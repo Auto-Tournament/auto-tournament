@@ -1,0 +1,284 @@
+import { Router, Request, Response } from 'express';
+import { matchService } from '../services/matchService';
+import { rconService } from '../services/rconService';
+import { CreateMatchInput } from '../types/match.types';
+import { requireAuth } from '../middleware/auth';
+import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
+import { log } from '../utils/logger';
+
+const router = Router();
+
+/**
+ * Helper to get base URL from request
+ */
+function getBaseUrl(req: Request): string {
+  return `${req.protocol}://${req.get('host')}`;
+}
+
+/**
+ * GET /api/matches/:slug.json
+ * Public endpoint for MatchZy to fetch match configuration
+ * No authentication required - this is called by the game server
+ */
+router.get('/:slug.json', (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const config = matchService.getMatchConfig(slug);
+
+    if (!config) {
+      return res.status(404).json({
+        success: false,
+        error: `Match configuration '${slug}' not found`,
+      });
+    }
+
+    // Return raw MatchZy config
+    return res.json(config);
+  } catch (error) {
+    console.error('Error fetching match config:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch match configuration',
+    });
+  }
+});
+
+/**
+ * GET /api/matches
+ * List all matches (authenticated)
+ */
+router.get('/', requireAuth, (req: Request, res: Response) => {
+  try {
+    const serverId = req.query.serverId as string | undefined;
+    const matches = matchService.getAllMatches(getBaseUrl(req), serverId);
+
+    return res.json({
+      success: true,
+      count: matches.length,
+      matches,
+    });
+  } catch (error) {
+    console.error('Error fetching matches:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch matches',
+    });
+  }
+});
+
+/**
+ * GET /api/matches/:slug
+ * Get match details (authenticated)
+ */
+router.get('/:slug', requireAuth, (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: `Match '${slug}' not found`,
+      });
+    }
+
+    return res.json({
+      success: true,
+      match,
+    });
+  } catch (error) {
+    console.error('Error fetching match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch match',
+    });
+  }
+});
+
+/**
+ * POST /api/matches
+ * Create a new match configuration (authenticated)
+ */
+router.post('/', requireAuth, (req: Request, res: Response) => {
+  try {
+    const input: CreateMatchInput = req.body;
+
+    if (!input.slug || !input.serverId || !input.config) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required fields: slug, serverId, config',
+      });
+    }
+
+    // Validate config structure
+    if (!input.config.team1 || !input.config.team2) {
+      return res.status(400).json({
+        success: false,
+        error: 'Match config must include team1 and team2',
+      });
+    }
+
+    const match = matchService.createMatch(input, getBaseUrl(req));
+
+    return res.status(201).json({
+      success: true,
+      message: 'Match created successfully',
+      match,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to create match';
+    const statusCode = message.includes('already exists')
+      ? 409
+      : message.includes('not found')
+      ? 404
+      : 400;
+
+    console.error('Error creating match:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * POST /api/matches/:slug/load
+ * Load match on server via RCON (authenticated)
+ * Automatically configures webhook unless ?skipWebhook=true
+ */
+router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const skipWebhook = req.query.skipWebhook === 'true';
+    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: `Match '${slug}' not found`,
+      });
+    }
+
+    const results = [];
+    let webhookConfigured = false;
+
+    // Configure webhook by default (unless explicitly skipped)
+    if (!skipWebhook) {
+      const serverToken = process.env.SERVER_TOKEN || '';
+      if (!serverToken) {
+        log.warn('SERVER_TOKEN not configured - skipping webhook setup');
+      } else {
+        const webhookUrl = `${getBaseUrl(req)}/api/events`;
+        log.webhookConfigured(match.serverId, webhookUrl);
+
+        const webhookCommands = getMatchZyWebhookCommands(getBaseUrl(req), serverToken);
+        for (const cmd of webhookCommands) {
+          const result = await rconService.sendCommand(match.serverId, cmd);
+          results.push(result);
+        }
+        webhookConfigured = true;
+      }
+    }
+
+    // Send RCON command to load match
+    const configUrl = match.configUrl;
+    const loadResult = await rconService.sendCommand(
+      match.serverId,
+      `matchzy_loadmatch_url "${configUrl}"`
+    );
+    results.push(loadResult);
+
+    if (loadResult.success) {
+      // Update match status
+      matchService.updateMatchStatus(slug, 'loaded');
+      log.matchLoaded(slug, match.serverId, webhookConfigured);
+    } else {
+      log.error(`Failed to load match ${slug} on server ${match.serverId}`, undefined, {
+        command: loadResult.command,
+      });
+    }
+
+    const allSuccessful = results.every((r) => r.success);
+
+    return res.status(allSuccessful ? 200 : 400).json({
+      success: allSuccessful,
+      message: allSuccessful
+        ? webhookConfigured
+          ? 'Match loaded and webhook configured'
+          : 'Match loaded (webhook skipped)'
+        : 'Failed to load match',
+      webhookConfigured,
+      match: matchService.getMatchBySlug(slug, getBaseUrl(req)),
+      rconResponses: results,
+    });
+  } catch (error) {
+    console.error('Error loading match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to load match on server',
+    });
+  }
+});
+
+/**
+ * PATCH /api/matches/:slug/status
+ * Update match status (authenticated)
+ */
+router.patch('/:slug/status', requireAuth, (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const { status } = req.body;
+
+    if (!status || !['pending', 'loaded', 'live', 'completed'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid status. Must be: pending, loaded, live, or completed',
+      });
+    }
+
+    matchService.updateMatchStatus(slug, status);
+    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+
+    return res.json({
+      success: true,
+      message: 'Match status updated',
+      match,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to update status';
+    const statusCode = message.includes('not found') ? 404 : 500;
+
+    console.error('Error updating match status:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * DELETE /api/matches/:slug
+ * Delete a match (authenticated)
+ */
+router.delete('/:slug', requireAuth, (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    matchService.deleteMatch(slug);
+
+    return res.json({
+      success: true,
+      message: 'Match deleted successfully',
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to delete match';
+    const statusCode = message.includes('not found') ? 404 : 500;
+
+    console.error('Error deleting match:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+export default router;
