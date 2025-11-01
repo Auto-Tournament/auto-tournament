@@ -6,6 +6,10 @@ import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
 import Servers from './pages/Servers';
+import Tournament from './pages/Tournament';
+import Bracket from './pages/Bracket';
+import Matches from './pages/Matches';
+import Development from './pages/Development';
 import Layout from './components/Layout';
 import { theme } from './theme';
 
@@ -73,7 +77,12 @@ function AppRoutes() {
         <Route index element={<Dashboard />} />
         <Route path="teams" element={<Teams />} />
         <Route path="servers" element={<Servers />} />
-        <Route path="matches" element={<Dashboard />} />
+        <Route path="tournament" element={<Tournament />} />
+        <Route path="bracket" element={<Bracket />} />
+        <Route path="matches" element={<Matches />} />
+        {(import.meta as unknown as { env: { DEV: boolean } }).env.DEV && (
+          <Route path="dev" element={<Development />} />
+        )}
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -48,21 +48,60 @@ class DatabaseManager {
         created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
         updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
       );
+    `);
 
+    // Tournament settings table (only one tournament at a time)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS tournament (
+        id INTEGER PRIMARY KEY CHECK (id = 1),
+        name TEXT NOT NULL,
+        type TEXT NOT NULL,
+        format TEXT NOT NULL,
+        status TEXT NOT NULL DEFAULT 'setup',
+        maps TEXT NOT NULL,
+        team_ids TEXT NOT NULL,
+        settings TEXT,
+        created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+        updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+        started_at INTEGER,
+        completed_at INTEGER
+      );
+    `);
+
+    // Matches table with bracket support
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS matches (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         slug TEXT NOT NULL UNIQUE,
-        server_id TEXT NOT NULL,
+        tournament_id INTEGER DEFAULT 1,
+        round INTEGER NOT NULL,
+        match_number INTEGER NOT NULL,
+        team1_id TEXT,
+        team2_id TEXT,
+        winner_id TEXT,
+        server_id TEXT,
         config TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending',
+        next_match_id INTEGER,
         created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
         loaded_at INTEGER,
-        FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE CASCADE
+        completed_at INTEGER,
+        FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE SET NULL,
+        FOREIGN KEY (tournament_id) REFERENCES tournament(id) ON DELETE CASCADE,
+        FOREIGN KEY (team1_id) REFERENCES teams(id) ON DELETE SET NULL,
+        FOREIGN KEY (team2_id) REFERENCES teams(id) ON DELETE SET NULL,
+        FOREIGN KEY (winner_id) REFERENCES teams(id) ON DELETE SET NULL,
+        FOREIGN KEY (next_match_id) REFERENCES matches(id) ON DELETE SET NULL
       );
 
       CREATE INDEX IF NOT EXISTS idx_matches_slug ON matches(slug);
       CREATE INDEX IF NOT EXISTS idx_matches_server_id ON matches(server_id);
+      CREATE INDEX IF NOT EXISTS idx_matches_tournament ON matches(tournament_id);
+      CREATE INDEX IF NOT EXISTS idx_matches_round ON matches(round);
+      CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
+    `);
 
+    this.db.exec(`
       CREATE TABLE IF NOT EXISTS match_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         match_slug TEXT NOT NULL,
@@ -73,8 +112,8 @@ class DatabaseManager {
       );
 
       CREATE INDEX IF NOT EXISTS idx_match_events_slug ON match_events(match_slug);
-          CREATE INDEX IF NOT EXISTS idx_match_events_type ON match_events(event_type);
-        `);
+      CREATE INDEX IF NOT EXISTS idx_match_events_type ON match_events(event_type);
+    `);
 
     // Teams table
     this.db.exec(`

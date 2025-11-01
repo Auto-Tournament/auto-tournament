@@ -1,0 +1,348 @@
+import React from 'react';
+import { Box, Card, CardContent, Typography, Chip } from '@mui/material';
+import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+
+interface Match {
+  id: number;
+  slug: string;
+  round: number;
+  matchNumber: number;
+  status: string;
+  team1?: { id: string; name: string; tag?: string };
+  team2?: { id: string; name: string; tag?: string };
+  winner?: { id: string; name: string; tag?: string };
+}
+
+interface BracketVisualizationProps {
+  matches: Match[];
+  totalRounds: number;
+  tournamentType: string;
+  isFullscreen?: boolean;
+}
+
+export default function BracketVisualization({
+  matches,
+  totalRounds,
+  tournamentType,
+  isFullscreen = false,
+}: BracketVisualizationProps) {
+  // Group matches by round
+  const matchesByRound: { [round: number]: Match[] } = {};
+  matches.forEach((match) => {
+    if (!matchesByRound[match.round]) {
+      matchesByRound[match.round] = [];
+    }
+    matchesByRound[match.round].push(match);
+  });
+
+  const MATCH_WIDTH = 300;
+  const MIN_MATCH_HEIGHT = 140;
+  const ROUND_SPACING = 100;
+  const MATCH_VERTICAL_SPACING = 50;
+
+  // Calculate dynamic height for each match based on content
+  const calculateMatchHeight = (match: Match): number => {
+    const baseHeight = 180; // Base height with normal content
+    const team1Name = match.team1?.name || 'TBD';
+    const team2Name = match.team2?.name || 'TBD';
+
+    // Add extra height if team names are long (more than 20 characters)
+    const team1Extra = team1Name.length > 20 ? Math.ceil((team1Name.length - 20) / 10) * 10 : 0;
+    const team2Extra = team2Name.length > 20 ? Math.ceil((team2Name.length - 20) / 10) * 10 : 0;
+
+    return baseHeight + Math.max(team1Extra, team2Extra);
+  };
+
+  const getRoundLabel = (round: number): string => {
+    if (tournamentType === 'single_elimination') {
+      if (round === totalRounds) return 'Finals';
+      if (round === totalRounds - 1) return 'Semi-Finals';
+      if (round === totalRounds - 2) return 'Quarter-Finals';
+    }
+    return `Round ${round}`;
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'live':
+        return 'warning';
+      case 'completed':
+        return 'success';
+      case 'ready':
+        return 'info';
+      default:
+        return 'default';
+    }
+  };
+
+  // Calculate total width and height
+  const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + 100;
+  const maxMatchesInRound = Math.max(...Object.values(matchesByRound).map((m) => m.length));
+
+  // Calculate max height needed for any match
+  const maxMatchHeight = Math.max(MIN_MATCH_HEIGHT, ...matches.map((m) => calculateMatchHeight(m)));
+
+  const totalHeight = maxMatchesInRound * (maxMatchHeight + MATCH_VERTICAL_SPACING) + 200;
+
+  return (
+    <Box
+      sx={{
+        width: '100%',
+        height: isFullscreen ? '100%' : '70vh',
+        border: isFullscreen ? 0 : 1,
+        borderColor: 'divider',
+        borderRadius: isFullscreen ? 0 : 2,
+        overflow: 'hidden',
+        bgcolor: '#1a1a1a',
+      }}
+    >
+      <TransformWrapper
+        initialScale={0.8}
+        minScale={0.3}
+        maxScale={2}
+        centerOnInit
+        wheel={{ step: 0.1 }}
+        panning={{ velocityDisabled: false }}
+      >
+        {() => (
+          <>
+            <TransformComponent
+              wrapperStyle={{
+                width: '100%',
+                height: '100%',
+              }}
+            >
+              <svg width={totalWidth} height={totalHeight}>
+                {/* Draw connector lines */}
+                {Array.from({ length: totalRounds - 1 }, (_, roundIndex) => {
+                  const round = roundIndex + 1;
+                  const currentMatches = matchesByRound[round] || [];
+                  const nextRoundMatches = matchesByRound[round + 1] || [];
+
+                  return currentMatches.map((match, matchIndex) => {
+                    // Calculate positions
+                    const x1 = 50 + round * (MATCH_WIDTH + ROUND_SPACING);
+                    const y1 =
+                      100 +
+                      matchIndex * (maxMatchHeight + MATCH_VERTICAL_SPACING) +
+                      maxMatchHeight / 2;
+
+                    // Determine which next match this connects to
+                    const nextMatchIndex = Math.floor(matchIndex / 2);
+                    if (nextMatchIndex < nextRoundMatches.length) {
+                      const x2 = x1 + MATCH_WIDTH + ROUND_SPACING;
+                      const y2 =
+                        100 +
+                        nextMatchIndex * (maxMatchHeight + MATCH_VERTICAL_SPACING * 2) +
+                        maxMatchHeight / 2;
+
+                      // Draw L-shaped connector
+                      const midX = x1 + (MATCH_WIDTH + ROUND_SPACING) / 2;
+
+                      return (
+                        <g key={`connector-${round}-${matchIndex}`}>
+                          <line x1={x1} y1={y1} x2={midX} y2={y1} stroke="#555" strokeWidth="2" />
+                          <line x1={midX} y1={y1} x2={midX} y2={y2} stroke="#555" strokeWidth="2" />
+                          <line
+                            x1={midX}
+                            y1={y2}
+                            x2={x2 - ROUND_SPACING}
+                            y2={y2}
+                            stroke="#555"
+                            strokeWidth="2"
+                          />
+                        </g>
+                      );
+                    }
+                    return null;
+                  });
+                })}
+
+                {/* Render matches */}
+                {Array.from({ length: totalRounds }, (_, i) => i + 1).map((round) => {
+                  const roundMatches = matchesByRound[round] || [];
+                  const verticalSpacing = Math.pow(2, round - 1) * MATCH_VERTICAL_SPACING;
+
+                  return (
+                    <g key={round}>
+                      {/* Round label */}
+                      <text
+                        x={50 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING) + MATCH_WIDTH / 2}
+                        y={50}
+                        textAnchor="middle"
+                        fill="#e0e0e0"
+                        fontSize="16"
+                        fontWeight="600"
+                      >
+                        {getRoundLabel(round)}
+                      </text>
+
+                      {/* Matches */}
+                      {roundMatches.map((match, matchIndex) => {
+                        const x = 50 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING);
+                        const matchHeight = calculateMatchHeight(match);
+                        const y = 100 + matchIndex * (maxMatchHeight + verticalSpacing);
+
+                        return (
+                          <g key={match.id}>
+                            <foreignObject x={x} y={y} width={MATCH_WIDTH} height={matchHeight}>
+                              <Card
+                                sx={{
+                                  width: MATCH_WIDTH,
+                                  minHeight: matchHeight,
+                                  borderLeft: 4,
+                                  borderColor:
+                                    match.status === 'completed'
+                                      ? 'success.main'
+                                      : match.status === 'live'
+                                      ? 'warning.main'
+                                      : match.status === 'ready'
+                                      ? 'info.main'
+                                      : '#444',
+                                  bgcolor: '#2a2a2a',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease',
+                                  borderRadius: 2,
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                  '&:hover': {
+                                    transform: 'translateY(-2px)',
+                                    boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+                                    zIndex: 10,
+                                  },
+                                }}
+                              >
+                                <CardContent
+                                  sx={{
+                                    p: 2,
+                                    height: '100%',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    '&:last-child': { pb: 2 },
+                                  }}
+                                >
+                                  <Box
+                                    display="flex"
+                                    justifyContent="space-between"
+                                    alignItems="center"
+                                    mb={1.5}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      fontWeight={600}
+                                      sx={{
+                                        color: '#888',
+                                        textTransform: 'uppercase',
+                                        fontSize: '0.7rem',
+                                        letterSpacing: '0.5px',
+                                      }}
+                                    >
+                                      {match.slug}
+                                    </Typography>
+                                    <Chip
+                                      label={match.status.toUpperCase()}
+                                      size="small"
+                                      color={getStatusColor(match.status)}
+                                      sx={{
+                                        height: 22,
+                                        fontSize: '0.65rem',
+                                        fontWeight: 600,
+                                      }}
+                                    />
+                                  </Box>
+                                  <Box display="flex" flexDirection="column" gap={1} flex={1}>
+                                    <Box
+                                      sx={{
+                                        p: 1.25,
+                                        borderRadius: 1.5,
+                                        bgcolor:
+                                          match.winner?.id === match.team1?.id
+                                            ? 'success.main'
+                                            : '#1f1f1f',
+                                        border: '2px solid',
+                                        borderColor:
+                                          match.winner?.id === match.team1?.id
+                                            ? 'success.dark'
+                                            : '#444',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={
+                                          match.winner?.id === match.team1?.id ? 700 : 500
+                                        }
+                                        sx={{
+                                          fontSize: '0.875rem',
+                                          color:
+                                            match.winner?.id === match.team1?.id
+                                              ? '#ffffff'
+                                              : match.team1
+                                              ? '#e8e8e8'
+                                              : '#777',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          wordBreak: 'break-word',
+                                        }}
+                                      >
+                                        {match.team1 ? match.team1.name : 'TBD'}
+                                      </Typography>
+                                    </Box>
+                                    <Box
+                                      sx={{
+                                        p: 1.25,
+                                        borderRadius: 1.5,
+                                        bgcolor:
+                                          match.winner?.id === match.team2?.id
+                                            ? 'success.main'
+                                            : '#1f1f1f',
+                                        border: '2px solid',
+                                        borderColor:
+                                          match.winner?.id === match.team2?.id
+                                            ? 'success.dark'
+                                            : '#444',
+                                        transition: 'all 0.2s',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                      }}
+                                    >
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={
+                                          match.winner?.id === match.team2?.id ? 700 : 500
+                                        }
+                                        sx={{
+                                          fontSize: '0.875rem',
+                                          color:
+                                            match.winner?.id === match.team2?.id
+                                              ? '#ffffff'
+                                              : match.team2
+                                              ? '#e8e8e8'
+                                              : '#777',
+                                          overflow: 'hidden',
+                                          textOverflow: 'ellipsis',
+                                          wordBreak: 'break-word',
+                                        }}
+                                      >
+                                        {match.team2 ? match.team2.name : 'TBD'}
+                                      </Typography>
+                                    </Box>
+                                  </Box>
+                                </CardContent>
+                              </Card>
+                            </foreignObject>
+                          </g>
+                        );
+                      })}
+                    </g>
+                  );
+                })}
+              </svg>
+            </TransformComponent>
+          </>
+        )}
+      </TransformWrapper>
+    </Box>
+  );
+}

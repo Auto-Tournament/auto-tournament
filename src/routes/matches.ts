@@ -5,6 +5,7 @@ import { CreateMatchInput } from '../types/match.types';
 import { requireAuth } from '../middleware/auth';
 import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
+import { db } from '../config/database';
 
 const router = Router();
 
@@ -46,11 +47,71 @@ router.get('/:slug.json', (req: Request, res: Response) => {
 /**
  * GET /api/matches
  * List all matches (authenticated)
+ * Returns tournament matches with team information
  */
 router.get('/', requireAuth, (req: Request, res: Response) => {
   try {
     const serverId = req.query.serverId as string | undefined;
-    const matches = matchService.getAllMatches(getBaseUrl(req), serverId);
+
+    // Fetch matches with tournament information
+    let query = `
+      SELECT 
+        m.*,
+        t1.id as team1_id, t1.name as team1_name, t1.tag as team1_tag,
+        t2.id as team2_id, t2.name as team2_name, t2.tag as team2_tag,
+        w.id as winner_id, w.name as winner_name, w.tag as winner_tag
+      FROM matches m
+      LEFT JOIN teams t1 ON m.team1_id = t1.id
+      LEFT JOIN teams t2 ON m.team2_id = t2.id
+      LEFT JOIN teams w ON m.winner_id = w.id
+    `;
+
+    const params: unknown[] = [];
+    if (serverId) {
+      query += ' WHERE m.server_id = ?';
+      params.push(serverId);
+    }
+
+    query += ' ORDER BY m.created_at DESC';
+
+    const rows = db.query<any>(query, params);
+
+    const matches = rows.map((row: any) => {
+      const config = row.config ? JSON.parse(row.config) : {};
+
+      return {
+        id: row.id,
+        slug: row.slug,
+        round: row.round,
+        matchNumber: row.match_number,
+        team1: row.team1_id
+          ? {
+              id: row.team1_id,
+              name: row.team1_name,
+              tag: row.team1_tag,
+            }
+          : undefined,
+        team2: row.team2_id
+          ? {
+              id: row.team2_id,
+              name: row.team2_name,
+              tag: row.team2_tag,
+            }
+          : undefined,
+        winner: row.winner_id
+          ? {
+              id: row.winner_id,
+              name: row.winner_name,
+              tag: row.winner_tag,
+            }
+          : undefined,
+        status: row.status,
+        config,
+        createdAt: row.created_at,
+        loadedAt: row.loaded_at,
+        completedAt: row.completed_at,
+      };
+    });
 
     return res.json({
       success: true,

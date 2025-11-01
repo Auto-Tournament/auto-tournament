@@ -60,6 +60,7 @@ export default function Servers() {
       }));
       setServers(serversWithStatus);
       setError('');
+      setLoading(false); // Show servers immediately
 
       // Check status for each server in parallel
       const statusPromises = serverList.map(async (server: Server) => {
@@ -78,9 +79,8 @@ export default function Servers() {
       );
     } catch (err) {
       setError('Failed to load servers');
-      console.error(err);
-    } finally {
       setLoading(false);
+      console.error(err);
     }
   };
 
@@ -103,23 +103,20 @@ export default function Servers() {
     handleCloseModal();
   };
 
-  if (loading) {
-    return (
-      <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
-        <CircularProgress />
-      </Box>
-    );
-  }
-
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Typography variant="h4" fontWeight={600}>
-          Servers
-        </Typography>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-          New Server
-        </Button>
+        <Box display="flex" alignItems="center" gap={2}>
+          <StorageIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight={600}>
+            Servers
+          </Typography>
+        </Box>
+        {!error && (
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
+            New Server
+          </Button>
+        )}
       </Box>
 
       {error && (
@@ -128,89 +125,92 @@ export default function Servers() {
         </Alert>
       )}
 
-      {servers.length === 0 ? (
-        <Card sx={{ textAlign: 'center', py: 8 }}>
-          <StorageIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No servers yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Create your first CS2 server to get started
-          </Typography>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-            Create Server
-          </Button>
-        </Card>
-      ) : (
-        <Grid container spacing={3}>
-          {servers.map((server) => (
-            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={server.id}>
-              <Card
-                sx={{
-                  cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
-                  '&:hover': {
-                    transform: 'translateY(-4px)',
-                    boxShadow: 6,
-                  },
-                }}
-                onClick={() => handleOpenModal(server)}
-              >
-                <CardContent>
-                  <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                    <Box>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {server.name}
-                      </Typography>
-                      <Chip
-                        icon={
-                          server.status === 'checking' ? undefined : server.status === 'online' ? (
-                            <CheckCircleIcon />
-                          ) : (
-                            <CancelIcon />
-                          )
-                        }
-                        label={
-                          server.status === 'checking'
-                            ? 'Checking...'
-                            : server.status === 'online'
-                            ? 'Online'
-                            : 'Offline'
-                        }
-                        size="small"
-                        color={
-                          server.status === 'checking'
-                            ? 'default'
-                            : server.status === 'online'
-                            ? 'success'
-                            : 'error'
-                        }
-                        sx={{ fontWeight: 600 }}
-                      />
+      {!error &&
+        (servers.length === 0 ? (
+          <Card sx={{ textAlign: 'center', py: 8 }}>
+            <StorageIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No servers yet
+            </Typography>
+            <Typography variant="body2" color="text.secondary" mb={3}>
+              Create your first CS2 server to get started
+            </Typography>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
+              Create Server
+            </Button>
+          </Card>
+        ) : (
+          <Grid container spacing={3}>
+            {servers.map((server) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={server.id}>
+                <Card
+                  sx={{
+                    cursor: 'pointer',
+                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    '&:hover': {
+                      transform: 'translateY(-4px)',
+                      boxShadow: 6,
+                    },
+                  }}
+                  onClick={() => handleOpenModal(server)}
+                >
+                  <CardContent>
+                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
+                      <Box>
+                        <Typography variant="h6" fontWeight={600} gutterBottom>
+                          {server.name}
+                        </Typography>
+                        <Chip
+                          icon={
+                            server.status === 'checking' ? (
+                              <CircularProgress size={16} />
+                            ) : server.status === 'online' ? (
+                              <CheckCircleIcon />
+                            ) : (
+                              <CancelIcon />
+                            )
+                          }
+                          label={
+                            server.status === 'checking'
+                              ? 'Checking...'
+                              : server.status === 'online'
+                              ? 'Online'
+                              : 'Offline'
+                          }
+                          size="small"
+                          color={
+                            server.status === 'checking'
+                              ? 'default'
+                              : server.status === 'online'
+                              ? 'success'
+                              : 'error'
+                          }
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                      <IconButton size="small" onClick={() => handleOpenModal(server)}>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
                     </Box>
-                    <IconButton size="small" onClick={() => handleOpenModal(server)}>
-                      <EditIcon fontSize="small" />
-                    </IconButton>
-                  </Box>
 
-                  <Box display="flex" flexDirection="column" gap={0.5} mb={2}>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Host:</strong> {server.host}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Port:</strong> {server.port}
-                    </Typography>
-                  </Box>
+                    <Box display="flex" flexDirection="column" gap={0.5} mb={2}>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Host:</strong> {server.host}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Port:</strong> {server.port}
+                      </Typography>
+                    </Box>
 
-                  <Typography variant="caption" color="text.secondary" display="block" mt={2}>
-                    ID: {server.id}
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+                    <Typography variant="caption" color="text.secondary" display="block" mt={2}>
+                      ID: {server.id}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ))}
 
       <ServerModal
         open={modalOpen}

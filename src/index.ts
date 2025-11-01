@@ -6,10 +6,12 @@ dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
+import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
 import { log } from './utils/logger';
+import { initializeSocket } from './services/socketService';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
@@ -17,8 +19,10 @@ import rconRoutes from './routes/rcon';
 import matchRoutes from './routes/matches';
 import eventRoutes from './routes/events';
 import steamRoutes from './routes/steam';
+import tournamentRoutes from './routes/tournament';
 
 const app = express();
+const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
 
 // Middleware
@@ -218,6 +222,7 @@ app.use('/api/rcon', rconRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/steam', steamRoutes);
+app.use('/api/tournament', tournamentRoutes);
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
@@ -235,7 +240,10 @@ app.use((_req: Request, res: Response) => {
 });
 
 // Start server
-const server = app.listen(PORT, () => {
+// Initialize Socket.io
+initializeSocket(httpServer);
+
+const server = httpServer.listen(PORT, () => {
   log.server('='.repeat(60));
   log.server('🎮  MatchZy Auto Tournament API');
   log.server('='.repeat(60));
@@ -243,6 +251,7 @@ const server = app.listen(PORT, () => {
   log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
   log.server(`API Docs: http://localhost:${PORT}/api-docs`);
   log.server(`Health check: http://localhost:${PORT}/health`);
+  log.server(`WebSocket: Enabled ✓`);
   log.server('='.repeat(60));
 });
 

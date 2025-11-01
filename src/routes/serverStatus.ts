@@ -45,16 +45,17 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     }
 
     // Try to connect and send a simple command
-    try {
-      await rconService.sendCommand(id, 'status');
-      log.info(`Server ${id} is online`);
+    const result = await rconService.sendCommand(id, 'status');
+
+    if (result.success) {
+      log.debug(`Server ${id} is online`);
       return res.json({
         success: true,
         status: 'online',
         serverId: id,
       });
-    } catch (error) {
-      log.warn(`Server ${id} is offline or unreachable`, { error });
+    } else {
+      log.warn(`Server ${id} is offline or unreachable`, { error: result.error });
       return res.json({
         success: true,
         status: 'offline',
