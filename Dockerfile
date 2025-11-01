@@ -7,16 +7,19 @@ FROM base AS dependencies
 COPY package.json bun.lockb ./
 RUN bun install --frozen-lockfile
 
-# Build TypeScript
+# Build TypeScript backend and React frontend
 FROM dependencies AS build
 COPY . .
-RUN bun run build
+RUN bun run build:server
+RUN bun run build:client
 
 # Production image
 FROM base AS release
 COPY --from=dependencies /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
+COPY --from=build /app/public ./public
 COPY --from=build /app/package.json ./
+COPY --from=build /app/docs ./docs
 
 # Create data directory for SQLite database
 RUN mkdir -p /app/data

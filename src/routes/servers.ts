@@ -1,8 +1,12 @@
 import { Router, Request, Response } from 'express';
 import { serverService } from '../services/serverService';
 import { CreateServerInput, UpdateServerInput } from '../types/server.types';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
+
+// Protect all server routes
+router.use(requireAuth);
 
 /**
  * GET /api/servers

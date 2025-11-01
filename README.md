@@ -1,108 +1,86 @@
 <div align="center">
-  <img src="docs/icon.svg" alt="MatchZy Auto Tournament" width="200" height="200">
+  <img src="client/public/icon.svg" alt="MatchZy Auto Tournament" width="140" height="140">
   
   # MatchZy Auto Tournament
   
-  **Automated tournament management API for Counter-Strike 2 using the MatchZy plugin**
+  **The one-button CS2 tournament automation API**
   
-  <p>A TypeScript-based REST API that automates CS2 tournament workflows. Load matches, manage servers, and track game events—all through a single API. Built for tournament admins who want to focus on running events, not managing servers.</p>
+  <p>Stop manually configuring servers. Load matches, track events, and manage entire tournaments through one API. Built for MatchZy plugin.</p>
 </div>
 
 ---
 
-## ✨ Features
+## ✨ What It Does
 
-- 🎯 **One-Click Match Loading** — Configure teams, load matches, and setup webhooks automatically
-- 🖥️ **Dynamic Server Management** — Add, update, or remove CS2 servers on the fly
-- 📡 **Real-Time Event Tracking** — Receive and store all MatchZy game events as they happen
-- 🔒 **Secure RCON Control** — Execute predefined commands with token-based authentication
-- 📊 **Match Status Automation** — Automatically update match states (pending → live → completed)
-- 📚 **Interactive API Docs** — Built-in Swagger UI at `/api-docs`
-
----
-
-## 📋 Prerequisites
-
-**Production:** [Docker](https://docs.docker.com/get-docker/) 20.10+  
-**Development:** [Bun](https://bun.sh/) 1.0+ or [Node.js](https://nodejs.org/) 18+
+- 🎯 **One-Click Match Setup** — Teams, configs, and webhooks in one command
+- 🖥️ **Server Fleet Management** — Add/remove CS2 servers dynamically
+- 👥 **Team Management** — Steam vanity URL resolution, Discord role integration
+- 📡 **Live Event Stream** — Real-time game events from MatchZy
+- 🔒 **Secure RCON** — Token-protected server commands
+- 🎨 **Modern Web UI** — Material Design 3 dashboard with authentication
+- 📚 **Auto Docs** — Interactive Swagger UI
 
 ---
 
 ## 🚀 Quick Start
 
-### Docker (Recommended)
+**With Docker:**
 
 ```bash
 cp .env.example .env
-# Edit .env with your tokens
 docker-compose up -d --build
 ```
 
-### Local Development
+**Local Dev:**
 
 ```bash
-bun install
-cp .env.example .env
-# Edit .env with your tokens
+bun install && cp .env.example .env
 bun run dev
 ```
 
-**API:** `http://localhost:3000` | **Docs:** `http://localhost:3000/api-docs`
+📖 **API Docs:** `http://localhost:3000/api-docs`  
+🎨 **Web UI:** `http://localhost:5173` (dev) or `/app` (prod)
+
+**Environment Variables:**
+
+```bash
+# Required
+API_TOKEN=your-secure-token          # Admin authentication
+SERVER_TOKEN=your-server-token       # MatchZy webhook auth
+
+# Optional
+STEAM_API_KEY=your-steam-key         # Enable Steam vanity URL resolution
+                                     # Get free key: https://steamcommunity.com/dev/apikey
+```
 
 ---
 
-## 📡 API Documentation
+## 🛠️ Stack
 
-All API endpoints, examples, and schemas are available in the interactive documentation:
-
-👉 **[View API Docs](http://localhost:3000/api-docs)** (when running)
-
-**Quick Overview:**
-
-- 🖥️ **Servers** — Manage CS2 servers
-- 👥 **Teams** — Manage teams with players & Discord integration
-- 🎮 **Matches** — Create and load match configurations
-- 🎛️ **RCON** — Execute server commands
-- 📡 **Events** — MatchZy webhook integration
-
-**Authentication:** `Authorization: Bearer <API_TOKEN>`
-
----
-
-## 🛠️ Tech Stack
-
-- **Runtime:** Bun + TypeScript
-- **Framework:** Express.js
-- **Database:** SQLite
-- **RCON:** dathost-rcon-client
-- **Docs:** Swagger/OpenAPI
-- **Deploy:** Docker + Docker Compose
+TypeScript • Express • React • Material UI • SQLite • Docker
 
 ---
 
 ## 🎯 Roadmap
 
-**Goal:** One-button fully automated tournaments
+_Goal: One button starts the entire tournament_
 
-- [ ] Bracket generation & scheduling
-- [ ] Intelligent server allocation
+- [x] Server management with CRUD
+- [x] Team management with Steam integration
+- [x] Match loading with auto-webhook setup
+- [x] Web UI with token auth
+- [ ] Swiss-system bracket generation
+- [ ] Automatic server allocation
 - [ ] Map veto system
-- [ ] Web dashboard UI
-- [ ] Discord bot integration
-- [ ] Stream overlay triggers
+- [ ] Discord bot notifications
+- [ ] Stream overlay API
 
 ---
-
-## 🤝 Contributing
-
-Contributions welcome! See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for guidelines.
 
 ## 📄 License
 
-MIT License - see [LICENSE](LICENSE) file.
-
----
+MIT License • [Contributing](.github/CONTRIBUTING.md)
 
 <div align="center">
-  <strong>Made with ❤️ for the CS2 tournament community</strong>
+  <strong>Made with ❤️ for the CS2 community</strong>
 </div>

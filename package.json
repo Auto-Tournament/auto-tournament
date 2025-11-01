@@ -4,10 +4,16 @@
     "description": "Tournament management API for CS2 MatchZy plugin",
     "main": "dist/index.js",
     "scripts": {
-        "dev": "tsx watch src/index.ts",
+        "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
+        "dev:server": "tsx watch src/index.ts",
+        "dev:client": "vite",
         "dev:debug": "LOG_LEVEL=debug tsx watch src/index.ts",
-        "build": "tsc",
-        "start": "node dist/index.js"
+        "build": "npm run build:server && npm run build:client",
+        "build:server": "tsc",
+        "build:client": "vite build",
+        "start": "node dist/index.js",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix"
     },
     "keywords": [
         "cs2",
@@ -19,11 +25,16 @@
     "author": "",
     "license": "PolyForm-Noncommercial-1.0.0",
     "dependencies": {
+        "@emotion/react": "^11.14.0",
+        "@emotion/styled": "^11.14.1",
+        "@mui/icons-material": "^7.3.4",
+        "@mui/material": "^7.3.4",
         "better-sqlite3": "^9.2.2",
         "cors": "^2.8.5",
         "dathost-rcon-client": "^1.0.3",
         "dotenv": "^16.3.1",
         "express": "^4.18.2",
+        "node-fetch": "^2.7.0",
         "pino": "^10.1.0",
         "pino-pretty": "^13.1.2",
         "swagger-jsdoc": "^6.2.8",
@@ -34,9 +45,24 @@
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
         "@types/node": "^20.10.5",
+        "@types/node-fetch": "^2.6.13",
+        "@types/react": "^18.2.0",
+        "@types/react-dom": "^18.2.0",
+        "@types/react-router-dom": "^5.3.3",
         "@types/swagger-jsdoc": "^6.0.4",
         "@types/swagger-ui-express": "^4.1.8",
+        "@typescript-eslint/eslint-plugin": "^8.46.2",
+        "@typescript-eslint/parser": "^8.46.2",
+        "@vitejs/plugin-react": "^4.2.1",
+        "concurrently": "^9.2.1",
+        "eslint": "^9.39.0",
+        "eslint-plugin-react": "^7.37.5",
+        "eslint-plugin-react-hooks": "^7.0.1",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
+        "react-router-dom": "^6.21.0",
         "tsx": "^4.7.0",
-        "typescript": "^5.3.3"
+        "typescript": "^5.3.3",
+        "vite": "^5.0.12"
     }
 }

@@ -1,6 +1,11 @@
+// IMPORTANT: Load environment variables FIRST, before any other imports
+// This ensures all modules can access env vars during initialization
+import dotenv from 'dotenv';
+import path from 'path';
+dotenv.config({ path: path.join(process.cwd(), '.env') });
+
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
@@ -10,9 +15,7 @@ import teamRoutes from './routes/teams';
 import rconRoutes from './routes/rcon';
 import matchRoutes from './routes/matches';
 import eventRoutes from './routes/events';
-
-// Load environment variables
-dotenv.config();
+import steamRoutes from './routes/steam';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -172,12 +175,54 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * @openapi
+ * /api/auth/verify:
+ *   get:
+ *     tags:
+ *       - Authentication
+ *     summary: Verify authentication token
+ *     description: Check if the provided token is valid
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token is valid
+ *       401:
+ *         description: Token is invalid
+ */
+app.get('/api/auth/verify', (req: Request, res: Response): void => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  const validToken = process.env.API_TOKEN;
+
+  if (!token || token !== validToken) {
+    res.status(401).json({
+      success: false,
+      error: 'Invalid token',
+    });
+    return;
+  }
+
+  res.json({
+    success: true,
+    message: 'Token is valid',
+  });
+});
+
 // API Routes
 app.use('/api/servers', serverRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/rcon', rconRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/events', eventRoutes);
+app.use('/api/steam', steamRoutes);
+
+// Serve frontend at /app
+const publicPath = path.join(__dirname, '../public');
+app.use('/app', express.static(publicPath));
+app.get('/app/*', (_req: Request, res: Response) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
+});
 
 // 404 handler
 app.use((_req: Request, res: Response) => {

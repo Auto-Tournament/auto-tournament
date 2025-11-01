@@ -22,7 +22,7 @@ class TeamService {
    * Get all teams
    */
   getAllTeams(): TeamResponse[] {
-    const teams = db.getAll<Team>('teams', 'ORDER BY name ASC');
+    const teams = db.getAll<Team>('teams');
     return teams.map((team) => this.toResponse(team));
   }
 
@@ -32,6 +32,18 @@ class TeamService {
   getTeamById(id: string): TeamResponse | null {
     const team = db.getOne<Team>('teams', 'id = ?', [id]);
     return team ? this.toResponse(team) : null;
+  }
+
+  /**
+   * Validate that a team doesn't have duplicate Steam IDs
+   */
+  private validateNoDuplicatePlayers(players: Player[]): void {
+    const steamIds = players.map(p => p.steamId.toLowerCase());
+    const uniqueSteamIds = new Set(steamIds);
+    
+    if (steamIds.length !== uniqueSteamIds.size) {
+      throw new Error('Team cannot have duplicate Steam IDs');
+    }
   }
 
   /**
@@ -52,6 +64,9 @@ class TeamService {
     if (!input.players || input.players.length === 0) {
       throw new Error('At least one player is required');
     }
+
+    // Validate no duplicate Steam IDs
+    this.validateNoDuplicatePlayers(input.players);
 
     // Check if team exists
     const existing = this.getTeamById(input.id);
@@ -90,6 +105,11 @@ class TeamService {
     const existing = this.getTeamById(id);
     if (!existing) {
       throw new Error(`Team with ID '${id}' not found`);
+    }
+
+    // Validate players if provided
+    if (input.players && input.players.length > 0) {
+      this.validateNoDuplicatePlayers(input.players);
     }
 
     const updateData: Record<string, unknown> = {

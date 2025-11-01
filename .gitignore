@@ -33,3 +33,7 @@ data/
 *.db
 *.db-shm
 *.db-wal
+
+# Frontend build
+public/
+!client/public/

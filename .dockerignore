@@ -1,6 +1,8 @@
 node_modules
 dist
 data
+public
+client
 *.db
 *.log
 .env
@@ -15,4 +17,5 @@ npm-debug.log
 yarn-error.log
 .vscode
 .idea
+vite.config.ts
 
