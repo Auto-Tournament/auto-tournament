@@ -11,6 +11,7 @@ import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
 import { log } from './utils/logger';
 import serverRoutes from './routes/servers';
+import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
 import rconRoutes from './routes/rcon';
 import matchRoutes from './routes/matches';
@@ -211,6 +212,7 @@ app.get('/api/auth/verify', (req: Request, res: Response): void => {
 
 // API Routes
 app.use('/api/servers', serverRoutes);
+app.use('/api/servers', serverStatusRoutes); // Mount status routes under /api/servers
 app.use('/api/teams', teamRoutes);
 app.use('/api/rcon', rconRoutes);
 app.use('/api/matches', matchRoutes);

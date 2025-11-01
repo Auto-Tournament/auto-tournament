@@ -5,6 +5,7 @@ import { AuthProvider, useAuth } from './contexts/AuthContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
+import Servers from './pages/Servers';
 import Layout from './components/Layout';
 import { theme } from './theme';
 
@@ -71,7 +72,7 @@ function AppRoutes() {
       >
         <Route index element={<Dashboard />} />
         <Route path="teams" element={<Teams />} />
-        <Route path="servers" element={<Dashboard />} />
+        <Route path="servers" element={<Servers />} />
         <Route path="matches" element={<Dashboard />} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
