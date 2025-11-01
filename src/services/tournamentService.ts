@@ -145,15 +145,8 @@ class TournamentService {
     db.update('tournament', updates, 'id = ?', [1]);
     log.debug('Tournament updated');
 
-    // Only auto-regenerate bracket if tournament is in setup mode
-    if (!isLive) {
-      try {
-        this.generateBracket();
-        log.success('Bracket automatically regenerated');
-      } catch (err) {
-        log.warn('Failed to auto-regenerate bracket', { error: err });
-      }
-    }
+    // Note: Bracket regeneration must now be done explicitly via regenerateBracket()
+    // This prevents accidental bracket resets
 
     return this.getTournament()!;
   }
@@ -260,6 +253,66 @@ class TournamentService {
       matches,
       totalRounds: this.calculateTotalRounds(tournament.teamIds.length, tournament.type),
     };
+  }
+
+  /**
+   * Explicitly regenerate brackets (DESTRUCTIVE - wipes all match data)
+   * Should only be called with user confirmation
+   */
+  regenerateBracket(force: boolean = false): BracketResponse {
+    const tournament = this.getTournament();
+    if (!tournament) {
+      throw new Error('No tournament exists');
+    }
+
+    // Safety check: prevent regeneration of live/completed tournaments unless forced
+    if (!force && tournament.status !== 'setup') {
+      throw new Error(
+        'Cannot regenerate bracket for a live or completed tournament. ' +
+          'Use force=true to override (this will delete all match data).'
+      );
+    }
+
+    log.warn('Regenerating bracket - all existing match data will be deleted');
+
+    // Generate new bracket (this also sets status to 'ready')
+    const result = this.generateBracket();
+
+    log.success('Bracket regenerated successfully');
+    return result;
+  }
+
+  /**
+   * Reset tournament back to setup mode
+   * Clears all matches and resets status
+   */
+  resetTournament(): TournamentResponse {
+    const tournament = this.getTournament();
+    if (!tournament) {
+      throw new Error('No tournament exists');
+    }
+
+    log.warn('Resetting tournament to setup mode');
+
+    // Delete all matches
+    db.exec('DELETE FROM matches WHERE tournament_id = 1');
+    db.exec(
+      'DELETE FROM match_events WHERE match_slug IN (SELECT slug FROM matches WHERE tournament_id = 1)'
+    );
+
+    // Reset tournament status
+    db.update(
+      'tournament',
+      {
+        status: 'setup',
+        updated_at: Math.floor(Date.now() / 1000),
+      },
+      'id = ?',
+      [1]
+    );
+
+    log.success('Tournament reset to setup mode');
+    return this.getTournament()!;
   }
 
   /**

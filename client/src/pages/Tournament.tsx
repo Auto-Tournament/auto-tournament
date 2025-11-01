@@ -19,8 +19,13 @@ import {
 } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
+import RefreshIcon from '@mui/icons-material/Refresh';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
+import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 const CS2_MAPS = [
   'de_ancient',
@@ -63,6 +68,11 @@ export default function Tournament() {
   const [seedingMethod, setSeedingMethod] = useState('random');
 
   const [saving, setSaving] = useState(false);
+  const [showPreviewModal, setShowPreviewModal] = useState(false);
+  const [pendingChanges, setPendingChanges] = useState<any[]>([]);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -100,28 +110,102 @@ export default function Tournament() {
     }
   };
 
-  const handleSave = async () => {
+  const detectChanges = () => {
+    if (!tournament) return [];
+
+    const changes: any[] = [];
+
+    if (name !== tournament.name) {
+      changes.push({
+        field: 'name',
+        label: 'Tournament Name',
+        oldValue: tournament.name,
+        newValue: name,
+      });
+    }
+
+    if (type !== tournament.type) {
+      changes.push({
+        field: 'type',
+        label: 'Tournament Type',
+        oldValue:
+          TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label || tournament.type,
+        newValue: TOURNAMENT_TYPES.find((t) => t.value === type)?.label || type,
+      });
+    }
+
+    if (format !== tournament.format) {
+      changes.push({
+        field: 'format',
+        label: 'Match Format',
+        oldValue:
+          MATCH_FORMATS.find((f) => f.value === tournament.format)?.label || tournament.format,
+        newValue: MATCH_FORMATS.find((f) => f.value === format)?.label || format,
+      });
+    }
+
+    if (JSON.stringify(maps) !== JSON.stringify(tournament.maps)) {
+      changes.push({
+        field: 'maps',
+        label: 'Map Pool',
+        oldValue: tournament.maps,
+        newValue: maps,
+      });
+    }
+
+    if (JSON.stringify(selectedTeams) !== JSON.stringify(tournament.teamIds)) {
+      changes.push({
+        field: 'teamIds',
+        label: 'Teams',
+        oldValue: tournament.teamIds.map(
+          (id: string) => teams.find((t) => t.id === id)?.name || id
+        ),
+        newValue: selectedTeams.map((id) => teams.find((t) => t.id === id)?.name || id),
+      });
+    }
+
+    return changes;
+  };
+
+  const handleSaveClick = () => {
     setError('');
     setSuccess('');
-    setSaving(true);
 
     if (!name.trim()) {
       setError('Tournament name is required');
-      setSaving(false);
       return;
     }
 
     if (selectedTeams.length < 2) {
       setError('At least 2 teams are required');
-      setSaving(false);
       return;
     }
 
     if (maps.length === 0) {
       setError('At least one map is required');
-      setSaving(false);
       return;
     }
+
+    // For new tournaments, save directly
+    if (!tournament) {
+      handleSave();
+      return;
+    }
+
+    // For existing tournaments, show preview
+    const changes = detectChanges();
+    if (changes.length === 0) {
+      setError('No changes detected');
+      return;
+    }
+
+    setPendingChanges(changes);
+    setShowPreviewModal(true);
+  };
+
+  const handleSave = async () => {
+    setShowPreviewModal(false);
+    setSaving(true);
 
     try {
       const payload = {
@@ -142,7 +226,7 @@ export default function Tournament() {
       setTournament(response.tournament);
       setSuccess(
         tournament
-          ? 'Tournament updated and bracket regenerated!'
+          ? 'Tournament updated successfully!'
           : 'Tournament created and bracket generated!'
       );
     } catch (err: any) {
@@ -152,15 +236,12 @@ export default function Tournament() {
     }
   };
 
-  const handleDelete = async () => {
-    if (
-      !(globalThis as any).confirm?.(
-        'Are you sure you want to delete this tournament and all matches?'
-      )
-    ) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
 
+  const handleDelete = async () => {
+    setShowDeleteConfirm(false);
     setError('');
     setSuccess('');
 
@@ -173,6 +254,51 @@ export default function Tournament() {
       setSuccess('Tournament deleted');
     } catch (err: any) {
       setError(err.message || 'Failed to delete tournament');
+    }
+  };
+
+  const handleRegenerateClick = () => {
+    setShowRegenerateConfirm(true);
+  };
+
+  const handleRegenerate = async () => {
+    setShowRegenerateConfirm(false);
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const isLive = tournament?.status !== 'setup';
+      const payload = isLive ? { force: true } : {};
+
+      await api.post('/api/tournament/bracket/regenerate', payload);
+      await loadData(); // Reload tournament data
+      setSuccess('Bracket regenerated successfully!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to regenerate bracket');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleResetClick = () => {
+    setShowResetConfirm(true);
+  };
+
+  const handleReset = async () => {
+    setShowResetConfirm(false);
+    setSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      await api.post('/api/tournament/reset');
+      await loadData(); // Reload tournament data
+      setSuccess('Tournament reset to setup mode!');
+    } catch (err: any) {
+      setError(err.message || 'Failed to reset tournament');
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -242,8 +368,30 @@ export default function Tournament() {
           )}
         </Box>
         <Box display="flex" gap={2}>
+          {tournament && (
+            <>
+              <Button
+                variant="outlined"
+                color="warning"
+                startIcon={<RefreshIcon />}
+                onClick={handleRegenerateClick}
+                disabled={saving}
+              >
+                Regenerate Brackets
+              </Button>
+              <Button
+                variant="outlined"
+                color="warning"
+                startIcon={<RestartAltIcon />}
+                onClick={handleResetClick}
+                disabled={saving}
+              >
+                Reset Tournament
+              </Button>
+            </>
+          )}
           {tournament && canEdit && (
-            <Button color="error" onClick={handleDelete}>
+            <Button color="error" onClick={handleDeleteClick} disabled={saving}>
               Delete Tournament
             </Button>
           )}
@@ -268,7 +416,8 @@ export default function Tournament() {
             Tournament is Live
           </Typography>
           <Typography variant="body2">
-            You can update the tournament name and maps, or replace teams (same count). Cannot change tournament type or format once started.
+            You can update the tournament name and maps, or replace teams (same count). Cannot
+            change tournament type or format once started.
           </Typography>
         </Alert>
       )}
@@ -464,7 +613,7 @@ export default function Tournament() {
               {canEdit && (
                 <Button
                   variant="contained"
-                  onClick={handleSave}
+                  onClick={handleSaveClick}
                   disabled={saving}
                   fullWidth
                   size="large"
@@ -482,6 +631,55 @@ export default function Tournament() {
           </CardContent>
         </Card>
       )}
+
+      {/* Change Preview Modal */}
+      <TournamentChangePreviewModal
+        open={showPreviewModal}
+        changes={pendingChanges}
+        isLive={tournament?.status !== 'setup'}
+        onConfirm={handleSave}
+        onCancel={() => setShowPreviewModal(false)}
+      />
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        open={showDeleteConfirm}
+        title="Delete Tournament"
+        message={`Are you sure you want to delete "${tournament?.name}"? This will delete all matches, brackets, and match data. This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDelete}
+        onCancel={() => setShowDeleteConfirm(false)}
+        confirmColor="error"
+      />
+
+      {/* Regenerate Brackets Confirmation */}
+      <ConfirmDialog
+        open={showRegenerateConfirm}
+        title="Regenerate Brackets"
+        message={
+          tournament?.status !== 'setup'
+            ? `⚠️ WARNING: The tournament is ${tournament?.status.toUpperCase()}!\n\nRegenerating brackets will DELETE ALL existing match data, including scores, statistics, and event history. This action cannot be undone.\n\nAre you absolutely sure you want to proceed?`
+            : `This will delete all existing matches and regenerate the bracket from scratch. Continue?`
+        }
+        confirmLabel={tournament?.status !== 'setup' ? 'YES, DELETE EVERYTHING' : 'Regenerate'}
+        cancelLabel="Cancel"
+        onConfirm={handleRegenerate}
+        onCancel={() => setShowRegenerateConfirm(false)}
+        confirmColor="error"
+      />
+
+      {/* Reset Tournament Confirmation */}
+      <ConfirmDialog
+        open={showResetConfirm}
+        title="Reset Tournament"
+        message={`⚠️ This will reset the tournament back to SETUP mode and DELETE ALL matches and match data.\n\nYou will need to regenerate brackets after resetting. This action cannot be undone.\n\nAre you sure you want to reset "${tournament?.name}"?`}
+        confirmLabel="Reset to Setup"
+        cancelLabel="Cancel"
+        onConfirm={handleReset}
+        onCancel={() => setShowResetConfirm(false)}
+        confirmColor="error"
+      />
     </Box>
   );
 }

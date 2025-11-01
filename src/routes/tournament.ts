@@ -267,34 +267,76 @@ router.get('/bracket', async (_req: Request, res: Response) => {
 
 /**
  * @openapi
- * /api/tournament/bracket/generate:
+ * /api/tournament/bracket/regenerate:
  *   post:
  *     tags:
  *       - Tournament
- *     summary: Generate tournament bracket
- *     description: Generates matches based on tournament type and settings
+ *     summary: Regenerate tournament bracket (DESTRUCTIVE)
+ *     description: Deletes all existing matches and regenerates bracket. Requires force=true for live tournaments.
  *     security:
  *       - BearerAuth: []
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               force:
+ *                 type: boolean
+ *                 description: Set to true to regenerate bracket for live tournament (destroys match data)
  *     responses:
  *       200:
- *         description: Bracket generated successfully
+ *         description: Bracket regenerated successfully
  *       400:
- *         description: Cannot generate bracket (tournament already started)
+ *         description: Cannot regenerate bracket without force flag
  */
-router.post('/bracket/generate', async (_req: Request, res: Response) => {
+router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Response) => {
   try {
-    const bracket = tournamentService.generateBracket();
+    const { force } = req.body;
+    const bracket = tournamentService.regenerateBracket(force === true);
 
     return res.json({
       success: true,
       ...bracket,
-      message: 'Bracket generated successfully',
+      message: 'Bracket regenerated successfully. All previous match data has been deleted.',
     });
   } catch (error: any) {
-    log.error('Error generating bracket', error);
+    log.error('Error regenerating bracket', error);
     return res.status(400).json({
       success: false,
-      error: error.message || 'Failed to generate bracket',
+      error: error.message || 'Failed to regenerate bracket',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/reset:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Reset tournament to setup mode
+ *     description: Deletes all matches and resets tournament status to setup
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Tournament reset successfully
+ */
+router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    const tournament = tournamentService.resetTournament();
+
+    return res.json({
+      success: true,
+      tournament,
+      message: 'Tournament reset to setup mode. All matches have been deleted.',
+    });
+  } catch (error: any) {
+    log.error('Error resetting tournament', error);
+    return res.status(400).json({
+      success: false,
+      error: error.message || 'Failed to reset tournament',
     });
   }
 });
