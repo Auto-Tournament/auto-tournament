@@ -21,6 +21,20 @@
 
 ---
 
+## 📋 Prerequisites
+
+### For Production (Docker)
+
+- [Docker](https://docs.docker.com/get-docker/) 20.10+ (includes Docker Compose)
+
+### For Local Development
+
+- **One of the following JavaScript runtimes:**
+  - [Bun](https://bun.sh/) 1.0+ (recommended - standalone runtime)
+  - [Node.js](https://nodejs.org/) 18+ (with npm, yarn, or pnpm)
+
+---
+
 ## 🚀 Quick Start
 
 ### Option 1: Docker (Recommended)
@@ -30,8 +44,8 @@
 cp .env.example .env
 # Edit .env with your tokens
 
-# 2. Start with Docker Compose
-docker-compose up -d
+# 2. Build and start with Docker Compose
+docker-compose up -d --build
 
 # 3. View logs
 docker-compose logs -f
@@ -199,21 +213,11 @@ MatchZy webhooks use the `X-MatchZy-Token` header with your `SERVER_TOKEN`.
 ### Build and Run
 
 ```bash
+# Build and start
+docker-compose up -d --build
+
+# Or just start (if already built)
 docker-compose up -d
-```
-
-### Database Persistence
-
-The SQLite database is persisted in the `./data` directory on your host machine. This ensures your tournament data survives container restarts.
-
-### Environment Variables
-
-Set these in your `.env` file or pass them to docker-compose:
-
-```env
-API_TOKEN=your-secret-admin-token
-SERVER_TOKEN=your-matchzy-webhook-token
-LOG_LEVEL=info
 ```
 
 ### Useful Commands
@@ -259,10 +263,20 @@ MIT
 
 Built for LAN tournaments and online events. Contributions welcome!
 
+Please read our [Contributing Guidelines](.github/CONTRIBUTING.md) and [Code of Conduct](.github/CODE_OF_CONDUCT.md) before submitting a pull request.
+
 1. Fork the repo
 2. Create a feature branch
 3. Make your changes
 4. Submit a pull request
+
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for detailed guidelines.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
