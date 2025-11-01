@@ -60,6 +60,7 @@ All API endpoints, examples, and schemas are available in the interactive docume
 **Quick Overview:**
 
 - 🖥️ **Servers** — Manage CS2 servers
+- 👥 **Teams** — Manage teams with players & Discord integration
 - 🎮 **Matches** — Create and load match configurations
 - 🎛️ **RCON** — Execute server commands
 - 📡 **Events** — MatchZy webhook integration

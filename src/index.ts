@@ -6,6 +6,7 @@ import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
 import { log } from './utils/logger';
 import serverRoutes from './routes/servers';
+import teamRoutes from './routes/teams';
 import rconRoutes from './routes/rcon';
 import matchRoutes from './routes/matches';
 import eventRoutes from './routes/events';
@@ -96,6 +97,16 @@ app.get('/', (_req: Request, res: Response) => {
         enable: 'POST /api/servers/:id/enable',
         disable: 'POST /api/servers/:id/disable',
       },
+      teams: {
+        list: 'GET /api/teams',
+        get: 'GET /api/teams/:id',
+        create: 'POST /api/teams',
+        createOrUpdate: 'POST /api/teams?upsert=true',
+        createBatch: 'POST /api/teams with array',
+        update: 'PUT /api/teams/:id',
+        updateBatch: 'PATCH /api/teams/batch',
+        delete: 'DELETE /api/teams/:id',
+      },
       rcon: {
         note: 'All RCON endpoints require Bearer token authentication',
         test: 'GET /api/rcon/test',
@@ -163,6 +174,7 @@ app.get('/health', (_req: Request, res: Response) => {
 
 // API Routes
 app.use('/api/servers', serverRoutes);
+app.use('/api/teams', teamRoutes);
 app.use('/api/rcon', rconRoutes);
 app.use('/api/matches', matchRoutes);
 app.use('/api/events', eventRoutes);

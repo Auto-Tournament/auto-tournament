@@ -73,13 +73,28 @@ class DatabaseManager {
       );
 
       CREATE INDEX IF NOT EXISTS idx_match_events_slug ON match_events(match_slug);
-      CREATE INDEX IF NOT EXISTS idx_match_events_type ON match_events(event_type);
-    `);
+          CREATE INDEX IF NOT EXISTS idx_match_events_type ON match_events(event_type);
+        `);
+
+    // Teams table
+    this.db.exec(`
+          CREATE TABLE IF NOT EXISTS teams (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            tag TEXT,
+            discord_role_id TEXT,
+            players TEXT NOT NULL,
+            created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+            updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+          );
+
+          CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
+        `);
 
     // Create indexes
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
-    `);
+          CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
+        `);
 
     log.success('Database schema initialized');
   }
