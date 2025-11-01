@@ -23,26 +23,31 @@
 
 ## 🚀 Quick Start
 
-### 1. Install Dependencies
+### Option 1: Docker (Recommended)
 
 ```bash
+# 1. Clone and configure
+cp .env.example .env
+# Edit .env with your tokens
+
+# 2. Start with Docker Compose
+docker-compose up -d
+
+# 3. View logs
+docker-compose logs -f
+```
+
+### Option 2: Local Development
+
+```bash
+# 1. Install dependencies
 bun install
-```
 
-### 2. Configure Environment
+# 2. Configure environment
+cp .env.example .env
+# Edit .env with your tokens
 
-Create a `.env` file:
-
-```env
-PORT=3000
-API_TOKEN=your-secret-admin-token
-SERVER_TOKEN=your-matchzy-webhook-token
-LOG_LEVEL=info
-```
-
-### 3. Start the Server
-
-```bash
+# 3. Start the server
 bun run dev
 ```
 
@@ -185,6 +190,47 @@ MatchZy webhooks use the `X-MatchZy-Token` header with your `SERVER_TOKEN`.
 - **RCON:** dathost-rcon-client
 - **Logging:** Pino (with pretty output)
 - **Docs:** Swagger/OpenAPI
+- **Deployment:** Docker + Docker Compose
+
+---
+
+## 🐳 Docker Deployment
+
+### Build and Run
+
+```bash
+docker-compose up -d
+```
+
+### Database Persistence
+
+The SQLite database is persisted in the `./data` directory on your host machine. This ensures your tournament data survives container restarts.
+
+### Environment Variables
+
+Set these in your `.env` file or pass them to docker-compose:
+
+```env
+API_TOKEN=your-secret-admin-token
+SERVER_TOKEN=your-matchzy-webhook-token
+LOG_LEVEL=info
+```
+
+### Useful Commands
+
+```bash
+# View logs
+docker-compose logs -f
+
+# Restart
+docker-compose restart
+
+# Stop
+docker-compose down
+
+# Rebuild after code changes
+docker-compose up -d --build
+```
 
 ---
 
