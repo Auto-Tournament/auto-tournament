@@ -1,0 +1,359 @@
+import React, { useState, useEffect } from 'react';
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  TextField,
+  Box,
+  IconButton,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+  Alert,
+  Divider,
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import AddIcon from '@mui/icons-material/Add';
+import PersonIcon from '@mui/icons-material/Person';
+import SearchIcon from '@mui/icons-material/Search';
+import { api } from '../../utils/api';
+import ConfirmDialog from './ConfirmDialog';
+
+interface Player {
+  steamId: string;
+  name: string;
+}
+
+interface Team {
+  id: string;
+  name: string;
+  tag?: string;
+  discordRoleId?: string;
+  players: Player[];
+}
+
+interface TeamModalProps {
+  open: boolean;
+  team: Team | null;
+  onClose: () => void;
+  onSave: () => void;
+}
+
+export default function TeamModal({ open, team, onClose, onSave }: TeamModalProps) {
+  const [id, setId] = useState('');
+  const [name, setName] = useState('');
+  const [tag, setTag] = useState('');
+  const [discordRoleId, setDiscordRoleId] = useState('');
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [newPlayerSteamId, setNewPlayerSteamId] = useState('');
+  const [newPlayerName, setNewPlayerName] = useState('');
+  const [error, setError] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [resolving, setResolving] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+
+  const isEditing = !!team;
+
+  useEffect(() => {
+    if (team) {
+      setId(team.id);
+      setName(team.name);
+      setTag(team.tag || '');
+      setDiscordRoleId(team.discordRoleId || '');
+      setPlayers(team.players);
+    } else {
+      resetForm();
+    }
+  }, [team, open]);
+
+  const resetForm = () => {
+    setId('');
+    setName('');
+    setTag('');
+    setDiscordRoleId('');
+    setPlayers([]);
+    setNewPlayerSteamId('');
+    setNewPlayerName('');
+    setError('');
+  };
+
+  const handleResolveSteam = async () => {
+    if (!newPlayerSteamId.trim()) {
+      setError('Please enter a Steam ID, vanity URL, or profile URL');
+      return;
+    }
+
+    setResolving(true);
+    setError('');
+
+    try {
+      const response = await api.post('/api/steam/resolve', {
+        input: newPlayerSteamId.trim(),
+      });
+
+      if (response.player) {
+        setNewPlayerSteamId(response.player.steamId);
+        setNewPlayerName(response.player.name);
+        setError('');
+      }
+    } catch (err: any) {
+      // If Steam API not available or resolution failed, allow manual entry
+      if (err.message?.includes('Steam API is not configured')) {
+        setError('Steam API not configured - enter Steam ID64 manually');
+      } else {
+        setError('Could not resolve Steam ID - please enter Steam ID64 manually');
+      }
+    } finally {
+      setResolving(false);
+    }
+  };
+
+  const handleAddPlayer = () => {
+    if (!newPlayerSteamId.trim() || !newPlayerName.trim()) {
+      setError('Both Steam ID and player name are required');
+      return;
+    }
+
+    const trimmedSteamId = newPlayerSteamId.trim();
+
+    // Check for duplicates (case-insensitive comparison)
+    if (players.some((p) => p.steamId.toLowerCase() === trimmedSteamId.toLowerCase())) {
+      setError('This Steam ID is already in the team');
+      return;
+    }
+
+    setPlayers([...players, { steamId: trimmedSteamId, name: newPlayerName.trim() }]);
+    setNewPlayerSteamId('');
+    setNewPlayerName('');
+    setError('');
+  };
+
+  const handleRemovePlayer = (steamId: string) => {
+    setPlayers(players.filter((p) => p.steamId !== steamId));
+  };
+
+  const handleSave = async () => {
+    if (!name.trim()) {
+      setError('Team name is required');
+      return;
+    }
+
+    if (!isEditing && !id.trim()) {
+      setError('Team ID is required');
+      return;
+    }
+
+    if (players.length === 0) {
+      setError('At least one player is required');
+      return;
+    }
+
+    setSaving(true);
+    setError('');
+
+    try {
+      const payload = {
+        id: id.trim(),
+        name: name.trim(),
+        tag: tag.trim() || undefined,
+        discordRoleId: discordRoleId.trim() || undefined,
+        players,
+      };
+
+      if (isEditing) {
+        await api.put(`/api/teams/${team.id}`, {
+          name: payload.name,
+          tag: payload.tag,
+          discordRoleId: payload.discordRoleId,
+          players: payload.players,
+        });
+      } else {
+        await api.post('/api/teams?upsert=true', payload);
+      }
+
+      onSave();
+      resetForm();
+    } catch (err: any) {
+      setError(err.message || 'Failed to save team');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setConfirmDeleteOpen(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!team) return;
+    setConfirmDeleteOpen(false);
+
+    setSaving(true);
+    try {
+      await api.delete(`/api/teams/${team.id}`);
+      onSave();
+      resetForm();
+    } catch (err: any) {
+      setError(err.message || 'Failed to delete team');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+        <DialogTitle>{isEditing ? 'Edit Team' : 'Create New Team'}</DialogTitle>
+        <DialogContent>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
+
+          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+            <TextField
+              label="Team ID"
+              value={id}
+              onChange={(e) => setId(e.target.value)}
+              disabled={isEditing}
+              placeholder="team1"
+              helperText={isEditing ? 'ID cannot be changed' : 'Unique identifier for this team'}
+              fullWidth
+            />
+
+            <TextField
+              label="Team Name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Astralis"
+              required
+              fullWidth
+            />
+
+            <TextField
+              label="Team Tag"
+              value={tag}
+              onChange={(e) => setTag(e.target.value)}
+              placeholder="AST"
+              helperText="Optional short tag (e.g., NAVI, G2)"
+              fullWidth
+            />
+
+            <TextField
+              label="Discord Role ID"
+              value={discordRoleId}
+              onChange={(e) => setDiscordRoleId(e.target.value)}
+              placeholder="123456789012345678"
+              helperText="Optional Discord role ID for notifications"
+              fullWidth
+            />
+
+            <Divider sx={{ my: 1 }} />
+
+            <Typography variant="subtitle1" fontWeight={600}>
+              Players ({players.length})
+            </Typography>
+
+            <Box display="flex" flexDirection="column" gap={1}>
+              <Box display="flex" gap={1}>
+                <TextField
+                  label="Steam ID / Vanity URL"
+                  value={newPlayerSteamId}
+                  onChange={(e) => setNewPlayerSteamId(e.target.value)}
+                  placeholder="gaben or steamcommunity.com/id/gaben"
+                  size="small"
+                  disabled={resolving}
+                  sx={{ flex: 2 }}
+                  helperText="Enter Steam ID64, vanity URL, or profile link"
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleResolveSteam}
+                  disabled={resolving || !newPlayerSteamId.trim()}
+                  sx={{ minWidth: '100px' }}
+                >
+                  {resolving ? 'Resolving...' : <SearchIcon />}
+                </Button>
+              </Box>
+              <Box display="flex" gap={1}>
+                <TextField
+                  label="Player Name"
+                  value={newPlayerName}
+                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  placeholder="s1mple"
+                  size="small"
+                  disabled={resolving}
+                  sx={{ flex: 1 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={handleAddPlayer}
+                  disabled={resolving}
+                  sx={{ minWidth: '56px' }}
+                >
+                  <AddIcon />
+                </Button>
+              </Box>
+            </Box>
+
+            {players.length > 0 ? (
+              <List sx={{ bgcolor: 'background.paper' }}>
+                {players.map((player) => (
+                  <ListItem
+                    key={player.steamId}
+                    secondaryAction={
+                      <IconButton
+                        edge="end"
+                        onClick={() => handleRemovePlayer(player.steamId)}
+                        color="error"
+                      >
+                        <DeleteIcon />
+                      </IconButton>
+                    }
+                  >
+                    <PersonIcon sx={{ mr: 2, color: 'text.secondary' }} />
+                    <ListItemText
+                      primary={player.name}
+                      secondary={player.steamId}
+                      primaryTypographyProps={{ fontWeight: 500 }}
+                    />
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <Alert severity="info">No players added yet. Add at least one player.</Alert>
+            )}
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+          {isEditing && (
+            <Button onClick={handleDeleteClick} color="error" disabled={saving} sx={{ mr: 'auto' }}>
+              Delete Team
+            </Button>
+          )}
+          <Button onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button onClick={handleSave} variant="contained" disabled={saving}>
+            {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Team'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <ConfirmDialog
+        open={confirmDeleteOpen}
+        title="Delete Team"
+        message={`Are you sure you want to delete "${team?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        onConfirm={handleDeleteConfirm}
+        onCancel={() => setConfirmDeleteOpen(false)}
+        confirmColor="error"
+      />
+    </>
+  );
+}

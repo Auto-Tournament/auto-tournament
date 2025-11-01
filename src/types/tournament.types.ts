@@ -75,6 +75,11 @@ export interface BracketMatch {
   serverId?: string;
   status: 'pending' | 'ready' | 'live' | 'completed';
   nextMatchId?: number;
+  createdAt?: number;
+  loadedAt?: number;
+  completedAt?: number;
+  team1Score?: number;
+  team2Score?: number;
   team1?: {
     id: string;
     name: string;
@@ -89,6 +94,30 @@ export interface BracketMatch {
     id: string;
     name: string;
     tag?: string;
+  };
+  team1Players?: Array<{
+    name: string;
+    steamId: string;
+    kills: number;
+    deaths: number;
+    assists: number;
+    damage: number;
+    headshots: number;
+  }>;
+  team2Players?: Array<{
+    name: string;
+    steamId: string;
+    kills: number;
+    deaths: number;
+    assists: number;
+    damage: number;
+    headshots: number;
+  }>;
+  config?: {
+    maplist?: string[];
+    num_maps?: number;
+    team1?: { name: string };
+    team2?: { name: string };
   };
 }
 
@@ -108,4 +137,3 @@ export interface BracketResponse {
   matches: BracketMatch[];
   totalRounds: number;
 }
-

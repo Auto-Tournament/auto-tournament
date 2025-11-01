@@ -18,6 +18,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import { formatDate, formatDuration, getStatusColor } from '../../utils/matchUtils';
 
 interface Team {
   id: string;
@@ -74,34 +75,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 }) => {
   const [matchTimer, setMatchTimer] = useState<number>(0);
 
-  const formatDate = (timestamp: number) => {
-    return new Date(timestamp * 1000).toLocaleString();
-  };
-
-  const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    const secs = seconds % 60;
-
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'live':
-        return 'error';
-      case 'ready':
-        return 'info';
-      case 'completed':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
-
   // Timer effect for live matches
   useEffect(() => {
     if (!match || match.status !== 'live' || !match.loadedAt) {
@@ -130,7 +103,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               Match #{matchNumber}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {roundLabel} • {match.slug}
+              {roundLabel}
             </Typography>
           </Box>
           <IconButton onClick={onClose}>
@@ -173,7 +146,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               {/* Team 1 */}
               <Box flex={1} textAlign="left">
                 <Typography variant="h5" fontWeight={700}>
-                  {match.team1?.name || 'TBD'}
+                  {match.team1?.name || (match.status === 'completed' ? '—' : 'TBD')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {match.team1?.tag}
@@ -218,7 +191,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               {/* Team 2 */}
               <Box flex={1} textAlign="right">
                 <Typography variant="h5" fontWeight={700}>
-                  {match.team2?.name || 'TBD'}
+                  {match.team2?.name || (match.status === 'completed' ? '—' : 'TBD')}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
                   {match.team2?.tag}

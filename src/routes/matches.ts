@@ -79,7 +79,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
     const matches = rows.map((row: any) => {
       const config = row.config ? JSON.parse(row.config) : {};
 
-      return {
+      const match: any = {
         id: row.id,
         slug: row.slug,
         round: row.round,
@@ -111,6 +111,52 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
       };
+
+      // Get latest player stats from match events
+      const playerStatsEvent = db.queryOne<any>(
+        `SELECT event_data FROM match_events 
+         WHERE match_slug = ? AND event_type = 'player_stats' 
+         ORDER BY received_at DESC LIMIT 1`,
+        [row.slug]
+      );
+
+      if (playerStatsEvent) {
+        try {
+          const eventData = JSON.parse(playerStatsEvent.event_data);
+          if (eventData.team1_players) {
+            match.team1Players = eventData.team1_players;
+          }
+          if (eventData.team2_players) {
+            match.team2Players = eventData.team2_players;
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+
+      // Get latest scores from series_end or round_end events
+      const scoreEvent = db.queryOne<any>(
+        `SELECT event_data FROM match_events 
+         WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
+         ORDER BY received_at DESC LIMIT 1`,
+        [row.slug]
+      );
+
+      if (scoreEvent) {
+        try {
+          const eventData = JSON.parse(scoreEvent.event_data);
+          if (eventData.team1_series_score !== undefined) {
+            match.team1Score = eventData.team1_series_score;
+          }
+          if (eventData.team2_series_score !== undefined) {
+            match.team2Score = eventData.team2_series_score;
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+
+      return match;
     });
 
     return res.json({

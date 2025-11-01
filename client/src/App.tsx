@@ -10,7 +10,7 @@ import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import Development from './pages/Development';
-import Layout from './components/Layout';
+import Layout from './components/layout/Layout';
 import { theme } from './theme';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {

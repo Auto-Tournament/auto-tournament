@@ -70,17 +70,52 @@ export const theme = createTheme({
   },
   components: {
     MuiButton: {
+      defaultProps: {
+        disableRipple: false,
+        disableFocusRipple: true, // Disable focus ripple by default
+      },
       styleOverrides: {
         root: {
-          borderRadius: 100, // Fully rounded buttons
+          borderRadius: 44, // Rounded but not fully pill-shaped
           padding: '10px 24px',
           fontSize: '0.875rem',
           fontWeight: 500,
+          // Make focus state same as hover state
+          '&:focus-visible': {
+            backgroundColor: 'rgba(208, 188, 255, 0.08)', // Same as hover for contained buttons
+          },
         },
         contained: {
           boxShadow: 'none',
           '&:hover': {
             boxShadow: 'none',
+          },
+          '&:focus-visible': {
+            backgroundColor: '#9C88D6', // Same as hover (primary.dark)
+            boxShadow: 'none',
+          },
+        },
+        outlined: {
+          '&:focus-visible': {
+            backgroundColor: 'rgba(208, 188, 255, 0.08)',
+          },
+        },
+        text: {
+          '&:focus-visible': {
+            backgroundColor: 'rgba(208, 188, 255, 0.08)',
+          },
+        },
+      },
+    },
+    MuiIconButton: {
+      defaultProps: {
+        disableFocusRipple: true, // Disable focus ripple for icon buttons too
+      },
+      styleOverrides: {
+        root: {
+          // Make focus state same as hover state
+          '&:focus-visible': {
+            backgroundColor: 'rgba(208, 188, 255, 0.08)',
           },
         },
       },

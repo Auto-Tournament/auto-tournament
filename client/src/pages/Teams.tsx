@@ -16,7 +16,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import DiscordIcon from '@mui/icons-material/Forum';
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
-import TeamModal from '../components/TeamModal';
+import TeamModal from '../components/modals/TeamModal';
 
 interface Player {
   steamId: string;
@@ -89,6 +89,7 @@ export default function Teams() {
           <Typography variant="h4" fontWeight={600}>
             Teams
           </Typography>
+          <Chip label={teams.length} color="primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }} />
         </Box>
         {!error && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>

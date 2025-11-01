@@ -12,12 +12,15 @@
 
 ## ✨ What It Does
 
-- 🎯 **One-Click Match Setup** — Teams, configs, and webhooks in one command
-- 🖥️ **Server Fleet Management** — Add/remove CS2 servers dynamically
+- 🏆 **Automated Brackets** — Single Elimination, Double Elimination, Round Robin, Swiss
+- 🎯 **Smart Walkovers** — Automatic bye handling and bracket progression
+- 🔄 **Live Updates** — Socket.io real-time match events and bracket changes
+- 🖥️ **Server Fleet Management** — Add/remove CS2 servers with live status checking
 - 👥 **Team Management** — Steam vanity URL resolution, Discord role integration
-- 📡 **Live Event Stream** — Real-time game events from MatchZy
-- 🔒 **Secure RCON** — Token-protected server commands
-- 🎨 **Modern Web UI** — Material Design 3 dashboard with authentication
+- 📡 **Event Processing** — Automatic match status updates from MatchZy webhooks
+- 🔒 **Secure RCON** — Token-protected server commands with whitelisted actions
+- 🎨 **Modern Web UI** — Material Design 3 dashboard with pan/zoom brackets
+- 🛡️ **Live Tournament Protection** — Prevent accidental bracket resets during play
 - 📚 **Auto Docs** — Interactive Swagger UI
 
 ---
@@ -65,15 +68,20 @@ TypeScript • Express • React • Material UI • SQLite • Docker
 
 _Goal: One button starts the entire tournament_
 
-- [x] Server management with CRUD
+- [x] Server management with CRUD and live status
 - [x] Team management with Steam integration
 - [x] Match loading with auto-webhook setup
-- [x] Web UI with token auth
-- [ ] Swiss-system bracket generation
-- [ ] Automatic server allocation
+- [x] Web UI with token auth and Material Design 3
+- [x] Tournament brackets (Single/Double Elimination, Round Robin, Swiss)
+- [x] Real-time updates via Socket.io
+- [x] Automatic bracket progression
+- [x] Team replacement without bracket reset
+- [x] Interactive bracket visualization with pan/zoom
+- [ ] Automatic server allocation for matches
 - [ ] Map veto system
 - [ ] Discord bot notifications
 - [ ] Stream overlay API
+- [ ] Admin dashboard for live tournament management
 
 ---
 

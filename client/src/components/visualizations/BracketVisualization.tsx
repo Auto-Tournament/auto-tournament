@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip } from '@mui/material';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
+import { getRoundLabel, getStatusColor } from '../../utils/matchUtils';
 
 interface Match {
   id: number;
@@ -64,15 +65,6 @@ export default function BracketVisualization({
     return baseHeight + Math.max(team1Extra, team2Extra);
   };
 
-  const getRoundLabel = (round: number): string => {
-    if (tournamentType === 'single_elimination') {
-      if (round === totalRounds) return 'Finals';
-      if (round === totalRounds - 1) return 'Semi-Finals';
-      if (round === totalRounds - 2) return 'Quarter-Finals';
-    }
-    return `Round ${round}`;
-  };
-
   // Calculate global match number based on all matches
   const getGlobalMatchNumber = (match: Match): number => {
     // Sort all matches by round, then by matchNumber
@@ -84,17 +76,17 @@ export default function BracketVisualization({
     return sortedMatches.findIndex((m) => m.id === match.id) + 1;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'live':
-        return 'warning';
-      case 'completed':
-        return 'success';
-      case 'ready':
-        return 'info';
-      default:
-        return 'default';
-    }
+  // Check if a match is a walkover (bye)
+  const isWalkover = (match: Match): boolean => {
+    return (
+      match.status === 'completed' &&
+      ((!!match.team1 && !match.team2) || (!match.team1 && !!match.team2))
+    );
+  };
+
+  const getStatusLabel = (match: Match): string => {
+    if (isWalkover(match)) return 'WALKOVER';
+    return match.status.toUpperCase();
   };
 
   // Calculate total width and height
@@ -196,7 +188,7 @@ export default function BracketVisualization({
                         fontSize="16"
                         fontWeight="600"
                       >
-                        {getRoundLabel(round)}
+                        {getRoundLabel(round, totalRounds)}
                       </text>
 
                       {/* Matches */}
@@ -266,20 +258,11 @@ export default function BracketVisualization({
                                       >
                                         Match #{getGlobalMatchNumber(match)}
                                       </Typography>
-                                      <Typography
-                                        variant="caption"
-                                        sx={{
-                                          color: '#888',
-                                          fontSize: '0.65rem',
-                                        }}
-                                      >
-                                        {match.slug}
-                                      </Typography>
                                     </Box>
                                     <Chip
-                                      label={match.status.toUpperCase()}
+                                      label={getStatusLabel(match)}
                                       size="small"
-                                      color={getStatusColor(match.status)}
+                                      color={getStatusColor(match.status, isWalkover(match))}
                                       sx={{
                                         height: 22,
                                         fontSize: '0.65rem',
@@ -308,6 +291,7 @@ export default function BracketVisualization({
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
+                                        justifyContent: match.team1 ? 'flex-start' : 'center',
                                       }}
                                     >
                                       <Typography
@@ -324,13 +308,21 @@ export default function BracketVisualization({
                                               ? '#ffffff'
                                               : match.team1
                                               ? '#e8e8e8'
-                                              : '#666',
+                                              : '#444',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',
+                                          fontStyle:
+                                            !match.team1 && match.status === 'completed'
+                                              ? 'italic'
+                                              : 'normal',
                                         }}
                                       >
-                                        {match.team1 ? match.team1.name : 'TBD'}
+                                        {match.team1
+                                          ? match.team1.name
+                                          : match.status === 'completed'
+                                          ? '—'
+                                          : 'TBD'}
                                       </Typography>
                                     </Box>
                                     <Box
@@ -353,6 +345,7 @@ export default function BracketVisualization({
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
+                                        justifyContent: match.team2 ? 'flex-start' : 'center',
                                       }}
                                     >
                                       <Typography
@@ -369,13 +362,21 @@ export default function BracketVisualization({
                                               ? '#ffffff'
                                               : match.team2
                                               ? '#e8e8e8'
-                                              : '#666',
+                                              : '#444',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',
+                                          fontStyle:
+                                            !match.team2 && match.status === 'completed'
+                                              ? 'italic'
+                                              : 'normal',
                                         }}
                                       >
-                                        {match.team2 ? match.team2.name : 'TBD'}
+                                        {match.team2
+                                          ? match.team2.name
+                                          : match.status === 'completed'
+                                          ? '—'
+                                          : 'TBD'}
                                       </Typography>
                                     </Box>
                                   </Box>

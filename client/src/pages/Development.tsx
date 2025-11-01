@@ -103,7 +103,6 @@ const Development: React.FC = () => {
         host: string;
         port: number;
         password: string;
-        enabled: boolean;
       }> = [];
 
       for (let i = 0; i < count; i++) {
@@ -113,11 +112,10 @@ const Development: React.FC = () => {
           host: '192.168.1.1',
           port: 27015 + i,
           password: 'test123',
-          enabled: true,
         });
       }
 
-      const response = await globalThis.fetch('/api/servers', {
+      const response = await globalThis.fetch('/api/servers/batch', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -127,13 +125,15 @@ const Development: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create test servers');
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to create test servers');
       }
 
       setMessage({ type: 'success', text: `Successfully created ${count} test servers!` });
     } catch (error) {
       console.error('Error creating test servers:', error);
-      setMessage({ type: 'error', text: 'Failed to create test servers' });
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create test servers';
+      setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
     }

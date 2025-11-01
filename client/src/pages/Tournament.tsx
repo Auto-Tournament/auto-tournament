@@ -262,6 +262,17 @@ export default function Tournament() {
         </Alert>
       )}
 
+      {tournament && !canEdit && (
+        <Alert severity="info" sx={{ mb: 3 }}>
+          <Typography variant="body2" fontWeight={600} gutterBottom>
+            Tournament is Live
+          </Typography>
+          <Typography variant="body2">
+            You can update the tournament name and maps, or replace teams (same count). Cannot change tournament type or format once started.
+          </Typography>
+        </Alert>
+      )}
+
       {tournament && tournament.status !== 'setup' ? (
         <Card>
           <CardContent>
@@ -359,61 +370,83 @@ export default function Tournament() {
               </Grid>
 
               <Box>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
                   <Typography variant="subtitle2" fontWeight={600}>
                     Select Teams
                   </Typography>
-                  <Box display="flex" gap={1}>
-                    <Button
-                      size="small"
-                      variant="text"
-                      onClick={() => setSelectedTeams(teams.map((t) => t.id))}
-                      disabled={!canEdit || saving || teams.length === 0}
-                    >
-                      Add All
-                    </Button>
-                    <Button
-                      size="small"
-                      variant="text"
-                      color="secondary"
-                      onClick={() => setSelectedTeams([])}
-                      disabled={!canEdit || saving || selectedTeams.length === 0}
-                    >
-                      Clear
-                    </Button>
-                  </Box>
+                  <Chip
+                    label={`${selectedTeams.length} / ${teams.length}`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
                 </Box>
-                <Autocomplete
-                  multiple
-                  options={teams}
-                  getOptionLabel={(option) => option.name}
-                  value={teams.filter((team) => selectedTeams.includes(team.id))}
-                  onChange={(_, newValue) => setSelectedTeams(newValue.map((t) => t.id))}
-                  disabled={!canEdit || saving}
-                  renderInput={(params) => <TextField {...params} placeholder="Choose teams..." />}
-                  renderTags={(value, getTagProps) =>
-                    value.map((option, index) => (
-                      <Chip label={option.name} {...getTagProps({ index })} key={option.id} />
-                    ))
-                  }
-                />
+                <Box display="flex" gap={1} alignItems="flex-start">
+                  <Autocomplete
+                    multiple
+                    options={teams}
+                    getOptionLabel={(option) => option.name}
+                    value={teams.filter((team) => selectedTeams.includes(team.id))}
+                    onChange={(_, newValue) => setSelectedTeams(newValue.map((t) => t.id))}
+                    disabled={!canEdit || saving}
+                    sx={{ flex: 1 }}
+                    renderInput={(params) => (
+                      <TextField {...params} placeholder="Choose teams..." />
+                    )}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip label={option.name} {...getTagProps({ index })} key={option.id} />
+                      ))
+                    }
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => setSelectedTeams(teams.map((t) => t.id))}
+                    disabled={!canEdit || saving || teams.length === 0}
+                    sx={{ mt: 1 }}
+                  >
+                    Add All
+                  </Button>
+                </Box>
               </Box>
 
-              <Autocomplete
-                multiple
-                options={CS2_MAPS}
-                value={maps}
-                onChange={(_, newValue) => setMaps(newValue)}
-                disabled={!canEdit || saving}
-                renderInput={(params) => (
-                  <TextField {...params} label="Map Pool" placeholder="Choose maps..." />
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip label={option} {...getTagProps({ index })} key={option} />
-                  ))
-                }
-              />
+              <Box>
+                <Box display="flex" alignItems="center" gap={1} mb={1}>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Map Pool
+                  </Typography>
+                  <Chip
+                    label={`${maps.length} / ${CS2_MAPS.length}`}
+                    size="small"
+                    color="primary"
+                    variant="outlined"
+                  />
+                </Box>
+                <Box display="flex" gap={1} alignItems="flex-start">
+                  <Autocomplete
+                    multiple
+                    options={CS2_MAPS}
+                    value={maps}
+                    onChange={(_, newValue) => setMaps(newValue)}
+                    disabled={!canEdit || saving}
+                    sx={{ flex: 1 }}
+                    renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+                    renderTags={(value, getTagProps) =>
+                      value.map((option, index) => (
+                        <Chip label={option} {...getTagProps({ index })} key={option} />
+                      ))
+                    }
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => setMaps([...CS2_MAPS])}
+                    disabled={!canEdit || saving || CS2_MAPS.length === 0}
+                    sx={{ mt: 1 }}
+                  >
+                    Add All
+                  </Button>
+                </Box>
+              </Box>
 
               <FormControl fullWidth>
                 <InputLabel>Seeding Method</InputLabel>

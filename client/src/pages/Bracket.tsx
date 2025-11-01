@@ -23,8 +23,9 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
-import BracketVisualization from '../components/BracketVisualization';
-import MatchDetailsModal from '../components/MatchDetailsModal';
+import BracketVisualization from '../components/visualizations/BracketVisualization';
+import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { getRoundLabel } from '../utils/matchUtils';
 
 interface Team {
   id: string;
@@ -242,13 +243,6 @@ export default function Bracket() {
     matchesByRound[match.round].push(match);
   });
 
-  const getRoundLabel = (round: number, total: number): string => {
-    if (round === total) return 'Finals';
-    if (round === total - 1) return 'Semi-Finals';
-    if (round === total - 2) return 'Quarter-Finals';
-    return `Round ${round}`;
-  };
-
   return (
     <Box
       ref={fullscreenRef}
@@ -405,7 +399,7 @@ export default function Bracket() {
                     <CardContent>
                       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                         <Typography variant="body2" fontWeight={600} color="text.secondary">
-                          Match {match.matchNumber} ({match.slug})
+                          Match #{getGlobalMatchNumber(match)}
                         </Typography>
                         <Chip
                           label={match.status.toUpperCase()}
@@ -450,7 +444,11 @@ export default function Bracket() {
                                   : 'text.disabled',
                             }}
                           >
-                            {match.team1 ? match.team1.name : 'TBD'}
+                            {match.team1
+                              ? match.team1.name
+                              : match.status === 'completed'
+                              ? '—'
+                              : 'TBD'}
                           </Typography>
                           {match.winner?.id === match.team1?.id && (
                             <Chip
@@ -493,7 +491,11 @@ export default function Bracket() {
                                   : 'text.disabled',
                             }}
                           >
-                            {match.team2 ? match.team2.name : 'TBD'}
+                            {match.team2
+                              ? match.team2.name
+                              : match.status === 'completed'
+                              ? '—'
+                              : 'TBD'}
                           </Typography>
                           {match.winner?.id === match.team2?.id && (
                             <Chip

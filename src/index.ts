@@ -39,6 +39,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     const { method, path } = req;
     const { statusCode } = res;
 
+    // Skip logging 304 (Not Modified) responses to reduce noise
+    if (statusCode === 304) {
+      return;
+    }
+
     // Log with appropriate level based on status code
     if (statusCode >= 500) {
       log.error(`${method} ${path}`, undefined, { statusCode, duration });

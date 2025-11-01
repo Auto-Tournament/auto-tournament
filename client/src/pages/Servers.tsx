@@ -17,7 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { api } from '../utils/api';
-import ServerModal from '../components/ServerModal';
+import ServerModal from '../components/modals/ServerModal';
 
 interface Server {
   id: string;
@@ -111,6 +111,11 @@ export default function Servers() {
           <Typography variant="h4" fontWeight={600}>
             Servers
           </Typography>
+          <Chip
+            label={servers.length}
+            color="primary"
+            sx={{ fontWeight: 600, fontSize: '0.9rem' }}
+          />
         </Box>
         {!error && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>

@@ -8,7 +8,7 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import StorageIcon from '@mui/icons-material/Storage';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import BuildIcon from '@mui/icons-material/Build';
-import { useAuth } from '../contexts/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 
 export default function Layout() {
   const navigate = useNavigate();
