@@ -1,8 +1,12 @@
-# 🎮 MatchZy Auto Tournament
-
-> **Automated tournament management API for Counter-Strike 2 using the MatchZy plugin**
-
-A TypeScript-based REST API that automates CS2 tournament workflows. Load matches, manage servers, and track game events—all through a single API. Built for tournament admins who want to focus on running events, not managing servers.
+<div align="center">
+  <img src="docs/icon.svg" alt="MatchZy Auto Tournament" width="200" height="200">
+  
+  # MatchZy Auto Tournament
+  
+  **Automated tournament management API for Counter-Strike 2 using the MatchZy plugin**
+  
+  <p>A TypeScript-based REST API that automates CS2 tournament workflows. Load matches, manage servers, and track game events—all through a single API. Built for tournament admins who want to focus on running events, not managing servers.</p>
+</div>
 
 ---
 
@@ -22,7 +26,7 @@ A TypeScript-based REST API that automates CS2 tournament workflows. Load matche
 ### 1. Install Dependencies
 
 ```bash
-npm install
+bun install
 ```
 
 ### 2. Configure Environment
@@ -39,7 +43,7 @@ LOG_LEVEL=info
 ### 3. Start the Server
 
 ```bash
-npm run dev
+bun run dev
 ```
 
 The API will be available at `http://localhost:3000` with interactive docs at `/api-docs`.
@@ -175,7 +179,7 @@ MatchZy webhooks use the `X-MatchZy-Token` header with your `SERVER_TOKEN`.
 
 ## 🛠️ Tech Stack
 
-- **Runtime:** Node.js + TypeScript
+- **Runtime:** Bun + TypeScript
 - **Framework:** Express.js
 - **Database:** SQLite (easily upgradeable to PostgreSQL/MySQL)
 - **RCON:** dathost-rcon-client
