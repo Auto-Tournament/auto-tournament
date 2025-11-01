@@ -24,16 +24,46 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import BracketVisualization from '../components/BracketVisualization';
+import MatchDetailsModal from '../components/MatchDetailsModal';
+
+interface Team {
+  id: string;
+  name: string;
+  tag?: string;
+}
+
+interface PlayerStats {
+  name: string;
+  steamId: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  damage: number;
+  headshots: number;
+}
 
 interface Match {
   id: number;
   slug: string;
   round: number;
   matchNumber: number;
-  status: string;
-  team1?: { id: string; name: string; tag?: string };
-  team2?: { id: string; name: string; tag?: string };
-  winner?: { id: string; name: string; tag?: string };
+  status: 'pending' | 'ready' | 'live' | 'completed';
+  team1?: Team;
+  team2?: Team;
+  winner?: Team;
+  createdAt?: number;
+  loadedAt?: number;
+  completedAt?: number;
+  team1Score?: number;
+  team2Score?: number;
+  team1Players?: PlayerStats[];
+  team2Players?: PlayerStats[];
+  config?: {
+    maplist?: string[];
+    num_maps?: number;
+    team1?: { name: string };
+    team2?: { name: string };
+  };
 }
 
 interface Tournament {
@@ -55,7 +85,17 @@ export default function Bracket() {
   const [totalRounds, setTotalRounds] = useState(0);
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const fullscreenRef = useRef<HTMLDivElement>(null);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
+
+  // Calculate global match number
+  const getGlobalMatchNumber = (match: Match): number => {
+    const sortedMatches = [...matches].sort((a, b) => {
+      if (a.round !== b.round) return a.round - b.round;
+      return a.matchNumber - b.matchNumber;
+    });
+    return sortedMatches.findIndex((m) => m.id === match.id) + 1;
+  };
 
   useEffect(() => {
     loadBracket();
@@ -65,21 +105,22 @@ export default function Bracket() {
 
   useEffect(() => {
     const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
+      setIsFullscreen(!!globalThis.document.fullscreenElement);
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    globalThis.document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () =>
+      globalThis.document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
 
   const toggleFullscreen = async () => {
     if (!fullscreenRef.current) return;
 
     try {
-      if (!document.fullscreenElement) {
+      if (!globalThis.document.fullscreenElement) {
         await fullscreenRef.current.requestFullscreen();
       } else {
-        await document.exitFullscreen();
+        await globalThis.document.exitFullscreen();
       }
     } catch (err) {
       console.error('Error toggling fullscreen:', err);
@@ -328,6 +369,7 @@ export default function Bracket() {
             totalRounds={totalRounds}
             tournamentType={tournament.type}
             isFullscreen={isFullscreen}
+            onMatchClick={(match) => setSelectedMatch(match)}
           />
         </Box>
       ) : (
@@ -474,6 +516,16 @@ export default function Bracket() {
             </Box>
           ))}
         </Box>
+      )}
+
+      {/* Match Details Modal */}
+      {selectedMatch && (
+        <MatchDetailsModal
+          match={selectedMatch}
+          matchNumber={getGlobalMatchNumber(selectedMatch)}
+          roundLabel={getRoundLabel(selectedMatch.round, totalRounds)}
+          onClose={() => setSelectedMatch(null)}
+        />
       )}
     </Box>
   );

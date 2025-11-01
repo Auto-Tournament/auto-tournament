@@ -358,22 +358,46 @@ export default function Tournament() {
                 </Grid>
               </Grid>
 
-              <Autocomplete
-                multiple
-                options={teams}
-                getOptionLabel={(option) => option.name}
-                value={teams.filter((team) => selectedTeams.includes(team.id))}
-                onChange={(_, newValue) => setSelectedTeams(newValue.map((t) => t.id))}
-                disabled={!canEdit || saving}
-                renderInput={(params) => (
-                  <TextField {...params} label="Select Teams" placeholder="Choose teams..." />
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip label={option.name} {...getTagProps({ index })} key={option.id} />
-                  ))
-                }
-              />
+              <Box>
+                <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                  <Typography variant="subtitle2" fontWeight={600}>
+                    Select Teams
+                  </Typography>
+                  <Box display="flex" gap={1}>
+                    <Button
+                      size="small"
+                      variant="text"
+                      onClick={() => setSelectedTeams(teams.map((t) => t.id))}
+                      disabled={!canEdit || saving || teams.length === 0}
+                    >
+                      Add All
+                    </Button>
+                    <Button
+                      size="small"
+                      variant="text"
+                      color="secondary"
+                      onClick={() => setSelectedTeams([])}
+                      disabled={!canEdit || saving || selectedTeams.length === 0}
+                    >
+                      Clear
+                    </Button>
+                  </Box>
+                </Box>
+                <Autocomplete
+                  multiple
+                  options={teams}
+                  getOptionLabel={(option) => option.name}
+                  value={teams.filter((team) => selectedTeams.includes(team.id))}
+                  onChange={(_, newValue) => setSelectedTeams(newValue.map((t) => t.id))}
+                  disabled={!canEdit || saving}
+                  renderInput={(params) => <TextField {...params} placeholder="Choose teams..." />}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip label={option.name} {...getTagProps({ index })} key={option.id} />
+                    ))
+                  }
+                />
+              </Box>
 
               <Autocomplete
                 multiple

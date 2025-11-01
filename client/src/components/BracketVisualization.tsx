@@ -7,10 +7,19 @@ interface Match {
   slug: string;
   round: number;
   matchNumber: number;
-  status: string;
+  status: 'pending' | 'ready' | 'live' | 'completed';
   team1?: { id: string; name: string; tag?: string };
   team2?: { id: string; name: string; tag?: string };
   winner?: { id: string; name: string; tag?: string };
+  createdAt?: number;
+  loadedAt?: number;
+  completedAt?: number;
+  team1Score?: number;
+  team2Score?: number;
+  config?: {
+    maplist?: string[];
+    num_maps?: number;
+  };
 }
 
 interface BracketVisualizationProps {
@@ -18,6 +27,7 @@ interface BracketVisualizationProps {
   totalRounds: number;
   tournamentType: string;
   isFullscreen?: boolean;
+  onMatchClick?: (match: Match) => void;
 }
 
 export default function BracketVisualization({
@@ -25,6 +35,7 @@ export default function BracketVisualization({
   totalRounds,
   tournamentType,
   isFullscreen = false,
+  onMatchClick,
 }: BracketVisualizationProps) {
   // Group matches by round
   const matchesByRound: { [round: number]: Match[] } = {};
@@ -60,6 +71,17 @@ export default function BracketVisualization({
       if (round === totalRounds - 2) return 'Quarter-Finals';
     }
     return `Round ${round}`;
+  };
+
+  // Calculate global match number based on all matches
+  const getGlobalMatchNumber = (match: Match): number => {
+    // Sort all matches by round, then by matchNumber
+    const sortedMatches = [...matches].sort((a, b) => {
+      if (a.round !== b.round) return a.round - b.round;
+      return a.matchNumber - b.matchNumber;
+    });
+
+    return sortedMatches.findIndex((m) => m.id === match.id) + 1;
   };
 
   const getStatusColor = (status: string) => {
@@ -185,11 +207,16 @@ export default function BracketVisualization({
 
                         return (
                           <g key={match.id}>
-                            <foreignObject x={x} y={y} width={MATCH_WIDTH} height={matchHeight}>
+                            <foreignObject
+                              x={x}
+                              y={y}
+                              width={MATCH_WIDTH}
+                              height={matchHeight}
+                              style={{ overflow: 'visible' }}
+                            >
                               <Card
                                 sx={{
                                   width: MATCH_WIDTH,
-                                  minHeight: matchHeight,
                                   borderLeft: 4,
                                   borderColor:
                                     match.status === 'completed'
@@ -200,21 +227,23 @@ export default function BracketVisualization({
                                       ? 'info.main'
                                       : '#444',
                                   bgcolor: '#2a2a2a',
-                                  cursor: 'pointer',
+                                  cursor: onMatchClick ? 'pointer' : 'default',
                                   transition: 'all 0.2s ease',
                                   borderRadius: 2,
                                   boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-                                  '&:hover': {
-                                    transform: 'translateY(-2px)',
-                                    boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
-                                    zIndex: 10,
-                                  },
+                                  '&:hover': onMatchClick
+                                    ? {
+                                        transform: 'translateY(-2px)',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+                                        zIndex: 10,
+                                      }
+                                    : {},
                                 }}
+                                onClick={() => onMatchClick?.(match)}
                               >
                                 <CardContent
                                   sx={{
                                     p: 2,
-                                    height: '100%',
                                     display: 'flex',
                                     flexDirection: 'column',
                                     '&:last-child': { pb: 2 },
@@ -226,18 +255,27 @@ export default function BracketVisualization({
                                     alignItems="center"
                                     mb={1.5}
                                   >
-                                    <Typography
-                                      variant="caption"
-                                      fontWeight={600}
-                                      sx={{
-                                        color: '#888',
-                                        textTransform: 'uppercase',
-                                        fontSize: '0.7rem',
-                                        letterSpacing: '0.5px',
-                                      }}
-                                    >
-                                      {match.slug}
-                                    </Typography>
+                                    <Box>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={700}
+                                        sx={{
+                                          color: '#e8e8e8',
+                                          fontSize: '0.85rem',
+                                        }}
+                                      >
+                                        Match #{getGlobalMatchNumber(match)}
+                                      </Typography>
+                                      <Typography
+                                        variant="caption"
+                                        sx={{
+                                          color: '#888',
+                                          fontSize: '0.65rem',
+                                        }}
+                                      >
+                                        {match.slug}
+                                      </Typography>
+                                    </Box>
                                     <Chip
                                       label={match.status.toUpperCase()}
                                       size="small"
@@ -255,14 +293,18 @@ export default function BracketVisualization({
                                         p: 1.25,
                                         borderRadius: 1.5,
                                         bgcolor:
-                                          match.winner?.id === match.team1?.id
+                                          match.team1 && match.winner?.id === match.team1?.id
                                             ? 'success.main'
-                                            : '#1f1f1f',
+                                            : match.team1
+                                            ? '#1f1f1f'
+                                            : 'transparent',
                                         border: '2px solid',
                                         borderColor:
-                                          match.winner?.id === match.team1?.id
+                                          match.team1 && match.winner?.id === match.team1?.id
                                             ? 'success.dark'
-                                            : '#444',
+                                            : match.team1
+                                            ? '#444'
+                                            : '#333',
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -271,16 +313,18 @@ export default function BracketVisualization({
                                       <Typography
                                         variant="body2"
                                         fontWeight={
-                                          match.winner?.id === match.team1?.id ? 700 : 500
+                                          match.team1 && match.winner?.id === match.team1?.id
+                                            ? 700
+                                            : 500
                                         }
                                         sx={{
                                           fontSize: '0.875rem',
                                           color:
-                                            match.winner?.id === match.team1?.id
+                                            match.team1 && match.winner?.id === match.team1?.id
                                               ? '#ffffff'
                                               : match.team1
                                               ? '#e8e8e8'
-                                              : '#777',
+                                              : '#666',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',
@@ -294,14 +338,18 @@ export default function BracketVisualization({
                                         p: 1.25,
                                         borderRadius: 1.5,
                                         bgcolor:
-                                          match.winner?.id === match.team2?.id
+                                          match.team2 && match.winner?.id === match.team2?.id
                                             ? 'success.main'
-                                            : '#1f1f1f',
+                                            : match.team2
+                                            ? '#1f1f1f'
+                                            : 'transparent',
                                         border: '2px solid',
                                         borderColor:
-                                          match.winner?.id === match.team2?.id
+                                          match.team2 && match.winner?.id === match.team2?.id
                                             ? 'success.dark'
-                                            : '#444',
+                                            : match.team2
+                                            ? '#444'
+                                            : '#333',
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -310,16 +358,18 @@ export default function BracketVisualization({
                                       <Typography
                                         variant="body2"
                                         fontWeight={
-                                          match.winner?.id === match.team2?.id ? 700 : 500
+                                          match.team2 && match.winner?.id === match.team2?.id
+                                            ? 700
+                                            : 500
                                         }
                                         sx={{
                                           fontSize: '0.875rem',
                                           color:
-                                            match.winner?.id === match.team2?.id
+                                            match.team2 && match.winner?.id === match.team2?.id
                                               ? '#ffffff'
                                               : match.team2
                                               ? '#e8e8e8'
-                                              : '#777',
+                                              : '#666',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',
