@@ -91,6 +91,11 @@ class TournamentService {
       log.success('Bracket automatically generated');
     } catch (err) {
       log.error('Failed to auto-generate bracket', err);
+
+      // Clean up: Delete the tournament since bracket generation failed
+      db.exec('DELETE FROM tournament WHERE id = 1');
+      log.warn('Tournament deleted due to bracket generation failure');
+
       // Re-throw to prevent returning tournament in broken state
       throw new Error(
         `Bracket generation failed: ${err instanceof Error ? err.message : String(err)}`
@@ -292,18 +297,13 @@ class TournamentService {
         this.linkMatches(matches, slugToDbId, tournament.type);
       }
 
-      // Update tournament status to 'ready'
-      db.update(
-        'tournament',
-        { status: 'ready', updated_at: Math.floor(Date.now() / 1000) },
-        'id = ?',
-        [1]
-      );
+      // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
+      db.update('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [1]);
 
       log.debug(`Bracket generated: ${matches.length} matches created`);
 
       return {
-        tournament: { ...tournament, status: 'ready' },
+        tournament,
         matches,
         totalRounds: this.calculateTotalRounds(tournament.teamIds.length, tournament.type),
       };
@@ -1302,12 +1302,40 @@ class TournamentService {
     switch (type) {
       case 'single_elimination':
       case 'double_elimination':
-        // Must be power of 2 for clean brackets (can be relaxed with byes)
+        // brackets-manager requires power of 2 for elimination tournaments
+        if (!this.isPowerOfTwo(count)) {
+          const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(count)));
+          const prevPowerOf2 = Math.pow(2, Math.floor(Math.log2(count)));
+          throw new Error(
+            `Elimination tournaments require a power-of-2 team count (2, 4, 8, 16, 32, 64, 128). ` +
+              `You have ${count} team(s). Try ${prevPowerOf2} or ${nextPowerOf2} teams.`
+          );
+        }
+        if (count > 128) {
+          throw new Error('Maximum 128 teams for elimination tournaments');
+        }
+        break;
+      case 'round_robin':
         if (count > 32) {
-          throw new Error('Maximum 32 teams for elimination tournaments');
+          throw new Error('Maximum 32 teams for round robin (too many matches)');
+        }
+        break;
+      case 'swiss':
+        if (count < 4) {
+          throw new Error('Swiss system requires at least 4 teams');
+        }
+        if (count > 64) {
+          throw new Error('Maximum 64 teams for Swiss system');
         }
         break;
     }
+  }
+
+  /**
+   * Check if a number is a power of 2
+   */
+  private isPowerOfTwo(n: number): boolean {
+    return n > 0 && (n & (n - 1)) === 0;
   }
 
   /**

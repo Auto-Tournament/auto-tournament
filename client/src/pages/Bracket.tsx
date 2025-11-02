@@ -325,7 +325,7 @@ export default function Bracket() {
               </Box>
             </Box>
             <Box display="flex" gap={2} alignItems="center">
-              {tournament.status === 'ready' && (
+              {tournament.status === 'setup' && (
                 <Button
                   variant="contained"
                   color="success"

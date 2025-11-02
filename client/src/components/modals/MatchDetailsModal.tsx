@@ -216,7 +216,16 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               {getMatchPhaseDisplay() && (
                 <Chip
                   label={getMatchPhaseDisplay()!.label}
-                  color={getMatchPhaseDisplay()!.color as any}
+                  color={
+                    getMatchPhaseDisplay()!.color as
+                      | 'default'
+                      | 'primary'
+                      | 'secondary'
+                      | 'error'
+                      | 'info'
+                      | 'success'
+                      | 'warning'
+                  }
                   sx={{ fontWeight: 600 }}
                   variant="outlined"
                 />

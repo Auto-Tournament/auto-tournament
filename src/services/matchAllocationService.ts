@@ -295,10 +295,18 @@ export class MatchAllocationService {
     if (tournament.status === 'in_progress') {
       // Tournament already started, just allocate any remaining matches
       log.debug('Tournament already in progress, allocating remaining matches');
-    } else if (tournament.status !== 'ready') {
+    } else if (tournament.status === 'completed') {
       return {
         success: false,
-        message: `Tournament is in '${tournament.status}' status. Must be 'ready' or 'in_progress' to start.`,
+        message: 'Tournament is already completed. Please create a new tournament.',
+        allocated: 0,
+        failed: 0,
+        results: [],
+      };
+    } else if (tournament.status !== 'setup' && tournament.status !== 'ready') {
+      return {
+        success: false,
+        message: `Tournament is in '${tournament.status}' status. Must be 'setup', 'ready', or 'in_progress' to start.`,
         allocated: 0,
         failed: 0,
         results: [],
@@ -311,8 +319,8 @@ export class MatchAllocationService {
     const allocated = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;
 
-    // Update tournament status to 'in_progress' if it was 'ready'
-    if (tournament.status === 'ready' && allocated > 0) {
+    // Update tournament status to 'in_progress' if starting for the first time
+    if ((tournament.status === 'setup' || tournament.status === 'ready') && allocated > 0) {
       db.update(
         'tournament',
         {

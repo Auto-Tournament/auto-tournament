@@ -16,11 +16,21 @@ import {
   Stack,
   Autocomplete,
   Grid,
+  Stepper,
+  Step,
+  StepLabel,
+  Divider,
+  Tooltip,
 } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import WarningIcon from '@mui/icons-material/Warning';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
@@ -67,23 +77,43 @@ const TOURNAMENT_TYPES: Array<{
   value: string;
   label: string;
   description?: string;
+  minTeams?: number;
+  maxTeams?: number;
+  requirePowerOfTwo?: boolean;
+  validCounts?: number[];
   disabled?: boolean;
 }> = [
   {
     value: 'single_elimination',
     label: 'Single Elimination',
-    description: 'Teams are eliminated after one loss',
+    description: "One loss and you're out.",
+    minTeams: 2,
+    maxTeams: 128,
+    requirePowerOfTwo: true,
+    validCounts: [2, 4, 8, 16, 32, 64, 128],
   },
   {
     value: 'double_elimination',
     label: 'Double Elimination',
-    description: 'Teams need two losses to be eliminated',
+    description: 'Two losses to be eliminated.',
+    minTeams: 2,
+    maxTeams: 128,
+    requirePowerOfTwo: true,
+    validCounts: [2, 4, 8, 16, 32, 64, 128],
   },
-  { value: 'round_robin', label: 'Round Robin', description: 'Every team plays every other team' },
+  {
+    value: 'round_robin',
+    label: 'Round Robin',
+    description: 'Everyone plays everyone.',
+    minTeams: 2,
+    maxTeams: 32,
+  },
   {
     value: 'swiss',
     label: 'Swiss System',
-    description: 'Teams with similar records face each other',
+    description: 'Similar records face each other.',
+    minTeams: 4,
+    maxTeams: 64,
   },
 ];
 
@@ -92,6 +122,19 @@ const MATCH_FORMATS = [
   { value: 'bo3', label: 'Best of 3' },
   { value: 'bo5', label: 'Best of 5' },
 ];
+
+// Helper function to check if a tournament type is valid for the given team count
+const isTournamentTypeValid = (
+  tournamentType: (typeof TOURNAMENT_TYPES)[number],
+  teamCount: number
+): boolean => {
+  if (teamCount < (tournamentType.minTeams || 0)) return false;
+  if (teamCount > (tournamentType.maxTeams || Infinity)) return false;
+  if (tournamentType.requirePowerOfTwo && tournamentType.validCounts) {
+    return tournamentType.validCounts.includes(teamCount);
+  }
+  return true;
+};
 
 export default function Tournament() {
   const navigate = useNavigate();
@@ -107,7 +150,6 @@ export default function Tournament() {
   const [format, setFormat] = useState('bo3');
   const [maps, setMaps] = useState<string[]>([]);
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
-  const [seedingMethod, setSeedingMethod] = useState('random');
 
   const [saving, setSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
@@ -128,9 +170,11 @@ export default function Tournament() {
     try {
       // Load teams
       const teamsResponse: { teams: Team[] } = await api.get('/api/teams');
-      setTeams(teamsResponse.teams || []);
+      const loadedTeams = teamsResponse.teams || [];
+      setTeams(loadedTeams);
 
       // Try to load existing tournament
+      let tournamentExists = false;
       try {
         const tournamentResponse = await api.get('/api/tournament');
         if (tournamentResponse.success) {
@@ -141,7 +185,23 @@ export default function Tournament() {
           setFormat(t.format);
           setMaps(t.maps);
           setSelectedTeams(t.teamIds);
-          setSeedingMethod(t.settings.seedingMethod);
+          tournamentExists = true;
+
+          // Check if tournament is in broken state (setup with no matches)
+          // This can happen if bracket generation failed in older versions
+          if (t.status === 'setup') {
+            try {
+              const bracketResponse = await api.get('/api/tournament/bracket');
+              if (!bracketResponse.matches || bracketResponse.matches.length === 0) {
+                setError(
+                  'Warning: Tournament exists but has no bracket. This may be from a failed bracket generation. ' +
+                    'Consider deleting and recreating the tournament.'
+                );
+              }
+            } catch {
+              // Bracket endpoint failed, tournament might be broken
+            }
+          }
         }
       } catch {
         // No tournament exists yet
@@ -231,6 +291,43 @@ export default function Tournament() {
       return;
     }
 
+    // Validate team count for tournament type
+    const tournamentType = TOURNAMENT_TYPES.find((t) => t.value === type);
+    if (tournamentType) {
+      if (tournamentType.minTeams && selectedTeams.length < tournamentType.minTeams) {
+        setError(
+          `${tournamentType.label} requires at least ${tournamentType.minTeams} teams. ` +
+            `You have ${selectedTeams.length} team(s).`
+        );
+        return;
+      }
+      if (tournamentType.maxTeams && selectedTeams.length > tournamentType.maxTeams) {
+        setError(
+          `${tournamentType.label} supports a maximum of ${tournamentType.maxTeams} teams. ` +
+            `You have ${selectedTeams.length} team(s).`
+        );
+        return;
+      }
+      // Check power-of-2 requirement
+      if (tournamentType.requirePowerOfTwo && tournamentType.validCounts) {
+        if (!tournamentType.validCounts.includes(selectedTeams.length)) {
+          const nextValid = tournamentType.validCounts.find((c) => c > selectedTeams.length);
+          const prevValid = tournamentType.validCounts
+            .slice()
+            .reverse()
+            .find((c) => c < selectedTeams.length);
+          setError(
+            `${
+              tournamentType.label
+            } requires a power-of-2 team count (${tournamentType.validCounts.join(', ')}). ` +
+              `You have ${selectedTeams.length} team(s). ` +
+              `Try ${prevValid || nextValid || 2} or ${nextValid || prevValid || 4} teams.`
+          );
+          return;
+        }
+      }
+    }
+
     // For new tournaments, save directly
     if (!tournament) {
       handleSave();
@@ -260,7 +357,7 @@ export default function Tournament() {
         maps,
         teamIds: selectedTeams,
         settings: {
-          seedingMethod,
+          seedingMethod: 'random',
         },
       };
 
@@ -419,60 +516,42 @@ export default function Tournament() {
 
   const canEdit = !tournament || tournament.status === 'setup';
 
+  // Determine current step
+  const getCurrentStep = () => {
+    if (!tournament) return 0;
+    if (tournament.status === 'setup') return 1;
+    if (tournament.status === 'in_progress' || tournament.status === 'completed') return 2;
+    return 1;
+  };
+
+  const currentStep = getCurrentStep();
+
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <EmojiEventsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Tournament
-          </Typography>
-          {tournament && (
-            <Chip
-              label={tournament.status.replace('_', ' ').toUpperCase()}
-              color={
-                tournament.status === 'setup'
-                  ? 'default'
-                  : tournament.status === 'ready'
-                  ? 'info'
-                  : tournament.status === 'in_progress'
-                  ? 'warning'
-                  : 'success'
-              }
-              sx={{ fontWeight: 600 }}
-            />
-          )}
-        </Box>
-        <Box display="flex" gap={2}>
-          {tournament && (
-            <>
-              <Button
-                variant="outlined"
-                color="warning"
-                startIcon={<RefreshIcon />}
-                onClick={handleRegenerateClick}
-                disabled={saving}
-              >
-                Regenerate Brackets
-              </Button>
-              <Button
-                variant="outlined"
-                color="warning"
-                startIcon={<RestartAltIcon />}
-                onClick={handleResetClick}
-                disabled={saving}
-              >
-                Reset Tournament
-              </Button>
-            </>
-          )}
-          {tournament && canEdit && (
-            <Button color="error" onClick={handleDeleteClick} disabled={saving}>
-              Delete Tournament
-            </Button>
-          )}
-        </Box>
+      {/* Header */}
+      <Box display="flex" alignItems="center" gap={2} mb={4}>
+        <EmojiEventsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+        <Typography variant="h4" fontWeight={600}>
+          Tournament Management
+        </Typography>
       </Box>
+
+      {/* Progress Steps */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Stepper activeStep={currentStep} alternativeLabel>
+            <Step>
+              <StepLabel>Create Tournament</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Review & Confirm</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Live Tournament</StepLabel>
+            </Step>
+          </Stepper>
+        </CardContent>
+      </Card>
 
       {error && (
         <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
@@ -486,87 +565,195 @@ export default function Tournament() {
         </Alert>
       )}
 
-      {!tournament && (
-        <Alert severity="info" sx={{ mb: 3 }} icon={false}>
-          <Typography variant="body2">
-            <strong>Powered by brackets-manager:</strong> Single Elimination, Double Elimination,
-            and Round Robin brackets are generated using the battle-tested{' '}
-            <a
-              href="https://github.com/Drarig29/brackets-manager.js"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ color: 'inherit', textDecoration: 'underline' }}
-            >
-              brackets-manager
-            </a>{' '}
-            library, ensuring proper handling of byes, walkovers, and non-power-of-2 team counts.
-          </Typography>
-        </Alert>
-      )}
-
-      {tournament && !canEdit && (
-        <Alert severity="info" sx={{ mb: 3 }}>
-          <Typography variant="body2" fontWeight={600} gutterBottom>
-            Tournament is Live
-          </Typography>
-          <Typography variant="body2">
-            You can update the tournament name and maps, or replace teams (same count). Cannot
-            change tournament type or format once started.
-          </Typography>
-        </Alert>
-      )}
-
-      {tournament && tournament.status !== 'setup' ? (
-        <Card>
+      {/* STEP 2: Review & Start Tournament */}
+      {tournament && tournament.status === 'setup' ? (
+        <Card sx={{ mb: 3 }}>
           <CardContent>
-            <Typography variant="h6" gutterBottom>
-              {tournament.name}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
-              {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
-            </Typography>
-            <Box mt={2}>
-              <Typography variant="body2" fontWeight={600}>
-                Teams:
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h5" fontWeight={600}>
+                Review Tournament
               </Typography>
-              <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                {tournament.teams.map((team) => (
-                  <Chip key={team.id} label={team.name} size="small" />
-                ))}
-              </Box>
+              <Chip label="READY TO START" color="success" />
             </Box>
-            <Box mt={2}>
-              <Typography variant="body2" fontWeight={600}>
-                Map Pool:
+
+            <Alert severity="info" sx={{ mb: 3 }} icon={<CheckCircleIcon />}>
+              <Typography variant="body2">
+                Tournament is configured and brackets are generated. Review the details below, then
+                click <strong>"Start Tournament"</strong> to allocate servers and begin matches.
               </Typography>
-              <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                {tournament.maps.map((map: string) => (
-                  <Chip key={map} label={map} size="small" variant="outlined" />
-                ))}
-              </Box>
-            </Box>
-            <Box mt={3}>
-              {tournament.status === 'ready' && (
+            </Alert>
+
+            <Grid container spacing={3}>
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Tournament Name
+                </Typography>
+                <Typography variant="body1" fontWeight={600} mb={2}>
+                  {tournament.name}
+                </Typography>
+
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Format
+                </Typography>
+                <Typography variant="body1" mb={2}>
+                  {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
+                  {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+                </Typography>
+              </Grid>
+
+              <Grid size={{ xs: 12, md: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Teams ({tournament.teams.length})
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
+                  {tournament.teams.map((team) => (
+                    <Chip key={team.id} label={team.name} size="small" />
+                  ))}
+                </Box>
+
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Map Pool ({tournament.maps.length})
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={1}>
+                  {tournament.maps.map((map: string) => (
+                    <Chip key={map} label={map} size="small" variant="outlined" />
+                  ))}
+                </Box>
+              </Grid>
+            </Grid>
+
+            <Divider sx={{ my: 3 }} />
+
+            {/* Action Buttons */}
+            <Box display="flex" gap={2} flexWrap="wrap">
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                startIcon={
+                  starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />
+                }
+                onClick={handleStartClick}
+                disabled={starting || saving}
+                sx={{ flex: 1, minWidth: 200 }}
+              >
+                {starting ? 'Starting...' : 'Start Tournament'}
+              </Button>
+              <Tooltip title="View the bracket structure">
                 <Button
-                  variant="contained"
-                  color="success"
-                  onClick={handleStartClick}
-                  disabled={starting || saving}
-                  fullWidth
-                  size="large"
-                  sx={{ mb: 2 }}
+                  variant="outlined"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() => navigate('/bracket')}
                 >
-                  {starting ? <CircularProgress size={24} /> : '🚀 Start Tournament'}
+                  View Bracket
                 </Button>
-              )}
-              <Button variant="outlined" onClick={() => navigate('/bracket')} fullWidth>
+              </Tooltip>
+              <Tooltip title="Recreate brackets with same settings">
+                <Button
+                  variant="outlined"
+                  color="warning"
+                  startIcon={<RefreshIcon />}
+                  onClick={handleRegenerateClick}
+                  disabled={saving}
+                >
+                  Regenerate
+                </Button>
+              </Tooltip>
+              <Tooltip title="Delete this tournament completely">
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteForeverIcon />}
+                  onClick={handleDeleteClick}
+                  disabled={saving}
+                >
+                  Delete
+                </Button>
+              </Tooltip>
+            </Box>
+          </CardContent>
+        </Card>
+      ) : tournament &&
+        (tournament.status === 'in_progress' || tournament.status === 'completed') ? (
+        /* STEP 3: Live Tournament */
+        <Card sx={{ mb: 3 }}>
+          <CardContent>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+              <Typography variant="h5" fontWeight={600}>
+                {tournament.name}
+              </Typography>
+              <Chip
+                label={tournament.status === 'in_progress' ? 'LIVE' : 'COMPLETED'}
+                color={tournament.status === 'in_progress' ? 'warning' : 'success'}
+              />
+            </Box>
+
+            <Alert severity="warning" sx={{ mb: 3 }}>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                Tournament is {tournament.status === 'in_progress' ? 'Live' : 'Completed'}
+              </Typography>
+              <Typography variant="body2">
+                {tournament.status === 'in_progress'
+                  ? 'Matches are currently running on servers. You cannot edit tournament settings while live.'
+                  : 'This tournament has finished all matches. Create a new tournament or reset this one to start over.'}
+              </Typography>
+            </Alert>
+
+            <Grid container spacing={2} sx={{ mb: 3 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Format
+                </Typography>
+                <Typography variant="body2">
+                  {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
+                  {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+                </Typography>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Teams
+                </Typography>
+                <Typography variant="body2">{tournament.teams.length} teams competing</Typography>
+              </Grid>
+            </Grid>
+
+            {/* Action Buttons */}
+            <Box display="flex" gap={2} flexWrap="wrap">
+              <Button
+                variant="contained"
+                startIcon={<VisibilityIcon />}
+                onClick={() => navigate('/bracket')}
+                sx={{ flex: 1, minWidth: 200 }}
+              >
                 View Bracket
               </Button>
+              <Tooltip title="Reset tournament to setup mode (clears all match data)">
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<RestartAltIcon />}
+                  onClick={handleResetClick}
+                  disabled={saving}
+                >
+                  Reset to Setup
+                </Button>
+              </Tooltip>
+              <Tooltip title="Delete this tournament completely">
+                <Button
+                  variant="outlined"
+                  color="error"
+                  startIcon={<DeleteForeverIcon />}
+                  onClick={handleDeleteClick}
+                  disabled={saving}
+                >
+                  Delete
+                </Button>
+              </Tooltip>
             </Box>
           </CardContent>
         </Card>
       ) : (
+        /* STEP 1: Create/Edit Tournament */
         <Card>
           <CardContent>
             <Typography variant="h6" gutterBottom>
@@ -593,22 +780,42 @@ export default function Tournament() {
                       onChange={(e) => setType(e.target.value)}
                       disabled={!canEdit || saving}
                     >
-                      {TOURNAMENT_TYPES.map((option) => (
-                        <MenuItem
-                          key={option.value}
-                          value={option.value}
-                          disabled={option.disabled}
-                        >
-                          <Box>
-                            <Typography variant="body1">{option.label}</Typography>
-                            {option.description && (
-                              <Typography variant="caption" color="text.secondary">
-                                {option.description}
-                              </Typography>
-                            )}
-                          </Box>
-                        </MenuItem>
-                      ))}
+                      {TOURNAMENT_TYPES.map((option) => {
+                        const isValid = isTournamentTypeValid(option, selectedTeams.length);
+                        return (
+                          <MenuItem
+                            key={option.value}
+                            value={option.value}
+                            disabled={option.disabled}
+                          >
+                            <Box display="flex" alignItems="center" gap={1} width="100%">
+                              {isValid ? (
+                                <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />
+                              ) : (
+                                <WarningIcon fontSize="small" sx={{ color: 'warning.main' }} />
+                              )}
+                              <Box flex={1}>
+                                <Box display="flex" alignItems="center" gap={1}>
+                                  <Typography variant="body1">{option.label}</Typography>
+                                  {!isValid && (
+                                    <Chip
+                                      label="Not available"
+                                      size="small"
+                                      color="warning"
+                                      sx={{ height: 20 }}
+                                    />
+                                  )}
+                                </Box>
+                                {option.description && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    {option.description}
+                                  </Typography>
+                                )}
+                              </Box>
+                            </Box>
+                          </MenuItem>
+                        );
+                      })}
                     </Select>
                   </FormControl>
                 </Grid>
@@ -631,6 +838,27 @@ export default function Tournament() {
                   </FormControl>
                 </Grid>
               </Grid>
+
+              {/* Team Count Validation Alert */}
+              {(() => {
+                const tournamentType = TOURNAMENT_TYPES.find((t) => t.value === type);
+                if (!tournamentType || selectedTeams.length === 0) return null;
+
+                const teamCount = selectedTeams.length;
+                const isValid = isTournamentTypeValid(tournamentType, teamCount);
+
+                if (isValid) return null; // Only show warning, not success
+
+                return (
+                  <Alert severity="warning" sx={{ mt: 2, mb: 2 }} icon={<WarningIcon />}>
+                    <Typography variant="body2">
+                      <strong>{tournamentType.label}</strong> needs a team count that keeps
+                      doubling—like 2, 4, 8, 16… You have <strong>{teamCount}</strong> team(s)
+                      selected.
+                    </Typography>
+                  </Alert>
+                );
+              })()}
 
               <Box>
                 <Box display="flex" alignItems="center" gap={1} mb={1}>
@@ -711,35 +939,41 @@ export default function Tournament() {
                 </Box>
               </Box>
 
-              <FormControl fullWidth>
-                <InputLabel>Seeding Method</InputLabel>
-                <Select
-                  value={seedingMethod}
-                  label="Seeding Method"
-                  onChange={(e) => setSeedingMethod(e.target.value)}
-                  disabled={!canEdit || saving}
-                >
-                  <MenuItem value="random">Random</MenuItem>
-                  <MenuItem value="manual">Manual (Coming Soon)</MenuItem>
-                </Select>
-              </FormControl>
-
+              {/* Action Buttons */}
               {canEdit && (
-                <Button
-                  variant="contained"
-                  onClick={handleSaveClick}
-                  disabled={saving}
-                  fullWidth
-                  size="large"
-                >
-                  {saving ? (
-                    <CircularProgress size={24} />
-                  ) : tournament ? (
-                    'Update Tournament'
-                  ) : (
-                    'Create Tournament'
-                  )}
-                </Button>
+                <>
+                  <Divider sx={{ my: 2 }} />
+                  <Box display="flex" gap={2} flexWrap="wrap">
+                    <Button
+                      variant="contained"
+                      onClick={handleSaveClick}
+                      disabled={saving}
+                      size="large"
+                      sx={{ flex: 1, minWidth: 200 }}
+                    >
+                      {saving ? (
+                        <CircularProgress size={24} />
+                      ) : tournament ? (
+                        'Save & Generate Brackets'
+                      ) : (
+                        'Create Tournament'
+                      )}
+                    </Button>
+                    {tournament && (
+                      <Tooltip title="Permanently delete this tournament and all its data">
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          startIcon={<DeleteForeverIcon />}
+                          onClick={handleDeleteClick}
+                          disabled={saving}
+                        >
+                          Delete
+                        </Button>
+                      </Tooltip>
+                    )}
+                  </Box>
+                </>
               )}
             </Stack>
           </CardContent>
@@ -758,9 +992,9 @@ export default function Tournament() {
       {/* Delete Confirmation */}
       <ConfirmDialog
         open={showDeleteConfirm}
-        title="Delete Tournament"
-        message={`Are you sure you want to delete "${tournament?.name}"? This will delete all matches, brackets, and match data. This action cannot be undone.`}
-        confirmLabel="Delete"
+        title="🗑️ Delete Tournament"
+        message={`Are you sure you want to permanently DELETE "${tournament?.name}"?\n\n⚠️ This will:\n• Remove the tournament completely\n• Delete all matches and brackets\n• Delete all match data and statistics\n• Cannot be undone\n\nNote: If you just want to start over with the same tournament settings, use "Reset to Setup" instead.`}
+        confirmLabel="Delete Permanently"
         cancelLabel="Cancel"
         onConfirm={handleDelete}
         onCancel={() => setShowDeleteConfirm(false)}
@@ -770,11 +1004,11 @@ export default function Tournament() {
       {/* Regenerate Brackets Confirmation */}
       <ConfirmDialog
         open={showRegenerateConfirm}
-        title="Regenerate Brackets"
+        title="🔄 Regenerate Brackets"
         message={
           tournament?.status !== 'setup'
             ? `⚠️ WARNING: The tournament is ${tournament?.status.toUpperCase()}!\n\nRegenerating brackets will DELETE ALL existing match data, including scores, statistics, and event history. This action cannot be undone.\n\nAre you absolutely sure you want to proceed?`
-            : `This will delete all existing matches and regenerate the bracket from scratch. Continue?`
+            : `This will delete all existing matches and regenerate the bracket with the same settings.\n\nContinue?`
         }
         confirmLabel={tournament?.status !== 'setup' ? 'YES, DELETE EVERYTHING' : 'Regenerate'}
         cancelLabel="Cancel"
@@ -786,13 +1020,13 @@ export default function Tournament() {
       {/* Reset Tournament Confirmation */}
       <ConfirmDialog
         open={showResetConfirm}
-        title="Reset Tournament"
-        message={`⚠️ This will reset the tournament back to SETUP mode and DELETE ALL matches and match data.\n\nYou will need to regenerate brackets after resetting. This action cannot be undone.\n\nAre you sure you want to reset "${tournament?.name}"?`}
+        title="🔄 Reset to Setup"
+        message={`Reset "${tournament?.name}" back to SETUP mode?\n\nThis will:\n• Clear tournament status (back to setup)\n• Delete all matches and brackets\n• Delete all match data and statistics\n• Keep tournament settings (name, teams, format)\n• Allow you to edit settings again\n\nAfter resetting, you'll need to save again to regenerate brackets.\n\nNote: To completely remove the tournament, use "Delete" instead.`}
         confirmLabel="Reset to Setup"
         cancelLabel="Cancel"
         onConfirm={handleReset}
         onCancel={() => setShowResetConfirm(false)}
-        confirmColor="error"
+        confirmColor="warning"
       />
 
       {/* Start Tournament Confirmation */}

@@ -46,12 +46,19 @@ export class BracketsAdapter {
     }));
 
     // Configure stage settings
+    // Note: Don't set 'size' for elimination tournaments - let the library calculate it
+    // based on seeding array to properly handle non-power-of-2 team counts
     const stageSettings: Partial<StageSettings> = {
-      size: teamIds.length,
       seedOrdering: settings.seedingMethod === 'random' ? ['natural'] : ['natural'],
       grandFinal: type === 'double_elimination' ? 'simple' : 'none',
       consolationFinal: settings.thirdPlaceMatch,
     };
+
+    // For round robin, size and groupCount are required
+    if (stageType === 'round_robin') {
+      stageSettings.size = teamIds.length;
+      stageSettings.groupCount = 1; // Single group - everyone plays everyone
+    }
 
     try {
       // Create the stage (tournament)
@@ -72,11 +79,25 @@ export class BracketsAdapter {
         throw new Error('Failed to create stage');
       }
 
+      if (!matches || matches.length === 0) {
+        throw new Error(`Failed to generate ${stageType} bracket with ${teamIds.length} teams`);
+      }
+
       // Convert brackets-manager matches to our format
       return this.convertMatches(matches as Match[], tournament, stageType);
     } catch (err) {
-      log.error('Brackets-manager error', err);
-      throw err;
+      const error = err as Error;
+      log.error('Brackets-manager error', error);
+
+      // Provide more helpful error messages
+      if (error.message.includes('minimum') || error.message.includes('participants')) {
+        throw new Error(
+          `Cannot create ${stageType} bracket: ${error.message}. ` +
+            `You have ${teamIds.length} team(s).`
+        );
+      }
+
+      throw new Error(`Failed to generate ${stageType} bracket: ${error.message}`);
     }
   }
 
@@ -123,11 +144,14 @@ export class BracketsAdapter {
       // Determine match slug based on type and position
       const slug = this.generateSlug(bmMatch, stageType);
 
-      // Convert round_id to number (it might be a number already, but ensure it)
-      const roundNum =
+      // Convert round_id to number (brackets-manager uses 0-based rounds)
+      const bmRoundNum =
         typeof bmMatch.round_id === 'number'
           ? bmMatch.round_id
           : parseInt(String(bmMatch.round_id), 10);
+
+      // Convert to 1-based rounds for our system (Round 0 -> Round 1, Round 1 -> Round 2, etc.)
+      const roundNum = bmRoundNum + 1;
 
       // Map team IDs (brackets-manager uses indices, we use actual team IDs)
       const team1Id =
@@ -179,6 +203,11 @@ export class BracketsAdapter {
    * Generate match slug based on brackets-manager match data
    */
   private generateSlug(match: Match, stageType: StageType): string {
+    // Convert brackets-manager's 0-based rounds to 1-based for our slugs
+    const bmRoundNum =
+      typeof match.round_id === 'number' ? match.round_id : parseInt(String(match.round_id), 10);
+    const roundNum = bmRoundNum + 1;
+
     if (stageType === 'double_elimination') {
       // Determine if it's winners bracket, losers bracket, or grand finals
       const isGrandFinal = match.group_id === 3;
@@ -187,13 +216,13 @@ export class BracketsAdapter {
       if (isGrandFinal) {
         return 'gf';
       } else if (isLosersBracket) {
-        return `lb-r${match.round_id}m${match.number}`;
+        return `lb-r${roundNum}m${match.number}`;
       } else {
-        return `r${match.round_id}m${match.number}`;
+        return `r${roundNum}m${match.number}`;
       }
     } else {
       // Single elimination or round robin
-      return `r${match.round_id}m${match.number}`;
+      return `r${roundNum}m${match.number}`;
     }
   }
 

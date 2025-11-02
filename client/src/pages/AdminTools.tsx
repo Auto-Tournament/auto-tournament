@@ -8,20 +8,30 @@ import {
   Button,
   Stack,
   Alert,
-  Chip,
   FormControl,
-  FormLabel,
-  FormGroup,
-  FormControlLabel,
-  Checkbox,
+  InputLabel,
+  Select,
+  MenuItem,
   Divider,
   Grid,
   CircularProgress,
+  Chip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import CampaignIcon from '@mui/icons-material/Campaign';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import PauseIcon from '@mui/icons-material/Pause';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import SettingsIcon from '@mui/icons-material/Settings';
+import MapIcon from '@mui/icons-material/Map';
+import GroupsIcon from '@mui/icons-material/Groups';
+import FitnessCenterIcon from '@mui/icons-material/FitnessCenter';
+import TerminalIcon from '@mui/icons-material/Terminal';
+import HistoryIcon from '@mui/icons-material/History';
 import SendIcon from '@mui/icons-material/Send';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import ErrorIcon from '@mui/icons-material/Error';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../utils/api';
 
@@ -34,19 +44,22 @@ interface Server {
 }
 
 export default function AdminTools() {
-  const [message, setMessage] = useState('');
+  // State
   const [servers, setServers] = useState<Server[]>([]);
-  const [selectedServers, setSelectedServers] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [selectedServer, setSelectedServer] = useState<string>('all');
   const [loadingServers, setLoadingServers] = useState(true);
+  const [executing, setExecuting] = useState(false);
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
-  const [broadcastResults, setBroadcastResults] = useState<{
-    successful: number;
-    failed: number;
-    total: number;
-  } | null>(null);
+
+  // Command parameters
+  const [broadcastMessage, setBroadcastMessage] = useState('');
+  const [restoreRound, setRestoreRound] = useState('');
+  const [readyRequired, setReadyRequired] = useState('');
+  const [mapName, setMapName] = useState('');
+  const [team1Name, setTeam1Name] = useState('');
+  const [team2Name, setTeam2Name] = useState('');
+  const [rconCommand, setRconCommand] = useState('');
 
   useEffect(() => {
     loadServers();
@@ -58,7 +71,6 @@ export default function AdminTools() {
       const response: { servers: Server[] } = await api.get('/api/servers');
       const enabledServers = (response.servers || []).filter((s: Server) => s.enabled);
       setServers(enabledServers);
-      setSelectedServers(enabledServers.map((s) => s.id));
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to load servers');
@@ -67,267 +79,570 @@ export default function AdminTools() {
     }
   };
 
-  const handleSelectAll = () => {
-    if (selectAll) {
-      setSelectedServers(servers.map((s) => s.id));
-    } else {
-      setSelectedServers([]);
-    }
-    setSelectAll(!selectAll);
-  };
-
-  const handleServerToggle = (serverId: string) => {
-    setSelectedServers((prev) =>
-      prev.includes(serverId) ? prev.filter((id) => id !== serverId) : [...prev, serverId]
-    );
-  };
-
-  const handleBroadcast = async () => {
-    if (!message.trim()) {
-      setError('Please enter a message');
+  const executeCommand = async (command: string, params?: Record<string, unknown>) => {
+    if (selectedServer === '' || selectedServer === 'none') {
+      setError('Please select a server');
       return;
     }
 
-    if (selectedServers.length === 0) {
-      setError('Please select at least one server');
-      return;
-    }
-
-    setLoading(true);
+    setExecuting(true);
     setError('');
     setSuccess('');
-    setBroadcastResults(null);
 
     try {
-      const response: {
-        success: boolean;
-        message: string;
-        stats: { total: number; successful: number; failed: number };
-      } = await api.post('/api/rcon/broadcast', {
-        message: message.trim(),
-        serverIds: selectedServers,
+      const serverIds = selectedServer === 'all' ? servers.map((s) => s.id) : [selectedServer];
+
+      const response = await api.post('/api/rcon/command', {
+        serverIds,
+        command,
+        ...params,
       });
 
-      setBroadcastResults(response.stats);
-      setSuccess(response.message);
-      setMessage(''); // Clear message after successful broadcast
+      if (response.success) {
+        const results = response.results || [];
+        const successful = results.filter((r: { success: boolean }) => r.success).length;
+        const failed = results.length - successful;
 
-      // Clear success after 5 seconds
-      setTimeout(() => setSuccess(''), 5000);
+        setSuccess(
+          `Command executed on ${successful}/${results.length} server(s)${
+            failed > 0 ? ` (${failed} failed)` : ''
+          }`
+        );
+      } else {
+        setError(response.error || 'Command execution failed');
+      }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to send broadcast');
+      setError(error.message || 'Failed to execute command');
     } finally {
-      setLoading(false);
+      setExecuting(false);
     }
   };
+
+  const handleBroadcast = () => {
+    if (!broadcastMessage.trim()) {
+      setError('Please enter a message to broadcast');
+      return;
+    }
+    executeCommand('css_asay', { message: broadcastMessage });
+    setBroadcastMessage('');
+  };
+
+  if (loadingServers) {
+    return (
+      <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
+        <CircularProgress />
+      </Box>
+    );
+  }
 
   return (
     <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <CampaignIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Admin Tools
-          </Typography>
-        </Box>
+      {/* Header */}
+      <Box display="flex" alignItems="center" gap={2} mb={4}>
+        <TerminalIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+        <Typography variant="h4" fontWeight={600}>
+          Admin Tools
+        </Typography>
       </Box>
 
-      {/* Broadcast Message Card */}
+      {/* Alerts */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+          {error}
+        </Alert>
+      )}
+
+      {success && (
+        <Alert severity="success" sx={{ mb: 3 }} onClose={() => setSuccess('')}>
+          {success}
+        </Alert>
+      )}
+
+      {/* Server Selection */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <Typography
-            variant="h6"
-            fontWeight={600}
-            mb={2}
-            display="flex"
-            alignItems="center"
-            gap={1}
-          >
-            <CampaignIcon color="primary" />
-            Broadcast Message
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Send an admin message (css_asay) to selected servers. The message will appear in chat
-            with an admin prefix.
-          </Typography>
-
-          {error && (
-            <Alert severity="error" onClose={() => setError('')} sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
-          {success && (
-            <Alert
-              severity="success"
-              onClose={() => setSuccess('')}
-              sx={{ mb: 2 }}
-              icon={<CheckCircleIcon />}
-            >
-              {success}
-            </Alert>
-          )}
-
-          {broadcastResults && (
-            <Alert severity={broadcastResults.failed === 0 ? 'success' : 'warning'} sx={{ mb: 2 }}>
-              <Box>
-                <Typography variant="body2" fontWeight={600}>
-                  Broadcast Results:
-                </Typography>
-                <Box display="flex" gap={2} mt={1}>
-                  <Chip
-                    label={`${broadcastResults.successful} Successful`}
-                    color="success"
-                    size="small"
-                    icon={<CheckCircleIcon />}
-                  />
-                  {broadcastResults.failed > 0 && (
-                    <Chip
-                      label={`${broadcastResults.failed} Failed`}
-                      color="error"
-                      size="small"
-                      icon={<ErrorIcon />}
-                    />
-                  )}
-                </Box>
-              </Box>
-            </Alert>
-          )}
-
-          <Stack spacing={3}>
-            {/* Message Input */}
-            <TextField
-              label="Message"
-              placeholder="Enter your admin message..."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              multiline
-              rows={3}
-              fullWidth
-              inputProps={{ maxLength: 200 }}
-              helperText={`${message.length}/200 characters`}
-            />
-
-            <Divider />
-
-            {/* Server Selection */}
-            <Box>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <FormLabel component="legend">Target Servers</FormLabel>
-                <Button
-                  size="small"
-                  startIcon={<RefreshIcon />}
-                  onClick={loadServers}
-                  disabled={loadingServers}
-                >
-                  Refresh
-                </Button>
-              </Box>
-
-              {loadingServers ? (
-                <Box display="flex" justifyContent="center" p={3}>
-                  <CircularProgress />
-                </Box>
-              ) : servers.length === 0 ? (
-                <Alert severity="warning">
-                  No enabled servers found. Please add and enable servers first.
-                </Alert>
-              ) : (
-                <>
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={selectedServers.length === servers.length}
-                        indeterminate={
-                          selectedServers.length > 0 && selectedServers.length < servers.length
-                        }
-                        onChange={handleSelectAll}
-                      />
-                    }
-                    label={
-                      <Typography fontWeight={600}>
-                        Select All ({selectedServers.length}/{servers.length})
-                      </Typography>
-                    }
-                  />
-
-                  <FormControl component="fieldset" fullWidth sx={{ mt: 1 }}>
-                    <FormGroup>
-                      <Grid container spacing={1}>
-                        {servers.map((server) => (
-                          <Grid size={{ xs: 12, sm: 6, md: 4 }} key={server.id}>
-                            <Card
-                              variant="outlined"
-                              sx={{
-                                bgcolor: selectedServers.includes(server.id)
-                                  ? 'action.selected'
-                                  : 'background.paper',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s',
-                                '&:hover': {
-                                  bgcolor: 'action.hover',
-                                },
-                              }}
-                              onClick={() => handleServerToggle(server.id)}
-                            >
-                              <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
-                                <FormControlLabel
-                                  control={
-                                    <Checkbox
-                                      checked={selectedServers.includes(server.id)}
-                                      onChange={() => handleServerToggle(server.id)}
-                                    />
-                                  }
-                                  label={
-                                    <Box>
-                                      <Typography variant="body2" fontWeight={600}>
-                                        {server.name}
-                                      </Typography>
-                                      <Typography variant="caption" color="text.secondary">
-                                        {server.host}:{server.port}
-                                      </Typography>
-                                    </Box>
-                                  }
-                                  sx={{ m: 0 }}
-                                />
-                              </CardContent>
-                            </Card>
-                          </Grid>
-                        ))}
-                      </Grid>
-                    </FormGroup>
-                  </FormControl>
-                </>
-              )}
-            </Box>
-
-            {/* Send Button */}
+          <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
+            <FormControl sx={{ flex: 1, maxWidth: 400 }}>
+              <InputLabel>Target Server</InputLabel>
+              <Select
+                value={selectedServer}
+                label="Target Server"
+                onChange={(e) => setSelectedServer(e.target.value)}
+              >
+                <MenuItem value="all">
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <Chip label="ALL" size="small" color="primary" />
+                    <Typography>All Servers ({servers.length})</Typography>
+                  </Box>
+                </MenuItem>
+                <Divider />
+                {servers.map((server) => (
+                  <MenuItem key={server.id} value={server.id}>
+                    {server.name} ({server.host}:{server.port})
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
             <Button
-              variant="contained"
-              size="large"
-              startIcon={loading ? <CircularProgress size={20} /> : <SendIcon />}
-              onClick={handleBroadcast}
-              disabled={loading || !message.trim() || selectedServers.length === 0}
-              fullWidth
+              variant="outlined"
+              startIcon={<RefreshIcon />}
+              onClick={loadServers}
+              disabled={loadingServers}
             >
-              {loading ? 'Sending...' : `Send to ${selectedServers.length} Server(s)`}
+              Refresh
             </Button>
-          </Stack>
+          </Box>
         </CardContent>
       </Card>
 
-      {/* Info Card */}
-      <Alert severity="info">
-        <Typography variant="body2" fontWeight={600} gutterBottom>
-          About Admin Broadcasts
-        </Typography>
-        <Typography variant="body2">
-          Messages sent via <code>css_asay</code> appear in the game chat with an admin prefix,
-          making them visually distinct from regular player messages. This is useful for important
-          announcements, warnings, or instructions during tournaments.
-        </Typography>
-      </Alert>
+      {/* Command Categories */}
+      <Stack spacing={2}>
+        {/* Match Control */}
+        <Accordion defaultExpanded>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <PlayArrowIcon color="primary" />
+              <Typography variant="h6">Match Control</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="success"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={() => executeCommand('css_start')}
+                  disabled={executing}
+                >
+                  Start Match
+                </Button>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="error"
+                  startIcon={<RestartAltIcon />}
+                  onClick={() => executeCommand('css_restart')}
+                  disabled={executing}
+                >
+                  Restart Match
+                </Button>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="warning"
+                  startIcon={<PauseIcon />}
+                  onClick={() => executeCommand('css_forcepause')}
+                  disabled={executing}
+                >
+                  Force Pause
+                </Button>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6, md: 3 }}>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  color="success"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={() => executeCommand('css_forceunpause')}
+                  disabled={executing}
+                >
+                  Force Unpause
+                </Button>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Match Settings */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <SettingsIcon color="primary" />
+              <Typography variant="h6">Match Settings</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_skipveto')}
+                    disabled={executing}
+                  >
+                    Skip Veto
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_roundknife')}
+                    disabled={executing}
+                  >
+                    Toggle Knife Round
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_playout')}
+                    disabled={executing}
+                  >
+                    Toggle Playout
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_whitelist')}
+                    disabled={executing}
+                  >
+                    Toggle Whitelist
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_settings')}
+                    disabled={executing}
+                  >
+                    Show Settings
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 6, md: 4 }}>
+                  <Button
+                    fullWidth
+                    variant="outlined"
+                    onClick={() => executeCommand('css_reload_admins')}
+                    disabled={executing}
+                  >
+                    Reload Admins
+                  </Button>
+                </Grid>
+              </Grid>
+
+              <Divider />
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Ready Required
+                </Typography>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    size="small"
+                    type="number"
+                    placeholder="0 = all players"
+                    value={readyRequired}
+                    onChange={(e) => setReadyRequired(e.target.value)}
+                    disabled={executing}
+                    sx={{ flex: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (readyRequired) {
+                        executeCommand('css_readyrequired', { value: readyRequired });
+                        setReadyRequired('');
+                      }
+                    }}
+                    disabled={executing || !readyRequired}
+                  >
+                    Set
+                  </Button>
+                </Box>
+              </Box>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Backup & Restore */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <HistoryIcon color="primary" />
+              <Typography variant="h6">Backup & Restore</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Restore Round Backup
+              </Typography>
+              <Box display="flex" gap={1}>
+                <TextField
+                  size="small"
+                  type="number"
+                  placeholder="Round number"
+                  value={restoreRound}
+                  onChange={(e) => setRestoreRound(e.target.value)}
+                  disabled={executing}
+                  sx={{ flex: 1 }}
+                />
+                <Button
+                  variant="contained"
+                  color="warning"
+                  onClick={() => {
+                    if (restoreRound) {
+                      executeCommand('css_restore', { round: restoreRound });
+                      setRestoreRound('');
+                    }
+                  }}
+                  disabled={executing || !restoreRound}
+                >
+                  Restore
+                </Button>
+              </Box>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Server Management */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <MapIcon color="primary" />
+              <Typography variant="h6">Server Management</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Change Map
+              </Typography>
+              <Box display="flex" gap={1}>
+                <TextField
+                  size="small"
+                  placeholder="de_dust2"
+                  value={mapName}
+                  onChange={(e) => setMapName(e.target.value)}
+                  disabled={executing}
+                  sx={{ flex: 1 }}
+                />
+                <Button
+                  variant="contained"
+                  onClick={() => {
+                    if (mapName) {
+                      executeCommand('css_map', { map: mapName });
+                      setMapName('');
+                    }
+                  }}
+                  disabled={executing || !mapName}
+                >
+                  Change Map
+                </Button>
+              </Box>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Team Management */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <GroupsIcon color="primary" />
+              <Typography variant="h6">Team Management</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Stack spacing={2}>
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Team 1 Name (CT)
+                </Typography>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    size="small"
+                    placeholder="Team 1"
+                    value={team1Name}
+                    onChange={(e) => setTeam1Name(e.target.value)}
+                    disabled={executing}
+                    sx={{ flex: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (team1Name) {
+                        executeCommand('css_team1', { name: team1Name });
+                        setTeam1Name('');
+                      }
+                    }}
+                    disabled={executing || !team1Name}
+                  >
+                    Set
+                  </Button>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="subtitle2" gutterBottom>
+                  Team 2 Name (T)
+                </Typography>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    size="small"
+                    placeholder="Team 2"
+                    value={team2Name}
+                    onChange={(e) => setTeam2Name(e.target.value)}
+                    disabled={executing}
+                    sx={{ flex: 1 }}
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={() => {
+                      if (team2Name) {
+                        executeCommand('css_team2', { name: team2Name });
+                        setTeam2Name('');
+                      }
+                    }}
+                    disabled={executing || !team2Name}
+                  >
+                    Set
+                  </Button>
+                </Box>
+              </Box>
+            </Stack>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Practice Mode */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <FitnessCenterIcon color="primary" />
+              <Typography variant="h6">Practice Mode</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="success"
+                  startIcon={<PlayArrowIcon />}
+                  onClick={() => executeCommand('css_prac')}
+                  disabled={executing}
+                >
+                  Start Practice Mode
+                </Button>
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  color="error"
+                  startIcon={<RestartAltIcon />}
+                  onClick={() => executeCommand('css_exitprac')}
+                  disabled={executing}
+                >
+                  Exit Practice Mode
+                </Button>
+              </Grid>
+            </Grid>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Admin Communication */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <CampaignIcon color="primary" />
+              <Typography variant="h6">Admin Communication</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Broadcast Admin Message
+              </Typography>
+              <Box display="flex" gap={1}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Enter message to broadcast..."
+                  value={broadcastMessage}
+                  onChange={(e) => setBroadcastMessage(e.target.value)}
+                  disabled={executing}
+                  multiline
+                  maxRows={3}
+                />
+                <Button
+                  variant="contained"
+                  startIcon={<SendIcon />}
+                  onClick={handleBroadcast}
+                  disabled={executing || !broadcastMessage.trim()}
+                >
+                  Send
+                </Button>
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                Uses css_asay command (Admin Say in All Chat)
+              </Typography>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+
+        {/* Advanced RCON */}
+        <Accordion>
+          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+            <Box display="flex" alignItems="center" gap={2}>
+              <TerminalIcon color="primary" />
+              <Typography variant="h6">Advanced RCON</Typography>
+            </Box>
+          </AccordionSummary>
+          <AccordionDetails>
+            <Box>
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  <strong>Warning:</strong> Advanced RCON allows direct command execution. Use with
+                  caution. Incorrect commands may crash the server.
+                </Typography>
+              </Alert>
+              <Typography variant="subtitle2" gutterBottom>
+                Execute Custom RCON Command
+              </Typography>
+              <Box display="flex" gap={1}>
+                <TextField
+                  fullWidth
+                  size="small"
+                  placeholder="Enter RCON command (e.g., mp_warmup_end)"
+                  value={rconCommand}
+                  onChange={(e) => setRconCommand(e.target.value)}
+                  disabled={executing}
+                />
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => {
+                    if (rconCommand) {
+                      executeCommand(rconCommand);
+                      setRconCommand('');
+                    }
+                  }}
+                  disabled={executing || !rconCommand}
+                >
+                  Execute
+                </Button>
+              </Box>
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+                No need to prefix with css_ - it will be added automatically for MatchZy commands
+              </Typography>
+            </Box>
+          </AccordionDetails>
+        </Accordion>
+      </Stack>
     </Box>
   );
 }

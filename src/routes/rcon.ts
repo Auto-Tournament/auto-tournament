@@ -436,4 +436,91 @@ router.post('/broadcast', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/rcon/command
+ * Execute generic admin commands with parameters
+ */
+router.post('/command', async (req: Request, res: Response) => {
+  try {
+    const { serverIds, command, message, round, value, map, name } = req.body;
+
+    if (!serverIds || !Array.isArray(serverIds) || serverIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverIds array is required',
+      });
+    }
+
+    if (!command) {
+      return res.status(400).json({
+        success: false,
+        error: 'command is required',
+      });
+    }
+
+    // Build the full command with parameters
+    let fullCommand = command;
+
+    // Add css_ prefix if not present and not a raw RCON command
+    if (
+      !fullCommand.startsWith('css_') &&
+      !fullCommand.startsWith('mp_') &&
+      !fullCommand.startsWith('sv_')
+    ) {
+      fullCommand = `css_${fullCommand}`;
+    }
+
+    // Append parameters based on the command
+    if (message !== undefined) {
+      // For css_asay and similar
+      fullCommand = `${fullCommand} ${message}`;
+    } else if (round !== undefined) {
+      // For css_restore
+      fullCommand = `${fullCommand} ${round}`;
+    } else if (value !== undefined) {
+      // For css_readyrequired
+      fullCommand = `${fullCommand} ${value}`;
+    } else if (map !== undefined) {
+      // For css_map
+      fullCommand = `${fullCommand} ${map}`;
+    } else if (name !== undefined) {
+      // For css_team1, css_team2
+      fullCommand = `${fullCommand} ${name}`;
+    }
+
+    // Execute command on all specified servers
+    const results = await Promise.all(
+      serverIds.map(async (serverId: string) => {
+        const result = await rconService.sendCommand(serverId, fullCommand);
+        return {
+          serverId,
+          success: result.success,
+          response: result.response,
+          error: result.error,
+        };
+      })
+    );
+
+    const successful = results.filter((r) => r.success).length;
+    const failed = results.filter((r) => !r.success).length;
+
+    return res.status(failed > 0 ? 207 : 200).json({
+      success: failed === 0,
+      message: `Command executed on ${successful} server(s), ${failed} failed`,
+      results,
+      stats: {
+        total: results.length,
+        successful,
+        failed,
+      },
+    });
+  } catch (error) {
+    console.error('Error executing command:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to execute command',
+    });
+  }
+});
+
 export default router;

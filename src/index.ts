@@ -44,6 +44,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
+    // Skip logging 404s for root path (common in dev mode from browser/tools)
+    if (statusCode === 404 && path === '/') {
+      return;
+    }
+
     // Log with appropriate level based on status code
     if (statusCode >= 500) {
       log.error(`${method} ${path}`, undefined, { statusCode, duration });

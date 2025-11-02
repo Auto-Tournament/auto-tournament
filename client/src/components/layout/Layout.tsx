@@ -9,7 +9,6 @@ import StorageIcon from '@mui/icons-material/Storage';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import BuildIcon from '@mui/icons-material/Build';
-import DataObjectIcon from '@mui/icons-material/DataObject';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Layout() {
