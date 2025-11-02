@@ -1,9 +1,10 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { bracketsAdapter } from './bracketsAdapter';
+import { generateMatchConfig } from './matchConfigGenerator';
 import { generateSwissBracket } from './swissGenerator';
 import { validateTeamCount } from '../utils/tournamentHelpers';
-import type { DbMatchRow, DbTeamRow, DbEventRow } from '../types/database.types';
+import type { DbMatchRow, DbTeamRow, DbEventRow, DbTournamentRow } from '../types/database.types';
 import type {
   Tournament,
   TournamentRow,

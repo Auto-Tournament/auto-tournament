@@ -41,8 +41,7 @@ const AdminTools: React.FC = () => {
   const [loadingServers, setLoadingServers] = useState(true);
   const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
 
-  const { executing, results, error, success, executeCommand, clearMessages } =
-    useAdminCommands();
+  const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
 
   useEffect(() => {
     loadServers();
@@ -73,10 +72,7 @@ const AdminTools: React.FC = () => {
     }
 
     // Determine which servers to execute on
-    const serverIds =
-      selectedServerId === 'all'
-        ? servers.map((s) => s.id)
-        : [selectedServerId];
+    const serverIds = selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId];
 
     if (serverIds.length === 0) {
       return;
@@ -267,4 +263,3 @@ const AdminTools: React.FC = () => {
 };
 
 export default AdminTools;
-

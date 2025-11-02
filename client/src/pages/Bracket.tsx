@@ -22,78 +22,34 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../utils/api';
 import BracketVisualization from '../components/visualizations/BracketVisualization';
 import RoundRobinView from '../components/visualizations/RoundRobinView';
 import SwissView from '../components/visualizations/SwissView';
 import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { getRoundLabel } from '../utils/matchUtils';
+import { useBracket, type Match } from '../hooks/useBracket';
 
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface PlayerStats {
-  name: string;
-  steamId: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  damage: number;
-  headshots: number;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  createdAt?: number;
-  loadedAt?: number;
-  completedAt?: number;
-  team1Score?: number;
-  team2Score?: number;
-  team1Players?: PlayerStats[];
-  team2Players?: PlayerStats[];
-  config?: {
-    maplist?: string[];
-    num_maps?: number;
-    team1?: { name: string };
-    team2?: { name: string };
-  };
-}
-
-interface Tournament {
-  id: number;
-  name: string;
-  type: string;
-  format: string;
-  status: string;
-  maps: string[];
-  teamIds: string[];
-  teams?: Team[];
-}
+// Interfaces are now imported from useBracket hook
 
 export default function Bracket() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
-  const [totalRounds, setTotalRounds] = useState(0);
+  const {
+    loading,
+    error,
+    tournament,
+    matches,
+    totalRounds,
+    starting,
+    startSuccess,
+    startError,
+    loadBracket,
+    startTournament,
+  } = useBracket();
+
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
-  const [starting, setStarting] = useState(false);
-  const [startSuccess, setStartSuccess] = useState('');
-  const [startError, setStartError] = useState('');
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
 
   // Calculate global match number
@@ -104,12 +60,6 @@ export default function Bracket() {
     });
     return sortedMatches.findIndex((m) => m.id === match.id) + 1;
   };
-
-  useEffect(() => {
-    loadBracket();
-    const interval = setInterval(loadBracket, 5000); // Refresh every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const handleFullscreenChange = () => {
@@ -132,57 +82,6 @@ export default function Bracket() {
       }
     } catch (err) {
       console.error('Error toggling fullscreen:', err);
-    }
-  };
-
-  const loadBracket = async () => {
-    try {
-      const response: {
-        success: boolean;
-        tournament: Tournament;
-        matches: Match[];
-        totalRounds: number;
-      } = await api.get('/api/tournament/bracket');
-      if (response.success) {
-        setTournament(response.tournament);
-        setMatches(response.matches);
-        setTotalRounds(response.totalRounds);
-        setError('');
-      }
-    } catch (err) {
-      // Don't show error for "no tournament" case - it's expected
-      const error = err as { message?: string };
-      if (error.message?.includes('No tournament')) {
-        setError('');
-        setTournament(null);
-        setMatches([]);
-      } else {
-        setError(error.message || 'Failed to load bracket');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleStartTournament = async () => {
-    setStarting(true);
-    setStartError('');
-    setStartSuccess('');
-
-    try {
-      const response: { message: string; allocated: number } = await api.post(
-        '/api/tournament/start'
-      );
-      setStartSuccess(
-        response.message ||
-          `Tournament started! ${response.allocated} match(es) allocated to servers.`
-      );
-      await loadBracket(); // Reload bracket to see updated status
-    } catch (err) {
-      const error = err as Error;
-      setStartError(error.message || 'Failed to start tournament');
-    } finally {
-      setStarting(false);
     }
   };
 
@@ -293,12 +192,12 @@ export default function Bracket() {
         <>
           {/* Success/Error Alerts */}
           {startSuccess && (
-            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setStartSuccess('')}>
+            <Alert severity="success" sx={{ mb: 2 }}>
               {startSuccess}
             </Alert>
           )}
           {startError && (
-            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setStartError('')}>
+            <Alert severity="error" sx={{ mb: 2 }}>
               {startError}
             </Alert>
           )}
@@ -329,7 +228,7 @@ export default function Bracket() {
                 <Button
                   variant="contained"
                   color="success"
-                  onClick={handleStartTournament}
+                  onClick={startTournament}
                   disabled={starting}
                   startIcon={starting ? <CircularProgress size={16} /> : null}
                 >
