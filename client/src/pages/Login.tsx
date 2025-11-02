@@ -65,7 +65,7 @@ export default function Login() {
             <Box
               component="img"
               src="/icon.svg"
-              alt="MatchZy Logo"
+              alt="MatchZy Auto Tournament Logo"
               sx={{
                 width: 120,
                 height: 120,
