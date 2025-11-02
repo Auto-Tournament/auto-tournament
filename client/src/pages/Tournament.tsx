@@ -73,6 +73,8 @@ export default function Tournament() {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [showStartConfirm, setShowStartConfirm] = useState(false);
+  const [starting, setStarting] = useState(false);
 
   useEffect(() => {
     loadData();
@@ -302,6 +304,32 @@ export default function Tournament() {
     }
   };
 
+  const handleStartClick = () => {
+    setShowStartConfirm(true);
+  };
+
+  const handleStart = async () => {
+    setShowStartConfirm(false);
+    setStarting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const response = await api.post('/api/tournament/start');
+      await loadData(); // Reload tournament data
+      setSuccess(
+        response.message ||
+          `Tournament started! ${response.allocated} match(es) allocated to servers.`
+      );
+      // Navigate to bracket view to see the matches
+      setTimeout(() => navigate('/bracket'), 2000);
+    } catch (err: any) {
+      setError(err.message || 'Failed to start tournament');
+    } finally {
+      setStarting(false);
+    }
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
@@ -453,7 +481,20 @@ export default function Tournament() {
               </Box>
             </Box>
             <Box mt={3}>
-              <Button variant="contained" href="/app/bracket" fullWidth>
+              {tournament.status === 'ready' && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleStartClick}
+                  disabled={starting || saving}
+                  fullWidth
+                  size="large"
+                  sx={{ mb: 2 }}
+                >
+                  {starting ? <CircularProgress size={24} /> : '🚀 Start Tournament'}
+                </Button>
+              )}
+              <Button variant="outlined" href="/app/bracket" fullWidth>
                 View Bracket
               </Button>
             </Box>
@@ -679,6 +720,18 @@ export default function Tournament() {
         onConfirm={handleReset}
         onCancel={() => setShowResetConfirm(false)}
         confirmColor="error"
+      />
+
+      {/* Start Tournament Confirmation */}
+      <ConfirmDialog
+        open={showStartConfirm}
+        title="Start Tournament"
+        message={`🚀 Ready to start the tournament?\n\nThis will:\n• Check all available servers\n• Automatically allocate servers to ready matches\n• Load matches on servers via RCON\n• Set servers to warmup mode\n• Change tournament status to IN PROGRESS\n\nMake sure all servers are online and ready before proceeding.`}
+        confirmLabel="Start Tournament"
+        cancelLabel="Cancel"
+        onConfirm={handleStart}
+        onCancel={() => setShowStartConfirm(false)}
+        confirmColor="success"
       />
     </Box>
   );

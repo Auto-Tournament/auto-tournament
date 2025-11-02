@@ -4,6 +4,7 @@ import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitMatchEvent, emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
+import { matchAllocationService } from '../services/matchAllocationService';
 
 const router = Router();
 
@@ -305,6 +306,13 @@ function advanceWinnerToNextMatch(currentMatch: any, winnerId: string): void {
 
           // Emit bracket update for new ready match
           emitBracketUpdate({ action: 'match_ready', matchSlug: updatedNextMatch.slug });
+
+          // Automatically allocate an available server to this ready match
+          autoAllocateServerToMatch(updatedNextMatch.slug).catch((error) => {
+            log.error('Failed to auto-allocate server to ready match', error, {
+              matchSlug: updatedNextMatch.slug,
+            });
+          });
         }
       }
     }
@@ -343,6 +351,34 @@ function checkTournamentCompletion(): void {
     }
   } catch (error) {
     log.error('Error checking tournament completion', error);
+  }
+}
+
+/**
+ * Automatically allocate an available server to a newly ready match
+ */
+async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
+  try {
+    // Get base URL from environment or construct it
+    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+
+    // Allocate this specific match to first available server
+    const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
+
+    if (result.success) {
+      log.success(`Auto-allocated match ${matchSlug} to server ${result.serverId}`);
+
+      // Emit bracket update
+      emitBracketUpdate({
+        action: 'match_allocated',
+        matchSlug,
+        serverId: result.serverId,
+      });
+    } else {
+      log.warn(`Could not auto-allocate match ${matchSlug}: ${result.error}`);
+    }
+  } catch (error) {
+    log.error('Error in auto-allocate server', error, { matchSlug });
   }
 }
 

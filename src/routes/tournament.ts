@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
+import { matchAllocationService } from '../services/matchAllocationService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
@@ -337,6 +338,62 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to reset tournament',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/start:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Start tournament and allocate servers
+ *     description: Automatically allocates available servers to ready matches and loads them via RCON. Updates tournament status to 'in_progress'.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Tournament started successfully with match allocation results
+ *       400:
+ *         description: Tournament not ready or no available servers
+ *       404:
+ *         description: No tournament exists
+ */
+router.post('/start', requireAuth, async (req: Request, res: Response) => {
+  try {
+    // Get base URL for webhook configuration
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+
+    const result = await matchAllocationService.startTournament(baseUrl);
+
+    if (result.success) {
+      log.success(result.message, {
+        allocated: result.allocated,
+        failed: result.failed,
+      });
+
+      return res.json({
+        success: true,
+        message: result.message,
+        allocated: result.allocated,
+        failed: result.failed,
+        results: result.results,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: result.message,
+        allocated: result.allocated,
+        failed: result.failed,
+        results: result.results,
+      });
+    }
+  } catch (error: any) {
+    log.error('Error starting tournament', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to start tournament',
     });
   }
 });

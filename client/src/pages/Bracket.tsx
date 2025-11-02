@@ -87,6 +87,9 @@ export default function Bracket() {
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [starting, setStarting] = useState(false);
+  const [startSuccess, setStartSuccess] = useState('');
+  const [startError, setStartError] = useState('');
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
 
   // Calculate global match number
@@ -149,6 +152,25 @@ export default function Bracket() {
       }
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleStartTournament = async () => {
+    setStarting(true);
+    setStartError('');
+    setStartSuccess('');
+
+    try {
+      const response = await api.post('/api/tournament/start');
+      setStartSuccess(
+        response.message ||
+          `Tournament started! ${response.allocated} match(es) allocated to servers.`
+      );
+      await loadBracket(); // Reload bracket to see updated status
+    } catch (err: any) {
+      setStartError(err.message || 'Failed to start tournament');
+    } finally {
+      setStarting(false);
     }
   };
 
@@ -256,73 +278,98 @@ export default function Bracket() {
     >
       {/* Header - hidden in fullscreen mode */}
       {!isFullscreen && (
-        <Box
-          sx={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            mb: 4,
-            p: 2,
-          }}
-        >
-          <Box display="flex" alignItems="center" gap={2}>
-            <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-            <Box>
-              <Typography variant="h4" fontWeight={600} gutterBottom>
-                {tournament.name}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {tournament.type.replace('_', ' ').toUpperCase()} •{' '}
-                {tournament.format.toUpperCase()}
-              </Typography>
+        <>
+          {/* Success/Error Alerts */}
+          {startSuccess && (
+            <Alert severity="success" sx={{ mb: 2 }} onClose={() => setStartSuccess('')}>
+              {startSuccess}
+            </Alert>
+          )}
+          {startError && (
+            <Alert severity="error" sx={{ mb: 2 }} onClose={() => setStartError('')}>
+              {startError}
+            </Alert>
+          )}
+
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              mb: 4,
+              p: 2,
+            }}
+          >
+            <Box display="flex" alignItems="center" gap={2}>
+              <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+              <Box>
+                <Typography variant="h4" fontWeight={600} gutterBottom>
+                  {tournament.name}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {tournament.type.replace('_', ' ').toUpperCase()} •{' '}
+                  {tournament.format.toUpperCase()}
+                </Typography>
+              </Box>
+            </Box>
+            <Box display="flex" gap={2} alignItems="center">
+              {tournament.status === 'ready' && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleStartTournament}
+                  disabled={starting}
+                  startIcon={starting ? <CircularProgress size={16} /> : null}
+                >
+                  {starting ? 'Starting...' : '🚀 Start Tournament'}
+                </Button>
+              )}
+              <ToggleButtonGroup
+                value={viewMode}
+                exclusive
+                onChange={(_, newMode) => newMode && setViewMode(newMode)}
+                size="small"
+              >
+                <ToggleButton value="visual">
+                  <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
+                  Visual
+                </ToggleButton>
+                <ToggleButton value="list">
+                  <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
+                  List
+                </ToggleButton>
+              </ToggleButtonGroup>
+              <Chip
+                label={tournament.status.replace('_', ' ').toUpperCase()}
+                color={
+                  tournament.status === 'setup'
+                    ? 'default'
+                    : tournament.status === 'ready'
+                    ? 'info'
+                    : tournament.status === 'in_progress'
+                    ? 'warning'
+                    : 'success'
+                }
+                sx={{ fontWeight: 600 }}
+              />
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                onClick={loadBracket}
+                size="small"
+              >
+                Refresh
+              </Button>
+              <IconButton
+                onClick={toggleFullscreen}
+                color="primary"
+                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+              >
+                {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
+              </IconButton>
             </Box>
           </Box>
-          <Box display="flex" gap={2} alignItems="center">
-            <ToggleButtonGroup
-              value={viewMode}
-              exclusive
-              onChange={(_, newMode) => newMode && setViewMode(newMode)}
-              size="small"
-            >
-              <ToggleButton value="visual">
-                <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
-                Visual
-              </ToggleButton>
-              <ToggleButton value="list">
-                <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
-                List
-              </ToggleButton>
-            </ToggleButtonGroup>
-            <Chip
-              label={tournament.status.replace('_', ' ').toUpperCase()}
-              color={
-                tournament.status === 'setup'
-                  ? 'default'
-                  : tournament.status === 'ready'
-                  ? 'info'
-                  : tournament.status === 'in_progress'
-                  ? 'warning'
-                  : 'success'
-              }
-              sx={{ fontWeight: 600 }}
-            />
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={loadBracket}
-              size="small"
-            >
-              Refresh
-            </Button>
-            <IconButton
-              onClick={toggleFullscreen}
-              color="primary"
-              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-            >
-              {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
-            </IconButton>
-          </Box>
-        </Box>
+        </>
       )}
 
       {/* Fullscreen exit button - only visible in fullscreen */}

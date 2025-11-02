@@ -31,6 +31,11 @@ export const log = {
       { slug, serverId, webhookConfigured },
       `✅ Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`
     ),
+  matchAllocated: (slug: string, serverId: string, serverName: string) =>
+    logger.info(
+      { slug, serverId, serverName },
+      `🎯 Match allocated: ${slug} → ${serverName} (${serverId})`
+    ),
   matchStatusUpdate: (slug: string, status: string) =>
     logger.info({ slug, status }, `📊 Match status: ${slug} → ${status}`),
 
