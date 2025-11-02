@@ -19,21 +19,29 @@ COPY . .
 RUN bun run build:server
 RUN bun run build:client
 
-# Production image with Caddy
-FROM base AS release
+# Production image with Node.js and Caddy (better-sqlite3 requires Node)
+FROM node:20-slim AS release
+WORKDIR /app
 
-# Install Caddy
-RUN apt-get update && apt-get install -y wget && \
+# Install build tools and Caddy
+RUN apt-get update && \
+    apt-get install -y wget python3 make g++ && \
     wget -O /usr/local/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64" && \
     chmod +x /usr/local/bin/caddy && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Copy application files
+# Copy package files first
+COPY --from=build /app/package.json ./
+
+# Copy node_modules
 COPY --from=dependencies /app/node_modules ./node_modules
+
+# Rebuild native modules for Node.js runtime
+RUN npm rebuild better-sqlite3 --build-from-source
+
+# Copy application files
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
-COPY --from=build /app/package.json ./
-COPY --from=build /app/docs ./docs
 
 # Copy Caddy configuration
 COPY Caddyfile /app/Caddyfile
@@ -54,7 +62,7 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
 # Create startup script
 RUN echo '#!/bin/sh\n\
 # Start Express backend in background\n\
-bun run start &\n\
+node dist/index.js &\n\
 \n\
 # Wait a moment for backend to start\n\
 sleep 2\n\

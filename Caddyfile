@@ -22,20 +22,25 @@
 
 # ========================================
 
-:3069 { # Serve React frontend from /app/public
-root \* /app/public
-file_server
-
-    # Proxy API requests to Express backend (localhost:3000)
+:3069 {
+    # API and WebSocket proxying (must come before file_server)
     reverse_proxy /api/* localhost:3000
-
-    # Proxy Socket.IO WebSocket connections
     reverse_proxy /socket.io/* localhost:3000
-
-    # Health check endpoint
     reverse_proxy /health localhost:3000
 
-    # SPA fallback: Serve index.html for all non-file routes (React Router)
-    try_files {path} /index.html
-
+    # Serve React frontend from /app/public
+    root * /app/public
+    
+    # Handle SPA routing: try file, then fallback to index.html
+    @notAPI {
+        not path /api/*
+        not path /socket.io/*
+        not path /health
+        file {
+            try_files {path} /index.html
+        }
+    }
+    rewrite @notAPI {http.matchers.file.relative}
+    
+    file_server
 }
