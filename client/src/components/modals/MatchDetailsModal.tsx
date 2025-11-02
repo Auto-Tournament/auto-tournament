@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   Box,
   Typography,
   IconButton,
@@ -12,13 +13,20 @@ import {
   Grid,
   Card,
   CardContent,
+  Button,
+  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import PauseIcon from '@mui/icons-material/Pause';
+import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import FastForwardIcon from '@mui/icons-material/FastForward';
+import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { formatDate, formatDuration, getStatusColor } from '../../utils/matchUtils';
+import { api } from '../../utils/api';
 
 interface Team {
   id: string;
@@ -44,7 +52,9 @@ interface Match {
   team1?: Team;
   team2?: Team;
   winner?: Team;
-  status: 'pending' | 'ready' | 'live' | 'completed';
+  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
+  serverId?: string;
+  serverName?: string;
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
@@ -52,6 +62,7 @@ interface Match {
   team2Score?: number;
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
+  matchPhase?: string; // warmup, knife, veto, live, post_match
   config?: {
     maplist?: string[];
     num_maps?: number;
@@ -74,6 +85,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   onClose,
 }) => {
   const [matchTimer, setMatchTimer] = useState<number>(0);
+  const [confirmAction, setConfirmAction] = useState<string | null>(null);
+  const [executing, setExecuting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Timer effect for live matches
   useEffect(() => {
@@ -91,6 +106,65 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
     return () => clearInterval(interval);
   }, [match]);
+
+  const handleAdminAction = async (action: string) => {
+    if (!match?.serverId) {
+      setError('No server assigned to this match');
+      return;
+    }
+
+    setExecuting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const endpoints: Record<string, string> = {
+        pause: '/api/rcon/force-pause',
+        unpause: '/api/rcon/force-unpause',
+        startMatch: '/api/rcon/start-match',
+        endWarmup: '/api/rcon/end-warmup',
+      };
+
+      const endpoint = endpoints[action];
+      if (!endpoint) {
+        throw new Error('Unknown action');
+      }
+
+      await api.post(endpoint, { serverId: match.serverId });
+
+      const messages: Record<string, string> = {
+        pause: 'Match paused successfully',
+        unpause: 'Match unpaused successfully',
+        startMatch: 'Match force started',
+        endWarmup: 'Warmup ended',
+      };
+
+      setSuccess(messages[action] || 'Command executed');
+      setConfirmAction(null);
+
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to execute command');
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  const getMatchPhaseDisplay = () => {
+    if (match?.matchPhase) {
+      const phases: Record<string, { label: string; color: string }> = {
+        warmup: { label: 'WARMUP', color: 'info' },
+        knife: { label: 'KNIFE ROUND', color: 'warning' },
+        veto: { label: 'VETO PHASE', color: 'secondary' },
+        live: { label: 'LIVE', color: 'error' },
+        post_match: { label: 'POST-MATCH', color: 'success' },
+      };
+      return phases[match.matchPhase] || null;
+    }
+    return null;
+  };
 
   if (!match) return null;
 
@@ -113,13 +187,41 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       </DialogTitle>
       <DialogContent>
         <Stack spacing={3} mt={1}>
+          {/* Error/Success Messages */}
+          {error && (
+            <Alert severity="error" onClose={() => setError('')}>
+              {error}
+            </Alert>
+          )}
+          {success && (
+            <Alert severity="success" onClose={() => setSuccess('')}>
+              {success}
+            </Alert>
+          )}
+
           {/* Status and Timer */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Chip
-              label={match.status.toUpperCase()}
-              color={getStatusColor(match.status)}
-              sx={{ fontWeight: 600 }}
-            />
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            flexWrap="wrap"
+            gap={2}
+          >
+            <Box display="flex" gap={1}>
+              <Chip
+                label={match.status.toUpperCase()}
+                color={getStatusColor(match.status)}
+                sx={{ fontWeight: 600 }}
+              />
+              {getMatchPhaseDisplay() && (
+                <Chip
+                  label={getMatchPhaseDisplay()!.label}
+                  color={getMatchPhaseDisplay()!.color as any}
+                  sx={{ fontWeight: 600 }}
+                  variant="outlined"
+                />
+              )}
+            </Box>
             {match.status === 'live' && match.loadedAt && (
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography variant="body2" color="text.secondary">
@@ -131,6 +233,15 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </Box>
             )}
           </Box>
+
+          {/* Server Info */}
+          {match.serverName && (
+            <Box>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Server:</strong> {match.serverName}
+              </Typography>
+            </Box>
+          )}
 
           <Divider />
 
@@ -387,8 +498,102 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               )}
             </Stack>
           </Box>
+
+          {/* Admin Controls */}
+          {match.serverId && match.status === 'live' && (
+            <>
+              <Divider />
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} mb={2} color="primary">
+                  ⚡ Admin Controls
+                </Typography>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="warning"
+                      startIcon={<PauseIcon />}
+                      onClick={() => setConfirmAction('pause')}
+                      disabled={executing}
+                    >
+                      Pause
+                    </Button>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="success"
+                      startIcon={<PlayArrowIcon />}
+                      onClick={() => setConfirmAction('unpause')}
+                      disabled={executing}
+                    >
+                      Unpause
+                    </Button>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="info"
+                      startIcon={<FastForwardIcon />}
+                      onClick={() => setConfirmAction('endWarmup')}
+                      disabled={executing}
+                    >
+                      End Warmup
+                    </Button>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Button
+                      fullWidth
+                      variant="outlined"
+                      color="error"
+                      startIcon={<RocketLaunchIcon />}
+                      onClick={() => setConfirmAction('startMatch')}
+                      disabled={executing}
+                    >
+                      Force Start
+                    </Button>
+                  </Grid>
+                </Grid>
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  ⚠️ Admin controls affect the live match immediately. Use with caution.
+                </Alert>
+              </Box>
+            </>
+          )}
         </Stack>
       </DialogContent>
+
+      {/* Confirmation Dialog */}
+      <Dialog open={!!confirmAction} onClose={() => !executing && setConfirmAction(null)}>
+        <DialogTitle>Confirm Action</DialogTitle>
+        <DialogContent>
+          <Typography>
+            {confirmAction === 'pause' &&
+              'This will pause the match. Players will not be able to unpause until you force unpause. Continue?'}
+            {confirmAction === 'unpause' && 'This will immediately unpause the match. Continue?'}
+            {confirmAction === 'endWarmup' &&
+              'This will end the warmup period and move to the next phase. Continue?'}
+            {confirmAction === 'startMatch' &&
+              'This will force start the match immediately, skipping any remaining warmup or veto phases. Continue?'}
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmAction(null)} disabled={executing}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => confirmAction && handleAdminAction(confirmAction)}
+            variant="contained"
+            color="error"
+            disabled={executing}
+          >
+            {executing ? 'Executing...' : 'Confirm'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Dialog>
   );
 };

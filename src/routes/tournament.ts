@@ -138,7 +138,7 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const tournament = tournamentService.createTournament(input);
+    const tournament = await tournamentService.createTournament(input);
 
     return res.json({
       success: true,
@@ -297,7 +297,7 @@ router.get('/bracket', async (_req: Request, res: Response) => {
 router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Response) => {
   try {
     const { force } = req.body;
-    const bracket = tournamentService.regenerateBracket(force === true);
+    const bracket = await tournamentService.regenerateBracket(force === true);
 
     return res.json({
       success: true,
@@ -400,6 +400,111 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: err.message || 'Failed to start tournament',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/wipe-database:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Wipe entire database (DEV ONLY)
+ *     description: Deletes all tournaments, matches, events, teams, and servers. USE WITH CAUTION!
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Database wiped successfully
+ */
+router.post('/wipe-database', async (_req: Request, res: Response) => {
+  try {
+    log.warn('⚠️  DATABASE WIPE REQUESTED - Deleting all data');
+
+    // Delete in correct order to avoid foreign key constraints
+    tournamentService.deleteTournament(); // This already deletes tournament, matches, and events
+
+    // Also delete teams and servers
+    const { db } = await import('../config/database');
+    db.exec('DELETE FROM teams');
+    db.exec('DELETE FROM servers');
+
+    log.success('✅ Database wiped successfully');
+
+    return res.json({
+      success: true,
+      message: 'Database wiped successfully. All data has been deleted.',
+    });
+  } catch (error) {
+    log.error('Error wiping database', error as Error);
+    const err = error as Error;
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to wipe database',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/wipe-table/{table}:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Wipe specific table (DEV ONLY)
+ *     description: Deletes all data from a specific table
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - name: table
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *           enum: [teams, servers, tournament, matches]
+ *     responses:
+ *       200:
+ *         description: Table wiped successfully
+ */
+router.post('/wipe-table/:table', async (req: Request, res: Response) => {
+  try {
+    const { table } = req.params;
+    const allowedTables = ['teams', 'servers', 'tournament', 'matches'];
+
+    if (!allowedTables.includes(table)) {
+      return res.status(400).json({
+        success: false,
+        error: `Invalid table. Allowed: ${allowedTables.join(', ')}`,
+      });
+    }
+
+    log.warn(`⚠️  TABLE WIPE REQUESTED - Deleting all data from ${table}`);
+
+    const { db } = await import('../config/database');
+
+    // Handle special cases for foreign key constraints
+    if (table === 'tournament') {
+      tournamentService.deleteTournament();
+    } else if (table === 'matches') {
+      db.exec('DELETE FROM match_events');
+      db.exec('DELETE FROM matches');
+    } else {
+      db.exec(`DELETE FROM ${table}`);
+    }
+
+    log.success(`✅ Table ${table} wiped successfully`);
+
+    return res.json({
+      success: true,
+      message: `Table ${table} wiped successfully.`,
+    });
+  } catch (error) {
+    log.error('Error wiping table', error as Error);
+    const err = error as Error;
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to wipe table',
     });
   }
 });

@@ -8,7 +8,7 @@ interface Match {
   slug: string;
   round: number;
   matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed';
+  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
   team1?: { id: string; name: string; tag?: string };
   team2?: { id: string; name: string; tag?: string };
   winner?: { id: string; name: string; tag?: string };

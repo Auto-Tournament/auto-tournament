@@ -1,6 +1,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import type { DbMatchRow, DbTeamRow, DbEventRow } from '../types/database.types';
+import { bracketsAdapter } from './bracketsAdapter';
+import type { DbMatchRow, DbTeamRow, DbEventRow, DbTournamentRow } from '../types/database.types';
 import type {
   Tournament,
   TournamentRow,
@@ -51,7 +52,7 @@ class TournamentService {
   /**
    * Create or replace the tournament
    */
-  createTournament(input: CreateTournamentInput): TournamentResponse {
+  async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
     const { name, type, format, maps, teamIds, settings } = input;
 
     // Validate team count based on tournament type
@@ -86,10 +87,14 @@ class TournamentService {
 
     // Auto-generate bracket
     try {
-      this.generateBracket();
+      await this.generateBracket();
       log.success('Bracket automatically generated');
     } catch (err) {
-      log.warn('Failed to auto-generate bracket', { error: err });
+      log.error('Failed to auto-generate bracket', err);
+      // Re-throw to prevent returning tournament in broken state
+      throw new Error(
+        `Bracket generation failed: ${err instanceof Error ? err.message : String(err)}`
+      );
     }
 
     return this.getTournament()!;
@@ -209,7 +214,7 @@ class TournamentService {
   /**
    * Generate bracket for the tournament
    */
-  generateBracket(): BracketResponse {
+  async generateBracket(): Promise<BracketResponse> {
     const tournament = this.getTournament();
     if (!tournament) {
       throw new Error('No tournament exists');
@@ -224,43 +229,95 @@ class TournamentService {
 
     let matches: BracketMatch[] = [];
 
-    switch (tournament.type) {
-      case 'single_elimination':
-        matches = this.generateSingleElimination(tournament);
-        break;
-      case 'double_elimination':
-        matches = this.generateDoubleElimination(tournament);
-        break;
-      case 'round_robin':
-        matches = this.generateRoundRobin(tournament);
-        break;
-      case 'swiss':
+    try {
+      if (tournament.type === 'swiss') {
+        // Swiss tournaments need custom implementation (brackets-manager doesn't support it)
         matches = this.generateSwiss(tournament);
-        break;
+      } else {
+        // Use brackets-manager for single_elimination, double_elimination, and round_robin
+        bracketsAdapter.reset(); // Clear previous state
+        const result = await bracketsAdapter.generateBracket(tournament);
+
+        // Insert matches into database and track IDs for linking
+        const slugToDbId: Map<string, number> = new Map();
+
+        for (const matchData of result.matches) {
+          const config = JSON.parse(matchData.config);
+          const insertResult = db.insert('matches', {
+            slug: matchData.slug,
+            tournament_id: 1,
+            round: matchData.round,
+            match_number: matchData.matchNum,
+            team1_id: matchData.team1Id,
+            team2_id: matchData.team2Id,
+            winner_id: matchData.winnerId,
+            server_id: null,
+            config: matchData.config,
+            status: matchData.status,
+            next_match_id: null, // Will be set in a second pass
+            created_at: Math.floor(Date.now() / 1000),
+          });
+
+          slugToDbId.set(matchData.slug, insertResult.lastInsertRowid as number);
+
+          matches.push({
+            id: insertResult.lastInsertRowid as number,
+            slug: matchData.slug,
+            round: matchData.round,
+            matchNumber: matchData.matchNum,
+            team1: matchData.team1Id
+              ? {
+                  id: matchData.team1Id,
+                  name: config.team1?.name || 'TBD',
+                  tag: config.team1?.tag || 'TBD',
+                }
+              : null,
+            team2: matchData.team2Id
+              ? {
+                  id: matchData.team2Id,
+                  name: config.team2?.name || 'TBD',
+                  tag: config.team2?.tag || 'TBD',
+                }
+              : null,
+            winner: null,
+            status: matchData.status,
+            serverId: null,
+            config,
+            nextMatchId: null,
+            createdAt: Math.floor(Date.now() / 1000),
+          });
+        }
+
+        // Link matches (set next_match_id based on bracket structure)
+        this.linkMatches(matches, slugToDbId, tournament.type);
+      }
+
+      // Update tournament status to 'ready'
+      db.update(
+        'tournament',
+        { status: 'ready', updated_at: Math.floor(Date.now() / 1000) },
+        'id = ?',
+        [1]
+      );
+
+      log.debug(`Bracket generated: ${matches.length} matches created`);
+
+      return {
+        tournament: { ...tournament, status: 'ready' },
+        matches,
+        totalRounds: this.calculateTotalRounds(tournament.teamIds.length, tournament.type),
+      };
+    } catch (err) {
+      log.error('Failed to generate bracket', err);
+      throw err;
     }
-
-    // Update tournament status to 'ready'
-    db.update(
-      'tournament',
-      { status: 'ready', updated_at: Math.floor(Date.now() / 1000) },
-      'id = ?',
-      [1]
-    );
-
-    log.debug(`Bracket generated: ${matches.length} matches created`);
-
-    return {
-      tournament: { ...tournament, status: 'ready' },
-      matches,
-      totalRounds: this.calculateTotalRounds(tournament.teamIds.length, tournament.type),
-    };
   }
 
   /**
    * Explicitly regenerate brackets (DESTRUCTIVE - wipes all match data)
    * Should only be called with user confirmation
    */
-  regenerateBracket(force: boolean = false): BracketResponse {
+  async regenerateBracket(force: boolean = false): Promise<BracketResponse> {
     const tournament = this.getTournament();
     if (!tournament) {
       throw new Error('No tournament exists');
@@ -277,7 +334,7 @@ class TournamentService {
     log.warn('Regenerating bracket - all existing match data will be deleted');
 
     // Generate new bracket (this also sets status to 'ready')
-    const result = this.generateBracket();
+    const result = await this.generateBracket();
 
     log.success('Bracket regenerated successfully');
     return result;
@@ -343,9 +400,6 @@ class TournamentService {
         slug: row.slug,
         round: row.round,
         matchNumber: row.match_number,
-        team1Id: row.team1_id,
-        team2Id: row.team2_id,
-        winnerId: row.winner_id,
         serverId: row.server_id,
         status: row.status,
         nextMatchId: row.next_match_id,
@@ -368,19 +422,20 @@ class TournamentService {
         const team1 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.team1_id,
         ]);
-        if (team1) match.team1 = team1 as { id: string; name: string; tag?: string };
+        if (team1) match.team1 = { id: team1.id, name: team1.name, tag: team1.tag || undefined };
       }
       if (row.team2_id) {
         const team2 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.team2_id,
         ]);
-        if (team2) match.team2 = team2 as { id: string; name: string; tag?: string };
+        if (team2) match.team2 = { id: team2.id, name: team2.name, tag: team2.tag || undefined };
       }
       if (row.winner_id) {
         const winner = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.winner_id,
         ]);
-        if (winner) match.winner = winner as { id: string; name: string; tag?: string };
+        if (winner)
+          match.winner = { id: winner.id, name: winner.name, tag: winner.tag || undefined };
       }
 
       // Get latest player stats from match events
@@ -432,10 +487,12 @@ class TournamentService {
   }
 
   /**
-   * Generate single elimination bracket
+   * Generate single elimination bracket (now handled by brackets-manager)
+   * @deprecated Use brackets-manager instead
    */
-  private generateSingleElimination(tournament: TournamentResponse): BracketMatch[] {
-    const teamIds = [...tournament.teamIds];
+
+  private _unused_generateSingleElimination(tournament: TournamentResponse): BracketMatch[] {
+    let teamIds = [...tournament.teamIds];
     const teamCount = teamIds.length;
 
     // Shuffle teams if random seeding
@@ -443,77 +500,76 @@ class TournamentService {
       this.shuffleArray(teamIds);
     }
 
-    // Calculate rounds needed for next power of 2
-    const totalRounds = Math.ceil(Math.log2(teamCount));
+    // Calculate bracket structure
+    const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(teamCount)));
+    const totalRounds = Math.log2(nextPowerOf2);
+    const byesNeeded = nextPowerOf2 - teamCount;
 
-    let matchIdCounter = 1;
+    log.debug(`Single elimination: ${teamCount} teams, ${byesNeeded} byes, ${totalRounds} rounds`);
 
-    // First pass: Create all matches without next_match_id to avoid foreign key constraint issues
+    // Create bracket with proper seeding for byes
+    // Top seeds get byes (first byesNeeded teams)
+    const teamsWithByes = teamIds.slice(0, byesNeeded);
+    const teamsWithoutByes = teamIds.slice(byesNeeded);
+
+    // Calculate how many first-round matches we need
+    const firstRoundMatches = Math.floor(teamsWithoutByes.length / 2);
+
+    log.debug(`First round: ${firstRoundMatches} matches, ${teamsWithByes.length} teams with byes`);
+
+    // Build bracket structure
     const matchData: Array<{
       slug: string;
       round: number;
       matchNum: number;
       team1Id?: string;
       team2Id?: string;
-      nextMatchId?: number;
       isWalkover?: boolean;
       winnerId?: string;
     }> = [];
 
-    for (let round = 1; round <= totalRounds; round++) {
+    // Generate first round matches (teams without byes)
+    for (let i = 0; i < firstRoundMatches; i++) {
+      matchData.push({
+        slug: this.generateMatchSlug(1, i + 1),
+        round: 1,
+        matchNum: i + 1,
+        team1Id: teamsWithoutByes[i * 2],
+        team2Id: teamsWithoutByes[i * 2 + 1],
+      });
+    }
+
+    // Generate subsequent rounds (all empty, will be filled as matches complete)
+    for (let round = 2; round <= totalRounds; round++) {
       const matchesInRound = Math.pow(2, totalRounds - round);
-
       for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
-        const slug = this.generateMatchSlug(round, matchNum);
-        const nextMatchId =
-          round < totalRounds
-            ? this.calculateNextMatchId(matchIdCounter, matchesInRound)
-            : undefined;
-
-        // Assign teams for first round
-        let team1Id: string | undefined;
-        let team2Id: string | undefined;
-        let isWalkover = false;
-        let winnerId: string | undefined;
-
-        if (round === 1) {
-          const team1Index = (matchNum - 1) * 2;
-          const team2Index = team1Index + 1;
-          team1Id = teamIds[team1Index] || undefined;
-          team2Id = teamIds[team2Index] || undefined;
-
-          // Skip this match entirely if both teams are undefined (empty structural match)
-          if (!team1Id && !team2Id) {
-            matchIdCounter++;
-            continue;
-          }
-
-          // Check if this is a walkover (bye) - only one team
-          if (team1Id && !team2Id) {
-            isWalkover = true;
-            winnerId = team1Id;
-          } else if (!team1Id && team2Id) {
-            isWalkover = true;
-            winnerId = team2Id;
-          }
-        }
-
         matchData.push({
-          slug,
+          slug: this.generateMatchSlug(round, matchNum),
           round,
           matchNum,
-          team1Id,
-          team2Id,
-          nextMatchId,
-          isWalkover,
-          winnerId,
+          team1Id: undefined,
+          team2Id: undefined,
         });
-
-        matchIdCounter++;
       }
     }
 
-    // Insert all matches without next_match_id first
+    // Pre-place teams with byes in round 2
+    // Distribute them evenly across second round matches
+    for (let i = 0; i < teamsWithByes.length; i++) {
+      const matchIndex = firstRoundMatches + i; // Index in matchData
+      if (matchIndex < matchData.length && matchData[matchIndex].round === 2) {
+        // Alternate between team1 and team2 slots
+        if (i % 2 === 0) {
+          matchData[matchIndex].team1Id = teamsWithByes[i];
+        } else {
+          matchData[matchIndex].team2Id = teamsWithByes[i];
+        }
+      }
+    }
+
+    // Insert all matches and track their database IDs
+    const slugToDbId: Record<string, number> = {};
+
     for (const data of matchData) {
       const config = this.generateMatchConfig(tournament, data.team1Id, data.team2Id, data.slug);
 
@@ -525,9 +581,9 @@ class TournamentService {
         status = 'ready';
       }
 
-      db.insert('matches', {
+      const result = db.insert('matches', {
         slug: data.slug,
-        tournament_id: 1,
+        tournament_id: tournament.id,
         round: data.round,
         match_number: data.matchNum,
         team1_id: data.team1Id || null,
@@ -540,42 +596,91 @@ class TournamentService {
         created_at: Math.floor(Date.now() / 1000),
         completed_at: data.isWalkover ? Math.floor(Date.now() / 1000) : null,
       });
+
+      slugToDbId[data.slug] = result.lastInsertRowid as number;
     }
 
-    // Second pass: Update matches with next_match_id now that all matches exist
-    for (const data of matchData) {
-      if (data.nextMatchId) {
-        db.update('matches', { next_match_id: data.nextMatchId }, 'slug = ?', [data.slug]);
+    // Second pass: Update matches with next_match_id using proper slug lookup
+    for (let round = 1; round < totalRounds; round++) {
+      const matchesInRound = Math.pow(2, totalRounds - round);
+
+      for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
+        const currentSlug = this.generateMatchSlug(round, matchNum);
+        const nextRound = round + 1;
+        const nextMatchNum = Math.ceil(matchNum / 2);
+        const nextSlug = this.generateMatchSlug(nextRound, nextMatchNum);
+
+        // Only update if both slugs exist in our map
+        if (slugToDbId[currentSlug] && slugToDbId[nextSlug]) {
+          db.update('matches', { next_match_id: slugToDbId[nextSlug] }, 'id = ?', [
+            slugToDbId[currentSlug],
+          ]);
+        }
       }
     }
 
     // Third pass: Advance walkover winners to next round
     for (const data of matchData) {
-      if (data.isWalkover && data.winnerId && data.nextMatchId) {
-        const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-          data.nextMatchId,
-        ]);
-        if (match) {
-          // Determine if winner goes to team1 or team2 slot
-          const positionInRound = data.matchNum - 1;
-          const isEvenMatch = positionInRound % 2 === 0;
+      if (data.isWalkover && data.winnerId) {
+        // Find the next match slug
+        const nextRound = data.round + 1;
+        const nextMatchNum = Math.ceil(data.matchNum / 2);
+        const nextSlug = this.generateMatchSlug(nextRound, nextMatchNum);
+        const nextMatchDbId = slugToDbId[nextSlug];
 
-          if (isEvenMatch) {
-            db.update('matches', { team1_id: data.winnerId }, 'id = ?', [data.nextMatchId]);
-          } else {
-            db.update('matches', { team2_id: data.winnerId }, 'id = ?', [data.nextMatchId]);
-          }
-
-          // Check if next match is now ready or also a walkover
-          const nextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-            data.nextMatchId,
+        if (nextMatchDbId) {
+          const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+            nextMatchDbId,
           ]);
-          if (nextMatch) {
-            if (nextMatch.team1_id && nextMatch.team2_id) {
-              db.update('matches', { status: 'ready' }, 'id = ?', [data.nextMatchId]);
-            } else if (nextMatch.team1_id || nextMatch.team2_id) {
-              // Still only one team, check if round 2 should also be walkover
-              // We'll handle this in a fourth pass
+          if (match) {
+            // Determine if winner goes to team1 or team2 slot
+            const positionInRound = data.matchNum - 1;
+            const isEvenMatch = positionInRound % 2 === 0;
+
+            if (isEvenMatch) {
+              db.update('matches', { team1_id: data.winnerId }, 'id = ?', [nextMatchDbId]);
+            } else {
+              db.update('matches', { team2_id: data.winnerId }, 'id = ?', [nextMatchDbId]);
+            }
+
+            // Check if next match is now ready or also a walkover
+            const nextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+              nextMatchDbId,
+            ]);
+            if (nextMatch) {
+              if (nextMatch.team1_id && nextMatch.team2_id) {
+                // Both teams assigned - update config and mark ready
+                const updatedConfig = this.generateMatchConfig(
+                  tournament,
+                  nextMatch.team1_id,
+                  nextMatch.team2_id,
+                  nextMatch.slug
+                );
+                db.update(
+                  'matches',
+                  { status: 'ready', config: JSON.stringify(updatedConfig) },
+                  'id = ?',
+                  [nextMatchDbId]
+                );
+                log.debug(
+                  `Match ${nextMatch.slug} now ready after walkover advancement: ${nextMatch.team1_id} vs ${nextMatch.team2_id}`
+                );
+              } else if (nextMatch.team1_id || nextMatch.team2_id) {
+                // Still only one team - update config to show the one team
+                const teamId = nextMatch.team1_id || nextMatch.team2_id;
+                const updatedConfig = this.generateMatchConfig(
+                  tournament,
+                  nextMatch.team1_id || undefined,
+                  nextMatch.team2_id || undefined,
+                  nextMatch.slug
+                );
+                db.update('matches', { config: JSON.stringify(updatedConfig) }, 'id = ?', [
+                  nextMatchDbId,
+                ]);
+                log.debug(
+                  `Match ${nextMatch.slug} partially filled with ${teamId} (waiting for opponent)`
+                );
+              }
             }
           }
         }
@@ -596,7 +701,7 @@ class TournamentService {
     while (changed) {
       changed = false;
       const matches = db.query<DbMatchRow>(
-        'SELECT * FROM matches WHERE tournament_id = 1 AND status = "pending" AND (team1_id IS NOT NULL OR team2_id IS NOT NULL) ORDER BY round, match_number'
+        "SELECT * FROM matches WHERE tournament_id = 1 AND status = 'pending' AND (team1_id IS NOT NULL OR team2_id IS NOT NULL) ORDER BY round, match_number"
       );
 
       for (const match of matches) {
@@ -627,13 +732,61 @@ class TournamentService {
               const updateField = isEvenMatch ? 'team1_id' : 'team2_id';
               db.update('matches', { [updateField]: winnerId }, 'id = ?', [match.next_match_id]);
 
-              // Update next match status
+              // Update next match status and config
               const updatedNextMatch = db.queryOne<DbMatchRow>(
                 'SELECT * FROM matches WHERE id = ?',
                 [match.next_match_id]
               );
               if (updatedNextMatch && updatedNextMatch.team1_id && updatedNextMatch.team2_id) {
-                db.update('matches', { status: 'ready' }, 'id = ?', [match.next_match_id]);
+                // Both teams now assigned - get tournament for config generation
+                const tournament = db.queryOne<DbTournamentRow>(
+                  'SELECT * FROM tournament WHERE id = 1'
+                );
+                if (tournament) {
+                  const maps = JSON.parse(tournament.maps);
+                  const updatedConfig = {
+                    matchid: updatedNextMatch.slug,
+                    num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
+                    maplist: maps,
+                    players_per_team: 5,
+                    clinch_series: true,
+                  };
+
+                  // Add team data
+                  const team1 = db.queryOne<DbTeamRow & { players: string }>(
+                    'SELECT * FROM teams WHERE id = ?',
+                    [updatedNextMatch.team1_id]
+                  );
+                  const team2 = db.queryOne<DbTeamRow & { players: string }>(
+                    'SELECT * FROM teams WHERE id = ?',
+                    [updatedNextMatch.team2_id]
+                  );
+
+                  if (team1 && team2) {
+                    Object.assign(updatedConfig, {
+                      team1: {
+                        name: team1.name,
+                        tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
+                        players: JSON.parse(team1.players),
+                      },
+                      team2: {
+                        name: team2.name,
+                        tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
+                        players: JSON.parse(team2.players),
+                      },
+                    });
+
+                    db.update(
+                      'matches',
+                      { status: 'ready', config: JSON.stringify(updatedConfig) },
+                      'id = ?',
+                      [match.next_match_id]
+                    );
+                    log.debug(
+                      `Cascading walkover: ${updatedNextMatch.slug} now ready (${team1.name} vs ${team2.name})`
+                    );
+                  }
+                }
               }
 
               changed = true;
@@ -646,8 +799,13 @@ class TournamentService {
 
   /**
    * Calculate next match ID based on current match ID
+   * @deprecated
    */
-  private calculateNextMatchId(currentMatchId: number, matchesInCurrentRound: number): number {
+
+  private _unused_calculateNextMatchId(
+    currentMatchId: number,
+    matchesInCurrentRound: number
+  ): number {
     // Next match ID is calculated based on match tree structure
     return (
       currentMatchId +
@@ -705,9 +863,11 @@ class TournamentService {
   }
 
   /**
-   * Generate double elimination bracket
+   * Generate double elimination bracket (now handled by brackets-manager)
+   * @deprecated Use brackets-manager instead
    */
-  private generateDoubleElimination(tournament: TournamentResponse): BracketMatch[] {
+
+  private _unused_generateDoubleElimination(tournament: TournamentResponse): BracketMatch[] {
     const teamIds = [...tournament.teamIds];
     const teamCount = teamIds.length;
 
@@ -715,58 +875,92 @@ class TournamentService {
       this.shuffleArray(teamIds);
     }
 
-    const upperRounds = Math.ceil(Math.log2(teamCount));
+    // Calculate bracket structure - need next power of 2 for proper bracket
+    const nextPowerOf2 = Math.pow(2, Math.ceil(Math.log2(teamCount)));
+    const winnersRounds = Math.log2(nextPowerOf2);
+    const losersRounds = (winnersRounds - 1) * 2;
+    const byesNeeded = nextPowerOf2 - teamCount;
 
-    // Generate upper bracket (same as single elimination)
-    for (let round = 1; round <= upperRounds; round++) {
-      const matchesInRound = Math.pow(2, upperRounds - round);
+    log.debug(
+      `Generating double elimination: ${teamCount} teams, ${byesNeeded} byes, ${winnersRounds} winners rounds, ${losersRounds} losers rounds`
+    );
 
-      for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
-        const slug = `ub-r${round}m${matchNum}`; // ub = upper bracket
+    // Track match IDs for linking
+    const winnersBracket: Record<string, number> = {};
+    const losersBracket: Record<string, number> = {};
 
+    // ===== GENERATE WINNERS BRACKET =====
+    for (let round = 1; round <= winnersRounds; round++) {
+      const maxMatchesInRound = Math.pow(2, winnersRounds - round);
+      let actualMatchNum = 1;
+
+      for (let matchSlot = 1; matchSlot <= maxMatchesInRound; matchSlot++) {
         let team1Id: string | undefined;
         let team2Id: string | undefined;
+        let status: 'pending' | 'ready' | 'completed' = 'pending';
+        let winnerId: string | null = null;
 
+        // First round: assign teams, only create matches where both teams exist
         if (round === 1) {
-          const team1Index = (matchNum - 1) * 2;
+          const team1Index = (matchSlot - 1) * 2;
           const team2Index = team1Index + 1;
           team1Id = teamIds[team1Index] || undefined;
           team2Id = teamIds[team2Index] || undefined;
+
+          // If only one team exists, they get a bye (walkover)
+          if (team1Id && !team2Id) {
+            status = 'completed';
+            winnerId = team1Id;
+          } else if (!team1Id && team2Id) {
+            status = 'completed';
+            winnerId = team2Id;
+          } else if (team1Id && team2Id) {
+            status = 'ready';
+          } else {
+            // No teams in this slot, skip creating the match
+            continue;
+          }
         }
 
+        const slug = `wb-r${round}m${actualMatchNum}`;
         const config = this.generateMatchConfig(tournament, team1Id, team2Id, slug);
 
-        db.insert('matches', {
+        const result = db.insert('matches', {
           slug,
-          tournament_id: 1,
+          tournament_id: tournament.id,
           round,
-          match_number: matchNum,
+          match_number: actualMatchNum,
           team1_id: team1Id || null,
           team2_id: team2Id || null,
-          winner_id: null,
+          winner_id: winnerId,
           server_id: null,
           config: JSON.stringify(config),
-          status: team1Id && team2Id ? 'ready' : 'pending',
-          next_match_id: null, // Set later
+          status,
+          next_match_id: null,
           created_at: Math.floor(Date.now() / 1000),
+          completed_at: status === 'completed' ? Math.floor(Date.now() / 1000) : null,
         });
+
+        winnersBracket[slug] = result.lastInsertRowid as number;
+        actualMatchNum++;
       }
     }
 
-    // Generate lower bracket (for losers)
-    const lowerRounds = (upperRounds - 1) * 2;
-    for (let round = 1; round <= lowerRounds; round++) {
-      const matchesInRound = Math.pow(2, Math.floor((lowerRounds - round) / 2));
+    // ===== GENERATE LOSERS BRACKET =====
+    for (let round = 1; round <= losersRounds; round++) {
+      // Losers bracket has alternating pattern:
+      // Odd rounds: Teams from winners drop in
+      // Even rounds: Winners from previous losers round advance
+      const matchesInRound = Math.pow(2, Math.floor((losersRounds - round) / 2));
 
       for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
-        const slug = `lb-r${round}m${matchNum}`; // lb = lower bracket
-
+        const slug = `lb-r${round}m${matchNum}`;
         const config = this.generateMatchConfig(tournament, undefined, undefined, slug);
 
-        db.insert('matches', {
+        const result = db.insert('matches', {
           slug,
-          tournament_id: 1,
-          round: upperRounds + round,
+          tournament_id: tournament.id,
+          round: winnersRounds + round,
           match_number: matchNum,
           team1_id: null,
           team2_id: null,
@@ -777,73 +971,206 @@ class TournamentService {
           next_match_id: null,
           created_at: Math.floor(Date.now() / 1000),
         });
+
+        losersBracket[slug] = result.lastInsertRowid as number;
       }
     }
 
-    // Grand finals
-    db.insert('matches', {
+    // ===== GENERATE GRAND FINALS =====
+    const gfConfig = this.generateMatchConfig(tournament, undefined, undefined, 'grand-finals');
+    const gfResult = db.insert('matches', {
       slug: 'grand-finals',
-      tournament_id: 1,
-      round: upperRounds + lowerRounds + 1,
+      tournament_id: tournament.id,
+      round: winnersRounds + losersRounds + 1,
       match_number: 1,
       team1_id: null,
       team2_id: null,
       winner_id: null,
       server_id: null,
-      config: JSON.stringify(
-        this.generateMatchConfig(tournament, undefined, undefined, 'grand-finals')
-      ),
+      config: JSON.stringify(gfConfig),
       status: 'pending',
       next_match_id: null,
       created_at: Math.floor(Date.now() / 1000),
     });
+    const grandFinalsId = gfResult.lastInsertRowid as number;
+
+    // ===== LINK WINNERS BRACKET MATCHES =====
+    for (let round = 1; round < winnersRounds; round++) {
+      const matchesInRound = Math.pow(2, winnersRounds - round);
+
+      for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
+        const currentSlug = `wb-r${round}m${matchNum}`;
+        const nextMatchNum = Math.ceil(matchNum / 2);
+        const nextSlug = `wb-r${round + 1}m${nextMatchNum}`;
+
+        db.update('matches', { next_match_id: winnersBracket[nextSlug] }, 'id = ?', [
+          winnersBracket[currentSlug]!,
+        ]);
+      }
+    }
+
+    // Link winners bracket finals to grand finals
+    const wbFinalsSlug = `wb-r${winnersRounds}m1`;
+    db.update('matches', { next_match_id: grandFinalsId }, 'id = ?', [
+      winnersBracket[wbFinalsSlug]!,
+    ]);
+
+    // ===== LINK LOSERS BRACKET MATCHES =====
+    for (let round = 1; round < losersRounds; round++) {
+      const matchesInRound = Math.pow(2, Math.floor((losersRounds - round) / 2));
+
+      for (let matchNum = 1; matchNum <= matchesInRound; matchNum++) {
+        const currentSlug = `lb-r${round}m${matchNum}`;
+        const nextMatchNum = Math.ceil(matchNum / 2);
+        const nextSlug = `lb-r${round + 1}m${nextMatchNum}`;
+
+        db.update('matches', { next_match_id: losersBracket[nextSlug] }, 'id = ?', [
+          losersBracket[currentSlug]!,
+        ]);
+      }
+    }
+
+    // Link losers bracket finals to grand finals
+    const lbFinalsSlug = `lb-r${losersRounds}m1`;
+    db.update('matches', { next_match_id: grandFinalsId }, 'id = ?', [
+      losersBracket[lbFinalsSlug]!,
+    ]);
+
+    // ===== AUTO-ADVANCE WALKOVER WINNERS =====
+    // Find all completed matches (walkovers) and advance their winners
+    const walkoverMatches = db.query<{
+      id: number;
+      slug: string;
+      winner_id: string;
+      next_match_id: number | null;
+    }>(
+      'SELECT id, slug, winner_id, next_match_id FROM matches WHERE status = ? AND winner_id IS NOT NULL',
+      ['completed']
+    );
+
+    for (const walkover of walkoverMatches) {
+      if (walkover.next_match_id && walkover.winner_id) {
+        const nextMatch = db.queryOne<{
+          id: number;
+          team1_id: string | null;
+          team2_id: string | null;
+        }>('SELECT id, team1_id, team2_id FROM matches WHERE id = ?', [walkover.next_match_id]);
+
+        if (nextMatch) {
+          // Advance winner to next match
+          if (!nextMatch.team1_id) {
+            db.update('matches', { team1_id: walkover.winner_id }, 'id = ?', [nextMatch.id]);
+            log.debug(
+              `Walkover: Advanced ${walkover.winner_id} from ${walkover.slug} to next match as team1`
+            );
+          } else if (!nextMatch.team2_id) {
+            db.update('matches', { team2_id: walkover.winner_id }, 'id = ?', [nextMatch.id]);
+            log.debug(
+              `Walkover: Advanced ${walkover.winner_id} from ${walkover.slug} to next match as team2`
+            );
+          }
+        }
+      }
+    }
+
+    // Check if any Round 2+ matches now have both teams and mark them ready
+    const readyMatches = db.query<{ id: number; team1_id: string; team2_id: string; slug: string }>(
+      'SELECT id, team1_id, team2_id, slug FROM matches WHERE status = ? AND team1_id IS NOT NULL AND team2_id IS NOT NULL',
+      ['pending']
+    );
+
+    for (const match of readyMatches) {
+      db.update('matches', { status: 'ready' }, 'id = ?', [match.id]);
+      log.debug(`Match ${match.slug} is now ready (both teams assigned)`);
+    }
+
+    log.success(`✅ Double elimination bracket generated: ${teamCount} teams`);
+    log.debug(`Winners bracket: ${Object.keys(winnersBracket).length} matches`);
+    log.debug(`Losers bracket: ${Object.keys(losersBracket).length} matches`);
 
     return this.getMatches();
   }
 
   /**
-   * Generate round robin bracket
+   * Generate round robin bracket using proper rotation algorithm (now handled by brackets-manager)
+   * @deprecated Use brackets-manager instead
    */
-  private generateRoundRobin(tournament: TournamentResponse): BracketMatch[] {
-    const teamIds = [...tournament.teamIds];
-    const teamCount = teamIds.length;
+
+  private _unused_generateRoundRobin(tournament: TournamentResponse): BracketMatch[] {
+    let teamIds = [...tournament.teamIds];
+    const originalTeamCount = teamIds.length;
 
     if (tournament.settings.seedingMethod === 'random') {
       this.shuffleArray(teamIds);
     }
 
-    let matchIdCounter = 1;
-    let round = 1;
+    // If odd number of teams, add a "BYE" placeholder
+    const hasOddTeams = teamIds.length % 2 === 1;
+    if (hasOddTeams) {
+      teamIds.push('BYE'); // Placeholder for bye
+    }
 
-    // Generate all possible matchups
-    for (let i = 0; i < teamCount; i++) {
-      for (let j = i + 1; j < teamCount; j++) {
-        const slug = `rr-r${round}m${matchIdCounter}`;
-        const config = this.generateMatchConfig(tournament, teamIds[i], teamIds[j], slug);
+    const teamCount = teamIds.length;
+    const numberOfRounds = teamCount - 1;
+    const matchesPerRound = teamCount / 2;
+
+    let globalMatchNumber = 1;
+
+    // Use circle rotation algorithm
+    // Team at index 0 stays fixed, others rotate clockwise
+    for (let round = 1; round <= numberOfRounds; round++) {
+      let matchNumber = 1;
+
+      // Generate matches for this round
+      for (let i = 0; i < matchesPerRound; i++) {
+        const team1Index = i;
+        const team2Index = teamCount - 1 - i;
+
+        const team1Id = teamIds[team1Index];
+        const team2Id = teamIds[team2Index];
+
+        // Skip matches with BYE
+        if (team1Id === 'BYE' || team2Id === 'BYE') {
+          continue;
+        }
+
+        const slug = `rr-r${round}m${matchNumber}`;
+        const config = this.generateMatchConfig(tournament, team1Id, team2Id, slug);
 
         db.insert('matches', {
           slug,
-          tournament_id: 1,
+          tournament_id: tournament.id,
           round,
-          match_number: matchIdCounter,
-          team1_id: teamIds[i],
-          team2_id: teamIds[j],
+          match_number: matchNumber,
+          team1_id: team1Id,
+          team2_id: team2Id,
           winner_id: null,
           server_id: null,
           config: JSON.stringify(config),
-          status: 'ready',
+          status: round === 1 ? 'ready' : 'pending', // Only Round 1 is ready initially
           next_match_id: null,
           created_at: Math.floor(Date.now() / 1000),
         });
 
-        matchIdCounter++;
+        matchNumber++;
+        globalMatchNumber++;
+      }
 
-        // Distribute matches across rounds
-        if (matchIdCounter % Math.ceil(teamCount / 2) === 0) {
-          round++;
-        }
+      // Rotate teams (keep index 0 fixed, rotate others)
+      if (round < numberOfRounds) {
+        const fixed = teamIds[0];
+        const rotated = teamIds.slice(1);
+        // Move last element to the beginning of rotated array
+        rotated.unshift(rotated.pop()!);
+        teamIds = [fixed, ...rotated];
       }
     }
+
+    log.success(
+      `Generated round robin bracket: ${originalTeamCount} teams, ${numberOfRounds} rounds, ${
+        globalMatchNumber - 1
+      } total matches`
+    );
 
     return this.getMatches();
   }
@@ -884,7 +1211,7 @@ class TournamentService {
 
         db.insert('matches', {
           slug,
-          tournament_id: 1,
+          tournament_id: tournament.id,
           round,
           match_number: matchNum,
           team1_id: team1Id || null,
@@ -900,6 +1227,46 @@ class TournamentService {
     }
 
     return this.getMatches();
+  }
+
+  /**
+   * Link matches by setting next_match_id for progression
+   */
+  private linkMatches(
+    matches: BracketMatch[],
+    slugToDbId: Map<string, number>,
+    tournamentType: string
+  ): void {
+    for (const match of matches) {
+      let nextMatchSlug: string | null = null;
+
+      if (tournamentType === 'single_elimination') {
+        // In single elimination, winners advance to the next round
+        // Match N in round R advances to match ceil(N/2) in round R+1
+        if (match.round < Math.max(...matches.map((m) => m.round))) {
+          const nextMatchNum = Math.ceil(match.matchNumber / 2);
+          nextMatchSlug = `r${match.round + 1}m${nextMatchNum}`;
+        }
+      } else if (tournamentType === 'double_elimination') {
+        // Double elimination has complex linking (handled by brackets-manager)
+        // For now, we'll let the match progression logic handle it
+        // We can enhance this later if needed
+        continue;
+      } else if (tournamentType === 'round_robin') {
+        // Round robin doesn't have progression (all matches are independent)
+        continue;
+      }
+
+      if (nextMatchSlug) {
+        const nextMatchId = slugToDbId.get(nextMatchSlug);
+        if (nextMatchId) {
+          // Update the database
+          db.update('matches', { next_match_id: nextMatchId }, 'id = ?', [match.id]);
+          // Update the in-memory object
+          match.nextMatchId = nextMatchId;
+        }
+      }
+    }
   }
 
   /**

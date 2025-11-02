@@ -13,7 +13,8 @@
 ## ✨ What It Does
 
 - 🏆 **Automated Brackets** — Single Elimination, Double Elimination, Round Robin, Swiss
-- 🎯 **Smart Walkovers** — Automatic bye handling and bracket progression
+  - Powered by [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js) for robust bracket generation
+- 🎯 **Smart Walkovers** — Automatic bye handling and bracket progression for any team count
 - 🚀 **Automatic Server Allocation** — Matches auto-assign to available servers as rounds progress
 - 🔄 **Live Updates** — Socket.io real-time match events and bracket changes
 - 🖥️ **Server Fleet Management** — Add/remove CS2 servers with live status checking
@@ -93,7 +94,8 @@ See [`.env.example`](.env.example) for a complete template.
 
 **Backend:** TypeScript • Express • SQLite • Socket.IO • Swagger  
 **Frontend:** React • Material UI (MUI) • Vite • React Router  
-**Infrastructure:** Docker • Caddy • RCON Client • Better-SQLite3
+**Infrastructure:** Docker • Caddy • RCON Client • Better-SQLite3  
+**Bracket Engine:** [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js) • brackets-memory-db
 
 ---
 

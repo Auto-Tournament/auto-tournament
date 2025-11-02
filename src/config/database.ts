@@ -162,7 +162,7 @@ class DatabaseManager {
   /**
    * Insert a record
    */
-  insert(table: string, data: Record<string, unknown>): void {
+  insert(table: string, data: Record<string, unknown>): BetterSqlite3.RunResult {
     const columns = Object.keys(data).join(', ');
     const placeholders = Object.keys(data)
       .map(() => '?')
@@ -171,7 +171,7 @@ class DatabaseManager {
 
     const query = `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`;
     const stmt = this.db.prepare(query);
-    stmt.run(...values);
+    return stmt.run(...values);
   }
 
   /**

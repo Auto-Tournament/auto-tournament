@@ -69,32 +69,29 @@ export interface BracketMatch {
   slug: string;
   round: number;
   matchNumber: number;
-  team1Id?: string;
-  team2Id?: string;
-  winnerId?: string;
-  serverId?: string;
-  status: 'pending' | 'ready' | 'live' | 'completed';
-  nextMatchId?: number;
+  team1?: {
+    id: string;
+    name: string;
+    tag?: string;
+  } | null;
+  team2?: {
+    id: string;
+    name: string;
+    tag?: string;
+  } | null;
+  winner?: {
+    id: string;
+    name: string;
+    tag?: string;
+  } | null;
+  serverId?: string | null;
+  status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
+  nextMatchId?: number | null;
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
   team1Score?: number;
   team2Score?: number;
-  team1?: {
-    id: string;
-    name: string;
-    tag?: string;
-  };
-  team2?: {
-    id: string;
-    name: string;
-    tag?: string;
-  };
-  winner?: {
-    id: string;
-    name: string;
-    tag?: string;
-  };
   team1Players?: Array<{
     name: string;
     steamId: string;

@@ -24,6 +24,9 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import BracketVisualization from '../components/visualizations/BracketVisualization';
+import RoundRobinView from '../components/visualizations/RoundRobinView';
+import SwissView from '../components/visualizations/SwissView';
+import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { getRoundLabel } from '../utils/matchUtils';
 
@@ -48,7 +51,7 @@ interface Match {
   slug: string;
   round: number;
   matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed';
+  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
   team1?: Team;
   team2?: Team;
   winner?: Team;
@@ -75,6 +78,7 @@ interface Tournament {
   status: string;
   maps: string[];
   teamIds: string[];
+  teams?: Team[];
 }
 
 export default function Bracket() {
@@ -133,7 +137,12 @@ export default function Bracket() {
 
   const loadBracket = async () => {
     try {
-      const response = await api.get('/api/tournament/bracket');
+      const response: {
+        success: boolean;
+        tournament: Tournament;
+        matches: Match[];
+        totalRounds: number;
+      } = await api.get('/api/tournament/bracket');
       if (response.success) {
         setTournament(response.tournament);
         setMatches(response.matches);
@@ -161,7 +170,9 @@ export default function Bracket() {
     setStartSuccess('');
 
     try {
-      const response = await api.post('/api/tournament/start');
+      const response: { message: string; allocated: number } = await api.post(
+        '/api/tournament/start'
+      );
       setStartSuccess(
         response.message ||
           `Tournament started! ${response.allocated} match(es) allocated to servers.`
@@ -406,13 +417,34 @@ export default function Bracket() {
             pt: 0,
           }}
         >
-          <BracketVisualization
-            matches={matches}
-            totalRounds={totalRounds}
-            tournamentType={tournament.type}
-            isFullscreen={isFullscreen}
-            onMatchClick={(match) => setSelectedMatch(match)}
-          />
+          {/* Use appropriate visualization based on tournament type */}
+          {tournament.type === 'round_robin' ? (
+            <RoundRobinView
+              matches={matches}
+              teams={tournament.teams || []}
+              onMatchClick={(match) => setSelectedMatch(match)}
+            />
+          ) : tournament.type === 'swiss' ? (
+            <SwissView
+              matches={matches}
+              teams={tournament.teams || []}
+              totalRounds={totalRounds}
+              onMatchClick={(match) => setSelectedMatch(match)}
+            />
+          ) : tournament.type === 'double_elimination' ? (
+            <DoubleEliminationView
+              matches={matches}
+              onMatchClick={(match) => setSelectedMatch(match)}
+            />
+          ) : (
+            <BracketVisualization
+              matches={matches}
+              totalRounds={totalRounds}
+              tournamentType={tournament.type}
+              isFullscreen={isFullscreen}
+              onMatchClick={(match) => setSelectedMatch(match)}
+            />
+          )}
         </Box>
       ) : (
         <Box

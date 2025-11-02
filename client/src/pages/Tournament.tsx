@@ -45,8 +45,11 @@ interface TournamentDetailed {
 
 interface TournamentChange {
   field: string;
-  from: string | string[];
-  to: string | string[];
+  label?: string;
+  oldValue?: string | string[];
+  newValue?: string | string[];
+  from?: string | string[];
+  to?: string | string[];
 }
 
 const CS2_MAPS = [
@@ -60,11 +63,28 @@ const CS2_MAPS = [
   'de_vertigo',
 ];
 
-const TOURNAMENT_TYPES: Array<{ value: string; label: string; disabled?: boolean }> = [
-  { value: 'single_elimination', label: 'Single Elimination' },
-  { value: 'double_elimination', label: 'Double Elimination' },
-  { value: 'round_robin', label: 'Round Robin' },
-  { value: 'swiss', label: 'Swiss System' },
+const TOURNAMENT_TYPES: Array<{
+  value: string;
+  label: string;
+  description?: string;
+  disabled?: boolean;
+}> = [
+  {
+    value: 'single_elimination',
+    label: 'Single Elimination',
+    description: 'Teams are eliminated after one loss',
+  },
+  {
+    value: 'double_elimination',
+    label: 'Double Elimination',
+    description: 'Teams need two losses to be eliminated',
+  },
+  { value: 'round_robin', label: 'Round Robin', description: 'Every team plays every other team' },
+  {
+    value: 'swiss',
+    label: 'Swiss System',
+    description: 'Teams with similar records face each other',
+  },
 ];
 
 const MATCH_FORMATS = [
@@ -107,7 +127,7 @@ export default function Tournament() {
     setError('');
     try {
       // Load teams
-      const teamsResponse = await api.get('/api/teams');
+      const teamsResponse: { teams: Team[] } = await api.get('/api/teams');
       setTeams(teamsResponse.teams || []);
 
       // Try to load existing tournament
@@ -466,6 +486,24 @@ export default function Tournament() {
         </Alert>
       )}
 
+      {!tournament && (
+        <Alert severity="info" sx={{ mb: 3 }} icon={false}>
+          <Typography variant="body2">
+            <strong>Powered by brackets-manager:</strong> Single Elimination, Double Elimination,
+            and Round Robin brackets are generated using the battle-tested{' '}
+            <a
+              href="https://github.com/Drarig29/brackets-manager.js"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: 'inherit', textDecoration: 'underline' }}
+            >
+              brackets-manager
+            </a>{' '}
+            library, ensuring proper handling of byes, walkovers, and non-power-of-2 team counts.
+          </Typography>
+        </Alert>
+      )}
+
       {tournament && !canEdit && (
         <Alert severity="info" sx={{ mb: 3 }}>
           <Typography variant="body2" fontWeight={600} gutterBottom>
@@ -522,7 +560,7 @@ export default function Tournament() {
                   {starting ? <CircularProgress size={24} /> : '🚀 Start Tournament'}
                 </Button>
               )}
-              <Button variant="outlined" href="/app/bracket" fullWidth>
+              <Button variant="outlined" onClick={() => navigate('/bracket')} fullWidth>
                 View Bracket
               </Button>
             </Box>
@@ -561,7 +599,14 @@ export default function Tournament() {
                           value={option.value}
                           disabled={option.disabled}
                         >
-                          {option.label}
+                          <Box>
+                            <Typography variant="body1">{option.label}</Typography>
+                            {option.description && (
+                              <Typography variant="caption" color="text.secondary">
+                                {option.description}
+                              </Typography>
+                            )}
+                          </Box>
                         </MenuItem>
                       ))}
                     </Select>

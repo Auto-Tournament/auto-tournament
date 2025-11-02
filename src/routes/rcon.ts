@@ -209,6 +209,62 @@ router.post('/unpause-match', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/rcon/force-pause
+ * Admin pause (players cannot unpause)
+ */
+router.post('/force-pause', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'css_forcepause');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error force pausing match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to force pause match',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/force-unpause
+ * Force unpause the match (admin)
+ */
+router.post('/force-unpause', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'css_forceunpause');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error force unpausing match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to force unpause match',
+    });
+  }
+});
+
+/**
  * POST /api/rcon/restart-match
  * Restart the match
  */
@@ -325,7 +381,7 @@ router.post('/say', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/broadcast
- * Broadcast a message to all servers or specific servers
+ * Broadcast an admin message to all servers or specific servers (css_asay)
  */
 router.post('/broadcast', async (req: Request, res: Response) => {
   try {
@@ -346,7 +402,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
       // Send to specific servers
       results = await Promise.all(
         serverIds.map((serverId: string) =>
-          rconService.sendCommand(serverId, `say ${sanitizedMessage}`)
+          rconService.sendCommand(serverId, `css_asay ${sanitizedMessage}`)
         )
       );
     } else {
@@ -354,7 +410,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
       const { serverService } = await import('../services/serverService');
       const servers = serverService.getAllServers(true);
       results = await Promise.all(
-        servers.map((server) => rconService.sendCommand(server.id, `say ${sanitizedMessage}`))
+        servers.map((server) => rconService.sendCommand(server.id, `css_asay ${sanitizedMessage}`))
       );
     }
 
@@ -363,7 +419,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
 
     return res.status(failed > 0 ? 207 : 200).json({
       success: failed === 0,
-      message: `Broadcast sent to ${successful} server(s), ${failed} failed`,
+      message: `Admin broadcast sent to ${successful} server(s), ${failed} failed`,
       results,
       stats: {
         total: results.length,

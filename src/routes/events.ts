@@ -230,13 +230,66 @@ function handleSeriesEnd(event: MatchZyEvent): void {
       advanceWinnerToNextMatch(match, winnerId);
     }
 
+    // For double elimination: advance loser to losers bracket
+    advanceLoserToLosersBracket(match, winnerId);
+
     // Check if tournament is completed
     checkTournamentCompletion();
+
+    // For round robin/swiss, check if round is complete and advance to next round
+    checkAndAdvanceRound(match.round);
 
     // Emit bracket update
     emitBracketUpdate({ action: 'match_completed', matchSlug: event.matchid });
   } catch (error) {
     log.error('Error handling series end', error);
+  }
+}
+
+/**
+ * Check if a round is complete and advance to next round (for round robin/swiss)
+ */
+function checkAndAdvanceRound(completedRound: number): void {
+  try {
+    const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    if (!tournament) return;
+
+    // Only for round robin and swiss formats
+    if (tournament.type !== 'round_robin' && tournament.type !== 'swiss') {
+      return;
+    }
+
+    // Check if all matches in the completed round are done
+    const pendingInRound = db.queryOne<{ count: number }>(
+      'SELECT COUNT(*) as count FROM matches WHERE round = ? AND status != "completed" AND tournament_id = 1',
+      [completedRound]
+    );
+
+    if (pendingInRound && pendingInRound.count === 0) {
+      // All matches in this round are complete, make next round ready
+      const nextRound = completedRound + 1;
+
+      const nextRoundMatches = db.query<DbMatchRow>(
+        'SELECT * FROM matches WHERE round = ? AND tournament_id = 1',
+        [nextRound]
+      );
+
+      if (nextRoundMatches.length > 0) {
+        db.update('matches', { status: 'ready' }, 'round = ? AND tournament_id = 1', [nextRound]);
+
+        log.success(
+          `Round ${completedRound} complete. Round ${nextRound} is now ready (${nextRoundMatches.length} matches)`
+        );
+
+        // Auto-allocate servers for the new round
+        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        matchAllocationService.allocateServersToMatches(baseUrl).catch((err) => {
+          log.error('Failed to auto-allocate servers for next round', err);
+        });
+      }
+    }
+  } catch (error) {
+    log.error('Error checking round advancement', error);
   }
 }
 
@@ -326,6 +379,129 @@ function advanceWinnerToNextMatch(currentMatch: DbMatchRow, winnerId: string): v
     }
   } catch (error) {
     log.error('Error advancing winner to next match', error);
+  }
+}
+
+/**
+ * Advance loser to losers bracket (for double elimination)
+ */
+function advanceLoserToLosersBracket(currentMatch: DbMatchRow, winnerId: string): void {
+  try {
+    // Only for winners bracket matches (wb-rXmY)
+    if (!currentMatch.slug.startsWith('wb-')) {
+      return; // Not a winners bracket match
+    }
+
+    // Check if this is a double elimination tournament
+    const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    if (!tournament || tournament.type !== 'double_elimination') {
+      return;
+    }
+
+    // Determine the loser
+    const loserId =
+      currentMatch.team1_id === winnerId ? currentMatch.team2_id : currentMatch.team1_id;
+
+    if (!loserId) {
+      log.warn('Could not determine loser for double elimination advancement', {
+        matchSlug: currentMatch.slug,
+      });
+      return;
+    }
+
+    // Parse winners bracket match slug: wb-r{round}m{match}
+    const wbMatch = currentMatch.slug.match(/^wb-r(\d+)m(\d+)$/);
+    if (!wbMatch) {
+      log.warn('Invalid winners bracket slug format', { slug: currentMatch.slug });
+      return;
+    }
+
+    const wbRound = parseInt(wbMatch[1], 10);
+    const wbMatchNum = parseInt(wbMatch[2], 10);
+
+    // Calculate losers bracket destination
+    // Winners Round R → Losers Round (2R-1)
+    const lbRound = 2 * wbRound - 1;
+    const lbMatchNum = wbMatchNum;
+
+    // Find the losers bracket match
+    const lbSlug = `lb-r${lbRound}m${lbMatchNum}`;
+    const lbMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [lbSlug]);
+
+    if (!lbMatch) {
+      log.warn('Losers bracket match not found', { lbSlug, wbSlug: currentMatch.slug });
+      return;
+    }
+
+    // Determine which slot to fill in losers bracket
+    if (!lbMatch.team1_id) {
+      db.update('matches', { team1_id: loserId }, 'id = ?', [lbMatch.id]);
+      log.debug(`Advanced loser ${loserId} to ${lbSlug} as team1`);
+    } else if (!lbMatch.team2_id) {
+      db.update('matches', { team2_id: loserId }, 'id = ?', [lbMatch.id]);
+      log.debug(`Advanced loser ${loserId} to ${lbSlug} as team2`);
+    } else {
+      log.warn('Losers bracket match already has both teams', { lbSlug });
+      return;
+    }
+
+    // Check if losers bracket match is now ready (has both teams)
+    const updatedLbMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+      lbMatch.id,
+    ]);
+
+    if (updatedLbMatch && updatedLbMatch.team1_id && updatedLbMatch.team2_id) {
+      // Both teams assigned, make it ready
+      db.update('matches', { status: 'ready' }, 'id = ?', [lbMatch.id]);
+
+      // Regenerate match config
+      const team1 = db.queryOne<DbTeamRow & { players: string }>(
+        'SELECT * FROM teams WHERE id = ?',
+        [updatedLbMatch.team1_id]
+      );
+      const team2 = db.queryOne<DbTeamRow & { players: string }>(
+        'SELECT * FROM teams WHERE id = ?',
+        [updatedLbMatch.team2_id]
+      );
+
+      if (team1 && team2 && tournament) {
+        const maps = JSON.parse(tournament.maps);
+        const config = {
+          matchid: updatedLbMatch.slug,
+          num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
+          maplist: maps,
+          players_per_team: 5,
+          clinch_series: true,
+          team1: {
+            name: team1.name,
+            tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
+            players: JSON.parse(team1.players),
+          },
+          team2: {
+            name: team2.name,
+            tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
+            players: JSON.parse(team2.players),
+          },
+        };
+
+        db.update('matches', { config: JSON.stringify(config) }, 'id = ?', [lbMatch.id]);
+        log.success(
+          `Losers bracket match ${updatedLbMatch.slug} is now ready: ${team1.name} vs ${team2.name}`
+        );
+
+        // Emit bracket update
+        emitBracketUpdate({ action: 'match_ready', matchSlug: updatedLbMatch.slug });
+
+        // Auto-allocate server
+        autoAllocateServerToMatch(updatedLbMatch.slug).catch((error) => {
+          log.error('Failed to auto-allocate server to losers bracket match', error, {
+            matchSlug: updatedLbMatch.slug,
+          });
+        });
+      }
+    }
+  } catch (error) {
+    log.error('Error advancing loser to losers bracket', error);
   }
 }
 

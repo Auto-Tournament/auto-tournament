@@ -7,7 +7,9 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
 import StorageIcon from '@mui/icons-material/Storage';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
+import CampaignIcon from '@mui/icons-material/Campaign';
 import BuildIcon from '@mui/icons-material/Build';
+import DataObjectIcon from '@mui/icons-material/DataObject';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function Layout() {
@@ -23,6 +25,7 @@ export default function Layout() {
     { label: 'Matches', path: '/matches', icon: SportsEsportsIcon },
     { label: 'Teams', path: '/teams', icon: GroupsIcon },
     { label: 'Servers', path: '/servers', icon: StorageIcon },
+    { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),
   ];
 

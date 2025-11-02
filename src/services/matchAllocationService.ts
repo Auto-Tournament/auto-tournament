@@ -346,14 +346,11 @@ export class MatchAllocationService {
    * Convert database row to BracketMatch
    */
   private rowToMatch(row: DbMatchRow): BracketMatch {
-    return {
+    const match: BracketMatch = {
       id: row.id,
       slug: row.slug,
       round: row.round,
       matchNumber: row.match_number,
-      team1Id: row.team1_id,
-      team2Id: row.team2_id,
-      winnerId: row.winner_id,
       serverId: row.server_id,
       status: row.status,
       nextMatchId: row.next_match_id,
@@ -361,6 +358,31 @@ export class MatchAllocationService {
       loadedAt: row.loaded_at,
       completedAt: row.completed_at,
     };
+
+    // Attach team info if available
+    if (row.team1_id) {
+      const team1 = db.queryOne<{ id: string; name: string; tag: string | null }>(
+        'SELECT id, name, tag FROM teams WHERE id = ?',
+        [row.team1_id]
+      );
+      if (team1) match.team1 = { id: team1.id, name: team1.name, tag: team1.tag || undefined };
+    }
+    if (row.team2_id) {
+      const team2 = db.queryOne<{ id: string; name: string; tag: string | null }>(
+        'SELECT id, name, tag FROM teams WHERE id = ?',
+        [row.team2_id]
+      );
+      if (team2) match.team2 = { id: team2.id, name: team2.name, tag: team2.tag || undefined };
+    }
+    if (row.winner_id) {
+      const winner = db.queryOne<{ id: string; name: string; tag: string | null }>(
+        'SELECT id, name, tag FROM teams WHERE id = ?',
+        [row.winner_id]
+      );
+      if (winner) match.winner = { id: winner.id, name: winner.name, tag: winner.tag || undefined };
+    }
+
+    return match;
   }
 }
 

@@ -10,17 +10,31 @@ import {
   Divider,
   Grid,
   CircularProgress,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from '@mui/material';
 import {
   BugReport as BugReportIcon,
   Group as GroupIcon,
   Storage as StorageIcon,
   Delete as DeleteIcon,
+  ExpandMore as ExpandMoreIcon,
+  DeleteForever as DeleteForeverIcon,
+  Warning as WarningIcon,
 } from '@mui/icons-material';
+import { api } from '../utils/api';
 
 const Development: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [confirmWipeOpen, setConfirmWipeOpen] = useState(false);
+  const [wiping, setWiping] = useState(false);
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
@@ -205,6 +219,60 @@ const Development: React.FC = () => {
     }
   };
 
+  const handleWipeDatabase = async () => {
+    setConfirmWipeOpen(false);
+    setWiping(true);
+    setMessage(null);
+
+    try {
+      const response: { success: boolean; message: string } = await api.post(
+        '/api/tournament/wipe-database'
+      );
+      setMessage({
+        type: 'success',
+        text: response.message || 'Database wiped successfully! Redirecting...',
+      });
+
+      // Refresh page after 2 seconds
+      setTimeout(() => {
+        globalThis.location.href = '/';
+      }, 2000);
+    } catch (error) {
+      console.error('Error wiping database:', error);
+      setMessage({ type: 'error', text: 'Failed to wipe database' });
+    } finally {
+      setWiping(false);
+    }
+  };
+
+  const handleWipeTable = async (table: string) => {
+    if (
+      !(globalThis as { confirm?: (message: string) => boolean }).confirm?.(
+        `Are you sure you want to wipe the ${table} table? This will delete all data in that table.`
+      )
+    ) {
+      return;
+    }
+
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const response: { success: boolean; message: string } = await api.post(
+        `/api/tournament/wipe-table/${table}`
+      );
+      setMessage({
+        type: 'success',
+        text: response.message || `Table ${table} wiped successfully!`,
+      });
+    } catch (error) {
+      console.error(`Error wiping ${table}:`, error);
+      setMessage({ type: 'error', text: `Failed to wipe ${table} table` });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box display="flex" alignItems="center" gap={2} mb={3}>
@@ -333,29 +401,202 @@ const Development: React.FC = () => {
           <Card sx={{ borderColor: 'error.main', borderWidth: 2, borderStyle: 'solid' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <DeleteIcon color="error" />
+                <WarningIcon color="error" />
                 <Typography variant="h6" fontWeight={600} color="error">
                   Danger Zone
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Delete all test data (teams and servers with &apos;test-&apos; prefix). This action
-                cannot be undone.
-              </Typography>
-              <Button
-                variant="outlined"
-                color="error"
-                onClick={handleDeleteAllTestData}
-                disabled={loading}
-                startIcon={<DeleteIcon />}
-              >
-                {loading ? <CircularProgress size={24} /> : 'Delete All Test Data'}
-              </Button>
+
+              {/* Delete Test Data */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <DeleteIcon />
+                    <Typography fontWeight={600}>Delete Test Data</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Delete all test data (teams and servers with &apos;test-&apos; prefix). This
+                    action cannot be undone.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    onClick={handleDeleteAllTestData}
+                    disabled={loading || wiping}
+                    startIcon={<DeleteIcon />}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Delete All Test Data'}
+                  </Button>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Wipe Specific Tables */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <StorageIcon />
+                    <Typography fontWeight={600}>Wipe Specific Tables</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Delete all data from a specific table. Useful for cleaning up without resetting
+                    everything.
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 6 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('teams')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Teams
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('servers')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Servers
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('tournament')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Tournament
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('matches')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Matches
+                      </Button>
+                    </Grid>
+                  </Grid>
+                </AccordionDetails>
+              </Accordion>
+
+              {/* Wipe Entire Database */}
+              <Accordion>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <DeleteForeverIcon />
+                    <Typography fontWeight={600}>Wipe Entire Database</Typography>
+                  </Box>
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Alert severity="error" sx={{ mb: 2 }}>
+                    <strong>EXTREMELY DESTRUCTIVE!</strong> This will delete ALL data.
+                  </Alert>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Permanently deletes:
+                  </Typography>
+                  <Box component="ul" sx={{ pl: 3, mb: 2 }}>
+                    <li>
+                      <Typography variant="body2" color="text.secondary">
+                        All tournaments & brackets
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant="body2" color="text.secondary">
+                        All matches & events
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant="body2" color="text.secondary">
+                        All teams & players
+                      </Typography>
+                    </li>
+                    <li>
+                      <Typography variant="body2" color="text.secondary">
+                        All server configurations
+                      </Typography>
+                    </li>
+                  </Box>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => setConfirmWipeOpen(true)}
+                    disabled={loading || wiping}
+                    startIcon={<DeleteForeverIcon />}
+                    fullWidth
+                  >
+                    {wiping ? <CircularProgress size={24} /> : 'Wipe Entire Database'}
+                  </Button>
+                </AccordionDetails>
+              </Accordion>
             </CardContent>
           </Card>
         </Grid>
       </Grid>
+
+      {/* Wipe Database Confirmation Dialog */}
+      <Dialog
+        open={confirmWipeOpen}
+        onClose={() => !wiping && setConfirmWipeOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <WarningIcon color="error" />
+          Confirm Database Wipe
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            <strong>Are you absolutely sure?</strong>
+          </DialogContentText>
+          <DialogContentText sx={{ mt: 2 }}>
+            This action will <strong>permanently delete</strong>:
+          </DialogContentText>
+          <Box component="ul" sx={{ mt: 1, color: 'text.secondary' }}>
+            <li>All tournament data and brackets</li>
+            <li>All match history and events</li>
+            <li>All teams and player configurations</li>
+            <li>All server configurations</li>
+          </Box>
+          <Alert severity="error" sx={{ mt: 2 }}>
+            <strong>This action cannot be undone!</strong>
+          </Alert>
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Button onClick={() => setConfirmWipeOpen(false)} disabled={wiping} variant="outlined">
+            Cancel
+          </Button>
+          <Button
+            onClick={handleWipeDatabase}
+            disabled={wiping}
+            variant="contained"
+            color="error"
+            startIcon={<DeleteForeverIcon />}
+            autoFocus
+          >
+            {wiping ? 'Wiping Database...' : 'Yes, Wipe Everything'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Container>
   );
 };
