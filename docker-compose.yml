@@ -8,10 +8,10 @@ services:
     container_name: matchzy-tournament-api
     restart: unless-stopped
     ports:
-      - '3000:3000'
+      - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     environment:
       - NODE_ENV=production
-      - PORT=3000
+      - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
       - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
       - LOG_LEVEL=${LOG_LEVEL:-info}
@@ -19,18 +19,11 @@ services:
       # Persist SQLite database
       - ./data:/app/data
     healthcheck:
-      test:
-        [
-          'CMD',
-          'bun',
-          'run',
-          '-e',
-          "fetch('http://localhost:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1))",
-        ]
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
       interval: 30s
       timeout: 3s
       retries: 3
-      start_period: 5s
+      start_period: 10s
     networks:
       - matchzy-network
 

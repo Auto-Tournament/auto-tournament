@@ -83,7 +83,7 @@ router.get('/:matchSlug', (req: Request, res: Response) => {
     return res.json({
       success: true,
       count: events.length,
-      events: events.map((e: any) => ({
+      events: events.map((e: Record<string, unknown>) => ({
         id: e.id,
         eventType: e.event_type,
         data: JSON.parse(e.event_data),
@@ -163,7 +163,9 @@ function handleEvent(event: MatchZyEvent): void {
 function handleSeriesEnd(event: MatchZyEvent): void {
   try {
     // Get the match from database
-    const match = db.queryOne<any>('SELECT * FROM matches WHERE slug = ?', [event.matchid]);
+    const match = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE slug = ?', [
+      event.matchid,
+    ]);
 
     if (!match) {
       log.warn('Match not found for series end event', { matchSlug: event.matchid });
@@ -177,8 +179,9 @@ function handleSeriesEnd(event: MatchZyEvent): void {
     let winnerId: string | null = null;
 
     // Winner is determined by series score
-    const team1Score = (event as any).team1_series_score || 0;
-    const team2Score = (event as any).team2_series_score || 0;
+    const eventData = event as { team1_series_score?: number; team2_series_score?: number };
+    const team1Score = eventData.team1_series_score || 0;
+    const team2Score = eventData.team2_series_score || 0;
 
     if (team1Score > team2Score) {
       winnerId = team1Id;
@@ -216,7 +219,10 @@ function handleSeriesEnd(event: MatchZyEvent): void {
     log.success(`Match ${event.matchid} completed. Winner: ${winnerId}`);
 
     // Emit match update
-    const updatedMatch = db.queryOne<any>('SELECT * FROM matches WHERE slug = ?', [event.matchid]);
+    const updatedMatch = db.queryOne<Record<string, unknown>>(
+      'SELECT * FROM matches WHERE slug = ?',
+      [event.matchid]
+    );
     if (updatedMatch) {
       emitMatchUpdate(updatedMatch);
     }
@@ -239,9 +245,9 @@ function handleSeriesEnd(event: MatchZyEvent): void {
 /**
  * Advance winner to next match in bracket
  */
-function advanceWinnerToNextMatch(currentMatch: any, winnerId: string): void {
+function advanceWinnerToNextMatch(currentMatch: Record<string, unknown>, winnerId: string): void {
   try {
-    const nextMatch = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [
+    const nextMatch = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE id = ?', [
       currentMatch.next_match_id,
     ]);
 
@@ -264,21 +270,26 @@ function advanceWinnerToNextMatch(currentMatch: any, winnerId: string): void {
     }
 
     // Update next match config with new team info
-    const updatedNextMatch = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [nextMatch.id]);
+    const updatedNextMatch = db.queryOne<Record<string, unknown>>(
+      'SELECT * FROM matches WHERE id = ?',
+      [nextMatch.id]
+    );
     if (updatedNextMatch && updatedNextMatch.team1_id && updatedNextMatch.team2_id) {
       // Both teams are now assigned, update status to 'ready'
       db.update('matches', { status: 'ready' }, 'id = ?', [nextMatch.id]);
 
       // Regenerate match config with both teams
-      const team1 = db.queryOne<any>('SELECT * FROM teams WHERE id = ?', [
+      const team1 = db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [
         updatedNextMatch.team1_id,
       ]);
-      const team2 = db.queryOne<any>('SELECT * FROM teams WHERE id = ?', [
+      const team2 = db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [
         updatedNextMatch.team2_id,
       ]);
 
       if (team1 && team2) {
-        const tournament = db.queryOne<any>('SELECT * FROM tournament WHERE id = 1');
+        const tournament = db.queryOne<Record<string, unknown>>(
+          'SELECT * FROM tournament WHERE id = 1'
+        );
         if (tournament) {
           const maps = JSON.parse(tournament.maps);
           const config = {
@@ -326,11 +337,13 @@ function advanceWinnerToNextMatch(currentMatch: any, winnerId: string): void {
  */
 function checkTournamentCompletion(): void {
   try {
-    const tournament = db.queryOne<any>('SELECT * FROM tournament WHERE id = 1');
+    const tournament = db.queryOne<Record<string, unknown>>(
+      'SELECT * FROM tournament WHERE id = 1'
+    );
     if (!tournament || tournament.status === 'completed') return;
 
     // Check if all matches are completed
-    const pendingMatches = db.queryOne<any>(
+    const pendingMatches = db.queryOne<Record<string, unknown>>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1 AND status != ?',
       ['completed']
     );

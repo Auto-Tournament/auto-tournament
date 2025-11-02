@@ -167,8 +167,9 @@ export default function Bracket() {
           `Tournament started! ${response.allocated} match(es) allocated to servers.`
       );
       await loadBracket(); // Reload bracket to see updated status
-    } catch (err: any) {
-      setStartError(err.message || 'Failed to start tournament');
+    } catch (err) {
+      const error = err as Error;
+      setStartError(error.message || 'Failed to start tournament');
     } finally {
       setStarting(false);
     }

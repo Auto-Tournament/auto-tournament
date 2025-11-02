@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Card, TextField, Button, Typography, Alert, Container } from '@mui/material';
+import { Box, Card, TextField, Button, Alert, Container } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
@@ -12,7 +12,10 @@ export default function Login() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const from = (location.state as any)?.from?.pathname || '/';
+  interface LocationState {
+    from?: { pathname: string };
+  }
+  const from = (location.state as LocationState)?.from?.pathname || '/';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,7 +36,7 @@ export default function Login() {
       } else {
         setError('Invalid password. Please check your API token.');
       }
-    } catch (err) {
+    } catch {
       setError('Failed to connect to the API. Please try again.');
     } finally {
       setLoading(false);

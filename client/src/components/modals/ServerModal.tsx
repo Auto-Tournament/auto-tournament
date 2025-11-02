@@ -83,7 +83,7 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
     try {
       const response = await api.get(`/api/servers/${server.id}/status`);
       setTestResult(response.status === 'online' ? 'success' : 'error');
-    } catch (err) {
+    } catch {
       setTestResult('error');
       setError('Failed to test connection');
     } finally {
@@ -145,8 +145,9 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
 
       onSave();
       resetForm();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save server');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to save server');
     } finally {
       setSaving(false);
     }
@@ -165,8 +166,9 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
       await api.delete(`/api/servers/${server.id}`);
       onSave();
       resetForm();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete server');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to delete server');
     } finally {
       setSaving(false);
     }

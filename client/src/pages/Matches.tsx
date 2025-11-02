@@ -12,7 +12,7 @@ import {
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { formatDate, getStatusColor, getRoundLabel } from '../utils/matchUtils';
 
@@ -61,7 +61,7 @@ interface MatchEvent {
   event: {
     event: string;
     matchid: string;
-    params?: any;
+    params?: Record<string, unknown>;
   };
 }
 
@@ -71,15 +71,12 @@ export default function Matches() {
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [liveEvents, setLiveEvents] = useState<Map<string, any>>(new Map());
+  const [liveEvents, setLiveEvents] = useState<Map<string, Record<string, unknown>>>(new Map());
 
   // Initialize Socket.io connection
   useEffect(() => {
-    const apiUrl =
-      (import.meta as unknown as { env: { VITE_API_URL?: string } }).env.VITE_API_URL || '';
-    const socketUrl = apiUrl.replace('/api', '') || window.location.origin;
-    const newSocket = io(socketUrl);
+    // Connect to same origin - works in both dev (proxied) and production (Caddy)
+    const newSocket = io();
 
     newSocket.on('connect', () => {
       console.log('Socket.io connected');
@@ -120,8 +117,6 @@ export default function Matches() {
       fetchMatches();
     });
 
-    setSocket(newSocket);
-
     return () => {
       newSocket.disconnect();
     };
@@ -130,14 +125,14 @@ export default function Matches() {
   // Fetch matches
   const fetchMatches = async () => {
     try {
-      const token = globalThis.localStorage.getItem('api_token');
+      const token = localStorage.getItem('api_token');
       if (!token) {
         setError('Authentication required - please log in again');
         setLoading(false);
         return;
       }
 
-      const response = await globalThis.fetch('/api/matches', {
+      const response = await fetch('/api/matches', {
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,

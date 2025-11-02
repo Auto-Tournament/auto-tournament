@@ -332,7 +332,7 @@ class TournamentService {
    * Get all matches for the tournament
    */
   private getMatches(): BracketMatch[] {
-    const rows = db.query<any>(
+    const rows = db.query<Record<string, unknown>>(
       'SELECT * FROM matches WHERE tournament_id = 1 ORDER BY round, match_number'
     );
 
@@ -357,33 +357,36 @@ class TournamentService {
       if (row.config) {
         try {
           match.config = JSON.parse(row.config);
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
 
       // Attach team info if available
       if (row.team1_id) {
-        const team1 = db.queryOne<any>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.team1_id,
-        ]);
+        const team1 = db.queryOne<Record<string, unknown>>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.team1_id]
+        );
         if (team1) match.team1 = team1;
       }
       if (row.team2_id) {
-        const team2 = db.queryOne<any>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.team2_id,
-        ]);
+        const team2 = db.queryOne<Record<string, unknown>>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.team2_id]
+        );
         if (team2) match.team2 = team2;
       }
       if (row.winner_id) {
-        const winner = db.queryOne<any>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.winner_id,
-        ]);
+        const winner = db.queryOne<Record<string, unknown>>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.winner_id]
+        );
         if (winner) match.winner = winner;
       }
 
       // Get latest player stats from match events
-      const playerStatsEvent = db.queryOne<any>(
+      const playerStatsEvent = db.queryOne<Record<string, unknown>>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'player_stats' 
          ORDER BY received_at DESC LIMIT 1`,
@@ -399,13 +402,13 @@ class TournamentService {
           if (eventData.team2_players) {
             match.team2Players = eventData.team2_players;
           }
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
 
       // Get latest scores from series_end or round_end events
-      const scoreEvent = db.queryOne<any>(
+      const scoreEvent = db.queryOne<Record<string, unknown>>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
          ORDER BY received_at DESC LIMIT 1`,
@@ -421,7 +424,7 @@ class TournamentService {
           if (eventData.team2_series_score !== undefined) {
             match.team2Score = eventData.team2_series_score;
           }
-        } catch (e) {
+        } catch {
           // Ignore parse errors
         }
       }
@@ -551,7 +554,9 @@ class TournamentService {
     // Third pass: Advance walkover winners to next round
     for (const data of matchData) {
       if (data.isWalkover && data.winnerId && data.nextMatchId) {
-        const match = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [data.nextMatchId]);
+        const match = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE id = ?', [
+          data.nextMatchId,
+        ]);
         if (match) {
           // Determine if winner goes to team1 or team2 slot
           const positionInRound = data.matchNum - 1;
@@ -564,9 +569,10 @@ class TournamentService {
           }
 
           // Check if next match is now ready or also a walkover
-          const nextMatch = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [
-            data.nextMatchId,
-          ]);
+          const nextMatch = db.queryOne<Record<string, unknown>>(
+            'SELECT * FROM matches WHERE id = ?',
+            [data.nextMatchId]
+          );
           if (nextMatch) {
             if (nextMatch.team1_id && nextMatch.team2_id) {
               db.update('matches', { status: 'ready' }, 'id = ?', [data.nextMatchId]);
@@ -592,7 +598,7 @@ class TournamentService {
     let changed = true;
     while (changed) {
       changed = false;
-      const matches = db.query<any>(
+      const matches = db.query<Record<string, unknown>>(
         'SELECT * FROM matches WHERE tournament_id = 1 AND status = "pending" AND (team1_id IS NOT NULL OR team2_id IS NOT NULL) ORDER BY round, match_number'
       );
 
@@ -613,9 +619,10 @@ class TournamentService {
 
           // Advance to next match
           if (match.next_match_id) {
-            const nextMatch = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [
-              match.next_match_id,
-            ]);
+            const nextMatch = db.queryOne<Record<string, unknown>>(
+              'SELECT * FROM matches WHERE id = ?',
+              [match.next_match_id]
+            );
             if (nextMatch) {
               // Determine slot based on match number
               const positionInRound = match.match_number - 1;
@@ -625,9 +632,10 @@ class TournamentService {
               db.update('matches', { [updateField]: winnerId }, 'id = ?', [match.next_match_id]);
 
               // Update next match status
-              const updatedNextMatch = db.queryOne<any>('SELECT * FROM matches WHERE id = ?', [
-                match.next_match_id,
-              ]);
+              const updatedNextMatch = db.queryOne<Record<string, unknown>>(
+                'SELECT * FROM matches WHERE id = ?',
+                [match.next_match_id]
+              );
               if (updatedNextMatch && updatedNextMatch.team1_id && updatedNextMatch.team2_id) {
                 db.update('matches', { status: 'ready' }, 'id = ?', [match.next_match_id]);
               }
@@ -660,11 +668,15 @@ class TournamentService {
     team1Id?: string,
     team2Id?: string,
     slug?: string
-  ): any {
-    const team1 = team1Id ? db.queryOne<any>('SELECT * FROM teams WHERE id = ?', [team1Id]) : null;
-    const team2 = team2Id ? db.queryOne<any>('SELECT * FROM teams WHERE id = ?', [team2Id]) : null;
+  ): Record<string, unknown> {
+    const team1 = team1Id
+      ? db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [team1Id])
+      : null;
+    const team2 = team2Id
+      ? db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [team2Id])
+      : null;
 
-    const config: any = {
+    const config: Record<string, unknown> = {
       matchid: slug || 'tbd',
       num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
       maplist: tournament.maps,
@@ -708,7 +720,6 @@ class TournamentService {
     }
 
     const upperRounds = Math.ceil(Math.log2(teamCount));
-    let matchIdCounter = 1;
 
     // Generate upper bracket (same as single elimination)
     for (let round = 1; round <= upperRounds; round++) {
@@ -743,8 +754,6 @@ class TournamentService {
           next_match_id: null, // Set later
           created_at: Math.floor(Date.now() / 1000),
         });
-
-        matchIdCounter++;
       }
     }
 
@@ -772,8 +781,6 @@ class TournamentService {
           next_match_id: null,
           created_at: Math.floor(Date.now() / 1000),
         });
-
-        matchIdCounter++;
       }
     }
 
@@ -860,7 +867,6 @@ class TournamentService {
     const totalRounds = Math.ceil(Math.log2(teamCount));
 
     // Generate first round pairings
-    let matchIdCounter = 1;
     for (let round = 1; round <= totalRounds; round++) {
       const pairsPerRound = Math.floor(teamCount / 2);
 
@@ -894,8 +900,6 @@ class TournamentService {
           next_match_id: null,
           created_at: Math.floor(Date.now() / 1000),
         });
-
-        matchIdCounter++;
       }
     }
 
@@ -909,10 +913,11 @@ class TournamentService {
     switch (type) {
       case 'single_elimination':
         return Math.ceil(Math.log2(teamCount));
-      case 'double_elimination':
+      case 'double_elimination': {
         const upperRounds = Math.ceil(Math.log2(teamCount));
         const lowerRounds = (upperRounds - 1) * 2;
         return upperRounds + lowerRounds + 1; // +1 for grand finals
+      }
       case 'round_robin':
         // Number of rounds = number of matches / matches per round
         return Math.ceil((teamCount * (teamCount - 1)) / 2 / Math.ceil(teamCount / 2));
@@ -961,7 +966,7 @@ class TournamentService {
     if (teamIds.length === 0) return [];
 
     const placeholders = teamIds.map(() => '?').join(',');
-    const teams = db.query<any>(
+    const teams = db.query<Record<string, unknown>>(
       `SELECT id, name, tag FROM teams WHERE id IN (${placeholders})`,
       teamIds
     );

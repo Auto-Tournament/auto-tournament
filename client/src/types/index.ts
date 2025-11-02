@@ -60,8 +60,22 @@ export interface Tournament {
   name: string;
   type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
   format: 'bo1' | 'bo3' | 'bo5';
-  status: 'setup' | 'live' | 'completed';
+  status: 'setup' | 'ready' | 'in_progress' | 'completed';
   teamIds: string[];
   maps: string[];
   createdAt: number;
+  settings?: {
+    seedingMethod?: 'seeded' | 'random';
+    thirdPlaceMatch?: boolean;
+  };
+}
+
+export interface MatchEvent {
+  matchSlug: string;
+  event: Record<string, unknown>;
+}
+
+export interface ApiError {
+  message: string;
+  status?: number;
 }

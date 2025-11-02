@@ -34,7 +34,7 @@ export function getIO(): SocketIOServer {
 /**
  * Emit tournament update
  */
-export function emitTournamentUpdate(tournament: any): void {
+export function emitTournamentUpdate(tournament: Record<string, unknown>): void {
   if (io) {
     io.emit('tournament:update', tournament);
     log.debug('Emitted tournament update', { tournamentId: tournament.id });
@@ -44,7 +44,7 @@ export function emitTournamentUpdate(tournament: any): void {
 /**
  * Emit bracket update
  */
-export function emitBracketUpdate(bracket: any): void {
+export function emitBracketUpdate(bracket: Record<string, unknown>): void {
   if (io) {
     io.emit('bracket:update', bracket);
     log.debug('Emitted bracket update');
@@ -54,7 +54,7 @@ export function emitBracketUpdate(bracket: any): void {
 /**
  * Emit match update
  */
-export function emitMatchUpdate(match: any): void {
+export function emitMatchUpdate(match: Record<string, unknown>): void {
   if (io) {
     io.emit('match:update', match);
     log.debug('Emitted match update', { matchId: match.id });
@@ -64,7 +64,7 @@ export function emitMatchUpdate(match: any): void {
 /**
  * Emit match event (live stats)
  */
-export function emitMatchEvent(matchSlug: string, event: any): void {
+export function emitMatchEvent(matchSlug: string, event: Record<string, unknown>): void {
   if (io) {
     io.emit('match:event', { matchSlug, event });
     io.emit(`match:event:${matchSlug}`, event);

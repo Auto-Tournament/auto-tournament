@@ -33,14 +33,15 @@ interface Server {
 
 export default function Servers() {
   const [servers, setServers] = useState<Server[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
 
   const checkServerStatus = async (serverId: string): Promise<'online' | 'offline'> => {
     try {
-      const response = await api.get(`/api/servers/${serverId}/status`);
+      const response: { status: 'online' | 'offline' } = await api.get(
+        `/api/servers/${serverId}/status`
+      );
       return response.status;
     } catch {
       return 'offline';
@@ -49,8 +50,7 @@ export default function Servers() {
 
   const loadServers = async () => {
     try {
-      setLoading(true);
-      const response = await api.get('/api/servers');
+      const response: { servers: Server[] } = await api.get('/api/servers');
       const serverList = response.servers || [];
 
       // Set initial status as 'checking'
@@ -60,7 +60,6 @@ export default function Servers() {
       }));
       setServers(serversWithStatus);
       setError('');
-      setLoading(false); // Show servers immediately
 
       // Check status for each server in parallel
       const statusPromises = serverList.map(async (server: Server) => {
@@ -79,13 +78,13 @@ export default function Servers() {
       );
     } catch (err) {
       setError('Failed to load servers');
-      setLoading(false);
       console.error(err);
     }
   };
 
   useEffect(() => {
     loadServers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOpenModal = (server?: Server) => {

@@ -2,11 +2,13 @@
  * API utility functions
  *
  * Uses relative paths (/api/*) which work in both environments:
- * - Development: Vite proxy forwards to localhost:3000
- * - Production: Express serves both frontend and API on same port
+ * - Development: Vite proxy forwards /api/* → localhost:3000
+ * - Production: Caddy proxy forwards /api/* → localhost:3000 (internal)
+ *
+ * All API calls should use '/api' prefix (e.g., '/api/servers', '/api/teams')
  */
 
-const getAuthHeaders = (token?: string): HeadersInit => {
+const getAuthHeaders = (token?: string): Record<string, string> => {
   const authToken = token || localStorage.getItem('api_token');
 
   if (!authToken) {
@@ -43,37 +45,37 @@ export const api = {
   /**
    * GET request
    */
-  async get(endpoint: string) {
+  async get<T = unknown>(endpoint: string): Promise<T> {
     return this.fetch(endpoint, { method: 'GET' });
   },
 
   /**
    * POST request
    */
-  async post(endpoint: string, data: any) {
+  async post<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
     return this.fetch(endpoint, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
   },
 
   /**
    * PUT request
    */
-  async put(endpoint: string, data: any) {
+  async put<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
     return this.fetch(endpoint, {
       method: 'PUT',
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
   },
 
   /**
    * PATCH request
    */
-  async patch(endpoint: string, data: any) {
+  async patch<T = unknown>(endpoint: string, data?: unknown): Promise<T> {
     return this.fetch(endpoint, {
       method: 'PATCH',
-      body: JSON.stringify(data),
+      body: data ? JSON.stringify(data) : undefined,
     });
   },
 

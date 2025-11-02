@@ -33,13 +33,21 @@
 - Node.js 18+ or Bun
 - CS2 server(s) with [MatchZy plugin](https://github.com/shobhit-pathak/MatchZy) installed
 
-**With Docker:**
+**With Docker (Recommended for Production):**
 
 ```bash
 cp .env.example .env
 # Edit .env with your tokens
 docker-compose up -d --build
 ```
+
+**Access Everything at:** `http://localhost:3069`
+
+- 🎨 **Web UI:** `http://localhost:3069/`
+- 📖 **API:** `http://localhost:3069/api`
+- 📚 **API Docs:** `http://localhost:3069/api-docs`
+
+> **Note:** Docker includes Caddy as an internal reverse proxy. Frontend at `/`, API at `/api`. Single port (3069) for everything!
 
 **Local Development:**
 
@@ -51,7 +59,7 @@ npm run dev
 ```
 
 📖 **API Docs:** `http://localhost:3000/api-docs`  
-🎨 **Web UI:** `http://localhost:5173` (dev) or `http://localhost:3000/app` (prod)
+🎨 **Web UI:** `http://localhost:5173` (dev)
 
 ---
 
@@ -85,7 +93,7 @@ See [`.env.example`](.env.example) for a complete template.
 
 **Backend:** TypeScript • Express • SQLite • Socket.IO • Swagger  
 **Frontend:** React • Material UI (MUI) • Vite • React Router  
-**Infrastructure:** Docker • RCON Client • Better-SQLite3
+**Infrastructure:** Docker • Caddy • RCON Client • Better-SQLite3
 
 ---
 

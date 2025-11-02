@@ -145,8 +145,8 @@ router.post('/', async (req: Request, res: Response) => {
       tournament,
       message: 'Tournament created successfully',
     });
-  } catch (error: any) {
-    log.error('Error creating tournament', error);
+  } catch (error) {
+    log.error('Error creating tournament', error as Error);
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to create tournament',
@@ -186,8 +186,8 @@ router.put('/', async (req: Request, res: Response) => {
       tournament,
       message: 'Tournament updated successfully',
     });
-  } catch (error: any) {
-    log.error('Error updating tournament', error);
+  } catch (error) {
+    log.error('Error updating tournament', error as Error);
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to update tournament',
@@ -217,8 +217,8 @@ router.delete('/', async (_req: Request, res: Response) => {
       success: true,
       message: 'Tournament deleted successfully',
     });
-  } catch (error: any) {
-    log.error('Error deleting tournament', error);
+  } catch (error) {
+    log.error('Error deleting tournament', error as Error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Failed to delete tournament',
@@ -301,8 +301,8 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
       ...bracket,
       message: 'Bracket regenerated successfully. All previous match data has been deleted.',
     });
-  } catch (error: any) {
-    log.error('Error regenerating bracket', error);
+  } catch (error) {
+    log.error('Error regenerating bracket', error as Error);
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to regenerate bracket',
@@ -333,8 +333,8 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
       tournament,
       message: 'Tournament reset to setup mode. All matches have been deleted.',
     });
-  } catch (error: any) {
-    log.error('Error resetting tournament', error);
+  } catch (error) {
+    log.error('Error resetting tournament', error as Error);
     return res.status(400).json({
       success: false,
       error: error.message || 'Failed to reset tournament',
@@ -389,8 +389,8 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
         results: result.results,
       });
     }
-  } catch (error: any) {
-    log.error('Error starting tournament', error);
+  } catch (error) {
+    log.error('Error starting tournament', error as Error);
     return res.status(500).json({
       success: false,
       error: error.message || 'Failed to start tournament',

@@ -1,0 +1,41 @@
+# ========================================
+
+# Caddy Configuration for MatchZy Tournament
+
+# ========================================
+
+# Internal reverse proxy that runs inside Docker container
+
+# Serves everything through a single port (3069)
+
+#
+
+# Routes:
+
+# / → React frontend (SPA)
+
+# /api/\* → Express backend API
+
+# /socket.io/\* → Socket.IO WebSocket
+
+# /health → Health check endpoint
+
+# ========================================
+
+:3069 { # Serve React frontend from /app/public
+root \* /app/public
+file_server
+
+    # Proxy API requests to Express backend (localhost:3000)
+    reverse_proxy /api/* localhost:3000
+
+    # Proxy Socket.IO WebSocket connections
+    reverse_proxy /socket.io/* localhost:3000
+
+    # Health check endpoint
+    reverse_proxy /health localhost:3000
+
+    # SPA fallback: Serve index.html for all non-file routes (React Router)
+    try_files {path} /index.html
+
+}

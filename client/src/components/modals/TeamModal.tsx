@@ -99,9 +99,10 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         setNewPlayerName(response.player.name);
         setError('');
       }
-    } catch (err: any) {
+    } catch (err) {
+      const error = err as Error;
       // If Steam API not available or resolution failed, allow manual entry
-      if (err.message?.includes('Steam API is not configured')) {
+      if (error.message?.includes('Steam API is not configured')) {
         setError('Steam API not configured - enter Steam ID64 manually');
       } else {
         setError('Could not resolve Steam ID - please enter Steam ID64 manually');
@@ -176,8 +177,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
       onSave();
       resetForm();
-    } catch (err: any) {
-      setError(err.message || 'Failed to save team');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to save team');
     } finally {
       setSaving(false);
     }
@@ -196,8 +198,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       await api.delete(`/api/teams/${team.id}`);
       onSave();
       resetForm();
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete team');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to delete team');
     } finally {
       setSaving(false);
     }

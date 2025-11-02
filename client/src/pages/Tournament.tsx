@@ -21,11 +21,33 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
-import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { Team } from '../types';
+
+interface TournamentDetailed {
+  id: number;
+  name: string;
+  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+  format: 'bo1' | 'bo3' | 'bo5';
+  status: 'setup' | 'ready' | 'in_progress' | 'completed';
+  teamIds: string[];
+  teams: Team[];
+  maps: string[];
+  createdAt: number;
+  settings: {
+    seedingMethod: 'seeded' | 'random';
+    thirdPlaceMatch?: boolean;
+  };
+}
+
+interface TournamentChange {
+  field: string;
+  from: string | string[];
+  to: string | string[];
+}
 
 const CS2_MAPS = [
   'de_ancient',
@@ -56,8 +78,8 @@ export default function Tournament() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [tournament, setTournament] = useState<any>(null);
-  const [teams, setTeams] = useState<any[]>([]);
+  const [tournament, setTournament] = useState<TournamentDetailed | null>(null);
+  const [teams, setTeams] = useState<Team[]>([]);
 
   // Form state
   const [name, setName] = useState('');
@@ -69,7 +91,7 @@ export default function Tournament() {
 
   const [saving, setSaving] = useState(false);
   const [showPreviewModal, setShowPreviewModal] = useState(false);
-  const [pendingChanges, setPendingChanges] = useState<any[]>([]);
+  const [pendingChanges, setPendingChanges] = useState<TournamentChange[]>([]);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -105,8 +127,9 @@ export default function Tournament() {
         // No tournament exists yet
         setTournament(null);
       }
-    } catch (err: any) {
-      setError(err.message || 'Failed to load data');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to load data');
     } finally {
       setLoading(false);
     }
@@ -115,7 +138,7 @@ export default function Tournament() {
   const detectChanges = () => {
     if (!tournament) return [];
 
-    const changes: any[] = [];
+    const changes: TournamentChange[] = [];
 
     if (name !== tournament.name) {
       changes.push({
@@ -231,8 +254,9 @@ export default function Tournament() {
           ? 'Tournament updated successfully!'
           : 'Tournament created and bracket generated!'
       );
-    } catch (err: any) {
-      setError(err.message || 'Failed to save tournament');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to save tournament');
     } finally {
       setSaving(false);
     }
@@ -254,8 +278,9 @@ export default function Tournament() {
       setSelectedTeams([]);
       setMaps([]);
       setSuccess('Tournament deleted');
-    } catch (err: any) {
-      setError(err.message || 'Failed to delete tournament');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to delete tournament');
     }
   };
 
@@ -276,8 +301,9 @@ export default function Tournament() {
       await api.post('/api/tournament/bracket/regenerate', payload);
       await loadData(); // Reload tournament data
       setSuccess('Bracket regenerated successfully!');
-    } catch (err: any) {
-      setError(err.message || 'Failed to regenerate bracket');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to regenerate bracket');
     } finally {
       setSaving(false);
     }
@@ -297,8 +323,9 @@ export default function Tournament() {
       await api.post('/api/tournament/reset');
       await loadData(); // Reload tournament data
       setSuccess('Tournament reset to setup mode!');
-    } catch (err: any) {
-      setError(err.message || 'Failed to reset tournament');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to reset tournament');
     } finally {
       setSaving(false);
     }
@@ -323,8 +350,9 @@ export default function Tournament() {
       );
       // Navigate to bracket view to see the matches
       setTimeout(() => navigate('/bracket'), 2000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to start tournament');
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to start tournament');
     } finally {
       setStarting(false);
     }
@@ -465,7 +493,7 @@ export default function Tournament() {
                 Teams:
               </Typography>
               <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                {tournament.teams.map((team: any) => (
+                {tournament.teams.map((team) => (
                   <Chip key={team.id} label={team.name} size="small" />
                 ))}
               </Box>

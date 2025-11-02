@@ -34,7 +34,7 @@ interface BracketVisualizationProps {
 export default function BracketVisualization({
   matches,
   totalRounds,
-  tournamentType,
+  tournamentType: _tournamentType,
   isFullscreen = false,
   onMatchClick,
 }: BracketVisualizationProps) {

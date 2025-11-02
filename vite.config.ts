@@ -10,12 +10,17 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    // Development proxy: forwards /api/* to Express server on port 3000
-    // Production: Express serves both frontend and API on same port (no proxy needed)
+    // Development proxy: forwards /api/* and /socket.io/* to Express server on port 3000
+    // Production: Caddy proxies both to Express on same port (no proxy needed)
     proxy: {
       '/api': {
         target: 'http://localhost:3000',
         changeOrigin: true,
+      },
+      '/socket.io': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        ws: true, // Enable WebSocket proxying
       },
     },
   },
