@@ -3,7 +3,7 @@
   
   # MatchZy Auto Tournament
   
-  **The one-button CS2 tournament automation API**
+  ⚡ **Automated tournament management API for CS2 MatchZy — one click from match creation to final scores**
   
   <p>Stop manually configuring servers. Load matches, track events, and manage entire tournaments through one API. Built for MatchZy plugin.</p>
 </div>
