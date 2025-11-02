@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
-import InfoIcon from '@mui/icons-material/Info';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
 import { TournamentForm } from '../components/tournament/TournamentForm';
 import { TournamentReview } from '../components/tournament/TournamentReview';
@@ -43,6 +42,9 @@ const Tournament: React.FC = () => {
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [maps, setMaps] = useState<string[]>([]);
 
+  // Edit mode state
+  const [isEditing, setIsEditing] = useState(false);
+
   // Action state
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
@@ -64,6 +66,9 @@ const Tournament: React.FC = () => {
       setFormat(tournament.format);
       setSelectedTeams(tournament.teamIds || []);
       setMaps(tournament.maps || []);
+      setIsEditing(false); // Close edit mode when tournament loads
+    } else {
+      setIsEditing(true); // Show form when creating new tournament
     }
   }, [tournament]);
 
@@ -76,6 +81,20 @@ const Tournament: React.FC = () => {
   };
 
   const canEdit = !tournament || tournament.status === 'setup';
+
+  // Check if form has changes compared to tournament
+  const hasChanges = (): boolean => {
+    if (!tournament) return true; // Creating new tournament
+
+    if (name !== tournament.name) return true;
+    if (type !== tournament.type) return true;
+    if (format !== tournament.format) return true;
+    if (JSON.stringify(selectedTeams.sort()) !== JSON.stringify(tournament.teamIds.sort()))
+      return true;
+    if (JSON.stringify(maps.sort()) !== JSON.stringify(tournament.maps.sort())) return true;
+
+    return false;
+  };
 
   const handleSave = async () => {
     // Validate before saving
@@ -281,13 +300,8 @@ const Tournament: React.FC = () => {
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
-      {/* Informational Banner */}
-      <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
-        Brackets are powered by <strong>brackets-manager.js</strong>
-      </Alert>
-
       {/* Stepper */}
-      {tournament && <TournamentStepper currentStep={getCurrentStep()} />}
+      <TournamentStepper currentStep={getCurrentStep()} />
 
       {/* Feedback Messages */}
       {success && (
@@ -302,7 +316,7 @@ const Tournament: React.FC = () => {
       )}
 
       {/* Step 1: Create/Edit Tournament */}
-      {(!tournament || tournament.status === 'setup') && (
+      {(!tournament || (tournament.status === 'setup' && isEditing)) && (
         <TournamentForm
           name={name}
           type={type}
@@ -313,18 +327,30 @@ const Tournament: React.FC = () => {
           canEdit={canEdit}
           saving={saving}
           tournamentExists={!!tournament}
+          hasChanges={hasChanges()}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
           onSave={handleSave}
+          onCancel={() => {
+            // Reset form to tournament values
+            if (tournament) {
+              setName(tournament.name);
+              setType(tournament.type);
+              setFormat(tournament.format);
+              setSelectedTeams(tournament.teamIds || []);
+              setMaps(tournament.maps || []);
+            }
+            setIsEditing(false);
+          }}
           onDelete={() => setShowDeleteConfirm(true)}
         />
       )}
 
       {/* Step 2: Review & Start (tournament is in 'setup' mode after creation) */}
-      {tournament && tournament.status === 'setup' && (
+      {tournament && tournament.status === 'setup' && !isEditing && (
         <TournamentReview
           tournament={{
             name: tournament.name,
@@ -335,6 +361,7 @@ const Tournament: React.FC = () => {
           }}
           starting={starting}
           saving={saving}
+          onEdit={() => setIsEditing(true)}
           onStart={() => setShowStartConfirm(true)}
           onViewBracket={() => navigate('/bracket')}
           onRegenerate={() => setShowRegenerateConfirm(true)}

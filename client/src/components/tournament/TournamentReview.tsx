@@ -29,6 +29,7 @@ interface TournamentReviewProps {
   };
   starting: boolean;
   saving: boolean;
+  onEdit?: () => void;
   onStart: () => void;
   onViewBracket: () => void;
   onRegenerate: () => void;
@@ -39,6 +40,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   tournament,
   starting,
   saving,
+  onEdit,
   onStart,
   onViewBracket,
   onRegenerate,
@@ -116,6 +118,13 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           >
             {starting ? 'Starting...' : 'Start Tournament'}
           </Button>
+          {onEdit && (
+            <Tooltip title="Edit tournament settings">
+              <Button variant="outlined" onClick={onEdit} disabled={starting || saving}>
+                Edit
+              </Button>
+            </Tooltip>
+          )}
           <Tooltip title="View the bracket structure">
             <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={onViewBracket}>
               View Bracket

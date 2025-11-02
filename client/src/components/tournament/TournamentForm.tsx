@@ -19,7 +19,11 @@ import {
   Tooltip,
   CircularProgress,
 } from '@mui/material';
-import { WarningIcon, CheckCircleIcon, DeleteForeverIcon } from '@mui/icons-material';
+import {
+  Warning as WarningIcon,
+  CheckCircle as CheckCircleIcon,
+  DeleteForever as DeleteForeverIcon,
+} from '@mui/icons-material';
 import { TOURNAMENT_TYPES, MATCH_FORMATS, CS2_MAPS } from '../../constants/tournament';
 import { isTournamentTypeValid } from '../../utils/tournamentValidation';
 import { Team } from '../../types';
@@ -34,12 +38,14 @@ interface TournamentFormProps {
   canEdit: boolean;
   saving: boolean;
   tournamentExists: boolean;
+  hasChanges?: boolean;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
   onTeamsChange: (teams: string[]) => void;
   onMapsChange: (maps: string[]) => void;
   onSave: () => void;
+  onCancel?: () => void;
   onDelete: () => void;
 }
 
@@ -53,12 +59,14 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   canEdit,
   saving,
   tournamentExists,
+  hasChanges = true,
   onNameChange,
   onTypeChange,
   onFormatChange,
   onTeamsChange,
   onMapsChange,
   onSave,
+  onCancel,
   onDelete,
 }) => {
   return (
@@ -244,21 +252,28 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
             <>
               <Divider />
               <Box display="flex" gap={2} flexWrap="wrap">
-                <Button
-                  variant="contained"
-                  onClick={onSave}
-                  disabled={saving}
-                  size="large"
-                  sx={{ flex: 1, minWidth: 200 }}
-                >
-                  {saving ? (
-                    <CircularProgress size={24} />
-                  ) : tournamentExists ? (
-                    'Save & Generate Brackets'
-                  ) : (
-                    'Create Tournament'
-                  )}
-                </Button>
+                {
+                  <Button
+                    variant="contained"
+                    onClick={onSave}
+                    disabled={saving || !hasChanges}
+                    size="large"
+                    sx={{ flex: 1, minWidth: 200 }}
+                  >
+                    {saving ? (
+                      <CircularProgress size={24} />
+                    ) : tournamentExists ? (
+                      'Save & Generate Brackets'
+                    ) : (
+                      'Create Tournament'
+                    )}
+                  </Button>
+                }
+                {tournamentExists && onCancel && (
+                  <Button variant="outlined" onClick={onCancel} disabled={saving}>
+                    Cancel
+                  </Button>
+                )}
                 {tournamentExists && (
                   <Tooltip title="Permanently delete this tournament and all its data">
                     <Button
