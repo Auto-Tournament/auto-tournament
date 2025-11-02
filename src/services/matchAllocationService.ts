@@ -5,6 +5,7 @@ import { tournamentService } from './tournamentService';
 import { log } from '../utils/logger';
 import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
 import type { ServerResponse } from '../types/server.types';
+import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 
 /**
@@ -33,7 +34,7 @@ export class MatchAllocationService {
 
     // Filter out servers that are currently in use (have an active match)
     const availableServers = onlineServers.filter((server) => {
-      const activeMatch = db.queryOne<Record<string, unknown>>(
+      const activeMatch = db.queryOne<{ id: number }>(
         `SELECT id FROM matches 
          WHERE server_id = ? 
          AND status IN ('loaded', 'live') 
@@ -54,7 +55,7 @@ export class MatchAllocationService {
    * Get all ready matches that need server allocation
    */
   getReadyMatches(): BracketMatch[] {
-    const matches = db.query<Record<string, unknown>>(
+    const matches = db.query<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status = 'ready' 
@@ -159,9 +160,7 @@ export class MatchAllocationService {
   }> {
     try {
       // Check if match already has a server
-      const match = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE slug = ?', [
-        matchSlug,
-      ]);
+      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
       if (!match) {
         return { success: false, error: 'Match not found' };
       }
@@ -225,9 +224,7 @@ export class MatchAllocationService {
 
     try {
       // Get match config
-      const match = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE slug = ?', [
-        matchSlug,
-      ]);
+      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
       if (!match) {
         return { success: false, error: 'Match not found' };
       }
@@ -348,7 +345,7 @@ export class MatchAllocationService {
   /**
    * Convert database row to BracketMatch
    */
-  private rowToMatch(row: Record<string, unknown>): BracketMatch {
+  private rowToMatch(row: DbMatchRow): BracketMatch {
     return {
       id: row.id,
       slug: row.slug,

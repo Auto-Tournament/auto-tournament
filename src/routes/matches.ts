@@ -6,6 +6,7 @@ import { requireAuth } from '../middleware/auth';
 import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
+import type { DbMatchRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
 
@@ -74,9 +75,19 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
 
     query += ' ORDER BY m.created_at DESC';
 
-    const rows = db.query<Record<string, unknown>>(query, params);
+    // This query includes JOIN columns that extend DbMatchRow
+    const rows = db.query<
+      DbMatchRow & {
+        team1_name?: string;
+        team1_tag?: string;
+        team2_name?: string;
+        team2_tag?: string;
+        winner_name?: string;
+        winner_tag?: string;
+      }
+    >(query, params);
 
-    const matches = rows.map((row: Record<string, unknown>) => {
+    const matches = rows.map((row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
 
       const match: Record<string, unknown> = {
@@ -113,7 +124,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
       };
 
       // Get latest player stats from match events
-      const playerStatsEvent = db.queryOne<Record<string, unknown>>(
+      const playerStatsEvent = db.queryOne<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'player_stats' 
          ORDER BY received_at DESC LIMIT 1`,
@@ -135,7 +146,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
       }
 
       // Get latest scores from series_end or round_end events
-      const scoreEvent = db.queryOne<Record<string, unknown>>(
+      const scoreEvent = db.queryOne<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
          ORDER BY received_at DESC LIMIT 1`,

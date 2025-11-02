@@ -147,9 +147,10 @@ router.post('/', async (req: Request, res: Response) => {
     });
   } catch (error) {
     log.error('Error creating tournament', error as Error);
+    const err = error as Error;
     return res.status(400).json({
       success: false,
-      error: error.message || 'Failed to create tournament',
+      error: err.message || 'Failed to create tournament',
     });
   }
 });
@@ -188,9 +189,10 @@ router.put('/', async (req: Request, res: Response) => {
     });
   } catch (error) {
     log.error('Error updating tournament', error as Error);
+    const err = error as Error;
     return res.status(400).json({
       success: false,
-      error: error.message || 'Failed to update tournament',
+      error: err.message || 'Failed to update tournament',
     });
   }
 });
@@ -219,9 +221,10 @@ router.delete('/', async (_req: Request, res: Response) => {
     });
   } catch (error) {
     log.error('Error deleting tournament', error as Error);
+    const err = error as Error;
     return res.status(500).json({
       success: false,
-      error: error.message || 'Failed to delete tournament',
+      error: err.message || 'Failed to delete tournament',
     });
   }
 });
@@ -303,9 +306,10 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
     });
   } catch (error) {
     log.error('Error regenerating bracket', error as Error);
+    const err = error as Error;
     return res.status(400).json({
       success: false,
-      error: error.message || 'Failed to regenerate bracket',
+      error: err.message || 'Failed to regenerate bracket',
     });
   }
 });
@@ -335,9 +339,10 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     });
   } catch (error) {
     log.error('Error resetting tournament', error as Error);
+    const err = error as Error;
     return res.status(400).json({
       success: false,
-      error: error.message || 'Failed to reset tournament',
+      error: err.message || 'Failed to reset tournament',
     });
   }
 });
@@ -391,9 +396,10 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     }
   } catch (error) {
     log.error('Error starting tournament', error as Error);
+    const err = error as Error;
     return res.status(500).json({
       success: false,
-      error: error.message || 'Failed to start tournament',
+      error: err.message || 'Failed to start tournament',
     });
   }
 });

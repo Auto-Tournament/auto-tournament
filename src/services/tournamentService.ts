@@ -1,5 +1,6 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import type { DbMatchRow, DbTeamRow, DbEventRow } from '../types/database.types';
 import type {
   Tournament,
   TournamentRow,
@@ -332,7 +333,7 @@ class TournamentService {
    * Get all matches for the tournament
    */
   private getMatches(): BracketMatch[] {
-    const rows = db.query<Record<string, unknown>>(
+    const rows = db.query<DbMatchRow>(
       'SELECT * FROM matches WHERE tournament_id = 1 ORDER BY round, match_number'
     );
 
@@ -364,29 +365,26 @@ class TournamentService {
 
       // Attach team info if available
       if (row.team1_id) {
-        const team1 = db.queryOne<Record<string, unknown>>(
-          'SELECT id, name, tag FROM teams WHERE id = ?',
-          [row.team1_id]
-        );
-        if (team1) match.team1 = team1;
+        const team1 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+          row.team1_id,
+        ]);
+        if (team1) match.team1 = team1 as { id: string; name: string; tag?: string };
       }
       if (row.team2_id) {
-        const team2 = db.queryOne<Record<string, unknown>>(
-          'SELECT id, name, tag FROM teams WHERE id = ?',
-          [row.team2_id]
-        );
-        if (team2) match.team2 = team2;
+        const team2 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+          row.team2_id,
+        ]);
+        if (team2) match.team2 = team2 as { id: string; name: string; tag?: string };
       }
       if (row.winner_id) {
-        const winner = db.queryOne<Record<string, unknown>>(
-          'SELECT id, name, tag FROM teams WHERE id = ?',
-          [row.winner_id]
-        );
-        if (winner) match.winner = winner;
+        const winner = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+          row.winner_id,
+        ]);
+        if (winner) match.winner = winner as { id: string; name: string; tag?: string };
       }
 
       // Get latest player stats from match events
-      const playerStatsEvent = db.queryOne<Record<string, unknown>>(
+      const playerStatsEvent = db.queryOne<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'player_stats' 
          ORDER BY received_at DESC LIMIT 1`,
@@ -408,7 +406,7 @@ class TournamentService {
       }
 
       // Get latest scores from series_end or round_end events
-      const scoreEvent = db.queryOne<Record<string, unknown>>(
+      const scoreEvent = db.queryOne<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
          ORDER BY received_at DESC LIMIT 1`,
@@ -554,7 +552,7 @@ class TournamentService {
     // Third pass: Advance walkover winners to next round
     for (const data of matchData) {
       if (data.isWalkover && data.winnerId && data.nextMatchId) {
-        const match = db.queryOne<Record<string, unknown>>('SELECT * FROM matches WHERE id = ?', [
+        const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
           data.nextMatchId,
         ]);
         if (match) {
@@ -569,10 +567,9 @@ class TournamentService {
           }
 
           // Check if next match is now ready or also a walkover
-          const nextMatch = db.queryOne<Record<string, unknown>>(
-            'SELECT * FROM matches WHERE id = ?',
-            [data.nextMatchId]
-          );
+          const nextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+            data.nextMatchId,
+          ]);
           if (nextMatch) {
             if (nextMatch.team1_id && nextMatch.team2_id) {
               db.update('matches', { status: 'ready' }, 'id = ?', [data.nextMatchId]);
@@ -598,7 +595,7 @@ class TournamentService {
     let changed = true;
     while (changed) {
       changed = false;
-      const matches = db.query<Record<string, unknown>>(
+      const matches = db.query<DbMatchRow>(
         'SELECT * FROM matches WHERE tournament_id = 1 AND status = "pending" AND (team1_id IS NOT NULL OR team2_id IS NOT NULL) ORDER BY round, match_number'
       );
 
@@ -619,10 +616,9 @@ class TournamentService {
 
           // Advance to next match
           if (match.next_match_id) {
-            const nextMatch = db.queryOne<Record<string, unknown>>(
-              'SELECT * FROM matches WHERE id = ?',
-              [match.next_match_id]
-            );
+            const nextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+              match.next_match_id,
+            ]);
             if (nextMatch) {
               // Determine slot based on match number
               const positionInRound = match.match_number - 1;
@@ -632,7 +628,7 @@ class TournamentService {
               db.update('matches', { [updateField]: winnerId }, 'id = ?', [match.next_match_id]);
 
               // Update next match status
-              const updatedNextMatch = db.queryOne<Record<string, unknown>>(
+              const updatedNextMatch = db.queryOne<DbMatchRow>(
                 'SELECT * FROM matches WHERE id = ?',
                 [match.next_match_id]
               );
@@ -670,10 +666,10 @@ class TournamentService {
     slug?: string
   ): Record<string, unknown> {
     const team1 = team1Id
-      ? db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [team1Id])
+      ? db.queryOne<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [team1Id])
       : null;
     const team2 = team2Id
-      ? db.queryOne<Record<string, unknown>>('SELECT * FROM teams WHERE id = ?', [team2Id])
+      ? db.queryOne<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [team2Id])
       : null;
 
     const config: Record<string, unknown> = {
@@ -966,12 +962,12 @@ class TournamentService {
     if (teamIds.length === 0) return [];
 
     const placeholders = teamIds.map(() => '?').join(',');
-    const teams = db.query<Record<string, unknown>>(
+    const teams = db.query<DbTeamRow>(
       `SELECT id, name, tag FROM teams WHERE id IN (${placeholders})`,
       teamIds
     );
 
-    return teams;
+    return teams as Array<{ id: string; name: string; tag?: string }>;
   }
 
   /**
