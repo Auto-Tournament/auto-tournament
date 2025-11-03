@@ -91,7 +91,12 @@ export const useBracket = () => {
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to load bracket');
+      // Handle 404 more gracefully - tournament doesn't exist yet
+      if (error.message.includes('404') || error.message.includes('No tournament')) {
+        setError('No tournament has been created yet. Create one to view the bracket.');
+      } else {
+        setError(error.message || 'Failed to load bracket');
+      }
     } finally {
       setLoading(false);
     }

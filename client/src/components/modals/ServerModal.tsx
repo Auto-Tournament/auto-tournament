@@ -11,7 +11,11 @@ import {
   Alert,
   Switch,
   FormControlLabel,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../../utils/api';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -43,6 +47,7 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
   const [testing, setTesting] = useState(false);
   const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const isEditing = !!server;
 
@@ -229,10 +234,23 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="your-rcon-password"
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               fullWidth
               helperText="Password for RCON access to the server"
+              InputProps={{
+                endAdornment: (
+                  <InputAdornment position="end">
+                    <IconButton
+                      aria-label="toggle password visibility"
+                      onClick={() => setShowPassword(!showPassword)}
+                      edge="end"
+                    >
+                      {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
             />
 
             <FormControlLabel

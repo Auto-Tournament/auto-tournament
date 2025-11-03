@@ -3,7 +3,7 @@ import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { log } from '../utils/logger';
-import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
+import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyConfig';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
@@ -239,6 +239,11 @@ export class MatchAllocationService {
         }
         log.webhookConfigured(serverId, `${baseUrl}/api/events`);
       }
+
+      // Configure demo upload URL
+      const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+      await rconService.sendCommand(serverId, demoUploadCommand);
+      log.debug(`Demo upload configured for match ${matchSlug}`, { serverId });
 
       // Load match on server
       const loadResult = await rconService.sendCommand(

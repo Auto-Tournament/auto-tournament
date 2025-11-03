@@ -5,8 +5,10 @@
     "main": "dist/index.js",
     "scripts": {
         "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
+        "dev:host": "concurrently \"npm run dev:server\" \"npm run dev:client:host\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
         "dev:server": "tsx watch src/index.ts",
         "dev:client": "vite",
+        "dev:client:host": "vite --host",
         "dev:debug": "LOG_LEVEL=debug tsx watch src/index.ts",
         "build": "npm run build:server && npm run build:client",
         "build:server": "tsc",

@@ -1,10 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { validateServerToken } from '../middleware/serverAuth';
+import { requireAuth } from '../middleware/auth';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { logWebhookEvent } from '../utils/eventLogger';
 import { emitMatchEvent, emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
+import { eventBufferService } from '../services/eventBufferService';
+import { playerConnectionService } from '../services/playerConnectionService';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
@@ -28,6 +32,15 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
 
     log.webhookReceived(event.event, event.matchid);
 
+    // Get server ID from match for event buffer
+    const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+      event.matchid,
+    ]);
+    const serverId = match?.server_id || 'unknown';
+
+    // Log to file (persistent logging for debugging/recovery)
+    logWebhookEvent(serverId, event);
+
     // Store event in database
     db.insert('match_events', {
       match_slug: event.matchid,
@@ -35,6 +48,9 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
       event_data: JSON.stringify(event),
       received_at: Math.floor(Date.now() / 1000),
     });
+
+    // Add to event buffer for debugging/monitoring
+    eventBufferService.addEvent(serverId, event.matchid, event);
 
     // Handle specific events
     handleEvent(event);
@@ -62,7 +78,7 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
  * Get all events for a specific match
  * Protected by API token
  */
-router.get('/:matchSlug', (req: Request, res: Response) => {
+router.get('/:matchSlug', requireAuth, (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
@@ -101,6 +117,87 @@ router.get('/:matchSlug', (req: Request, res: Response) => {
 });
 
 /**
+ * GET /api/events/server/:serverId
+ * Get buffered events for a specific server (debugging)
+ * Protected by API token
+ */
+router.get('/server/:serverId', requireAuth, (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.params;
+    const events = eventBufferService.getEvents(serverId);
+
+    return res.json({
+      success: true,
+      serverId,
+      count: events.length,
+      events,
+    });
+  } catch (error) {
+    console.error('Error fetching server events:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch server events',
+    });
+  }
+});
+
+/**
+ * GET /api/events/servers/list
+ * Get list of servers with buffered events
+ * Protected by API token
+ */
+router.get('/servers/list', requireAuth, (_req: Request, res: Response) => {
+  try {
+    const stats = eventBufferService.getStats();
+
+    return res.json({
+      success: true,
+      ...stats,
+    });
+  } catch (error) {
+    console.error('Error fetching server list:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch server list',
+    });
+  }
+});
+
+/**
+ * GET /api/events/connections/:matchSlug
+ * Get player connection status for a match
+ * Protected by API token
+ */
+router.get('/connections/:matchSlug', requireAuth, (req: Request, res: Response) => {
+  try {
+    const { matchSlug } = req.params;
+    const status = playerConnectionService.getStatus(matchSlug);
+
+    if (!status) {
+      return res.json({
+        success: true,
+        matchSlug,
+        connectedPlayers: [],
+        team1Connected: 0,
+        team2Connected: 0,
+        totalConnected: 0,
+      });
+    }
+
+    return res.json({
+      success: true,
+      ...status,
+    });
+  } catch (error) {
+    console.error('Error fetching connection status:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch connection status',
+    });
+  }
+});
+
+/**
  * Handle different event types
  */
 function handleEvent(event: MatchZyEvent): void {
@@ -124,6 +221,8 @@ function handleEvent(event: MatchZyEvent): void {
         { matchId: event.matchid, winner: event.winner }
       );
       handleSeriesEnd(event);
+      // Clear connection tracking when match ends
+      playerConnectionService.clearMatch(event.matchid);
       break;
 
     case 'map_result':
@@ -142,14 +241,38 @@ function handleEvent(event: MatchZyEvent): void {
 
     case 'player_connect':
       log.debug(`Player connected: ${event.player.name}`, { steamId: event.player.steamid });
+      // Track connection (we don't know team yet, will be in series_start or other events)
+      // For now, we'll get team from match config
+      {
+        const match = db.queryOne<DbMatchRow>('SELECT config FROM matches WHERE slug = ?', [
+          event.matchid,
+        ]);
+        if (match && match.config) {
+          const config = JSON.parse(match.config);
+          const team1Players = config.team1?.players || [];
+          
+          const isTeam1 = team1Players.some((p: { steamid: string }) => p.steamid === event.player.steamid);
+          const team = isTeam1 ? 'team1' : 'team2';
+          
+          playerConnectionService.playerConnected(
+            event.matchid,
+            event.player.steamid,
+            event.player.name,
+            team
+          );
+        }
+      }
       break;
 
     case 'player_disconnect':
       log.debug(`Player disconnected: ${event.player.name}`, { steamId: event.player.steamid });
+      playerConnectionService.playerDisconnected(event.matchid, event.player.steamid);
       break;
 
     case 'going_live':
       log.success(`Map ${event.map_number} going live!`, { matchId: event.matchid });
+      // Mark all connected players as ready
+      playerConnectionService.markAllReady(event.matchid);
       break;
 
     default:

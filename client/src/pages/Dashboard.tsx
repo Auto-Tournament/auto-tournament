@@ -7,6 +7,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -56,6 +57,11 @@ export default function Dashboard() {
         <Typography variant="h4" fontWeight={600}>
           Dashboard
         </Typography>
+      </Box>
+
+      {/* Onboarding Checklist */}
+      <Box mb={4}>
+        <OnboardingChecklist />
       </Box>
 
       <Grid container spacing={3}>

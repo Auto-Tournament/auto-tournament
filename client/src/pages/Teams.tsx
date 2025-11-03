@@ -17,6 +17,7 @@ import DiscordIcon from '@mui/icons-material/Forum';
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
+import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 
 interface Player {
   steamId: string;
@@ -143,9 +144,12 @@ export default function Teams() {
                           <Chip label={team.tag} size="small" sx={{ fontWeight: 600 }} />
                         )}
                       </Box>
-                      <IconButton size="small" onClick={() => handleOpenModal(team)}>
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                      <Box display="flex" gap={0.5}>
+                        <TeamLinkActions teamId={team.id} />
+                        <IconButton size="small" onClick={() => handleOpenModal(team)}>
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
                     </Box>
 
                     <Box display="flex" alignItems="center" gap={1} mb={1}>

@@ -11,6 +11,7 @@ import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
 import { log } from './utils/logger';
+import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
@@ -20,6 +21,9 @@ import matchRoutes from './routes/matches';
 import eventRoutes from './routes/events';
 import steamRoutes from './routes/steam';
 import tournamentRoutes from './routes/tournament';
+import demoRoutes from './routes/demos';
+import teamMatchRoutes from './routes/teamMatch';
+import teamStatsRoutes from './routes/teamStats';
 
 const app = express();
 const httpServer = createServer(app);
@@ -233,6 +237,9 @@ app.use('/api/matches', matchRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/steam', steamRoutes);
 app.use('/api/tournament', tournamentRoutes);
+app.use('/api/demos', demoRoutes);
+app.use('/team', teamMatchRoutes); // Public route - no /api prefix
+app.use('/team', teamStatsRoutes); // Public route - no /api prefix
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
@@ -253,15 +260,20 @@ app.use((_req: Request, res: Response) => {
 // Initialize Socket.io
 initializeSocket(httpServer);
 
-const server = httpServer.listen(PORT, () => {
+// Cleanup old event logs (keep last 30 days)
+cleanupOldLogs(30);
+
+const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
   log.server('='.repeat(60));
   log.server('🎮  MatchZy Auto Tournament API');
   log.server('='.repeat(60));
   log.server(`Server running on port ${PORT}`);
+  log.server(`Listening on: 0.0.0.0:${PORT} (all network interfaces)`);
   log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
   log.server(`API Docs: http://localhost:${PORT}/api-docs`);
   log.server(`Health check: http://localhost:${PORT}/health`);
   log.server(`WebSocket: Enabled ✓`);
+  log.server(`Event logs: data/logs/events/ (30 day retention)`);
   log.server('='.repeat(60));
 });
 

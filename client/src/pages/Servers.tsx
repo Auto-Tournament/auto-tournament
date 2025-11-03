@@ -16,6 +16,7 @@ import StorageIcon from '@mui/icons-material/Storage';
 import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
+import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 
@@ -36,6 +37,7 @@ export default function Servers() {
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const checkServerStatus = async (serverId: string): Promise<'online' | 'offline'> => {
     try {
@@ -49,6 +51,7 @@ export default function Servers() {
   };
 
   const loadServers = async () => {
+    setRefreshing(true);
     try {
       const response: { servers: Server[] } = await api.get('/api/servers');
       const serverList = response.servers || [];
@@ -79,6 +82,8 @@ export default function Servers() {
     } catch (err) {
       setError('Failed to load servers');
       console.error(err);
+    } finally {
+      setRefreshing(false);
     }
   };
 
@@ -117,9 +122,19 @@ export default function Servers() {
           />
         </Box>
         {!error && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-            New Server
-          </Button>
+          <Box display="flex" gap={2}>
+            <Button
+              variant="outlined"
+              startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+              onClick={loadServers}
+              disabled={refreshing}
+            >
+              {refreshing ? 'Checking...' : 'Refresh Status'}
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
+              New Server
+            </Button>
+          </Box>
         )}
       </Box>
 

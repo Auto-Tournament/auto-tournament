@@ -81,3 +81,14 @@ export function emitServerStatus(serverId: string, status: 'online' | 'offline')
     log.debug('Emitted server status', { serverId, status });
   }
 }
+
+/**
+ * Emit server event for debugging/monitoring
+ */
+export function emitServerEvent(serverId: string, event: Record<string, unknown>): void {
+  if (io) {
+    io.emit('server:event', { serverId, ...event });
+    io.emit(`server:event:${serverId}`, event);
+    log.debug('Emitted server event for monitoring', { serverId });
+  }
+}

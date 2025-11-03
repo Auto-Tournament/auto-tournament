@@ -3,19 +3,13 @@ import { matchService } from '../services/matchService';
 import { rconService } from '../services/rconService';
 import { CreateMatchInput } from '../types/match.types';
 import { requireAuth } from '../middleware/auth';
-import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
+import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
+import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 
 const router = Router();
-
-/**
- * Helper to get base URL from request
- */
-function getBaseUrl(req: Request): string {
-  return `${req.protocol}://${req.get('host')}`;
-}
 
 /**
  * GET /api/matches/:slug.json
@@ -84,6 +78,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         team2_tag?: string;
         winner_name?: string;
         winner_tag?: string;
+        demo_file_path?: string;
       }
     >(query, params);
 
@@ -118,6 +113,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
           : undefined,
         status: row.status,
         config,
+        demoFilePath: row.demo_file_path,
         createdAt: row.created_at,
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
@@ -286,16 +282,26 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       if (!serverToken) {
         log.warn('SERVER_TOKEN not configured - skipping webhook setup');
       } else {
-        const webhookUrl = `${getBaseUrl(req)}/api/events`;
+        const baseUrl = getWebhookBaseUrl(req);
+        const webhookUrl = `${baseUrl}/api/events`;
         log.webhookConfigured(match.serverId, webhookUrl);
 
-        const webhookCommands = getMatchZyWebhookCommands(getBaseUrl(req), serverToken);
+        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
         for (const cmd of webhookCommands) {
           const result = await rconService.sendCommand(match.serverId, cmd);
           results.push(result);
         }
         webhookConfigured = true;
       }
+    }
+
+    // Configure demo upload URL
+    const baseUrl = getWebhookBaseUrl(req);
+    const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, slug);
+    const demoResult = await rconService.sendCommand(match.serverId, demoUploadCommand);
+    results.push(demoResult);
+    if (demoResult.success) {
+      log.debug(`Demo upload configured for match ${slug}`);
     }
 
     // Send RCON command to load match

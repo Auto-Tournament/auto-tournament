@@ -3,6 +3,7 @@ import { tournamentService } from '../services/tournamentService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { getWebhookBaseUrl } from '../utils/urlHelper';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
 
 const router = Router();
@@ -368,7 +369,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
     // Get base URL for webhook configuration
-    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    const baseUrl = getWebhookBaseUrl(req);
 
     const result = await matchAllocationService.startTournament(baseUrl);
 

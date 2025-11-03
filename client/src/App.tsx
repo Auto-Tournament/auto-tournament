@@ -11,6 +11,7 @@ import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import AdminTools from './pages/AdminTools';
 import Development from './pages/Development';
+import TeamMatch from './pages/TeamMatch';
 import Layout from './components/layout/Layout';
 import { theme } from './theme';
 
@@ -67,6 +68,10 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+      
+      {/* Public team match view - no auth required */}
+      <Route path="/team/:teamId" element={<TeamMatch />} />
+      
       <Route
         path="/"
         element={

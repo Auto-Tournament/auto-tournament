@@ -14,6 +14,7 @@ export interface DbMatchRow {
   status: 'pending' | 'ready' | 'live' | 'completed';
   config?: string;
   next_match_id?: number;
+  demo_file_path?: string;
   created_at?: number;
   loaded_at?: number;
   completed_at?: number;

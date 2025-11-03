@@ -14,6 +14,13 @@ export function getMatchZyWebhookCommands(baseUrl: string, serverToken: string):
 }
 
 /**
+ * Get RCON command to configure MatchZy demo upload
+ */
+export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {
+  return `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`;
+}
+
+/**
  * Get RCON commands to disable MatchZy webhook
  */
 export function getDisableWebhookCommands(): string[] {

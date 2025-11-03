@@ -25,8 +25,15 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import FastForwardIcon from '@mui/icons-material/FastForward';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
+import PendingIcon from '@mui/icons-material/Pending';
+import LinkIcon from '@mui/icons-material/Link';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { formatDate, formatDuration, getStatusColor } from '../../utils/matchUtils';
 import { api } from '../../utils/api';
+import { usePlayerConnections } from '../../hooks/usePlayerConnections';
+import { copyTeamMatchUrl } from '../../utils/teamLinks';
 
 interface Team {
   id: string;
@@ -89,6 +96,19 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [copiedTeam, setCopiedTeam] = useState<'team1' | 'team2' | null>(null);
+  
+  // Player connection status
+  const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
+
+  const handleCopyTeamLink = async (teamId: string | undefined, teamNumber: 'team1' | 'team2') => {
+    if (!teamId) return;
+    const success = await copyTeamMatchUrl(teamId);
+    if (success) {
+      setCopiedTeam(teamNumber);
+      setTimeout(() => setCopiedTeam(null), 2000);
+    }
+  };
 
   // Timer effect for live matches
   useEffect(() => {
@@ -265,9 +285,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             <Box display="flex" justifyContent="space-between" alignItems="center" gap={2}>
               {/* Team 1 */}
               <Box flex={1} textAlign="left">
-                <Typography variant="h5" fontWeight={700}>
-                  {match.team1?.name || (match.status === 'completed' ? '—' : 'TBD')}
-                </Typography>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <Typography variant="h5" fontWeight={700}>
+                    {match.team1?.name || (match.status === 'completed' ? '—' : 'TBD')}
+                  </Typography>
+                  {match.team1?.id && (
+                    <Tooltip title={copiedTeam === 'team1' ? 'Copied!' : 'Copy team match link'}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopyTeamLink(match.team1?.id, 'team1')}
+                        color={copiedTeam === 'team1' ? 'success' : 'default'}
+                      >
+                        {copiedTeam === 'team1' ? <ContentCopyIcon fontSize="small" /> : <LinkIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
                 <Typography variant="caption" color="text.secondary">
                   {match.team1?.tag}
                 </Typography>
@@ -310,9 +343,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
               {/* Team 2 */}
               <Box flex={1} textAlign="right">
-                <Typography variant="h5" fontWeight={700}>
-                  {match.team2?.name || (match.status === 'completed' ? '—' : 'TBD')}
-                </Typography>
+                <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
+                  {match.team2?.id && (
+                    <Tooltip title={copiedTeam === 'team2' ? 'Copied!' : 'Copy team match link'}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleCopyTeamLink(match.team2?.id, 'team2')}
+                        color={copiedTeam === 'team2' ? 'success' : 'default'}
+                      >
+                        {copiedTeam === 'team2' ? <ContentCopyIcon fontSize="small" /> : <LinkIcon fontSize="small" />}
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  <Typography variant="h5" fontWeight={700}>
+                    {match.team2?.name || (match.status === 'completed' ? '—' : 'TBD')}
+                  </Typography>
+                </Box>
                 <Typography variant="caption" color="text.secondary">
                   {match.team2?.tag}
                 </Typography>
@@ -324,6 +370,125 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </Box>
             </Box>
           </Box>
+
+          {/* Player Connection Status */}
+          {connectionStatus && connectionStatus.totalConnected > 0 && (
+            <>
+              <Divider />
+              <Box>
+                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <GroupsIcon color="primary" />
+                    <Typography variant="subtitle1" fontWeight={600}>
+                      Connected Players
+                    </Typography>
+                  </Box>
+                  <Chip
+                    label={`${connectionStatus.totalConnected}/10`}
+                    color={connectionStatus.totalConnected >= 10 ? 'success' : 'warning'}
+                    size="small"
+                  />
+                </Box>
+                <Grid container spacing={2}>
+                  {/* Team 1 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                          {match.team1?.name || 'Team 1'} ({connectionStatus.team1Connected}/5)
+                        </Typography>
+                        <Stack spacing={1}>
+                          {connectionStatus.connectedPlayers
+                            .filter((p) => p.team === 'team1')
+                            .map((player) => (
+                              <Box
+                                key={player.steamId}
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                                sx={{
+                                  p: 1,
+                                  bgcolor: 'action.hover',
+                                  borderRadius: 1,
+                                }}
+                              >
+                                {player.isReady ? (
+                                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main' }} />
+                                ) : (
+                                  <PendingIcon sx={{ fontSize: 20, color: 'grey.500' }} />
+                                )}
+                                <Typography variant="body2" flex={1}>
+                                  {player.name}
+                                </Typography>
+                                <Chip
+                                  label={player.isReady ? 'Ready' : 'Connected'}
+                                  size="small"
+                                  color={player.isReady ? 'success' : 'default'}
+                                  sx={{ height: 20, fontSize: '0.7rem' }}
+                                />
+                              </Box>
+                            ))}
+                          {connectionStatus.team1Connected === 0 && (
+                            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                              No players connected yet
+                            </Typography>
+                          )}
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Team 2 */}
+                  <Grid size={{ xs: 12, md: 6 }}>
+                    <Card variant="outlined">
+                      <CardContent>
+                        <Typography variant="subtitle2" fontWeight={600} mb={2}>
+                          {match.team2?.name || 'Team 2'} ({connectionStatus.team2Connected}/5)
+                        </Typography>
+                        <Stack spacing={1}>
+                          {connectionStatus.connectedPlayers
+                            .filter((p) => p.team === 'team2')
+                            .map((player) => (
+                              <Box
+                                key={player.steamId}
+                                display="flex"
+                                alignItems="center"
+                                gap={1}
+                                sx={{
+                                  p: 1,
+                                  bgcolor: 'action.hover',
+                                  borderRadius: 1,
+                                }}
+                              >
+                                {player.isReady ? (
+                                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main' }} />
+                                ) : (
+                                  <PendingIcon sx={{ fontSize: 20, color: 'grey.500' }} />
+                                )}
+                                <Typography variant="body2" flex={1}>
+                                  {player.name}
+                                </Typography>
+                                <Chip
+                                  label={player.isReady ? 'Ready' : 'Connected'}
+                                  size="small"
+                                  color={player.isReady ? 'success' : 'default'}
+                                  sx={{ height: 20, fontSize: '0.7rem' }}
+                                />
+                              </Box>
+                            ))}
+                          {connectionStatus.team2Connected === 0 && (
+                            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                              No players connected yet
+                            </Typography>
+                          )}
+                        </Stack>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                </Grid>
+              </Box>
+            </>
+          )}
 
           {/* Player Leaderboards */}
           {(match.team1Players || match.team2Players) && (

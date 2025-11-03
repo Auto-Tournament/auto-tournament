@@ -3,6 +3,8 @@ import { serverService } from '../services/serverService';
 import { rconService } from '../services/rconService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
+import { getWebhookBaseUrl } from '../utils/urlHelper';
 
 const router = Router();
 
@@ -49,6 +51,25 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 
     if (result.success) {
       log.debug(`Server ${id} is online`);
+
+      // Configure webhook automatically when server is online
+      const serverToken = process.env.SERVER_TOKEN || '';
+      if (serverToken) {
+        try {
+          const baseUrl = getWebhookBaseUrl(req);
+          const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
+          
+          for (const cmd of webhookCommands) {
+            await rconService.sendCommand(id, cmd);
+          }
+          
+          log.webhookConfigured(id, `${baseUrl}/api/events`);
+        } catch (error) {
+          // Don't fail status check if webhook setup fails
+          log.warn(`Failed to configure webhook for server ${id}`, { error });
+        }
+      }
+
       return res.json({
         success: true,
         status: 'online',

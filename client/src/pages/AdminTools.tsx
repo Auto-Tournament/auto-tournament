@@ -26,6 +26,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../utils/api';
 import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from '../constants/adminCommands';
 import { useAdminCommands } from '../hooks/useAdminCommands';
+import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 
 interface Server {
   id: string;
@@ -120,30 +121,62 @@ const AdminTools: React.FC = () => {
         </Button>
       </Box>
 
+      {/* Server Events Monitor */}
+      <Box mb={3}>
+        <ServerEventsMonitor />
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      <Typography variant="h5" fontWeight={600} mb={3}>
+        RCON Commands
+      </Typography>
+
       {/* Server Selection */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
-          <FormControl fullWidth>
-            <InputLabel>Target Server(s)</InputLabel>
-            <Select
-              value={selectedServerId}
-              label="Target Server(s)"
-              onChange={(e) => setSelectedServerId(e.target.value)}
-            >
-              <MenuItem value="all">
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Chip label="All Servers" size="small" color="primary" />
-                  <Typography>Execute on all {servers.length} server(s)</Typography>
-                </Box>
-              </MenuItem>
-              <Divider />
-              {servers.map((server) => (
-                <MenuItem key={server.id} value={server.id}>
-                  {server.name} ({server.host}:{server.port})
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Grid container spacing={2} alignItems="center">
+            <Grid size={{ xs: 12, md: 8 }}>
+              <FormControl fullWidth>
+                <InputLabel>Target Server(s)</InputLabel>
+                <Select
+                  value={selectedServerId}
+                  label="Target Server(s)"
+                  onChange={(e) => setSelectedServerId(e.target.value)}
+                >
+                  <MenuItem value="all">
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <Chip label="All Servers" size="small" color="primary" />
+                      <Typography>Execute on all {servers.length} server(s)</Typography>
+                    </Box>
+                  </MenuItem>
+                  <Divider />
+                  {servers.map((server) => (
+                    <MenuItem key={server.id} value={server.id}>
+                      {server.name} ({server.host}:{server.port})
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Button
+                fullWidth
+                variant="contained"
+                color="info"
+                onClick={() =>
+                  executeCommand(
+                    selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId],
+                    'status'
+                  )
+                }
+                disabled={executing || servers.length === 0}
+                startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
+              >
+                Send Status
+              </Button>
+            </Grid>
+          </Grid>
         </CardContent>
       </Card>
 

@@ -12,17 +12,34 @@
 
 ## ✨ What It Does
 
+### Tournament Management
 - 🏆 **Automated Brackets** — Single Elimination, Double Elimination, Round Robin, Swiss
   - Powered by [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js) for robust bracket generation
 - 🎯 **Smart Walkovers** — Automatic bye handling and bracket progression for any team count
 - 🚀 **Automatic Server Allocation** — Matches auto-assign to available servers as rounds progress
-- 🔄 **Live Updates** — Socket.io real-time match events and bracket changes
-- 🖥️ **Server Fleet Management** — Add/remove CS2 servers with live status checking
-- 👥 **Team Management** — Steam vanity URL resolution, player roster management
-- 📡 **Event Processing** — Automatic match status updates from MatchZy webhooks
-- 🔒 **Secure RCON** — Token-protected server commands with whitelisted actions
-- 🎨 **Modern Web UI** — Material Design 3 dashboard with pan/zoom brackets
 - 🛡️ **Live Tournament Protection** — Prevent accidental bracket resets during play
+- 📊 **Guided Onboarding** — Step-by-step checklist for first-time setup
+
+### Server & Match Management
+- 🖥️ **Server Fleet Management** — Add/remove CS2 servers with live status checking and refresh
+- 🔄 **Auto Webhook Configuration** — Servers automatically configured when checked online
+- 📡 **Event Processing** — Automatic match status updates from MatchZy webhooks
+- 🎬 **Demo Recording** — Automatic demo upload and download with smart file naming
+- 👥 **Player Connection Tracking** — Real-time visibility of connected players (X/10)
+- 🔒 **Secure RCON** — Token-protected server commands with whitelisted actions
+
+### Team Experience
+- 🎮 **Public Team Pages** — No-login team portals with match info and server connection
+- 🔊 **Sound Notifications** — Customizable alerts when matches are ready (8 sounds, volume control)
+- 📈 **Performance Stats** — Win/loss records, win rate, tournament standings
+- 📜 **Match History** — View past matches with scores and opponents
+- 🔗 **Easy Sharing** — Copy team links from admin dashboard
+
+### Admin & Monitoring
+- 🐛 **Server Event Monitor** — Live WebSocket view of all MatchZy events by server
+- 📝 **Event File Logging** — All webhook events logged to files (30-day retention)
+- 🎮 **Live Match Controls** — Pause, unpause, force start from admin panel
+- 🎨 **Modern Web UI** — Material Design 3 dashboard with pan/zoom brackets
 - 📚 **Auto Docs** — Interactive Swagger UI at `/api-docs`
 
 ---
@@ -71,6 +88,10 @@ npm run dev
 ```bash
 API_TOKEN=your-secure-token          # Admin authentication for Web UI & API
 SERVER_TOKEN=your-server-token       # MatchZy webhook authentication
+WEBHOOK_URL=http://localhost:3000    # URL where CS2 servers send webhook events
+                                     # Examples:
+                                     #   - Local: http://192.168.1.100:3000
+                                     #   - Production: https://yourdomain.com
 ```
 
 ### Optional Environment Variables
@@ -79,7 +100,6 @@ SERVER_TOKEN=your-server-token       # MatchZy webhook authentication
 STEAM_API_KEY=your-key               # Steam vanity URL resolution
                                      # Get free: https://steamcommunity.com/dev/apikey
 
-BASE_URL=https://your-domain.com     # Webhook callback URL (auto-detected if not set)
 PORT=3000                            # Server port (default: 3000)
 NODE_ENV=production                  # Environment mode
 LOG_LEVEL=info                       # Logging level (info | debug)
@@ -133,6 +153,12 @@ Whether you're fixing bugs, adding features, improving docs, or sharing ideas �
 👉 **[Read the Contributing Guide](.github/CONTRIBUTING.md)** to get started
 
 📜 **[Code of Conduct](.github/CODE_OF_CONDUCT.md)** • 📄 **[MIT License](LICENSE)**
+
+---
+
+## 🎵 Credits
+
+- **Notification Sound**: [DRAGON-STUDIO](https://pixabay.com/users/dragon-studio-38165424/) from [Pixabay](https://pixabay.com/sound-effects/)
 
 ---
 

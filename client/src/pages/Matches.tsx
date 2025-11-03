@@ -9,12 +9,19 @@ import {
   Grid,
   LinearProgress,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import DownloadIcon from '@mui/icons-material/Download';
+import LinkIcon from '@mui/icons-material/Link';
 import { io } from 'socket.io-client';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { formatDate, getStatusColor, getRoundLabel } from '../utils/matchUtils';
+import { api } from '../utils/api';
+import PersonIcon from '@mui/icons-material/Person';
+import { copyTeamMatchUrl } from '../utils/teamLinks';
 
 interface Team {
   id: string;
@@ -44,6 +51,7 @@ interface Match {
   createdAt: number;
   loadedAt?: number;
   completedAt?: number;
+  demoFilePath?: string;
   team1Score?: number;
   team2Score?: number;
   team1Players?: PlayerStats[];
@@ -72,6 +80,43 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, Record<string, unknown>>>(new Map());
+  const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
+  const [copiedLinkMatch, setCopiedLinkMatch] = useState<string | null>(null);
+
+  // Copy team match link
+  const handleCopyTeamLink = async (teamId: string | undefined, matchSlug: string, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation();
+    }
+    if (!teamId) return;
+
+    const success = await copyTeamMatchUrl(teamId);
+    if (success) {
+      setCopiedLinkMatch(matchSlug);
+      setTimeout(() => setCopiedLinkMatch(null), 2000);
+    }
+  };
+
+  // Download demo file
+  const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
+    if (event) {
+      event.stopPropagation(); // Prevent card click
+    }
+
+    if (!match.demoFilePath) return;
+
+    try {
+      // Create a temporary link to trigger download
+      const link = document.createElement('a');
+      link.href = `/api/demos/${match.slug}/download`;
+      link.download = match.demoFilePath;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (err) {
+      console.error('Error downloading demo:', err);
+    }
+  };
 
   // Initialize Socket.io connection
   useEffect(() => {
@@ -82,8 +127,19 @@ export default function Matches() {
       console.log('Socket.io connected');
     });
 
-    newSocket.on('match:update', (match: Match) => {
-      // Update match in live or history
+    newSocket.on('match:update', (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
+      // Handle connection status updates
+      if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
+        setConnectionCounts((prev) => {
+          const updated = new Map(prev);
+          updated.set(data.slug!, data.connectionStatus!.totalConnected);
+          return updated;
+        });
+        return;
+      }
+
+      // Handle regular match updates
+      const match = data as Match;
       if (match.status === 'live' || match.status === 'ready') {
         setLiveMatches((prev) => {
           const index = prev.findIndex((m) => m.id === match.id);
@@ -292,12 +348,38 @@ export default function Matches() {
                                 {getRoundLabel(match.round)}
                               </Typography>
                             </Box>
-                            <Chip
-                              label={match.status.toUpperCase()}
-                              size="small"
-                              color={getStatusColor(match.status)}
-                              sx={{ fontWeight: 600 }}
-                            />
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Tooltip title="Copy team 1 link">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleCopyTeamLink(match.team1?.id, match.slug, e)}
+                                    disabled={!match.team1?.id}
+                                    color={copiedLinkMatch === match.slug ? 'success' : 'default'}
+                                  >
+                                    <LinkIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title={match.demoFilePath ? "Download Demo" : "No demo available"}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleDownloadDemo(match, e)}
+                                    disabled={!match.demoFilePath}
+                                    color="primary"
+                                  >
+                                    <DownloadIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Chip
+                                label={match.status.toUpperCase()}
+                                size="small"
+                                color={getStatusColor(match.status)}
+                                sx={{ fontWeight: 600 }}
+                              />
+                            </Box>
                           </Box>
 
                           <Stack spacing={1.5}>
@@ -356,6 +438,29 @@ export default function Matches() {
                             </Box>
                           </Stack>
 
+                          {/* Connection Status */}
+                          {connectionCounts.has(match.slug) && (
+                            <Box
+                              mt={2}
+                              p={1}
+                              bgcolor={
+                                connectionCounts.get(match.slug)! >= 10
+                                  ? 'success.light'
+                                  : 'warning.light'
+                              }
+                              borderRadius={1}
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="center"
+                              gap={0.5}
+                            >
+                              <PersonIcon sx={{ fontSize: 16 }} />
+                              <Typography variant="caption" fontWeight={600}>
+                                {connectionCounts.get(match.slug)}/10 Players
+                              </Typography>
+                            </Box>
+                          )}
+
                           {event && event.event && (
                             <Box mt={2} p={1} bgcolor="action.hover" borderRadius={1}>
                               <Typography variant="caption" color="text.secondary">
@@ -411,20 +516,46 @@ export default function Matches() {
                                 {getRoundLabel(match.round)}
                               </Typography>
                             </Box>
-                            <Chip
-                              label={
-                                (match.team1 && !match.team2) || (!match.team1 && match.team2)
-                                  ? 'WALKOVER'
-                                  : 'COMPLETED'
-                              }
-                              size="small"
-                              color={
-                                (match.team1 && !match.team2) || (!match.team1 && match.team2)
-                                  ? 'warning'
-                                  : 'success'
-                              }
-                              sx={{ fontWeight: 600 }}
-                            />
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <Tooltip title="Copy team 1 link">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleCopyTeamLink(match.team1?.id, match.slug, e)}
+                                    disabled={!match.team1?.id}
+                                    color={copiedLinkMatch === match.slug ? 'success' : 'default'}
+                                  >
+                                    <LinkIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip title={match.demoFilePath ? "Download Demo" : "No demo available"}>
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => handleDownloadDemo(match, e)}
+                                    disabled={!match.demoFilePath}
+                                    color="primary"
+                                  >
+                                    <DownloadIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Chip
+                                label={
+                                  (match.team1 && !match.team2) || (!match.team1 && match.team2)
+                                    ? 'WALKOVER'
+                                    : 'COMPLETED'
+                                }
+                                size="small"
+                                color={
+                                  (match.team1 && !match.team2) || (!match.team1 && match.team2)
+                                    ? 'warning'
+                                    : 'success'
+                                }
+                                sx={{ fontWeight: 600 }}
+                              />
+                            </Box>
                           </Box>
 
                           <Stack spacing={1}>

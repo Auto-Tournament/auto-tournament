@@ -83,6 +83,7 @@ class DatabaseManager {
         config TEXT NOT NULL,
         status TEXT NOT NULL DEFAULT 'pending',
         next_match_id INTEGER,
+        demo_file_path TEXT,
         created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
         loaded_at INTEGER,
         completed_at INTEGER,
@@ -100,6 +101,13 @@ class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_matches_round ON matches(round);
       CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
     `);
+
+    // Migration: Add demo_file_path column if it doesn't exist
+    try {
+      this.db.exec(`ALTER TABLE matches ADD COLUMN demo_file_path TEXT;`);
+    } catch {
+      // Column already exists, ignore
+    }
 
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS match_events (
