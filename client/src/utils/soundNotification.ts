@@ -34,7 +34,7 @@ class SoundNotification {
     
     this.isMuted = savedMute === 'true';
     this.volume = savedVolume ? parseFloat(savedVolume) : 0.5;
-    this.soundFile = savedSound || 'notification';
+    this.soundFile = savedSound || 'drum-beat-02-36276';
 
     // Initialize audio element
     this.initAudio();
