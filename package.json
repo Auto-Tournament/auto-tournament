@@ -4,8 +4,8 @@
     "description": "Tournament management API for CS2 MatchZy plugin",
     "main": "dist/index.js",
     "scripts": {
-        "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
-        "dev:host": "concurrently \"npm run dev:server\" \"npm run dev:client:host\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
+        "dev": "concurrently \"npm run dev:server\" \"npm run dev:client:host\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
+        "dev:localhost": "concurrently \"npm run dev:server\" \"npm run dev:client\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
         "dev:server": "tsx watch src/index.ts",
         "dev:client": "vite",
         "dev:client:host": "vite --host",
