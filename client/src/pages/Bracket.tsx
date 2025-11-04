@@ -28,7 +28,7 @@ import SwissView from '../components/visualizations/SwissView';
 import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { getRoundLabel } from '../utils/matchUtils';
+import { getRoundLabel, getStatusColor, getStatusLabel } from '../utils/matchUtils';
 import { useBracket, type Match } from '../hooks/useBracket';
 
 // Interfaces are now imported from useBracket hook
@@ -368,17 +368,9 @@ export default function Bracket() {
                           Match #{getGlobalMatchNumber(match)}
                         </Typography>
                         <Chip
-                          label={match.status.toUpperCase()}
+                          label={getStatusLabel(match.status)}
                           size="small"
-                          color={
-                            match.status === 'completed'
-                              ? 'success'
-                              : match.status === 'live'
-                              ? 'warning'
-                              : match.status === 'ready'
-                              ? 'info'
-                              : 'default'
-                          }
+                          color={getStatusColor(match.status)}
                         />
                       </Box>
                       <Stack spacing={1}>

@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { IconButton, Tooltip, Box } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { copyTeamMatchUrl, openTeamMatchInNewTab } from '../../utils/teamLinks';
+import { openTeamMatchInNewTab } from '../../utils/teamLinks';
+import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 
 interface TeamLinkActionsProps {
   teamId: string;
@@ -19,16 +20,11 @@ export const TeamLinkActions: React.FC<TeamLinkActionsProps> = ({
   onCopyClick,
   size = 'small',
 }) => {
-  const [copied, setCopied] = useState(false);
+  const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   const handleCopy = async (event: React.MouseEvent) => {
     event.stopPropagation();
-    const success = await copyTeamMatchUrl(teamId);
-    
-    if (success) {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    }
+    await copyLink(teamId);
 
     if (onCopyClick) {
       onCopyClick(event);
@@ -41,18 +37,22 @@ export const TeamLinkActions: React.FC<TeamLinkActionsProps> = ({
   };
 
   return (
-    <Box display="flex" gap={0.5}>
-      <Tooltip title="Open team match page">
-        <IconButton size={size} onClick={handleOpenInNewTab} color="primary">
-          <OpenInNewIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-      <Tooltip title={copied ? 'Copied!' : 'Copy team match link'}>
-        <IconButton size={size} onClick={handleCopy} color={copied ? 'success' : 'default'}>
-          <LinkIcon fontSize="small" />
-        </IconButton>
-      </Tooltip>
-    </Box>
+    <>
+      <Box display="flex" gap={0.5}>
+        <Tooltip title="Open team match page">
+          <IconButton size={size} onClick={handleOpenInNewTab} color="primary">
+            <OpenInNewIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Copy team match link">
+          <IconButton size={size} onClick={handleCopy}>
+            <LinkIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+      </Box>
+
+      <ToastNotification />
+    </>
   );
 };
 

@@ -24,6 +24,28 @@ export const formatDuration = (seconds: number): string => {
 };
 
 /**
+ * Get a human-readable label for a match status
+ */
+export const getStatusLabel = (status: string, walkover: boolean = false): string => {
+  if (walkover) return 'WALKOVER';
+
+  switch (status) {
+    case 'pending':
+      return 'WAITING FOR TEAMS';
+    case 'ready':
+      return 'READY TO START';
+    case 'loaded':
+      return 'WARMUP';
+    case 'live':
+      return 'LIVE';
+    case 'completed':
+      return 'COMPLETED';
+    default:
+      return status.toUpperCase();
+  }
+};
+
+/**
  * Get the MUI color for a match status
  */
 export const getStatusColor = (
@@ -35,8 +57,10 @@ export const getStatusColor = (
   switch (status) {
     case 'live':
       return 'error';
-    case 'ready':
+    case 'loaded':
       return 'info';
+    case 'ready':
+      return 'success';
     case 'completed':
       return 'success';
     default:

@@ -12,12 +12,37 @@ export function getTeamMatchUrl(teamId: string): string {
 
 /**
  * Copy team match URL to clipboard
+ * Fallback for insecure contexts (non-HTTPS/localhost)
  */
 export async function copyTeamMatchUrl(teamId: string): Promise<boolean> {
   try {
     const url = getTeamMatchUrl(teamId);
-    await navigator.clipboard.writeText(url);
-    return true;
+    
+    // Modern Clipboard API (requires secure context)
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      await navigator.clipboard.writeText(url);
+      return true;
+    }
+    
+    // Fallback for insecure contexts
+    const textArea = document.createElement('textarea');
+    textArea.value = url;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+      const successful = document.execCommand('copy');
+      document.body.removeChild(textArea);
+      return successful;
+    } catch (err) {
+      document.body.removeChild(textArea);
+      console.error('Fallback copy failed:', err);
+      return false;
+    }
   } catch (error) {
     console.error('Failed to copy team link:', error);
     return false;

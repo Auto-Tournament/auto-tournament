@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip } from '@mui/material';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
-import { getRoundLabel, getStatusColor } from '../../utils/matchUtils';
+import { getRoundLabel, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 
 interface Match {
   id: number;
@@ -84,10 +84,7 @@ export default function BracketVisualization({
     );
   };
 
-  const getStatusLabel = (match: Match): string => {
-    if (isWalkover(match)) return 'WALKOVER';
-    return match.status.toUpperCase();
-  };
+  // Use utility function for status labels
 
   // Calculate total width and height
   const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + 100;
@@ -260,7 +257,7 @@ export default function BracketVisualization({
                                       </Typography>
                                     </Box>
                                     <Chip
-                                      label={getStatusLabel(match)}
+                                      label={getStatusLabel(match.status, isWalkover(match))}
                                       size="small"
                                       color={getStatusColor(match.status, isWalkover(match))}
                                       sx={{

@@ -16,6 +16,7 @@ import {
   Button,
   Alert,
   Tooltip,
+  Snackbar,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -31,10 +32,10 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import PendingIcon from '@mui/icons-material/Pending';
 import LinkIcon from '@mui/icons-material/Link';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { formatDate, formatDuration, getStatusColor } from '../../utils/matchUtils';
+import { formatDate, formatDuration, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import { api } from '../../utils/api';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
-import { copyTeamMatchUrl } from '../../utils/teamLinks';
+import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 
 interface Team {
   id: string;
@@ -97,19 +98,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [executing, setExecuting] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
-  const [copiedTeam, setCopiedTeam] = useState<'team1' | 'team2' | null>(null);
 
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
 
-  const handleCopyTeamLink = async (teamId: string | undefined, teamNumber: 'team1' | 'team2') => {
-    if (!teamId) return;
-    const success = await copyTeamMatchUrl(teamId);
-    if (success) {
-      setCopiedTeam(teamNumber);
-      setTimeout(() => setCopiedTeam(null), 2000);
-    }
-  };
+  // Team link copy with toast
+  const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   // Timer effect for live matches
   useEffect(() => {
@@ -190,6 +184,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   if (!match) return null;
 
   return (
+    <>
     <Dialog open={!!match} onClose={onClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
@@ -230,7 +225,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
           >
             <Box display="flex" gap={1}>
               <Chip
-                label={match.status.toUpperCase()}
+                label={getStatusLabel(match.status)}
                 color={getStatusColor(match.status)}
                 sx={{ fontWeight: 600 }}
               />
@@ -291,17 +286,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     {match.team1?.name || (match.status === 'completed' ? '—' : 'TBD')}
                   </Typography>
                   {match.team1?.id && (
-                    <Tooltip title={copiedTeam === 'team1' ? 'Copied!' : 'Copy team match link'}>
+                    <Tooltip title="Copy team match link">
                       <IconButton
                         size="small"
-                        onClick={() => handleCopyTeamLink(match.team1?.id, 'team1')}
-                        color={copiedTeam === 'team1' ? 'success' : 'default'}
+                        onClick={() => copyLink(match.team1?.id)}
                       >
-                        {copiedTeam === 'team1' ? (
-                          <ContentCopyIcon fontSize="small" />
-                        ) : (
-                          <LinkIcon fontSize="small" />
-                        )}
+                        <LinkIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   )}
@@ -350,17 +340,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               <Box flex={1} textAlign="right">
                 <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
                   {match.team2?.id && (
-                    <Tooltip title={copiedTeam === 'team2' ? 'Copied!' : 'Copy team match link'}>
+                    <Tooltip title="Copy team match link">
                       <IconButton
                         size="small"
-                        onClick={() => handleCopyTeamLink(match.team2?.id, 'team2')}
-                        color={copiedTeam === 'team2' ? 'success' : 'default'}
+                        onClick={() => copyLink(match.team2?.id)}
                       >
-                        {copiedTeam === 'team2' ? (
-                          <ContentCopyIcon fontSize="small" />
-                        ) : (
-                          <LinkIcon fontSize="small" />
-                        )}
+                        <LinkIcon fontSize="small" />
                       </IconButton>
                     </Tooltip>
                   )}
@@ -786,6 +771,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         </DialogActions>
       </Dialog>
     </Dialog>
+
+    <ToastNotification />
+  </>
   );
 };
 

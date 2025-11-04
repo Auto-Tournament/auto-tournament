@@ -11,7 +11,7 @@ import {
 } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
-import { getStatusColor } from '../../utils/matchUtils';
+import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 
 interface Team {
   id: string;
@@ -137,11 +137,10 @@ export default function DoubleEliminationView({
               {bracketType === 'grand-finals' ? 'GRAND FINALS' : match.slug.toUpperCase()}
             </Typography>
             <Chip
-              label={match.status.toUpperCase()}
+              label={getStatusLabel(match.status)}
               size="small"
+              color={getStatusColor(match.status)}
               sx={{
-                bgcolor: getStatusColor(match.status),
-                color: 'white',
                 fontWeight: 600,
                 fontSize: '0.7rem',
               }}

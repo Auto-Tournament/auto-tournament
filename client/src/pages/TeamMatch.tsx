@@ -17,7 +17,11 @@ import {
   Tooltip,
   Grid,
   Slider,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import StorageIcon from '@mui/icons-material/Storage';
 import MapIcon from '@mui/icons-material/Map';
@@ -36,7 +40,7 @@ import {
   NOTIFICATION_SOUNDS,
   type NotificationSoundValue,
 } from '../utils/soundNotification';
-import { formatDate } from '../utils/matchUtils';
+import { formatDate, getStatusColor, getStatusLabel } from '../utils/matchUtils';
 
 interface Team {
   id: string;
@@ -278,20 +282,7 @@ export default function TeamMatch() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'live':
-        return 'error';
-      case 'loaded':
-        return 'warning';
-      case 'ready':
-        return 'info';
-      case 'completed':
-        return 'success';
-      default:
-        return 'default';
-    }
-  };
+  // Status utilities imported from matchUtils
 
   const getRoundLabel = (round: number) => {
     if (round === 1) return 'Round 1';
@@ -515,61 +506,55 @@ export default function TeamMatch() {
               </Card>
             )}
 
-            {/* Match History */}
+            {/* Match History - Grid of small cards */}
             {matchHistory.length > 0 && (
-              <Card>
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={3}>
-                    <HistoryIcon color="primary" />
-                    <Typography variant="h6" fontWeight={600}>
-                      Recent Matches
-                    </Typography>
-                  </Box>
-                  <Stack spacing={2}>
-                    {matchHistory.map((historyMatch) => (
-                      <Paper
-                        key={historyMatch.slug}
-                        variant="outlined"
+              <Box>
+                <Box display="flex" alignItems="center" gap={1} mb={3}>
+                  <HistoryIcon color="primary" />
+                  <Typography variant="h6" fontWeight={600}>
+                    Match History
+                  </Typography>
+                </Box>
+                <Grid container spacing={2}>
+                  {matchHistory.map((historyMatch) => (
+                    <Grid size={{ xs: 12, sm: 6 }} key={historyMatch.slug}>
+                      <Card
                         sx={{
-                          p: 2,
                           borderLeft: 4,
                           borderColor: historyMatch.won ? 'success.main' : 'error.main',
+                          height: '100%',
                         }}
                       >
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          mb={1}
-                        >
-                          <Box display="flex" alignItems="center" gap={1}>
+                        <CardContent>
+                          <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
                             <Chip
                               label={historyMatch.won ? 'WIN' : 'LOSS'}
                               size="small"
                               color={historyMatch.won ? 'success' : 'error'}
                               sx={{ fontWeight: 600 }}
                             />
-                            <Typography variant="body2" fontWeight={600}>
-                              Match #{historyMatch.matchNumber}
-                            </Typography>
+                            <Chip
+                              label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
+                              size="small"
+                              variant="outlined"
+                              sx={{ fontWeight: 600 }}
+                            />
                           </Box>
-                          <Chip
-                            label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
-                            size="small"
-                            variant="outlined"
-                          />
-                        </Box>
-                        <Typography variant="body2" color="text.secondary">
-                          vs {historyMatch.opponent?.name || 'Unknown'}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {formatDate(historyMatch.completedAt)}
-                        </Typography>
-                      </Paper>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
+                          <Typography variant="body2" fontWeight={600} gutterBottom>
+                            vs {historyMatch.opponent?.name || 'Unknown'}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" display="block">
+                            Match #{historyMatch.matchNumber}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary">
+                            {formatDate(historyMatch.completedAt)}
+                          </Typography>
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  ))}
+                </Grid>
+              </Box>
             )}
           </Stack>
         </Container>
@@ -704,66 +689,9 @@ export default function TeamMatch() {
             </Card>
           )}
 
-          {/* Team Stats Card */}
-          {stats && (
+          {/* Current/Active Match Card - Only show if ready/loaded/live */}
+          {hasMatch && match && ['ready', 'loaded', 'live'].includes(match.status) && (
             <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <LeaderboardIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
-                    Team Performance
-                  </Typography>
-                </Box>
-                <Grid container spacing={2}>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                      <Typography variant="h4" fontWeight={700} color="primary">
-                        {stats.wins}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Wins
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                      <Typography variant="h4" fontWeight={700} color="error">
-                        {stats.losses}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Losses
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                      <Typography variant="h4" fontWeight={700} color="success.main">
-                        {stats.winRate}%
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        Win Rate
-                      </Typography>
-                    </Paper>
-                  </Grid>
-                  {standing && (
-                    <Grid size={{ xs: 6, sm: 3 }}>
-                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
-                        <Typography variant="h4" fontWeight={700}>
-                          #{standing.position}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          of {standing.totalTeams}
-                        </Typography>
-                      </Paper>
-                    </Grid>
-                  )}
-                </Grid>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Match Info Card */}
-          <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
@@ -775,7 +703,7 @@ export default function TeamMatch() {
                   </Typography>
                 </Box>
                 <Chip
-                  label={match.status.toUpperCase()}
+                  label={getStatusLabel(match.status)}
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600, fontSize: '0.9rem', px: 2 }}
                 />
@@ -929,13 +857,6 @@ export default function TeamMatch() {
               <Divider sx={{ my: 3 }} />
 
               <Box>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <MapIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
-                    Match Details
-                  </Typography>
-                </Box>
-
                 <Stack spacing={2}>
                   <Box>
                     <Typography variant="body2" color="text.secondary">
@@ -944,16 +865,23 @@ export default function TeamMatch() {
                   </Box>
 
                   {match.maps.length > 0 && (
-                    <Box>
-                      <Typography variant="body2" color="text.secondary" gutterBottom>
-                        <strong>Map Pool:</strong>
-                      </Typography>
-                      <Box display="flex" flexWrap="wrap" gap={1} mt={1}>
-                        {match.maps.map((map, idx) => (
-                          <Chip key={idx} label={map} size="small" />
-                        ))}
-                      </Box>
-                    </Box>
+                    <Accordion>
+                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <MapIcon fontSize="small" color="primary" />
+                          <Typography variant="body2" fontWeight={600}>
+                            Map Pool ({match.maps.length})
+                          </Typography>
+                        </Box>
+                      </AccordionSummary>
+                      <AccordionDetails>
+                        <Box display="flex" flexWrap="wrap" gap={1}>
+                          {match.maps.map((map, idx) => (
+                            <Chip key={idx} label={map} size="small" />
+                          ))}
+                        </Box>
+                      </AccordionDetails>
+                    </Accordion>
                   )}
                 </Stack>
               </Box>
@@ -990,57 +918,115 @@ export default function TeamMatch() {
               )}
             </CardContent>
           </Card>
+          )}
 
-          {/* Match History */}
-          {matchHistory.length > 0 && (
+          {/* Team Stats Card */}
+          {stats && stats.totalMatches > 0 && (
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={3}>
-                  <HistoryIcon color="primary" />
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <LeaderboardIcon color="primary" />
                   <Typography variant="h6" fontWeight={600}>
-                    Recent Matches
+                    Team Performance
                   </Typography>
                 </Box>
-                <Stack spacing={2}>
-                  {matchHistory.map((historyMatch) => (
-                    <Paper
-                      key={historyMatch.slug}
-                      variant="outlined"
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" fontWeight={700} color="primary">
+                        {stats.wins}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Wins
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" fontWeight={700} color="error">
+                        {stats.losses}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Losses
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  <Grid size={{ xs: 6, sm: 3 }}>
+                    <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
+                      <Typography variant="h4" fontWeight={700} color="success.main">
+                        {stats.winRate}%
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Win Rate
+                      </Typography>
+                    </Paper>
+                  </Grid>
+                  {standing && (
+                    <Grid size={{ xs: 6, sm: 3 }}>
+                      <Paper variant="outlined" sx={{ p: 2, textAlign: 'center' }}>
+                        <Typography variant="h4" fontWeight={700}>
+                          #{standing.position}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          of {standing.totalTeams}
+                        </Typography>
+                      </Paper>
+                    </Grid>
+                  )}
+                </Grid>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Match History - Grid of small cards */}
+          {matchHistory.length > 0 && (
+            <Box>
+              <Box display="flex" alignItems="center" gap={1} mb={3}>
+                <HistoryIcon color="primary" />
+                <Typography variant="h6" fontWeight={600}>
+                  Match History
+                </Typography>
+              </Box>
+              <Grid container spacing={2}>
+                {matchHistory.map((historyMatch) => (
+                  <Grid size={{ xs: 12, sm: 6 }} key={historyMatch.slug}>
+                    <Card
                       sx={{
-                        p: 2,
                         borderLeft: 4,
                         borderColor: historyMatch.won ? 'success.main' : 'error.main',
+                        height: '100%',
                       }}
                     >
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Box display="flex" alignItems="center" gap={1}>
+                      <CardContent>
+                        <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
                           <Chip
                             label={historyMatch.won ? 'WIN' : 'LOSS'}
                             size="small"
                             color={historyMatch.won ? 'success' : 'error'}
                             sx={{ fontWeight: 600 }}
                           />
-                          <Typography variant="body2" fontWeight={600}>
-                            Match #{historyMatch.matchNumber}
-                          </Typography>
+                          <Chip
+                            label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
+                            size="small"
+                            variant="outlined"
+                            sx={{ fontWeight: 600 }}
+                          />
                         </Box>
-                        <Chip
-                          label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
-                          size="small"
-                          variant="outlined"
-                        />
-                      </Box>
-                      <Typography variant="body2" color="text.secondary">
-                        vs {historyMatch.opponent?.name || 'Unknown'}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {formatDate(historyMatch.completedAt)}
-                      </Typography>
-                    </Paper>
-                  ))}
-                </Stack>
-              </CardContent>
-            </Card>
+                        <Typography variant="body2" fontWeight={600} gutterBottom>
+                          vs {historyMatch.opponent?.name || 'Unknown'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          Match #{historyMatch.matchNumber}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatDate(historyMatch.completedAt)}
+                        </Typography>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Box>
           )}
 
           {/* Footer */}

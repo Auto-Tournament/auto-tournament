@@ -22,8 +22,8 @@ import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { formatDate, getStatusColor, getRoundLabel } from '../utils/matchUtils';
-import { copyTeamMatchUrl } from '../utils/teamLinks';
+import { formatDate, getStatusColor, getStatusLabel, getRoundLabel } from '../utils/matchUtils';
+import { useTeamLinkCopy } from '../hooks/useTeamLinkCopy';
 
 interface Team {
   id: string;
@@ -88,25 +88,9 @@ export default function Matches() {
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
-  const [copiedLinkMatch, setCopiedLinkMatch] = useState<string | null>(null);
 
-  // Copy team match link
-  const handleCopyTeamLink = async (
-    teamId: string | undefined,
-    matchSlug: string,
-    event?: React.MouseEvent
-  ) => {
-    if (event) {
-      event.stopPropagation();
-    }
-    if (!teamId) return;
-
-    const success = await copyTeamMatchUrl(teamId);
-    if (success) {
-      setCopiedLinkMatch(matchSlug);
-      setTimeout(() => setCopiedLinkMatch(null), 2000);
-    }
-  };
+  // Team link copy with toast
+  const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   // Download demo file
   const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
@@ -362,15 +346,15 @@ export default function Matches() {
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="center" gap={1}>
-                              <Tooltip title="Copy team 1 link">
+                              <Tooltip title="Copy team match link">
                                 <span>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) =>
-                                      handleCopyTeamLink(match.team1?.id, match.slug, e)
-                                    }
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      copyLink(match.team1?.id);
+                                    }}
                                     disabled={!match.team1?.id}
-                                    color={copiedLinkMatch === match.slug ? 'success' : 'default'}
                                   >
                                     <LinkIcon fontSize="small" />
                                   </IconButton>
@@ -391,7 +375,7 @@ export default function Matches() {
                                 </span>
                               </Tooltip>
                               <Chip
-                                label={match.status.toUpperCase()}
+                                label={getStatusLabel(match.status)}
                                 size="small"
                                 color={getStatusColor(match.status)}
                                 sx={{ fontWeight: 600 }}
@@ -534,15 +518,15 @@ export default function Matches() {
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="center" gap={1}>
-                              <Tooltip title="Copy team 1 link">
+                              <Tooltip title="Copy team match link">
                                 <span>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) =>
-                                      handleCopyTeamLink(match.team1?.id, match.slug, e)
-                                    }
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      copyLink(match.team1?.id);
+                                    }}
                                     disabled={!match.team1?.id}
-                                    color={copiedLinkMatch === match.slug ? 'success' : 'default'}
                                   >
                                     <LinkIcon fontSize="small" />
                                   </IconButton>
@@ -681,6 +665,8 @@ export default function Matches() {
           onClose={() => setSelectedMatch(null)}
         />
       )}
+
+      <ToastNotification />
     </Box>
   );
 }

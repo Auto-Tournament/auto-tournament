@@ -13,7 +13,7 @@ import {
   Chip,
   Grid,
 } from '@mui/material';
-import { getStatusColor } from '../../utils/matchUtils';
+import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 
 interface Team {
   id: string;
@@ -273,7 +273,7 @@ export default function RoundRobinView({ matches, teams, onMatchClick }: RoundRo
                               </Typography>
                             </Box>
                             <Chip
-                              label={match.status.toUpperCase()}
+                              label={getStatusLabel(match.status)}
                               size="small"
                               color={getStatusColor(match.status)}
                               sx={{ ml: 2, minWidth: 90 }}
