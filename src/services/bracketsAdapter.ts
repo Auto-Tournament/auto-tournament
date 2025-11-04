@@ -235,39 +235,55 @@ export class BracketsAdapter {
     team2Id: string | null
   ): Record<string, unknown> {
     const team1 = team1Id
-      ? db.queryOne<{ name: string; tag: string | null; players: string }>(
-          'SELECT name, tag, players FROM teams WHERE id = ?',
+      ? db.queryOne<{ id: string; name: string; tag: string | null; players: string }>(
+          'SELECT id, name, tag, players FROM teams WHERE id = ?',
           [team1Id]
         )
       : null;
 
     const team2 = team2Id
-      ? db.queryOne<{ name: string; tag: string | null; players: string }>(
-          'SELECT name, tag, players FROM teams WHERE id = ?',
+      ? db.queryOne<{ id: string; name: string; tag: string | null; players: string }>(
+          'SELECT id, name, tag, players FROM teams WHERE id = ?',
           [team2Id]
         )
       : null;
 
+    const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
+
     return {
       matchid: `${tournament.name}-${Date.now()}`,
-      num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
+      match_title: `Map 1 of ${numMaps}`,
+      side_type: 'standard',
+      veto_first: 'team1',
+      skip_veto: false,
+      min_players_to_ready: 5,
+      players_per_team: 5,
+      num_maps: numMaps,
       maplist: tournament.maps,
+      min_spectators_to_ready: 0,
+      wingman: false,
+      clinch_series: true,
+      spectators: {
+        players: {},
+      },
       team1: team1
         ? {
+            id: team1.id,
             name: team1.name,
-            tag: team1.tag || team1.name.substring(0, 5).toUpperCase(),
+            tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
             players: JSON.parse(team1.players),
+            series_score: 0,
           }
-        : null,
+        : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
       team2: team2
         ? {
+            id: team2.id,
             name: team2.name,
-            tag: team2.tag || team2.name.substring(0, 5).toUpperCase(),
+            tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
             players: JSON.parse(team2.players),
+            series_score: 0,
           }
-        : null,
-      clinch_series: true,
-      skip_veto: false,
+        : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     };
   }
 

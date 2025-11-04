@@ -14,6 +14,16 @@ export function getMatchZyWebhookCommands(baseUrl: string, serverToken: string):
 }
 
 /**
+ * Get RCON commands to configure MatchZy match loading with bearer auth
+ */
+export function getMatchZyLoadMatchAuthCommands(configToken: string): string[] {
+  return [
+    `matchzy_loadmatch_url_header_key "Authorization"`,
+    `matchzy_loadmatch_url_header_value "Bearer ${configToken}"`,
+  ];
+}
+
+/**
  * Get RCON command to configure MatchZy demo upload
  */
 export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {

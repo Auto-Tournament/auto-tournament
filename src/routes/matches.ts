@@ -3,7 +3,11 @@ import { matchService } from '../services/matchService';
 import { rconService } from '../services/rconService';
 import { CreateMatchInput } from '../types/match.types';
 import { requireAuth } from '../middleware/auth';
-import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyConfig';
+import {
+  getMatchZyWebhookCommands,
+  getMatchZyDemoUploadCommand,
+  getMatchZyLoadMatchAuthCommands,
+} from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
@@ -13,11 +17,38 @@ const router = Router();
 
 /**
  * GET /api/matches/:slug.json
- * Public endpoint for MatchZy to fetch match configuration
- * No authentication required - this is called by the game server
+ * Protected endpoint for MatchZy to fetch match configuration
+ * Requires bearer token authentication from game server
  */
 router.get('/:slug.json', (req: Request, res: Response) => {
   try {
+    // Check for bearer token
+    const authHeader = req.headers.authorization;
+    const expectedToken = process.env.MATCH_CONFIG_TOKEN;
+
+    if (!expectedToken) {
+      return res.status(500).json({
+        success: false,
+        error: 'MATCH_CONFIG_TOKEN environment variable is not configured',
+      });
+    }
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({
+        success: false,
+        error: 'Missing or invalid authorization header. Expected: Bearer <token>',
+      });
+    }
+
+    const token = authHeader.substring(7); // Remove "Bearer " prefix
+    if (token !== expectedToken) {
+      return res.status(403).json({
+        success: false,
+        error: 'Invalid bearer token',
+      });
+    }
+
+    // Token is valid, fetch config
     const { slug } = req.params;
     const config = matchService.getMatchConfig(slug);
 
@@ -302,6 +333,22 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
     results.push(demoResult);
     if (demoResult.success) {
       log.debug(`Demo upload configured for match ${slug}`);
+    }
+
+    // Configure bearer token auth for match config loading
+    const configToken = process.env.MATCH_CONFIG_TOKEN;
+    if (configToken) {
+      log.debug(`Configuring match config auth for ${match.serverId}`);
+      const authCommands = getMatchZyLoadMatchAuthCommands(configToken);
+      for (const cmd of authCommands) {
+        const result = await rconService.sendCommand(match.serverId, cmd);
+        results.push(result);
+      }
+      log.debug(`Match config auth configured for ${match.serverId}`);
+    } else {
+      log.warn(
+        `No MATCH_CONFIG_TOKEN set - match loading will fail. Please set MATCH_CONFIG_TOKEN in .env`
+      );
     }
 
     // Send RCON command to load match

@@ -4,7 +4,11 @@ import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
 import { log } from '../utils/logger';
-import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyConfig';
+import {
+  getMatchZyWebhookCommands,
+  getMatchZyDemoUploadCommand,
+  getMatchZyLoadMatchAuthCommands,
+} from '../utils/matchzyConfig';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
@@ -282,6 +286,22 @@ export class MatchAllocationService {
         log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
       } else {
         log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
+      }
+
+      // Configure bearer token auth for match config loading
+      const configToken = process.env.MATCH_CONFIG_TOKEN;
+      if (configToken) {
+        log.debug(`Configuring match config auth for ${serverId}`);
+        const authCommands = getMatchZyLoadMatchAuthCommands(configToken);
+        for (const cmd of authCommands) {
+          log.debug(`Sending auth command: ${cmd}`, { serverId });
+          await rconService.sendCommand(serverId, cmd);
+        }
+        log.info(`✓ Match config auth configured for ${serverId}`);
+      } else {
+        log.warn(
+          `No MATCH_CONFIG_TOKEN set - match loading will fail. Please set MATCH_CONFIG_TOKEN in .env`
+        );
       }
 
       // Load match on server

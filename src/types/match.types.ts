@@ -3,24 +3,38 @@ export interface MatchPlayer {
 }
 
 export interface MatchTeam {
+  id?: string;
   name: string;
+  tag?: string;
+  flag?: string; // Country code (e.g., "US", "EU")
+  logo?: string | null; // URL to team logo
   players: MatchPlayer;
+  coaches?: MatchPlayer | null;
+  series_score?: number;
+  matchtext?: string | null; // Override team name for single maps
 }
 
 export interface MatchConfig {
   matchid: number | string;
+  match_title?: string;
+  side_type?: string; // "standard", "always_knife", etc.
+  veto_first?: string; // "team1" or "team2"
+  skip_veto?: boolean;
+  min_players_to_ready?: number;
+  players_per_team: number;
   team1: MatchTeam;
   team2: MatchTeam;
   num_maps: number;
-  maplist: string[];
-  map_sides: string[]; // e.g., ["team1_ct", "team2_ct", "knife"]
+  maplist: string[] | null;
+  map_sides?: string[]; // e.g., ["team1_ct", "team2_ct", "knife"]
   spectators?: {
     players?: MatchPlayer;
   };
+  min_spectators_to_ready?: number;
+  wingman?: boolean;
   clinch_series?: boolean;
-  players_per_team: number;
   cvars?: {
-    [key: string]: string;
+    [key: string]: string | number;
   };
 }
 
