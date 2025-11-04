@@ -18,6 +18,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
+import { EmptyState } from '../components/shared/EmptyState';
 
 interface Player {
   steamId: string;
@@ -92,9 +93,9 @@ export default function Teams() {
           </Typography>
           <Chip label={teams.length} color="primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }} />
         </Box>
-        {!error && (
+        {!error && teams.length > 0 && (
           <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-            New Team
+            Add Team
           </Button>
         )}
       </Box>
@@ -107,18 +108,14 @@ export default function Teams() {
 
       {!error &&
         (teams.length === 0 ? (
-          <Card sx={{ textAlign: 'center', py: 8 }}>
-            <GroupsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No teams yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Create your first team to get started
-            </Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-              Create Team
-            </Button>
-          </Card>
+          <EmptyState
+            icon={GroupsIcon}
+            title="No teams yet"
+            description="Create your first team to get started with the tournament"
+            actionLabel="Create Team"
+            actionIcon={AddIcon}
+            onAction={() => handleOpenModal()}
+          />
         ) : (
           <Grid container spacing={3}>
             {teams.map((team) => (

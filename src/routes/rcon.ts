@@ -461,11 +461,15 @@ router.post('/command', async (req: Request, res: Response) => {
     // Build the full command with parameters
     let fullCommand = command;
 
+    // List of base RCON commands that don't need css_ prefix
+    const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password'];
+
     // Add css_ prefix if not present and not a raw RCON command
     if (
       !fullCommand.startsWith('css_') &&
       !fullCommand.startsWith('mp_') &&
-      !fullCommand.startsWith('sv_')
+      !fullCommand.startsWith('sv_') &&
+      !baseRconCommands.includes(fullCommand.split(' ')[0])
     ) {
       fullCommand = `css_${fullCommand}`;
     }

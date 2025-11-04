@@ -267,11 +267,16 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   label="Steam ID / Vanity URL"
                   value={newPlayerSteamId}
                   onChange={(e) => setNewPlayerSteamId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newPlayerSteamId.trim() && !resolving) {
+                      handleResolveSteam();
+                    }
+                  }}
                   placeholder="gaben or steamcommunity.com/id/gaben"
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
-                  helperText="Enter Steam ID64, vanity URL, or profile link"
+                  helperText="Enter Steam ID64, vanity URL, or profile link (press Enter to search)"
                 />
                 <Button
                   variant="outlined"

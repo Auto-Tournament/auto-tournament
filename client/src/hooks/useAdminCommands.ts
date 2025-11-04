@@ -6,6 +6,7 @@ export interface ExecutionResult {
   serverName: string;
   success: boolean;
   error?: string;
+  response?: string;
 }
 
 export const useAdminCommands = () => {

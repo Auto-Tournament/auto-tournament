@@ -19,6 +19,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
+import { EmptyState } from '../components/shared/EmptyState';
 
 interface Server {
   id: string;
@@ -121,7 +122,7 @@ export default function Servers() {
             sx={{ fontWeight: 600, fontSize: '0.9rem' }}
           />
         </Box>
-        {!error && (
+        {!error && servers.length > 0 && (
           <Box display="flex" gap={2}>
             <Button
               variant="outlined"
@@ -132,7 +133,7 @@ export default function Servers() {
               {refreshing ? 'Checking...' : 'Refresh Status'}
             </Button>
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-              New Server
+              Add Server
             </Button>
           </Box>
         )}
@@ -146,18 +147,14 @@ export default function Servers() {
 
       {!error &&
         (servers.length === 0 ? (
-          <Card sx={{ textAlign: 'center', py: 8 }}>
-            <StorageIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-            <Typography variant="h6" color="text.secondary" gutterBottom>
-              No servers yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3}>
-              Create your first CS2 server to get started
-            </Typography>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-              Create Server
-            </Button>
-          </Card>
+          <EmptyState
+            icon={StorageIcon}
+            title="No servers registered"
+            description="Add your first CS2 server to get started with the tournament"
+            actionLabel="Add Server"
+            actionIcon={AddIcon}
+            onAction={() => handleOpenModal()}
+          />
         ) : (
           <Grid container spacing={3}>
             {servers.map((server) => (

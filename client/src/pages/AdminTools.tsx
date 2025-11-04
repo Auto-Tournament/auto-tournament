@@ -42,8 +42,7 @@ const AdminTools: React.FC = () => {
   const [loadingServers, setLoadingServers] = useState(true);
   const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
 
-  const { executing, results, error, success, executeCommand, clearMessages } =
-    useAdminCommands();
+  const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
 
   useEffect(() => {
     loadServers();
@@ -74,10 +73,7 @@ const AdminTools: React.FC = () => {
     }
 
     // Determine which servers to execute on
-    const serverIds =
-      selectedServerId === 'all'
-        ? servers.map((s) => s.id)
-        : [selectedServerId];
+    const serverIds = selectedServerId === 'all' ? servers.map((s) => s.id) : [selectedServerId];
 
     if (serverIds.length === 0) {
       return;
@@ -199,24 +195,54 @@ const AdminTools: React.FC = () => {
             <Typography variant="h6" gutterBottom>
               Execution Results
             </Typography>
-            <Grid container spacing={1}>
+            <Grid container spacing={2}>
               {results.map((result) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={result.serverId}>
+                <Grid size={{ xs: 12 }} key={result.serverId}>
                   <Box
                     sx={{
-                      p: 1.5,
+                      p: 2,
                       borderRadius: 1,
                       border: '1px solid',
                       borderColor: result.success ? 'success.main' : 'error.main',
                       bgcolor: result.success ? 'success.light' : 'error.light',
                     }}
                   >
-                    <Typography variant="body2" fontWeight={600}>
-                      {result.serverName}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      {result.success ? '✓ Success' : `✗ ${result.error}`}
-                    </Typography>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <Typography variant="body2" fontWeight={600}>
+                        {result.serverName}
+                      </Typography>
+                      <Chip
+                        label={result.success ? '✓ Success' : '✗ Failed'}
+                        size="small"
+                        color={result.success ? 'success' : 'error'}
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </Box>
+                    {result.response && (
+                      <Box
+                        sx={{
+                          mt: 1,
+                          p: 1.5,
+                          borderRadius: 1,
+                          bgcolor: 'background.paper',
+                          border: '1px solid',
+                          borderColor: 'divider',
+                          fontFamily: 'monospace',
+                          fontSize: '0.75rem',
+                          whiteSpace: 'pre-wrap',
+                          wordBreak: 'break-word',
+                          maxHeight: '300px',
+                          overflowY: 'auto',
+                        }}
+                      >
+                        {result.response}
+                      </Box>
+                    )}
+                    {result.error && (
+                      <Typography variant="caption" color="error.main" display="block" mt={1}>
+                        Error: {result.error}
+                      </Typography>
+                    )}
                   </Box>
                 </Grid>
               ))}
@@ -300,4 +326,3 @@ const AdminTools: React.FC = () => {
 };
 
 export default AdminTools;
-

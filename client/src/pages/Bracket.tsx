@@ -27,6 +27,7 @@ import RoundRobinView from '../components/visualizations/RoundRobinView';
 import SwissView from '../components/visualizations/SwissView';
 import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { EmptyState } from '../components/shared/EmptyState';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket, type Match } from '../hooks/useBracket';
 
@@ -96,13 +97,11 @@ export default function Bracket() {
   if (error) {
     return (
       <Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-            <Typography variant="h4" fontWeight={600}>
-              Bracket
-            </Typography>
-          </Box>
+        <Box display="flex" alignItems="center" gap={2} mb={4}>
+          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight={600}>
+            Bracket
+          </Typography>
         </Box>
         <Alert severity="error">{error}</Alert>
       </Box>
@@ -112,30 +111,20 @@ export default function Bracket() {
   if (!tournament) {
     return (
       <Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-            <Typography variant="h4" fontWeight={600}>
-              Bracket
-            </Typography>
-          </Box>
+        <Box display="flex" alignItems="center" gap={2} mb={4}>
+          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight={600}>
+            Bracket
+          </Typography>
         </Box>
-        <Card sx={{ textAlign: 'center', py: 8 }}>
-          <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No tournament yet
-          </Typography>
-          <Typography variant="body2" color="text.secondary" mb={3}>
-            Create a tournament and generate the bracket to get started
-          </Typography>
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => navigate('/tournament')}
-          >
-            Create Tournament
-          </Button>
-        </Card>
+        <EmptyState
+          icon={AccountTreeOutlinedIcon}
+          title="No bracket to display"
+          description="Create a tournament and generate the bracket to get started"
+          actionLabel="Create Tournament"
+          actionIcon={AddIcon}
+          onAction={() => navigate('/tournament')}
+        />
       </Box>
     );
   }
@@ -143,13 +132,11 @@ export default function Bracket() {
   if (!matches.length) {
     return (
       <Box>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-          <Box display="flex" alignItems="center" gap={2}>
-            <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-            <Typography variant="h4" fontWeight={600}>
-              Bracket
-            </Typography>
-          </Box>
+        <Box display="flex" alignItems="center" gap={2} mb={4}>
+          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
+          <Typography variant="h4" fontWeight={600}>
+            Bracket
+          </Typography>
         </Box>
         <Card sx={{ textAlign: 'center', py: 8 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />

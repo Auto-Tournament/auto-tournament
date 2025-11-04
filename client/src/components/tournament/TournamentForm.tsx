@@ -23,9 +23,10 @@ import {
   Warning as WarningIcon,
   CheckCircle as CheckCircleIcon,
   DeleteForever as DeleteForeverIcon,
+  Add as AddIcon,
 } from '@mui/icons-material';
 import { TOURNAMENT_TYPES, MATCH_FORMATS, CS2_MAPS } from '../../constants/tournament';
-import { isTournamentTypeValid } from '../../utils/tournamentValidation';
+import { isTournamentTypeValid, validateTeamCountForType } from '../../utils/tournamentValidation';
 import { Team } from '../../types';
 
 interface TournamentFormProps {
@@ -151,22 +152,40 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
             </Grid>
           </Grid>
 
+          {/* Not Enough Teams Alert */}
+          {teams.length < 2 && (
+            <Alert
+              severity="error"
+              icon={<WarningIcon />}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={() => (window.location.href = '/teams')}
+                >
+                  Create Team
+                </Button>
+              }
+            >
+              <Typography variant="body2">
+                You need at least <strong>2 teams</strong> to create a tournament. You currently
+                have <strong>{teams.length}</strong> team(s).
+              </Typography>
+            </Alert>
+          )}
+
           {/* Team Count Validation Alert */}
           {(() => {
-            const tournamentType = TOURNAMENT_TYPES.find((t) => t.value === type);
-            if (!tournamentType || selectedTeams.length === 0) return null;
+            if (selectedTeams.length === 0) return null;
 
-            const teamCount = selectedTeams.length;
-            const isValid = isTournamentTypeValid(tournamentType, teamCount);
+            const validation = validateTeamCountForType(type, selectedTeams.length);
 
-            if (isValid) return null;
+            if (validation.isValid) return null;
 
             return (
               <Alert severity="warning" icon={<WarningIcon />}>
-                <Typography variant="body2">
-                  <strong>{tournamentType.label}</strong> needs a team count that keeps
-                  doubling—like 2, 4, 8, 16… You have <strong>{teamCount}</strong> team(s) selected.
-                </Typography>
+                <Typography variant="body2">{validation.error}</Typography>
               </Alert>
             );
           })()}

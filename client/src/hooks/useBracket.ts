@@ -87,14 +87,20 @@ export const useBracket = () => {
         setMatches(response.matches || []);
         setTotalRounds(response.totalRounds || 0);
       } else {
-        setError('No tournament found. Please create a tournament first.');
+        // No tournament yet - not an error, just empty state
+        setTournament(null);
+        setMatches([]);
+        setTotalRounds(0);
       }
     } catch (err) {
       const error = err as Error;
-      // Handle 404 more gracefully - tournament doesn't exist yet
+      // Handle 404 gracefully - tournament doesn't exist yet (empty state)
       if (error.message.includes('404') || error.message.includes('No tournament')) {
-        setError('No tournament has been created yet. Create one to view the bracket.');
+        setTournament(null);
+        setMatches([]);
+        setTotalRounds(0);
       } else {
+        // Real error - network issue, server error, etc.
         setError(error.message || 'Failed to load bracket');
       }
     } finally {

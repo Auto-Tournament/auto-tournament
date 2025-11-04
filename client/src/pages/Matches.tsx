@@ -16,11 +16,13 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DownloadIcon from '@mui/icons-material/Download';
 import LinkIcon from '@mui/icons-material/Link';
-import { io } from 'socket.io-client';
-import MatchDetailsModal from '../components/modals/MatchDetailsModal';
-import { formatDate, getStatusColor, getRoundLabel } from '../utils/matchUtils';
-import { api } from '../utils/api';
 import PersonIcon from '@mui/icons-material/Person';
+import AddIcon from '@mui/icons-material/Add';
+import { io } from 'socket.io-client';
+import { useNavigate } from 'react-router-dom';
+import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { EmptyState } from '../components/shared/EmptyState';
+import { formatDate, getStatusColor, getRoundLabel } from '../utils/matchUtils';
 import { copyTeamMatchUrl } from '../utils/teamLinks';
 
 interface Team {
@@ -69,22 +71,31 @@ interface MatchEvent {
   event: {
     event: string;
     matchid: string;
-    params?: Record<string, unknown>;
+    params?: {
+      team1_score?: number;
+      team2_score?: number;
+      [key: string]: unknown;
+    };
   };
 }
 
 export default function Matches() {
+  const navigate = useNavigate();
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [liveEvents, setLiveEvents] = useState<Map<string, Record<string, unknown>>>(new Map());
+  const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [copiedLinkMatch, setCopiedLinkMatch] = useState<string | null>(null);
 
   // Copy team match link
-  const handleCopyTeamLink = async (teamId: string | undefined, matchSlug: string, event?: React.MouseEvent) => {
+  const handleCopyTeamLink = async (
+    teamId: string | undefined,
+    matchSlug: string,
+    event?: React.MouseEvent
+  ) => {
     if (event) {
       event.stopPropagation();
     }
@@ -127,38 +138,41 @@ export default function Matches() {
       console.log('Socket.io connected');
     });
 
-    newSocket.on('match:update', (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
-      // Handle connection status updates
-      if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
-        setConnectionCounts((prev) => {
-          const updated = new Map(prev);
-          updated.set(data.slug!, data.connectionStatus!.totalConnected);
-          return updated;
-        });
-        return;
-      }
-
-      // Handle regular match updates
-      const match = data as Match;
-      if (match.status === 'live' || match.status === 'ready') {
-        setLiveMatches((prev) => {
-          const index = prev.findIndex((m) => m.id === match.id);
-          if (index !== -1) {
-            const updated = [...prev];
-            updated[index] = match;
+    newSocket.on(
+      'match:update',
+      (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
+        // Handle connection status updates
+        if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
+          setConnectionCounts((prev) => {
+            const updated = new Map(prev);
+            updated.set(data.slug!, data.connectionStatus!.totalConnected);
             return updated;
-          }
-          return [...prev, match];
-        });
-      } else if (match.status === 'completed') {
-        setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
-        setMatchHistory((prev) => {
-          const exists = prev.find((m) => m.id === match.id);
-          if (exists) return prev;
-          return [match, ...prev];
-        });
+          });
+          return;
+        }
+
+        // Handle regular match updates
+        const match = data as Match;
+        if (match.status === 'live' || match.status === 'ready') {
+          setLiveMatches((prev) => {
+            const index = prev.findIndex((m) => m.id === match.id);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = match;
+              return updated;
+            }
+            return [...prev, match];
+          });
+        } else if (match.status === 'completed') {
+          setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
+          setMatchHistory((prev) => {
+            const exists = prev.find((m) => m.id === match.id);
+            if (exists) return prev;
+            return [match, ...prev];
+          });
+        }
       }
-    });
+    );
 
     newSocket.on('match:event', (data: MatchEvent) => {
       setLiveEvents((prev) => {
@@ -280,15 +294,14 @@ export default function Matches() {
       </Box>
 
       {!hasMatches && (
-        <Card sx={{ textAlign: 'center', py: 8 }}>
-          <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-          <Typography variant="h6" color="text.secondary" gutterBottom>
-            No matches to display
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Create a tournament and generate brackets to see matches here
-          </Typography>
-        </Card>
+        <EmptyState
+          icon={SportsEsportsIcon}
+          title="No matches to display"
+          description="Create a tournament and generate brackets to see matches here"
+          actionLabel="Create Tournament"
+          actionIcon={AddIcon}
+          onAction={() => navigate('/tournament')}
+        />
       )}
 
       {hasMatches && (
@@ -353,7 +366,9 @@ export default function Matches() {
                                 <span>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) => handleCopyTeamLink(match.team1?.id, match.slug, e)}
+                                    onClick={(e) =>
+                                      handleCopyTeamLink(match.team1?.id, match.slug, e)
+                                    }
                                     disabled={!match.team1?.id}
                                     color={copiedLinkMatch === match.slug ? 'success' : 'default'}
                                   >
@@ -361,7 +376,9 @@ export default function Matches() {
                                   </IconButton>
                                 </span>
                               </Tooltip>
-                              <Tooltip title={match.demoFilePath ? "Download Demo" : "No demo available"}>
+                              <Tooltip
+                                title={match.demoFilePath ? 'Download Demo' : 'No demo available'}
+                              >
                                 <span>
                                   <IconButton
                                     size="small"
@@ -521,7 +538,9 @@ export default function Matches() {
                                 <span>
                                   <IconButton
                                     size="small"
-                                    onClick={(e) => handleCopyTeamLink(match.team1?.id, match.slug, e)}
+                                    onClick={(e) =>
+                                      handleCopyTeamLink(match.team1?.id, match.slug, e)
+                                    }
                                     disabled={!match.team1?.id}
                                     color={copiedLinkMatch === match.slug ? 'success' : 'default'}
                                   >
@@ -529,7 +548,9 @@ export default function Matches() {
                                   </IconButton>
                                 </span>
                               </Tooltip>
-                              <Tooltip title={match.demoFilePath ? "Download Demo" : "No demo available"}>
+                              <Tooltip
+                                title={match.demoFilePath ? 'Download Demo' : 'No demo available'}
+                              >
                                 <span>
                                   <IconButton
                                     size="small"

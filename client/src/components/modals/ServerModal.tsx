@@ -182,7 +182,7 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
   return (
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-        <DialogTitle>{isEditing ? 'Edit Server' : 'Create New Server'}</DialogTitle>
+        <DialogTitle>{isEditing ? 'Edit Server' : 'Add Server'}</DialogTitle>
         <DialogContent>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
@@ -304,7 +304,7 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
             Cancel
           </Button>
           <Button onClick={handleSave} variant="contained" disabled={saving}>
-            {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Server'}
+            {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Server'}
           </Button>
         </DialogActions>
       </Dialog>
