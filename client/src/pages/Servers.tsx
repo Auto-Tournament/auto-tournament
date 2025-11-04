@@ -231,6 +231,7 @@ export default function Servers() {
       <ServerModal
         open={modalOpen}
         server={editingServer}
+        servers={servers}
         onClose={handleCloseModal}
         onSave={handleSave}
       />

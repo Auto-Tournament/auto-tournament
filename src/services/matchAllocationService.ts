@@ -2,6 +2,7 @@ import { db } from '../config/database';
 import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
+import { serverStatusService, ServerStatus } from './serverStatusService';
 import { log } from '../utils/logger';
 import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyConfig';
 import type { ServerResponse } from '../types/server.types';
@@ -78,24 +79,31 @@ export class MatchAllocationService {
       error?: string;
     }>
   > {
+    log.info('📊 Getting available servers...');
     const availableServers = await this.getAvailableServers();
-    const readyMatches = this.getReadyMatches();
+    log.info(`Found ${availableServers.length} available server(s)`);
 
-    log.debug(`Allocating ${availableServers.length} servers to ${readyMatches.length} matches`);
+    log.info('📊 Getting ready matches...');
+    const readyMatches = this.getReadyMatches();
+    log.info(`Found ${readyMatches.length} ready match(es) to allocate`);
 
     if (readyMatches.length === 0) {
-      log.debug('No ready matches to allocate');
+      log.info('✓ No ready matches to allocate');
       return [];
     }
 
     if (availableServers.length === 0) {
-      log.warn('No available servers for match allocation');
+      log.warn('⚠️  No available servers for match allocation');
       return readyMatches.map((match) => ({
         matchSlug: match.slug,
         success: false,
         error: 'No available servers',
       }));
     }
+
+    log.info(
+      `🎯 Allocating ${readyMatches.length} match(es) to ${availableServers.length} server(s)`
+    );
 
     const results: Array<{
       matchSlug: string;
@@ -110,6 +118,8 @@ export class MatchAllocationService {
       const server = availableServers[serverIndex % availableServers.length];
 
       try {
+        log.info(`➡️  Allocating match ${match.slug} to server ${server.name} (${server.id})`);
+
         // Update match with server_id
         db.update('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
 
@@ -125,6 +135,9 @@ export class MatchAllocationService {
           });
           serverIndex++; // Move to next server for next match
         } else {
+          log.error(`Failed to load match ${match.slug} on ${server.name}`, undefined, {
+            error: loadResult.error,
+          });
           results.push({
             matchSlug: match.slug,
             serverId: server.id,
@@ -143,6 +156,12 @@ export class MatchAllocationService {
         });
       }
     }
+
+    log.info(
+      `📈 Allocation complete: ${results.filter((r) => r.success).length} successful, ${
+        results.filter((r) => !r.success).length
+      } failed`
+    );
 
     return results;
   }
@@ -223,35 +242,61 @@ export class MatchAllocationService {
     const serverToken = process.env.SERVER_TOKEN || '';
 
     try {
+      log.info(`🎮 Loading match ${matchSlug} on server ${serverId}`);
+
       // Get match config
       const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
       if (!match) {
+        log.error(`Match ${matchSlug} not found in database`);
         return { success: false, error: 'Match not found' };
       }
 
       const configUrl = `${baseUrl}/api/matches/${matchSlug}.json`;
+      log.debug(`Match config URL: ${configUrl}`);
+
+      // Initialize server status
+      await serverStatusService.initializeMatchOnServer(serverId, matchSlug);
 
       // Configure webhook (if SERVER_TOKEN is set)
       if (serverToken) {
+        log.debug(`Configuring webhook for server ${serverId}`);
         const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
         for (const cmd of webhookCommands) {
+          log.debug(`Sending webhook command: ${cmd}`, { serverId });
           await rconService.sendCommand(serverId, cmd);
         }
         log.webhookConfigured(serverId, `${baseUrl}/api/events`);
+      } else {
+        log.warn(`No SERVER_TOKEN set, skipping webhook configuration for ${serverId}`);
       }
 
       // Configure demo upload URL
       const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
-      await rconService.sendCommand(serverId, demoUploadCommand);
-      log.debug(`Demo upload configured for match ${matchSlug}`, { serverId });
+      log.debug(`Configuring demo upload for match ${matchSlug}`, {
+        serverId,
+        command: demoUploadCommand,
+        uploadUrl: `${baseUrl}/api/demos/${matchSlug}/upload`,
+      });
+      const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
+      if (demoResult.success) {
+        log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
+      } else {
+        log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
+      }
 
       // Load match on server
+      log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
       const loadResult = await rconService.sendCommand(
         serverId,
         `matchzy_loadmatch_url "${configUrl}"`
       );
 
       if (loadResult.success) {
+        log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
+
+        // Set server status to warmup (waiting for players)
+        await serverStatusService.setMatchWarmup(serverId, matchSlug);
+
         // Update match status to 'loaded'
         db.update(
           'matches',
@@ -262,6 +307,8 @@ export class MatchAllocationService {
         log.matchLoaded(matchSlug, serverId, !!serverToken);
         return { success: true };
       } else {
+        // Set server status to error
+        await serverStatusService.setServerStatus(serverId, ServerStatus.ERROR);
         return { success: false, error: loadResult.error };
       }
     } catch (error) {
@@ -285,9 +332,13 @@ export class MatchAllocationService {
       error?: string;
     }>;
   }> {
+    log.info('🚀 ==================== STARTING TOURNAMENT ====================');
+    log.info(`Base URL: ${baseUrl}`);
+
     // Check if tournament exists and is ready
     const tournament = tournamentService.getTournament();
     if (!tournament) {
+      log.error('No tournament exists');
       return {
         success: false,
         message: 'No tournament exists',
@@ -297,10 +348,15 @@ export class MatchAllocationService {
       };
     }
 
+    log.info(`Tournament: ${tournament.name} (${tournament.type}, ${tournament.format})`);
+    log.info(`Current status: ${tournament.status}`);
+    log.info(`Teams: ${tournament.teamIds.length}`);
+
     if (tournament.status === 'in_progress') {
       // Tournament already started, just allocate any remaining matches
-      log.debug('Tournament already in progress, allocating remaining matches');
+      log.info('Tournament already in progress, allocating remaining matches');
     } else if (tournament.status === 'completed') {
+      log.warn('Tournament is already completed');
       return {
         success: false,
         message: 'Tournament is already completed. Please create a new tournament.',
@@ -309,6 +365,7 @@ export class MatchAllocationService {
         results: [],
       };
     } else if (tournament.status !== 'setup' && tournament.status !== 'ready') {
+      log.warn(`Invalid tournament status: ${tournament.status}`);
       return {
         success: false,
         message: `Tournament is in '${tournament.status}' status. Must be 'setup', 'ready', or 'in_progress' to start.`,
@@ -319,7 +376,9 @@ export class MatchAllocationService {
     }
 
     // Allocate servers to matches
+    log.info('Allocating servers to matches...');
     const results = await this.allocateServersToMatches(baseUrl);
+    log.info(`Allocation complete: ${results.length} matches processed`);
 
     const allocated = results.filter((r) => r.success).length;
     const failed = results.filter((r) => !r.success).length;

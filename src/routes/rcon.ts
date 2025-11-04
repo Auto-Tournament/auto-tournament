@@ -461,35 +461,41 @@ router.post('/command', async (req: Request, res: Response) => {
     // Build the full command with parameters
     let fullCommand = command;
 
-    // List of base RCON commands that don't need css_ prefix
-    const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password'];
+    // Handle custom raw RCON commands
+    if (command === 'custom' && value) {
+      // Use the value directly as the raw command without any prefix
+      fullCommand = value;
+    } else {
+      // List of base RCON commands that don't need css_ prefix
+      const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password'];
 
-    // Add css_ prefix if not present and not a raw RCON command
-    if (
-      !fullCommand.startsWith('css_') &&
-      !fullCommand.startsWith('mp_') &&
-      !fullCommand.startsWith('sv_') &&
-      !baseRconCommands.includes(fullCommand.split(' ')[0])
-    ) {
-      fullCommand = `css_${fullCommand}`;
-    }
+      // Add css_ prefix if not present and not a raw RCON command
+      if (
+        !fullCommand.startsWith('css_') &&
+        !fullCommand.startsWith('mp_') &&
+        !fullCommand.startsWith('sv_') &&
+        !baseRconCommands.includes(fullCommand.split(' ')[0])
+      ) {
+        fullCommand = `css_${fullCommand}`;
+      }
 
-    // Append parameters based on the command
-    if (message !== undefined) {
-      // For css_asay and similar
-      fullCommand = `${fullCommand} ${message}`;
-    } else if (round !== undefined) {
-      // For css_restore
-      fullCommand = `${fullCommand} ${round}`;
-    } else if (value !== undefined) {
-      // For css_readyrequired
-      fullCommand = `${fullCommand} ${value}`;
-    } else if (map !== undefined) {
-      // For css_map
-      fullCommand = `${fullCommand} ${map}`;
-    } else if (name !== undefined) {
-      // For css_team1, css_team2
-      fullCommand = `${fullCommand} ${name}`;
+      // Append parameters based on the command
+      if (message !== undefined) {
+        // For css_asay and similar
+        fullCommand = `${fullCommand} ${message}`;
+      } else if (round !== undefined) {
+        // For css_restore
+        fullCommand = `${fullCommand} ${round}`;
+      } else if (value !== undefined && command !== 'custom') {
+        // For css_readyrequired and similar (but not for custom)
+        fullCommand = `${fullCommand} ${value}`;
+      } else if (map !== undefined) {
+        // For css_map
+        fullCommand = `${fullCommand} ${map}`;
+      } else if (name !== undefined) {
+        // For css_team1, css_team2
+        fullCommand = `${fullCommand} ${name}`;
+      }
     }
 
     // Execute command on all specified servers

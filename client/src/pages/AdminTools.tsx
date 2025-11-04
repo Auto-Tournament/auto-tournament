@@ -27,6 +27,7 @@ import { api } from '../utils/api';
 import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from '../constants/adminCommands';
 import { useAdminCommands } from '../hooks/useAdminCommands';
 import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
+import { LogViewer } from '../components/admin/LogViewer';
 
 interface Server {
   id: string;
@@ -120,6 +121,13 @@ const AdminTools: React.FC = () => {
       {/* Server Events Monitor */}
       <Box mb={3}>
         <ServerEventsMonitor />
+      </Box>
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Application Logs */}
+      <Box mb={3}>
+        <LogViewer />
       </Box>
 
       <Divider sx={{ my: 4 }} />

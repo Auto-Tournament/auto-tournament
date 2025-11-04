@@ -15,6 +15,7 @@ import {
   CardContent,
   Button,
   Alert,
+  Tooltip,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -97,7 +98,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [copiedTeam, setCopiedTeam] = useState<'team1' | 'team2' | null>(null);
-  
+
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
 
@@ -296,7 +297,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                         onClick={() => handleCopyTeamLink(match.team1?.id, 'team1')}
                         color={copiedTeam === 'team1' ? 'success' : 'default'}
                       >
-                        {copiedTeam === 'team1' ? <ContentCopyIcon fontSize="small" /> : <LinkIcon fontSize="small" />}
+                        {copiedTeam === 'team1' ? (
+                          <ContentCopyIcon fontSize="small" />
+                        ) : (
+                          <LinkIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </Tooltip>
                   )}
@@ -351,7 +356,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                         onClick={() => handleCopyTeamLink(match.team2?.id, 'team2')}
                         color={copiedTeam === 'team2' ? 'success' : 'default'}
                       >
-                        {copiedTeam === 'team2' ? <ContentCopyIcon fontSize="small" /> : <LinkIcon fontSize="small" />}
+                        {copiedTeam === 'team2' ? (
+                          <ContentCopyIcon fontSize="small" />
+                        ) : (
+                          <LinkIcon fontSize="small" />
+                        )}
                       </IconButton>
                     </Tooltip>
                   )}
@@ -429,7 +438,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                               </Box>
                             ))}
                           {connectionStatus.team1Connected === 0 && (
-                            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ py: 2, textAlign: 'center' }}
+                            >
                               No players connected yet
                             </Typography>
                           )}
@@ -477,7 +490,11 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                               </Box>
                             ))}
                           {connectionStatus.team2Connected === 0 && (
-                            <Typography variant="body2" color="text.secondary" sx={{ py: 2, textAlign: 'center' }}>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              sx={{ py: 2, textAlign: 'center' }}
+                            >
                               No players connected yet
                             </Typography>
                           )}

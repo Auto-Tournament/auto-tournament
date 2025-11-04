@@ -9,6 +9,7 @@ import { emitMatchEvent, emitMatchUpdate, emitBracketUpdate } from '../services/
 import { matchAllocationService } from '../services/matchAllocationService';
 import { eventBufferService } from '../services/eventBufferService';
 import { playerConnectionService } from '../services/playerConnectionService';
+import { serverStatusService } from '../services/serverStatusService';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
@@ -213,6 +214,15 @@ function handleEvent(event: MatchZyEvent): void {
           Date.now() / 1000
         )} WHERE slug = '${event.matchid}'`
       );
+      // Update server status to live
+      {
+        const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+          event.matchid,
+        ]);
+        if (match?.server_id) {
+          serverStatusService.setMatchLive(match.server_id, event.matchid);
+        }
+      }
       break;
 
     case 'series_end':
@@ -223,6 +233,15 @@ function handleEvent(event: MatchZyEvent): void {
       handleSeriesEnd(event);
       // Clear connection tracking when match ends
       playerConnectionService.clearMatch(event.matchid);
+      // Update server status to postgame
+      {
+        const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+          event.matchid,
+        ]);
+        if (match?.server_id) {
+          serverStatusService.setMatchCompleted(match.server_id);
+        }
+      }
       break;
 
     case 'map_result':
@@ -250,10 +269,12 @@ function handleEvent(event: MatchZyEvent): void {
         if (match && match.config) {
           const config = JSON.parse(match.config);
           const team1Players = config.team1?.players || [];
-          
-          const isTeam1 = team1Players.some((p: { steamid: string }) => p.steamid === event.player.steamid);
+
+          const isTeam1 = team1Players.some(
+            (p: { steamid: string }) => p.steamid === event.player.steamid
+          );
           const team = isTeam1 ? 'team1' : 'team2';
-          
+
           playerConnectionService.playerConnected(
             event.matchid,
             event.player.steamid,
@@ -273,6 +294,15 @@ function handleEvent(event: MatchZyEvent): void {
       log.success(`Map ${event.map_number} going live!`, { matchId: event.matchid });
       // Mark all connected players as ready
       playerConnectionService.markAllReady(event.matchid);
+      // Update server status if first map
+      if (event.map_number === 1) {
+        const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+          event.matchid,
+        ]);
+        if (match?.server_id) {
+          serverStatusService.setMatchLive(match.server_id, event.matchid);
+        }
+      }
       break;
 
     default:

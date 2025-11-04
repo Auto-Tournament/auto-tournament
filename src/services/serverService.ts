@@ -31,6 +31,21 @@ export class ServerService {
   }
 
   /**
+   * Check if a server with the same host:port already exists
+   */
+  private getServerByHostPort(host: string, port: number, excludeId?: string): Server | null {
+    const servers = db.getAll<Server>('servers', 'host = ? AND port = ?', [host, port]);
+
+    // If excludeId is provided, filter it out (for updates)
+    if (excludeId) {
+      const filtered = servers.filter((s) => s.id !== excludeId);
+      return filtered.length > 0 ? filtered[0] : null;
+    }
+
+    return servers.length > 0 ? servers[0] : null;
+  }
+
+  /**
    * Create a new server
    */
   createServer(input: CreateServerInput, upsert = false): ServerResponse {
@@ -47,6 +62,14 @@ export class ServerService {
         });
       }
       throw new Error(`Server with ID '${input.id}' already exists`);
+    }
+
+    // Check if server with same host:port already exists
+    const duplicate = this.getServerByHostPort(input.host, input.port);
+    if (duplicate) {
+      throw new Error(
+        `A server with host:port '${input.host}:${input.port}' already exists (ID: ${duplicate.id}, Name: ${duplicate.name})`
+      );
     }
 
     // Validate port
@@ -79,6 +102,20 @@ export class ServerService {
     // Validate port if provided
     if (input.port !== undefined && (input.port < 1 || input.port > 65535)) {
       throw new Error('Port must be between 1 and 65535');
+    }
+
+    // Check for duplicate host:port if either is being changed
+    const newHost = input.host !== undefined ? input.host : existing.host;
+    const newPort = input.port !== undefined ? input.port : existing.port;
+
+    // Only check if host or port is actually changing
+    if (input.host !== undefined || input.port !== undefined) {
+      const duplicate = this.getServerByHostPort(newHost, newPort, id);
+      if (duplicate) {
+        throw new Error(
+          `A server with host:port '${newHost}:${newPort}' already exists (ID: ${duplicate.id}, Name: ${duplicate.name})`
+        );
+      }
     }
 
     const updateData: Record<string, unknown> = {

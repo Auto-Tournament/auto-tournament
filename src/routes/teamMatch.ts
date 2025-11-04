@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
+import { serverStatusService } from '../services/serverStatusService';
 import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
@@ -9,9 +10,11 @@ const router = Router();
  * Get current or next match for a team (public, no auth required)
  * This is for teams to view their match info and connect to servers
  */
-router.get('/:teamId/match', (req: Request, res: Response) => {
+router.get('/:teamId/match', async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
+
+    console.log(`[TeamMatch] Looking for matches for team: ${teamId}`);
 
     // Check if team exists
     const team = db.queryOne<{ id: string; name: string; tag: string }>(
@@ -20,11 +23,14 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
     );
 
     if (!team) {
+      console.log(`[TeamMatch] Team not found: ${teamId}`);
       return res.status(404).json({
         success: false,
         error: 'Team not found',
       });
     }
+
+    console.log(`[TeamMatch] Team found: ${team.name}`);
 
     // Find active match (loaded or live)
     let match = db.queryOne<
@@ -54,8 +60,13 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
       [teamId, teamId]
     );
 
+    if (match) {
+      console.log(`[TeamMatch] Found active match: ${match.slug} (status: ${match.status})`);
+    }
+
     // If no active match, find next pending/ready match
     if (!match) {
+      console.log(`[TeamMatch] No active match, looking for pending/ready matches...`);
       match = db.queryOne<
         DbMatchRow & {
           team1_name?: string;
@@ -82,9 +93,28 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
         LIMIT 1`,
         [teamId, teamId]
       );
+
+      if (match) {
+        console.log(
+          `[TeamMatch] Found pending/ready match: ${match.slug} (status: ${match.status})`
+        );
+      }
     }
 
+    // Check all matches for this team for debugging
+    const allMatches = db.query<DbMatchRow>(
+      `SELECT slug, status, round, match_number FROM matches 
+       WHERE team1_id = ? OR team2_id = ?
+       ORDER BY round, match_number`,
+      [teamId, teamId]
+    );
+    console.log(
+      `[TeamMatch] All matches for team ${team.name}:`,
+      allMatches.map((m) => `${m.slug} (${m.status})`).join(', ') || 'none'
+    );
+
     if (!match) {
+      console.log(`[TeamMatch] No matches found for team ${team.name}`);
       return res.json({
         success: true,
         team: {
@@ -103,6 +133,12 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
       ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
       : { id: match.team1_id, name: match.team1_name, tag: match.team1_tag };
 
+    console.log(
+      `[TeamMatch] Returning match ${match.slug} for team ${team.name} (opponent: ${
+        opponent.name || 'TBD'
+      }, server: ${match.server_name || 'not assigned'})`
+    );
+
     // Get match config for map pool
     const config = match.config ? JSON.parse(match.config) : {};
 
@@ -110,6 +146,17 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
     // CS2 servers typically don't have a join password by default
     // If you want to add join passwords, add a separate field to servers table
     const serverPassword = null;
+
+    // Get real server status from the server itself
+    let realServerStatus = null;
+    let serverStatusDescription = null;
+    if (match.server_id) {
+      const statusInfo = await serverStatusService.getServerStatus(match.server_id);
+      if (statusInfo.online && statusInfo.status) {
+        realServerStatus = statusInfo.status;
+        serverStatusDescription = serverStatusService.getStatusDescription(statusInfo.status);
+      }
+    }
 
     return res.json({
       success: true,
@@ -139,6 +186,8 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
               host: match.server_host,
               port: match.server_port,
               password: serverPassword,
+              status: realServerStatus,
+              statusDescription: serverStatusDescription,
             }
           : null,
         maps: config.maplist || [],
@@ -156,4 +205,3 @@ router.get('/:teamId/match', (req: Request, res: Response) => {
 });
 
 export default router;
-

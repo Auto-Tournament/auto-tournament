@@ -17,6 +17,7 @@ import DiscordIcon from '@mui/icons-material/Forum';
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
+import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
 
@@ -40,6 +41,7 @@ export default function Teams() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
   const loadTeams = async () => {
@@ -75,6 +77,30 @@ export default function Teams() {
     handleCloseModal();
   };
 
+  const handleImportTeams = async (
+    importedTeams: Array<{
+      name: string;
+      tag?: string;
+      players: Array<{ name: string; steamId: string }>;
+    }>
+  ) => {
+    // Generate IDs from team names (slugify)
+    const teamsWithIds = importedTeams.map((team) => ({
+      id: team.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_+|_+$/g, ''),
+      name: team.name,
+      tag: team.tag || '',
+      players: team.players,
+    }));
+
+    const promises = teamsWithIds.map((team) => api.post('/api/teams', team));
+
+    await Promise.all(promises);
+    await loadTeams();
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -94,9 +120,14 @@ export default function Teams() {
           <Chip label={teams.length} color="primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }} />
         </Box>
         {!error && teams.length > 0 && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-            Add Team
-          </Button>
+          <Box display="flex" gap={2}>
+            <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+              Import JSON
+            </Button>
+            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
+              Add Team
+            </Button>
+          </Box>
         )}
       </Box>
 
@@ -108,14 +139,21 @@ export default function Teams() {
 
       {!error &&
         (teams.length === 0 ? (
-          <EmptyState
-            icon={GroupsIcon}
-            title="No teams yet"
-            description="Create your first team to get started with the tournament"
-            actionLabel="Create Team"
-            actionIcon={AddIcon}
-            onAction={() => handleOpenModal()}
-          />
+          <Box>
+            <EmptyState
+              icon={GroupsIcon}
+              title="No teams yet"
+              description="Create your first team to get started with the tournament"
+              actionLabel="Create Team"
+              actionIcon={AddIcon}
+              onAction={() => handleOpenModal()}
+            />
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+                Or Import Teams from JSON
+              </Button>
+            </Box>
+          </Box>
         ) : (
           <Grid container spacing={3}>
             {teams.map((team) => (
@@ -180,6 +218,11 @@ export default function Teams() {
         team={editingTeam}
         onClose={handleCloseModal}
         onSave={handleSave}
+      />
+      <TeamImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImportTeams}
       />
     </Box>
   );

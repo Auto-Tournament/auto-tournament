@@ -31,11 +31,12 @@ interface Server {
 interface ServerModalProps {
   open: boolean;
   server: Server | null;
+  servers: Server[]; // All existing servers for duplicate checking
   onClose: () => void;
   onSave: () => void;
 }
 
-export default function ServerModal({ open, server, onClose, onSave }: ServerModalProps) {
+export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
@@ -120,6 +121,20 @@ export default function ServerModal({ open, server, onClose, onSave }: ServerMod
 
     if (!password.trim()) {
       setError('RCON password is required');
+      return;
+    }
+
+    // Check for duplicate host:port combination
+    const duplicate = servers.find(
+      (s) => s.host === host.trim() && s.port === portNum && s.id !== (isEditing ? server?.id : '') // Exclude current server when editing
+    );
+
+    if (duplicate) {
+      setError(
+        `A server with host:port '${host.trim()}:${portNum}' already exists (ID: ${
+          duplicate.id
+        }, Name: ${duplicate.name})`
+      );
       return;
     }
 

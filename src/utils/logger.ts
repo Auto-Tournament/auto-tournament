@@ -2,6 +2,37 @@ import pino from 'pino';
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+// In-memory log buffer for recent logs
+export interface LogEntry {
+  timestamp: number;
+  level: string;
+  message: string;
+  meta?: object;
+}
+
+const MAX_LOGS = 1000; // Keep last 1000 logs
+const logBuffer: LogEntry[] = [];
+
+// Helper to add to log buffer
+function addToBuffer(level: string, message: string, meta?: object) {
+  logBuffer.push({
+    timestamp: Date.now(),
+    level,
+    message,
+    meta,
+  });
+
+  // Keep only the last MAX_LOGS entries
+  if (logBuffer.length > MAX_LOGS) {
+    logBuffer.shift();
+  }
+}
+
+// Export function to get recent logs
+export function getRecentLogs(limit = 100): LogEntry[] {
+  return logBuffer.slice(-limit).reverse(); // Most recent first
+}
+
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   transport: isDevelopment
@@ -20,73 +51,146 @@ export const logger = pino({
 // Convenience methods with emojis
 export const log = {
   // Server events
-  server: (message: string, meta?: object) => logger.info({ ...meta }, `🚀 ${message}`),
-  database: (message: string, meta?: object) => logger.info({ ...meta }, `📦 ${message}`),
+  server: (message: string, meta?: object) => {
+    const msg = `🚀 ${message}`;
+    addToBuffer('info', msg, meta);
+    logger.info({ ...meta }, msg);
+  },
+  database: (message: string, meta?: object) => {
+    const msg = `📦 ${message}`;
+    addToBuffer('info', msg, meta);
+    logger.info({ ...meta }, msg);
+  },
 
   // Match events
-  matchCreated: (slug: string, serverId: string) =>
-    logger.info({ slug, serverId }, `🎮 Match created: ${slug} on server ${serverId}`),
-  matchLoaded: (slug: string, serverId: string, webhookConfigured: boolean) =>
-    logger.info(
-      { slug, serverId, webhookConfigured },
-      `✅ Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`
-    ),
-  matchAllocated: (slug: string, serverId: string, serverName: string) =>
-    logger.info(
-      { slug, serverId, serverName },
-      `🎯 Match allocated: ${slug} → ${serverName} (${serverId})`
-    ),
-  matchStatusUpdate: (slug: string, status: string) =>
-    logger.info({ slug, status }, `📊 Match status: ${slug} → ${status}`),
+  matchCreated: (slug: string, serverId: string) => {
+    const msg = `🎮 Match created: ${slug} on server ${serverId}`;
+    const meta = { slug, serverId };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  matchLoaded: (slug: string, serverId: string, webhookConfigured: boolean) => {
+    const msg = `✅ Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`;
+    const meta = { slug, serverId, webhookConfigured };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  matchAllocated: (slug: string, serverId: string, serverName: string) => {
+    const msg = `🎯 Match allocated: ${slug} → ${serverName} (${serverId})`;
+    const meta = { slug, serverId, serverName };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  matchStatusUpdate: (slug: string, status: string) => {
+    const msg = `📊 Match status: ${slug} → ${status}`;
+    const meta = { slug, status };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
 
   // RCON events
-  rconCommand: (serverId: string, command: string, success: boolean) =>
-    logger.info(
-      { serverId, command, success },
-      `🎛️  RCON ${success ? '✓' : '✗'}: ${serverId} → ${command}`
-    ),
-  rconBroadcast: (count: number, command: string) =>
-    logger.info({ count, command }, `📢 Broadcast to ${count} servers: ${command}`),
+  rconCommand: (serverId: string, command: string, success: boolean) => {
+    const msg = `🎛️  RCON ${success ? '✓' : '✗'}: ${serverId} → ${command}`;
+    const meta = { serverId, command, success };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  rconBroadcast: (count: number, command: string) => {
+    const msg = `📢 Broadcast to ${count} servers: ${command}`;
+    const meta = { count, command };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
 
   // Webhook events
-  webhookReceived: (event: string, matchId: string) =>
-    logger.info({ event, matchId }, `📡 Event received: ${event} (${matchId})`),
-  webhookConfigured: (serverId: string, url: string) =>
-    logger.info({ serverId, url }, `🔗 Webhook configured: ${serverId} → ${url}`),
+  webhookReceived: (event: string, matchId: string) => {
+    const msg = `📡 Event received: ${event} (${matchId})`;
+    const meta = { event, matchId };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  webhookConfigured: (serverId: string, url: string) => {
+    const msg = `🔗 Webhook configured: ${serverId} → ${url}`;
+    const meta = { serverId, url };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
 
   // Server management
-  serverCreated: (id: string, name: string) =>
-    logger.info({ id, name }, `🖥️  Server created: ${name} (${id})`),
-  serverUpdated: (id: string, name: string) =>
-    logger.info({ id, name }, `🔧 Server updated: ${name} (${id})`),
-  serverDeleted: (id: string, name: string) =>
-    logger.info({ id, name }, `🗑️  Server deleted: ${name} (${id})`),
+  serverCreated: (id: string, name: string) => {
+    const msg = `🖥️  Server created: ${name} (${id})`;
+    const meta = { id, name };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  serverUpdated: (id: string, name: string) => {
+    const msg = `🔧 Server updated: ${name} (${id})`;
+    const meta = { id, name };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
+  serverDeleted: (id: string, name: string) => {
+    const msg = `🗑️  Server deleted: ${name} (${id})`;
+    const meta = { id, name };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
 
   // HTTP requests
-  request: (method: string, path: string, statusCode?: number) =>
-    logger.info(
-      { method, path, statusCode },
-      `🌐 ${method} ${path}${statusCode ? ` → ${statusCode}` : ''}`
-    ),
+  request: (method: string, path: string, statusCode?: number) => {
+    const msg = `🌐 ${method} ${path}${statusCode ? ` → ${statusCode}` : ''}`;
+    const meta = { method, path, statusCode };
+    addToBuffer('info', msg, meta);
+    logger.info(meta, msg);
+  },
 
   // Auth
-  authSuccess: (endpoint: string) => logger.debug({ endpoint }, `🔓 Auth success: ${endpoint}`),
-  authFailed: (endpoint: string, reason: string) =>
-    logger.warn({ endpoint, reason }, `🔒 Auth failed: ${endpoint} - ${reason}`),
+  authSuccess: (endpoint: string) => {
+    const msg = `🔓 Auth success: ${endpoint}`;
+    const meta = { endpoint };
+    addToBuffer('debug', msg, meta);
+    logger.debug(meta, msg);
+  },
+  authFailed: (endpoint: string, reason: string) => {
+    const msg = `🔒 Auth failed: ${endpoint} - ${reason}`;
+    const meta = { endpoint, reason };
+    addToBuffer('warn', msg, meta);
+    logger.warn(meta, msg);
+  },
 
   // Warnings
-  warn: (message: string, meta?: object) => logger.warn({ ...meta }, `⚠️  ${message}`),
+  warn: (message: string, meta?: object) => {
+    const msg = `⚠️  ${message}`;
+    addToBuffer('warn', msg, meta);
+    logger.warn({ ...meta }, msg);
+  },
 
   // Errors
   error: (message: string, error?: Error | unknown, meta?: object) => {
     const errorDetails =
       error instanceof Error ? { error: error.message, stack: error.stack } : { error };
-    logger.error({ ...meta, ...errorDetails }, `❌ ${message}`);
+    const msg = `❌ ${message}`;
+    addToBuffer('error', msg, { ...meta, ...errorDetails });
+    logger.error({ ...meta, ...errorDetails }, msg);
   },
 
   // Debug
-  debug: (message: string, meta?: object) => logger.debug({ ...meta }, `🐛 ${message}`),
+  debug: (message: string, meta?: object) => {
+    const msg = `🐛 ${message}`;
+    addToBuffer('debug', msg, meta);
+    logger.debug({ ...meta }, msg);
+  },
+
+  // Info
+  info: (message: string, meta?: object) => {
+    addToBuffer('info', message, meta);
+    logger.info({ ...meta }, message);
+  },
 
   // Success
-  success: (message: string, meta?: object) => logger.info({ ...meta }, `✅ ${message}`),
+  success: (message: string, meta?: object) => {
+    const msg = `✅ ${message}`;
+    addToBuffer('info', msg, meta);
+    logger.info({ ...meta }, msg);
+  },
 };

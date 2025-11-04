@@ -21,19 +21,21 @@ import {
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import StorageIcon from '@mui/icons-material/Storage';
 import MapIcon from '@mui/icons-material/Map';
-import GroupsIcon from '@mui/icons-material/Groups';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import { FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import HistoryIcon from '@mui/icons-material/History';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { io } from 'socket.io-client';
 import { usePlayerConnections } from '../hooks/usePlayerConnections';
-import { soundNotification, NOTIFICATION_SOUNDS, type NotificationSoundValue } from '../utils/soundNotification';
+import {
+  soundNotification,
+  NOTIFICATION_SOUNDS,
+  type NotificationSoundValue,
+} from '../utils/soundNotification';
 import { formatDate } from '../utils/matchUtils';
 
 interface Team {
@@ -48,6 +50,12 @@ interface Server {
   host: string;
   port: number;
   password?: string;
+  status?: string | null;
+  statusDescription?: {
+    label: string;
+    description: string;
+    color: 'success' | 'warning' | 'error' | 'info' | 'default';
+  } | null;
 }
 
 interface MatchInfo {
@@ -101,7 +109,9 @@ export default function TeamMatch() {
   const [stats, setStats] = useState<TeamStats | null>(null);
   const [standing, setStanding] = useState<Standing | null>(null);
   const [volume, setVolume] = useState(soundNotification.getVolume());
-  const [soundFile, setSoundFile] = useState<NotificationSoundValue>(soundNotification.getSoundFile());
+  const [soundFile, setSoundFile] = useState<NotificationSoundValue>(
+    soundNotification.getSoundFile()
+  );
   const [showSettings, setShowSettings] = useState(false);
 
   const previousMatchStatus = useRef<string | null>(null);
@@ -114,8 +124,8 @@ export default function TeamMatch() {
     setError('');
 
     try {
-      const response = await fetch(`/team/${teamId}/match`);
-      
+      const response = await fetch(`/api/team/${teamId}/match`);
+
       // Handle 404 gracefully (team or no matches)
       if (response.status === 404) {
         const data = await response.json();
@@ -163,7 +173,7 @@ export default function TeamMatch() {
     if (!teamId) return;
 
     try {
-      const response = await fetch(`/team/${teamId}/history?limit=5`);
+      const response = await fetch(`/api/team/${teamId}/history?limit=5`);
       const data = await response.json();
 
       if (data.success) {
@@ -178,7 +188,7 @@ export default function TeamMatch() {
     if (!teamId) return;
 
     try {
-      const response = await fetch(`/team/${teamId}/stats`);
+      const response = await fetch(`/api/team/${teamId}/stats`);
       const data = await response.json();
 
       if (data.success) {
@@ -337,7 +347,11 @@ export default function TeamMatch() {
                     </IconButton>
                   </Tooltip>
                   <Tooltip title={isMuted ? 'Unmute notifications' : 'Mute notifications'}>
-                    <IconButton onClick={toggleMute} size="small" color={isMuted ? 'default' : 'primary'}>
+                    <IconButton
+                      onClick={toggleMute}
+                      size="small"
+                      color={isMuted ? 'default' : 'primary'}
+                    >
                       {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
                     </IconButton>
                   </Tooltip>
@@ -360,7 +374,9 @@ export default function TeamMatch() {
                         <Select
                           value={soundFile}
                           label="Notification Sound"
-                          onChange={(e) => handleSoundChange(e.target.value as NotificationSoundValue)}
+                          onChange={(e) =>
+                            handleSoundChange(e.target.value as NotificationSoundValue)
+                          }
                         >
                           {NOTIFICATION_SOUNDS.map((sound) => (
                             <MenuItem key={sound.value} value={sound.value}>
@@ -520,7 +536,12 @@ export default function TeamMatch() {
                           borderColor: historyMatch.won ? 'success.main' : 'error.main',
                         }}
                       >
-                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                          mb={1}
+                        >
                           <Box display="flex" alignItems="center" gap={1}>
                             <Chip
                               label={historyMatch.won ? 'WIN' : 'LOSS'}
@@ -563,7 +584,8 @@ export default function TeamMatch() {
           {/* Team Header with Audio Controls */}
           <Card
             sx={{
-              background: 'linear-gradient(135deg, rgba(103, 80, 164, 0.1) 0%, rgba(103, 80, 164, 0.05) 100%)',
+              background:
+                'linear-gradient(135deg, rgba(103, 80, 164, 0.1) 0%, rgba(103, 80, 164, 0.05) 100%)',
             }}
           >
             <CardContent sx={{ py: 4 }}>
@@ -573,7 +595,11 @@ export default function TeamMatch() {
                     {team?.name}
                   </Typography>
                   {team?.tag && (
-                    <Chip label={team.tag} size="large" sx={{ fontSize: '1rem', fontWeight: 600 }} />
+                    <Chip
+                      label={team.tag}
+                      size="medium"
+                      sx={{ fontSize: '1rem', fontWeight: 600 }}
+                    />
                   )}
                 </Box>
                 <Box display="flex" gap={1}>
@@ -606,7 +632,9 @@ export default function TeamMatch() {
                       <Select
                         value={soundFile}
                         label="Notification Sound"
-                        onChange={(e) => handleSoundChange(e.target.value as NotificationSoundValue)}
+                        onChange={(e) =>
+                          handleSoundChange(e.target.value as NotificationSoundValue)
+                        }
                       >
                         {NOTIFICATION_SOUNDS.map((sound) => (
                           <MenuItem key={sound.value} value={sound.value}>
@@ -616,33 +644,33 @@ export default function TeamMatch() {
                       </Select>
                     </FormControl>
                   </Box>
-                    <Box>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-                        <Typography variant="body2">Volume</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {Math.round(volume * 100)}%
-                        </Typography>
-                      </Box>
-                      <Box display="flex" gap={2} alignItems="center">
-                        <Slider
-                          value={volume * 100}
-                          onChange={(_, value) => handleVolumeChange((value as number) / 100)}
-                          min={0}
-                          max={100}
-                          step={5}
-                          sx={{ flex: 1 }}
-                          color="primary"
-                        />
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          startIcon={<PlayArrowIcon />}
-                          onClick={handlePreviewSound}
-                        >
-                          Test
-                        </Button>
-                      </Box>
+                  <Box>
+                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                      <Typography variant="body2">Volume</Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {Math.round(volume * 100)}%
+                      </Typography>
                     </Box>
+                    <Box display="flex" gap={2} alignItems="center">
+                      <Slider
+                        value={volume * 100}
+                        onChange={(_, value) => handleVolumeChange((value as number) / 100)}
+                        min={0}
+                        max={100}
+                        step={5}
+                        sx={{ flex: 1 }}
+                        color="primary"
+                      />
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<PlayArrowIcon />}
+                        onClick={handlePreviewSound}
+                      >
+                        Test
+                      </Button>
+                    </Box>
+                  </Box>
                   <Divider />
                   <Box>
                     <Typography variant="caption" color="text.secondary">
@@ -814,10 +842,42 @@ export default function TeamMatch() {
                     </Box>
 
                     <Paper variant="outlined" sx={{ p: 3, mb: 2 }}>
-                      <Typography variant="h6" fontWeight={600} gutterBottom>
-                        {match.server.name}
-                      </Typography>
-                      <Typography variant="body1" fontFamily="monospace" color="text.secondary" mb={2}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                        <Typography variant="h6" fontWeight={600}>
+                          {match.server.name}
+                        </Typography>
+                        {match.server.statusDescription && (
+                          <Chip
+                            label={match.server.statusDescription.label}
+                            color={match.server.statusDescription.color}
+                            size="small"
+                            sx={{ fontWeight: 600 }}
+                          />
+                        )}
+                      </Box>
+
+                      {match.server.statusDescription && (
+                        <Alert
+                          severity={
+                            match.server.statusDescription.color === 'default'
+                              ? 'info'
+                              : match.server.statusDescription.color
+                          }
+                          sx={{ mb: 2 }}
+                          icon={false}
+                        >
+                          <Typography variant="body2">
+                            {match.server.statusDescription.description}
+                          </Typography>
+                        </Alert>
+                      )}
+
+                      <Typography
+                        variant="body1"
+                        fontFamily="monospace"
+                        color="text.secondary"
+                        mb={2}
+                      >
                         {match.server.host}:{match.server.port}
                       </Typography>
 
@@ -992,4 +1052,3 @@ export default function TeamMatch() {
     </Box>
   );
 }
-

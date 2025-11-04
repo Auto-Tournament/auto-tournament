@@ -1,0 +1,80 @@
+[
+    {
+        "name": "Lotto Headshots",
+        "tag": "LHS",
+        "players": [
+            {
+                "name": "player1",
+                "steamId": "76561198123456789"
+            },
+            {
+                "name": "player2",
+                "steamId": "76561198234567890"
+            },
+            {
+                "name": "player3",
+                "steamId": "76561198345678901"
+            },
+            {
+                "name": "player4",
+                "steamId": "76561198456789012"
+            },
+            {
+                "name": "player5",
+                "steamId": "76561198567890123"
+            }
+        ]
+    },
+    {
+        "name": "Team Liquid",
+        "tag": "TL",
+        "players": [
+            {
+                "name": "Twistzz",
+                "steamId": "76561198161197101"
+            },
+            {
+                "name": "ultimate",
+                "steamId": "76561198132854241"
+            },
+            {
+                "name": "NAF",
+                "steamId": "76561197987313043"
+            },
+            {
+                "name": "Grim",
+                "steamId": "76561198321796370"
+            },
+            {
+                "name": "yekindar",
+                "steamId": "76561198246607476"
+            }
+        ]
+    },
+    {
+        "name": "Cloud9",
+        "tag": "C9",
+        "players": [
+            {
+                "name": "Ax1Le",
+                "steamId": "76561198344536253"
+            },
+            {
+                "name": "HObbit",
+                "steamId": "76561198044045107"
+            },
+            {
+                "name": "interz",
+                "steamId": "76561198258719060"
+            },
+            {
+                "name": "Perfecto",
+                "steamId": "76561198001617674"
+            },
+            {
+                "name": "electroNic",
+                "steamId": "76561198001620231"
+            }
+        ]
+    }
+]

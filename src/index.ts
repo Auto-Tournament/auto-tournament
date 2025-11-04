@@ -24,6 +24,7 @@ import tournamentRoutes from './routes/tournament';
 import demoRoutes from './routes/demos';
 import teamMatchRoutes from './routes/teamMatch';
 import teamStatsRoutes from './routes/teamStats';
+import logsRoutes from './routes/logs';
 
 const app = express();
 const httpServer = createServer(app);
@@ -238,8 +239,9 @@ app.use('/api/events', eventRoutes);
 app.use('/api/steam', steamRoutes);
 app.use('/api/tournament', tournamentRoutes);
 app.use('/api/demos', demoRoutes);
-app.use('/team', teamMatchRoutes); // Public route - no /api prefix
-app.use('/team', teamStatsRoutes); // Public route - no /api prefix
+app.use('/api/logs', logsRoutes);
+app.use('/api/team', teamMatchRoutes); // Public team match data
+app.use('/api/team', teamStatsRoutes); // Public team stats/history
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
