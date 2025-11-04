@@ -17,6 +17,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import BlockIcon from '@mui/icons-material/Block';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
@@ -31,7 +32,7 @@ interface Server {
   enabled: boolean;
   createdAt: number;
   updatedAt: number;
-  status?: 'online' | 'offline' | 'checking';
+  status?: 'online' | 'offline' | 'checking' | 'disabled';
 }
 
 export default function Servers() {
@@ -59,25 +60,29 @@ export default function Servers() {
       const response: { servers: Server[] } = await api.get('/api/servers');
       const serverList = response.servers || [];
 
-      // Set initial status as 'checking'
+      // Set initial status - disabled servers get 'disabled', others get 'checking'
       const serversWithStatus = serverList.map((s: Server) => ({
         ...s,
-        status: 'checking' as const,
+        status: s.enabled ? ('checking' as const) : ('disabled' as const),
       }));
       setServers(serversWithStatus);
       setError('');
 
-      // Check status for each server in parallel
-      const statusPromises = serverList.map(async (server: Server) => {
+      // Check status only for enabled servers
+      const enabledServers = serverList.filter((s) => s.enabled);
+      const statusPromises = enabledServers.map(async (server: Server) => {
         const status = await checkServerStatus(server.id);
         return { id: server.id, status };
       });
 
       const statuses = await Promise.all(statusPromises);
 
-      // Update servers with actual status
+      // Update servers with actual status (only enabled servers)
       setServers((prev) =>
         prev.map((server) => {
+          if (!server.enabled) {
+            return { ...server, status: 'disabled' as const };
+          }
           const statusInfo = statuses.find((s) => s.id === server.id);
           return { ...server, status: statusInfo?.status || 'offline' };
         })
@@ -152,14 +157,21 @@ export default function Servers() {
 
       {!error &&
         (servers.length === 0 ? (
-          <EmptyState
-            icon={StorageIcon}
-            title="No servers registered"
-            description="Add your first CS2 server to get started with the tournament"
-            actionLabel="Add Server"
-            actionIcon={AddIcon}
-            onAction={() => handleOpenModal()}
-          />
+          <Box>
+            <EmptyState
+              icon={StorageIcon}
+              title="No servers registered"
+              description="Add your first CS2 server to get started with the tournament"
+              actionLabel="Add Server"
+              actionIcon={AddIcon}
+              onAction={() => handleOpenModal()}
+            />
+            <Box display="flex" justifyContent="center" mt={2}>
+              <Button variant="outlined" onClick={() => setBatchModalOpen(true)}>
+                Or Batch Add Multiple Servers
+              </Button>
+            </Box>
+          </Box>
         ) : (
           <Grid container spacing={3}>
             {servers.map((server) => (
@@ -187,6 +199,8 @@ export default function Servers() {
                               <CircularProgress size={16} />
                             ) : server.status === 'online' ? (
                               <CheckCircleIcon />
+                            ) : server.status === 'disabled' ? (
+                              <BlockIcon />
                             ) : (
                               <CancelIcon />
                             )
@@ -196,6 +210,8 @@ export default function Servers() {
                               ? 'Checking...'
                               : server.status === 'online'
                               ? 'Online'
+                              : server.status === 'disabled'
+                              ? 'Disabled'
                               : 'Offline'
                           }
                           size="small"
@@ -204,6 +220,8 @@ export default function Servers() {
                               ? 'default'
                               : server.status === 'online'
                               ? 'success'
+                              : server.status === 'disabled'
+                              ? 'default'
                               : 'error'
                           }
                           sx={{ fontWeight: 600 }}

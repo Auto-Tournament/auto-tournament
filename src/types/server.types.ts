@@ -19,6 +19,7 @@ export interface CreateServerInput {
   host: string;
   port: number;
   password: string;
+  enabled?: boolean; // Optional, defaults to true
 }
 
 export interface UpdateServerInput {
@@ -26,6 +27,7 @@ export interface UpdateServerInput {
   host?: string;
   port?: number;
   password?: string;
+  enabled?: boolean;
 }
 
 export interface BatchUpdateInput {

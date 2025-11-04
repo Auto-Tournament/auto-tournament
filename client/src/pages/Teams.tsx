@@ -84,13 +84,15 @@ export default function Teams() {
       players: Array<{ name: string; steamId: string }>;
     }>
   ) => {
-    // Generate IDs from team names (slugify)
+    // Sanitize team names and generate IDs
     const teamsWithIds = importedTeams.map((team) => ({
       id: team.name
         .toLowerCase()
-        .replace(/[^a-z0-9]+/g, '_')
-        .replace(/^_+|_+$/g, ''),
-      name: team.name,
+        .trim()
+        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/\s+/g, '_') // Replace spaces with underscores
+        .replace(/^_+|_+$/g, ''), // Remove leading/trailing underscores
+      name: team.name.replace(/[^a-zA-Z0-9\s]/g, '').trim(), // Sanitize name
       tag: team.tag || '',
       players: team.players,
     }));

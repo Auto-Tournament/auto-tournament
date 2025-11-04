@@ -83,7 +83,7 @@ export class ServerService {
       host: input.host,
       port: input.port,
       password: input.password,
-      enabled: 1,
+      enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
     });
 
     log.serverCreated(input.id, input.name);
@@ -126,6 +126,7 @@ export class ServerService {
     if (input.host !== undefined) updateData.host = input.host;
     if (input.port !== undefined) updateData.port = input.port;
     if (input.password !== undefined) updateData.password = input.password;
+    if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
     db.update('servers', updateData, 'id = ?', [id]);
 

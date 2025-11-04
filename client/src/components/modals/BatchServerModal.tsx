@@ -15,7 +15,12 @@ import {
   Stack,
   Paper,
   Chip,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import Grid from '@mui/material/Grid';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../../utils/api';
 
 interface BatchServerModalProps {
@@ -37,8 +42,8 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const [baseName, setBaseName] = useState('');
   const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
-  const [startPort, setStartPort] = useState('27015');
   const [count, setCount] = useState('3');
+  const [ports, setPorts] = useState<string[]>(['27015', '27016', '27017']);
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [error, setError] = useState('');
@@ -49,11 +54,38 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     setBaseName('');
     setBaseId('');
     setHost('');
-    setStartPort('27015');
     setCount('3');
+    setPorts(['27015', '27016', '27017']);
     setPassword('');
     setEnabled(true);
     setError('');
+  };
+
+  // Update ports array when count changes
+  const handleCountChange = (newCount: string) => {
+    setCount(newCount);
+    const countNum = parseInt(newCount) || 3;
+    const validCount = Math.min(Math.max(countNum, 1), 50);
+    
+    // Adjust ports array
+    setPorts((prevPorts) => {
+      const newPorts = [...prevPorts];
+      // Add more ports if needed
+      while (newPorts.length < validCount) {
+        const lastPort = parseInt(newPorts[newPorts.length - 1]) || 27015;
+        newPorts.push(String(lastPort + 1));
+      }
+      // Remove excess ports
+      return newPorts.slice(0, validCount);
+    });
+  };
+
+  const handlePortChange = (index: number, value: string) => {
+    setPorts((prevPorts) => {
+      const newPorts = [...prevPorts];
+      newPorts[index] = value;
+      return newPorts;
+    });
   };
 
   const handleClose = () => {
@@ -78,12 +110,6 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       return;
     }
 
-    const portNum = parseInt(startPort);
-    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-      setError('Start port must be between 1 and 65535');
-      return;
-    }
-
     const serverCount = parseInt(count);
     if (isNaN(serverCount) || serverCount < 1 || serverCount > 50) {
       setError('Number of servers must be between 1 and 50');
@@ -95,6 +121,15 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       return;
     }
 
+    // Validate all ports
+    for (let i = 0; i < serverCount; i++) {
+      const portNum = parseInt(ports[i]);
+      if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+        setError(`Server #${i + 1} port must be between 1 and 65535`);
+        return;
+      }
+    }
+
     setSaving(true);
     setError('');
 
@@ -103,11 +138,12 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       
       // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
+        const portNum = parseInt(ports[i - 1]);
         const server: ServerConfig = {
           id: `${baseId.trim()}_${i}`,
           name: `${baseName.trim()} #${i}`,
           host: host.trim(),
-          port: portNum + (i - 1),
+          port: portNum,
           password: password.trim(),
           enabled,
         };
@@ -148,16 +184,16 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     if (!baseId.trim() || !baseName.trim()) return [];
 
     const serverCount = parseInt(count) || 3;
-    const portNum = parseInt(startPort) || 27015;
 
     return Array.from({ length: Math.min(serverCount, 10) }, (_, i) => ({
       id: `${baseId.trim()}_${i + 1}`,
       name: `${baseName.trim()} #${i + 1}`,
-      port: portNum + i,
+      port: parseInt(ports[i]) || 0,
     }));
   };
 
   const preview = previewServers();
+  const serverCount = parseInt(count) || 3;
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
@@ -204,28 +240,41 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
             fullWidth
           />
 
-          <Box display="flex" gap={2}>
-            <TextField
-              label="Starting Port"
-              value={startPort}
-              onChange={(e) => setStartPort(e.target.value)}
-              placeholder="27015"
-              type="number"
-              required
-              fullWidth
-            />
+          <TextField
+            label="Number of Servers"
+            value={count}
+            onChange={(e) => handleCountChange(e.target.value)}
+            placeholder="3"
+            type="number"
+            inputProps={{ min: 1, max: 50 }}
+            required
+            fullWidth
+            helperText="Max: 50"
+          />
 
-            <TextField
-              label="Number of Servers"
-              value={count}
-              onChange={(e) => setCount(e.target.value)}
-              placeholder="3"
-              type="number"
-              inputProps={{ min: 1, max: 50 }}
-              required
-              fullWidth
-              helperText="Max: 50"
-            />
+          <Divider />
+
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+              Assign Ports
+            </Typography>
+            <Grid container spacing={2}>
+              {Array.from({ length: serverCount }, (_, i) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
+                  <TextField
+                    label={`Server #${i + 1}`}
+                    value={ports[i] || ''}
+                    onChange={(e) => handlePortChange(i, e.target.value)}
+                    placeholder="27015"
+                    type="number"
+                    inputProps={{ min: 1, max: 65535 }}
+                    required
+                    fullWidth
+                    size="small"
+                  />
+                </Grid>
+              ))}
+            </Grid>
           </Box>
 
           <TextField
@@ -237,11 +286,19 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
             required
             fullWidth
             helperText="Same password for all servers"
-          />
-
-          <FormControlLabel
-            control={<Switch checked={showPassword} onChange={(e) => setShowPassword(e.target.checked)} />}
-            label="Show password"
+            InputProps={{
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton
+                    aria-label="toggle password visibility"
+                    onClick={() => setShowPassword(!showPassword)}
+                    edge="end"
+                  >
+                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
           />
 
           <FormControlLabel

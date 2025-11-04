@@ -42,6 +42,39 @@ interface TeamModalProps {
   onSave: () => void;
 }
 
+// Utility to generate team ID from name
+const slugifyTeamName = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+    .replace(/\s+/g, '_') // Replace spaces with underscores
+    .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+};
+
+// Utility to generate team tag from name (max 4 chars)
+const generateTeamTag = (name: string): string => {
+  const words = name
+    .trim()
+    .split(/\s+/)
+    .filter((w) => w.length > 0);
+
+  if (words.length === 0) return '';
+  
+  if (words.length === 1) {
+    // Single word: take first 4 characters
+    return words[0].substring(0, 4).toUpperCase();
+  }
+
+  // Multiple words: take first letter of each word (up to 4)
+  const tag = words
+    .slice(0, 4)
+    .map((w) => w[0])
+    .join('');
+
+  return tag.toUpperCase();
+};
+
 export default function TeamModal({ open, team, onClose, onSave }: TeamModalProps) {
   const [id, setId] = useState('');
   const [name, setName] = useState('');
@@ -78,6 +111,17 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setNewPlayerSteamId('');
     setNewPlayerName('');
     setError('');
+  };
+
+  const handleNameChange = (newName: string) => {
+    // Only allow letters, numbers, and spaces
+    const sanitized = newName.replace(/[^a-zA-Z0-9\s]/g, '');
+    setName(sanitized);
+    
+    // Auto-generate tag if not editing (when editing, keep existing tag)
+    if (!isEditing) {
+      setTag(generateTeamTag(sanitized));
+    }
   };
 
   const handleResolveSteam = async () => {
@@ -142,11 +186,6 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       return;
     }
 
-    if (!isEditing && !id.trim()) {
-      setError('Team ID is required');
-      return;
-    }
-
     if (players.length === 0) {
       setError('At least one player is required');
       return;
@@ -157,7 +196,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
     try {
       const payload = {
-        id: id.trim(),
+        id: isEditing ? id.trim() : slugifyTeamName(name),
         name: name.trim(),
         tag: tag.trim() || undefined,
         discordRoleId: discordRoleId.trim() || undefined,
@@ -219,30 +258,22 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
             <TextField
-              label="Team ID"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              disabled={isEditing}
-              placeholder="team1"
-              helperText={isEditing ? 'ID cannot be changed' : 'Unique identifier for this team'}
-              fullWidth
-            />
-
-            <TextField
               label="Team Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Astralis"
               required
               fullWidth
+              helperText="Only letters, numbers, and spaces allowed"
             />
 
             <TextField
               label="Team Tag"
               value={tag}
-              onChange={(e) => setTag(e.target.value)}
+              onChange={(e) => setTag(e.target.value.toUpperCase())}
               placeholder="AST"
-              helperText="Optional short tag (e.g., NAVI, G2)"
+              helperText="Auto-generated from team name (max 4 characters)"
+              inputProps={{ maxLength: 4 }}
               fullWidth
             />
 

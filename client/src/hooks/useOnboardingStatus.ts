@@ -11,6 +11,13 @@ interface OnboardingStatus {
   loading: boolean;
 }
 
+interface TournamentResponse {
+  success: boolean;
+  tournament?: {
+    status: 'setup' | 'ready' | 'in_progress' | 'completed';
+  };
+}
+
 export const useOnboardingStatus = () => {
   const [status, setStatus] = useState<OnboardingStatus>({
     hasServers: false,
@@ -37,7 +44,7 @@ export const useOnboardingStatus = () => {
       // Try to load tournament
       let tournamentStatus: 'none' | 'setup' | 'ready' | 'in_progress' | 'completed' = 'none';
       try {
-        const tournamentResponse = await api.get('/api/tournament');
+        const tournamentResponse: TournamentResponse = await api.get('/api/tournament');
         if (tournamentResponse.success && tournamentResponse.tournament) {
           tournamentStatus = tournamentResponse.tournament.status;
         }
