@@ -19,6 +19,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
+import BatchServerModal from '../components/modals/BatchServerModal';
 import { EmptyState } from '../components/shared/EmptyState';
 
 interface Server {
@@ -37,6 +38,7 @@ export default function Servers() {
   const [servers, setServers] = useState<Server[]>([]);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
+  const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -131,6 +133,9 @@ export default function Servers() {
               disabled={refreshing}
             >
               {refreshing ? 'Checking...' : 'Refresh Status'}
+            </Button>
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setBatchModalOpen(true)}>
+              Batch Add
             </Button>
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
               Add Server
@@ -233,6 +238,12 @@ export default function Servers() {
         server={editingServer}
         servers={servers}
         onClose={handleCloseModal}
+        onSave={handleSave}
+      />
+
+      <BatchServerModal
+        open={batchModalOpen}
+        onClose={() => setBatchModalOpen(false)}
         onSave={handleSave}
       />
     </Box>
