@@ -6,18 +6,19 @@ import {
   DialogActions,
   Button,
   Typography,
+  Box,
 } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
 interface ConfirmDialogProps {
   open: boolean;
   title: string;
-  message: string;
+  message: React.ReactNode; // Changed from string to ReactNode to accept JSX
   confirmLabel?: string;
   cancelLabel?: string;
   onConfirm: () => void;
   onCancel: () => void;
-  confirmColor?: 'error' | 'warning' | 'primary' | 'secondary';
+  confirmColor?: 'error' | 'warning' | 'primary' | 'secondary' | 'success';
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
@@ -34,7 +35,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <Dialog
       open={open}
       onClose={onCancel}
-      maxWidth="xs"
+      maxWidth="sm"
       fullWidth
       PaperProps={{
         sx: {
@@ -52,7 +53,12 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       >
         <WarningAmberIcon
           sx={{
-            color: confirmColor === 'error' ? 'error.main' : 'warning.main',
+            color:
+              confirmColor === 'error'
+                ? 'error.main'
+                : confirmColor === 'success'
+                ? 'success.main'
+                : 'warning.main',
             fontSize: 28,
           }}
         />
@@ -61,9 +67,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         </Typography>
       </DialogTitle>
       <DialogContent>
-        <Typography variant="body2" color="text.secondary">
-          {message}
-        </Typography>
+        <Box>{message}</Box>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={onCancel} variant="outlined" color="inherit">

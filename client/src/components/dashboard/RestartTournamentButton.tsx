@@ -1,41 +1,43 @@
 import React, { useState } from 'react';
+import { Button, CircularProgress, Alert, Snackbar, ButtonProps, Typography, Box } from '@mui/material';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { useNavigate } from 'react-router-dom';
-import { Button, CircularProgress, Alert, Snackbar, Typography, Box } from '@mui/material';
-import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
 
-interface StartTournamentButtonProps {
-  variant?: 'text' | 'outlined' | 'contained';
-  size?: 'small' | 'medium' | 'large';
+interface RestartTournamentButtonProps {
+  variant?: ButtonProps['variant'];
+  size?: ButtonProps['size'];
   fullWidth?: boolean;
   onSuccess?: () => void;
 }
 
-export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
-  variant = 'contained',
+export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = ({
+  variant = 'outlined',
   size = 'large',
   fullWidth = false,
   onSuccess,
 }) => {
   const navigate = useNavigate();
-  const { startTournament } = useTournament();
-  const [starting, setStarting] = useState(false);
+  const { restartTournament } = useTournament();
+  const [restarting, setRestarting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
-  const handleStart = async () => {
-    setStarting(true);
+  const handleRestart = async () => {
+    setRestarting(true);
     setError('');
     setShowConfirm(false);
 
     try {
       const baseUrl = window.location.origin;
-      const response = await startTournament(baseUrl);
+      const response = await restartTournament(baseUrl);
 
       if (response.success) {
-        setSuccess(`Tournament started! ${response.allocated} matches allocated to servers`);
+        setSuccess(
+          `Tournament restarted! ${response.restarted} server(s) restarted, ${response.allocated} matches allocated`
+        );
         setTimeout(() => {
           setSuccess('');
           if (onSuccess) {
@@ -44,13 +46,13 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
           navigate('/bracket');
         }, 2000);
       } else {
-        setError(response.message || 'Failed to start tournament');
+        setError(response.message || 'Failed to restart tournament');
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to start tournament');
+      setError(error.message || 'Failed to restart tournament');
     } finally {
-      setStarting(false);
+      setRestarting(false);
     }
   };
 
@@ -58,54 +60,51 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     <>
       <Button
         variant={variant}
-        color="success"
+        color="warning"
         size={size}
         fullWidth={fullWidth}
-        startIcon={starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />}
+        startIcon={restarting ? <CircularProgress size={20} color="inherit" /> : <RestartAltIcon />}
         onClick={() => setShowConfirm(true)}
-        disabled={starting}
+        disabled={restarting}
       >
-        {starting ? 'Starting...' : 'Start Tournament'}
+        {restarting ? 'Restarting...' : 'Restart Tournament'}
       </Button>
 
       <ConfirmDialog
         open={showConfirm}
-        title="Start Tournament"
+        title="Restart Tournament Matches"
         message={
           <>
             <Typography variant="body2" color="text.secondary" paragraph>
-              🚀 Ready to start the tournament?
+              🔄 This will restart all active matches and reload them on servers.
             </Typography>
             <Typography variant="body2" fontWeight={600} gutterBottom>
-              This will:
+              Actions:
             </Typography>
             <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
               <Typography component="li" variant="body2" color="text.secondary">
-                Check all available servers
+                Run matchzy_endmatch on all servers with loaded/live matches
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Automatically allocate servers to ready matches
+                Reset matches to 'ready' status
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Load matches on servers via RCON
+                Reallocate matches to available servers
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Set servers to warmup mode
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Change tournament status to IN PROGRESS
+                Reload match configs via RCON
               </Typography>
             </Box>
-            <Typography variant="body2" color="warning.main" fontWeight={600}>
-              Make sure all servers are online and ready before proceeding.
+            <Typography variant="body2" color="text.secondary">
+              Use this if matches are stuck or need a fresh start.
             </Typography>
           </>
         }
-        confirmLabel="Start Tournament"
+        confirmLabel="Restart Tournament"
         cancelLabel="Cancel"
-        onConfirm={handleStart}
+        onConfirm={handleRestart}
         onCancel={() => setShowConfirm(false)}
-        confirmColor="success"
+        confirmColor="warning"
       />
 
       <Snackbar

@@ -31,8 +31,16 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import PendingIcon from '@mui/icons-material/Pending';
 import LinkIcon from '@mui/icons-material/Link';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
-import { formatDate, formatDuration, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
+import {
+  formatDate,
+  formatDuration,
+  getStatusColor,
+  getStatusLabel,
+  getDetailedStatusLabel,
+  getStatusExplanation,
+} from '../../utils/matchUtils';
 import { api } from '../../utils/api';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
@@ -75,6 +83,10 @@ interface Match {
   config?: {
     maplist?: string[];
     num_maps?: number;
+    players_per_team?: number;
+    expected_players_total?: number;
+    expected_players_team1?: number;
+    expected_players_team2?: number;
     team1?: { name: string };
     team2?: { name: string };
   };
@@ -123,7 +135,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   }, [match]);
 
   const handleAdminAction = async (action: string) => {
-    if (!match?.serverId) {
+    if (!match?.serverId && action !== 'restartMatch') {
       setError('No server assigned to this match');
       return;
     }
@@ -138,6 +150,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         unpause: '/api/rcon/force-unpause',
         startMatch: '/api/rcon/start-match',
         endWarmup: '/api/rcon/end-warmup',
+        restartMatch: `/api/matches/${match?.slug}/restart`,
       };
 
       const endpoint = endpoints[action];
@@ -145,13 +158,18 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         throw new Error('Unknown action');
       }
 
-      await api.post(endpoint, { serverId: match.serverId });
+      if (action === 'restartMatch') {
+        await api.post(endpoint);
+      } else {
+        await api.post(endpoint, { serverId: match?.serverId });
+      }
 
       const messages: Record<string, string> = {
         pause: 'Match paused successfully',
         unpause: 'Match unpaused successfully',
         startMatch: 'Match force started',
         endWarmup: 'Warmup ended',
+        restartMatch: 'Match restarted successfully - ended and reloaded',
       };
 
       setSuccess(messages[action] || 'Command executed');
@@ -196,9 +214,46 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               {roundLabel}
             </Typography>
           </Box>
-          <IconButton onClick={onClose}>
-            <CloseIcon />
-          </IconButton>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Tooltip
+              title="Open team match page in new window"
+              PopperProps={{ style: { zIndex: 1500 } }}
+            >
+              <span>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (match.team1?.id) {
+                      window.open(`/team/${match.team1.id}`, '_blank', 'noopener,noreferrer');
+                    }
+                  }}
+                  disabled={!match.team1?.id}
+                  color="primary"
+                >
+                  <OpenInNewIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Tooltip
+              title="Copy team match link"
+              PopperProps={{ style: { zIndex: 1500 } }}
+            >
+              <span>
+                <IconButton
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    copyLink(match.team1?.id);
+                  }}
+                  disabled={!match.team1?.id}
+                >
+                  <LinkIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <IconButton onClick={onClose} edge="end">
+              <CloseIcon />
+            </IconButton>
+          </Box>
         </Box>
       </DialogTitle>
       <DialogContent>
@@ -258,6 +313,31 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </Box>
             )}
           </Box>
+
+          {/* Detailed Status Info */}
+          <Alert
+            severity={
+              match.status === 'completed'
+                ? 'success'
+                : match.status === 'live'
+                ? 'error'
+                : match.status === 'loaded'
+                ? 'info'
+                : 'warning'
+            }
+            icon={false}
+          >
+            <Typography variant="body2" fontWeight={600} mb={0.5}>
+              {getDetailedStatusLabel(
+                match.status,
+                connectionStatus?.totalConnected,
+                match.config?.expected_players_total || 10
+              )}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              {getStatusExplanation(match.status)}
+            </Typography>
+          </Alert>
 
           {/* Server Info */}
           {match.serverName && (
@@ -378,8 +458,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     </Typography>
                   </Box>
                   <Chip
-                    label={`${connectionStatus.totalConnected}/10`}
-                    color={connectionStatus.totalConnected >= 10 ? 'success' : 'warning'}
+                    label={`${connectionStatus.totalConnected}/${match.config?.expected_players_total || 10}`}
+                    color={
+                      connectionStatus.totalConnected >= (match.config?.expected_players_total || 10)
+                        ? 'success'
+                        : 'warning'
+                    }
                     size="small"
                   />
                 </Box>
@@ -676,7 +760,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
           </Box>
 
           {/* Admin Controls */}
-          {match.serverId && match.status === 'live' && (
+          {match.serverId && (match.status === 'live' || match.status === 'loaded') && (
             <>
               <Divider />
               <Box>
@@ -684,57 +768,108 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   ⚡ Admin Controls
                 </Typography>
                 <Grid container spacing={2}>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="warning"
-                      startIcon={<PauseIcon />}
-                      onClick={() => setConfirmAction('pause')}
-                      disabled={executing}
+                  {match.status === 'live' && (
+                    <>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Tooltip
+                          title="Force pause the match (players cannot unpause)"
+                          PopperProps={{ style: { zIndex: 1500 } }}
+                        >
+                          <span>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              color="warning"
+                              startIcon={<PauseIcon />}
+                              onClick={() => setConfirmAction('pause')}
+                              disabled={executing}
+                            >
+                              Pause
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Tooltip
+                          title="Force unpause the match immediately"
+                          PopperProps={{ style: { zIndex: 1500 } }}
+                        >
+                          <span>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              color="success"
+                              startIcon={<PlayArrowIcon />}
+                              onClick={() => setConfirmAction('unpause')}
+                              disabled={executing}
+                            >
+                              Unpause
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Tooltip
+                          title="End warmup period and move to next phase (knife/veto)"
+                          PopperProps={{ style: { zIndex: 1500 } }}
+                        >
+                          <span>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              color="info"
+                              startIcon={<FastForwardIcon />}
+                              onClick={() => setConfirmAction('endWarmup')}
+                              disabled={executing}
+                            >
+                              End Warmup
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </Grid>
+                      <Grid size={{ xs: 6, sm: 3 }}>
+                        <Tooltip
+                          title="Skip warmup/veto and start match immediately"
+                          PopperProps={{ style: { zIndex: 1500 } }}
+                        >
+                          <span>
+                            <Button
+                              fullWidth
+                              variant="outlined"
+                              color="error"
+                              startIcon={<RocketLaunchIcon />}
+                              onClick={() => setConfirmAction('startMatch')}
+                              disabled={executing}
+                            >
+                              Force Start
+                            </Button>
+                          </span>
+                        </Tooltip>
+                      </Grid>
+                    </>
+                  )}
+                  <Grid size={{ xs: 12, sm: match.status === 'live' ? 6 : 12 }}>
+                    <Tooltip
+                      title="End this match and reload it from scratch (all progress lost, returns to warmup)"
+                      PopperProps={{ style: { zIndex: 1500 } }}
                     >
-                      Pause
-                    </Button>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="success"
-                      startIcon={<PlayArrowIcon />}
-                      onClick={() => setConfirmAction('unpause')}
-                      disabled={executing}
-                    >
-                      Unpause
-                    </Button>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="info"
-                      startIcon={<FastForwardIcon />}
-                      onClick={() => setConfirmAction('endWarmup')}
-                      disabled={executing}
-                    >
-                      End Warmup
-                    </Button>
-                  </Grid>
-                  <Grid size={{ xs: 6, sm: 3 }}>
-                    <Button
-                      fullWidth
-                      variant="outlined"
-                      color="error"
-                      startIcon={<RocketLaunchIcon />}
-                      onClick={() => setConfirmAction('startMatch')}
-                      disabled={executing}
-                    >
-                      Force Start
-                    </Button>
+                      <span style={{ display: 'block' }}>
+                        <Button
+                          fullWidth
+                          variant="contained"
+                          color="warning"
+                          startIcon={<RestartAltIcon />}
+                          onClick={() => setConfirmAction('restartMatch')}
+                          disabled={executing}
+                        >
+                          Restart Match
+                        </Button>
+                      </span>
+                    </Tooltip>
                   </Grid>
                 </Grid>
                 <Alert severity="warning" sx={{ mt: 2 }}>
-                  ⚠️ Admin controls affect the live match immediately. Use with caution.
+                  ⚠️ Admin controls affect the match immediately. Use with caution.
                 </Alert>
               </Box>
             </>
@@ -746,15 +881,65 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       <Dialog open={!!confirmAction} onClose={() => !executing && setConfirmAction(null)}>
         <DialogTitle>Confirm Action</DialogTitle>
         <DialogContent>
-          <Typography>
-            {confirmAction === 'pause' &&
-              'This will pause the match. Players will not be able to unpause until you force unpause. Continue?'}
-            {confirmAction === 'unpause' && 'This will immediately unpause the match. Continue?'}
-            {confirmAction === 'endWarmup' &&
-              'This will end the warmup period and move to the next phase. Continue?'}
-            {confirmAction === 'startMatch' &&
-              'This will force start the match immediately, skipping any remaining warmup or veto phases. Continue?'}
-          </Typography>
+          <Box>
+            {confirmAction === 'pause' && (
+              <>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  This will pause the match. Players will not be able to unpause until you force
+                  unpause.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Continue?
+                </Typography>
+              </>
+            )}
+            {confirmAction === 'unpause' && (
+              <>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  This will immediately unpause the match.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Continue?
+                </Typography>
+              </>
+            )}
+            {confirmAction === 'endWarmup' && (
+              <>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  This will end the warmup period and move to the next phase (knife round or match
+                  start).
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Continue?
+                </Typography>
+              </>
+            )}
+            {confirmAction === 'startMatch' && (
+              <>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  This will force start the match immediately, skipping any remaining warmup or veto
+                  phases.
+                </Typography>
+                <Typography variant="body2" color="warning.main" fontWeight={600}>
+                  Use only if players are stuck and won't ready up.
+                </Typography>
+              </>
+            )}
+            {confirmAction === 'restartMatch' && (
+              <>
+                <Typography variant="body2" fontWeight={600} color="warning.main" paragraph>
+                  ⚠️ This will end the current match and reload it from scratch.
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  The match will go back to warmup. All current progress (rounds, scores, etc.) will
+                  be lost.
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Continue?
+                </Typography>
+              </>
+            )}
+          </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmAction(null)} disabled={executing}>

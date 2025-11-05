@@ -105,32 +105,45 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
         <Divider sx={{ my: 3 }} />
 
         <Box display="flex" gap={2} flexWrap="wrap">
-          <Button
-            variant="contained"
-            color="success"
-            size="large"
-            startIcon={
-              starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />
-            }
-            onClick={onStart}
-            disabled={starting || saving}
-            sx={{ flex: 1, minWidth: 200 }}
+          <Tooltip
+            title="Automatically allocate servers to ready matches and load them via RCON"
+            PopperProps={{ style: { zIndex: 1200 } }}
           >
-            {starting ? 'Starting...' : 'Start Tournament'}
-          </Button>
+            <span style={{ flex: 1, minWidth: 200 }}>
+              <Button
+                variant="contained"
+                color="success"
+                size="large"
+                fullWidth
+                startIcon={
+                  starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />
+                }
+                onClick={onStart}
+                disabled={starting || saving}
+              >
+                {starting ? 'Starting...' : 'Start Tournament'}
+              </Button>
+            </span>
+          </Tooltip>
           {onEdit && (
-            <Tooltip title="Edit tournament settings">
+            <Tooltip title="Edit tournament settings" PopperProps={{ style: { zIndex: 1200 } }}>
               <Button variant="outlined" onClick={onEdit} disabled={starting || saving}>
                 Edit
               </Button>
             </Tooltip>
           )}
-          <Tooltip title="View the bracket structure">
+          <Tooltip
+            title="View the bracket structure"
+            PopperProps={{ style: { zIndex: 1200 } }}
+          >
             <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={onViewBracket}>
               View Bracket
             </Button>
           </Tooltip>
-          <Tooltip title="Recreate brackets with same settings">
+          <Tooltip
+            title="Recreate brackets with same settings (deletes all match data)"
+            PopperProps={{ style: { zIndex: 1200 } }}
+          >
             <Button
               variant="outlined"
               color="warning"
@@ -141,7 +154,10 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               Regenerate
             </Button>
           </Tooltip>
-          <Tooltip title="Delete this tournament completely">
+          <Tooltip
+            title="Permanently delete this tournament and all its data"
+            PopperProps={{ style: { zIndex: 1200 } }}
+          >
             <Button
               variant="outlined"
               color="error"

@@ -167,7 +167,7 @@ router.post('/pause-match', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_pause');
+    const result = await rconService.sendCommand(serverId, 'matchzy_pause');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -195,7 +195,7 @@ router.post('/unpause-match', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_unpause');
+    const result = await rconService.sendCommand(serverId, 'matchzy_unpause');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -279,7 +279,9 @@ router.post('/restart-match', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_restart');
+    // Note: This endpoint is for CS2 server restart, not match restart
+    // For match restart, use matchzy_endmatch instead
+    const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);

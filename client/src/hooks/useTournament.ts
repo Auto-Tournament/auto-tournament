@@ -118,6 +118,13 @@ export const useTournament = () => {
     return response;
   };
 
+  const restartTournament = async (baseUrl: string) => {
+    const response = await api.post('/api/tournament/restart', { baseUrl });
+    // Reload tournament data after restarting
+    await loadData();
+    return response;
+  };
+
   return {
     tournament,
     teams,
@@ -129,6 +136,7 @@ export const useTournament = () => {
     regenerateBracket,
     resetTournament,
     startTournament,
+    restartTournament,
     refreshData: loadData,
   };
 };

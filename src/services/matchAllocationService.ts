@@ -434,6 +434,220 @@ export class MatchAllocationService {
   }
 
   /**
+   * Restart tournament - run matchzy_endmatch on all servers with loaded matches, then reallocate
+   */
+  async restartTournament(baseUrl: string): Promise<{
+    success: boolean;
+    message: string;
+    allocated: number;
+    failed: number;
+    restarted: number;
+    restartFailed: number;
+    results: Array<{
+      matchSlug: string;
+      serverId?: string;
+      success: boolean;
+      error?: string;
+    }>;
+  }> {
+    log.info('🔄 ==================== RESTARTING TOURNAMENT ====================');
+    log.info(`Base URL: ${baseUrl}`);
+
+    // Check if tournament exists
+    const tournament = tournamentService.getTournament();
+    if (!tournament) {
+      log.error('No tournament exists');
+      return {
+        success: false,
+        message: 'No tournament exists',
+        allocated: 0,
+        failed: 0,
+        restarted: 0,
+        restartFailed: 0,
+        results: [],
+      };
+    }
+
+    log.info(`Tournament: ${tournament.name} (${tournament.type}, ${tournament.format})`);
+
+    // Get all servers that have loaded matches
+    const loadedMatches = db.query<DbMatchRow>(
+      `SELECT * FROM matches 
+       WHERE tournament_id = 1 
+       AND status IN ('loaded', 'live')
+       AND server_id IS NOT NULL 
+       AND server_id != ''`
+    );
+
+    log.info(`Found ${loadedMatches.length} loaded/live match(es) to restart`);
+
+    // Restart each server with a loaded match
+    let restarted = 0;
+    let restartFailed = 0;
+    const serverIds = new Set<string>();
+
+    for (const match of loadedMatches) {
+      if (match.server_id) {
+        serverIds.add(match.server_id);
+      }
+    }
+
+    log.info(`Restarting ${serverIds.size} server(s)...`);
+
+    for (const serverId of serverIds) {
+      try {
+        log.info(`🔄 Ending match on server: ${serverId}`);
+        const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+
+        if (result.success) {
+          log.success(`✓ Match ended on server ${serverId}`);
+          restarted++;
+
+          // Wait a moment for the server to clean up
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          // Clear server status
+          await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
+        } else {
+          log.error(`Failed to end match on server ${serverId}`, undefined, { error: result.error });
+          restartFailed++;
+        }
+      } catch (error) {
+        log.error(`Error ending match on server ${serverId}`, error);
+        restartFailed++;
+      }
+    }
+
+    // Reset all loaded/live matches back to 'ready' status
+    if (loadedMatches.length > 0) {
+      db.exec(
+        `UPDATE matches 
+         SET status = 'ready', 
+             loaded_at = NULL,
+             server_id = NULL
+         WHERE tournament_id = 1 
+         AND status IN ('loaded', 'live')`
+      );
+      log.info(`✓ Reset ${loadedMatches.length} match(es) to 'ready' status`);
+    }
+
+    // Now run the normal start tournament flow
+    log.info('Starting tournament allocation after restart...');
+    const startResult = await this.startTournament(baseUrl);
+
+    log.info('🔄 ========================================================');
+
+    return {
+      success: startResult.success,
+      message: `Tournament restarted! ${restarted} match(es) ended. ${startResult.allocated} match(es) reallocated.${
+        restartFailed > 0 ? ` ${restartFailed} match(es) failed to end.` : ''
+      }${startResult.failed > 0 ? ` ${startResult.failed} match(es) failed to reload.` : ''}`,
+      allocated: startResult.allocated,
+      failed: startResult.failed,
+      restarted,
+      restartFailed,
+      results: startResult.results,
+    };
+  }
+
+  /**
+   * Restart a single match - end it and reload it on the same server
+   */
+  async restartMatch(matchSlug: string, baseUrl: string): Promise<{
+    success: boolean;
+    message: string;
+    error?: string;
+  }> {
+    log.info(`🔄 Restarting match: ${matchSlug}`);
+
+    try {
+      // Get the match
+      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+
+      if (!match) {
+        return {
+          success: false,
+          message: 'Match not found',
+          error: 'Match not found',
+        };
+      }
+
+      if (!match.server_id) {
+        return {
+          success: false,
+          message: 'Match has no server assigned',
+          error: 'No server assigned',
+        };
+      }
+
+      const status = match.status as string;
+      if (status !== 'loaded' && status !== 'live') {
+        return {
+          success: false,
+          message: `Match is in '${status}' status. Can only restart loaded/live matches.`,
+          error: `Invalid status: ${status}`,
+        };
+      }
+
+      const serverId = match.server_id;
+
+      // Step 1: End the current match
+      log.info(`Ending match ${matchSlug} on server ${serverId}`);
+      const endResult = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+
+      if (!endResult.success) {
+        return {
+          success: false,
+          message: `Failed to end match: ${endResult.error}`,
+          error: endResult.error,
+        };
+      }
+
+      log.success(`✓ Match ${matchSlug} ended successfully`);
+
+      // Step 2: Wait a few seconds for server to clean up
+      await new Promise((resolve) => setTimeout(resolve, 3000));
+
+      // Step 3: Reset match status to 'ready'
+      db.update(
+        'matches',
+        { status: 'ready', loaded_at: null },
+        'slug = ?',
+        [matchSlug]
+      );
+
+      // Clear server status
+      await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
+
+      // Step 4: Reload the match on the same server
+      log.info(`Reloading match ${matchSlug} on server ${serverId}`);
+      const loadResult = await this.loadMatchOnServer(matchSlug, serverId, baseUrl);
+
+      if (loadResult.success) {
+        log.success(`✓ Match ${matchSlug} restarted successfully`);
+        return {
+          success: true,
+          message: 'Match restarted successfully',
+        };
+      } else {
+        return {
+          success: false,
+          message: `Match ended but failed to reload: ${loadResult.error}`,
+          error: loadResult.error,
+        };
+      }
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      log.error(`Error restarting match ${matchSlug}`, error);
+      return {
+        success: false,
+        message: `Error restarting match: ${errorMessage}`,
+        error: errorMessage,
+      };
+    }
+  }
+
+  /**
    * Convert database row to BracketMatch
    */
   private rowToMatch(row: DbMatchRow): BracketMatch {

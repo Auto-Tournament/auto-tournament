@@ -73,6 +73,14 @@ interface MatchInfo {
   maps: string[];
   matchFormat: string;
   loadedAt?: number;
+  config?: {
+    players_per_team?: number;
+    expected_players_total?: number;
+    expected_players_team1?: number;
+    expected_players_team2?: number;
+    num_maps?: number;
+    maplist?: string[];
+  };
 }
 
 interface MatchHistoryItem {
@@ -744,15 +752,21 @@ export default function TeamMatch() {
               {/* Connection Status */}
               {connectionStatus && connectionStatus.totalConnected > 0 && (
                 <Alert
-                  severity={connectionStatus.totalConnected >= 10 ? 'success' : 'warning'}
+                  severity={
+                    connectionStatus.totalConnected >= (match.config?.expected_players_total || 10)
+                      ? 'success'
+                      : 'warning'
+                  }
                   sx={{ mb: 3 }}
                 >
                   <Typography variant="body2" fontWeight={600}>
-                    {connectionStatus.totalConnected}/10 Players Connected
+                    {connectionStatus.totalConnected}/{match.config?.expected_players_total || 10}{' '}
+                    Players Connected
                   </Typography>
                   <Typography variant="caption">
-                    Team 1: {connectionStatus.team1Connected}/5 • Team 2:{' '}
-                    {connectionStatus.team2Connected}/5
+                    Team 1: {connectionStatus.team1Connected}/{match.config?.expected_players_team1 || 5}{' '}
+                    • Team 2: {connectionStatus.team2Connected}/
+                    {match.config?.expected_players_team2 || 5}
                   </Typography>
                 </Alert>
               )}
@@ -770,41 +784,18 @@ export default function TeamMatch() {
                     </Box>
 
                     <Paper variant="outlined" sx={{ p: 3, mb: 2 }}>
-                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
+                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
                         <Typography variant="h6" fontWeight={600}>
                           {match.server.name}
                         </Typography>
-                        {match.server.statusDescription && (
-                          <Chip
-                            label={match.server.statusDescription.label}
-                            color={match.server.statusDescription.color}
-                            size="small"
-                            sx={{ fontWeight: 600 }}
-                          />
-                        )}
                       </Box>
 
-                      {match.server.statusDescription && (
-                        <Alert
-                          severity={
-                            match.server.statusDescription.color === 'default'
-                              ? 'info'
-                              : match.server.statusDescription.color
-                          }
-                          sx={{ mb: 2 }}
-                          icon={false}
-                        >
-                          <Typography variant="body2">
-                            {match.server.statusDescription.description}
-                          </Typography>
-                        </Alert>
-                      )}
-
                       <Typography
-                        variant="body1"
+                        variant="h5"
                         fontFamily="monospace"
-                        color="text.secondary"
+                        color="primary.main"
                         mb={2}
+                        sx={{ fontWeight: 600 }}
                       >
                         {match.server.host}:{match.server.port}
                       </Typography>
@@ -886,34 +877,44 @@ export default function TeamMatch() {
                 </Stack>
               </Box>
 
-              {/* Status Messages */}
+              {/* Player-Friendly Status Messages */}
               {match.status === 'pending' && (
                 <Alert severity="info" sx={{ mt: 3 }}>
-                  Your match is scheduled. Waiting for server allocation...
+                  ⏳ Your match is coming up soon! Check back shortly for server details.
                 </Alert>
               )}
 
               {match.status === 'loaded' && !match.server && (
-                <Alert severity="warning" sx={{ mt: 3 }}>
-                  Match is loaded! Waiting for server assignment...
+                <Alert severity="info" sx={{ mt: 3 }}>
+                  ⏳ Your match is starting soon! Server details will appear here shortly.
                 </Alert>
               )}
 
               {match.status === 'loaded' && match.server && (
                 <Alert severity="success" sx={{ mt: 3 }}>
-                  🎮 Match is loaded! Connect now and get ready!
+                  <Typography variant="body1" fontWeight={600} mb={0.5}>
+                    🎮 Your server is ready!
+                  </Typography>
+                  <Typography variant="body2">
+                    Click "Connect to Server" above to join. Once all players are in and ready, the match will start automatically.
+                  </Typography>
                 </Alert>
               )}
 
               {match.status === 'live' && (
                 <Alert severity="error" sx={{ mt: 3 }}>
-                  🔴 MATCH IS LIVE! Connect immediately if you haven't already!
+                  <Typography variant="body1" fontWeight={600} mb={0.5}>
+                    🔴 MATCH IS LIVE NOW!
+                  </Typography>
+                  <Typography variant="body2">
+                    The match has started! Connect to the server immediately if you haven't joined yet.
+                  </Typography>
                 </Alert>
               )}
 
               {match.status === 'completed' && (
                 <Alert severity="success" sx={{ mt: 3 }}>
-                  Match completed. Thank you for playing!
+                  ✅ Match completed. Thank you for playing! Check the bracket for results.
                 </Alert>
               )}
             </CardContent>

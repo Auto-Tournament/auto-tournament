@@ -32,6 +32,11 @@ export interface Server {
 export interface MatchConfig {
   maplist?: string[];
   num_maps?: number;
+  players_per_team?: number;
+  min_players_to_ready?: number;
+  expected_players_total?: number;
+  expected_players_team1?: number;
+  expected_players_team2?: number;
   team1?: { name: string };
   team2?: { name: string };
 }

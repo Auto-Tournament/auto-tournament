@@ -250,14 +250,26 @@ export class BracketsAdapter {
 
     const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
 
+    // Calculate players based on actual team sizes
+    const team1PlayerObj = team1 ? JSON.parse(team1.players) : {};
+    const team2PlayerObj = team2 ? JSON.parse(team2.players) : {};
+    const team1PlayerCount = Object.keys(team1PlayerObj).length;
+    const team2PlayerCount = Object.keys(team2PlayerObj).length;
+    
+    // MatchZy needs players_per_team to be the max of both teams
+    const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
+    
+    // Store actual player counts for frontend display
+    const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
+
     return {
       matchid: `${tournament.name}-${Date.now()}`,
       match_title: `Map 1 of ${numMaps}`,
       side_type: 'standard',
       veto_first: 'team1',
       skip_veto: false,
-      min_players_to_ready: 5,
-      players_per_team: 5,
+      min_players_to_ready: 1, // Allow match to start with at least 1 player (flexible for small matches)
+      players_per_team: playersPerTeam,
       num_maps: numMaps,
       maplist: tournament.maps,
       min_spectators_to_ready: 0,
@@ -266,12 +278,16 @@ export class BracketsAdapter {
       spectators: {
         players: {},
       },
+      // Custom fields for our frontend
+      expected_players_total: totalExpectedPlayers,
+      expected_players_team1: team1PlayerCount,
+      expected_players_team2: team2PlayerCount,
       team1: team1
         ? {
             id: team1.id,
             name: team1.name,
             tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
-            players: JSON.parse(team1.players),
+            players: team1PlayerObj,
             series_score: 0,
           }
         : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
@@ -280,7 +296,7 @@ export class BracketsAdapter {
             id: team2.id,
             name: team2.name,
             tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
-            players: JSON.parse(team2.players),
+            players: team2PlayerObj,
             series_score: 0,
           }
         : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },

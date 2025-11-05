@@ -1,10 +1,14 @@
 import { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { matchAllocationService } from '../services/matchAllocationService';
+import { rconService } from '../services/rconService';
+import { serverStatusService, ServerStatus } from '../services/serverStatusService';
+import { db } from '../config/database';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
+import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
 
@@ -205,7 +209,7 @@ router.put('/', async (req: Request, res: Response) => {
  *     tags:
  *       - Tournament
  *     summary: Delete tournament
- *     description: Delete the current tournament and all associated matches
+ *     description: Ends all matches on servers and deletes the current tournament and all associated data
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -214,11 +218,69 @@ router.put('/', async (req: Request, res: Response) => {
  */
 router.delete('/', async (_req: Request, res: Response) => {
   try {
+    log.info('Deleting tournament...');
+
+    // First, end all matches on servers (same as reset)
+    const loadedMatches = db.query<DbMatchRow>(
+      `SELECT * FROM matches 
+       WHERE tournament_id = 1 
+       AND status IN ('loaded', 'live')
+       AND server_id IS NOT NULL 
+       AND server_id != ''`
+    );
+
+    let matchesEnded = 0;
+    let matchesEndedFailed = 0;
+
+    if (loadedMatches.length > 0) {
+      log.info(`Ending ${loadedMatches.length} active match(es) on servers before deletion...`);
+
+      const serverIds = new Set<string>();
+      for (const match of loadedMatches) {
+        if (match.server_id) {
+          serverIds.add(match.server_id);
+        }
+      }
+
+      for (const serverId of serverIds) {
+        try {
+          log.info(`Ending match on server: ${serverId}`);
+          const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+
+          if (result.success) {
+            log.success(`✓ Match ended on server ${serverId}`);
+            matchesEnded++;
+
+            // Clear server status
+            await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
+          } else {
+            log.error(`Failed to end match on server ${serverId}`, undefined, {
+              error: result.error,
+            });
+            matchesEndedFailed++;
+          }
+        } catch (error) {
+          log.error(`Error ending match on server ${serverId}`, error);
+          matchesEndedFailed++;
+        }
+      }
+
+      // Wait a moment for servers to clean up
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    // Now delete the tournament (will also delete matches via CASCADE)
     tournamentService.deleteTournament();
+
+    log.success(`Tournament deleted successfully. ${matchesEnded} match(es) ended on servers.`);
 
     return res.json({
       success: true,
-      message: 'Tournament deleted successfully',
+      message: `Tournament deleted successfully.${
+        matchesEnded > 0 ? ` ${matchesEnded} match(es) ended on servers.` : ''
+      }${matchesEndedFailed > 0 ? ` ${matchesEndedFailed} match(es) failed to end.` : ''}`,
+      matchesEnded,
+      matchesEndedFailed,
     });
   } catch (error) {
     log.error('Error deleting tournament', error as Error);
@@ -322,7 +384,7 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
  *     tags:
  *       - Tournament
  *     summary: Reset tournament to setup mode
- *     description: Deletes all matches and resets tournament status to setup
+ *     description: Ends all matches on servers and resets tournament status to setup
  *     security:
  *       - BearerAuth: []
  *     responses:
@@ -331,12 +393,76 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
  */
 router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
   try {
+    log.info('Resetting tournament to setup mode...');
+
+    // First, end all matches on servers
+    const loadedMatches = db.query<DbMatchRow>(
+      `SELECT * FROM matches 
+       WHERE tournament_id = 1 
+       AND status IN ('loaded', 'live')
+       AND server_id IS NOT NULL 
+       AND server_id != ''`
+    );
+
+    let matchesEnded = 0;
+    let matchesEndedFailed = 0;
+
+    if (loadedMatches.length > 0) {
+      log.info(`Ending ${loadedMatches.length} active match(es) on servers...`);
+
+      const serverIds = new Set<string>();
+      for (const match of loadedMatches) {
+        if (match.server_id) {
+          serverIds.add(match.server_id);
+        }
+      }
+
+      for (const serverId of serverIds) {
+        try {
+          log.info(`Ending match on server: ${serverId}`);
+          const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+
+          if (result.success) {
+            log.success(`✓ Match ended on server ${serverId}`);
+            matchesEnded++;
+
+            // Clear server status
+            await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
+          } else {
+            log.error(`Failed to end match on server ${serverId}`, undefined, {
+              error: result.error,
+            });
+            matchesEndedFailed++;
+          }
+        } catch (error) {
+          log.error(`Error ending match on server ${serverId}`, error);
+          matchesEndedFailed++;
+        }
+      }
+
+      // Wait a moment for servers to clean up
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+    }
+
+    // Now reset the tournament in the database
     const tournament = tournamentService.resetTournament();
+
+    log.success(`Tournament reset to setup mode. ${matchesEnded} match(es) ended on servers.`);
 
     return res.json({
       success: true,
       tournament,
-      message: 'Tournament reset to setup mode. All matches have been deleted.',
+      message: `Tournament reset to setup mode.${
+        matchesEnded > 0
+          ? ` ${matchesEnded} match(es) ended on servers.`
+          : ''
+      }${
+        matchesEndedFailed > 0
+          ? ` ${matchesEndedFailed} match(es) failed to end.`
+          : ''
+      } All match data has been cleared.`,
+      matchesEnded,
+      matchesEndedFailed,
     });
   } catch (error) {
     log.error('Error resetting tournament', error as Error);
@@ -401,6 +527,69 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: err.message || 'Failed to start tournament',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/tournament/restart:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Restart tournament matches and reallocate servers
+ *     description: Runs matchzy_endmatch on all servers with loaded/live matches, resets matches to ready status, then reallocates servers. Useful for restarting stuck matches.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Tournament restarted successfully with allocation results
+ *       400:
+ *         description: Tournament not ready or restart failed
+ *       404:
+ *         description: No tournament exists
+ */
+router.post('/restart', requireAuth, async (req: Request, res: Response) => {
+  try {
+    // Get base URL for webhook configuration
+    const baseUrl = getWebhookBaseUrl(req);
+
+    const result = await matchAllocationService.restartTournament(baseUrl);
+
+    if (result.success) {
+      log.success(result.message, {
+        restarted: result.restarted,
+        allocated: result.allocated,
+        failed: result.failed,
+        restartFailed: result.restartFailed,
+      });
+
+      return res.json({
+        success: true,
+        message: result.message,
+        allocated: result.allocated,
+        failed: result.failed,
+        restarted: result.restarted,
+        restartFailed: result.restartFailed,
+        results: result.results,
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: result.message,
+        allocated: result.allocated,
+        failed: result.failed,
+        restarted: result.restarted,
+        restartFailed: result.restartFailed,
+        results: result.results,
+      });
+    }
+  } catch (error) {
+    log.error('Error restarting tournament', error as Error);
+    const err = error as Error;
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to restart tournament',
     });
   }
 });

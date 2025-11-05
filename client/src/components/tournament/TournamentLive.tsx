@@ -14,6 +14,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
+import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
 
 interface TournamentLiveProps {
   tournament: {
@@ -79,35 +80,62 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
         </Grid>
 
         <Box display="flex" gap={2} flexWrap="wrap">
-          <Button
-            variant="contained"
-            startIcon={<VisibilityIcon />}
-            onClick={onViewBracket}
-            sx={{ flex: 1, minWidth: 200 }}
+          <Tooltip
+            title="View the tournament bracket and match details"
+            PopperProps={{ style: { zIndex: 1200 } }}
           >
-            View Bracket
-          </Button>
-          <Tooltip title="Reset tournament to setup mode (clears all match data)">
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<RestartAltIcon />}
-              onClick={onReset}
-              disabled={saving}
-            >
-              Reset to Setup
-            </Button>
+            <span style={{ flex: 1, minWidth: 200 }}>
+              <Button
+                variant="contained"
+                fullWidth
+                startIcon={<VisibilityIcon />}
+                onClick={onViewBracket}
+              >
+                View Bracket
+              </Button>
+            </span>
           </Tooltip>
-          <Tooltip title="Delete this tournament completely">
-            <Button
-              variant="outlined"
-              color="error"
-              startIcon={<DeleteForeverIcon />}
-              onClick={onDelete}
-              disabled={saving}
+          {tournament.status === 'in_progress' && (
+            <Tooltip
+              title="End all active matches on servers and reload them (useful for stuck matches)"
+              PopperProps={{ style: { zIndex: 1200 } }}
             >
-              Delete
-            </Button>
+              <Box flex={1} minWidth={200}>
+                <RestartTournamentButton fullWidth variant="outlined" size="medium" />
+              </Box>
+            </Tooltip>
+          )}
+          <Tooltip
+            title="End all matches and reset tournament to setup mode (keeps tournament settings but clears all match data)"
+            PopperProps={{ style: { zIndex: 1200 } }}
+          >
+            <span>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<RestartAltIcon />}
+                onClick={onReset}
+                disabled={saving}
+              >
+                Reset to Setup
+              </Button>
+            </span>
+          </Tooltip>
+          <Tooltip
+            title="Permanently delete this tournament and all its data"
+            PopperProps={{ style: { zIndex: 1200 } }}
+          >
+            <span>
+              <Button
+                variant="outlined"
+                color="error"
+                startIcon={<DeleteForeverIcon />}
+                onClick={onDelete}
+                disabled={saving}
+              >
+                Delete
+              </Button>
+            </span>
           </Tooltip>
         </Box>
       </CardContent>

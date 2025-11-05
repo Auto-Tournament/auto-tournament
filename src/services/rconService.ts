@@ -169,28 +169,28 @@ export class RconService {
      * Execute MatchZy command
      */
     matchzy: (serverId: string, matchzyCommand: string) =>
-      this.sendCommand(serverId, `get5_${matchzyCommand}`),
+      this.sendCommand(serverId, `matchzy_${matchzyCommand}`),
 
     /**
      * Load a match config (MatchZy)
      */
     loadMatch: (serverId: string, configUrl: string) =>
-      this.sendCommand(serverId, `get5_loadmatch "${configUrl}"`),
+      this.sendCommand(serverId, `matchzy_loadmatch_url "${configUrl}"`),
 
     /**
      * End current match (MatchZy)
      */
-    endMatch: (serverId: string) => this.sendCommand(serverId, 'get5_endmatch'),
+    endMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_endmatch'),
 
     /**
      * Pause match (MatchZy)
      */
-    pauseMatch: (serverId: string) => this.sendCommand(serverId, 'get5_pausematch'),
+    pauseMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_pause'),
 
     /**
      * Unpause match (MatchZy)
      */
-    unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'get5_unpausematch'),
+    unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_unpause'),
   };
 }
 

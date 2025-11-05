@@ -16,13 +16,21 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import DownloadIcon from '@mui/icons-material/Download';
 import LinkIcon from '@mui/icons-material/Link';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { formatDate, getStatusColor, getStatusLabel, getRoundLabel } from '../utils/matchUtils';
+import { StatusLegend } from '../components/shared/StatusLegend';
+import {
+  formatDate,
+  getStatusColor,
+  getStatusLabel,
+  getDetailedStatusLabel,
+  getRoundLabel,
+} from '../utils/matchUtils';
 import { useTeamLinkCopy } from '../hooks/useTeamLinkCopy';
 
 interface Team {
@@ -61,6 +69,10 @@ interface Match {
   config?: {
     maplist?: string[];
     num_maps?: number;
+    players_per_team?: number;
+    expected_players_total?: number;
+    expected_players_team1?: number;
+    expected_players_team2?: number;
     team1?: { name: string };
     team2?: { name: string };
   };
@@ -277,6 +289,13 @@ export default function Matches() {
         </Typography>
       </Box>
 
+      {/* Status Legend */}
+      {hasMatches && (
+        <Box mb={3}>
+          <StatusLegend />
+        </Box>
+      )}
+
       {!hasMatches && (
         <EmptyState
           icon={SportsEsportsIcon}
@@ -346,7 +365,34 @@ export default function Matches() {
                               </Typography>
                             </Box>
                             <Box display="flex" alignItems="center" gap={1}>
-                              <Tooltip title="Copy team match link">
+                              <Tooltip
+                                title="Open team match page in new window"
+                                PopperProps={{ style: { zIndex: 1200 } }}
+                              >
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      if (match.team1?.id) {
+                                        window.open(
+                                          `/team/${match.team1.id}`,
+                                          '_blank',
+                                          'noopener,noreferrer'
+                                        );
+                                      }
+                                    }}
+                                    disabled={!match.team1?.id}
+                                    color="primary"
+                                  >
+                                    <OpenInNewIcon fontSize="small" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                              <Tooltip
+                                title="Copy team match link"
+                                PopperProps={{ style: { zIndex: 1200 } }}
+                              >
                                 <span>
                                   <IconButton
                                     size="small"
@@ -362,13 +408,14 @@ export default function Matches() {
                               </Tooltip>
                               <Tooltip
                                 title={match.demoFilePath ? 'Download Demo' : 'No demo available'}
+                                PopperProps={{ style: { zIndex: 1200 } }}
                               >
                                 <span>
                                   <IconButton
                                     size="small"
                                     onClick={(e) => handleDownloadDemo(match, e)}
                                     disabled={!match.demoFilePath}
-                                    color="primary"
+                                    color="secondary"
                                   >
                                     <DownloadIcon fontSize="small" />
                                   </IconButton>
@@ -378,7 +425,7 @@ export default function Matches() {
                                 label={getStatusLabel(match.status)}
                                 size="small"
                                 color={getStatusColor(match.status)}
-                                sx={{ fontWeight: 600 }}
+                                sx={{ fontWeight: 600, minWidth: 140 }}
                               />
                             </Box>
                           </Box>
@@ -439,28 +486,51 @@ export default function Matches() {
                             </Box>
                           </Stack>
 
-                          {/* Connection Status */}
-                          {connectionCounts.has(match.slug) && (
-                            <Box
-                              mt={2}
-                              p={1}
-                              bgcolor={
-                                connectionCounts.get(match.slug)! >= 10
-                                  ? 'success.light'
-                                  : 'warning.light'
-                              }
-                              borderRadius={1}
-                              display="flex"
-                              alignItems="center"
-                              justifyContent="center"
-                              gap={0.5}
-                            >
-                              <PersonIcon sx={{ fontSize: 16 }} />
-                              <Typography variant="caption" fontWeight={600}>
-                                {connectionCounts.get(match.slug)}/10 Players
+                          {/* Detailed Status with Player Count */}
+                          <Box
+                            mt={2}
+                            p={1.5}
+                            bgcolor={
+                              match.status === 'loaded'
+                                ? connectionCounts.get(match.slug)! >= (match.config?.expected_players_total || 10)
+                                  ? 'success.dark'
+                                  : 'warning.dark'
+                                : 'info.dark'
+                            }
+                            borderRadius={1}
+                          >
+                            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
+                              <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
+                              <Typography variant="body2" fontWeight={600} color="white">
+                                {getDetailedStatusLabel(
+                                  match.status,
+                                  connectionCounts.get(match.slug),
+                                  match.config?.expected_players_total || 10
+                                )}
                               </Typography>
                             </Box>
-                          )}
+                            {match.status === 'loaded' && connectionCounts.has(match.slug) && (
+                              <Box
+                                sx={{
+                                  width: '100%',
+                                  height: 4,
+                                  bgcolor: 'rgba(255,255,255,0.2)',
+                                  borderRadius: 1,
+                                  overflow: 'hidden',
+                                  mt: 1,
+                                }}
+                              >
+                                <Box
+                                  sx={{
+                                    width: `${(connectionCounts.get(match.slug)! / (match.config?.expected_players_total || 10)) * 100}%`,
+                                    height: '100%',
+                                    bgcolor: 'white',
+                                    transition: 'width 0.3s ease',
+                                  }}
+                                />
+                              </Box>
+                            )}
+                          </Box>
 
                           {event && event.event && (
                             <Box mt={2} p={1} bgcolor="action.hover" borderRadius={1}>

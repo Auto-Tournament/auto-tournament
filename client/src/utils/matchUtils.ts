@@ -31,17 +31,69 @@ export const getStatusLabel = (status: string, walkover: boolean = false): strin
 
   switch (status) {
     case 'pending':
-      return 'WAITING FOR TEAMS';
-    case 'ready':
-      return 'READY TO START';
+      return 'WAITING FOR SERVER';
     case 'loaded':
-      return 'WARMUP';
+      return 'WAITING FOR PLAYERS';
     case 'live':
-      return 'LIVE';
+      return 'MATCH IN PROGRESS';
     case 'completed':
       return 'COMPLETED';
     default:
       return status.toUpperCase();
+  }
+};
+
+/**
+ * Get a detailed status label with player count information
+ */
+export const getDetailedStatusLabel = (
+  status: string,
+  playerCount?: number,
+  expectedPlayers?: number,
+  walkover: boolean = false
+): string => {
+  if (walkover) return 'WALKOVER';
+
+  const expected = expectedPlayers || 10; // Default to 10 if not provided
+
+  switch (status) {
+    case 'pending':
+      return 'Waiting for server allocation...';
+    case 'loaded':
+      if (playerCount !== undefined) {
+        if (playerCount === 0) {
+          return `Server ready - Waiting for players to connect (0/${expected})`;
+        } else if (playerCount < expected) {
+          return `Waiting for players to connect (${playerCount}/${expected})`;
+        } else {
+          return `All players connected - Waiting for ready up (${playerCount}/${expected})`;
+        }
+      }
+      return 'Server ready - Waiting for players to connect';
+    case 'live':
+      return 'Match in progress';
+    case 'completed':
+      return 'Match completed';
+    default:
+      return status;
+  }
+};
+
+/**
+ * Get a detailed explanation for each match status
+ */
+export const getStatusExplanation = (status: string): string => {
+  switch (status) {
+    case 'pending':
+      return 'Match is scheduled but not yet assigned to a server. Will be allocated when a server becomes available.';
+    case 'loaded':
+      return 'Match is loaded on the server and in warmup mode. Players should connect and ready up to start.';
+    case 'live':
+      return 'Match is currently in progress. Players are competing and rounds are being played.';
+    case 'completed':
+      return 'Match has finished. Winner has been determined and bracket has been updated.';
+    default:
+      return '';
   }
 };
 

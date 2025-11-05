@@ -138,7 +138,7 @@
  *     tags:
  *       - RCON
  *     summary: Pause match
- *     description: Execute css_pause command
+ *     description: Execute matchzy_pause command
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -164,7 +164,7 @@
  *     tags:
  *       - RCON
  *     summary: Unpause match
- *     description: Execute css_unpause command
+ *     description: Execute matchzy_unpause command
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -190,7 +190,7 @@
  *     tags:
  *       - RCON
  *     summary: Restart match
- *     description: Execute css_restart command
+ *     description: Execute mp_restartgame command (restarts current round)
  *     security:
  *       - bearerAuth: []
  *     requestBody:

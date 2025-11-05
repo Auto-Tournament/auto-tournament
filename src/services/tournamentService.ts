@@ -172,16 +172,12 @@ class TournamentService {
 
   /**
    * Delete tournament and all associated matches
+   * Note: Server cleanup (ending matches) should be done by the caller before this
    */
   deleteTournament(): void {
-    const existing = this.getTournament();
-    if (existing && existing.status !== 'setup') {
-      throw new Error(
-        'Cannot delete tournament after it has started. Please finish or reset it first.'
-      );
-    }
+    // Delete tournament (CASCADE will also delete matches and events)
     db.exec('DELETE FROM tournament WHERE id = 1');
-    log.debug('Tournament deleted');
+    log.debug('Tournament deleted from database');
   }
 
   /**

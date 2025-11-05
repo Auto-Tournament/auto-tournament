@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { rconService } from '../services/rconService';
+import { matchAllocationService } from '../services/matchAllocationService';
 import { CreateMatchInput } from '../types/match.types';
 import { requireAuth } from '../middleware/auth';
 import {
@@ -387,6 +388,39 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to load match on server',
+    });
+  }
+});
+
+/**
+ * POST /api/matches/:slug/restart
+ * Restart a match - end it and reload it (authenticated)
+ */
+router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const baseUrl = getWebhookBaseUrl(req);
+
+    const result = await matchAllocationService.restartMatch(slug, baseUrl);
+
+    if (result.success) {
+      log.success(`Match ${slug} restarted successfully`);
+      return res.json({
+        success: true,
+        message: result.message,
+        match: matchService.getMatchBySlug(slug, baseUrl),
+      });
+    } else {
+      return res.status(400).json({
+        success: false,
+        error: result.message,
+      });
+    }
+  } catch (error) {
+    log.error(`Error restarting match`, error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to restart match',
     });
   }
 });

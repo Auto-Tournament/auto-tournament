@@ -495,21 +495,34 @@ function advanceWinnerToNextMatch(currentMatch: DbMatchRow, winnerId: string): v
         const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
         if (tournament) {
           const maps = JSON.parse(tournament.maps);
+          
+          // Calculate players based on actual team sizes
+          const team1PlayerObj = JSON.parse(team1.players);
+          const team2PlayerObj = JSON.parse(team2.players);
+          const team1PlayerCount = Object.keys(team1PlayerObj).length;
+          const team2PlayerCount = Object.keys(team2PlayerObj).length;
+          const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
+          const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
+          
           const config = {
             matchid: updatedNextMatch.slug,
             num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
             maplist: maps,
-            players_per_team: 5,
+            min_players_to_ready: 1,
+            players_per_team: playersPerTeam,
             clinch_series: true,
+            expected_players_total: totalExpectedPlayers,
+            expected_players_team1: team1PlayerCount,
+            expected_players_team2: team2PlayerCount,
             team1: {
               name: team1.name,
               tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
-              players: JSON.parse(team1.players),
+              players: team1PlayerObj,
             },
             team2: {
               name: team2.name,
               tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
-              players: JSON.parse(team2.players),
+              players: team2PlayerObj,
             },
           };
 
@@ -619,21 +632,34 @@ function advanceLoserToLosersBracket(currentMatch: DbMatchRow, winnerId: string)
 
       if (team1 && team2 && tournament) {
         const maps = JSON.parse(tournament.maps);
+        
+        // Calculate players based on actual team sizes
+        const team1PlayerObj = JSON.parse(team1.players);
+        const team2PlayerObj = JSON.parse(team2.players);
+        const team1PlayerCount = Object.keys(team1PlayerObj).length;
+        const team2PlayerCount = Object.keys(team2PlayerObj).length;
+        const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
+        const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
+        
         const config = {
           matchid: updatedLbMatch.slug,
           num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
           maplist: maps,
-          players_per_team: 5,
+          min_players_to_ready: 1,
+          players_per_team: playersPerTeam,
           clinch_series: true,
+          expected_players_total: totalExpectedPlayers,
+          expected_players_team1: team1PlayerCount,
+          expected_players_team2: team2PlayerCount,
           team1: {
             name: team1.name,
             tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
-            players: JSON.parse(team1.players),
+            players: team1PlayerObj,
           },
           team2: {
             name: team2.name,
             tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
-            players: JSON.parse(team2.players),
+            players: team2PlayerObj,
           },
         };
 
