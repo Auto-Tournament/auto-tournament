@@ -118,20 +118,6 @@ const AdminTools: React.FC = () => {
         </Button>
       </Box>
 
-      {/* Server Events Monitor */}
-      <Box mb={3}>
-        <ServerEventsMonitor />
-      </Box>
-
-      <Divider sx={{ my: 4 }} />
-
-      {/* Application Logs */}
-      <Box mb={3}>
-        <LogViewer />
-      </Box>
-
-      <Divider sx={{ my: 4 }} />
-
       <Typography variant="h5" fontWeight={600} mb={3}>
         RCON Commands
       </Typography>
@@ -329,6 +315,33 @@ const AdminTools: React.FC = () => {
           No enabled servers found. Please add and enable servers in the Servers page.
         </Alert>
       )}
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Monitoring & Logs Section - Collapsed by default */}
+      <Typography variant="h5" fontWeight={600} mb={3}>
+        Monitoring & Logs
+      </Typography>
+
+      {/* Server Events Monitor */}
+      <Accordion>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Server Events Monitor</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <ServerEventsMonitor />
+        </AccordionDetails>
+      </Accordion>
+
+      {/* Application Logs */}
+      <Accordion sx={{ mt: 2 }}>
+        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+          <Typography variant="h6">Application Logs</Typography>
+        </AccordionSummary>
+        <AccordionDetails>
+          <LogViewer />
+        </AccordionDetails>
+      </Accordion>
     </Container>
   );
 };
