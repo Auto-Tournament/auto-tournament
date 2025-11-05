@@ -3,6 +3,7 @@ import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
+import { emitTournamentUpdate, emitBracketUpdate } from './socketService';
 import { log } from '../utils/logger';
 import {
   getMatchZyWebhookCommands,
@@ -441,7 +442,6 @@ export class MatchAllocationService {
         log.success(`Tournament started! Teams can now begin map veto.`);
         
         // Emit tournament update so teams know veto is available
-        const { emitTournamentUpdate, emitBracketUpdate } = require('./socketService');
         emitTournamentUpdate({ id: 1, status: 'in_progress' });
         emitBracketUpdate({ action: 'tournament_started' });
       }

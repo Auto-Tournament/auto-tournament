@@ -188,6 +188,10 @@ router.put('/', async (req: Request, res: Response) => {
     const input: UpdateTournamentInput = req.body;
     const tournament = tournamentService.updateTournament(input);
 
+    // Emit updates to all clients
+    emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
+    emitBracketUpdate({ action: 'tournament_updated' });
+
     return res.json({
       success: true,
       tournament,
@@ -366,6 +370,10 @@ router.post('/bracket/regenerate', requireAuth, async (req: Request, res: Respon
     const { force } = req.body;
     const bracket = await tournamentService.regenerateBracket(force === true);
 
+    // Emit updates to all clients
+    emitBracketUpdate({ action: 'bracket_regenerated' });
+    emitTournamentUpdate({ action: 'bracket_regenerated', status: 'ready' });
+
     return res.json({
       success: true,
       ...bracket,
@@ -452,6 +460,10 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     const tournament = tournamentService.resetTournament();
 
     log.success(`Tournament reset to setup mode. ${matchesEnded} match(es) ended on servers.`);
+
+    // Emit updates to all clients
+    emitBracketUpdate({ action: 'tournament_reset' });
+    emitTournamentUpdate({ action: 'tournament_reset', status: 'setup' });
 
     return res.json({
       success: true,
