@@ -76,6 +76,8 @@ export default function TeamMatch() {
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
 
   const previousMatchStatus = useRef<string | null>(null);
+  const previousVetoAvailable = useRef<boolean>(false);
+  const previousServerAssigned = useRef<boolean>(false);
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
 
   const loadTeamMatch = async () => {
@@ -214,19 +216,35 @@ export default function TeamMatch() {
     };
   }, [teamId]);
 
-  // Sound notification when match becomes ready
+  // Sound notification when match becomes ready or veto starts
   useEffect(() => {
     if (!match) return;
 
-    // Check if status changed to 'loaded' or 'live'
-    if (previousMatchStatus.current && previousMatchStatus.current !== match.status) {
-      if (match.status === 'loaded' || match.status === 'live') {
-        soundNotification.playNotification();
-      }
+    const isVetoAvailable = 
+      tournamentStatus === 'in_progress' && 
+      match.status === 'ready' && 
+      !vetoCompleted && 
+      ['bo1', 'bo3', 'bo5'].includes(matchFormat);
+
+    const hasServerAssigned = Boolean(match.server);
+
+    // Play sound when veto becomes available (tournament started)
+    if (isVetoAvailable && !previousVetoAvailable.current) {
+      soundNotification.playNotification();
+      console.log('🔔 Notification: Veto is now available!');
     }
 
+    // Play sound when server is assigned (ready to connect)
+    if (hasServerAssigned && !previousServerAssigned.current && match.status === 'loaded') {
+      soundNotification.playNotification();
+      console.log('🔔 Notification: Server is ready, players can connect!');
+    }
+
+    // Update refs
     previousMatchStatus.current = match.status;
-  }, [match?.status]);
+    previousVetoAvailable.current = isVetoAvailable;
+    previousServerAssigned.current = hasServerAssigned;
+  }, [match?.status, match?.server, tournamentStatus, vetoCompleted, matchFormat]);
 
   const toggleMute = () => {
     const newMutedState = soundNotification.toggleMute();
