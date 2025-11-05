@@ -83,9 +83,7 @@ cp .env.example .env
 docker-compose up -d --build
 ```
 
-**Access at:** `http://localhost:3069`
-
-Everything runs on one port - Caddy handles routing internally.
+**Access at:** `http://localhost:3069` (or your domain without port in production)
 
 ### Without Docker
 

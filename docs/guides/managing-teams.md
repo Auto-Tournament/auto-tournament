@@ -44,7 +44,7 @@ Download example: [`TEAM_IMPORT_EXAMPLE.json`](../TEAM_IMPORT_EXAMPLE.json)
 
 Each team gets a public URL:
 ```
-https://your-domain:3069/team/team-pinger
+https://your-domain.com/team/team-pinger
 ```
 
 Share this with teams - no authentication needed. They can:

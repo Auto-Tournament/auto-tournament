@@ -79,8 +79,8 @@ System creates all matches with proper seeding. View bracket in:
 Before starting, send teams their URLs:
 
 ```
-Team Awesome: http://your-domain:3069/team/team-awesome
-Team Legends: http://your-domain:3069/team/team-legends
+Team Awesome: https://your-domain.com/team/team-awesome
+Team Legends: https://your-domain.com/team/team-legends
 ...
 ```
 

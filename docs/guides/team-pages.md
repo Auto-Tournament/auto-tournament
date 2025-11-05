@@ -4,7 +4,7 @@
 
 Each team gets a public page at:
 ```
-https://your-domain:3069/team/{team-slug}
+https://your-domain.com/team/team-pinger
 ```
 
 **No authentication required** - teams can bookmark and access freely.

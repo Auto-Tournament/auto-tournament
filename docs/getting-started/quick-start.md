@@ -27,9 +27,7 @@ nano .env
 docker-compose up -d --build
 ```
 
-**Access:** `http://localhost:3069`
-
-Single port for everything - Caddy routes internally.
+**Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
 
 ### Local Development
 
@@ -99,7 +97,7 @@ That's it! The system auto-configures webhooks when you load matches.
 
 ## First Login
 
-1. Navigate to `http://localhost:3069`
+1. Navigate to `http://localhost:3069` (or your domain)
 2. Click **"Login"** (top right)
 3. Enter your `API_TOKEN`
 4. You're in! 🎉
