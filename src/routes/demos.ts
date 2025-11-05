@@ -22,15 +22,29 @@ if (!fs.existsSync(DEMOS_DIR)) {
  * POST /api/demos/:matchSlug/upload
  * Upload demo file from MatchZy server
  * Protected by server token validation
+ * Follows MatchZy recommended pattern with streaming
  */
 router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
+    // Read MatchZy headers
+    const matchzyFilename = req.header('MatchZy-FileName');
+    const matchzyMatchId = req.header('MatchZy-MatchId');
+    const matchzyMapNumber = req.header('MatchZy-MapNumber');
+
+    log.debug('Demo upload started', {
+      matchSlug,
+      filename: matchzyFilename,
+      matchId: matchzyMatchId,
+      mapNumber: matchzyMapNumber,
+    });
+
     // Get match details
     const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
 
     if (!match) {
+      log.warn(`Demo upload rejected: Match ${matchSlug} not found`);
       res.status(404).json({
         success: false,
         error: `Match '${matchSlug}' not found`,
@@ -38,91 +52,80 @@ router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Respo
       return;
     }
 
-    // Get team names for filename
-    const team1 = match.team1_id
-      ? db.queryOne<{ name: string }>('SELECT name FROM teams WHERE id = ?', [match.team1_id])
-      : null;
-    const team2 = match.team2_id
-      ? db.queryOne<{ name: string }>('SELECT name FROM teams WHERE id = ?', [match.team2_id])
-      : null;
-
-    // Get last map from events (map_result or series_end)
-    const mapEvent = db.queryOne<{ event_data: string }>(
-      `SELECT event_data FROM match_events 
-       WHERE match_slug = ? AND event_type IN ('map_result', 'series_end') 
-       ORDER BY received_at DESC LIMIT 1`,
-      [matchSlug]
-    );
-
-    let mapName = 'unknown';
-    if (mapEvent) {
-      try {
-        const eventData = JSON.parse(mapEvent.event_data);
-        mapName = eventData.map_name || 'unknown';
-      } catch {
-        // Ignore parse errors
-      }
+    // Create match-specific folder (following MatchZy pattern)
+    const matchFolder = path.join(DEMOS_DIR, matchSlug);
+    if (!fs.existsSync(matchFolder)) {
+      fs.mkdirSync(matchFolder, { recursive: true });
     }
 
-    // Get the uploaded file from request body (MatchZy sends binary data)
-    const chunks: Buffer[] = [];
-    
-    req.on('data', (chunk: Buffer) => {
-      chunks.push(chunk);
-    });
+    // Use MatchZy's filename if provided, otherwise generate our own
+    let filename: string;
+    if (matchzyFilename) {
+      filename = matchzyFilename;
+    } else {
+      // Fallback: Generate filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_');
+      const mapNumber = matchzyMapNumber || '0';
+      filename = `${timestamp}_${matchSlug}_map${mapNumber}.dem`;
+    }
 
+    const filepath = path.join(matchFolder, filename);
+
+    // Create write stream (following MatchZy pattern)
+    const writeStream = fs.createWriteStream(filepath);
+
+    // Pipe the request body into the stream (efficient streaming)
+    req.pipe(writeStream);
+
+    // Wait for request to end and reply with 200
     req.on('end', () => {
-      try {
-        const buffer = Buffer.concat(chunks);
+      writeStream.end();
 
-        // Generate filename: {TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}.dem
-        const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_');
-        const team1Name = team1?.name.replace(/[^a-zA-Z0-9]/g, '_') || 'TBD';
-        const team2Name = team2?.name.replace(/[^a-zA-Z0-9]/g, '_') || 'TBD';
-        const cleanMap = mapName.replace(/[^a-zA-Z0-9]/g, '_');
-        const filename = `${timestamp}_${matchSlug}_${cleanMap}_${team1Name}_vs_${team2Name}.dem`;
-        const filepath = path.join(DEMOS_DIR, filename);
+      // Update match with demo file path (store relative path)
+      const relativePath = path.join(matchSlug, filename);
+      db.update('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
-        // Write file to disk
-        fs.writeFileSync(filepath, buffer);
+      log.success(`Demo uploaded for match ${matchSlug}`, {
+        filename,
+        matchId: matchzyMatchId,
+        mapNumber: matchzyMapNumber,
+        path: relativePath,
+      });
 
-        // Update match with demo file path
-        db.update('matches', { demo_file_path: filename }, 'slug = ?', [matchSlug]);
-
-        log.success(`Demo uploaded for match ${matchSlug}`, {
-          filename,
-          size: buffer.length,
-          teams: `${team1Name} vs ${team2Name}`,
-        });
-
-        res.json({
-          success: true,
-          message: 'Demo uploaded successfully',
-          filename,
-          size: buffer.length,
-        });
-      } catch (error) {
-        log.error('Error saving demo file', error);
-        res.status(500).json({
-          success: false,
-          error: 'Failed to save demo file',
-        });
-      }
+      res.status(200).json({
+        success: true,
+        message: 'Demo uploaded successfully',
+        filename,
+      });
     });
 
-    req.on('error', (error) => {
-      log.error('Error receiving demo upload', error);
+    // If there is a problem writing the file, reply with 500
+    writeStream.on('error', (err) => {
+      log.error('Error writing demo file', err);
       res.status(500).json({
         success: false,
-        error: 'Failed to receive demo file',
+        error: 'Error writing demo file: ' + err.message,
       });
+    });
+
+    // Handle request errors
+    req.on('error', (error) => {
+      log.error('Error receiving demo upload', error);
+      if (!res.headersSent) {
+        res.status(500).json({
+          success: false,
+          error: 'Failed to receive demo file',
+        });
+      }
     });
   } catch (error) {
     log.error('Error processing demo upload', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to process demo upload',
-    });
+    if (!res.headersSent) {
+      res.status(500).json({
+        success: false,
+        error: 'Failed to process demo upload',
+      });
+    }
   }
 });
 
@@ -152,7 +155,13 @@ router.get('/:matchSlug/download', requireAuth, (req: Request, res: Response) =>
       });
     }
 
-    const filepath = path.join(DEMOS_DIR, match.demo_file_path);
+    // Handle both old flat structure and new folder structure
+    let filepath = path.join(DEMOS_DIR, match.demo_file_path);
+    
+    // If file doesn't exist and path doesn't include folder, try legacy flat path
+    if (!fs.existsSync(filepath) && !match.demo_file_path.includes(path.sep)) {
+      filepath = path.join(DEMOS_DIR, matchSlug, match.demo_file_path);
+    }
 
     if (!fs.existsSync(filepath)) {
       log.warn(`Demo file not found on disk: ${filepath}`);
@@ -164,8 +173,11 @@ router.get('/:matchSlug/download', requireAuth, (req: Request, res: Response) =>
 
     log.debug(`Serving demo file: ${match.demo_file_path}`, { matchSlug });
 
+    // Extract just filename for download
+    const downloadFilename = path.basename(match.demo_file_path);
+
     // Send file for download
-    res.download(filepath, match.demo_file_path, (err) => {
+    res.download(filepath, downloadFilename, (err) => {
       if (err) {
         log.error('Error sending demo file', err);
       }
@@ -208,7 +220,14 @@ router.get('/:matchSlug/info', requireAuth, (req: Request, res: Response) => {
       });
     }
 
-    const filepath = path.join(DEMOS_DIR, match.demo_file_path);
+    // Handle both old flat structure and new folder structure
+    let filepath = path.join(DEMOS_DIR, match.demo_file_path);
+    
+    // If file doesn't exist and path doesn't include folder, try legacy flat path
+    if (!fs.existsSync(filepath) && !match.demo_file_path.includes(path.sep)) {
+      filepath = path.join(DEMOS_DIR, matchSlug, match.demo_file_path);
+    }
+
     const exists = fs.existsSync(filepath);
     let fileSize = 0;
 
@@ -220,7 +239,7 @@ router.get('/:matchSlug/info', requireAuth, (req: Request, res: Response) => {
     res.json({
       success: true,
       hasDemo: exists,
-      filename: match.demo_file_path,
+      filename: path.basename(match.demo_file_path),
       size: fileSize,
       sizeFormatted: `${(fileSize / 1024 / 1024).toFixed(2)} MB`,
     });
