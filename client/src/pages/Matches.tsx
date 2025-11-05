@@ -49,7 +49,7 @@ interface Match {
   team1?: Team;
   team2?: Team;
   winner?: Team;
-  status: 'pending' | 'ready' | 'live' | 'completed';
+  status: 'pending' | 'loaded' | 'live' | 'completed';
   createdAt: number;
   loadedAt?: number;
   completedAt?: number;
@@ -137,7 +137,7 @@ export default function Matches() {
 
         // Handle regular match updates
         const match = data as Match;
-        if (match.status === 'live' || match.status === 'ready') {
+        if (match.status === 'live' || match.status === 'loaded') {
           setLiveMatches((prev) => {
             const index = prev.findIndex((m) => m.id === match.id);
             if (index !== -1) {
@@ -199,9 +199,9 @@ export default function Matches() {
       if (data.success) {
         const matches = data.matches || [];
 
-        // Live matches: only show matches with both teams assigned
+        // Live matches: only show matches with both teams assigned (loaded = warmup, live = in progress)
         const live = matches.filter(
-          (m: Match) => (m.status === 'live' || m.status === 'ready') && m.team1 && m.team2
+          (m: Match) => (m.status === 'live' || m.status === 'loaded') && m.team1 && m.team2
         );
 
         // History: show all completed matches including walkovers

@@ -212,7 +212,7 @@ export default function BracketVisualization({
                                       ? 'success.main'
                                       : match.status === 'live'
                                       ? 'warning.main'
-                                      : match.status === 'ready'
+                                      : match.status === 'loaded'
                                       ? 'info.main'
                                       : '#444',
                                   bgcolor: '#2a2a2a',

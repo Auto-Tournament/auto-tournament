@@ -893,13 +893,13 @@ export default function TeamMatch() {
                 </Alert>
               )}
 
-              {match.status === 'ready' && !match.server && (
+              {match.status === 'loaded' && !match.server && (
                 <Alert severity="warning" sx={{ mt: 3 }}>
-                  Match is ready! Waiting for server assignment...
+                  Match is loaded! Waiting for server assignment...
                 </Alert>
               )}
 
-              {match.status === 'loaded' && (
+              {match.status === 'loaded' && match.server && (
                 <Alert severity="success" sx={{ mt: 3 }}>
                   🎮 Match is loaded! Connect now and get ready!
                 </Alert>

@@ -22,14 +22,14 @@ const router = Router();
  */
 router.get('/:slug.json', (req: Request, res: Response) => {
   try {
-    // Check for bearer token
+    // Check for bearer token (uses same SERVER_TOKEN as webhook auth)
     const authHeader = req.headers.authorization;
-    const expectedToken = process.env.MATCH_CONFIG_TOKEN;
+    const expectedToken = process.env.SERVER_TOKEN;
 
     if (!expectedToken) {
       return res.status(500).json({
         success: false,
-        error: 'MATCH_CONFIG_TOKEN environment variable is not configured',
+        error: 'SERVER_TOKEN environment variable is not configured',
       });
     }
 
@@ -336,10 +336,10 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Configure bearer token auth for match config loading
-    const configToken = process.env.MATCH_CONFIG_TOKEN;
-    if (configToken) {
+    const serverToken = process.env.SERVER_TOKEN;
+    if (serverToken) {
       log.debug(`Configuring match config auth for ${match.serverId}`);
-      const authCommands = getMatchZyLoadMatchAuthCommands(configToken);
+      const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
       for (const cmd of authCommands) {
         const result = await rconService.sendCommand(match.serverId, cmd);
         results.push(result);
@@ -347,7 +347,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       log.debug(`Match config auth configured for ${match.serverId}`);
     } else {
       log.warn(
-        `No MATCH_CONFIG_TOKEN set - match loading will fail. Please set MATCH_CONFIG_TOKEN in .env`
+        `No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`
       );
     }
 

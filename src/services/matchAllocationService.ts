@@ -288,11 +288,10 @@ export class MatchAllocationService {
         log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
       }
 
-      // Configure bearer token auth for match config loading
-      const configToken = process.env.MATCH_CONFIG_TOKEN;
-      if (configToken) {
+      // Configure bearer token auth for match config loading (uses same SERVER_TOKEN)
+      if (serverToken) {
         log.debug(`Configuring match config auth for ${serverId}`);
-        const authCommands = getMatchZyLoadMatchAuthCommands(configToken);
+        const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
         for (const cmd of authCommands) {
           log.debug(`Sending auth command: ${cmd}`, { serverId });
           await rconService.sendCommand(serverId, cmd);
@@ -300,7 +299,7 @@ export class MatchAllocationService {
         log.info(`✓ Match config auth configured for ${serverId}`);
       } else {
         log.warn(
-          `No MATCH_CONFIG_TOKEN set - match loading will fail. Please set MATCH_CONFIG_TOKEN in .env`
+          `No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`
         );
       }
 

@@ -85,7 +85,7 @@ npm run dev
 
 ### Required Environment Variables
 
-All three tokens should be secure random strings. Generate them with:
+All tokens should be secure random strings. Generate them with:
 ```bash
 openssl rand -hex 32
 ```
@@ -96,15 +96,13 @@ API_TOKEN=your-secure-admin-token-here
 # Used by: Web UI login, all authenticated API calls
 
 SERVER_TOKEN=your-secure-server-token-here
-# MatchZy webhook authentication - validates incoming event webhooks from CS2 servers
-# Used by: MatchZy remote_log events (player connections, match events, etc.)
-
-MATCH_CONFIG_TOKEN=your-secure-match-config-token-here
-# Match config endpoint authentication - secures match configuration loading
-# Used by: MatchZy matchzy_loadmatch_url (bearer token for fetching match configs)
+# CS2 server authentication - validates all communication from MatchZy plugin
+# Used by:
+#   - MatchZy webhook events (player connections, match events, etc.)
+#   - Match config loading (bearer token for matchzy_loadmatch_url)
 
 WEBHOOK_URL=http://localhost:3000
-# URL where CS2 servers send MatchZy events
+# URL where CS2 servers send MatchZy events and fetch match configs
 # Examples:
 #   - Same machine:  http://localhost:3000
 #   - Same network:  http://192.168.1.100:3000

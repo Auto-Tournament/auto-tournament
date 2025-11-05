@@ -357,7 +357,7 @@ export default function Bracket() {
                           ? 'success.main'
                           : match.status === 'live'
                           ? 'warning.main'
-                          : match.status === 'ready'
+                          : match.status === 'loaded'
                           ? 'info.main'
                           : 'grey.300',
                     }}

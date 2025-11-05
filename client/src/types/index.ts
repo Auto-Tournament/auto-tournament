@@ -44,7 +44,7 @@ export interface Match {
   team1?: Team;
   team2?: Team;
   winner?: Team;
-  status: 'pending' | 'ready' | 'live' | 'completed';
+  status: 'pending' | 'loaded' | 'live' | 'completed';
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
