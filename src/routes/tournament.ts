@@ -570,6 +570,7 @@ router.post('/restart', requireAuth, async (req: Request, res: Response) => {
 
       // Emit tournament restart event
       emitBracketUpdate({ action: 'tournament_restarted', allocated: result.allocated });
+      emitTournamentUpdate({ action: 'tournament_restarted', status: 'ready' });
 
       return res.json({
         success: true,

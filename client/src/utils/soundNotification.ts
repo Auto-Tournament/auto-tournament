@@ -23,7 +23,7 @@ export type NotificationSoundValue = typeof NOTIFICATION_SOUNDS[number]['value']
 class SoundNotification {
   private audio: HTMLAudioElement | null = null;
   private isMuted: boolean = false;
-  private volume: number = 0.5;
+  private volume: number = 0.25;
   private soundFile: NotificationSoundValue = 'notification';
 
   constructor() {
@@ -33,7 +33,7 @@ class SoundNotification {
     const savedSound = localStorage.getItem('teamMatchSoundFile') as NotificationSoundValue | null;
     
     this.isMuted = savedMute === 'true';
-    this.volume = savedVolume ? parseFloat(savedVolume) : 0.5;
+    this.volume = savedVolume ? parseFloat(savedVolume) : 0.25;
     this.soundFile = savedSound || 'drum-beat-02-36276';
 
     // Initialize audio element
