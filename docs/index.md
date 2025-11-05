@@ -53,16 +53,16 @@ A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Hand
 
 ## How It Works
 
-```mermaid
-graph LR
-    A[Admin Creates Tournament] --> B[Teams Start Veto]
-    B --> C[Server Auto-Allocated]
-    C --> D[Match Loads]
-    D --> E[Players Connect]
-    E --> F[Match Goes Live]
-    F --> G[Winner Auto-Advanced]
-    G --> H[Next Match Ready]
-```
+**The Flow:**
+
+1. **Admin Creates Tournament** → Select teams, format, map pool
+2. **Teams Start Veto** → Interactive map ban/pick process
+3. **Server Auto-Allocated** → System finds available server
+4. **Match Loads** → Config generated and sent to server
+5. **Players Connect** → Teams join and ready up
+6. **Match Goes Live** → Automatic start when all ready
+7. **Winner Auto-Advanced** → Bracket updates in real-time
+8. **Next Match Ready** → Process repeats
 
 ### The Magic
 
@@ -158,7 +158,7 @@ PORT=3000                         # API port
 ## Support
 
 - **Issues:** [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues)
-- **Discord:** [Join CS2 Community](https://discord.gg/cs2)
+- **Discussions:** [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
 
 ## License
 

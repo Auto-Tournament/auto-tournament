@@ -228,7 +228,7 @@ npm start
 If you're still stuck:
 
 1. Check GitHub Issues: https://github.com/sivert-io/matchzy-auto-tournament/issues
-2. Join Discord: https://discord.gg/cs2
+2. Start a Discussion: https://github.com/sivert-io/matchzy-auto-tournament/discussions
 3. Include:
    - What you were trying to do
    - Error messages (API logs, CS2 console)

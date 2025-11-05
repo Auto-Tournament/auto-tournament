@@ -27,25 +27,24 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 
 ### Tournament Lifecycle
 
-```mermaid
-stateDiagram-v2
-    [*] --> Setup: Create Tournament
-    Setup --> Ready: Generate Bracket
-    Ready --> InProgress: Start Tournament
-    InProgress --> InProgress: Matches Complete
-    InProgress --> Completed: Final Match Done
-    Completed --> [*]
-    
-    Setup --> Setup: Modify Teams
-    Ready --> Setup: Regenerate Bracket
-```
-
 **States:**
 
-- **Setup:** Configuring tournament and teams
-- **Ready:** Bracket generated, waiting to start
-- **In Progress:** Tournament active, matches running
-- **Completed:** All matches finished
+1. **Setup** → Configuring tournament and teams
+   - Add teams
+   - Select format and map pool
+   - Can modify teams
+
+2. **Ready** → Bracket generated, waiting to start
+   - Bracket preview available
+   - Can regenerate bracket
+   
+3. **In Progress** → Tournament active, matches running
+   - Matches automatically progress
+   - Real-time updates
+   
+4. **Completed** → All matches finished
+   - Final results available
+   - Demos ready for download
 
 ---
 

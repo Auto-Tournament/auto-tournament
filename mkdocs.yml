@@ -9,42 +9,51 @@ edit_uri: edit/main/docs/
 
 theme:
   name: material
+  logo: icon.svg
+  favicon: icon.svg
   palette:
     # Light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: blue
+      primary: deep purple
+      accent: purple
       toggle:
         icon: material/brightness-7
         name: Switch to dark mode
     # Dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: indigo
-      accent: blue
+      primary: deep purple
+      accent: purple
       toggle:
         icon: material/brightness-4
         name: Switch to light mode
   font:
-    text: Roboto
-    code: Roboto Mono
+    text: Inter
+    code: Fira Code
   features:
-    - navigation.instant
-    - navigation.tracking
-    - navigation.tabs
-    - navigation.sections
-    - navigation.expand
-    - navigation.top
-    - search.suggest
-    - search.highlight
-    - content.tabs.link
-    - content.code.copy
+    - announce.dismiss
     - content.code.annotate
+    - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - navigation.expand
+    - navigation.footer
+    - navigation.indexes
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.sections
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.top
+    - navigation.tracking
+    - search.highlight
+    - search.share
+    - search.suggest
+    - toc.follow
   icon:
     repo: fontawesome/brands/github
-    edit: material/pencil
-    view: material/eye
 
 plugins:
   - search
@@ -83,23 +92,20 @@ markdown_extensions:
       repo: matchzy-auto-tournament
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
 
+copyright: Copyright &copy; 2025 MatchZy Auto Tournament Contributors
+
 extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/sivert-io/matchzy-auto-tournament
-    - icon: fontawesome/brands/discord
-      link: https://discord.gg/cs2
+      name: GitHub Repository
   version:
     provider: mike
   generator: false
