@@ -1,39 +1,58 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
 # Dependencies
-node_modules/
+node_modules
+.npm
+.yarn
 
-# Build output
-dist/
+# Build outputs
+dist
+dist-ssr
+*.local
+public/assets
 
-# Environment variables
+# Environment
 .env
+.env.local
+.env.*.local
 
 # IDE
-.vscode/
-.idea/
+.vscode/*
+!.vscode/extensions.json
+.idea
 *.swp
 *.swo
+*~
 
 # OS
 .DS_Store
 Thumbs.db
 
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+# Data
+data/*.db
+data/*.db-shm
+data/*.db-wal
+data/logs/*.log
+data/demos/*.dem
+
+# MkDocs
+site/
+.cache/
+
+# TypeScript
+*.tsbuildinfo
 
 # Testing
-coverage/
-.nyc_output/
+coverage
+.nyc_output
 
-# Database
-data/
-*.db
-*.db-shm
-*.db-wal
-
-# Frontend build
-public/
-!client/public/
+# Temporary
+tmp/
+temp/

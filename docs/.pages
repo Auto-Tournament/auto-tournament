@@ -1,0 +1,11 @@
+# Navigation order configuration
+nav:
+  - Home: index.md
+  - Getting Started: getting-started
+  - Features: features
+  - User Guides: guides
+  - API Reference: api
+  - MatchZy Integration: matchzy
+  - Development: development
+  - Troubleshooting: troubleshooting
+
