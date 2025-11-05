@@ -41,85 +41,27 @@ import {
   type NotificationSoundValue,
 } from '../utils/soundNotification';
 import { formatDate, getStatusColor, getStatusLabel } from '../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  password?: string;
-  status?: string | null;
-  statusDescription?: {
-    label: string;
-    description: string;
-    color: 'success' | 'warning' | 'error' | 'info' | 'default';
-  } | null;
-}
-
-interface MatchInfo {
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
-  isTeam1: boolean;
-  opponent: Team | null;
-  server: Server | null;
-  maps: string[];
-  matchFormat: string;
-  loadedAt?: number;
-  config?: {
-    players_per_team?: number;
-    expected_players_total?: number;
-    expected_players_team1?: number;
-    expected_players_team2?: number;
-    num_maps?: number;
-    maplist?: string[];
-  };
-}
-
-interface MatchHistoryItem {
-  slug: string;
-  round: number;
-  matchNumber: number;
-  opponent: Team | null;
-  won: boolean;
-  teamScore: number;
-  opponentScore: number;
-  completedAt: number;
-}
-
-interface TeamStats {
-  totalMatches: number;
-  wins: number;
-  losses: number;
-  winRate: number;
-}
-
-interface Standing {
-  position: number;
-  totalTeams: number;
-  wins: number;
-}
+import type {
+  Team,
+  TeamStats,
+  TeamStanding,
+  TeamMatchInfo,
+  TeamMatchHistory,
+} from '../types';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
   const [team, setTeam] = useState<Team | null>(null);
-  const [match, setMatch] = useState<MatchInfo | null>(null);
+  const [match, setMatch] = useState<TeamMatchInfo | null>(null);
   const [hasMatch, setHasMatch] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(soundNotification.isMutedState());
-  const [matchHistory, setMatchHistory] = useState<MatchHistoryItem[]>([]);
+  const [matchHistory, setMatchHistory] = useState<TeamMatchHistory[]>([]);
   const [stats, setStats] = useState<TeamStats | null>(null);
-  const [standing, setStanding] = useState<Standing | null>(null);
+  const [standing, setStanding] = useState<TeamStanding | null>(null);
   const [volume, setVolume] = useState(soundNotification.getVolume());
   const [soundFile, setSoundFile] = useState<NotificationSoundValue>(
     soundNotification.getSoundFile()

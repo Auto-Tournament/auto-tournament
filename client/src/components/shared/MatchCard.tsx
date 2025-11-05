@@ -9,28 +9,10 @@ import {
   getDetailedStatusLabel,
   getRoundLabel,
 } from '../../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
+import type { Match } from '../../types';
 
 interface MatchCardProps {
-  match: {
-    id: number;
-    slug: string;
-    round: number;
-    matchNumber?: number;
-    team1?: Team;
-    team2?: Team;
-    winner?: Team;
-    status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
-    demoFilePath?: string;
-    config?: {
-      expected_players_total?: number;
-    };
-  };
+  match: Match;
   matchNumber: number; // Global match number
   roundLabel?: string; // Optional custom round label
   variant?: 'live' | 'completed' | 'default'; // Visual variant
@@ -79,13 +61,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'divider';
   };
 
-  const getTeamTextColor = (team: Team | undefined, teamId: string | undefined) => {
+  const getTeamTextColor = (teamId: string | undefined) => {
     if (isWinner(teamId)) return 'success.contrastText';
+    const team = teamId === match.team1?.id ? match.team1 : match.team2;
     if (team) return 'text.primary';
     return 'text.disabled';
   };
 
-  const getTeamName = (team: Team | undefined) => {
+  const getTeamName = (teamId: string | undefined) => {
+    const team = teamId === match.team1?.id ? match.team1 : match.team2;
     if (team) return team.name;
     if (match.status === 'completed') return '—';
     return 'TBD';
@@ -161,10 +145,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               variant="body1"
               fontWeight={isWinner(match.team1?.id) ? 600 : 500}
               sx={{
-                color: getTeamTextColor(match.team1, match.team1?.id),
+                color: getTeamTextColor(match.team1?.id),
               }}
             >
-              {getTeamName(match.team1)}
+              {getTeamName(match.team1?.id)}
             </Typography>
             {isWinner(match.team1?.id) && (
               <Chip
@@ -211,10 +195,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               variant="body1"
               fontWeight={isWinner(match.team2?.id) ? 600 : 500}
               sx={{
-                color: getTeamTextColor(match.team2, match.team2?.id),
+                color: getTeamTextColor(match.team2?.id),
               }}
             >
-              {getTeamName(match.team2)}
+              {getTeamName(match.team2?.id)}
             </Typography>
             {isWinner(match.team2?.id) && (
               <Chip

@@ -12,25 +12,7 @@ import {
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  team1Score?: number;
-  team2Score?: number;
-}
+import type { Match } from '../../types';
 
 interface DoubleEliminationViewProps {
   matches: Match[];

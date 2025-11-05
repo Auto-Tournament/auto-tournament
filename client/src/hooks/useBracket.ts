@@ -1,70 +1,8 @@
 import { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 import { io, type Socket } from 'socket.io-client';
+import type { Match, Tournament } from '../types';
 
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface PlayerStats {
-  name: string;
-  steamId: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  damage: number;
-  headshots: number;
-}
-
-export interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  serverId?: string;
-  serverName?: string;
-  createdAt?: number;
-  loadedAt?: number;
-  completedAt?: number;
-  team1Score?: number;
-  team2Score?: number;
-  team1Players?: PlayerStats[];
-  team2Players?: PlayerStats[];
-  matchPhase?: string;
-  config?: {
-    maplist?: string[];
-    num_maps?: number;
-    team1?: { name: string };
-    team2?: { name: string };
-    expected_players_total?: number;
-    expected_players_team1?: number;
-    expected_players_team2?: number;
-  };
-  demoFilePath?: string;
-}
-
-export interface Tournament {
-  id: number;
-  name: string;
-  type: string;
-  format: string;
-  status: string;
-  maps: string[];
-  teamIds: string[];
-  teams?: Team[];
-}
-
-export interface BracketData {
-  tournament: Tournament;
-  matches: Match[];
-  totalRounds: number;
-}
 
 export const useBracket = () => {
   const [loading, setLoading] = useState(true);

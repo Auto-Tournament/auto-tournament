@@ -14,25 +14,7 @@ import {
   TableRow,
 } from '@mui/material';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  team1Score?: number;
-  team2Score?: number;
-}
+import type { Match, Team } from '../../types';
 
 interface SwissViewProps {
   matches: Match[];
@@ -41,7 +23,7 @@ interface SwissViewProps {
   onMatchClick?: (match: Match) => void;
 }
 
-interface TeamRecord {
+interface SwissTeamRecord {
   team: Team;
   wins: number;
   losses: number;
@@ -53,8 +35,8 @@ interface TeamRecord {
 
 export default function SwissView({ matches, teams, totalRounds, onMatchClick }: SwissViewProps) {
   // Calculate team records
-  const calculateRecords = (): TeamRecord[] => {
-    const records: { [teamId: string]: TeamRecord } = {};
+  const calculateRecords = (): SwissTeamRecord[] => {
+    const records: { [teamId: string]: SwissTeamRecord } = {};
 
     // Initialize
     teams.forEach((team) => {

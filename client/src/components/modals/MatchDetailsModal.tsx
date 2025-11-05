@@ -36,53 +36,7 @@ import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 import { openTeamMatchInNewTab } from '../../utils/teamLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface PlayerStats {
-  name: string;
-  steamId: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  damage: number;
-  headshots: number;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  serverId?: string;
-  serverName?: string;
-  createdAt?: number;
-  loadedAt?: number;
-  completedAt?: number;
-  team1Score?: number;
-  team2Score?: number;
-  team1Players?: PlayerStats[];
-  team2Players?: PlayerStats[];
-  matchPhase?: string; // warmup, knife, veto, live, post_match
-  config?: {
-    maplist?: string[];
-    num_maps?: number;
-    players_per_team?: number;
-    expected_players_total?: number;
-    expected_players_team1?: number;
-    expected_players_team2?: number;
-    team1?: { name: string };
-    team2?: { name: string };
-  };
-}
+import type { Match } from '../../types';
 
 interface MatchDetailsModalProps {
   match: Match | null;

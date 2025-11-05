@@ -19,67 +19,7 @@ import {
   formatDate,
   getRoundLabel,
 } from '../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface PlayerStats {
-  name: string;
-  steamId: string;
-  kills: number;
-  deaths: number;
-  assists: number;
-  damage: number;
-  headshots: number;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  status: 'pending' | 'loaded' | 'live' | 'completed';
-  serverId?: string;
-  serverName?: string;
-  createdAt: number;
-  loadedAt?: number;
-  completedAt?: number;
-  demoFilePath?: string;
-  team1Score?: number;
-  team2Score?: number;
-  team1Players?: PlayerStats[];
-  team2Players?: PlayerStats[];
-  matchPhase?: string;
-  config?: {
-    maplist?: string[];
-    num_maps?: number;
-    players_per_team?: number;
-    expected_players_total?: number;
-    expected_players_team1?: number;
-    expected_players_team2?: number;
-    team1?: { name: string };
-    team2?: { name: string };
-  };
-}
-
-interface MatchEvent {
-  matchSlug: string;
-  event: {
-    event: string;
-    matchid: string;
-    params?: {
-      team1_score?: number;
-      team2_score?: number;
-      [key: string]: unknown;
-    };
-  };
-}
+import type { Match, MatchEvent } from '../types';
 
 export default function Matches() {
   const navigate = useNavigate();

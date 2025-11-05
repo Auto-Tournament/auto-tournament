@@ -14,25 +14,7 @@ import {
   Grid,
 } from '@mui/material';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-}
-
-interface Match {
-  id: number;
-  slug: string;
-  round: number;
-  matchNumber: number;
-  status: 'pending' | 'ready' | 'live' | 'completed' | 'loaded';
-  team1?: Team;
-  team2?: Team;
-  winner?: Team;
-  team1Score?: number;
-  team2Score?: number;
-}
+import type { Match, Team } from '../../types';
 
 interface RoundRobinViewProps {
   matches: Match[];
@@ -40,7 +22,7 @@ interface RoundRobinViewProps {
   onMatchClick?: (match: Match) => void;
 }
 
-interface TeamStats {
+interface RoundRobinTeamStats {
   team: Team;
   played: number;
   wins: number;
@@ -52,8 +34,8 @@ interface TeamStats {
 
 export default function RoundRobinView({ matches, teams, onMatchClick }: RoundRobinViewProps) {
   // Calculate standings
-  const calculateStandings = (): TeamStats[] => {
-    const stats: { [teamId: string]: TeamStats } = {};
+  const calculateStandings = (): RoundRobinTeamStats[] => {
+    const stats: { [teamId: string]: RoundRobinTeamStats } = {};
 
     // Initialize stats for all teams
     teams.forEach((team) => {

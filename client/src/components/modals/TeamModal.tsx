@@ -21,19 +21,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import { api } from '../../utils/api';
 import ConfirmDialog from './ConfirmDialog';
-
-interface Player {
-  steamId: string;
-  name: string;
-}
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-  discordRoleId?: string;
-  players: Player[];
-}
+import type { Team, Player } from '../../types';
 
 interface TeamModalProps {
   open: boolean;

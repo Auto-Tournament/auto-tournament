@@ -20,21 +20,7 @@ import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
-
-interface Player {
-  steamId: string;
-  name: string;
-}
-
-interface Team {
-  id: string;
-  name: string;
-  tag?: string;
-  discordRoleId?: string;
-  players: Player[];
-  createdAt: number;
-  updatedAt: number;
-}
+import type { Team } from '../types';
 
 export default function Teams() {
   const [teams, setTeams] = useState<Team[]>([]);

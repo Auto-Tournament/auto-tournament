@@ -29,7 +29,8 @@ import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchCard } from '../components/shared/MatchCard';
 import { getRoundLabel } from '../utils/matchUtils';
-import { useBracket, type Match } from '../hooks/useBracket';
+import { useBracket } from '../hooks/useBracket';
+import type { Match } from '../types';
 
 // Interfaces are now imported from useBracket hook
 
