@@ -47,8 +47,27 @@ Quick links: [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/g
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
+
+# 1. Create environment file
 cp .env.example .env
-# Edit .env with your secure tokens (see below)
+
+# 2. Generate secure tokens
+openssl rand -hex 32  # Copy this for API_TOKEN
+openssl rand -hex 32  # Copy this for SERVER_TOKEN
+
+# 3. Edit .env with your tokens and server IP
+nano .env  # or use your preferred editor
+```
+
+**Required in `.env`:**
+```bash
+API_TOKEN=your-generated-token-here      # Admin dashboard login
+SERVER_TOKEN=your-generated-token-here   # MatchZy authentication  
+WEBHOOK_URL=http://192.168.1.100:3000   # Your server IP (where CS2 sends events)
+```
+
+```bash
+# 4. Start everything
 docker-compose up -d --build
 ```
 
@@ -59,24 +78,11 @@ docker-compose up -d --build
 ```bash
 npm install
 cp .env.example .env
+# Edit .env with tokens (same as above)
 npm run dev
 ```
 
 Frontend: `http://localhost:5173` • API: `http://localhost:3000` • Docs: `http://localhost:3000/api-docs`
-
-### Environment Setup
-
-Generate secure tokens:
-```bash
-openssl rand -hex 32
-```
-
-Required in `.env`:
-```bash
-API_TOKEN=<your-admin-token>      # Admin dashboard login
-SERVER_TOKEN=<your-server-token>  # MatchZy authentication
-WEBHOOK_URL=http://your-ip:3000   # Where CS2 sends events
-```
 
 **That's it!** The system auto-configures webhooks on your CS2 servers. See [full setup guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) for details.
 
