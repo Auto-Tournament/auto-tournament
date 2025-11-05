@@ -138,7 +138,7 @@
  *     tags:
  *       - RCON
  *     summary: Pause match
- *     description: Execute matchzy_pause command
+ *     description: Execute css_pause command
  *     security:
  *       - bearerAuth: []
  *     requestBody:
@@ -164,7 +164,7 @@
  *     tags:
  *       - RCON
  *     summary: Unpause match
- *     description: Execute matchzy_unpause command
+ *     description: Execute css_unpause command
  *     security:
  *       - bearerAuth: []
  *     requestBody:

@@ -180,17 +180,17 @@ export class RconService {
     /**
      * End current match (MatchZy)
      */
-    endMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_endmatch'),
+    endMatch: (serverId: string) => this.sendCommand(serverId, 'css_restart'),
 
     /**
      * Pause match (MatchZy)
      */
-    pauseMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_pause'),
+    pauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_pause'),
 
     /**
      * Unpause match (MatchZy)
      */
-    unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'matchzy_unpause'),
+    unpauseMatch: (serverId: string) => this.sendCommand(serverId, 'css_unpause'),
   };
 }
 

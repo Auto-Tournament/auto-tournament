@@ -434,7 +434,7 @@ export class MatchAllocationService {
   }
 
   /**
-   * Restart tournament - run matchzy_endmatch on all servers with loaded matches, then reallocate
+   * Restart tournament - run css_restart on all servers with loaded matches, then reallocate
    */
   async restartTournament(baseUrl: string): Promise<{
     success: boolean;
@@ -497,7 +497,7 @@ export class MatchAllocationService {
     for (const serverId of serverIds) {
       try {
         log.info(`🔄 Ending match on server: ${serverId}`);
-        const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+        const result = await rconService.sendCommand(serverId, 'css_restart');
 
         if (result.success) {
           log.success(`✓ Match ended on server ${serverId}`);
@@ -593,7 +593,7 @@ export class MatchAllocationService {
 
       // Step 1: End the current match
       log.info(`Ending match ${matchSlug} on server ${serverId}`);
-      const endResult = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+      const endResult = await rconService.sendCommand(serverId, 'css_restart');
 
       if (!endResult.success) {
         return {

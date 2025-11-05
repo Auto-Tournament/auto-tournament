@@ -246,7 +246,7 @@ router.delete('/', async (_req: Request, res: Response) => {
       for (const serverId of serverIds) {
         try {
           log.info(`Ending match on server: ${serverId}`);
-          const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+          const result = await rconService.sendCommand(serverId, 'css_restart');
 
           if (result.success) {
             log.success(`✓ Match ended on server ${serverId}`);
@@ -424,7 +424,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
       for (const serverId of serverIds) {
         try {
           log.info(`Ending match on server: ${serverId}`);
-          const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+          const result = await rconService.sendCommand(serverId, 'css_restart');
 
           if (result.success) {
             log.success(`✓ Match ended on server ${serverId}`);
@@ -542,7 +542,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
  *     tags:
  *       - Tournament
  *     summary: Restart tournament matches and reallocate servers
- *     description: Runs matchzy_endmatch on all servers with loaded/live matches, resets matches to ready status, then reallocates servers. Useful for restarting stuck matches.
+ *     description: Runs css_restart on all servers with loaded/live matches, resets matches to ready status, then reallocates servers. Useful for restarting stuck matches.
  *     security:
  *       - BearerAuth: []
  *     responses:
