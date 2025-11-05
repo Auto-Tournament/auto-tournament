@@ -108,42 +108,13 @@ nav:
   - Home: index.md
   - Getting Started:
       - Quick Start: getting-started/quick-start.md
-      - Installation: getting-started/installation.md
-      - Configuration: getting-started/configuration.md
       - First Tournament: getting-started/first-tournament.md
-  - Features:
-      - Overview: features/overview.md
-      - Map Veto System: features/map-veto.md
-      - Player Tracking: features/player-tracking.md
-      - Event Processing: features/events.md
-      - Admin Controls: features/admin-controls.md
-  - User Guides:
-      - Creating Tournaments: guides/creating-tournaments.md
+  - Features: features/overview.md
+  - Admin Guide:
       - Managing Teams: guides/managing-teams.md
-      - Server Management: guides/server-management.md
       - Running Matches: guides/running-matches.md
+      - Troubleshooting: guides/troubleshooting.md
+  - For Teams:
       - Team Pages: guides/team-pages.md
-  - API Reference:
-      - Overview: api/overview.md
-      - Authentication: api/authentication.md
-      - Tournaments: api/tournaments.md
-      - Matches: api/matches.md
-      - Teams: api/teams.md
-      - Servers: api/servers.md
-      - Events: api/events.md
-      - RCON: api/rcon.md
-  - MatchZy Integration:
-      - Event Types: matchzy/events.md
-      - Webhook Setup: matchzy/webhook-setup.md
-      - RCON Commands: matchzy/rcon-commands.md
-      - Match Configuration: matchzy/match-config.md
-  - Development:
-      - Architecture: development/architecture.md
-      - Database Schema: development/database.md
-      - WebSocket Events: development/websockets.md
-      - Contributing: development/contributing.md
-  - Troubleshooting:
-      - Common Issues: troubleshooting/common-issues.md
-      - Event Debugging: troubleshooting/event-debugging.md
-      - RCON Problems: troubleshooting/rcon.md
+      - Map Veto: features/map-veto.md
 

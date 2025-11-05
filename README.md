@@ -10,6 +10,18 @@
 
 ---
 
+## 📚 Documentation
+
+**Full documentation:** https://sivert-io.github.io/matchzy-auto-tournament/
+
+Quick links:
+- [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) - Get running in 5 minutes
+- [First Tournament](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/first-tournament/) - Complete walkthrough
+- [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/) - What it can do
+- [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/) - Common issues
+
+---
+
 ## ✨ What It Does
 
 ### Tournament Management

@@ -1,118 +1,165 @@
 # MatchZy Auto Tournament
 
-<div align="center">
-  <img src="https://raw.githubusercontent.com/yourusername/matchzy-auto-tournament/main/client/public/icon.svg" alt="MatchZy Auto Tournament" width="140" height="140">
-  
-  **Automated tournament management system for CS2 MatchZy**
-  
-  _Stop manually configuring servers. Load matches, track events, and manage entire tournaments through one API._
-</div>
+**Automated CS2 tournament management** - one click from match creation to final scores.
 
----
+## What Is This?
 
-## What is MatchZy Auto Tournament?
+A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Handles everything:
 
-MatchZy Auto Tournament is a complete tournament automation system for Counter-Strike 2, built specifically to work with the [MatchZy plugin](https://github.com/shobhit-pathak/MatchZy). It handles everything from bracket generation to live match monitoring, with zero manual server configuration.
+- Create tournaments (Single/Double Elimination, Round Robin, Swiss)
+- Manage teams and players
+- Interactive map veto system (BO1/BO3/BO5)
+- Automatic server allocation and match loading
+- Real-time match tracking and live scores
+- Player connection monitoring
+- Admin match controls (pause, restore, broadcast, etc.)
+- Automatic bracket progression
+- Demo file management
+- Public team pages (no auth needed)
 
-## Key Highlights
+## Key Features
 
-### 🚀 One-Click Tournament Management
-Create a tournament, add teams, click "Start" — matches automatically load on your server fleet with proper configurations.
+### 🎮 **Fully Automated**
+- Add teams and servers
+- Generate bracket
+- Click "Start Tournament"
+- System handles the rest
 
-### 🗺️ Professional Map Veto
-Teams use an interactive web interface to ban and pick maps (FaceIT-style), with real-time synchronization and turn-based security.
+### 🗺️ **Professional Map Veto**
+- FaceIT-style pick/ban system
+- Turn-based security
+- Real-time updates
+- Side selection
 
-### 📡 Real-Time Everything
-WebSocket-powered live updates for player connections, match status, veto progress, and bracket advancement.
+### 📊 **Real-Time Everything**
+- Live scores via WebSocket
+- Player connection tracking
+- Match phase monitoring
+- Instant bracket updates
 
-### 🎮 Team Experience
-Public team pages (no login required) show server info, connection instructions, match history, and stats — shareable via simple links.
+### 🎯 **Admin Controls**
+- Pause/unpause matches
+- Restore round backups
+- Add backup players mid-match
+- Broadcast messages
+- Full RCON integration
 
-### 🛡️ Production-Ready
-Docker deployment, automatic demo recording, comprehensive event logging, and secure RCON communication.
+### 👥 **Team Pages**
+- Public pages for each team
+- No authentication needed
+- Participate in veto
+- Monitor matches
+- See server IPs
 
----
-
-## Quick Links
-
-- **[Quick Start Guide](getting-started/quick-start.md)** — Get running in 5 minutes
-- **[Feature Overview](features/overview.md)** — See everything it can do
-- **[API Reference](api/overview.md)** — Complete API documentation
-- **[GitHub Repository](https://github.com/yourusername/matchzy-auto-tournament)** — Source code and issues
-
----
-
-## Tournament Flow
+## How It Works
 
 ```mermaid
 graph LR
-    A[Create Tournament] --> B[Add Teams]
-    B --> C[Generate Bracket]
-    C --> D[Start Tournament]
-    D --> E{Format?}
-    E -->|BO1/BO3/BO5| F[Teams Complete Veto]
-    E -->|Round Robin/Swiss| G[Load Matches]
-    F --> G
-    G --> H[Players Connect]
-    H --> I[Match Goes Live]
-    I --> J[Auto Bracket Progression]
-    J --> K{More Rounds?}
-    K -->|Yes| G
-    K -->|No| L[Tournament Complete]
+    A[Admin Creates Tournament] --> B[Teams Start Veto]
+    B --> C[Server Auto-Allocated]
+    C --> D[Match Loads]
+    D --> E[Players Connect]
+    E --> F[Match Goes Live]
+    F --> G[Winner Auto-Advanced]
+    G --> H[Next Match Ready]
 ```
 
----
+### The Magic
 
-## Supported Tournament Formats
+1. **MatchZy webhook** sends events to API (player connects, round ends, etc.)
+2. **API processes** events and updates database
+3. **WebSocket broadcasts** to all connected clients  
+4. **Frontend updates** in real-time (no refresh!)
 
-| Format | Description | Min Teams | Max Teams | Uses Veto |
-|--------|-------------|-----------|-----------|-----------|
-| **Single Elimination** | One loss and you're out | 2 | 128 | ✅ (BO1/3/5) |
-| **Double Elimination** | Two losses to be eliminated | 2 | 128 | ✅ (BO1/3/5) |
-| **Round Robin** | Everyone plays everyone | 2 | 32 | ❌ |
-| **Swiss System** | Similar records face each other | 4 | 64 | ❌ |
+## Quick Start
 
----
+### With Docker (Recommended)
 
-## What Makes It Different?
+```bash
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+cp .env.example .env
+# Edit .env with your tokens
+docker-compose up -d --build
+```
 
-### vs. Manual MatchZy Configuration
-- ❌ **Manual:** Create JSON configs, upload to server, run RCON commands for each match
-- ✅ **Auto Tournament:** Click "Start Tournament" and it handles everything
+**Access at:** `http://localhost:3069`
 
-### vs. Other Tournament Systems
-- ✅ **Built for MatchZy** — Native integration with all events and commands
-- ✅ **Real-time player tracking** — See exactly who's connected and ready
-- ✅ **Team-centric UX** — Public pages teams can access without admin login
-- ✅ **Map veto included** — Professional pick/ban system built-in
+Everything runs on one port - Caddy handles routing internally.
 
----
+### Without Docker
 
-## Screenshots
+```bash
+npm install
+cp .env.example .env
+# Edit .env
+npm run dev
+```
 
-<div align="center">
-  <img src="assets/bracket-view.png" alt="Bracket View" width="600">
-  <p><em>Interactive bracket with pan/zoom and live match status</em></p>
-  
-  <img src="assets/veto-interface.png" alt="Map Veto" width="600">
-  <p><em>FaceIT-style map veto with real-time team synchronization</em></p>
-  
-  <img src="assets/player-roster.png" alt="Player Roster" width="600">
-  <p><em>Live player connection and ready status tracking</em></p>
-</div>
+**Frontend:** `http://localhost:5173`  
+**API:** `http://localhost:3000`  
+**API Docs:** `http://localhost:3000/api-docs`
 
----
+## Requirements
 
-## Community & Support
+- **CS2 servers** with MatchZy plugin
+- **Node.js 18+** or Bun
+- **Docker** (for production)
 
-- 📖 **Documentation:** You're reading it!
-- 🐛 **Bug Reports:** [GitHub Issues](https://github.com/yourusername/matchzy-auto-tournament/issues)
-- 💡 **Feature Requests:** [GitHub Discussions](https://github.com/yourusername/matchzy-auto-tournament/discussions)
-- 🤝 **Contributing:** [Contributing Guide](development/contributing.md)
+Recommended: Run on private network, expose via reverse proxy.
 
----
+## Configuration
 
-<div align="center">
-  <strong>Made with ❤️ for the CS2 community</strong>
-</div>
+Generate secure tokens:
+```bash
+openssl rand -hex 32
+```
 
+Required in `.env`:
+```bash
+API_TOKEN=your-admin-token        # Admin login
+SERVER_TOKEN=your-server-token    # CS2 ↔ API auth
+WEBHOOK_URL=http://your-ip:3000   # Where CS2 sends events
+```
+
+Optional:
+```bash
+STEAM_API_KEY=your-key            # For vanity URLs
+PORT=3000                         # API port
+```
+
+## First Tournament
+
+1. **Add Servers** (Admin Tools → Servers)
+   - CS2 IP, port, RCON password
+2. **Add Teams** (Teams → Create Team)
+   - Team name, players with Steam IDs
+3. **Create Tournament** (Tournaments → Create)
+   - Type, format, teams, map pool
+4. **Generate Bracket**
+5. **Start Tournament**
+6. System takes over! ✨
+
+## Documentation
+
+- **[Quick Start](getting-started/quick-start.md)** - Setup guide
+- **[First Tournament](getting-started/first-tournament.md)** - Step-by-step
+- **[Features](features/overview.md)** - What it can do
+- **[Running Matches](guides/running-matches.md)** - Admin operations
+- **[Troubleshooting](guides/troubleshooting.md)** - Common issues
+
+## Architecture
+
+**Backend:** TypeScript • Express • SQLite • Socket.IO • RCON  
+**Frontend:** React • Material UI • Vite  
+**Bracket:** brackets-manager.js  
+**Deploy:** Docker • Caddy
+
+## Support
+
+- **Issues:** [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues)
+- **Discord:** [Join CS2 Community](https://discord.gg/cs2)
+
+## License
+
+MIT License - Made with ❤️ for the CS2 community

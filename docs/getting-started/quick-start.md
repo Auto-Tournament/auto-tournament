@@ -1,142 +1,178 @@
 # Quick Start
 
-Get MatchZy Auto Tournament running in 5 minutes!
-
----
+Get up and running in 5 minutes.
 
 ## Prerequisites
 
-!!! requirements "What You Need"
-    - **Node.js 18+** or Bun runtime
-    - **CS2 dedicated server(s)** with MatchZy plugin installed
-    - **10 minutes** for setup
-
----
+- CS2 dedicated server(s) with MatchZy plugin
+- Node.js 18+ or Docker
+- RCON access to your servers
 
 ## Installation
 
-### Option 1: Docker (Recommended for Production)
+### Docker (Recommended)
 
 ```bash
-# Clone the repository
-git clone https://github.com/yourusername/matchzy-auto-tournament.git
+# Clone repository
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 
-# Copy and configure environment file
+# Setup environment
 cp .env.example .env
-nano .env  # Edit with your tokens
 
-# Start with Docker Compose
+# Edit .env with your tokens (see below)
+nano .env
+
+# Start everything
 docker-compose up -d --build
 ```
 
-!!! success "Access Your Dashboard"
-    Everything is now available at **`http://localhost:3069`**
-    
-    - 🎨 Web UI: `http://localhost:3069/`
-    - 📖 API: `http://localhost:3069/api`
-    - 📚 API Docs: `http://localhost:3069/api-docs`
+**Access:** `http://localhost:3069`
 
-### Option 2: Local Development
+Single port for everything - Caddy routes internally.
+
+### Local Development
 
 ```bash
-# Clone and install
-git clone https://github.com/yourusername/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+# Install dependencies
 npm install
 
-# Configure environment
+# Setup environment
 cp .env.example .env
-nano .env  # Edit with your tokens
 
-# Run in development mode
+# Edit .env
+nano .env
+
+# Start in dev mode
 npm run dev
 ```
 
-!!! info "Development URLs"
-    - 📖 API: `http://localhost:3000`
-    - 🎨 Frontend: `http://localhost:5173`
-    - 📚 API Docs: `http://localhost:3000/api-docs`
+**Frontend:** `http://localhost:5173`  
+**API:** `http://localhost:3000`
 
----
+## Environment Setup
 
-## Configuration
-
-### Generate Secure Tokens
+Generate secure tokens:
 
 ```bash
-# Generate random tokens for API_TOKEN and SERVER_TOKEN
 openssl rand -hex 32
 ```
 
-### Required Environment Variables
-
-```bash title=".env"
-# Admin authentication (for Web UI login)
-API_TOKEN=your-secure-admin-token-here
-
-# CS2 server authentication (for MatchZy webhooks)
-SERVER_TOKEN=your-secure-server-token-here
-
-# URL where CS2 servers can reach this API
-WEBHOOK_URL=http://192.168.1.100:3000  # Use your server's IP
-```
-
-!!! warning "WEBHOOK_URL Configuration"
-    - **Local testing:** `http://localhost:3000`
-    - **Same network:** `http://192.168.1.100:3000` (your machine's local IP)
-    - **Production:** `https://yourdomain.com`
-    
-    CS2 servers must be able to reach this URL to send events!
-
-### Optional Variables
+Edit `.env`:
 
 ```bash
-STEAM_API_KEY=your-key       # For Steam vanity URL resolution
-PORT=3000                    # Server port (default: 3000)
-NODE_ENV=production          # Environment mode
+# Required
+API_TOKEN=<token-from-above>       # Admin authentication
+SERVER_TOKEN=<different-token>     # CS2 server authentication
+WEBHOOK_URL=http://192.168.1.100:3000  # Your API server IP
+
+# Optional
+STEAM_API_KEY=<your-steam-key>     # For vanity URL resolution
+PORT=3000                          # API port (default: 3000)
 ```
 
----
+### Token Explanation
+
+- **API_TOKEN**: Used to login to admin panel
+- **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
+- **WEBHOOK_URL**: Where CS2 servers send events (your API server)
+
+## CS2 Server Setup
+
+### Install MatchZy
+
+1. Download from [MatchZy Releases](https://github.com/shobhit-pathak/MatchZy/releases)
+2. Extract to: `csgo/addons/counterstrikesharp/plugins/MatchZy/`
+3. Restart server
+4. Verify: `css_plugins list` shows MatchZy
+
+### Enable RCON
+
+Add to `server.cfg`:
+
+```cfg
+rcon_password "your-secure-rcon-password"
+hostport 27015
+```
+
+That's it! The system auto-configures webhooks when you load matches.
 
 ## First Login
 
-1. **Navigate to:** `http://localhost:3069` (Docker) or `http://localhost:5173` (Dev)
-2. **Click "Login"**
-3. **Enter your API_TOKEN** from `.env`
-4. **You're in!** 🎉
+1. Navigate to `http://localhost:3069`
+2. Click **"Login"** (top right)
+3. Enter your `API_TOKEN`
+4. You're in! 🎉
 
----
+## Add Your First Server
+
+1. Go to **Admin Tools** → **Servers**
+2. Click **"Add Server"**
+3. Fill in:
+   ```
+   Name: My Server 1
+   Host: 192.168.1.50
+   Port: 27015
+   RCON Password: <your-rcon-password>
+   ```
+4. Click **"Test Connection"** (optional)
+5. Click **"Add Server"**
+
+Server should show as 🟢 Online.
+
+## Add Your First Team
+
+1. Go to **Teams**
+2. Click **"Create Team"**
+3. Fill in:
+   ```
+   Team Name: Team Awesome
+   Team Tag: AWE
+   ```
+4. Add players (minimum 5):
+   ```
+   Steam ID: 76561199486434142
+   Name: Player1
+   ```
+   Repeat for all players
+5. Click **"Create Team"**
+
+Repeat for all teams (minimum 2 for a tournament).
 
 ## Next Steps
 
-Now that you're running, follow the **[First Tournament Guide](first-tournament.md)** to:
+You're ready to create your first tournament!
 
-1. ✅ Add your CS2 servers
-2. ✅ Create teams
-3. ✅ Generate a bracket
-4. ✅ Start your first tournament
+👉 **[First Tournament Guide](first-tournament.md)** - Step-by-step tournament setup
 
----
+## Network Notes
+
+**Private Network (LAN):**
+- Everything on `192.168.x.x` - works out of the box
+- Share team pages with local IPs
+
+**Public Internet:**
+- Get a domain or use public IP
+- Use reverse proxy (Caddy/Nginx) with SSL
+- Update `WEBHOOK_URL` to public address
+- Port forward 3069 (or proxy port)
+
+**Recommended:** Run on private network, expose via reverse proxy if needed.
 
 ## Troubleshooting
 
-!!! failure "Can't access the dashboard?"
-    - Check if the containers/processes are running
-    - Verify port 3069 (Docker) or 5173 (dev) isn't blocked
-    - Check Docker logs: `docker-compose logs -f`
+**Can't login:**
+- Verify API_TOKEN in `.env` matches what you're entering
+- Restart API after changing `.env`
 
-!!! failure "Can't login?"
-    - Verify `API_TOKEN` is set correctly in `.env`
-    - Check browser console for errors (F12)
-    - Try regenerating the token with `openssl rand -hex 32`
+**Server shows offline:**
+- Check RCON password is correct
+- Verify server is running
+- Test from API server: `nc -zv server-ip 27015`
 
-!!! failure "CS2 servers not connecting?"
-    - Verify `WEBHOOK_URL` is reachable from CS2 servers
-    - Check `SERVER_TOKEN` matches in both `.env` and MatchZy config
-    - See [MatchZy Webhook Setup](../matchzy/webhook-setup.md)
+**Events not arriving:**
+- Check CS2 can reach API: `curl http://api-ip:3000/api/events/test`
+- Verify WEBHOOK_URL in `.env` is correct
+- Check firewall allows port 3000
 
----
-
-**Ready to run your first tournament?** Continue to **[First Tournament →](first-tournament.md)**
-
+More help: **[Troubleshooting Guide](../guides/troubleshooting.md)**

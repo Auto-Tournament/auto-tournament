@@ -1,0 +1,94 @@
+# Managing Teams
+
+## Adding Teams
+
+### Single Team
+
+1. Go to **Teams** page
+2. Click **"Create Team"**
+3. Fill in:
+   - Team Name
+   - Team Tag (2-8 characters)
+   - Logo URL (optional)
+4. Add players:
+   - Steam ID or vanity URL
+   - Player name
+   - Minimum 5 players required
+5. Click **"Create Team"**
+
+### Bulk Import (JSON)
+
+For multiple teams, use JSON import:
+
+```json
+{
+  "teams": [
+    {
+      "name": "Team Pinger",
+      "tag": "PING",
+      "players": [
+        { "steamId": "76561199486434142", "name": "Simpert" },
+        { "steamId": "76561198765432109", "name": "Player2" },
+        { "steamId": "76561198765432108", "name": "Player3" },
+        { "steamId": "76561198765432107", "name": "Player4" },
+        { "steamId": "76561198765432106", "name": "Player5" }
+      ]
+    }
+  ]
+}
+```
+
+Download example: [`TEAM_IMPORT_EXAMPLE.json`](../TEAM_IMPORT_EXAMPLE.json)
+
+## Team Pages
+
+Each team gets a public URL:
+```
+https://your-domain:3069/team/team-pinger
+```
+
+Share this with teams - no authentication needed. They can:
+- View upcoming matches
+- Participate in map veto
+- See live scores
+- Get server connection info
+- Monitor player connections
+
+## Managing Players
+
+### Adding Players
+
+- Edit team → Add Player
+- Enter Steam ID (Steam64, Steam32, or vanity URL)
+- Steam API key in `.env` enables vanity URL resolution
+
+### Backup Players (Mid-Match)
+
+If a player can't connect during a match:
+
+1. Open match details
+2. **Player Management** → Add Backup Player
+3. Search for player
+4. Select team
+5. System executes `css_add_player` via RCON
+
+## Replacing Teams
+
+If a team withdraws mid-tournament:
+
+1. Find replacement team
+2. Click **"Replace in Tournament"**
+3. Select team to replace
+4. Bracket updates automatically
+
+## Common Issues
+
+**Player can't connect: "Auth rejected"**
+- Verify Steam ID is correct
+- Add as backup player via admin controls
+- Check `get5_check_auths true` is set
+
+**Team not appearing in tournament creation**
+- Ensure team has at least 5 players
+- Refresh page
+- Check team wasn't deleted

@@ -1,219 +1,275 @@
 # Your First Tournament
 
-This guide walks you through creating and running your first tournament from start to finish.
+Step-by-step guide to running a complete tournament.
 
----
+## Before You Start
 
-## Step 1: Add CS2 Servers
+Make sure you have:
+- [x] System installed and running
+- [x] At least one CS2 server added and showing 🟢 Online
+- [x] At least 2 teams created with 5+ players each
 
-1. Navigate to **Admin Tools** in the sidebar
-2. Scroll to **Server Management**
-3. Click **Add Server**
-4. Fill in server details:
-   ```
-   Server ID: ntlan_1
-   Server Name: NTLAN Server #1
-   Host: 192.168.1.50
-   Port: 27015
-   RCON Password: your-rcon-password
-   ```
-5. Click **Add Server**
-6. Click **Check Status** to verify RCON connection
+## Step 1: Create Tournament
 
-!!! tip "Server Status"
-    Servers should show as **ONLINE** with a green indicator. If offline:
-    
-    - Verify the server is running
-    - Check host/port are correct
-    - Verify RCON password matches
-    - Ensure firewall allows connection
+1. Go to **Tournaments** page
+2. Click **"Create Tournament"**
 
-!!! info "Auto-Configuration"
-    When you check server status, the system automatically configures:
-    
-    - MatchZy webhook URL
-    - Event header authentication
-    - Whitelist protection
-    
-    You don't need to manually configure `matchzy_remote_log_url`!
+### Basic Info
 
----
-
-## Step 2: Add Teams
-
-1. Go to **Tournament** page
-2. In the **Teams** section, click **Add Team**
-3. Enter team details:
-   ```
-   Team ID: team-alpha
-   Team Name: Team Alpha
-   Tag: ALPHA (optional)
-   ```
-4. Add **5 players** to the team:
-   - Enter Steam ID or profile URL
-   - System automatically fetches Steam names
-5. Click **Add Team**
-6. Repeat for all teams
-
-!!! example "Minimum Teams Required"
-    - **Single/Double Elimination:** 2, 4, 8, 16, 32, 64, or 128 teams
-    - **Round Robin:** Any number (2-32)
-    - **Swiss:** 4, 8, 16, 32, or 64 teams
-
----
-
-## Step 3: Create Tournament
-
-1. Scroll to **Tournament Configuration**
-2. Click **Create New Tournament**
-3. Fill in tournament details:
-   ```
-   Name: November LAN Tournament
-   Type: Single Elimination
-   Format: Best of 3 (BO3)
-   Teams: Select all your teams
-   ```
-4. Choose map pool (CS2 active duty maps)
-5. Click **Create Tournament**
-
-!!! success "Bracket Generated"
-    The system automatically generates the bracket based on your tournament type and team count!
-
----
-
-## Step 4: Review Bracket
-
-1. Go to **Bracket** page
-2. See your tournament structure:
-   - **Grid View:** Visual bracket with rounds
-   - **List View:** All matches in order
-3. Click any match to see details
-
-!!! info "Match Status Colors"
-    - **Gray:** Pending (not started)
-    - **Yellow:** Ready (waiting for veto/server)
-    - **Blue:** Loaded (warmup, players connecting)
-    - **Red:** Live (match in progress)
-    - **Green:** Completed (winner determined)
-
----
-
-## Step 5: Start Tournament
-
-### For BO1/BO3/BO5 Tournaments (with Veto)
-
-1. Click **Start Tournament** button
-2. Teams will see **map veto interface** on their team pages
-3. Teams complete veto (alternating bans/picks)
-4. Match automatically loads on available server
-5. Players connect and match goes live
-
-### For Round Robin/Swiss Tournaments (no Veto)
-
-1. Click **Start Tournament** button
-2. Matches immediately load on available servers
-3. Players connect and matches go live
-
-!!! warning "Ensure Servers Available"
-    Make sure you have at least one online server before starting!
-    Check **Admin Tools → Server Status** to verify.
-
----
-
-## Step 6: Share Team Pages
-
-1. In the **Bracket** view, click on a team
-2. Click **Copy Team Link**
-3. Share the link with that team
-
-Example team URL:
 ```
-http://localhost:3069/team/team-alpha/match
+Name: Weekend Cup 2025
+Description: 8-team single elimination
 ```
 
-!!! success "What Teams See"
-    Teams can access their page without logging in to:
-    
-    - ✅ Complete map veto (BO1/BO3/BO5)
-    - ✅ See server connection info
-    - ✅ View opponent and match status
-    - ✅ Check player connection status
-    - ✅ View match history and stats
+### Choose Format
 
----
+**Tournament Type:**
+- **Single Elimination** - Fast, one loss and you're out
+- **Double Elimination** - Second chance via lower bracket
+- **Round Robin** - Everyone plays everyone
+- **Swiss System** - Pairs teams by W/L record
 
-## Step 7: Monitor Matches
+**Match Format:**
+- **BO1** - One map, veto required (7 maps → ban 6, pick sides)
+- **BO3** - Three maps, veto required (7 maps → ban 2, pick 2, decider)
+- **BO5** - Five maps, veto required (7 maps → ban 2, pick all)
+- **Round Robin/Swiss** - Pre-set maps, no veto
 
-### As Admin
+### Select Teams
 
-**View Live Matches:**
-- **Matches Page:** All live and upcoming matches
-- **Bracket Page:** See tournament progression
-- **Match Modal:** Click any match for detailed view
+Check boxes for teams to include:
+```
+[x] Team Awesome
+[x] Team Legends
+[x] Team Alpha
+[x] Team Beta
+[x] Team Gamma
+[x] Team Delta
+[x] Team Echo
+[x] Team Foxtrot
+```
 
-**Admin Controls:**
-- Pause/unpause match
-- Broadcast messages
-- Add backup players
-- Restart rounds/matches
-- View player roster with ready status
+Power of 2 (2, 4, 8, 16) recommended for elimination brackets.
 
-### Event Monitoring
+### Map Pool (for BO1/BO3/BO5)
 
-1. Go to **Admin Tools**
-2. Scroll to **Server Events Monitor**
-3. Select a server
-4. See all events in real-time:
-   ```
-   [14:30:15] player_connect
-   [14:30:18] player_ready
-   [14:30:45] going_live
-   ```
+Select maps for veto:
+```
+[x] Ancient
+[x] Anubis
+[x] Dust2
+[x] Inferno
+[x] Mirage
+[x] Nuke
+[x] Overpass
+```
 
----
+Need exactly 7 maps for proper veto flow.
 
-## Step 8: Match Completion & Progression
+## Step 2: Generate Bracket
 
-When a match completes:
+Click **"Generate Bracket"**
 
-1. ✅ **Winner determined** automatically
-2. ✅ **Bracket advances** — Winner moves to next round
-3. ✅ **Server freed** — Available for next match
-4. ✅ **Demo saved** — Download from match details
+System creates all matches with proper seeding. View bracket in:
+- **Graph View** - Visual bracket tree
+- **List View** - Simple match list
 
-The system automatically allocates servers to next round matches as they become ready!
+## Step 3: Share Team Pages
 
----
+Before starting, send teams their URLs:
 
-## Common First-Time Issues
+```
+Team Awesome: http://your-domain:3069/team/team-awesome
+Team Legends: http://your-domain:3069/team/team-legends
+...
+```
 
-!!! failure "Veto interface not showing?"
-    - Verify tournament status is **IN PROGRESS**
-    - Check match status is **READY**
-    - Ensure format is BO1, BO3, or BO5 (Round Robin/Swiss don't use veto)
+Teams should bookmark these - they'll use them for veto and monitoring.
 
-!!! failure "Players can't connect?"
-    - Check `get5_check_auths true` is set (auto-configured)
-    - Verify player Steam IDs match team roster exactly
-    - Players must be in the team roster to join
+## Step 4: Start Tournament
 
-!!! failure "Events not showing?"
-    - Verify `WEBHOOK_URL` in `.env` is reachable from CS2 servers
-    - Check `SERVER_TOKEN` matches in `.env` and server config
-    - Look for errors in API console logs
+Click **"Start Tournament"**
 
----
+### What Happens Next
+
+**For BO1/BO3/BO5:**
+1. Tournament status → "In Progress"
+2. Teams receive notification to start veto
+3. Teams visit their team page
+4. Interactive map veto begins
+5. When veto completes:
+   - System finds available server
+   - Generates match config with picked maps
+   - Loads match automatically
+   - Teams see server IP on their page
+
+**For Round Robin/Swiss:**
+1. Tournament status → "In Progress"
+2. System allocates servers immediately
+3. Matches load automatically
+4. Teams see server IPs right away
+
+## Step 5: Monitor Matches
+
+### Matches Page
+
+Real-time overview:
+```
+LIVE MATCHES
+━━━━━━━━━━━━━━━━━━━━━━
+Match #1 - Quarterfinals
+Team Awesome  11 - 7  Team Legends
+de_mirage • Live • 8/10 players
+```
+
+Click any match for:
+- Detailed scores
+- Player connection roster
+- Admin controls
+
+### Bracket Page
+
+Visual bracket updates in real-time:
+- Green checkmarks for completed matches
+- Live scores for ongoing matches
+- Winner advancement automatic
+
+## Map Veto Process
+
+(For BO1/BO3/BO5 matches)
+
+### BO1 Example:
+```
+1. Team A bans map
+2. Team B bans map
+3. Team A bans map
+4. Team B bans map
+5. Team A bans map
+6. Team B bans map
+7. Last map auto-picked
+8. Team B picks starting side
+```
+
+### BO3 Example:
+```
+1. Team A bans map
+2. Team B bans map
+3. Team A picks Map 1
+4. Team B picks side for Map 1
+5. Team B picks Map 2
+6. Team A picks side for Map 2
+7. Team A bans map
+8. Team B bans map
+9. Last map is Map 3 (knife round)
+```
+
+Teams see turn-based interface with:
+- Colored action prompt (BAN/PICK/SIDE)
+- Clickable map cards
+- Veto history
+- Real-time opponent actions
+
+## During Matches
+
+### Warmup
+
+Players connect and type `.ready`:
+```
+connect 192.168.1.100:27015
+.ready
+```
+
+Monitor progress: "8/10 players connected, 5 ready"
+
+### Live Match
+
+Automatic updates:
+- Current score
+- Round number
+- Match phase (live, halftime, overtime, paused)
+
+### Match Completion
+
+When match ends:
+- Winner auto-determined
+- Winner advances in bracket
+- Next match becomes "Ready"
+- Demo file auto-uploaded
+- Server freed for next match
+
+## Admin Interventions
+
+If issues arise, open match modal for:
+
+**Quick Actions:**
+- Pause/Unpause
+- Swap Teams
+- Restart Round
+
+**Advanced:**
+- Restore Backup (previous round)
+- Add Backup Player
+- Broadcast Message
+- Force Start / End Match
+
+See [Running Matches](../guides/running-matches.md) for detailed scenarios.
+
+## Common Issues
+
+**Veto stuck:**
+- Admin Controls → Skip Veto
+- Manually set maps if needed
+
+**No server available:**
+- Check server status (Admin Tools)
+- Free up busy servers
+- Add more servers
+
+**Player can't connect:**
+- Pause match
+- Add as backup player via admin controls
+- Verify Steam ID is correct
+
+**Match not auto-starting:**
+- Check all 10 players ready
+- Force start via admin controls
+- Check MatchZy console for errors
+
+## Post-Tournament
+
+### Results
+
+- Bracket shows full tournament progression
+- Download demos from match details
+- Export bracket screenshot
+
+### Cleanup
+
+- Archive demo files
+- Export team/match data if needed
+- Server status should auto-reset to "Online"
+
+## Tips
+
+**Before tournament:**
+- Test veto with dummy match
+- Verify all servers online
+- Share team pages in advance
+- Have backup servers ready
+
+**During tournament:**
+- Monitor matches page continuously
+- Have admin controls ready
+- Communicate via broadcast
+- Log any incidents
+
+**After tournament:**
+- Download all demos
+- Screenshot final bracket
+- Survey teams for feedback
 
 ## Next Steps
 
-- 📖 **[Learn about Map Veto](../features/map-veto.md)** — How the veto system works
-- 🎮 **[Admin Controls Guide](../features/admin-controls.md)** — All available match controls
-- 📡 **[Event Processing](../features/events.md)** — Understanding MatchZy events
-- 🔧 **[Troubleshooting](../troubleshooting/common-issues.md)** — Fix common problems
-
----
-
-**Congratulations! You've run your first tournament.** 🎉
-
-Explore the rest of the documentation to learn about advanced features like player statistics, demo analysis, and more!
-
+- **[Running Matches](../guides/running-matches.md)** - Detailed match operations
+- **[Admin Controls](features/overview.md)** - All admin features
+- **[Troubleshooting](../guides/troubleshooting.md)** - Fix common issues
