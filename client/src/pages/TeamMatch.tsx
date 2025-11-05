@@ -226,6 +226,30 @@ export default function TeamMatch() {
       loadTeamStats();
     });
 
+    socket.on('bracket:update', () => {
+      // Refresh match data when bracket updates (e.g., match completed, new round started)
+      loadTeamMatch();
+      loadMatchHistory();
+      loadTeamStats();
+    });
+
+    socket.on('tournament:update', (data: { deleted?: boolean; action?: string }) => {
+      // Handle tournament deletion
+      if (data.deleted || data.action === 'tournament_deleted') {
+        setError('Tournament has been deleted');
+        setMatch(null);
+        setHasMatch(false);
+        setMatchHistory([]);
+        setStats(null);
+        setStanding(null);
+      } else {
+        // Other tournament updates might affect team matches
+        loadTeamMatch();
+        loadMatchHistory();
+        loadTeamStats();
+      }
+    });
+
     return () => {
       socket.close();
     };

@@ -2,36 +2,23 @@ import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Stack,
-  Chip,
   Grid,
   LinearProgress,
   Alert,
-  IconButton,
-  Tooltip,
+  Stack,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import DownloadIcon from '@mui/icons-material/Download';
-import LinkIcon from '@mui/icons-material/Link';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import PersonIcon from '@mui/icons-material/Person';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
+import { MatchCard } from '../components/shared/MatchCard';
 import {
   formatDate,
-  getStatusColor,
-  getStatusLabel,
-  getDetailedStatusLabel,
   getRoundLabel,
 } from '../utils/matchUtils';
-import { useTeamLinkCopy } from '../hooks/useTeamLinkCopy';
 
 interface Team {
   id: string;
@@ -58,6 +45,8 @@ interface Match {
   team2?: Team;
   winner?: Team;
   status: 'pending' | 'loaded' | 'live' | 'completed';
+  serverId?: string;
+  serverName?: string;
   createdAt: number;
   loadedAt?: number;
   completedAt?: number;
@@ -66,6 +55,7 @@ interface Match {
   team2Score?: number;
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
+  matchPhase?: string;
   config?: {
     maplist?: string[];
     num_maps?: number;
@@ -100,9 +90,6 @@ export default function Matches() {
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
-
-  // Team link copy with toast
-  const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   // Download demo file
   const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
@@ -336,211 +323,27 @@ export default function Matches() {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
-                      <Card
-                        sx={{
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          borderLeft: 4,
-                          borderColor: match.status === 'live' ? 'error.main' : 'info.main',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: 6,
-                          },
-                        }}
-                        onClick={() => setSelectedMatch(match)}
-                      >
-                        <CardContent>
-                          <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={2}
-                          >
-                            <Box>
-                              <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
-                                Match #{matchNumber}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {getRoundLabel(match.round)}
-                              </Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Tooltip
-                                title="Open team match page in new window"
-                                PopperProps={{ style: { zIndex: 1200 } }}
-                              >
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      if (match.team1?.id) {
-                                        window.open(
-                                          `/team/${match.team1.id}`,
-                                          '_blank',
-                                          'noopener,noreferrer'
-                                        );
-                                      }
-                                    }}
-                                    disabled={!match.team1?.id}
-                                    color="primary"
-                                  >
-                                    <OpenInNewIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Tooltip
-                                title="Copy team match link"
-                                PopperProps={{ style: { zIndex: 1200 } }}
-                              >
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      copyLink(match.team1?.id);
-                                    }}
-                                    disabled={!match.team1?.id}
-                                  >
-                                    <LinkIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Tooltip
-                                title={match.demoFilePath ? 'Download Demo' : 'No demo available'}
-                                PopperProps={{ style: { zIndex: 1200 } }}
-                              >
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => handleDownloadDemo(match, e)}
-                                    disabled={!match.demoFilePath}
-                                    color="secondary"
-                                  >
-                                    <DownloadIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Chip
-                                label={getStatusLabel(match.status)}
-                                size="small"
-                                color={getStatusColor(match.status)}
-                                sx={{ fontWeight: 600, minWidth: 140 }}
-                              />
-                            </Box>
+                      <Box>
+                        <MatchCard
+                          match={match}
+                          matchNumber={matchNumber}
+                          variant="live"
+                          playerCount={connectionCounts.get(match.slug)}
+                          liveScores={{
+                            team1Score: event?.params?.team1_score,
+                            team2Score: event?.params?.team2_score,
+                          }}
+                          showPlayerProgress={true}
+                          onClick={() => setSelectedMatch(match)}
+                        />
+                        {event && event.event && (
+                          <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
+                            <Typography variant="caption" color="text.secondary">
+                              Latest: {event.event.replace(/_/g, ' ')}
+                            </Typography>
                           </Box>
-
-                          <Stack spacing={1.5}>
-                            <Box
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 1,
-                                bgcolor: 'background.paper',
-                                border: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
-                              <Typography variant="body1" fontWeight={500}>
-                                {match.team1 ? match.team1.name : 'TBD'}
-                              </Typography>
-                              {event?.params?.team1_score !== undefined && (
-                                <Chip
-                                  label={event.params.team1_score}
-                                  size="small"
-                                  sx={{ fontWeight: 600, minWidth: 40 }}
-                                />
-                              )}
-                            </Box>
-
-                            <Box display="flex" justifyContent="center">
-                              <Typography variant="body2" color="text.secondary" fontWeight={600}>
-                                VS
-                              </Typography>
-                            </Box>
-
-                            <Box
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 1,
-                                bgcolor: 'background.paper',
-                                border: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
-                              <Typography variant="body1" fontWeight={500}>
-                                {match.team2 ? match.team2.name : 'TBD'}
-                              </Typography>
-                              {event?.params?.team2_score !== undefined && (
-                                <Chip
-                                  label={event.params.team2_score}
-                                  size="small"
-                                  sx={{ fontWeight: 600, minWidth: 40 }}
-                                />
-                              )}
-                            </Box>
-                          </Stack>
-
-                          {/* Detailed Status with Player Count */}
-                          <Box
-                            mt={2}
-                            p={1.5}
-                            bgcolor={
-                              match.status === 'loaded'
-                                ? connectionCounts.get(match.slug)! >= (match.config?.expected_players_total || 10)
-                                  ? 'success.dark'
-                                  : 'warning.dark'
-                                : 'info.dark'
-                            }
-                            borderRadius={1}
-                          >
-                            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-                              <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
-                              <Typography variant="body2" fontWeight={600} color="white">
-                                {getDetailedStatusLabel(
-                                  match.status,
-                                  connectionCounts.get(match.slug),
-                                  match.config?.expected_players_total || 10
-                                )}
-                              </Typography>
-                            </Box>
-                            {match.status === 'loaded' && connectionCounts.has(match.slug) && (
-                              <Box
-                                sx={{
-                                  width: '100%',
-                                  height: 4,
-                                  bgcolor: 'rgba(255,255,255,0.2)',
-                                  borderRadius: 1,
-                                  overflow: 'hidden',
-                                  mt: 1,
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    width: `${(connectionCounts.get(match.slug)! / (match.config?.expected_players_total || 10)) * 100}%`,
-                                    height: '100%',
-                                    bgcolor: 'white',
-                                    transition: 'width 0.3s ease',
-                                  }}
-                                />
-                              </Box>
-                            )}
-                          </Box>
-
-                          {event && event.event && (
-                            <Box mt={2} p={1} bgcolor="action.hover" borderRadius={1}>
-                              <Typography variant="caption" color="text.secondary">
-                                Latest: {event.event.replace(/_/g, ' ')}
-                              </Typography>
-                            </Box>
-                          )}
-                        </CardContent>
-                      </Card>
+                        )}
+                      </Box>
                     </Grid>
                   );
                 })}
@@ -559,164 +362,22 @@ export default function Matches() {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
-                      <Card
-                        sx={{
-                          cursor: 'pointer',
-                          transition: 'transform 0.2s, box-shadow 0.2s',
-                          borderLeft: 4,
-                          borderColor: 'success.main',
-                          '&:hover': {
-                            transform: 'translateY(-4px)',
-                            boxShadow: 6,
-                          },
-                        }}
-                        onClick={() => setSelectedMatch(match)}
-                      >
-                        <CardContent>
-                          <Box
-                            display="flex"
-                            justifyContent="space-between"
-                            alignItems="center"
-                            mb={2}
-                          >
-                            <Box>
-                              <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
-                                Match #{matchNumber}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {getRoundLabel(match.round)}
-                              </Typography>
-                            </Box>
-                            <Box display="flex" alignItems="center" gap={1}>
-                              <Tooltip title="Copy team match link">
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      copyLink(match.team1?.id);
-                                    }}
-                                    disabled={!match.team1?.id}
-                                  >
-                                    <LinkIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Tooltip
-                                title={match.demoFilePath ? 'Download Demo' : 'No demo available'}
-                              >
-                                <span>
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => handleDownloadDemo(match, e)}
-                                    disabled={!match.demoFilePath}
-                                    color="primary"
-                                  >
-                                    <DownloadIcon fontSize="small" />
-                                  </IconButton>
-                                </span>
-                              </Tooltip>
-                              <Chip
-                                label={
-                                  (match.team1 && !match.team2) || (!match.team1 && match.team2)
-                                    ? 'WALKOVER'
-                                    : 'COMPLETED'
-                                }
-                                size="small"
-                                color={
-                                  (match.team1 && !match.team2) || (!match.team1 && match.team2)
-                                    ? 'warning'
-                                    : 'success'
-                                }
-                                sx={{ fontWeight: 600 }}
-                              />
-                            </Box>
-                          </Box>
-
-                          <Stack spacing={1}>
-                            <Box
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 1,
-                                bgcolor:
-                                  match.winner?.id === match.team1?.id
-                                    ? 'success.light'
-                                    : 'background.paper',
-                                border: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
-                              <Typography
-                                variant="body1"
-                                fontWeight={match.winner?.id === match.team1?.id ? 600 : 400}
-                                sx={{
-                                  fontStyle: !match.team1 ? 'italic' : 'normal',
-                                  color:
-                                    match.winner?.id === match.team1?.id
-                                      ? 'success.contrastText'
-                                      : !match.team1
-                                      ? 'text.disabled'
-                                      : 'text.primary',
-                                }}
-                              >
-                                {match.team1 ? match.team1.name : '—'}
-                              </Typography>
-                              {match.winner?.id === match.team1?.id && (
-                                <EmojiEventsIcon sx={{ color: 'success.contrastText' }} />
-                              )}
-                            </Box>
-
-                            <Box
-                              display="flex"
-                              justifyContent="space-between"
-                              alignItems="center"
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 1,
-                                bgcolor:
-                                  match.winner?.id === match.team2?.id
-                                    ? 'success.light'
-                                    : 'background.paper',
-                                border: 1,
-                                borderColor: 'divider',
-                              }}
-                            >
-                              <Typography
-                                variant="body1"
-                                fontWeight={match.winner?.id === match.team2?.id ? 600 : 400}
-                                sx={{
-                                  fontStyle: !match.team2 ? 'italic' : 'normal',
-                                  color:
-                                    match.winner?.id === match.team2?.id
-                                      ? 'success.contrastText'
-                                      : !match.team2
-                                      ? 'text.disabled'
-                                      : 'text.primary',
-                                }}
-                              >
-                                {match.team2 ? match.team2.name : '—'}
-                              </Typography>
-                              {match.winner?.id === match.team2?.id && (
-                                <EmojiEventsIcon sx={{ color: 'success.contrastText' }} />
-                              )}
-                            </Box>
-                          </Stack>
-
-                          {match.completedAt && (
-                            <Typography
-                              variant="caption"
-                              color="text.secondary"
-                              mt={2}
-                              display="block"
-                            >
+                      <Box>
+                        <MatchCard
+                          match={match}
+                          matchNumber={matchNumber}
+                          variant="completed"
+                          onDownloadDemo={(e) => handleDownloadDemo(match, e)}
+                          onClick={() => setSelectedMatch(match)}
+                        />
+                        {match.completedAt && (
+                          <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
+                            <Typography variant="caption" color="text.secondary">
                               Completed: {formatDate(match.completedAt)}
                             </Typography>
-                          )}
-                        </CardContent>
-                      </Card>
+                          </Box>
+                        )}
+                      </Box>
                     </Grid>
                   );
                 })}
@@ -735,8 +396,6 @@ export default function Matches() {
           onClose={() => setSelectedMatch(null)}
         />
       )}
-
-      <ToastNotification />
     </Box>
   );
 }

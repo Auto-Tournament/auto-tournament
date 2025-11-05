@@ -2,9 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import {
   Box,
   Typography,
-  Card,
-  CardContent,
-  Chip,
   CircularProgress,
   Alert,
   Button,
@@ -12,6 +9,8 @@ import {
   ToggleButton,
   ToggleButtonGroup,
   IconButton,
+  Chip,
+  Card,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -28,7 +27,8 @@ import SwissView from '../components/visualizations/SwissView';
 import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { getRoundLabel, getStatusColor, getStatusLabel } from '../utils/matchUtils';
+import { MatchCard } from '../components/shared/MatchCard';
+import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket, type Match } from '../hooks/useBracket';
 
 // Interfaces are now imported from useBracket hook
@@ -348,129 +348,13 @@ export default function Bracket() {
               </Typography>
               <Stack spacing={2}>
                 {matchesByRound[round]?.map((match) => (
-                  <Card
+                  <MatchCard
                     key={match.id}
-                    sx={{
-                      borderLeft: 4,
-                      borderColor:
-                        match.status === 'completed'
-                          ? 'success.main'
-                          : match.status === 'live'
-                          ? 'warning.main'
-                          : match.status === 'loaded'
-                          ? 'info.main'
-                          : 'grey.300',
-                    }}
-                  >
-                    <CardContent>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Typography variant="body2" fontWeight={600} color="text.secondary">
-                          Match #{getGlobalMatchNumber(match)}
-                        </Typography>
-                        <Chip
-                          label={getStatusLabel(match.status)}
-                          size="small"
-                          color={getStatusColor(match.status)}
-                        />
-                      </Box>
-                      <Stack spacing={1}>
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{
-                            p: 1.5,
-                            borderRadius: 1,
-                            bgcolor:
-                              match.winner?.id === match.team1?.id
-                                ? 'success.main'
-                                : 'background.paper',
-                            border: 1,
-                            borderColor:
-                              match.winner?.id === match.team1?.id ? 'success.dark' : 'divider',
-                          }}
-                        >
-                          <Typography
-                            variant="body1"
-                            fontWeight={match.winner?.id === match.team1?.id ? 600 : 400}
-                            sx={{
-                              color:
-                                match.winner?.id === match.team1?.id
-                                  ? 'success.contrastText'
-                                  : match.team1
-                                  ? 'text.primary'
-                                  : 'text.disabled',
-                            }}
-                          >
-                            {match.team1
-                              ? match.team1.name
-                              : match.status === 'completed'
-                              ? '—'
-                              : 'TBD'}
-                          </Typography>
-                          {match.winner?.id === match.team1?.id && (
-                            <Chip
-                              label="WINNER"
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                fontWeight: 600,
-                                color: 'success.contrastText',
-                                borderColor: 'success.contrastText',
-                              }}
-                            />
-                          )}
-                        </Box>
-                        <Box
-                          display="flex"
-                          justifyContent="space-between"
-                          alignItems="center"
-                          sx={{
-                            p: 1.5,
-                            borderRadius: 1,
-                            bgcolor:
-                              match.winner?.id === match.team2?.id
-                                ? 'success.main'
-                                : 'background.paper',
-                            border: 1,
-                            borderColor:
-                              match.winner?.id === match.team2?.id ? 'success.dark' : 'divider',
-                          }}
-                        >
-                          <Typography
-                            variant="body1"
-                            fontWeight={match.winner?.id === match.team2?.id ? 600 : 400}
-                            sx={{
-                              color:
-                                match.winner?.id === match.team2?.id
-                                  ? 'success.contrastText'
-                                  : match.team2
-                                  ? 'text.primary'
-                                  : 'text.disabled',
-                            }}
-                          >
-                            {match.team2
-                              ? match.team2.name
-                              : match.status === 'completed'
-                              ? '—'
-                              : 'TBD'}
-                          </Typography>
-                          {match.winner?.id === match.team2?.id && (
-                            <Chip
-                              label="WINNER"
-                              size="small"
-                              variant="outlined"
-                              sx={{
-                                fontWeight: 600,
-                                color: 'success.contrastText',
-                                borderColor: 'success.contrastText',
-                              }}
-                            />
-                          )}
-                        </Box>
-                      </Stack>
-                    </CardContent>
-                  </Card>
+                    match={match}
+                    matchNumber={getGlobalMatchNumber(match)}
+                    roundLabel={getRoundLabel(round, totalRounds)}
+                    onClick={() => setSelectedMatch(match)}
+                  />
                 ))}
               </Stack>
             </Box>

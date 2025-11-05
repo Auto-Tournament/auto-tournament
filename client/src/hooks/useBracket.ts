@@ -27,6 +27,8 @@ export interface Match {
   team1?: Team;
   team2?: Team;
   winner?: Team;
+  serverId?: string;
+  serverName?: string;
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
@@ -34,12 +36,17 @@ export interface Match {
   team2Score?: number;
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
+  matchPhase?: string;
   config?: {
     maplist?: string[];
     num_maps?: number;
     team1?: { name: string };
     team2?: { name: string };
+    expected_players_total?: number;
+    expected_players_team1?: number;
+    expected_players_team2?: number;
   };
+  demoFilePath?: string;
 }
 
 export interface Tournament {

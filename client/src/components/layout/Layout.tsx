@@ -1,7 +1,7 @@
 import React from 'react';
 import { AppBar, Toolbar, Box, Button, Container, IconButton } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import LogoutIcon from '@mui/icons-material/Logout';
+import { Logout } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -75,7 +75,7 @@ export default function Layout() {
           </Box>
 
           <IconButton color="inherit" onClick={handleLogout} title="Logout">
-            <LogoutIcon />
+            <Logout />
           </IconButton>
         </Toolbar>
       </AppBar>

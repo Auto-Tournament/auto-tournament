@@ -9,6 +9,7 @@ import { log } from '../utils/logger';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
 import type { DbMatchRow } from '../types/database.types';
+import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
 
 const router = Router();
 
@@ -273,6 +274,9 @@ router.delete('/', async (_req: Request, res: Response) => {
     tournamentService.deleteTournament();
 
     log.success(`Tournament deleted successfully. ${matchesEnded} match(es) ended on servers.`);
+
+    // Emit tournament deleted event
+    emitTournamentUpdate({ deleted: true, action: 'tournament_deleted' });
 
     return res.json({
       success: true,
@@ -563,6 +567,9 @@ router.post('/restart', requireAuth, async (req: Request, res: Response) => {
         failed: result.failed,
         restartFailed: result.restartFailed,
       });
+
+      // Emit tournament restart event
+      emitBracketUpdate({ action: 'tournament_restarted', allocated: result.allocated });
 
       return res.json({
         success: true,

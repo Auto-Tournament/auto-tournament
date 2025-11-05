@@ -62,7 +62,7 @@ router.get('/test', async (_req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/practice-mode
- * Start practice mode (css_prac)
+ * Start practice mode (matchzy_prac)
  */
 router.post('/practice-mode', async (req: Request, res: Response) => {
   try {
@@ -75,7 +75,7 @@ router.post('/practice-mode', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_prac');
+    const result = await rconService.sendCommand(serverId, 'matchzy_prac');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -90,7 +90,7 @@ router.post('/practice-mode', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/start-match
- * Force start a match (css_start)
+ * Force start a match (matchzy_forcestart)
  */
 router.post('/start-match', async (req: Request, res: Response) => {
   try {
@@ -103,7 +103,7 @@ router.post('/start-match', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_start');
+    const result = await rconService.sendCommand(serverId, 'matchzy_forcestart');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -118,7 +118,7 @@ router.post('/start-match', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/change-map
- * Change map (css_map <mapname>)
+ * Change map (changelevel <mapname>)
  */
 router.post('/change-map', async (req: Request, res: Response) => {
   try {
@@ -139,7 +139,7 @@ router.post('/change-map', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, `css_map ${mapName}`);
+    const result = await rconService.sendCommand(serverId, `changelevel ${mapName}`);
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -210,7 +210,7 @@ router.post('/unpause-match', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/force-pause
- * Admin pause (players cannot unpause)
+ * Admin pause (matchzy_pause is already admin-level)
  */
 router.post('/force-pause', async (req: Request, res: Response) => {
   try {
@@ -223,7 +223,7 @@ router.post('/force-pause', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_forcepause');
+    const result = await rconService.sendCommand(serverId, 'matchzy_pause');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -238,7 +238,7 @@ router.post('/force-pause', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/force-unpause
- * Force unpause the match (admin)
+ * Force unpause the match (matchzy_unpause is already admin-level)
  */
 router.post('/force-unpause', async (req: Request, res: Response) => {
   try {
@@ -251,7 +251,7 @@ router.post('/force-unpause', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_forceunpause');
+    const result = await rconService.sendCommand(serverId, 'matchzy_unpause');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -324,7 +324,7 @@ router.post('/end-warmup', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/reload-admins
- * Reload admin configuration
+ * Reload admin configuration (exec admins.cfg)
  */
 router.post('/reload-admins', async (req: Request, res: Response) => {
   try {
@@ -337,7 +337,7 @@ router.post('/reload-admins', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_reload_admins');
+    const result = await rconService.sendCommand(serverId, 'exec admins.cfg');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
@@ -383,7 +383,7 @@ router.post('/say', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/broadcast
- * Broadcast an admin message to all servers or specific servers (css_asay)
+ * Broadcast an admin message to all servers or specific servers (using say command)
  */
 router.post('/broadcast', async (req: Request, res: Response) => {
   try {
@@ -404,7 +404,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
       // Send to specific servers
       results = await Promise.all(
         serverIds.map((serverId: string) =>
-          rconService.sendCommand(serverId, `css_asay ${sanitizedMessage}`)
+          rconService.sendCommand(serverId, `say [ADMIN] ${sanitizedMessage}`)
         )
       );
     } else {
@@ -412,7 +412,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
       const { serverService } = await import('../services/serverService');
       const servers = serverService.getAllServers(true);
       results = await Promise.all(
-        servers.map((server) => rconService.sendCommand(server.id, `css_asay ${sanitizedMessage}`))
+        servers.map((server) => rconService.sendCommand(server.id, `say [ADMIN] ${sanitizedMessage}`))
       );
     }
 
@@ -434,6 +434,174 @@ router.post('/broadcast', async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to broadcast message',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/swap-teams
+ * Swap teams (switch sides)
+ */
+router.post('/swap-teams', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'matchzy_swap');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error swapping teams:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to swap teams',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/restore-backup
+ * Restore match to a specific round
+ */
+router.post('/restore-backup', async (req: Request, res: Response) => {
+  try {
+    const { serverId, round } = req.body;
+
+    if (!serverId || round === undefined) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId and round are required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, `matchzy_restore ${round}`);
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error restoring backup:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to restore backup',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/skip-veto
+ * Skip the veto phase
+ */
+router.post('/skip-veto', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'matchzy_skipveto');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error skipping veto:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to skip veto',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/restart-round
+ * Restart the current round
+ */
+router.post('/restart-round', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'mp_restartgame 1');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error restarting round:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to restart round',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/add-time
+ * Add time to the current round
+ */
+router.post('/add-time', async (req: Request, res: Response) => {
+  try {
+    const { serverId, seconds } = req.body;
+
+    if (!serverId || !seconds) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId and seconds are required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, `mp_roundtime_defuse ${seconds / 60}`);
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error adding time:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to add time',
+    });
+  }
+});
+
+/**
+ * POST /api/rcon/end-match
+ * Force end the current match
+ */
+router.post('/end-match', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.body;
+
+    if (!serverId) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId is required',
+      });
+    }
+
+    const result = await rconService.sendCommand(serverId, 'matchzy_endmatch');
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error ending match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to end match',
     });
   }
 });
@@ -468,34 +636,35 @@ router.post('/command', async (req: Request, res: Response) => {
       // Use the value directly as the raw command without any prefix
       fullCommand = value;
     } else {
-      // List of base RCON commands that don't need css_ prefix
-      const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password'];
+      // List of base RCON commands and prefixes that don't need modification
+      const baseRconCommands = ['status', 'changelevel', 'kick', 'ban', 'exec', 'rcon_password', 'say'];
 
-      // Add css_ prefix if not present and not a raw RCON command
+      // Add matchzy_ prefix if not present and not a raw RCON command or already prefixed
       if (
-        !fullCommand.startsWith('css_') &&
+        !fullCommand.startsWith('matchzy_') &&
         !fullCommand.startsWith('mp_') &&
         !fullCommand.startsWith('sv_') &&
+        !fullCommand.startsWith('say') &&
         !baseRconCommands.includes(fullCommand.split(' ')[0])
       ) {
-        fullCommand = `css_${fullCommand}`;
+        fullCommand = `matchzy_${fullCommand}`;
       }
 
       // Append parameters based on the command
       if (message !== undefined) {
-        // For css_asay and similar
+        // For say and similar message commands
         fullCommand = `${fullCommand} ${message}`;
       } else if (round !== undefined) {
-        // For css_restore
+        // For matchzy_restore
         fullCommand = `${fullCommand} ${round}`;
       } else if (value !== undefined && command !== 'custom') {
-        // For css_readyrequired and similar (but not for custom)
+        // For matchzy commands with value parameters
         fullCommand = `${fullCommand} ${value}`;
       } else if (map !== undefined) {
-        // For css_map
+        // For changelevel and map commands
         fullCommand = `${fullCommand} ${map}`;
       } else if (name !== undefined) {
-        // For css_team1, css_team2
+        // For team name commands
         fullCommand = `${fullCommand} ${name}`;
       }
     }

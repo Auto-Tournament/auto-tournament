@@ -37,9 +37,9 @@ export const LogViewer: React.FC = () => {
         params.append('level', levelFilter);
       }
 
-      const response = await api.get(`/api/logs?${params.toString()}`);
+      const response: { success: boolean; logs: LogEntry[] } = await api.get(`/api/logs?${params.toString()}`);
       if (response.success) {
-        setLogs(response.logs || []);
+        setLogs(response.logs);
       }
     } catch (err) {
       const error = err as Error;

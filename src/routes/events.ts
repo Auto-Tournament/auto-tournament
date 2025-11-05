@@ -42,13 +42,22 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
     // Log to file (persistent logging for debugging/recovery)
     logWebhookEvent(serverId, event);
 
-    // Store event in database
-    db.insert('match_events', {
-      match_slug: event.matchid,
-      event_type: event.event,
-      event_data: JSON.stringify(event),
-      received_at: Math.floor(Date.now() / 1000),
-    });
+    // Store event in database - only if match exists
+    if (match) {
+      try {
+        db.insert('match_events', {
+          match_slug: event.matchid,
+          event_type: event.event,
+          event_data: JSON.stringify(event),
+          received_at: Math.floor(Date.now() / 1000),
+        });
+      } catch (insertError) {
+        // Log but don't fail - event is still logged to file and will be processed
+        log.error(`Failed to insert event to database (match: ${event.matchid}, event: ${event.event})`, insertError);
+      }
+    } else {
+      log.warn(`Event received for unknown match: ${event.matchid}. Event will not be stored in database but will still be processed.`);
+    }
 
     // Add to event buffer for debugging/monitoring
     eventBufferService.addEvent(serverId, event.matchid, event);

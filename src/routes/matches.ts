@@ -13,6 +13,7 @@ import { log } from '../utils/logger';
 import { db } from '../config/database';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
+import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 
 const router = Router();
 
@@ -405,10 +406,18 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
 
     if (result.success) {
       log.success(`Match ${slug} restarted successfully`);
+      
+      // Emit match restart event
+      const updatedMatch = matchService.getMatchBySlug(slug, baseUrl);
+      if (updatedMatch) {
+        emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
+        emitBracketUpdate({ action: 'match_restarted', matchSlug: slug });
+      }
+      
       return res.json({
         success: true,
         message: result.message,
-        match: matchService.getMatchBySlug(slug, baseUrl),
+        match: updatedMatch,
       });
     } else {
       return res.status(400).json({

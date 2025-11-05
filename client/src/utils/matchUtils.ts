@@ -82,13 +82,31 @@ export const getDetailedStatusLabel = (
 /**
  * Get a detailed explanation for each match status
  */
-export const getStatusExplanation = (status: string): string => {
+export const getStatusExplanation = (
+  status: string,
+  playerCount?: number,
+  expectedPlayers?: number
+): string => {
+  const expected = expectedPlayers || 10;
+
   switch (status) {
     case 'pending':
       return 'Match is scheduled but not yet assigned to a server. Will be allocated when a server becomes available.';
     case 'loaded':
+      if (playerCount !== undefined) {
+        if (playerCount === 0) {
+          return `Match is loaded on the server and in warmup mode. Waiting for players to connect (0/${expected}).`;
+        } else if (playerCount < expected) {
+          return `Match is in warmup mode. ${playerCount} of ${expected} players connected. Waiting for all players to join and ready up.`;
+        } else {
+          return `All ${expected} players are connected! Waiting for teams to ready up to begin the match.`;
+        }
+      }
       return 'Match is loaded on the server and in warmup mode. Players should connect and ready up to start.';
     case 'live':
+      if (playerCount !== undefined && playerCount > 0) {
+        return `Match is currently in progress with ${playerCount}/${expected} players connected. Rounds are being played.`;
+      }
       return 'Match is currently in progress. Players are competing and rounds are being played.';
     case 'completed':
       return 'Match has finished. Winner has been determined and bracket has been updated.';
