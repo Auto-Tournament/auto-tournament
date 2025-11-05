@@ -1,0 +1,40 @@
+/* Match the project's Material Design 3 Purple theme */
+
+:root {
+  /* Light mode overrides */
+  --md-primary-fg-color: #6750A4;        /* Purple adjusted for light mode */
+  --md-primary-fg-color--light: #D0BCFF;
+  --md-primary-fg-color--dark: #381E72;
+  --md-accent-fg-color: #9C88D6;
+}
+
+[data-md-color-scheme="slate"] {
+  /* Dark mode - match project exactly */
+  --md-primary-fg-color: #D0BCFF;        /* M3 Purple main */
+  --md-primary-fg-color--light: #E8DEF8;
+  --md-primary-fg-color--dark: #9C88D6;
+  --md-primary-bg-color: #381E72;
+  
+  --md-accent-fg-color: #D0BCFF;
+  
+  /* Background colors to match project */
+  --md-default-bg-color: #1C1B1F;        /* Same as project background.default */
+  --md-default-fg-color: #E6E1E5;        /* Same as project text.primary */
+  --md-default-fg-color--light: #CAC4D0; /* Same as project text.secondary */
+  
+  /* Code block colors */
+  --md-code-bg-color: #2B2930;           /* Same as project paper background */
+  --md-code-fg-color: #E6E1E5;
+}
+
+/* Rounded corners to match project */
+.md-button {
+  border-radius: 44px !important;        /* Match project button radius */
+}
+
+/* Logo styling */
+.md-header__button.md-logo img,
+.md-header__button.md-logo svg {
+  height: 2rem;
+}
+
