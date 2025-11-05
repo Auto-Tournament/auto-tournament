@@ -23,6 +23,8 @@ export interface Match {
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
   matchPhase?: string; // warmup, knife, veto, live, post_match
+  currentMap?: string; // Current map being played (e.g., de_mirage)
+  mapNumber?: number; // Current map number in series (0-indexed)
   demoFilePath?: string;
   config?: MatchConfig;
   vetoCompleted?: boolean;

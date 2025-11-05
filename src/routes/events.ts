@@ -334,6 +334,10 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
         `Map ${event.map_number} result: ${event.team1_score}-${event.team2_score} on ${event.map_name}`,
         { matchId: event.matchid, winner: event.winner }
       );
+      // Update current map for multi-map series
+      if (actualMatchSlug !== '-1' && event.map_name) {
+        db.update('matches', { current_map: event.map_name, map_number: event.map_number || 0 }, 'slug = ?', [actualMatchSlug]);
+      }
       break;
 
     case 'round_end':
@@ -378,13 +382,21 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
       log.success(`Map ${event.map_number} going live!`, { matchSlug: actualMatchSlug });
       // Mark all connected players as ready
       playerConnectionService.markAllReady(actualMatchSlug);
-      // Update server status if first map
-      if (event.map_number === 1) {
-        const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+      // Update current map from config if available
+      if (actualMatchSlug !== '-1') {
+        const matchData = db.queryOne<DbMatchRow>('SELECT config, server_id FROM matches WHERE slug = ?', [
           actualMatchSlug,
         ]);
-        if (match?.server_id) {
-          serverStatusService.setMatchLive(match.server_id, actualMatchSlug);
+        if (matchData) {
+          const config = matchData.config ? JSON.parse(matchData.config) : null;
+          const currentMap = config?.maplist?.[event.map_number || 0];
+          if (currentMap) {
+            db.update('matches', { current_map: currentMap, map_number: event.map_number || 0 }, 'slug = ?', [actualMatchSlug]);
+          }
+          // Update server status if first map
+          if (event.map_number === 1 && matchData.server_id) {
+            serverStatusService.setMatchLive(matchData.server_id, actualMatchSlug);
+          }
         }
       }
       break;

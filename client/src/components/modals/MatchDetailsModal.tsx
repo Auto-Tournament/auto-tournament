@@ -38,6 +38,7 @@ import { openTeamMatchInNewTab } from '../../utils/teamLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
+import { getMapData } from '../../constants/maps';
 import type { Match } from '../../types';
 
 interface MatchDetailsModalProps {
@@ -478,6 +479,53 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     </Card>
                   </Grid>
                 </Grid>
+              </Box>
+            </>
+          )}
+
+          {/* Current Map Display */}
+          {match.currentMap && (match.status === 'live' || match.status === 'loaded') && (
+            <>
+              <Divider />
+              <Box>
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <MapIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Current Map
+                  </Typography>
+                </Box>
+                <Card
+                  sx={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    backgroundImage: `url(${getMapData(match.currentMap)?.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    height: 200,
+                    display: 'flex',
+                    alignItems: 'flex-end',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                    },
+                  }}
+                >
+                  <Box sx={{ position: 'relative', p: 2, width: '100%' }}>
+                    <Typography variant="h4" fontWeight={700} color="white">
+                      {getMapData(match.currentMap)?.displayName || match.currentMap.replace('de_', '')}
+                    </Typography>
+                    {match.mapNumber !== undefined && match.config?.num_maps && match.config.num_maps > 1 && (
+                      <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                        Map {match.mapNumber + 1} of {match.config.num_maps}
+                      </Typography>
+                    )}
+                  </Box>
+                </Card>
               </Box>
             </>
           )}

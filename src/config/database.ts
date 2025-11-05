@@ -116,6 +116,18 @@ class DatabaseManager {
       // Column already exists, ignore
     }
 
+    // Migration: Add current_map and map_number columns
+    try {
+      this.db.exec(`ALTER TABLE matches ADD COLUMN current_map TEXT;`);
+    } catch {
+      // Column already exists, ignore
+    }
+    try {
+      this.db.exec(`ALTER TABLE matches ADD COLUMN map_number INTEGER DEFAULT 0;`);
+    } catch {
+      // Column already exists, ignore
+    }
+
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS match_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
