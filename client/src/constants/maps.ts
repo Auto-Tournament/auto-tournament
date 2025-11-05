@@ -37,11 +37,6 @@ export const CS2_MAPS: CS2MapData[] = [
     image: 'https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXQ9QVcJY8gulRPQVraFd2kw8zQQFhwIB5XrbiOJQJz2v_YfTpD48y_wdDQwaPwYujQlz5Q7pMhibiV9I2l2w23r0U4amqhJtWQcVRrNQ7X-1G7xrnr15bou53MnyY1viIqt37YyRXghlwaHYMZqA/',
   },
   {
-    name: 'de_overpass',
-    displayName: 'Overpass',
-    image: 'https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXQ9QVcJY8gulReQ0HdUuqkw8zTU3dwJB5Vvba0JAxv2_rbdzQR69C9m4OSlKPwMr_SkW5Q65Zw07uUrdjw2Vax_BVka2r3J4OUegE_ZV_V_lC6yO_v0sC-u8_BnyBrs3I8pSGKv3NJI1g/',
-  },
-  {
     name: 'de_vertigo',
     displayName: 'Vertigo',
     image: 'https://community.cloudflare.steamstatic.com/economy/image/-9a81dlWLwJ2UUGcVs_nsVtzdOEdtWwKGZZLQHTxDZ7I56KU0Zwwo4NUX4oFJZEHLbXQ9QVcJY8gulReQ0DdS-C7leHTDREhOxRSuKi0Nglp2fzbJDgNueOxwdHdzvT1J--CxWgEvZAh2OjF9o-l0FLk-hA5MW2iLdOXegBsNVvSrlDtl-_pgpe_vZnKmyFm7yAm7XvVnRC11BwabLQ50uveFwtPQfUfTmQCPd0/',

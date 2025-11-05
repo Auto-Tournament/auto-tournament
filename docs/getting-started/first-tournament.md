@@ -53,7 +53,7 @@ Power of 2 (2, 4, 8, 16) recommended for elimination brackets.
 
 ### Map Pool (for BO1/BO3/BO5)
 
-Select maps for veto:
+Select maps for veto (current CS2 competitive pool):
 ```
 [x] Ancient
 [x] Anubis
@@ -61,7 +61,7 @@ Select maps for veto:
 [x] Inferno
 [x] Mirage
 [x] Nuke
-[x] Overpass
+[x] Vertigo
 ```
 
 Need exactly 7 maps for proper veto flow.
