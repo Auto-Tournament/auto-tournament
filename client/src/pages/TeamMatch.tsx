@@ -121,6 +121,15 @@ export default function TeamMatch() {
       setHasMatch(data.hasMatch);
       setMatch(data.match || null);
       setTournamentStatus(data.tournamentStatus || 'setup');
+      
+      // Debug logging
+      console.log('🔍 Veto Debug Info:', {
+        tournamentStatus: data.tournamentStatus,
+        matchStatus: data.match?.status,
+        matchFormat: data.match?.config?.num_maps === 1 ? 'bo1' : data.match?.config?.num_maps === 3 ? 'bo3' : data.match?.config?.num_maps === 5 ? 'bo5' : 'unknown',
+        vetoCompleted: data.match?.vetoCompleted,
+        shouldShowVeto: data.tournamentStatus === 'in_progress' && data.match?.status === 'ready' && !data.match?.vetoCompleted,
+      });
     } catch (err) {
       // Network or parsing error
       console.error('Error loading team match:', err);

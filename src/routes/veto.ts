@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitVetoUpdate } from '../services/socketService';
+import { matchAllocationService } from '../services/matchAllocationService';
 import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
@@ -349,9 +350,6 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       console.log(`Picked Maps:`, vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName));
       console.log('========================================\n');
       
-      // Import here to avoid circular dependency
-      const { matchAllocationService } = require('../services/matchAllocationService');
-      
       // Use API_URL from environment or construct from standard port
       const baseUrl = process.env.API_URL || 'http://localhost:3001';
       console.log(`Base URL for webhook: ${baseUrl}`);
@@ -359,8 +357,8 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       // Allocate and load match (async, don't wait for response)
       setImmediate(async () => {
         try {
-          console.log(`[VETO] Calling allocateToMatch for ${matchSlug}...`);
-          const result = await matchAllocationService.allocateToMatch(matchSlug, baseUrl);
+          console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
+          const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
           
           if (result.success) {
             log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);

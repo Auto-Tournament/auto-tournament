@@ -215,13 +215,26 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
               <Chip
                 label={`${maps.length} / ${CS2_MAPS.length}`}
                 size="small"
-                color={maps.length > 0 ? 'success' : 'default'}
+                color={maps.length === CS2_MAPS.length ? 'success' : 'default'}
                 variant="outlined"
               />
             </Box>
             <Typography variant="body2" color="text.secondary" mb={1}>
-              Maps for the tournament (used for vetoing/picking)
+              {['bo1', 'bo3', 'bo5'].includes(matchFormat)
+                ? 'Select exactly 7 maps for veto system (BO1/BO3/BO5 requires all 7 competitive maps)'
+                : 'Maps for the tournament (used for rotation in Round Robin/Swiss)'}
             </Typography>
+            
+            {/* Map Pool Validation for Veto Formats */}
+            {['bo1', 'bo3', 'bo5'].includes(matchFormat) && maps.length !== CS2_MAPS.length && (
+              <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
+                <Typography variant="body2">
+                  <strong>Map veto requires exactly {CS2_MAPS.length} maps.</strong> You have selected {maps.length}.
+                  Click "Add All" to select all competitive maps.
+                </Typography>
+              </Alert>
+            )}
+            
             <Box display="flex" gap={1} alignItems="flex-start">
               <Autocomplete
                 multiple
@@ -243,7 +256,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
                 disabled={!canEdit || saving || CS2_MAPS.length === 0}
                 sx={{ mt: 1 }}
               >
-                Add All
+                Add All ({CS2_MAPS.length})
               </Button>
             </Box>
           </Box>
@@ -378,7 +391,11 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
                   <Button
                     variant="contained"
                     onClick={onSave}
-                    disabled={saving || !hasChanges}
+                    disabled={
+                      saving || 
+                      !hasChanges ||
+                      (['bo1', 'bo3', 'bo5'].includes(matchFormat) && maps.length !== CS2_MAPS.length)
+                    }
                     size="large"
                     sx={{ flex: 1, minWidth: 200 }}
                   >

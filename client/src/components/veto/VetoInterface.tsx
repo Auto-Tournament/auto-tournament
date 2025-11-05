@@ -265,92 +265,126 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       </Paper>
 
       {/* Progress Header */}
-      <Paper elevation={3} sx={{ mb: 3, p: 3, bgcolor: actionDisplay.bgcolor }}>
+      <Paper elevation={1} sx={{ mb: 3, p: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
         <Stack spacing={2}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h4" fontWeight={700} color="white">
-              {currentTeamName}: {actionDisplay.text} A MAP
+            <Typography variant="h5" fontWeight={600}>
+              {isMyTurn ? (
+                <>
+                  Your turn to{' '}
+                  <Box
+                    component="span"
+                    sx={{
+                      color: currentAction === 'ban' ? 'error.main' : currentAction === 'pick' ? 'success.main' : 'info.main',
+                      fontWeight: 700,
+                    }}
+                  >
+                    {currentAction === 'ban' ? 'Ban' : currentAction === 'pick' ? 'Pick' : 'Choose Side'}
+                  </Box>
+                  {currentAction !== 'side_pick' && ' a map'}
+                </>
+              ) : (
+                <>
+                  Waiting for <strong>{currentTeamName}</strong>...
+                </>
+              )}
             </Typography>
             <Chip
               label={`Step ${vetoState.currentStep} of ${vetoState.totalSteps}`}
-              sx={{
-                bgcolor: 'rgba(255,255,255,0.2)',
-                color: 'white',
-                fontWeight: 600,
-              }}
+              variant="outlined"
+              color="primary"
             />
           </Box>
 
           <LinearProgress
             variant="determinate"
             value={(vetoState.currentStep / vetoState.totalSteps) * 100}
-            sx={{
-              height: 8,
-              borderRadius: 4,
-              bgcolor: 'rgba(255,255,255,0.2)',
-              '& .MuiLinearProgress-bar': {
-                bgcolor: 'white',
-              },
-            }}
+            sx={{ height: 6, borderRadius: 3 }}
           />
-
-          <Typography variant="body1" color="white">
-            {isMyTurn 
-              ? `Your turn to ${currentAction === 'ban' ? 'ban' : currentAction === 'pick' ? 'pick' : 'choose starting side on'} a map` 
-              : `Waiting for ${currentTeamName} to ${currentAction === 'ban' ? 'ban' : currentAction === 'pick' ? 'pick' : 'choose starting side on'} a map...`
-            }
-          </Typography>
         </Stack>
       </Paper>
 
       {/* Side Picker (for side_pick actions) */}
-      {currentAction === 'side_pick' && (
-        <Card sx={{ mb: 3 }}>
-          <CardContent>
-            <Typography variant="h6" fontWeight={600} mb={2} textAlign="center">
-              Choose Your Starting Side
-            </Typography>
-            <Typography variant="body2" color="text.secondary" mb={3} textAlign="center">
-              Select which side you want to start on for{' '}
-              {getMapData(vetoState.pickedMaps[vetoState.pickedMaps.length - 1]?.mapName)
-                ?.displayName || 'the map'}
-            </Typography>
-            {!isMyTurn && (
-              <Alert severity="info" sx={{ mb: 2 }}>
-                Waiting for {currentTeamName} to choose their starting side...
-              </Alert>
-            )}
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 6 }}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="info"
-                  size="large"
-                  onClick={() => handleSidePick('CT')}
-                  disabled={!isMyTurn}
-                  sx={{ py: 2, fontSize: '1.2rem', fontWeight: 700 }}
-                >
-                  Counter-Terrorist (CT)
-                </Button>
+      {currentAction === 'side_pick' && (() => {
+        const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
+        const mapData = getMapData(lastPickedMap?.mapName);
+        
+        return (
+          <Card sx={{ mb: 3 }}>
+            <CardContent>
+              {/* Map Display */}
+              <Box
+                sx={{
+                  position: 'relative',
+                  overflow: 'hidden',
+                  borderRadius: 2,
+                  mb: 3,
+                  backgroundImage: `url(${mapData?.image})`,
+                  backgroundSize: 'cover',
+                  backgroundPosition: 'center',
+                  height: 250,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  '&::before': {
+                    content: '""',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                  },
+                }}
+              >
+                <Box sx={{ position: 'relative', textAlign: 'center' }}>
+                  <Typography variant="h2" fontWeight={700} color="white" sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
+                    {mapData?.displayName || lastPickedMap?.mapName}
+                  </Typography>
+                  <Typography variant="h6" color="rgba(255,255,255,0.9)" sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
+                    Choose Your Starting Side
+                  </Typography>
+                </Box>
+              </Box>
+
+              {!isMyTurn && (
+                <Alert severity="info" sx={{ mb: 2 }}>
+                  Waiting for {currentTeamName} to choose their starting side...
+                </Alert>
+              )}
+
+              <Grid container spacing={2}>
+                <Grid size={{ xs: 6 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="info"
+                    size="large"
+                    onClick={() => handleSidePick('CT')}
+                    disabled={!isMyTurn}
+                    sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                  >
+                    🛡️ Counter-Terrorist
+                  </Button>
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <Button
+                    fullWidth
+                    variant="contained"
+                    color="warning"
+                    size="large"
+                    onClick={() => handleSidePick('T')}
+                    disabled={!isMyTurn}
+                    sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                  >
+                    💣 Terrorist
+                  </Button>
+                </Grid>
               </Grid>
-              <Grid size={{ xs: 6 }}>
-                <Button
-                  fullWidth
-                  variant="contained"
-                  color="warning"
-                  size="large"
-                  onClick={() => handleSidePick('T')}
-                  disabled={!isMyTurn}
-                  sx={{ py: 2, fontSize: '1.2rem', fontWeight: 700 }}
-                >
-                  Terrorist (T)
-                </Button>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
       {/* Map Grid */}
       {currentAction !== 'side_pick' && (

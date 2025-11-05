@@ -48,6 +48,7 @@ export const MATCH_FORMATS = [
   { value: 'bo5', label: 'Best of 5' },
 ];
 
+// Current CS2 competitive map pool (same as majors)
 export const CS2_MAPS = [
   'de_ancient',
   'de_anubis',
@@ -55,6 +56,5 @@ export const CS2_MAPS = [
   'de_inferno',
   'de_mirage',
   'de_nuke',
-  'de_overpass',
   'de_vertigo',
 ];
