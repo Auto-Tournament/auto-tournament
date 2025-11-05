@@ -117,6 +117,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
 
     const matches = rows.map((row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
+      const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
       const match: Record<string, unknown> = {
         id: row.id,
@@ -150,6 +151,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         createdAt: row.created_at,
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
+        vetoCompleted: vetoState?.status === 'completed',
       };
 
       // Get latest player stats from match events
@@ -199,9 +201,13 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
       return match;
     });
 
+    // Get tournament status
+    const tournament = db.queryOne<{ status: string }>('SELECT status FROM tournament WHERE id = 1');
+
     return res.json({
       success: true,
       count: matches.length,
+      tournamentStatus: tournament?.status || 'setup',
       matches,
     });
   } catch (error) {
@@ -316,10 +322,10 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
         log.warn('SERVER_TOKEN not configured - skipping webhook setup');
       } else {
         const baseUrl = getWebhookBaseUrl(req);
-        const webhookUrl = `${baseUrl}/api/events`;
+        const webhookUrl = `${baseUrl}/api/events/${slug}`;
         log.webhookConfigured(match.serverId, webhookUrl);
 
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
+        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, slug);
         for (const cmd of webhookCommands) {
           const result = await rconService.sendCommand(match.serverId, cmd);
           results.push(result);

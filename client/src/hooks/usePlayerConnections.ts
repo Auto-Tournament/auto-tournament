@@ -31,20 +31,33 @@ export const usePlayerConnections = (matchSlug: string | null) => {
 
     setLoading(true);
     try {
+      console.log(`[usePlayerConnections] Loading status for match: ${matchSlug}`);
       const response = await api.get(`/api/events/connections/${matchSlug}`);
+      console.log(`[usePlayerConnections] Response:`, response);
+      
       if (response.success) {
-        setStatus({
-          matchSlug: response.matchSlug,
+        const newStatus = {
+          matchSlug: response.matchSlug || matchSlug,
           connectedPlayers: response.connectedPlayers || [],
           team1Connected: response.team1Connected || 0,
           team2Connected: response.team2Connected || 0,
           totalConnected: response.totalConnected || 0,
           lastUpdated: response.lastUpdated || Date.now(),
-        });
+        };
+        console.log(`[usePlayerConnections] Setting status:`, newStatus);
+        setStatus(newStatus);
       }
     } catch (error) {
       console.error('Failed to load connection status:', error);
-      setStatus(null);
+      // Still set an empty status to show 0/10
+      setStatus({
+        matchSlug,
+        connectedPlayers: [],
+        team1Connected: 0,
+        team2Connected: 0,
+        totalConnected: 0,
+        lastUpdated: Date.now(),
+      });
     } finally {
       setLoading(false);
     }
@@ -59,7 +72,9 @@ export const usePlayerConnections = (matchSlug: string | null) => {
     const socket: Socket = io();
 
     socket.on('match:update', (data: { slug?: string; connectionStatus?: ConnectionStatus }) => {
+      console.log('[usePlayerConnections] WebSocket match:update:', data);
       if (data.slug === matchSlug && data.connectionStatus) {
+        console.log('[usePlayerConnections] Updating connection status from WebSocket');
         setStatus(data.connectionStatus);
       }
     });

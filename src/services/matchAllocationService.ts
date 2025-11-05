@@ -263,13 +263,14 @@ export class MatchAllocationService {
 
       // Configure webhook (if SERVER_TOKEN is set)
       if (serverToken) {
-        log.debug(`Configuring webhook for server ${serverId}`);
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
+        log.debug(`Configuring webhook for match ${matchSlug} on server ${serverId}`);
+        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, matchSlug);
         for (const cmd of webhookCommands) {
           log.debug(`Sending webhook command: ${cmd}`, { serverId });
           await rconService.sendCommand(serverId, cmd);
         }
-        log.webhookConfigured(serverId, `${baseUrl}/api/events`);
+        const webhookUrl = `${baseUrl}/api/events/${matchSlug}`;
+        log.webhookConfigured(serverId, webhookUrl);
       } else {
         log.warn(`No SERVER_TOKEN set, skipping webhook configuration for ${serverId}`);
       }
@@ -371,10 +372,7 @@ export class MatchAllocationService {
     log.info(`Current status: ${tournament.status}`);
     log.info(`Teams: ${tournament.teamIds.length}`);
 
-    if (tournament.status === 'in_progress') {
-      // Tournament already started, just allocate any remaining matches
-      log.info('Tournament already in progress, allocating remaining matches');
-    } else if (tournament.status === 'completed') {
+    if (tournament.status === 'completed') {
       log.warn('Tournament is already completed');
       return {
         success: false,
@@ -383,7 +381,7 @@ export class MatchAllocationService {
         failed: 0,
         results: [],
       };
-    } else if (tournament.status !== 'setup' && tournament.status !== 'ready') {
+    } else if (tournament.status !== 'setup' && tournament.status !== 'ready' && tournament.status !== 'in_progress') {
       log.warn(`Invalid tournament status: ${tournament.status}`);
       return {
         success: false,
@@ -394,43 +392,109 @@ export class MatchAllocationService {
       };
     }
 
-    // Allocate servers to matches
-    log.info('Allocating servers to matches...');
-    const results = await this.allocateServersToMatches(baseUrl);
-    log.info(`Allocation complete: ${results.length} matches processed`);
-
-    const allocated = results.filter((r) => r.success).length;
-    const failed = results.filter((r) => !r.success).length;
-
-    // Update tournament status to 'in_progress' if starting for the first time
-    if ((tournament.status === 'setup' || tournament.status === 'ready') && allocated > 0) {
-      db.update(
-        'tournament',
-        {
-          status: 'in_progress',
-          started_at: Math.floor(Date.now() / 1000),
-          updated_at: Math.floor(Date.now() / 1000),
-        },
-        'id = ?',
-        [1]
-      );
-      log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
+    // Check if bracket/matches exist
+    const matchCount = db.queryOne<{ count: number }>(
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
+    );
+    
+    if (!matchCount || matchCount.count === 0) {
+      log.warn('No matches found - regenerating bracket before starting');
+      try {
+        await tournamentService.regenerateBracket(true);
+        log.success('Bracket regenerated successfully');
+      } catch (err) {
+        log.error('Failed to regenerate bracket', err);
+        return {
+          success: false,
+          message: 'No matches exist and bracket regeneration failed. Please regenerate bracket manually.',
+          allocated: 0,
+          failed: 0,
+          results: [],
+        };
+      }
     }
 
-    return {
-      success: allocated > 0,
-      message:
-        allocated > 0
-          ? `Tournament started! ${allocated} match(es) allocated to servers${
-              failed > 0 ? `, ${failed} failed` : ''
-            }`
-          : failed > 0
-          ? `Failed to allocate any matches. ${failed} match(es) could not be loaded.`
-          : 'No matches ready for allocation',
-      allocated,
-      failed,
-      results,
-    };
+    // Determine if this tournament uses veto system
+    const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
+    const isElimination = tournament.type === 'single_elimination' || tournament.type === 'double_elimination';
+
+    let results = [];
+    let allocated = 0;
+    let failed = 0;
+
+    if (requiresVeto && isElimination) {
+      // BO1/BO3/BO5 elimination: Just update status, don't load matches yet
+      // Teams will complete veto first, then matches are loaded
+      log.info('BO format detected - matches will load after teams complete map veto');
+      
+      if (tournament.status === 'setup' || tournament.status === 'ready') {
+        db.update(
+          'tournament',
+          {
+            status: 'in_progress',
+            started_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
+          },
+          'id = ?',
+          [1]
+        );
+        log.success(`Tournament started! Teams can now begin map veto.`);
+        
+        // Emit tournament update so teams know veto is available
+        const { emitTournamentUpdate, emitBracketUpdate } = require('./socketService');
+        emitTournamentUpdate({ id: 1, status: 'in_progress' });
+        emitBracketUpdate({ action: 'tournament_started' });
+      }
+
+      return {
+        success: true,
+        message: 'Tournament started! Teams can now complete map veto. Matches will load after veto completion.',
+        allocated: 0,
+        failed: 0,
+        results: [],
+      };
+    } else {
+      // Round Robin/Swiss: Load matches immediately (no veto)
+      log.info('Round Robin/Swiss format detected - loading matches immediately');
+      
+      // Allocate servers to matches
+      log.info('Allocating servers to matches...');
+      results = await this.allocateServersToMatches(baseUrl);
+      log.info(`Allocation complete: ${results.length} matches processed`);
+
+      allocated = results.filter((r) => r.success).length;
+      failed = results.filter((r) => !r.success).length;
+
+      // Update tournament status to 'in_progress' if starting for the first time
+      if ((tournament.status === 'setup' || tournament.status === 'ready') && allocated > 0) {
+        db.update(
+          'tournament',
+          {
+            status: 'in_progress',
+            started_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
+          },
+          'id = ?',
+          [1]
+        );
+        log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
+      }
+
+      return {
+        success: allocated > 0,
+        message:
+          allocated > 0
+            ? `Tournament started! ${allocated} match(es) allocated to servers${
+                failed > 0 ? `, ${failed} failed` : ''
+              }`
+            : failed > 0
+            ? `Failed to allocate any matches. ${failed} match(es) could not be loaded.`
+            : 'No matches ready for allocation',
+        allocated,
+        failed,
+        results,
+      };
+    }
   }
 
   /**

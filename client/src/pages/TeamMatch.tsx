@@ -20,6 +20,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  LinearProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
@@ -41,12 +42,15 @@ import {
   type NotificationSoundValue,
 } from '../utils/soundNotification';
 import { formatDate, getStatusColor, getStatusLabel } from '../utils/matchUtils';
+import { VetoInterface } from '../components/veto/VetoInterface';
+import { PlayerRoster } from '../components/match/PlayerRoster';
 import type {
   Team,
   TeamStats,
   TeamStanding,
   TeamMatchInfo,
   TeamMatchHistory,
+  VetoState,
 } from '../types';
 
 export default function TeamMatch() {
@@ -67,6 +71,9 @@ export default function TeamMatch() {
     soundNotification.getSoundFile()
   );
   const [showSettings, setShowSettings] = useState(false);
+  const [vetoCompleted, setVetoCompleted] = useState(false);
+  const [matchFormat, setMatchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
+  const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
 
   const previousMatchStatus = useRef<string | null>(null);
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
@@ -113,6 +120,7 @@ export default function TeamMatch() {
       setTeam(data.team);
       setHasMatch(data.hasMatch);
       setMatch(data.match || null);
+      setTournamentStatus(data.tournamentStatus || 'setup');
     } catch (err) {
       // Network or parsing error
       console.error('Error loading team match:', err);
@@ -254,6 +262,18 @@ export default function TeamMatch() {
     navigator.clipboard.writeText(connectCommand);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleVetoComplete = async (veto: VetoState) => {
+    console.log('Veto completed!', veto);
+    setVetoCompleted(true);
+    
+    // Backend will automatically load the match after veto completion
+    // Just wait a moment then reload to get the updated status
+    setTimeout(() => {
+      console.log('Reloading team match to get updated status after veto...');
+      loadTeamMatch();
+    }, 3000); // Wait 3 seconds for server allocation
   };
 
   // Status utilities imported from matchUtils
@@ -663,9 +683,67 @@ export default function TeamMatch() {
             </Card>
           )}
 
-          {/* Current/Active Match Card - Only show if ready/loaded/live */}
-          {hasMatch && match && ['ready', 'loaded', 'live'].includes(match.status) && (
-            <Card>
+          {/* Tournament Not Started - Show message when match is ready but tournament hasn't started */}
+          {hasMatch &&
+            match &&
+            tournamentStatus !== 'in_progress' &&
+            match.status === 'ready' &&
+            ['bo1', 'bo3', 'bo5'].includes(matchFormat) && (
+              <Card>
+                <CardContent>
+                  <Alert severity="warning">
+                    <Typography variant="body1" fontWeight={600} gutterBottom>
+                      ⏳ Waiting for Tournament to Start
+                    </Typography>
+                    <Typography variant="body2">
+                      Your match is ready, but the tournament hasn't started yet. The map veto will
+                      become available once the tournament administrator starts the tournament.
+                    </Typography>
+                    {tournamentStatus === 'setup' && (
+                      <Typography variant="caption" display="block" mt={1}>
+                        Tournament Status: Setup Phase
+                      </Typography>
+                    )}
+                  </Alert>
+                </CardContent>
+              </Card>
+            )}
+
+          {/* Veto Phase - Show when tournament started, match is ready and format requires veto */}
+          {hasMatch &&
+            match &&
+            tournamentStatus === 'in_progress' &&
+            match.status === 'ready' &&
+            !vetoCompleted &&
+            ['bo1', 'bo3', 'bo5'].includes(matchFormat) && (
+              <Card>
+                <CardContent>
+                  <Typography variant="h5" fontWeight={600} mb={3}>
+                    🗺️ Map Selection
+                  </Typography>
+                  <Alert severity="info" sx={{ mb: 3 }}>
+                    <Typography variant="body2">
+                      <strong>Tournament has started!</strong> Complete the map veto process to begin
+                      your match.
+                    </Typography>
+                  </Alert>
+                  <VetoInterface 
+                    matchSlug={match.slug} 
+                    team1Name={match.team1?.name}
+                    team2Name={match.team2?.name}
+                    currentTeamSlug={team?.id}
+                    onComplete={handleVetoComplete} 
+                  />
+                </CardContent>
+              </Card>
+            )}
+
+          {/* Current/Active Match Card - Only show if loaded/live or veto completed */}
+          {hasMatch &&
+            match &&
+            (['loaded', 'live'].includes(match.status) ||
+              (match.status === 'ready' && vetoCompleted)) && (
+              <Card>
             <CardContent>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
                 <Box>
@@ -715,26 +793,18 @@ export default function TeamMatch() {
                 </Box>
               </Paper>
 
-              {/* Connection Status */}
-              {connectionStatus && connectionStatus.totalConnected > 0 && (
-                <Alert
-                  severity={
-                    connectionStatus.totalConnected >= (match.config?.expected_players_total || 10)
-                      ? 'success'
-                      : 'warning'
-                  }
-                  sx={{ mb: 3 }}
-                >
-                  <Typography variant="body2" fontWeight={600}>
-                    {connectionStatus.totalConnected}/{match.config?.expected_players_total || 10}{' '}
-                    Players Connected
-                  </Typography>
-                  <Typography variant="caption">
-                    Team 1: {connectionStatus.team1Connected}/{match.config?.expected_players_team1 || 5}{' '}
-                    • Team 2: {connectionStatus.team2Connected}/
-                    {match.config?.expected_players_team2 || 5}
-                  </Typography>
-                </Alert>
+              {/* Player Roster with Connection Status */}
+              {match.config && (
+                <Box mb={3}>
+                  <PlayerRoster
+                    team1Name={match.team1?.name || 'Team 1'}
+                    team2Name={match.team2?.name || 'Team 2'}
+                    team1Players={(match.config as { team1?: { players?: Array<{ steamid: string; name: string }> } })?.team1?.players || []}
+                    team2Players={(match.config as { team2?: { players?: Array<{ steamid: string; name: string }> } })?.team2?.players || []}
+                    connectedPlayers={connectionStatus?.connectedPlayers || []}
+                    isTeam1={match.isTeam1}
+                  />
+                </Box>
               )}
 
               {/* Server Connection */}

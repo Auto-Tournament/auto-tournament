@@ -85,6 +85,7 @@ export interface PlayerConnectEvent extends MatchZyBaseEvent {
   player: {
     steamid: string;
     name: string;
+    team: string;
   };
 }
 
@@ -93,7 +94,53 @@ export interface PlayerDisconnectEvent extends MatchZyBaseEvent {
   player: {
     steamid: string;
     name: string;
+    team: string;
   };
+}
+
+// Player Ready Events
+export interface PlayerReadyEvent extends MatchZyBaseEvent {
+  event: 'player_ready';
+  player: {
+    steamid: string;
+    name: string;
+    team: string;
+  };
+  team: string;
+  ready_count_team1: number;
+  ready_count_team2: number;
+  total_ready: number;
+  expected_total: number;
+}
+
+export interface PlayerUnreadyEvent extends MatchZyBaseEvent {
+  event: 'player_unready';
+  player: {
+    steamid: string;
+    name: string;
+    team: string;
+  };
+  team: string;
+  ready_count_team1: number;
+  ready_count_team2: number;
+  total_ready: number;
+  expected_total: number;
+}
+
+export interface TeamReadyEvent extends MatchZyBaseEvent {
+  event: 'team_ready';
+  team: 'team1' | 'team2';
+  ready_count: number;
+  total_ready: number;
+  expected_total: number;
+}
+
+export interface AllPlayersReadyEvent extends MatchZyBaseEvent {
+  event: 'all_players_ready';
+  ready_count_team1: number;
+  ready_count_team2: number;
+  total_ready: number;
+  countdown_started: boolean;
 }
 
 export interface PlayerDeathEvent extends MatchZyBaseEvent {
@@ -147,6 +194,8 @@ export interface BombExplodedEvent extends MatchZyBaseEvent {
 export interface SideSwapEvent extends MatchZyBaseEvent {
   event: 'side_swap';
   map_number: number;
+  team1_side?: string;
+  team2_side?: string;
 }
 
 // Going Live
@@ -155,11 +204,78 @@ export interface GoingLiveEvent extends MatchZyBaseEvent {
   map_number: number;
 }
 
+// Match Phase Events
+export interface WarmupEndedEvent extends MatchZyBaseEvent {
+  event: 'warmup_ended';
+  map_number: number;
+}
+
+export interface KnifeRoundStartedEvent extends MatchZyBaseEvent {
+  event: 'knife_round_started';
+  map_number: number;
+}
+
+export interface KnifeRoundEndedEvent extends MatchZyBaseEvent {
+  event: 'knife_round_ended';
+  map_number: number;
+  winner: 'team1' | 'team2';
+}
+
+export interface RoundStartedEvent extends MatchZyBaseEvent {
+  event: 'round_started';
+  map_number: number;
+  round_number: number;
+  team1_score: number;
+  team2_score: number;
+}
+
+export interface HalftimeStartedEvent extends MatchZyBaseEvent {
+  event: 'halftime_started';
+  map_number: number;
+  team1_score: number;
+  team2_score: number;
+}
+
+export interface OvertimeStartedEvent extends MatchZyBaseEvent {
+  event: 'overtime_started';
+  map_number: number;
+  overtime_number: number;
+}
+
+// Pause System Events
+export interface MatchPausedEvent extends MatchZyBaseEvent {
+  event: 'match_paused';
+  map_number: number;
+  paused_by: {
+    steamid: string;
+    name: string;
+    team: string;
+  };
+  is_tactical: boolean;
+  is_admin: boolean;
+  pause_time: number;
+}
+
+export interface UnpauseRequestedEvent extends MatchZyBaseEvent {
+  event: 'unpause_requested';
+  map_number: number;
+  team: 'team1' | 'team2';
+  teams_ready: number;
+  teams_needed: number;
+}
+
+export interface MatchUnpausedEvent extends MatchZyBaseEvent {
+  event: 'match_unpaused';
+  map_number: number;
+  pause_duration: number;
+}
+
 // Backup Loaded
 export interface BackupLoadedEvent extends MatchZyBaseEvent {
   event: 'backup_loaded';
   map_number: number;
   round_number: number;
+  filename?: string;
 }
 
 // Stats Update (Note: This may be limited in MatchZy compared to Get5)
@@ -193,12 +309,25 @@ export type MatchZyEvent =
   | RoundMVPEvent
   | PlayerConnectEvent
   | PlayerDisconnectEvent
+  | PlayerReadyEvent
+  | PlayerUnreadyEvent
+  | TeamReadyEvent
+  | AllPlayersReadyEvent
   | PlayerDeathEvent
   | BombPlantedEvent
   | BombDefusedEvent
   | BombExplodedEvent
   | SideSwapEvent
   | GoingLiveEvent
+  | WarmupEndedEvent
+  | KnifeRoundStartedEvent
+  | KnifeRoundEndedEvent
+  | RoundStartedEvent
+  | HalftimeStartedEvent
+  | OvertimeStartedEvent
+  | MatchPausedEvent
+  | UnpauseRequestedEvent
+  | MatchUnpausedEvent
   | BackupLoadedEvent
   | PlayerStatsUpdateEvent;
 

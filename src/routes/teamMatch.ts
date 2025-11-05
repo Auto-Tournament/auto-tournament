@@ -141,6 +141,12 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     // Get match config for map pool
     const config = match.config ? JSON.parse(match.config) : {};
+    
+    // Get tournament status
+    const tournament = db.queryOne<{ status: string }>(
+      'SELECT status FROM tournament WHERE id = ?',
+      [match.tournament_id]
+    );
 
     // Note: We're NOT exposing RCON password to teams
     // CS2 servers typically don't have a join password by default
@@ -166,12 +172,23 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         tag: team.tag,
       },
       hasMatch: true,
+      tournamentStatus: tournament?.status || 'setup',
       match: {
         slug: match.slug,
         round: match.round,
         matchNumber: match.match_number,
         status: match.status,
         isTeam1,
+        team1: isTeam1
+          ? { id: team.id, name: team.name, tag: team.tag }
+          : opponent.id
+          ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+          : null,
+        team2: !isTeam1
+          ? { id: team.id, name: team.name, tag: team.tag }
+          : opponent.id
+          ? { id: opponent.id, name: opponent.name, tag: opponent.tag }
+          : null,
         opponent: opponent.id
           ? {
               id: opponent.id,
@@ -193,6 +210,11 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         maps: config.maplist || [],
         matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
         loadedAt: match.loaded_at,
+        config: {
+          expected_players_total: config.players_per_team ? config.players_per_team * 2 : 10,
+          expected_players_team1: config.players_per_team || 5,
+          expected_players_team2: config.players_per_team || 5,
+        },
       },
     });
   } catch (error) {

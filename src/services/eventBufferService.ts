@@ -16,7 +16,7 @@ interface ServerEvent {
 
 class EventBufferService {
   private buffers: Map<string, ServerEvent[]> = new Map();
-  private readonly MAX_EVENTS_PER_SERVER = 50;
+  private readonly MAX_EVENTS_PER_SERVER = 100;
 
   /**
    * Add an event to a server's buffer
@@ -37,12 +37,13 @@ class EventBufferService {
     // Add to beginning of array
     buffer.unshift(serverEvent);
 
-    // Keep only last 50 events
+    // Keep only last 100 events
     if (buffer.length > this.MAX_EVENTS_PER_SERVER) {
       buffer.pop();
     }
 
     // Emit event via WebSocket for real-time monitoring
+    // Emit both to server-specific channel AND global channel
     emitServerEvent(serverId, serverEvent as unknown as Record<string, unknown>);
 
     log.debug(`Event buffered for server ${serverId}`, {

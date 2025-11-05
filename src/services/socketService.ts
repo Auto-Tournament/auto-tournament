@@ -92,3 +92,14 @@ export function emitServerEvent(serverId: string, event: Record<string, unknown>
     log.debug('Emitted server event for monitoring', { serverId });
   }
 }
+
+/**
+ * Emit veto update
+ */
+export function emitVetoUpdate(matchSlug: string, vetoState: Record<string, unknown> | null): void {
+  if (io) {
+    io.emit('veto:update', { matchSlug, veto: vetoState });
+    io.emit(`veto:update:${matchSlug}`, vetoState);
+    log.debug('Emitted veto update', { matchSlug });
+  }
+}

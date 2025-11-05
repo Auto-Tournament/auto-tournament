@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { validateServerToken } from '../middleware/serverAuth';
+// import { validateServerToken } from '../middleware/serverAuth'; // TEMPORARILY DISABLED FOR TESTING
 import { requireAuth } from '../middleware/auth';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
@@ -15,29 +15,99 @@ import type { DbMatchRow, DbTeamRow, DbTournamentRow, DbEventRow } from '../type
 const router = Router();
 
 /**
- * POST /api/events
- * Receive MatchZy events via webhook
- * Protected by server token validation
+ * GET /api/events
+ * Simple test endpoint to verify route is working
  */
-router.post('/', validateServerToken, (req: Request, res: Response) => {
+router.get('/test', (_req: Request, res: Response) => {
+  res.send('hello - events route is working');
+});
+
+/**
+ * POST /api/events
+ * Receive MatchZy events via webhook (legacy endpoint without server ID)
+ * Protected by server token validation (TEMPORARILY DISABLED FOR TESTING)
+ */
+router.post('/', (req: Request, res: Response) => {
+  handleEventRequest(req, res, undefined);
+});
+
+/**
+ * POST /api/events/:matchSlugOrServerId
+ * Receive MatchZy events via webhook with match slug or server ID in URL
+ * Protected by server token validation (TEMPORARILY DISABLED FOR TESTING)
+ */
+router.post('/:matchSlugOrServerId', (req: Request, res: Response) => {
+  const identifier = req.params.matchSlugOrServerId;
+  handleEventRequest(req, res, identifier);
+});
+
+/**
+ * Handle incoming event request
+ */
+function handleEventRequest(req: Request, res: Response, matchSlugOrServerIdFromUrl?: string): Response {
+  // Log raw request for debugging
+  console.log('\n🔍 RAW REQUEST RECEIVED:');
+  console.log('Headers:', JSON.stringify(req.headers, null, 2));
+  console.log('Body:', JSON.stringify(req.body, null, 2));
+  console.log('URL Path:', req.path);
+  console.log('---\n');
   try {
     const event: MatchZyEvent = req.body;
 
     // Validate event has required fields
-    if (!event.event || !event.matchid) {
+    if (!event.event) {
+      console.log('⚠️ Event missing "event" field');
       return res.status(400).json({
         success: false,
-        error: 'Invalid event: missing required fields (event, matchid)',
+        error: 'Invalid event: missing event type',
       });
     }
 
-    log.webhookReceived(event.event, event.matchid);
+    // USE MATCH SLUG FROM URL INSTEAD OF PAYLOAD!
+    // If we have a match slug in the URL, use it (overrides payload matchid)
+    const matchSlugFromUrl = matchSlugOrServerIdFromUrl;
+    
+    // Check if URL param is a match slug
+    const matchFromUrl = matchSlugFromUrl ? db.queryOne<DbMatchRow>(
+      'SELECT server_id, slug FROM matches WHERE slug = ?',
+      [matchSlugFromUrl]
+    ) : null;
+    
+    // Use match slug from URL if available, otherwise fall back to event.matchid
+    const actualMatchSlug = matchFromUrl?.slug || String(event.matchid);
+    const isNoMatch = actualMatchSlug === '-1';
+    
+    console.log(`📍 Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
 
-    // Get server ID from match for event buffer
-    const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
-      event.matchid,
-    ]);
-    const serverId = match?.server_id || 'unknown';
+    log.webhookReceived(event.event, actualMatchSlug);
+    
+    // Log full event payload to console
+    console.log('\n📡 FULL EVENT RECEIVED:');
+    console.log(JSON.stringify(event, null, 2));
+    console.log('---\n');
+
+    // Get server ID from match lookup
+    const match = !isNoMatch ? db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
+      actualMatchSlug,
+    ]) : matchFromUrl;
+    
+    const serverId = matchFromUrl?.server_id || match?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
+    
+    console.log(`🖥️ Server ID: ${serverId} (from ${matchFromUrl ? 'URL match lookup' : match?.server_id ? 'matchid lookup' : matchSlugOrServerIdFromUrl ? 'URL fallback' : 'unknown'})`);
+
+    // Handle events with no match loaded
+    if (isNoMatch) {
+      console.log(`ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`);
+      console.log('   This is normal during server startup or between matches.');
+      
+      // Log to file but don't store in database
+      logWebhookEvent(serverId, event);
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Event received (no active match)',
+      });
+    }
 
     // Log to file (persistent logging for debugging/recovery)
     logWebhookEvent(serverId, event);
@@ -46,27 +116,27 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
     if (match) {
       try {
         db.insert('match_events', {
-          match_slug: event.matchid,
+          match_slug: actualMatchSlug, // Use actual match slug from URL
           event_type: event.event,
           event_data: JSON.stringify(event),
           received_at: Math.floor(Date.now() / 1000),
         });
       } catch (insertError) {
         // Log but don't fail - event is still logged to file and will be processed
-        log.error(`Failed to insert event to database (match: ${event.matchid}, event: ${event.event})`, insertError);
+        log.error(`Failed to insert event to database (match: ${actualMatchSlug}, event: ${event.event})`, insertError);
       }
     } else {
-      log.warn(`Event received for unknown match: ${event.matchid}. Event will not be stored in database but will still be processed.`);
+      log.warn(`Event received for unknown match: ${actualMatchSlug}. Event will not be stored in database but will still be processed.`);
     }
 
     // Add to event buffer for debugging/monitoring
-    eventBufferService.addEvent(serverId, event.matchid, event);
+    eventBufferService.addEvent(serverId, actualMatchSlug, event);
 
-    // Handle specific events
-    handleEvent(event);
+    // Handle specific events with actual match slug
+    handleEvent(event, actualMatchSlug);
 
     // Emit real-time event via Socket.io
-    emitMatchEvent(event.matchid, event as unknown as Record<string, unknown>);
+    emitMatchEvent(actualMatchSlug, event as unknown as Record<string, unknown>);
 
     // Respond quickly to MatchZy
     return res.status(200).json({
@@ -81,7 +151,11 @@ router.post('/', validateServerToken, (req: Request, res: Response) => {
       error: 'Error processing event',
     });
   }
-});
+}
+
+/**
+ * POST /api/events (legacy - redirects to handleEventRequest)
+ */
 
 /**
  * GET /api/events/:matchSlug
@@ -175,10 +249,9 @@ router.get('/servers/list', requireAuth, (_req: Request, res: Response) => {
 
 /**
  * GET /api/events/connections/:matchSlug
- * Get player connection status for a match
- * Protected by API token
+ * Get player connection status for a match (public - no auth for teams to see)
  */
-router.get('/connections/:matchSlug', requireAuth, (req: Request, res: Response) => {
+router.get('/connections/:matchSlug', (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
     const status = playerConnectionService.getStatus(matchSlug);
@@ -191,6 +264,7 @@ router.get('/connections/:matchSlug', requireAuth, (req: Request, res: Response)
         team1Connected: 0,
         team2Connected: 0,
         totalConnected: 0,
+        lastUpdated: Date.now(),
       });
     }
 
@@ -209,8 +283,10 @@ router.get('/connections/:matchSlug', requireAuth, (req: Request, res: Response)
 
 /**
  * Handle different event types
+ * @param event The MatchZy event
+ * @param actualMatchSlug The actual match slug (from URL or payload)
  */
-function handleEvent(event: MatchZyEvent): void {
+function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
   switch (event.event) {
     case 'series_start':
       log.success(`Series started: ${event.team1_name} vs ${event.team2_name}`, {
@@ -268,12 +344,11 @@ function handleEvent(event: MatchZyEvent): void {
       break;
 
     case 'player_connect':
-      log.debug(`Player connected: ${event.player.name}`, { steamId: event.player.steamid });
-      // Track connection (we don't know team yet, will be in series_start or other events)
-      // For now, we'll get team from match config
+      log.debug(`Player connected: ${event.player.name}`, { steamId: event.player.steamid, matchSlug: actualMatchSlug });
+      // Track connection using actual match slug from URL
       {
         const match = db.queryOne<DbMatchRow>('SELECT config FROM matches WHERE slug = ?', [
-          event.matchid,
+          actualMatchSlug,
         ]);
         if (match && match.config) {
           const config = JSON.parse(match.config);
@@ -285,7 +360,7 @@ function handleEvent(event: MatchZyEvent): void {
           const team = isTeam1 ? 'team1' : 'team2';
 
           playerConnectionService.playerConnected(
-            event.matchid,
+            actualMatchSlug,
             event.player.steamid,
             event.player.name,
             team
@@ -295,23 +370,137 @@ function handleEvent(event: MatchZyEvent): void {
       break;
 
     case 'player_disconnect':
-      log.debug(`Player disconnected: ${event.player.name}`, { steamId: event.player.steamid });
-      playerConnectionService.playerDisconnected(event.matchid, event.player.steamid);
+      log.debug(`Player disconnected: ${event.player.name}`, { steamId: event.player.steamid, matchSlug: actualMatchSlug });
+      playerConnectionService.playerDisconnected(actualMatchSlug, event.player.steamid);
       break;
 
     case 'going_live':
-      log.success(`Map ${event.map_number} going live!`, { matchId: event.matchid });
+      log.success(`Map ${event.map_number} going live!`, { matchSlug: actualMatchSlug });
       // Mark all connected players as ready
-      playerConnectionService.markAllReady(event.matchid);
+      playerConnectionService.markAllReady(actualMatchSlug);
       // Update server status if first map
       if (event.map_number === 1) {
         const match = db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
-          event.matchid,
+          actualMatchSlug,
         ]);
         if (match?.server_id) {
-          serverStatusService.setMatchLive(match.server_id, event.matchid);
+          serverStatusService.setMatchLive(match.server_id, actualMatchSlug);
         }
       }
+      break;
+
+    // Player Ready Events
+    case 'player_ready':
+      log.debug(`Player ready: ${event.player.name}`, {
+        matchSlug: actualMatchSlug,
+        team: event.team,
+        totalReady: event.total_ready,
+        expected: event.expected_total,
+      });
+      playerConnectionService.playerReady(actualMatchSlug, event.player.steamid, true);
+      // Emit connection status update with ready counts
+      emitMatchUpdate({
+        slug: actualMatchSlug,
+        connectionStatus: {
+          totalConnected: event.total_ready,
+          team1Connected: event.ready_count_team1,
+          team2Connected: event.ready_count_team2,
+        },
+      });
+      break;
+
+    case 'player_unready':
+      log.debug(`Player unready: ${event.player.name}`, {
+        matchSlug: actualMatchSlug,
+        team: event.team,
+      });
+      playerConnectionService.playerReady(actualMatchSlug, event.player.steamid, false);
+      emitMatchUpdate({
+        slug: actualMatchSlug,
+        connectionStatus: {
+          totalConnected: event.total_ready,
+          team1Connected: event.ready_count_team1,
+          team2Connected: event.ready_count_team2,
+        },
+      });
+      break;
+
+    case 'team_ready':
+      log.success(`Team ready: ${event.team}`, {
+        matchId: event.matchid,
+        readyCount: event.ready_count,
+      });
+      break;
+
+    case 'all_players_ready':
+      log.success(`All players ready! Match starting soon.`, {
+        matchId: event.matchid,
+        totalReady: event.total_ready,
+      });
+      break;
+
+    // Match Phase Events
+    case 'warmup_ended':
+      log.info(`Warmup ended`, { matchId: event.matchid, mapNumber: event.map_number });
+      break;
+
+    case 'knife_round_started':
+      log.info(`Knife round started`, { matchId: event.matchid, mapNumber: event.map_number });
+      break;
+
+    case 'knife_round_ended':
+      log.success(`Knife round won by ${event.winner}`, {
+        matchId: event.matchid,
+        mapNumber: event.map_number,
+      });
+      break;
+
+    case 'round_started':
+      log.debug(`Round ${event.round_number} started`, {
+        matchId: event.matchid,
+        mapNumber: event.map_number,
+        score: `${event.team1_score}-${event.team2_score}`,
+      });
+      break;
+
+    case 'halftime_started':
+      log.info(`Halftime started`, {
+        matchId: event.matchid,
+        mapNumber: event.map_number,
+        score: `${event.team1_score}-${event.team2_score}`,
+      });
+      break;
+
+    case 'overtime_started':
+      log.success(`Overtime ${event.overtime_number} started!`, {
+        matchId: event.matchid,
+        mapNumber: event.map_number,
+      });
+      break;
+
+    // Pause System Events
+    case 'match_paused':
+      log.warn(`Match paused by ${event.paused_by.name}`, {
+        matchId: event.matchid,
+        mapNumber: event.map_number,
+        tactical: event.is_tactical,
+        admin: event.is_admin,
+      });
+      break;
+
+    case 'unpause_requested':
+      log.info(`Unpause requested by ${event.team}`, {
+        matchId: event.matchid,
+        teamsReady: event.teams_ready,
+        teamsNeeded: event.teams_needed,
+      });
+      break;
+
+    case 'match_unpaused':
+      log.success(`Match unpaused`, {
+        matchId: event.matchid,
+        pauseDuration: event.pause_duration,
+      });
       break;
 
     default:

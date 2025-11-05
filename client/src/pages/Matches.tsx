@@ -23,6 +23,7 @@ import type { Match, MatchEvent } from '../types';
 
 export default function Matches() {
   const navigate = useNavigate();
+  const [upcomingMatches, setUpcomingMatches] = useState<Match[]>([]);
   const [liveMatches, setLiveMatches] = useState<Match[]>([]);
   const [matchHistory, setMatchHistory] = useState<Match[]>([]);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
@@ -30,6 +31,7 @@ export default function Matches() {
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
+  const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
 
   // Download demo file
   const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
@@ -76,7 +78,23 @@ export default function Matches() {
 
         // Handle regular match updates
         const match = data as Match;
-        if (match.status === 'live' || match.status === 'loaded') {
+        if (match.status === 'pending' || match.status === 'ready') {
+          // Update upcoming matches
+          setUpcomingMatches((prev) => {
+            const index = prev.findIndex((m) => m.id === match.id);
+            if (index !== -1) {
+              const updated = [...prev];
+              updated[index] = match;
+              return updated;
+            }
+            return [...prev, match];
+          });
+          // Remove from live if it was there
+          setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
+        } else if (match.status === 'live' || match.status === 'loaded') {
+          // Remove from upcoming
+          setUpcomingMatches((prev) => prev.filter((m) => m.id !== match.id));
+          // Add to live
           setLiveMatches((prev) => {
             const index = prev.findIndex((m) => m.id === match.id);
             if (index !== -1) {
@@ -87,7 +105,10 @@ export default function Matches() {
             return [...prev, match];
           });
         } else if (match.status === 'completed') {
+          // Remove from upcoming and live
+          setUpcomingMatches((prev) => prev.filter((m) => m.id !== match.id));
           setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
+          // Add to history
           setMatchHistory((prev) => {
             const exists = prev.find((m) => m.id === match.id);
             if (exists) return prev;
@@ -137,6 +158,12 @@ export default function Matches() {
       const data = await response.json();
       if (data.success) {
         const matches = data.matches || [];
+        setTournamentStatus(data.tournamentStatus || 'setup');
+
+        // Upcoming matches: pending and ready (including veto phase)
+        const upcoming = matches.filter(
+          (m: Match) => (m.status === 'pending' || m.status === 'ready') && m.team1 && m.team2
+        );
 
         // Live matches: only show matches with both teams assigned (loaded = warmup, live = in progress)
         const live = matches.filter(
@@ -148,6 +175,7 @@ export default function Matches() {
           .filter((m: Match) => m.status === 'completed')
           .sort((a: Match, b: Match) => (b.completedAt || 0) - (a.completedAt || 0));
 
+        setUpcomingMatches(upcoming);
         setLiveMatches(live);
         setMatchHistory(history);
       }
@@ -175,7 +203,7 @@ export default function Matches() {
   };
 
   // Get all matches for numbering context
-  const allMatches = [...liveMatches, ...matchHistory];
+  const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];
 
   if (loading) {
     return (
@@ -205,7 +233,7 @@ export default function Matches() {
     );
   }
 
-  const hasMatches = liveMatches.length > 0 || matchHistory.length > 0;
+  const hasMatches = upcomingMatches.length > 0 || liveMatches.length > 0 || matchHistory.length > 0;
 
   return (
     <Box>
@@ -284,6 +312,32 @@ export default function Matches() {
                           </Box>
                         )}
                       </Box>
+                    </Grid>
+                  );
+                })}
+              </Grid>
+            </Box>
+          )}
+
+          {/* Upcoming Matches Section */}
+          {upcomingMatches.length > 0 && (
+            <Box>
+              <Typography variant="h6" fontWeight={600} mb={2}>
+                Upcoming Matches ({upcomingMatches.length})
+              </Typography>
+              <Grid container spacing={3}>
+                {upcomingMatches.map((match) => {
+                  const matchNumber = getGlobalMatchNumber(match, allMatches);
+                  return (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                      <MatchCard
+                        match={match}
+                        matchNumber={matchNumber}
+                        variant="default"
+                        vetoCompleted={match.vetoCompleted}
+                        tournamentStarted={tournamentStatus === 'in_progress'}
+                        onClick={() => setSelectedMatch(match)}
+                      />
                     </Grid>
                   );
                 })}

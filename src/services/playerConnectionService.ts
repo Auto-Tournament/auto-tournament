@@ -76,6 +76,21 @@ class PlayerConnectionService {
   }
 
   /**
+   * Track player ready status
+   */
+  playerReady(matchSlug: string, steamId: string, isReady: boolean): void {
+    const players = this.connections.get(matchSlug);
+    if (!players) return;
+
+    const player = players.find((p) => p.steamId === steamId);
+    if (player) {
+      player.isReady = isReady;
+      log.debug(`Player ${isReady ? 'ready' : 'unready'}: ${player.name}`, { matchSlug });
+      this.emitUpdate(matchSlug);
+    }
+  }
+
+  /**
    * Mark all connected players as ready (when match goes live)
    */
   markAllReady(matchSlug: string): void {

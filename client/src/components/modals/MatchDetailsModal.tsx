@@ -36,6 +36,8 @@ import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 import { openTeamMatchInNewTab } from '../../utils/teamLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
+import { PlayerRoster } from '../match/PlayerRoster';
+import { AddBackupPlayer } from '../admin/AddBackupPlayer';
 import type { Match } from '../../types';
 
 interface MatchDetailsModalProps {
@@ -328,133 +330,18 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </Box>
           </Box>
 
-          {/* Player Connection Status */}
-          {connectionStatus && connectionStatus.totalConnected > 0 && (
+          {/* Player Roster */}
+          {match.config && (match.status === 'loaded' || match.status === 'live') && (
             <>
               <Divider />
               <Box>
-                <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <GroupsIcon color="primary" />
-                    <Typography variant="subtitle1" fontWeight={600}>
-                      Connected Players
-                    </Typography>
-                  </Box>
-                  <Chip
-                    label={`${connectionStatus.totalConnected}/${match.config?.expected_players_total || 10}`}
-                    color={
-                      connectionStatus.totalConnected >= (match.config?.expected_players_total || 10)
-                        ? 'success'
-                        : 'warning'
-                    }
-                    size="small"
-                  />
-                </Box>
-                <Grid container spacing={2}>
-                  {/* Team 1 */}
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" fontWeight={600} mb={2}>
-                          {match.team1?.name || 'Team 1'} ({connectionStatus.team1Connected}/5)
-                        </Typography>
-                        <Stack spacing={1}>
-                          {connectionStatus.connectedPlayers
-                            .filter((p) => p.team === 'team1')
-                            .map((player) => (
-                              <Box
-                                key={player.steamId}
-                                display="flex"
-                                alignItems="center"
-                                gap={1}
-                                sx={{
-                                  p: 1,
-                                  bgcolor: 'action.hover',
-                                  borderRadius: 1,
-                                }}
-                              >
-                                {player.isReady ? (
-                                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main' }} />
-                                ) : (
-                                  <PendingIcon sx={{ fontSize: 20, color: 'grey.500' }} />
-                                )}
-                                <Typography variant="body2" flex={1}>
-                                  {player.name}
-                                </Typography>
-                                <Chip
-                                  label={player.isReady ? 'Ready' : 'Connected'}
-                                  size="small"
-                                  color={player.isReady ? 'success' : 'default'}
-                                  sx={{ height: 20, fontSize: '0.7rem' }}
-                                />
-                              </Box>
-                            ))}
-                          {connectionStatus.team1Connected === 0 && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ py: 2, textAlign: 'center' }}
-                            >
-                              No players connected yet
-                            </Typography>
-                          )}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  {/* Team 2 */}
-                  <Grid size={{ xs: 12, md: 6 }}>
-                    <Card variant="outlined">
-                      <CardContent>
-                        <Typography variant="subtitle2" fontWeight={600} mb={2}>
-                          {match.team2?.name || 'Team 2'} ({connectionStatus.team2Connected}/5)
-                        </Typography>
-                        <Stack spacing={1}>
-                          {connectionStatus.connectedPlayers
-                            .filter((p) => p.team === 'team2')
-                            .map((player) => (
-                              <Box
-                                key={player.steamId}
-                                display="flex"
-                                alignItems="center"
-                                gap={1}
-                                sx={{
-                                  p: 1,
-                                  bgcolor: 'action.hover',
-                                  borderRadius: 1,
-                                }}
-                              >
-                                {player.isReady ? (
-                                  <CheckCircleIcon sx={{ fontSize: 20, color: 'success.main' }} />
-                                ) : (
-                                  <PendingIcon sx={{ fontSize: 20, color: 'grey.500' }} />
-                                )}
-                                <Typography variant="body2" flex={1}>
-                                  {player.name}
-                                </Typography>
-                                <Chip
-                                  label={player.isReady ? 'Ready' : 'Connected'}
-                                  size="small"
-                                  color={player.isReady ? 'success' : 'default'}
-                                  sx={{ height: 20, fontSize: '0.7rem' }}
-                                />
-                              </Box>
-                            ))}
-                          {connectionStatus.team2Connected === 0 && (
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ py: 2, textAlign: 'center' }}
-                            >
-                              No players connected yet
-                            </Typography>
-                          )}
-                        </Stack>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                </Grid>
+                <PlayerRoster
+                  team1Name={match.team1?.name || 'Team 1'}
+                  team2Name={match.team2?.name || 'Team 2'}
+                  team1Players={(match.config as { team1?: { players?: Array<{ steamid: string; name: string }> } })?.team1?.players || []}
+                  team2Players={(match.config as { team2?: { players?: Array<{ steamid: string; name: string }> } })?.team2?.players || []}
+                  connectedPlayers={connectionStatus?.connectedPlayers || []}
+                />
               </Box>
             </>
           )}
@@ -650,6 +537,27 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 <AdminMatchControls
                   serverId={match.serverId}
                   matchSlug={match.slug}
+                  onSuccess={(message) => {
+                    setSuccess(message);
+                    setTimeout(() => setSuccess(''), 3000);
+                  }}
+                  onError={(message) => {
+                    setError(message);
+                  }}
+                />
+              </Box>
+              
+              <Divider sx={{ my: 2 }} />
+              
+              {/* Add Backup Player */}
+              <Box>
+                <AddBackupPlayer
+                  matchSlug={match.slug}
+                  serverId={match.serverId}
+                  team1Name={match.team1?.name || 'Team 1'}
+                  team2Name={match.team2?.name || 'Team 2'}
+                  existingTeam1Players={(match.config as { team1?: { players?: Array<{ steamid: string; name: string }> } })?.team1?.players || []}
+                  existingTeam2Players={(match.config as { team2?: { players?: Array<{ steamid: string; name: string }> } })?.team2?.players || []}
                   onSuccess={(message) => {
                     setSuccess(message);
                     setTimeout(() => setSuccess(''), 3000);

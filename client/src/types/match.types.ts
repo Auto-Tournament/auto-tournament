@@ -25,6 +25,7 @@ export interface Match {
   matchPhase?: string; // warmup, knife, veto, live, post_match
   demoFilePath?: string;
   config?: MatchConfig;
+  vetoCompleted?: boolean;
 }
 
 export interface MatchConfig {

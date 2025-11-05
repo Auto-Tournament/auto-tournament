@@ -1,5 +1,5 @@
 import { db } from '../config/database';
-import type { DbTeamRow } from '../types/database.types';
+import type { DbTeamRow, DbMatchRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 
 export const generateMatchConfig = (
@@ -29,16 +29,44 @@ export const generateMatchConfig = (
   // Store actual player counts for frontend display
   const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
 
+  // Check if match has veto results
+  let vetoMaps = tournament.maps;
+  let sideType = 'standard';
+  let skipVeto = false;
+
+  if (slug) {
+    const match = db.queryOne<DbMatchRow>('SELECT veto_state FROM matches WHERE slug = ?', [slug]);
+    if (match?.veto_state) {
+      try {
+        const vetoState = JSON.parse(match.veto_state);
+        if (vetoState.status === 'completed' && vetoState.pickedMaps?.length > 0) {
+          // Use veto results
+          vetoMaps = vetoState.pickedMaps.map((p: { mapName: string }) => p.mapName);
+          skipVeto = true; // Skip in-game veto since we did it in UI
+          
+          // Check if any maps have knife rounds
+          const hasKnifeMaps = vetoState.pickedMaps.some((p: { knifeRound: boolean }) => p.knifeRound);
+          if (!hasKnifeMaps) {
+            sideType = 'never_knife'; // Disable knife for all maps if none require it
+          }
+        }
+      } catch (err) {
+        // Invalid veto state, use tournament maps
+        console.error('Failed to parse veto state:', err);
+      }
+    }
+  }
+
   const config: Record<string, unknown> = {
     matchid: slug || 'tbd',
     match_title: `Map 1 of ${numMaps}`,
-    side_type: 'standard', // Can be: standard, always_knife, never_knife
+    side_type: sideType,
     veto_first: 'team1', // team1 or team2
-    skip_veto: false,
+    skip_veto: skipVeto,
     min_players_to_ready: 1, // Allow match to start with at least 1 player (flexible for small matches)
     players_per_team: playersPerTeam,
     num_maps: numMaps,
-    maplist: tournament.maps,
+    maplist: vetoMaps,
     min_spectators_to_ready: 0,
     wingman: false,
     clinch_series: true,

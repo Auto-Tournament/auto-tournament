@@ -5,6 +5,7 @@
 export interface DbMatchRow {
   id: number;
   slug: string;
+  tournament_id: number;
   round: number;
   match_number: number;
   team1_id?: string;
@@ -15,6 +16,7 @@ export interface DbMatchRow {
   config?: string;
   next_match_id?: number;
   demo_file_path?: string;
+  veto_state?: string;
   created_at?: number;
   loaded_at?: number;
   completed_at?: number;

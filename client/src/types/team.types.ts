@@ -36,6 +36,8 @@ export interface TeamMatchInfo {
   matchNumber: number;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
   isTeam1: boolean;
+  team1?: Team; // For veto interface
+  team2?: Team; // For veto interface
   opponent: Team | null;
   server: {
     id: string;

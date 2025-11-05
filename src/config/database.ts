@@ -109,6 +109,13 @@ class DatabaseManager {
       // Column already exists, ignore
     }
 
+    // Migration: Add veto_state column if it doesn't exist
+    try {
+      this.db.exec(`ALTER TABLE matches ADD COLUMN veto_state TEXT;`);
+    } catch {
+      // Column already exists, ignore
+    }
+
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS match_events (
         id INTEGER PRIMARY KEY AUTOINCREMENT,

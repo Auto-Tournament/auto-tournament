@@ -27,3 +27,19 @@ export type {
   TournamentSettings,
   BracketData,
 } from './tournament.types';
+
+// Veto types
+export type {
+  VetoActionType,
+  VetoTeam,
+  MapSide,
+  VetoAction,
+  VetoMapResult,
+  VetoState,
+  VetoStep,
+  CS2MapData,
+} from './veto.types';
+
+// Match phase types
+export type { MatchPhase, MatchPhaseInfo } from './matchPhase.types';
+export { getPhaseDisplay } from './matchPhase.types';

@@ -26,16 +26,25 @@ export const formatDuration = (seconds: number): string => {
 /**
  * Get a human-readable label for a match status
  */
-export const getStatusLabel = (status: string, walkover: boolean = false): string => {
+export const getStatusLabel = (
+  status: string, 
+  walkover: boolean = false,
+  vetoCompleted?: boolean,
+  tournamentStarted?: boolean
+): string => {
   if (walkover) return 'WALKOVER';
 
   switch (status) {
     case 'pending':
-      return 'WAITING FOR SERVER';
+      return 'NOT STARTED';
+    case 'ready':
+      if (tournamentStarted === false) return 'WAITING';
+      if (vetoCompleted === false) return 'MAP VETO';
+      return 'READY';
     case 'loaded':
-      return 'WAITING FOR PLAYERS';
+      return 'WARMUP';
     case 'live':
-      return 'MATCH IN PROGRESS';
+      return 'LIVE';
     case 'completed':
       return 'COMPLETED';
     default:
@@ -50,7 +59,9 @@ export const getDetailedStatusLabel = (
   status: string,
   playerCount?: number,
   expectedPlayers?: number,
-  walkover: boolean = false
+  walkover: boolean = false,
+  vetoCompleted?: boolean,
+  tournamentStarted?: boolean
 ): string => {
   if (walkover) return 'WALKOVER';
 
@@ -58,18 +69,27 @@ export const getDetailedStatusLabel = (
 
   switch (status) {
     case 'pending':
-      return 'Waiting for server allocation...';
+      return 'Waiting for tournament to start...';
+    case 'ready':
+      // Match is ready - could be in veto or waiting for server
+      if (tournamentStarted === false) {
+        return 'Waiting for tournament to start...';
+      }
+      if (vetoCompleted === false) {
+        return 'Teams voting for maps...';
+      }
+      return 'Veto complete - Waiting for server...';
     case 'loaded':
       if (playerCount !== undefined) {
         if (playerCount === 0) {
-          return `Server ready - Waiting for players to connect (0/${expected})`;
+          return `Server ready - Waiting for players (0/${expected})`;
         } else if (playerCount < expected) {
-          return `Waiting for players to connect (${playerCount}/${expected})`;
+          return `Waiting for players (${playerCount}/${expected})`;
         } else {
-          return `All players connected - Waiting for ready up (${playerCount}/${expected})`;
+          return `All players connected - Waiting for ready up`;
         }
       }
-      return 'Server ready - Waiting for players to connect';
+      return 'Server ready - Waiting for players';
     case 'live':
       return 'Match in progress';
     case 'completed':

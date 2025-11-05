@@ -19,6 +19,8 @@ interface MatchCardProps {
   playerCount?: number; // Current player count
   liveScores?: { team1Score?: number; team2Score?: number }; // Live scores
   showPlayerProgress?: boolean; // Show player connection progress bar
+  vetoCompleted?: boolean; // Whether veto is complete
+  tournamentStarted?: boolean; // Whether tournament has started
   onDownloadDemo?: (event: React.MouseEvent) => void;
   onClick?: () => void;
 }
@@ -31,6 +33,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   playerCount,
   liveScores,
   showPlayerProgress = false,
+  vetoCompleted,
+  tournamentStarted,
   onDownloadDemo,
   onClick,
 }) => {
@@ -107,7 +111,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Chip
-              label={getStatusLabel(match.status)}
+              label={getStatusLabel(match.status, false, vetoCompleted, tournamentStarted)}
               size="small"
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
@@ -239,7 +243,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
               <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
               <Typography variant="body2" fontWeight={600} color="white">
-                {getDetailedStatusLabel(match.status, playerCount, expectedPlayers)}
+                {getDetailedStatusLabel(match.status, playerCount, expectedPlayers, false, vetoCompleted, tournamentStarted)}
               </Typography>
             </Box>
             {match.status === 'loaded' && (

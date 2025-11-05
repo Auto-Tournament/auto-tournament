@@ -4,12 +4,17 @@
 
 /**
  * Get RCON commands to configure MatchZy webhook
+ * Uses match slug in URL path for better event tracking
  */
-export function getMatchZyWebhookCommands(baseUrl: string, serverToken: string): string[] {
+export function getMatchZyWebhookCommands(baseUrl: string, serverToken: string, matchSlug?: string): string[] {
+  // Encode match slug in URL path if provided (e.g., /api/events/r1m1)
+  const webhookUrl = matchSlug ? `${baseUrl}/api/events/${matchSlug}` : `${baseUrl}/api/events`;
+  
   return [
-    `matchzy_remote_log_url "${baseUrl}/api/events"`,
+    `matchzy_remote_log_url "${webhookUrl}"`,
     `matchzy_remote_log_header_key "X-MatchZy-Token"`,
     `matchzy_remote_log_header_value "${serverToken}"`,
+    `get5_check_auths true`, // Enable auth check to prevent random players
   ];
 }
 

@@ -87,21 +87,33 @@ export const ServerEventsMonitor: React.FC = () => {
     };
   }, []);
 
-  // Listen to server-specific events
+  // Listen to ALL server events (no filtering)
   useEffect(() => {
     const socket = socketRef.current;
-    if (!socket || !selectedServerId) return;
+    if (!socket) return;
 
     const handleServerEvent = (event: ServerEvent) => {
-      if (!isPaused && event.serverId === selectedServerId) {
-        setEvents((prev) => [event, ...prev].slice(0, 50)); // Keep last 50
+      if (!isPaused) {
+        // Show events from all servers if no specific server selected
+        if (!selectedServerId || event.serverId === selectedServerId) {
+          setEvents((prev) => [event, ...prev].slice(0, 100)); // Keep last 100
+        }
       }
     };
 
-    socket.on(`server:event:${selectedServerId}`, handleServerEvent);
+    // Listen to all server events
+    socket.on('server:event', handleServerEvent);
+    
+    // Also listen to server-specific events if one is selected
+    if (selectedServerId) {
+      socket.on(`server:event:${selectedServerId}`, handleServerEvent);
+    }
 
     return () => {
-      socket.off(`server:event:${selectedServerId}`, handleServerEvent);
+      socket.off('server:event', handleServerEvent);
+      if (selectedServerId) {
+        socket.off(`server:event:${selectedServerId}`, handleServerEvent);
+      }
     };
   }, [selectedServerId, isPaused]);
 
@@ -292,10 +304,10 @@ export const ServerEventsMonitor: React.FC = () => {
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="caption" color="text.secondary">
-            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 50)
+            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100) - All servers
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Events update in real-time via WebSocket
+            Events update in real-time via WebSocket (unfiltered)
           </Typography>
         </Box>
       </CardContent>

@@ -57,13 +57,16 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       if (serverToken) {
         try {
           const baseUrl = getWebhookBaseUrl(req);
+          // For server status check, use generic webhook without match slug
+          // Match-specific webhook will be configured when match is loaded
           const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
           
           for (const cmd of webhookCommands) {
             await rconService.sendCommand(id, cmd);
           }
           
-          log.webhookConfigured(id, `${baseUrl}/api/events`);
+          const webhookUrl = `${baseUrl}/api/events`;
+          log.webhookConfigured(id, webhookUrl);
         } catch (error) {
           // Don't fail status check if webhook setup fails
           log.warn(`Failed to configure webhook for server ${id}`, { error });
