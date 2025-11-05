@@ -2,7 +2,7 @@
 
 :root {
   /* Light mode overrides */
-  --md-primary-fg-color: #6750A4;        /* Purple adjusted for light mode */
+  --md-primary-fg-color: #6750A4;        /* Purple for light mode */
   --md-primary-fg-color--light: #D0BCFF;
   --md-primary-fg-color--dark: #381E72;
   --md-accent-fg-color: #9C88D6;
@@ -10,12 +10,15 @@
 
 [data-md-color-scheme="slate"] {
   /* Dark mode - match project exactly */
-  --md-primary-fg-color: #D0BCFF;        /* M3 Purple main */
-  --md-primary-fg-color--light: #E8DEF8;
-  --md-primary-fg-color--dark: #9C88D6;
-  --md-primary-bg-color: #381E72;
   
-  --md-accent-fg-color: #D0BCFF;
+  /* Header/Navbar - use surface color like project navbar */
+  --md-primary-fg-color: #2B2930;        /* Surface/paper color - same as navbar */
+  --md-primary-fg-color--light: #E8DEF8;
+  --md-primary-fg-color--dark: #1C1B1F;
+  --md-primary-bg-color: #E6E1E5;
+  
+  /* Accent - keep purple for links, buttons, etc. */
+  --md-accent-fg-color: #D0BCFF;         /* M3 Purple for accents */
   
   /* Background colors to match project */
   --md-default-bg-color: #1C1B1F;        /* Same as project background.default */
