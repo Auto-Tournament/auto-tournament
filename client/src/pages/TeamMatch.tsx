@@ -122,14 +122,24 @@ export default function TeamMatch() {
       setHasMatch(data.hasMatch);
       setMatch(data.match || null);
       setTournamentStatus(data.tournamentStatus || 'setup');
-      
+
       // Debug logging
       console.log('🔍 Veto Debug Info:', {
         tournamentStatus: data.tournamentStatus,
         matchStatus: data.match?.status,
-        matchFormat: data.match?.config?.num_maps === 1 ? 'bo1' : data.match?.config?.num_maps === 3 ? 'bo3' : data.match?.config?.num_maps === 5 ? 'bo5' : 'unknown',
+        matchFormat:
+          data.match?.config?.num_maps === 1
+            ? 'bo1'
+            : data.match?.config?.num_maps === 3
+            ? 'bo3'
+            : data.match?.config?.num_maps === 5
+            ? 'bo5'
+            : 'unknown',
         vetoCompleted: data.match?.vetoCompleted,
-        shouldShowVeto: data.tournamentStatus === 'in_progress' && data.match?.status === 'ready' && !data.match?.vetoCompleted,
+        shouldShowVeto:
+          data.tournamentStatus === 'in_progress' &&
+          data.match?.status === 'ready' &&
+          !data.match?.vetoCompleted,
       });
     } catch (err) {
       // Network or parsing error
@@ -219,10 +229,10 @@ export default function TeamMatch() {
   useEffect(() => {
     if (!match) return;
 
-    const isVetoAvailable = 
-      tournamentStatus === 'in_progress' && 
-      match.status === 'ready' && 
-      !vetoCompleted && 
+    const isVetoAvailable =
+      tournamentStatus === 'in_progress' &&
+      match.status === 'ready' &&
+      !vetoCompleted &&
       ['bo1', 'bo3', 'bo5'].includes(matchFormat);
 
     const hasServerAssigned = Boolean(match.server);
@@ -293,7 +303,7 @@ export default function TeamMatch() {
   const handleVetoComplete = async (veto: VetoState) => {
     console.log('Veto completed!', veto);
     setVetoCompleted(true);
-    
+
     // Backend will automatically load the match after veto completion
     // Just wait a moment then reload to get the updated status
     setTimeout(() => {
@@ -546,7 +556,12 @@ export default function TeamMatch() {
                         }}
                       >
                         <CardContent>
-                          <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
+                          <Box
+                            display="flex"
+                            justifyContent="space-between"
+                            alignItems="start"
+                            mb={1}
+                          >
                             <Chip
                               label={historyMatch.won ? 'WIN' : 'LOSS'}
                               size="small"
@@ -709,11 +724,11 @@ export default function TeamMatch() {
             </Card>
           )}
 
-          {/* Tournament Not Started - Show message when match is ready but tournament hasn't started */}
+          {/* Tournament Not Started - Show message when match is pending and tournament hasn't started */}
           {hasMatch &&
             match &&
             tournamentStatus !== 'in_progress' &&
-            match.status === 'ready' &&
+            match.status === 'pending' &&
             ['bo1', 'bo3', 'bo5'].includes(matchFormat) && (
               <Card>
                 <CardContent>
@@ -735,11 +750,11 @@ export default function TeamMatch() {
               </Card>
             )}
 
-          {/* Veto Phase - Show when tournament started, match is ready and format requires veto */}
+          {/* Veto Phase - Show when tournament started, match is pending (waiting for veto) and format requires veto */}
           {hasMatch &&
             match &&
             tournamentStatus === 'in_progress' &&
-            match.status === 'ready' &&
+            match.status === 'pending' &&
             !vetoCompleted &&
             ['bo1', 'bo3', 'bo5'].includes(matchFormat) && (
               <Card>
@@ -749,16 +764,16 @@ export default function TeamMatch() {
                   </Typography>
                   <Alert severity="info" sx={{ mb: 3 }}>
                     <Typography variant="body2">
-                      <strong>Tournament has started!</strong> Complete the map veto process to begin
-                      your match.
+                      <strong>Tournament has started!</strong> Complete the map veto process to
+                      begin your match.
                     </Typography>
                   </Alert>
-                  <VetoInterface 
-                    matchSlug={match.slug} 
+                  <VetoInterface
+                    matchSlug={match.slug}
                     team1Name={match.team1?.name}
                     team2Name={match.team2?.name}
                     currentTeamSlug={team?.id}
-                    onComplete={handleVetoComplete} 
+                    onComplete={handleVetoComplete}
                   />
                 </CardContent>
               </Card>
@@ -770,218 +785,238 @@ export default function TeamMatch() {
             (['loaded', 'live'].includes(match.status) ||
               (match.status === 'ready' && vetoCompleted)) && (
               <Card>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-                <Box>
-                  <Typography variant="h5" fontWeight={600}>
-                    Match #{match.matchNumber}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {getRoundLabel(match.round)}
-                  </Typography>
-                </Box>
-                <Chip
-                  label={getStatusLabel(match.status)}
-                  color={getStatusColor(match.status)}
-                  sx={{ fontWeight: 600, fontSize: '0.9rem', px: 2 }}
-                />
-              </Box>
-
-              {/* VS Display */}
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: 4,
-                  mb: 3,
-                  background: 'linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%)',
-                }}
-              >
-                <Box display="flex" justifyContent="space-around" alignItems="center">
-                  <Box textAlign="center">
-                    <Typography variant="h4" fontWeight={700} color="primary">
-                      {team?.name}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Your Team
-                    </Typography>
-                  </Box>
-                  <Typography variant="h3" color="text.secondary" fontWeight={700}>
-                    VS
-                  </Typography>
-                  <Box textAlign="center">
-                    <Typography variant="h4" fontWeight={700}>
-                      {match.opponent?.name || 'TBD'}
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      Opponent
-                    </Typography>
-                  </Box>
-                </Box>
-              </Paper>
-
-              {/* Player Roster with Connection Status */}
-              {match.config && (
-                <Box mb={3}>
-                  <PlayerRoster
-                    team1Name={match.team1?.name || 'Team 1'}
-                    team2Name={match.team2?.name || 'Team 2'}
-                    team1Players={(match.config as { team1?: { players?: Array<{ steamid: string; name: string }> } })?.team1?.players || []}
-                    team2Players={(match.config as { team2?: { players?: Array<{ steamid: string; name: string }> } })?.team2?.players || []}
-                    connectedPlayers={connectionStatus?.connectedPlayers || []}
-                    isTeam1={match.isTeam1}
-                  />
-                </Box>
-              )}
-
-              {/* Server Connection */}
-              {match.server ? (
-                <>
-                  <Divider sx={{ my: 3 }} />
-                  <Box>
-                    <Box display="flex" alignItems="center" gap={1} mb={2}>
-                      <StorageIcon color="primary" />
-                      <Typography variant="h6" fontWeight={600}>
-                        Server
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+                    <Box>
+                      <Typography variant="h5" fontWeight={600}>
+                        Match #{match.matchNumber}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {getRoundLabel(match.round)}
                       </Typography>
                     </Box>
+                    <Chip
+                      label={getStatusLabel(match.status)}
+                      color={getStatusColor(match.status)}
+                      sx={{ fontWeight: 600, fontSize: '0.9rem', px: 2 }}
+                    />
+                  </Box>
 
-                    <Paper variant="outlined" sx={{ p: 3, mb: 2 }}>
-                      <Box display="flex" alignItems="center" justifyContent="space-between" mb={2}>
-                        <Typography variant="h6" fontWeight={600}>
-                          {match.server.name}
+                  {/* VS Display */}
+                  <Paper
+                    variant="outlined"
+                    sx={{
+                      p: 4,
+                      mb: 3,
+                      background:
+                        'linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%)',
+                    }}
+                  >
+                    <Box display="flex" justifyContent="space-around" alignItems="center">
+                      <Box textAlign="center">
+                        <Typography variant="h4" fontWeight={700} color="primary">
+                          {team?.name}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Your Team
+                        </Typography>
+                      </Box>
+                      <Typography variant="h3" color="text.secondary" fontWeight={700}>
+                        VS
+                      </Typography>
+                      <Box textAlign="center">
+                        <Typography variant="h4" fontWeight={700}>
+                          {match.opponent?.name || 'TBD'}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary">
+                          Opponent
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </Paper>
+
+                  {/* Player Roster with Connection Status */}
+                  {match.config && (
+                    <Box mb={3}>
+                      <PlayerRoster
+                        team1Name={match.team1?.name || 'Team 1'}
+                        team2Name={match.team2?.name || 'Team 2'}
+                        team1Players={
+                          (
+                            match.config as {
+                              team1?: { players?: Array<{ steamid: string; name: string }> };
+                            }
+                          )?.team1?.players || []
+                        }
+                        team2Players={
+                          (
+                            match.config as {
+                              team2?: { players?: Array<{ steamid: string; name: string }> };
+                            }
+                          )?.team2?.players || []
+                        }
+                        connectedPlayers={connectionStatus?.connectedPlayers || []}
+                        isTeam1={match.isTeam1}
+                      />
+                    </Box>
+                  )}
+
+                  {/* Server Connection */}
+                  {match.server ? (
+                    <>
+                      <Divider sx={{ my: 3 }} />
+                      <Box>
+                        <Box display="flex" alignItems="center" gap={1} mb={2}>
+                          <StorageIcon color="primary" />
+                          <Typography variant="h6" fontWeight={600}>
+                            Server
+                          </Typography>
+                        </Box>
+
+                        <Paper variant="outlined" sx={{ p: 3, mb: 2 }}>
+                          <Box
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="space-between"
+                            mb={2}
+                          >
+                            <Typography variant="h6" fontWeight={600}>
+                              {match.server.name}
+                            </Typography>
+                          </Box>
+
+                          <Typography
+                            variant="h5"
+                            fontFamily="monospace"
+                            color="primary.main"
+                            mb={2}
+                            sx={{ fontWeight: 600 }}
+                          >
+                            {match.server.host}:{match.server.port}
+                          </Typography>
+
+                          <Stack spacing={2}>
+                            <Button
+                              variant="contained"
+                              size="large"
+                              fullWidth
+                              color={connected ? 'success' : 'primary'}
+                              startIcon={<SportsEsportsIcon />}
+                              onClick={handleConnect}
+                              sx={{ py: 1.5 }}
+                            >
+                              {connected ? '✓ Connecting...' : 'Connect to Server'}
+                            </Button>
+
+                            <Button
+                              variant="outlined"
+                              size="small"
+                              fullWidth
+                              startIcon={copied ? null : <ContentCopyIcon />}
+                              onClick={handleCopyIP}
+                            >
+                              {copied ? '✓ Copied!' : 'Copy Console Command'}
+                            </Button>
+                          </Stack>
+                        </Paper>
+
+                        <Alert severity="info">
+                          <Typography variant="body2">
+                            <strong>How to connect:</strong>
+                            <br />
+                            1. Click "Connect to Server" to launch CS2 and connect
+                            <br />
+                            OR
+                            <br />
+                            2. Copy the command and paste it in your CS2 console (~)
+                          </Typography>
+                        </Alert>
+                      </Box>
+                    </>
+                  ) : (
+                    <Alert severity="info" sx={{ mt: 3 }}>
+                      Server will be assigned when the match is ready. Please check back soon.
+                    </Alert>
+                  )}
+
+                  {/* Match Details */}
+                  <Divider sx={{ my: 3 }} />
+
+                  <Box>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Typography variant="body2" color="text.secondary">
+                          <strong>Format:</strong> {match.matchFormat}
                         </Typography>
                       </Box>
 
-                      <Typography
-                        variant="h5"
-                        fontFamily="monospace"
-                        color="primary.main"
-                        mb={2}
-                        sx={{ fontWeight: 600 }}
-                      >
-                        {match.server.host}:{match.server.port}
+                      {match.maps.length > 0 && (
+                        <Accordion>
+                          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                            <Box display="flex" alignItems="center" gap={1}>
+                              <MapIcon fontSize="small" color="primary" />
+                              <Typography variant="body2" fontWeight={600}>
+                                Map Pool ({match.maps.length})
+                              </Typography>
+                            </Box>
+                          </AccordionSummary>
+                          <AccordionDetails>
+                            <Box display="flex" flexWrap="wrap" gap={1}>
+                              {match.maps.map((map, idx) => (
+                                <Chip key={idx} label={map} size="small" />
+                              ))}
+                            </Box>
+                          </AccordionDetails>
+                        </Accordion>
+                      )}
+                    </Stack>
+                  </Box>
+
+                  {/* Player-Friendly Status Messages */}
+                  {match.status === 'pending' && (
+                    <Alert severity="info" sx={{ mt: 3 }}>
+                      ⏳ Your match is coming up soon! Check back shortly for server details.
+                    </Alert>
+                  )}
+
+                  {match.status === 'loaded' && !match.server && (
+                    <Alert severity="info" sx={{ mt: 3 }}>
+                      ⏳ Your match is starting soon! Server details will appear here shortly.
+                    </Alert>
+                  )}
+
+                  {match.status === 'loaded' && match.server && (
+                    <Alert severity="success" sx={{ mt: 3 }}>
+                      <Typography variant="body1" fontWeight={600} mb={0.5}>
+                        🎮 Your server is ready!
                       </Typography>
-
-                      <Stack spacing={2}>
-                        <Button
-                          variant="contained"
-                          size="large"
-                          fullWidth
-                          color={connected ? 'success' : 'primary'}
-                          startIcon={<SportsEsportsIcon />}
-                          onClick={handleConnect}
-                          sx={{ py: 1.5 }}
-                        >
-                          {connected ? '✓ Connecting...' : 'Connect to Server'}
-                        </Button>
-
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          fullWidth
-                          startIcon={copied ? null : <ContentCopyIcon />}
-                          onClick={handleCopyIP}
-                        >
-                          {copied ? '✓ Copied!' : 'Copy Console Command'}
-                        </Button>
-                      </Stack>
-                    </Paper>
-
-                    <Alert severity="info">
                       <Typography variant="body2">
-                        <strong>How to connect:</strong>
-                        <br />
-                        1. Click "Connect to Server" to launch CS2 and connect
-                        <br />
-                        OR
-                        <br />
-                        2. Copy the command and paste it in your CS2 console (~)
+                        Click "Connect to Server" above to join. Once all players are in and ready,
+                        the match will start automatically.
                       </Typography>
                     </Alert>
-                  </Box>
-                </>
-              ) : (
-                <Alert severity="info" sx={{ mt: 3 }}>
-                  Server will be assigned when the match is ready. Please check back soon.
-                </Alert>
-              )}
-
-              {/* Match Details */}
-              <Divider sx={{ my: 3 }} />
-
-              <Box>
-                <Stack spacing={2}>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      <strong>Format:</strong> {match.matchFormat}
-                    </Typography>
-                  </Box>
-
-                  {match.maps.length > 0 && (
-                    <Accordion>
-                      <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <MapIcon fontSize="small" color="primary" />
-                          <Typography variant="body2" fontWeight={600}>
-                            Map Pool ({match.maps.length})
-                          </Typography>
-                        </Box>
-                      </AccordionSummary>
-                      <AccordionDetails>
-                        <Box display="flex" flexWrap="wrap" gap={1}>
-                          {match.maps.map((map, idx) => (
-                            <Chip key={idx} label={map} size="small" />
-                          ))}
-                        </Box>
-                      </AccordionDetails>
-                    </Accordion>
                   )}
-                </Stack>
-              </Box>
 
-              {/* Player-Friendly Status Messages */}
-              {match.status === 'pending' && (
-                <Alert severity="info" sx={{ mt: 3 }}>
-                  ⏳ Your match is coming up soon! Check back shortly for server details.
-                </Alert>
-              )}
+                  {match.status === 'live' && (
+                    <Alert severity="error" sx={{ mt: 3 }}>
+                      <Typography variant="body1" fontWeight={600} mb={0.5}>
+                        🔴 MATCH IS LIVE NOW!
+                      </Typography>
+                      <Typography variant="body2">
+                        The match has started! Connect to the server immediately if you haven't
+                        joined yet.
+                      </Typography>
+                    </Alert>
+                  )}
 
-              {match.status === 'loaded' && !match.server && (
-                <Alert severity="info" sx={{ mt: 3 }}>
-                  ⏳ Your match is starting soon! Server details will appear here shortly.
-                </Alert>
-              )}
-
-              {match.status === 'loaded' && match.server && (
-                <Alert severity="success" sx={{ mt: 3 }}>
-                  <Typography variant="body1" fontWeight={600} mb={0.5}>
-                    🎮 Your server is ready!
-                  </Typography>
-                  <Typography variant="body2">
-                    Click "Connect to Server" above to join. Once all players are in and ready, the match will start automatically.
-                  </Typography>
-                </Alert>
-              )}
-
-              {match.status === 'live' && (
-                <Alert severity="error" sx={{ mt: 3 }}>
-                  <Typography variant="body1" fontWeight={600} mb={0.5}>
-                    🔴 MATCH IS LIVE NOW!
-                  </Typography>
-                  <Typography variant="body2">
-                    The match has started! Connect to the server immediately if you haven't joined yet.
-                  </Typography>
-                </Alert>
-              )}
-
-              {match.status === 'completed' && (
-                <Alert severity="success" sx={{ mt: 3 }}>
-                  ✅ Match completed. Thank you for playing! Check the bracket for results.
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-          )}
+                  {match.status === 'completed' && (
+                    <Alert severity="success" sx={{ mt: 3 }}>
+                      ✅ Match completed. Thank you for playing! Check the bracket for results.
+                    </Alert>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
           {/* Team Stats Card */}
           {stats && stats.totalMatches > 0 && (
@@ -1061,7 +1096,12 @@ export default function TeamMatch() {
                       }}
                     >
                       <CardContent>
-                        <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
+                        <Box
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="start"
+                          mb={1}
+                        >
                           <Chip
                             label={historyMatch.won ? 'WIN' : 'LOSS'}
                             size="small"

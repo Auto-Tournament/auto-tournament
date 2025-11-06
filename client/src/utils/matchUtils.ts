@@ -27,7 +27,7 @@ export const formatDuration = (seconds: number): string => {
  * Get a human-readable label for a match status
  */
 export const getStatusLabel = (
-  status: string, 
+  status: string,
   walkover: boolean = false,
   vetoCompleted?: boolean,
   tournamentStarted?: boolean
@@ -36,7 +36,8 @@ export const getStatusLabel = (
 
   switch (status) {
     case 'pending':
-      return 'NOT STARTED';
+      if (tournamentStarted === false) return 'NOT STARTED';
+      return 'VETO PENDING';
     case 'ready':
       if (tournamentStarted === false) return 'WAITING';
       if (vetoCompleted === false) return 'MAP VETO';
@@ -69,7 +70,12 @@ export const getDetailedStatusLabel = (
 
   switch (status) {
     case 'pending':
-      return 'Waiting for tournament to start...';
+      // Match is pending - check if tournament has started
+      if (tournamentStarted === false) {
+        return 'Waiting for tournament to start...';
+      }
+      // Tournament started, match pending means waiting for veto
+      return 'Waiting for map veto to begin...';
     case 'ready':
       // Match is ready - could be in veto or waiting for server
       if (tournamentStarted === false) {
