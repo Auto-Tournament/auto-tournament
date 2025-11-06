@@ -311,6 +311,12 @@ class TournamentService {
       throw new Error('No tournament exists');
     }
 
+    // Count matches before deletion for logging
+    const matchCount = db.queryOne<{ count: number }>(
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
+    );
+
+    // Delete all matches (this also clears all veto states stored in matches)
     db.exec('DELETE FROM matches WHERE tournament_id = 1');
 
     db.update(
@@ -325,7 +331,11 @@ class TournamentService {
       [1]
     );
 
-    log.success('Tournament reset to setup mode');
+    log.success(
+      `Tournament reset to setup mode. Deleted ${
+        matchCount?.count || 0
+      } match(es) and cleared all veto states.`
+    );
     return this.getTournament()!;
   }
 

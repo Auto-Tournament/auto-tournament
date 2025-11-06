@@ -50,6 +50,16 @@ export const generateSwissBracket = (
 
       const config = generateMatchConfig(tournament, team1Id, team2Id, slug);
 
+      // Determine initial status
+      // For BO formats (bo1, bo3, bo5), matches stay in 'pending' until veto is completed
+      const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
+      let status = 'pending';
+
+      if (round === 1 && team1Id && team2Id && !requiresVeto) {
+        // Non-BO formats: match is ready immediately
+        status = 'ready';
+      }
+
       db.insert('matches', {
         slug,
         tournament_id: tournament.id,
@@ -60,7 +70,7 @@ export const generateSwissBracket = (
         winner_id: null,
         server_id: null,
         config: JSON.stringify(config),
-        status: round === 1 && team1Id && team2Id ? 'ready' : 'pending',
+        status,
         next_match_id: null,
         created_at: Math.floor(Date.now() / 1000),
       });

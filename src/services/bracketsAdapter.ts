@@ -173,8 +173,18 @@ export class BracketsAdapter {
       if (bmMatch.opponent1?.result === 'win' || bmMatch.opponent2?.result === 'win') {
         status = 'completed';
       } else if (team1Id && team2Id) {
-        // Both teams are set - match is ready
-        status = roundNum === 1 ? 'ready' : 'pending';
+        // Both teams are set - check if match should be ready
+        // For BO formats (bo1, bo3, bo5), matches stay in 'pending' until veto is completed
+        const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
+
+        if (roundNum === 1 && !requiresVeto) {
+          // Non-BO formats: match is ready immediately
+          status = 'ready';
+        } else {
+          // BO formats OR later rounds: stay pending
+          // BO matches will become 'ready' after veto completion
+          status = 'pending';
+        }
       } else if (team1Id || team2Id) {
         // One team is set (bye) - mark as pending, will be handled by progression logic
         status = 'pending';
@@ -255,10 +265,10 @@ export class BracketsAdapter {
     const team2PlayerObj = team2 ? JSON.parse(team2.players) : {};
     const team1PlayerCount = Object.keys(team1PlayerObj).length;
     const team2PlayerCount = Object.keys(team2PlayerObj).length;
-    
+
     // MatchZy needs players_per_team to be the max of both teams
     const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
-    
+
     // Store actual player counts for frontend display
     const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
 

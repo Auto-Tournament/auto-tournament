@@ -67,8 +67,14 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     }
 
     // Get teams (id is the slug)
-    const team1 = db.queryOne<{ name: string; id: string }>('SELECT name, id FROM teams WHERE id = ?', [match.team1_id]);
-    const team2 = db.queryOne<{ name: string; id: string }>('SELECT name, id FROM teams WHERE id = ?', [match.team2_id]);
+    const team1 = db.queryOne<{ name: string; id: string }>(
+      'SELECT name, id FROM teams WHERE id = ?',
+      [match.team1_id]
+    );
+    const team2 = db.queryOne<{ name: string; id: string }>(
+      'SELECT name, id FROM teams WHERE id = ?',
+      [match.team2_id]
+    );
 
     // Get tournament to determine format
     const tournament = db.queryOne<{ format: string; maps: string }>(
@@ -149,8 +155,14 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     }
 
     // Get teams to validate which team is allowed to make this action (id is the slug)
-    const team1 = db.queryOne<{ name: string; id: string }>('SELECT name, id FROM teams WHERE id = ?', [match.team1_id]);
-    const team2 = db.queryOne<{ name: string; id: string }>('SELECT name, id FROM teams WHERE id = ?', [match.team2_id]);
+    const team1 = db.queryOne<{ name: string; id: string }>(
+      'SELECT name, id FROM teams WHERE id = ?',
+      [match.team1_id]
+    );
+    const team2 = db.queryOne<{ name: string; id: string }>(
+      'SELECT name, id FROM teams WHERE id = ?',
+      [match.team2_id]
+    );
 
     // Get tournament
     const tournament = db.queryOne<{ format: string; maps: string }>(
@@ -213,14 +225,14 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     if (teamSlug) {
       const expectedTeam = currentStepConfig.team;
       const actualTeam = teamSlug === team1?.id ? 'team1' : teamSlug === team2?.id ? 'team2' : null;
-      
+
       if (!actualTeam) {
         return res.status(403).json({
           success: false,
           error: 'Invalid team',
         });
       }
-      
+
       if (actualTeam !== expectedTeam) {
         return res.status(403).json({
           success: false,
@@ -274,7 +286,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       });
     } else if (currentAction === 'side_pick') {
       log.debug('Processing side pick', { side, currentAction, teamSlug });
-      
+
       if (!side || !['CT', 'T'].includes(side)) {
         log.warn('Invalid side selection', { side });
         return res.status(400).json({
@@ -286,7 +298,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       // Set side for the last picked map
       const lastPick = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
       log.debug('Last picked map', { lastPick, pickedMapsCount: vetoState.pickedMaps.length });
-      
+
       if (lastPick) {
         if (currentStepConfig.team === 'team1') {
           lastPick.sideTeam1 = side;
@@ -295,11 +307,11 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
           lastPick.sideTeam2 = side;
           lastPick.sideTeam1 = side === 'CT' ? 'T' : 'CT';
         }
-        log.success(`Side picked for ${lastPick.mapName}`, { 
-          team: currentStepConfig.team, 
+        log.success(`Side picked for ${lastPick.mapName}`, {
+          team: currentStepConfig.team,
           side,
           sideTeam1: lastPick.sideTeam1,
-          sideTeam2: lastPick.sideTeam2 
+          sideTeam2: lastPick.sideTeam2,
         });
       } else {
         log.error('No map to pick side for');
@@ -342,24 +354,31 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       log.success(`🎉 Veto completed for match ${matchSlug}`, {
         pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
       });
-      
+
+      // Update match status to 'ready' now that veto is completed
+      db.update('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
+      log.info(`Match ${matchSlug} status updated to 'ready' after veto completion`);
+
       // Automatically allocate server and load match after veto completion
       console.log('\n========================================');
       console.log(`🚀 AUTO-LOADING MATCH AFTER VETO`);
       console.log(`Match: ${matchSlug}`);
-      console.log(`Picked Maps:`, vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName));
+      console.log(
+        `Picked Maps:`,
+        vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName)
+      );
       console.log('========================================\n');
-      
+
       // Use API_URL from environment or construct from standard port
       const baseUrl = process.env.API_URL || 'http://localhost:3001';
       console.log(`Base URL for webhook: ${baseUrl}`);
-      
+
       // Allocate and load match (async, don't wait for response)
       setImmediate(async () => {
         try {
           console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
           const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
-          
+
           if (result.success) {
             log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
             console.log(`Server: ${result.serverId}`);
@@ -433,4 +452,3 @@ router.post('/:matchSlug/reset', async (req: Request, res: Response) => {
 });
 
 export default router;
-

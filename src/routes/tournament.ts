@@ -469,14 +469,10 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
       success: true,
       tournament,
       message: `Tournament reset to setup mode.${
-        matchesEnded > 0
-          ? ` ${matchesEnded} match(es) ended on servers.`
-          : ''
+        matchesEnded > 0 ? ` ${matchesEnded} match(es) ended on servers.` : ''
       }${
-        matchesEndedFailed > 0
-          ? ` ${matchesEndedFailed} match(es) failed to end.`
-          : ''
-      } All match data has been cleared.`,
+        matchesEndedFailed > 0 ? ` ${matchesEndedFailed} match(es) failed to end.` : ''
+      } All match data and veto states have been cleared.`,
       matchesEnded,
       matchesEndedFailed,
     });
