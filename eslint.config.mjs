@@ -3,6 +3,7 @@ import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import react from 'eslint-plugin-react';
 import reactHooks from 'eslint-plugin-react-hooks';
+import reactCompiler from 'eslint-plugin-react-compiler';
 
 export default [
   js.configs.recommended,
@@ -89,6 +90,7 @@ export default [
       '@typescript-eslint': typescript,
       react,
       'react-hooks': reactHooks,
+      'react-compiler': reactCompiler,
     },
     rules: {
       ...typescript.configs.recommended.rules,
@@ -100,6 +102,7 @@ export default [
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       'no-console': 'off',
+      'react-compiler/react-compiler': 'error', // Catch React performance anti-patterns
     },
     settings: {
       react: {

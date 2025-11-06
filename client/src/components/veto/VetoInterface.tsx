@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Typography,
@@ -12,7 +12,7 @@ import {
   Paper,
   LinearProgress,
 } from '@mui/material';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
 import { CS2_MAPS, getMapData } from '../../constants/maps';
 import { getVetoOrder } from '../../constants/vetoOrders';
@@ -26,39 +26,18 @@ interface VetoInterfaceProps {
   onComplete?: (vetoState: VetoState) => void;
 }
 
-export const VetoInterface: React.FC<VetoInterfaceProps> = ({ 
-  matchSlug, 
+export const VetoInterface: React.FC<VetoInterfaceProps> = ({
+  matchSlug,
   team1Name: propTeam1Name,
   team2Name: propTeam2Name,
   currentTeamSlug,
-  onComplete 
+  onComplete,
 }) => {
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [selectedMap, setSelectedMap] = useState<string | null>(null);
-  const [socket, setSocket] = useState<Socket | null>(null);
 
-  useEffect(() => {
-    loadVetoState();
-
-    // Setup Socket.IO for real-time veto updates
-    const newSocket = io();
-    setSocket(newSocket);
-
-    newSocket.on(`veto:update:${matchSlug}`, (updatedVeto: VetoState) => {
-      setVetoState(updatedVeto);
-      if (updatedVeto.status === 'completed' && onComplete) {
-        onComplete(updatedVeto);
-      }
-    });
-
-    return () => {
-      newSocket.close();
-    };
-  }, [matchSlug]);
-
-  const loadVetoState = async () => {
+  const loadVetoState = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -80,7 +59,25 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [matchSlug, onComplete]);
+
+  useEffect(() => {
+    loadVetoState();
+
+    // Setup Socket.IO for real-time veto updates
+    const newSocket = io();
+
+    newSocket.on(`veto:update:${matchSlug}`, (updatedVeto: VetoState) => {
+      setVetoState(updatedVeto);
+      if (updatedVeto.status === 'completed' && onComplete) {
+        onComplete(updatedVeto);
+      }
+    });
+
+    return () => {
+      newSocket.close();
+    };
+  }, [matchSlug, onComplete, loadVetoState]);
 
   const handleMapAction = async (mapName: string) => {
     if (!vetoState || vetoState.status === 'completed' || !isMyTurn) return;
@@ -88,8 +85,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     const currentAction = vetoState.currentAction;
 
     if (currentAction === 'side_pick') {
-      // Just select the map, show side picker
-      setSelectedMap(mapName);
+      // Side picker is shown automatically when action is 'side_pick'
       return;
     }
 
@@ -98,7 +94,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           mapName,
           teamSlug: currentTeamSlug, // Send which team is making the action
         }),
@@ -131,7 +127,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           side,
           teamSlug: currentTeamSlug, // Send which team is making the action
         }),
@@ -141,7 +137,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       console.log('Side pick response:', data);
 
       if (data.success) {
-        setSelectedMap(null);
         setError('');
       } else {
         console.error('Side pick failed:', data.error);
@@ -211,36 +206,25 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const vetoOrder = getVetoOrder(vetoState.format);
   const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
   const currentAction = currentStepConfig?.action;
-  
+
   // Use team names from veto state (backend) or props as fallback
   const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
   const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
-  
+
   // Get current team name
   const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
-  
+
   // Determine if it's this team's turn
   // Compare current team slug with the team IDs in veto state
-  const isMyTurn = !currentTeamSlug || !vetoState.team1Id || !vetoState.team2Id || (
-    currentStepConfig?.team === 'team1' ? currentTeamSlug === vetoState.team1Id : currentTeamSlug === vetoState.team2Id
-  );
+  const isMyTurn =
+    !currentTeamSlug ||
+    !vetoState.team1Id ||
+    !vetoState.team2Id ||
+    (currentStepConfig?.team === 'team1'
+      ? currentTeamSlug === vetoState.team1Id
+      : currentTeamSlug === vetoState.team2Id);
 
   // Determine action color and text
-  const getActionDisplay = () => {
-    switch (currentAction) {
-      case 'ban':
-        return { text: 'BAN', color: 'error.main', bgcolor: 'error.dark' };
-      case 'pick':
-        return { text: 'PICK', color: 'success.main', bgcolor: 'success.dark' };
-      case 'side_pick':
-        return { text: 'PICK SIDE', color: 'info.main', bgcolor: 'info.dark' };
-      default:
-        return { text: 'SELECT', color: 'primary.main', bgcolor: 'primary.dark' };
-    }
-  };
-
-  const actionDisplay = getActionDisplay();
-
   // Show ALL maps, not just available ones (banned maps will be faded)
   const mapsToShow = CS2_MAPS;
 
@@ -265,7 +249,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       </Paper>
 
       {/* Progress Header */}
-      <Paper elevation={1} sx={{ mb: 3, p: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider' }}>
+      <Paper
+        elevation={1}
+        sx={{
+          mb: 3,
+          p: 3,
+          bgcolor: 'background.paper',
+          border: '1px solid',
+          borderColor: 'divider',
+        }}
+      >
         <Stack spacing={2}>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h5" fontWeight={600}>
@@ -275,11 +268,20 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   <Box
                     component="span"
                     sx={{
-                      color: currentAction === 'ban' ? 'error.main' : currentAction === 'pick' ? 'success.main' : 'info.main',
+                      color:
+                        currentAction === 'ban'
+                          ? 'error.main'
+                          : currentAction === 'pick'
+                          ? 'success.main'
+                          : 'info.main',
                       fontWeight: 700,
                     }}
                   >
-                    {currentAction === 'ban' ? 'Ban' : currentAction === 'pick' ? 'Pick' : 'Choose Side'}
+                    {currentAction === 'ban'
+                      ? 'Ban'
+                      : currentAction === 'pick'
+                      ? 'Pick'
+                      : 'Choose Side'}
                   </Box>
                   {currentAction !== 'side_pick' && ' a map'}
                 </>
@@ -305,86 +307,97 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       </Paper>
 
       {/* Side Picker (for side_pick actions) */}
-      {currentAction === 'side_pick' && (() => {
-        const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
-        const mapData = getMapData(lastPickedMap?.mapName);
-        
-        return (
-          <Card sx={{ mb: 3 }}>
-            <CardContent>
-              {/* Map Display */}
-              <Box
-                sx={{
-                  position: 'relative',
-                  overflow: 'hidden',
-                  borderRadius: 2,
-                  mb: 3,
-                  backgroundImage: `url(${mapData?.image})`,
-                  backgroundSize: 'cover',
-                  backgroundPosition: 'center',
-                  height: 250,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  '&::before': {
-                    content: '""',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    background: 'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
-                  },
-                }}
-              >
-                <Box sx={{ position: 'relative', textAlign: 'center' }}>
-                  <Typography variant="h2" fontWeight={700} color="white" sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}>
-                    {mapData?.displayName || lastPickedMap?.mapName}
-                  </Typography>
-                  <Typography variant="h6" color="rgba(255,255,255,0.9)" sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}>
-                    Choose Your Starting Side
-                  </Typography>
+      {currentAction === 'side_pick' &&
+        (() => {
+          const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
+          const mapData = getMapData(lastPickedMap?.mapName);
+
+          return (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                {/* Map Display */}
+                <Box
+                  sx={{
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: 2,
+                    mb: 3,
+                    backgroundImage: `url(${mapData?.image})`,
+                    backgroundSize: 'cover',
+                    backgroundPosition: 'center',
+                    height: 250,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    '&::before': {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      background:
+                        'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                    },
+                  }}
+                >
+                  <Box sx={{ position: 'relative', textAlign: 'center' }}>
+                    <Typography
+                      variant="h2"
+                      fontWeight={700}
+                      color="white"
+                      sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                    >
+                      {mapData?.displayName || lastPickedMap?.mapName}
+                    </Typography>
+                    <Typography
+                      variant="h6"
+                      color="rgba(255,255,255,0.9)"
+                      sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                    >
+                      Choose Your Starting Side
+                    </Typography>
+                  </Box>
                 </Box>
-              </Box>
 
-              {!isMyTurn && (
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  Waiting for {currentTeamName} to choose their starting side...
-                </Alert>
-              )}
+                {!isMyTurn && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    Waiting for {currentTeamName} to choose their starting side...
+                  </Alert>
+                )}
 
-              <Grid container spacing={2}>
-                <Grid size={{ xs: 6 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="info"
-                    size="large"
-                    onClick={() => handleSidePick('CT')}
-                    disabled={!isMyTurn}
-                    sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
-                  >
-                    🛡️ Counter-Terrorist
-                  </Button>
+                <Grid container spacing={2}>
+                  <Grid size={{ xs: 6 }}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="info"
+                      size="large"
+                      onClick={() => handleSidePick('CT')}
+                      disabled={!isMyTurn}
+                      sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                    >
+                      🛡️ Counter-Terrorist
+                    </Button>
+                  </Grid>
+                  <Grid size={{ xs: 6 }}>
+                    <Button
+                      fullWidth
+                      variant="contained"
+                      color="warning"
+                      size="large"
+                      onClick={() => handleSidePick('T')}
+                      disabled={!isMyTurn}
+                      sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
+                    >
+                      💣 Terrorist
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid size={{ xs: 6 }}>
-                  <Button
-                    fullWidth
-                    variant="contained"
-                    color="warning"
-                    size="large"
-                    onClick={() => handleSidePick('T')}
-                    disabled={!isMyTurn}
-                    sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
-                  >
-                    💣 Terrorist
-                  </Button>
-                </Grid>
-              </Grid>
-            </CardContent>
-          </Card>
-        );
-      })()}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
       {/* Map Grid */}
       {currentAction !== 'side_pick' && (
@@ -436,7 +449,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   }}
                 >
                   <Typography variant="body2">
-                    <strong>Step {action.step}:</strong> {action.team === 'team1' ? team1Name : team2Name}{' '}
+                    <strong>Step {action.step}:</strong>{' '}
+                    {action.team === 'team1' ? team1Name : team2Name}{' '}
                     <Chip
                       label={action.action.toUpperCase()}
                       size="small"
@@ -461,4 +475,3 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     </Box>
   );
 };
-

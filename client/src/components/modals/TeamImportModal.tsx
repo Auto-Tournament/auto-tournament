@@ -56,7 +56,10 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
     onClose();
   };
 
-  const validateTeam = (team: any, index: number): string | null => {
+  const validateTeam = (
+    team: { name?: string; players?: Array<{ name?: string; steamId?: string }> },
+    index: number
+  ): string | null => {
     if (!team.name || typeof team.name !== 'string') {
       return `Team ${index + 1}: Missing or invalid team name`;
     }

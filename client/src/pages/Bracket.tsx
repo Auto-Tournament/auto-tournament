@@ -51,8 +51,13 @@ export default function Bracket() {
 
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
+
+  // Derive the current match from matches array (automatically updates when matches change)
+  const selectedMatch = selectedMatchId
+    ? matches.find((m) => m.id === selectedMatchId) || null
+    : null;
 
   // Calculate global match number
   const getGlobalMatchNumber = (match: Match): number => {
@@ -309,19 +314,19 @@ export default function Bracket() {
             <RoundRobinView
               matches={matches}
               teams={tournament.teams || []}
-              onMatchClick={(match) => setSelectedMatch(match)}
+              onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
           ) : tournament.type === 'swiss' ? (
             <SwissView
               matches={matches}
               teams={tournament.teams || []}
               totalRounds={totalRounds}
-              onMatchClick={(match) => setSelectedMatch(match)}
+              onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
           ) : tournament.type === 'double_elimination' ? (
             <DoubleEliminationView
               matches={matches}
-              onMatchClick={(match) => setSelectedMatch(match)}
+              onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
           ) : (
             <BracketVisualization
@@ -329,7 +334,7 @@ export default function Bracket() {
               totalRounds={totalRounds}
               tournamentType={tournament.type}
               isFullscreen={isFullscreen}
-              onMatchClick={(match) => setSelectedMatch(match)}
+              onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
           )}
         </Box>
@@ -354,7 +359,7 @@ export default function Bracket() {
                     match={match}
                     matchNumber={getGlobalMatchNumber(match)}
                     roundLabel={getRoundLabel(round, totalRounds)}
-                    onClick={() => setSelectedMatch(match)}
+                    onClick={() => setSelectedMatchId(match.id)}
                   />
                 ))}
               </Stack>
@@ -369,7 +374,7 @@ export default function Bracket() {
           match={selectedMatch}
           matchNumber={getGlobalMatchNumber(selectedMatch)}
           roundLabel={getRoundLabel(selectedMatch.round, totalRounds)}
-          onClose={() => setSelectedMatch(null)}
+          onClose={() => setSelectedMatchId(null)}
         />
       )}
     </Box>

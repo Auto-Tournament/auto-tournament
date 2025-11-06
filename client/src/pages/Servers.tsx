@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Button,
@@ -41,7 +41,7 @@ export default function Servers() {
     }
   };
 
-  const loadServers = async () => {
+  const loadServers = useCallback(async () => {
     setRefreshing(true);
     try {
       const response = await api.get<ServersResponse>('/api/servers');
@@ -80,12 +80,11 @@ export default function Servers() {
     } finally {
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadServers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [loadServers]);
 
   const handleOpenModal = (server?: Server) => {
     setEditingServer(server || null);

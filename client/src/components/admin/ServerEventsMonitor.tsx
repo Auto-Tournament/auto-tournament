@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -113,7 +113,7 @@ export const ServerEventsMonitor: React.FC = () => {
     }
   };
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     if (!selectedServerId) return;
 
     setLoading(true);
@@ -132,7 +132,7 @@ export const ServerEventsMonitor: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedServerId]);
 
   const handleServerChange = (serverId: string) => {
     setSelectedServerId(serverId);
@@ -151,7 +151,7 @@ export const ServerEventsMonitor: React.FC = () => {
     if (selectedServerId) {
       loadEvents();
     }
-  }, [selectedServerId]);
+  }, [selectedServerId, loadEvents]);
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {

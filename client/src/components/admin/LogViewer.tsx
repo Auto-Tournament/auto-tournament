@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   Card,
@@ -22,7 +22,7 @@ export const LogViewer: React.FC = () => {
   const [levelFilter, setLevelFilter] = useState<string>('');
   const [autoRefresh, setAutoRefresh] = useState(false);
 
-  const loadLogs = async () => {
+  const loadLogs = useCallback(async () => {
     try {
       setError('');
       const params = new URLSearchParams();
@@ -41,11 +41,11 @@ export const LogViewer: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [levelFilter]);
 
   useEffect(() => {
     loadLogs();
-  }, [levelFilter]);
+  }, [loadLogs]);
 
   useEffect(() => {
     if (!autoRefresh) return;
@@ -55,7 +55,7 @@ export const LogViewer: React.FC = () => {
     }, 2000); // Refresh every 2 seconds
 
     return () => clearInterval(interval);
-  }, [autoRefresh, levelFilter]);
+  }, [autoRefresh, loadLogs]);
 
   const getLevelColor = (level: string) => {
     switch (level) {
@@ -156,7 +156,16 @@ export const LogViewer: React.FC = () => {
                     <Chip
                       label={log.level.toUpperCase()}
                       size="small"
-                      color={getLevelColor(log.level) as any}
+                      color={
+                        getLevelColor(log.level) as
+                          | 'default'
+                          | 'error'
+                          | 'warning'
+                          | 'info'
+                          | 'primary'
+                          | 'secondary'
+                          | 'success'
+                      }
                       sx={{ minWidth: '70px', fontWeight: 'bold', fontSize: '11px' }}
                     />
                     <Typography component="span" sx={{ wordBreak: 'break-word' }}>

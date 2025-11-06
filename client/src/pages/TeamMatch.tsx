@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -20,7 +20,6 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  LinearProgress,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
@@ -72,7 +71,7 @@ export default function TeamMatch() {
   );
   const [showSettings, setShowSettings] = useState(false);
   const [vetoCompleted, setVetoCompleted] = useState(false);
-  const [matchFormat, setMatchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
+  const [matchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
 
   const previousMatchStatus = useRef<string | null>(null);
@@ -80,7 +79,7 @@ export default function TeamMatch() {
   const previousServerAssigned = useRef<boolean>(false);
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
 
-  const loadTeamMatch = async () => {
+  const loadTeamMatch = useCallback(async () => {
     if (!teamId) return;
 
     setLoading(true);
@@ -140,9 +139,9 @@ export default function TeamMatch() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [teamId]);
 
-  const loadMatchHistory = async () => {
+  const loadMatchHistory = useCallback(async () => {
     if (!teamId) return;
 
     try {
@@ -155,9 +154,9 @@ export default function TeamMatch() {
     } catch (err) {
       console.error('Failed to load match history:', err);
     }
-  };
+  }, [teamId]);
 
-  const loadTeamStats = async () => {
+  const loadTeamStats = useCallback(async () => {
     if (!teamId) return;
 
     try {
@@ -171,7 +170,7 @@ export default function TeamMatch() {
     } catch (err) {
       console.error('Failed to load team stats:', err);
     }
-  };
+  }, [teamId]);
 
   useEffect(() => {
     loadTeamMatch();
@@ -214,7 +213,7 @@ export default function TeamMatch() {
     return () => {
       socket.close();
     };
-  }, [teamId]);
+  }, [teamId, loadTeamMatch, loadMatchHistory, loadTeamStats]);
 
   // Sound notification when match becomes ready or veto starts
   useEffect(() => {
@@ -244,7 +243,7 @@ export default function TeamMatch() {
     previousMatchStatus.current = match.status;
     previousVetoAvailable.current = isVetoAvailable;
     previousServerAssigned.current = hasServerAssigned;
-  }, [match?.status, match?.server, tournamentStatus, vetoCompleted, matchFormat]);
+  }, [match, tournamentStatus, vetoCompleted, matchFormat]);
 
   const toggleMute = () => {
     const newMutedState = soundNotification.toggleMute();

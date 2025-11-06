@@ -3,7 +3,7 @@ import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
-import { emitTournamentUpdate, emitBracketUpdate } from './socketService';
+import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
 import {
   getMatchZyWebhookCommands,
@@ -128,6 +128,19 @@ export class MatchAllocationService {
         // Update match with server_id
         db.update('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
 
+        // Emit websocket event for server assignment
+        const matchWithServer = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+          match.slug,
+        ]);
+        if (matchWithServer) {
+          emitMatchUpdate(matchWithServer as unknown as Record<string, unknown>);
+          emitBracketUpdate({
+            action: 'server_assigned',
+            matchSlug: match.slug,
+            serverId: server.id,
+          });
+        }
+
         // Load match on server
         const loadResult = await this.loadMatchOnServer(match.slug, server.id, baseUrl);
 
@@ -207,6 +220,15 @@ export class MatchAllocationService {
 
       // Update match with server_id
       db.update('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
+
+      // Emit websocket event for server assignment
+      const matchWithServer = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
+      if (matchWithServer) {
+        emitMatchUpdate(matchWithServer as unknown as Record<string, unknown>);
+        emitBracketUpdate({ action: 'server_assigned', matchSlug, serverId: server.id });
+      }
 
       // Load match on server
       const loadResult = await this.loadMatchOnServer(matchSlug, server.id, baseUrl);
@@ -300,9 +322,7 @@ export class MatchAllocationService {
         }
         log.info(`✓ Match config auth configured for ${serverId}`);
       } else {
-        log.warn(
-          `No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`
-        );
+        log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
       }
 
       // Load match on server
@@ -326,6 +346,16 @@ export class MatchAllocationService {
           [matchSlug]
         );
         log.matchLoaded(matchSlug, serverId, !!serverToken);
+
+        // Emit websocket events to notify clients
+        const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+          matchSlug,
+        ]);
+        if (updatedMatch) {
+          emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
+          emitBracketUpdate({ action: 'match_loaded', matchSlug });
+        }
+
         return { success: true };
       } else {
         // Set server status to error
@@ -382,7 +412,11 @@ export class MatchAllocationService {
         failed: 0,
         results: [],
       };
-    } else if (tournament.status !== 'setup' && tournament.status !== 'ready' && tournament.status !== 'in_progress') {
+    } else if (
+      tournament.status !== 'setup' &&
+      tournament.status !== 'ready' &&
+      tournament.status !== 'in_progress'
+    ) {
       log.warn(`Invalid tournament status: ${tournament.status}`);
       return {
         success: false,
@@ -397,7 +431,7 @@ export class MatchAllocationService {
     const matchCount = db.queryOne<{ count: number }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
     );
-    
+
     if (!matchCount || matchCount.count === 0) {
       log.warn('No matches found - regenerating bracket before starting');
       try {
@@ -407,7 +441,8 @@ export class MatchAllocationService {
         log.error('Failed to regenerate bracket', err);
         return {
           success: false,
-          message: 'No matches exist and bracket regeneration failed. Please regenerate bracket manually.',
+          message:
+            'No matches exist and bracket regeneration failed. Please regenerate bracket manually.',
           allocated: 0,
           failed: 0,
           results: [],
@@ -417,7 +452,8 @@ export class MatchAllocationService {
 
     // Determine if this tournament uses veto system
     const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
-    const isElimination = tournament.type === 'single_elimination' || tournament.type === 'double_elimination';
+    const isElimination =
+      tournament.type === 'single_elimination' || tournament.type === 'double_elimination';
 
     let results = [];
     let allocated = 0;
@@ -427,7 +463,7 @@ export class MatchAllocationService {
       // BO1/BO3/BO5 elimination: Just update status, don't load matches yet
       // Teams will complete veto first, then matches are loaded
       log.info('BO format detected - matches will load after teams complete map veto');
-      
+
       if (tournament.status === 'setup' || tournament.status === 'ready') {
         db.update(
           'tournament',
@@ -440,7 +476,7 @@ export class MatchAllocationService {
           [1]
         );
         log.success(`Tournament started! Teams can now begin map veto.`);
-        
+
         // Emit tournament update so teams know veto is available
         emitTournamentUpdate({ id: 1, status: 'in_progress' });
         emitBracketUpdate({ action: 'tournament_started' });
@@ -448,7 +484,8 @@ export class MatchAllocationService {
 
       return {
         success: true,
-        message: 'Tournament started! Teams can now complete map veto. Matches will load after veto completion.',
+        message:
+          'Tournament started! Teams can now complete map veto. Matches will load after veto completion.',
         allocated: 0,
         failed: 0,
         results: [],
@@ -456,7 +493,7 @@ export class MatchAllocationService {
     } else {
       // Round Robin/Swiss: Load matches immediately (no veto)
       log.info('Round Robin/Swiss format detected - loading matches immediately');
-      
+
       // Allocate servers to matches
       log.info('Allocating servers to matches...');
       results = await this.allocateServersToMatches(baseUrl);
@@ -573,7 +610,9 @@ export class MatchAllocationService {
           // Clear server status
           await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
         } else {
-          log.error(`Failed to end match on server ${serverId}`, undefined, { error: result.error });
+          log.error(`Failed to end match on server ${serverId}`, undefined, {
+            error: result.error,
+          });
           restartFailed++;
         }
       } catch (error) {
@@ -603,7 +642,9 @@ export class MatchAllocationService {
 
     return {
       success: startResult.success,
-      message: `Tournament restarted! ${restarted} match(es) ended. ${startResult.allocated} match(es) reallocated.${
+      message: `Tournament restarted! ${restarted} match(es) ended. ${
+        startResult.allocated
+      } match(es) reallocated.${
         restartFailed > 0 ? ` ${restartFailed} match(es) failed to end.` : ''
       }${startResult.failed > 0 ? ` ${startResult.failed} match(es) failed to reload.` : ''}`,
       allocated: startResult.allocated,
@@ -617,7 +658,10 @@ export class MatchAllocationService {
   /**
    * Restart a single match - end it and reload it on the same server
    */
-  async restartMatch(matchSlug: string, baseUrl: string): Promise<{
+  async restartMatch(
+    matchSlug: string,
+    baseUrl: string
+  ): Promise<{
     success: boolean;
     message: string;
     error?: string;
@@ -673,12 +717,7 @@ export class MatchAllocationService {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Step 3: Reset match status to 'ready'
-      db.update(
-        'matches',
-        { status: 'ready', loaded_at: null },
-        'slug = ?',
-        [matchSlug]
-      );
+      db.update('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [matchSlug]);
 
       // Clear server status
       await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);

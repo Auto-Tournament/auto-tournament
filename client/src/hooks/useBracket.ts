@@ -3,7 +3,6 @@ import { api } from '../utils/api';
 import { io, type Socket } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
 
-
 export const useBracket = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -92,11 +91,11 @@ export const useBracket = () => {
     const newSocket = io();
     setSocket(newSocket);
 
-    newSocket.on('match_update', () => {
+    newSocket.on('match:update', () => {
       loadBracket();
     });
 
-    newSocket.on('bracket_update', () => {
+    newSocket.on('bracket:update', () => {
       loadBracket();
     });
 

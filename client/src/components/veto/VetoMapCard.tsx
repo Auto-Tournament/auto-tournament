@@ -16,7 +16,7 @@ interface VetoMapCardProps {
 }
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
-  mapName,
+  _mapName,
   displayName,
   imageUrl,
   state,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Box,
   TextField,
@@ -11,7 +11,6 @@ import {
   Alert,
   CircularProgress,
   Typography,
-  Chip,
   Stack,
 } from '@mui/material';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
@@ -36,7 +35,6 @@ interface AddBackupPlayerProps {
 }
 
 export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
-  matchSlug,
   serverId,
   team1Name,
   team2Name,
@@ -51,11 +49,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [targetTeam, setTargetTeam] = useState<'team1' | 'team2'>('team1');
 
-  useEffect(() => {
-    loadAllPlayers();
-  }, []);
-
-  const loadAllPlayers = async () => {
+  const loadAllPlayers = useCallback(async () => {
     setLoading(true);
     try {
       // Get all teams in the tournament
@@ -94,7 +88,11 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
     } finally {
       setLoading(false);
     }
-  };
+  }, [existingTeam1Players, existingTeam2Players, onError]);
+
+  useEffect(() => {
+    loadAllPlayers();
+  }, [loadAllPlayers]);
 
   const handleAddPlayer = async () => {
     if (!selectedPlayer) return;
