@@ -146,6 +146,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
             }
           : undefined,
         status: row.status,
+        serverId: row.server_id,
         config,
         demoFilePath: row.demo_file_path,
         createdAt: row.created_at,
@@ -202,7 +203,9 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
     });
 
     // Get tournament status
-    const tournament = db.queryOne<{ status: string }>('SELECT status FROM tournament WHERE id = 1');
+    const tournament = db.queryOne<{ status: string }>(
+      'SELECT status FROM tournament WHERE id = 1'
+    );
 
     return res.json({
       success: true,
@@ -354,9 +357,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       }
       log.debug(`Match config auth configured for ${match.serverId}`);
     } else {
-      log.warn(
-        `No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`
-      );
+      log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
     }
 
     // Send RCON command to load match
@@ -412,14 +413,14 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
 
     if (result.success) {
       log.success(`Match ${slug} restarted successfully`);
-      
+
       // Emit match restart event
       const updatedMatch = matchService.getMatchBySlug(slug, baseUrl);
       if (updatedMatch) {
         emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
         emitBracketUpdate({ action: 'match_restarted', matchSlug: slug });
       }
-      
+
       return res.json({
         success: true,
         message: result.message,
