@@ -1,6 +1,7 @@
 import { db } from '../config/database';
 import type { DbTeamRow, DbMatchRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
+import { log } from '../utils/logger';
 
 export const generateMatchConfig = (
   tournament: TournamentResponse,
@@ -31,7 +32,7 @@ export const generateMatchConfig = (
 
   // Check if match has veto results
   let vetoMaps = tournament.maps;
-  let sideType = 'standard';
+  let mapSides = ['team1_ct', 'team2_ct', 'knife'];
   let skipVeto = false;
 
   if (slug) {
@@ -50,7 +51,7 @@ export const generateMatchConfig = (
             (p: { knifeRound: boolean }) => p.knifeRound
           );
           if (!hasKnifeMaps) {
-            sideType = 'never_knife'; // Disable knife for all maps if none require it
+            mapSides = ['team1_ct', 'team2_ct']; // Disable knife for all maps if none require it
           }
         }
       } catch (err) {
@@ -63,7 +64,7 @@ export const generateMatchConfig = (
   const config: Record<string, unknown> = {
     matchid: slug || 'tbd',
     match_title: `Map 1 of ${numMaps}`,
-    side_type: sideType,
+    map_sides: mapSides,
     veto_first: 'team1', // team1 or team2
     skip_veto: skipVeto,
     min_players_to_ready: 1, // Allow match to start with at least 1 player (flexible for small matches)
@@ -99,6 +100,8 @@ export const generateMatchConfig = (
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
   };
+
+  log.info('Match config:', config);
 
   return config;
 };

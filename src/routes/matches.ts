@@ -25,30 +25,30 @@ const router = Router();
 router.get('/:slug.json', (req: Request, res: Response) => {
   try {
     // Check for bearer token (uses same SERVER_TOKEN as webhook auth)
-    const authHeader = req.headers.authorization;
-    const expectedToken = process.env.SERVER_TOKEN;
+    // const authHeader = req.headers.authorization;
+    // const expectedToken = process.env.SERVER_TOKEN;
 
-    if (!expectedToken) {
-      return res.status(500).json({
-        success: false,
-        error: 'SERVER_TOKEN environment variable is not configured',
-      });
-    }
+    // if (!expectedToken) {
+    //   return res.status(500).json({
+    //     success: false,
+    //     error: 'SERVER_TOKEN environment variable is not configured',
+    //   });
+    // }
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-      return res.status(401).json({
-        success: false,
-        error: 'Missing or invalid authorization header. Expected: Bearer <token>',
-      });
-    }
+    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     error: 'Missing or invalid authorization header. Expected: Bearer <token>',
+    //   });
+    // }
 
-    const token = authHeader.substring(7); // Remove "Bearer " prefix
-    if (token !== expectedToken) {
-      return res.status(403).json({
-        success: false,
-        error: 'Invalid bearer token',
-      });
-    }
+    // const token = authHeader.substring(7); // Remove "Bearer " prefix
+    // if (token !== expectedToken) {
+    //   return res.status(403).json({
+    //     success: false,
+    //     error: 'Invalid bearer token',
+    //   });
+    // }
 
     // Token is valid, fetch config
     const { slug } = req.params;

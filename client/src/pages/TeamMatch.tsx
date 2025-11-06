@@ -795,6 +795,11 @@ export default function TeamMatch() {
                         {getRoundLabel(match.round)}
                       </Typography>
                     </Box>
+                    <Box>
+                      <Typography variant="body2" color="text.secondary">
+                        {match.config?.maplist}
+                      </Typography>
+                    </Box>
                     <Chip
                       label={getStatusLabel(match.status)}
                       color={getStatusColor(match.status)}
