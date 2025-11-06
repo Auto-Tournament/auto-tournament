@@ -77,16 +77,29 @@ PORT=3000                          # API port (default: 3000)
 
 ## CS2 Server Setup
 
-### Install MatchZy
+### Install MatchZy (Modified Version)
 
-1. Download from [MatchZy Releases](https://github.com/shobhit-pathak/MatchZy/releases)
-2. Extract to: `csgo/addons/counterstrikesharp/plugins/MatchZy/`
-3. Restart server
-4. Verify: `css_plugins list` shows MatchZy
+> ⚠️ **Note:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) to send additional granular match and player data to the API.
+
+Use the forked version instead of the standard release:
+
+```bash
+git clone https://github.com/sivert-io/matchzy.git
+cd matchzy
+dotnet build
+```
+
+Refer to the official [MatchZy Developer Documentation](https://shobhit-pathak.github.io/MatchZy/developers/) for detailed build and setup instructions.
+
+After building, copy the compiled plugin to your CS2 server:
+
+```
+csgo/addons/counterstrikesharp/plugins/MatchZy/
+```
+
+A pull request will be submitted upstream once this fork’s extended event system is finalized.
 
 ### Enable RCON
-
-Add to `server.cfg`:
 
 ```cfg
 rcon_password "your-secure-rcon-password"
