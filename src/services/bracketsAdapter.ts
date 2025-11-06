@@ -174,7 +174,8 @@ export class BracketsAdapter {
         status = 'completed';
       } else if (team1Id && team2Id) {
         // Both teams are set - check if match should be ready
-        // For BO formats (bo1, bo3, bo5), matches stay in 'pending' until veto is completed
+        // ALL BO formats (bo1, bo3, bo5) require veto, matches stay 'pending' until veto is completed
+        // This applies to ALL tournament types: single_elimination, double_elimination, round_robin, swiss
         const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
 
         if (roundNum === 1 && !requiresVeto) {
@@ -272,12 +273,17 @@ export class BracketsAdapter {
     // Store actual player counts for frontend display
     const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
 
+    // All tournaments use veto process (BO1/BO3/BO5 determines the veto flow)
+    // skip_veto is false by default - teams will do map veto before match starts
+    const skipVeto = false;
+    const sideType = 'standard'; // Standard allows knife rounds for maps that need it
+
     return {
       matchid: `${tournament.name}-${Date.now()}`,
       match_title: `Map 1 of ${numMaps}`,
-      side_type: 'standard',
+      side_type: sideType,
       veto_first: 'team1',
-      skip_veto: false,
+      skip_veto: skipVeto,
       min_players_to_ready: 1, // Allow match to start with at least 1 player (flexible for small matches)
       players_per_team: playersPerTeam,
       num_maps: numMaps,

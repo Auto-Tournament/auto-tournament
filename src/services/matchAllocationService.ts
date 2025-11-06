@@ -452,17 +452,15 @@ export class MatchAllocationService {
 
     // Determine if this tournament uses veto system
     const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
-    const isElimination =
-      tournament.type === 'single_elimination' || tournament.type === 'double_elimination';
 
     let results = [];
     let allocated = 0;
     let failed = 0;
 
-    if (requiresVeto && isElimination) {
-      // BO1/BO3/BO5 elimination: Just update status, don't load matches yet
-      // Teams will complete veto first, then matches are loaded
-      log.info('BO format detected - matches will load after teams complete map veto');
+    if (requiresVeto) {
+      // ALL BO formats (BO1/BO3/BO5) require veto - applies to all tournament types
+      // Update status first so teams can access veto interface
+      log.info('BO format detected - teams must complete map veto before matches load');
 
       if (tournament.status === 'setup' || tournament.status === 'ready') {
         db.update(
@@ -491,8 +489,8 @@ export class MatchAllocationService {
         results: [],
       };
     } else {
-      // Round Robin/Swiss: Load matches immediately (no veto)
-      log.info('Round Robin/Swiss format detected - loading matches immediately');
+      // Non-BO formats: Load matches immediately (no veto required)
+      log.info('Non-BO format detected - loading matches immediately');
 
       // Allocate servers to matches
       log.info('Allocating servers to matches...');
@@ -517,16 +515,36 @@ export class MatchAllocationService {
         log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
       }
 
+      // Check for pending matches waiting for veto
+      let message: string;
+      if (allocated > 0) {
+        message = `Tournament started! ${allocated} match(es) allocated to servers${
+          failed > 0 ? `, ${failed} failed` : ''
+        }`;
+      } else if (failed > 0) {
+        message = `Failed to allocate any matches. ${failed} match(es) could not be loaded.`;
+      } else {
+        // Check if there are pending matches waiting for veto
+        const pendingMatches = db.query<DbMatchRow>(
+          `SELECT * FROM matches 
+           WHERE tournament_id = 1 
+           AND status = 'pending'`
+        );
+
+        const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
+
+        if (pendingMatches.length > 0 && requiresVeto) {
+          message = `No matches ready for allocation. ${pendingMatches.length} match(es) are waiting for map veto to be completed by teams. Matches will auto-allocate after veto completion.`;
+        } else if (pendingMatches.length > 0) {
+          message = `No matches ready for allocation. ${pendingMatches.length} match(es) are pending.`;
+        } else {
+          message = 'No matches ready for allocation.';
+        }
+      }
+
       return {
         success: allocated > 0,
-        message:
-          allocated > 0
-            ? `Tournament started! ${allocated} match(es) allocated to servers${
-                failed > 0 ? `, ${failed} failed` : ''
-              }`
-            : failed > 0
-            ? `Failed to allocate any matches. ${failed} match(es) could not be loaded.`
-            : 'No matches ready for allocation',
+        message,
         allocated,
         failed,
         results,

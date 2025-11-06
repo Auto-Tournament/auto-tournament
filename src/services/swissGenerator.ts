@@ -51,7 +51,7 @@ export const generateSwissBracket = (
       const config = generateMatchConfig(tournament, team1Id, team2Id, slug);
 
       // Determine initial status
-      // For BO formats (bo1, bo3, bo5), matches stay in 'pending' until veto is completed
+      // ALL BO formats require veto before match can start
       const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
       let status = 'pending';
 

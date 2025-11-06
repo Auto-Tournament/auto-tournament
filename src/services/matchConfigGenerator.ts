@@ -22,10 +22,10 @@ export const generateMatchConfig = (
   const team2PlayerObj = team2 ? JSON.parse(team2.players) : {};
   const team1PlayerCount = Object.keys(team1PlayerObj).length;
   const team2PlayerCount = Object.keys(team2PlayerObj).length;
-  
+
   // MatchZy needs players_per_team to be the max of both teams
   const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
-  
+
   // Store actual player counts for frontend display
   const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
 
@@ -35,6 +35,7 @@ export const generateMatchConfig = (
   let skipVeto = false;
 
   if (slug) {
+    // Check if match has veto results
     const match = db.queryOne<DbMatchRow>('SELECT veto_state FROM matches WHERE slug = ?', [slug]);
     if (match?.veto_state) {
       try {
@@ -43,9 +44,11 @@ export const generateMatchConfig = (
           // Use veto results
           vetoMaps = vetoState.pickedMaps.map((p: { mapName: string }) => p.mapName);
           skipVeto = true; // Skip in-game veto since we did it in UI
-          
+
           // Check if any maps have knife rounds
-          const hasKnifeMaps = vetoState.pickedMaps.some((p: { knifeRound: boolean }) => p.knifeRound);
+          const hasKnifeMaps = vetoState.pickedMaps.some(
+            (p: { knifeRound: boolean }) => p.knifeRound
+          );
           if (!hasKnifeMaps) {
             sideType = 'never_knife'; // Disable knife for all maps if none require it
           }
