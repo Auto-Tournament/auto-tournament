@@ -645,7 +645,7 @@ function checkAndAdvanceRound(completedRound: number): void {
         );
 
         // Auto-allocate servers for the new round
-        const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+        const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3000';
         matchAllocationService.allocateServersToMatches(baseUrl).catch((err) => {
           log.error('Failed to auto-allocate servers for next round', err);
         });
@@ -933,7 +933,7 @@ function checkTournamentCompletion(): void {
 async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
   try {
     // Get base URL from environment or construct it
-    const baseUrl = process.env.BASE_URL || 'http://localhost:3000';
+    const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3000';
 
     // Allocate this specific match to first available server
     const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);

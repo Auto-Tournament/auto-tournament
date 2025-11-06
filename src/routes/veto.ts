@@ -370,7 +370,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       console.log('========================================\n');
 
       // Use API_URL from environment or construct from standard port
-      const baseUrl = process.env.API_URL || 'http://localhost:3001';
+      const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3001';
       console.log(`Base URL for webhook: ${baseUrl}`);
 
       // Allocate and load match (async, don't wait for response)
