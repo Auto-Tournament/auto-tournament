@@ -220,21 +220,21 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
               />
             </Box>
             <Typography variant="body2" color="text.secondary" mb={1}>
-              {['bo1', 'bo3', 'bo5'].includes(matchFormat)
+              {['bo1', 'bo3', 'bo5'].includes(format)
                 ? 'Select exactly 7 maps for veto system (BO1/BO3/BO5 requires all 7 competitive maps)'
                 : 'Maps for the tournament (used for rotation in Round Robin/Swiss)'}
             </Typography>
-            
+
             {/* Map Pool Validation for Veto Formats */}
-            {['bo1', 'bo3', 'bo5'].includes(matchFormat) && maps.length !== CS2_MAPS.length && (
+            {['bo1', 'bo3', 'bo5'].includes(format) && maps.length !== CS2_MAPS.length && (
               <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  <strong>Map veto requires exactly {CS2_MAPS.length} maps.</strong> You have selected {maps.length}.
-                  Click "Add All" to select all competitive maps.
+                  <strong>Map veto requires exactly {CS2_MAPS.length} maps.</strong> You have
+                  selected {maps.length}. Click "Add All" to select all competitive maps.
                 </Typography>
               </Alert>
             )}
-            
+
             <Box display="flex" gap={1} alignItems="flex-start">
               <Autocomplete
                 multiple
@@ -392,9 +392,9 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
                     variant="contained"
                     onClick={onSave}
                     disabled={
-                      saving || 
+                      saving ||
                       !hasChanges ||
-                      (['bo1', 'bo3', 'bo5'].includes(matchFormat) && maps.length !== CS2_MAPS.length)
+                      (['bo1', 'bo3', 'bo5'].includes(format) && maps.length !== CS2_MAPS.length)
                     }
                     size="large"
                     sx={{ flex: 1, minWidth: 200 }}

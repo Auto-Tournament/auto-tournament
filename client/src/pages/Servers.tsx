@@ -22,18 +22,7 @@ import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
 import { EmptyState } from '../components/shared/EmptyState';
-
-interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  password: string;
-  enabled: boolean;
-  createdAt: number;
-  updatedAt: number;
-  status?: 'online' | 'offline' | 'checking' | 'disabled';
-}
+import type { Server, ServersResponse, ServerStatusResponse } from '../types';
 
 export default function Servers() {
   const [servers, setServers] = useState<Server[]>([]);
@@ -45,10 +34,8 @@ export default function Servers() {
 
   const checkServerStatus = async (serverId: string): Promise<'online' | 'offline'> => {
     try {
-      const response: { status: 'online' | 'offline' } = await api.get(
-        `/api/servers/${serverId}/status`
-      );
-      return response.status;
+      const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);
+      return response.status === 'online' ? 'online' : 'offline';
     } catch {
       return 'offline';
     }
@@ -57,7 +44,7 @@ export default function Servers() {
   const loadServers = async () => {
     setRefreshing(true);
     try {
-      const response: { servers: Server[] } = await api.get('/api/servers');
+      const response = await api.get<ServersResponse>('/api/servers');
       const serverList = response.servers || [];
 
       // Set initial status - disabled servers get 'disabled', others get 'checking'
@@ -139,7 +126,11 @@ export default function Servers() {
             >
               {refreshing ? 'Checking...' : 'Refresh Status'}
             </Button>
-            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setBatchModalOpen(true)}>
+            <Button
+              variant="outlined"
+              startIcon={<AddIcon />}
+              onClick={() => setBatchModalOpen(true)}
+            >
               Batch Add
             </Button>
             <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>

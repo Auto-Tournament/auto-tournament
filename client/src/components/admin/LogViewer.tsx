@@ -13,13 +13,7 @@ import {
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import { api } from '../../utils/api';
-
-interface LogEntry {
-  timestamp: number;
-  level: string;
-  message: string;
-  meta?: Record<string, any>;
-}
+import type { LogEntry, LogsResponse } from '../../types';
 
 export const LogViewer: React.FC = () => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
@@ -37,7 +31,7 @@ export const LogViewer: React.FC = () => {
         params.append('level', levelFilter);
       }
 
-      const response: { success: boolean; logs: LogEntry[] } = await api.get(`/api/logs?${params.toString()}`);
+      const response = await api.get<LogsResponse>(`/api/logs?${params.toString()}`);
       if (response.success) {
         setLogs(response.logs);
       }

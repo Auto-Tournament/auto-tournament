@@ -1,26 +1,16 @@
 import { useState, useEffect } from 'react';
 import { api } from '../utils/api';
-import { Match, Team } from '../types';
+import type {
+  Match,
+  Team,
+  Tournament,
+  TeamsResponse,
+  TournamentResponse,
+  TournamentBracketResponse,
+} from '../types';
 
-interface TournamentDetailed {
-  id: number;
-  name: string;
-  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
-  format: 'bo1' | 'bo3' | 'bo5';
-  status: 'setup' | 'ready' | 'in_progress' | 'completed';
-  maps: string[];
-  teamIds: string[];
-  settings: {
-    matchFormat: string;
-    thirdPlaceMatch: boolean;
-    autoAdvance: boolean;
-    checkInRequired: boolean;
-    seedingMethod: 'seeded' | 'random';
-  };
-  created_at: number;
-  updated_at: number;
-  started_at: number | null;
-  completed_at: number | null;
+// Extended Tournament with teams array
+interface TournamentDetailed extends Tournament {
   teams: Array<{ id: string; name: string; tag?: string }>;
 }
 
@@ -36,13 +26,15 @@ export const useTournament = () => {
 
     try {
       // Load teams
-      const teamsResponse: { teams: Team[] } = await api.get('/api/teams');
+      const teamsResponse = await api.get<TeamsResponse>('/api/teams');
       const loadedTeams = teamsResponse.teams || [];
       setTeams(loadedTeams);
 
       // Try to load existing tournament
       try {
-        const tournamentResponse: { success: boolean; tournament: TournamentDetailed } = await api.get('/api/tournament');
+        const tournamentResponse = await api.get<
+          TournamentResponse & { tournament: TournamentDetailed }
+        >('/api/tournament');
         if (tournamentResponse.success) {
           const t = tournamentResponse.tournament;
           setTournament(t);
@@ -50,7 +42,9 @@ export const useTournament = () => {
           // Check if tournament is in broken state
           if (t.status === 'setup') {
             try {
-              const bracketResponse: { success: boolean; matches: Match[] } = await api.get('/api/tournament/bracket');
+              const bracketResponse = await api.get<
+                TournamentBracketResponse & { matches: Match[] }
+              >('/api/tournament/bracket');
               if (!bracketResponse.matches || bracketResponse.matches.length === 0) {
                 setError(
                   'Warning: Tournament exists but has no bracket. This may be from a failed bracket generation. ' +
@@ -86,9 +80,9 @@ export const useTournament = () => {
     teamIds: string[];
     settings: { seedingMethod: string };
   }) => {
-    const response: { success: boolean; tournament: TournamentDetailed } = tournament
-      ? await api.put('/api/tournament', payload)
-      : await api.post('/api/tournament', payload);
+    const response = await api[tournament ? 'put' : 'post']<
+      TournamentResponse & { tournament: TournamentDetailed }
+    >('/api/tournament', payload);
 
     setTournament(response.tournament);
     return response;
@@ -100,26 +94,41 @@ export const useTournament = () => {
   };
 
   const regenerateBracket = async (force = false) => {
-    const response: { success: boolean; tournament: TournamentDetailed } = await api.post('/api/tournament/bracket/regenerate', { force });
+    const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
+      '/api/tournament/bracket/regenerate',
+      { force }
+    );
     setTournament(response.tournament);
     return response;
   };
 
   const resetTournament = async () => {
-    const response: { success: boolean; tournament: TournamentDetailed } = await api.post('/api/tournament/reset');
+    const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
+      '/api/tournament/reset'
+    );
     setTournament(response.tournament);
     return response;
   };
 
   const startTournament = async (baseUrl: string) => {
-    const response: { success: boolean; tournament: TournamentDetailed } = await api.post('/api/tournament/start', { baseUrl });
+    const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
+      '/api/tournament/start',
+      { baseUrl }
+    );
     // Reload tournament data after starting
     await loadData();
     return response;
   };
 
   const restartTournament = async (baseUrl: string) => {
-    const response: { success: boolean; message: string; restarted: number; allocated: number; failed: number; restartFailed: number } = await api.post('/api/tournament/restart', { baseUrl });
+    const response = await api.post<{
+      success: boolean;
+      message: string;
+      restarted: number;
+      allocated: number;
+      failed: number;
+      restartFailed: number;
+    }>('/api/tournament/restart', { baseUrl });
     // Reload tournament data after restarting
     await loadData();
     return response;

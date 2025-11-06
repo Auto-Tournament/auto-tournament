@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io, Socket } from 'socket.io-client';
+import type { ApiResponse } from '../types';
 
 export interface ConnectedPlayer {
   steamId: string;
@@ -19,11 +20,20 @@ export interface ConnectionStatus {
   lastUpdated: number;
 }
 
+interface ConnectionStatusResponse extends ApiResponse {
+  matchSlug?: string;
+  connectedPlayers?: ConnectedPlayer[];
+  team1Connected?: number;
+  team2Connected?: number;
+  totalConnected?: number;
+  lastUpdated?: number;
+}
+
 export const usePlayerConnections = (matchSlug: string | null) => {
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     if (!matchSlug) {
       setStatus(null);
       return;
@@ -32,11 +42,13 @@ export const usePlayerConnections = (matchSlug: string | null) => {
     setLoading(true);
     try {
       console.log(`[usePlayerConnections] Loading status for match: ${matchSlug}`);
-      const response = await api.get(`/api/events/connections/${matchSlug}`);
+      const response = await api.get<ConnectionStatusResponse>(
+        `/api/events/connections/${matchSlug}`
+      );
       console.log(`[usePlayerConnections] Response:`, response);
-      
+
       if (response.success) {
-        const newStatus = {
+        const newStatus: ConnectionStatus = {
           matchSlug: response.matchSlug || matchSlug,
           connectedPlayers: response.connectedPlayers || [],
           team1Connected: response.team1Connected || 0,
@@ -61,7 +73,7 @@ export const usePlayerConnections = (matchSlug: string | null) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [matchSlug]);
 
   useEffect(() => {
     loadStatus();
@@ -82,8 +94,7 @@ export const usePlayerConnections = (matchSlug: string | null) => {
     return () => {
       socket.close();
     };
-  }, [matchSlug]);
+  }, [matchSlug, loadStatus]);
 
   return { status, loading, refresh: loadStatus };
 };
-

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { api } from '../utils/api';
 
 interface OnboardingStatus {
@@ -29,7 +29,7 @@ export const useOnboardingStatus = () => {
     loading: true,
   });
 
-  const loadStatus = async () => {
+  const loadStatus = useCallback(async () => {
     setStatus((prev) => ({ ...prev, loading: true }));
 
     try {
@@ -66,12 +66,12 @@ export const useOnboardingStatus = () => {
       console.error('Failed to load onboarding status:', error);
       setStatus((prev) => ({ ...prev, loading: false }));
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadStatus();
-  }, []);
+  }, [loadStatus]);
 
   return { ...status, refresh: loadStatus };
 };
-

@@ -21,32 +21,17 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
-
-interface Server {
-  id: string;
-  name: string;
-}
-
-interface ServerEvent {
-  timestamp: number;
-  serverId: string;
-  matchSlug: string;
-  event: {
-    event: string;
-    matchid: string;
-    [key: string]: unknown;
-  };
-}
+import type { ServerEvent, ServerEventsResponse, ServerListResponse } from '../../types';
 
 export const ServerEventsMonitor: React.FC = () => {
-  const [servers, setServers] = useState<Server[]>([]);
+  const [servers, setServers] = useState<Array<{ id: string; name: string; events?: number }>>([]);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [events, setEvents] = useState<ServerEvent[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  
+
   const socketRef = useRef<Socket | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +88,7 @@ export const ServerEventsMonitor: React.FC = () => {
 
     // Listen to all server events
     socket.on('server:event', handleServerEvent);
-    
+
     // Also listen to server-specific events if one is selected
     if (selectedServerId) {
       socket.on(`server:event:${selectedServerId}`, handleServerEvent);
@@ -119,7 +104,7 @@ export const ServerEventsMonitor: React.FC = () => {
 
   const loadServers = async () => {
     try {
-      const response = await api.get('/api/events/servers/list');
+      const response = await api.get<ServerListResponse>('/api/events/servers/list');
       if (response.success && response.servers) {
         setServers(response.servers);
       }
@@ -135,7 +120,9 @@ export const ServerEventsMonitor: React.FC = () => {
     setError('');
 
     try {
-      const response = await api.get(`/api/events/server/${selectedServerId}`);
+      const response = await api.get<ServerEventsResponse>(
+        `/api/events/server/${selectedServerId}`
+      );
       if (response.success) {
         setEvents(response.events || []);
       }
@@ -253,12 +240,7 @@ export const ServerEventsMonitor: React.FC = () => {
           </Select>
         </FormControl>
 
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={loadServers}
-          sx={{ mb: 2 }}
-        >
+        <Button variant="outlined" size="small" onClick={loadServers} sx={{ mb: 2 }}>
           Refresh Server List
         </Button>
 
@@ -385,4 +367,3 @@ const EventItem: React.FC<{
     </Box>
   );
 };
-

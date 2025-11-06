@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  LinearProgress,
-  Alert,
-  Stack,
-} from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, Alert, Stack } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
@@ -15,11 +8,9 @@ import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
-import {
-  formatDate,
-  getRoundLabel,
-} from '../utils/matchUtils';
-import type { Match, MatchEvent } from '../types';
+import { formatDate, getRoundLabel } from '../utils/matchUtils';
+import { api } from '../utils/api';
+import type { Match, MatchEvent, MatchesResponse } from '../types';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -139,41 +130,26 @@ export default function Matches() {
   // Fetch matches
   const fetchMatches = async () => {
     try {
-      const token = localStorage.getItem('api_token');
-      if (!token) {
-        setError('Authentication required - please log in again');
-        setLoading(false);
-        return;
-      }
+      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
 
-      const response = await fetch('/api/matches', {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      if (!response.ok) throw new Error('Failed to fetch matches');
-
-      const data = await response.json();
       if (data.success) {
         const matches = data.matches || [];
         setTournamentStatus(data.tournamentStatus || 'setup');
 
         // Upcoming matches: pending and ready (including veto phase)
         const upcoming = matches.filter(
-          (m: Match) => (m.status === 'pending' || m.status === 'ready') && m.team1 && m.team2
+          (m) => (m.status === 'pending' || m.status === 'ready') && m.team1 && m.team2
         );
 
         // Live matches: only show matches with both teams assigned (loaded = warmup, live = in progress)
         const live = matches.filter(
-          (m: Match) => (m.status === 'live' || m.status === 'loaded') && m.team1 && m.team2
+          (m) => (m.status === 'live' || m.status === 'loaded') && m.team1 && m.team2
         );
 
         // History: show all completed matches including walkovers
         const history = matches
-          .filter((m: Match) => m.status === 'completed')
-          .sort((a: Match, b: Match) => (b.completedAt || 0) - (a.completedAt || 0));
+          .filter((m) => m.status === 'completed')
+          .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 
         setUpcomingMatches(upcoming);
         setLiveMatches(live);
@@ -233,7 +209,8 @@ export default function Matches() {
     );
   }
 
-  const hasMatches = upcomingMatches.length > 0 || liveMatches.length > 0 || matchHistory.length > 0;
+  const hasMatches =
+    upcomingMatches.length > 0 || liveMatches.length > 0 || matchHistory.length > 0;
 
   return (
     <Box>

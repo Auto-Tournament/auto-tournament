@@ -1,18 +1,9 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Divider,
-  Grid,
-  Paper,
-} from '@mui/material';
+import { Box, Typography, Card, CardContent, Chip, Divider, Grid, Paper } from '@mui/material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-import type { Match } from '../../types';
+import type { Match, Team } from '../../types';
 
 interface DoubleEliminationViewProps {
   matches: Match[];
@@ -114,7 +105,9 @@ export default function DoubleEliminationView({
         onClick={() => onMatchClick?.(match)}
       >
         <CardContent sx={{ p: 2 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+          <Box
+            sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}
+          >
             <Typography variant="caption" color="text.secondary" fontWeight={600}>
               {bracketType === 'grand-finals' ? 'GRAND FINALS' : match.slug.toUpperCase()}
             </Typography>
@@ -162,12 +155,16 @@ export default function DoubleEliminationView({
               round === Math.max(...rounds)
                 ? 'Finals'
                 : round === Math.max(...rounds) - 1
-                  ? 'Semi-Finals'
-                  : `Round ${round}`;
+                ? 'Semi-Finals'
+                : `Round ${round}`;
 
             return (
               <Grid item xs={12} sm={6} md={4} lg={3} key={round}>
-                <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1.5, fontWeight: 600 }}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ mb: 1.5, fontWeight: 600 }}
+                >
                   {roundLabel}
                 </Typography>
                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
@@ -214,10 +211,12 @@ export default function DoubleEliminationView({
               Grand Finals
             </Typography>
           </Box>
-          <Box sx={{ maxWidth: 400, mx: 'auto' }}>
-            {renderMatch(grandFinals, 'grand-finals')}
-          </Box>
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 2, textAlign: 'center' }}>
+          <Box sx={{ maxWidth: 400, mx: 'auto' }}>{renderMatch(grandFinals, 'grand-finals')}</Box>
+          <Typography
+            variant="caption"
+            color="text.secondary"
+            sx={{ display: 'block', mt: 2, textAlign: 'center' }}
+          >
             Winners bracket champion vs. Losers bracket champion
           </Typography>
         </Paper>
@@ -234,4 +233,3 @@ export default function DoubleEliminationView({
     </Box>
   );
 }
-

@@ -34,7 +34,8 @@ export default function Teams() {
     try {
       setLoading(true);
       const response = await api.get('/api/teams');
-      setTeams(response.teams || []);
+      const data = response as { success: boolean; teams: Team[] };
+      setTeams(data.teams || []);
       setError('');
     } catch (err) {
       setError('Failed to load teams');
@@ -178,7 +179,7 @@ export default function Teams() {
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
                       <GroupsIcon fontSize="small" color="action" />
                       <Typography variant="body2" color="text.secondary">
-                        {team.players.length} {team.players.length === 1 ? 'player' : 'players'}
+                        {team.players?.length} {team.players?.length === 1 ? 'player' : 'players'}
                       </Typography>
                     </Box>
 
