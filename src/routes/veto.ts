@@ -3,7 +3,8 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitVetoUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import type { DbMatchRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import { generateMatchConfig } from '../services/matchConfigGenerator';
 
 const router = Router();
 
@@ -359,7 +360,34 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       db.update('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
       log.info(`Match ${matchSlug} status updated to 'ready' after veto completion`);
 
-      // Automatically allocate server and load match after veto completion
+      // NEW: Recompute and persist the fresh config snapshot so /api/matches and any readers of matches.config are in sync
+      const t = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+        match.tournament_id,
+      ]);
+      if (t) {
+        const tournament = {
+          name: t.name,
+          type: t.type,
+          format: t.format,
+          maps: JSON.parse(t.maps),
+          teamIds: JSON.parse(t.team_ids),
+          settings: t.settings ? JSON.parse(t.settings) : {},
+        };
+        try {
+          const cfg = await generateMatchConfig(
+            tournament as any,
+            match.team1_id ?? undefined,
+            match.team2_id ?? undefined,
+            matchSlug
+          );
+          db.update('matches', { config: JSON.stringify(cfg) }, 'slug = ?', [matchSlug]);
+          log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
+        } catch (e) {
+          log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
+        }
+      }
+
+      // Automatically allocate server and load match after veto completion (async)
       console.log('\n========================================');
       console.log(`🚀 AUTO-LOADING MATCH AFTER VETO`);
       console.log(`Match: ${matchSlug}`);
@@ -373,7 +401,6 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3001';
       console.log(`Base URL for webhook: ${baseUrl}`);
 
-      // Allocate and load match (async, don't wait for response)
       setImmediate(async () => {
         try {
           console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
@@ -387,7 +414,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             console.error('Allocation error:', result.error);
           }
         } catch (err) {
-          log.error(`❌ Error loading match after veto`, err);
+          log.error(`❌ Error loading match after veto`, err as Error);
           console.error('Exception during allocation:', err);
         }
       });
@@ -416,7 +443,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       veto: vetoState,
     });
   } catch (error) {
-    log.error('Error processing veto action', error);
+    log.error('Error processing veto action', error as Error);
     return res.status(500).json({
       success: false,
       error: 'Failed to process veto action',
@@ -443,7 +470,7 @@ router.post('/:matchSlug/reset', async (req: Request, res: Response) => {
       message: 'Veto reset successfully',
     });
   } catch (error) {
-    log.error('Error resetting veto', error);
+    log.error('Error resetting veto', error as Error);
     return res.status(500).json({
       success: false,
       error: 'Failed to reset veto',

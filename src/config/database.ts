@@ -13,6 +13,31 @@ const DB_PATH = path.join(DB_DIR, 'tournament.db');
 class DatabaseManager {
   private db: BetterSqlite3.Database;
 
+  // Add near the top of the class (private helpers)
+  private safeJson(value: unknown): string {
+    try {
+      // Avoid logging huge blobs and secrets-looking keys
+      return JSON.stringify(value, (k, v) => {
+        const key = k.toLowerCase?.() ?? '';
+        if (/(password|secret|token|key)/.test(key)) return '***';
+        if (typeof v === 'string' && v.length > 500) return v.slice(0, 500) + '…';
+        return v;
+      });
+    } catch {
+      return String(value);
+    }
+  }
+
+  private logRunResult(op: string, table: string, res: BetterSqlite3.RunResult) {
+    const meta = `changes=${res.changes} lastInsertRowid=${String(res.lastInsertRowid)}`;
+    if (res.changes > 0) {
+      log.success(`[DB] ${op} ${table} OK (${meta})`);
+    } else {
+      // 0 changes can be perfectly fine (e.g., idempotent updates), but we surface it distinctly
+      log.database(`[DB] ${op} ${table}: no rows changed (${meta})`);
+    }
+  }
+
   constructor() {
     // Ensure data directory exists
     if (!fs.existsSync(DB_DIR)) {
@@ -195,10 +220,19 @@ class DatabaseManager {
       .map(() => '?')
       .join(', ');
     const values = Object.values(data);
-
     const query = `INSERT INTO ${table} (${columns}) VALUES (${placeholders})`;
-    const stmt = this.db.prepare(query);
-    return stmt.run(...values);
+
+    try {
+      log.database(`[DB] INSERT ${table} columns=[${columns}] values=${this.safeJson(values)}`);
+      const stmt = this.db.prepare(query);
+      const res = stmt.run(...values);
+      this.logRunResult('INSERT', table, res);
+      return res;
+    } catch (err) {
+      log.error(`[DB] INSERT ${table} failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${query} params=${this.safeJson(values)}`);
+      throw err;
+    }
   }
 
   /**
@@ -209,47 +243,95 @@ class DatabaseManager {
     data: Record<string, unknown>,
     where: string,
     whereParams: unknown[]
-  ): void {
+  ): BetterSqlite3.RunResult {
     const setClauses = Object.keys(data)
       .map((key) => `${key} = ?`)
       .join(', ');
     const values = [...Object.values(data), ...whereParams];
-
     const query = `UPDATE ${table} SET ${setClauses} WHERE ${where}`;
-    const stmt = this.db.prepare(query);
-    stmt.run(...values);
+
+    try {
+      log.database(
+        `[DB] UPDATE ${table} set=${this.safeJson(data)} where="${where}" params=${this.safeJson(
+          whereParams
+        )}`
+      );
+      const stmt = this.db.prepare(query);
+      const res = stmt.run(...values);
+      this.logRunResult('UPDATE', table, res);
+      return res;
+    } catch (err) {
+      log.error(`[DB] UPDATE ${table} failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${query} params=${this.safeJson(values)}`);
+      throw err;
+    }
   }
 
   /**
    * Delete a record
    */
-  delete(table: string, where: string, params: unknown[]): void {
+  delete(table: string, where: string, params: unknown[]): BetterSqlite3.RunResult {
     const query = `DELETE FROM ${table} WHERE ${where}`;
-    const stmt = this.db.prepare(query);
-    stmt.run(...params);
-  }
-
-  /**
-   * Execute custom query
-   */
-  query<T>(sql: string, params?: unknown[]): T[] {
-    const stmt = this.db.prepare(sql);
-    return (params ? stmt.all(...params) : stmt.all()) as T[];
-  }
-
-  /**
-   * Execute custom query (single result)
-   */
-  queryOne<T>(sql: string, params?: unknown[]): T | undefined {
-    const stmt = this.db.prepare(sql);
-    return (params ? stmt.get(...params) : stmt.get()) as T | undefined;
+    try {
+      log.database(`[DB] DELETE ${table} where="${where}" params=${this.safeJson(params)}`);
+      const stmt = this.db.prepare(query);
+      const res = stmt.run(...params);
+      this.logRunResult('DELETE', table, res);
+      return res;
+    } catch (err) {
+      log.error(`[DB] DELETE ${table} failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${query} params=${this.safeJson(params)}`);
+      throw err;
+    }
   }
 
   /**
    * Execute raw SQL
    */
   exec(sql: string): void {
-    this.db.exec(sql);
+    try {
+      log.database(`[DB] EXEC sql=${JSON.stringify(sql)}`);
+      this.db.exec(sql);
+      log.success('[DB] EXEC OK');
+    } catch (err) {
+      log.error(`[DB] EXEC failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${JSON.stringify(sql)}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Execute custom query
+   */
+  query<T>(sql: string, params?: unknown[]): T[] {
+    try {
+      log.database(`[DB] QUERY sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      const stmt = this.db.prepare(sql);
+      const res = (params ? stmt.all(...params) : stmt.all()) as T[];
+      log.database(`[DB] QUERY OK rows=${res.length}`);
+      return res;
+    } catch (err) {
+      log.error(`[DB] QUERY failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Execute custom query (single result)
+   */
+  queryOne<T>(sql: string, params?: unknown[]): T | undefined {
+    try {
+      log.database(`[DB] QUERY ONE sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      const stmt = this.db.prepare(sql);
+      const row = (params ? stmt.get(...params) : stmt.get()) as T | undefined;
+      log.database(`[DB] QUERY ONE OK ${row ? 'found' : 'not found'}`);
+      return row;
+    } catch (err) {
+      log.error(`[DB] QUERY ONE failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      throw err;
+    }
   }
 
   /**

@@ -16,10 +16,7 @@ export interface MatchTeam {
 
 export interface MatchConfig {
   matchid: number | string;
-  match_title?: string;
-  side_type?: string; // "standard", "always_knife", etc.
-  veto_first?: string; // "team1" or "team2"
-  skip_veto?: boolean;
+  skip_veto: true;
   min_players_to_ready?: number;
   players_per_team: number;
   team1: MatchTeam;
@@ -31,8 +28,10 @@ export interface MatchConfig {
     players?: MatchPlayer;
   };
   min_spectators_to_ready?: number;
+  expected_players_total?: number;
+  expected_players_team1?: number;
+  expected_players_team2?: number;
   wingman?: boolean;
-  clinch_series?: boolean;
   cvars?: {
     [key: string]: string | number;
   };

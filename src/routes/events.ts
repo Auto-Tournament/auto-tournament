@@ -11,6 +11,7 @@ import { eventBufferService } from '../services/eventBufferService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { serverStatusService } from '../services/serverStatusService';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow, DbEventRow } from '../types/database.types';
+import { MatchConfig } from '../types/match.types';
 
 const router = Router();
 
@@ -44,7 +45,11 @@ router.post('/:matchSlugOrServerId', (req: Request, res: Response) => {
 /**
  * Handle incoming event request
  */
-function handleEventRequest(req: Request, res: Response, matchSlugOrServerIdFromUrl?: string): Response {
+function handleEventRequest(
+  req: Request,
+  res: Response,
+  matchSlugOrServerIdFromUrl?: string
+): Response {
   // Log raw request for debugging
   console.log('\n🔍 RAW REQUEST RECEIVED:');
   console.log('Headers:', JSON.stringify(req.headers, null, 2));
@@ -66,43 +71,57 @@ function handleEventRequest(req: Request, res: Response, matchSlugOrServerIdFrom
     // USE MATCH SLUG FROM URL INSTEAD OF PAYLOAD!
     // If we have a match slug in the URL, use it (overrides payload matchid)
     const matchSlugFromUrl = matchSlugOrServerIdFromUrl;
-    
+
     // Check if URL param is a match slug
-    const matchFromUrl = matchSlugFromUrl ? db.queryOne<DbMatchRow>(
-      'SELECT server_id, slug FROM matches WHERE slug = ?',
-      [matchSlugFromUrl]
-    ) : null;
-    
+    const matchFromUrl = matchSlugFromUrl
+      ? db.queryOne<DbMatchRow>('SELECT server_id, slug FROM matches WHERE slug = ?', [
+          matchSlugFromUrl,
+        ])
+      : null;
+
     // Use match slug from URL if available, otherwise fall back to event.matchid
     const actualMatchSlug = matchFromUrl?.slug || String(event.matchid);
     const isNoMatch = actualMatchSlug === '-1';
-    
+
     console.log(`📍 Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
 
     log.webhookReceived(event.event, actualMatchSlug);
-    
+
     // Log full event payload to console
     console.log('\n📡 FULL EVENT RECEIVED:');
     console.log(JSON.stringify(event, null, 2));
     console.log('---\n');
 
     // Get server ID from match lookup
-    const match = !isNoMatch ? db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [
-      actualMatchSlug,
-    ]) : matchFromUrl;
-    
-    const serverId = matchFromUrl?.server_id || match?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
-    
-    console.log(`🖥️ Server ID: ${serverId} (from ${matchFromUrl ? 'URL match lookup' : match?.server_id ? 'matchid lookup' : matchSlugOrServerIdFromUrl ? 'URL fallback' : 'unknown'})`);
+    const match = !isNoMatch
+      ? db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [actualMatchSlug])
+      : matchFromUrl;
+
+    const serverId =
+      matchFromUrl?.server_id || match?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
+
+    console.log(
+      `🖥️ Server ID: ${serverId} (from ${
+        matchFromUrl
+          ? 'URL match lookup'
+          : match?.server_id
+          ? 'matchid lookup'
+          : matchSlugOrServerIdFromUrl
+          ? 'URL fallback'
+          : 'unknown'
+      })`
+    );
 
     // Handle events with no match loaded
     if (isNoMatch) {
-      console.log(`ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`);
+      console.log(
+        `ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
+      );
       console.log('   This is normal during server startup or between matches.');
-      
+
       // Log to file but don't store in database
       logWebhookEvent(serverId, event);
-      
+
       return res.status(200).json({
         success: true,
         message: 'Event received (no active match)',
@@ -123,10 +142,15 @@ function handleEventRequest(req: Request, res: Response, matchSlugOrServerIdFrom
         });
       } catch (insertError) {
         // Log but don't fail - event is still logged to file and will be processed
-        log.error(`Failed to insert event to database (match: ${actualMatchSlug}, event: ${event.event})`, insertError);
+        log.error(
+          `Failed to insert event to database (match: ${actualMatchSlug}, event: ${event.event})`,
+          insertError
+        );
       }
     } else {
-      log.warn(`Event received for unknown match: ${actualMatchSlug}. Event will not be stored in database but will still be processed.`);
+      log.warn(
+        `Event received for unknown match: ${actualMatchSlug}. Event will not be stored in database but will still be processed.`
+      );
     }
 
     // Add to event buffer for debugging/monitoring
@@ -336,7 +360,12 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
       );
       // Update current map for multi-map series
       if (actualMatchSlug !== '-1' && event.map_name) {
-        db.update('matches', { current_map: event.map_name, map_number: event.map_number || 0 }, 'slug = ?', [actualMatchSlug]);
+        db.update(
+          'matches',
+          { current_map: event.map_name, map_number: event.map_number || 0 },
+          'slug = ?',
+          [actualMatchSlug]
+        );
       }
       break;
 
@@ -348,7 +377,10 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
       break;
 
     case 'player_connect':
-      log.debug(`Player connected: ${event.player.name}`, { steamId: event.player.steamid, matchSlug: actualMatchSlug });
+      log.debug(`Player connected: ${event.player.name}`, {
+        steamId: event.player.steamid,
+        matchSlug: actualMatchSlug,
+      });
       // Track connection using actual match slug from URL
       {
         const match = db.queryOne<DbMatchRow>('SELECT config FROM matches WHERE slug = ?', [
@@ -374,7 +406,10 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
       break;
 
     case 'player_disconnect':
-      log.debug(`Player disconnected: ${event.player.name}`, { steamId: event.player.steamid, matchSlug: actualMatchSlug });
+      log.debug(`Player disconnected: ${event.player.name}`, {
+        steamId: event.player.steamid,
+        matchSlug: actualMatchSlug,
+      });
       playerConnectionService.playerDisconnected(actualMatchSlug, event.player.steamid);
       break;
 
@@ -384,14 +419,20 @@ function handleEvent(event: MatchZyEvent, actualMatchSlug: string): void {
       playerConnectionService.markAllReady(actualMatchSlug);
       // Update current map from config if available
       if (actualMatchSlug !== '-1') {
-        const matchData = db.queryOne<DbMatchRow>('SELECT config, server_id FROM matches WHERE slug = ?', [
-          actualMatchSlug,
-        ]);
+        const matchData = db.queryOne<DbMatchRow>(
+          'SELECT config, server_id FROM matches WHERE slug = ?',
+          [actualMatchSlug]
+        );
         if (matchData) {
           const config = matchData.config ? JSON.parse(matchData.config) : null;
           const currentMap = config?.maplist?.[event.map_number || 0];
           if (currentMap) {
-            db.update('matches', { current_map: currentMap, map_number: event.map_number || 0 }, 'slug = ?', [actualMatchSlug]);
+            db.update(
+              'matches',
+              { current_map: currentMap, map_number: event.map_number || 0 },
+              'slug = ?',
+              [actualMatchSlug]
+            );
           }
           // Update server status if first map
           if (event.map_number === 1 && matchData.server_id) {
@@ -705,7 +746,7 @@ function advanceWinnerToNextMatch(currentMatch: DbMatchRow, winnerId: string): v
         const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
         if (tournament) {
           const maps = JSON.parse(tournament.maps);
-          
+
           // Calculate players based on actual team sizes
           const team1PlayerObj = JSON.parse(team1.players);
           const team2PlayerObj = JSON.parse(team2.players);
@@ -713,14 +754,15 @@ function advanceWinnerToNextMatch(currentMatch: DbMatchRow, winnerId: string): v
           const team2PlayerCount = Object.keys(team2PlayerObj).length;
           const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
           const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
-          
-          const config = {
+          const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
+
+          const config: MatchConfig = {
             matchid: updatedNextMatch.slug,
-            num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
-            maplist: maps,
+            skip_veto: true,
+            num_maps: numMaps,
+            maplist: maps.slice(0, numMaps),
             min_players_to_ready: 1,
             players_per_team: playersPerTeam,
-            clinch_series: true,
             expected_players_total: totalExpectedPlayers,
             expected_players_team1: team1PlayerCount,
             expected_players_team2: team2PlayerCount,
@@ -842,7 +884,7 @@ function advanceLoserToLosersBracket(currentMatch: DbMatchRow, winnerId: string)
 
       if (team1 && team2 && tournament) {
         const maps = JSON.parse(tournament.maps);
-        
+
         // Calculate players based on actual team sizes
         const team1PlayerObj = JSON.parse(team1.players);
         const team2PlayerObj = JSON.parse(team2.players);
@@ -850,14 +892,15 @@ function advanceLoserToLosersBracket(currentMatch: DbMatchRow, winnerId: string)
         const team2PlayerCount = Object.keys(team2PlayerObj).length;
         const playersPerTeam = Math.max(team1PlayerCount, team2PlayerCount, 1);
         const totalExpectedPlayers = team1PlayerCount + team2PlayerCount;
-        
-        const config = {
+
+        const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
+        const config: MatchConfig = {
           matchid: updatedLbMatch.slug,
-          num_maps: tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5,
-          maplist: maps,
+          skip_veto: true,
+          num_maps: numMaps,
+          maplist: maps.slice(0, numMaps),
           min_players_to_ready: 1,
           players_per_team: playersPerTeam,
-          clinch_series: true,
           expected_players_total: totalExpectedPlayers,
           expected_players_team1: team1PlayerCount,
           expected_players_team2: team2PlayerCount,

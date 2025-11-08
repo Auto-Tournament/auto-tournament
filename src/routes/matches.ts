@@ -11,58 +11,83 @@ import {
 } from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
-import type { DbMatchRow, DbEventRow } from '../types/database.types';
+import type { DbMatchRow, DbEventRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
+import { generateMatchConfig } from '../services/matchConfigGenerator';
 
 const router = Router();
 
 /**
  * GET /api/matches/:slug.json
  * Protected endpoint for MatchZy to fetch match configuration
- * Requires bearer token authentication from game server
+ * Returns a FRESH, on-demand config assembled from DB (reads veto_state)
+ * Requires bearer token authentication from game server (kept commented for local dev)
  */
-router.get('/:slug.json', (req: Request, res: Response) => {
+router.get('/:slug.json', async (req: Request, res: Response) => {
   try {
-    // Check for bearer token (uses same SERVER_TOKEN as webhook auth)
+    // // Optional bearer token auth — enable when you wire SERVER_TOKEN on the game server
     // const authHeader = req.headers.authorization;
     // const expectedToken = process.env.SERVER_TOKEN;
-
     // if (!expectedToken) {
     //   return res.status(500).json({
     //     success: false,
     //     error: 'SERVER_TOKEN environment variable is not configured',
     //   });
     // }
-
-    // if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    //   return res.status(401).json({
-    //     success: false,
-    //     error: 'Missing or invalid authorization header. Expected: Bearer <token>',
-    //   });
+    // if (!authHeader?.startsWith('Bearer ')) {
+    //     return res.status(401).json({
+    //       success: false,
+    //       error: 'Missing or invalid authorization header. Expected: Bearer <token>',
+    //     });
     // }
-
-    // const token = authHeader.substring(7); // Remove "Bearer " prefix
+    // const token = authHeader.substring(7);
     // if (token !== expectedToken) {
-    //   return res.status(403).json({
-    //     success: false,
-    //     error: 'Invalid bearer token',
-    //   });
+    //   return res.status(403).json({ success: false, error: 'Invalid bearer token' });
     // }
 
-    // Token is valid, fetch config
     const { slug } = req.params;
-    const config = matchService.getMatchConfig(slug);
 
-    if (!config) {
+    // 1) Load the match row
+    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    if (!match) {
       return res.status(404).json({
         success: false,
         error: `Match configuration '${slug}' not found`,
       });
     }
 
+    // 2) Load the tournament row
+    const t = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      match.tournament_id ?? 1,
+    ]);
+    if (!t) {
+      return res.status(500).json({
+        success: false,
+        error: 'Tournament not found',
+      });
+    }
+
+    // 3) Hydrate a Tournament-like object for config generation
+    const tournament = {
+      name: t.name,
+      type: t.type,
+      format: t.format,
+      maps: JSON.parse(t.maps),
+      teamIds: JSON.parse(t.team_ids),
+      settings: t.settings ? JSON.parse(t.settings) : {},
+    };
+
+    // 4) Generate a fresh config (reads veto_state internally)
+    const fresh = await generateMatchConfig(
+      tournament as any,
+      match.team1_id ?? undefined,
+      match.team2_id ?? undefined,
+      slug
+    );
+
     // Return raw MatchZy config
-    return res.json(config);
+    return res.json(fresh);
   } catch (error) {
     console.error('Error fetching match config:', error);
     return res.status(500).json({
@@ -167,10 +192,10 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         try {
           const eventData = JSON.parse(playerStatsEvent.event_data);
           if (eventData.team1_players) {
-            match.team1Players = eventData.team1_players;
+            (match as any).team1Players = eventData.team1_players;
           }
           if (eventData.team2_players) {
-            match.team2Players = eventData.team2_players;
+            (match as any).team2Players = eventData.team2_players;
           }
         } catch {
           // Ignore parse errors
@@ -189,10 +214,10 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         try {
           const eventData = JSON.parse(scoreEvent.event_data);
           if (eventData.team1_series_score !== undefined) {
-            match.team1Score = eventData.team1_series_score;
+            (match as any).team1Score = eventData.team1_series_score;
           }
           if (eventData.team2_series_score !== undefined) {
-            match.team2Score = eventData.team2_series_score;
+            (match as any).team2Score = eventData.team2_series_score;
           }
         } catch {
           // Ignore parse errors
