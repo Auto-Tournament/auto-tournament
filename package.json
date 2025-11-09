@@ -16,8 +16,8 @@
         "start": "node dist/index.js",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
-        "docs:serve": "mkdocs serve",
-        "docs:build": "mkdocs build"
+        "docs:serve": "mkdocs serve --config-file docs/mkdocs.yml",
+        "docs:build": "mkdocs build --config-file docs/mkdocs.yml"
     },
     "keywords": [
         "cs2",

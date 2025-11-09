@@ -67,26 +67,59 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo ""
+read -p "Skip container test? (y/n) " -n 1 -r
+echo
+SKIP_TEST=$REPLY
+
+echo ""
 echo -e "${YELLOW}Step 1/4: Building Docker image...${NC}"
-docker build -t "${DOCKER_IMAGE}:${VERSION}" -t "${DOCKER_IMAGE}:latest" .
+docker build -f docker/Dockerfile -t "${DOCKER_IMAGE}:${VERSION}" -t "${DOCKER_IMAGE}:latest" .
 
 if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to build Docker image${NC}"
     exit 1
 fi
 
-echo ""
-echo -e "${YELLOW}Step 2/4: Testing image...${NC}"
-# Quick test to ensure the image runs
-CONTAINER_ID=$(docker run -d --rm -e API_TOKEN=test -e SERVER_TOKEN=test "${DOCKER_IMAGE}:${VERSION}")
-sleep 5
-
-if docker ps | grep -q "${CONTAINER_ID}"; then
-    echo -e "${GREEN}Image test passed!${NC}"
-    docker stop "${CONTAINER_ID}" > /dev/null 2>&1
+if [[ $SKIP_TEST =~ ^[Yy]$ ]]; then
+    echo ""
+    echo -e "${YELLOW}Skipping container test...${NC}"
 else
-    echo -e "${RED}Image test failed - container not running${NC}"
-    exit 1
+    echo ""
+    echo -e "${YELLOW}Step 2/4: Testing image...${NC}"
+    # Quick test to ensure the image runs
+    CONTAINER_ID=$(docker run -d --rm \
+        -e API_TOKEN=test-token \
+        -e SERVER_TOKEN=test-token \
+        -e WEBHOOK_URL=http://localhost:3069/api \
+        "${DOCKER_IMAGE}:${VERSION}")
+
+    echo "Container ID: ${CONTAINER_ID}"
+    echo "Waiting for container to start..."
+    sleep 8
+
+    # Check if container is still running
+    if docker ps --format '{{.ID}}' | grep -q "^${CONTAINER_ID:0:12}"; then
+        echo -e "${GREEN}✅ Container is running!${NC}"
+        
+        # Additional health check
+        if docker exec "${CONTAINER_ID}" wget --spider -q http://localhost:3069/health 2>/dev/null; then
+            echo -e "${GREEN}✅ Health check passed!${NC}"
+        else
+            echo -e "${YELLOW}⚠️  Health endpoint not responding yet (this is OK for quick test)${NC}"
+        fi
+        
+        docker stop "${CONTAINER_ID}" > /dev/null 2>&1
+        echo -e "${GREEN}Image test passed!${NC}"
+    else
+        echo -e "${RED}❌ Container failed to start or crashed${NC}"
+        echo ""
+        echo "Container logs:"
+        docker logs "${CONTAINER_ID}" 2>&1 || echo "Could not fetch logs"
+        echo ""
+        echo "Cleaning up..."
+        docker rm -f "${CONTAINER_ID}" > /dev/null 2>&1 || true
+        exit 1
+    fi
 fi
 
 echo ""

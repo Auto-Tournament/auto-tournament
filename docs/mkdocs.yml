@@ -9,7 +9,6 @@ site_description: >-
 # Repository
 repo_name: sivert-io/matchzy-auto-tournament
 repo_url: https://github.com/sivert-io/matchzy-auto-tournament
-edit_uri: edit/main/docs/
 
 # Copyright
 copyright: Copyright &copy; 2025 Sivert Gullberg Hansen
@@ -51,17 +50,13 @@ theme:
         name: Switch to light mode
     - media: "(prefers-color-scheme: light)"
       scheme: default
-      primary: indigo
-      accent: indigo
       toggle:
         icon: material/toggle-switch
         name: Switch to dark mode
     - media: "(prefers-color-scheme: dark)"
       scheme: slate
-      primary: black
-      accent: indigo
       toggle:
-        icon: material/toggle-switch-off
+        icon: material/toggle-switch-off-outline
         name: Switch to system preference
   font:
     text: Roboto
@@ -78,6 +73,13 @@ plugins:
   # - git-revision-date-localized:
   #     enable_creation_date: true
   #     type: timeago
+
+# Customization
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/sivert-io/matchzy-auto-tournament
+  generator: false
 
 # Extensions
 markdown_extensions:
@@ -111,39 +113,12 @@ markdown_extensions:
       repo: matchzy-auto-tournament
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.superfences:
-      custom_fences:
-        - name: mermaid
-          class: mermaid
-          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.superfences
   - pymdownx.tabbed:
       alternate_style: true
-      combine_header_slug: true
-      slugify: !!python/object/apply:pymdownx.slugs.slugify
-        kwds:
-          case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
-
-extra_css:
-  - stylesheets/extra.css
-
-# Additional configuration
-extra:
-  analytics:
-    provider: google
-    property: G-RJYR9R229H
-  social:
-    - icon: fontawesome/brands/github
-      link: https://github.com/sivert-io/matchzy-auto-tournament
-      name: GitHub Repository
-    - icon: fontawesome/brands/linkedin
-      link: https://www.linkedin.com/in/sivertgullberghansen/
-      name: LinkedIn Profile
-  version:
-    provider: mike
-  generator: false
 
 # Page tree
 nav:
@@ -151,15 +126,19 @@ nav:
   - Getting Started:
       - Quick Start: getting-started/quick-start.md
       - First Tournament: getting-started/first-tournament.md
-  - Features: features/overview.md
+  - Features:
+      - Overview: features/overview.md
+      - Map Veto: features/map-veto.md
   - Admin Guide:
       - Managing Teams: guides/managing-teams.md
       - Running Matches: guides/running-matches.md
       - Troubleshooting: guides/troubleshooting.md
   - For Teams:
       - Team Pages: guides/team-pages.md
-      - Map Veto: features/map-veto.md
   - Development:
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
 
+# Additional CSS
+extra_css:
+  - stylesheets/extra.css

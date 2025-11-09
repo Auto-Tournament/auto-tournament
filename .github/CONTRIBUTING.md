@@ -1,123 +1,64 @@
 # Contributing to MatchZy Auto Tournament
 
-First off, thank you for considering contributing to MatchZy Auto Tournament! 🎉
+Thank you for your interest in contributing! 🎉
+
+## 📚 Full Documentation
+
+For detailed contribution guidelines, please see:
+
+**[Development → Contributing](https://mat.sivert.io/development/contributing/)**
 
 ## 🚀 Quick Start
 
-1. Fork the repository
-2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git`
-3. Create a new branch: `git checkout -b feature/your-feature-name`
-4. Make your changes
-5. Test your changes locally
-6. Commit your changes: `git commit -m "Add: your feature description"`
-7. Push to your fork: `git push origin feature/your-feature-name`
-8. Open a Pull Request
+1. **Fork & Clone**
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
+   cd matchzy-auto-tournament
+   ```
 
-## 💻 Development Setup
+2. **Install Dependencies**
+   ```bash
+   npm install
+   ```
 
-### Prerequisites
+3. **Setup Environment**
+   ```bash
+   cp .env.example .env
+   # Edit .env with your test tokens
+   ```
 
-- Bun 1.0+ or Node.js 18+
-- Docker (optional, for testing deployment)
+4. **Start Development**
+   ```bash
+   npm run dev
+   ```
 
-### Installation
+## 📝 Guidelines
 
-```bash
-# Install dependencies
-bun install
+- ✅ Write clear commit messages
+- ✅ Test your changes
+- ✅ Update documentation if needed
+- ✅ Follow existing code style
+- ✅ Keep PRs focused on one feature/fix
 
-# Copy environment file
-cp .env.example .env
+## 🐛 Reporting Issues
 
-# Start development server
-bun run dev
-```
+Found a bug? Please [open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new) with:
 
-## 📋 Development Guidelines
-
-### Code Style
-
-- Use TypeScript for all new code
-- Follow the existing code structure
-- Use meaningful variable and function names
-- Add comments for complex logic
-- Keep functions small and focused
-
-### Commit Messages
-
-Use clear and descriptive commit messages:
-
-- `Add: new feature description`
-- `Fix: bug description`
-- `Update: what was updated`
-- `Refactor: what was refactored`
-- `Docs: documentation changes`
-
-### Testing
-
-Before submitting a PR:
-
-1. Test your changes locally
-2. Ensure no linter errors: `bun run build`
-3. Test with Docker if deployment-related: `docker compose up --build`
-
-## 🐛 Reporting Bugs
-
-Use the [Bug Report template](.github/ISSUE_TEMPLATE/bug_report.md) and include:
-
-- Clear description of the bug
+- Clear description
 - Steps to reproduce
 - Expected vs actual behavior
-- Environment details (OS, runtime version, etc.)
-- Relevant logs or screenshots
+- Environment details (OS, Docker version, etc.)
 
-## 💡 Suggesting Features
+## 💬 Questions?
 
-Use the [Feature Request template](.github/ISSUE_TEMPLATE/feature_request.md) and include:
+- [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) - Ask questions
+- [Documentation](https://mat.sivert.io/) - Read the docs
+- [Discord](https://discord.gg/your-invite) - Join our community
 
-- Clear description of the feature
-- Why it's needed
-- How it should work
-- Use cases
+## 📖 Code of Conduct
 
-## 📝 Code of Conduct
+Be respectful and constructive. We're all here to build something awesome for the CS2 community! 🎮
 
-### Our Standards
+---
 
-- Be respectful and inclusive
-- Welcome newcomers
-- Focus on constructive criticism
-- Help others learn and grow
-
-### Unacceptable Behavior
-
-- Harassment or discrimination
-- Trolling or insulting comments
-- Personal or political attacks
-- Publishing others' private information
-
-## 🎯 Priority Areas
-
-We especially welcome contributions in these areas:
-
-- [ ] Tournament bracket generation
-- [ ] Match scheduling system
-- [ ] Map veto functionality
-- [ ] Web dashboard UI
-- [ ] Discord bot integration
-- [ ] Documentation improvements
-- [ ] Test coverage
-- [ ] Performance optimizations
-
-## 📚 Resources
-
-- [API Documentation](http://localhost:3000/api-docs) (when running locally)
-- [MatchZy Plugin Documentation](https://shobhit-pathak.github.io/MatchZy/)
-- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
-
-## ❓ Questions?
-
-- Open a [Question issue](.github/ISSUE_TEMPLATE/question.md)
-- Check existing issues for similar questions
-
-Thank you for contributing! 🙏
+**Full Contribution Guide:** https://mat.sivert.io/development/contributing/

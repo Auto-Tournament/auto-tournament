@@ -52,7 +52,7 @@ openssl rand -hex 32  # Copy for SERVER_TOKEN
 nano .env
 
 # 4. Start everything
-docker compose up -d --build
+docker compose -f docker/docker-compose.yml up -d
 ```
 
 **Access at:** `http://localhost:3069`
@@ -80,7 +80,9 @@ Requires [CounterStrikeSharp](https://docs.cssharp.dev/guides/getting-started/) 
 
 ## 🤝 Contributing
 
-Contributions are welcome! See **[Contributing Guide](.github/CONTRIBUTING.md)** • [Code of Conduct](.github/CODE_OF_CONDUCT.md)
+Contributions are welcome! Whether you're fixing bugs, adding features, improving docs, or sharing ideas.
+
+**👉 [Read the Contributing Guide](.github/CONTRIBUTING.md)**
 
 ---
 

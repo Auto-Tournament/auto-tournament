@@ -6,8 +6,8 @@ version: '3.8'
 services:
   matchzy-tournament:
     build:
-      context: .
-      dockerfile: Dockerfile
+      context: ..
+      dockerfile: docker/Dockerfile
     container_name: matchzy-tournament-api-dev
     restart: unless-stopped
     ports:

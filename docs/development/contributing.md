@@ -54,7 +54,17 @@ matchzy-auto-tournament/
 │       ├── pages/                # Page components
 │       ├── hooks/                # Custom React hooks
 │       └── types/                # TypeScript types
-└── docs/                         # Documentation (MkDocs)
+├── docs/                         # Documentation (MkDocs)
+│   ├── mkdocs.yml               # Docs configuration
+│   └── requirements.txt          # Python dependencies for docs
+├── docker/                       # Docker configuration
+│   ├── Dockerfile               # Multi-stage build
+│   ├── docker-compose.yml       # Production compose
+│   ├── docker-compose.dev.yml   # Development compose
+│   └── Caddyfile                # Reverse proxy config
+└── scripts/                      # Utility scripts
+    ├── release.sh               # Docker Hub release automation
+    └── test-docker.sh           # Local Docker testing
 ```
 
 ## Code Guidelines

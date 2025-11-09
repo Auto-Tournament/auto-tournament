@@ -8,8 +8,8 @@ services:
     # Option 2: Build locally (for development)
     # Comment out 'image' above and uncomment these:
     # build:
-    #   context: .
-    #   dockerfile: Dockerfile
+    #   context: ..
+    #   dockerfile: docker/Dockerfile
     
     container_name: matchzy-tournament-api
     restart: unless-stopped
