@@ -11,25 +11,13 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
+**📚 [Full Documentation](https://sivert-io.github.io/matchzy-auto-tournament/)** • [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) • [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/) • [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
+
 </div>
 
 ---
 
-## 📚 Documentation
-
-**👉 [Full Documentation](https://sivert-io.github.io/matchzy-auto-tournament/)**
-
-**Quick Links:**
-
-- 🚀 [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/)
-- ✨ [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/)
-- 🔧 [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
-- 👨‍💻 [Contributing](https://sivert-io.github.io/matchzy-auto-tournament/development/contributing/)
-- 🏗️ [Architecture](https://sivert-io.github.io/matchzy-auto-tournament/development/architecture/)
-
----
-
-## ✨ Key Features
+## ✨ Features
 
 🏆 **Tournament Brackets** — Single/Double Elimination, Round Robin, Swiss with auto-progression  
 🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5  
@@ -38,18 +26,11 @@
 👥 **Public Team Pages** — No-auth pages for teams to monitor matches and veto  
 🎛️ **Admin Match Controls** — Pause, restore, broadcast, add players via RCON  
 📊 **Player Tracking** — Live connection and ready status for all 10 players  
-🎬 **Demo Management** — Automatic upload and download with streaming  
-🔒 **Secure** — Token-based auth for admin and server communication
-
-**Tech Stack:** TypeScript • React • Material UI • Express • SQLite • Socket.IO • Docker
+🎬 **Demo Management** — Automatic upload and download with streaming
 
 ---
 
 ## 🚀 Quick Start
-
-**Prerequisites:** Node.js 18+ or Docker, CS2 server(s) with [MatchZy plugin](https://github.com/shobhit-pathak/MatchZy)
-
-### With Docker (Recommended)
 
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
@@ -59,119 +40,55 @@ cd matchzy-auto-tournament
 cp .env.example .env
 
 # 2. Generate secure tokens
-openssl rand -hex 32  # Copy this for API_TOKEN
-openssl rand -hex 32  # Copy this for SERVER_TOKEN
+openssl rand -hex 32  # Copy for API_TOKEN
+openssl rand -hex 32  # Copy for SERVER_TOKEN
 
-# 3. Edit .env with your tokens and server IP
-nano .env  # or use your preferred editor
-```
+# 3. Edit .env and add:
+#    - API_TOKEN (admin login)
+#    - SERVER_TOKEN (CS2 server auth)
+#    - WEBHOOK_URL (your server IP where CS2 sends events)
+nano .env
 
-**Required in `.env`:**
-
-```bash
-API_TOKEN=your-generated-token-here      # Admin dashboard login
-SERVER_TOKEN=your-generated-token-here   # MatchZy authentication
-WEBHOOK_URL=http://192.168.1.100:3000   # Your server IP (where CS2 sends events)
-```
-
-```bash
 # 4. Start everything
 docker-compose up -d --build
 ```
 
-**Access at:** `http://localhost:3069` (Web UI, API, and docs all on one port)
+**Access at:** `http://localhost:3069`
 
-### Local Development
+**Requirements:** Docker • CS2 server(s) with [modified MatchZy plugin](#️-matchzy-plugin-requirement)
 
-```bash
-npm install
-cp .env.example .env
-# Edit .env with tokens (same as above)
-npm run dev
-```
-
-Frontend: `http://localhost:5173` • API: `http://localhost:3000` • Docs: `http://localhost:3000/api-docs`
-
-**That's it!** The system auto-configures webhooks on your CS2 servers. See [full setup guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) for details.
+**👉 [Full setup guide with detailed configuration](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/)**
 
 ---
 
-## ⚙️ MatchZy Plugin Requirement
+## ⚙️ CS2 Server Plugin
 
 > [!CAUTION]
 > This project requires a **modified version of MatchZy** with enhanced event tracking.
 >
-> The official MatchZy release does not expose all the granular match and player events required for full automation. This system depends on a customized fork that extends MatchZy to send additional API payload data for real-time tracking.
+> The official MatchZy release does not expose all the granular match and player events required for full automation.
 
-### Installation
+**Download:** [sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
 
-**Download the latest release:**
+Extract to your CS2 server's `csgo/` directory and restart.
 
-👉 **[sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)**
+**👉 [Complete installation guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/#cs2-server-setup)**
 
-```bash
-# Extract to your CS2 server
-cd /path/to/cs2/game/csgo
-unzip MatchZy-*.zip
-
-# Restart server
-```
-
-See the [Quick Start Guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/#cs2-server-setup) for detailed CS2 server configuration.
-
----
-
-## 🎯 Roadmap
-
-### ✅ Core Features (Complete)
-
-- [x] Tournament brackets with 4 formats
-- [x] Map veto system (BO1/BO3/BO5)
-- [x] Real-time player tracking
-- [x] Admin match controls (15+ RCON commands)
-- [x] Demo file management
-- [x] Public team pages
-- [x] Match phase tracking
-- [x] Backup player system
-
-### 🚧 In Progress
-
-- [ ] Enhanced player stats (K/D, MVPs, utility damage)
-- [ ] Round-by-round breakdown visualization
-- [ ] Pause analytics
-
-### 🔮 Planned
-
-- [ ] Discord bot integration
-- [ ] Tournament leaderboards
-- [ ] Match timeline visualization
-- [ ] Live event feed with kill icons
-- [ ] Observer/streaming overlay
-- [ ] Player profiles & statistics
-- [ ] Multi-tournament support
+Requires [CounterStrikeSharp](https://docs.cssharp.dev/guides/getting-started/) to be installed first.
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Whether you're:
-
-- 🐛 Fixing bugs
-- ✨ Adding features
-- 📝 Improving docs
-- 💡 Sharing ideas
-
-**👉 [Read the Contributing Guide](.github/CONTRIBUTING.md)**
-
-📜 [Code of Conduct](.github/CODE_OF_CONDUCT.md) • 📄 [MIT License](LICENSE)
+Contributions are welcome! See **[Contributing Guide](.github/CONTRIBUTING.md)** • [Code of Conduct](.github/CODE_OF_CONDUCT.md)
 
 ---
 
-## 🎵 Credits
+## 📜 License
 
-- **Map Images**: [ghostcap-gaming/cs2-map-images](https://github.com/ghostcap-gaming/cs2-map-images)
-- **Notification Sound**: [DRAGON-STUDIO](https://pixabay.com/users/dragon-studio-38165424/) from [Pixabay](https://pixabay.com/sound-effects/)
-- **Bracket Engine**: [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
+MIT License - see [LICENSE](LICENSE) for details
+
+**Credits:** [ghostcap-gaming/cs2-map-images](https://github.com/ghostcap-gaming/cs2-map-images) • [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
 
 ---
 

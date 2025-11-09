@@ -77,31 +77,51 @@ PORT=3000                          # API port (default: 3000)
 
 ## CS2 Server Setup
 
+### Prerequisites
+
+**Install CounterStrikeSharp:**
+
+1. Download [CounterStrikeSharp with runtime](https://github.com/roflmuffin/CounterStrikeSharp/releases)
+2. Extract to your CS2 server's `csgo/` directory
+3. Verify by typing `meta list` in server console
+
+📖 [CounterStrikeSharp Installation Guide](https://docs.cssharp.dev/guides/getting-started/)
+
 ### Install MatchZy (Modified Version)
 
-> ⚠️ **Note:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) to send additional granular match and player data to the API.
+> ⚠️ **Important:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) with enhanced event tracking for tournament automation.
 
-**Download the latest release:**
+**Download:** [github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
 
-👉 **[github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)**
-
-**Installation Steps:**
-
-1. **Download** the latest `MatchZy-*.zip` from releases
-2. **Extract** to your CS2 server directory:
+**Installation:**
 
 ```bash
+# Navigate to your CS2 server directory
 cd /path/to/cs2/game/csgo
+
+# Extract the plugin (it includes the correct folder structure)
 unzip MatchZy-*.zip
+
+# Restart your CS2 server
 ```
 
-3. **Restart** your CS2 server
+**Verify installation:**
 
-The plugin structure should look like:
+Type `css_plugins list` in server console. You should see **MatchZy by WD-** listed.
+
+**Expected structure:**
 
 ```
-csgo/addons/counterstrikesharp/plugins/MatchZy/
+csgo/
+└── addons/
+    └── counterstrikesharp/
+        └── plugins/
+            └── MatchZy/
+                ├── MatchZy.dll
+                └── ...
 ```
+
+The plugin zip file already contains the full `addons/counterstrikesharp/plugins/MatchZy/` structure, so extracting to `csgo/` puts everything in the right place.
 
 ### Enable RCON
 

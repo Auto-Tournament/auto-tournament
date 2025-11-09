@@ -10,8 +10,8 @@ RUN apt-get update && \
     apt-get install -y python3 make g++ && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY package.json ./
-RUN bun install
+COPY package.json bun.lockb ./
+RUN bun install --frozen-lockfile
 
 # Build TypeScript backend and React frontend
 FROM dependencies AS build
