@@ -39,7 +39,12 @@ git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp .env.example .env
 # Edit .env with your tokens
+
+# Pull from Docker Hub (after first release)
 docker compose -f docker/docker-compose.yml up -d
+
+# OR build locally
+# docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Access:** `http://localhost:3069`

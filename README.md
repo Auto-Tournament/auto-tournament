@@ -53,9 +53,39 @@ nano .env
 
 # 4. Start everything
 docker compose -f docker/docker-compose.yml up -d
+
+# OR build locally (until first release)
+# docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Access at:** `http://localhost:3069`
+
+<details>
+<summary><b>Or use Docker Compose</b></summary>
+
+Create `docker-compose.yml`:
+
+```yaml
+version: '3.8'
+
+services:
+  matchzy-tournament:
+    image: sivertio/matchzy-auto-tournament:latest
+    container_name: matchzy-tournament
+    restart: unless-stopped
+    ports:
+      - '3069:3069'
+    environment:
+      - API_TOKEN=${API_TOKEN}
+      - SERVER_TOKEN=${SERVER_TOKEN}
+      - WEBHOOK_URL=http://your-ip:3069/api
+    volumes:
+      - ./data:/app/data
+```
+
+Run: `docker compose up -d`
+
+</details>
 
 **👉 [Full setup guide with detailed configuration](https://mat.sivert.io/getting-started/quick-start/)**
 

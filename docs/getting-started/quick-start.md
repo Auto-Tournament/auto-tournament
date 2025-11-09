@@ -23,11 +23,41 @@ cp .env.example .env
 # Edit .env with your tokens (see below)
 nano .env
 
-# Start everything
+# Start everything (pulls from Docker Hub)
 docker compose -f docker/docker-compose.yml up -d
+
+# OR build locally from source
+# docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
+
+??? example "Using Docker Compose"
+
+    Create a `docker-compose.yml` file:
+
+    ```yaml
+    version: '3.8'
+
+    services:
+      matchzy-tournament:
+        image: sivertio/matchzy-auto-tournament:latest
+        container_name: matchzy-tournament-api
+        restart: unless-stopped
+        ports:
+          - '3069:3069'
+        environment:
+          - API_TOKEN=${API_TOKEN}
+          - SERVER_TOKEN=${SERVER_TOKEN}
+          - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:3069/api}
+        volumes:
+          - ./data:/app/data
+    ```
+
+    Then run:
+    ```bash
+    docker compose up -d
+    ```
 
 ??? info "Advanced: Docker Architecture"
 The Docker setup uses **Caddy** as a reverse proxy that serves:

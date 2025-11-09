@@ -2,14 +2,12 @@ version: '3.8'
 
 services:
   matchzy-tournament:
-    # Option 1: Use published image from Docker Hub (recommended for users)
+    # Pull from Docker Hub (recommended - requires release first)
     image: sivertio/matchzy-auto-tournament:latest
     
-    # Option 2: Build locally (for development)
-    # Comment out 'image' above and uncomment these:
-    # build:
-    #   context: ..
-    #   dockerfile: docker/Dockerfile
+    # If image not found, build locally:
+    # Use docker/docker-compose.dev.yml instead:
+    # docker compose -f docker/docker-compose.dev.yml up -d --build
     
     container_name: matchzy-tournament-api
     restart: unless-stopped
@@ -20,9 +18,10 @@ services:
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
       - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
+      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:3069/api}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     volumes:
-      # Persist SQLite database
+      # Persist SQLite database and demos
       - ./data:/app/data
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
@@ -38,6 +37,5 @@ networks:
     driver: bridge
 
 volumes:
-  # Define named volume for database (optional, using bind mount above)
   matchzy-data:
     driver: local
