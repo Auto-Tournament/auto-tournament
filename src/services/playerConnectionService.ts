@@ -165,7 +165,7 @@ class PlayerConnectionService {
       emitMatchUpdate({
         slug: matchSlug,
         connectionStatus: status,
-      } as unknown as Record<string, unknown>);
+      });
     }
   }
 }

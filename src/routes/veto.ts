@@ -4,6 +4,7 @@ import { log } from '../utils/logger';
 import { emitVetoUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from '../services/matchConfigGenerator';
 
 const router = Router();
@@ -365,17 +366,24 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         match.tournament_id,
       ]);
       if (t) {
-        const tournament = {
+        const tournament: TournamentResponse = {
+          id: t.id,
           name: t.name,
-          type: t.type,
-          format: t.format,
+          type: t.type as TournamentResponse['type'],
+          format: t.format as TournamentResponse['format'],
+          status: t.status as TournamentResponse['status'],
           maps: JSON.parse(t.maps),
           teamIds: JSON.parse(t.team_ids),
           settings: t.settings ? JSON.parse(t.settings) : {},
+          created_at: t.created_at,
+          updated_at: t.updated_at ?? t.created_at,
+          started_at: t.started_at,
+          completed_at: t.completed_at,
+          teams: [], // Not needed for config generation
         };
         try {
           const cfg = await generateMatchConfig(
-            tournament as any,
+            tournament,
             match.team1_id ?? undefined,
             match.team2_id ?? undefined,
             matchSlug

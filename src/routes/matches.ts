@@ -1,20 +1,17 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
-import { rconService } from '../services/rconService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { CreateMatchInput } from '../types/match.types';
+import { loadMatchOnServer } from '../services/matchLoadingService';
+import { CreateMatchInput, MatchListItem } from '../types/match.types';
+import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommand,
-  getMatchZyLoadMatchAuthCommands,
-} from '../utils/matchzyConfig';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
-import type { DbMatchRow, DbEventRow, DbTournamentRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigGenerator';
+import { enrichMatch } from '../utils/matchEnrichment';
 
 const router = Router();
 
@@ -69,18 +66,25 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     }
 
     // 3) Hydrate a Tournament-like object for config generation
-    const tournament = {
+    const tournament: TournamentResponse = {
+      id: t.id,
       name: t.name,
-      type: t.type,
-      format: t.format,
+      type: t.type as TournamentResponse['type'],
+      format: t.format as TournamentResponse['format'],
+      status: t.status as TournamentResponse['status'],
       maps: JSON.parse(t.maps),
       teamIds: JSON.parse(t.team_ids),
       settings: t.settings ? JSON.parse(t.settings) : {},
+      created_at: t.created_at,
+      updated_at: t.updated_at ?? t.created_at,
+      started_at: t.started_at,
+      completed_at: t.completed_at,
+      teams: [], // Not needed for config generation
     };
 
     // 4) Generate a fresh config (reads veto_state internally)
     const fresh = await generateMatchConfig(
-      tournament as any,
+      tournament,
       match.team1_id ?? undefined,
       match.team2_id ?? undefined,
       slug
@@ -140,30 +144,30 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
       }
     >(query, params);
 
-    const matches = rows.map((row) => {
+    const matches: MatchListItem[] = rows.map((row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
       const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
-      const match: Record<string, unknown> = {
+      const match: MatchListItem = {
         id: row.id,
         slug: row.slug,
         round: row.round,
         matchNumber: row.match_number,
-        team1: row.team1_id
+        team1: row.team1_id && row.team1_name
           ? {
               id: row.team1_id,
               name: row.team1_name,
               tag: row.team1_tag,
             }
           : undefined,
-        team2: row.team2_id
+        team2: row.team2_id && row.team2_name
           ? {
               id: row.team2_id,
               name: row.team2_name,
               tag: row.team2_tag,
             }
           : undefined,
-        winner: row.winner_id
+        winner: row.winner_id && row.winner_name
           ? {
               id: row.winner_id,
               name: row.winner_name,
@@ -174,55 +178,14 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         serverId: row.server_id,
         config,
         demoFilePath: row.demo_file_path,
-        createdAt: row.created_at,
+        createdAt: row.created_at ?? 0,
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
         vetoCompleted: vetoState?.status === 'completed',
       };
 
-      // Get latest player stats from match events
-      const playerStatsEvent = db.queryOne<DbEventRow>(
-        `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type = 'player_stats' 
-         ORDER BY received_at DESC LIMIT 1`,
-        [row.slug]
-      );
-
-      if (playerStatsEvent) {
-        try {
-          const eventData = JSON.parse(playerStatsEvent.event_data);
-          if (eventData.team1_players) {
-            (match as any).team1Players = eventData.team1_players;
-          }
-          if (eventData.team2_players) {
-            (match as any).team2Players = eventData.team2_players;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-
-      // Get latest scores from series_end or round_end events
-      const scoreEvent = db.queryOne<DbEventRow>(
-        `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
-         ORDER BY received_at DESC LIMIT 1`,
-        [row.slug]
-      );
-
-      if (scoreEvent) {
-        try {
-          const eventData = JSON.parse(scoreEvent.event_data);
-          if (eventData.team1_series_score !== undefined) {
-            (match as any).team1Score = eventData.team1_series_score;
-          }
-          if (eventData.team2_series_score !== undefined) {
-            (match as any).team2Score = eventData.team2_series_score;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
+      // Enrich match with player stats and scores from events
+      enrichMatch(match, row.slug);
 
       return match;
     });
@@ -340,82 +303,34 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    const results = [];
-    let webhookConfigured = false;
-
-    // Configure webhook by default (unless explicitly skipped)
-    if (!skipWebhook) {
-      const serverToken = process.env.SERVER_TOKEN || '';
-      if (!serverToken) {
-        log.warn('SERVER_TOKEN not configured - skipping webhook setup');
-      } else {
-        const baseUrl = getWebhookBaseUrl(req);
-        const webhookUrl = `${baseUrl}/api/events/${slug}`;
-        log.webhookConfigured(match.serverId, webhookUrl);
-
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, slug);
-        for (const cmd of webhookCommands) {
-          const result = await rconService.sendCommand(match.serverId, cmd);
-          results.push(result);
-        }
-        webhookConfigured = true;
-      }
-    }
-
-    // Configure demo upload URL
     const baseUrl = getWebhookBaseUrl(req);
-    const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, slug);
-    const demoResult = await rconService.sendCommand(match.serverId, demoUploadCommand);
-    results.push(demoResult);
-    if (demoResult.success) {
-      log.debug(`Demo upload configured for match ${slug}`);
-    }
+    
+    // Use centralized match loading service
+    const result = await loadMatchOnServer(slug, match.serverId, {
+      skipWebhook,
+      baseUrl,
+    });
 
-    // Configure bearer token auth for match config loading
-    const serverToken = process.env.SERVER_TOKEN;
-    if (serverToken) {
-      log.debug(`Configuring match config auth for ${match.serverId}`);
-      const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
-      for (const cmd of authCommands) {
-        const result = await rconService.sendCommand(match.serverId, cmd);
-        results.push(result);
-      }
-      log.debug(`Match config auth configured for ${match.serverId}`);
+    if (result.success) {
+      return res.status(200).json({
+        success: true,
+        message: result.webhookConfigured
+          ? 'Match loaded and webhook configured'
+          : 'Match loaded (webhook skipped)',
+        webhookConfigured: result.webhookConfigured,
+        demoUploadConfigured: result.demoUploadConfigured,
+        match: matchService.getMatchBySlug(slug, getBaseUrl(req)),
+        rconResponses: result.rconResponses,
+      });
     } else {
-      log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
-    }
-
-    // Send RCON command to load match
-    const configUrl = match.configUrl;
-    const loadResult = await rconService.sendCommand(
-      match.serverId,
-      `matchzy_loadmatch_url "${configUrl}"`
-    );
-    results.push(loadResult);
-
-    if (loadResult.success) {
-      // Update match status
-      matchService.updateMatchStatus(slug, 'loaded');
-      log.matchLoaded(slug, match.serverId, webhookConfigured);
-    } else {
-      log.error(`Failed to load match ${slug} on server ${match.serverId}`, undefined, {
-        command: loadResult.command,
+      return res.status(400).json({
+        success: false,
+        error: result.error || 'Failed to load match',
+        webhookConfigured: result.webhookConfigured,
+        demoUploadConfigured: result.demoUploadConfigured,
+        rconResponses: result.rconResponses,
       });
     }
-
-    const allSuccessful = results.every((r) => r.success);
-
-    return res.status(allSuccessful ? 200 : 400).json({
-      success: allSuccessful,
-      message: allSuccessful
-        ? webhookConfigured
-          ? 'Match loaded and webhook configured'
-          : 'Match loaded (webhook skipped)'
-        : 'Failed to load match',
-      webhookConfigured,
-      match: matchService.getMatchBySlug(slug, getBaseUrl(req)),
-      rconResponses: results,
-    });
   } catch (error) {
     console.error('Error loading match:', error);
     return res.status(500).json({
@@ -442,7 +357,7 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
       // Emit match restart event
       const updatedMatch = matchService.getMatchBySlug(slug, baseUrl);
       if (updatedMatch) {
-        emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
+        emitMatchUpdate(updatedMatch);
         emitBracketUpdate({ action: 'match_restarted', matchSlug: slug });
       }
 

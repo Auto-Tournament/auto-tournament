@@ -1,5 +1,6 @@
 import { db } from '../config/database';
 import { generateMatchConfig } from './matchConfigGenerator';
+import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 import type { TournamentResponse, BracketMatch } from '../types/tournament.types';
 
 /**
@@ -16,10 +17,10 @@ const shuffleArray = <T>(array: T[]): void => {
  * Generate Swiss system bracket
  * Swiss system pairs teams with similar records against each other
  */
-export const generateSwissBracket = (
+export const generateSwissBracket = async (
   tournament: TournamentResponse,
   getMatchesCallback: () => BracketMatch[]
-): BracketMatch[] => {
+): Promise<BracketMatch[]> => {
   const teamIds = [...tournament.teamIds];
   const teamCount = teamIds.length;
 
@@ -48,17 +49,10 @@ export const generateSwissBracket = (
         team2Id = teamIds[team2Index] || undefined;
       }
 
-      const config = generateMatchConfig(tournament, team1Id, team2Id, slug);
+      const config = await generateMatchConfig(tournament, team1Id, team2Id, slug);
 
-      // Determine initial status
-      // ALL BO formats require veto before match can start
-      const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
-      let status = 'pending';
-
-      if (round === 1 && team1Id && team2Id && !requiresVeto) {
-        // Non-BO formats: match is ready immediately
-        status = 'ready';
-      }
+      // Determine initial status using shared helper
+      const status = determineInitialMatchStatus(team1Id, team2Id, tournament.format, round);
 
       db.insert('matches', {
         slug,

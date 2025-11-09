@@ -4,6 +4,7 @@ import type { Match, StageType, StageSettings } from 'brackets-model';
 import { log } from '../utils/logger';
 import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from './matchConfigGenerator';
+import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 
 /**
  * Adapter to convert brackets-manager output to our database schema
@@ -169,27 +170,14 @@ export class BracketsAdapter {
             : null;
 
         // Determine status
-        let status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed' = 'pending';
+        let status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
 
         if (bmMatch.opponent1?.result === 'win' || bmMatch.opponent2?.result === 'win') {
+          // Match is already completed
           status = 'completed';
-        } else if (team1Id && team2Id) {
-          // Both teams are set - check if match should be ready
-          // ALL BO formats (bo1, bo3, bo5) require veto, matches stay 'pending' until veto is completed
-          // This applies to ALL tournament types: single_elimination, double_elimination, round_robin, swiss
-          const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
-
-          if (roundNum === 1 && !requiresVeto) {
-            // Non-BO formats: match is ready immediately
-            status = 'ready';
-          } else {
-            // BO formats OR later rounds: stay pending
-            // BO matches will become 'ready' after veto completion
-            status = 'pending';
-          }
-        } else if (team1Id || team2Id) {
-          // One team is set (bye) - mark as pending, will be handled by progression logic
-          status = 'pending';
+        } else {
+          // Use shared helper for initial status determination
+          status = determineInitialMatchStatus(team1Id, team2Id, tournament.format, roundNum);
         }
 
         // Generate match config

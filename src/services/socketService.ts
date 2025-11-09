@@ -1,6 +1,14 @@
 import { Server as SocketIOServer } from 'socket.io';
 import type { Server as HTTPServer } from 'http';
 import { log } from '../utils/logger';
+import type {
+  TournamentUpdateEvent,
+  BracketUpdateEvent,
+  MatchUpdateEvent,
+  MatchEventData,
+  ServerEvent,
+  VetoUpdateEvent,
+} from '../types/socket.types';
 
 let io: SocketIOServer | null = null;
 
@@ -34,7 +42,7 @@ export function getIO(): SocketIOServer {
 /**
  * Emit tournament update
  */
-export function emitTournamentUpdate(tournament: Record<string, unknown>): void {
+export function emitTournamentUpdate(tournament: TournamentUpdateEvent): void {
   if (io) {
     io.emit('tournament:update', tournament);
     log.debug('Emitted tournament update', { tournamentId: tournament.id });
@@ -44,7 +52,7 @@ export function emitTournamentUpdate(tournament: Record<string, unknown>): void 
 /**
  * Emit bracket update
  */
-export function emitBracketUpdate(bracket: Record<string, unknown>): void {
+export function emitBracketUpdate(bracket: BracketUpdateEvent): void {
   if (io) {
     io.emit('bracket:update', bracket);
     log.debug('Emitted bracket update');
@@ -54,7 +62,7 @@ export function emitBracketUpdate(bracket: Record<string, unknown>): void {
 /**
  * Emit match update
  */
-export function emitMatchUpdate(match: Record<string, unknown>): void {
+export function emitMatchUpdate(match: MatchUpdateEvent): void {
   if (io) {
     io.emit('match:update', match);
     log.debug('Emitted match update', { matchId: match.id });
@@ -64,7 +72,7 @@ export function emitMatchUpdate(match: Record<string, unknown>): void {
 /**
  * Emit match event (live stats)
  */
-export function emitMatchEvent(matchSlug: string, event: Record<string, unknown>): void {
+export function emitMatchEvent(matchSlug: string, event: MatchEventData['event']): void {
   if (io) {
     io.emit('match:event', { matchSlug, event });
     io.emit(`match:event:${matchSlug}`, event);
@@ -85,7 +93,7 @@ export function emitServerStatus(serverId: string, status: 'online' | 'offline')
 /**
  * Emit server event for debugging/monitoring
  */
-export function emitServerEvent(serverId: string, event: Record<string, unknown>): void {
+export function emitServerEvent(serverId: string, event: Omit<ServerEvent, 'serverId'>): void {
   if (io) {
     io.emit('server:event', { serverId, ...event });
     io.emit(`server:event:${serverId}`, event);
@@ -96,7 +104,7 @@ export function emitServerEvent(serverId: string, event: Record<string, unknown>
 /**
  * Emit veto update
  */
-export function emitVetoUpdate(matchSlug: string, vetoState: Record<string, unknown> | null): void {
+export function emitVetoUpdate(matchSlug: string, vetoState: VetoUpdateEvent['veto']): void {
   if (io) {
     io.emit('veto:update', { matchSlug, veto: vetoState });
     io.emit(`veto:update:${matchSlug}`, vetoState);

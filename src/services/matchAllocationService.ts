@@ -4,12 +4,8 @@ import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
+import { loadMatchOnServer } from './matchLoadingService';
 import { log } from '../utils/logger';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommand,
-  getMatchZyLoadMatchAuthCommands,
-} from '../utils/matchzyConfig';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
@@ -133,7 +129,7 @@ export class MatchAllocationService {
           match.slug,
         ]);
         if (matchWithServer) {
-          emitMatchUpdate(matchWithServer as unknown as Record<string, unknown>);
+          emitMatchUpdate(matchWithServer);
           emitBracketUpdate({
             action: 'server_assigned',
             matchSlug: match.slug,
@@ -142,7 +138,7 @@ export class MatchAllocationService {
         }
 
         // Load match on server
-        const loadResult = await this.loadMatchOnServer(match.slug, server.id, baseUrl);
+        const loadResult = await loadMatchOnServer(match.slug, server.id, { baseUrl });
 
         if (loadResult.success) {
           log.matchAllocated(match.slug, server.id, server.name);
@@ -226,12 +222,12 @@ export class MatchAllocationService {
         matchSlug,
       ]);
       if (matchWithServer) {
-        emitMatchUpdate(matchWithServer as unknown as Record<string, unknown>);
+        emitMatchUpdate(matchWithServer);
         emitBracketUpdate({ action: 'server_assigned', matchSlug, serverId: server.id });
       }
 
       // Load match on server
-      const loadResult = await this.loadMatchOnServer(matchSlug, server.id, baseUrl);
+      const loadResult = await loadMatchOnServer(matchSlug, server.id, { baseUrl });
 
       if (loadResult.success) {
         log.matchAllocated(matchSlug, server.id, server.name);
@@ -255,116 +251,6 @@ export class MatchAllocationService {
         success: false,
         error: errorMessage,
       };
-    }
-  }
-
-  /**
-   * Load a match on a server via RCON
-   */
-  private async loadMatchOnServer(
-    matchSlug: string,
-    serverId: string,
-    baseUrl: string
-  ): Promise<{ success: boolean; error?: string }> {
-    const serverToken = process.env.SERVER_TOKEN || '';
-
-    try {
-      log.info(`🎮 Loading match ${matchSlug} on server ${serverId}`);
-
-      // Get match config
-      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
-      if (!match) {
-        log.error(`Match ${matchSlug} not found in database`);
-        return { success: false, error: 'Match not found' };
-      }
-
-      const configUrl = `${baseUrl}/api/matches/${matchSlug}.json`;
-      log.debug(`Match config URL: ${configUrl}`);
-
-      // Initialize server status
-      await serverStatusService.initializeMatchOnServer(serverId, matchSlug);
-
-      // Configure webhook (if SERVER_TOKEN is set)
-      if (serverToken) {
-        log.debug(`Configuring webhook for match ${matchSlug} on server ${serverId}`);
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, matchSlug);
-        for (const cmd of webhookCommands) {
-          log.debug(`Sending webhook command: ${cmd}`, { serverId });
-          await rconService.sendCommand(serverId, cmd);
-        }
-        const webhookUrl = `${baseUrl}/api/events/${matchSlug}`;
-        log.webhookConfigured(serverId, webhookUrl);
-      } else {
-        log.warn(`No SERVER_TOKEN set, skipping webhook configuration for ${serverId}`);
-      }
-
-      // Configure demo upload URL
-      const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
-      log.debug(`Configuring demo upload for match ${matchSlug}`, {
-        serverId,
-        command: demoUploadCommand,
-        uploadUrl: `${baseUrl}/api/demos/${matchSlug}/upload`,
-      });
-      const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
-      if (demoResult.success) {
-        log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
-      } else {
-        log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
-      }
-
-      // Configure bearer token auth for match config loading (uses same SERVER_TOKEN)
-      if (serverToken) {
-        log.debug(`Configuring match config auth for ${serverId}`);
-        const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
-        for (const cmd of authCommands) {
-          log.debug(`Sending auth command: ${cmd}`, { serverId });
-          await rconService.sendCommand(serverId, cmd);
-        }
-        log.info(`✓ Match config auth configured for ${serverId}`);
-      } else {
-        log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
-      }
-
-      // Load match on server
-      log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
-      const loadResult = await rconService.sendCommand(
-        serverId,
-        `matchzy_loadmatch_url "${configUrl}"`
-      );
-
-      if (loadResult.success) {
-        log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
-
-        // Set server status to warmup (waiting for players)
-        await serverStatusService.setMatchWarmup(serverId, matchSlug);
-
-        // Update match status to 'loaded'
-        db.update(
-          'matches',
-          { status: 'loaded', loaded_at: Math.floor(Date.now() / 1000) },
-          'slug = ?',
-          [matchSlug]
-        );
-        log.matchLoaded(matchSlug, serverId, !!serverToken);
-
-        // Emit websocket events to notify clients
-        const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-          matchSlug,
-        ]);
-        if (updatedMatch) {
-          emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
-          emitBracketUpdate({ action: 'match_loaded', matchSlug });
-        }
-
-        return { success: true };
-      } else {
-        // Set server status to error
-        await serverStatusService.setServerStatus(serverId, ServerStatus.ERROR);
-        return { success: false, error: loadResult.error };
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      return { success: false, error: errorMessage };
     }
   }
 
@@ -742,7 +628,7 @@ export class MatchAllocationService {
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);
-      const loadResult = await this.loadMatchOnServer(matchSlug, serverId, baseUrl);
+      const loadResult = await loadMatchOnServer(matchSlug, serverId, { baseUrl });
 
       if (loadResult.success) {
         log.success(`✓ Match ${matchSlug} restarted successfully`);

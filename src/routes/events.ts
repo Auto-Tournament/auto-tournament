@@ -626,7 +626,7 @@ function handleSeriesEnd(event: MatchZyEvent): void {
       event.matchid,
     ]);
     if (updatedMatch) {
-      emitMatchUpdate(updatedMatch as unknown as Record<string, unknown>);
+      emitMatchUpdate(updatedMatch);
     }
 
     // If this match has a next_match_id, advance the winner

@@ -44,7 +44,9 @@ class EventBufferService {
 
     // Emit event via WebSocket for real-time monitoring
     // Emit both to server-specific channel AND global channel
-    emitServerEvent(serverId, serverEvent as unknown as Record<string, unknown>);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { serverId: _serverId, ...eventWithoutServerId } = serverEvent;
+    emitServerEvent(serverId, eventWithoutServerId);
 
     log.debug(`Event buffered for server ${serverId}`, {
       eventType: event.event,

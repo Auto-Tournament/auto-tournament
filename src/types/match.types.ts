@@ -62,4 +62,59 @@ export interface MatchResponse {
   loadedAt?: number;
   status: string;
   configUrl: string; // The URL to access this match config
+  [key: string]: unknown;
+}
+
+/**
+ * Match list item response - used for GET /api/matches
+ */
+export interface MatchListItem {
+  id: number;
+  slug: string;
+  round: number;
+  matchNumber: number;
+  [key: string]: unknown;
+  team1?: {
+    id: string;
+    name: string;
+    tag?: string;
+  };
+  team2?: {
+    id: string;
+    name: string;
+    tag?: string;
+  };
+  winner?: {
+    id: string;
+    name: string;
+    tag?: string;
+  };
+  status: string;
+  serverId?: string;
+  config?: Record<string, unknown>;
+  demoFilePath?: string;
+  createdAt: number;
+  loadedAt?: number;
+  completedAt?: number;
+  vetoCompleted?: boolean;
+  team1Players?: Array<{
+    name: string;
+    steamId: string;
+    kills: number;
+    deaths: number;
+    assists: number;
+    damage: number;
+    headshots: number;
+  }>;
+  team2Players?: Array<{
+    name: string;
+    steamId: string;
+    kills: number;
+    deaths: number;
+    assists: number;
+    damage: number;
+    headshots: number;
+  }>;
+  team1Score?: number;
+  team2Score?: number;
 }

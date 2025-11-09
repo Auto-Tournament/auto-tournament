@@ -37,6 +37,9 @@ export interface DbTournamentRow {
   team_ids: string;
   maps: string;
   created_at: number;
+  updated_at?: number;
+  started_at?: number;
+  completed_at?: number;
   settings?: string;
 }
 

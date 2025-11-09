@@ -3,7 +3,7 @@ import { serverService } from '../services/serverService';
 import { rconService } from '../services/rconService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { getMatchZyWebhookCommands } from '../utils/matchzyConfig';
+import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 
 const router = Router();

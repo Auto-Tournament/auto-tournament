@@ -2,8 +2,9 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { bracketsAdapter } from './bracketsAdapter';
 import { generateSwissBracket } from './swissGenerator';
-import { validateTeamCount } from '../utils/tournamentHelpers';
-import type { DbMatchRow, DbTeamRow, DbEventRow } from '../types/database.types';
+import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
+import { enrichMatch } from '../utils/matchEnrichment';
+import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
   Tournament,
   TournamentRow,
@@ -201,7 +202,7 @@ class TournamentService {
     try {
       if (tournament.type === 'swiss') {
         // Swiss tournaments need custom implementation (brackets-manager doesn't support it)
-        matches = generateSwissBracket(tournament, () => this.getMatches());
+        matches = await generateSwissBracket(tournament, () => this.getMatches());
       } else {
         // Use brackets-manager for single_elimination, double_elimination, and round_robin
         bracketsAdapter.reset(); // Clear previous state
@@ -266,7 +267,7 @@ class TournamentService {
 
       log.debug(`Bracket generated: ${matches.length} matches created`);
 
-      const totalRounds = this.calculateTotalRounds(tournament.teamIds.length, tournament.type);
+      const totalRounds = calculateTotalRounds(tournament.teamIds.length, tournament.type);
       return { tournament, matches, totalRounds };
     } catch (err) {
       log.error('Failed to generate bracket', err);
@@ -347,7 +348,7 @@ class TournamentService {
     if (!tournament) return null;
 
     const matches = this.getMatches();
-    const totalRounds = this.calculateTotalRounds(tournament.teamIds.length, tournament.type);
+    const totalRounds = calculateTotalRounds(tournament.teamIds.length, tournament.type);
 
     return { tournament, matches, totalRounds };
   }
@@ -404,49 +405,8 @@ class TournamentService {
           match.winner = { id: winner.id, name: winner.name, tag: winner.tag || undefined };
       }
 
-      // Get latest player stats from match events
-      const playerStatsEvent = db.queryOne<DbEventRow>(
-        `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type = 'player_stats' 
-         ORDER BY received_at DESC LIMIT 1`,
-        [row.slug]
-      );
-
-      if (playerStatsEvent) {
-        try {
-          const eventData = JSON.parse(playerStatsEvent.event_data);
-          if (eventData.team1_players) {
-            match.team1Players = eventData.team1_players;
-          }
-          if (eventData.team2_players) {
-            match.team2Players = eventData.team2_players;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
-
-      // Get latest scores from series_end or round_end events
-      const scoreEvent = db.queryOne<DbEventRow>(
-        `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
-         ORDER BY received_at DESC LIMIT 1`,
-        [row.slug]
-      );
-
-      if (scoreEvent) {
-        try {
-          const eventData = JSON.parse(scoreEvent.event_data);
-          if (eventData.team1_series_score !== undefined) {
-            match.team1Score = eventData.team1_series_score;
-          }
-          if (eventData.team2_series_score !== undefined) {
-            match.team2Score = eventData.team2_series_score;
-          }
-        } catch {
-          // Ignore parse errors
-        }
-      }
+      // Enrich match with player stats and scores from events
+      enrichMatch(match, row.slug);
 
       return match;
     });
@@ -487,27 +447,6 @@ class TournamentService {
           match.nextMatchId = nextMatchId;
         }
       }
-    }
-  }
-
-  /**
-   * Calculate total rounds needed
-   */
-  private calculateTotalRounds(teamCount: number, type: string): number {
-    switch (type) {
-      case 'single_elimination':
-        return Math.ceil(Math.log2(teamCount));
-      case 'double_elimination': {
-        const upperRounds = Math.ceil(Math.log2(teamCount));
-        const lowerRounds = upperRounds * 2 - 2;
-        return upperRounds + lowerRounds + 1; // +1 for grand finals
-      }
-      case 'round_robin':
-        return teamCount % 2 === 0 ? teamCount - 1 : teamCount;
-      case 'swiss':
-        return Math.ceil(Math.log2(teamCount));
-      default:
-        return 0;
     }
   }
 
