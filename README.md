@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 [Full Documentation](https://sivert-io.github.io/matchzy-auto-tournament/)** • [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) • [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/) • [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
+**📚 [Full Documentation](https://mat.sivert.io/)** • [Quick Start](https://mat.sivert.io/getting-started/quick-start/) • [Features](https://mat.sivert.io/features/overview/) • [Troubleshooting](https://mat.sivert.io/guides/troubleshooting/)
 
 </div>
 
@@ -57,7 +57,7 @@ docker compose up -d --build
 
 **Requirements:** Docker • CS2 server(s) with [modified MatchZy plugin](#️-matchzy-plugin-requirement)
 
-**👉 [Full setup guide with detailed configuration](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/)**
+**👉 [Full setup guide with detailed configuration](https://mat.sivert.io/getting-started/quick-start/)**
 
 ---
 
@@ -72,7 +72,7 @@ docker compose up -d --build
 
 Extract to your CS2 server's `csgo/` directory and restart.
 
-**👉 [Complete installation guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/#cs2-server-setup)**
+**👉 [Complete installation guide](https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup)**
 
 Requires [CounterStrikeSharp](https://docs.cssharp.dev/guides/getting-started/) to be installed first.
 
