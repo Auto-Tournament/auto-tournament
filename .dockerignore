@@ -1,19 +1,44 @@
-node_modules
-dist
-data
-public
-*.db
-*.log
-.env
-.env.*
+# Git
 .git
 .gitignore
-README.md
-docs
+.github
+
+# Documentation
+docs/
+mkdocs.yml
+requirements.txt
 *.md
+
+# Node modules (will be installed in container)
+node_modules
+
+# Environment files (should be provided at runtime)
+.env
+.env.*
+
+# Development files
+*.log
+npm-debug.log*
 .DS_Store
-npm-debug.log
-yarn-error.log
+
+# Data directories (should be mounted as volumes)
+data/
+demos/
+
+# Build artifacts from local dev (will be built in container)
+dist/
+
+# IDE
 .vscode
 .idea
+*.swp
+*.swo
 
+# Testing
+coverage/
+*.test.ts
+*.spec.ts
+
+# Misc
+*.bak
+*.tmp

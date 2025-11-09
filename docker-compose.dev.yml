@@ -1,17 +1,14 @@
 version: '3.8'
 
+# Development compose file - builds locally instead of pulling from Docker Hub
+# Usage: docker compose -f docker-compose.dev.yml up -d --build
+
 services:
   matchzy-tournament:
-    # Option 1: Use published image from Docker Hub (recommended for users)
-    image: sivertio/matchzy-auto-tournament:latest
-    
-    # Option 2: Build locally (for development)
-    # Comment out 'image' above and uncomment these:
-    # build:
-    #   context: .
-    #   dockerfile: Dockerfile
-    
-    container_name: matchzy-tournament-api
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: matchzy-tournament-api-dev
     restart: unless-stopped
     ports:
       - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
@@ -20,7 +17,7 @@ services:
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
       - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - LOG_LEVEL=${LOG_LEVEL:-debug}
     volumes:
       # Persist SQLite database
       - ./data:/app/data
@@ -38,6 +35,6 @@ networks:
     driver: bridge
 
 volumes:
-  # Define named volume for database (optional, using bind mount above)
   matchzy-data:
     driver: local
+
