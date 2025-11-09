@@ -24,6 +24,11 @@ export default function Matches() {
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
 
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Matches';
+  }, []);
+
   // Download demo file
   const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
     if (event) {

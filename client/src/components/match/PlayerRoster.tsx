@@ -1,12 +1,5 @@
 import React from 'react';
-import {
-  Box,
-  Typography,
-  Grid,
-  Paper,
-  Chip,
-  Stack,
-} from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Stack } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
@@ -24,11 +17,76 @@ interface PlayerRosterProps {
 export const PlayerRoster: React.FC<PlayerRosterProps> = ({
   team1Name,
   team2Name,
-  team1Players,
-  team2Players,
+  team1Players: team1PlayersRaw,
+  team2Players: team2PlayersRaw,
   connectedPlayers,
   isTeam1,
 }) => {
+  // Convert players to array format if they're objects
+  const normalizePlayers = (players: unknown): Array<{ steamid: string; name: string }> => {
+    if (!players) return [];
+    if (Array.isArray(players)) {
+      // Already an array, ensure each player has correct format
+      return players.map((player, index) => {
+        if (typeof player === 'string') {
+          return { steamid: `player_${index}`, name: player };
+        }
+        if (player && typeof player === 'object') {
+          const p = player as {
+            steamid?: string;
+            steamId?: string;
+            name?: string | { name: string; steamId: string };
+          };
+          // Handle nested name object
+          const playerName =
+            typeof p.name === 'object' && p.name !== null
+              ? p.name.name
+              : String(p.name || 'Unknown');
+          const playerSteamId =
+            p.steamid ||
+            p.steamId ||
+            (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
+            `player_${index}`;
+          return { steamid: playerSteamId, name: playerName };
+        }
+        return { steamid: `player_${index}`, name: 'Unknown' };
+      });
+    }
+
+    // Handle object format: {0: {name, steamId}, 1: {...}} or {steamid: name}
+    if (typeof players === 'object') {
+      return Object.entries(players).map(([key, player]) => {
+        if (typeof player === 'string') {
+          return { steamid: `player_${key}`, name: player };
+        }
+        if (player && typeof player === 'object') {
+          const p = player as {
+            steamid?: string;
+            steamId?: string;
+            name?: string | { name: string; steamId: string };
+          };
+          // Handle nested name object
+          const playerName =
+            typeof p.name === 'object' && p.name !== null
+              ? p.name.name
+              : String(p.name || 'Unknown');
+          const playerSteamId =
+            p.steamid ||
+            p.steamId ||
+            (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
+            `player_${key}`;
+          return { steamid: playerSteamId, name: playerName };
+        }
+        return { steamid: `player_${key}`, name: 'Unknown' };
+      });
+    }
+
+    return [];
+  };
+
+  const team1Players = normalizePlayers(team1PlayersRaw);
+  const team2Players = normalizePlayers(team2PlayersRaw);
+
   // Debug: Log what we're working with
   React.useEffect(() => {
     console.log('[PlayerRoster] Team 1 Players:', team1Players);
@@ -61,15 +119,13 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
           <Typography variant="h6" fontWeight={600}>
             {teamName}
           </Typography>
-          {isYourTeam && (
-            <Chip label="Your Team" color="primary" size="small" />
-          )}
+          {isYourTeam && <Chip label="Your Team" color="primary" size="small" />}
         </Box>
-        
+
         <Stack spacing={1}>
           {players.map((player) => {
             const status = getPlayerStatus(player.steamid);
-            
+
             return (
               <Box
                 key={player.steamid}
@@ -115,7 +171,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                     fontWeight: status.isConnected ? 600 : 400,
                   }}
                 >
-                  {typeof player.name === 'string' ? player.name : player.name?.name || String(player.steamid) || 'Unknown'}
+                  {player.name}
                 </Typography>
 
                 {/* Status Badge */}
@@ -163,23 +219,12 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
       </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
-          {renderPlayerList(
-            team1Name,
-            team1Players,
-            'primary',
-            isTeam1 === true
-          )}
+          {renderPlayerList(team1Name, team1Players, 'primary', isTeam1 === true)}
         </Grid>
         <Grid size={{ xs: 12, md: 6 }}>
-          {renderPlayerList(
-            team2Name,
-            team2Players,
-            'error',
-            isTeam1 === false
-          )}
+          {renderPlayerList(team2Name, team2Players, 'error', isTeam1 === false)}
         </Grid>
       </Grid>
     </Box>
   );
 };
-

@@ -60,6 +60,11 @@ export default function Bracket() {
     ? matches.find((m) => m.id === selectedMatchId) || null
     : null;
 
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Bracket';
+  }, []);
+
   // Calculate global match number
   const getGlobalMatchNumber = (match: Match): number => {
     const sortedMatches = [...matches].sort((a, b) => {

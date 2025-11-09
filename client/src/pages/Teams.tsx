@@ -30,6 +30,11 @@ export default function Teams() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
 
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Teams';
+  }, []);
+
   const loadTeams = async () => {
     try {
       setLoading(true);

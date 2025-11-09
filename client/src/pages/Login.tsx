@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Card, TextField, Button, Alert, Container } from '@mui/material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -11,6 +11,11 @@ export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Login';
+  }, []);
 
   interface LocationState {
     from?: { pathname: string };

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Typography, Card, CardContent, Button, Grid } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -11,6 +11,11 @@ import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist
 
 export default function Dashboard() {
   const navigate = useNavigate();
+
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Dashboard';
+  }, []);
 
   const cards = [
     {

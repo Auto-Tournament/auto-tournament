@@ -55,10 +55,11 @@ export const theme = createTheme({
   },
   typography: {
     fontFamily: [
-      'Roboto',
+      'Inter',
       '-apple-system',
       'BlinkMacSystemFont',
       '"Segoe UI"',
+      'Roboto',
       '"Helvetica Neue"',
       'Arial',
       'sans-serif',
@@ -67,6 +68,12 @@ export const theme = createTheme({
       textTransform: 'none', // M3 style - no uppercase
       fontWeight: 500,
     },
+    h1: { lineHeight: 1.1 },
+    h2: { lineHeight: 1.1 },
+    h3: { lineHeight: 1.1 },
+    h4: { lineHeight: 1.1 },
+    h5: { lineHeight: 1.1 },
+    h6: { lineHeight: 1.1 },
   },
   components: {
     MuiButton: {

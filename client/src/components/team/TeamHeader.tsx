@@ -20,15 +20,13 @@ export function TeamHeader({ team, isMuted, onToggleMute, onToggleSettings }: Te
           'linear-gradient(135deg, rgba(103, 80, 164, 0.1) 0%, rgba(103, 80, 164, 0.05) 100%)',
       }}
     >
-      <CardContent sx={{ py: 4 }}>
+      <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box flex={1} textAlign="center">
-            <Typography variant="h3" fontWeight={700} gutterBottom>
+          <Box flex={1} display="flex" alignItems="center" gap={1}>
+            <Typography variant="h2" fontWeight={600} color="primary">
               {team?.name}
             </Typography>
-            {team?.tag && (
-              <Chip label={team.tag} size="medium" sx={{ fontSize: '1rem', fontWeight: 600 }} />
-            )}
+            {team?.tag && <Chip label={team.tag} size="medium" sx={{ fontSize: '1rem' }} />}
           </Box>
           <Box display="flex" gap={1}>
             <Tooltip title="Sound settings">

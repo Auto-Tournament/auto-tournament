@@ -28,6 +28,9 @@ import {
   DeleteForever as DeleteForeverIcon,
   Warning as WarningIcon,
 } from '@mui/icons-material';
+
+// Set dynamic page title
+document.title = 'Development';
 import { api } from '../utils/api';
 
 const Development: React.FC = () => {

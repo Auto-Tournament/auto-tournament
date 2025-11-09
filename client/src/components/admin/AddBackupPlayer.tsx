@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   TextField,
@@ -49,14 +49,92 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
   const [targetTeam, setTargetTeam] = useState<'team1' | 'team2'>('team1');
 
+  // Normalize player data to ensure it's always an array
+  const normalizePlayers = useCallback(
+    (players: unknown): Array<{ steamid: string; name: string }> => {
+      if (!players) return [];
+      if (Array.isArray(players)) {
+        return players.map((player, index) => {
+          if (typeof player === 'string') {
+            return { steamid: `player_${index}`, name: player };
+          }
+          if (player && typeof player === 'object') {
+            const p = player as {
+              steamid?: string;
+              steamId?: string;
+              name?: string | { name: string; steamId: string };
+            };
+            const playerName =
+              typeof p.name === 'object' && p.name !== null
+                ? p.name.name
+                : String(p.name || 'Unknown');
+            const playerSteamId =
+              p.steamid ||
+              p.steamId ||
+              (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
+              `player_${index}`;
+            return { steamid: playerSteamId, name: playerName };
+          }
+          return { steamid: `player_${index}`, name: 'Unknown' };
+        });
+      }
+
+      // Handle object format: {0: {name, steamId}, 1: {...}}
+      if (typeof players === 'object') {
+        return Object.entries(players).map(([key, player]) => {
+          if (typeof player === 'string') {
+            return { steamid: `player_${key}`, name: player };
+          }
+          if (player && typeof player === 'object') {
+            const p = player as {
+              steamid?: string;
+              steamId?: string;
+              name?: string | { name: string; steamId: string };
+            };
+            const playerName =
+              typeof p.name === 'object' && p.name !== null
+                ? p.name.name
+                : String(p.name || 'Unknown');
+            const playerSteamId =
+              p.steamid ||
+              p.steamId ||
+              (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
+              `player_${key}`;
+            return { steamid: playerSteamId, name: playerName };
+          }
+          return { steamid: `player_${key}`, name: 'Unknown' };
+        });
+      }
+
+      return [];
+    },
+    []
+  );
+
+  const normalizedTeam1Players = useMemo(
+    () => normalizePlayers(existingTeam1Players),
+    [existingTeam1Players, normalizePlayers]
+  );
+  const normalizedTeam2Players = useMemo(
+    () => normalizePlayers(existingTeam2Players),
+    [existingTeam2Players, normalizePlayers]
+  );
+
   const loadAllPlayers = useCallback(async () => {
     setLoading(true);
     try {
       // Get all teams in the tournament
-      const response = await api.get<{ success: boolean; teams: Array<{ id: string; name: string; players: Array<{ steamid: string; steamId: string; name: string }> }> }>('/api/teams');
+      const response = await api.get<{
+        success: boolean;
+        teams: Array<{
+          id: string;
+          name: string;
+          players: Array<{ steamid: string; steamId: string; name: string }>;
+        }>;
+      }>('/api/teams');
       if (response.success && response.teams) {
         const players: Player[] = [];
-        
+
         for (const team of response.teams) {
           if (team.players && Array.isArray(team.players)) {
             for (const player of team.players) {
@@ -72,13 +150,11 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
         // Filter out players already in the match
         const existingSteamIds = [
-          ...existingTeam1Players.map((p) => p.steamid),
-          ...existingTeam2Players.map((p) => p.steamid),
+          ...normalizedTeam1Players.map((p) => p.steamid),
+          ...normalizedTeam2Players.map((p) => p.steamid),
         ];
 
-        const availablePlayers = players.filter(
-          (p) => !existingSteamIds.includes(p.steamId)
-        );
+        const availablePlayers = players.filter((p) => !existingSteamIds.includes(p.steamId));
 
         setAllPlayers(availablePlayers);
       }
@@ -88,7 +164,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [existingTeam1Players, existingTeam2Players, onError]);
+  }, [normalizedTeam1Players, normalizedTeam2Players, onError]);
 
   useEffect(() => {
     loadAllPlayers();
@@ -99,11 +175,14 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
     setAdding(true);
     try {
-      const response = await api.post<{ success: boolean; error: string }>(`/api/rcon/${serverId}/add-player`, {
-        steamId: selectedPlayer.steamId,
-        team: targetTeam,
-        nickname: selectedPlayer.name,
-      });
+      const response = await api.post<{ success: boolean; error: string }>(
+        `/api/rcon/${serverId}/add-player`,
+        {
+          steamId: selectedPlayer.steamId,
+          team: targetTeam,
+          nickname: selectedPlayer.name,
+        }
+      );
 
       if (response.success) {
         if (onSuccess) {
@@ -174,12 +253,8 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
               onChange={(e) => setTargetTeam(e.target.value as 'team1' | 'team2')}
               disabled={adding}
             >
-              <MenuItem value="team1">
-                {team1Name} (Team 1)
-              </MenuItem>
-              <MenuItem value="team2">
-                {team2Name} (Team 2)
-              </MenuItem>
+              <MenuItem value="team1">{team1Name} (Team 1)</MenuItem>
+              <MenuItem value="team2">{team2Name} (Team 2)</MenuItem>
             </Select>
           </FormControl>
 
@@ -212,8 +287,8 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
             <Typography variant="caption">
-              ⚠️ <strong>Important:</strong> The player must reconnect to the server after being added.
-              They may need to restart CS2 if they're already connected.
+              ⚠️ <strong>Important:</strong> The player must reconnect to the server after being
+              added. They may need to restart CS2 if they're already connected.
             </Typography>
           </Alert>
         </Stack>
@@ -221,4 +296,3 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
     </Box>
   );
 };
-

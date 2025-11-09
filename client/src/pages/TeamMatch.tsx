@@ -56,6 +56,15 @@ export default function TeamMatch() {
     handleSoundChange,
   } = useSoundSettings();
 
+  // Set dynamic page title
+  useEffect(() => {
+    if (team?.name) {
+      document.title = team.name;
+    } else {
+      document.title = 'Team Page';
+    }
+  }, [team]);
+
   // Sound notification when match becomes ready or veto starts
   useEffect(() => {
     if (!match) return;

@@ -32,6 +32,11 @@ export default function Servers() {
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Servers';
+  }, []);
+
   const checkServerStatus = async (serverId: string): Promise<'online' | 'offline'> => {
     try {
       const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);

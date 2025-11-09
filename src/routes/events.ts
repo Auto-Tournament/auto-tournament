@@ -12,6 +12,7 @@ import { logWebhookEvent } from '../utils/eventLogger';
 import { emitMatchEvent } from '../services/socketService';
 import { eventBufferService } from '../services/eventBufferService';
 import { handleMatchEvent } from '../services/matchEventHandler';
+import { playerConnectionService } from '../services/playerConnectionService';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
@@ -165,6 +166,41 @@ function handleEventRequest(
     });
   }
 }
+
+/**
+ * GET /api/events/connections/:matchSlug
+ * Get player connection status for a match (PUBLIC - for team pages)
+ */
+router.get('/connections/:matchSlug', (req: Request, res: Response) => {
+  try {
+    const { matchSlug } = req.params;
+    const status = playerConnectionService.getStatus(matchSlug);
+
+    if (!status) {
+      // Return empty status if match not found
+      return res.json({
+        success: true,
+        matchSlug,
+        connectedPlayers: [],
+        team1Connected: 0,
+        team2Connected: 0,
+        totalConnected: 0,
+        lastUpdated: Date.now(),
+      });
+    }
+
+    return res.json({
+      success: true,
+      ...status,
+    });
+  } catch (error) {
+    log.error('Error fetching connection status', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch connection status',
+    });
+  }
+});
 
 /**
  * GET /api/events/:matchSlug

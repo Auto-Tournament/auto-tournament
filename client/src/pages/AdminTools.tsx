@@ -29,6 +29,9 @@ import { useAdminCommands } from '../hooks/useAdminCommands';
 import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
 
+// Set dynamic page title
+document.title = 'Admin Tools';
+
 interface Server {
   id: string;
   name: string;

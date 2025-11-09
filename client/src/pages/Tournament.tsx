@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
@@ -48,6 +48,11 @@ const Tournament: React.FC = () => {
   // Action state
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
+
+  // Set dynamic page title
+  useEffect(() => {
+    document.title = 'Tournament Setup';
+  }, []);
   const [success, setSuccess] = useState('');
 
   // Dialog state
