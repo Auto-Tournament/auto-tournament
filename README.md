@@ -98,10 +98,10 @@ Frontend: `http://localhost:5173` • API: `http://localhost:3000` • Docs: `ht
 
 ## ⚙️ MatchZy Plugin Requirement
 
-> **Important:** This project requires a **modified version of MatchZy** with enhanced event tracking.
-
-The official MatchZy release does not expose all the granular match and player events required for full automation.  
-This system depends on a customized fork that extends MatchZy to send additional API payload data for real-time tracking.
+> [!CAUTION]
+> This project requires a **modified version of MatchZy** with enhanced event tracking.
+>
+> The official MatchZy release does not expose all the granular match and player events required for full automation. This system depends on a customized fork that extends MatchZy to send additional API payload data for real-time tracking.
 
 ### Installation
 
