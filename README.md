@@ -7,9 +7,10 @@
   
   <p>Complete tournament automation for Counter-Strike 2 using the MatchZy plugin. Zero manual server configuration.</p>
 
-  [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-orange.svg)](LICENSE)
-  [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
-  [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-orange.svg)](LICENSE)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
+[![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
 </div>
 
 ---
@@ -18,7 +19,13 @@
 
 **👉 [Full Documentation](https://sivert-io.github.io/matchzy-auto-tournament/)**
 
-Quick links: [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) • [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/) • [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
+**Quick Links:**
+
+- 🚀 [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/)
+- ✨ [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/)
+- 🔧 [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
+- 👨‍💻 [Contributing](https://sivert-io.github.io/matchzy-auto-tournament/development/contributing/)
+- 🏗️ [Architecture](https://sivert-io.github.io/matchzy-auto-tournament/development/architecture/)
 
 ---
 
@@ -60,9 +67,10 @@ nano .env  # or use your preferred editor
 ```
 
 **Required in `.env`:**
+
 ```bash
 API_TOKEN=your-generated-token-here      # Admin dashboard login
-SERVER_TOKEN=your-generated-token-here   # MatchZy authentication  
+SERVER_TOKEN=your-generated-token-here   # MatchZy authentication
 WEBHOOK_URL=http://192.168.1.100:3000   # Your server IP (where CS2 sends events)
 ```
 
@@ -99,6 +107,7 @@ This system depends on a customized fork that extends MatchZy to send additional
 **Build Instructions:** [MatchZy Developer Docs](https://shobhit-pathak.github.io/MatchZy/developers/)
 
 You can clone and build the modified plugin yourself:
+
 ```bash
 git clone https://github.com/sivert-io/matchzy.git
 cd matchzy
@@ -106,6 +115,7 @@ dotnet build
 ```
 
 Once built, copy the plugin files to your server:
+
 ```
 csgo/addons/counterstrikesharp/plugins/MatchZy/
 ```
@@ -117,6 +127,7 @@ A pull request will be opened upstream once the extended event system is finaliz
 ## 🎯 Roadmap
 
 ### ✅ Core Features (Complete)
+
 - [x] Tournament brackets with 4 formats
 - [x] Map veto system (BO1/BO3/BO5)
 - [x] Real-time player tracking
@@ -127,11 +138,13 @@ A pull request will be opened upstream once the extended event system is finaliz
 - [x] Backup player system
 
 ### 🚧 In Progress
+
 - [ ] Enhanced player stats (K/D, MVPs, utility damage)
 - [ ] Round-by-round breakdown visualization
 - [ ] Pause analytics
 
 ### 🔮 Planned
+
 - [ ] Discord bot integration
 - [ ] Tournament leaderboards
 - [ ] Match timeline visualization
@@ -145,6 +158,7 @@ A pull request will be opened upstream once the extended event system is finaliz
 ## 🤝 Contributing
 
 Contributions are welcome! Whether you're:
+
 - 🐛 Fixing bugs
 - ✨ Adding features
 - 📝 Improving docs

@@ -10,7 +10,7 @@ import { db } from '../config/database';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
-import { generateMatchConfig } from '../services/matchConfigGenerator';
+import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
 
 const router = Router();
@@ -153,27 +153,30 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
         slug: row.slug,
         round: row.round,
         matchNumber: row.match_number,
-        team1: row.team1_id && row.team1_name
-          ? {
-              id: row.team1_id,
-              name: row.team1_name,
-              tag: row.team1_tag,
-            }
-          : undefined,
-        team2: row.team2_id && row.team2_name
-          ? {
-              id: row.team2_id,
-              name: row.team2_name,
-              tag: row.team2_tag,
-            }
-          : undefined,
-        winner: row.winner_id && row.winner_name
-          ? {
-              id: row.winner_id,
-              name: row.winner_name,
-              tag: row.winner_tag,
-            }
-          : undefined,
+        team1:
+          row.team1_id && row.team1_name
+            ? {
+                id: row.team1_id,
+                name: row.team1_name,
+                tag: row.team1_tag,
+              }
+            : undefined,
+        team2:
+          row.team2_id && row.team2_name
+            ? {
+                id: row.team2_id,
+                name: row.team2_name,
+                tag: row.team2_tag,
+              }
+            : undefined,
+        winner:
+          row.winner_id && row.winner_name
+            ? {
+                id: row.winner_id,
+                name: row.winner_name,
+                tag: row.winner_tag,
+              }
+            : undefined,
         status: row.status,
         serverId: row.server_id,
         config,
@@ -304,7 +307,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
     }
 
     const baseUrl = getWebhookBaseUrl(req);
-    
+
     // Use centralized match loading service
     const result = await loadMatchOnServer(slug, match.serverId, {
       skipWebhook,

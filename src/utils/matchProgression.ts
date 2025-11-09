@@ -7,7 +7,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitBracketUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { generateMatchConfig } from '../services/matchConfigGenerator';
+import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 

@@ -2,14 +2,17 @@ import { BracketsManager } from 'brackets-manager';
 import { InMemoryDatabase } from 'brackets-memory-db';
 import type { Match, StageType, StageSettings } from 'brackets-model';
 import { log } from '../utils/logger';
-import type { TournamentResponse } from '../types/tournament.types';
-import { generateMatchConfig } from './matchConfigGenerator';
+import type { TournamentResponse, BracketMatch } from '../types/tournament.types';
+import type { IBracketGenerator, BracketGeneratorResult } from './bracketGenerators/types';
+import { generateMatchConfig } from './matchConfigBuilder';
 import { determineInitialMatchStatus } from '../utils/matchStatusHelpers';
 
 /**
- * Adapter to convert brackets-manager output to our database schema
+ * Standard Bracket Generator
+ * Generates single elimination, double elimination, and round robin brackets
+ * using the brackets-manager library
  */
-export class BracketsAdapter {
+export class StandardBracketGenerator implements IBracketGenerator {
   private manager: BracketsManager;
   private storage: InMemoryDatabase;
 
@@ -21,19 +24,10 @@ export class BracketsAdapter {
   /**
    * Generate bracket using brackets-manager and convert to our schema
    */
-  async generateBracket(tournament: TournamentResponse): Promise<{
-    matches: Array<{
-      slug: string;
-      round: number;
-      matchNum: number;
-      team1Id: string | null;
-      team2Id: string | null;
-      winnerId: string | null;
-      status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
-      nextMatchId: number | null;
-      config: string;
-    }>;
-  }> {
+  async generate(
+    tournament: TournamentResponse,
+    _getMatchesCallback: () => BracketMatch[]
+  ): Promise<BracketGeneratorResult> {
     const { teamIds, type, settings } = tournament;
 
     // Map our tournament types to brackets-manager types
@@ -241,4 +235,5 @@ export class BracketsAdapter {
   }
 }
 
-export const bracketsAdapter = new BracketsAdapter();
+// Export singleton instance
+export const standardBracketGenerator = new StandardBracketGenerator();

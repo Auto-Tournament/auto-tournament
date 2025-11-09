@@ -126,4 +126,7 @@ nav:
   - For Teams:
       - Team Pages: guides/team-pages.md
       - Map Veto: features/map-veto.md
+  - Development:
+      - Architecture: development/architecture.md
+      - Contributing: development/contributing.md
 

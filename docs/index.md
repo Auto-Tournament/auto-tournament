@@ -20,24 +20,28 @@ A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Hand
 ## Key Features
 
 ### 🎮 **Fully Automated**
+
 - Add teams and servers
 - Generate bracket
 - Click "Start Tournament"
 - System handles the rest
 
 ### 🗺️ **Professional Map Veto**
+
 - FaceIT-style pick/ban system
 - Turn-based security
 - Real-time updates
 - Side selection
 
 ### 📊 **Real-Time Everything**
+
 - Live scores via WebSocket
 - Player connection tracking
 - Match phase monitoring
 - Instant bracket updates
 
 ### 🎯 **Admin Controls**
+
 - Pause/unpause matches
 - Restore round backups
 - Add backup players mid-match
@@ -45,6 +49,7 @@ A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Hand
 - Full RCON integration
 
 ### 👥 **Team Pages**
+
 - Public pages for each team
 - No authentication needed
 - Participate in veto
@@ -68,7 +73,7 @@ A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Hand
 
 1. **MatchZy webhook** sends events to API (player connects, round ends, etc.)
 2. **API processes** events and updates database
-3. **WebSocket broadcasts** to all connected clients  
+3. **WebSocket broadcasts** to all connected clients
 4. **Frontend updates** in real-time (no refresh!)
 
 ## Quick Start
@@ -109,11 +114,13 @@ Recommended: Run on private network, expose via reverse proxy.
 ## Configuration
 
 Generate secure tokens:
+
 ```bash
 openssl rand -hex 32
 ```
 
 Required in `.env`:
+
 ```bash
 API_TOKEN=your-admin-token        # Admin login
 SERVER_TOKEN=your-server-token    # CS2 ↔ API auth
@@ -121,6 +128,7 @@ WEBHOOK_URL=http://your-ip:3000   # Where CS2 sends events
 ```
 
 Optional:
+
 ```bash
 STEAM_API_KEY=your-key            # For vanity URLs
 PORT=3000                         # API port
@@ -146,12 +154,17 @@ PORT=3000                         # API port
 - **[Running Matches](guides/running-matches.md)** - Admin operations
 - **[Troubleshooting](guides/troubleshooting.md)** - Common issues
 
-## Architecture
+## Tech Stack
 
 **Backend:** TypeScript • Express • SQLite • Socket.IO • RCON  
 **Frontend:** React • Material UI • Vite  
-**Bracket:** brackets-manager.js  
+**Bracket System:** Extensible generator pattern with `brackets-manager.js`  
 **Deploy:** Docker • Caddy
+
+**For Developers:**
+
+- **[Architecture](development/architecture.md)** - System design and patterns
+- **[Contributing](development/contributing.md)** - How to contribute
 
 ## Support
 

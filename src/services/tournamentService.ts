@@ -1,7 +1,6 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { bracketsAdapter } from './bracketsAdapter';
-import { generateSwissBracket } from './swissGenerator';
+import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
 import { enrichMatch } from '../utils/matchEnrichment';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
@@ -200,13 +199,22 @@ class TournamentService {
     let matches: BracketMatch[] = [];
 
     try {
-      if (tournament.type === 'swiss') {
-        // Swiss tournaments need custom implementation (brackets-manager doesn't support it)
-        matches = await generateSwissBracket(tournament, () => this.getMatches());
+      // Get the appropriate generator for this tournament type
+      const generator = getBracketGenerator(tournament.type);
+
+      // Reset state if available
+      if (generator.reset) {
+        generator.reset();
+      }
+
+      const result = await generator.generate(tournament, () => this.getMatches());
+
+      // Handle different result types (Swiss returns BracketMatch[], others return BracketGeneratorResult)
+      if (Array.isArray(result)) {
+        // Swiss generator returns BracketMatch[] directly (already in DB)
+        matches = result;
       } else {
-        // Use brackets-manager for single_elimination, double_elimination, and round_robin
-        bracketsAdapter.reset(); // Clear previous state
-        const result = await bracketsAdapter.generateBracket(tournament);
+        // Standard generators return BracketGeneratorResult (needs DB insertion)
 
         // Insert matches into database and track IDs for linking
         const slugToDbId: Map<string, number> = new Map();

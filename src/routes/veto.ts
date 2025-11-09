@@ -5,7 +5,7 @@ import { emitVetoUpdate } from '../services/socketService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
-import { generateMatchConfig } from '../services/matchConfigGenerator';
+import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { getVetoOrder } from '../utils/vetoConfig';
 
 const router = Router();
