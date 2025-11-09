@@ -2,7 +2,6 @@ import { Router, Request, Response } from 'express';
 import { tournamentService } from '../services/tournamentService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { rconService } from '../services/rconService';
-import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { db } from '../config/database';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -255,9 +254,6 @@ router.delete('/', async (_req: Request, res: Response) => {
           if (result.success) {
             log.success(`✓ Match ended on server ${serverId}`);
             matchesEnded++;
-
-            // Clear server status
-            await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
           } else {
             log.error(`Failed to end match on server ${serverId}`, undefined, {
               error: result.error,
@@ -437,9 +433,6 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
           if (result.success) {
             log.success(`✓ Match ended on server ${serverId}`);
             matchesEnded++;
-
-            // Clear server status
-            await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
           } else {
             log.error(`Failed to end match on server ${serverId}`, undefined, {
               error: result.error,

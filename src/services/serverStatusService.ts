@@ -28,47 +28,8 @@ export class ServerStatusService {
   private readonly UPDATE_TIME_VAR = 'matchzy_tournament_updated';
 
   /**
-   * Set the server status
-   */
-  async setServerStatus(
-    serverId: string,
-    status: ServerStatus,
-    matchSlug?: string
-  ): Promise<boolean> {
-    try {
-      const timestamp = Math.floor(Date.now() / 1000);
-
-      // Set status
-      const statusResult = await rconService.sendCommand(serverId, `${this.STATUS_VAR} ${status}`);
-
-      if (!statusResult.success) {
-        log.error(`Failed to set server status on ${serverId}`, undefined, {
-          status,
-          error: statusResult.error,
-        });
-        return false;
-      }
-
-      // Set match slug if provided
-      if (matchSlug) {
-        await rconService.sendCommand(serverId, `${this.MATCH_SLUG_VAR} ${matchSlug}`);
-      }
-
-      // Set update timestamp
-      await rconService.sendCommand(serverId, `${this.UPDATE_TIME_VAR} ${timestamp}`);
-
-      log.info(
-        `✓ Server ${serverId} status updated: ${status}${matchSlug ? ` (${matchSlug})` : ''}`
-      );
-      return true;
-    } catch (error) {
-      log.error(`Failed to set server status on ${serverId}`, error);
-      return false;
-    }
-  }
-
-  /**
    * Get the current server status by querying the server directly
+   * The CS2 plugin manages these ConVars; we only read them.
    */
   async getServerStatus(serverId: string): Promise<{
     status: ServerStatus | null;
@@ -118,41 +79,6 @@ export class ServerStatusService {
         online: false,
       };
     }
-  }
-
-  /**
-   * Initialize server status when loading a match
-   */
-  async initializeMatchOnServer(serverId: string, matchSlug: string): Promise<boolean> {
-    return this.setServerStatus(serverId, ServerStatus.LOADING, matchSlug);
-  }
-
-  /**
-   * Mark match as in warmup (waiting for players)
-   */
-  async setMatchWarmup(serverId: string, matchSlug: string): Promise<boolean> {
-    return this.setServerStatus(serverId, ServerStatus.WARMUP, matchSlug);
-  }
-
-  /**
-   * Mark match as live
-   */
-  async setMatchLive(serverId: string, matchSlug: string): Promise<boolean> {
-    return this.setServerStatus(serverId, ServerStatus.LIVE, matchSlug);
-  }
-
-  /**
-   * Mark match as completed
-   */
-  async setMatchCompleted(serverId: string): Promise<boolean> {
-    return this.setServerStatus(serverId, ServerStatus.POSTGAME);
-  }
-
-  /**
-   * Clear server status (reset to idle)
-   */
-  async clearServerStatus(serverId: string): Promise<boolean> {
-    return this.setServerStatus(serverId, ServerStatus.IDLE);
   }
 
   /**

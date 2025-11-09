@@ -5,7 +5,6 @@
 
 import { db } from '../config/database';
 import { rconService } from './rconService';
-import { serverStatusService, ServerStatus } from './serverStatusService';
 import { emitMatchUpdate, emitBracketUpdate } from './socketService';
 import { log } from '../utils/logger';
 import {
@@ -53,9 +52,6 @@ export async function loadMatchOnServer(
 
     const configUrl = `${baseUrl}/api/matches/${matchSlug}.json`;
     log.debug(`Match config URL: ${configUrl}`);
-
-    // Initialize server status
-    await serverStatusService.initializeMatchOnServer(serverId, matchSlug);
 
     let webhookConfigured = false;
 
@@ -132,9 +128,6 @@ export async function loadMatchOnServer(
     if (loadResult.success) {
       log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
 
-      // Set server status to warmup (waiting for players)
-      await serverStatusService.setMatchWarmup(serverId, matchSlug);
-
       // Update match status to 'loaded'
       db.update(
         'matches',
@@ -160,8 +153,6 @@ export async function loadMatchOnServer(
         rconResponses: results,
       };
     } else {
-      // Set server status to error
-      await serverStatusService.setServerStatus(serverId, ServerStatus.ERROR);
       return {
         success: false,
         error: loadResult.error,
@@ -179,4 +170,3 @@ export async function loadMatchOnServer(
     };
   }
 }
-

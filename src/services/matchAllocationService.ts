@@ -2,7 +2,6 @@ import { db } from '../config/database';
 import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
-import { serverStatusService, ServerStatus } from './serverStatusService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
 import { loadMatchOnServer } from './matchLoadingService';
 import { log } from '../utils/logger';
@@ -510,9 +509,6 @@ export class MatchAllocationService {
 
           // Wait a moment for the server to clean up
           await new Promise((resolve) => setTimeout(resolve, 2000));
-
-          // Clear server status
-          await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
         } else {
           log.error(`Failed to end match on server ${serverId}`, undefined, {
             error: result.error,
@@ -622,9 +618,6 @@ export class MatchAllocationService {
 
       // Step 3: Reset match status to 'ready'
       db.update('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [matchSlug]);
-
-      // Clear server status
-      await serverStatusService.setServerStatus(serverId, ServerStatus.IDLE);
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);

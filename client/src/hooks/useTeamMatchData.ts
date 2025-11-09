@@ -102,7 +102,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       if (!silent) setUpdating(true);
 
       try {
-        const response = await fetch(`/api/teams/${teamId}/matches`);
+        const response = await fetch(`/api/team/${teamId}/history`);
         if (response.ok) {
           const data = await response.json();
           setMatchHistory(data.matches || []);
@@ -123,7 +123,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       if (!silent) setUpdating(true);
 
       try {
-        const response = await fetch(`/api/teams/${teamId}/stats`);
+        const response = await fetch(`/api/team/${teamId}/stats`);
         if (response.ok) {
           const data = await response.json();
           setStats(data.stats);

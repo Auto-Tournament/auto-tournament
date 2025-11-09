@@ -95,11 +95,23 @@ export class RconService {
       host: server.host,
       port: server.port,
       password: server.password,
+      timeout: 5000, // 5 second timeout for connection and commands
     });
 
     try {
-      await client.connect();
-      const response = await client.send(command);
+      // Add overall timeout wrapper to prevent indefinite hanging
+      const executeWithTimeout = async () => {
+        await client.connect();
+        const response = await client.send(command);
+        return response;
+      };
+
+      const response = await Promise.race([
+        executeWithTimeout(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('RCON operation timeout (10s)')), 10000)
+        ),
+      ]);
 
       log.rconCommand(server.id, command, true);
 

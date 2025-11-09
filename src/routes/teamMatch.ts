@@ -228,14 +228,34 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // If you want to add join passwords, add a separate field to servers table
     const serverPassword = null;
 
-    // Get real server status from the server itself
+    // Get real-time server status from custom plugin ConVars (with 2s timeout)
+    // The CS2 plugin manages these ConVars; we just query them for real-time status
     let realServerStatus = null;
     let serverStatusDescription = null;
     if (match.server_id) {
-      const statusInfo = await serverStatusService.getServerStatus(match.server_id);
-      if (statusInfo.online && statusInfo.status) {
-        realServerStatus = statusInfo.status;
-        serverStatusDescription = serverStatusService.getStatusDescription(statusInfo.status);
+      try {
+        // 2 second timeout - fail fast if server is unreachable or ConVars don't exist yet
+        const statusInfo = await Promise.race([
+          serverStatusService.getServerStatus(match.server_id),
+          new Promise<{ status: null; matchSlug: null; updatedAt: null; online: false }>(
+            (resolve) =>
+              setTimeout(
+                () => resolve({ status: null, matchSlug: null, updatedAt: null, online: false }),
+                2000
+              )
+          ),
+        ]);
+
+        if (statusInfo.online && statusInfo.status) {
+          realServerStatus = statusInfo.status;
+          serverStatusDescription = serverStatusService.getStatusDescription(statusInfo.status);
+        }
+      } catch (error) {
+        // Silently fail - server status is nice-to-have, not critical
+        console.debug(
+          '[TeamMatch] Server status check failed (plugin ConVars may not exist yet):',
+          error
+        );
       }
     }
 
