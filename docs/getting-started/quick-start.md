@@ -4,7 +4,7 @@ Get up and running in 5 minutes.
 
 ## Prerequisites
 
-- CS2 dedicated server(s) with MatchZy plugin
+- CS2 dedicated server(s) with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
 - Node.js 18+ or Docker
 - RCON access to your servers
 
