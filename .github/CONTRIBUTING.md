@@ -59,7 +59,7 @@ Before submitting a PR:
 
 1. Test your changes locally
 2. Ensure no linter errors: `bun run build`
-3. Test with Docker if deployment-related: `docker-compose up --build`
+3. Test with Docker if deployment-related: `docker compose up --build`
 
 ## 🐛 Reporting Bugs
 

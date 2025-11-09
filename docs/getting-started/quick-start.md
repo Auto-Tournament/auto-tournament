@@ -24,7 +24,7 @@ cp .env.example .env
 nano .env
 
 # Start everything
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)

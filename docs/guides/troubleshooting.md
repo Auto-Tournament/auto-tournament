@@ -7,12 +7,14 @@
 **Symptoms:** Status shows 🔴 Offline
 
 **Check:**
+
 - Is CS2 server running?
 - Is RCON password correct?
 - Can API reach server on port 27015?
 - Check firewall rules
 
 **Fix:**
+
 1. Verify server is running
 2. Test RCON: `rcon_address IP:27015; rcon_password PASSWORD; rcon status`
 3. Click "Check Status" to refresh
@@ -23,11 +25,13 @@
 **Symptoms:** "Failed to load match" error
 
 **Check:**
+
 - Is server status "Online"?
 - Is MatchZy plugin loaded? (`css_plugins list`)
 - Can server reach API for webhook?
 
 **Fix:**
+
 1. Verify MatchZy installed
 2. Check server console for errors
 3. Try manual RCON: `matchzy_loadmatch_url https://...`
@@ -38,12 +42,14 @@
 **Symptoms:** No real-time updates, player connections not showing
 
 **Check:**
+
 - CS2 console: `[MatchZy] Remote log sent: ...`
 - API console for events
 - Webhook configuration
 - SERVER_TOKEN matches
 
 **Fix:**
+
 1. Check CS2 can reach API: `curl http://api-ip:3000/api/events/test`
 2. Verify `matchzy_remote_log_url` is set
 3. Verify `matchzy_remote_log_header_value` matches SERVER_TOKEN
@@ -57,6 +63,7 @@
 **Symptoms:** "Auth rejected" or similar
 
 **Fix:**
+
 1. Verify Steam ID is correct
 2. Add as backup player:
    - Match Details → Player Management
@@ -68,11 +75,13 @@
 **Symptoms:** No "Start Veto" button on team page
 
 **Check:**
+
 - Is tournament started?
 - Is match format BO1/BO3/BO5?
 - Is match status "ready"?
 
 **Fix:**
+
 1. Verify tournament is in "In Progress" state
 2. Refresh team page
 3. If stuck, admin can skip veto
@@ -82,10 +91,12 @@
 **Symptoms:** Waiting for players, but all are connected
 
 **Check:**
+
 - Are all players actually ready? (typed `.ready`)
 - Are there 10/10 players?
 
 **Fix:**
+
 1. Check player roster for who's not ready
 2. Ask players to type `.ready`
 3. Or force start: Admin Controls → End Warmup
@@ -95,10 +106,12 @@
 **Symptoms:** Live scores not changing
 
 **Check:**
+
 - Are events arriving? (check API logs)
 - Is WebSocket connected? (check browser console)
 
 **Fix:**
+
 1. Refresh page
 2. Check server events endpoint
 3. Verify match is actually live on server
@@ -110,6 +123,7 @@
 **Symptoms:** Match complete but bracket not updating
 
 **Fix:**
+
 1. Verify match status is "completed"
 2. Check winner is set correctly
 3. Manually set winner if needed:
@@ -124,6 +138,7 @@
 **Explanation:** Normal - waiting for previous match
 
 **Fix:**
+
 - Previous match must complete first
 - Winner auto-fills the slot
 
@@ -134,6 +149,7 @@
 **Symptoms:** CS2 servers can't send webhooks
 
 **Fix:**
+
 1. Check API is running: `curl http://api-ip:3000/api/events/test`
 2. Check firewall allows incoming on port 3000
 3. Verify WEBHOOK_URL in `.env` is correct
@@ -144,6 +160,7 @@
 **Symptoms:** Can't send RCON commands
 
 **Fix:**
+
 1. Check server is running
 2. Verify port 27015 is open
 3. Test from API server: `nc -zv server-ip 27015`
@@ -154,9 +171,10 @@
 ### Container Won't Start
 
 **Fix:**
+
 ```bash
 # Check logs
-docker-compose logs api
+docker compose logs api
 
 # Common issues:
 # - Port already in use: change PORT in .env
@@ -167,12 +185,13 @@ docker-compose logs api
 ### Can't Access from Other Machines
 
 **Fix:**
+
 ```bash
 # Ensure ports are exposed
-docker-compose ps
+docker compose ps
 
 # Should show 0.0.0.0:3069->3069
-# If not, check docker-compose.yml ports section
+# If not, check docker compose.yml ports section
 ```
 
 ## General Tips
@@ -190,6 +209,7 @@ Restart API to see detailed logs.
 ### Check Browser Console
 
 Press F12 in browser, check Console tab for:
+
 - WebSocket connection errors
 - API request failures
 - JavaScript errors
@@ -198,7 +218,7 @@ Press F12 in browser, check Console tab for:
 
 ```bash
 # Check all services
-docker-compose ps  # All should be "Up"
+docker compose ps  # All should be "Up"
 
 # Check API health
 curl http://localhost:3069/api/events/test
@@ -215,8 +235,8 @@ If all else fails:
 
 ```bash
 # Restart everything
-docker-compose down
-docker-compose up -d --build
+docker compose down
+docker compose up -d --build
 
 # Or without Docker:
 npm run build
@@ -234,4 +254,3 @@ If you're still stuck:
    - Error messages (API logs, CS2 console)
    - Browser console errors (if frontend issue)
    - Your setup (Docker/local, network config)
-
