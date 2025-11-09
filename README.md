@@ -98,29 +98,26 @@ Frontend: `http://localhost:5173` • API: `http://localhost:3000` • Docs: `ht
 
 ## ⚙️ MatchZy Plugin Requirement
 
-> **Important:** This project requires a **modified version of the [MatchZy](https://github.com/shobhit-pathak/MatchZy)** plugin.
+> **Important:** This project requires a **modified version of MatchZy** with enhanced event tracking.
 
 The official MatchZy release does not expose all the granular match and player events required for full automation.  
 This system depends on a customized fork that extends MatchZy to send additional API payload data for real-time tracking.
 
-**Modified Fork:** [sivert-io/matchzy](https://github.com/sivert-io/matchzy)  
-**Build Instructions:** [MatchZy Developer Docs](https://shobhit-pathak.github.io/MatchZy/developers/)
+### Installation
 
-You can clone and build the modified plugin yourself:
+**Download the latest release:**
+
+👉 **[sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)**
 
 ```bash
-git clone https://github.com/sivert-io/matchzy.git
-cd matchzy
-dotnet build
+# Extract to your CS2 server
+cd /path/to/cs2/game/csgo
+unzip MatchZy-*.zip
+
+# Restart server
 ```
 
-Once built, copy the plugin files to your server:
-
-```
-csgo/addons/counterstrikesharp/plugins/MatchZy/
-```
-
-A pull request will be opened upstream once the extended event system is finalized and validated.
+See the [Quick Start Guide](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/#cs2-server-setup) for detailed CS2 server configuration.
 
 ---
 

@@ -105,11 +105,18 @@ npm run dev
 
 ## Requirements
 
-- **CS2 servers** with MatchZy plugin
+- **CS2 servers** with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
 - **Node.js 18+** or Bun
 - **Docker** (for production)
 
 Recommended: Run on private network, expose via reverse proxy.
+
+!!! info "MatchZy Plugin"
+This project requires a modified version of MatchZy with enhanced event tracking.
+
+    **Download:** [github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
+
+    Extract to your CS2 server and restart. See [Quick Start](getting-started/quick-start.md#cs2-server-setup) for details.
 
 ## Configuration
 

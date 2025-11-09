@@ -81,23 +81,27 @@ PORT=3000                          # API port (default: 3000)
 
 > ⚠️ **Note:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) to send additional granular match and player data to the API.
 
-Use the forked version instead of the standard release:
+**Download the latest release:**
+
+👉 **[github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)**
+
+**Installation Steps:**
+
+1. **Download** the latest `MatchZy-*.zip` from releases
+2. **Extract** to your CS2 server directory:
 
 ```bash
-git clone https://github.com/sivert-io/matchzy.git
-cd matchzy
-dotnet build
+cd /path/to/cs2/game/csgo
+unzip MatchZy-*.zip
 ```
 
-Refer to the official [MatchZy Developer Documentation](https://shobhit-pathak.github.io/MatchZy/developers/) for detailed build and setup instructions.
+3. **Restart** your CS2 server
 
-After building, copy the compiled plugin to your CS2 server:
+The plugin structure should look like:
 
 ```
 csgo/addons/counterstrikesharp/plugins/MatchZy/
 ```
-
-A pull request will be submitted upstream once this fork’s extended event system is finalized.
 
 ### Enable RCON
 
@@ -159,10 +163,12 @@ You're ready to create your first tournament!
 ## Network Notes
 
 **Private Network (LAN):**
+
 - Everything on `192.168.x.x` - works out of the box
 - Share team pages with local IPs
 
 **Public Internet:**
+
 - Get a domain or use public IP
 - Use reverse proxy (Caddy/Nginx) with SSL
 - Update `WEBHOOK_URL` to public address
@@ -173,15 +179,18 @@ You're ready to create your first tournament!
 ## Troubleshooting
 
 **Can't login:**
+
 - Verify API_TOKEN in `.env` matches what you're entering
 - Restart API after changing `.env`
 
 **Server shows offline:**
+
 - Check RCON password is correct
 - Verify server is running
 - Test from API server: `nc -zv server-ip 27015`
 
 **Events not arriving:**
+
 - Check CS2 can reach API: `curl http://api-ip:3000/api/events/test`
 - Verify WEBHOOK_URL in `.env` is correct
 - Check firewall allows port 3000
