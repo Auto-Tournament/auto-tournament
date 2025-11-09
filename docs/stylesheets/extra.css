@@ -60,9 +60,53 @@
   }
 }
 
-/* Rounded corners to match project */
+/* Rounded corners and colors to match project */
 .md-button {
   border-radius: 44px !important;        /* Match project button radius */
+}
+
+/* Primary button - filled purple */
+.md-button--primary {
+  background-color: #6750A4 !important;
+  color: white !important;
+  border-color: #6750A4 !important;
+}
+
+.md-button--primary:hover {
+  background-color: #7965AF !important;
+  border-color: #7965AF !important;
+}
+
+[data-md-color-scheme="slate"] .md-button--primary {
+  background-color: #D0BCFF !important;
+  color: #1C1B1F !important;
+  border-color: #D0BCFF !important;
+}
+
+[data-md-color-scheme="slate"] .md-button--primary:hover {
+  background-color: #E8DEF8 !important;
+  border-color: #E8DEF8 !important;
+}
+
+/* Secondary button - outlined purple */
+.md-button {
+  color: #6750A4 !important;
+  border-color: #6750A4 !important;
+}
+
+.md-button:hover {
+  background-color: rgba(103, 80, 164, 0.1) !important;
+  border-color: #7965AF !important;
+}
+
+[data-md-color-scheme="slate"] .md-button {
+  color: #D0BCFF !important;
+  border-color: #D0BCFF !important;
+}
+
+[data-md-color-scheme="slate"] .md-button:hover {
+  background-color: rgba(208, 188, 255, 0.1) !important;
+  border-color: #E8DEF8 !important;
 }
 
 /* Logo styling */
