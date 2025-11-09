@@ -126,8 +126,6 @@ One click from bracket creation to final scores
 
 <div align="center" markdown>
 
-**Tech Stack:** TypeScript • React • Material UI • Express • SQLite • Socket.IO • Docker
-
 MIT License • Made with :material-heart: for the CS2 community
 
 </div>

@@ -18,8 +18,8 @@ copyright: Copyright &copy; 2025 Sivert Gullberg Hansen
 theme:
   name: material
   features:
-    - content.action.edit
-    - content.action.view
+    # - content.action.edit
+    # - content.action.view
     - content.code.annotate
     - content.code.copy
     # - content.code.select
@@ -75,9 +75,9 @@ theme:
 plugins:
   - search:
       separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
-  - git-revision-date-localized:
-      enable_creation_date: true
-      type: timeago
+  # - git-revision-date-localized:
+  #     enable_creation_date: true
+  #     type: timeago
 
 # Extensions
 markdown_extensions:
