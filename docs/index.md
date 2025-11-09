@@ -21,63 +21,14 @@ One click from bracket creation to final scores
 
 ## Features
 
-<div class="grid cards" markdown>
+- :material-trophy: **Full Automation** — Create tournaments, generate brackets, start matches. System handles server allocation and progression.
+- :material-map: **Map Veto System** — FaceIT-style interactive pick/ban for BO1/BO3/BO5 with real-time turn-based security.
+- :material-lightning-bolt: **Real-Time Updates** — Live scores, player tracking, bracket updates. WebSocket-powered, zero refresh needed.
+- :material-account-group: **Public Team Pages** — No-auth pages for teams to view matches and veto. Share a link, teams handle the rest.
+- :material-console: **Admin Controls** — Pause, restore, add players, broadcast messages. Full RCON integration for match control.
+- :material-chart-line: **Match Tracking** — Player connections, round scores, statistics. Complete match history and analytics.
 
-- :material-trophy:{ .lg .middle } **Full Automation**
-
-  ***
-
-  Create tournaments, generate brackets, start matches.  
-  System handles server allocation and progression.
-
-  [:octicons-arrow-right-24: Quick Start](getting-started/quick-start.md)
-
-- :material-map:{ .lg .middle } **Map Veto System**
-
-  ***
-
-  FaceIT-style interactive pick/ban for BO1/BO3/BO5.  
-  Real-time turn-based security.
-
-  [:octicons-arrow-right-24: Learn More](features/overview.md#map-veto)
-
-- :material-lightning-bolt:{ .lg .middle } **Real-Time Updates**
-
-  ***
-
-  Live scores, player tracking, bracket updates.  
-  WebSocket-powered, zero refresh needed.
-
-  [:octicons-arrow-right-24: See Features](features/overview.md)
-
-- :material-account-group:{ .lg .middle } **Public Team Pages**
-
-  ***
-
-  No-auth pages for teams to view matches and veto.  
-  Share a link, teams handle the rest.
-
-  [:octicons-arrow-right-24: Team Features](features/overview.md#team-pages)
-
-- :material-console:{ .lg .middle } **Admin Controls**
-
-  ***
-
-  Pause, restore, add players, broadcast messages.  
-  Full RCON integration for match control.
-
-  [:octicons-arrow-right-24: Admin Guide](guides/running-matches.md)
-
-- :material-chart-line:{ .lg .middle } **Match Tracking**
-
-  ***
-
-  Player connections, round scores, statistics.  
-  Complete match history and analytics.
-
-  [:octicons-arrow-right-24: View All Features](features/overview.md)
-
-</div>
+[:octicons-arrow-right-24: View All Features](features/overview.md){ .md-button }
 
 ---
 
