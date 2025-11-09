@@ -68,6 +68,22 @@ export interface MatchResponse {
 /**
  * Match list item response - used for GET /api/matches
  */
+/**
+ * Player stats from match events
+ */
+export interface PlayerStats {
+  name: string;
+  steamId: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  damage: number;
+  headshots: number;
+}
+
+/**
+ * Match list item response - used for GET /api/matches
+ */
 export interface MatchListItem {
   id: number;
   slug: string;
@@ -97,24 +113,18 @@ export interface MatchListItem {
   loadedAt?: number;
   completedAt?: number;
   vetoCompleted?: boolean;
-  team1Players?: Array<{
-    name: string;
-    steamId: string;
-    kills: number;
-    deaths: number;
-    assists: number;
-    damage: number;
-    headshots: number;
-  }>;
-  team2Players?: Array<{
-    name: string;
-    steamId: string;
-    kills: number;
-    deaths: number;
-    assists: number;
-    damage: number;
-    headshots: number;
-  }>;
+  team1Players?: PlayerStats[];
+  team2Players?: PlayerStats[];
   team1Score?: number;
   team2Score?: number;
 }
+
+/**
+ * Enrichable match object - BracketMatch or similar structures with optional fields
+ */
+export type EnrichableMatch = Record<string, unknown> & {
+  team1Players?: PlayerStats[];
+  team2Players?: PlayerStats[];
+  team1Score?: number;
+  team2Score?: number;
+};

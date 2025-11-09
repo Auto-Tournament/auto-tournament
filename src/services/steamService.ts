@@ -4,30 +4,11 @@ dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import { log } from '../utils/logger';
 import fetch from 'node-fetch';
-
-interface SteamPlayer {
-  steamId: string;
-  name: string;
-  avatarUrl?: string;
-}
-
-interface SteamAPIResponse {
-  response: {
-    success: number;
-    steamid?: string;
-    message?: string;
-  };
-}
-
-interface SteamPlayerSummaryResponse {
-  response: {
-    players: Array<{
-      steamid: string;
-      personaname: string;
-      avatarfull: string;
-    }>;
-  };
-}
+import type {
+  SteamPlayer,
+  SteamAPIResponse,
+  SteamPlayerSummaryResponse,
+} from '../types/steam.types';
 
 class SteamService {
   private readonly apiKey: string | undefined;

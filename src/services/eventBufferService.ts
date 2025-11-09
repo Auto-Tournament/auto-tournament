@@ -3,11 +3,11 @@
  * Stores the last 50 events per server in memory for real-time monitoring
  */
 
-import { MatchZyEvent } from '../types/matchzy-events.types';
+import type { MatchZyEvent } from '../types/matchzy-events.types';
 import { log } from '../utils/logger';
 import { emitServerEvent } from './socketService';
 
-interface ServerEvent {
+interface ServerEventWithId {
   timestamp: number;
   serverId: string;
   matchSlug: string;
@@ -15,7 +15,7 @@ interface ServerEvent {
 }
 
 class EventBufferService {
-  private buffers: Map<string, ServerEvent[]> = new Map();
+  private buffers: Map<string, ServerEventWithId[]> = new Map();
   private readonly MAX_EVENTS_PER_SERVER = 100;
 
   /**
@@ -27,7 +27,7 @@ class EventBufferService {
     }
 
     const buffer = this.buffers.get(serverId)!;
-    const serverEvent: ServerEvent = {
+    const serverEvent: ServerEventWithId = {
       timestamp: Date.now(),
       serverId,
       matchSlug,
@@ -57,7 +57,7 @@ class EventBufferService {
   /**
    * Get all events for a specific server
    */
-  getEvents(serverId: string): ServerEvent[] {
+  getEvents(serverId: string): ServerEventWithId[] {
     return this.buffers.get(serverId) || [];
   }
 
@@ -87,7 +87,11 @@ class EventBufferService {
   /**
    * Get buffer statistics
    */
-  getStats(): { serverCount: number; totalEvents: number; servers: Array<{ id: string; events: number }> } {
+  getStats(): {
+    serverCount: number;
+    totalEvents: number;
+    servers: Array<{ id: string; events: number }>;
+  } {
     const servers = Array.from(this.buffers.entries()).map(([id, events]) => ({
       id,
       events: events.length,
@@ -102,5 +106,3 @@ class EventBufferService {
 }
 
 export const eventBufferService = new EventBufferService();
-export type { ServerEvent };
-
