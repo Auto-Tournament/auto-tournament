@@ -32,6 +32,8 @@
 
 ## 🚀 Quick Start
 
+> **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — [Installation guide](https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup)
+
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
@@ -54,8 +56,6 @@ docker compose up -d --build
 ```
 
 **Access at:** `http://localhost:3069`
-
-**Requirements:** Docker • CS2 server(s) with [modified MatchZy plugin](#️-matchzy-plugin-requirement)
 
 **👉 [Full setup guide with detailed configuration](https://mat.sivert.io/getting-started/quick-start/)**
 
