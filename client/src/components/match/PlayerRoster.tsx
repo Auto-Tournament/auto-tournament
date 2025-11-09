@@ -115,7 +115,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                     fontWeight: status.isConnected ? 600 : 400,
                   }}
                 >
-                  {player.name}
+                  {typeof player.name === 'string' ? player.name : player.name?.name || String(player.steamid) || 'Unknown'}
                 </Typography>
 
                 {/* Status Badge */}

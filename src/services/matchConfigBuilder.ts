@@ -24,15 +24,51 @@ export const generateMatchConfig = async (
 
   const numMaps = tournament.format === 'bo1' ? 1 : tournament.format === 'bo3' ? 3 : 5;
 
-  const team1Players = team1 ? JSON.parse(team1.players || '{}') : {};
-  const team2Players = team2 ? JSON.parse(team2.players || '{}') : {};
+  // Parse players from database and convert to MatchZy format
+  // Database format: {0: {name, steamId}, 1: {name, steamId}}
+  // MatchZy format: {steamId: name, steamId2: name2}
+  const convertPlayersToMatchZyFormat = (playersJson: string): Record<string, string> => {
+    try {
+      const parsed = JSON.parse(playersJson || '{}');
+      const result: Record<string, string> = {};
+
+      // If it's already in MatchZy format (all keys are Steam IDs), return as-is
+      const keys = Object.keys(parsed);
+      if (keys.length > 0 && keys.every((k) => /^7656\d{13}$/.test(k))) {
+        return parsed;
+      }
+
+      // Convert from database array-like format to MatchZy format
+      Object.values(parsed).forEach((player: unknown) => {
+        if (
+          player &&
+          typeof player === 'object' &&
+          'steamId' in player &&
+          'name' in player &&
+          typeof (player as { steamId: string; name: string }).steamId === 'string' &&
+          typeof (player as { steamId: string; name: string }).name === 'string'
+        ) {
+          const typedPlayer = player as { steamId: string; name: string };
+          result[typedPlayer.steamId] = typedPlayer.name;
+        }
+      });
+
+      return result;
+    } catch (e) {
+      console.error('Failed to parse players JSON:', e);
+      return {};
+    }
+  };
+
+  const team1Players = team1 ? convertPlayersToMatchZyFormat(team1.players) : {};
+  const team2Players = team2 ? convertPlayersToMatchZyFormat(team2.players) : {};
   const team1Count = Object.keys(team1Players).length;
   const team2Count = Object.keys(team2Players).length;
 
   const playersPerTeam = Math.max(team1Count, team2Count, 1);
 
-  // Defaults (used when no veto yet)
-  let maplist: string[] = tournament.maps;
+  // Only set maplist after veto completes - no point storing the map pool
+  let maplist: string[] | null = null;
   // We'll carry *per map* sides here, based on the UI veto
   type PerMapSide = 'team1_ct' | 'team2_ct' | 'knife';
   let per_map_sides: PerMapSide[] = Array.from({ length: numMaps }, () => 'knife');

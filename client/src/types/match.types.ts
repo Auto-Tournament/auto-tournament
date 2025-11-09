@@ -3,6 +3,7 @@
  */
 
 import type { Team } from './team.types';
+import type { MatchPhase } from './matchPhase.types';
 
 export interface Match {
   id: number;
@@ -22,7 +23,7 @@ export interface Match {
   team2Score?: number;
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
-  matchPhase?: string; // warmup, knife, veto, live, post_match
+  matchPhase?: MatchPhase; // warmup, knife, veto, live, post_match
   currentMap?: string; // Current map being played (e.g., de_mirage)
   mapNumber?: number; // Current map number in series (0-indexed)
   demoFilePath?: string;
@@ -30,15 +31,28 @@ export interface Match {
   vetoCompleted?: boolean;
 }
 
+export interface MatchConfigPlayer {
+  steamid: string;
+  name: string;
+}
+
+export interface MatchConfigTeam {
+  id?: string;
+  name: string;
+  tag?: string;
+  flag?: string;
+  players?: MatchConfigPlayer[];
+}
+
 export interface MatchConfig {
-  maplist?: string[];
+  maplist?: string[] | null; // null until veto completes
   num_maps?: number;
   players_per_team?: number;
   expected_players_total?: number;
   expected_players_team1?: number;
   expected_players_team2?: number;
-  team1?: { name: string };
-  team2?: { name: string };
+  team1?: MatchConfigTeam;
+  team2?: MatchConfigTeam;
 }
 
 export interface PlayerStats {
@@ -70,4 +84,3 @@ export interface PlayerConnectionStatus {
   team2Connected: number;
   expectedTotal: number;
 }
-

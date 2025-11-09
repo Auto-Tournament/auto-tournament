@@ -20,7 +20,7 @@ import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
-import type { Team } from '../types';
+import type { Team, TeamsResponse } from '../types';
 
 export default function Teams() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -33,8 +33,7 @@ export default function Teams() {
   const loadTeams = async () => {
     try {
       setLoading(true);
-      const response = await api.get('/api/teams');
-      const data = response as { success: boolean; teams: Team[] };
+      const data = await api.get<TeamsResponse>('/api/teams');
       setTeams(data.teams || []);
       setError('');
     } catch (err) {

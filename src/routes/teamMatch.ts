@@ -16,9 +16,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     console.log(`[TeamMatch] Looking for matches for team: ${teamId}`);
 
-    // Check if team exists
-    const team = db.queryOne<{ id: string; name: string; tag: string }>(
-      'SELECT id, name, tag FROM teams WHERE id = ?',
+    // Check if team exists and get players
+    const team = db.queryOne<{ id: string; name: string; tag: string; players: string }>(
+      'SELECT id, name, tag, players FROM teams WHERE id = ?',
       [teamId]
     );
 
@@ -31,6 +31,37 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     console.log(`[TeamMatch] Team found: ${team.name}`);
+
+    // Parse players JSON
+    let parsedPlayers: Array<{ steamId: string; name: string }> = [];
+    if (team.players) {
+      try {
+        const playersObj = JSON.parse(team.players);
+        // Convert {index: {name, steamId}} to [{steamId, name}]
+        parsedPlayers = Object.values(playersObj).map((playerData: unknown) => {
+          if (typeof playerData === 'string') {
+            // Old format: {steamId: name}
+            return { steamId: 'unknown', name: playerData };
+          }
+          // New format: {index: {name, steamId}}
+          if (
+            playerData &&
+            typeof playerData === 'object' &&
+            'steamId' in playerData &&
+            'name' in playerData
+          ) {
+            const player = playerData as { steamId?: string; name?: string };
+            return {
+              steamId: player.steamId || 'unknown',
+              name: player.name || 'Unknown',
+            };
+          }
+          return { steamId: 'unknown', name: 'Unknown' };
+        });
+      } catch (err) {
+        console.error('[TeamMatch] Failed to parse players JSON:', err);
+      }
+    }
 
     // Find active match (loaded or live)
     let match = db.queryOne<
@@ -121,6 +152,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           id: team.id,
           name: team.name,
           tag: team.tag,
+          players: parsedPlayers,
         },
         hasMatch: false,
         message: 'No upcoming matches found',
@@ -141,7 +173,50 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     // Get match config for map pool
     const config = match.config ? JSON.parse(match.config) : {};
-    
+
+    // Get veto state to determine actual picked maps
+    let pickedMaps: string[] = [];
+    if (match.veto_state) {
+      try {
+        const vetoState = JSON.parse(match.veto_state);
+        if (vetoState?.status === 'completed' && Array.isArray(vetoState.pickedMaps)) {
+          pickedMaps = vetoState.pickedMaps
+            .sort(
+              (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+                (a.mapNumber || 0) - (b.mapNumber || 0)
+            )
+            .map((m: { mapName: string }) => m.mapName);
+        }
+      } catch (e) {
+        console.error('[TeamMatch] Failed to parse veto_state:', e);
+      }
+    }
+
+    // Transform players from dictionary to array for frontend
+    const transformPlayers = (players: Record<string, unknown> | undefined) => {
+      if (!players) return [];
+      return Object.values(players).map((playerData: unknown) => {
+        if (typeof playerData === 'string') {
+          // Old format: {steamId: name}
+          return { steamid: 'unknown', name: playerData };
+        }
+        // New format: {index: {name, steamId}}
+        if (
+          playerData &&
+          typeof playerData === 'object' &&
+          'steamId' in playerData &&
+          'name' in playerData
+        ) {
+          const player = playerData as { steamId?: string; name?: string };
+          return {
+            steamid: player.steamId || 'unknown',
+            name: player.name || 'Unknown',
+          };
+        }
+        return { steamid: 'unknown', name: 'Unknown' };
+      });
+    };
+
     // Get tournament status
     const tournament = db.queryOne<{ status: string }>(
       'SELECT status FROM tournament WHERE id = ?',
@@ -170,6 +245,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         id: team.id,
         name: team.name,
         tag: team.tag,
+        players: parsedPlayers,
       },
       hasMatch: true,
       tournamentStatus: tournament?.status || 'setup',
@@ -207,13 +283,34 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
               statusDescription: serverStatusDescription,
             }
           : null,
-        maps: config.maplist || [],
+        maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
         matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
         loadedAt: match.loaded_at,
         config: {
+          maplist: config.maplist,
+          num_maps: config.num_maps,
+          players_per_team: config.players_per_team,
           expected_players_total: config.players_per_team ? config.players_per_team * 2 : 10,
           expected_players_team1: config.players_per_team || 5,
           expected_players_team2: config.players_per_team || 5,
+          team1: config.team1
+            ? {
+                id: config.team1.id,
+                name: config.team1.name,
+                tag: config.team1.tag,
+                flag: config.team1.flag,
+                players: transformPlayers(config.team1.players),
+              }
+            : undefined,
+          team2: config.team2
+            ? {
+                id: config.team2.id,
+                name: config.team2.name,
+                tag: config.team2.tag,
+                flag: config.team2.flag,
+                players: transformPlayers(config.team2.players),
+              }
+            : undefined,
         },
       },
     });

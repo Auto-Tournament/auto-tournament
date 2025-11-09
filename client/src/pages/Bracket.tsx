@@ -22,6 +22,7 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
 import BracketVisualization from '../components/visualizations/BracketVisualization';
+import ModernBracketVisualization from '../components/visualizations/ModernBracketVisualization';
 import RoundRobinView from '../components/visualizations/RoundRobinView';
 import SwissView from '../components/visualizations/SwissView';
 import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
@@ -326,6 +327,14 @@ export default function Bracket() {
           ) : tournament.type === 'double_elimination' ? (
             <DoubleEliminationView
               matches={matches}
+              onMatchClick={(match) => setSelectedMatchId(match.id)}
+            />
+          ) : tournament.type === 'single_elimination' ? (
+            <ModernBracketVisualization
+              matches={matches}
+              totalRounds={totalRounds}
+              tournamentType={tournament.type}
+              isFullscreen={isFullscreen}
               onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
           ) : (

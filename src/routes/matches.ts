@@ -103,10 +103,10 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
 
 /**
  * GET /api/matches
- * List all matches (authenticated)
+ * List all matches (public - used by team pages)
  * Returns tournament matches with team information
  */
-router.get('/', requireAuth, (req: Request, res: Response) => {
+router.get('/', (req: Request, res: Response) => {
   try {
     const serverId = req.query.serverId as string | undefined;
 
@@ -144,9 +144,46 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
       }
     >(query, params);
 
+    // Transform players from dictionary to array for frontend
+    const transformPlayers = (players: Record<string, unknown> | undefined) => {
+      if (!players) return [];
+      return Object.values(players).map((playerData: unknown) => {
+        if (typeof playerData === 'string') {
+          // Old format: {steamId: name}
+          return { steamid: 'unknown', name: playerData };
+        }
+        // New format: {index: {name, steamId}}
+        if (playerData && typeof playerData === 'object' && 'steamId' in playerData && 'name' in playerData) {
+          const player = playerData as { steamId?: string; name?: string };
+          return {
+            steamid: player.steamId || 'unknown',
+            name: player.name || 'Unknown',
+          };
+        }
+        return { steamid: 'unknown', name: 'Unknown' };
+      });
+    };
+
     const matches: MatchListItem[] = rows.map((row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
       const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
+
+      // Transform config to include properly formatted team players
+      const transformedConfig = {
+        ...config,
+        team1: config.team1
+          ? {
+              ...config.team1,
+              players: transformPlayers(config.team1.players),
+            }
+          : undefined,
+        team2: config.team2
+          ? {
+              ...config.team2,
+              players: transformPlayers(config.team2.players),
+            }
+          : undefined,
+      };
 
       const match: MatchListItem = {
         id: row.id,
@@ -179,7 +216,7 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
             : undefined,
         status: row.status,
         serverId: row.server_id,
-        config,
+        config: transformedConfig,
         demoFilePath: row.demo_file_path,
         createdAt: row.created_at ?? 0,
         loadedAt: row.loaded_at,
@@ -215,9 +252,9 @@ router.get('/', requireAuth, (req: Request, res: Response) => {
 
 /**
  * GET /api/matches/:slug
- * Get match details (authenticated)
+ * Get match details (public - used by team pages)
  */
-router.get('/:slug', requireAuth, (req: Request, res: Response) => {
+router.get('/:slug', (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
     const match = matchService.getMatchBySlug(slug, getBaseUrl(req));

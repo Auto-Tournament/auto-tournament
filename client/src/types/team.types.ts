@@ -62,6 +62,18 @@ export interface TeamMatchInfo {
     expected_players_team2?: number;
     num_maps?: number;
     maplist?: string[];
+    team1?: {
+      id?: string;
+      name: string;
+      tag?: string;
+      players?: Array<{ steamid: string; name: string }>;
+    };
+    team2?: {
+      id?: string;
+      name: string;
+      tag?: string;
+      players?: Array<{ steamid: string; name: string }>;
+    };
   };
 }
 
