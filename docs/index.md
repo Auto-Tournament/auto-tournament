@@ -1,183 +1,133 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
+<div align="center" markdown>
+
 # MatchZy Auto Tournament
 
-**Automated CS2 tournament management** - one click from match creation to final scores.
+### **Automated CS2 tournament management**
 
-## What Is This?
+One click from bracket creation to final scores
 
-A complete tournament system for Counter-Strike 2 using the MatchZy plugin. Handles everything:
+[Get Started :material-rocket-launch:](getting-started/quick-start.md){ .md-button .md-button--primary }
+[View Features :material-star:](features/overview.md){ .md-button }
 
-- Create tournaments (Single/Double Elimination, Round Robin, Swiss)
-- Manage teams and players
-- Interactive map veto system (BO1/BO3/BO5)
-- Automatic server allocation and match loading
-- Real-time match tracking and live scores
-- Player connection monitoring
-- Admin match controls (pause, restore, broadcast, etc.)
-- Automatic bracket progression
-- Demo file management
-- Public team pages (no auth needed)
+</div>
 
-## Key Features
+---
 
-### 🎮 **Fully Automated**
+## Features
 
-- Add teams and servers
-- Generate bracket
-- Click "Start Tournament"
-- System handles the rest
+<div class="grid cards" markdown>
 
-### 🗺️ **Professional Map Veto**
+- :material-trophy:{ .lg .middle } **Full Automation**
 
-- FaceIT-style pick/ban system
-- Turn-based security
-- Real-time updates
-- Side selection
+  ***
 
-### 📊 **Real-Time Everything**
+  Create tournaments, generate brackets, start matches.  
+  System handles server allocation and progression.
 
-- Live scores via WebSocket
-- Player connection tracking
-- Match phase monitoring
-- Instant bracket updates
+  [:octicons-arrow-right-24: Quick Start](getting-started/quick-start.md)
 
-### 🎯 **Admin Controls**
+- :material-map:{ .lg .middle } **Map Veto System**
 
-- Pause/unpause matches
-- Restore round backups
-- Add backup players mid-match
-- Broadcast messages
-- Full RCON integration
+  ***
 
-### 👥 **Team Pages**
+  FaceIT-style interactive pick/ban for BO1/BO3/BO5.  
+  Real-time turn-based security.
 
-- Public pages for each team
-- No authentication needed
-- Participate in veto
-- Monitor matches
-- See server IPs
+  [:octicons-arrow-right-24: Learn More](features/overview.md#map-veto)
 
-## How It Works
+- :material-lightning-bolt:{ .lg .middle } **Real-Time Updates**
 
-**The Flow:**
+  ***
 
-1. **Admin Creates Tournament** → Select teams, format, map pool
-2. **Teams Start Veto** → Interactive map ban/pick process
-3. **Server Auto-Allocated** → System finds available server
-4. **Match Loads** → Config generated and sent to server
-5. **Players Connect** → Teams join and ready up
-6. **Match Goes Live** → Automatic start when all ready
-7. **Winner Auto-Advanced** → Bracket updates in real-time
-8. **Next Match Ready** → Process repeats
+  Live scores, player tracking, bracket updates.  
+  WebSocket-powered, zero refresh needed.
 
-### The Magic
+  [:octicons-arrow-right-24: See Features](features/overview.md)
 
-1. **MatchZy webhook** sends events to API (player connects, round ends, etc.)
-2. **API processes** events and updates database
-3. **WebSocket broadcasts** to all connected clients
-4. **Frontend updates** in real-time (no refresh!)
+- :material-account-group:{ .lg .middle } **Public Team Pages**
+
+  ***
+
+  No-auth pages for teams to view matches and veto.  
+  Share a link, teams handle the rest.
+
+  [:octicons-arrow-right-24: Team Features](features/overview.md#team-pages)
+
+- :material-console:{ .lg .middle } **Admin Controls**
+
+  ***
+
+  Pause, restore, add players, broadcast messages.  
+  Full RCON integration for match control.
+
+  [:octicons-arrow-right-24: Admin Guide](guides/running-matches.md)
+
+- :material-chart-line:{ .lg .middle } **Match Tracking**
+
+  ***
+
+  Player connections, round scores, statistics.  
+  Complete match history and analytics.
+
+  [:octicons-arrow-right-24: View All Features](features/overview.md)
+
+</div>
+
+---
 
 ## Quick Start
 
-### With Docker (Recommended)
+=== "Docker (Recommended)"
 
-```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
-cp .env.example .env
-# Edit .env with your tokens
-docker-compose up -d --build
-```
+    ```bash
+    git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+    cd matchzy-auto-tournament
+    cp .env.example .env
+    # Edit .env with your tokens
+    docker-compose up -d --build
+    ```
 
-**Access at:** `http://localhost:3069` (or your domain without port in production)
+    **Access:** `http://localhost:3069`
 
-### Without Docker
+=== "Local Development"
 
-```bash
-npm install
-cp .env.example .env
-# Edit .env
-npm run dev
-```
+    ```bash
+    npm install
+    cp .env.example .env
+    # Edit .env with your tokens
+    npm run dev
+    ```
 
-**Frontend:** `http://localhost:5173`  
-**API:** `http://localhost:3000`  
-**API Docs:** `http://localhost:3000/api-docs`
+    **Frontend:** `http://localhost:5173`
+    **API:** `http://localhost:3000`
+
+---
 
 ## Requirements
 
-- **CS2 servers** with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
-- **Node.js 18+** or Bun
-- **Docker** (for production)
+- CS2 servers with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases) :material-download:
+- Node.js 18+ or Docker :material-docker:
+- RCON access to servers :material-server-network:
 
-Recommended: Run on private network, expose via reverse proxy.
-
-!!! info "MatchZy Plugin"
-This project requires a modified version of MatchZy with enhanced event tracking.
-
-    **Download:** [github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
-
-    Extract to your CS2 server and restart. See [Quick Start](getting-started/quick-start.md#cs2-server-setup) for details.
-
-## Configuration
-
-Generate secure tokens:
-
-```bash
-openssl rand -hex 32
-```
-
-Required in `.env`:
-
-```bash
-API_TOKEN=your-admin-token        # Admin login
-SERVER_TOKEN=your-server-token    # CS2 ↔ API auth
-WEBHOOK_URL=http://your-ip:3000   # Where CS2 sends events
-```
-
-Optional:
-
-```bash
-STEAM_API_KEY=your-key            # For vanity URLs
-PORT=3000                         # API port
-```
-
-## First Tournament
-
-1. **Add Servers** (Admin Tools → Servers)
-   - CS2 IP, port, RCON password
-2. **Add Teams** (Teams → Create Team)
-   - Team name, players with Steam IDs
-3. **Create Tournament** (Tournaments → Create)
-   - Type, format, teams, map pool
-4. **Generate Bracket**
-5. **Start Tournament**
-6. System takes over! ✨
-
-## Documentation
-
-- **[Quick Start](getting-started/quick-start.md)** - Setup guide
-- **[First Tournament](getting-started/first-tournament.md)** - Step-by-step
-- **[Features](features/overview.md)** - What it can do
-- **[Running Matches](guides/running-matches.md)** - Admin operations
-- **[Troubleshooting](guides/troubleshooting.md)** - Common issues
-
-## Tech Stack
-
-**Backend:** TypeScript • Express • SQLite • Socket.IO • RCON  
-**Frontend:** React • Material UI • Vite  
-**Bracket System:** Extensible generator pattern with `brackets-manager.js`  
-**Deploy:** Docker • Caddy
-
-**For Developers:**
-
-- **[Architecture](development/architecture.md)** - System design and patterns
-- **[Contributing](development/contributing.md)** - How to contribute
+---
 
 ## Support
 
-- **Issues:** [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues)
-- **Discussions:** [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
+[:material-github: GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues){ .md-button }
+[:material-chat: Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions){ .md-button }
 
-## License
+---
 
-MIT License - Made with ❤️ for the CS2 community
+<div align="center" markdown>
+
+**Tech Stack:** TypeScript • React • Material UI • Express • SQLite • Socket.IO • Docker
+
+MIT License • Made with :material-heart: for the CS2 community
+
+</div>
