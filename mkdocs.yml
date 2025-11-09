@@ -1,73 +1,91 @@
+# Project information
 site_name: MatchZy Auto Tournament
-site_description: ⚡ Automated tournament management API for CS2 MatchZy - one click from match creation to final scores
-site_author: MatchZy Auto Tournament Contributors
 site_url: https://sivert-io.github.io/matchzy-auto-tournament/
+site_author: MatchZy Auto Tournament Contributors
+site_description: >-
+  Automated tournament management API for CS2 MatchZy - one click from match 
+  creation to final scores with real-time match tracking and statistics
 
+# Repository
 repo_name: sivert-io/matchzy-auto-tournament
 repo_url: https://github.com/sivert-io/matchzy-auto-tournament
 edit_uri: edit/main/docs/
 
+# Copyright
+copyright: Copyright &copy; 2025 MatchZy Auto Tournament Contributors
+
+# Configuration
 theme:
   name: material
-  logo: icon.svg
-  favicon: icon.svg
-  palette:
-    # Light mode
-    - media: "(prefers-color-scheme: light)"
-      scheme: default
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-7
-        name: Switch to dark mode
-    # Dark mode (matches project's M3 Purple theme)
-    - media: "(prefers-color-scheme: dark)"
-      scheme: slate
-      primary: custom
-      accent: custom
-      toggle:
-        icon: material/brightness-4
-        name: Switch to light mode
-  font:
-    text: Roboto
-    code: Fira Code
   features:
-    - announce.dismiss
+    - content.action.edit
+    - content.action.view
     - content.code.annotate
     - content.code.copy
-    - content.tabs.link
+    # - content.code.select
+    # - content.footnote.tooltips
+    # - content.tabs.link
     - content.tooltips
-    - navigation.expand
+    # - header.autohide
+    # - navigation.expand
     - navigation.footer
     - navigation.indexes
-    - navigation.instant
-    - navigation.instant.prefetch
-    - navigation.instant.progress
+    # - navigation.instant
+    # - navigation.instant.prefetch
+    # - navigation.instant.progress
+    # - navigation.prune
     - navigation.sections
     - navigation.tabs
-    - navigation.tabs.sticky
+    # - navigation.tabs.sticky
     - navigation.top
     - navigation.tracking
     - search.highlight
     - search.share
     - search.suggest
     - toc.follow
+    # - toc.integrate
+  palette:
+    - media: "(prefers-color-scheme)"
+      toggle:
+        icon: material/link
+        name: Switch to light mode
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: indigo
+      toggle:
+        icon: material/toggle-switch-off
+        name: Switch to system preference
+  font:
+    text: Roboto
+    code: Roboto Mono
+  favicon: icon.svg
+  logo: icon.svg
   icon:
     repo: fontawesome/brands/github
 
+# Plugins
 plugins:
-  - search
+  - search:
+      separator: '[\s\u200b\-_,:!=\[\]()"`/]+|\.(?!\d)|&[lg]t;|(?!\b)(?=[A-Z][a-z])'
   - git-revision-date-localized:
       enable_creation_date: true
       type: timeago
 
+# Extensions
 markdown_extensions:
   - abbr
   - admonition
   - attr_list
   - def_list
   - footnotes
-  - meta
   - md_in_html
   - toc:
       permalink: true
@@ -78,8 +96,8 @@ markdown_extensions:
   - pymdownx.caret
   - pymdownx.details
   - pymdownx.emoji:
-      emoji_index: !!python/name:material.extensions.emoji.twemoji
       emoji_generator: !!python/name:material.extensions.emoji.to_svg
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
   - pymdownx.highlight:
       anchor_linenums: true
       line_spans: __span
@@ -87,14 +105,23 @@ markdown_extensions:
   - pymdownx.inlinehilite
   - pymdownx.keys
   - pymdownx.magiclink:
+      normalize_issue_symbols: true
       repo_url_shorthand: true
       user: sivert-io
       repo: matchzy-auto-tournament
   - pymdownx.mark
   - pymdownx.smartsymbols
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - pymdownx.tabbed:
       alternate_style: true
+      combine_header_slug: true
+      slugify: !!python/object/apply:pymdownx.slugs.slugify
+        kwds:
+          case: lower
   - pymdownx.tasklist:
       custom_checkbox: true
   - pymdownx.tilde
@@ -102,8 +129,7 @@ markdown_extensions:
 extra_css:
   - stylesheets/extra.css
 
-copyright: Copyright &copy; 2025 MatchZy Auto Tournament Contributors
-
+# Additional configuration
 extra:
   social:
     - icon: fontawesome/brands/github
@@ -113,6 +139,7 @@ extra:
     provider: mike
   generator: false
 
+# Page tree
 nav:
   - Home: index.md
   - Getting Started:

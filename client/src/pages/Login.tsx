@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, TextField, Button, Alert, Container } from '@mui/material';
+import { Box, Card, TextField, Button, Alert, Container, Link } from '@mui/material';
+import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
@@ -112,6 +113,29 @@ export default function Login() {
               {loading ? 'Signing in...' : 'Sign In'}
             </Button>
           </form>
+
+          <Box sx={{ textAlign: 'center', mt: 3 }}>
+            <Link
+              href="https://github.com/sivert-io/matchzy-auto-tournament"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontSize: '0.875rem',
+                color: 'text.secondary',
+                textDecoration: 'none',
+                '&:hover': {
+                  color: 'primary.main',
+                  textDecoration: 'underline',
+                },
+              }}
+            >
+              GitHub
+              <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+            </Link>
+          </Box>
         </Card>
       </Container>
     </Box>

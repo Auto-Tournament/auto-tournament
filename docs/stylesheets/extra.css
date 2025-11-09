@@ -5,20 +5,21 @@
   --md-primary-fg-color: #6750A4;        /* Purple for light mode */
   --md-primary-fg-color--light: #D0BCFF;
   --md-primary-fg-color--dark: #381E72;
-  --md-accent-fg-color: #9C88D6;
+  --md-accent-fg-color: #D0BCFF;         /* Bright purple for accents */
 }
 
 [data-md-color-scheme="slate"] {
   /* Dark mode - match project exactly */
   
-  /* Header/Navbar - use surface color like project navbar */
-  --md-primary-fg-color: #2B2930;        /* Surface/paper color - same as navbar */
+  /* Header/Navbar - truly dark background */
+  --md-primary-fg-color: #1C1B1F;        /* Dark background - same as body */
   --md-primary-fg-color--light: #E8DEF8;
-  --md-primary-fg-color--dark: #1C1B1F;
+  --md-primary-fg-color--dark: #0D0D0F;
   --md-primary-bg-color: #E6E1E5;
   
-  /* Accent - keep purple for links, buttons, etc. */
-  --md-accent-fg-color: #D0BCFF;         /* M3 Purple for accents */
+  /* Accent - bright purple for links, buttons, active states */
+  --md-accent-fg-color: #D0BCFF;         /* M3 Purple primary - same as frontend */
+  --md-accent-fg-color--transparent: rgba(208, 188, 255, 0.1);
   
   /* Background colors to match project */
   --md-default-bg-color: #1C1B1F;        /* Same as project background.default */
@@ -28,6 +29,35 @@
   /* Code block colors */
   --md-code-bg-color: #2B2930;           /* Same as project paper background */
   --md-code-fg-color: #E6E1E5;
+  
+  /* Links - use bright purple */
+  --md-typeset-a-color: #D0BCFF;
+  
+  /* Table of contents active item */
+  --md-typeset-table-color: #2B2930;
+}
+
+/* Enhanced purple highlights for dark mode */
+[data-md-color-scheme="slate"] {
+  /* Sidebar active nav item */
+  .md-nav__link--active {
+    color: #D0BCFF !important;
+  }
+  
+  /* Hover states */
+  .md-nav__link:hover {
+    color: #E8DEF8 !important;
+  }
+  
+  /* Search highlights */
+  .md-search-result__meta {
+    background-color: #2B2930;
+  }
+  
+  /* Admonition headers */
+  .md-typeset .admonition-title {
+    background-color: rgba(208, 188, 255, 0.1);
+  }
 }
 
 /* Rounded corners to match project */
@@ -39,5 +69,38 @@
 .md-header__button.md-logo img,
 .md-header__button.md-logo svg {
   height: 2rem;
+}
+
+/* Clean separator between header and content */
+[data-md-color-scheme="slate"] .md-header {
+  box-shadow: 0 0 0.2rem rgba(0,0,0,.1), 0 0.2rem 0.4rem rgba(0,0,0,.2);
+}
+
+/* Improve sidebar appearance */
+[data-md-color-scheme="slate"] .md-sidebar {
+  background-color: transparent;
+}
+
+/* Better content cards */
+[data-md-color-scheme="slate"] .md-typeset .admonition,
+[data-md-color-scheme="slate"] .md-typeset details {
+  border: none;
+  box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,.05), 0 0 0.05rem rgba(0,0,0,.1);
+}
+
+/* Tabs styling */
+[data-md-color-scheme="slate"] .md-tabs {
+  background-color: #1C1B1F;
+  border-bottom: 0.05rem solid rgba(208, 188, 255, 0.1);
+}
+
+/* Code blocks with subtle borders */
+[data-md-color-scheme="slate"] .md-typeset pre > code {
+  border-radius: 0.5rem;
+}
+
+/* Navigation path breadcrumbs */
+[data-md-color-scheme="slate"] .md-path {
+  color: #CAC4D0;
 }
 

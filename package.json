@@ -15,7 +15,9 @@
         "build:client": "vite build",
         "start": "node dist/index.js",
         "lint": "eslint .",
-        "lint:fix": "eslint . --fix"
+        "lint:fix": "eslint . --fix",
+        "docs:serve": "mkdocs serve",
+        "docs:build": "mkdocs build"
     },
     "keywords": [
         "cs2",
