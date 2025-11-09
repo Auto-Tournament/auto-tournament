@@ -8,7 +8,7 @@
   <p>Complete tournament automation for Counter-Strike 2 using the MatchZy plugin. Zero manual server configuration.</p>
 
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-orange.svg)](LICENSE)
-[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker compose.yml)
+[![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
 **📚 [Full Documentation](https://sivert-io.github.io/matchzy-auto-tournament/)** • [Quick Start](https://sivert-io.github.io/matchzy-auto-tournament/getting-started/quick-start/) • [Features](https://sivert-io.github.io/matchzy-auto-tournament/features/overview/) • [Troubleshooting](https://sivert-io.github.io/matchzy-auto-tournament/guides/troubleshooting/)
