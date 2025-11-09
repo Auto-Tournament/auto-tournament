@@ -1,7 +1,7 @@
 # Project information
 site_name: MatchZy Auto Tournament
 site_url: https://sivert-io.github.io/matchzy-auto-tournament/
-site_author: MatchZy Auto Tournament Contributors
+site_author: Sivert Gullberg Hansen
 site_description: >-
   Automated tournament management API for CS2 MatchZy - one click from match 
   creation to final scores with real-time match tracking and statistics
@@ -12,7 +12,7 @@ repo_url: https://github.com/sivert-io/matchzy-auto-tournament
 edit_uri: edit/main/docs/
 
 # Copyright
-copyright: Copyright &copy; 2025 MatchZy Auto Tournament Contributors
+copyright: Copyright &copy; 2025 Sivert Gullberg Hansen
 
 # Configuration
 theme:
@@ -131,10 +131,16 @@ extra_css:
 
 # Additional configuration
 extra:
+  analytics:
+    provider: google
+    property: G-RJYR9R229H
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/sivert-io/matchzy-auto-tournament
       name: GitHub Repository
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/sivertgullberghansen/
+      name: LinkedIn Profile
   version:
     provider: mike
   generator: false
