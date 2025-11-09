@@ -15,6 +15,7 @@ copyright: Copyright &copy; 2025 Sivert Gullberg Hansen
 
 # Directory configuration (config is inside docs/, so use current dir)
 docs_dir: .
+site_dir: ../site  # Build output goes to project root /site (outside docs/)
 
 # Configuration
 theme:
