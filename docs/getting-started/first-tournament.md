@@ -233,30 +233,30 @@ If issues arise, open match modal for:
 
 See [Running Matches](../guides/running-matches.md) for detailed scenarios.
 
-## Common Issues
+??? warning "Common Issues"
 
-**Veto stuck:**
+    **Veto stuck:**
 
-- Admin Controls → Skip Veto
-- Manually set maps if needed
+    - Admin Controls → Skip Veto
+    - Manually set maps if needed
 
-**No server available:**
+    **No server available:**
 
-- Check server status (Admin Tools)
-- Free up busy servers
-- Add more servers
+    - Check server status (Admin Tools)
+    - Free up busy servers
+    - Add more servers
 
-**Player can't connect:**
+    **Player can't connect:**
 
-- Pause match
-- Add as backup player via admin controls
-- Verify Steam ID is correct
+    - Pause match
+    - Add as backup player via admin controls
+    - Verify Steam ID is correct
 
-**Match not auto-starting:**
+    **Match not auto-starting:**
 
-- Check all 10 players ready
-- Force start via admin controls
-- Check MatchZy console for errors
+    - Check all 10 players ready
+    - Force start via admin controls
+    - Check MatchZy console for errors
 
 ## Post-Tournament
 

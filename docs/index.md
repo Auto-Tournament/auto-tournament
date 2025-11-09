@@ -34,29 +34,15 @@ One click from bracket creation to final scores
 
 ## Quick Start
 
-=== "Docker (Recommended)"
+```bash
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+cp .env.example .env
+# Edit .env with your tokens
+docker compose up -d --build
+```
 
-    ```bash
-    git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-    cd matchzy-auto-tournament
-    cp .env.example .env
-    # Edit .env with your tokens
-    docker compose up -d --build
-    ```
-
-    **Access:** `http://localhost:3069`
-
-=== "Local Development"
-
-    ```bash
-    npm install
-    cp .env.example .env
-    # Edit .env with your tokens
-    npm run dev
-    ```
-
-    **Frontend:** `http://localhost:5173`
-    **API:** `http://localhost:3000`
+**Access:** `http://localhost:3069`
 
 ---
 

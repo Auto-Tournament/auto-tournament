@@ -204,7 +204,7 @@ Team pages are public (no login). Security is based on:
 
 ## Troubleshooting
 
-!!! failure "Veto not showing for teams?"
+??? failure "Veto not showing for teams?"
 **Check:**
 
     - Tournament status is `in_progress` (admin must start it)
@@ -213,13 +213,13 @@ Team pages are public (no login). Security is based on:
 
     **Fix:** Admin clicks "Start Tournament" button
 
-!!! failure "Can't click any maps?"
+??? failure "Can't click any maps?"
 **Cause:** It's not your turn
 
     **Solution:** Wait for other team to complete their action. You'll see:
     "Waiting for {Other Team} to ban a map..."
 
-!!! failure "Match not loading after veto?"
+??? failure "Match not loading after veto?"
 **Check:**
 
     - At least one server is online and available

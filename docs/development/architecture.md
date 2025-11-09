@@ -20,35 +20,37 @@ src/services/
 
 ### How It Works
 
-#### 1. Interface (`bracketGenerators/types.ts`)
+??? example "Technical Implementation Details"
 
-```typescript
-interface IBracketGenerator {
-  generate(tournament, getMatchesCallback): Promise<BracketMatch[] | BracketGeneratorResult>;
-  reset?(): void; // Optional state reset
-}
-```
+    **1. Interface (`bracketGenerators/types.ts`)**
 
-#### 2. Registry (`bracketGenerators/index.ts`)
+    ```typescript
+    interface IBracketGenerator {
+      generate(tournament, getMatchesCallback): Promise<BracketMatch[] | BracketGeneratorResult>;
+      reset?(): void; // Optional state reset
+    }
+    ```
 
-Maps tournament types to their generators:
+    **2. Registry (`bracketGenerators/index.ts`)**
 
-```typescript
-const bracketGenerators: Record<TournamentType, IBracketGenerator> = {
-  single_elimination: standardBracketGenerator,
-  double_elimination: standardBracketGenerator,
-  round_robin: standardBracketGenerator,
-  swiss: swissBracketGenerator,
-};
-```
+    Maps tournament types to their generators:
 
-#### 3. Usage (`tournamentService.ts`)
+    ```typescript
+    const bracketGenerators: Record<TournamentType, IBracketGenerator> = {
+      single_elimination: standardBracketGenerator,
+      double_elimination: standardBracketGenerator,
+      round_robin: standardBracketGenerator,
+      swiss: swissBracketGenerator,
+    };
+    ```
 
-```typescript
-const generator = getBracketGenerator(tournament.type);
-generator.reset?.(); // Reset state if stateful
-const result = await generator.generate(tournament, () => this.getMatches());
-```
+    **3. Usage (`tournamentService.ts`)**
+
+    ```typescript
+    const generator = getBracketGenerator(tournament.type);
+    generator.reset?.(); // Reset state if stateful
+    const result = await generator.generate(tournament, () => this.getMatches());
+    ```
 
 ### Adding New Tournament Types
 

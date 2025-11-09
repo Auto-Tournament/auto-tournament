@@ -16,27 +16,27 @@
    - Minimum 5 players required
 5. Click **"Create Team"**
 
-### Bulk Import (JSON)
+??? example "Advanced: Bulk Import (JSON)"
 
-For multiple teams, use JSON import:
+    For multiple teams, use JSON import:
 
-```json
-{
-  "teams": [
+    ```json
     {
-      "name": "Team Pinger",
-      "tag": "PING",
-      "players": [
-        { "steamId": "76561199486434142", "name": "Simpert" },
-        { "steamId": "76561198765432109", "name": "Player2" },
-        { "steamId": "76561198765432108", "name": "Player3" },
-        { "steamId": "76561198765432107", "name": "Player4" },
-        { "steamId": "76561198765432106", "name": "Player5" }
+      "teams": [
+        {
+          "name": "Team Pinger",
+          "tag": "PING",
+          "players": [
+            { "steamId": "76561199486434142", "name": "Simpert" },
+            { "steamId": "76561198765432109", "name": "Player2" },
+            { "steamId": "76561198765432108", "name": "Player3" },
+            { "steamId": "76561198765432107", "name": "Player4" },
+            { "steamId": "76561198765432106", "name": "Player5" }
+          ]
+        }
       ]
     }
-  ]
-}
-```
+    ```
 
 ## Team Pages
 
@@ -81,16 +81,16 @@ If a team withdraws mid-tournament:
 3. Select team to replace
 4. Bracket updates automatically
 
-## Common Issues
+??? warning "Common Issues"
 
-**Player can't connect: "Auth rejected"**
+    **Player can't connect: "Auth rejected"**
 
-- Verify Steam ID is correct
-- Add as backup player via admin controls
-- Check `get5_check_auths true` is set
+    - Verify Steam ID is correct
+    - Add as backup player via admin controls
+    - Check `get5_check_auths true` is set
 
-**Team not appearing in tournament creation**
+    **Team not appearing in tournament creation**
 
-- Ensure team has at least 5 players
-- Refresh page
-- Check team wasn't deleted
+    - Ensure team has at least 5 players
+    - Refresh page
+    - Check team wasn't deleted

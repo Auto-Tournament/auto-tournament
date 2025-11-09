@@ -29,7 +29,7 @@ docker compose up -d --build
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
 
-!!! info "Docker Architecture"
+??? info "Advanced: Docker Architecture"
 The Docker setup uses **Caddy** as a reverse proxy that serves:
 
     - Frontend app at `/` (root)
@@ -37,24 +37,24 @@ The Docker setup uses **Caddy** as a reverse proxy that serves:
 
     **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
 
-### Local Development
+??? example "Advanced: Local Development (without Docker)"
 
-```bash
-# Install dependencies
-npm install
+    ```bash
+    # Install dependencies
+    npm install
 
-# Setup environment
-cp .env.example .env
+    # Setup environment
+    cp .env.example .env
 
-# Edit .env
-nano .env
+    # Edit .env
+    nano .env
 
-# Start in dev mode
-npm run dev
-```
+    # Start in dev mode
+    npm run dev
+    ```
 
-**Frontend:** `http://localhost:5173`  
-**API:** `http://localhost:3000`
+    **Frontend:** `http://localhost:5173`
+    **API:** `http://localhost:3000`
 
 ## Environment Setup
 
@@ -82,13 +82,13 @@ STEAM_API_KEY=<your-steam-key>     # For vanity URL resolution
 PORT=3000                          # API port (default: 3000)
 ```
 
-### Token Explanation
+??? info "What do these tokens do?"
 
-- **API_TOKEN**: Used to login to admin panel
-- **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
-- **WEBHOOK_URL**: Where CS2 servers send events
-  - Docker: `http://your-ip:3069/api` (Caddy handles routing)
-  - Local dev: `http://your-ip:3000` (direct to API)
+    - **API_TOKEN**: Used to login to admin panel
+    - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
+    - **WEBHOOK_URL**: Where CS2 servers send events
+        - Docker: `http://your-ip:3069/api` (Caddy handles routing)
+        - Local dev: `http://your-ip:3000` (direct to API)
 
 ## CS2 Server Setup
 
@@ -195,62 +195,60 @@ You're ready to create your first tournament!
 
 👉 **[First Tournament Guide](first-tournament.md)** - Step-by-step tournament setup
 
-## Network Notes
+??? abstract "Advanced: Network Configuration"
 
-**Private Network (LAN):**
+    **Private Network (LAN):**
 
-- Everything on `192.168.x.x` - works out of the box
-- Share team pages with local IPs
+    - Everything on `192.168.x.x` - works out of the box
+    - Share team pages with local IPs
 
-**Public Internet:**
+    **Public Internet:**
 
-- Get a domain or use public IP
-- **Docker:** Expose/proxy port **3069** only - Caddy serves both app and API
-  - `WEBHOOK_URL=https://your-domain.com/api`
-- **Local dev:** Expose port **3000** for API, **5173** for frontend
-  - `WEBHOOK_URL=http://your-ip:3000`
+    - Get a domain or use public IP
+    - **Docker:** Expose/proxy port **3069** only - Caddy serves both app and API
+      - `WEBHOOK_URL=https://your-domain.com/api`
+    - **Local dev:** Expose port **3000** for API, **5173** for frontend
+      - `WEBHOOK_URL=http://your-ip:3000`
 
-**Recommended:** Run on private network, expose via reverse proxy if needed.
+    **Recommended:** Run on private network, expose via reverse proxy if needed.
 
-!!! tip "Docker = Single Port"
-With Docker, CS2 servers hit `your-domain.com/api/events/...` (port 3069).  
- Caddy routes `/api` internally - no need to expose port 3000!
+    **Single Port Architecture:**
+
+    With Docker, CS2 servers hit `your-domain.com/api/events/...` (port 3069).
+    Caddy routes `/api` internally - no need to expose port 3000!
 
 ## Troubleshooting
 
-**Can't login:**
+??? failure "Can't login?"
 
-- Verify API_TOKEN in `.env` matches what you're entering
-- Restart API after changing `.env`
+    - Verify API_TOKEN in `.env` matches what you're entering
+    - Restart API after changing `.env`: `docker compose restart`
 
-**Server shows offline:**
+??? failure "Server shows offline?"
 
-- Check RCON password is correct in `.env`
-- Verify CS2 server is running
-- Test RCON connectivity from your API server:
-  ```bash
-  # Replace with your CS2 server's IP and RCON port
-  nc -zv 192.168.1.100 27015
-  ```
-  Should show "succeeded" if connection works
+    - Check RCON password is correct in `.env`
+    - Verify CS2 server is running
+    - Test RCON connectivity from your API server:
+        ```bash
+        # Replace with your CS2 server's IP and RCON port
+        nc -zv 192.168.1.100 27015
+        ```
+        Should show "succeeded" if connection works
 
-**Events not arriving:**
+??? failure "Events not arriving?"
 
-- Test CS2 server can reach API (run this from your CS2 server):
+    - Test CS2 server can reach API (run this from your CS2 server):
+        ```bash
+        # Docker: Test via Caddy
+        curl http://192.168.1.50:3069/api/events/test
 
-  ```bash
-  # Docker: Test via Caddy
-  curl http://192.168.1.50:3069/api/events/test
+        # Local dev: Test direct API
+        curl http://192.168.1.50:3000/api/events/test
+        ```
+        Should return `{"message":"Test received"}`
+    - Verify `WEBHOOK_URL` in `.env` matches your setup:
+        - Docker: `http://your-ip:3069/api` or `https://your-domain.com/api`
+        - Local dev: `http://your-ip:3000`
+    - Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
 
-  # Local dev: Test direct API
-  curl http://192.168.1.50:3000/api/events/test
-  ```
-
-  Should return `{"message":"Test received"}`
-
-- Verify `WEBHOOK_URL` in `.env` matches your setup:
-  - Docker: `http://your-ip:3069/api` or `https://your-domain.com/api`
-  - Local dev: `http://your-ip:3000`
-- Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
-
-More help: **[Troubleshooting Guide](../guides/troubleshooting.md)**
+**Need more help?** See the **[Troubleshooting Guide](../guides/troubleshooting.md)**

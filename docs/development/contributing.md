@@ -130,33 +130,33 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
 2. Add emitter in `src/services/socketService.ts`
 3. Add listener in frontend `src/hooks/useWebSocket.ts`
 
-## Testing
+??? example "Testing"
 
-```bash
-# Run backend build (TypeScript compilation)
-npm run build
+    ```bash
+    # Run backend build (TypeScript compilation)
+    npm run build
 
-# Run backend in development
-npm run dev
+    # Run backend in development
+    npm run dev
 
-# Build frontend
-npm run build:client
+    # Build frontend
+    npm run build:client
 
-# Build both
-npm run build:all
-```
+    # Build both
+    npm run build:all
+    ```
 
-### Manual Testing
+    **Manual Testing:**
 
-1. Start the development server
-2. Create a test tournament
-3. Test the full flow:
-   - Team creation
-   - Tournament creation
-   - Bracket generation
-   - Map veto
-   - Match loading
-   - Live scoring
+    1. Start the development server
+    2. Create a test tournament
+    3. Test the full flow:
+       - Team creation
+       - Tournament creation
+       - Bracket generation
+       - Map veto
+       - Match loading
+       - Live scoring
 
 ## Pull Request Process
 
