@@ -10,12 +10,12 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 
 **Supported Formats:**
 
-| Format | Teams | Matches | Description |
-|--------|-------|---------|-------------|
-| Single Elimination | 2-128 | ~N | One loss = eliminated |
-| Double Elimination | 2-128 | ~2N | Two losses = eliminated |
-| Round Robin | 2-32 | N(N-1)/2 | Everyone plays everyone |
-| Swiss | 4-64 | ~log₂(N) rounds | Similar records face off |
+| Format             | Teams | Matches         | Description              |
+| ------------------ | ----- | --------------- | ------------------------ |
+| Single Elimination | 2-128 | ~N              | One loss = eliminated    |
+| Double Elimination | 2-128 | ~2N             | Two losses = eliminated  |
+| Round Robin        | 2-32  | N(N-1)/2        | Everyone plays everyone  |
+| Swiss              | 4-64  | ~log₂(N) rounds | Similar records face off |
 
 **Features:**
 
@@ -30,6 +30,7 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 **States:**
 
 1. **Setup** → Configuring tournament and teams
+
    - Add teams
    - Select format and map pool
    - Can modify teams
@@ -37,11 +38,9 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 2. **Ready** → Bracket generated, waiting to start
    - Bracket preview available
    - Can regenerate bracket
-   
 3. **In Progress** → Tournament active, matches running
    - Matches automatically progress
    - Real-time updates
-   
 4. **Completed** → All matches finished
    - Final results available
    - Demos ready for download
@@ -62,15 +61,15 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 
 The system shows context-aware status messages:
 
-| Status | Condition | Message |
-|--------|-----------|---------|
-| Pending | Tournament not started | "Waiting for tournament to start..." |
-| Ready | Veto not complete | "Teams voting for maps..." |
-| Ready | Veto complete | "Veto complete - Waiting for server..." |
-| Loaded | 0 players | "Server ready - Waiting for players (0/10)" |
-| Loaded | Some players | "Waiting for players (3/10)" |
-| Loaded | All players | "All players connected - Waiting for ready up" |
-| Live | - | "Match in progress" |
+| Status  | Condition              | Message                                        |
+| ------- | ---------------------- | ---------------------------------------------- |
+| Pending | Tournament not started | "Waiting for tournament to start..."           |
+| Ready   | Veto not complete      | "Teams voting for maps..."                     |
+| Ready   | Veto complete          | "Veto complete - Waiting for server..."        |
+| Loaded  | 0 players              | "Server ready - Waiting for players (0/10)"    |
+| Loaded  | Some players           | "Waiting for players (3/10)"                   |
+| Loaded  | All players            | "All players connected - Waiting for ready up" |
+| Live    | -                      | "Match in progress"                            |
 
 ---
 
@@ -82,7 +81,7 @@ The system shows context-aware status messages:
 
 - 🔄 Match status changes (pending → ready → loaded → live → completed)
 - 🔄 Players connect/disconnect
-- 🔄 Players ready/unready  
+- 🔄 Players ready/unready
 - 🔄 Veto actions happen (ban, pick, side selection)
 - 🔄 Tournament state changes (starts, completes)
 - 🔄 Bracket updates (winners determined)
@@ -98,6 +97,7 @@ Shows **live roster** of all 10 players with status:
 - ✅ **Ready** — Player typed `.ready` (green)
 
 **Tracked via events:**
+
 - `player_connect` → Add to roster
 - `player_disconnect` → Remove from roster
 - `player_ready` → Mark as ready
@@ -135,27 +135,33 @@ When tournament starts or veto completes:
 ### 25+ MatchZy Events Processed
 
 **Player Events:**
+
 - `player_connect`, `player_disconnect`
 - `player_ready`, `player_unready`
 - `player_death`, `round_mvp`
 
 **Match Phase Events:**
+
 - `series_start`, `series_end`
 - `going_live`, `warmup_ended`
 - `knife_round_started`, `knife_round_ended`
 - `halftime_started`, `overtime_started`
 
 **Round Events:**
+
 - `round_started`, `round_end`
 - `bomb_planted`, `bomb_defused`, `bomb_exploded`
 
 **Pause Events:**
+
 - `match_paused`, `unpause_requested`, `match_unpaused`
 
 **Admin Events:**
+
 - `side_swap`, `backup_loaded`
 
 **All events:**
+
 - ✅ Logged to console
 - ✅ Stored in database (`match_events` table)
 - ✅ Logged to files (`data/logs/events/`)
@@ -196,6 +202,7 @@ When tournament starts or veto completes:
 6. Clicks "Add Player to Match"
 
 **Backend sends RCON:**
+
 ```
 get5_addplayer {steamId} {team} "{nickname}"
 ```
@@ -256,6 +263,7 @@ Admins can download demos from:
 ### Sound Notifications
 
 **8 Available Sounds:**
+
 - Notification (default)
 - Alert
 - Bell
@@ -266,6 +274,7 @@ Admins can download demos from:
 - Success
 
 **Controls:**
+
 - 🔊 Volume slider
 - 🔇 Mute toggle
 - 🎵 Sound preview
@@ -291,6 +300,7 @@ Shows **unfiltered stream** of all MatchZy events from all servers:
 - ✅ Server filter (optional)
 
 **Perfect for debugging:**
+
 - Verify events are being sent
 - Check player Steam IDs
 - Monitor match progression
@@ -308,7 +318,6 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 
 ## Next Steps
 
-- 🎮 **[Player Tracking Details](player-tracking.md)** — How player status works
-- 📡 **[Event Processing Deep Dive](events.md)** — All event types explained
-- 🎛️ **[Admin Controls Reference](admin-controls.md)** — Complete command list
-
+- 🎮 **[Map Veto System](map-veto.md)** — Interactive pick/ban flow
+- 📖 **[Running Matches](../guides/running-matches.md)** — Match management guide
+- 🎯 **[First Tournament](../getting-started/first-tournament.md)** — Step-by-step tutorial

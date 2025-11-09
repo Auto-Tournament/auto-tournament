@@ -38,16 +38,16 @@ For multiple teams, use JSON import:
 }
 ```
 
-Download example: [`TEAM_IMPORT_EXAMPLE.json`](../TEAM_IMPORT_EXAMPLE.json)
-
 ## Team Pages
 
 Each team gets a public URL:
+
 ```
 https://your-domain.com/team/team-pinger
 ```
 
 Share this with teams - no authentication needed. They can:
+
 - View upcoming matches
 - Participate in map veto
 - See live scores
@@ -84,11 +84,13 @@ If a team withdraws mid-tournament:
 ## Common Issues
 
 **Player can't connect: "Auth rejected"**
+
 - Verify Steam ID is correct
 - Add as backup player via admin controls
 - Check `get5_check_auths true` is set
 
 **Team not appearing in tournament creation**
+
 - Ensure team has at least 5 players
 - Refresh page
 - Check team wasn't deleted

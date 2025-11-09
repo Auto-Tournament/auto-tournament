@@ -29,6 +29,14 @@ docker compose up -d --build
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
 
+!!! info "Docker Architecture"
+The Docker setup uses **Caddy** as a reverse proxy that serves:
+
+    - Frontend app at `/` (root)
+    - API at `/api`
+
+    **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
+
 ### Local Development
 
 ```bash
@@ -62,7 +70,12 @@ Edit `.env`:
 # Required
 API_TOKEN=<token-from-above>       # Admin authentication
 SERVER_TOKEN=<different-token>     # CS2 server authentication
-WEBHOOK_URL=http://192.168.1.100:3000  # Your API server IP
+
+# Docker: Use port 3069 with /api path (Caddy routes it internally)
+WEBHOOK_URL=http://192.168.1.100:3069/api
+
+# Local dev: Use port 3000 directly (no Caddy)
+# WEBHOOK_URL=http://192.168.1.100:3000
 
 # Optional
 STEAM_API_KEY=<your-steam-key>     # For vanity URL resolution
@@ -73,7 +86,9 @@ PORT=3000                          # API port (default: 3000)
 
 - **API_TOKEN**: Used to login to admin panel
 - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
-- **WEBHOOK_URL**: Where CS2 servers send events (your API server)
+- **WEBHOOK_URL**: Where CS2 servers send events
+  - Docker: `http://your-ip:3069/api` (Caddy handles routing)
+  - Local dev: `http://your-ip:3000` (direct to API)
 
 ## CS2 Server Setup
 
@@ -190,11 +205,16 @@ You're ready to create your first tournament!
 **Public Internet:**
 
 - Get a domain or use public IP
-- Use reverse proxy (Caddy/Nginx) with SSL
-- Update `WEBHOOK_URL` to public address
-- Port forward 3069 (or proxy port)
+- **Docker:** Expose/proxy port **3069** only - Caddy serves both app and API
+  - `WEBHOOK_URL=https://your-domain.com/api`
+- **Local dev:** Expose port **3000** for API, **5173** for frontend
+  - `WEBHOOK_URL=http://your-ip:3000`
 
 **Recommended:** Run on private network, expose via reverse proxy if needed.
+
+!!! tip "Docker = Single Port"
+With Docker, CS2 servers hit `your-domain.com/api/events/...` (port 3069).  
+ Caddy routes `/api` internally - no need to expose port 3000!
 
 ## Troubleshooting
 
@@ -205,14 +225,32 @@ You're ready to create your first tournament!
 
 **Server shows offline:**
 
-- Check RCON password is correct
-- Verify server is running
-- Test from API server: `nc -zv server-ip 27015`
+- Check RCON password is correct in `.env`
+- Verify CS2 server is running
+- Test RCON connectivity from your API server:
+  ```bash
+  # Replace with your CS2 server's IP and RCON port
+  nc -zv 192.168.1.100 27015
+  ```
+  Should show "succeeded" if connection works
 
 **Events not arriving:**
 
-- Check CS2 can reach API: `curl http://api-ip:3000/api/events/test`
-- Verify WEBHOOK_URL in `.env` is correct
-- Check firewall allows port 3000
+- Test CS2 server can reach API (run this from your CS2 server):
+
+  ```bash
+  # Docker: Test via Caddy
+  curl http://192.168.1.50:3069/api/events/test
+
+  # Local dev: Test direct API
+  curl http://192.168.1.50:3000/api/events/test
+  ```
+
+  Should return `{"message":"Test received"}`
+
+- Verify `WEBHOOK_URL` in `.env` matches your setup:
+  - Docker: `http://your-ip:3069/api` or `https://your-domain.com/api`
+  - Local dev: `http://your-ip:3000`
+- Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
 
 More help: **[Troubleshooting Guide](../guides/troubleshooting.md)**

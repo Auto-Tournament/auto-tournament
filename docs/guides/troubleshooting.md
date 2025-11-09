@@ -50,11 +50,13 @@
 
 **Fix:**
 
-1. Check CS2 can reach API: `curl http://api-ip:3000/api/events/test`
-2. Verify `matchzy_remote_log_url` is set
+1. Check CS2 can reach API (from your CS2 server):
+    - Docker: `curl http://192.168.1.50:3069/api/events/test`
+    - Local dev: `curl http://192.168.1.50:3000/api/events/test`
+2. Verify `matchzy_remote_log_url` is set correctly
 3. Verify `matchzy_remote_log_header_value` matches SERVER_TOKEN
 4. Click "Check Status" to reconfigure webhooks
-5. Check firewall allows port 3000
+5. Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
 
 ## Match Issues
 
@@ -150,9 +152,13 @@
 
 **Fix:**
 
-1. Check API is running: `curl http://api-ip:3000/api/events/test`
-2. Check firewall allows incoming on port 3000
-3. Verify WEBHOOK_URL in `.env` is correct
+1. Test API is reachable (from CS2 server):
+    - Docker: `curl http://192.168.1.50:3069/api/events/test`
+    - Local dev: `curl http://192.168.1.50:3000/api/events/test`
+2. Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
+3. Verify `WEBHOOK_URL` in `.env` matches your setup:
+    - Docker: `http://your-ip:3069/api`
+    - Local dev: `http://your-ip:3000`
 4. Use IP address instead of hostname if DNS issues
 
 ### CS2 Server Unreachable

@@ -9,7 +9,7 @@ The map veto system allows teams to ban and pick maps in a professional Counter-
 Map veto is **only available** for:
 
 - ✅ **Best of 1 (BO1)** tournaments
-- ✅ **Best of 3 (BO3)** tournaments  
+- ✅ **Best of 3 (BO3)** tournaments
 - ✅ **Best of 5 (BO5)** tournaments
 
 Round Robin and Swiss tournaments use **preset maps** and **don't require veto**.
@@ -73,11 +73,12 @@ Result: 4 picked maps + 1 decider (with knife round)
 Admin must click **"Start Tournament"** first. Until then, teams see:
 
 !!! warning "Waiting for Tournament to Start"
-    Your match is ready, but the tournament hasn't started yet. The map veto will become available once the tournament administrator starts the tournament.
+Your match is ready, but the tournament hasn't started yet. The map veto will become available once the tournament administrator starts the tournament.
 
 ### 2. Teams Access Veto Interface
 
 Each team navigates to their public team page:
+
 ```
 http://your-domain/team/{team-id}/match
 ```
@@ -91,29 +92,26 @@ They see the map veto interface with:
 
 ### 3. Turn-Based Actions
 
-!!! example "Your Turn"
-    - Header shows: **"Your turn to ban a map"**
-    - Maps are **clickable** with hover effects
-    - Click a map to ban/pick it
+!!! example "Your Turn" - Header shows: **"Your turn to ban a map"** - Maps are **clickable** with hover effects - Click a map to ban/pick it
 
-!!! info "Not Your Turn"
-    - Header shows: **"Waiting for Team Beta to pick a map..."**
-    - All maps are **grayed out and disabled**
-    - No error messages, just visual feedback
+!!! info "Not Your Turn" - Header shows: **"Waiting for Team Beta to pick a map..."** - All maps are **grayed out and disabled** - No error messages, just visual feedback
 
 ### 4. Map States
 
 **Available Maps:**
+
 - Full color, clickable
 - Hover effect shows intent
 
 **Banned Maps:**
+
 - 50% opacity
 - Grayscale filter
 - Red block icon overlay
 - Still visible (not hidden)
 
 **Picked Maps:**
+
 - Green border with thickness
 - "MAP 1/2/3" chip in corner
 - Side indicator (CT/T) if chosen
@@ -131,10 +129,7 @@ Select which side you want to start on for Mirage
 [Counter-Terrorist (CT)]  [Terrorist (T)]
 ```
 
-!!! tip "Side Selection Strategy"
-    - **CT-sided maps:** Nuke, Vertigo (often pick CT)
-    - **T-sided maps:** Mirage, Inferno (often pick T)
-    - **Balanced maps:** Dust2, Ancient (either side works)
+!!! tip "Side Selection Strategy" - **CT-sided maps:** Nuke, Vertigo (often pick CT) - **T-sided maps:** Mirage, Inferno (often pick T) - **Balanced maps:** Dust2, Ancient (either side works)
 
 ---
 
@@ -196,15 +191,11 @@ Admins can:
 
 ## Security
 
-!!! success "Turn-Based Enforcement"
-    - Backend validates which team is making each action
-    - Returns `403 Forbidden` if wrong team tries to act
-    - Frontend disables UI when it's not your turn
-    - No way for teams to cheat or act out of order
+!!! success "Turn-Based Enforcement" - Backend validates which team is making each action - Returns `403 Forbidden` if wrong team tries to act - Frontend disables UI when it's not your turn - No way for teams to cheat or act out of order
 
 !!! info "No Authentication Required"
-    Team pages are public (no login). Security is based on:
-    
+Team pages are public (no login). Security is based on:
+
     - **Team identification** from URL (`/team/team-alpha/match`)
     - **Turn validation** on backend
     - **Visual UI hints** on frontend
@@ -214,34 +205,33 @@ Admins can:
 ## Troubleshooting
 
 !!! failure "Veto not showing for teams?"
-    **Check:**
-    
+**Check:**
+
     - Tournament status is `in_progress` (admin must start it)
     - Match status is `ready`
     - Match format is BO1, BO3, or BO5
-    
+
     **Fix:** Admin clicks "Start Tournament" button
 
 !!! failure "Can't click any maps?"
-    **Cause:** It's not your turn
-    
+**Cause:** It's not your turn
+
     **Solution:** Wait for other team to complete their action. You'll see:
     "Waiting for {Other Team} to ban a map..."
 
 !!! failure "Match not loading after veto?"
-    **Check:**
-    
+**Check:**
+
     - At least one server is online and available
     - Check server logs: `Admin Tools → Server Events Monitor`
     - Check API logs for allocation errors
-    
-    **Fix:** Ensure `API_URL` environment variable is set correctly
+
+    **Fix:** Ensure `WEBHOOK_URL` environment variable is set correctly in `.env`
 
 ---
 
 ## Next Steps
 
-- 📊 **[Player Tracking](player-tracking.md)** — See who's connected and ready
-- 🎮 **[Admin Controls](admin-controls.md)** — Manage live matches
-- 📡 **[Event Processing](events.md)** — Understand MatchZy events
-
+- 📊 **[Feature Overview](overview.md)** — See all features in detail
+- 🎮 **[Running Matches](../guides/running-matches.md)** — Match management guide
+- 🎯 **[First Tournament](../getting-started/first-tournament.md)** — Step-by-step tutorial
