@@ -52,7 +52,7 @@ Configure and monitor your CS2 servers with real-time status indicators.
 
 ## Tournament Bracket
 
-Visual bracket view showing Quarter-Finals, Semi-Finals, and Finals with team matchups.
+Double-elimination bracket showcasing synchronized winner and loser brackets with seeded matchups.
 
 ![Bracket View](assets/preview/08-bracket-view.png)
 

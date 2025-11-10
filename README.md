@@ -31,7 +31,7 @@
 
 <div align="center">
   <img src="docs/assets/preview/08-bracket-view.png" alt="Tournament Bracket View" width="800">
-  <p><em>Visual tournament bracket with real-time match status updates</em></p>
+  <p><em>Double-elimination bracket with synchronized winner and loser paths plus interactive match zoom</em></p>
 </div>
 
 **👉 <a href="https://mat.sivert.io/screenshots/" target="_blank">View More Screenshots</a>**
