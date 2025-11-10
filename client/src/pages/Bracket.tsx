@@ -21,9 +21,7 @@ import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import { useNavigate } from 'react-router-dom';
-import BracketVisualization from '../components/visualizations/BracketVisualization';
-import ModernBracketVisualization from '../components/visualizations/ModernBracketVisualization';
-import RoundRobinView from '../components/visualizations/RoundRobinView';
+import BracketsViewerVisualization from '../components/visualizations/BracketsViewerVisualization';
 import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
@@ -315,31 +313,17 @@ export default function Bracket() {
           }}
         >
           {/* Use appropriate visualization based on tournament type */}
-          {tournament.type === 'round_robin' ? (
-            <RoundRobinView
-              matches={matches}
-              teams={tournament.teams || []}
-              onMatchClick={(match) => setSelectedMatchId(match.id)}
-            />
-          ) : tournament.type === 'swiss' ? (
+          {tournament.type === 'swiss' ? (
             <SwissView
               matches={matches}
               teams={tournament.teams || []}
               totalRounds={totalRounds}
               onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
-          ) : tournament.type === 'single_elimination' || tournament.type === 'double_elimination' ? (
-            <ModernBracketVisualization
-              matches={matches}
-              totalRounds={totalRounds}
-              tournamentType={tournament.type}
-              isFullscreen={isFullscreen}
-              onMatchClick={(match) => setSelectedMatchId(match.id)}
-            />
           ) : (
-            <BracketVisualization
+            // All bracket-manager types: single_elimination, double_elimination, round_robin
+            <BracketsViewerVisualization
               matches={matches}
-              totalRounds={totalRounds}
               tournamentType={tournament.type}
               isFullscreen={isFullscreen}
               onMatchClick={(match) => setSelectedMatchId(match.id)}

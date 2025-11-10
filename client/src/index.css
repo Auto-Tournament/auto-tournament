@@ -14,3 +14,49 @@ body {
   min-height: 100vh;
 }
 
+/* Brackets Viewer styles */
+@import 'brackets-viewer/dist/brackets-viewer.min.css';
+
+.brackets-viewer {
+  --primary-background: #121212;
+  --secondary-background: #1e1e1e;
+  --match-background: #1e1e1e;
+  --connector-color: rgba(255, 255, 255, 0.12);
+  --win-color: #4caf50;
+  --loss-color: rgba(255, 255, 255, 0.3);
+  --text-color: rgba(255, 255, 255, 0.87);
+  --border-color: rgba(255, 255, 255, 0.12);
+  --border-hover-color: #90caf9;
+}
+
+.brackets-viewer .participant {
+  background: var(--match-background);
+  border-color: var(--border-color);
+  color: var(--text-color);
+}
+
+.brackets-viewer .participant:hover {
+  border-color: var(--border-hover-color);
+}
+
+.brackets-viewer .participant.win {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.brackets-viewer .participant.loss {
+  color: var(--loss-color);
+}
+
+.brackets-viewer .match {
+  background: var(--secondary-background);
+}
+
+.brackets-viewer .connector {
+  border-color: var(--connector-color);
+}
+
+.brackets-viewer .round-name {
+  color: var(--text-color);
+  font-weight: 600;
+}
+
