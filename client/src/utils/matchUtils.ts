@@ -36,7 +36,7 @@ export const getStatusLabel = (
 
   switch (status) {
     case 'pending':
-      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
+      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT TO START';
       return 'VETO PENDING';
     case 'ready':
       if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
@@ -111,13 +111,22 @@ export const getDetailedStatusLabel = (
 export const getStatusExplanation = (
   status: string,
   playerCount?: number,
-  expectedPlayers?: number
+  expectedPlayers?: number,
+  tournamentStarted?: boolean
 ): string => {
   const expected = expectedPlayers || 10;
 
   switch (status) {
     case 'pending':
+      if (tournamentStarted === false) {
+        return 'Tournament has not started yet. Matches will become available once the bracket is launched.';
+      }
       return 'Match is scheduled but not yet assigned to a server. Will be allocated when a server becomes available.';
+    case 'ready':
+      if (tournamentStarted === false) {
+        return 'Tournament has not started yet. Teams cannot enter the veto phase until it begins.';
+      }
+      return 'Match is ready and waiting for veto or server assignment.';
     case 'loaded':
       if (playerCount !== undefined) {
         if (playerCount === 0) {

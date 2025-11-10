@@ -90,6 +90,23 @@ export default function BracketsViewerVisualization({
     [matches]
   );
 
+  const updateMatchClickTargets = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const matchElements = container.querySelectorAll<HTMLElement>('.match[data-match-id]');
+    matchElements.forEach((element) => {
+      const matchId = element.getAttribute('data-match-id');
+      if (!matchId) return;
+
+      const originalMatch = findOriginalMatch(matchId as Id);
+      const hasTeams = Boolean(originalMatch?.team1?.id && originalMatch?.team2?.id);
+
+      element.style.cursor = hasTeams ? 'pointer' : 'default';
+      element.classList.toggle('match--clickable', hasTeams);
+    });
+  }, [findOriginalMatch]);
+
   const viewerData = useMemo(() => {
     if (matches.length === 0) {
       matchLookupRef.current.clear();
@@ -445,6 +462,8 @@ export default function BracketsViewerVisualization({
             shouldAutoCenterRef.current = false;
           }
         }
+
+        updateMatchClickTargets();
       } catch (error) {
         console.error('Error rendering bracket:', error);
       }
@@ -459,7 +478,7 @@ export default function BracketsViewerVisualization({
         containerRef.current.innerHTML = '';
       }
     };
-  }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch]);
+  }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch, updateMatchClickTargets]);
 
   return (
     <Box

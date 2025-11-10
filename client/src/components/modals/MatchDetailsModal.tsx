@@ -39,6 +39,7 @@ import { AddBackupPlayer } from '../admin/AddBackupPlayer';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { getPhaseDisplay } from '../../types/matchPhase.types';
 import type { Match } from '../../types';
+import { useTournamentStatus } from '../../hooks/useTournamentStatus';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -62,6 +63,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   // Team link copy with toast
   const { copyLink, ToastNotification } = useTeamLinkCopy();
+
+  const { status: tournamentStatus } = useTournamentStatus();
+  const tournamentStarted =
+    tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
 
   // Timer effect for live matches
   useEffect(() => {
@@ -131,7 +136,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             >
               <Box display="flex" gap={1}>
                 <Chip
-                  label={getStatusLabel(match.status)}
+                  label={getStatusLabel(match.status, false, match.vetoCompleted, tournamentStarted)}
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600 }}
                 />
@@ -182,14 +187,18 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 {getDetailedStatusLabel(
                   match.status,
                   connectionStatus?.totalConnected,
-                  match.config?.expected_players_total || 10
+                  match.config?.expected_players_total || 10,
+                  false,
+                  match.vetoCompleted,
+                  tournamentStarted
                 )}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {getStatusExplanation(
                   match.status,
                   connectionStatus?.totalConnected,
-                  match.config?.expected_players_total || 10
+                  match.config?.expected_players_total || 10,
+                  tournamentStarted
                 )}
               </Typography>
             </Alert>

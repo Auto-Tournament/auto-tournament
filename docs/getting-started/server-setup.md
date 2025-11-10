@@ -8,19 +8,20 @@ Before you can add servers to the tournament system, you need to install the req
 
 ### Install CounterStrikeSharp
 
-1. Download [CounterStrikeSharp with runtime](https://github.com/roflmuffin/CounterStrikeSharp/releases)
-2. Extract to your CS2 server's `csgo/` directory
-3. Verify by typing `meta list` in server console
+Follow the official CounterStrikeSharp getting started guide to install the runtime and dependencies on your CS2 server:  
+📖 [CounterStrikeSharp – Getting Started](https://docs.cssharp.dev/docs/guides/getting-started.html)
 
-📖 [CounterStrikeSharp Installation Guide](https://docs.cssharp.dev/guides/getting-started/)
+After completing the guide, verify the plugin is loaded by typing `meta list` in your server console. You should see CounterStrikeSharp listed.
 
 ---
 
 ## Install MatchZy (Modified Version)
 
-> ⚠️ **Important:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) with enhanced event tracking for tournament automation.
->
-> The official MatchZy release does not expose all the granular match and player events required for full automation.
+!!! danger "Modified MatchZy required"
+
+    This project ships with a forked version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
+
+    The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this modified build.
 
 ### Download
 
@@ -103,7 +104,8 @@ Make sure your CS2 server can reach the tournament system API:
 - Allow outbound connections from CS2 server to tournament system on port **3000**
 - CS2 server will send webhook events to: `http://your-tournament-ip:3000/events/...`
 
-> **Tip:** If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
+!!! note
+    If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
 
 ---
 
