@@ -1,5 +1,5 @@
 import React from 'react';
-import { AppBar, Toolbar, Box, Button, Container, IconButton } from '@mui/material';
+import { AppBar, Toolbar, Box, Button, Container, IconButton, Tooltip } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Logout } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -73,6 +73,18 @@ export default function Layout() {
               );
             })}
           </Box>
+
+          <Tooltip title="Open documentation" arrow>
+            <Button
+              color="inherit"
+              href="https://mat.sivert.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{ mr: 2 }}
+            >
+              Docs
+            </Button>
+          </Tooltip>
 
           <IconButton color="inherit" onClick={handleLogout} title="Logout">
             <Logout />
