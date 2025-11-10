@@ -113,7 +113,7 @@ Powerful RCON commands and match controls for tournament administrators.
 
 ---
 
-<div align="center">
+<div align="center" markdown>
 
 **Ready to get started?**
 
