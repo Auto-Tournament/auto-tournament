@@ -127,6 +127,13 @@ export default function BracketVisualization({
                 width: '100%',
                 height: '100%',
               }}
+              contentStyle={{
+                width: `${totalWidth}px`,
+                height: `${totalHeight}px`,
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
             >
               <svg width={totalWidth} height={totalHeight}>
                 {/* Draw connector lines */}
