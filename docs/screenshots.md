@@ -60,9 +60,17 @@ Visual bracket view showing Quarter-Finals, Semi-Finals, and Finals with team ma
 
 ## Match Management
 
+### Matches Overview
+
 Overview of all matches with live status updates and match cards.
 
 ![Matches Overview](assets/preview/09-matches-overview.png)
+
+### Match Details Modal
+
+Detailed match view with live player roster, admin controls, and match information.
+
+![Match Details Modal](assets/preview/12-match-details-modal.png)
 
 ---
 
@@ -98,9 +106,10 @@ Powerful RCON commands and match controls for tournament administrators.
 ✅ **Server Management** - Real-time server status monitoring  
 ✅ **Visual Brackets** - Clean, modern bracket visualization  
 ✅ **Match Management** - Live match tracking and status updates  
+✅ **Match Details** - Player roster with live connection status (0/10 players)  
 ✅ **Map Veto** - Interactive pick/ban system with map previews  
 ✅ **Public Team Pages** - No-auth pages for team access  
-✅ **Admin Controls** - Comprehensive RCON command interface  
+✅ **Admin Controls** - Comprehensive RCON command interface with match control buttons  
 
 ---
 
