@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, Chip } from '@mui/material';
+import { Box, Card, CardContent, Typography, Chip, useTheme } from '@mui/material';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { getRoundLabel, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 
@@ -38,6 +38,8 @@ export default function BracketVisualization({
   isFullscreen = false,
   onMatchClick,
 }: BracketVisualizationProps) {
+  const theme = useTheme();
+  
   // Group matches by round
   const matchesByRound: { [round: number]: Match[] } = {};
   matches.forEach((match) => {
@@ -86,14 +88,16 @@ export default function BracketVisualization({
 
   // Use utility function for status labels
 
-  // Calculate total width and height
-  const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + 100;
+  // Calculate total width and height with proper padding for centering
+  const horizontalPadding = 100;
+  const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + (horizontalPadding * 2);
   const maxMatchesInRound = Math.max(...Object.values(matchesByRound).map((m) => m.length));
 
   // Calculate max height needed for any match
   const maxMatchHeight = Math.max(MIN_MATCH_HEIGHT, ...matches.map((m) => calculateMatchHeight(m)));
 
-  const totalHeight = maxMatchesInRound * (maxMatchHeight + MATCH_VERTICAL_SPACING) + 200;
+  const verticalPadding = 200;
+  const totalHeight = maxMatchesInRound * (maxMatchHeight + MATCH_VERTICAL_SPACING) + verticalPadding;
 
   return (
     <Box
@@ -104,7 +108,7 @@ export default function BracketVisualization({
         borderColor: 'divider',
         borderRadius: isFullscreen ? 0 : 2,
         overflow: 'hidden',
-        bgcolor: '#1a1a1a',
+        bgcolor: 'background.default',
       }}
     >
       <TransformWrapper
@@ -112,6 +116,7 @@ export default function BracketVisualization({
         minScale={0.3}
         maxScale={2}
         centerOnInit
+        centerZoomedOut
         wheel={{ step: 0.1 }}
         panning={{ velocityDisabled: false }}
       >
@@ -132,9 +137,9 @@ export default function BracketVisualization({
 
                   return currentMatches.map((match, matchIndex) => {
                     // Calculate positions
-                    const x1 = 50 + round * (MATCH_WIDTH + ROUND_SPACING);
+                    const x1 = horizontalPadding + round * (MATCH_WIDTH + ROUND_SPACING);
                     const y1 =
-                      100 +
+                      verticalPadding / 2 +
                       matchIndex * (maxMatchHeight + MATCH_VERTICAL_SPACING) +
                       maxMatchHeight / 2;
 
@@ -143,24 +148,27 @@ export default function BracketVisualization({
                     if (nextMatchIndex < nextRoundMatches.length) {
                       const x2 = x1 + MATCH_WIDTH + ROUND_SPACING;
                       const y2 =
-                        100 +
+                        verticalPadding / 2 +
                         nextMatchIndex * (maxMatchHeight + MATCH_VERTICAL_SPACING * 2) +
                         maxMatchHeight / 2;
 
                       // Draw L-shaped connector
                       const midX = x1 + (MATCH_WIDTH + ROUND_SPACING) / 2;
+                      
+                      const lineColor = theme.palette.divider;
 
                       return (
                         <g key={`connector-${round}-${matchIndex}`}>
-                          <line x1={x1} y1={y1} x2={midX} y2={y1} stroke="#555" strokeWidth="2" />
-                          <line x1={midX} y1={y1} x2={midX} y2={y2} stroke="#555" strokeWidth="2" />
+                          <line x1={x1} y1={y1} x2={midX} y2={y1} stroke={lineColor} strokeWidth="2" opacity="0.3" />
+                          <line x1={midX} y1={y1} x2={midX} y2={y2} stroke={lineColor} strokeWidth="2" opacity="0.3" />
                           <line
                             x1={midX}
                             y1={y2}
                             x2={x2 - ROUND_SPACING}
                             y2={y2}
-                            stroke="#555"
+                            stroke={lineColor}
                             strokeWidth="2"
+                            opacity="0.3"
                           />
                         </g>
                       );
@@ -178,10 +186,10 @@ export default function BracketVisualization({
                     <g key={round}>
                       {/* Round label */}
                       <text
-                        x={50 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING) + MATCH_WIDTH / 2}
-                        y={50}
+                        x={horizontalPadding + (round - 1) * (MATCH_WIDTH + ROUND_SPACING) + MATCH_WIDTH / 2}
+                        y={verticalPadding / 4}
                         textAnchor="middle"
-                        fill="#e0e0e0"
+                        fill={theme.palette.text.primary}
                         fontSize="16"
                         fontWeight="600"
                       >
@@ -190,9 +198,9 @@ export default function BracketVisualization({
 
                       {/* Matches */}
                       {roundMatches.map((match, matchIndex) => {
-                        const x = 50 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING);
+                        const x = horizontalPadding + (round - 1) * (MATCH_WIDTH + ROUND_SPACING);
                         const matchHeight = calculateMatchHeight(match);
-                        const y = 100 + matchIndex * (maxMatchHeight + verticalSpacing);
+                        const y = verticalPadding / 2 + matchIndex * (maxMatchHeight + verticalSpacing);
 
                         return (
                           <g key={match.id}>
@@ -211,20 +219,23 @@ export default function BracketVisualization({
                                     match.status === 'completed'
                                       ? 'success.main'
                                       : match.status === 'live'
-                                      ? 'warning.main'
+                                      ? 'error.main'
                                       : match.status === 'loaded'
                                       ? 'info.main'
-                                      : '#444',
-                                  bgcolor: '#2a2a2a',
+                                      : match.status === 'ready'
+                                      ? 'warning.main'
+                                      : 'divider',
+                                  bgcolor: 'background.paper',
                                   cursor: onMatchClick ? 'pointer' : 'default',
                                   transition: 'all 0.2s ease',
                                   borderRadius: 2,
-                                  boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+                                  boxShadow: 3,
                                   '&:hover': onMatchClick
                                     ? {
                                         transform: 'translateY(-2px)',
-                                        boxShadow: '0 4px 12px rgba(0,0,0,0.6)',
+                                        boxShadow: 6,
                                         zIndex: 10,
+                                        borderColor: 'primary.main',
                                       }
                                     : {},
                                 }}
@@ -249,7 +260,7 @@ export default function BracketVisualization({
                                         variant="body2"
                                         fontWeight={700}
                                         sx={{
-                                          color: '#e8e8e8',
+                                          color: 'text.secondary',
                                           fontSize: '0.85rem',
                                         }}
                                       >
@@ -274,17 +285,17 @@ export default function BracketVisualization({
                                         borderRadius: 1.5,
                                         bgcolor:
                                           match.team1 && match.winner?.id === match.team1?.id
-                                            ? 'success.main'
-                                            : match.team1
-                                            ? '#1f1f1f'
-                                            : 'transparent',
-                                        border: '2px solid',
-                                        borderColor:
-                                          match.team1 && match.winner?.id === match.team1?.id
                                             ? 'success.dark'
                                             : match.team1
-                                            ? '#444'
-                                            : '#333',
+                                            ? 'background.default'
+                                            : 'transparent',
+                                        border: '1px solid',
+                                        borderColor:
+                                          match.team1 && match.winner?.id === match.team1?.id
+                                            ? 'success.main'
+                                            : match.team1
+                                            ? 'divider'
+                                            : 'divider',
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -302,10 +313,10 @@ export default function BracketVisualization({
                                           fontSize: '0.875rem',
                                           color:
                                             match.team1 && match.winner?.id === match.team1?.id
-                                              ? '#ffffff'
+                                              ? 'success.contrastText'
                                               : match.team1
-                                              ? '#e8e8e8'
-                                              : '#444',
+                                              ? 'text.primary'
+                                              : 'text.disabled',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',
@@ -328,17 +339,17 @@ export default function BracketVisualization({
                                         borderRadius: 1.5,
                                         bgcolor:
                                           match.team2 && match.winner?.id === match.team2?.id
-                                            ? 'success.main'
-                                            : match.team2
-                                            ? '#1f1f1f'
-                                            : 'transparent',
-                                        border: '2px solid',
-                                        borderColor:
-                                          match.team2 && match.winner?.id === match.team2?.id
                                             ? 'success.dark'
                                             : match.team2
-                                            ? '#444'
-                                            : '#333',
+                                            ? 'background.default'
+                                            : 'transparent',
+                                        border: '1px solid',
+                                        borderColor:
+                                          match.team2 && match.winner?.id === match.team2?.id
+                                            ? 'success.main'
+                                            : match.team2
+                                            ? 'divider'
+                                            : 'divider',
                                         transition: 'all 0.2s',
                                         display: 'flex',
                                         alignItems: 'center',
@@ -356,10 +367,10 @@ export default function BracketVisualization({
                                           fontSize: '0.875rem',
                                           color:
                                             match.team2 && match.winner?.id === match.team2?.id
-                                              ? '#ffffff'
+                                              ? 'success.contrastText'
                                               : match.team2
-                                              ? '#e8e8e8'
-                                              : '#444',
+                                              ? 'text.primary'
+                                              : 'text.disabled',
                                           overflow: 'hidden',
                                           textOverflow: 'ellipsis',
                                           wordBreak: 'break-word',

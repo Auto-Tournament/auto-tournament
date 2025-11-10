@@ -152,15 +152,15 @@ export const getStatusColor = (
 
   switch (status) {
     case 'live':
-      return 'error';
+      return 'error'; // Red - match is live
     case 'loaded':
-      return 'info';
+      return 'info'; // Blue - server loaded, waiting for players
     case 'ready':
-      return 'success';
+      return 'warning'; // Yellow/Orange - ready to start
     case 'completed':
-      return 'success';
+      return 'success'; // Green - match finished
     default:
-      return 'default';
+      return 'default'; // Gray - pending or unknown
   }
 };
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Paper } from '@mui/material';
+import { Box, Typography, Paper, useTheme } from '@mui/material';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { getRoundLabel } from '../../utils/matchUtils';
 
@@ -33,6 +33,8 @@ export default function ModernBracketVisualization({
   isFullscreen = false,
   onMatchClick,
 }: ModernBracketVisualizationProps) {
+  const theme = useTheme();
+  
   // Group matches by round
   const matchesByRound: { [round: number]: Match[] } = {};
   matches.forEach((match) => {
@@ -64,22 +66,25 @@ export default function ModernBracketVisualization({
     return 150 + matchIndex * (MATCH_HEIGHT + spacing) + offset;
   };
 
-  // Calculate total dimensions
-  const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + 200;
+  // Calculate total dimensions with proper padding for centering
+  const horizontalPadding = 100;
+  const totalWidth = totalRounds * (MATCH_WIDTH + ROUND_SPACING) + (horizontalPadding * 2);
   const maxMatchesInRound = Math.max(...Object.values(matchesByRound).map((m) => m.length));
-  const totalHeight = maxMatchesInRound * (MATCH_HEIGHT + getVerticalSpacing(1)) + 400;
+  const verticalPadding = 400;
+  const totalHeight = maxMatchesInRound * (MATCH_HEIGHT + getVerticalSpacing(1)) + verticalPadding;
 
   // Check if team is winner
   const isWinner = (match: Match, teamId?: string) => {
     return match.winner && teamId && match.winner.id === teamId;
   };
 
-  // Get status color
+  // Get status color using theme
   const getStatusColor = (match: Match) => {
-    if (match.status === 'live') return '#FFA726';
-    if (match.status === 'completed') return '#66BB6A';
-    if (match.status === 'loaded') return '#42A5F5';
-    return '#666';
+    if (match.status === 'live') return theme.palette.error.main;
+    if (match.status === 'completed') return theme.palette.success.main;
+    if (match.status === 'loaded') return theme.palette.info.main;
+    if (match.status === 'ready') return theme.palette.warning.main;
+    return theme.palette.divider;
   };
 
   return (
@@ -91,7 +96,7 @@ export default function ModernBracketVisualization({
         borderColor: 'divider',
         borderRadius: isFullscreen ? 0 : 2,
         overflow: 'hidden',
-        bgcolor: '#1a1d2e',
+        bgcolor: 'background.default',
       }}
     >
       <TransformWrapper
@@ -99,6 +104,7 @@ export default function ModernBracketVisualization({
         minScale={0.3}
         maxScale={2}
         centerOnInit
+        centerZoomedOut
         wheel={{ step: 0.1 }}
         panning={{ velocityDisabled: false }}
       >
@@ -112,8 +118,8 @@ export default function ModernBracketVisualization({
             <defs>
               {/* Gradient for winner highlight */}
               <linearGradient id="winnerGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="#66BB6A" stopOpacity="0.3" />
-                <stop offset="100%" stopColor="#66BB6A" stopOpacity="0.1" />
+                <stop offset="0%" stopColor={theme.palette.success.main} stopOpacity="0.3" />
+                <stop offset="100%" stopColor={theme.palette.success.main} stopOpacity="0.1" />
               </linearGradient>
             </defs>
 
@@ -124,7 +130,7 @@ export default function ModernBracketVisualization({
               const nextRoundMatches = matchesByRound[round + 1] || [];
 
               return currentMatches.map((match, matchIndex) => {
-                const x1 = 80 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING) + MATCH_WIDTH;
+                const x1 = horizontalPadding + (round - 1) * (MATCH_WIDTH + ROUND_SPACING) + MATCH_WIDTH;
                 const y1 = getMatchY(round, matchIndex) + MATCH_HEIGHT / 2;
 
                 // Pair up: matches 0&1 -> next match 0, matches 2&3 -> next match 1, etc.
@@ -137,7 +143,7 @@ export default function ModernBracketVisualization({
 
                   // Determine line color based on winner
                   const hasWinner = !!match.winner;
-                  const lineColor = hasWinner ? '#4CAF50' : '#3a4052';
+                  const lineColor = hasWinner ? theme.palette.success.main : theme.palette.divider;
                   const lineWidth = hasWinner ? 3 : 2;
 
                   return (
@@ -160,7 +166,7 @@ export default function ModernBracketVisualization({
                             y1={y1}
                             x2={midX}
                             y2={getMatchY(round, matchIndex + 1) + MATCH_HEIGHT / 2}
-                            stroke="#3a4052"
+                            stroke={theme.palette.divider}
                             strokeWidth="2"
                             opacity="0.4"
                           />
@@ -186,17 +192,17 @@ export default function ModernBracketVisualization({
             {/* Render rounds */}
             {Array.from({ length: totalRounds }, (_, i) => i + 1).map((round) => {
               const roundMatches = matchesByRound[round] || [];
-              const x = 80 + (round - 1) * (MATCH_WIDTH + ROUND_SPACING);
+              const x = horizontalPadding + (round - 1) * (MATCH_WIDTH + ROUND_SPACING);
 
               return (
                 <g key={round}>
                   {/* Round header with background */}
-                  <rect x={x} y={40} width={MATCH_WIDTH} height={60} fill="#252941" rx="8" />
+                  <rect x={x} y={40} width={MATCH_WIDTH} height={60} fill={theme.palette.background.paper} rx="8" />
                   <text
                     x={x + MATCH_WIDTH / 2}
                     y={65}
                     textAnchor="middle"
-                    fill="#b8c0d8"
+                    fill={theme.palette.text.primary}
                     fontSize="14"
                     fontWeight="600"
                     letterSpacing="0.5"
@@ -207,7 +213,7 @@ export default function ModernBracketVisualization({
                     x={x + MATCH_WIDTH / 2}
                     y={85}
                     textAnchor="middle"
-                    fill="#666d85"
+                    fill={theme.palette.text.secondary}
                     fontSize="11"
                   >
                     {roundMatches.length} {roundMatches.length === 1 ? 'Match' : 'Matches'}
@@ -231,8 +237,9 @@ export default function ModernBracketVisualization({
                             sx={{
                               width: MATCH_WIDTH,
                               height: MATCH_HEIGHT,
-                              bgcolor: '#252941',
-                              border: '1px solid #3a4052',
+                              bgcolor: 'background.paper',
+                              border: '1px solid',
+                              borderColor: 'divider',
                               borderRadius: 2,
                               overflow: 'hidden',
                               cursor: onMatchClick ? 'pointer' : 'default',
@@ -241,8 +248,8 @@ export default function ModernBracketVisualization({
                               '&:hover': onMatchClick
                                 ? {
                                     transform: 'translateY(-2px)',
-                                    boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
-                                    borderColor: '#5865F2',
+                                    boxShadow: 6,
+                                    borderColor: 'primary.main',
                                   }
                                 : {},
                             }}
@@ -278,9 +285,10 @@ export default function ModernBracketVisualization({
                                   px: 2,
                                   py: 0.5,
                                   bgcolor: isWinner(match, match.team1?.id)
-                                    ? 'rgba(102, 187, 106, 0.15)'
+                                    ? 'success.dark'
                                     : 'transparent',
-                                  borderBottom: '1px solid #3a4052',
+                                  borderBottom: '1px solid',
+                                  borderColor: 'divider',
                                 }}
                               >
                                 <Typography
@@ -289,9 +297,9 @@ export default function ModernBracketVisualization({
                                     flex: 1,
                                     color: match.team1
                                       ? isWinner(match, match.team1.id)
-                                        ? '#fff'
-                                        : '#b8c0d8'
-                                      : '#666d85',
+                                        ? 'success.contrastText'
+                                        : 'text.primary'
+                                      : 'text.disabled',
                                     fontWeight: isWinner(match, match.team1?.id) ? 700 : 500,
                                     fontSize: '0.875rem',
                                     overflow: 'hidden',
@@ -307,8 +315,8 @@ export default function ModernBracketVisualization({
                                     sx={{
                                       ml: 1,
                                       color: isWinner(match, match.team1?.id)
-                                        ? '#66BB6A'
-                                        : '#666d85',
+                                        ? 'success.contrastText'
+                                        : 'text.secondary',
                                       fontWeight: 700,
                                       fontSize: '0.9rem',
                                     }}
@@ -327,7 +335,7 @@ export default function ModernBracketVisualization({
                                   px: 2,
                                   py: 0.5,
                                   bgcolor: isWinner(match, match.team2?.id)
-                                    ? 'rgba(102, 187, 106, 0.15)'
+                                    ? 'success.dark'
                                     : 'transparent',
                                 }}
                               >
@@ -337,9 +345,9 @@ export default function ModernBracketVisualization({
                                     flex: 1,
                                     color: match.team2
                                       ? isWinner(match, match.team2.id)
-                                        ? '#fff'
-                                        : '#b8c0d8'
-                                      : '#666d85',
+                                        ? 'success.contrastText'
+                                        : 'text.primary'
+                                      : 'text.disabled',
                                     fontWeight: isWinner(match, match.team2?.id) ? 700 : 500,
                                     fontSize: '0.875rem',
                                     overflow: 'hidden',
@@ -355,8 +363,8 @@ export default function ModernBracketVisualization({
                                     sx={{
                                       ml: 1,
                                       color: isWinner(match, match.team2?.id)
-                                        ? '#66BB6A'
-                                        : '#666d85',
+                                        ? 'success.contrastText'
+                                        : 'text.secondary',
                                       fontWeight: 700,
                                       fontSize: '0.9rem',
                                     }}

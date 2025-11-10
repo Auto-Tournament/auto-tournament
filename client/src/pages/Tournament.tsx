@@ -73,6 +73,12 @@ const Tournament: React.FC = () => {
       setMaps(tournament.maps || []);
       setIsEditing(false); // Close edit mode when tournament loads
     } else {
+      // Clear form when no tournament (e.g., after deletion)
+      setName('');
+      setType('single_elimination');
+      setFormat('bo3');
+      setSelectedTeams([]);
+      setMaps([]);
       setIsEditing(true); // Show form when creating new tournament
     }
   }, [tournament]);

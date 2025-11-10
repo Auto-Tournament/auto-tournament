@@ -175,6 +175,10 @@ class TournamentService {
    * Note: Server cleanup (ending matches) should be done by the caller before this
    */
   deleteTournament(): void {
+    // First, clear server_id from all matches to clean up references
+    db.exec('UPDATE matches SET server_id = NULL WHERE tournament_id = 1');
+    log.debug('Cleared server references from matches');
+    
     // Delete tournament (CASCADE will also delete matches and events)
     db.exec('DELETE FROM tournament WHERE id = 1');
     log.debug('Tournament deleted from database');
