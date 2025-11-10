@@ -17,11 +17,12 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ## Install MatchZy (Modified Version)
 
-!!! danger "Modified MatchZy required"
+Important:
+:   !!! danger "Modified MatchZy required"
 
-    This project ships with a forked version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
+        This project ships with a forked version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
 
-    The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this modified build.
+        The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this modified build.
 
 ### Download
 
@@ -104,8 +105,10 @@ Make sure your CS2 server can reach the tournament system API:
 - Allow outbound connections from CS2 server to tournament system on port **3000**
 - CS2 server will send webhook events to: `http://your-tournament-ip:3000/events/...`
 
-!!! note
-    If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
+Tip:
+:   !!! note
+
+        If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
 
 ---
 
