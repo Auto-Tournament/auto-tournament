@@ -8,6 +8,8 @@ Get up and running in 5 minutes.
 - Node.js 18+ or Docker
 - RCON access to your servers
 
+> **New to CS2 server setup?** See the [CS2 Server Setup Guide](server-setup.md) for detailed installation instructions.
+
 ## Installation
 
 ### Docker (Recommended)
@@ -31,6 +33,15 @@ docker compose -f docker/docker-compose.yml up -d
 ```
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
+
+??? info "Advanced: Docker Architecture"
+
+    The Docker setup uses Caddy as a reverse proxy that serves:
+
+    - Frontend app at `/` (root)
+    - API at `/api`
+
+    **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
 
 ??? example "Using Docker Compose"
 
@@ -58,14 +69,6 @@ docker compose -f docker/docker-compose.yml up -d
     ```bash
     docker compose up -d
     ```
-
-??? info "Advanced: Docker Architecture"
-The Docker setup uses **Caddy** as a reverse proxy that serves:
-
-    - Frontend app at `/` (root)
-    - API at `/api`
-
-    **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
 
 ??? example "Advanced: Local Development (without Docker)"
 
@@ -120,85 +123,12 @@ PORT=3000                          # API port (default: 3000)
         - Docker: `http://your-ip:3069/api` (Caddy handles routing)
         - Local dev: `http://your-ip:3000` (direct to API)
 
-## CS2 Server Setup
-
-### Prerequisites
-
-**Install CounterStrikeSharp:**
-
-1. Download [CounterStrikeSharp with runtime](https://github.com/roflmuffin/CounterStrikeSharp/releases)
-2. Extract to your CS2 server's `csgo/` directory
-3. Verify by typing `meta list` in server console
-
-📖 [CounterStrikeSharp Installation Guide](https://docs.cssharp.dev/guides/getting-started/)
-
-### Install MatchZy (Modified Version)
-
-> ⚠️ **Important:** This project uses a modified version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) with enhanced event tracking for tournament automation.
-
-**Download:** [github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
-
-**Installation:**
-
-```bash
-# Navigate to your CS2 server directory
-cd /path/to/cs2/game/csgo
-
-# Extract the plugin (it includes the correct folder structure)
-unzip MatchZy-*.zip
-
-# Restart your CS2 server
-```
-
-**Verify installation:**
-
-Type `css_plugins list` in server console. You should see **MatchZy by WD-** listed.
-
-**Expected structure:**
-
-```
-csgo/
-└── addons/
-    └── counterstrikesharp/
-        └── plugins/
-            └── MatchZy/
-                ├── MatchZy.dll
-                └── ...
-```
-
-The plugin zip file already contains the full `addons/counterstrikesharp/plugins/MatchZy/` structure, so extracting to `csgo/` puts everything in the right place.
-
-### Enable RCON
-
-```cfg
-rcon_password "your-secure-rcon-password"
-hostport 27015
-```
-
-That's it! The system auto-configures webhooks when you load matches.
-
 ## First Login
 
 1. Navigate to `http://localhost:3069` (or your domain)
 2. Click **"Login"** (top right)
 3. Enter your `API_TOKEN`
 4. You're in! 🎉
-
-## Add Your First Server
-
-1. Go to **Admin Tools** → **Servers**
-2. Click **"Add Server"**
-3. Fill in:
-   ```
-   Name: My Server 1
-   Host: 192.168.1.50
-   Port: 27015
-   RCON Password: <your-rcon-password>
-   ```
-4. Click **"Test Connection"** (optional)
-5. Click **"Add Server"**
-
-Server should show as 🟢 Online.
 
 ## Add Your First Team
 
@@ -221,7 +151,7 @@ Repeat for all teams (minimum 2 for a tournament).
 
 ## Next Steps
 
-You're ready to create your first tournament!
+👉 **[CS2 Server Setup](server-setup.md)** - Install the modified MatchZy plugin on your CS2 server(s)
 
 👉 **[First Tournament Guide](first-tournament.md)** - Step-by-step tournament setup
 

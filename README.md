@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 [Full Documentation](https://mat.sivert.io/)** • [Quick Start](https://mat.sivert.io/getting-started/quick-start/) • [Features](https://mat.sivert.io/features/overview/) • [Troubleshooting](https://mat.sivert.io/guides/troubleshooting/)
+**📚 <a href="https://mat.sivert.io/" target="_blank">Full Documentation</a>** • <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">Quick Start</a> • <a href="https://mat.sivert.io/features/overview/" target="_blank">Features</a> • <a href="https://mat.sivert.io/roadmap/" target="_blank">Roadmap</a> • <a href="https://mat.sivert.io/guides/troubleshooting/" target="_blank">Troubleshooting</a>
 
 </div>
 
@@ -32,7 +32,7 @@
 
 ## 🚀 Quick Start
 
-> **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — [Installation guide](https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup)
+> **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Installation guide</a>
 
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
@@ -87,7 +87,7 @@ Run: `docker compose up -d`
 
 </details>
 
-**👉 [Full setup guide with detailed configuration](https://mat.sivert.io/getting-started/quick-start/)**
+**👉 <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">Full setup guide with detailed configuration</a>**
 
 ---
 
@@ -98,13 +98,13 @@ Run: `docker compose up -d`
 >
 > The official MatchZy release does not expose all the granular match and player events required for full automation.
 
-**Download:** [sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
+**Download:** <a href="https://github.com/sivert-io/matchzy/releases" target="_blank">sivert-io/matchzy/releases</a>
 
 Extract to your CS2 server's `csgo/` directory and restart.
 
-**👉 [Complete installation guide](https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup)**
+**👉 <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Complete installation guide</a>**
 
-Requires [CounterStrikeSharp](https://docs.cssharp.dev/guides/getting-started/) to be installed first.
+Requires <a href="https://docs.cssharp.dev/guides/getting-started/" target="_blank">CounterStrikeSharp</a> to be installed first.
 
 ---
 
@@ -112,7 +112,7 @@ Requires [CounterStrikeSharp](https://docs.cssharp.dev/guides/getting-started/) 
 
 Contributions are welcome! Whether you're fixing bugs, adding features, improving docs, or sharing ideas.
 
-**👉 [Read the Contributing Guide](.github/CONTRIBUTING.md)**
+**👉 <a href=".github/CONTRIBUTING.md" target="_blank">Read the Contributing Guide</a>**
 
 ---
 
@@ -120,7 +120,7 @@ Contributions are welcome! Whether you're fixing bugs, adding features, improvin
 
 MIT License - see [LICENSE](LICENSE) for details
 
-**Credits:** [ghostcap-gaming/cs2-map-images](https://github.com/ghostcap-gaming/cs2-map-images) • [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js)
+**Credits:** <a href="https://github.com/ghostcap-gaming/cs2-map-images" target="_blank">ghostcap-gaming/cs2-map-images</a> • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a>
 
 ---
 

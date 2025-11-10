@@ -11,17 +11,20 @@ For detailed contribution guidelines, please see:
 ## 🚀 Quick Start
 
 1. **Fork & Clone**
+
    ```bash
    git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
    cd matchzy-auto-tournament
    ```
 
 2. **Install Dependencies**
+
    ```bash
    npm install
    ```
 
 3. **Setup Environment**
+
    ```bash
    cp .env.example .env
    # Edit .env with your test tokens
@@ -53,7 +56,6 @@ Found a bug? Please [open an issue](https://github.com/sivert-io/matchzy-auto-to
 
 - [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) - Ask questions
 - [Documentation](https://mat.sivert.io/) - Read the docs
-- [Discord](https://discord.gg/your-invite) - Join our community
 
 ## 📖 Code of Conduct
 

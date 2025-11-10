@@ -129,6 +129,7 @@ nav:
   - Home: index.md
   - Getting Started:
       - Quick Start: getting-started/quick-start.md
+      - CS2 Server Setup: getting-started/server-setup.md
       - First Tournament: getting-started/first-tournament.md
   - Features:
       - Overview: features/overview.md
@@ -142,6 +143,7 @@ nav:
   - Development:
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
+  - Roadmap: roadmap.md
 
 # Additional CSS
 extra_css:

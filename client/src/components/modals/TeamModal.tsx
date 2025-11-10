@@ -21,7 +21,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import { api } from '../../utils/api';
 import ConfirmDialog from './ConfirmDialog';
-import type { Team, Player } from '../../types';
+import type { Team, Player, PlayerResponse } from '../../types';
 
 interface TeamModalProps {
   open: boolean;
@@ -48,7 +48,7 @@ const generateTeamTag = (name: string): string => {
     .filter((w) => w.length > 0);
 
   if (words.length === 0) return '';
-  
+
   if (words.length === 1) {
     // Single word: take first 4 characters
     return words[0].substring(0, 4).toUpperCase();
@@ -84,7 +84,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       setName(team.name);
       setTag(team.tag || '');
       setDiscordRoleId(team.discordRoleId || '');
-      setPlayers(team.players);
+      setPlayers(team.players || []);
     } else {
       resetForm();
     }
@@ -105,7 +105,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     // Only allow letters, numbers, and spaces
     const sanitized = newName.replace(/[^a-zA-Z0-9\s]/g, '');
     setName(sanitized);
-    
+
     // Auto-generate tag if not editing (when editing, keep existing tag)
     if (!isEditing) {
       setTag(generateTeamTag(sanitized));
@@ -122,7 +122,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setError('');
 
     try {
-      const response = await api.post('/api/steam/resolve', {
+      const response: PlayerResponse = await api.post('/api/steam/resolve', {
         input: newPlayerSteamId.trim(),
       });
 

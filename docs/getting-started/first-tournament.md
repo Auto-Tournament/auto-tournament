@@ -7,8 +7,28 @@ Step-by-step guide to running a complete tournament.
 Make sure you have:
 
 - [x] System installed and running
-- [x] At least one CS2 server added and showing 🟢 Online
 - [x] At least 2 teams created with 5+ players each
+- [x] At least one CS2 server with the modified MatchZy plugin installed
+
+> **Haven't set up your CS2 server yet?** See the [CS2 Server Setup Guide](server-setup.md) for detailed installation instructions.
+
+## Add Your First Server
+
+Add your configured CS2 server to the system:
+
+1. Go to **Admin Tools** → **Servers**
+2. Click **"Add Server"**
+3. Fill in:
+   ```
+   Name: My Server 1
+   Host: 192.168.1.50
+   Port: 27015
+   RCON Password: <your-rcon-password>
+   ```
+4. Click **"Test Connection"** (optional)
+5. Click **"Add Server"**
+
+Server should show as 🟢 Online.
 
 ## Step 1: Create Tournament
 
