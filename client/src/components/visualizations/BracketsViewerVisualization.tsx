@@ -200,7 +200,7 @@ export default function BracketsViewerVisualization({
     const buildOpponent = (
       match: Match,
       team: Match['team1'],
-      position: number,
+      position: number | undefined,
       score: number | undefined
     ): ParticipantResult | null => {
       if (team?.id) {
@@ -214,7 +214,7 @@ export default function BracketsViewerVisualization({
 
         return {
           id: participantId ?? null,
-          position,
+          position: position ?? undefined,
           score: score ?? undefined,
           result,
         };
@@ -223,7 +223,7 @@ export default function BracketsViewerVisualization({
       if (match.status !== 'completed') {
         return {
           id: null,
-          position,
+          position: position ?? undefined,
         };
       }
 
@@ -250,8 +250,8 @@ export default function BracketsViewerVisualization({
           parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
-        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
-        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0];
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1];
         viewerMatches.push({
           id: viewerMatchId,
           number: m.matchNumber,
@@ -289,8 +289,8 @@ export default function BracketsViewerVisualization({
           parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
-        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
-        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0];
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1];
         viewerMatches.push({
           id: viewerMatchId,
           number: m.matchNumber,
@@ -326,8 +326,8 @@ export default function BracketsViewerVisualization({
           gfMatch.round === 1
             ? [(gfMatch.matchNumber - 1) * 2 + 1, (gfMatch.matchNumber - 1) * 2 + 2]
             : [];
-        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
-        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0];
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1];
         viewerMatches.push({
           id: viewerMatchId,
           number: 1,
@@ -397,20 +397,6 @@ export default function BracketsViewerVisualization({
             const originalMatch = findOriginalMatch(match.id);
             const hasTeam1 = Boolean(originalMatch?.team1);
             const hasTeam2 = Boolean(originalMatch?.team2);
-            // Temporary debug logging to inspect click data
-            if (process.env.NODE_ENV === 'development') {
-              // eslint-disable-next-line no-console
-              console.debug('[Bracket] Viewer match click', {
-                viewerMatch: match,
-                originalMatch,
-                hasTeam1,
-                hasTeam2,
-                viewerMatchId: match.id,
-                lookupHasExact: matchLookupRef.current.has(match.id),
-                lookupHasString: matchLookupRef.current.has(String(match.id) as Id),
-                lookupHasNumber: matchLookupRef.current.has(Number(match.id) as Id),
-              });
-            }
             if (hasTeam1 && hasTeam2) {
               centerMatch(match.id);
             }

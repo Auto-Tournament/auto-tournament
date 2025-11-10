@@ -210,8 +210,8 @@ export class StandardBracketGenerator implements IBracketGenerator {
 
     if (stageType === 'double_elimination') {
       // Determine if it's winners bracket, losers bracket, or grand finals
-      const isGrandFinal = match.group_id === 3;
-      const isLosersBracket = match.group_id === 2;
+      const isGrandFinal = match.group_id === 2;
+      const isLosersBracket = match.group_id === 1;
 
       if (isGrandFinal) {
         return 'gf';

@@ -72,19 +72,6 @@ export default function Bracket() {
   };
 
   const handleMatchClick = (match: Match) => {
-    if (process.env.NODE_ENV === 'development') {
-      // eslint-disable-next-line no-console
-      console.debug('[Bracket Page] onMatchClick', {
-        matchId: match.id,
-        slug: match.slug,
-        team1: match.team1,
-        team2: match.team2,
-        team1Present: Boolean(match.team1),
-        team2Present: Boolean(match.team2),
-        winner: match.winner,
-        status: match.status,
-      });
-    }
     if (!match.team1 || !match.team2) {
       return;
     }
