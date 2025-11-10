@@ -20,6 +20,7 @@
 ## ✨ Features
 
 🏆 **Tournament Brackets** — Single/Double Elimination, Round Robin, Swiss with auto-progression  
+🧩 **Custom Bracket Viewer** — Bundled fork of `brackets-viewer.js` with enhanced theming, matchup centering, and MatchZy integration  
 🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5  
 ⚡ **Real-Time Updates** — WebSocket-powered live scores and player tracking  
 🎮 **Auto Server Allocation** — Matches load automatically when servers are available  
@@ -98,6 +99,18 @@ Run: `docker compose up -d`
 
 ---
 
+## 🧩 Bracket Viewer Fork
+
+The frontend bundles a lightly modified copy of [`brackets-viewer.js`](https://github.com/Drarig29/brackets-viewer.js) inside `client/src/brackets-viewer`. Our fork adds:
+
+- Material UI theming hooks and dark-mode variables
+- Automatic seeding + match positioning interop with MatchZy data
+- Smooth zoom-to-match navigation for the bracket modal workflow
+
+When upgrading to a newer upstream release, follow the notes in the [development docs](https://mat.sivert.io/development/architecture/#frontend-bracket-viewer) to re-apply local patches.
+
+---
+
 ## ⚙️ CS2 Server Plugin
 
 > [!CAUTION]
@@ -127,7 +140,7 @@ Contributions are welcome! Whether you're fixing bugs, adding features, improvin
 
 MIT License - see [LICENSE](LICENSE) for details
 
-**Credits:** <a href="https://github.com/ghostcap-gaming/cs2-map-images" target="_blank">ghostcap-gaming/cs2-map-images</a> • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a>
+**Credits:** <a href="https://github.com/ghostcap-gaming/cs2-map-images" target="_blank">ghostcap-gaming/cs2-map-images</a> • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a> • <a href="https://github.com/Drarig29/brackets-viewer.js" target="_blank">brackets-viewer.js</a> (customized copy vendored in `client/src/brackets-viewer`)
 
 ---
 

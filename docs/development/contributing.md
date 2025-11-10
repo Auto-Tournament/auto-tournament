@@ -53,7 +53,8 @@ matchzy-auto-tournament/
 │       ├── components/           # Reusable React components
 │       ├── pages/                # Page components
 │       ├── hooks/                # Custom React hooks
-│       └── types/                # TypeScript types
+│       ├── types/                # TypeScript types
+│       └── brackets-viewer/      # Forked brackets-viewer.js bundle with MatchZy tweaks
 ├── docs/                         # Documentation (MkDocs)
 │   ├── mkdocs.yml               # Docs configuration
 │   └── requirements.txt          # Python dependencies for docs

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
@@ -24,6 +24,71 @@ export default function BracketsViewerVisualization({
   const containerRef = useRef<HTMLDivElement>(null);
   const matchLookupRef = useRef<Map<Id, Match>>(new Map());
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
+  const shouldAutoCenterRef = useRef<boolean>(true);
+  const autoCenterSignatureRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (matches.length === 0) {
+      autoCenterSignatureRef.current = null;
+      shouldAutoCenterRef.current = true;
+      return;
+    }
+
+    const signature = matches
+      .map((m) => `${m.round}-${m.matchNumber}-${m.id}`)
+      .sort()
+      .join('|');
+
+    if (autoCenterSignatureRef.current !== signature) {
+      autoCenterSignatureRef.current = signature;
+      shouldAutoCenterRef.current = true;
+    }
+  }, [matches]);
+
+  const centerMatch = useCallback((matchId: Id) => {
+    const transformInstance = transformRef.current;
+    const container = containerRef.current;
+    if (!transformInstance || !container) return;
+    const { state, zoomToElement } = transformInstance;
+    if (!state || typeof zoomToElement !== 'function') return;
+
+    const matchElement = container.querySelector<HTMLElement>(
+      `.match[data-match-id="${matchId}"]`
+    );
+    if (!matchElement) return;
+
+    const currentScale = state?.scale ?? 1;
+    try {
+      zoomToElement(matchElement, currentScale, 300, 'easeOutCubic');
+    } catch (error) {
+      console.error('Failed to center on match element:', error);
+    } finally {
+      shouldAutoCenterRef.current = false;
+    }
+  }, []);
+
+  const findOriginalMatch = useCallback(
+    (matchId: Id): Match | undefined => {
+      const direct = matchLookupRef.current.get(matchId);
+      if (direct) return direct;
+
+      const stringKey = String(matchId) as Id;
+      const viaString = matchLookupRef.current.get(stringKey);
+      if (viaString) return viaString;
+
+      const numericKey = Number(matchId);
+      if (!Number.isNaN(numericKey)) {
+        const viaNumber = matchLookupRef.current.get(numericKey as Id);
+        if (viaNumber) return viaNumber;
+
+        const match = matches.find((m) => m.id === numericKey);
+        if (match) return match;
+      }
+
+      return matches.find((m) => String(m.id) === String(matchId));
+    },
+    [matches]
+  );
 
   const viewerData = useMemo(() => {
     if (matches.length === 0) {
@@ -120,6 +185,18 @@ export default function BracketsViewerVisualization({
 
     parentMatchPositions.forEach((positions) => positions.sort((a, b) => a - b));
 
+    const registerMatch = (matchId: Id, match: Match) => {
+      matchLookup.set(matchId, match);
+
+      const stringKey = String(matchId) as Id;
+      matchLookup.set(stringKey, match);
+
+      const numericKey = Number(matchId);
+      if (!Number.isNaN(numericKey)) {
+        matchLookup.set(numericKey as Id, match);
+      }
+    };
+
     const buildOpponent = (
       match: Match,
       team: Match['team1'],
@@ -186,7 +263,7 @@ export default function BracketsViewerVisualization({
           opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
           opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
         });
-        matchLookup.set(viewerMatchId, m);
+        registerMatch(viewerMatchId as Id, m);
       });
 
       roundCounter++;
@@ -225,7 +302,7 @@ export default function BracketsViewerVisualization({
           opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
           opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
         });
-        matchLookup.set(viewerMatchId, m);
+        registerMatch(viewerMatchId as Id, m);
       });
 
       roundCounter++;
@@ -262,7 +339,7 @@ export default function BracketsViewerVisualization({
           opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, gfMatch.team1Score),
           opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, gfMatch.team2Score),
         });
-        matchLookup.set(viewerMatchId, gfMatch);
+        registerMatch(viewerMatchId as Id, gfMatch);
       }
     }
 
@@ -317,9 +394,26 @@ export default function BracketsViewerVisualization({
           highlightParticipantOnHover: true,
           onMatchClick: (match) => {
             // Find the original match by ID
-            const originalMatch = matchLookupRef.current.get(match.id);
-            const hasTeam1 = Boolean(originalMatch?.team1?.id);
-            const hasTeam2 = Boolean(originalMatch?.team2?.id);
+            const originalMatch = findOriginalMatch(match.id);
+            const hasTeam1 = Boolean(originalMatch?.team1);
+            const hasTeam2 = Boolean(originalMatch?.team2);
+            // Temporary debug logging to inspect click data
+            if (process.env.NODE_ENV === 'development') {
+              // eslint-disable-next-line no-console
+              console.debug('[Bracket] Viewer match click', {
+                viewerMatch: match,
+                originalMatch,
+                hasTeam1,
+                hasTeam2,
+                viewerMatchId: match.id,
+                lookupHasExact: matchLookupRef.current.has(match.id),
+                lookupHasString: matchLookupRef.current.has(String(match.id) as Id),
+                lookupHasNumber: matchLookupRef.current.has(Number(match.id) as Id),
+              });
+            }
+            if (hasTeam1 && hasTeam2) {
+              centerMatch(match.id);
+            }
             if (originalMatch && hasTeam1 && hasTeam2 && onMatchClick) {
               onMatchClick(originalMatch);
             }
@@ -360,8 +454,10 @@ export default function BracketsViewerVisualization({
 
         const transformInstance = transformRef.current;
         if (transformInstance) {
-          transformInstance.resetTransform();
-          transformInstance.centerView(undefined, 0);
+          if (shouldAutoCenterRef.current) {
+            transformInstance.centerView(undefined, 300, 'easeOutCubic');
+            shouldAutoCenterRef.current = false;
+          }
         }
       } catch (error) {
         console.error('Error rendering bracket:', error);
@@ -377,7 +473,7 @@ export default function BracketsViewerVisualization({
         containerRef.current.innerHTML = '';
       }
     };
-  }, [viewerData, theme, onMatchClick]);
+  }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch]);
 
   return (
     <Box
@@ -400,6 +496,7 @@ export default function BracketsViewerVisualization({
         wheel={{ step: 0.1 }}
         doubleClick={{ disabled: true }}
         pinch={{ step: 5 }}
+        panning={{ velocityDisabled: true, allowLeftClickPan: true }}
         limitToBounds
         centerZoomedOut
         centerOnInit

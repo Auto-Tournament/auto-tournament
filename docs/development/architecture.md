@@ -137,3 +137,22 @@ All bracket generators use this to create match configs.
 - `*BracketGenerator.ts` - Generates bracket structure
 - `matchConfigBuilder.ts` - Builds individual match configs
 - `bracketGenerators/` - Interface and registry
+
+## Frontend Bracket Viewer
+
+The React client ships with a **vendored copy of [`brackets-viewer.js`](https://github.com/Drarig29/brackets-viewer.js)** located at `client/src/brackets-viewer/`. We maintain a fork because the stock package does not yet expose the behaviours we rely on:
+
+- Extended metadata ingestion (seed positions, `nextMatchId` wiring, parent match hints)
+- Reactive theming hooks to map into the Material UI design system
+- Smooth `zoomToElement` focus when opening our match modal
+- Small UX tweaks (separated BoX labels, hover states, popover styling)
+
+When updating to a newer upstream release:
+
+1. Pull the new source from the upstream repository.
+2. Re-run the build script from the upstream project to regenerate assets (SCSS → CSS, TypeScript → JS).
+3. Copy the distribution files back into `client/src/brackets-viewer/`.
+4. Re-apply local adjustments (search for `// MatchZy` comments) and run `npm run lint`.
+5. Validate the bracket view for single elimination, double elimination, losers bracket transfers, and Swiss layouts.
+
+Keeping the fork checked in ensures deterministic builds and avoids shipping multiple runtime bundles.
