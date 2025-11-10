@@ -134,6 +134,7 @@ nav:
   - Features:
       - Overview: features/overview.md
       - Map Veto: features/map-veto.md
+  - Screenshots: screenshots.md
   - Admin Guide:
       - Managing Teams: guides/managing-teams.md
       - Running Matches: guides/running-matches.md
