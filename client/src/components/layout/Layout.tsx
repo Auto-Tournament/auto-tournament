@@ -86,9 +86,11 @@ export default function Layout() {
             </Button>
           </Tooltip>
 
-          <IconButton color="inherit" onClick={handleLogout} title="Logout">
-            <Logout />
-          </IconButton>
+          <Tooltip title="Logout" arrow>
+            <IconButton color="inherit" onClick={handleLogout}>
+              <Logout />
+            </IconButton>
+          </Tooltip>
         </Toolbar>
       </AppBar>
 
