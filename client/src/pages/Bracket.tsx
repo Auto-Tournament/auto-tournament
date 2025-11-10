@@ -71,6 +71,13 @@ export default function Bracket() {
     return sortedMatches.findIndex((m) => m.id === match.id) + 1;
   };
 
+  const handleMatchClick = (match: Match) => {
+    if (!match.team1?.id || !match.team2?.id) {
+      return;
+    }
+    setSelectedMatchId(match.id);
+  };
+
   useEffect(() => {
     const handleFullscreenChange = () => {
       setIsFullscreen(!!globalThis.document.fullscreenElement);
@@ -318,7 +325,7 @@ export default function Bracket() {
               matches={matches}
               teams={tournament.teams || []}
               totalRounds={totalRounds}
-              onMatchClick={(match) => setSelectedMatchId(match.id)}
+              onMatchClick={handleMatchClick}
             />
           ) : (
             // All bracket-manager types: single_elimination, double_elimination, round_robin
@@ -326,7 +333,7 @@ export default function Bracket() {
               matches={matches}
               tournamentType={tournament.type}
               isFullscreen={isFullscreen}
-              onMatchClick={(match) => setSelectedMatchId(match.id)}
+              onMatchClick={handleMatchClick}
             />
           )}
         </Box>
@@ -351,7 +358,7 @@ export default function Bracket() {
                     match={match}
                     matchNumber={getGlobalMatchNumber(match)}
                     roundLabel={getRoundLabel(round, totalRounds)}
-                    onClick={() => setSelectedMatchId(match.id)}
+                    onClick={() => handleMatchClick(match)}
                   />
                 ))}
               </Stack>

@@ -1,7 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useMemo, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
-import { render } from 'brackets-viewer';
+import { alpha } from '@mui/material/styles';
+import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
+import { render } from '../../brackets-viewer';
 import type { Match } from '../../types';
+import type { Id, Stage, ParticipantResult } from 'brackets-model';
+import '../../brackets-viewer/style.scss';
 
 interface BracketsViewerVisualizationProps {
   matches: Match[];
@@ -18,11 +22,15 @@ export default function BracketsViewerVisualization({
 }: BracketsViewerVisualizationProps) {
   const theme = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
+  const matchLookupRef = useRef<Map<Id, Match>>(new Map());
+  const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
 
-  useEffect(() => {
-    if (!containerRef.current || matches.length === 0) return;
+  const viewerData = useMemo(() => {
+    if (matches.length === 0) {
+      matchLookupRef.current.clear();
+      return null;
+    }
 
-    // Convert our matches to brackets-viewer format
     const getStageName = () => {
       switch (tournamentType) {
         case 'single_elimination': return 'Single Elimination';
@@ -31,16 +39,6 @@ export default function BracketsViewerVisualization({
         default: return 'Tournament';
       }
     };
-
-    const stages = [
-      {
-        id: 1,
-        tournament_id: 1,
-        name: getStageName(),
-        type: tournamentType,
-        number: 1,
-      },
-    ];
 
     // Group matches into their respective groups
     const groups: any[] = [];
@@ -108,7 +106,52 @@ export default function BracketsViewerVisualization({
 
     // Create rounds and matches
     let roundCounter = 0;
-    let matchCounter = 0;
+    let fallbackMatchId = 1;
+    const matchLookup = new Map<Id, Match>();
+    const parentMatchPositions = new Map<Id, number[]>();
+
+    matches.forEach((match) => {
+      if (match.nextMatchId !== undefined && match.nextMatchId !== null) {
+        const positions = parentMatchPositions.get(match.nextMatchId as Id) ?? [];
+        positions.push(match.matchNumber);
+        parentMatchPositions.set(match.nextMatchId as Id, positions);
+      }
+    });
+
+    parentMatchPositions.forEach((positions) => positions.sort((a, b) => a - b));
+
+    const buildOpponent = (
+      match: Match,
+      team: Match['team1'],
+      position: number,
+      score: number | undefined
+    ): ParticipantResult | null => {
+      if (team?.id) {
+        const participantId = teamIdMap.get(team.id);
+        const result =
+          match.winner?.id && team.id
+            ? match.winner.id === team.id
+              ? 'win'
+              : 'loss'
+            : undefined;
+
+        return {
+          id: participantId ?? null,
+          position,
+          score: score ?? undefined,
+          result,
+        };
+      }
+
+      if (match.status !== 'completed') {
+        return {
+          id: null,
+          position,
+        };
+      }
+
+      return null;
+    };
 
     // Winners bracket rounds
     const wbRounds = Object.keys(matchesByRound)
@@ -125,31 +168,25 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const viewerMatchId = m.id ?? fallbackMatchId++;
+        const parentPositions =
+          parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
+        const seedingPositions =
+          m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
         viewerMatches.push({
-          id: matchCounter++,
+          id: viewerMatchId,
           number: m.matchNumber,
           stage_id: 1,
           group_id: 1,
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: m.team1
-            ? {
-                id: teamIdMap.get(m.team1.id),
-                position: 1,
-                result: m.winner?.id === m.team1.id ? 'win' : undefined,
-                score: m.team1Score,
-              }
-            : null,
-          opponent2: m.team2
-            ? {
-                id: teamIdMap.get(m.team2.id),
-                position: 2,
-                result: m.winner?.id === m.team2.id ? 'win' : undefined,
-                score: m.team2Score,
-              }
-            : null,
+          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
         });
+        matchLookup.set(viewerMatchId, m);
       });
 
       roundCounter++;
@@ -170,31 +207,25 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const viewerMatchId = m.id ?? fallbackMatchId++;
+        const parentPositions =
+          parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
+        const seedingPositions =
+          m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
         viewerMatches.push({
-          id: matchCounter++,
+          id: viewerMatchId,
           number: m.matchNumber,
           stage_id: 1,
           group_id: 2,
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: m.team1
-            ? {
-                id: teamIdMap.get(m.team1.id),
-                position: 1,
-                result: m.winner?.id === m.team1.id ? 'win' : undefined,
-                score: m.team1Score,
-              }
-            : null,
-          opponent2: m.team2
-            ? {
-                id: teamIdMap.get(m.team2.id),
-                position: 2,
-                result: m.winner?.id === m.team2.id ? 'win' : undefined,
-                score: m.team2Score,
-              }
-            : null,
+          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
         });
+        matchLookup.set(viewerMatchId, m);
       });
 
       roundCounter++;
@@ -211,90 +242,142 @@ export default function BracketsViewerVisualization({
           group_id: 3,
         });
 
+        const viewerMatchId = gfMatch.id ?? fallbackMatchId++;
+        const parentPositions =
+          parentMatchPositions.get((gfMatch.id ?? viewerMatchId) as Id) ?? [];
+        const seedingPositions =
+          gfMatch.round === 1
+            ? [(gfMatch.matchNumber - 1) * 2 + 1, (gfMatch.matchNumber - 1) * 2 + 2]
+            : [];
+        const opponent1Position = parentPositions[0] ?? seedingPositions[0] ?? 1;
+        const opponent2Position = parentPositions[1] ?? seedingPositions[1] ?? 2;
         viewerMatches.push({
-          id: matchCounter++,
+          id: viewerMatchId,
           number: 1,
           stage_id: 1,
           group_id: 3,
           round_id: roundCounter,
           child_count: 0,
           status: gfMatch.status === 'completed' ? 2 : gfMatch.status === 'live' ? 1 : 0,
-          opponent1: gfMatch.team1
-            ? {
-                id: teamIdMap.get(gfMatch.team1.id),
-                position: 1,
-                result: gfMatch.winner?.id === gfMatch.team1.id ? 'win' : undefined,
-                score: gfMatch.team1Score,
-              }
-            : null,
-          opponent2: gfMatch.team2
-            ? {
-                id: teamIdMap.get(gfMatch.team2.id),
-                position: 2,
-                result: gfMatch.winner?.id === gfMatch.team2.id ? 'win' : undefined,
-                score: gfMatch.team2Score,
-              }
-            : null,
+          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, gfMatch.team1Score),
+          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, gfMatch.team2Score),
         });
+        matchLookup.set(viewerMatchId, gfMatch);
       }
     }
 
+    const stageSettings: Stage['settings'] = {
+      skipFirstRound: false,
+      grandFinal: hasGrandFinals ? 'simple' : 'none',
+      size: participants.length || undefined,
+    };
+
+    if (tournamentType === 'round_robin') {
+      stageSettings.groupCount = groups.length || 1;
+    }
+
+    const stage: Stage = {
+      id: 1,
+      tournament_id: 1,
+      name: getStageName(),
+      type: tournamentType as Stage['type'],
+      number: 1,
+      settings: stageSettings,
+    };
+
+    return {
+      data: {
+        stages: [stage],
+        matches: viewerMatches,
+        matchGames: [],
+        participants,
+        groups,
+        rounds,
+      },
+      matchLookup,
+    };
+  }, [matches, tournamentType]);
+
+  useEffect(() => {
+    if (!containerRef.current || !viewerData) return;
+
+    const { data, matchLookup } = viewerData;
+    matchLookupRef.current = matchLookup;
+
     // Render the bracket
-    try {
-      render(
-        {
-          stages,
-          matches: viewerMatches,
-          matchGames: [],
-          participants,
-          groups,
-          rounds,
-        },
-        {
-          selector: containerRef.current,
+    let cancelled = false;
+
+    const run = async () => {
+      try {
+        await render(data, {
           participantOriginPlacement: 'before',
-          separatedChildCountLabel: false,
-          showSlotsOrigin: false,
-          showLowerBracketSlotsOrigin: false,
+          separatedChildCountLabel: true,
+          showSlotsOrigin: true,
+          showLowerBracketSlotsOrigin: true,
           highlightParticipantOnHover: true,
           onMatchClick: (match) => {
             // Find the original match by ID
-            const originalMatch = matches.find((m) => m.id === match.id);
-            if (originalMatch && onMatchClick) {
+            const originalMatch = matchLookupRef.current.get(match.id);
+            const hasTeam1 = Boolean(originalMatch?.team1?.id);
+            const hasTeam2 = Boolean(originalMatch?.team2?.id);
+            if (originalMatch && hasTeam1 && hasTeam2 && onMatchClick) {
               onMatchClick(originalMatch);
             }
           },
-        }
-      );
+        });
 
-      // Apply custom styles based on theme
-      const bracketContainer = containerRef.current;
-      if (bracketContainer) {
-        bracketContainer.style.setProperty(
-          '--primary-background',
-          theme.palette.background.default
-        );
-        bracketContainer.style.setProperty(
-          '--secondary-background',
-          theme.palette.background.paper
-        );
-        bracketContainer.style.setProperty('--match-background', theme.palette.background.paper);
-        bracketContainer.style.setProperty('--connector-color', theme.palette.divider);
-        bracketContainer.style.setProperty('--win-color', theme.palette.success.main);
-        bracketContainer.style.setProperty('--loss-color', theme.palette.text.disabled);
-        bracketContainer.style.setProperty('--text-color', theme.palette.text.primary);
+        if (cancelled) return;
+
+        // Apply custom styles based on theme
+        const bracketContainer = containerRef.current;
+        if (bracketContainer) {
+          const primaryBackground = theme.palette.background.default;
+          const secondaryBackground =
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.background.default, 0.8)
+              : alpha(theme.palette.background.default, 0.95);
+          const matchBackground =
+            theme.palette.mode === 'dark'
+              ? alpha(theme.palette.background.paper, 0.6)
+              : theme.palette.background.paper;
+
+          bracketContainer.style.setProperty('--primary-background', primaryBackground);
+          bracketContainer.style.setProperty('--secondary-background', secondaryBackground);
+          bracketContainer.style.setProperty('--match-background', matchBackground);
+          bracketContainer.style.setProperty('--font-color', theme.palette.text.primary);
+          bracketContainer.style.setProperty('--label-color', theme.palette.text.secondary);
+          bracketContainer.style.setProperty('--hint-color', theme.palette.text.secondary);
+          bracketContainer.style.setProperty('--connector-color', theme.palette.divider);
+          bracketContainer.style.setProperty('--border-color', theme.palette.divider);
+          bracketContainer.style.setProperty(
+            '--border-hover-color',
+            alpha(theme.palette.text.primary, 0.4)
+          );
+          bracketContainer.style.setProperty('--border-selected-color', theme.palette.primary.main);
+          bracketContainer.style.setProperty('--win-color', theme.palette.success.main);
+          bracketContainer.style.setProperty('--loss-color', theme.palette.error.main);
+        }
+
+        const transformInstance = transformRef.current;
+        if (transformInstance) {
+          transformInstance.resetTransform();
+          transformInstance.centerView(undefined, 0);
+        }
+      } catch (error) {
+        console.error('Error rendering bracket:', error);
       }
-    } catch (error) {
-      console.error('Error rendering bracket:', error);
-    }
+    };
+
+    void run();
 
     // Cleanup
     return () => {
+      cancelled = true;
       if (containerRef.current) {
         containerRef.current.innerHTML = '';
       }
     };
-  }, [matches, tournamentType, theme, onMatchClick]);
+  }, [viewerData, theme, onMatchClick]);
 
   return (
     <Box
@@ -304,16 +387,39 @@ export default function BracketsViewerVisualization({
         border: isFullscreen ? 0 : 1,
         borderColor: 'divider',
         borderRadius: isFullscreen ? 0 : 2,
-        overflow: 'auto',
+        overflow: 'hidden',
         bgcolor: 'background.default',
-        p: 3,
-        '& .brackets-viewer': {
-          width: '100%',
-          height: '100%',
-        },
+        p: 0,
       }}
     >
-      <div ref={containerRef} className="brackets-viewer" />
+      <TransformWrapper
+        ref={transformRef}
+        minScale={0.5}
+        maxScale={2.5}
+        initialScale={1}
+        wheel={{ step: 0.1 }}
+        doubleClick={{ disabled: true }}
+        pinch={{ step: 5 }}
+        limitToBounds
+        centerZoomedOut
+        centerOnInit
+        alignmentAnimation={{ disabled: true }}
+        velocityAnimation={{ disabled: true }}
+      >
+        <TransformComponent
+          wrapperStyle={{
+            width: '100%',
+            height: '100%',
+            padding: theme.spacing(3),
+            overflow: 'hidden',
+            background: theme.palette.background.default,
+            boxSizing: 'border-box',
+          }}
+          contentStyle={{ width: 'auto', height: 'auto' }}
+        >
+          <div ref={containerRef} className="brackets-viewer" />
+        </TransformComponent>
+      </TransformWrapper>
     </Box>
   );
 }

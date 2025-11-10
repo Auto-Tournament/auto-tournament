@@ -10,6 +10,7 @@ export interface Match {
   slug: string;
   round: number;
   matchNumber: number;
+  nextMatchId?: number | null;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
   team1?: Team;
   team2?: Team;

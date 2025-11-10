@@ -1,0 +1,124 @@
+{
+    "origin-hint": {
+        "seed": "Seed {{position}}",
+        "winner-bracket": "Perdant $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+        "winner-bracket-semi-final": "Perdant $t(abbreviations.winner-bracket) Semi {{position}}",
+        "winner-bracket-final": "Perdant Finale $t(abbreviations.winner-bracket)",
+        "consolation-final": "Perdant Semi {{position}}",
+        "grand-final": "Gagnant Finale $t(abbreviations.loser-bracket)",
+        "double-elimination-consolation-final-opponent-1": "Perdant $t(abbreviations.loser-bracket) Semi 1",
+        "double-elimination-consolation-final-opponent-2": "Perdant $t(abbreviations.loser-bracket) Final"
+    },
+    "match-label": {
+        "default": "Match {{matchNumber}}",
+        "winner-bracket": "$t(abbreviations.winner-bracket)",
+        "loser-bracket": "$t(abbreviations.loser-bracket)",
+        "standard-bracket": "$t(abbreviations.match)",
+        "standard-bracket-semi-final": "Semi {{matchNumber}}",
+        "standard-bracket-final": "Finale",
+        "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+        "double-elimination-semi-final": "{{matchPrefix}} Semi {{matchNumber}}",
+        "double-elimination-final": "Finale {{matchPrefix}}",
+        "consolation-final": "Petite finale",
+        "grand-final-single": "Grande finale",
+        "grand-final": "$t(abbreviations.grand-final) Round {{roundNumber}}",
+        "match-game": "Game {{gameNumber}}"
+    },
+    "match-status": {
+        "locked": "Verrouillé",
+        "waiting": "En attente",
+        "ready": "Prêt",
+        "running": "En cours",
+        "completed": "Terminé",
+        "archived": "Archivé"
+    },
+    "abbreviations": {
+        "win": "V",
+        "loss": "D",
+        "forfeit": "F",
+        "position": "P",
+        "seed": "#",
+        "winner-bracket": "WB",
+        "loser-bracket": "LB",
+        "match": "M",
+        "grand-final": "GF"
+    },
+    "ranking": {
+        "rank": {
+            "text": "#",
+            "tooltip": "Rang"
+        },
+        "id": {
+            "text": "Name",
+            "tooltip": "Nom"
+        },
+        "played": {
+            "text": "J",
+            "tooltip": "Joué"
+        },
+        "wins": {
+            "text": "$t(abbreviations.win)",
+            "tooltip": "Victoires"
+        },
+        "draws": {
+            "text": "N",
+            "tooltip": "Match nul"
+        },
+        "losses": {
+            "text": "$t(abbreviations.loss)",
+            "tooltip": "Défaites"
+        },
+        "forfeits": {
+            "text": "$t(abbreviations.forfeit)",
+            "tooltip": "Forfaits"
+        },
+        "scoreFor": {
+            "text": "SF",
+            "tooltip": "Score pour"
+        },
+        "scoreAgainst": {
+            "text": "SA",
+            "tooltip": "Score contre"
+        },
+        "scoreDifference": {
+            "text": "+/-",
+            "tooltip": "Différence de score"
+        },
+        "points": {
+            "text": "Pts",
+            "tooltip": "Points"
+        }
+    },
+    "common": {
+        "bye": "BYE",
+        "best-of-x": "Bo{{x}}",
+        "consolation": "Consolation",
+        "group-name": "Groupe {{groupNumber}}",
+        "group-name-winner-bracket": "Winner Bracket",
+        "group-name-loser-bracket": "Loser Bracket",
+        "round-name": "Round {{roundNumber}}",
+        "round-name-final": "Round final",
+        "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Round {{roundNumber}}",
+        "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Round final",
+        "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Round {{roundNumber}}",
+        "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Round final"
+    },
+    "form-creator": {
+        "stage-name-label": "Name your stage",
+        "stage-name-placeholder": "Give a name for your stage",
+        "stage-selector-label": "Select a stage",
+        "team-label": "Name your teams",
+        "team-placeholder": "Comma separated List of Team Names (must be 2^n)",
+        "team-count": "Or a team count",
+        "team-count-placeholder": "How many teams do you want?",
+        "group-label": "How many groups?",
+        "group-placeholder": "How many groups do you want?",
+        "seed-order-label": "How would you like to order your seeds?",
+        "double-elimination-seed-order-placeholder": "Seed order for double elimination comma separated",
+        "round-robin-mode-label": "Which round robin mode do you like?",
+        "consolation-final-label": "Consolation Final",
+        "skip-first-round-label": "Skip first round",
+        "grand-final-type-label": "Grand final type",
+        "submit": "Create"
+    }
+}

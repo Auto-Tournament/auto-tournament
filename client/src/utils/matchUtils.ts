@@ -36,10 +36,10 @@ export const getStatusLabel = (
 
   switch (status) {
     case 'pending':
-      if (tournamentStarted === false) return 'NOT STARTED';
+      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
       return 'VETO PENDING';
     case 'ready':
-      if (tournamentStarted === false) return 'WAITING';
+      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
       if (vetoCompleted === false) return 'MAP VETO';
       return 'READY';
     case 'loaded':

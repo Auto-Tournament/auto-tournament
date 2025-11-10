@@ -37,7 +37,6 @@
         "brackets-manager": "^1.7.1",
         "brackets-memory-db": "^1.0.5",
         "brackets-model": "^1.5.1",
-        "brackets-viewer": "^1.8.1",
         "cors": "^2.8.5",
         "dathost-rcon-client": "^1.0.3",
         "dotenv": "^16.3.1",
@@ -73,6 +72,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.21.0",
+        "sass": "^1.93.3",
         "tsx": "^4.7.0",
         "typescript": "^5.3.3",
         "vite": "^5.0.12"

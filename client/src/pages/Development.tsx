@@ -67,23 +67,48 @@ const Development: React.FC = () => {
         'BIG',
         'Complexity',
         'ENCE',
+        'Virtus.pro',
+        'GamerLegion',
+        'Eternal Fire',
+        'The MongolZ',
+        'Monte',
+        'paiN Gaming',
+        'Movistar Riders',
+        'Imperial Esports',
+        'Aurora Gaming',
+        'MIBR',
+        'OG',
+        '9INE',
+        'Bad News Eagles',
+        'SAW',
       ];
+
+      const slugify = (value: string) =>
+        value
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, '');
+
+      const createSteamId = (teamIndex: number, playerIndex: number) =>
+        `7656119${(10000000 + teamIndex * 10 + playerIndex)
+          .toString()
+          .padStart(8, '0')}`;
 
       for (let i = 0; i < count; i++) {
         const teamName = teamNames[i % teamNames.length];
-        const suffix = i >= teamNames.length ? ` ${Math.floor(i / teamNames.length) + 1}` : '';
+        const suffixIndex = Math.floor(i / teamNames.length);
+        const suffix = suffixIndex > 0 ? ` ${suffixIndex + 1}` : '';
+        const fullName = `${teamName}${suffix}`;
+        const slug = slugify(fullName);
 
         teams.push({
-          id: `test-team-${Date.now()}-${i}`,
-          name: `${teamName}${suffix}`,
-          tag: teamName.substring(0, 3).toUpperCase(),
-          players: [
-            { steamId: `7656119${Math.floor(Math.random() * 100000000)}`, name: 'Player1' },
-            { steamId: `7656119${Math.floor(Math.random() * 100000000)}`, name: 'Player2' },
-            { steamId: `7656119${Math.floor(Math.random() * 100000000)}`, name: 'Player3' },
-            { steamId: `7656119${Math.floor(Math.random() * 100000000)}`, name: 'Player4' },
-            { steamId: `7656119${Math.floor(Math.random() * 100000000)}`, name: 'Player5' },
-          ],
+          id: `test-team-${slug}`,
+          name: fullName,
+          tag: teamName.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase() || 'TST',
+          players: Array.from({ length: 5 }, (_, playerIndex) => ({
+            steamId: createSteamId(i, playerIndex),
+            name: `Player ${playerIndex + 1}`,
+          })),
         });
       }
 
