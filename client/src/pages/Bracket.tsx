@@ -25,7 +25,6 @@ import BracketVisualization from '../components/visualizations/BracketVisualizat
 import ModernBracketVisualization from '../components/visualizations/ModernBracketVisualization';
 import RoundRobinView from '../components/visualizations/RoundRobinView';
 import SwissView from '../components/visualizations/SwissView';
-import DoubleEliminationView from '../components/visualizations/DoubleEliminationView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchCard } from '../components/shared/MatchCard';
@@ -329,12 +328,7 @@ export default function Bracket() {
               totalRounds={totalRounds}
               onMatchClick={(match) => setSelectedMatchId(match.id)}
             />
-          ) : tournament.type === 'double_elimination' ? (
-            <DoubleEliminationView
-              matches={matches}
-              onMatchClick={(match) => setSelectedMatchId(match.id)}
-            />
-          ) : tournament.type === 'single_elimination' ? (
+          ) : tournament.type === 'single_elimination' || tournament.type === 'double_elimination' ? (
             <ModernBracketVisualization
               matches={matches}
               totalRounds={totalRounds}
