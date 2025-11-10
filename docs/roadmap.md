@@ -1,612 +1,249 @@
 # Roadmap
 
-This document outlines the current feature set and planned future enhancements for MatchZy Auto Tournament.
+This document outlines current features and planned enhancements for MatchZy Auto Tournament, organized by priority.
 
 ---
 
-## ✅ Current Features (v1.0)
+## 🎯 Core Features (Must-Haves)
 
-### 🏆 Tournament Management
+Essential functionality for running competitive CS2 tournaments.
 
-**Bracket Formats:**
+### Tournament Management
 
-- ✅ Single Elimination (2-128 teams)
-- ✅ Double Elimination (2-128 teams)
-- ✅ Round Robin (2-32 teams)
-- ✅ Swiss System (4-64 teams)
-
-**Tournament Features:**
-
-- ✅ Automatic bye handling for non-power-of-two team counts
-- ✅ Smart seeding (random or manual)
-- ✅ Walkover support (missing team advances opponent)
-- ✅ Third-place match (optional for elimination brackets)
-- ✅ Bracket regeneration without losing tournament
-- ✅ Tournament lifecycle states (Setup → Ready → In Progress → Completed)
+- ✅ Single/Double Elimination, Round Robin, Swiss formats (2-128 teams)
+- ✅ Automatic bye handling and smart seeding
+- ✅ Bracket regeneration and walkover support
 - ✅ Real-time bracket updates via WebSocket
+- ⏳ Qualification system and multi-stage tournaments
+- ⏳ Group stage + playoff hybrid formats
+- ⏳ Tournament templates and scheduling
 
-### 🗺️ Map Veto System
+### Match & Veto System
 
-**Match Formats:**
-
-- ✅ BO1 (7 maps → ban 6, pick sides on final map)
-- ✅ BO3 (7 maps → ban 2, pick 2, sides on each, decider auto-selected)
-- ✅ BO5 (7 maps → ban 2, pick all 5 with sides)
-
-**Veto Features:**
-
-- ✅ FaceIT-style interactive pick/ban interface
-- ✅ Turn-based security (teams can only vote on their turn)
-- ✅ Real-time updates via WebSocket
-- ✅ Visual feedback (banned maps, picked maps, remaining maps)
-- ✅ Team-specific veto pages (no authentication required)
-- ✅ Auto-progression when veto completes
+- ✅ BO1/BO3/BO5 map veto (FaceIT-style interactive pick/ban)
+- ✅ Turn-based veto security and real-time updates
 - ✅ Admin skip veto option
-
-### ⚡ Real-Time Features
-
-**WebSocket Live Updates:**
-
-- ✅ Match status changes (pending → ready → loaded → live → completed)
-- ✅ Player connection/disconnection tracking
-- ✅ Player ready/unready status
-- ✅ Veto actions (ban, pick, side selection)
-- ✅ Tournament state changes
-- ✅ Bracket progression
-- ✅ Round scores and map completion
-- ✅ Server status updates
-
-**Player Tracking:**
-
-- ✅ Live roster display (all 10 players)
-- ✅ Connection status (Offline / Connected / Ready)
-- ✅ Color-coded status indicators
-- ✅ Real-time status updates during match
-
-### 🖥️ Server Management
-
-**Auto Server Allocation:**
-
-- ✅ Automatic server assignment when match is ready
-- ✅ Intelligent server selection (finds available servers)
-- ✅ Automatic match config generation
-- ✅ Auto-configuration of webhooks via RCON
-- ✅ Auto-configuration of demo upload
-- ✅ Server pool management (multiple servers)
-
-**Server Monitoring:**
-
-- ✅ RCON heartbeat checks (periodic status monitoring)
-- ✅ Match tracking (which match is on which server)
-- ✅ Online/offline status indicators
-- ✅ Server details management (host, port, RCON password)
-- ✅ Enable/disable servers
-- ✅ Test connection feature
-
-### 🎛️ Admin Controls
-
-**Match Controls:**
-
-- ✅ Start match (force start)
-- ✅ Restart match
-- ✅ Pause match (admin pause - players can't unpause)
-- ✅ Unpause match
-- ✅ Broadcast message to server
-- ✅ Restore backup (select specific round)
-- ✅ Change map
-- ✅ Swap teams
-- ✅ Skip veto
-- ✅ Toggle knife round
-- ✅ Add time
-- ✅ End match
-- ✅ Add backup player (autocomplete search across all tournament players)
-
-**Admin Features:**
-
-- ✅ Server management page
-- ✅ Team management interface
-- ✅ Match overview dashboard
-- ✅ Event stream monitor (real-time debugging)
-- ✅ Application logs viewer
-- ✅ Tournament controls
-
-### 👥 Team Experience
-
-**Public Team Pages:**
-
-- ✅ No authentication required
-- ✅ Current match information
-- ✅ Opponent details
-- ✅ Map veto interface
-- ✅ Server connection details (IP, port, connect command)
-- ✅ Live player status (all 10 players)
-- ✅ Team statistics (W/L, win rate)
-- ✅ Match history with past opponents and scores
-- ✅ Team roster with player names
-
-**Sound Notifications:**
-
-- ✅ 8 different notification sounds (Notification, Alert, Bell, Chime, Ding, Ping, Pop, Success)
-- ✅ Volume control slider
-- ✅ Mute toggle
-- ✅ Sound preview
-- ✅ Persists per browser
-- ✅ Plays on match status changes (loaded/live)
-
-### 📊 Team Management
-
-**Team Features:**
-
-- ✅ Create/edit/delete teams
-- ✅ Team name and tag
-- ✅ Minimum 5 players per team
-- ✅ Player management (add/remove players)
-- ✅ Steam ID support
-- ✅ Player name customization
-- ✅ Team statistics tracking
-- ✅ Match history per team
-- ✅ JSON import/export for team data
-
-### 🎬 Demo Management
-
-**Demo Recording & Storage:**
-
-- ✅ Automatic demo upload from MatchZy
-- ✅ Streaming upload (memory-efficient)
-- ✅ Match-specific folders (`demos/{matchSlug}/`)
-- ✅ Original filename preservation
-- ✅ Metadata tracking (map number, match ID)
-
-**Demo Download:**
-
-- ✅ Download from match details modal
-- ✅ Download from match history
-- ✅ API endpoint for programmatic access
-- ✅ Per-map demo files for BO3/BO5
-
-### 🔧 Event Processing
-
-**MatchZy Event Integration:**
-
-- ✅ 25+ event types processed
-- ✅ Player events (connect, disconnect, ready, unready, death, MVP)
-- ✅ Match phase events (series start/end, going live, warmup, knife round, halftime, overtime)
-- ✅ Round events (start, end, bomb planted/defused/exploded)
-- ✅ Pause events (paused, unpause requested, unpaused)
-- ✅ Admin events (side swap, backup loaded)
-
-**Event Handling:**
-
-- ✅ Logged to console
-- ✅ Stored in database (`match_events` table)
-- ✅ File logging (`data/logs/events/`)
-- ✅ Broadcast via WebSocket
-- ✅ Trigger service updates
-- ✅ 30-day log retention
-
-### 🔍 Monitoring & Debugging
-
-**Server Events Monitor:**
-
-- ✅ Unfiltered event stream (Admin Tools page)
-- ✅ Last 100 events buffered
-- ✅ Real-time WebSocket updates
-- ✅ Color-coded by event type
-- ✅ Full JSON payload display
-- ✅ Pause/resume streaming
-- ✅ Server filter
-
-**Application Logs:**
-
-- ✅ Real-time log viewer
-- ✅ Log level filtering
-- ✅ Searchable logs
-- ✅ Timestamped entries
-
-### 🐳 Deployment & Infrastructure
-
-**Docker Support:**
-
-- ✅ Official Docker images on Docker Hub
-- ✅ Caddy reverse proxy (single-port architecture)
-- ✅ Development and production compose files
-- ✅ Volume persistence for data
-- ✅ Environment variable configuration
-
-**Database:**
-
-- ✅ SQLite with better-sqlite3
-- ✅ File-based storage (`data/matchzy-tournament.db`)
-- ✅ Automatic schema initialization
-- ✅ Foreign key constraints
-- ✅ JSON field support
-
-### 📡 API & Integration
-
-**REST API:**
-
-- ✅ Full REST API for all operations
-- ✅ API token authentication
-- ✅ Server token authentication (for webhooks)
-- ✅ Swagger/OpenAPI documentation
-- ✅ CORS support for development
-
-**WebSocket API:**
-
-- ✅ Socket.IO for real-time updates
-- ✅ Room-based broadcasting (match-specific, global)
-- ✅ Automatic reconnection
-- ✅ Event-based architecture
-
----
-
-## 🚀 Planned Features (Future Versions)
-
-### 📊 Database & Storage
-
-**External Database Support (v1.1)** 🎯
-
-- ⏳ PostgreSQL support
-- ⏳ MySQL/MariaDB support
-- ⏳ Configurable via environment variables
-- ⏳ Migration tool from SQLite
-- ⏳ Connection pooling
-- ⏳ Better scalability for large tournaments
-
-**Backup & Recovery:**
-
-- ⏳ Automatic database backups
-- ⏳ Point-in-time recovery
-- ⏳ Export/import tournament data
-- ⏳ Disaster recovery tools
-
-### 📈 Statistics & Analytics
-
-**Enhanced Player Statistics:**
-
-- ⏳ Kill/Death ratios
-- ⏳ Average damage per round (ADR)
-- ⏳ Headshot percentage
-- ⏳ Kills per map
-- ⏳ MVP counts
-- ⏳ Weapon statistics
-- ⏳ Clutch statistics
-
-**Team Analytics:**
-
-- ⏳ Win rate by map
-- ⏳ Win rate by side (T/CT)
-- ⏳ Round win percentage
-- ⏳ Economic performance
-- ⏳ Pistol round win rate
-- ⏳ Head-to-head records
-
-**Tournament Statistics:**
-
-- ⏳ Top players leaderboard
-- ⏳ Top teams leaderboard
-- ⏳ Most picked/banned maps
-- ⏳ Average match duration
-- ⏳ Tournament progression timeline
-
-**Data Visualization:**
-
-- ⏳ Charts and graphs for statistics
-- ⏳ Heatmaps for player positions
-- ⏳ Round economy graphs
-- ⏳ Performance trends over time
-
-### 🏆 Tournament Features
-
-**Qualification System:**
-
-- ⏳ Qualifier tournaments feeding into main bracket
-- ⏳ Point-based qualification
-- ⏳ Multi-stage tournaments
-
-**Group Stage + Playoffs:**
-
-- ⏳ Hybrid format (group stage → single/double elimination)
-- ⏳ Automatic advancement based on group standings
-- ⏳ Tiebreaker rules
-
-**Tournament Templates:**
-
-- ⏳ Save tournament formats as templates
-- ⏳ Quick tournament creation from templates
-- ⏳ Default settings per format
-
-**Schedule Management:**
-
-- ⏳ Scheduled match start times
-- ⏳ Match delay handling
-- ⏳ Automatic notifications before match start
-- ⏳ Time zone support
-
-### 🗺️ Map & Veto Enhancements
-
-**Custom Map Pools:**
-
-- ⏳ Different map pools per tournament
-- ⏳ Support for non-standard maps
-- ⏳ Map pool versioning
-
-**Advanced Veto Options:**
-
 - ⏳ BO2 format support
-- ⏳ Custom veto flows
-- ⏳ Captain-based veto (only one player from team can veto)
-- ⏳ Veto time limits
-- ⏳ Auto-random if veto times out
+- ⏳ Custom veto flows and time limits
+- ⏳ Captain-based veto (single player from team)
 
-**Map Statistics:**
+### Server Management
 
-- ⏳ Win rate per map per team
-- ⏳ Veto history (most banned/picked maps)
-- ⏳ Suggested map bans based on statistics
+- ✅ Auto server allocation and match loading
+- ✅ RCON heartbeat monitoring and health checks
+- ✅ Webhook auto-configuration
+- ✅ Multiple server pool management
+- ⏳ Server regions and geographic grouping
+- ⏳ Performance monitoring (tick rate, FPS, latency)
+- ⏳ GOTV relay support and public spectator links
 
-### 👥 User Management & Permissions
+### Real-Time Features
 
-**Multi-Admin System:**
+- ✅ WebSocket live updates (matches, players, veto, brackets)
+- ✅ 25+ MatchZy event processing
+- ✅ Player connection tracking (10-player live roster)
+- ✅ Event stream monitor for debugging
+- ⏳ Enhanced performance optimizations
 
-- ⏳ Multiple admin accounts
-- ⏳ Role-based permissions (Super Admin, Admin, Observer)
-- ⏳ Per-tournament permissions
-- ⏳ Audit logs for admin actions
+### Admin Controls
 
-**Team Management Permissions:**
+- ✅ 12+ match control commands (pause, restore, broadcast, etc.)
+- ✅ Backup player system with autocomplete
+- ✅ Server management interface
+- ✅ Real-time event and application logs
+- ⏳ Bulk match operations
+- ⏳ Advanced backup/restore tools
 
-- ⏳ Team captain accounts
-- ⏳ Captains can update their roster
-- ⏳ Captains can update team details
+### Team Experience
+
+- ✅ Public team pages (no authentication required)
+- ✅ Live match info, server details, and player status
+- ✅ Sound notifications (8 customizable sounds)
+- ✅ Team statistics and match history
+- ⏳ Team captain accounts with self-service roster management
 - ⏳ Team registration workflow
 
-**Public Observer Accounts:**
+---
 
-- ⏳ Read-only access to tournament data
-- ⏳ Can view brackets and matches
-- ⏳ Cannot make changes
+## 📊 Statistics & Analytics
 
-### 📱 Notifications & Communication
+Track performance and generate insights.
 
-**Discord Integration:**
+### Current Features
 
-- ⏳ Match start notifications
-- ⏳ Match completion notifications
-- ⏳ Bracket updates
-- ⏳ Veto reminders
-- ⏳ Webhook configuration per tournament
+- ✅ Team win/loss records and win rates
+- ✅ Match history tracking
+- ✅ Basic player tracking
+- ✅ Event logging (30-day retention)
 
-**Email Notifications:**
+### Planned Features
 
-- ⏳ SMTP configuration
-- ⏳ Match reminders
-- ⏳ Tournament updates
-- ⏳ Team-specific notifications
+- ⏳ Player statistics (K/D, ADR, HS%, MVPs, clutches)
+- ⏳ Team analytics (map win rates, side preferences, economy)
+- ⏳ Tournament leaderboards (top players/teams)
+- ⏳ Data visualization (charts, graphs, heatmaps)
+- ⏳ Historical trends and performance analysis
 
-**In-App Notifications:**
+---
 
-- ⏳ Notification center in web UI
-- ⏳ Browser push notifications
-- ⏳ Per-user notification preferences
+## 🔐 User Management & Security
 
-### 🎮 Server & Match Enhancements
+Control access and ensure system integrity.
 
-**Server Regions:**
+### Current Features
 
-- ⏳ Geographic server grouping
-- ⏳ Automatic server selection based on team regions
-- ⏳ Region preference system
+- ✅ API token authentication (admin + server)
+- ✅ CORS support for development
+- ✅ Event authentication and validation
 
-**Match Booking:**
+### Planned Features
 
-- ⏳ Teams can request specific time slots
-- ⏳ Server reservation system
-- ⏳ Conflict detection
-
-**Server Performance Monitoring:**
-
-- ⏳ Tick rate monitoring
-- ⏳ Server FPS tracking
-- ⏳ Latency monitoring
-- ⏳ Performance alerts
-
-**Gotv Relay Support:**
-
-- ⏳ GOTV connection details
-- ⏳ Public spectator links
-- ⏳ Stream integration
-
-### 📺 Broadcasting & Spectating
-
-**Stream Integration:**
-
-- ⏳ Twitch stream links per match
-- ⏳ YouTube stream links
-- ⏳ Embedded stream viewer
-- ⏳ Streamer dashboard
-
-**Public Match Pages:**
-
-- ⏳ Public-facing match pages for spectators
-- ⏳ Live scores without authentication
-- ⏳ Shareable match links
-- ⏳ Embed code for matches
-
-**Overlay Generation:**
-
-- ⏳ OBS overlay data endpoints
-- ⏳ Real-time score updates for overlays
-- ⏳ Team logos and branding
-- ⏳ Custom overlay templates
-
-### 🎨 Customization & Branding
-
-**Tournament Branding:**
-
-- ⏳ Custom tournament logos
-- ⏳ Color scheme customization
-- ⏳ Custom banners and backgrounds
-- ⏳ Sponsor logos
-
-**Team Logos:**
-
-- ⏳ Upload team logos
-- ⏳ Logo display in brackets
-- ⏳ Logo display in team pages
-- ⏳ Auto-resize and optimization
-
-**Custom Themes:**
-
-- ⏳ Multiple UI themes
-- ⏳ Per-tournament theme selection
-- ⏳ Custom CSS support
-- ⏳ White-label options
-
-### 🔐 Security & Compliance
-
-**Enhanced Security:**
-
-- ⏳ Rate limiting for API endpoints
-- ⏳ IP whitelisting for admin access
+- ⏳ Multi-admin system with role-based permissions
+- ⏳ Team captain accounts
+- ⏳ Public observer accounts (read-only)
+- ⏳ Audit logging for admin actions
 - ⏳ Two-factor authentication (2FA)
+- ⏳ Rate limiting and IP whitelisting
 - ⏳ Session management
-- ⏳ Password policies
 
-**Audit Logging:**
+---
 
-- ⏳ Complete audit trail of all actions
-- ⏳ Admin action logs
-- ⏳ Match manipulation detection
-- ⏳ Security event logging
+## 💾 Database & Infrastructure
 
-**Data Privacy:**
+Scalability and deployment options.
 
-- ⏳ GDPR compliance features
-- ⏳ Data export for users
-- ⏳ Data deletion requests
-- ⏳ Privacy policy management
+### Current Features
 
-### 🌐 Internationalization
+- ✅ SQLite with better-sqlite3 (file-based)
+- ✅ Docker support with Caddy reverse proxy
+- ✅ Automatic schema initialization
+- ✅ Volume persistence for data
 
-**Multi-Language Support:**
+### Planned Features (High Priority)
 
-- ⏳ UI translation system
-- ⏳ Multiple language options
-- ⏳ Community translations
-- ⏳ RTL language support
+- 🎯 **PostgreSQL support** (v1.1)
+- 🎯 **MySQL/MariaDB support** (v1.1)
+- 🎯 **Migration tool from SQLite** (v1.1)
+- ⏳ Connection pooling
+- ⏳ Automatic database backups
+- ⏳ Point-in-time recovery
+- ⏳ High availability setup
 
-**Localization:**
+---
 
-- ⏳ Date/time format localization
-- ⏳ Number format localization
-- ⏳ Time zone display
+## 📺 Broadcasting & Spectating
 
-### 🔌 API & Integrations
+Public-facing features for viewers and streamers.
 
-**Webhooks (Outgoing):**
+### Current Features
 
-- ⏳ Tournament event webhooks
-- ⏳ Match start/end webhooks
-- ⏳ Custom webhook endpoints
-- ⏳ Webhook retry logic
+- ✅ Demo recording and automatic upload
+- ✅ Demo download (streaming, per-map files)
+- ✅ Match-specific demo folders
 
-**Third-Party Integrations:**
+### Planned Features
 
-- ⏳ Challonge import
-- ⏳ Battlefy integration
-- ⏳ FACEIT API integration
-- ⏳ Steam API enhancements
+- ⏳ Public match pages for spectators
+- ⏳ Stream integration (Twitch, YouTube)
+- ⏳ OBS overlay data endpoints
+- ⏳ Real-time score APIs for overlays
+- ⏳ Embedded stream viewer
 
-**GraphQL API:**
+---
 
-- ⏳ GraphQL endpoint alongside REST
-- ⏳ Real-time subscriptions
-- ⏳ Schema documentation
+## 🎨 Customization & Branding
 
-### 📱 Mobile Experience
+Personalize the tournament experience.
 
-**Mobile Optimization:**
+### Current Features
 
-- ⏳ Progressive Web App (PWA)
-- ⏳ Installable on mobile devices
-- ⏳ Offline support
-- ⏳ Push notifications
-- ⏳ Better mobile UI/UX
+- ✅ Material UI theming (light/dark mode)
+- ✅ Team names and tags
+- ✅ Custom tournament names
 
-**Mobile Apps:**
+### Planned Features
 
-- ⏳ Native iOS app (future consideration)
-- ⏳ Native Android app (future consideration)
+- ⏳ Tournament branding (logos, colors, banners)
+- ⏳ Team logos and image uploads
+- ⏳ Custom themes and white-label options
+- ⏳ Sponsor logos and custom CSS
 
-### 🎯 Quality of Life
+---
 
-**Import/Export:**
+## 🔔 Notifications & Communication
 
+Keep participants informed.
+
+### Current Features
+
+- ✅ Real-time WebSocket updates
+- ✅ In-browser sound notifications
+- ✅ Visual status indicators
+
+### Planned Features
+
+- ⏳ Email notifications (SMTP configuration)
+- ⏳ Webhook system (outgoing events)
+- ⏳ In-app notification center
+- ⏳ Browser push notifications
+
+---
+
+## 🌐 Integration & API
+
+Connect with external services and tools.
+
+### Current Features
+
+- ✅ REST API with full CRUD operations
+- ✅ Swagger/OpenAPI documentation
+- ✅ WebSocket API (Socket.IO)
+- ✅ MatchZy webhook receiver
+
+### Planned Features
+
+- ⏳ GraphQL API endpoint
+- ⏳ Third-party integrations (Challonge, Battlefy, FACEIT)
+- ⏳ Enhanced Steam API features
+- ⏳ API rate limit headers and versioning
+
+---
+
+## ✨ Quality of Life
+
+Improvements for better user experience.
+
+### Navigation & Interface
+
+- ✅ Responsive design (desktop, tablet, mobile)
+- ✅ Intuitive admin controls
+- ✅ Real-time data updates (no refresh needed)
+- ⏳ Keyboard shortcuts
+- ⏳ Advanced search and filtering
+- ⏳ Improved mobile UI/UX
+- ⏳ Progressive Web App (PWA) support
+
+### Import/Export
+
+- ✅ JSON team import/export
 - ⏳ CSV export for brackets
 - ⏳ Excel export for statistics
 - ⏳ PDF bracket generation
 - ⏳ Tournament archive export
 
-**Search & Filtering:**
+### Internationalization
 
-- ⏳ Advanced search for teams
-- ⏳ Filter matches by status
-- ⏳ Search match history
-- ⏳ Filter by tournament
+- ⏳ Multi-language support
+- ⏳ Date/time localization
+- ⏳ RTL language support
+- ⏳ Community translations
 
-**Keyboard Shortcuts:**
-
-- ⏳ Quick navigation shortcuts
-- ⏳ Admin action shortcuts
-- ⏳ Customizable hotkeys
-
-**Dark Mode:**
-
-- ⏳ System preference detection
-- ⏳ Manual toggle
-- ⏳ Per-user preference
-
-### 🧪 Testing & Development
-
-**Testing Tools:**
+### Developer Experience
 
 - ⏳ Mock server mode for development
 - ⏳ Automated testing suite
-- ⏳ Integration tests
+- ⏳ Better error messages and debugging
 - ⏳ Performance benchmarks
-
-**Developer Tools:**
-
-- ⏳ API rate limit headers
-- ⏳ Better error messages
-- ⏳ Development mode debugging
-- ⏳ API request logging
-
----
-
-## 🎯 Priority Levels
-
-Features marked with:
-
-- 🎯 = **High Priority** (planned for next release)
-- ⏳ = **Future** (planned but no specific timeline)
-
----
-
-## 💡 Feature Requests
-
-Have an idea for a feature? We'd love to hear from you!
-
-**Submit a feature request:**
-
-- [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues/new?template=feature_request.md)
-- [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
-
-**Contributing:**
-
-- See our [Contributing Guide](development/contributing.md)
-- Check [Good First Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ---
 
@@ -614,21 +251,42 @@ Have an idea for a feature? We'd love to hear from you!
 
 **v1.0.0** (Current)
 
-- Initial release
-- All current features listed above
+- Initial release with core tournament management
+- BO1/BO3/BO5 map veto system
+- Real-time updates and player tracking
+- Admin controls and demo management
+- Public team pages and statistics
 
 **v1.1.0** (Planned)
 
 - External database support (PostgreSQL, MySQL)
 - Enhanced player statistics
-- Discord integration
 - Tournament templates
+
+---
+
+## 💡 Feature Requests
+
+Have an idea? We'd love to hear from you!
+
+- [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues/new?template=feature_request.md)
+- [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
+
+---
+
+## 🤝 Contributing
+
+Want to help build these features?
+
+- [Contributing Guide](development/contributing.md)
+- [Good First Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues?q=is%3Aissue+is%3Aopen+label%3A%22good+first+issue%22)
 
 ---
 
 <div align="center">
 
-**Want to help build these features?**  
-[Start Contributing →](development/contributing.md)
+**Legend:** ✅ Completed • 🎯 High Priority • ⏳ Planned
+
+Made with ❤️ for the CS2 community
 
 </div>
