@@ -8,6 +8,7 @@ import path from 'path';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 
 const LOGS_DIR = path.join(process.cwd(), 'data', 'logs', 'events');
+const ALL_EVENTS_FILE = path.join(LOGS_DIR, 'events-all.txt');
 
 // Ensure logs directory exists
 if (!fs.existsSync(LOGS_DIR)) {
@@ -39,6 +40,7 @@ export function logWebhookEvent(serverId: string, event: MatchZyEvent): void {
     // Write to file (append mode)
     const logLine = JSON.stringify(logEntry) + '\n';
     fs.appendFileSync(filepath, logLine, 'utf8');
+    fs.appendFileSync(ALL_EVENTS_FILE, logLine, 'utf8');
   } catch (error) {
     // Don't let logging errors crash the API
     console.error('Failed to write event to log file:', error);
