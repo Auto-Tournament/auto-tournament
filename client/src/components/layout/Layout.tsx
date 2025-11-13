@@ -9,9 +9,21 @@ import {
   Tooltip,
   Snackbar,
   Alert,
+  Paper,
 } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
-import { Logout } from '@mui/icons-material';
+import {
+  Book,
+  BookSharp,
+  DeveloperBoard,
+  DeveloperMode,
+  DocumentScanner,
+  LibraryAdd,
+  LibraryBooks,
+  Logout,
+  Notes,
+  QuestionAnswer,
+} from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import GroupsIcon from '@mui/icons-material/Groups';
@@ -120,23 +132,20 @@ export default function Layout() {
             })}
           </Box>
 
-          <Tooltip title="Open documentation" arrow>
-            <Button
-              color="inherit"
-              href="https://mat.sivert.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{ mr: 2 }}
-            >
-              Docs
-            </Button>
-          </Tooltip>
+          <Button
+            color="inherit"
+            href="https://mat.sivert.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ mr: 2 }}
+            startIcon={<LibraryBooks />}
+          >
+            Documentation
+          </Button>
 
-          <Tooltip title="Logout" arrow>
-            <IconButton color="inherit" onClick={handleLogout}>
-              <Logout />
-            </IconButton>
-          </Tooltip>
+          <Button color="error" onClick={handleLogout} startIcon={<Logout />}>
+            Sign out
+          </Button>
         </Toolbar>
       </AppBar>
 

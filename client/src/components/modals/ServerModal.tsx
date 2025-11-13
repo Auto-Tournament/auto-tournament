@@ -183,6 +183,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
       onSave();
       resetForm();
+      onClose();
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to save server');
@@ -204,6 +205,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       await api.delete(`/api/servers/${server.id}`);
       onSave();
       resetForm();
+      onClose();
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to delete server');

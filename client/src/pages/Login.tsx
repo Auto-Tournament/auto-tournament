@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Card, TextField, Button, Alert, Container, Link } from '@mui/material';
+import {
+  Box,
+  Card,
+  TextField,
+  Button,
+  Alert,
+  Container,
+  Link,
+  Stack,
+  Typography,
+  Divider,
+} from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
@@ -63,79 +74,100 @@ export default function Login() {
         <Card
           elevation={0}
           sx={{
-            p: 4,
+            p: { xs: 4, md: 5 },
             backgroundColor: 'background.paper',
+            borderRadius: 3,
+            boxShadow: (theme) => theme.shadows[location.pathname === '/login' ? 8 : 2],
           }}
         >
-          <Box sx={{ textAlign: 'center', mb: 4 }}>
-            <Box
-              component="img"
-              src="/icon.svg"
-              alt="MatchZy Auto Tournament Logo"
-              sx={{
-                width: 120,
-                height: 120,
-                mb: 3,
-              }}
-            />
-          </Box>
+          <Stack spacing={4} alignItems="center">
+            <Stack spacing={2} alignItems="center" sx={{ width: '100%' }}>
+              <Box
+                sx={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  width: '100%',
+                }}
+              >
+                <img
+                  src="/icon.svg"
+                  alt="MatchZy Auto Tournament Logo"
+                  style={{ width: '108px', height: '108px' }}
+                />
+              </Box>
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              fullWidth
-              id="password"
-              label="Password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your API token"
-              autoFocus
-              disabled={loading}
-              sx={{ mb: 3 }}
-            />
+              <Stack spacing={0.5} alignItems="center" sx={{ textAlign: 'center', px: 2 }}>
+                <Typography variant="h5" fontWeight={600}>
+                  Welcome back
+                </Typography>
+                <Typography variant="body2" color="text.secondary" maxWidth={320}>
+                  Enter the administrator API token to manage tournaments, servers, and teams.
+                </Typography>
+              </Stack>
+            </Stack>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 3 }}>
-                {error}
-              </Alert>
-            )}
+            <Stack component="form" onSubmit={handleSubmit} spacing={2.5} sx={{ width: '100%' }}>
+              <TextField
+                fullWidth
+                id="password"
+                label="API Token"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your API token"
+                autoFocus
+                disabled={loading}
+              />
 
-            <Button
-              type="submit"
-              variant="contained"
-              fullWidth
-              size="large"
-              disabled={loading}
-              sx={{
-                py: 1.5,
-              }}
-            >
-              {loading ? 'Signing in...' : 'Sign In'}
-            </Button>
-          </form>
+              {error && (
+                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                  {error}
+                </Alert>
+              )}
 
-          <Box sx={{ textAlign: 'center', mt: 3 }}>
-            <Link
-              href="https://github.com/sivert-io/matchzy-auto-tournament"
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 0.5,
-                fontSize: '0.875rem',
-                color: 'text.secondary',
-                textDecoration: 'none',
-                '&:hover': {
-                  color: 'primary.main',
-                  textDecoration: 'underline',
-                },
-              }}
-            >
-              GitHub
-              <OpenInNewIcon sx={{ fontSize: '1rem' }} />
-            </Link>
-          </Box>
+              <Button type="submit" variant="contained" fullWidth size="large" disabled={loading}>
+                {loading ? 'Signing in…' : 'Sign In'}
+              </Button>
+            </Stack>
+
+            <Divider flexItem />
+
+            <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
+              <Typography variant="body2" color="text.secondary">
+                Need the token or access instructions?
+              </Typography>
+
+              <Stack direction="row" spacing={2}>
+                <Link
+                  href="https://github.com/sivert-io/matchzy-auto-tournament"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                  }}
+                >
+                  GitHub
+                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+                </Link>
+                <Link
+                  href="https://mat.sivert.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  sx={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 0.5,
+                  }}
+                >
+                  Documentation
+                  <OpenInNewIcon sx={{ fontSize: '1rem' }} />
+                </Link>
+              </Stack>
+            </Stack>
+          </Stack>
         </Card>
       </Container>
     </Box>
