@@ -3,6 +3,7 @@ import { api } from '../utils/api';
 
 interface OnboardingStatus {
   hasServers: boolean;
+  hasWebhookUrl: boolean;
   hasTeams: boolean;
   hasTournament: boolean;
   tournamentStatus: 'none' | 'setup' | 'ready' | 'in_progress' | 'completed';
@@ -21,6 +22,7 @@ interface TournamentResponse {
 export const useOnboardingStatus = () => {
   const [status, setStatus] = useState<OnboardingStatus>({
     hasServers: false,
+    hasWebhookUrl: false,
     hasTeams: false,
     hasTournament: false,
     tournamentStatus: 'none',
@@ -41,6 +43,17 @@ export const useOnboardingStatus = () => {
       const teamsResponse: { teams: unknown[] } = await api.get('/api/teams');
       const teams = teamsResponse.teams || [];
 
+      // Load settings
+      let hasWebhookUrl = false;
+      try {
+        const settingsResponse: { settings: { webhookConfigured: boolean } } = await api.get(
+          '/api/settings'
+        );
+        hasWebhookUrl = Boolean(settingsResponse.settings?.webhookConfigured);
+      } catch (settingsError) {
+        console.error('Failed to load settings status:', settingsError);
+      }
+
       // Try to load tournament
       let tournamentStatus: 'none' | 'setup' | 'ready' | 'in_progress' | 'completed' = 'none';
       try {
@@ -55,6 +68,7 @@ export const useOnboardingStatus = () => {
 
       setStatus({
         hasServers: servers.length > 0,
+        hasWebhookUrl,
         hasTeams: teams.length >= 2,
         hasTournament: tournamentStatus !== 'none',
         tournamentStatus,

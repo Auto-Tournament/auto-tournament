@@ -75,6 +75,15 @@ class DatabaseManager {
       );
     `);
 
+    // Application settings table (key/value store for runtime configuration)
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS app_settings (
+        key TEXT PRIMARY KEY,
+        value TEXT,
+        updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      );
+    `);
+
     // Tournament settings table (only one tournament at a time)
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS tournament (
@@ -188,6 +197,67 @@ class DatabaseManager {
         `);
 
     log.success('Database schema initialized');
+  }
+
+  /**
+   * Get application setting by key
+   */
+  getAppSetting(key: string): string | null {
+    try {
+      const stmt = this.db.prepare('SELECT value FROM app_settings WHERE key = ?');
+      const row = stmt.get(key) as { value: string | null } | undefined;
+      log.database(`[DB] SETTINGS get key=${key} ${row ? 'found' : 'missing'}`);
+      return row?.value ?? null;
+    } catch (err) {
+      log.error(`[DB] SETTINGS get failed for key=${key}: ${(err as Error).message}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Set or delete an application setting
+   */
+  setAppSetting(key: string, value: string | null): void {
+    const trimmedKey = key.trim();
+    if (!trimmedKey) {
+      throw new Error('Setting key is required');
+    }
+
+    try {
+      if (value === null) {
+        const stmt = this.db.prepare('DELETE FROM app_settings WHERE key = ?');
+        const res = stmt.run(trimmedKey);
+        this.logRunResult('DELETE', `app_settings(${trimmedKey})`, res);
+        return;
+      }
+
+      const stmt = this.db.prepare(`
+        INSERT INTO app_settings (key, value, updated_at)
+        VALUES (?, ?, strftime('%s', 'now'))
+        ON CONFLICT(key)
+        DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+      `);
+      const res = stmt.run(trimmedKey, value);
+      this.logRunResult('UPSERT', `app_settings(${trimmedKey})`, res);
+    } catch (err) {
+      log.error(`[DB] SETTINGS set failed for key=${trimmedKey}: ${(err as Error).message}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Get all application settings
+   */
+  getAllAppSettings(): Array<{ key: string; value: string | null; updated_at: number }> {
+    try {
+      const stmt = this.db.prepare('SELECT key, value, updated_at FROM app_settings');
+      const rows = stmt.all() as Array<{ key: string; value: string | null; updated_at: number }>;
+      log.database(`[DB] SETTINGS getAll count=${rows.length}`);
+      return rows;
+    } catch (err) {
+      log.error(`[DB] SETTINGS getAll failed: ${(err as Error).message}`);
+      throw err;
+    }
   }
 
   /**

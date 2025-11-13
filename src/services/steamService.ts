@@ -1,7 +1,3 @@
-import dotenv from 'dotenv';
-import path from 'path';
-dotenv.config({ path: path.join(process.cwd(), '.env') });
-
 import { log } from '../utils/logger';
 import fetch from 'node-fetch';
 import type {
@@ -9,15 +5,14 @@ import type {
   SteamAPIResponse,
   SteamPlayerSummaryResponse,
 } from '../types/steam.types';
+import { settingsService } from './settingsService';
 
 class SteamService {
-  private readonly apiKey: string | undefined;
   private readonly baseUrl = 'http://api.steampowered.com';
 
   constructor() {
-    this.apiKey = process.env.STEAM_API_KEY;
-    if (!this.apiKey) {
-      log.warn('STEAM_API_KEY not set - Steam vanity URL resolution will be disabled');
+    if (!settingsService.isSteamApiConfigured()) {
+      log.warn('Steam API key not configured. Configure it from the Settings page to enable Steam vanity resolution.');
     }
   }
 
@@ -25,7 +20,7 @@ class SteamService {
    * Check if Steam API is available
    */
   isAvailable(): boolean {
-    return !!this.apiKey;
+    return settingsService.isSteamApiConfigured();
   }
 
   /**
@@ -37,8 +32,9 @@ class SteamService {
    * - Steam ID64: 76561197960287930
    */
   async resolveSteamId(input: string): Promise<string | null> {
-    if (!this.apiKey) {
-      log.warn('Cannot resolve Steam ID - STEAM_API_KEY not configured');
+    const apiKey = settingsService.getSteamApiKey();
+    if (!apiKey) {
+      log.warn('Cannot resolve Steam ID - Steam API key is not configured');
       return null;
     }
 
@@ -67,7 +63,7 @@ class SteamService {
     }
 
     try {
-      const url = `${this.baseUrl}/ISteamUser/ResolveVanityURL/v0001/?key=${this.apiKey}&vanityurl=${vanityUrl}`;
+      const url = `${this.baseUrl}/ISteamUser/ResolveVanityURL/v0001/?key=${apiKey}&vanityurl=${vanityUrl}`;
       const response = await fetch(url);
       const data = (await response.json()) as SteamAPIResponse;
 
@@ -90,12 +86,13 @@ class SteamService {
    * Returns name and avatar URL
    */
   async getPlayerInfo(steamId: string): Promise<SteamPlayer | null> {
-    if (!this.apiKey) {
+    const apiKey = settingsService.getSteamApiKey();
+    if (!apiKey) {
       return null;
     }
 
     try {
-      const url = `${this.baseUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${this.apiKey}&steamids=${steamId}`;
+      const url = `${this.baseUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${steamId}`;
       const response = await fetch(url);
       const data = (await response.json()) as SteamPlayerSummaryResponse;
 

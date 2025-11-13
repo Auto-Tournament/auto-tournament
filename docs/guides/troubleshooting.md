@@ -156,8 +156,8 @@
     - Docker: `curl http://192.168.1.50:3069/api/events/test`
     - Local dev: `curl http://192.168.1.50:3000/api/events/test`
 2. Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
-3. Verify `WEBHOOK_URL` in `.env` matches your setup:
-    - Docker: `http://your-ip:3069/api`
+3. Verify the webhook URL in the dashboard **Settings** matches your setup:
+    - Docker: typically `https://your-domain.com`
     - Local dev: `http://your-ip:3000`
 4. Use IP address instead of hostname if DNS issues
 

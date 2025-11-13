@@ -2,7 +2,7 @@ import React from 'react';
 import { IconButton, Tooltip, Box } from '@mui/material';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import { openTeamMatchInNewTab } from '../../utils/teamLinks';
+import { getTeamMatchUrl } from '../../utils/teamLinks';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 
 interface TeamLinkActionsProps {
@@ -31,16 +31,17 @@ export const TeamLinkActions: React.FC<TeamLinkActionsProps> = ({
     }
   };
 
-  const handleOpenInNewTab = (event: React.MouseEvent) => {
-    event.stopPropagation();
-    openTeamMatchInNewTab(teamId);
-  };
-
   return (
     <>
       <Box display="flex" gap={0.5}>
         <Tooltip title="Open team match page">
-          <IconButton size={size} onClick={handleOpenInNewTab} color="primary">
+          <IconButton
+            size={size}
+            href={getTeamMatchUrl(teamId)}
+            target="_blank"
+            rel="noopener noreferrer"
+            color="primary"
+          >
             <OpenInNewIcon fontSize="small" />
           </IconButton>
         </Tooltip>
@@ -55,4 +56,3 @@ export const TeamLinkActions: React.FC<TeamLinkActionsProps> = ({
     </>
   );
 };
-

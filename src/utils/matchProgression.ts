@@ -10,6 +10,7 @@ import { matchAllocationService } from '../services/matchAllocationService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
+import { settingsService } from '../services/settingsService';
 
 /**
  * Advance winner to next match in bracket
@@ -233,7 +234,15 @@ function findLosersBracketMatch(wbMatch: DbMatchRow): DbMatchRow | undefined {
  */
 async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
   try {
-    const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3000';
+    const webhookUrl = settingsService.getWebhookUrl();
+    const baseUrl = webhookUrl || 'http://localhost:3000';
+
+    if (!webhookUrl) {
+      log.warn(
+        'Webhook URL is not configured. Falling back to http://localhost:3000 for auto allocation.'
+      );
+    }
+
     const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
 
     if (result.success) {

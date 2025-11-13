@@ -7,6 +7,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import DashboardIcon from '@mui/icons-material/Dashboard';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 
 export default function Dashboard() {
@@ -52,6 +53,13 @@ export default function Dashboard() {
       icon: <SportsEsportsIcon sx={{ fontSize: 48 }} />,
       path: '/matches',
       color: '#984061',
+    },
+    {
+      title: 'Settings',
+      description: 'Manage webhook URLs and integrations',
+      icon: <SettingsIcon sx={{ fontSize: 48 }} />,
+      path: '/settings',
+      color: '#1D4ED8',
     },
   ];
 

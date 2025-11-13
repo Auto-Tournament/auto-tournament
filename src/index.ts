@@ -26,6 +26,7 @@ import teamMatchRoutes from './routes/teamMatch';
 import teamStatsRoutes from './routes/teamStats';
 import logsRoutes from './routes/logs';
 import vetoRoutes from './routes/veto';
+import settingsRoutes from './routes/settings';
 
 const app = express();
 const httpServer = createServer(app);
@@ -162,6 +163,10 @@ app.get('/', (_req: Request, res: Response) => {
         webhook: 'POST /api/events (server token required)',
         getEvents: 'GET /api/events/:matchSlug (auth required)',
       },
+      settings: {
+        list: 'GET /api/settings (auth required)',
+        update: 'PUT /api/settings (auth required)',
+      },
     },
   });
 });
@@ -244,6 +249,7 @@ app.use('/api/logs', logsRoutes);
 app.use('/api/team', teamMatchRoutes); // Public team match data
 app.use('/api/team', teamStatsRoutes); // Public team stats/history
 app.use('/api/veto', vetoRoutes); // Map veto system
+app.use('/api/settings', settingsRoutes);
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');

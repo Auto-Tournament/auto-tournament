@@ -90,7 +90,6 @@ else
     CONTAINER_ID=$(docker run -d --rm \
         -e API_TOKEN=test-token \
         -e SERVER_TOKEN=test-token \
-        -e WEBHOOK_URL=http://localhost:3069/api \
         "${DOCKER_IMAGE}:${VERSION}")
 
     echo "Container ID: ${CONTAINER_ID}"

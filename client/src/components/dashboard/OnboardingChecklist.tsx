@@ -21,12 +21,14 @@ import StorageIcon from '@mui/icons-material/Storage';
 import GroupsIcon from '@mui/icons-material/Groups';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
+import SettingsIcon from '@mui/icons-material/Settings';
 import { useOnboardingStatus } from '../../hooks/useOnboardingStatus';
 import { StartTournamentButton } from './StartTournamentButton';
 
 export const OnboardingChecklist: React.FC = () => {
   const navigate = useNavigate();
   const {
+    hasWebhookUrl,
     hasServers,
     hasTeams,
     hasTournament,
@@ -49,6 +51,7 @@ export const OnboardingChecklist: React.FC = () => {
 
   // Calculate completion
   const steps = [
+    { completed: hasWebhookUrl, label: 'Set webhook URL' },
     { completed: hasServers, label: 'Add at least one server' },
     { completed: hasTeams, label: 'Create at least two teams' },
     { completed: hasTournament, label: 'Create a tournament' },
@@ -103,6 +106,39 @@ export const OnboardingChecklist: React.FC = () => {
         )}
 
         <List sx={{ py: 0 }}>
+          {/* Step 0: Configure Webhook */}
+          <ListItem sx={{ px: 0, py: 1.5 }}>
+            <ListItemIcon sx={{ minWidth: 40 }}>
+              {hasWebhookUrl ? (
+                <CheckCircleIcon color="success" />
+              ) : (
+                <RadioButtonUncheckedIcon color="disabled" />
+              )}
+            </ListItemIcon>
+            <ListItemText
+              primary={
+                <Box display="flex" alignItems="center" gap={1}>
+                  <SettingsIcon fontSize="small" color={hasWebhookUrl ? 'success' : 'action'} />
+                  <Typography fontWeight={hasWebhookUrl ? 400 : 600}>
+                    Configure webhook URL
+                  </Typography>
+                </Box>
+              }
+              secondary={
+                hasWebhookUrl
+                  ? 'Webhook endpoint configured'
+                  : 'Set the base URL for webhooks and demo uploads'
+              }
+            />
+            {!hasWebhookUrl && (
+              <Button variant="outlined" size="small" onClick={() => navigate('/settings')}>
+                Open Settings
+              </Button>
+            )}
+          </ListItem>
+
+          <Divider />
+
           {/* Step 1: Add Servers */}
           <ListItem sx={{ px: 0, py: 1.5 }}>
             <ListItemIcon sx={{ minWidth: 40 }}>

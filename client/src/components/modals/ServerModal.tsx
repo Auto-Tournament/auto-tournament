@@ -17,6 +17,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../../utils/api';
+import type { ServerStatusResponse } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
 
 interface Server {
@@ -36,8 +37,17 @@ interface ServerModalProps {
   onSave: () => void;
 }
 
+const slugifyServerName = (name: string): string => {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s]/g, '')
+    .replace(/\s+/g, '_')
+    .replace(/_+/g, '_')
+    .replace(/^_+|_+$/g, '');
+};
+
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
-  const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
   const [port, setPort] = useState('27015');
@@ -54,7 +64,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
   useEffect(() => {
     if (server) {
-      setId(server.id);
       setName(server.name);
       setHost(server.host);
       setPort(server.port.toString());
@@ -66,7 +75,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   }, [server, open]);
 
   const resetForm = () => {
-    setId('');
     setName('');
     setHost('');
     setPort('27015');
@@ -74,6 +82,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setEnabled(true);
     setError('');
     setTestResult(null);
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
   };
 
   const handleTestConnection = async () => {
@@ -87,7 +99,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setError('');
 
     try {
-      const response = await api.get(`/api/servers/${server.id}/status`);
+      const response = await api.get<ServerStatusResponse>(`/api/servers/${server.id}/status`);
       setTestResult(response.status === 'online' ? 'success' : 'error');
     } catch {
       setTestResult('error');
@@ -100,11 +112,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const handleSave = async () => {
     if (!name.trim()) {
       setError('Server name is required');
-      return;
-    }
-
-    if (!isEditing && !id.trim()) {
-      setError('Server ID is required');
       return;
     }
 
@@ -121,6 +128,17 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
     if (!password.trim()) {
       setError('RCON password is required');
+      return;
+    }
+
+    const generatedId = isEditing ? server.id : slugifyServerName(name);
+    if (!generatedId) {
+      setError('Unable to generate server ID. Please adjust the server name.');
+      return;
+    }
+
+    if (!isEditing && servers.some((existing) => existing.id === generatedId)) {
+      setError(`Server name creates duplicate ID '${generatedId}'. Choose a different name.`);
       return;
     }
 
@@ -143,7 +161,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
     try {
       const payload = {
-        id: id.trim(),
+        id: generatedId,
         name: name.trim(),
         host: host.trim(),
         port: portNum,
@@ -207,19 +225,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
             <TextField
-              label="Server ID"
-              value={id}
-              onChange={(e) => setId(e.target.value)}
-              disabled={isEditing}
-              placeholder="server1"
-              helperText={isEditing ? 'ID cannot be changed' : 'Unique identifier for this server'}
-              fullWidth
-            />
-
-            <TextField
               label="Server Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => handleNameChange(e.target.value)}
               placeholder="Match Server #1"
               required
               fullWidth

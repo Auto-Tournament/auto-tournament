@@ -48,12 +48,3 @@ export async function copyTeamMatchUrl(teamId: string): Promise<boolean> {
     return false;
   }
 }
-
-/**
- * Open team match page in new tab
- */
-export function openTeamMatchInNewTab(teamId: string): void {
-  const url = getTeamMatchUrl(teamId);
-  window.open(url, '_blank', 'noopener,noreferrer');
-}
-

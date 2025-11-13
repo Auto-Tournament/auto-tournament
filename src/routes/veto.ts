@@ -7,6 +7,7 @@ import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { getVetoOrder } from '../utils/vetoConfig';
+import { settingsService } from '../services/settingsService';
 
 const router = Router();
 
@@ -364,27 +365,33 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       );
       console.log('========================================\n');
 
-      // Use API_URL from environment or construct from standard port
-      const baseUrl = process.env.WEBHOOK_URL || 'http://localhost:3001';
-      console.log(`Base URL for webhook: ${baseUrl}`);
+      const baseUrl = settingsService.getWebhookUrl();
 
-      setImmediate(async () => {
-        try {
-          console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
-          const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
+      if (!baseUrl) {
+        log.warn(
+          `Webhook URL is not configured. Skipping auto-load for match ${matchSlug} after veto.`
+        );
+      } else {
+        console.log(`Base URL for webhook: ${baseUrl}`);
 
-          if (result.success) {
-            log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
-            console.log(`Server: ${result.serverId}`);
-          } else {
-            log.error(`❌ Failed to load match ${matchSlug} after veto: ${result.error}`);
-            console.error('Allocation error:', result.error);
+        setImmediate(async () => {
+          try {
+            console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
+            const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
+
+            if (result.success) {
+              log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
+              console.log(`Server: ${result.serverId}`);
+            } else {
+              log.error(`❌ Failed to load match ${matchSlug} after veto: ${result.error}`);
+              console.error('Allocation error:', result.error);
+            }
+          } catch (err) {
+            log.error(`❌ Error loading match after veto`, err as Error);
+            console.error('Exception during allocation:', err);
           }
-        } catch (err) {
-          log.error(`❌ Error loading match after veto`, err as Error);
-          console.error('Exception during allocation:', err);
-        }
-      });
+        });
+      }
     } else {
       // Set next step
       const nextStepConfig = vetoOrder[vetoState.currentStep - 1];

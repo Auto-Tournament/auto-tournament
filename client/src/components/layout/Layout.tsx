@@ -1,5 +1,15 @@
-import React from 'react';
-import { AppBar, Toolbar, Box, Button, Container, IconButton, Tooltip } from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Button,
+  Container,
+  IconButton,
+  Tooltip,
+  Snackbar,
+  Alert,
+} from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { Logout } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -8,13 +18,17 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import StorageIcon from '@mui/icons-material/Storage';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CampaignIcon from '@mui/icons-material/Campaign';
+import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
 import { useAuth } from '../../contexts/AuthContext';
+import { api } from '../../utils/api';
+import type { SettingsResponse } from '../../types/api.types';
 
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
+  const [webhookConfigured, setWebhookConfigured] = useState<boolean | null>(null);
 
   const isDevelopment = (import.meta as unknown as { env: { DEV: boolean } }).env.DEV;
 
@@ -25,8 +39,40 @@ export default function Layout() {
     { label: 'Teams', path: '/teams', icon: GroupsIcon },
     { label: 'Servers', path: '/servers', icon: StorageIcon },
     { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
+    { label: 'Settings', path: '/settings', icon: SettingsIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),
   ];
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadSettings = async () => {
+      try {
+        const response = await api.get<SettingsResponse>('/api/settings');
+        if (isMounted) {
+          setWebhookConfigured(Boolean(response.settings?.webhookConfigured));
+        }
+      } catch {
+        if (isMounted) {
+          setWebhookConfigured(false);
+        }
+      }
+    };
+
+    loadSettings();
+
+    const handleSettingsUpdated = (event: Event) => {
+      const customEvent = event as CustomEvent<SettingsResponse['settings']>;
+      setWebhookConfigured(Boolean(customEvent.detail?.webhookConfigured));
+    };
+
+    window.addEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
+    };
+  }, []);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';
@@ -106,6 +152,34 @@ export default function Layout() {
           <Outlet />
         </Container>
       </Box>
+
+      <Snackbar
+        open={webhookConfigured === false}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        autoHideDuration={null}
+      >
+        <Alert
+          severity="error"
+          variant="filled"
+          icon={false}
+          sx={{
+            alignItems: 'center',
+            display: 'flex',
+          }}
+          action={
+            <Button
+              color="inherit"
+              size="small"
+              variant="outlined"
+              onClick={() => navigate('/settings')}
+            >
+              Open Settings
+            </Button>
+          }
+        >
+          Webhook URL is not configured. Matches and servers cannot receive events until it is set.
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }

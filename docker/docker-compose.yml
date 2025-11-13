@@ -18,11 +18,11 @@ services:
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
       - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
-      - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:3069/api}
       - LOG_LEVEL=${LOG_LEVEL:-info}
     volumes:
       # Persist SQLite database and demos
       - ./data:/app/data
+    # Configure webhook URL and Steam API key from the in-app Settings page after startup.
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
       interval: 30s

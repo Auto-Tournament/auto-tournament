@@ -32,7 +32,7 @@ import {
 } from '../../utils/matchUtils';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
-import { openTeamMatchInNewTab } from '../../utils/teamLinks';
+import { getTeamMatchUrl } from '../../utils/teamLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
@@ -65,8 +65,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   const { status: tournamentStatus } = useTournamentStatus();
-  const tournamentStarted =
-    tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
+  const tournamentStarted = tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
 
   // Timer effect for live matches
   useEffect(() => {
@@ -136,7 +135,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             >
               <Box display="flex" gap={1}>
                 <Chip
-                  label={getStatusLabel(match.status, false, match.vetoCompleted, tournamentStarted)}
+                  label={getStatusLabel(
+                    match.status,
+                    false,
+                    match.vetoCompleted,
+                    tournamentStarted
+                  )}
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600 }}
                 />
@@ -239,7 +243,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                         <Tooltip title="Open team match page">
                           <IconButton
                             size="small"
-                            onClick={() => openTeamMatchInNewTab(match.team1?.id || '')}
+                            href={getTeamMatchUrl(match.team1?.id || '')}
+                            target="_blank"
                             color="primary"
                           >
                             <OpenInNewIcon fontSize="small" />
@@ -298,7 +303,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                         <Tooltip title="Open team match page">
                           <IconButton
                             size="small"
-                            onClick={() => openTeamMatchInNewTab(match.team2?.id || '')}
+                            href={getTeamMatchUrl(match.team2?.id || '')}
+                            target="_blank"
+                            rel="noopener noreferrer"
                             color="primary"
                           >
                             <OpenInNewIcon fontSize="small" />

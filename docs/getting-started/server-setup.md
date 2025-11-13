@@ -156,10 +156,10 @@ Should show "succeeded" if connection works.
 
 ### Webhooks Not Arriving
 
-**Check WEBHOOK_URL in `.env`:**
+**Check the webhook URL in the dashboard Settings:**
 
-- Should match your tournament system's IP/domain
-- Docker: `http://your-ip:3069/api`
+- Should match your tournament system's public URL or LAN IP
+- Docker: typically `https://your-domain.com`
 - Local dev: `http://your-ip:3000`
 
 **Test from CS2 server:**

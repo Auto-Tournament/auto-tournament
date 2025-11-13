@@ -60,7 +60,7 @@ Share this with teams - no authentication needed. They can:
 
 - Edit team → Add Player
 - Enter Steam ID (Steam64, Steam32, or vanity URL)
-- Steam API key in `.env` enables vanity URL resolution
+- Configure a Steam API key in the dashboard **Settings** to enable vanity URL resolution
 
 ### Backup Players (Mid-Match)
 

@@ -197,3 +197,13 @@ export interface PlayerConnectionStatus {
 export interface PlayerConnectionResponse extends ApiResponse {
   status: PlayerConnectionStatus;
 }
+
+// Settings types
+export interface SettingsResponse extends ApiResponse {
+  settings: {
+    webhookUrl: string | null;
+    steamApiKey: string | null;
+    steamApiKeySet: boolean;
+    webhookConfigured: boolean;
+  };
+}

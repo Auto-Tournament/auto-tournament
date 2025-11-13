@@ -60,10 +60,11 @@ docker compose -f docker/docker-compose.yml up -d
         environment:
           - API_TOKEN=${API_TOKEN}
           - SERVER_TOKEN=${SERVER_TOKEN}
-          - WEBHOOK_URL=${WEBHOOK_URL:-http://localhost:3069/api}
         volumes:
           - ./data:/app/data
     ```
+
+    After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
 
     Then run:
     ```bash
@@ -104,14 +105,6 @@ Edit `.env`:
 API_TOKEN=<token-from-above>       # Admin authentication
 SERVER_TOKEN=<different-token>     # CS2 server authentication
 
-# Docker: Use port 3069 with /api path (Caddy routes it internally)
-WEBHOOK_URL=http://192.168.1.100:3069/api
-
-# Local dev: Use port 3000 directly (no Caddy)
-# WEBHOOK_URL=http://192.168.1.100:3000
-
-# Optional
-STEAM_API_KEY=<your-steam-key>     # For vanity URL resolution
 PORT=3000                          # API port (default: 3000)
 ```
 
@@ -119,9 +112,7 @@ PORT=3000                          # API port (default: 3000)
 
     - **API_TOKEN**: Used to login to admin panel
     - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
-    - **WEBHOOK_URL**: Where CS2 servers send events
-        - Docker: `http://your-ip:3069/api` (Caddy handles routing)
-        - Local dev: `http://your-ip:3000` (direct to API)
+    - Configure the webhook URL and Steam API key from the in-app **Settings** page once the server is running.
 
 ## First Login
 
@@ -166,9 +157,9 @@ Repeat for all teams (minimum 2 for a tournament).
 
     - Get a domain or use public IP
     - **Docker:** Expose/proxy port **3069** only - Caddy serves both app and API
-      - `WEBHOOK_URL=https://your-domain.com/api`
+      - Set the webhook base URL in **Settings** to your public domain (e.g. `https://your-domain.com`)
     - **Local dev:** Expose port **3000** for API, **5173** for frontend
-      - `WEBHOOK_URL=http://your-ip:3000`
+      - In **Settings**, use your machine IP (e.g. `http://your-ip:3000`)
 
     **Recommended:** Run on private network, expose via reverse proxy if needed.
 
@@ -206,9 +197,7 @@ Repeat for all teams (minimum 2 for a tournament).
         curl http://192.168.1.50:3000/api/events/test
         ```
         Should return `{"message":"Test received"}`
-    - Verify `WEBHOOK_URL` in `.env` matches your setup:
-        - Docker: `http://your-ip:3069/api` or `https://your-domain.com/api`
-        - Local dev: `http://your-ip:3000`
+    - Verify the webhook URL in **Settings → Webhook URL** matches how your CS2 servers reach the API
     - Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
 
 **Need more help?** See the **[Troubleshooting Guide](../guides/troubleshooting.md)**

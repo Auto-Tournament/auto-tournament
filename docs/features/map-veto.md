@@ -226,7 +226,7 @@ Team pages are public (no login). Security is based on:
     - Check server logs: `Admin Tools → Server Events Monitor`
     - Check API logs for allocation errors
 
-    **Fix:** Ensure `WEBHOOK_URL` environment variable is set correctly in `.env`
+    **Fix:** Ensure the webhook URL in the dashboard **Settings** points to the tournament API
 
 ---
 

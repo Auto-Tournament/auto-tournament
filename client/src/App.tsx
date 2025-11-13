@@ -10,6 +10,7 @@ import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import AdminTools from './pages/AdminTools';
+import Settings from './pages/Settings';
 import Development from './pages/Development';
 import TeamMatch from './pages/TeamMatch';
 import Layout from './components/layout/Layout';
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="bracket" element={<Bracket />} />
         <Route path="matches" element={<Matches />} />
         <Route path="admin" element={<AdminTools />} />
+        <Route path="settings" element={<Settings />} />
         {(import.meta as unknown as { env: { DEV: boolean } }).env.DEV && (
           <Route path="dev" element={<Development />} />
         )}

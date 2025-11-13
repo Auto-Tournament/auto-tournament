@@ -56,7 +56,6 @@ openssl rand -hex 32  # Copy for SERVER_TOKEN
 # 3. Edit .env and add:
 #    - API_TOKEN (admin login)
 #    - SERVER_TOKEN (CS2 server auth)
-#    - WEBHOOK_URL (your server IP where CS2 sends events)
 nano .env
 
 # 4. Start everything
@@ -86,10 +85,11 @@ services:
     environment:
       - API_TOKEN=${API_TOKEN}
       - SERVER_TOKEN=${SERVER_TOKEN}
-      - WEBHOOK_URL=http://your-ip:3069/api
     volumes:
       - ./data:/app/data
 ```
+
+Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
 
 Run: `docker compose up -d`
 
