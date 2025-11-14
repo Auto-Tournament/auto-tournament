@@ -102,11 +102,36 @@ export function MatchInfoCard({
 
   const handleConnect = () => {
     if (!match.server) return;
-    if (match.server.password) {
-      window.location.href = `steam://connect/${match.server.host}:${match.server.port}/${match.server.password}`;
-    } else {
-      window.location.href = `steam://connect/${match.server.host}:${match.server.port}`;
+
+    const address = `${match.server.host}:${match.server.port}`;
+    const encodedPassword = match.server.password
+      ? encodeURIComponent(match.server.password)
+      : '';
+
+    // Preferred CS2 launch syntax
+    const params = match.server.password
+      ? `+password%20${encodedPassword};%20+connect%20${address}`
+      : `+connect%20${address}`;
+    const steamUri = `steam://run/730//${params}`;
+
+    // Legacy CS:GO/Steam connect syntax as fallback
+    const legacyUri = match.server.password
+      ? `steam://connect/${address}/${match.server.password}`
+      : `steam://connect/${address}`;
+
+    let navigationTriggered = false;
+
+    try {
+      window.location.href = steamUri;
+      navigationTriggered = true;
+    } catch (error) {
+      console.warn('Failed to trigger Steam connect via run/730, falling back.', error);
     }
+
+    if (!navigationTriggered) {
+      window.location.href = legacyUri;
+    }
+
     setConnected(true);
     setTimeout(() => setConnected(false), 3000);
   };

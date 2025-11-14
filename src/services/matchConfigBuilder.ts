@@ -75,15 +75,17 @@ export const generateMatchConfig = async (
 
   // 2) If we have a match/veto, use it
   console.log('slug', slug);
+  let existingMatch: DbMatchRow | null = null;
   if (slug) {
-    const match = await db.queryOne<DbMatchRow>('SELECT veto_state FROM matches WHERE slug = ?', [
-      slug,
-    ]);
-    console.log('match', match);
-    if (match?.veto_state) {
-      console.log('match.veto_state', match.veto_state);
+    existingMatch =
+      (await db.queryOne<DbMatchRow>('SELECT id, veto_state FROM matches WHERE slug = ?', [
+        slug,
+      ])) ?? null;
+    console.log('match', existingMatch);
+    if (existingMatch?.veto_state) {
+      console.log('match.veto_state', existingMatch.veto_state);
       try {
-        const veto = JSON.parse(match.veto_state) as {
+        const veto = JSON.parse(existingMatch.veto_state) as {
           status: 'in_progress' | 'completed';
           pickedMaps: Array<{
             mapName: string;
@@ -139,7 +141,7 @@ export const generateMatchConfig = async (
     : ['team1_ct', 'team2_ct'];
 
   const config: MatchConfig = {
-    matchid: slug || 'tbd',
+    matchid: existingMatch?.id ?? slug ?? 'tbd',
     num_maps: numMaps,
     players_per_team: playersPerTeam,
     min_players_to_ready: 1,

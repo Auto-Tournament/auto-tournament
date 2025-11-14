@@ -6,6 +6,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitMatchUpdate, emitBracketUpdate } from './socketService';
+import { playerConnectionService } from './playerConnectionService';
 import type { MatchZyEvent } from '../types/matchzy-events.types';
 import type { DbMatchRow } from '../types/database.types';
 import {
@@ -66,13 +67,21 @@ export function handleMatchEvent(event: MatchZyEvent): void {
       break;
 
     // Map Events
-    case 'going_live':
+    case 'going_live': {
       log.success(`Going live: Map ${eventData.map_number} - ${eventData.map_name}`, {
         matchId: event.matchid,
         team1: eventData.team1_name,
         team2: eventData.team2_name,
       });
+      const liveMatch = resolveMatch(event.matchid);
+      if (liveMatch) {
+        updateMatchStatus(liveMatch, 'live');
+        playerConnectionService.markAllReady(liveMatch.slug);
+      } else {
+        log.warn(`Going live event received for unknown match`, { matchId: event.matchid });
+      }
       break;
+    }
 
     // Round Events
     case 'round_end':
@@ -149,12 +158,48 @@ export function handleMatchEvent(event: MatchZyEvent): void {
   }
 }
 
+function resolveMatch(identifier: string | number): DbMatchRow | null {
+  const identifierStr = String(identifier);
+  const numericId = Number(identifierStr);
+
+  if (!Number.isNaN(numericId)) {
+    const byId = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    if (byId) {
+      return byId;
+    }
+  }
+
+  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]);
+}
+
+function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): void {
+  if (match.status === status) {
+    return;
+  }
+
+  db.update('matches', { status }, 'id = ?', [match.id]);
+  const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
+  if (updatedMatch) {
+    emitMatchUpdate(updatedMatch);
+    emitBracketUpdate({
+      action: 'match_status',
+      matchSlug: updatedMatch.slug,
+      status: updatedMatch.status,
+    });
+  }
+}
+
 /**
  * Handle series end event - update match status and advance tournament
  */
 function handleSeriesEnd(event: MatchZyEvent): void {
   const eventData = event as unknown as Record<string, unknown>;
-  const matchSlug = String(event.matchid);
+  const match = resolveMatch(event.matchid);
+  if (!match) {
+    log.error(`Match not found for series_end event: ${event.matchid}`);
+    return;
+  }
+  const matchSlug = match.slug;
   log.success(
     `🏆 SERIES ENDED: ${eventData.team1_name} ${eventData.team1_series_score}-${eventData.team2_series_score} ${eventData.team2_name}`,
     {
@@ -162,13 +207,6 @@ function handleSeriesEnd(event: MatchZyEvent): void {
       winner: (eventData.winner as { name?: string })?.name,
     }
   );
-
-  // Determine winner team ID
-  const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
-  if (!match) {
-    log.error(`Match not found for series_end event: ${matchSlug}`);
-    return;
-  }
 
   const team1Score = Number(eventData.team1_series_score) || 0;
   const team2Score = Number(eventData.team2_series_score) || 0;
@@ -187,16 +225,14 @@ function handleSeriesEnd(event: MatchZyEvent): void {
       winner_id: winnerId,
       completed_at: Math.floor(Date.now() / 1000),
     },
-    'slug = ?',
-    [matchSlug]
+    'id = ?',
+    [match.id]
   );
 
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
 
   // Emit match update
-  const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-    event.matchid,
-  ]);
+  const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
   if (updatedMatch) {
     emitMatchUpdate(updatedMatch);
   }

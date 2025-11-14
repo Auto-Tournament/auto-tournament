@@ -19,7 +19,7 @@ if (!fs.existsSync(LOGS_DIR)) {
  * Log a webhook event to file
  * Creates daily log files: events-YYYY-MM-DD.log
  */
-export function logWebhookEvent(serverId: string, event: MatchZyEvent): void {
+export function logWebhookEvent(serverId: string, matchSlug: string, event: MatchZyEvent): void {
   try {
     // Get current date for filename
     const date = new Date();
@@ -32,7 +32,7 @@ export function logWebhookEvent(serverId: string, event: MatchZyEvent): void {
     const logEntry = {
       timestamp,
       serverId,
-      matchSlug: event.matchid,
+      matchSlug,
       eventType: event.event,
       event,
     };

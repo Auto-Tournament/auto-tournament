@@ -125,8 +125,83 @@ export async function loadMatchOnServer(
       error: loadResult.error,
     });
 
+    const responseText = (loadResult.response || '').toLowerCase();
+    const pluginReportedFailure = responseText.includes('match load failed');
+    const gotvInactive = responseText.includes('gotv[0] not active');
+
+    const handlePluginFailure = (message: string) => {
+      log.warn(message, {
+        serverId,
+        matchSlug,
+        response: loadResult.response,
+      });
+    };
+
+    if (pluginReportedFailure || gotvInactive) {
+      const errorMessage = gotvInactive
+        ? 'MatchZy refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
+        : 'MatchZy plugin reported that it failed to load the match. Check the server console for the detailed error.';
+
+      handlePluginFailure(errorMessage);
+
+      return {
+        success: false,
+        error: errorMessage,
+        webhookConfigured,
+        demoUploadConfigured,
+        rconResponses: results,
+      };
+    }
+
     if (loadResult.success) {
       log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
+
+      // MatchZy wipes remote log/upload cvars when a new match loads.
+      // Reapply them a short moment after the load command finishes so webhook + uploads keep working.
+      const reapplyCommands = async () => {
+        log.debug(`Reapplying MatchZy webhook/demo config after load for ${serverId}`);
+        if (!skipWebhook && serverToken) {
+          const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, matchSlug);
+          for (const cmd of webhookCommands) {
+            const result = await rconService.sendCommand(serverId, cmd);
+            results.push({
+              success: result.success,
+              command: `[reload] ${cmd}`,
+              error: result.error,
+            });
+            if (!result.success) {
+              log.warn(`Failed to reapply webhook command post-load`, {
+                serverId,
+                matchSlug,
+                command: cmd,
+                error: result.error,
+              });
+            }
+          }
+        }
+
+        const demoCmd = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+        const demoReResult = await rconService.sendCommand(serverId, demoCmd);
+        results.push({
+          success: demoReResult.success,
+          command: `[reload] ${demoCmd}`,
+          error: demoReResult.error,
+        });
+        if (!demoReResult.success) {
+          log.warn(`Failed to reapply demo upload command post-load`, {
+            serverId,
+            matchSlug,
+            error: demoReResult.error,
+          });
+        }
+      };
+
+      try {
+        await new Promise((resolve) => setTimeout(resolve, 5000));
+        await reapplyCommands();
+      } catch (reapplyError) {
+        log.warn('Post-load MatchZy reconfiguration failed', reapplyError as Error);
+      }
 
       // Update match status to 'loaded'
       db.update(

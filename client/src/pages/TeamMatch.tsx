@@ -20,11 +20,43 @@ import { TeamStatsCard } from '../components/team/TeamStatsCard';
 import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useSoundSettings } from '../hooks/useSoundSettings';
-import type { VetoState } from '../types';
+import type { Team, VetoState } from '../types';
+
+function TeamSoundControls({ team }: { team: Team | null }) {
+  const [showSettings, setShowSettings] = useState(false);
+  const {
+    isMuted,
+    volume,
+    soundFile,
+    toggleMute,
+    handleVolumeChange,
+    handlePreviewSound,
+    handleSoundChange,
+  } = useSoundSettings();
+
+  return (
+    <>
+      <TeamHeader
+        team={team}
+        isMuted={isMuted}
+        onToggleMute={toggleMute}
+        onToggleSettings={() => setShowSettings(true)}
+      />
+      <SoundSettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        volume={volume}
+        soundFile={soundFile}
+        onVolumeChange={handleVolumeChange}
+        onSoundChange={handleSoundChange}
+        onPreviewSound={handlePreviewSound}
+      />
+    </>
+  );
+}
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
-  const [showSettings, setShowSettings] = useState(false);
   const [vetoCompleted, setVetoCompleted] = useState(false);
   const [matchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
 
@@ -45,16 +77,6 @@ export default function TeamMatch() {
     tournamentStatus,
     loadTeamMatch,
   } = useTeamMatchData(teamId);
-
-  const {
-    isMuted,
-    volume,
-    soundFile,
-    toggleMute,
-    handleVolumeChange,
-    handlePreviewSound,
-    handleSoundChange,
-  } = useSoundSettings();
 
   // Set dynamic page title
   useEffect(() => {
@@ -163,12 +185,7 @@ export default function TeamMatch() {
       <Box minHeight="100vh" bgcolor="background.default" py={6}>
         <Container maxWidth="md">
           <Stack spacing={3}>
-            <TeamHeader
-              team={team}
-              isMuted={isMuted}
-              onToggleMute={toggleMute}
-              onToggleSettings={() => setShowSettings(true)}
-            />
+            <TeamSoundControls team={team} />
 
             <PlayerRosterCard team={team} />
 
@@ -189,16 +206,6 @@ export default function TeamMatch() {
           </Stack>
         </Container>
 
-        {/* Sound Settings Modal */}
-        <SoundSettingsModal
-          open={showSettings}
-          onClose={() => setShowSettings(false)}
-          volume={volume}
-          soundFile={soundFile}
-          onVolumeChange={handleVolumeChange}
-          onSoundChange={handleSoundChange}
-          onPreviewSound={handlePreviewSound}
-        />
       </Box>
     );
   }
@@ -208,12 +215,7 @@ export default function TeamMatch() {
     <Box minHeight="100vh" bgcolor="background.default" py={6}>
       <Container maxWidth="md">
         <Stack spacing={3}>
-          <TeamHeader
-            team={team}
-            isMuted={isMuted}
-            onToggleMute={toggleMute}
-            onToggleSettings={() => setShowSettings(true)}
-          />
+          <TeamSoundControls team={team} />
 
           {match && (
             <MatchInfoCard
@@ -234,16 +236,6 @@ export default function TeamMatch() {
         </Stack>
       </Container>
 
-      {/* Sound Settings Modal */}
-      <SoundSettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        volume={volume}
-        soundFile={soundFile}
-        onVolumeChange={handleVolumeChange}
-        onSoundChange={handleSoundChange}
-        onPreviewSound={handlePreviewSound}
-      />
     </Box>
   );
 }

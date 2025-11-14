@@ -70,12 +70,16 @@ function handleEventRequest(
 
     // Determine match slug from URL or payload
     const matchFromUrl = matchSlugOrServerIdFromUrl
-      ? db.queryOne<DbMatchRow>('SELECT server_id, slug FROM matches WHERE slug = ?', [
+      ? db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlugOrServerIdFromUrl]) ||
+        db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [
           matchSlugOrServerIdFromUrl,
         ])
       : null;
 
-    const actualMatchSlug = matchFromUrl?.slug || String(event.matchid);
+    const matchFromPayload = findMatchByIdentifier(event.matchid);
+    const resolvedMatch = matchFromUrl || matchFromPayload;
+
+    const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
     const isNoMatch = actualMatchSlug === '-1';
 
     console.log(`📍 Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
@@ -87,18 +91,14 @@ function handleEventRequest(
     console.log('---\n');
 
     // Get server ID
-    const match = !isNoMatch
-      ? db.queryOne<DbMatchRow>('SELECT server_id FROM matches WHERE slug = ?', [actualMatchSlug])
-      : matchFromUrl;
-
     const serverId =
-      matchFromUrl?.server_id || match?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
+      resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
 
     console.log(
       `🖥️ Server ID: ${serverId} (from ${
         matchFromUrl
           ? 'URL match lookup'
-          : match?.server_id
+          : resolvedMatch
           ? 'matchid lookup'
           : matchSlugOrServerIdFromUrl
           ? 'URL fallback'
@@ -112,7 +112,7 @@ function handleEventRequest(
         `ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
       );
       console.log('   This is normal during server startup or between matches.');
-      logWebhookEvent(serverId, event);
+      logWebhookEvent(serverId, actualMatchSlug, event);
       return res.status(200).json({
         success: true,
         message: 'Event received (no active match)',
@@ -120,10 +120,10 @@ function handleEventRequest(
     }
 
     // Log to file
-    logWebhookEvent(serverId, event);
+    logWebhookEvent(serverId, actualMatchSlug, event);
 
     // Store event in database
-    if (match) {
+    if (resolvedMatch) {
       try {
         db.insert('match_events', {
           match_slug: actualMatchSlug,
@@ -165,6 +165,24 @@ function handleEventRequest(
       error: 'Error processing event',
     });
   }
+}
+
+function findMatchByIdentifier(identifier: string | number): DbMatchRow | null {
+  if (identifier === undefined || identifier === null) {
+    return null;
+  }
+
+  const identifierStr = String(identifier);
+  const numericId = Number(identifierStr);
+
+  if (!Number.isNaN(numericId)) {
+    const byId = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    if (byId) {
+      return byId;
+    }
+  }
+
+  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]);
 }
 
 /**

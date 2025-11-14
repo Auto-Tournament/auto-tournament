@@ -7,7 +7,7 @@
 
 export interface MatchZyBaseEvent {
   event: string;
-  matchid: string;
+  matchid: string | number;
 }
 
 // Series Events
