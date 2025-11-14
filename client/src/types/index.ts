@@ -19,6 +19,9 @@ export type {
   TeamStanding,
   TeamMatchInfo,
   TeamMatchHistory,
+  MatchConnectionStatus,
+  MatchLiveStats,
+  ConnectedPlayerStatus,
 } from './team.types';
 
 // Tournament types

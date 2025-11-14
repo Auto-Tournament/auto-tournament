@@ -30,7 +30,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import { getMapDisplayName, getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
-import type { Team, TeamMatchInfo, VetoState } from '../../types';
+import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
 
 interface MatchInfoCardProps {
   match: TeamMatchInfo;
@@ -41,6 +41,17 @@ interface MatchInfoCardProps {
   onVetoComplete: (veto: VetoState) => void;
   getRoundLabel: (round: number) => string;
 }
+
+const LIVE_STATUS_DISPLAY: Record<
+  MatchLiveStats['status'],
+  { label: string; chipColor: 'success' | 'info' | 'warning' | 'default' }
+> = {
+  warmup: { label: 'Warmup', chipColor: 'info' },
+  knife: { label: 'Knife Round', chipColor: 'warning' },
+  live: { label: 'Live', chipColor: 'success' },
+  halftime: { label: 'Halftime', chipColor: 'warning' },
+  postgame: { label: 'Postgame', chipColor: 'default' },
+};
 
 // Helper function to determine map status
 const getMapStatus = (
@@ -97,8 +108,31 @@ export function MatchInfoCard({
   const [connected, setConnected] = useState(false);
 
   // Get current map being played (first map for now)
-  const currentMap = match.maps.length > 0 ? match.maps[0] : null;
-  const currentMapData = currentMap ? getMapData(currentMap) : null;
+  const currentMapSlug =
+    (match.liveStats && match.liveStats.mapNumber < match.maps.length
+      ? match.maps[match.liveStats.mapNumber]
+      : match.maps[0]) || null;
+  const currentMapData = currentMapSlug ? getMapData(currentMapSlug) : null;
+  const liveStats = match.liveStats || null;
+  const connectionStatus = match.connectionStatus || null;
+  const team1Score = liveStats?.team1Score ?? 0;
+  const team2Score = liveStats?.team2Score ?? 0;
+  const team1SeriesScore = liveStats?.team1SeriesScore ?? 0;
+  const team2SeriesScore = liveStats?.team2SeriesScore ?? 0;
+  const roundNumber = liveStats?.roundNumber ?? null;
+  const mapNumber = liveStats?.mapNumber ?? null;
+  const currentMap =
+    (mapNumber !== null && match.maps[mapNumber]) || match.maps[0] || null;
+  const currentMapLabel = currentMap ? getMapDisplayName(currentMap) : null;
+  const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
+  const totalConnected = connectionStatus?.totalConnected ?? 0;
+  const expectedPlayersTotal =
+    match.config?.expected_players_total ||
+    (match.config?.players_per_team ? match.config.players_per_team * 2 : undefined);
+  const expectedPlayersDisplay =
+    expectedPlayersTotal ?? (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
+  const playersReady =
+    expectedPlayersTotal !== undefined ? totalConnected >= expectedPlayersTotal : totalConnected > 0;
 
   const handleConnect = () => {
     if (!match.server) return;
@@ -240,17 +274,75 @@ export function MatchInfoCard({
                 <Typography variant="h4" fontWeight={700} color="primary.main" gutterBottom>
                   {team?.name}
                 </Typography>
+                <Typography variant="h2" fontWeight={800} color="primary.main">
+                  {team1Score}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Rounds Won
+                </Typography>
+              {team1SeriesScore > 0 && (
+                <Chip
+                  label={`Map Wins: ${team1SeriesScore}`}
+                  size="small"
+                  color="primary"
+                  sx={{ mt: 1, fontWeight: 600 }}
+                />
+              )}
               </Box>
-              <Typography variant="h3" color="text.secondary" fontWeight={700} mx={3}>
-                VS
-              </Typography>
+              <Stack spacing={1} alignItems="center" mx={3}>
+                <Typography variant="h3" color="text.secondary" fontWeight={700}>
+                  VS
+                </Typography>
+                {liveStatusDisplay && (
+                  <Chip
+                    label={liveStatusDisplay.label}
+                    color={liveStatusDisplay.chipColor}
+                    size="small"
+                    sx={{ fontWeight: 600 }}
+                  />
+                )}
+                {liveStats && (
+                  <Typography variant="caption" color="text.secondary">
+                    {currentMapLabel ? `Map ${mapNumber !== null ? mapNumber + 1 : ''}: ${currentMapLabel}` : 'Current Map'}
+                  </Typography>
+                )}
+                {liveStats && (
+                  <Typography variant="caption" color="text.secondary">
+                    {roundNumber !== null ? `Round ${roundNumber}` : 'Live'}
+                  </Typography>
+                )}
+              </Stack>
               <Box textAlign="center" flex={1}>
                 <Typography variant="h4" fontWeight={700} color="error.main" gutterBottom>
                   {match.opponent?.name || 'TBD'}
                 </Typography>
+                <Typography variant="h2" fontWeight={800} color="error.main">
+                  {team2Score}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  Rounds Won
+                </Typography>
+                {team2SeriesScore > 0 && (
+                  <Chip
+                    label={`Map Wins: ${team2SeriesScore}`}
+                    size="small"
+                    color="error"
+                    sx={{ mt: 1, fontWeight: 600 }}
+                  />
+                )}
               </Box>
             </Box>
           </Paper>
+
+          <Alert
+            severity={playersReady ? 'success' : 'info'}
+            icon={<PeopleIcon fontSize="small" />}
+            sx={{ mb: 3 }}
+          >
+            {playersReady
+              ? 'All required players are connected. Match can start.'
+              : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
+          </Alert>
 
           {/* Map Image Display with Server Info */}
           {match.server && currentMapData && (

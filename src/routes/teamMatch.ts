@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
+import { playerConnectionService } from '../services/playerConnectionService';
+import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
@@ -259,6 +261,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       }
     }
 
+    const connectionStatus = playerConnectionService.getStatus(match.slug);
+    const liveStats = matchLiveStatsService.getStats(match.slug);
+
     return res.json({
       success: true,
       team: {
@@ -303,6 +308,19 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
               statusDescription: serverStatusDescription,
             }
           : null,
+        connectionStatus: connectionStatus
+          ? {
+              ...connectionStatus,
+              connectedPlayers: connectionStatus.connectedPlayers.map((player) => ({
+                steamId: player.steamId,
+                name: player.name,
+                team: player.team,
+                connectedAt: player.connectedAt,
+                isReady: player.isReady,
+              })),
+            }
+          : null,
+        liveStats: liveStats || null,
         maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
         matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
         loadedAt: match.loaded_at,

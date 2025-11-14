@@ -52,6 +52,8 @@ export interface TeamMatchInfo {
       color: 'success' | 'warning' | 'error' | 'info' | 'default';
     } | null;
   } | null;
+  connectionStatus?: MatchConnectionStatus | null;
+  liveStats?: MatchLiveStats | null;
   maps: string[];
   matchFormat: string;
   loadedAt?: number;
@@ -75,6 +77,36 @@ export interface TeamMatchInfo {
       players?: Array<{ steamid: string; name: string }>;
     };
   };
+}
+
+export interface ConnectedPlayerStatus {
+  steamId: string;
+  name: string;
+  team: 'team1' | 'team2';
+  connectedAt: number;
+  isReady: boolean;
+}
+
+export interface MatchConnectionStatus {
+  matchSlug: string;
+  connectedPlayers: ConnectedPlayerStatus[];
+  team1Connected: number;
+  team2Connected: number;
+  totalConnected: number;
+  lastUpdated: number;
+}
+
+export interface MatchLiveStats {
+  matchSlug: string;
+  team1Score: number;
+  team2Score: number;
+  roundNumber: number;
+  mapNumber: number;
+  status: 'warmup' | 'knife' | 'live' | 'halftime' | 'postgame';
+  lastEventAt: number;
+  team1SeriesScore: number;
+  team2SeriesScore: number;
+  mapName?: string | null;
 }
 
 export interface TeamMatchHistory {

@@ -7,6 +7,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitMatchUpdate, emitBracketUpdate } from './socketService';
 import { playerConnectionService } from './playerConnectionService';
+import { matchLiveStatsService, type MatchLiveStats } from './matchLiveStatsService';
 import type { MatchZyEvent } from '../types/matchzy-events.types';
 import type { DbMatchRow } from '../types/database.types';
 import {
@@ -60,6 +61,12 @@ export function handleMatchEvent(event: MatchZyEvent): void {
           winner: (eventData.winner as { name?: string })?.name,
         }
       );
+      {
+        const match = resolveMatch(event.matchid);
+        if (match) {
+          updateLiveStats(match, parseScorePayload(eventData, 'postgame'));
+        }
+      }
       break;
 
     case 'series_end':
@@ -77,55 +84,137 @@ export function handleMatchEvent(event: MatchZyEvent): void {
       if (liveMatch) {
         updateMatchStatus(liveMatch, 'live');
         playerConnectionService.markAllReady(liveMatch.slug);
+        updateLiveStats(liveMatch, parseScorePayload(eventData, 'live'));
       } else {
         log.warn(`Going live event received for unknown match`, { matchId: event.matchid });
       }
       break;
     }
 
+    // Player connection events
+    case 'player_connect': {
+      const match = resolveMatch(event.matchid);
+      const playerInfo = eventData.player as { steamid?: string; name?: string; team?: string };
+      const steamId = playerInfo?.steamid;
+      if (!match || !steamId) {
+        log.warn('Player connect event received without match or steamId', {
+          matchId: event.matchid,
+        });
+        break;
+      }
+      const team = determinePlayerTeam(match, steamId, playerInfo?.team);
+      if (!team) {
+        log.warn('Could not determine team for player_connect event', {
+          matchId: event.matchid,
+          steamId,
+        });
+        break;
+      }
+      playerConnectionService.playerConnected(match.slug, steamId, playerInfo?.name || 'Unknown', team);
+      break;
+    }
+
+    case 'player_disconnect': {
+      const match = resolveMatch(event.matchid);
+      const steamId = (eventData.player as { steamid?: string })?.steamid;
+      if (!match || !steamId) {
+        log.warn('Player disconnect event received without match or steamId', {
+          matchId: event.matchid,
+        });
+        break;
+      }
+      playerConnectionService.playerDisconnected(match.slug, steamId);
+      break;
+    }
+
+    case 'player_ready':
+    case 'player_unready': {
+      const match = resolveMatch(event.matchid);
+      const steamId = (eventData.player as { steamid?: string })?.steamid;
+      if (!match || !steamId) {
+        break;
+      }
+      playerConnectionService.playerReady(
+        match.slug,
+        steamId,
+        event.event === 'player_ready'
+      );
+      break;
+    }
+
     // Round Events
-    case 'round_end':
+    case 'round_end': {
       log.debug(`Round ${eventData.round_number} won by ${eventData.winner}`, {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
         reason: eventData.reason,
       });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, parseScorePayload(eventData, 'live'));
+      }
       break;
+    }
 
-    case 'knife_round_started':
+    case 'knife_round_started': {
       log.info(`Knife round started`, { matchId: event.matchid, mapNumber: eventData.map_number });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, { status: 'knife' });
+      }
       break;
+    }
 
-    case 'knife_round_ended':
+    case 'knife_round_ended': {
       log.success(`Knife round won by ${eventData.winner}`, {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
       });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, { status: 'warmup' });
+      }
       break;
+    }
 
-    case 'round_started':
+    case 'round_started': {
       log.debug(`Round ${eventData.round_number} started`, {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, parseScorePayload(eventData, 'live'));
+      }
       break;
+    }
 
-    case 'halftime_started':
+    case 'halftime_started': {
       log.info(`Halftime started`, {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, parseScorePayload(eventData, 'halftime'));
+      }
       break;
+    }
 
-    case 'overtime_started':
+    case 'overtime_started': {
       log.success(`Overtime ${eventData.overtime_number} started!`, {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
       });
+      const match = resolveMatch(event.matchid);
+      if (match) {
+        updateLiveStats(match, { status: 'live' });
+      }
       break;
+    }
 
     // Pause System Events
     case 'match_paused':
@@ -187,6 +276,88 @@ function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): voi
       status: updatedMatch.status,
     });
   }
+}
+
+function determinePlayerTeam(
+  match: DbMatchRow,
+  steamId: string,
+  fallbackTeam?: string
+): 'team1' | 'team2' | null {
+  if (fallbackTeam === 'team1' || fallbackTeam === 'team2') {
+    return fallbackTeam;
+  }
+
+  if (!match.config) {
+    return null;
+  }
+
+  try {
+    const config = typeof match.config === 'string' ? JSON.parse(match.config) : match.config;
+    const team1Players = config?.team1?.players;
+    const team2Players = config?.team2?.players;
+    if (team1Players && Object.prototype.hasOwnProperty.call(team1Players, steamId)) {
+      return 'team1';
+    }
+    if (team2Players && Object.prototype.hasOwnProperty.call(team2Players, steamId)) {
+      return 'team2';
+    }
+  } catch (error) {
+    log.warn('Failed to parse match config when determining player team', {
+      error,
+      matchId: match.id,
+    });
+  }
+
+  return null;
+}
+
+function updateLiveStats(match: DbMatchRow, updates: Partial<MatchLiveStats>): void {
+  const stats = matchLiveStatsService.update(match.slug, updates);
+  emitMatchUpdate({
+    slug: match.slug,
+    liveStats: stats,
+  });
+}
+
+function parseScorePayload(
+  eventData: Record<string, unknown>,
+  status: MatchLiveStats['status']
+): Partial<MatchLiveStats> {
+  const updates: Partial<MatchLiveStats> = { status };
+  const mapNumber = parseNumber(eventData.map_number);
+  const roundNumber = parseNumber(eventData.round_number);
+  const team1Score =
+    parseNumber(eventData.team1_score) ??
+    parseNumber((eventData.team1 as Record<string, unknown> | undefined)?.score);
+  const team2Score =
+    parseNumber(eventData.team2_score) ??
+    parseNumber((eventData.team2 as Record<string, unknown> | undefined)?.score);
+  const team1SeriesScore =
+    parseNumber(eventData.team1_series_score) ??
+    parseNumber((eventData.team1 as Record<string, unknown> | undefined)?.series_score);
+  const team2SeriesScore =
+    parseNumber(eventData.team2_series_score) ??
+    parseNumber((eventData.team2 as Record<string, unknown> | undefined)?.series_score);
+  const mapName = (eventData.map_name as string) ?? undefined;
+
+  if (mapNumber !== undefined) updates.mapNumber = mapNumber;
+  if (roundNumber !== undefined) updates.roundNumber = roundNumber;
+  if (team1Score !== undefined) updates.team1Score = team1Score;
+  if (team2Score !== undefined) updates.team2Score = team2Score;
+  if (team1SeriesScore !== undefined) updates.team1SeriesScore = team1SeriesScore;
+  if (team2SeriesScore !== undefined) updates.team2SeriesScore = team2SeriesScore;
+  if (mapName !== undefined) updates.mapName = mapName;
+
+  return updates;
+}
+
+function parseNumber(value: unknown): number | undefined {
+  if (value === undefined || value === null) return undefined;
+  const num = typeof value === 'string' ? Number(value) : value;
+  if (typeof num === 'number' && Number.isFinite(num)) {
+    return num;
+  }
+  return undefined;
 }
 
 /**

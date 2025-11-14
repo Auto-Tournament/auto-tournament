@@ -13,6 +13,7 @@ import {
   getMatchZyLoadMatchAuthCommands,
 } from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
+import { matchLiveStatsService } from './matchLiveStatsService';
 
 export interface MatchLoadOptions {
   skipWebhook?: boolean;
@@ -155,6 +156,7 @@ export async function loadMatchOnServer(
 
     if (loadResult.success) {
       log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
+      matchLiveStatsService.reset(match.slug);
 
       // MatchZy wipes remote log/upload cvars when a new match loads.
       // Reapply them a short moment after the load command finishes so webhook + uploads keep working.
