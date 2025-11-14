@@ -15,6 +15,12 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ---
 
+### Prefer an automated setup?
+
+If you need to provision several CS2 servers quickly, use the companion **[CS2 Server Manager](../guides/cs2-server-manager.md)**. It installs SteamCMD, CounterStrikeSharp, the MatchZy enhanced fork, Metamod:Source, and CS2-AutoUpdater in one pass, then keeps everything updated via the `manage.sh` helper.[^1]
+
+---
+
 ## Install MatchZy (Modified Version)
 
 Important:
@@ -179,4 +185,6 @@ Once your CS2 server is configured:
 👉 **[Add Your First Server](first-tournament.md#add-your-first-server)** - Add the server to your tournament system
 
 👉 **[First Tournament Guide](first-tournament.md)** - Create your first tournament
+
+[^1]: CS2 Server Manager repository — <https://github.com/sivert-io/cs2-server-manager>.
 

@@ -128,6 +128,20 @@ Requires <a href="https://docs.cssharp.dev/guides/getting-started/" target="_bla
 
 ---
 
+## 🖥️ CS2 Server Manager
+
+Need a quick way to spin up several CS2 servers that are pre-wired for MatchZy Auto Tournament? Check out the companion project **[CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)**.[^1]
+
+- Deploys 3–5 dedicated servers (SteamCMD + CounterStrikeSharp) in minutes
+- Installs the MatchZy enhanced fork, CounterStrikeSharp, Metamod:Source, and CS2-AutoUpdater automatically
+- Ships with `manage.sh` for interactive or scripted installs, updates, and repairs
+- Preserves your overrides (`overrides/game/csgo/`) across updates, including MatchZy configs
+- Supports tmux-powered console access, log tailing, and debug mode per server
+
+> **Docs:** New walkthrough available at [`docs/guides/cs2-server-manager.md`](docs/guides/cs2-server-manager.md) with prerequisites, install steps, and troubleshooting tips.
+
+---
+
 ## 🤝 Contributing
 
 Contributions are welcome! Whether you're fixing bugs, adding features, improving docs, or sharing ideas.
@@ -147,3 +161,5 @@ MIT License - see [LICENSE](LICENSE) for details
 <div align="center">
   <strong>Made with ❤️ for the CS2 community</strong>
 </div>
+
+[^1]: CS2 Server Manager GitHub repository – <https://github.com/sivert-io/cs2-server-manager>.

@@ -143,6 +143,7 @@ nav:
   - Getting Started:
       - Quick Start: getting-started/quick-start.md
       - CS2 Server Setup: getting-started/server-setup.md
+      - CS2 Server Manager: guides/cs2-server-manager.md
       - First Tournament: getting-started/first-tournament.md
   - Features:
       - Overview: features/overview.md
