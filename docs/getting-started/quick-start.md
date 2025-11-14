@@ -2,13 +2,22 @@
 
 Get up and running in 5 minutes.
 
-## Prerequisites
+## Choose Your Setup Path
 
-- CS2 dedicated server(s) with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
+### Option A — CS2 Server Manager (recommended)
+
+If you just want working CS2 servers with the right plugins, use the automated **[CS2 Server Manager](../guides/cs2-server-manager.md)**. It installs SteamCMD, CounterStrikeSharp, the MatchZy enhanced fork, and CS2-AutoUpdater, then keeps everything patched with `manage.sh`.
+
+- Best for LAN hosts or new admins.
+- Deploy 3–5 servers, all preconfigured for MatchZy Auto Tournament.
+- Overrides (`overrides/game/csgo/`) survive updates.
+
+### Option B — Manual install (advanced users)
+
+- CS2 dedicated server(s) with [modified MatchZy](https://github.com/sivert-io/matchzy/releases)
 - Node.js 18+ or Docker
-- RCON access to your servers
-
-> **New to CS2 server setup?** See the [CS2 Server Setup Guide](server-setup.md) for detailed installation instructions.
+- RCON access to each server
+- Follow the [CS2 Server Setup Guide](server-setup.md) if you’re provisioning by hand.
 
 ## Installation
 
@@ -145,6 +154,8 @@ Repeat for all teams (minimum 2 for a tournament).
 👉 **[CS2 Server Setup](server-setup.md)** - Install the modified MatchZy plugin on your CS2 server(s)
 
 👉 **[First Tournament Guide](first-tournament.md)** - Step-by-step tournament setup
+
+👉 **Prefer automation?** Skip manual installs and use the **[CS2 Server Manager](../guides/cs2-server-manager.md)** to provision everything in minutes.
 
 ??? abstract "Advanced: Network Configuration"
 

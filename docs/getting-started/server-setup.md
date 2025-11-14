@@ -15,9 +15,9 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ---
 
-### Prefer an automated setup?
+!!! tip "Prefer an automated setup?"
 
-If you need to provision several CS2 servers quickly, use the companion **[CS2 Server Manager](../guides/cs2-server-manager.md)**. It installs SteamCMD, CounterStrikeSharp, the MatchZy enhanced fork, Metamod:Source, and CS2-AutoUpdater in one pass, then keeps everything updated via the `manage.sh` helper.[^1]
+    Use the companion **[CS2 Server Manager](../guides/cs2-server-manager.md)** if you want ready-to-go servers (SteamCMD + CounterStrikeSharp + MatchZy + CS2-AutoUpdater). One command deploys 3–5 servers with the correct plugins and webhook configuration—perfect for LANs or first-time server admins.[^1]
 
 ---
 

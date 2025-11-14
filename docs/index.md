@@ -32,22 +32,30 @@ One click from bracket creation to final scores
 
 ---
 
-## Quick Start
+## Quick Start Paths
+
+### 😊 Recommended: CS2 Server Manager
+
+Use the companion **[CS2 Server Manager](guides/cs2-server-manager.md)** to deploy 3–5 CS2 servers that already include:
+
+- CounterStrikeSharp + Metamod:Source
+- MatchZy enhanced fork + CS2 AutoUpdater
+- Pre-configured webhooks and RCON
+
+Best for LANs, new admins, or anyone who wants a working fleet in minutes.
+
+### 🛠️ Manual Setup (advanced users)
 
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp .env.example .env
-# Edit .env with your tokens
-
-# Pull from Docker Hub (after first release)
 docker compose -f docker/docker-compose.yml up -d
-
-# OR build locally
+# or build dev image:
 # docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
-**Access:** `http://localhost:3069`
+**Dashboard access:** `http://localhost:3069`
 
 ---
 
