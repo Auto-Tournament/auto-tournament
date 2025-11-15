@@ -10,6 +10,18 @@ import type {
   MatchLiveStats,
 } from '../types';
 
+type BracketSocketEvent = {
+  matchSlug?: string;
+  [key: string]: unknown;
+};
+
+type TournamentSocketEvent = {
+  deleted?: boolean;
+  action?: string;
+  matchSlug?: string;
+  [key: string]: unknown;
+};
+
 interface UseTeamMatchDataReturn {
   team: Team | null;
   match: TeamMatchInfo | null;
@@ -314,18 +326,20 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
       // Ignore updates for other matches
     };
 
-    // Use silent updates for socket events to avoid loading spinner
-    socket.on('match:update', handleMatchUpdate);
-
-    socket.on('bracket:update', () => {
-      // Refresh match data when bracket updates (silent)
+    const handleBracketUpdate = (event?: BracketSocketEvent) => {
+      const trackedSlug = currentMatchSlugRef.current;
+      if (!trackedSlug) return;
+      if (event?.matchSlug && event.matchSlug !== trackedSlug) {
+        return;
+      }
       loadTeamMatch(true);
-      loadMatchHistory(true);
-      loadTeamStats(true);
-    });
+    };
 
-    socket.on('tournament:update', (data: { deleted?: boolean; action?: string }) => {
-      // Handle tournament deletion
+    const handleTournamentUpdate = (
+      data?: TournamentSocketEvent
+    ) => {
+      if (!data) return;
+
       if (data.deleted || data.action === 'tournament_deleted') {
         setError('Tournament has been deleted');
         setMatch(null);
@@ -334,16 +348,40 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
         setStats(null);
         setStanding(null);
         currentMatchSlugRef.current = null;
-      } else {
-        // Other tournament updates (silent)
-        loadTeamMatch(true);
-        loadMatchHistory(true);
-        loadTeamStats(true);
+        return;
       }
-    });
+
+      const trackedSlug = currentMatchSlugRef.current;
+      if (!trackedSlug) return;
+      if (data.matchSlug && data.matchSlug !== trackedSlug) {
+        return;
+      }
+
+      const refreshActions = new Set([
+        'tournament_reset',
+        'tournament_restarted',
+        'bracket_regenerated',
+        'match_loaded',
+        'match_restarted',
+        'server_assigned',
+      ]);
+
+      if (data.action && !refreshActions.has(data.action)) {
+        return;
+      }
+
+      loadTeamMatch(true);
+    };
+
+    // Use silent updates for socket events to avoid loading spinner
+    socket.on('match:update', handleMatchUpdate);
+    socket.on('bracket:update', handleBracketUpdate);
+    socket.on('tournament:update', handleTournamentUpdate);
 
     return () => {
       socket.off('match:update', handleMatchUpdate);
+      socket.off('bracket:update', handleBracketUpdate);
+      socket.off('tournament:update', handleTournamentUpdate);
       socket.close();
     };
     // Only re-run if teamId changes, not on every state update

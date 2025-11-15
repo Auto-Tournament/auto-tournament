@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { api } from '../utils/api';
-import { io, type Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
 
 export const useBracket = () => {
@@ -12,7 +12,6 @@ export const useBracket = () => {
   const [starting, setStarting] = useState(false);
   const [startSuccess, setStartSuccess] = useState('');
   const [startError, setStartError] = useState('');
-  const [socket, setSocket] = useState<Socket | null>(null);
 
   const loadBracket = async () => {
     setLoading(true);
@@ -87,19 +86,157 @@ export const useBracket = () => {
   useEffect(() => {
     loadBracket();
 
-    // Setup Socket.IO connection
     const newSocket = io();
-    setSocket(newSocket);
 
-    newSocket.on('match:update', () => {
-      loadBracket();
-    });
+    const applyMatchPatch = (payload: Record<string, unknown>) => {
+      if (!payload) return;
+      const slug =
+        (payload.slug as string | undefined) ||
+        (payload.matchSlug as string | undefined) ||
+        (payload.match && typeof payload.match === 'object'
+          ? ((payload.match as { slug?: string }).slug ?? undefined)
+          : undefined);
 
-    newSocket.on('bracket:update', () => {
-      loadBracket();
-    });
+      if (!slug) {
+        return;
+      }
+
+      setMatches((prev) => {
+        if (!prev.length) return prev;
+        const index = prev.findIndex((match) => match.slug === slug);
+        if (index === -1) return prev;
+
+        const current = prev[index];
+        const next: Match = { ...current };
+        let changed = false;
+
+        const status = (payload.status as Match['status'] | undefined) ??
+          ((payload as { match_status?: string }).match_status as Match['status'] | undefined);
+        if (status && status !== current.status) {
+          next.status = status;
+          changed = true;
+        }
+
+        const serverId =
+          (payload.serverId as string | undefined) ||
+          ((payload as { server_id?: string }).server_id ?? undefined);
+        if (serverId !== undefined && serverId !== current.serverId) {
+          next.serverId = serverId || undefined;
+          changed = true;
+        }
+
+        const team1Score =
+          (payload.team1Score as number | undefined) ||
+          ((payload as { team1_score?: number }).team1_score ?? undefined);
+        if (typeof team1Score === 'number' && team1Score !== current.team1Score) {
+          next.team1Score = team1Score;
+          changed = true;
+        }
+
+        const team2Score =
+          (payload.team2Score as number | undefined) ||
+          ((payload as { team2_score?: number }).team2_score ?? undefined);
+        if (typeof team2Score === 'number' && team2Score !== current.team2Score) {
+          next.team2Score = team2Score;
+          changed = true;
+        }
+
+        if (!changed) {
+          return prev;
+        }
+
+        const clone = [...prev];
+        clone[index] = next;
+        return clone;
+      });
+    };
+
+    const handleBracketUpdate = (event: Record<string, unknown>) => {
+      if (!event) return;
+
+      const action = event.action as string | undefined;
+      const slug = event.matchSlug as string | undefined;
+      const status = event.status as Tournament['status'] | undefined;
+
+      if (status) {
+        setTournament((prev) => (prev ? { ...prev, status } : prev));
+      }
+
+      const requiresFullReload = !action
+        ? true
+        : [
+            'bracket_regenerated',
+            'tournament_reset',
+            'tournament_restarted',
+            'tournament_updated',
+            'tournament_completed',
+            'tournament_started',
+          ].includes(action);
+
+      if (requiresFullReload) {
+        loadBracket();
+        return;
+      }
+
+      if (!slug) {
+        return;
+      }
+
+      setMatches((prev) => {
+        if (!prev.length) return prev;
+        const index = prev.findIndex((match) => match.slug === slug);
+        if (index === -1) return prev;
+
+        const current = prev[index];
+        const next: Match = { ...current };
+        let changed = false;
+
+        if (action === 'match_status') {
+          const newStatus =
+            (event.status as Match['status'] | undefined) ??
+            (event.matchStatus as Match['status'] | undefined);
+          if (newStatus && newStatus !== current.status) {
+            next.status = newStatus;
+            changed = true;
+          }
+        } else if (action === 'match_ready') {
+          if (current.status !== 'ready') {
+            next.status = 'ready';
+            changed = true;
+          }
+        } else if (action === 'match_loaded') {
+          if (current.status !== 'loaded') {
+            next.status = 'loaded';
+            changed = true;
+          }
+        } else if (action === 'match_restarted') {
+          if (current.status !== 'loaded') {
+            next.status = 'loaded';
+            changed = true;
+          }
+        } else if (action === 'server_assigned' || action === 'match_allocated') {
+          const serverId =
+            (event.serverId as string | undefined) ??
+            ((event as { server_id?: string }).server_id ?? undefined);
+          if (serverId !== undefined && serverId !== current.serverId) {
+            next.serverId = serverId || undefined;
+            changed = true;
+          }
+        }
+
+        if (!changed) return prev;
+        const clone = [...prev];
+        clone[index] = next;
+        return clone;
+      });
+    };
+
+    newSocket.on('match:update', applyMatchPatch);
+    newSocket.on('bracket:update', handleBracketUpdate);
 
     return () => {
+      newSocket.off('match:update', applyMatchPatch);
+      newSocket.off('bracket:update', handleBracketUpdate);
       newSocket.close();
     };
   }, []);
@@ -113,7 +250,6 @@ export const useBracket = () => {
     starting,
     startSuccess,
     startError,
-    socket,
     loadBracket,
     startTournament,
   };
