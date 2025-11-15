@@ -685,7 +685,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </Accordion>
 
             {match.serverId && (match.status === 'live' || match.status === 'loaded') && (
-              <Accordion defaultExpanded sx={{ mt: 2 }}>
+              <Accordion sx={{ mt: 2 }}>
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Typography variant="subtitle1" fontWeight={600}>
                     Admin Controls

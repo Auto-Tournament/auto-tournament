@@ -248,9 +248,9 @@ export function MatchInfoCard({
             />
           )}
 
-          <MatchRosterAccordion team={team} match={match} />
-
           <MatchMapChips match={match} currentMapNumber={mapNumber} />
+
+          <MatchRosterAccordion team={team} match={match} />
 
           {showVetoHistory && (
             <MatchVetoHistory
