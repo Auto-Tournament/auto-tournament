@@ -2,6 +2,27 @@ import { log } from '../utils/logger';
 
 export type LiveStatus = 'warmup' | 'knife' | 'live' | 'halftime' | 'postgame';
 
+export interface PlayerStatLine {
+  steamId: string;
+  name: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  flashAssists: number;
+  headshotKills: number;
+  damage: number;
+  utilityDamage: number;
+  kast: number;
+  mvps: number;
+  score: number;
+  roundsPlayed: number;
+}
+
+export interface MatchPlayerStatsSnapshot {
+  team1: PlayerStatLine[];
+  team2: PlayerStatLine[];
+}
+
 export interface MatchLiveStats {
   matchSlug: string;
   team1Score: number;
@@ -13,6 +34,8 @@ export interface MatchLiveStats {
   team1SeriesScore: number;
   team2SeriesScore: number;
   mapName?: string | null;
+  totalMaps: number;
+  playerStats?: MatchPlayerStatsSnapshot | null;
 }
 
 class MatchLiveStatsService {
@@ -34,6 +57,8 @@ class MatchLiveStatsService {
       team1SeriesScore: 0,
       team2SeriesScore: 0,
       mapName: null,
+      totalMaps: 1,
+      playerStats: null,
     };
     this.stats.set(matchSlug, entry);
     return entry;

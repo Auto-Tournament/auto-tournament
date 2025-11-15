@@ -15,6 +15,7 @@ import {
   advanceLoserToLosersBracket,
   checkTournamentCompletion,
 } from '../utils/matchProgression';
+import { recordMapResult, getMapResults } from './matchMapResultService';
 
 /**
  * Main event handler - routes events to specific handlers
@@ -65,6 +66,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         const match = resolveMatch(event.matchid);
         if (match) {
           updateLiveStats(match, parseScorePayload(eventData, 'postgame'));
+          handleMapCompletion(match, event, eventData);
         }
       }
       break;
@@ -85,6 +87,12 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         updateMatchStatus(liveMatch, 'live');
         playerConnectionService.markAllReady(liveMatch.slug);
         updateLiveStats(liveMatch, parseScorePayload(eventData, 'live'));
+        db.update(
+          'matches',
+          { current_map: eventData.map_name, map_number: eventData.map_number },
+          'id = ?',
+          [liveMatch.id]
+        );
       } else {
         log.warn(`Going live event received for unknown match`, { matchId: event.matchid });
       }
@@ -152,7 +160,22 @@ export function handleMatchEvent(event: MatchZyEvent): void {
       });
       const match = resolveMatch(event.matchid);
       if (match) {
-        updateLiveStats(match, parseScorePayload(eventData, 'live'));
+        const updates = parseScorePayload(eventData, 'live');
+        const stats = matchLiveStatsService.update(match.slug, updates);
+        db.update(
+          'matches',
+          {
+            current_map: stats.mapName ?? match.current_map,
+            map_number: stats.mapNumber ?? match.map_number,
+          },
+          'id = ?',
+          [match.id]
+        );
+        emitMatchUpdate({
+          slug: match.slug,
+          liveStats: stats,
+          status: match.status,
+        });
       }
       break;
     }
@@ -184,7 +207,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
-      const match = resolveMatch(event.matchid);
+        const match = resolveMatch(event.matchid) ?? null;
       if (match) {
         updateLiveStats(match, parseScorePayload(eventData, 'live'));
       }
@@ -197,7 +220,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
-      const match = resolveMatch(event.matchid);
+      const match = resolveMatch(event.matchid) ?? null;
       if (match) {
         updateLiveStats(match, parseScorePayload(eventData, 'halftime'));
       }
@@ -258,7 +281,7 @@ function resolveMatch(identifier: string | number): DbMatchRow | null {
     }
   }
 
-  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]);
+  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]) ?? null;
 }
 
 function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): void {
@@ -396,6 +419,131 @@ function parseNumber(value: unknown): number | undefined {
   const num = typeof value === 'string' ? Number(value) : value;
   if (typeof num === 'number' && Number.isFinite(num)) {
     return num;
+  }
+  return undefined;
+}
+
+function handleMapCompletion(
+  match: DbMatchRow,
+  originalEvent: MatchZyEvent,
+  eventData: Record<string, unknown>
+): void {
+  const config = parseMatchConfig(match.config);
+  const totalMaps = config?.num_maps ?? 1;
+  const requiredWins = Math.max(1, Math.ceil(totalMaps / 2));
+  const completedMapNumber =
+    typeof eventData.map_number === 'number'
+      ? (eventData.map_number as number)
+      : parseNumber(eventData.map_number) ?? match.map_number ?? 0;
+  const mapName = (eventData.map_name as string) ?? match.current_map ?? null;
+  const team1ScoreFinal =
+    extractNestedNumber(eventData, ['team1', 'score']) ??
+    extractNestedNumber(eventData, ['team1_score']) ??
+    0;
+  const team2ScoreFinal =
+    extractNestedNumber(eventData, ['team2', 'score']) ??
+    extractNestedNumber(eventData, ['team2_score']) ??
+    0;
+  const winnerTeam =
+    ((eventData.winner as { team?: string } | undefined)?.team as 'team1' | 'team2' | undefined) ??
+    (team1ScoreFinal === team2ScoreFinal ? 'none' : team1ScoreFinal > team2ScoreFinal ? 'team1' : 'team2');
+
+  recordMapResult({
+    matchSlug: match.slug,
+    mapNumber: completedMapNumber,
+    mapName,
+    team1Score: team1ScoreFinal,
+    team2Score: team2ScoreFinal,
+    winnerTeam,
+  });
+
+  const team1SeriesScore =
+    extractNestedNumber(eventData, ['team1', 'series_score']) ??
+    extractNestedNumber(eventData, ['team1_series_score']) ??
+    0;
+  const team2SeriesScore =
+    extractNestedNumber(eventData, ['team2', 'series_score']) ??
+    extractNestedNumber(eventData, ['team2_series_score']) ??
+    0;
+
+  const seriesFinished =
+    team1SeriesScore >= requiredWins || team2SeriesScore >= requiredWins;
+
+  const maxMapIndex = Math.max(0, totalMaps - 1);
+  const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
+  const targetMapNumber = seriesFinished ? completedMapNumber : upcomingIndex;
+  db.update(
+    'matches',
+    {
+      current_map: null,
+      map_number: targetMapNumber,
+    },
+    'id = ?',
+    [match.id]
+  );
+
+  if (seriesFinished) {
+    const syntheticSeriesEvent: MatchZyEvent = {
+      ...originalEvent,
+      event: 'series_end',
+      team1_series_score: team1SeriesScore,
+      team2_series_score: team2SeriesScore,
+      winner:
+        ((eventData.winner as { team?: string })?.team as 'team1' | 'team2' | undefined) || 'none',
+      time_until_restore: 0,
+    };
+    handleSeriesEnd(syntheticSeriesEvent);
+    return;
+  }
+
+  const nextStats = matchLiveStatsService.update(match.slug, {
+    team1Score: 0,
+    team2Score: 0,
+    status: 'warmup',
+    mapNumber: completedMapNumber + 1,
+    mapName: null,
+  });
+
+  emitMatchUpdate({
+    slug: match.slug,
+    liveStats: nextStats,
+    mapResults: getMapResults(match.slug),
+  });
+}
+
+function parseMatchConfig(config: unknown): { num_maps?: number } | null {
+  if (!config) return null;
+  if (typeof config === 'object') {
+    return config as { num_maps?: number };
+  }
+  if (typeof config === 'string') {
+    try {
+      return JSON.parse(config) as { num_maps?: number };
+    } catch {
+      return null;
+    }
+  }
+  return null;
+}
+
+function extractNestedNumber(
+  source: Record<string, unknown>,
+  path: Array<string>
+): number | undefined {
+  let cursor: unknown = source;
+  for (const key of path) {
+    if (cursor && typeof cursor === 'object' && key in (cursor as Record<string, unknown>)) {
+      cursor = (cursor as Record<string, unknown>)[key];
+    } else {
+      return undefined;
+    }
+  }
+  if (typeof cursor === 'number') {
+    return cursor;
+  }
+  if (typeof cursor === 'string') {
+    const parsed = Number(cursor);
+    return Number.isFinite(parsed) ? parsed : undefined;
   }
   return undefined;
 }

@@ -323,6 +323,8 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
         status: 'warmup',
         lastEventAt: Date.now(),
         mapName: null,
+        totalMaps: 1,
+        playerStats: null,
       });
     }
 

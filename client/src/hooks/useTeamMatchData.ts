@@ -8,6 +8,7 @@ import type {
   TeamMatchHistory,
   MatchConnectionStatus,
   MatchLiveStats,
+  MatchPlayerStatsSnapshot,
 } from '../types';
 
 type BracketSocketEvent = {
@@ -71,18 +72,36 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     });
   }, []);
 
+  const swapPlayerStats = useCallback((stats?: MatchPlayerStatsSnapshot | null) => {
+    if (!stats) return stats ?? null;
+    return {
+      team1: [...stats.team2],
+      team2: [...stats.team1],
+    };
+  }, []);
+
   const mergeLiveStats = useCallback((slug: string, stats: MatchLiveStats) => {
     setMatch((prev) => {
       if (!prev || prev.slug !== slug) return prev;
-      if (prev.liveStats && prev.liveStats.lastEventAt >= stats.lastEventAt) {
+      const normalizedStats = prev.isTeam1
+        ? stats
+        : {
+            ...stats,
+            team1Score: stats.team2Score,
+            team2Score: stats.team1Score,
+            team1SeriesScore: stats.team2SeriesScore,
+            team2SeriesScore: stats.team1SeriesScore,
+            playerStats: swapPlayerStats(stats.playerStats),
+          };
+      if (prev.liveStats && prev.liveStats.lastEventAt >= normalizedStats.lastEventAt) {
         return prev;
       }
       return {
         ...prev,
-        liveStats: stats,
+        liveStats: normalizedStats,
       };
     });
-  }, []);
+  }, [swapPlayerStats]);
 
   const fetchConnectionStatus = useCallback(
     async (slug: string) => {
@@ -129,6 +148,8 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
             status: data.status ?? 'warmup',
             lastEventAt: data.lastEventAt ?? Date.now(),
             mapName: data.mapName ?? null,
+            totalMaps: data.totalMaps ?? 1,
+            playerStats: data.playerStats ?? null,
           });
         }
       } catch (err) {
@@ -304,7 +325,42 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
           }
 
           if (data.liveStats) {
-            updated.liveStats = data.liveStats;
+            updated.liveStats = prev.isTeam1
+              ? data.liveStats
+              : {
+                  ...data.liveStats,
+                  team1Score: data.liveStats.team2Score,
+                  team2Score: data.liveStats.team1Score,
+                  team1SeriesScore: data.liveStats.team2SeriesScore,
+                  team2SeriesScore: data.liveStats.team1SeriesScore,
+                  playerStats: swapPlayerStats(data.liveStats.playerStats),
+                };
+            changed = true;
+          }
+
+          if (Object.prototype.hasOwnProperty.call(data, 'currentMap') || Object.prototype.hasOwnProperty.call(data, 'current_map')) {
+            const nextMap =
+              (data as Record<string, unknown>).currentMap ??
+              (data as Record<string, unknown>).current_map ??
+              null;
+            updated.currentMap = typeof nextMap === 'string' ? nextMap : null;
+            changed = true;
+          }
+
+          if (Object.prototype.hasOwnProperty.call(data, 'mapNumber') || Object.prototype.hasOwnProperty.call(data, 'map_number')) {
+            const nextMapNumber =
+              (data as Record<string, unknown>).mapNumber ??
+              (data as Record<string, unknown>).map_number ??
+              null;
+            updated.mapNumber =
+              typeof nextMapNumber === 'number' && Number.isFinite(nextMapNumber)
+                ? Number(nextMapNumber)
+                : updated.mapNumber ?? null;
+            changed = true;
+          }
+
+          if (Array.isArray((data as Record<string, unknown>).mapResults)) {
+            updated.mapResults = (data as { mapResults: TeamMatchInfo['mapResults'] }).mapResults;
             changed = true;
           }
 

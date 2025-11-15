@@ -21,6 +21,9 @@ export type {
   TeamMatchHistory,
   MatchConnectionStatus,
   MatchLiveStats,
+  MatchPlayerStatsSnapshot,
+  MatchPlayerStatsLine,
+  MatchMapResult,
   ConnectedPlayerStatus,
   TeamMatchVetoSummary,
 } from './team.types';

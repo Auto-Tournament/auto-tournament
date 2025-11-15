@@ -81,6 +81,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   const expectedPlayers = match.config?.expected_players_total || 10;
   const playerProgress = playerCount !== undefined ? (playerCount / expectedPlayers) * 100 : 0;
+  const totalMaps =
+    match.config?.num_maps ??
+    (match.config?.maplist && match.config.maplist.length > 0
+      ? match.config.maplist.length
+      : undefined);
+  const mapDisplayNumber =
+    typeof match.mapNumber === 'number'
+      ? totalMaps
+        ? Math.min(match.mapNumber + 1, totalMaps)
+        : match.mapNumber + 1
+      : null;
 
   return (
     <Card
@@ -116,13 +127,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
             />
+            {mapDisplayNumber && totalMaps && (
+              <Chip
+                label={`Map ${mapDisplayNumber}/${totalMaps}`}
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
             {match.demoFilePath && onDownloadDemo && (
               <Tooltip title="Download demo">
-                <IconButton
-                  size="small"
-                  onClick={onDownloadDemo}
-                  sx={{ color: 'primary.main' }}
-                >
+                <IconButton size="small" onClick={onDownloadDemo} sx={{ color: 'primary.main' }}>
                   <DownloadIcon fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -243,7 +258,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <Box display="flex" alignItems="center" gap={1} mb={0.5}>
               <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
               <Typography variant="body2" fontWeight={600} color="white">
-                {getDetailedStatusLabel(match.status, playerCount, expectedPlayers, false, vetoCompleted, tournamentStarted)}
+                {getDetailedStatusLabel(
+                  match.status,
+                  playerCount,
+                  expectedPlayers,
+                  false,
+                  vetoCompleted,
+                  tournamentStarted
+                )}
               </Typography>
             </Box>
             {match.status === 'loaded' && (
@@ -269,4 +291,3 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     </Card>
   );
 };
-

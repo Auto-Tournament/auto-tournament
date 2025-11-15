@@ -2,7 +2,11 @@ import { db } from '../config/database';
 import { rconService } from './rconService';
 import { playerConnectionService, type ConnectedPlayer } from './playerConnectionService';
 import type { DbMatchRow } from '../types/database.types';
-import { matchLiveStatsService } from './matchLiveStatsService';
+import {
+  matchLiveStatsService,
+  type MatchPlayerStatsSnapshot,
+  type PlayerStatLine,
+} from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
 
@@ -52,6 +56,7 @@ type MatchReportPlayer = {
   ready?: boolean;
   connectedAt?: number;
   connected?: boolean;
+  stats?: MatchReportPlayerStats;
 };
 
 type MatchReportConnection = {
@@ -62,6 +67,26 @@ type MatchReportConnection = {
   ready?: boolean;
   connectedAt?: number;
   coach?: boolean;
+};
+
+type MatchReportPlayerStats = {
+  kills?: number;
+  deaths?: number;
+  assists?: number;
+  flash_assists?: number;
+  flashAssists?: number;
+  headshot_kills?: number;
+  headshotKills?: number;
+  damage?: number;
+  utility_damage?: number;
+  utilityDamage?: number;
+  kast?: number;
+  score?: number;
+  mvp?: number;
+  mvps?: number;
+  rounds_played?: number;
+  roundsPlayed?: number;
+  [key: string]: unknown;
 };
 
 const MATCH_REPORT_COMMANDS = ['matchzy_match_report', 'css_match_report'];
@@ -278,6 +303,7 @@ function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): void
     return;
   }
 
+  const playerStats = extractPlayerStats(report);
   const stats = matchLiveStatsService.update(matchSlug, {
     status: mapPhaseToLiveStatus(matchInfo.phase),
     team1Score: matchInfo.score?.team1 ?? 0,
@@ -287,13 +313,108 @@ function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): void
     mapNumber: matchInfo.map?.index ?? matchInfo.map?.number ?? 0,
     roundNumber: matchInfo.map?.round ?? 0,
     mapName: matchInfo.map?.name ?? null,
+    totalMaps: matchInfo.map?.total ?? report.match?.map?.total ?? 1,
+    playerStats: playerStats,
   });
+
+  persistMatchMetaFromReport(matchSlug, matchInfo);
 
   emitMatchUpdate({
     slug: matchSlug,
     liveStats: stats,
     status: matchInfo.phase,
   });
+}
+
+function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchReport['match']): void {
+  if (!matchInfo) return;
+
+  const updates: Record<string, unknown> = {};
+
+  if (matchInfo.map?.name !== undefined) {
+    updates.current_map = matchInfo.map?.name ?? null;
+  }
+  if (matchInfo.map?.index !== undefined) {
+    updates.map_number = matchInfo.map.index;
+  } else if (matchInfo.map?.number !== undefined) {
+    updates.map_number = matchInfo.map.number;
+  }
+
+  if (Object.keys(updates).length === 0) {
+    return;
+  }
+
+  try {
+    db.update('matches', updates, 'slug = ?', [matchSlug]);
+  } catch (error) {
+    log.warn('[MatchReport] Failed to persist match meta from report', {
+      matchSlug,
+      error,
+      updates,
+    });
+  }
+}
+
+function extractPlayerStats(report: MatchReport): MatchPlayerStatsSnapshot | null {
+  if (!report.teams) {
+    return null;
+  }
+
+  const buildTeamStats = (team?: MatchReportTeam): PlayerStatLine[] => {
+    if (!team?.players || !Array.isArray(team.players)) {
+      return [];
+    }
+
+    return team.players
+      .map((player) => {
+        const steamId = player.steamId || player.steamid;
+        if (!steamId) {
+          return null;
+        }
+        const stats = player.stats ?? {};
+        return {
+          steamId,
+          name: player.name || 'Unknown',
+          kills: pickStat(stats, ['kills']),
+          deaths: pickStat(stats, ['deaths']),
+          assists: pickStat(stats, ['assists']),
+          flashAssists: pickStat(stats, ['flash_assists', 'flashAssists']),
+          headshotKills: pickStat(stats, ['headshot_kills', 'headshotKills']),
+          damage: pickStat(stats, ['damage']),
+          utilityDamage: pickStat(stats, ['utility_damage', 'utilityDamage']),
+          kast: pickStat(stats, ['kast']),
+          mvps: pickStat(stats, ['mvp', 'mvps']),
+          score: pickStat(stats, ['score']),
+          roundsPlayed: pickStat(stats, ['rounds_played', 'roundsPlayed']),
+        };
+      })
+      .filter((line): line is PlayerStatLine => Boolean(line));
+  };
+
+  const team1Stats = buildTeamStats(report.teams.team1);
+  const team2Stats = buildTeamStats(report.teams.team2);
+
+  if (!team1Stats.length && !team2Stats.length) {
+    return null;
+  }
+
+  return {
+    team1: team1Stats,
+    team2: team2Stats,
+  };
+}
+
+function pickStat(stats: MatchReportPlayerStats, keys: string[], defaultValue = 0): number {
+  for (const key of keys) {
+    const value = stats[key];
+    if (typeof value === 'number' && Number.isFinite(value)) {
+      return value;
+    }
+    if (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
+      return Number(value);
+    }
+  }
+  return defaultValue;
 }
 
 function normalizeTeamSlot(

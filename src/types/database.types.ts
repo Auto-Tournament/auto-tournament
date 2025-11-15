@@ -20,6 +20,10 @@ export interface DbMatchRow {
   created_at?: number;
   loaded_at?: number;
   completed_at?: number;
+  current_map?: string | null;
+  map_number?: number | null;
+  team1_name?: string | null;
+  team2_name?: string | null;
 }
 
 export interface DbTeamRow {

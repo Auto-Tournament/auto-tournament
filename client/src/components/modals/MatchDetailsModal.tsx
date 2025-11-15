@@ -14,12 +14,16 @@ import {
   CardContent,
   Alert,
   Tooltip,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import {
@@ -31,6 +35,7 @@ import {
   getStatusExplanation,
 } from '../../utils/matchUtils';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
+import { useLiveStats } from '../../hooks/useLiveStats';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 import { getTeamMatchUrl } from '../../utils/teamLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
@@ -60,6 +65,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
+  const { stats: liveStats } = useLiveStats(match?.slug || null);
 
   // Team link copy with toast
   const { copyLink, ToastNotification } = useTeamLinkCopy();
@@ -92,6 +98,50 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   };
 
   if (!match) return null;
+
+  const mapRoundsTeam1 = liveStats?.team1Score ?? match.team1Score ?? 0;
+  const mapRoundsTeam2 = liveStats?.team2Score ?? match.team2Score ?? 0;
+  const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
+  const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
+  const activeMapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
+  const mapList =
+    (match.config?.maplist && match.config?.maplist.length > 0 ? match.config?.maplist : []) ?? [];
+  const activeMapKey =
+    liveStats?.mapName ||
+    match.currentMap ||
+    (typeof activeMapNumber === 'number' && mapList[activeMapNumber]
+      ? mapList[activeMapNumber]
+      : null);
+  const currentMapLabel = activeMapKey ? getMapDisplayName(activeMapKey) || activeMapKey : null;
+  const roundNumber = liveStats?.roundNumber ?? null;
+  const totalMapCount =
+    liveStats?.totalMaps ??
+    match.config?.num_maps ??
+    (mapList.length > 0 ? mapList.length : match.mapResults?.length) ??
+    undefined;
+  const livePlayerStats = liveStats?.playerStats ?? null;
+  const normalizedTeam1Players = livePlayerStats?.team1?.length
+    ? livePlayerStats.team1.map((player) => ({
+        name: player.name,
+        steamId: player.steamId,
+        kills: player.kills,
+        deaths: player.deaths,
+        assists: player.assists,
+        damage: player.damage,
+        headshots: player.headshotKills,
+      }))
+    : match.team1Players || [];
+  const normalizedTeam2Players = livePlayerStats?.team2?.length
+    ? livePlayerStats.team2.map((player) => ({
+        name: player.name,
+        steamId: player.steamId,
+        kills: player.kills,
+        deaths: player.deaths,
+        assists: player.assists,
+        damage: player.damage,
+        headshots: player.headshotKills,
+      }))
+    : match.team2Players || [];
 
   return (
     <>
@@ -274,7 +324,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
                       }}
                     >
-                      {match.team1Score || 0}
+                      {mapRoundsTeam1}
                     </Typography>
                     <Typography variant="h3" color="text.disabled">
                       -
@@ -287,12 +337,38 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
                       }}
                     >
-                      {match.team2Score || 0}
+                      {mapRoundsTeam2}
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.secondary" mt={1}>
-                    Rounds Won
+                    Map Rounds
                   </Typography>
+                  <Box display="flex" alignItems="center" justifyContent="center" gap={1} mt={0.5}>
+                    <Typography variant="caption" color="text.secondary">
+                      Series Maps
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {seriesWinsTeam1}
+                    </Typography>
+                    <Typography variant="body2" color="text.disabled">
+                      -
+                    </Typography>
+                    <Typography variant="body2" fontWeight={600}>
+                      {seriesWinsTeam2}
+                    </Typography>
+                  </Box>
+                  {currentMapLabel && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {`Map ${activeMapNumber !== null ? activeMapNumber + 1 : ''}${
+                        totalMapCount ? ` of ${totalMapCount}` : ''
+                      }: ${currentMapLabel}`}
+                    </Typography>
+                  )}
+                  {roundNumber !== null && (
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      {`Round ${roundNumber}`}
+                    </Typography>
+                  )}
                 </Box>
 
                 {/* Team 2 */}
@@ -351,7 +427,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             )}
 
             {/* Player Leaderboards */}
-            {(match.team1Players || match.team2Players) && (
+            {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
               <>
                 <Divider />
                 <Box>
@@ -369,9 +445,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
                             {match.team1?.name || 'Team 1'}
                           </Typography>
-                          {match.team1Players && match.team1Players.length > 0 ? (
+                          {normalizedTeam1Players.length > 0 ? (
                             <Stack spacing={1}>
-                              {match.team1Players
+                              {normalizedTeam1Players
                                 .sort((a, b) => b.kills - a.kills)
                                 .map((player, idx) => (
                                   <Box
@@ -429,9 +505,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
                             {match.team2?.name || 'Team 2'}
                           </Typography>
-                          {match.team2Players && match.team2Players.length > 0 ? (
+                          {normalizedTeam2Players.length > 0 ? (
                             <Stack spacing={1}>
-                              {match.team2Players
+                              {normalizedTeam2Players
                                 .sort((a, b) => b.kills - a.kills)
                                 .map((player, idx) => (
                                   <Box
@@ -501,7 +577,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     sx={{
                       position: 'relative',
                       overflow: 'hidden',
-                      backgroundImage: `url(${getMapData(match.currentMap)?.image})`,
+                      backgroundImage: activeMapKey
+                        ? `url(${getMapData(activeMapKey)?.image})`
+                        : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',
                       height: 200,
@@ -520,76 +598,100 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   >
                     <Box sx={{ position: 'relative', p: 2, width: '100%' }}>
                       <Typography variant="h4" fontWeight={700} color="white">
-                        {getMapData(match.currentMap)?.displayName ||
-                          match.currentMap.replace('de_', '')}
+                        {currentMapLabel || 'TBD'}
                       </Typography>
-                      {match.mapNumber !== undefined &&
-                        match.config?.num_maps &&
-                        match.config.num_maps > 1 && (
-                          <Typography variant="body2" color="rgba(255,255,255,0.7)">
-                            Map {match.mapNumber + 1} of {match.config.num_maps}
-                          </Typography>
-                        )}
+                      {activeMapNumber !== null && totalMapCount && totalMapCount > 1 && (
+                        <Typography variant="body2" color="rgba(255,255,255,0.7)">
+                          Map {Math.min(activeMapNumber + 1, totalMapCount)} of {totalMapCount}
+                        </Typography>
+                      )}
                     </Box>
                   </Card>
                 </Box>
               </>
             )}
 
-            <Divider />
-            <Box>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <MapIcon color="primary" />
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Maps
-                </Typography>
-              </Box>
-              {match.config?.maplist && match.config.maplist.length > 0 ? (
-                <Box display="flex" flexWrap="wrap" gap={1}>
-                  {match.config.maplist.map((map, idx) => (
-                    <Chip key={idx} label={getMapDisplayName(map)} />
-                  ))}
+            <Accordion defaultExpanded sx={{ mt: 2 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <MapIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Maps
+                  </Typography>
                 </Box>
-              ) : (
-                <Typography variant="body2" color="text.secondary" fontStyle="italic">
-                  To be determined via veto
-                </Typography>
-              )}
-            </Box>
-
-            <Divider />
-
-            <Box>
-              <Box display="flex" alignItems="center" gap={1} mb={2}>
-                <CalendarTodayIcon color="primary" />
-                <Typography variant="subtitle1" fontWeight={600}>
-                  Match Information
-                </Typography>
-              </Box>
-              <Stack spacing={1}>
-                {match.createdAt && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Created:</strong> {formatDate(match.createdAt)}
+              </AccordionSummary>
+              <AccordionDetails>
+                {mapList.length > 0 ? (
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {mapList.map((map, idx) => {
+                      const displayName = getMapDisplayName(map) || map;
+                      const labelBase = `${idx + 1}. ${displayName}`;
+                      const result = match.mapResults?.find((mr) => mr.mapNumber === idx);
+                      let chipLabel = labelBase;
+                      let chipColor: 'default' | 'success' | 'error' | 'secondary' = 'default';
+                      if (result) {
+                        chipLabel = `${labelBase} • ${result.team1Score}-${result.team2Score}`;
+                        chipColor = result.team1Score > result.team2Score ? 'success' : 'error';
+                      } else if (activeMapNumber === idx && currentMapLabel) {
+                        chipLabel = `${labelBase} • Live`;
+                        chipColor = 'secondary';
+                      }
+                      return (
+                        <Chip
+                          key={`${map}-${idx}`}
+                          label={chipLabel}
+                          color={chipColor}
+                          variant={chipColor === 'default' ? 'outlined' : 'filled'}
+                        />
+                      );
+                    })}
+                  </Box>
+                ) : (
+                  <Typography variant="body2" color="text.secondary" fontStyle="italic">
+                    To be determined via veto
                   </Typography>
                 )}
-                {match.loadedAt && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Started:</strong> {formatDate(match.loadedAt)}
-                  </Typography>
-                )}
-                {match.completedAt && (
-                  <Typography variant="body2" color="text.secondary">
-                    <strong>Completed:</strong> {formatDate(match.completedAt)}
-                  </Typography>
-                )}
-              </Stack>
-            </Box>
+              </AccordionDetails>
+            </Accordion>
 
-            {/* Admin Controls */}
+            <Accordion defaultExpanded sx={{ mt: 2 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Box display="flex" alignItems="center" gap={1}>
+                  <CalendarTodayIcon color="primary" />
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Match Information
+                  </Typography>
+                </Box>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Stack spacing={1}>
+                  {match.createdAt && (
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Created:</strong> {formatDate(match.createdAt)}
+                    </Typography>
+                  )}
+                  {match.loadedAt && (
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Started:</strong> {formatDate(match.loadedAt)}
+                    </Typography>
+                  )}
+                  {match.completedAt && (
+                    <Typography variant="body2" color="text.secondary">
+                      <strong>Completed:</strong> {formatDate(match.completedAt)}
+                    </Typography>
+                  )}
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
+
             {match.serverId && (match.status === 'live' || match.status === 'loaded') && (
-              <>
-                <Divider />
-                <Box>
+              <Accordion defaultExpanded sx={{ mt: 2 }}>
+                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Admin Controls
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails>
                   <AdminMatchControls
                     serverId={match.serverId}
                     matchSlug={match.slug}
@@ -601,12 +703,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       setError(message);
                     }}
                   />
-                </Box>
-
-                <Divider sx={{ my: 2 }} />
-
-                {/* Add Backup Player */}
-                <Box>
+                  <Divider sx={{ my: 2 }} />
                   <AddBackupPlayer
                     matchSlug={match.slug}
                     serverId={match.serverId}
@@ -622,8 +719,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       setError(message);
                     }}
                   />
-                </Box>
-              </>
+                </AccordionDetails>
+              </Accordion>
             )}
           </Stack>
         </DialogContent>

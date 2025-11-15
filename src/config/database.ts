@@ -176,6 +176,24 @@ class DatabaseManager {
       CREATE INDEX IF NOT EXISTS idx_match_events_type ON match_events(event_type);
     `);
 
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS match_map_results (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        match_slug TEXT NOT NULL,
+        map_number INTEGER NOT NULL,
+        map_name TEXT,
+        team1_score INTEGER NOT NULL DEFAULT 0,
+        team2_score INTEGER NOT NULL DEFAULT 0,
+        winner_team TEXT,
+        completed_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+        UNIQUE(match_slug, map_number),
+        FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE
+      );
+
+      CREATE INDEX IF NOT EXISTS idx_match_map_results_slug ON match_map_results(match_slug);
+      CREATE INDEX IF NOT EXISTS idx_match_map_results_map ON match_map_results(map_number);
+    `);
+
     // Teams table
     this.db.exec(`
           CREATE TABLE IF NOT EXISTS teams (
@@ -351,6 +369,23 @@ class DatabaseManager {
     } catch (err) {
       log.error(`[DB] DELETE ${table} failed: ${(err as Error).message}`);
       log.database(`[DB] SQL: ${query} params=${this.safeJson(params)}`);
+      throw err;
+    }
+  }
+
+  /**
+   * Execute arbitrary write operation (INSERT/UPDATE/DELETE with custom SQL)
+   */
+  run(sql: string, params: unknown[] = []): BetterSqlite3.RunResult {
+    try {
+      log.database(`[DB] RUN sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      const stmt = this.db.prepare(sql);
+      const res = stmt.run(...params);
+      this.logRunResult('RUN', 'custom', res);
+      return res;
+    } catch (err) {
+      log.error(`[DB] RUN failed: ${(err as Error).message}`);
+      log.database(`[DB] SQL: ${JSON.stringify(sql)} params=${this.safeJson(params)}`);
       throw err;
     }
   }

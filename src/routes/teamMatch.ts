@@ -4,8 +4,9 @@ import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
-import { matchLiveStatsService } from '../services/matchLiveStatsService';
+import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
+import { getMapResults } from '../services/matchMapResultService';
 
 const router = Router();
 
@@ -278,6 +279,23 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
+    const normalizedLiveStats = liveStats ? normalizeLiveStatsForTeamView(liveStats, isTeam1) : null;
+    const rawMapResults = getMapResults(match.slug);
+    const normalizedMapResults = rawMapResults.map((result) => ({
+      mapNumber: result.mapNumber,
+      mapName: result.mapName,
+      team1Score: isTeam1 ? result.team1Score : result.team2Score,
+      team2Score: isTeam1 ? result.team2Score : result.team1Score,
+      winner: isTeam1
+        ? result.winnerTeam
+        : result.winnerTeam === 'team1'
+        ? 'team2'
+        : result.winnerTeam === 'team2'
+        ? 'team1'
+        : result.winnerTeam,
+      completedAt: result.completedAt,
+    }));
+
     return res.json({
       success: true,
       team: {
@@ -294,6 +312,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         matchNumber: match.match_number,
         status: match.status,
         isTeam1,
+        currentMap: match.current_map ?? null,
+        mapNumber: match.map_number ?? null,
         team1: isTeam1
           ? { id: team.id, name: team.name, tag: team.tag }
           : opponent.id
@@ -334,8 +354,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
               })),
             }
           : null,
-        liveStats: liveStats || null,
+        liveStats: normalizedLiveStats,
         maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
+        mapResults: normalizedMapResults,
         veto: vetoSummary,
         matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
         loadedAt: match.loaded_at,
@@ -377,3 +398,26 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 });
 
 export default router;
+
+function normalizeLiveStatsForTeamView(
+  liveStats: MatchLiveStats,
+  isTeam1: boolean
+): MatchLiveStats {
+  if (isTeam1) {
+    return liveStats;
+  }
+
+  return {
+    ...liveStats,
+    team1Score: liveStats.team2Score,
+    team2Score: liveStats.team1Score,
+    team1SeriesScore: liveStats.team2SeriesScore,
+    team2SeriesScore: liveStats.team1SeriesScore,
+    playerStats: liveStats.playerStats
+      ? {
+          team1: [...liveStats.playerStats.team2],
+          team2: [...liveStats.playerStats.team1],
+        }
+      : liveStats.playerStats,
+  };
+}

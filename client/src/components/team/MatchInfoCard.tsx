@@ -16,10 +16,10 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  TableHead,
   TableRow,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import StorageIcon from '@mui/icons-material/Storage';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
@@ -50,18 +50,6 @@ const LIVE_STATUS_DISPLAY: Record<
   live: { label: 'Live', chipColor: 'success' },
   halftime: { label: 'Halftime', chipColor: 'warning' },
   postgame: { label: 'Postgame', chipColor: 'default' },
-};
-
-// Helper function to determine map status
-const getMapStatus = (
-  mapIndex: number,
-  totalMaps: number,
-  matchStatus: string
-): 'won' | 'lost' | 'ongoing' | 'upcoming' => {
-  // TODO: Replace with actual map results when available
-  // For now, show first map as ongoing if match is live or loaded
-  if ((matchStatus === 'live' || matchStatus === 'loaded') && mapIndex === 0) return 'ongoing';
-  return 'upcoming';
 };
 
 // Helper function to get map chip styling
@@ -106,44 +94,124 @@ export function MatchInfoCard({
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
 
-  // Get current map being played (first map for now)
-  const currentMapSlug =
-    (match.liveStats && match.liveStats.mapNumber < match.maps.length
-      ? match.maps[match.liveStats.mapNumber]
-      : match.maps[0]) || null;
-  const currentMapData = currentMapSlug ? getMapData(currentMapSlug) : null;
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
-  const team1Score = liveStats?.team1Score ?? 0;
-  const team2Score = liveStats?.team2Score ?? 0;
-  const team1SeriesScore = liveStats?.team1SeriesScore ?? 0;
-  const team2SeriesScore = liveStats?.team2SeriesScore ?? 0;
+  const mapRoundsTeam1 = liveStats?.team1Score ?? 0;
+  const mapRoundsTeam2 = liveStats?.team2Score ?? 0;
+  const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
+  const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
   const roundNumber = liveStats?.roundNumber ?? null;
-  const mapNumber = liveStats?.mapNumber ?? null;
-  const currentMap =
-    (mapNumber !== null && match.maps[mapNumber]) || match.maps[0] || null;
-  const currentMapLabel = currentMap ? getMapDisplayName(currentMap) : null;
+  const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
+  const totalMaps =
+    liveStats?.totalMaps ??
+    match.config?.num_maps ??
+    (match.maps.length > 0 ? match.maps.length : Math.max(match.mapResults.length, 1)) ??
+    1;
+  const currentMapSlug =
+    liveStats?.mapName ||
+    match.currentMap ||
+    (typeof mapNumber === 'number' && match.maps[mapNumber]
+      ? match.maps[mapNumber]
+      : match.maps[0]) ||
+    null;
+  const currentMapData = currentMapSlug ? getMapData(currentMapSlug) : null;
+  const currentMapLabel = currentMapSlug
+    ? getMapDisplayName(currentMapSlug) || currentMapSlug
+    : null;
+  const mapDisplayNumber =
+    typeof mapNumber === 'number' ? Math.min(mapNumber + 1, totalMaps) : null;
   const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =
     match.config?.expected_players_total ||
     (match.config?.players_per_team ? match.config.players_per_team * 2 : undefined);
   const expectedPlayersDisplay =
-    expectedPlayersTotal ?? (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
+    expectedPlayersTotal ??
+    (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
   const playersReady =
-    expectedPlayersTotal !== undefined ? totalConnected >= expectedPlayersTotal : totalConnected > 0;
+    expectedPlayersTotal !== undefined
+      ? totalConnected >= expectedPlayersTotal
+      : totalConnected > 0;
   const vetoActions = match.veto?.actions ?? [];
   const vetoTeam1Name = match.veto?.team1Name || match.team1?.name || 'Team 1';
   const vetoTeam2Name = match.veto?.team2Name || match.team2?.name || 'Team 2';
   const showVetoHistory = vetoActions.length > 0;
+  const playerStats = liveStats?.playerStats ?? null;
+  const hasPlayerStats =
+    !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
+
+  type PlayerLine = NonNullable<MatchLiveStats['playerStats']>['team1'][number];
+
+  const formatKdDiff = (kills: number, deaths: number): string => {
+    const diff = kills - deaths;
+    if (diff === 0) return '0';
+    return diff > 0 ? `+${diff}` : `${diff}`;
+  };
+
+  const formatAdr = (player: PlayerLine): string => {
+    if (!player.roundsPlayed) return '—';
+    const adr = player.damage / Math.max(1, player.roundsPlayed);
+    return Math.round(adr).toString();
+  };
+
+  const formatKastValue = (kast: number): string => {
+    if (!kast) return '—';
+    const normalized = kast > 1 ? kast : kast * 100;
+    return `${Math.round(normalized)}%`;
+  };
+
+  const renderPlayerTable = (rows: PlayerLine[], accent: 'primary' | 'error') => (
+    <TableContainer component={Paper} variant="outlined">
+      <Table size="small">
+        <TableHead>
+          <TableRow>
+            <TableCell>Player</TableCell>
+            <TableCell align="right">K</TableCell>
+            <TableCell align="right">D</TableCell>
+            <TableCell align="right">A</TableCell>
+            <TableCell align="right">+/-</TableCell>
+            <TableCell align="right">ADR</TableCell>
+            <TableCell align="right">KAST</TableCell>
+            <TableCell align="right">MVP</TableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={8} align="center">
+                <Typography variant="body2" color="text.secondary">
+                  Waiting for stats...
+                </Typography>
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((player) => (
+              <TableRow key={player.steamId}>
+                <TableCell sx={{ fontWeight: 600 }}>
+                  <Typography variant="body2" color={`${accent}.main`} fontWeight={600}>
+                    {player.name}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{player.kills}</TableCell>
+                <TableCell align="right">{player.deaths}</TableCell>
+                <TableCell align="right">{player.assists}</TableCell>
+                <TableCell align="right">{formatKdDiff(player.kills, player.deaths)}</TableCell>
+                <TableCell align="right">{formatAdr(player)}</TableCell>
+                <TableCell align="right">{formatKastValue(player.kast)}</TableCell>
+                <TableCell align="right">{player.mvps ?? 0}</TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
 
   const handleConnect = () => {
     if (!match.server) return;
 
     const address = `${match.server.host}:${match.server.port}`;
-    const encodedPassword = match.server.password
-      ? encodeURIComponent(match.server.password)
-      : '';
+    const encodedPassword = match.server.password ? encodeURIComponent(match.server.password) : '';
 
     // Preferred CS2 launch syntax
     const params = match.server.password
@@ -278,19 +346,14 @@ export function MatchInfoCard({
                   {team?.name}
                 </Typography>
                 <Typography variant="h2" fontWeight={800} color="primary.main">
-                  {team1Score}
+                  {mapRoundsTeam1}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Rounds Won
+                  Map Rounds
                 </Typography>
-              {team1SeriesScore > 0 && (
-                <Chip
-                  label={`Map Wins: ${team1SeriesScore}`}
-                  size="small"
-                  color="primary"
-                  sx={{ mt: 1, fontWeight: 600 }}
-                />
-              )}
+                <Typography variant="caption" color="text.secondary">
+                  Series Maps Won: {seriesWinsTeam1}
+                </Typography>
               </Box>
               <Stack spacing={1} alignItems="center" mx={3}>
                 <Typography variant="h3" color="text.secondary" fontWeight={700}>
@@ -304,9 +367,14 @@ export function MatchInfoCard({
                     sx={{ fontWeight: 600 }}
                   />
                 )}
-                {liveStats && (
+                {mapDisplayNumber && (
                   <Typography variant="caption" color="text.secondary">
-                    {currentMapLabel ? `Map ${mapNumber !== null ? mapNumber + 1 : ''}: ${currentMapLabel}` : 'Current Map'}
+                    Map {mapDisplayNumber}/{totalMaps}
+                  </Typography>
+                )}
+                {currentMapLabel && (
+                  <Typography variant="caption" color="text.secondary">
+                    {currentMapLabel}
                   </Typography>
                 )}
                 {liveStats && (
@@ -320,32 +388,29 @@ export function MatchInfoCard({
                   {match.opponent?.name || 'TBD'}
                 </Typography>
                 <Typography variant="h2" fontWeight={800} color="error.main">
-                  {team2Score}
+                  {mapRoundsTeam2}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  Rounds Won
+                  Map Rounds
                 </Typography>
-                {team2SeriesScore > 0 && (
-                  <Chip
-                    label={`Map Wins: ${team2SeriesScore}`}
-                    size="small"
-                    color="error"
-                    sx={{ mt: 1, fontWeight: 600 }}
-                  />
-                )}
+                <Typography variant="caption" color="text.secondary">
+                  Series Maps Won: {seriesWinsTeam2}
+                </Typography>
               </Box>
             </Box>
           </Paper>
 
-          <Alert
-            severity={playersReady ? 'success' : 'info'}
-            icon={<PeopleIcon fontSize="small" />}
-            sx={{ mb: 3 }}
-          >
-            {playersReady
-              ? 'All required players are connected. Match can start.'
-              : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
-          </Alert>
+          {match.status !== 'live' && (
+            <Alert
+              severity={playersReady ? 'success' : 'info'}
+              icon={<PeopleIcon fontSize="small" />}
+              sx={{ mb: 3 }}
+            >
+              {playersReady
+                ? 'All required players are connected. Match can start.'
+                : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
+            </Alert>
+          )}
 
           {/* Map Image Display with Server Info */}
           {match.server && currentMapData && (
@@ -461,6 +526,33 @@ export function MatchInfoCard({
             </Alert>
           )}
 
+          {hasPlayerStats && playerStats && (
+            <Box mt={3}>
+              <Typography variant="h6" fontWeight={600} mb={1}>
+                Player Performance
+              </Typography>
+              <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                <Box flex={1}>
+                  <Typography variant="subtitle2" color="text.secondary" mb={0.5}>
+                    {team?.name || 'Your Team'}
+                  </Typography>
+                  {renderPlayerTable(playerStats.team1, 'primary')}
+                </Box>
+                <Box flex={1}>
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    mb={0.5}
+                    textAlign={{ xs: 'left', md: 'right' }}
+                  >
+                    {match.opponent?.name || 'Opponent'}
+                  </Typography>
+                  {renderPlayerTable(playerStats.team2, 'error')}
+                </Box>
+              </Stack>
+            </Box>
+          )}
+
           {/* Players Accordion */}
           <Accordion sx={{ mb: 3 }}>
             <AccordionSummary expandIcon={<ExpandMoreIcon />}>
@@ -516,7 +608,21 @@ export function MatchInfoCard({
           {match.maps.length > 0 && (
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               {match.maps.map((map, idx) => {
-                const status = getMapStatus(idx, match.maps.length, match.status);
+                const result = match.mapResults.find((mr) => mr.mapNumber === idx);
+                let status: 'won' | 'lost' | 'ongoing' | 'upcoming' = 'upcoming';
+                if (result) {
+                  if (result.team1Score > result.team2Score) {
+                    status = 'won';
+                  } else if (result.team2Score > result.team1Score) {
+                    status = 'lost';
+                  }
+                } else if (
+                  typeof mapNumber === 'number' &&
+                  idx === mapNumber &&
+                  (match.status === 'live' || match.status === 'loaded')
+                ) {
+                  status = 'ongoing';
+                }
                 const chipStyle = getMapChipStyle(status);
                 return (
                   <Chip
@@ -525,9 +631,11 @@ export function MatchInfoCard({
                     size="medium"
                     icon={chipStyle.icon || undefined}
                     sx={{
-                      bgcolor: chipStyle.bgcolor,
+                      bgcolor: status === 'upcoming' ? 'transparent' : chipStyle.bgcolor,
                       color: chipStyle.color,
                       fontWeight: 600,
+                      border: status === 'upcoming' ? '1px dashed' : 'none',
+                      borderColor: status === 'upcoming' ? 'divider' : 'transparent',
                       '& .MuiChip-icon': {
                         color: chipStyle.color,
                       },

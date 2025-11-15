@@ -81,6 +81,15 @@ export interface PlayerStats {
   headshots: number;
 }
 
+export interface MatchMapResult {
+  mapNumber: number;
+  mapName?: string | null;
+  team1Score: number;
+  team2Score: number;
+  winnerTeam?: 'team1' | 'team2' | 'none' | null;
+  completedAt: number;
+}
+
 /**
  * Match list item response - used for GET /api/matches
  */
@@ -117,6 +126,9 @@ export interface MatchListItem {
   team2Players?: PlayerStats[];
   team1Score?: number;
   team2Score?: number;
+  currentMap?: string | null;
+  mapNumber?: number;
+  mapResults?: MatchMapResult[];
 }
 
 /**

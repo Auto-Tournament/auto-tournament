@@ -46,6 +46,8 @@ export interface TeamMatchInfo {
   matchNumber: number;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
   isTeam1: boolean;
+  currentMap?: string | null;
+  mapNumber?: number | null;
   team1?: Team; // For veto interface
   team2?: Team; // For veto interface
   opponent: Team | null;
@@ -65,6 +67,7 @@ export interface TeamMatchInfo {
   connectionStatus?: MatchConnectionStatus | null;
   liveStats?: MatchLiveStats | null;
   maps: string[];
+  mapResults: MatchMapResult[];
   matchFormat: string;
   loadedAt?: number;
   config?: {
@@ -118,6 +121,39 @@ export interface MatchLiveStats {
   team1SeriesScore: number;
   team2SeriesScore: number;
   mapName?: string | null;
+  totalMaps: number;
+  playerStats?: MatchPlayerStatsSnapshot | null;
+}
+
+export interface MatchPlayerStatsSnapshot {
+  team1: MatchPlayerStatsLine[];
+  team2: MatchPlayerStatsLine[];
+}
+
+export interface MatchPlayerStatsLine {
+  steamId: string;
+  name: string;
+  kills: number;
+  deaths: number;
+  assists: number;
+  flashAssists: number;
+  headshotKills: number;
+  damage: number;
+  utilityDamage: number;
+  kast: number;
+  mvps: number;
+  score: number;
+  roundsPlayed: number;
+}
+
+export interface MatchMapResult {
+  mapNumber: number;
+  mapName?: string | null;
+  team1Score: number;
+  team2Score: number;
+  winner?: 'team1' | 'team2' | 'none' | null;
+  winnerTeam?: 'team1' | 'team2' | 'none' | null;
+  completedAt: number;
 }
 
 export interface TeamMatchHistory {

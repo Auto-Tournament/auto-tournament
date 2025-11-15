@@ -13,6 +13,7 @@ import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
+import { getMapResults } from '../services/matchMapResultService';
 
 const router = Router();
 
@@ -204,7 +205,14 @@ router.get('/', (req: Request, res: Response) => {
         loadedAt: row.loaded_at,
         completedAt: row.completed_at,
         vetoCompleted: vetoState?.status === 'completed',
+        currentMap: row.current_map ?? undefined,
+        mapNumber: typeof row.map_number === 'number' ? row.map_number : undefined,
       };
+
+      const mapResults = getMapResults(row.slug);
+      if (mapResults.length > 0) {
+        match.mapResults = mapResults;
+      }
 
       // Enrich match with player stats and scores from events
       enrichMatch(match, row.slug);
