@@ -141,6 +141,14 @@ class PlayerConnectionService {
   }
 
   /**
+   * Replace connection list for a match (e.g., after querying server directly)
+   */
+  setConnections(matchSlug: string, players: ConnectedPlayer[]): void {
+    this.connections.set(matchSlug, players);
+    this.emitUpdate(matchSlug);
+  }
+
+  /**
    * Get all matches with connections
    */
   getAllStatuses(): MatchConnectionStatus[] {
@@ -171,4 +179,3 @@ class PlayerConnectionService {
 }
 
 export const playerConnectionService = new PlayerConnectionService();
-

@@ -2,6 +2,8 @@
  * Team-related types
  */
 
+import type { VetoAction, VetoMapResult } from './veto.types';
+
 export interface Player {
   steamId: string;
   name: string;
@@ -28,6 +30,14 @@ export interface TeamStanding {
   position: number;
   totalTeams: number;
   wins: number;
+}
+
+export interface TeamMatchVetoSummary {
+  status: 'pending' | 'in_progress' | 'completed';
+  team1Name?: string;
+  team2Name?: string;
+  pickedMaps: VetoMapResult[];
+  actions: VetoAction[];
 }
 
 export interface TeamMatchInfo {
@@ -77,6 +87,7 @@ export interface TeamMatchInfo {
       players?: Array<{ steamid: string; name: string }>;
     };
   };
+  veto?: TeamMatchVetoSummary | null;
 }
 
 export interface ConnectedPlayerStatus {

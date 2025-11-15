@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
+import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
+import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 
@@ -178,46 +180,57 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     // Get veto state to determine actual picked maps
     let pickedMaps: string[] = [];
+    let vetoSummary: {
+      status: 'pending' | 'in_progress' | 'completed';
+      team1Name?: string;
+      team2Name?: string;
+      pickedMaps: Array<{
+        mapNumber?: number;
+        mapName: string;
+        pickedBy?: string;
+        sideTeam1?: string;
+        sideTeam2?: string;
+        knifeRound?: boolean;
+      }>;
+      actions: Array<{
+        step: number;
+        team: 'team1' | 'team2';
+        action: string;
+        mapName?: string;
+        side?: string;
+        timestamp?: number;
+      }>;
+    } | null = null;
+
     if (match.veto_state) {
       try {
         const vetoState = JSON.parse(match.veto_state);
-        if (vetoState?.status === 'completed' && Array.isArray(vetoState.pickedMaps)) {
-          pickedMaps = vetoState.pickedMaps
-            .sort(
-              (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
-                (a.mapNumber || 0) - (b.mapNumber || 0)
-            )
-            .map((m: { mapName: string }) => m.mapName);
+        if (vetoState) {
+          const orderedPickedMaps = Array.isArray(vetoState.pickedMaps)
+            ? [...vetoState.pickedMaps].sort(
+                (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+                  (a.mapNumber || 0) - (b.mapNumber || 0)
+              )
+            : [];
+
+          pickedMaps = orderedPickedMaps.map((m: { mapName: string }) => m.mapName);
+
+          vetoSummary = {
+            status: vetoState.status || 'pending',
+            team1Name: vetoState.team1Name || match.team1_name || 'Team 1',
+            team2Name: vetoState.team2Name || match.team2_name || 'Team 2',
+            pickedMaps: orderedPickedMaps,
+            actions: Array.isArray(vetoState.actions)
+              ? [...vetoState.actions].sort(
+                  (a: { step?: number }, b: { step?: number }) => (a.step || 0) - (b.step || 0)
+                )
+              : [],
+          };
         }
       } catch (e) {
         console.error('[TeamMatch] Failed to parse veto_state:', e);
       }
     }
-
-    // Transform players from dictionary to array for frontend
-    const transformPlayers = (players: Record<string, unknown> | undefined) => {
-      if (!players) return [];
-      return Object.values(players).map((playerData: unknown) => {
-        if (typeof playerData === 'string') {
-          // Old format: {steamId: name}
-          return { steamid: 'unknown', name: playerData };
-        }
-        // New format: {index: {name, steamId}}
-        if (
-          playerData &&
-          typeof playerData === 'object' &&
-          'steamId' in playerData &&
-          'name' in playerData
-        ) {
-          const player = playerData as { steamId?: string; name?: string };
-          return {
-            steamid: player.steamId || 'unknown',
-            name: player.name || 'Unknown',
-          };
-        }
-        return { steamid: 'unknown', name: 'Unknown' };
-      });
-    };
 
     // Get tournament status
     const tournament = db.queryOne<{ status: string }>(
@@ -261,6 +274,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       }
     }
 
+    await refreshConnectionsFromServer(match.slug);
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
@@ -322,6 +336,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           : null,
         liveStats: liveStats || null,
         maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
+        veto: vetoSummary,
         matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
         loadedAt: match.loaded_at,
         config: {
@@ -337,7 +352,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
                 name: config.team1.name,
                 tag: config.team1.tag,
                 flag: config.team1.flag,
-                players: transformPlayers(config.team1.players),
+                players: normalizeConfigPlayers(config.team1.players),
               }
             : undefined,
           team2: config.team2
@@ -346,7 +361,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
                 name: config.team2.name,
                 tag: config.team2.tag,
                 flag: config.team2.flag,
-                players: transformPlayers(config.team2.players),
+                players: normalizeConfigPlayers(config.team2.players),
               }
             : undefined,
         },

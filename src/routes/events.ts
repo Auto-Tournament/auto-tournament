@@ -10,9 +10,10 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { logWebhookEvent } from '../utils/eventLogger';
 import { emitMatchEvent } from '../services/socketService';
-import { eventBufferService } from '../services/eventBufferService';
 import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
+import { matchLiveStatsService } from '../services/matchLiveStatsService';
+import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
@@ -144,7 +145,6 @@ function handleEventRequest(
     }
 
     // Add to event buffer
-    eventBufferService.addEvent(serverId, actualMatchSlug, event);
 
     // Process the event
     handleMatchEvent(event);
@@ -182,16 +182,19 @@ function findMatchByIdentifier(identifier: string | number): DbMatchRow | null {
     }
   }
 
-  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]);
+  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]) ?? null;
 }
 
 /**
  * GET /api/events/connections/:matchSlug
  * Get player connection status for a match (PUBLIC - for team pages)
  */
-router.get('/connections/:matchSlug', (req: Request, res: Response) => {
+router.get('/connections/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
+
+    await refreshConnectionsFromServer(matchSlug);
+
     const status = playerConnectionService.getStatus(matchSlug);
 
     if (!status) {
@@ -216,6 +219,44 @@ router.get('/connections/:matchSlug', (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to fetch connection status',
+    });
+  }
+});
+
+/**
+ * GET /api/events/live/:matchSlug
+ * Get latest live stats snapshot for a match (PUBLIC)
+ */
+router.get('/live/:matchSlug', (req: Request, res: Response) => {
+  try {
+    const { matchSlug } = req.params;
+    const stats = matchLiveStatsService.getStats(matchSlug);
+
+    if (!stats) {
+      return res.json({
+        success: true,
+        matchSlug,
+        team1Score: 0,
+        team2Score: 0,
+        team1SeriesScore: 0,
+        team2SeriesScore: 0,
+        roundNumber: 0,
+        mapNumber: 0,
+        status: 'warmup',
+        lastEventAt: Date.now(),
+        mapName: null,
+      });
+    }
+
+    return res.json({
+      success: true,
+      ...stats,
+    });
+  } catch (error) {
+    log.error('Error fetching live stats', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch live stats',
     });
   }
 });

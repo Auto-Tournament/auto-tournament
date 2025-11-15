@@ -4,12 +4,13 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
 import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
+import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 
 interface PlayerRosterProps {
   team1Name: string;
   team2Name: string;
-  team1Players: Array<{ steamid: string; name: string }>;
-  team2Players: Array<{ steamid: string; name: string }>;
+  team1Players: unknown;
+  team2Players: unknown;
   connectedPlayers: ConnectedPlayer[];
   isTeam1?: boolean; // If viewing from team perspective
 }
@@ -22,77 +23,8 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
   connectedPlayers,
   isTeam1,
 }) => {
-  // Convert players to array format if they're objects
-  const normalizePlayers = (players: unknown): Array<{ steamid: string; name: string }> => {
-    if (!players) return [];
-    if (Array.isArray(players)) {
-      // Already an array, ensure each player has correct format
-      return players.map((player, index) => {
-        if (typeof player === 'string') {
-          return { steamid: `player_${index}`, name: player };
-        }
-        if (player && typeof player === 'object') {
-          const p = player as {
-            steamid?: string;
-            steamId?: string;
-            name?: string | { name: string; steamId: string };
-          };
-          // Handle nested name object
-          const playerName =
-            typeof p.name === 'object' && p.name !== null
-              ? p.name.name
-              : String(p.name || 'Unknown');
-          const playerSteamId =
-            p.steamid ||
-            p.steamId ||
-            (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
-            `player_${index}`;
-          return { steamid: playerSteamId, name: playerName };
-        }
-        return { steamid: `player_${index}`, name: 'Unknown' };
-      });
-    }
-
-    // Handle object format: {0: {name, steamId}, 1: {...}} or {steamid: name}
-    if (typeof players === 'object') {
-      return Object.entries(players).map(([key, player]) => {
-        if (typeof player === 'string') {
-          return { steamid: `player_${key}`, name: player };
-        }
-        if (player && typeof player === 'object') {
-          const p = player as {
-            steamid?: string;
-            steamId?: string;
-            name?: string | { name: string; steamId: string };
-          };
-          // Handle nested name object
-          const playerName =
-            typeof p.name === 'object' && p.name !== null
-              ? p.name.name
-              : String(p.name || 'Unknown');
-          const playerSteamId =
-            p.steamid ||
-            p.steamId ||
-            (typeof p.name === 'object' && p.name !== null ? p.name.steamId : undefined) ||
-            `player_${key}`;
-          return { steamid: playerSteamId, name: playerName };
-        }
-        return { steamid: `player_${key}`, name: 'Unknown' };
-      });
-    }
-
-    return [];
-  };
-
-  const team1Players = normalizePlayers(team1PlayersRaw);
-  const team2Players = normalizePlayers(team2PlayersRaw);
-
-  // Debug: Log what we're working with
-  React.useEffect(() => {
-    console.log('[PlayerRoster] Team 1 Players:', team1Players);
-    console.log('[PlayerRoster] Team 2 Players:', team2Players);
-    console.log('[PlayerRoster] Connected Players:', connectedPlayers);
-  }, [team1Players, team2Players, connectedPlayers]);
+  const team1Players = normalizeConfigPlayers(team1PlayersRaw);
+  const team2Players = normalizeConfigPlayers(team2PlayersRaw);
 
   const getPlayerStatus = (steamId: string) => {
     console.log(`[PlayerRoster] Checking status for steamId: ${steamId}`);
@@ -109,7 +41,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
 
   const renderPlayerList = (
     teamName: string,
-    players: Array<{ steamid: string; name: string }>,
+    players: NormalizedPlayer[],
     teamColor: 'primary' | 'error',
     isYourTeam?: boolean
   ) => {

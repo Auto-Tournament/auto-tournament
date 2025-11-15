@@ -32,13 +32,35 @@ interface ConnectionStatusResponse extends ApiResponse {
 export const usePlayerConnections = (matchSlug: string | null) => {
   const [status, setStatus] = useState<ConnectionStatus | null>(null);
   const [loading, setLoading] = useState(false);
+  const lastFetchRef = useState(() => ({
+    slug: null as string | null,
+    timestamp: 0,
+  }))[0];
 
-  const loadStatus = useCallback(async () => {
+  const shouldSkipFetch = (slug: string, force: boolean) => {
+    if (force) return false;
+    return (
+      lastFetchRef.slug === slug &&
+      Date.now() - lastFetchRef.timestamp < 5000 // 5s cache window
+    );
+  };
+
+  const recordFetch = (slug: string) => {
+    lastFetchRef.slug = slug;
+    lastFetchRef.timestamp = Date.now();
+  };
+
+  const loadStatus = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
     if (!matchSlug) {
       setStatus(null);
       return;
     }
 
+    if (shouldSkipFetch(matchSlug, force)) {
+      return;
+    }
+
+    recordFetch(matchSlug);
     setLoading(true);
     try {
       console.log(`[usePlayerConnections] Loading status for match: ${matchSlug}`);
@@ -76,25 +98,35 @@ export const usePlayerConnections = (matchSlug: string | null) => {
   }, [matchSlug]);
 
   useEffect(() => {
-    loadStatus();
+    loadStatus({ force: true });
 
     if (!matchSlug) return;
 
     // Setup WebSocket to listen for connection updates
     const socket: Socket = io();
 
-    socket.on('match:update', (data: { slug?: string; connectionStatus?: ConnectionStatus }) => {
+    const handleUpdate = (data: { slug?: string; connectionStatus?: ConnectionStatus }) => {
       console.log('[usePlayerConnections] WebSocket match:update:', data);
       if (data.slug === matchSlug && data.connectionStatus) {
         console.log('[usePlayerConnections] Updating connection status from WebSocket');
         setStatus(data.connectionStatus);
       }
-    });
+    };
+
+    socket.on('match:update', handleUpdate);
+
+    if (matchSlug) {
+      socket.on(`match:update:${matchSlug}`, handleUpdate);
+    }
 
     return () => {
+      socket.off('match:update', handleUpdate);
+      if (matchSlug) {
+        socket.off(`match:update:${matchSlug}`, handleUpdate);
+      }
       socket.close();
     };
   }, [matchSlug, loadStatus]);
 
-  return { status, loading, refresh: loadStatus };
+  return { status, loading, refresh: () => loadStatus({ force: true }) };
 };

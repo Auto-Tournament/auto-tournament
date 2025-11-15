@@ -12,6 +12,7 @@ import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
+import { normalizeConfigPlayers } from '../utils/playerTransform';
 
 const router = Router();
 
@@ -145,25 +146,6 @@ router.get('/', (req: Request, res: Response) => {
     >(query, params);
 
     // Transform players from dictionary to array for frontend
-    const transformPlayers = (players: Record<string, unknown> | undefined) => {
-      if (!players) return [];
-      return Object.values(players).map((playerData: unknown) => {
-        if (typeof playerData === 'string') {
-          // Old format: {steamId: name}
-          return { steamid: 'unknown', name: playerData };
-        }
-        // New format: {index: {name, steamId}}
-        if (playerData && typeof playerData === 'object' && 'steamId' in playerData && 'name' in playerData) {
-          const player = playerData as { steamId?: string; name?: string };
-          return {
-            steamid: player.steamId || 'unknown',
-            name: player.name || 'Unknown',
-          };
-        }
-        return { steamid: 'unknown', name: 'Unknown' };
-      });
-    };
-
     const matches: MatchListItem[] = rows.map((row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
       const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
@@ -174,13 +156,13 @@ router.get('/', (req: Request, res: Response) => {
         team1: config.team1
           ? {
               ...config.team1,
-              players: transformPlayers(config.team1.players),
+              players: normalizeConfigPlayers(config.team1.players),
             }
           : undefined,
         team2: config.team2
           ? {
               ...config.team2,
-              players: transformPlayers(config.team2.players),
+              players: normalizeConfigPlayers(config.team2.players),
             }
           : undefined,
       };

@@ -65,7 +65,13 @@ export function emitBracketUpdate(bracket: BracketUpdateEvent): void {
 export function emitMatchUpdate(match: MatchUpdateEvent): void {
   if (io) {
     io.emit('match:update', match);
-    log.debug('Emitted match update', { matchId: match.id });
+
+    const slug = (match as { slug?: string }).slug;
+    if (slug) {
+      io.emit(`match:update:${slug}`, match);
+    }
+
+    log.debug('Emitted match update', { matchId: match.id, slug });
   }
 }
 

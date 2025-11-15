@@ -8,7 +8,6 @@ import {
   Chip,
   Stack,
   Alert,
-  Divider,
   Paper,
   Accordion,
   AccordionSummary,
@@ -133,6 +132,10 @@ export function MatchInfoCard({
     expectedPlayersTotal ?? (match.config?.players_per_team ? match.config.players_per_team * 2 : 10);
   const playersReady =
     expectedPlayersTotal !== undefined ? totalConnected >= expectedPlayersTotal : totalConnected > 0;
+  const vetoActions = match.veto?.actions ?? [];
+  const vetoTeam1Name = match.veto?.team1Name || match.team1?.name || 'Team 1';
+  const vetoTeam2Name = match.veto?.team2Name || match.team2?.name || 'Team 2';
+  const showVetoHistory = vetoActions.length > 0;
 
   const handleConnect = () => {
     if (!match.server) return;
@@ -533,6 +536,47 @@ export function MatchInfoCard({
                 );
               })}
             </Stack>
+          )}
+
+          {showVetoHistory && (
+            <Box mt={3}>
+              <Typography variant="subtitle1" fontWeight={600} mb={1}>
+                Veto History
+              </Typography>
+              <Stack spacing={1}>
+                {vetoActions.map((action, idx) => (
+                  <Box
+                    key={`${action.step}-${action.action}-${idx}`}
+                    sx={{
+                      p: 1.5,
+                      borderRadius: 1,
+                      bgcolor: 'action.hover',
+                      border: '1px solid',
+                      borderColor: 'divider',
+                    }}
+                  >
+                    <Typography variant="body2">
+                      <strong>Step {action.step}:</strong>{' '}
+                      {action.team === 'team1' ? vetoTeam1Name : vetoTeam2Name}{' '}
+                      <Chip
+                        label={action.action.toUpperCase()}
+                        size="small"
+                        color={
+                          action.action === 'ban'
+                            ? 'error'
+                            : action.action === 'pick'
+                            ? 'success'
+                            : 'info'
+                        }
+                        sx={{ mx: 1 }}
+                      />
+                      {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
+                      {action.side ? ` (Starting ${action.side})` : ''}
+                    </Typography>
+                  </Box>
+                ))}
+              </Stack>
+            </Box>
           )}
         </CardContent>
       </Card>

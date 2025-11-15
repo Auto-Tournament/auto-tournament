@@ -13,6 +13,10 @@ import { swaggerSpec } from './config/swagger';
 import { log } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
+import { serverService } from './services/serverService';
+import { rconService } from './services/rconService';
+import { settingsService } from './services/settingsService';
+import { getMatchZyWebhookCommands, getMatchZyLoadMatchAuthCommands } from './utils/matchzyRconCommands';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
@@ -285,6 +289,10 @@ const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
   log.server(`WebSocket: Enabled ✓`);
   log.server(`Event logs: data/logs/events/ (30 day retention)`);
   log.server('='.repeat(60));
+
+  bootstrapServerWebhooks().catch((error) => {
+    log.warn('Failed to auto-configure server webhooks on startup', { error });
+  });
 });
 
 // Graceful shutdown
@@ -305,3 +313,51 @@ process.on('SIGTERM', () => {
     process.exit(0);
   });
 });
+
+async function bootstrapServerWebhooks(): Promise<void> {
+  const serverToken = process.env.SERVER_TOKEN;
+  if (!serverToken) {
+    log.warn('SERVER_TOKEN is not set. Skipping automatic webhook bootstrap.');
+    return;
+  }
+
+  let baseUrl: string;
+  try {
+    baseUrl = settingsService.requireWebhookUrl();
+  } catch (error) {
+    log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
+    return;
+  }
+
+  const enabledServers = serverService.getAllServers(true);
+  if (enabledServers.length === 0) {
+    log.info('No enabled servers found for webhook bootstrap.');
+    return;
+  }
+
+  log.info(`Bootstrapping webhooks for ${enabledServers.length} server(s)...`);
+
+  for (const serverInfo of enabledServers) {
+    try {
+      const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
+      if (!statusResult.success) {
+        log.warn(`Skipping ${serverInfo.id}: unable to reach server (${statusResult.error})`);
+        continue;
+      }
+
+      const commands = [
+        ...getMatchZyWebhookCommands(baseUrl, serverToken),
+        ...getMatchZyLoadMatchAuthCommands(serverToken),
+      ];
+
+      for (const cmd of commands) {
+        await rconService.sendCommand(serverInfo.id, cmd);
+      }
+
+      log.webhookConfigured(serverInfo.id, `${baseUrl}/api/events`);
+      log.success(`Auto-configured MatchZy webhook/auth for ${serverInfo.name} (${serverInfo.id})`);
+    } catch (error) {
+      log.warn(`Failed to auto-configure webhook for server ${serverInfo.id}`, { error });
+    }
+  }
+}

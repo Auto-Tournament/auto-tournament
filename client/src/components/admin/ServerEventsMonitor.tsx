@@ -21,7 +21,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
-import type { ServerEvent, ServerEventsResponse, ServerListResponse } from '../../types';
+import type { ServerEvent, ServerEventsResponse } from '../../types';
 
 export const ServerEventsMonitor: React.FC = () => {
   const [servers, setServers] = useState<Array<{ id: string; name: string; events?: number }>>([]);
@@ -104,9 +104,18 @@ export const ServerEventsMonitor: React.FC = () => {
 
   const loadServers = async () => {
     try {
-      const response = await api.get<ServerListResponse>('/api/events/servers/list');
-      if (response.success && response.servers) {
-        setServers(response.servers);
+      const response = await api.get<{
+        success: boolean;
+        servers: Array<{ id: string; name: string }>;
+      }>('/api/servers?enabled=true');
+
+      if (response.success && Array.isArray(response.servers)) {
+        setServers(
+          response.servers.map((server) => ({
+            id: server.id,
+            name: server.name,
+          }))
+        );
       }
     } catch (err) {
       console.error('Failed to load servers:', err);
@@ -206,14 +215,18 @@ export const ServerEventsMonitor: React.FC = () => {
               </IconButton>
             </Tooltip>
             <Tooltip title="Refresh events">
-              <IconButton onClick={loadEvents} disabled={!selectedServerId || loading}>
-                <RefreshIcon />
-              </IconButton>
+              <span>
+                <IconButton onClick={loadEvents} disabled={!selectedServerId || loading}>
+                  <RefreshIcon />
+                </IconButton>
+              </span>
             </Tooltip>
             <Tooltip title="Clear console">
-              <IconButton onClick={handleClear} disabled={events.length === 0}>
-                <ClearIcon />
-              </IconButton>
+              <span>
+                <IconButton onClick={handleClear} disabled={events.length === 0}>
+                  <ClearIcon />
+                </IconButton>
+              </span>
             </Tooltip>
           </Box>
         </Box>

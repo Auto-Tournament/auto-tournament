@@ -22,6 +22,7 @@ export type {
   MatchConnectionStatus,
   MatchLiveStats,
   ConnectedPlayerStatus,
+  TeamMatchVetoSummary,
 } from './team.types';
 
 // Tournament types

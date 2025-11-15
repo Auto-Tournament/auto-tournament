@@ -1,6 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { io } from 'socket.io-client';
-import type { Team, TeamStats, TeamStanding, TeamMatchInfo, TeamMatchHistory } from '../types';
+import type {
+  Team,
+  TeamStats,
+  TeamStanding,
+  TeamMatchInfo,
+  TeamMatchHistory,
+  MatchConnectionStatus,
+  MatchLiveStats,
+} from '../types';
 
 interface UseTeamMatchDataReturn {
   team: Team | null;
@@ -33,6 +41,90 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
   
   // Use ref to track current match slug to avoid infinite loops
   const currentMatchSlugRef = useRef<string | null>(null);
+
+  const mergeConnectionStatus = useCallback((slug: string, status: MatchConnectionStatus) => {
+    setMatch((prev) => {
+      if (!prev || prev.slug !== slug) return prev;
+      if (
+        prev.connectionStatus &&
+        prev.connectionStatus.totalConnected === status.totalConnected &&
+        prev.connectionStatus.lastUpdated >= status.lastUpdated
+      ) {
+        return prev;
+      }
+      return {
+        ...prev,
+        connectionStatus: status,
+      };
+    });
+  }, []);
+
+  const mergeLiveStats = useCallback((slug: string, stats: MatchLiveStats) => {
+    setMatch((prev) => {
+      if (!prev || prev.slug !== slug) return prev;
+      if (prev.liveStats && prev.liveStats.lastEventAt >= stats.lastEventAt) {
+        return prev;
+      }
+      return {
+        ...prev,
+        liveStats: stats,
+      };
+    });
+  }, []);
+
+  const fetchConnectionStatus = useCallback(
+    async (slug: string) => {
+      try {
+        const response = await fetch(`/api/events/connections/${slug}`);
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        if (data?.success) {
+          mergeConnectionStatus(slug, {
+            matchSlug: slug,
+            connectedPlayers: data.connectedPlayers || [],
+            team1Connected: data.team1Connected || 0,
+            team2Connected: data.team2Connected || 0,
+            totalConnected: data.totalConnected || 0,
+            lastUpdated: data.lastUpdated || Date.now(),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch connection status snapshot', err);
+      }
+    },
+    [mergeConnectionStatus]
+  );
+
+  const fetchLiveStats = useCallback(
+    async (slug: string) => {
+      try {
+        const response = await fetch(`/api/events/live/${slug}`);
+        if (!response.ok) {
+          return;
+        }
+        const data = await response.json();
+        if (data?.success) {
+          mergeLiveStats(slug, {
+            matchSlug: slug,
+            team1Score: data.team1Score ?? 0,
+            team2Score: data.team2Score ?? 0,
+            team1SeriesScore: data.team1SeriesScore ?? 0,
+            team2SeriesScore: data.team2SeriesScore ?? 0,
+            roundNumber: data.roundNumber ?? 0,
+            mapNumber: data.mapNumber ?? 0,
+            status: data.status ?? 'warmup',
+            lastEventAt: data.lastEventAt ?? Date.now(),
+            mapName: data.mapName ?? null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to fetch live stats snapshot', err);
+      }
+    },
+    [mergeLiveStats]
+  );
 
   const loadTeamMatch = useCallback(
     async (silent = false) => {
@@ -145,6 +237,14 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     }
   }, [match]);
 
+  const currentMatchSlug = match?.slug ?? null;
+
+  useEffect(() => {
+    if (!currentMatchSlug) return;
+    fetchConnectionStatus(currentMatchSlug);
+    fetchLiveStats(currentMatchSlug);
+  }, [currentMatchSlug, fetchConnectionStatus, fetchLiveStats]);
+
   useEffect(() => {
     if (!teamId) return;
 
@@ -156,13 +256,66 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     // Setup Socket.IO for real-time updates
     const socket = io();
 
-    // Use silent updates for socket events to avoid loading spinner
-    socket.on('match:update', (data: { slug?: string }) => {
-      // Only update if it's relevant to this team's current match
-      if (!data.slug || data.slug === currentMatchSlugRef.current) {
-        loadTeamMatch(true); // Silent update
+    const handleMatchUpdate = (data: {
+      slug?: string;
+      matchSlug?: string;
+      status?: TeamMatchInfo['status'];
+      connectionStatus?: MatchConnectionStatus;
+      liveStats?: MatchLiveStats;
+    }) => {
+      const messageSlug = data.slug || data.matchSlug;
+      const trackedSlug = currentMatchSlugRef.current;
+
+      if (!messageSlug) {
+        return;
       }
-    });
+
+      if (trackedSlug && messageSlug === trackedSlug) {
+        let appliedPatch = false;
+
+        setMatch((prev) => {
+          if (!prev || prev.slug !== messageSlug) {
+            return prev;
+          }
+
+          let changed = false;
+          const updated: TeamMatchInfo = { ...prev };
+
+          if (data.status && data.status !== prev.status) {
+            updated.status = data.status;
+            changed = true;
+          }
+
+          if (data.connectionStatus) {
+            updated.connectionStatus = data.connectionStatus;
+            changed = true;
+          }
+
+          if (data.liveStats) {
+            updated.liveStats = data.liveStats;
+            changed = true;
+          }
+
+          if (changed) {
+            appliedPatch = true;
+            return updated;
+          }
+
+          return prev;
+        });
+
+        if (!appliedPatch) {
+          fetchConnectionStatus(messageSlug);
+          fetchLiveStats(messageSlug);
+        }
+        return;
+      }
+
+      // Ignore updates for other matches
+    };
+
+    // Use silent updates for socket events to avoid loading spinner
+    socket.on('match:update', handleMatchUpdate);
 
     socket.on('bracket:update', () => {
       // Refresh match data when bracket updates (silent)
@@ -190,6 +343,7 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
     });
 
     return () => {
+      socket.off('match:update', handleMatchUpdate);
       socket.close();
     };
     // Only re-run if teamId changes, not on every state update

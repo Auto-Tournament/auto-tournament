@@ -295,10 +295,11 @@ function determinePlayerTeam(
     const config = typeof match.config === 'string' ? JSON.parse(match.config) : match.config;
     const team1Players = config?.team1?.players;
     const team2Players = config?.team2?.players;
-    if (team1Players && Object.prototype.hasOwnProperty.call(team1Players, steamId)) {
+
+    if (playerMatchesCollection(team1Players, steamId)) {
       return 'team1';
     }
-    if (team2Players && Object.prototype.hasOwnProperty.call(team2Players, steamId)) {
+    if (playerMatchesCollection(team2Players, steamId)) {
       return 'team2';
     }
   } catch (error) {
@@ -306,6 +307,45 @@ function determinePlayerTeam(
       error,
       matchId: match.id,
     });
+  }
+
+  return null;
+}
+
+function playerMatchesCollection(collection: unknown, steamId: string): boolean {
+  if (!collection) return false;
+
+  // Handle array of players [{ steamid, name }, ...]
+  if (Array.isArray(collection)) {
+    return collection.some((player) => getSteamIdFromUnknown(player) === steamId);
+  }
+
+  if (typeof collection === 'object') {
+    // Direct key lookup (MatchZy format {steamId: name})
+    if (Object.prototype.hasOwnProperty.call(collection, steamId)) {
+      return true;
+    }
+
+    // Iterate over values (legacy format {0: {steamId, name}})
+    return Object.values(collection).some((value) => getSteamIdFromUnknown(value) === steamId);
+  }
+
+  return false;
+}
+
+function getSteamIdFromUnknown(value: unknown): string | null {
+  if (!value) return null;
+
+  if (typeof value === 'string') {
+    // Some older configs stored steamId directly as a string entry
+    return /^7656\d{13}$/.test(value) ? value : null;
+  }
+
+  if (typeof value === 'object') {
+    const candidate =
+      (value as { steamId?: string; steamid?: string }).steamId ||
+      (value as { steamId?: string; steamid?: string }).steamid;
+    return typeof candidate === 'string' ? candidate : null;
   }
 
   return null;
