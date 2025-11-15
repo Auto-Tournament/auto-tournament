@@ -29,6 +29,22 @@ export function getMatchZyLoadMatchAuthCommands(configToken: string): string[] {
 }
 
 /**
+ * Get RCON commands to configure match report upload endpoint
+ */
+export function getMatchZyReportUploadCommands(
+  baseUrl: string,
+  serverToken: string,
+  serverId: string
+): string[] {
+  const reportEndpoint = `${baseUrl}/api/events/report`;
+  return [
+    `matchzy_report_endpoint "${reportEndpoint}"`,
+    `matchzy_report_server_id "${serverId}"`,
+    `matchzy_report_token "${serverToken}"`,
+  ];
+}
+
+/**
  * Get RCON command to configure MatchZy demo upload
  */
 export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {

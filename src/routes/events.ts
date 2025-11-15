@@ -5,6 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
+import { validateServerToken } from '../middleware/serverAuth';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
@@ -13,7 +14,11 @@ import { emitMatchEvent } from '../services/socketService';
 import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
-import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
+import {
+  refreshConnectionsFromServer,
+  applyMatchReport,
+  type MatchReport,
+} from '../services/connectionSnapshotService';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
 
 const router = Router();
@@ -186,19 +191,92 @@ function findMatchByIdentifier(identifier: string | number): DbMatchRow | null {
 }
 
 /**
+ * POST /api/events/report
+ * Allows the server plugin to push a full match report directly via HTTP
+ */
+router.post('/report', validateServerToken, async (req: Request, res: Response) => {
+  try {
+    const { serverId, matchSlug, report } = req.body ?? {};
+
+    if (!serverId || !report) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId and report are required',
+      });
+    }
+
+    let match: DbMatchRow | null = null;
+    if (matchSlug !== undefined && matchSlug !== null) {
+      match = findMatchByIdentifier(matchSlug);
+    }
+    if (!match) {
+      match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId]) ?? null;
+    }
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match not found for provided identifiers',
+      });
+    }
+
+    let parsedReport: MatchReport;
+    try {
+      parsedReport =
+        typeof report === 'string' ? (JSON.parse(report) as MatchReport) : (report as MatchReport);
+    } catch (error) {
+      return res.status(400).json({
+        success: false,
+        error: 'Report must be valid JSON',
+      });
+    }
+
+    if (!parsedReport || typeof parsedReport !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: 'Report payload is invalid',
+      });
+    }
+
+    applyMatchReport(match.slug, parsedReport);
+
+    log.info('[MatchReport] Report ingested via plugin POST', {
+      matchSlug: match.slug,
+      serverId,
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('Failed to ingest match report via plugin POST', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to ingest match report',
+    });
+  }
+});
+
+/**
  * GET /api/events/connections/:matchSlug
  * Get player connection status for a match (PUBLIC - for team pages)
  */
+const CONNECTION_SNAPSHOT_TTL_MS = 5000;
+
 router.get('/connections/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
+    const force = req.query.force === 'true';
 
-    await refreshConnectionsFromServer(matchSlug);
+    const existingStatus = playerConnectionService.getStatus(matchSlug);
+    const isStale =
+      !existingStatus || Date.now() - (existingStatus.lastUpdated ?? 0) > CONNECTION_SNAPSHOT_TTL_MS;
 
-    const status = playerConnectionService.getStatus(matchSlug);
+    if (force || isStale) {
+      await refreshConnectionsFromServer(matchSlug, { force });
+    }
+
+    const status = playerConnectionService.getStatus(matchSlug) ?? existingStatus;
 
     if (!status) {
-      // Return empty status if match not found
       return res.json({
         success: true,
         matchSlug,

@@ -6,7 +6,7 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
 
-type MatchReport = {
+export type MatchReport = {
   match?: {
     matchId?: number;
     slug?: string;
@@ -65,34 +65,72 @@ type MatchReportConnection = {
 };
 
 const MATCH_REPORT_COMMANDS = ['matchzy_match_report', 'css_match_report'];
+const REFRESH_TTL_MS = 5000;
+const REPORT_ERROR_LOG_COOLDOWN_MS = 30000;
 
-export async function refreshConnectionsFromServer(matchSlug: string): Promise<void> {
-  try {
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
-    if (!match || !match.server_id) {
-      return;
-    }
+type RefreshState = {
+  lastRun: number;
+  promise: Promise<void> | null;
+};
 
-    const report = await fetchMatchReport(match.server_id);
-    if (!report) {
-      return;
-    }
+const refreshState = new Map<string, RefreshState>();
+const reportErrorLogState = new Map<string, number>();
 
-    const connectedPlayers = extractConnectedPlayers(report, match.slug);
-    playerConnectionService.setConnections(match.slug, connectedPlayers);
-    log.info('[Connections] Parsed players from match report', {
-      matchSlug,
-      connectedPlayers,
-    });
+export async function refreshConnectionsFromServer(
+  matchSlug: string,
+  options?: { force?: boolean }
+): Promise<void> {
+  const force = options?.force ?? false;
+  const now = Date.now();
+  const state = refreshState.get(matchSlug) ?? { lastRun: 0, promise: null };
 
-    updateLiveStatsFromReport(match.slug, report);
-  } catch (error) {
-    log.error(`Failed to refresh connections via match report for match ${matchSlug}`, error);
+  if (state.promise) {
+    log.debug('[Connections] Awaiting in-flight refresh', { matchSlug });
+    return state.promise;
   }
+
+  if (!force && now - state.lastRun < REFRESH_TTL_MS) {
+    log.debug('[Connections] Skipping refresh (recent)', {
+      matchSlug,
+      ageMs: now - state.lastRun,
+    });
+    return;
+  }
+
+  const refreshPromise = (async () => {
+    try {
+      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      if (!match || !match.server_id) {
+        return;
+      }
+
+      const report = await fetchMatchReport(match.server_id);
+      if (!report) {
+        return;
+      }
+
+      applyMatchReport(match.slug, report);
+    } catch (error) {
+      log.error(`Failed to refresh connections via match report for match ${matchSlug}`, error);
+    } finally {
+      refreshState.set(matchSlug, {
+        lastRun: Date.now(),
+        promise: null,
+      });
+    }
+  })();
+
+  refreshState.set(matchSlug, {
+    lastRun: state.lastRun,
+    promise: refreshPromise,
+  });
+
+  return refreshPromise;
 }
 
-async function fetchMatchReport(serverId: string): Promise<MatchReport | null> {
+export async function fetchMatchReport(serverId: string): Promise<MatchReport | null> {
   let lastError: unknown = null;
+  let lastErrorDetails: Record<string, unknown> | null = null;
 
   for (const command of MATCH_REPORT_COMMANDS) {
     try {
@@ -117,14 +155,61 @@ async function fetchMatchReport(serverId: string): Promise<MatchReport | null> {
       }
 
       const jsonPayload = result.response.slice(jsonStart).trim();
-      return JSON.parse(jsonPayload) as MatchReport;
+
+      try {
+        return JSON.parse(jsonPayload) as MatchReport;
+      } catch (parseError) {
+        lastError = parseError;
+        lastErrorDetails = {
+          reason: 'Invalid JSON payload',
+          length: jsonPayload.length,
+          startsWith: jsonPayload.slice(0, 40),
+          endsWith: jsonPayload.slice(-40),
+        };
+        log.warn('[MatchReport] Invalid JSON payload received', {
+          serverId,
+          command,
+          ...lastErrorDetails,
+        });
+        continue;
+      }
     } catch (error) {
       lastError = error;
+      lastErrorDetails = {
+        reason: 'RCON command failed',
+        command,
+      };
     }
   }
 
-  log.error('[MatchReport] Unable to retrieve match report', { serverId, lastError });
+  const now = Date.now();
+  const lastLoggedAt = reportErrorLogState.get(serverId) ?? 0;
+  if (now - lastLoggedAt > REPORT_ERROR_LOG_COOLDOWN_MS) {
+    log.error('[MatchReport] Unable to retrieve match report', {
+      serverId,
+      lastError,
+      lastErrorDetails,
+    });
+    reportErrorLogState.set(serverId, now);
+  } else {
+    log.debug('[MatchReport] Suppressed duplicate error', {
+      serverId,
+      lastErrorDetails,
+    });
+  }
+
   return null;
+}
+
+export function applyMatchReport(matchSlug: string, report: MatchReport): void {
+  const connectedPlayers = extractConnectedPlayers(report, matchSlug);
+  playerConnectionService.setConnections(matchSlug, connectedPlayers);
+  log.info('[Connections] Parsed players from match report', {
+    matchSlug,
+    connectedPlayers,
+  });
+
+  updateLiveStatsFromReport(matchSlug, report);
 }
 
 function extractConnectedPlayers(report: MatchReport, matchSlug: string): ConnectedPlayer[] {

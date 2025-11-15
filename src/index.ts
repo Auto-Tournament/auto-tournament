@@ -16,7 +16,11 @@ import { initializeSocket } from './services/socketService';
 import { serverService } from './services/serverService';
 import { rconService } from './services/rconService';
 import { settingsService } from './services/settingsService';
-import { getMatchZyWebhookCommands, getMatchZyLoadMatchAuthCommands } from './utils/matchzyRconCommands';
+import {
+  getMatchZyWebhookCommands,
+  getMatchZyLoadMatchAuthCommands,
+  getMatchZyReportUploadCommands,
+} from './utils/matchzyRconCommands';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
@@ -348,6 +352,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
       const commands = [
         ...getMatchZyWebhookCommands(baseUrl, serverToken),
         ...getMatchZyLoadMatchAuthCommands(serverToken),
+        ...getMatchZyReportUploadCommands(baseUrl, serverToken, serverInfo.id),
       ];
 
       for (const cmd of commands) {
