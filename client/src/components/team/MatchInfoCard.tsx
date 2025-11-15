@@ -100,7 +100,6 @@ export function MatchInfoCard({
   const mapRoundsTeam2 = liveStats?.team2Score ?? 0;
   const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
   const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
-  const roundNumber = liveStats?.roundNumber ?? null;
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
   const totalMaps =
     liveStats?.totalMaps ??
@@ -324,11 +323,6 @@ export function MatchInfoCard({
                 {getRoundLabel(match.round)}
               </Typography>
             </Box>
-            <Chip
-              label={getStatusLabel(match.status)}
-              color={getStatusColor(match.status)}
-              sx={{ fontWeight: 600, fontSize: '0.9rem', px: 2 }}
-            />
           </Box>
 
           {/* VS Display */}
@@ -341,20 +335,23 @@ export function MatchInfoCard({
             }}
           >
             <Box display="flex" justifyContent="space-between" alignItems="center">
-              <Box textAlign="center" flex={1}>
-                <Typography variant="h4" fontWeight={700} color="primary.main" gutterBottom>
+              <Stack spacing={1} alignItems="center" flex={1}>
+                <Typography variant="h4" fontWeight={700} color="primary.main">
                   {team?.name}
                 </Typography>
-                <Typography variant="h2" fontWeight={800} color="primary.main">
+                <Typography variant="h1" fontWeight={900} color="primary.main">
                   {mapRoundsTeam1}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" display="block">
                   Map Rounds
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Series Maps Won: {seriesWinsTeam1}
-                </Typography>
-              </Box>
+                <Chip
+                  size="small"
+                  label={`Series: ${seriesWinsTeam1}`}
+                  color="primary"
+                  variant="outlined"
+                />
+              </Stack>
               <Stack spacing={1} alignItems="center" mx={3}>
                 <Typography variant="h3" color="text.secondary" fontWeight={700}>
                   VS
@@ -367,36 +364,24 @@ export function MatchInfoCard({
                     sx={{ fontWeight: 600 }}
                   />
                 )}
-                {mapDisplayNumber && (
-                  <Typography variant="caption" color="text.secondary">
-                    Map {mapDisplayNumber}/{totalMaps}
-                  </Typography>
-                )}
-                {currentMapLabel && (
-                  <Typography variant="caption" color="text.secondary">
-                    {currentMapLabel}
-                  </Typography>
-                )}
-                {liveStats && (
-                  <Typography variant="caption" color="text.secondary">
-                    {roundNumber !== null ? `Round ${roundNumber}` : 'Live'}
-                  </Typography>
-                )}
               </Stack>
-              <Box textAlign="center" flex={1}>
-                <Typography variant="h4" fontWeight={700} color="error.main" gutterBottom>
+              <Stack spacing={1} alignItems="center" flex={1}>
+                <Typography variant="h4" fontWeight={700} color="error.main">
                   {match.opponent?.name || 'TBD'}
                 </Typography>
-                <Typography variant="h2" fontWeight={800} color="error.main">
+                <Typography variant="h1" fontWeight={900} color="error.main">
                   {mapRoundsTeam2}
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
+                <Typography variant="body2" color="text.secondary" display="block">
                   Map Rounds
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Series Maps Won: {seriesWinsTeam2}
-                </Typography>
-              </Box>
+                <Chip
+                  size="small"
+                  label={`Series: ${seriesWinsTeam2}`}
+                  color="error"
+                  variant="outlined"
+                />
+              </Stack>
             </Box>
           </Paper>
 
@@ -647,44 +632,48 @@ export function MatchInfoCard({
           )}
 
           {showVetoHistory && (
-            <Box mt={3}>
-              <Typography variant="subtitle1" fontWeight={600} mb={1}>
-                Veto History
-              </Typography>
-              <Stack spacing={1}>
-                {vetoActions.map((action, idx) => (
-                  <Box
-                    key={`${action.step}-${action.action}-${idx}`}
-                    sx={{
-                      p: 1.5,
-                      borderRadius: 1,
-                      bgcolor: 'action.hover',
-                      border: '1px solid',
-                      borderColor: 'divider',
-                    }}
-                  >
-                    <Typography variant="body2">
-                      <strong>Step {action.step}:</strong>{' '}
-                      {action.team === 'team1' ? vetoTeam1Name : vetoTeam2Name}{' '}
-                      <Chip
-                        label={action.action.toUpperCase()}
-                        size="small"
-                        color={
-                          action.action === 'ban'
-                            ? 'error'
-                            : action.action === 'pick'
-                            ? 'success'
-                            : 'info'
-                        }
-                        sx={{ mx: 1 }}
-                      />
-                      {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
-                      {action.side ? ` (Starting ${action.side})` : ''}
-                    </Typography>
-                  </Box>
-                ))}
-              </Stack>
-            </Box>
+            <Accordion sx={{ mt: 3 }}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  Veto History
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Stack spacing={1}>
+                  {vetoActions.map((action, idx) => (
+                    <Box
+                      key={`${action.step}-${action.action}-${idx}`}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 1,
+                        bgcolor: 'action.hover',
+                        border: '1px solid',
+                        borderColor: 'divider',
+                      }}
+                    >
+                      <Typography variant="body2">
+                        <strong>Step {action.step}:</strong>{' '}
+                        {action.team === 'team1' ? vetoTeam1Name : vetoTeam2Name}{' '}
+                        <Chip
+                          label={action.action.toUpperCase()}
+                          size="small"
+                          color={
+                            action.action === 'ban'
+                              ? 'error'
+                              : action.action === 'pick'
+                              ? 'success'
+                              : 'info'
+                          }
+                          sx={{ mx: 1 }}
+                        />
+                        {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
+                        {action.side ? ` (Starting ${action.side})` : ''}
+                      </Typography>
+                    </Box>
+                  ))}
+                </Stack>
+              </AccordionDetails>
+            </Accordion>
           )}
         </CardContent>
       </Card>

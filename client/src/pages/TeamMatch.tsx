@@ -19,6 +19,7 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { TeamStatsCard } from '../components/team/TeamStatsCard';
 import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
+import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import type { Team, VetoState } from '../types';
 
@@ -61,8 +62,8 @@ export default function TeamMatch() {
   const [matchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
 
   const previousMatchStatus = useRef<string | null>(null);
-  const previousVetoAvailable = useRef<boolean>(false);
-  const previousServerAssigned = useRef<boolean>(false);
+  const previousVetoReady = useRef<boolean>(false);
+  const previousServerReady = useRef<boolean>(false);
 
   // Custom hooks for data and sound
   const {
@@ -77,6 +78,8 @@ export default function TeamMatch() {
     tournamentStatus,
     loadTeamMatch,
   } = useTeamMatchData(teamId);
+  const { tournament } = useTournamentStatus();
+  const tournamentName = tournament?.name ?? null;
 
   // Set dynamic page title
   useEffect(() => {
@@ -91,30 +94,31 @@ export default function TeamMatch() {
   useEffect(() => {
     if (!match) return;
 
-    const isVetoAvailable =
+    const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
+
+    const vetoReady =
       tournamentStatus === 'in_progress' &&
-      match.status === 'ready' &&
+      match.status === 'pending' &&
       !vetoCompleted &&
-      ['bo1', 'bo3', 'bo5'].includes(matchFormat);
+      isEligibleFormat &&
+      match.veto?.status !== 'completed';
 
-    const hasServerAssigned = Boolean(match.server);
+    const serverReady =
+      Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
 
-    // Play sound when veto becomes available (tournament started)
-    if (isVetoAvailable && !previousVetoAvailable.current) {
+    if (vetoReady && !previousVetoReady.current) {
       soundNotification.playNotification();
       console.log('🔔 Notification: Veto is now available!');
     }
 
-    // Play sound when server is assigned (ready to connect)
-    if (hasServerAssigned && !previousServerAssigned.current && match.status === 'loaded') {
+    if (serverReady && !previousServerReady.current) {
       soundNotification.playNotification();
       console.log('🔔 Notification: Server is ready, players can connect!');
     }
 
-    // Update refs
     previousMatchStatus.current = match.status;
-    previousVetoAvailable.current = isVetoAvailable;
-    previousServerAssigned.current = hasServerAssigned;
+    previousVetoReady.current = vetoReady;
+    previousServerReady.current = serverReady;
   }, [match, tournamentStatus, vetoCompleted, matchFormat]);
 
   // Check if match format is in veto debug info
@@ -205,7 +209,6 @@ export default function TeamMatch() {
             <TeamMatchHistoryCard matchHistory={matchHistory} />
           </Stack>
         </Container>
-
       </Box>
     );
   }
@@ -215,6 +218,17 @@ export default function TeamMatch() {
     <Box minHeight="100vh" bgcolor="background.default" py={6}>
       <Container maxWidth="md">
         <Stack spacing={3}>
+          {tournamentName && (
+            <Typography
+              component="h1"
+              variant="h3"
+              fontWeight={800}
+              textAlign="center"
+              color="text.primary"
+            >
+              {tournamentName}
+            </Typography>
+          )}
           <TeamSoundControls team={team} />
 
           {match && (
@@ -235,7 +249,6 @@ export default function TeamMatch() {
           <TeamMatchHistoryCard matchHistory={matchHistory} />
         </Stack>
       </Container>
-
     </Box>
   );
 }
