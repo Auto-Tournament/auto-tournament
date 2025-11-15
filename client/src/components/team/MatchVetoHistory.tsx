@@ -16,7 +16,7 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
   }
 
   return (
-    <Accordion sx={{ mt: 3 }}>
+    <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="subtitle1" fontWeight={600}>
           Veto History

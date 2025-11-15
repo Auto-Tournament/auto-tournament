@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -102,8 +102,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   const mapRoundsTeam1 = liveStats?.team1Score ?? match.team1Score ?? 0;
   const mapRoundsTeam2 = liveStats?.team2Score ?? match.team2Score ?? 0;
-  const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
-  const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
   const activeMapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
   const mapList = Array.isArray(match.config?.maplist) ? match.config.maplist : [];
   const configMaps =
@@ -132,6 +130,28 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     match.config?.num_maps ??
     (mapList.length > 0 ? mapList.length : match.mapResults?.length) ??
     undefined;
+  const derivedSeriesWins = useMemo(() => {
+    if (match.mapResults && match.mapResults.length > 0) {
+      return match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) {
+            acc.team1 += 1;
+          } else if (result.team2Score > result.team1Score) {
+            acc.team2 += 1;
+          }
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+    }
+    return {
+      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
+      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
+    };
+  }, [match.mapResults, liveStats, match.team1Score, match.team2Score]);
+
+  const seriesWinsTeam1 = derivedSeriesWins.team1;
+  const seriesWinsTeam2 = derivedSeriesWins.team2;
   const livePlayerStats = liveStats?.playerStats ?? null;
   const normalizedTeam1Players = livePlayerStats?.team1?.length
     ? livePlayerStats.team1.map((player) => ({
@@ -337,7 +357,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
                       }}
                     >
-                      {mapRoundsTeam1}
+                      {seriesWinsTeam1}
                     </Typography>
                     <Typography variant="h3" color="text.disabled">
                       -
@@ -350,26 +370,40 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
                       }}
                     >
-                      {mapRoundsTeam2}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" mt={1}>
-                    Map Rounds
-                  </Typography>
-                  <Box display="flex" alignItems="center" justifyContent="center" gap={1} mt={0.5}>
-                    <Typography variant="caption" color="text.secondary">
-                      Series Maps
-                    </Typography>
-                    <Typography variant="body2" fontWeight={600}>
-                      {seriesWinsTeam1}
-                    </Typography>
-                    <Typography variant="body2" color="text.disabled">
-                      -
-                    </Typography>
-                    <Typography variant="body2" fontWeight={600}>
                       {seriesWinsTeam2}
                     </Typography>
                   </Box>
+                  <Typography variant="caption" color="text.secondary" mt={1}>
+                    Series Maps Won
+                  </Typography>
+                  <Box display="flex" alignItems="center" justifyContent="center" gap={2} mt={1}>
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      sx={{
+                        color:
+                          match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
+                      }}
+                    >
+                      {mapRoundsTeam1}
+                    </Typography>
+                    <Typography variant="h5" color="text.disabled">
+                      -
+                    </Typography>
+                    <Typography
+                      variant="h4"
+                      fontWeight={700}
+                      sx={{
+                        color:
+                          match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
+                      }}
+                    >
+                      {mapRoundsTeam2}
+                    </Typography>
+                  </Box>
+                  <Typography variant="caption" color="text.secondary">
+                    Map Rounds
+                  </Typography>
                   {currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {`Map ${activeMapNumber !== null ? activeMapNumber + 1 : ''}${
@@ -624,7 +658,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </>
             )}
 
-            <Accordion defaultExpanded sx={{ mt: 2 }}>
+            <Accordion defaultExpanded>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Box display="flex" alignItems="center" gap={1}>
                   <MapIcon color="primary" />

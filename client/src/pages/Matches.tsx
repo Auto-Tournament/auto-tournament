@@ -62,52 +62,52 @@ export default function Matches() {
     newSocket.on(
       'match:update',
       (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
+        const matchSlug = 'slug' in data ? data.slug : undefined;
+        const matchId = 'id' in data ? data.id : undefined;
+
         // Handle connection status updates
         if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
           setConnectionCounts((prev) => {
             const updated = new Map(prev);
-            updated.set(data.slug!, data.connectionStatus!.totalConnected);
+            updated.set(matchSlug!, data.connectionStatus!.totalConnected);
             return updated;
           });
           return;
         }
 
-        // Handle regular match updates
         const match = data as Match;
+
+        const matchIdOrSlugEquals = (m: Match) =>
+          (match.id !== undefined && m.id === match.id) ||
+          (!!match.slug && !!m.slug && m.slug === match.slug);
+
+        const upsertMatch = (list: Match[], updatedMatch: Match) => {
+          const index = list.findIndex(matchIdOrSlugEquals);
+          if (index !== -1) {
+            const updated = [...list];
+            updated[index] = { ...updated[index], ...updatedMatch };
+            return updated;
+          }
+          return [...list, updatedMatch];
+        };
+
+        const removeMatch = (list: Match[], updatedMatch: Match) =>
+          list.filter((m) => !matchIdOrSlugEquals(m));
+
         if (match.status === 'pending' || match.status === 'ready') {
-          // Update upcoming matches
-          setUpcomingMatches((prev) => {
-            const index = prev.findIndex((m) => m.id === match.id);
-            if (index !== -1) {
-              const updated = [...prev];
-              updated[index] = match;
-              return updated;
-            }
-            return [...prev, match];
-          });
-          // Remove from live if it was there
-          setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
+          setUpcomingMatches((prev) => upsertMatch(prev, match));
+          setLiveMatches((prev) => removeMatch(prev, match));
         } else if (match.status === 'live' || match.status === 'loaded') {
-          // Remove from upcoming
-          setUpcomingMatches((prev) => prev.filter((m) => m.id !== match.id));
-          // Add to live
-          setLiveMatches((prev) => {
-            const index = prev.findIndex((m) => m.id === match.id);
-            if (index !== -1) {
-              const updated = [...prev];
-              updated[index] = match;
-              return updated;
-            }
-            return [...prev, match];
-          });
+          setUpcomingMatches((prev) => removeMatch(prev, match));
+          setLiveMatches((prev) => upsertMatch(prev, match));
         } else if (match.status === 'completed') {
-          // Remove from upcoming and live
-          setUpcomingMatches((prev) => prev.filter((m) => m.id !== match.id));
-          setLiveMatches((prev) => prev.filter((m) => m.id !== match.id));
-          // Add to history
+          setUpcomingMatches((prev) => removeMatch(prev, match));
+          setLiveMatches((prev) => removeMatch(prev, match));
           setMatchHistory((prev) => {
-            const exists = prev.find((m) => m.id === match.id);
-            if (exists) return prev;
+            const exists = prev.some(matchIdOrSlugEquals);
+            if (exists) {
+              return prev.map((m) => (matchIdOrSlugEquals(m) ? { ...m, ...match } : m));
+            }
             return [match, ...prev];
           });
         }

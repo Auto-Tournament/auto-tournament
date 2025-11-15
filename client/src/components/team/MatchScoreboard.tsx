@@ -28,7 +28,6 @@ export function MatchScoreboard({
       variant="outlined"
       sx={{
         p: 4,
-        mb: 3,
         background: 'linear-gradient(135deg, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.05) 100%)',
       }}
     >
@@ -38,17 +37,17 @@ export function MatchScoreboard({
             {leftName}
           </Typography>
           <Typography variant="h1" fontWeight={900} color="primary.main">
+            {leftSeriesWins}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Series Maps Won
+          </Typography>
+          <Typography variant="h4" fontWeight={700} color="primary.main">
             {leftMapRounds}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Map Rounds
           </Typography>
-          <Chip
-            size="small"
-            label={`Series: ${leftSeriesWins}`}
-            color="primary"
-            variant="outlined"
-          />
         </Stack>
         <Stack spacing={1} alignItems="center" mx={3}>
           <Typography variant="h3" color="text.secondary" fontWeight={700}>
@@ -68,12 +67,17 @@ export function MatchScoreboard({
             {rightName || 'TBD'}
           </Typography>
           <Typography variant="h1" fontWeight={900} color="error.main">
+            {rightSeriesWins}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            Series Maps Won
+          </Typography>
+          <Typography variant="h4" fontWeight={700} color="error.main">
             {rightMapRounds}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             Map Rounds
           </Typography>
-          <Chip size="small" label={`Series: ${rightSeriesWins}`} color="error" variant="outlined" />
         </Stack>
       </Box>
     </Paper>

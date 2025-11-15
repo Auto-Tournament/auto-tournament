@@ -1,10 +1,10 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
-import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
+import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, MatchMapResult } from '../../types';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchRosterAccordion } from './MatchRosterAccordion';
@@ -89,6 +89,26 @@ export function MatchInfoCard({
   const playerStats = liveStats?.playerStats ?? null;
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
+
+  const deriveSeriesWins = useMemo(() => {
+    if (match.mapResults && match.mapResults.length > 0) {
+      return match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) {
+            acc.team1 += 1;
+          } else if (result.team2Score > result.team1Score) {
+            acc.team2 += 1;
+          }
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+    }
+    return {
+      team1: liveStats?.team1SeriesScore ?? 0,
+      team2: liveStats?.team2SeriesScore ?? 0,
+    };
+  }, [match.mapResults, liveStats]);
 
   const handleConnect = () => {
     if (!match.server) return;
@@ -198,67 +218,65 @@ export function MatchInfoCard({
     return (
       <Card>
         <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-            <Box>
-              <Typography variant="h5" fontWeight={600}>
-                Match #{match.matchNumber}
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {getRoundLabel(match.round)}
-              </Typography>
+          <Box display="flex" flexDirection="column" gap={3}>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Box>
+                <Typography variant="h5" fontWeight={600}>
+                  Match #{match.matchNumber}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {getRoundLabel(match.round)}
+                </Typography>
+              </Box>
             </Box>
+
+            <MatchScoreboard
+              leftName={team?.name}
+              rightName={match.opponent?.name}
+              leftMapRounds={mapRoundsTeam1}
+              rightMapRounds={mapRoundsTeam2}
+              leftSeriesWins={deriveSeriesWins.team1}
+              rightSeriesWins={deriveSeriesWins.team2}
+              liveStatusDisplay={liveStatusDisplay}
+            />
+
+            {match.status !== 'live' && (
+              <Alert severity={playersReady ? 'success' : 'info'} icon={<PeopleIcon fontSize="small" />}>
+                {playersReady
+                  ? 'All required players are connected. Match can start.'
+                  : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
+              </Alert>
+            )}
+
+            <MatchServerPanel
+              server={match.server}
+              currentMapData={currentMapData}
+              connected={connected}
+              copied={copied}
+              onConnect={handleConnect}
+              onCopy={handleCopyIP}
+            />
+
+            {hasPlayerStats && playerStats && (
+              <MatchPlayerPerformance
+                playerStats={playerStats}
+                teamName={team?.name}
+                opponentName={match.opponent?.name}
+              />
+            )}
+
+            <MatchMapChips match={match} currentMapNumber={mapNumber} />
+
+            <MatchRosterAccordion team={team} match={match} />
+
+            {showVetoHistory && (
+              <MatchVetoHistory
+                actions={vetoActions}
+                team1Name={vetoTeam1Name}
+                team2Name={vetoTeam2Name}
+              />
+            )}
           </Box>
-
-          <MatchScoreboard
-            leftName={team?.name}
-            rightName={match.opponent?.name}
-            leftMapRounds={mapRoundsTeam1}
-            rightMapRounds={mapRoundsTeam2}
-            leftSeriesWins={seriesWinsTeam1}
-            rightSeriesWins={seriesWinsTeam2}
-            liveStatusDisplay={liveStatusDisplay}
-          />
-
-          {match.status !== 'live' && (
-            <Alert
-              severity={playersReady ? 'success' : 'info'}
-              icon={<PeopleIcon fontSize="small" />}
-              sx={{ mb: 3 }}
-            >
-              {playersReady
-                ? 'All required players are connected. Match can start.'
-                : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
-            </Alert>
-          )}
-
-          <MatchServerPanel
-            server={match.server}
-            currentMapData={currentMapData}
-            connected={connected}
-            copied={copied}
-            onConnect={handleConnect}
-            onCopy={handleCopyIP}
-          />
-
-          {hasPlayerStats && playerStats && (
-            <MatchPlayerPerformance
-              playerStats={playerStats}
-              teamName={team?.name}
-              opponentName={match.opponent?.name}
-            />
-          )}
-
-          <MatchMapChips match={match} currentMapNumber={mapNumber} />
-
-          <MatchRosterAccordion team={team} match={match} />
-
-          {showVetoHistory && (
-            <MatchVetoHistory
-              actions={vetoActions}
-              team1Name={vetoTeam1Name}
-              team2Name={vetoTeam2Name}
-            />
-          )}
         </CardContent>
       </Card>
     );

@@ -87,7 +87,7 @@ export function MatchPlayerPerformance({
   }
 
   return (
-    <Box mt={3}>
+    <Box>
       <Typography variant="h6" fontWeight={600} mb={1}>
         Player Performance
       </Typography>

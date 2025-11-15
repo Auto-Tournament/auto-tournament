@@ -22,7 +22,7 @@ interface MatchRosterAccordionProps {
 
 export function MatchRosterAccordion({ team, match }: MatchRosterAccordionProps) {
   return (
-    <Accordion sx={{ mb: 3 }}>
+    <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box display="flex" alignItems="center" gap={1}>
           <PeopleIcon color="primary" />

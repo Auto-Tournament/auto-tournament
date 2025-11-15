@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Stack, Typography, Alert } from '@mui/material';
+import { Box, Button, Typography, Alert } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import type { TeamMatchInfo } from '../../types';
@@ -24,21 +24,20 @@ export function MatchServerPanel({
 }: MatchServerPanelProps) {
   if (!server) {
     return (
-      <Alert severity="info" sx={{ mb: 3 }}>
+      <Alert severity="info">
         Server will be assigned when the match is ready. Please check back soon.
       </Alert>
     );
   }
 
   return (
-    <>
+    <Box display="flex" flexDirection="column" gap={2}>
       {currentMapData && (
         <Box
           sx={{
             position: 'relative',
             width: '100%',
             height: 180,
-            mb: 2,
             borderRadius: 2,
             overflow: 'hidden',
           }}
@@ -112,7 +111,7 @@ export function MatchServerPanel({
         </Box>
       )}
 
-      <Stack spacing={2} mb={3}>
+      <Box display="flex" flexDirection="column" gap={2}>
         <Button
           variant="contained"
           size="large"
@@ -134,8 +133,8 @@ export function MatchServerPanel({
         >
           {copied ? '✓ Copied!' : 'Copy Console Command'}
         </Button>
-      </Stack>
-    </>
+      </Box>
+    </Box>
   );
 }
 
