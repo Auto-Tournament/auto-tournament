@@ -129,6 +129,7 @@ export interface MatchListItem {
   currentMap?: string | null;
   mapNumber?: number;
   mapResults?: MatchMapResult[];
+  maps?: string[];
 }
 
 /**

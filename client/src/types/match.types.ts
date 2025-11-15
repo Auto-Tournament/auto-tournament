@@ -31,6 +31,7 @@ export interface Match {
   config?: MatchConfig;
   vetoCompleted?: boolean;
   mapResults?: MatchMapResult[];
+  maps?: string[];
 }
 
 export interface MatchConfigPlayer {

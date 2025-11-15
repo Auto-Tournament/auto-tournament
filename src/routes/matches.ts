@@ -207,11 +207,34 @@ router.get('/', (req: Request, res: Response) => {
         vetoCompleted: vetoState?.status === 'completed',
         currentMap: row.current_map ?? undefined,
         mapNumber: typeof row.map_number === 'number' ? row.map_number : undefined,
+        maps: undefined,
       };
 
       const mapResults = getMapResults(row.slug);
       if (mapResults.length > 0) {
         match.mapResults = mapResults;
+      }
+
+      if (Array.isArray(vetoState?.pickedMaps) && vetoState.pickedMaps.length > 0) {
+        const orderedPickedMaps = [...vetoState.pickedMaps].sort(
+          (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+            (a.mapNumber || 0) - (b.mapNumber || 0)
+        );
+        const pickedMapNames = orderedPickedMaps
+          .map((m: { mapName?: string | null }) => m.mapName)
+          .filter((name): name is string => Boolean(name));
+        if (pickedMapNames.length > 0) {
+          match.maps = pickedMapNames;
+        }
+      }
+
+      if (!match.maps && mapResults.length > 0) {
+        const resultsMaps = mapResults
+          .map((result) => result.mapName)
+          .filter((name): name is string => Boolean(name));
+        if (resultsMaps.length > 0) {
+          match.maps = resultsMaps;
+        }
       }
 
       // Enrich match with player stats and scores from events

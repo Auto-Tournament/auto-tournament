@@ -7,7 +7,6 @@ import {
   Typography,
   IconButton,
   Stack,
-  Chip,
   Divider,
   Grid,
   Card,
@@ -17,6 +16,7 @@ import {
   Accordion,
   AccordionSummary,
   AccordionDetails,
+  Chip,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -45,6 +45,7 @@ import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { getPhaseDisplay } from '../../types/matchPhase.types';
 import type { Match } from '../../types';
 import { useTournamentStatus } from '../../hooks/useTournamentStatus';
+import { MapChipList } from '../match/MapChipList';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -104,8 +105,20 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
   const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
   const activeMapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
-  const mapList =
-    (match.config?.maplist && match.config?.maplist.length > 0 ? match.config?.maplist : []) ?? [];
+  const mapList = Array.isArray(match.config?.maplist) ? match.config.maplist : [];
+  const configMaps =
+    Array.isArray(match.config?.maplist) && match.config?.maplist.length > 0
+      ? (match.config.maplist.filter(Boolean) as string[])
+      : [];
+  const mapResultsFallback =
+    match.mapResults?.map((result) => result.mapName).filter((name): name is string => Boolean(name)) ??
+    [];
+  const mapsToShow =
+    configMaps.length > 0
+      ? configMaps
+      : Array.isArray(match.maps) && match.maps.length > 0
+      ? match.maps
+      : mapResultsFallback;
   const activeMapKey =
     liveStats?.mapName ||
     match.currentMap ||
@@ -621,31 +634,13 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 </Box>
               </AccordionSummary>
               <AccordionDetails>
-                {mapList.length > 0 ? (
-                  <Box display="flex" flexWrap="wrap" gap={1}>
-                    {mapList.map((map, idx) => {
-                      const displayName = getMapDisplayName(map) || map;
-                      const labelBase = `${idx + 1}. ${displayName}`;
-                      const result = match.mapResults?.find((mr) => mr.mapNumber === idx);
-                      let chipLabel = labelBase;
-                      let chipColor: 'default' | 'success' | 'error' | 'secondary' = 'default';
-                      if (result) {
-                        chipLabel = `${labelBase} • ${result.team1Score}-${result.team2Score}`;
-                        chipColor = result.team1Score > result.team2Score ? 'success' : 'error';
-                      } else if (activeMapNumber === idx && currentMapLabel) {
-                        chipLabel = `${labelBase} • Live`;
-                        chipColor = 'secondary';
-                      }
-                      return (
-                        <Chip
-                          key={`${map}-${idx}`}
-                          label={chipLabel}
-                          color={chipColor}
-                          variant={chipColor === 'default' ? 'outlined' : 'filled'}
-                        />
-                      );
-                    })}
-                  </Box>
+                {mapsToShow.length > 0 ? (
+                  <MapChipList
+                    maps={mapsToShow}
+                    activeMapIndex={activeMapNumber}
+                    activeMapLabel={currentMapLabel}
+                    mapResults={match.mapResults || []}
+                  />
                 ) : (
                   <Typography variant="body2" color="text.secondary" fontStyle="italic">
                     To be determined via veto
