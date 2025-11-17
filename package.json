@@ -24,7 +24,7 @@
         "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '✅ Removed PostgreSQL container' || echo '⚠️  PostgreSQL container not found'",
         "test": "bash scripts/test-e2e-all.sh",
         "test:manual": "playwright test",
-        "test:ui": "playwright test --ui",
+        "test:ui": "bash scripts/test-e2e-all.sh --ui",
         "test:report": "playwright show-report",
         "test:install": "playwright install"
     },

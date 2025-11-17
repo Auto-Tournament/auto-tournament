@@ -99,10 +99,21 @@ echo ""
 echo -e "${YELLOW}Step 2/4: Running Playwright E2E tests...${NC}"
 echo ""
 
+# Check if UI mode is requested
+UI_MODE=false
+if [[ "$*" == *"--ui"* ]]; then
+  UI_MODE=true
+  echo -e "${BLUE}Running in UI mode (interactive)${NC}"
+fi
+
 # Run tests (skip webServer since Docker Compose handles it)
 # Note: timeout command may not be available on macOS, so we run without it
 # The test timeout is handled by Playwright's own timeout settings
-SKIP_WEBSERVER=1 yarn test:manual
+if [ "$UI_MODE" = true ]; then
+  SKIP_WEBSERVER=1 yarn test:manual --ui
+else
+  SKIP_WEBSERVER=1 yarn test:manual
+fi
 TEST_EXIT_CODE=$?
 
 if [ $TEST_EXIT_CODE -ne 0 ]; then
@@ -117,12 +128,29 @@ else
   echo -e "${RED}❌ Some tests failed${NC}"
 fi
 
-# Step 4: Show HTML report location
+# Step 4: Show HTML report location and open it
 echo ""
 echo -e "${YELLOW}Step 4/4: Test report${NC}"
 if [ -d "playwright-report" ]; then
   echo -e "${GREEN}HTML report available at: playwright-report/index.html${NC}"
-  echo -e "${BLUE}View report with: yarn test:report${NC}"
+  
+  # Open the report automatically (only if not in UI mode)
+  if [ "$UI_MODE" != true ]; then
+    if command -v open > /dev/null; then
+      # macOS
+      open playwright-report/index.html
+    elif command -v xdg-open > /dev/null; then
+      # Linux
+      xdg-open playwright-report/index.html
+    elif command -v start > /dev/null; then
+      # Windows
+      start playwright-report/index.html
+    else
+      echo -e "${BLUE}View report with: yarn test:report${NC}"
+    fi
+  else
+    echo -e "${BLUE}UI mode was used - report available at: playwright-report/index.html${NC}"
+  fi
 else
   echo -e "${YELLOW}⚠️  No HTML report generated${NC}"
 fi
