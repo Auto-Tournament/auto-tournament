@@ -61,12 +61,18 @@ npm run dev
       postgres:16-alpine
     ```
 
-    Then configure your `.env` file with:
-    - `DB_HOST=localhost`
-    - `DB_PORT=5432`
-    - `DB_USER=postgres`
-    - `DB_PASSWORD=postgres`
-    - `DB_NAME=matchzy_tournament`
+    Then set environment variables:
+    ```bash
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    export DB_USER=postgres
+    export DB_PASSWORD=postgres
+    export DB_NAME=matchzy_tournament
+    
+    # Also set your API_TOKEN (admin password)
+    export API_TOKEN=admin123  # Or any password you want
+    export SERVER_TOKEN=server123
+    ```
 
 **Access:**
 

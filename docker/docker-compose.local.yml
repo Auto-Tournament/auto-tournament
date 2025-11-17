@@ -38,8 +38,8 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)
-      - API_TOKEN=${API_TOKEN:-test-token-123}
-      - SERVER_TOKEN=${SERVER_TOKEN:-test-server-token-456}
+      - API_TOKEN=${API_TOKEN:-admin123}
+      - SERVER_TOKEN=${SERVER_TOKEN:-server123}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
       - DB_HOST=postgres

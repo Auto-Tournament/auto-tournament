@@ -101,26 +101,35 @@ volumes:
     postgres:16-alpine
   ```
 
-**Generate secure tokens:**
+**Generate password-style tokens:**
 
 ```bash
-openssl rand -hex 32  # Copy for API_TOKEN
-openssl rand -hex 32  # Copy for SERVER_TOKEN
+# Generate tokens (they will be displayed)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+
+# Show the generated tokens
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+
+# Export them
+export API_TOKEN
+export SERVER_TOKEN
 ```
 
-Set environment variables (choose one method):
+**Note:** The `API_TOKEN` is your admin password - you can use any password you want (e.g., `mypassword123`). You can also set them manually:
 
 **Option A: Export in shell:**
 
 ```bash
-export API_TOKEN=<your-api-token>
+export API_TOKEN=<your-password>
 export SERVER_TOKEN=<your-server-token>
 export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_NAME=matchzy_tournament
 ```
 
-**Option B: Edit compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual token.
+**Option B: Edit compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual password.
 
 **Start:**
 
@@ -143,9 +152,13 @@ If you want to build from source or contribute:
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 
-# Set environment variables (export in shell or edit compose file directly)
-export API_TOKEN=$(openssl rand -hex 32)
-export SERVER_TOKEN=$(openssl rand -hex 32)
+# Set environment variables (generate password-style tokens)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+export API_TOKEN
+export SERVER_TOKEN
 
 # Build and start from source
 docker compose -f docker/docker-compose.local.yml up -d --build

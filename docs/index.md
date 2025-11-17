@@ -46,11 +46,11 @@ Best for LANs, new admins, or anyone who wants a working fleet in minutes.
 
 ### 🛠️ Docker Setup (no cloning needed)
 
-Create `docker-compose.yml` and `.env` files (see [Quick Start Guide](getting-started/quick-start.md) for full example):
+Create `docker-compose.yml` and set environment variables (see [Quick Start Guide](getting-started/quick-start.md) for full example):
 
 ```bash
 # Create docker-compose.yml with PostgreSQL service and matchzy-tournament image
-# Create .env with API_TOKEN, SERVER_TOKEN, and DB credentials
+# Set API_TOKEN and SERVER_TOKEN environment variables (see Quick Start Guide)
 docker compose up -d
 ```
 
@@ -61,7 +61,15 @@ docker compose up -d
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
-cp .env.example .env
+
+# Set environment variables (tokens will be displayed)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+export API_TOKEN
+export SERVER_TOKEN
+
 docker compose -f docker/docker-compose.local.yml up -d --build
 ```
 

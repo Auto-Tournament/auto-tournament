@@ -74,12 +74,20 @@ volumes:
 
 **2. Set environment variables (choose one method):**
 
-**Option A: Export in your shell:**
+**Option A: Generate and export in your shell:**
 
 ```bash
-# Generate secure tokens
-export API_TOKEN=$(openssl rand -hex 32)
-export SERVER_TOKEN=$(openssl rand -hex 32)
+# Generate password-style tokens (these will be displayed)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+
+# Show the generated tokens
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+
+# Export them
+export API_TOKEN
+export SERVER_TOKEN
 
 # Optional: Override database defaults
 export DB_USER=postgres
@@ -87,7 +95,9 @@ export DB_PASSWORD=postgres
 export DB_NAME=matchzy_tournament
 ```
 
-**Option B: Edit the compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual token in the compose file.
+**Option B: Edit the compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual password in the compose file.
+
+**Note:** The `API_TOKEN` is your admin password - it doesn't need to be super secure, just use something you can remember or save. Typical passwords work fine (e.g., `mypassword123` or `admin2024`).
 
 **3. Start:**
 
@@ -104,8 +114,15 @@ docker compose up -d
     ```bash
     git clone https://github.com/sivert-io/matchzy-auto-tournament.git
     cd matchzy-auto-tournament
-    cp .env.example .env
-    # Edit .env with your tokens
+    
+    # Set environment variables (tokens will be displayed)
+    API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+    SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+    echo "Your API_TOKEN (admin password): $API_TOKEN"
+    echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+    export API_TOKEN
+    export SERVER_TOKEN
+    
     docker compose -f docker/docker-compose.local.yml up -d --build
     ```
 
@@ -176,9 +193,13 @@ docker compose up -d
         # Install dependencies
         npm install
 
-        # Set environment variables
-        export API_TOKEN=$(openssl rand -hex 32)
-        export SERVER_TOKEN=$(openssl rand -hex 32)
+        # Set environment variables (generate password-style tokens)
+        API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+        SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+        echo "Your API_TOKEN (admin password): $API_TOKEN"
+        echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+        export API_TOKEN
+        export SERVER_TOKEN
         export DB_HOST=localhost
         export DB_PORT=5432
         export DB_USER=postgres
@@ -208,9 +229,17 @@ docker compose up -d
 Set environment variables (via shell or edit compose file directly):
 
 ```bash
-# Required - Generate secure tokens
-export API_TOKEN=$(openssl rand -hex 32)
-export SERVER_TOKEN=$(openssl rand -hex 32)
+# Required - Generate password-style tokens (these will be displayed)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+
+# Display the generated tokens
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+
+# Export them
+export API_TOKEN
+export SERVER_TOKEN
 
 # Database Configuration (PostgreSQL required)
 # For local development, use: yarn db
@@ -230,15 +259,15 @@ export PORT=3000                          # API port (default: 3000)
 
 ??? info "What do these tokens do?"
 
-    - **API_TOKEN**: Used to login to admin panel
-    - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks
+    - **API_TOKEN**: Your admin password - used to login to the admin panel. You can use any password you want (e.g., `mypassword123`). The generated token is just a suggestion.
+    - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks. Should be different from your API_TOKEN.
     - Configure the webhook URL and Steam API key from the in-app **Settings** page once the server is running.
 
 ## First Login
 
 1. Navigate to `http://localhost:3069` (or your domain)
 2. Click **"Login"** (top right)
-3. Enter your `API_TOKEN`
+3. Enter your `API_TOKEN` (the password you generated above - it was displayed after running the generation command)
 4. You're in! 🎉
 
 ## Add Your First Team
