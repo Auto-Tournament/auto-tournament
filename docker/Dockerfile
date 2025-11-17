@@ -16,6 +16,8 @@ RUN bun install --frozen-lockfile
 # Build TypeScript backend and React frontend
 FROM dependencies AS build
 COPY . .
+# Ensure public directory exists for vite build output
+RUN mkdir -p public
 RUN bun run build:server
 RUN bun run build:client
 
