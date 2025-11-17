@@ -31,7 +31,7 @@ ARG BUILDPLATFORM
 # Dynamically detect architecture for Caddy download
 RUN apt-get update && \
     apt-get install -y wget python3 make g++ && \
-    ARCH=$(echo ${TARGETPLATFORM} | cut -d '/' -f2) && \
+    ARCH=$(echo "${TARGETPLATFORM}" | cut -d '/' -f2) && \
     if [ "$ARCH" = "amd64" ]; then \
         CADDY_ARCH="amd64"; \
     elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ]; then \
@@ -39,6 +39,7 @@ RUN apt-get update && \
     elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ]; then \
         CADDY_ARCH="armv7"; \
     else \
+        echo "Warning: Unsupported architecture $ARCH, falling back to amd64" >&2; \
         CADDY_ARCH="amd64"; \
     fi && \
     wget -O /usr/local/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=${CADDY_ARCH}" && \

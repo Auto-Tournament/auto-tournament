@@ -35,7 +35,7 @@ fi
 BUILDER_NAME="matchzy-builder"
 if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
     echo -e "${YELLOW}Creating Docker Buildx builder...${NC}"
-    docker buildx create --name "${BUILDER_NAME}" --use
+    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
 else
     docker buildx use "${BUILDER_NAME}"
 fi
@@ -151,6 +151,16 @@ fi
 
 echo ""
 echo -e "${YELLOW}Step 3/3: Verifying pushed images...${NC}"
+docker buildx imagetools inspect "${DOCKER_IMAGE}:${VERSION}" > /tmp/image_inspect.txt 2>&1
+if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
+    echo -e "${RED}❌ Failed to verify pushed images for both linux/amd64 and linux/arm64 platforms${NC}"
+    echo "docker buildx imagetools inspect output:"
+    cat /tmp/image_inspect.txt
+    rm -f /tmp/image_inspect.txt
+    exit 1
+fi
+echo -e "${GREEN}✅ Verified pushed images for linux/amd64 and linux/arm64 platforms${NC}"
+rm -f /tmp/image_inspect.txt
 
 echo ""
 echo -e "${GREEN}✅ Successfully released ${DOCKER_IMAGE}:${VERSION}${NC}"
