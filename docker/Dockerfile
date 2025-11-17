@@ -17,8 +17,9 @@ COPY package.json yarn.lock package-lock.json* ./
 # Configure Yarn to use node_modules and set cache directory
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
     echo "enableGlobalCache: false" >> .yarnrc.yml
-# Install production dependencies only
-RUN yarn install --production --immutable 2>&1 || yarn install --immutable
+# Install all dependencies (will be used in final image)
+# Note: Installing all deps is simpler and the size difference is minimal
+RUN yarn install --immutable
 
 # Build TypeScript backend and React frontend
 FROM base AS build
@@ -32,11 +33,13 @@ COPY package.json yarn.lock package-lock.json* ./
 # Configure Yarn to use node_modules and set cache directory
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
     echo "enableGlobalCache: false" >> .yarnrc.yml
+# Install all dependencies (including devDependencies needed for build)
 RUN yarn install --immutable
 
 COPY . .
 # Ensure public directory exists for vite build output
 RUN mkdir -p public
+# Build TypeScript backend and React frontend
 RUN yarn build:server
 RUN yarn build:client
 
