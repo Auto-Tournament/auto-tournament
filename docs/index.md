@@ -52,13 +52,13 @@ cd matchzy-auto-tournament
 cp .env.example .env
 # Production: PostgreSQL by default (faster builds, no SQLite rebuild)
 docker compose -f docker/docker-compose.yml up -d
-# Development: SQLite by default (simpler setup, no PostgreSQL needed)
+# Development: PostgreSQL by default (faster builds, no SQLite rebuild)
 # docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Dashboard access:** `http://localhost:3069`
 
-**Database:** The application supports both PostgreSQL (production default) and SQLite (development default). The database schema is automatically initialized on first startup.
+**Database:** The application supports both PostgreSQL (default for Docker) and SQLite (for local development without Docker). The database schema is automatically initialized on first startup.
 
 ---
 

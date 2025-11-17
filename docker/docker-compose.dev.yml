@@ -2,36 +2,36 @@
 # Usage: docker compose -f docker-compose.dev.yml up -d --build
 
 services:
-  # PostgreSQL service (optional - only needed if DB_TYPE=postgresql)
-  # Uncomment and configure if you want to use PostgreSQL in development
-  # postgres:
-  #   image: postgres:16-alpine
-  #   container_name: matchzy-postgres-dev
-  #   restart: unless-stopped
-  #   environment:
-  #     - POSTGRES_USER=${DB_USER:-postgres}
-  #     - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-  #     - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
-  #   volumes:
-  #     - postgres-data:/var/lib/postgresql/data
-  #   ports:
-  #     - '5432:5432'
-  #   healthcheck:
-  #     test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #   networks:
-  #     - matchzy-network
+  # PostgreSQL service (always available in development - no SQLite rebuild needed)
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres-dev
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No port binding needed - DB is only accessible within Docker network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matchzy-network
 
   matchzy-tournament:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      args:
-        ENABLE_SQLITE: "true"  # Enable SQLite for development
+      # No SQLite rebuild needed - always use PostgreSQL in dev
     container_name: matchzy-tournament-api-dev
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     env_file:
@@ -42,10 +42,15 @@ services:
       - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
       - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DB_TYPE=${DB_TYPE:-sqlite}  # Use SQLite by default for development
-      - DB_PATH=/app/data/tournament.db
+      - DB_TYPE=${DB_TYPE:-postgresql}  # Use PostgreSQL by default for development
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-matchzy_tournament}
     volumes:
-      # Persist SQLite database (if using SQLite)
+      # Persist demos and other data
       - ./data:/app/data
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
@@ -63,5 +68,5 @@ networks:
 volumes:
   matchzy-data:
     driver: local
-  # postgres-data:
-  #   driver: local
+  postgres-data:
+    driver: local

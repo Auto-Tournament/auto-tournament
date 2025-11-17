@@ -183,13 +183,13 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     ```
 
     This script will:
-    - Build the Docker image (with SQLite enabled for dev testing)
+    - Build the Docker image (no SQLite rebuild needed - uses PostgreSQL)
     - Start the container with docker-compose
-    - Verify all services are running (Caddy, Node backend)
+    - Verify all services are running (PostgreSQL, Caddy, Node backend)
     - Test health endpoints, frontend, and API
     - Clean up automatically
 
-    **Note:** Development Docker setup uses SQLite by default (no PostgreSQL service needed). For production testing with PostgreSQL, use `docker-compose.yml` instead.
+    **Note:** Development Docker setup uses PostgreSQL (faster builds, no native module rebuilds). For local development outside Docker, SQLite is still recommended.
 
     **Manual Testing:**
 

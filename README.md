@@ -109,16 +109,16 @@ services:
       - DB_TYPE=${DB_TYPE:-postgresql}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
     volumes:
-      - ./data:/app/data  # For SQLite (if DB_TYPE=sqlite) and demos
+      - ./data:/app/data  # For demos and other data
 
 volumes:
   postgres-data:
 ```
 
 **Database Configuration:**
-- **Production**: PostgreSQL is used by default (configured in docker-compose.yml)
-- **Development**: SQLite is used by default (configured in docker-compose.dev.yml)
-- Switch databases by setting `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file
+- **Docker (both compose files)**: PostgreSQL is used by default (no SQLite rebuild needed, faster builds)
+- **Local development (without Docker)**: SQLite is recommended (no database setup needed)
+- Switch databases by setting `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file (SQLite only available outside Docker)
 
 Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
 

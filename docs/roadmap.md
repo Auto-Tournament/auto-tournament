@@ -114,8 +114,8 @@ Scalability and deployment options.
 
 ### Current Features
 
-- ✅ **PostgreSQL support** (default for production)
-- ✅ SQLite support (default for development)
+- ✅ **PostgreSQL support** (default for Docker - production & development)
+- ✅ SQLite support (for local development without Docker)
 - ✅ Database abstraction layer (switch between databases via environment variable)
 - ✅ Docker support with Caddy reverse proxy
 - ✅ Automatic schema initialization
