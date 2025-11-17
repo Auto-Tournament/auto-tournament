@@ -6,28 +6,28 @@ class MatchService {
   /**
    * Create a new match configuration
    */
-  createMatch(input: CreateMatchInput, baseUrl: string): MatchResponse {
+  async createMatch(input: CreateMatchInput, baseUrl: string): Promise<MatchResponse> {
     // Check if slug already exists
-    const existing = db.getOne<Match>('matches', 'slug = ?', [input.slug]);
+    const existing = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);
     if (existing) {
       throw new Error(`Match with slug '${input.slug}' already exists`);
     }
 
     // Validate server exists
-    const server = db.getOne('servers', 'id = ?', [input.serverId]);
+    const server = await db.getOneAsync('servers', 'id = ?', [input.serverId]);
     if (!server) {
       throw new Error(`Server '${input.serverId}' not found`);
     }
 
     // Insert match
-    db.insert('matches', {
+    await db.insertAsync('matches', {
       slug: input.slug,
       server_id: input.serverId,
       config: JSON.stringify(input.config),
       status: 'pending',
     });
 
-    const match = db.getOne<Match>('matches', 'slug = ?', [input.slug]);
+    const match = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);
     if (!match) {
       throw new Error('Failed to create match');
     }
@@ -39,28 +39,28 @@ class MatchService {
   /**
    * Get match by slug
    */
-  getMatchBySlug(slug: string, baseUrl: string): MatchResponse | null {
-    const match = db.getOne<Match>('matches', 'slug = ?', [slug]);
+  async getMatchBySlug(slug: string, baseUrl: string): Promise<MatchResponse | null> {
+    const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);
     return match ? this.toResponse(match, baseUrl) : null;
   }
 
   /**
    * Get match by ID
    */
-  getMatchById(id: number, baseUrl: string): MatchResponse | null {
-    const match = db.getOne<Match>('matches', 'id = ?', [id]);
+  async getMatchById(id: number, baseUrl: string): Promise<MatchResponse | null> {
+    const match = await db.getOneAsync<Match>('matches', 'id = ?', [id]);
     return match ? this.toResponse(match, baseUrl) : null;
   }
 
   /**
    * Get all matches
    */
-  getAllMatches(baseUrl: string, serverId?: string): MatchResponse[] {
+  async getAllMatches(baseUrl: string, serverId?: string): Promise<MatchResponse[]> {
     let matches: Match[];
     if (serverId) {
-      matches = db.getAll<Match>('matches', 'server_id = ?', [serverId]);
+      matches = await db.getAllAsync<Match>('matches', 'server_id = ?', [serverId]);
     } else {
-      matches = db.getAll<Match>('matches');
+      matches = await db.getAllAsync<Match>('matches');
     }
     return matches.map((m) => this.toResponse(m, baseUrl));
   }
@@ -68,8 +68,8 @@ class MatchService {
   /**
    * Update match status
    */
-  updateMatchStatus(slug: string, status: 'pending' | 'loaded' | 'live' | 'completed'): void {
-    const match = db.getOne<Match>('matches', 'slug = ?', [slug]);
+  async updateMatchStatus(slug: string, status: 'pending' | 'loaded' | 'live' | 'completed'): Promise<void> {
+    const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);
     if (!match) {
       throw new Error(`Match '${slug}' not found`);
     }
@@ -79,27 +79,27 @@ class MatchService {
       updateData.loaded_at = Math.floor(Date.now() / 1000);
     }
 
-    db.update('matches', updateData, 'slug = ?', [slug]);
+    await db.updateAsync('matches', updateData, 'slug = ?', [slug]);
     log.matchStatusUpdate(slug, status);
   }
 
   /**
    * Delete match
    */
-  deleteMatch(slug: string): void {
-    const match = db.getOne<Match>('matches', 'slug = ?', [slug]);
+  async deleteMatch(slug: string): Promise<void> {
+    const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);
     if (!match) {
       throw new Error(`Match '${slug}' not found`);
     }
-    db.delete('matches', 'slug = ?', [slug]);
+    await db.deleteAsync('matches', 'slug = ?', [slug]);
     log.success(`Match deleted: ${slug}`);
   }
 
   /**
    * Get match config (raw JSON for MatchZy)
    */
-  getMatchConfig(slug: string): MatchConfig | null {
-    const match = db.getOne<Match>('matches', 'slug = ?', [slug]);
+  async getMatchConfig(slug: string): Promise<MatchConfig | null> {
+    const match = await db.getOneAsync<Match>('matches', 'slug = ?', [slug]);
     if (!match) {
       return null;
     }

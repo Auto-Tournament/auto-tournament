@@ -48,7 +48,9 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     const { slug } = req.params;
 
     // 1) Load the match row
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [slug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      slug,
+    ]);
     if (!match) {
       return res.status(404).json({
         success: false,
@@ -57,7 +59,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     }
 
     // 2) Load the tournament row
-    const t = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+    const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
       match.tournament_id ?? 1,
     ]);
     if (!t) {
@@ -108,7 +110,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
  * List all matches (public - used by team pages)
  * Returns tournament matches with team information
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const serverId = req.query.serverId as string | undefined;
 
@@ -134,7 +136,7 @@ router.get('/', (req: Request, res: Response) => {
     query += ' ORDER BY m.created_at DESC';
 
     // This query includes JOIN columns that extend DbMatchRow
-    const rows = db.query<
+    const rows = await db.queryAsync<
       DbMatchRow & {
         team1_name?: string;
         team1_tag?: string;
@@ -147,7 +149,7 @@ router.get('/', (req: Request, res: Response) => {
     >(query, params);
 
     // Transform players from dictionary to array for frontend
-    const matches: MatchListItem[] = rows.map((row) => {
+    const matches: MatchListItem[] = await Promise.all(rows.map(async (row) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
       const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
@@ -210,7 +212,7 @@ router.get('/', (req: Request, res: Response) => {
         maps: undefined,
       };
 
-      const mapResults = getMapResults(row.slug);
+      const mapResults = await getMapResults(row.slug);
       if (mapResults.length > 0) {
         match.mapResults = mapResults;
       }
@@ -238,13 +240,13 @@ router.get('/', (req: Request, res: Response) => {
       }
 
       // Enrich match with player stats and scores from events
-      enrichMatch(match, row.slug);
+      await enrichMatch(match, row.slug);
 
       return match;
-    });
+    }));
 
     // Get tournament status
-    const tournament = db.queryOne<{ status: string }>(
+    const tournament = await db.queryOneAsync<{ status: string }>(
       'SELECT status FROM tournament WHERE id = 1'
     );
 
@@ -267,10 +269,10 @@ router.get('/', (req: Request, res: Response) => {
  * GET /api/matches/:slug
  * Get match details (public - used by team pages)
  */
-router.get('/:slug', (req: Request, res: Response) => {
+router.get('/:slug', async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+    const match = await matchService.getMatchBySlug(slug, getBaseUrl(req));
 
     if (!match) {
       return res.status(404).json({
@@ -296,7 +298,7 @@ router.get('/:slug', (req: Request, res: Response) => {
  * POST /api/matches
  * Create a new match configuration (authenticated)
  */
-router.post('/', requireAuth, (req: Request, res: Response) => {
+router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const input: CreateMatchInput = req.body;
 
@@ -315,7 +317,7 @@ router.post('/', requireAuth, (req: Request, res: Response) => {
       });
     }
 
-    const match = matchService.createMatch(input, getBaseUrl(req));
+    const match = await matchService.createMatch(input, getBaseUrl(req));
 
     return res.status(201).json({
       success: true,
@@ -347,7 +349,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
     const skipWebhook = req.query.skipWebhook === 'true';
-    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+    const match = await matchService.getMatchBySlug(slug, getBaseUrl(req));
 
     if (!match) {
       return res.status(404).json({
@@ -356,7 +358,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    const baseUrl = getWebhookBaseUrl(req);
+    const baseUrl = await getWebhookBaseUrl(req);
 
     // Use centralized match loading service
     const result = await loadMatchOnServer(slug, match.serverId, {
@@ -372,7 +374,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
           : 'Match loaded (webhook skipped)',
         webhookConfigured: result.webhookConfigured,
         demoUploadConfigured: result.demoUploadConfigured,
-        match: matchService.getMatchBySlug(slug, getBaseUrl(req)),
+        match: await matchService.getMatchBySlug(slug, getBaseUrl(req)),
         rconResponses: result.rconResponses,
       });
     } else {
@@ -400,7 +402,7 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
 router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const baseUrl = getWebhookBaseUrl(req);
+    const baseUrl = await getWebhookBaseUrl(req);
 
     const result = await matchAllocationService.restartMatch(slug, baseUrl);
 
@@ -408,7 +410,7 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
       log.success(`Match ${slug} restarted successfully`);
 
       // Emit match restart event
-      const updatedMatch = matchService.getMatchBySlug(slug, baseUrl);
+      const updatedMatch = await matchService.getMatchBySlug(slug, baseUrl);
       if (updatedMatch) {
         emitMatchUpdate(updatedMatch);
         emitBracketUpdate({ action: 'match_restarted', matchSlug: slug });
@@ -438,7 +440,7 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
  * PATCH /api/matches/:slug/status
  * Update match status (authenticated)
  */
-router.patch('/:slug/status', requireAuth, (req: Request, res: Response) => {
+router.patch('/:slug/status', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
     const { status } = req.body;
@@ -450,8 +452,8 @@ router.patch('/:slug/status', requireAuth, (req: Request, res: Response) => {
       });
     }
 
-    matchService.updateMatchStatus(slug, status);
-    const match = matchService.getMatchBySlug(slug, getBaseUrl(req));
+    await matchService.updateMatchStatus(slug, status);
+    const match = await matchService.getMatchBySlug(slug, getBaseUrl(req));
 
     return res.json({
       success: true,
@@ -474,10 +476,10 @@ router.patch('/:slug/status', requireAuth, (req: Request, res: Response) => {
  * DELETE /api/matches/:slug
  * Delete a match (authenticated)
  */
-router.delete('/:slug', requireAuth, (req: Request, res: Response) => {
+router.delete('/:slug', requireAuth, async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    matchService.deleteMatch(slug);
+    await matchService.deleteMatch(slug);
 
     return res.json({
       success: true,

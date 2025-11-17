@@ -8,6 +8,7 @@ Thank you for your interest in contributing! This project welcomes contributions
 
 - Node.js 18+
 - Docker (optional, for full stack testing)
+- PostgreSQL (optional, only if using PostgreSQL for local development)
 - A CS2 server with MatchZy plugin (for testing)
 
 ### Local Setup
@@ -23,10 +24,25 @@ npm install
 # Copy environment file
 cp .env.example .env
 # Edit .env with your configuration
+# For local development, SQLite is recommended (no database setup needed)
+# Set DB_TYPE=sqlite in .env, or use PostgreSQL if you prefer
 
 # Start development server
 npm run dev
 ```
+
+??? info "Database Options for Local Development"
+
+    **SQLite (Recommended for Development):**
+    - No setup required - works out of the box
+    - Set `DB_TYPE=sqlite` in `.env` (or leave unset, defaults to SQLite for local dev)
+    - Database file: `data/tournament.db`
+
+    **PostgreSQL (Optional):**
+    - Requires PostgreSQL installed locally or Docker
+    - Set `DB_TYPE=postgresql` in `.env`
+    - Configure `DATABASE_URL` or individual `DB_*` environment variables
+    - Useful for testing PostgreSQL-specific features
 
 **Access:**
 
@@ -167,11 +183,13 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     ```
 
     This script will:
-    - Build the Docker image
+    - Build the Docker image (with SQLite enabled for dev testing)
     - Start the container with docker-compose
     - Verify all services are running (Caddy, Node backend)
     - Test health endpoints, frontend, and API
     - Clean up automatically
+
+    **Note:** Development Docker setup uses SQLite by default (no PostgreSQL service needed). For production testing with PostgreSQL, use `docker-compose.yml` instead.
 
     **Manual Testing:**
 

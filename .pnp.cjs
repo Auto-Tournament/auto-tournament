@@ -37,6 +37,7 @@ const RAW_RUNTIME_STATE =
           ["@types/express", "npm:4.17.25"],\
           ["@types/node", "npm:20.19.25"],\
           ["@types/node-fetch", "npm:2.6.13"],\
+          ["@types/pg", "npm:8.15.6"],\
           ["@types/react", "npm:18.3.26"],\
           ["@types/react-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:18.3.7"],\
           ["@types/react-router-dom", "npm:5.3.3"],\
@@ -62,6 +63,7 @@ const RAW_RUNTIME_STATE =
           ["i18next-browser-languagedetector", "npm:7.2.2"],\
           ["matchzy-auto-tournament", "workspace:."],\
           ["node-fetch", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:2.7.0"],\
+          ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
           ["pino", "npm:10.1.0"],\
           ["pino-pretty", "npm:13.1.2"],\
           ["react", "npm:18.3.1"],\
@@ -2278,6 +2280,18 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/@types-parse-json-npm-4.0.2-f87f65692e-10c0.zip/node_modules/@types/parse-json/",\
         "packageDependencies": [\
           ["@types/parse-json", "npm:4.0.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@types/pg", [\
+      ["npm:8.15.6", {\
+        "packageLocation": "../../.yarn/berry/cache/@types-pg-npm-8.15.6-44108e12b9-10c0.zip/node_modules/@types/pg/",\
+        "packageDependencies": [\
+          ["@types/node", "npm:24.10.1"],\
+          ["@types/pg", "npm:8.15.6"],\
+          ["pg-protocol", "npm:1.10.3"],\
+          ["pg-types", "npm:2.2.0"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -5821,6 +5835,7 @@ const RAW_RUNTIME_STATE =
           ["@types/express", "npm:4.17.25"],\
           ["@types/node", "npm:20.19.25"],\
           ["@types/node-fetch", "npm:2.6.13"],\
+          ["@types/pg", "npm:8.15.6"],\
           ["@types/react", "npm:18.3.26"],\
           ["@types/react-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:18.3.7"],\
           ["@types/react-router-dom", "npm:5.3.3"],\
@@ -5846,6 +5861,7 @@ const RAW_RUNTIME_STATE =
           ["i18next-browser-languagedetector", "npm:7.2.2"],\
           ["matchzy-auto-tournament", "workspace:."],\
           ["node-fetch", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:2.7.0"],\
+          ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
           ["pino", "npm:10.1.0"],\
           ["pino-pretty", "npm:13.1.2"],\
           ["react", "npm:18.3.1"],\
@@ -6493,6 +6509,116 @@ const RAW_RUNTIME_STATE =
         "linkType": "HARD"\
       }]\
     ]],\
+    ["pg", [\
+      ["npm:8.16.3", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-npm-8.16.3-b98e6b613b-10c0.zip/node_modules/pg/",\
+        "packageDependencies": [\
+          ["pg", "npm:8.16.3"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3", {\
+        "packageLocation": "./.yarn/__virtual__/pg-virtual-13d53278fe/3/.yarn/berry/cache/pg-npm-8.16.3-b98e6b613b-10c0.zip/node_modules/pg/",\
+        "packageDependencies": [\
+          ["@types/pg-native", null],\
+          ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
+          ["pg-cloudflare", "npm:1.2.7"],\
+          ["pg-connection-string", "npm:2.9.1"],\
+          ["pg-native", null],\
+          ["pg-pool", "virtual:13d53278fe27763f312f3b1f81e41c6636e2b0da00c8c5c2e9a062d63244be3aaec3d477a47f4241d575b5e70af6e8fd3421e491602dec1220023c5c69cd0de9#npm:3.10.1"],\
+          ["pg-protocol", "npm:1.10.3"],\
+          ["pg-types", "npm:2.2.0"],\
+          ["pgpass", "npm:1.0.5"]\
+        ],\
+        "packagePeers": [\
+          "@types/pg-native",\
+          "pg-native"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-cloudflare", [\
+      ["npm:1.2.7", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-cloudflare-npm-1.2.7-d440af1270-10c0.zip/node_modules/pg-cloudflare/",\
+        "packageDependencies": [\
+          ["pg-cloudflare", "npm:1.2.7"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-connection-string", [\
+      ["npm:2.9.1", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-connection-string-npm-2.9.1-f24224b1ff-10c0.zip/node_modules/pg-connection-string/",\
+        "packageDependencies": [\
+          ["pg-connection-string", "npm:2.9.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-int8", [\
+      ["npm:1.0.1", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-int8-npm-1.0.1-5cd67f3e22-10c0.zip/node_modules/pg-int8/",\
+        "packageDependencies": [\
+          ["pg-int8", "npm:1.0.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-pool", [\
+      ["npm:3.10.1", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-pool-npm-3.10.1-708b6eab98-10c0.zip/node_modules/pg-pool/",\
+        "packageDependencies": [\
+          ["pg-pool", "npm:3.10.1"]\
+        ],\
+        "linkType": "SOFT"\
+      }],\
+      ["virtual:13d53278fe27763f312f3b1f81e41c6636e2b0da00c8c5c2e9a062d63244be3aaec3d477a47f4241d575b5e70af6e8fd3421e491602dec1220023c5c69cd0de9#npm:3.10.1", {\
+        "packageLocation": "./.yarn/__virtual__/pg-pool-virtual-cf59033810/3/.yarn/berry/cache/pg-pool-npm-3.10.1-708b6eab98-10c0.zip/node_modules/pg-pool/",\
+        "packageDependencies": [\
+          ["@types/pg", null],\
+          ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
+          ["pg-pool", "virtual:13d53278fe27763f312f3b1f81e41c6636e2b0da00c8c5c2e9a062d63244be3aaec3d477a47f4241d575b5e70af6e8fd3421e491602dec1220023c5c69cd0de9#npm:3.10.1"]\
+        ],\
+        "packagePeers": [\
+          "@types/pg",\
+          "pg"\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-protocol", [\
+      ["npm:1.10.3", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-protocol-npm-1.10.3-f64bdf6543-10c0.zip/node_modules/pg-protocol/",\
+        "packageDependencies": [\
+          ["pg-protocol", "npm:1.10.3"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pg-types", [\
+      ["npm:2.2.0", {\
+        "packageLocation": "../../.yarn/berry/cache/pg-types-npm-2.2.0-a3360226c4-10c0.zip/node_modules/pg-types/",\
+        "packageDependencies": [\
+          ["pg-int8", "npm:1.0.1"],\
+          ["pg-types", "npm:2.2.0"],\
+          ["postgres-array", "npm:2.0.0"],\
+          ["postgres-bytea", "npm:1.0.0"],\
+          ["postgres-date", "npm:1.0.7"],\
+          ["postgres-interval", "npm:1.2.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["pgpass", [\
+      ["npm:1.0.5", {\
+        "packageLocation": "../../.yarn/berry/cache/pgpass-npm-1.0.5-653e71ddd8-10c0.zip/node_modules/pgpass/",\
+        "packageDependencies": [\
+          ["pgpass", "npm:1.0.5"],\
+          ["split2", "npm:4.2.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
     ["picocolors", [\
       ["npm:1.1.1", {\
         "packageLocation": "../../.yarn/berry/cache/picocolors-npm-1.1.1-4fede47cf1-10c0.zip/node_modules/picocolors/",\
@@ -6596,6 +6722,43 @@ const RAW_RUNTIME_STATE =
           ["picocolors", "npm:1.1.1"],\
           ["postcss", "npm:8.5.6"],\
           ["source-map-js", "npm:1.2.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["postgres-array", [\
+      ["npm:2.0.0", {\
+        "packageLocation": "../../.yarn/berry/cache/postgres-array-npm-2.0.0-4f49dc1389-10c0.zip/node_modules/postgres-array/",\
+        "packageDependencies": [\
+          ["postgres-array", "npm:2.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["postgres-bytea", [\
+      ["npm:1.0.0", {\
+        "packageLocation": "../../.yarn/berry/cache/postgres-bytea-npm-1.0.0-8c2b81fa73-10c0.zip/node_modules/postgres-bytea/",\
+        "packageDependencies": [\
+          ["postgres-bytea", "npm:1.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["postgres-date", [\
+      ["npm:1.0.7", {\
+        "packageLocation": "../../.yarn/berry/cache/postgres-date-npm-1.0.7-aadfe5531e-10c0.zip/node_modules/postgres-date/",\
+        "packageDependencies": [\
+          ["postgres-date", "npm:1.0.7"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["postgres-interval", [\
+      ["npm:1.2.0", {\
+        "packageLocation": "../../.yarn/berry/cache/postgres-interval-npm-1.2.0-ca6414744d-10c0.zip/node_modules/postgres-interval/",\
+        "packageDependencies": [\
+          ["postgres-interval", "npm:1.2.0"],\
+          ["xtend", "npm:4.0.2"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -8429,6 +8592,15 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/xmlhttprequest-ssl-npm-2.1.2-7d8e3817bc-10c0.zip/node_modules/xmlhttprequest-ssl/",\
         "packageDependencies": [\
           ["xmlhttprequest-ssl", "npm:2.1.2"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["xtend", [\
+      ["npm:4.0.2", {\
+        "packageLocation": "../../.yarn/berry/cache/xtend-npm-4.0.2-7f2375736e-10c0.zip/node_modules/xtend/",\
+        "packageDependencies": [\
+          ["xtend", "npm:4.0.2"]\
         ],\
         "linkType": "HARD"\
       }]\

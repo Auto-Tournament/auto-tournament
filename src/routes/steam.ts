@@ -41,7 +41,7 @@ router.use(requireAuth);
  */
 router.post('/resolve', async (req: Request, res: Response) => {
   try {
-    if (!steamService.isAvailable()) {
+    if (!(await steamService.isAvailable())) {
       return res.status(503).json({
         success: false,
         error: 'Steam API is not configured. Add your Steam API key from the Settings page.',
@@ -107,7 +107,7 @@ router.post('/resolve', async (req: Request, res: Response) => {
  */
 router.get('/player/:steamId', async (req: Request, res: Response) => {
   try {
-    if (!steamService.isAvailable()) {
+    if (!(await steamService.isAvailable())) {
       return res.status(503).json({
         success: false,
         error: 'Steam API is not configured. Add your Steam API key from the Settings page.',

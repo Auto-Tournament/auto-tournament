@@ -33,7 +33,7 @@ const UPSERT_SQL = `
     completed_at = excluded.completed_at
 `;
 
-export function recordMapResult(params: {
+export async function recordMapResult(params: {
   matchSlug: string;
   mapNumber: number | null | undefined;
   mapName?: string | null;
@@ -41,7 +41,7 @@ export function recordMapResult(params: {
   team2Score?: number | null;
   winnerTeam?: WinnerTeam;
   completedAt?: number;
-}): void {
+}): Promise<void> {
   const { matchSlug, mapNumber } = params;
 
   if (!matchSlug || typeof mapNumber !== 'number' || Number.isNaN(mapNumber)) {
@@ -59,7 +59,7 @@ export function recordMapResult(params: {
   };
 
   try {
-    db.run(UPSERT_SQL, [
+    await db.runAsync(UPSERT_SQL, [
       payload.matchSlug,
       payload.mapNumber,
       payload.mapName,
@@ -77,8 +77,8 @@ export function recordMapResult(params: {
   }
 }
 
-export function getMapResults(matchSlug: string): MatchMapResultRecord[] {
-  const rows = db.query<{
+export async function getMapResults(matchSlug: string): Promise<MatchMapResultRecord[]> {
+  const rows = await db.queryAsync<{
     map_number: number;
     map_name?: string | null;
     team1_score: number;
@@ -104,9 +104,9 @@ export function getMapResults(matchSlug: string): MatchMapResultRecord[] {
   }));
 }
 
-export function clearMapResults(matchSlug: string): void {
+export async function clearMapResults(matchSlug: string): Promise<void> {
   try {
-    db.run('DELETE FROM match_map_results WHERE match_slug = ?', [matchSlug]);
+    await db.runAsync('DELETE FROM match_map_results WHERE match_slug = ?', [matchSlug]);
   } catch (error) {
     log.error('[MatchMapResults] Failed to clear map results', { error, matchSlug });
   }

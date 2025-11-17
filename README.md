@@ -56,9 +56,11 @@ openssl rand -hex 32  # Copy for SERVER_TOKEN
 # 3. Edit .env and add:
 #    - API_TOKEN (admin login)
 #    - SERVER_TOKEN (CS2 server auth)
+#    - DB_TYPE (optional, default: postgresql)
+#    - DB_USER, DB_PASSWORD, DB_NAME (optional, defaults provided)
 nano .env
 
-# 4. Start everything
+# 4. Start everything (includes PostgreSQL by default)
 docker compose -f docker/docker-compose.yml up -d
 
 # OR build locally (until first release)
@@ -73,21 +75,50 @@ docker compose -f docker/docker-compose.yml up -d
 Create `docker-compose.yml`:
 
 ```yaml
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   matchzy-tournament:
     image: sivertio/matchzy-auto-tournament:latest
     container_name: matchzy-tournament
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - '3069:3069'
     environment:
       - API_TOKEN=${API_TOKEN}
       - SERVER_TOKEN=${SERVER_TOKEN}
+      - DB_TYPE=${DB_TYPE:-postgresql}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
     volumes:
-      - ./data:/app/data
+      - ./data:/app/data  # For SQLite (if DB_TYPE=sqlite) and demos
+
+volumes:
+  postgres-data:
 ```
+
+**Database Configuration:**
+- **Production**: PostgreSQL is used by default (configured in docker-compose.yml)
+- **Development**: SQLite is used by default (configured in docker-compose.dev.yml)
+- Switch databases by setting `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file
 
 Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
 

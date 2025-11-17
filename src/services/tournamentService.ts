@@ -27,12 +27,12 @@ class TournamentService {
   /**
    * Get the current tournament (only one tournament exists at a time)
    */
-  getTournament(): TournamentResponse | null {
-    const row = db.queryOne<TournamentRow>('SELECT * FROM tournament WHERE id = 1');
+  async getTournament(): Promise<TournamentResponse | null> {
+    const row = await db.queryOneAsync<TournamentRow>('SELECT * FROM tournament WHERE id = 1');
     if (!row) return null;
 
     const tournament = this.rowToTournament(row);
-    const teams = this.getTeamsForTournament(tournament.team_ids);
+    const teams = await this.getTeamsForTournament(tournament.team_ids);
 
     return {
       id: tournament.id,
@@ -69,10 +69,10 @@ class TournamentService {
     const now = Math.floor(Date.now() / 1000);
 
     // Delete existing tournament (if any) - we only support one tournament at a time
-    db.exec('DELETE FROM tournament WHERE id = 1');
+    await db.execAsync('DELETE FROM tournament WHERE id = 1');
 
     // Insert new tournament
-    db.insert('tournament', {
+    await db.insertAsync('tournament', {
       id: 1,
       name,
       type,
@@ -95,7 +95,7 @@ class TournamentService {
       log.error('Failed to auto-generate bracket', err);
 
       // Clean up: Delete the tournament since bracket generation failed
-      db.exec('DELETE FROM tournament WHERE id = 1');
+      await db.execAsync('DELETE FROM tournament WHERE id = 1');
       log.warn('Tournament deleted due to bracket generation failure');
 
       // Re-throw to prevent returning tournament in broken state
@@ -104,7 +104,7 @@ class TournamentService {
       );
     }
 
-    const created = this.getTournament();
+    const created = await this.getTournament();
     if (!created) {
       throw new Error('Failed to create tournament');
     }
@@ -116,7 +116,7 @@ class TournamentService {
    * Update existing tournament
    */
   async updateTournament(input: UpdateTournamentInput): Promise<TournamentResponse> {
-    const existing = this.getTournament();
+    const existing = await this.getTournament();
     if (!existing) {
       throw new Error('No tournament exists to update');
     }
@@ -142,7 +142,7 @@ class TournamentService {
       updates.settings = JSON.stringify(merged);
     }
 
-    db.update('tournament', updates, 'id = ?', [1]);
+    await db.updateAsync('tournament', updates, 'id = ?', [1]);
 
     log.debug('Tournament updated');
 
@@ -157,12 +157,12 @@ class TournamentService {
         // Revert changes to teams if bracket generation fails
         if (teamIds) {
           const oldTeamId = existing.teamIds;
-          db.update('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [1]);
+          await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [1]);
         }
       }
     }
 
-    const updated = this.getTournament();
+    const updated = await this.getTournament();
     if (!updated) {
       throw new Error('Failed to retrieve updated tournament');
     }
@@ -174,13 +174,13 @@ class TournamentService {
    * Delete tournament and all associated matches
    * Note: Server cleanup (ending matches) should be done by the caller before this
    */
-  deleteTournament(): void {
+  async deleteTournament(): Promise<void> {
     // First, clear server_id from all matches to clean up references
-    db.exec('UPDATE matches SET server_id = NULL WHERE tournament_id = 1');
+    await db.execAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = 1');
     log.debug('Cleared server references from matches');
     
     // Delete tournament (CASCADE will also delete matches and events)
-    db.exec('DELETE FROM tournament WHERE id = 1');
+    await db.execAsync('DELETE FROM tournament WHERE id = 1');
     log.debug('Tournament deleted from database');
   }
 
@@ -188,7 +188,7 @@ class TournamentService {
    * Generate bracket for the tournament
    */
   async generateBracket(): Promise<BracketResponse> {
-    const tournament = this.getTournament();
+    const tournament = await this.getTournament();
     if (!tournament) {
       throw new Error('No tournament exists');
     }
@@ -198,7 +198,7 @@ class TournamentService {
     }
 
     // Delete existing matches
-    db.exec('DELETE FROM matches WHERE tournament_id = 1');
+    await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
 
     let matches: BracketMatch[] = [];
 
@@ -225,7 +225,7 @@ class TournamentService {
 
         for (const matchData of result.matches) {
           const config = JSON.parse(matchData.config);
-          const insertResult = db.insert('matches', {
+          const insertResult = await db.insertAsync('matches', {
             slug: matchData.slug,
             tournament_id: 1,
             round: matchData.round,
@@ -271,11 +271,11 @@ class TournamentService {
         }
 
         // Link matches (set next_match_id based on bracket structure)
-        this.linkMatches(matches, slugToDbId, tournament.type);
+        await this.linkMatches(matches, slugToDbId, tournament.type);
       }
 
       // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
-      db.update('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [1]);
+      await db.updateAsync('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [1]);
 
       log.debug(`Bracket generated: ${matches.length} matches created`);
 
@@ -292,7 +292,7 @@ class TournamentService {
    * Should only be called with user confirmation
    */
   async regenerateBracket(force: boolean = false): Promise<BracketResponse> {
-    const tournament = this.getTournament();
+    const tournament = await this.getTournament();
     if (!tournament) {
       throw new Error('No tournament exists');
     }
@@ -318,21 +318,21 @@ class TournamentService {
    * Reset tournament back to setup mode
    * Clears all matches and resets status
    */
-  resetTournament(): TournamentResponse {
-    const tournament = this.getTournament();
+  async resetTournament(): Promise<TournamentResponse> {
+    const tournament = await this.getTournament();
     if (!tournament) {
       throw new Error('No tournament exists');
     }
 
     // Count matches before deletion for logging
-    const matchCount = db.queryOne<{ count: number }>(
+    const matchCount = await db.queryOneAsync<{ count: number }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
     );
 
     // Delete all matches (this also clears all veto states stored in matches)
-    db.exec('DELETE FROM matches WHERE tournament_id = 1');
+    await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
 
-    db.update(
+    await db.updateAsync(
       'tournament',
       {
         status: 'setup',
@@ -349,17 +349,19 @@ class TournamentService {
         matchCount?.count || 0
       } match(es) and cleared all veto states.`
     );
-    return this.getTournament()!;
+    const result = await this.getTournament();
+    if (!result) throw new Error('Failed to retrieve tournament after reset');
+    return result;
   }
 
   /**
    * Get bracket with all matches
    */
-  getBracket(): BracketResponse | null {
-    const tournament = this.getTournament();
+  async getBracket(): Promise<BracketResponse | null> {
+    const tournament = await this.getTournament();
     if (!tournament) return null;
 
-    const matches = this.getMatches();
+    const matches = await this.getMatches();
     const totalRounds = calculateTotalRounds(tournament.teamIds.length, tournament.type);
 
     return { tournament, matches, totalRounds };
@@ -368,12 +370,13 @@ class TournamentService {
   /**
    * Get all matches for the tournament
    */
-  private getMatches(): BracketMatch[] {
-    const rows = db.query<DbMatchRow>(
+  private async getMatches(): Promise<BracketMatch[]> {
+    const rows = await db.queryAsync<DbMatchRow>(
       'SELECT * FROM matches WHERE tournament_id = 1 ORDER BY round, match_number'
     );
 
-    return rows.map((row) => {
+    const matches: BracketMatch[] = [];
+    for (const row of rows) {
       const match: BracketMatch = {
         id: row.id,
         slug: row.slug,
@@ -398,19 +401,19 @@ class TournamentService {
 
       // Attach team info if available
       if (row.team1_id) {
-        const team1 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+        const team1 = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.team1_id,
         ]);
         if (team1) match.team1 = { id: team1.id, name: team1.name, tag: team1.tag || undefined };
       }
       if (row.team2_id) {
-        const team2 = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+        const team2 = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.team2_id,
         ]);
         if (team2) match.team2 = { id: team2.id, name: team2.name, tag: team2.tag || undefined };
       }
       if (row.winner_id) {
-        const winner = db.queryOne<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+        const winner = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
           row.winner_id,
         ]);
         if (winner)
@@ -418,20 +421,21 @@ class TournamentService {
       }
 
       // Enrich match with player stats and scores from events
-      enrichMatch(match, row.slug);
+      await enrichMatch(match, row.slug);
 
-      return match;
-    });
+      matches.push(match);
+    }
+    return matches;
   }
 
   /**
    * Link matches by setting next_match_id for progression
    */
-  private linkMatches(
+  private async linkMatches(
     matches: BracketMatch[],
     slugToDbId: Map<string, number>,
     tournamentType: string
-  ): void {
+  ): Promise<void> {
     for (const match of matches) {
       let nextMatchSlug: string | null = null;
 
@@ -454,7 +458,7 @@ class TournamentService {
         const nextMatchId = slugToDbId.get(nextMatchSlug);
         if (nextMatchId) {
           // Update the database
-          db.update('matches', { next_match_id: nextMatchId }, 'id = ?', [match.id]);
+          await db.updateAsync('matches', { next_match_id: nextMatchId }, 'id = ?', [match.id]);
           // Update the in-memory object
           match.nextMatchId = nextMatchId;
         }
@@ -465,13 +469,13 @@ class TournamentService {
   /**
    * Get teams for tournament
    */
-  private getTeamsForTournament(
+  private async getTeamsForTournament(
     teamIds: string[]
-  ): Array<{ id: string; name: string; tag?: string }> {
+  ): Promise<Array<{ id: string; name: string; tag?: string }>> {
     if (teamIds.length === 0) return [];
 
     const placeholders = teamIds.map(() => '?').join(',');
-    const teams = db.query<DbTeamRow>(
+    const teams = await db.queryAsync<DbTeamRow>(
       `SELECT id, name, tag FROM teams WHERE id IN (${placeholders})`,
       teamIds
     );

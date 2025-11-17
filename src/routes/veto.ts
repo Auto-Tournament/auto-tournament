@@ -19,7 +19,9 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      matchSlug,
+    ]);
 
     if (!match) {
       return res.status(404).json({
@@ -29,17 +31,17 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     }
 
     // Get teams (id is the slug)
-    const team1 = db.queryOne<{ name: string; id: string }>(
+    const team1 = await db.queryOneAsync<{ name: string; id: string }>(
       'SELECT name, id FROM teams WHERE id = ?',
       [match.team1_id]
     );
-    const team2 = db.queryOne<{ name: string; id: string }>(
+    const team2 = await db.queryOneAsync<{ name: string; id: string }>(
       'SELECT name, id FROM teams WHERE id = ?',
       [match.team2_id]
     );
 
     // Get tournament to determine format
-    const tournament = db.queryOne<{ format: string; maps: string }>(
+    const tournament = await db.queryOneAsync<{ format: string; maps: string }>(
       'SELECT format, maps FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
@@ -107,7 +109,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     const { matchSlug } = req.params;
     const { mapName, side, teamSlug } = req.body;
 
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      matchSlug,
+    ]);
 
     if (!match) {
       return res.status(404).json({
@@ -117,17 +121,17 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     }
 
     // Get teams to validate which team is allowed to make this action (id is the slug)
-    const team1 = db.queryOne<{ name: string; id: string }>(
+    const team1 = await db.queryOneAsync<{ name: string; id: string }>(
       'SELECT name, id FROM teams WHERE id = ?',
       [match.team1_id]
     );
-    const team2 = db.queryOne<{ name: string; id: string }>(
+    const team2 = await db.queryOneAsync<{ name: string; id: string }>(
       'SELECT name, id FROM teams WHERE id = ?',
       [match.team2_id]
     );
 
     // Get tournament
-    const tournament = db.queryOne<{ format: string; maps: string }>(
+    const tournament = await db.queryOneAsync<{ format: string; maps: string }>(
       'SELECT format, maps FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
@@ -318,11 +322,11 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       });
 
       // Update match status to 'ready' now that veto is completed
-      db.update('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
+      await db.updateAsync('matches', { status: 'ready' }, 'slug = ?', [matchSlug]);
       log.info(`Match ${matchSlug} status updated to 'ready' after veto completion`);
 
       // NEW: Recompute and persist the fresh config snapshot so /api/matches and any readers of matches.config are in sync
-      const t = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
         match.tournament_id,
       ]);
       if (t) {
@@ -348,7 +352,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             match.team2_id ?? undefined,
             matchSlug
           );
-          db.update('matches', { config: JSON.stringify(cfg) }, 'slug = ?', [matchSlug]);
+          await db.updateAsync('matches', { config: JSON.stringify(cfg) }, 'slug = ?', [matchSlug]);
           log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
         } catch (e) {
           log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
@@ -365,7 +369,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       );
       console.log('========================================\n');
 
-      const baseUrl = settingsService.getWebhookUrl();
+      const baseUrl = await settingsService.getWebhookUrl();
 
       if (!baseUrl) {
         log.warn(
@@ -400,7 +404,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     }
 
     // Save veto state
-    db.update('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [matchSlug]);
+    await db.updateAsync('matches', { veto_state: JSON.stringify(vetoState) }, 'slug = ?', [
+      matchSlug,
+    ]);
 
     // Emit update via Socket.io
     emitVetoUpdate(matchSlug, vetoState);
@@ -433,7 +439,7 @@ router.post('/:matchSlug/reset', async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
-    db.update('matches', { veto_state: null }, 'slug = ?', [matchSlug]);
+    await db.updateAsync('matches', { veto_state: null }, 'slug = ?', [matchSlug]);
 
     log.info(`Veto reset for match ${matchSlug}`);
 

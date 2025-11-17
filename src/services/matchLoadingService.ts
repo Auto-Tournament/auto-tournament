@@ -45,7 +45,7 @@ export async function loadMatchOnServer(
     log.info(`🎮 Loading match ${matchSlug} on server ${serverId}`);
 
     // Get match config
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
     if (!match) {
       log.error(`Match ${matchSlug} not found in database`);
       return { success: false, error: 'Match not found' };
@@ -206,7 +206,7 @@ export async function loadMatchOnServer(
       }
 
       // Update match status to 'loaded'
-      db.update(
+      await db.updateAsync(
         'matches',
         { status: 'loaded', loaded_at: Math.floor(Date.now() / 1000) },
         'slug = ?',

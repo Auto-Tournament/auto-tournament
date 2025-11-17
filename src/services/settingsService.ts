@@ -12,16 +12,16 @@ export interface AppSetting {
 const ALLOWED_KEYS: AppSettingKey[] = ['webhook_url', 'steam_api_key'];
 
 class SettingsService {
-  getSetting(key: AppSettingKey): string | null {
+  async getSetting(key: AppSettingKey): Promise<string | null> {
     if (!ALLOWED_KEYS.includes(key)) {
       throw new Error(`Unknown setting: ${key}`);
     }
 
-    return db.getAppSetting(key);
+    return await db.getAppSettingAsync(key);
   }
 
-  getAllSettings(): AppSetting[] {
-    const rows = db.getAllAppSettings();
+  async getAllSettings(): Promise<AppSetting[]> {
+    const rows = await db.getAllAppSettingsAsync();
     return rows
       .filter((row): row is AppSetting => ALLOWED_KEYS.includes(row.key as AppSettingKey))
       .map((row) => ({
@@ -31,7 +31,7 @@ class SettingsService {
       }));
   }
 
-  setSetting(key: AppSettingKey, value: string | null): void {
+  async setSetting(key: AppSettingKey, value: string | null): Promise<void> {
     if (!ALLOWED_KEYS.includes(key)) {
       throw new Error(`Unknown setting: ${key}`);
     }
@@ -40,49 +40,49 @@ class SettingsService {
       const trimmed = value.trim();
 
       if (!trimmed) {
-        db.setAppSetting(key, null);
+        await db.setAppSettingAsync(key, null);
         return;
       }
 
       if (key === 'webhook_url') {
         this.validateWebhookUrl(trimmed);
         const normalized = this.normalizeUrl(trimmed);
-        db.setAppSetting(key, normalized);
+        await db.setAppSettingAsync(key, normalized);
         log.success(`Webhook URL updated to ${normalized}`);
         return;
       }
 
       if (key === 'steam_api_key') {
-        db.setAppSetting(key, trimmed);
+        await db.setAppSettingAsync(key, trimmed);
         log.success('Steam API key updated');
         return;
       }
     }
 
-    db.setAppSetting(key, null);
+    await db.setAppSettingAsync(key, null);
     log.success(`Setting ${key} cleared`);
   }
 
-  getWebhookUrl(): string | null {
-    const value = this.getSetting('webhook_url');
+  async getWebhookUrl(): Promise<string | null> {
+    const value = await this.getSetting('webhook_url');
     return value ? this.normalizeUrl(value) : null;
   }
 
-  requireWebhookUrl(): string {
-    const webhookUrl = this.getWebhookUrl();
+  async requireWebhookUrl(): Promise<string> {
+    const webhookUrl = await this.getWebhookUrl();
     if (!webhookUrl) {
       throw new Error('Webhook URL is not configured. Update it from the Settings page.');
     }
     return webhookUrl;
   }
 
-  isSteamApiConfigured(): boolean {
-    const value = this.getSetting('steam_api_key');
+  async isSteamApiConfigured(): Promise<boolean> {
+    const value = await this.getSetting('steam_api_key');
     return Boolean(value && value.trim().length > 0);
   }
 
-  getSteamApiKey(): string | null {
-    const value = this.getSetting('steam_api_key');
+  async getSteamApiKey(): Promise<string | null> {
+    const value = await this.getSetting('steam_api_key');
     return value ? value.trim() : null;
   }
 

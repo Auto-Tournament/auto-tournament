@@ -12,9 +12,9 @@ router.use(requireAuth);
  * GET /api/teams
  * Get all teams
  */
-router.get('/', (_req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   try {
-    const teams = teamService.getAllTeams();
+    const teams = await teamService.getAllTeams();
     return res.json({
       success: true,
       count: teams.length,
@@ -33,10 +33,10 @@ router.get('/', (_req: Request, res: Response) => {
  * GET /api/teams/:id
  * Get team by ID
  */
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const team = teamService.getTeamById(id);
+    const team = await teamService.getTeamById(id);
 
     if (!team) {
       return res.status(404).json({
@@ -63,14 +63,14 @@ router.get('/:id', (req: Request, res: Response) => {
  * Create team(s) - supports single or batch creation
  * Query param: ?upsert=true to update if exists
  */
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const upsert = req.query.upsert === 'true';
     const body = req.body;
 
     // Batch creation
     if (Array.isArray(body)) {
-      const result = teamService.createTeams(body as CreateTeamInput[], upsert);
+      const result = await teamService.createTeams(body as CreateTeamInput[], upsert);
       const statusCode = result.failed.length > 0 ? 207 : 201;
 
       return res.status(statusCode).json({
@@ -88,7 +88,7 @@ router.post('/', (req: Request, res: Response) => {
 
     // Single creation
     const input = body as CreateTeamInput;
-    const team = teamService.createTeam(input, upsert);
+    const team = await teamService.createTeam(input, upsert);
 
     return res.status(upsert ? 200 : 201).json({
       success: true,
@@ -108,12 +108,12 @@ router.post('/', (req: Request, res: Response) => {
  * PUT /api/teams/:id
  * Update team
  */
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const input = req.body as UpdateTeamInput;
 
-    const team = teamService.updateTeam(id, input);
+    const team = await teamService.updateTeam(id, input);
 
     return res.json({
       success: true,
@@ -134,7 +134,7 @@ router.put('/:id', (req: Request, res: Response) => {
  * PATCH /api/teams/batch
  * Batch update teams
  */
-router.patch('/batch', (req: Request, res: Response) => {
+router.patch('/batch', async (req: Request, res: Response) => {
   try {
     const updates = req.body as { id: string; updates: UpdateTeamInput }[];
 
@@ -145,7 +145,7 @@ router.patch('/batch', (req: Request, res: Response) => {
       });
     }
 
-    const result = teamService.updateTeams(updates);
+    const result = await teamService.updateTeams(updates);
     const statusCode = result.failed.length > 0 ? 207 : 200;
 
     return res.status(statusCode).json({
@@ -172,10 +172,10 @@ router.patch('/batch', (req: Request, res: Response) => {
  * DELETE /api/teams/:id
  * Delete team
  */
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    teamService.deleteTeam(id);
+    await teamService.deleteTeam(id);
 
     return res.json({
       success: true,

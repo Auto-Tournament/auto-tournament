@@ -17,7 +17,7 @@ export class MatchAllocationService {
    * Get all available servers (enabled, online, and not in use)
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
-    const enabledServers = serverService.getAllServers(true); // Get only enabled servers
+    const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
     // Check each server's status (online/offline)
     const statusChecks = await Promise.all(
@@ -34,16 +34,19 @@ export class MatchAllocationService {
     const onlineServers = statusChecks.filter((s) => s.isOnline).map((s) => s.server);
 
     // Filter out servers that are currently in use (have an active match)
-    const availableServers = onlineServers.filter((server) => {
-      const activeMatch = db.queryOne<{ id: number }>(
+    const availableServers: ServerResponse[] = [];
+    for (const server of onlineServers) {
+      const activeMatch = await db.queryOneAsync<{ id: number }>(
         `SELECT id FROM matches 
          WHERE server_id = ? 
          AND status IN ('loaded', 'live') 
          AND tournament_id = 1`,
         [server.id]
       );
-      return !activeMatch; // Server is available if no active match
-    });
+      if (!activeMatch) {
+        availableServers.push(server); // Server is available if no active match
+      }
+    }
 
     log.debug(
       `Found ${availableServers.length} available servers out of ${enabledServers.length} enabled`
@@ -55,8 +58,8 @@ export class MatchAllocationService {
   /**
    * Get all ready matches that need server allocation
    */
-  getReadyMatches(): BracketMatch[] {
-    const matches = db.query<DbMatchRow>(
+  async getReadyMatches(): Promise<BracketMatch[]> {
+    const matches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status = 'ready' 
@@ -84,7 +87,7 @@ export class MatchAllocationService {
     log.info(`Found ${availableServers.length} available server(s)`);
 
     log.info('📊 Getting ready matches...');
-    const readyMatches = this.getReadyMatches();
+    const readyMatches = await this.getReadyMatches();
     log.info(`Found ${readyMatches.length} ready match(es) to allocate`);
 
     if (readyMatches.length === 0) {
@@ -121,10 +124,10 @@ export class MatchAllocationService {
         log.info(`➡️  Allocating match ${match.slug} to server ${server.name} (${server.id})`);
 
         // Update match with server_id
-        db.update('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
+        await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
 
         // Emit websocket event for server assignment
-        const matchWithServer = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        const matchWithServer = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
           match.slug,
         ]);
         if (matchWithServer) {
@@ -214,10 +217,10 @@ export class MatchAllocationService {
       const server = availableServers[0];
 
       // Update match with server_id
-      db.update('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
+      await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
 
       // Emit websocket event for server assignment
-      const matchWithServer = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      const matchWithServer = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
         matchSlug,
       ]);
       if (matchWithServer) {
@@ -236,7 +239,7 @@ export class MatchAllocationService {
         };
       } else {
         // Rollback server_id if loading failed
-        db.update('matches', { server_id: null }, 'slug = ?', [matchSlug]);
+        await db.updateAsync('matches', { server_id: null }, 'slug = ?', [matchSlug]);
         return {
           success: false,
           serverId: server.id,
@@ -272,7 +275,7 @@ export class MatchAllocationService {
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists and is ready
-    const tournament = tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament();
     if (!tournament) {
       log.error('No tournament exists');
       return {
@@ -313,7 +316,7 @@ export class MatchAllocationService {
     }
 
     // Check if bracket/matches exist
-    const matchCount = db.queryOne<{ count: number }>(
+    const matchCount = await db.queryOneAsync<{ count: number }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
     );
 
@@ -348,7 +351,7 @@ export class MatchAllocationService {
       log.info('BO format detected - teams must complete map veto before matches load');
 
       if (tournament.status === 'setup' || tournament.status === 'ready') {
-        db.update(
+        await db.updateAsync(
           'tournament',
           {
             status: 'in_progress',
@@ -387,7 +390,7 @@ export class MatchAllocationService {
 
       // Update tournament status to 'in_progress' if starting for the first time
       if ((tournament.status === 'setup' || tournament.status === 'ready') && allocated > 0) {
-        db.update(
+        await db.updateAsync(
           'tournament',
           {
             status: 'in_progress',
@@ -458,7 +461,7 @@ export class MatchAllocationService {
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists
-    const tournament = tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament();
     if (!tournament) {
       log.error('No tournament exists');
       return {
@@ -523,7 +526,7 @@ export class MatchAllocationService {
 
     // Reset all loaded/live matches back to 'ready' status
     if (loadedMatches.length > 0) {
-      db.exec(
+      await db.execAsync(
         `UPDATE matches 
          SET status = 'ready', 
              loaded_at = NULL,
@@ -617,7 +620,7 @@ export class MatchAllocationService {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Step 3: Reset match status to 'ready'
-      db.update('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [matchSlug]);
+      await db.updateAsync('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [matchSlug]);
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);

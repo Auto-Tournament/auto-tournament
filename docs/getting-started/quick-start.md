@@ -35,13 +35,20 @@ cp .env.example .env
 nano .env
 
 # Start everything (pulls from Docker Hub)
+# Production: Uses PostgreSQL by default (no SQLite rebuild needed)
 docker compose -f docker/docker-compose.yml up -d
 
 # OR build locally from source
+# Development: Uses SQLite by default (no PostgreSQL needed)
 # docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
+
+**Database:** 
+- **Production** (`docker-compose.yml`): PostgreSQL by default (no SQLite rebuild needed, faster builds)
+- **Development** (`docker-compose.dev.yml`): SQLite by default (no PostgreSQL service needed, simpler setup)
+- The database schema is automatically initialized on first startup
 
 ??? info "Advanced: Docker Architecture"
 
@@ -66,21 +73,50 @@ docker compose -f docker/docker-compose.yml up -d
     Create a `docker-compose.yml` file:
 
     ```yaml
-    version: '3.8'
-
     services:
+      postgres:
+        image: postgres:16-alpine
+        container_name: matchzy-postgres
+        restart: unless-stopped
+        environment:
+          - POSTGRES_USER=${DB_USER:-postgres}
+          - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+          - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+        volumes:
+          - postgres-data:/var/lib/postgresql/data
+        ports:
+          - '5432:5432'
+        healthcheck:
+          test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+          interval: 10s
+          timeout: 5s
+          retries: 5
+
       matchzy-tournament:
         image: sivertio/matchzy-auto-tournament:latest
         container_name: matchzy-tournament-api
         restart: unless-stopped
+        depends_on:
+          postgres:
+            condition: service_healthy
         ports:
           - '3069:3069'
         environment:
           - API_TOKEN=${API_TOKEN}
           - SERVER_TOKEN=${SERVER_TOKEN}
+          - DB_TYPE=${DB_TYPE:-postgresql}
+          - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
         volumes:
-          - ./data:/app/data
+          - ./data:/app/data  # For SQLite (if DB_TYPE=sqlite) and demos
+
+    volumes:
+      postgres-data:
     ```
+
+    **Database Options:**
+    - **Development (docker-compose.dev.yml)**: Uses SQLite by default. No PostgreSQL service needed. Data persists in `./data/tournament.db`.
+    - **Production (docker-compose.yml)**: Uses PostgreSQL by default. Requires PostgreSQL service. Data persists in the `postgres-data` volume.
+    - **Switch databases**: Set `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file.
 
     After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
 
@@ -108,6 +144,8 @@ docker compose -f docker/docker-compose.yml up -d
     **Frontend:** `http://localhost:5173`
     **API:** `http://localhost:3000`
 
+    **Database:** For local development without Docker, SQLite is recommended (no database setup needed). Set `DB_TYPE=sqlite` in your `.env` file.
+
 ## Environment Setup
 
 Generate secure tokens:
@@ -122,6 +160,18 @@ Edit `.env`:
 # Required
 API_TOKEN=<token-from-above>       # Admin authentication
 SERVER_TOKEN=<different-token>     # CS2 server authentication
+
+# Database Configuration (optional - defaults shown)
+# Production (Docker): PostgreSQL by default
+# Development (Docker): SQLite by default
+# Local dev: SQLite recommended (no setup needed)
+DB_TYPE=postgresql                 # Database type: postgresql (default) or sqlite
+DB_USER=postgres                   # PostgreSQL username (only if DB_TYPE=postgresql)
+DB_PASSWORD=postgres               # PostgreSQL password (only if DB_TYPE=postgresql)
+DB_NAME=matchzy_tournament         # PostgreSQL database name (only if DB_TYPE=postgresql)
+# DATABASE_URL can be used instead of individual DB_* vars
+# DATABASE_URL=postgresql://user:password@host:port/database
+# DB_PATH=/app/data/tournament.db  # SQLite database path (only if DB_TYPE=sqlite)
 
 PORT=3000                          # API port (default: 3000)
 ```

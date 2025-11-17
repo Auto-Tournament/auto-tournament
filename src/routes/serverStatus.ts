@@ -37,7 +37,7 @@ router.use(requireAuth);
 router.get('/:id/status', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const server = serverService.getServerById(id);
+    const server = await serverService.getServerById(id);
 
     if (!server) {
       return res.status(404).json({
@@ -56,7 +56,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       const serverToken = process.env.SERVER_TOKEN || '';
       if (serverToken) {
         try {
-          const baseUrl = getWebhookBaseUrl(req);
+          const baseUrl = await getWebhookBaseUrl(req);
           // For server status check, use generic webhook without match slug
           // Match-specific webhook will be configured when match is loaded
           const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);

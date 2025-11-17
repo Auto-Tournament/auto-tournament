@@ -50,12 +50,15 @@ Best for LANs, new admins, or anyone who wants a working fleet in minutes.
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp .env.example .env
+# Production: PostgreSQL by default (faster builds, no SQLite rebuild)
 docker compose -f docker/docker-compose.yml up -d
-# or build dev image:
+# Development: SQLite by default (simpler setup, no PostgreSQL needed)
 # docker compose -f docker/docker-compose.dev.yml up -d --build
 ```
 
 **Dashboard access:** `http://localhost:3069`
+
+**Database:** The application supports both PostgreSQL (production default) and SQLite (development default). The database schema is automatically initialized on first startup.
 
 ---
 

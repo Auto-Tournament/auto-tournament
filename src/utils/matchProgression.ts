@@ -20,7 +20,7 @@ export async function advanceWinnerToNextMatch(
   winnerId: string
 ): Promise<void> {
   try {
-    const nextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    const nextMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
       currentMatch.next_match_id,
     ]);
 
@@ -31,10 +31,10 @@ export async function advanceWinnerToNextMatch(
 
     // Determine which slot to fill (team1 or team2)
     if (!nextMatch.team1_id) {
-      db.update('matches', { team1_id: winnerId }, 'id = ?', [nextMatch.id]);
+      await db.updateAsync('matches', { team1_id: winnerId }, 'id = ?', [nextMatch.id]);
       log.debug(`Advanced ${winnerId} to ${nextMatch.slug} as team1`);
     } else if (!nextMatch.team2_id) {
-      db.update('matches', { team2_id: winnerId }, 'id = ?', [nextMatch.id]);
+      await db.updateAsync('matches', { team2_id: winnerId }, 'id = ?', [nextMatch.id]);
       log.debug(`Advanced ${winnerId} to ${nextMatch.slug} as team2`);
     } else {
       log.warn('Next match already has both teams assigned', { nextMatchSlug: nextMatch.slug });
@@ -42,7 +42,7 @@ export async function advanceWinnerToNextMatch(
     }
 
     // Check if both teams are now assigned
-    const updatedNextMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    const updatedNextMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
       nextMatch.id,
     ]);
 
@@ -67,7 +67,7 @@ export async function advanceLoserToLosersBracket(
       return;
     }
 
-    const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
     if (!tournament || tournament.type !== 'double_elimination') {
       return;
     }
@@ -81,17 +81,17 @@ export async function advanceLoserToLosersBracket(
     }
 
     // Find the losers bracket destination
-    const lbMatch = findLosersBracketMatch(currentMatch);
+    const lbMatch = await findLosersBracketMatch(currentMatch);
     if (!lbMatch) {
       return;
     }
 
     // Assign loser to losers bracket
     if (!lbMatch.team1_id) {
-      db.update('matches', { team1_id: loserId }, 'id = ?', [lbMatch.id]);
+      await db.updateAsync('matches', { team1_id: loserId }, 'id = ?', [lbMatch.id]);
       log.debug(`Advanced loser ${loserId} to ${lbMatch.slug} as team1`);
     } else if (!lbMatch.team2_id) {
-      db.update('matches', { team2_id: loserId }, 'id = ?', [lbMatch.id]);
+      await db.updateAsync('matches', { team2_id: loserId }, 'id = ?', [lbMatch.id]);
       log.debug(`Advanced loser ${loserId} to ${lbMatch.slug} as team2`);
     } else {
       log.warn('Losers bracket match already full', { lbSlug: lbMatch.slug });
@@ -99,7 +99,7 @@ export async function advanceLoserToLosersBracket(
     }
 
     // Check if losers bracket match is now ready
-    const updatedLbMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    const updatedLbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
       lbMatch.id,
     ]);
 
@@ -114,18 +114,18 @@ export async function advanceLoserToLosersBracket(
 /**
  * Check if tournament is completed
  */
-export function checkTournamentCompletion(): void {
+export async function checkTournamentCompletion(): Promise<void> {
   try {
-    const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
     if (!tournament || tournament.status === 'completed') return;
 
-    const pendingMatches = db.queryOne<{ count: number }>(
+    const pendingMatches = await db.queryOneAsync<{ count: number }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1 AND status != ?',
       ['completed']
     );
 
     if (pendingMatches && pendingMatches.count === 0) {
-      db.update(
+      await db.updateAsync(
         'tournament',
         {
           status: 'completed',
@@ -149,7 +149,7 @@ export function checkTournamentCompletion(): void {
 async function makeMatchReady(match: DbMatchRow): Promise<void> {
   try {
     // Get tournament data
-    const tournament = db.queryOne<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
+    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
     if (!tournament) {
       log.error('Tournament not found');
       return;
@@ -181,11 +181,11 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
     );
 
     // Update match with config and ready status
-    db.update('matches', { config: JSON.stringify(config), status: 'ready' }, 'id = ?', [match.id]);
+    await db.updateAsync('matches', { config: JSON.stringify(config), status: 'ready' }, 'id = ?', [match.id]);
 
     // Get team names for logging
-    const team1 = db.queryOne<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team1_id]);
-    const team2 = db.queryOne<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team2_id]);
+    const team1 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team1_id]);
+    const team2 = await db.queryOneAsync<DbTeamRow>('SELECT name FROM teams WHERE id = ?', [match.team2_id]);
 
     log.success(
       `Match ${match.slug} is now ready: ${team1?.name || 'TBD'} vs ${team2?.name || 'TBD'}`
@@ -203,7 +203,7 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
 /**
  * Find the losers bracket match for a winners bracket loser
  */
-function findLosersBracketMatch(wbMatch: DbMatchRow): DbMatchRow | undefined {
+async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow | undefined> {
   // Parse winners bracket match slug
   const wbSlugMatch = wbMatch.slug.match(/^(?:wb-)?r(\d+)m(\d+)$/);
   if (!wbSlugMatch) {
@@ -219,7 +219,7 @@ function findLosersBracketMatch(wbMatch: DbMatchRow): DbMatchRow | undefined {
   const lbMatchNum = wbMatchNum;
   const lbSlug = `lb-r${lbRound}m${lbMatchNum}`;
 
-  const lbMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [lbSlug]);
+  const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [lbSlug]);
 
   if (!lbMatch) {
     log.warn('Losers bracket match not found', { lbSlug, wbSlug: wbMatch.slug });
@@ -234,7 +234,7 @@ function findLosersBracketMatch(wbMatch: DbMatchRow): DbMatchRow | undefined {
  */
 async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
   try {
-    const webhookUrl = settingsService.getWebhookUrl();
+    const webhookUrl = await settingsService.getWebhookUrl();
     const baseUrl = webhookUrl || 'http://localhost:3000';
 
     if (!webhookUrl) {

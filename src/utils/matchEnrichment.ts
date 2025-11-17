@@ -11,8 +11,8 @@ import type { BracketMatch } from '../types/tournament.types';
 /**
  * Enriches a match object with player stats from match events
  */
-export function enrichMatchWithPlayerStats(match: EnrichableMatch | BracketMatch, matchSlug: string): void {
-  const playerStatsEvent = db.queryOne<DbEventRow>(
+export async function enrichMatchWithPlayerStats(match: EnrichableMatch | BracketMatch, matchSlug: string): Promise<void> {
+  const playerStatsEvent = await db.queryOneAsync<DbEventRow>(
     `SELECT event_data FROM match_events 
      WHERE match_slug = ? AND event_type = 'player_stats' 
      ORDER BY received_at DESC LIMIT 1`,
@@ -37,8 +37,8 @@ export function enrichMatchWithPlayerStats(match: EnrichableMatch | BracketMatch
 /**
  * Enriches a match object with scores from match events
  */
-export function enrichMatchWithScores(match: EnrichableMatch | BracketMatch, matchSlug: string): void {
-  const scoreEvent = db.queryOne<DbEventRow>(
+export async function enrichMatchWithScores(match: EnrichableMatch | BracketMatch, matchSlug: string): Promise<void> {
+  const scoreEvent = await db.queryOneAsync<DbEventRow>(
     `SELECT event_data FROM match_events 
      WHERE match_slug = ? AND event_type IN ('series_end', 'round_end', 'map_end') 
      ORDER BY received_at DESC LIMIT 1`,
@@ -63,7 +63,7 @@ export function enrichMatchWithScores(match: EnrichableMatch | BracketMatch, mat
 /**
  * Enriches a match with both player stats and scores
  */
-export function enrichMatch(match: EnrichableMatch | BracketMatch, matchSlug: string): void {
-  enrichMatchWithPlayerStats(match, matchSlug);
-  enrichMatchWithScores(match, matchSlug);
+export async function enrichMatch(match: EnrichableMatch | BracketMatch, matchSlug: string): Promise<void> {
+  await enrichMatchWithPlayerStats(match, matchSlug);
+  await enrichMatchWithScores(match, matchSlug);
 }

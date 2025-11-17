@@ -63,10 +63,16 @@ if [ ! -f .env ]; then
 API_TOKEN=test-token-123
 SERVER_TOKEN=test-server-token-123
 LOG_LEVEL=info
+DB_TYPE=sqlite
 EOF
     echo -e "${GREEN}✅ Created .env file${NC}"
 else
     echo -e "${YELLOW}⚠️  .env file already exists, using existing values${NC}"
+    # Ensure DB_TYPE is set to sqlite for dev testing
+    if ! grep -q "^DB_TYPE=" .env; then
+        echo "DB_TYPE=sqlite" >> .env
+        echo -e "${GREEN}✅ Added DB_TYPE=sqlite to .env file${NC}"
+    fi
 fi
 
 # Tag the image so docker-compose can use it (if compose file references it)

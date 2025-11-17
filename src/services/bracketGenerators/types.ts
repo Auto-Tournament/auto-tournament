@@ -35,7 +35,7 @@ export interface IBracketGenerator {
    */
   generate(
     tournament: TournamentResponse,
-    getMatchesCallback: () => BracketMatch[]
+    getMatchesCallback: () => Promise<BracketMatch[]>
   ): Promise<BracketMatch[] | BracketGeneratorResult>;
 
   /**

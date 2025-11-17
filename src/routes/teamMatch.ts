@@ -280,7 +280,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
     const normalizedLiveStats = liveStats ? normalizeLiveStatsForTeamView(liveStats, isTeam1) : null;
-    const rawMapResults = getMapResults(match.slug);
+    const rawMapResults = await getMapResults(match.slug);
     const normalizedMapResults = rawMapResults.map((result) => ({
       mapNumber: result.mapNumber,
       mapName: result.mapName,
