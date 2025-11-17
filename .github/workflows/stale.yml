@@ -7,6 +7,7 @@ on:
   workflow_dispatch: # Allow manual triggering
 
 permissions:
+  actions: write
   contents: read
   issues: write
   pull-requests: write
@@ -24,28 +25,28 @@ jobs:
           stale-issue-label: 'stale'
           stale-issue-message: |
             This issue has been automatically marked as stale because it has been open for 60 days with no recent activity.
-            
+
             If this issue is still relevant, please:
             - Add a comment to let us know you're still interested
             - Remove the `stale` label
-            
+
             Otherwise, this issue will be closed in 14 days. Thank you for your contributions!
           close-issue-message: |
             This issue was automatically closed due to inactivity. If you're still experiencing this problem or have questions, please feel free to reopen it or create a new issue.
-          
+
           # PR configuration
           days-before-pr-stale: 45
-          days-before-pr-close: -1  # Never automatically close PRs
+          days-before-pr-close: -1 # Never automatically close PRs
           stale-pr-label: 'stale'
           stale-pr-message: |
             This pull request has been automatically marked as stale because it has been open for 45 days with no recent activity.
-            
+
             If you're still working on this, please:
             - Add a comment or push new commits
             - Remove the `stale` label
-            
+
             Thank you for your contributions!
-          
+
           # Exempt certain labels/issues from being marked stale
           exempt-issue-labels: 'pinned,security,bug,enhancement,help wanted,good first issue'
           exempt-pr-labels: 'pinned,security,draft,WIP,work in progress'
@@ -53,10 +54,9 @@ jobs:
           exempt-all-pr-milestones: false
           exempt-all-issue-assignees: false
           exempt-all-pr-assignees: false
-          
+
           # Configuration
           operations-per-run: 30
           ascending: false
           delete-branch: false
           enable-statistics: true
-
