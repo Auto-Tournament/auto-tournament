@@ -19,10 +19,10 @@ test.describe('Authentication', () => {
     await expect(page).toHaveTitle(/Login/i);
     
     // Check for login form elements
-    const passwordInput = page.getByLabel(/password|token/i);
+    const passwordInput = page.getByLabel(/api token/i);
     await expect(passwordInput).toBeVisible();
     
-    const loginButton = page.getByRole('button', { name: /login|sign in/i });
+    const loginButton = page.getByRole('button', { name: /sign in/i });
     await expect(loginButton).toBeVisible();
   });
 
@@ -39,11 +39,11 @@ test.describe('Authentication', () => {
     await page.goto('/login');
     
     // Enter API token
-    const passwordInput = page.getByLabel(/password|token/i);
+    const passwordInput = page.getByLabel(/api token/i);
     await passwordInput.fill(apiToken);
     
     // Click login button
-    const loginButton = page.getByRole('button', { name: /login|sign in/i });
+    const loginButton = page.getByRole('button', { name: /sign in/i });
     await loginButton.click();
     
     // Should redirect to dashboard/home
@@ -59,11 +59,11 @@ test.describe('Authentication', () => {
     await page.goto('/login');
     
     // Enter invalid token
-    const passwordInput = page.getByLabel(/password|token/i);
+    const passwordInput = page.getByLabel(/api token/i);
     await passwordInput.fill('invalid-token-12345');
     
     // Click login button
-    const loginButton = page.getByRole('button', { name: /login|sign in/i });
+    const loginButton = page.getByRole('button', { name: /sign in/i });
     await loginButton.click();
     
     // Should show error message
@@ -78,8 +78,8 @@ test.describe('Authentication', () => {
     
     // Login first
     await page.goto('/login');
-    await page.getByLabel(/password|token/i).fill(apiToken);
-    await page.getByRole('button', { name: /login|sign in/i }).click();
+    await page.getByLabel(/api token/i).fill(apiToken);
+    await page.getByRole('button', { name: /sign in/i }).click();
     
     // Wait for navigation
     await expect(page).not.toHaveURL(/\/login/);
@@ -102,8 +102,8 @@ test.describe('Authentication', () => {
     
     // Login
     await page.goto('/login');
-    await page.getByLabel(/password|token/i).fill(apiToken);
-    await page.getByRole('button', { name: /login|sign in/i }).click();
+    await page.getByLabel(/api token/i).fill(apiToken);
+    await page.getByRole('button', { name: /sign in/i }).click();
     await expect(page).not.toHaveURL(/\/login/);
     
     // Reload page
