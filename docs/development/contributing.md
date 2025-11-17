@@ -6,7 +6,7 @@ Thank you for your interest in contributing! This project welcomes contributions
 
 ### Prerequisites
 
-- Node.js 18+ or Bun
+- Node.js 18+
 - Docker (optional, for full stack testing)
 - A CS2 server with MatchZy plugin (for testing)
 
@@ -156,6 +156,22 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     # Build both
     npm run build:all
     ```
+
+    **Docker Testing:**
+
+    Test the full Docker build and deployment:
+
+    ```bash
+    # Run comprehensive Docker test script
+    bash scripts/test-docker.sh
+    ```
+
+    This script will:
+    - Build the Docker image
+    - Start the container with docker-compose
+    - Verify all services are running (Caddy, Node backend)
+    - Test health endpoints, frontend, and API
+    - Clean up automatically
 
     **Manual Testing:**
 

@@ -22,25 +22,25 @@
 
 # ========================================
 
-:3069 { # API and WebSocket proxying (must come before file_server)
-reverse_proxy /api/_ localhost:3000
-reverse_proxy /socket.io/_ localhost:3000
-reverse_proxy /health localhost:3000
+:3069 {
+	# API and WebSocket proxying (must come before file_server)
+	reverse_proxy /api/* localhost:3000
+	reverse_proxy /socket.io/* localhost:3000
+	reverse_proxy /health localhost:3000
 
-    # Serve React frontend from /app/public
-    root * /app/public
+	# Serve React frontend from /app/public
+	root * /app/public
 
-    # Handle SPA routing: try file, then fallback to index.html
-    @notAPI {
-        not path /api/*
-        not path /socket.io/*
-        not path /health
-        file {
-            try_files {path} /index.html
-        }
-    }
-    rewrite @notAPI {http.matchers.file.relative}
+	# Handle SPA routing: try file, then fallback to index.html
+	@notAPI {
+		not path /api/*
+		not path /socket.io/*
+		not path /health
+		file {
+			try_files {path} /index.html
+		}
+	}
+	rewrite @notAPI {http.matchers.file.relative}
 
-    file_server
-
+	file_server
 }

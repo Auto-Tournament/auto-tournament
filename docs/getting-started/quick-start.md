@@ -52,6 +52,15 @@ docker compose -f docker/docker-compose.yml up -d
 
     **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
 
+    **Multi-Architecture Support:**
+
+    The Docker image automatically detects and supports multiple architectures:
+    - `amd64` / `x86_64` (Intel/AMD 64-bit)
+    - `arm64` / `aarch64` (ARM 64-bit, e.g., Apple Silicon, Raspberry Pi 4+)
+    - `armv7` / `armv6` (ARM 32-bit, e.g., older Raspberry Pi)
+
+    The build process automatically downloads the correct Caddy binary for your platform.
+
 ??? example "Using Docker Compose"
 
     Create a `docker-compose.yml` file:

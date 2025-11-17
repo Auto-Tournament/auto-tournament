@@ -1,14 +1,12 @@
-version: '3.8'
-
 services:
   matchzy-tournament:
     # Pull from Docker Hub (recommended - requires release first)
     image: sivertio/matchzy-auto-tournament:latest
-    
+
     # If image not found, build locally:
     # Use docker/docker-compose.dev.yml instead:
     # docker compose -f docker/docker-compose.dev.yml up -d --build
-    
+
     container_name: matchzy-tournament-api
     restart: unless-stopped
     ports:

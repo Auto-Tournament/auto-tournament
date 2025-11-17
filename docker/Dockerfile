@@ -1,8 +1,11 @@
-# Use official Bun image
-FROM oven/bun:1 AS base
+# Use Node.js for build with Yarn (better optional dependency handling)
+FROM node:20-slim AS base
 WORKDIR /app
 
-# Install dependencies
+# Enable Yarn via corepack (built into Node.js 20+)
+RUN corepack enable && corepack prepare yarn@stable --activate
+
+# Install dependencies (production only for runtime)
 FROM base AS dependencies
 
 # Install Python and build tools for native modules (better-sqlite3)
@@ -10,16 +13,32 @@ RUN apt-get update && \
     apt-get install -y python3 make g++ && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
-COPY package.json bun.lockb ./
-RUN bun install --frozen-lockfile
+COPY package.json yarn.lock package-lock.json* ./
+# Configure Yarn to use node_modules and set cache directory
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
+    echo "enableGlobalCache: false" >> .yarnrc.yml
+# Install production dependencies only
+RUN yarn install --production --immutable 2>&1 || yarn install --immutable
 
 # Build TypeScript backend and React frontend
-FROM dependencies AS build
+FROM base AS build
+
+# Install all dependencies (including devDependencies for build)
+RUN apt-get update && \
+    apt-get install -y python3 make g++ && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
+COPY package.json yarn.lock package-lock.json* ./
+# Configure Yarn to use node_modules and set cache directory
+RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
+    echo "enableGlobalCache: false" >> .yarnrc.yml
+RUN yarn install --immutable
+
 COPY . .
 # Ensure public directory exists for vite build output
 RUN mkdir -p public
-RUN bun run build:server
-RUN bun run build:client
+RUN yarn build:server
+RUN yarn build:client
 
 # Production image with Node.js and Caddy (better-sqlite3 requires Node)
 FROM node:20-slim AS release
@@ -29,16 +48,16 @@ WORKDIR /app
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
 
-# Install build tools and Caddy
+# Install build tools, Caddy, and procps (for pgrep in tests)
 # Dynamically detect architecture for Caddy download
 RUN apt-get update && \
-    apt-get install -y wget python3 make g++ && \
-    ARCH=$(echo "${TARGETPLATFORM}" | cut -d '/' -f2) && \
-    if [ "$ARCH" = "amd64" ]; then \
+    apt-get install -y wget python3 make g++ procps && \
+    ARCH=$(echo "${TARGETPLATFORM:-linux/amd64}" | cut -d '/' -f2) && \
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
         CADDY_ARCH="amd64"; \
-    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ]; then \
+    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ] || [ "$ARCH" = "aarch64" ]; then \
         CADDY_ARCH="arm64"; \
-    elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ]; then \
+    elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ] || [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv6l" ]; then \
         CADDY_ARCH="armv7"; \
     else \
         echo "Warning: Unsupported architecture $ARCH, falling back to amd64" >&2; \

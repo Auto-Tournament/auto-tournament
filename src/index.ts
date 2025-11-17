@@ -80,11 +80,11 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 // Swagger Documentation
 app.use(
   '/api-docs',
-  swaggerUi.serve,
+  ...(swaggerUi.serve as any),
   swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'MatchZy API Docs',
-  })
+  }) as any
 );
 
 // Swagger JSON

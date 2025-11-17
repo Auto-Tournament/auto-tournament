@@ -1,5 +1,3 @@
-version: '3.8'
-
 # Development compose file - builds locally instead of pulling from Docker Hub
 # Usage: docker compose -f docker-compose.dev.yml up -d --build
 
@@ -37,4 +35,3 @@ networks:
 volumes:
   matchzy-data:
     driver: local
-
