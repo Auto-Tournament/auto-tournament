@@ -67,7 +67,7 @@ export class MatchAllocationService {
        ORDER BY round, match_number`
     );
 
-    return matches.map((row) => this.rowToMatch(row));
+    return Promise.all(matches.map((row) => this.rowToMatch(row)));
   }
 
   /**
@@ -195,7 +195,7 @@ export class MatchAllocationService {
   }> {
     try {
       // Check if match already has a server
-      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
       if (!match) {
         return { success: false, error: 'Match not found' };
       }
@@ -413,7 +413,7 @@ export class MatchAllocationService {
         message = `Failed to allocate any matches. ${failed} match(es) could not be loaded.`;
       } else {
         // Check if there are pending matches waiting for veto
-        const pendingMatches = db.query<DbMatchRow>(
+        const pendingMatches = await db.queryAsync<DbMatchRow>(
           `SELECT * FROM matches 
            WHERE tournament_id = 1 
            AND status = 'pending'`
@@ -478,7 +478,7 @@ export class MatchAllocationService {
     log.info(`Tournament: ${tournament.name} (${tournament.type}, ${tournament.format})`);
 
     // Get all servers that have loaded matches
-    const loadedMatches = db.query<DbMatchRow>(
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status IN ('loaded', 'live')
@@ -573,7 +573,7 @@ export class MatchAllocationService {
 
     try {
       // Get the match
-      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
 
       if (!match) {
         return {
@@ -653,7 +653,7 @@ export class MatchAllocationService {
   /**
    * Convert database row to BracketMatch
    */
-  private rowToMatch(row: DbMatchRow): BracketMatch {
+  private async rowToMatch(row: DbMatchRow): Promise<BracketMatch> {
     const match: BracketMatch = {
       id: row.id,
       slug: row.slug,
@@ -669,21 +669,21 @@ export class MatchAllocationService {
 
     // Attach team info if available
     if (row.team1_id) {
-      const team1 = db.queryOne<{ id: string; name: string; tag: string | null }>(
+      const team1 = await db.queryOneAsync<{ id: string; name: string; tag: string | null }>(
         'SELECT id, name, tag FROM teams WHERE id = ?',
         [row.team1_id]
       );
       if (team1) match.team1 = { id: team1.id, name: team1.name, tag: team1.tag || undefined };
     }
     if (row.team2_id) {
-      const team2 = db.queryOne<{ id: string; name: string; tag: string | null }>(
+      const team2 = await db.queryOneAsync<{ id: string; name: string; tag: string | null }>(
         'SELECT id, name, tag FROM teams WHERE id = ?',
         [row.team2_id]
       );
       if (team2) match.team2 = { id: team2.id, name: team2.name, tag: team2.tag || undefined };
     }
     if (row.winner_id) {
-      const winner = db.queryOne<{ id: string; name: string; tag: string | null }>(
+      const winner = await db.queryOneAsync<{ id: string; name: string; tag: string | null }>(
         'SELECT id, name, tag FROM teams WHERE id = ?',
         [row.winner_id]
       );

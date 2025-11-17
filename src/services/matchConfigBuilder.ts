@@ -12,12 +12,12 @@ export const generateMatchConfig = async (
 ): Promise<MatchConfig> => {
   // 1) DB reads (await!)
   const team1 = team1Id
-    ? await db.queryOne<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
+    ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
         team1Id,
       ])
     : null;
   const team2 = team2Id
-    ? await db.queryOne<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
+    ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
         team2Id,
       ])
     : null;
@@ -78,7 +78,7 @@ export const generateMatchConfig = async (
   let existingMatch: DbMatchRow | null = null;
   if (slug) {
     existingMatch =
-      (await db.queryOne<DbMatchRow>('SELECT id, veto_state FROM matches WHERE slug = ?', [
+      (await db.queryOneAsync<DbMatchRow>('SELECT id, veto_state FROM matches WHERE slug = ?', [
         slug,
       ])) ?? null;
     console.log('match', existingMatch);

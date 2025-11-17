@@ -215,7 +215,7 @@ export async function loadMatchOnServer(
       log.matchLoaded(matchSlug, serverId, webhookConfigured);
 
       // Emit websocket events to notify clients
-      const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
         matchSlug,
       ]);
       if (updatedMatch) {

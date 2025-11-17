@@ -225,7 +225,7 @@ router.delete('/', async (_req: Request, res: Response) => {
     log.info('Deleting tournament...');
 
     // First, end all matches on servers (same as reset)
-    const loadedMatches = db.query<DbMatchRow>(
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status IN ('loaded', 'live')
@@ -404,7 +404,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     log.info('Resetting tournament to setup mode...');
 
     // First, end all matches on servers
-    const loadedMatches = db.query<DbMatchRow>(
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status IN ('loaded', 'live')

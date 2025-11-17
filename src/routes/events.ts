@@ -348,7 +348,7 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
  * GET /api/events/:matchSlug
  * Get all events for a specific match
  */
-router.get('/:matchSlug', requireAuth, (req: Request, res: Response) => {
+router.get('/:matchSlug', requireAuth, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
@@ -365,7 +365,7 @@ router.get('/:matchSlug', requireAuth, (req: Request, res: Response) => {
     query += ' ORDER BY received_at DESC LIMIT ?';
     params.push(limit);
 
-    const events = db.query<DbEventRow>(query, params);
+    const events = await db.queryAsync<DbEventRow>(query, params);
 
     return res.json({
       success: true,

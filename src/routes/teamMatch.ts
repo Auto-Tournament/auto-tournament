@@ -22,7 +22,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     console.log(`[TeamMatch] Looking for matches for team: ${teamId}`);
 
     // Check if team exists and get players
-    const team = db.queryOne<{ id: string; name: string; tag: string; players: string }>(
+    const team = await db.queryOneAsync<{ id: string; name: string; tag: string; players: string }>(
       'SELECT id, name, tag, players FROM teams WHERE id = ?',
       [teamId]
     );
@@ -69,7 +69,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Find active match (loaded or live)
-    let match = db.queryOne<
+    let match = await db.queryOneAsync<
       DbMatchRow & {
         team1_name?: string;
         team1_tag?: string;
@@ -103,7 +103,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // If no active match, find next pending/ready match
     if (!match) {
       console.log(`[TeamMatch] No active match, looking for pending/ready matches...`);
-      match = db.queryOne<
+      match = await db.queryOneAsync<
         DbMatchRow & {
           team1_name?: string;
           team1_tag?: string;
@@ -138,7 +138,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Check all matches for this team for debugging
-    const allMatches = db.query<DbMatchRow>(
+    const allMatches = await db.queryAsync<DbMatchRow>(
       `SELECT slug, status, round, match_number FROM matches 
        WHERE team1_id = ? OR team2_id = ?
        ORDER BY round, match_number`,
@@ -234,7 +234,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Get tournament status
-    const tournament = db.queryOne<{ status: string }>(
+    const tournament = await db.queryOneAsync<{ status: string }>(
       'SELECT status FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
