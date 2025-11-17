@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 CONTAINER_NAME="matchzy-tournament-api-dev"
 IMAGE_NAME="matchzy-auto-tournament:test"
 TEST_PORT=3069
-COMPOSE_FILE="docker/docker-compose.dev.yml"
+COMPOSE_FILE="docker/docker-compose.local.yml"
 
 echo -e "${BLUE}MatchZy Auto Tournament - Docker Test${NC}"
 echo "========================================="

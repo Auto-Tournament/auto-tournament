@@ -9,8 +9,10 @@ services:
       - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    # No port binding needed - DB is only accessible within Docker network
+    # Uncomment the line below if you need external access for backups/management:
+    # ports:
+    #   - '5432:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
@@ -20,13 +22,12 @@ services:
       - matchzy-network
 
   matchzy-tournament:
-    # Pull from Docker Hub (recommended - requires release first)
+    # Pull from Docker Hub (pre-built image - no cloning needed)
     # Note: Production image is built without SQLite (ENABLE_SQLITE=false by default)
     image: sivertio/matchzy-auto-tournament:latest
 
-    # If image not found, build locally:
-    # Use docker/docker-compose.dev.yml instead:
-    # docker compose -f docker/docker-compose.dev.yml up -d --build
+    # To build from source instead, use docker/docker-compose.local.yml:
+    # docker compose -f docker/docker-compose.local.yml up -d --build
 
     container_name: matchzy-tournament-api
     restart: unless-stopped

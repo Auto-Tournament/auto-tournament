@@ -21,29 +21,87 @@ If you just want working CS2 servers with the right plugins, use the automated *
 
 ## Installation
 
-### Docker (Recommended)
+### Docker (Recommended - No cloning needed)
 
-```bash
-# Clone repository
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+**1. Create `docker-compose.yml` in any directory:**
 
-# Setup environment
-cp .env.example .env
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No port binding needed - DB is only accessible within Docker network
+    # Uncomment if you need external access for backups/management:
+    # ports:
+    #   - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-# Edit .env with your tokens (see below)
-nano .env
+  matchzy-tournament:
+    image: sivertio/matchzy-auto-tournament:latest
+    container_name: matchzy-tournament-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - '3069:3069'
+    environment:
+      - API_TOKEN=${API_TOKEN}
+      - SERVER_TOKEN=${SERVER_TOKEN}
+      - DB_TYPE=${DB_TYPE:-postgresql}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+    volumes:
+      - ./data:/app/data
 
-# Start everything (pulls from Docker Hub)
-# Production: Uses PostgreSQL by default (no SQLite rebuild needed)
-docker compose -f docker/docker-compose.yml up -d
-
-# OR build locally from source
-# Development: Uses PostgreSQL by default (no SQLite rebuild needed, faster builds)
-# docker compose -f docker/docker-compose.dev.yml up -d --build
+volumes:
+  postgres-data:
 ```
 
-**Access:** `http://localhost:3069` (development) or `https://your-domain.com` (production)
+**2. Create `.env` file in the same directory:**
+
+```bash
+# Generate tokens
+openssl rand -hex 32  # Copy for API_TOKEN
+openssl rand -hex 32  # Copy for SERVER_TOKEN
+```
+
+```bash
+API_TOKEN=<your-api-token>
+SERVER_TOKEN=<your-server-token>
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=matchzy_tournament
+```
+
+**3. Start:**
+```bash
+docker compose up -d
+```
+
+**Access:** `http://localhost:3069` (or `https://your-domain.com` in production)
+
+??? example "Build from Source (Optional)"
+
+    If you've cloned the repository and want to build from source:
+
+    ```bash
+    git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+    cd matchzy-auto-tournament
+    cp .env.example .env
+    # Edit .env with your tokens
+    docker compose -f docker/docker-compose.local.yml up -d --build
+    ```
 
 **Database:**
 
@@ -69,62 +127,19 @@ docker compose -f docker/docker-compose.yml up -d
 
     The build process automatically downloads the correct Caddy binary for your platform.
 
-??? example "Using Docker Compose"
+??? info "Docker Compose Files"
 
-    Create a `docker-compose.yml` file:
-
-    ```yaml
-    services:
-      postgres:
-        image: postgres:16-alpine
-        container_name: matchzy-postgres
-        restart: unless-stopped
-        environment:
-          - POSTGRES_USER=${DB_USER:-postgres}
-          - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-          - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
-        volumes:
-          - postgres-data:/var/lib/postgresql/data
-        ports:
-          - '5432:5432'
-        healthcheck:
-          test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
-          interval: 10s
-          timeout: 5s
-          retries: 5
-
-      matchzy-tournament:
-        image: sivertio/matchzy-auto-tournament:latest
-        container_name: matchzy-tournament-api
-        restart: unless-stopped
-        depends_on:
-          postgres:
-            condition: service_healthy
-        ports:
-          - '3069:3069'
-        environment:
-          - API_TOKEN=${API_TOKEN}
-          - SERVER_TOKEN=${SERVER_TOKEN}
-          - DB_TYPE=${DB_TYPE:-postgresql}
-          - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
-        volumes:
-          - ./data:/app/data  # For demos and other data
-
-    volumes:
-      postgres-data:
-    ```
-
+    The repository includes two compose files:
+    
+    - **`docker/docker-compose.yml`**: Uses pre-built image from Docker Hub (no cloning needed)
+    - **`docker/docker-compose.local.yml`**: Builds from source (requires cloned repository)
+    
     **Database Options:**
     - **Docker (both compose files)**: Uses PostgreSQL by default. PostgreSQL service included. Data persists in the `postgres-data` volume.
     - **Local development (without Docker)**: SQLite recommended. Set `DB_TYPE=sqlite` in your `.env` file. Data persists in `data/tournament.db`.
     - **Switch databases**: Set `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file (SQLite only available outside Docker).
 
     After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
-
-    Then run:
-    ```bash
-    docker compose up -d
-    ```
 
 ??? example "Advanced: Local Development (without Docker)"
 

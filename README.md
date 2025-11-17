@@ -42,37 +42,9 @@
 
 > **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Installation guide</a>
 
-```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+### Option 1: Docker (Recommended - No cloning needed)
 
-# 1. Create environment file
-cp .env.example .env
-
-# 2. Generate secure tokens
-openssl rand -hex 32  # Copy for API_TOKEN
-openssl rand -hex 32  # Copy for SERVER_TOKEN
-
-# 3. Edit .env and add:
-#    - API_TOKEN (admin login)
-#    - SERVER_TOKEN (CS2 server auth)
-#    - DB_TYPE (optional, default: postgresql)
-#    - DB_USER, DB_PASSWORD, DB_NAME (optional, defaults provided)
-nano .env
-
-# 4. Start everything (includes PostgreSQL by default)
-docker compose -f docker/docker-compose.yml up -d
-
-# OR build locally (until first release)
-# docker compose -f docker/docker-compose.dev.yml up -d --build
-```
-
-**Access at:** `http://localhost:3069`
-
-<details>
-<summary><b>Or use Docker Compose</b></summary>
-
-Create `docker-compose.yml`:
+Create `docker-compose.yml` in any directory:
 
 ```yaml
 services:
@@ -86,8 +58,10 @@ services:
       - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    ports:
-      - '5432:5432'
+    # No port binding needed - DB is only accessible within Docker network
+    # Uncomment if you need external access for backups/management:
+    # ports:
+    #   - '5432:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
@@ -120,9 +94,52 @@ volumes:
 - **Local development (without Docker)**: SQLite is recommended (no database setup needed)
 - Switch databases by setting `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file (SQLite only available outside Docker)
 
+**Generate secure tokens:**
+```bash
+openssl rand -hex 32  # Copy for API_TOKEN
+openssl rand -hex 32  # Copy for SERVER_TOKEN
+```
+
+Create `.env` file in the same directory:
+```bash
+API_TOKEN=<your-api-token>
+SERVER_TOKEN=<your-server-token>
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=matchzy_tournament
+```
+
+**Start:**
+```bash
+docker compose up -d
+```
+
+**Access at:** `http://localhost:3069`
+
 Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
 
-Run: `docker compose up -d`
+</details>
+
+<details>
+<summary><b>Option 2: Build from Source</b></summary>
+
+If you want to build from source or contribute:
+
+```bash
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+
+# Create environment file
+cp .env.example .env
+
+# Edit .env with your tokens (see Option 1 above)
+nano .env
+
+# Build and start from source
+docker compose -f docker/docker-compose.local.yml up -d --build
+```
+
+**Access at:** `http://localhost:3069`
 
 </details>
 

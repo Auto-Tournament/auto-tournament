@@ -44,19 +44,26 @@ Use the companion **[CS2 Server Manager](guides/cs2-server-manager.md)** to depl
 
 Best for LANs, new admins, or anyone who wants a working fleet in minutes.
 
-### 🛠️ Manual Setup (advanced users)
+### 🛠️ Docker Setup (no cloning needed)
+
+Create `docker-compose.yml` and `.env` files (see [Quick Start Guide](getting-started/quick-start.md) for full example):
+
+```bash
+# Create docker-compose.yml with PostgreSQL service and matchzy-tournament image
+# Create .env with API_TOKEN, SERVER_TOKEN, and DB credentials
+docker compose up -d
+```
+
+**Dashboard access:** `http://localhost:3069`
+
+### 🛠️ Build from Source (for contributors)
 
 ```bash
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp .env.example .env
-# Production: PostgreSQL by default (faster builds, no SQLite rebuild)
-docker compose -f docker/docker-compose.yml up -d
-# Development: PostgreSQL by default (faster builds, no SQLite rebuild)
-# docker compose -f docker/docker-compose.dev.yml up -d --build
+docker compose -f docker/docker-compose.local.yml up -d --build
 ```
-
-**Dashboard access:** `http://localhost:3069`
 
 **Database:** The application supports both PostgreSQL (default for Docker) and SQLite (for local development without Docker). The database schema is automatically initialized on first startup.
 

@@ -76,8 +76,8 @@ matchzy-auto-tournament/
 │   └── requirements.txt          # Python dependencies for docs
 ├── docker/                       # Docker configuration
 │   ├── Dockerfile               # Multi-stage build
-│   ├── docker-compose.yml       # Production compose
-│   ├── docker-compose.dev.yml   # Development compose
+│   ├── docker-compose.yml       # Docker Hub image (pre-built)
+│   ├── docker-compose.local.yml # Local build from source
 │   └── Caddyfile                # Reverse proxy config
 └── scripts/                      # Utility scripts
     ├── release.sh               # Docker Hub release automation
@@ -183,13 +183,13 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     ```
 
     This script will:
-    - Build the Docker image (no SQLite rebuild needed - uses PostgreSQL)
-    - Start the container with docker-compose
+    - Build the Docker image from source (no SQLite rebuild needed - uses PostgreSQL)
+    - Start the container with docker-compose.local.yml
     - Verify all services are running (PostgreSQL, Caddy, Node backend)
     - Test health endpoints, frontend, and API
     - Clean up automatically
 
-    **Note:** Development Docker setup uses PostgreSQL (faster builds, no native module rebuilds). For local development outside Docker, SQLite is still recommended.
+    **Note:** The local build compose file uses PostgreSQL (faster builds, no native module rebuilds). For local development outside Docker, SQLite is still recommended.
 
     **Manual Testing:**
 

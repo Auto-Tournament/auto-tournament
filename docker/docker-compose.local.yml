@@ -1,5 +1,6 @@
-# Development compose file - builds locally instead of pulling from Docker Hub
-# Usage: docker compose -f docker-compose.dev.yml up -d --build
+# Local build compose file - builds from source instead of pulling from Docker Hub
+# Usage: docker compose -f docker/docker-compose.local.yml up -d --build
+# Use this when you've cloned the repository and want to build from source
 
 services:
   # PostgreSQL service (always available in development - no SQLite rebuild needed)
