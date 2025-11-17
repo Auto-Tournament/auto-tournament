@@ -11,39 +11,52 @@ End-to-end tests for MatchZy Auto Tournament using Playwright.
 
 2. Install Playwright browsers:
    ```bash
-   yarn test:e2e:install
+   yarn test:install
    ```
 
 ## Running Tests
 
-### Run all tests
+### Run all tests (recommended - fully automated)
 ```bash
-yarn test:e2e
+# Fully automated: spins up Docker Compose with PostgreSQL, runs tests, cleans up
+yarn test
+```
+
+### Run tests manually (requires server and database running)
+```bash
+# Make sure PostgreSQL is running: yarn db
+# Make sure server is running: yarn start
+# Then run tests:
+yarn test:manual
 ```
 
 ### Run tests with specific tags
 ```bash
 # Run only authentication tests
-yarn test:e2e --grep @auth
+yarn test:manual --grep @auth
 
 # Run only teams tests
-yarn test:e2e --grep @teams
+yarn test:manual --grep @teams
 
 # Run only CRUD tests
-yarn test:e2e --grep @crud
+yarn test:manual --grep @crud
 
 # Run login tests only
-yarn test:e2e --grep @login
+yarn test:manual --grep @login
 ```
 
-### Run tests in UI mode (interactive)
+### Run tests in UI mode (interactive debugging)
 ```bash
-yarn test:e2e:ui
+# Works with automated setup
+yarn test:ui
+
+# Or with manual setup (requires server/db running)
+yarn test:manual --ui
 ```
 
 ### View HTML report
 ```bash
-yarn test:e2e:report
+yarn test:report
 ```
 
 ## Test Tags
@@ -55,6 +68,13 @@ Tests are organized using tags for easy filtering:
 - `@logout` - Logout tests
 - `@teams` - Teams page tests
 - `@servers` - Servers page tests
+- `@tournament` - Tournament page tests
+- `@bracket` - Bracket page tests
+- `@matches` - Matches page tests
+- `@settings` - Settings page tests
+- `@dashboard` - Dashboard page tests
+- `@navigation` - Navigation tests
+- `@configuration` - Configuration/settings tests
 - `@crud` - Create, Read, Update, Delete operations
 - `@example` - Example/template tests
 
@@ -68,8 +88,13 @@ Tests are organized using tags for easy filtering:
 ```
 tests/
 ├── auth.spec.ts      # Authentication tests (@auth, @login, @logout)
+├── dashboard.spec.ts # Dashboard page tests (@dashboard, @navigation)
 ├── teams.spec.ts     # Teams page tests (@teams, @crud)
-├── servers.spec.ts    # Servers page tests (@servers, @crud)
+├── servers.spec.ts   # Servers page tests (@servers, @crud)
+├── tournament.spec.ts # Tournament page tests (@tournament, @crud)
+├── bracket.spec.ts   # Bracket page tests (@bracket, @navigation)
+├── matches.spec.ts   # Matches page tests (@matches, @navigation)
+├── settings.spec.ts   # Settings page tests (@settings, @configuration)
 └── example.spec.ts   # Example/template tests (@example)
 ```
 
@@ -96,7 +121,7 @@ test.describe('Your Feature', () => {
 
 After running tests, view the full HTML report:
 ```bash
-yarn test:e2e:report
+yarn test:report
 ```
 
 The report includes:

@@ -62,7 +62,8 @@ export default defineConfig({
   ],
 
   /* Run your local dev server before starting the tests */
-  webServer: {
+  /* Disabled when using Docker Compose (test script handles server startup) */
+  webServer: process.env.SKIP_WEBSERVER ? undefined : {
     command: 'yarn start',
     url: 'http://localhost:3069',
     reuseExistingServer: !process.env.CI,

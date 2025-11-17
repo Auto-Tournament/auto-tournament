@@ -22,10 +22,11 @@
         "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '✅ Stopped PostgreSQL container' || echo '⚠️  PostgreSQL container not running'",
         "db:restart": "yarn db:stop && sleep 1 && yarn db",
         "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '✅ Removed PostgreSQL container' || echo '⚠️  PostgreSQL container not found'",
-        "test:e2e": "playwright test",
-        "test:e2e:ui": "playwright test --ui",
-        "test:e2e:report": "playwright show-report",
-        "test:e2e:install": "playwright install"
+        "test": "bash scripts/test-e2e-all.sh",
+        "test:manual": "playwright test",
+        "test:ui": "bash scripts/test-e2e-all.sh --ui",
+        "test:report": "playwright show-report",
+        "test:install": "playwright install"
     },
     "keywords": [
         "cs2",
