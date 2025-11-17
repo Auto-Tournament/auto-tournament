@@ -25,6 +25,21 @@ if ! docker info > /dev/null 2>&1; then
     exit 1
 fi
 
+# Set up Docker Buildx for multi-platform builds
+if ! docker buildx version > /dev/null 2>&1; then
+    echo -e "${RED}Error: Docker Buildx is not available. Please update Docker.${NC}"
+    exit 1
+fi
+
+# Create and use buildx builder if it doesn't exist
+BUILDER_NAME="matchzy-builder"
+if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    echo -e "${YELLOW}Creating Docker Buildx builder...${NC}"
+    docker buildx create --name "${BUILDER_NAME}" --use
+else
+    docker buildx use "${BUILDER_NAME}"
+fi
+
 # Check if logged in to Docker Hub
 if ! docker info | grep -q "Username"; then
     echo -e "${YELLOW}Not logged in to Docker Hub. Attempting to log in...${NC}"
@@ -58,6 +73,7 @@ fi
 echo ""
 echo -e "Building and pushing: ${GREEN}${DOCKER_IMAGE}:${VERSION}${NC}"
 echo -e "Also tagging as: ${GREEN}${DOCKER_IMAGE}:latest${NC}"
+echo -e "Platforms: ${GREEN}linux/amd64,linux/arm64${NC}"
 echo ""
 read -p "Continue? (y/n) " -n 1 -r
 echo
@@ -72,22 +88,31 @@ echo
 SKIP_TEST=$REPLY
 
 echo ""
-echo -e "${YELLOW}Step 1/4: Building Docker image...${NC}"
-docker build -f docker/Dockerfile -t "${DOCKER_IMAGE}:${VERSION}" -t "${DOCKER_IMAGE}:latest" .
+echo -e "${YELLOW}Step 1/3: Building and pushing multi-platform Docker images...${NC}"
+echo -e "${YELLOW}(This may take several minutes for multi-platform builds)${NC}"
+
+# Build and push multi-platform images using buildx
+docker buildx build \
+    --platform linux/amd64,linux/arm64 \
+    --file docker/Dockerfile \
+    --tag "${DOCKER_IMAGE}:${VERSION}" \
+    --tag "${DOCKER_IMAGE}:latest" \
+    --push \
+    .
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to build Docker image${NC}"
+    echo -e "${RED}Failed to build and push Docker images${NC}"
     exit 1
 fi
 
-if [[ $SKIP_TEST =~ ^[Yy]$ ]]; then
+if [[ ! $SKIP_TEST =~ ^[Yy]$ ]]; then
     echo ""
-    echo -e "${YELLOW}Skipping container test...${NC}"
-else
-    echo ""
-    echo -e "${YELLOW}Step 2/4: Testing image...${NC}"
+    echo -e "${YELLOW}Step 2/3: Testing image (amd64 platform)...${NC}"
+    # Pull and test the amd64 image
+    docker pull --platform linux/amd64 "${DOCKER_IMAGE}:${VERSION}"
+    
     # Quick test to ensure the image runs
-    CONTAINER_ID=$(docker run -d --rm \
+    CONTAINER_ID=$(docker run -d --rm --platform linux/amd64 \
         -e API_TOKEN=test-token \
         -e SERVER_TOKEN=test-token \
         "${DOCKER_IMAGE}:${VERSION}")
@@ -119,34 +144,28 @@ else
         docker rm -f "${CONTAINER_ID}" > /dev/null 2>&1 || true
         exit 1
     fi
+else
+    echo ""
+    echo -e "${YELLOW}Skipping container test...${NC}"
 fi
 
 echo ""
-echo -e "${YELLOW}Step 3/4: Pushing version tag (${VERSION})...${NC}"
-docker push "${DOCKER_IMAGE}:${VERSION}"
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to push version tag${NC}"
-    exit 1
-fi
-
-echo ""
-echo -e "${YELLOW}Step 4/4: Pushing latest tag...${NC}"
-docker push "${DOCKER_IMAGE}:latest"
-
-if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to push latest tag${NC}"
-    exit 1
-fi
+echo -e "${YELLOW}Step 3/3: Verifying pushed images...${NC}"
 
 echo ""
 echo -e "${GREEN}✅ Successfully released ${DOCKER_IMAGE}:${VERSION}${NC}"
 echo ""
 echo "Docker Hub: https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}"
 echo ""
+echo "Images are available for:"
+echo -e "  ${GREEN}linux/amd64${NC} (Intel/AMD 64-bit)"
+echo -e "  ${GREEN}linux/arm64${NC} (ARM 64-bit, e.g., Apple Silicon, AWS Graviton)"
+echo ""
 echo "Users can now pull with:"
 echo -e "  ${YELLOW}docker pull ${DOCKER_IMAGE}:${VERSION}${NC}"
 echo -e "  ${YELLOW}docker pull ${DOCKER_IMAGE}:latest${NC}"
+echo ""
+echo "Docker will automatically select the correct platform for their system."
 echo ""
 echo "Next steps:"
 echo "  1. Create GitHub release: https://github.com/sivert-io/matchzy-auto-tournament/releases/new"

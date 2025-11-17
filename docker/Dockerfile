@@ -23,10 +23,25 @@ RUN bun run build:client
 FROM node:20-slim AS release
 WORKDIR /app
 
+# Build arguments for platform detection
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
 # Install build tools and Caddy
+# Dynamically detect architecture for Caddy download
 RUN apt-get update && \
     apt-get install -y wget python3 make g++ && \
-    wget -O /usr/local/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=amd64" && \
+    ARCH=$(echo ${TARGETPLATFORM} | cut -d '/' -f2) && \
+    if [ "$ARCH" = "amd64" ]; then \
+        CADDY_ARCH="amd64"; \
+    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ]; then \
+        CADDY_ARCH="arm64"; \
+    elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ]; then \
+        CADDY_ARCH="armv7"; \
+    else \
+        CADDY_ARCH="amd64"; \
+    fi && \
+    wget -O /usr/local/bin/caddy "https://caddyserver.com/api/download?os=linux&arch=${CADDY_ARCH}" && \
     chmod +x /usr/local/bin/caddy && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
 
@@ -44,7 +59,7 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 
 # Copy Caddy configuration
-COPY Caddyfile /app/Caddyfile
+COPY docker/Caddyfile /app/Caddyfile
 
 # Create data directory for SQLite database
 RUN mkdir -p /app/data
