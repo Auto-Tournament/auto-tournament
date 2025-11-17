@@ -32,6 +32,7 @@ const RAW_RUNTIME_STATE =
           ["@emotion/styled", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:11.14.1"],\
           ["@mui/icons-material", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:7.3.5"],\
           ["@mui/material", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:7.3.5"],\
+          ["@playwright/test", "npm:1.56.1"],\
           ["@types/cors", "npm:2.8.19"],\
           ["@types/express", "npm:4.17.25"],\
           ["@types/node", "npm:20.19.25"],\
@@ -64,6 +65,7 @@ const RAW_RUNTIME_STATE =
           ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
           ["pino", "npm:10.1.0"],\
           ["pino-pretty", "npm:13.1.2"],\
+          ["playwright", "npm:1.56.1"],\
           ["react", "npm:18.3.1"],\
           ["react-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:18.3.1"],\
           ["react-router-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:6.30.2"],\
@@ -1819,6 +1821,16 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/@pinojs-redact-npm-0.4.0-445417bca6-10c0.zip/node_modules/@pinojs/redact/",\
         "packageDependencies": [\
           ["@pinojs/redact", "npm:0.4.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["@playwright/test", [\
+      ["npm:1.56.1", {\
+        "packageLocation": "../../.yarn/berry/cache/@playwright-test-npm-1.56.1-74bef72ba3-10c0.zip/node_modules/@playwright/test/",\
+        "packageDependencies": [\
+          ["@playwright/test", "npm:1.56.1"],\
+          ["playwright", "npm:1.56.1"]\
         ],\
         "linkType": "HARD"\
       }]\
@@ -4618,6 +4630,14 @@ const RAW_RUNTIME_STATE =
       }]\
     ]],\
     ["fsevents", [\
+      ["patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1", {\
+        "packageLocation": "./.yarn/unplugged/fsevents-patch-19706e7e35/node_modules/fsevents/",\
+        "packageDependencies": [\
+          ["fsevents", "patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"],\
+          ["node-gyp", "npm:12.1.0"]\
+        ],\
+        "linkType": "HARD"\
+      }],\
       ["patch:fsevents@npm%3A2.3.3#optional!builtin<compat/fsevents>::version=2.3.3&hash=df0bf1", {\
         "packageLocation": "./.yarn/unplugged/fsevents-patch-6b67494872/node_modules/fsevents/",\
         "packageDependencies": [\
@@ -5677,6 +5697,7 @@ const RAW_RUNTIME_STATE =
           ["@emotion/styled", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:11.14.1"],\
           ["@mui/icons-material", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:7.3.5"],\
           ["@mui/material", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:7.3.5"],\
+          ["@playwright/test", "npm:1.56.1"],\
           ["@types/cors", "npm:2.8.19"],\
           ["@types/express", "npm:4.17.25"],\
           ["@types/node", "npm:20.19.25"],\
@@ -5709,6 +5730,7 @@ const RAW_RUNTIME_STATE =
           ["pg", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:8.16.3"],\
           ["pino", "npm:10.1.0"],\
           ["pino-pretty", "npm:13.1.2"],\
+          ["playwright", "npm:1.56.1"],\
           ["react", "npm:18.3.1"],\
           ["react-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:18.3.1"],\
           ["react-router-dom", "virtual:6561c8f44b4b58b61565dd67692215c8c23095a192bfeaa95bf3dbf50f2e6f7bed03ae95beaa21a28661acb15cf10977c90e9fbd97bd1a8b82ef8de93bbd4138#npm:6.30.2"],\
@@ -6509,6 +6531,26 @@ const RAW_RUNTIME_STATE =
         "packageLocation": "../../.yarn/berry/cache/pino-std-serializers-npm-7.0.0-94d470ae0c-10c0.zip/node_modules/pino-std-serializers/",\
         "packageDependencies": [\
           ["pino-std-serializers", "npm:7.0.0"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["playwright", [\
+      ["npm:1.56.1", {\
+        "packageLocation": "../../.yarn/berry/cache/playwright-npm-1.56.1-a3ae71eaf6-10c0.zip/node_modules/playwright/",\
+        "packageDependencies": [\
+          ["fsevents", "patch:fsevents@npm%3A2.3.2#optional!builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"],\
+          ["playwright", "npm:1.56.1"],\
+          ["playwright-core", "npm:1.56.1"]\
+        ],\
+        "linkType": "HARD"\
+      }]\
+    ]],\
+    ["playwright-core", [\
+      ["npm:1.56.1", {\
+        "packageLocation": "../../.yarn/berry/cache/playwright-core-npm-1.56.1-3f4e0b135f-10c0.zip/node_modules/playwright-core/",\
+        "packageDependencies": [\
+          ["playwright-core", "npm:1.56.1"]\
         ],\
         "linkType": "HARD"\
       }]\
