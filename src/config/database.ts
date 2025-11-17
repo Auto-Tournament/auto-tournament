@@ -78,7 +78,7 @@ class DatabaseManager {
   private async initializeSchemaAsync(): Promise<void> {
     if (!this.postgresPool) return;
 
-    const schema = getSchemaSQL('postgres');
+    const schema = getSchemaSQL();
     const client = await this.postgresPool.connect();
 
     try {

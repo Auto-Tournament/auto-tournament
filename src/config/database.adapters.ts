@@ -57,7 +57,7 @@ export class PostgresAdapter implements DatabaseAdapter {
   }
 
   async initializeSchema(): Promise<void> {
-    const schema = getSchemaSQL('postgres');
+    const schema = getSchemaSQL();
     const client = await this.pool.connect();
 
     try {

@@ -80,16 +80,16 @@ services:
     environment:
       - API_TOKEN=${API_TOKEN}
       - SERVER_TOKEN=${SERVER_TOKEN}
-      - DB_TYPE=${DB_TYPE:-postgresql}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
     volumes:
-      - ./data:/app/data  # For demos and other data
+      - ./data:/app/data # For demos and other data
 
 volumes:
   postgres-data:
 ```
 
 **Database Configuration:**
+
 - **PostgreSQL is required** for all setups (Docker and local development)
 - For local development, use `yarn db` to start PostgreSQL, or run manually:
   ```bash
@@ -102,21 +102,28 @@ volumes:
   ```
 
 **Generate secure tokens:**
+
 ```bash
 openssl rand -hex 32  # Copy for API_TOKEN
 openssl rand -hex 32  # Copy for SERVER_TOKEN
 ```
 
-Create `.env` file in the same directory:
+Set environment variables (choose one method):
+
+**Option A: Export in shell:**
+
 ```bash
-API_TOKEN=<your-api-token>
-SERVER_TOKEN=<your-server-token>
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=matchzy_tournament
+export API_TOKEN=<your-api-token>
+export SERVER_TOKEN=<your-server-token>
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_NAME=matchzy_tournament
 ```
 
+**Option B: Edit compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual token.
+
 **Start:**
+
 ```bash
 docker compose up -d
 ```
@@ -136,11 +143,9 @@ If you want to build from source or contribute:
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 
-# Create environment file
-cp .env.example .env
-
-# Edit .env with your tokens (see Option 1 above)
-nano .env
+# Set environment variables (export in shell or edit compose file directly)
+export API_TOKEN=$(openssl rand -hex 32)
+export SERVER_TOKEN=$(openssl rand -hex 32)
 
 # Build and start from source
 docker compose -f docker/docker-compose.local.yml up -d --build

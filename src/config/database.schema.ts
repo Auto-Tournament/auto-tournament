@@ -5,7 +5,7 @@
 /**
  * Get PostgreSQL schema SQL
  */
-export function getSchemaSQL(_dbType: 'postgres'): string {
+export function getSchemaSQL(): string {
   return `
     -- Servers table
     CREATE TABLE IF NOT EXISTS servers (

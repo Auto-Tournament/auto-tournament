@@ -35,15 +35,12 @@ services:
         condition: service_healthy
     ports:
       - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
-    env_file:
-      - .env # Load environment variables from .env file in docker/ directory
     environment:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)
-      - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
-      - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
+      - API_TOKEN=${API_TOKEN:-test-token-123}
+      - SERVER_TOKEN=${SERVER_TOKEN:-test-server-token-456}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DB_TYPE=${DB_TYPE:-postgresql}  # Use PostgreSQL by default for development
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
       - DB_HOST=postgres
       - DB_PORT=5432

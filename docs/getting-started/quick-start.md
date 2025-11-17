@@ -57,10 +57,14 @@ services:
     ports:
       - '3069:3069'
     environment:
-      - API_TOKEN=${API_TOKEN}
-      - SERVER_TOKEN=${SERVER_TOKEN}
-      - DB_TYPE=${DB_TYPE:-postgresql}
+      - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
+      - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-matchzy_tournament}
     volumes:
       - ./data:/app/data
 
@@ -68,21 +72,22 @@ volumes:
   postgres-data:
 ```
 
-**2. Create `.env` file in the same directory:**
+**2. Set environment variables (choose one method):**
+
+**Option A: Export in your shell:**
 
 ```bash
-# Generate tokens
-openssl rand -hex 32  # Copy for API_TOKEN
-openssl rand -hex 32  # Copy for SERVER_TOKEN
+# Generate secure tokens
+export API_TOKEN=$(openssl rand -hex 32)
+export SERVER_TOKEN=$(openssl rand -hex 32)
+
+# Optional: Override database defaults
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_NAME=matchzy_tournament
 ```
 
-```bash
-API_TOKEN=<your-api-token>
-SERVER_TOKEN=<your-server-token>
-DB_USER=postgres
-DB_PASSWORD=postgres
-DB_NAME=matchzy_tournament
-```
+**Option B: Edit the compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual token in the compose file.
 
 **3. Start:**
 
@@ -161,25 +166,28 @@ docker compose up -d
         -p 5432:5432 \
         postgres:16-alpine
       ```
-      Then configure your `.env` file with the connection details.
+        Then set `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament` via shell environment variables or edit the compose file.
 
     After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
 
 ??? example "Advanced: Local Development (without Docker)"
 
-    ```bash
-    # Install dependencies
-    npm install
+        ```bash
+        # Install dependencies
+        npm install
 
-    # Setup environment
-    cp .env.example .env
+        # Set environment variables
+        export API_TOKEN=$(openssl rand -hex 32)
+        export SERVER_TOKEN=$(openssl rand -hex 32)
+        export DB_HOST=localhost
+        export DB_PORT=5432
+        export DB_USER=postgres
+        export DB_PASSWORD=postgres
+        export DB_NAME=matchzy_tournament
 
-    # Edit .env
-    nano .env
-
-    # Start in dev mode
-    npm run dev
-    ```
+        # Start in dev mode
+        npm run dev
+        ```
 
     **Frontend:** `http://localhost:5173`
     **API:** `http://localhost:3000`
@@ -193,36 +201,31 @@ docker compose up -d
       -p 5432:5432 \
       postgres:16-alpine
     ```
-    Then configure your `.env` file with `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament`.
+        Then set `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament` via shell environment variables.
 
 ## Environment Setup
 
-Generate secure tokens:
+Set environment variables (via shell or edit compose file directly):
 
 ```bash
-openssl rand -hex 32
-```
-
-Edit `.env`:
-
-```bash
-# Required
-API_TOKEN=<token-from-above>       # Admin authentication
-SERVER_TOKEN=<different-token>     # CS2 server authentication
+# Required - Generate secure tokens
+export API_TOKEN=$(openssl rand -hex 32)
+export SERVER_TOKEN=$(openssl rand -hex 32)
 
 # Database Configuration (PostgreSQL required)
 # For local development, use: yarn db
 # Or run manually: docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine
-DB_TYPE=postgresql                 # Database type: postgresql (required)
-DB_HOST=localhost                  # PostgreSQL host (use 'postgres' for Docker Compose, 'localhost' for local dev)
-DB_PORT=5432                       # PostgreSQL port
-DB_USER=postgres                   # PostgreSQL username
-DB_PASSWORD=postgres               # PostgreSQL password
-DB_NAME=matchzy_tournament         # PostgreSQL database name
-# DATABASE_URL can be used instead of individual DB_* vars
-# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/matchzy_tournament
+export DB_HOST=localhost                  # PostgreSQL host (use 'postgres' for Docker Compose, 'localhost' for local dev)
+export DB_PORT=5432                       # PostgreSQL port
+export DB_USER=postgres                   # PostgreSQL username
+export DB_PASSWORD=postgres               # PostgreSQL password
+export DB_NAME=matchzy_tournament         # PostgreSQL database name
 
-PORT=3000                          # API port (default: 3000)
+# Optional
+export PORT=3000                          # API port (default: 3000)
+
+# Or use DATABASE_URL instead of individual DB_* vars
+# export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/matchzy_tournament
 ```
 
 ??? info "What do these tokens do?"
@@ -291,12 +294,12 @@ Repeat for all teams (minimum 2 for a tournament).
 
 ??? failure "Can't login?"
 
-    - Verify API_TOKEN in `.env` matches what you're entering
-    - Restart API after changing `.env`: `docker compose restart`
+    - Verify API_TOKEN matches what you're entering (check shell env var or compose file)
+    - Restart API after changing tokens: `docker compose restart`
 
 ??? failure "Server shows offline?"
 
-    - Check RCON password is correct in `.env`
+    - Check RCON password is correct (shell env var or compose file)
     - Verify CS2 server is running
     - Test RCON connectivity from your API server:
         ```bash
