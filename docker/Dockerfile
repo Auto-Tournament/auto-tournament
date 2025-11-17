@@ -8,16 +8,6 @@ RUN corepack enable && corepack prepare yarn@stable --activate
 # Install dependencies (production only for runtime)
 FROM base AS dependencies
 
-# Build argument to conditionally install SQLite
-ARG ENABLE_SQLITE=false
-
-# Install Python and build tools only if SQLite is enabled (for better-sqlite3 native module)
-RUN if [ "$ENABLE_SQLITE" = "true" ]; then \
-      apt-get update && \
-      apt-get install -y python3 make g++ && \
-      apt-get clean && rm -rf /var/lib/apt/lists/*; \
-    fi
-
 COPY package.json yarn.lock package-lock.json* ./
 # Configure Yarn to use node_modules and set cache directory
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
@@ -29,20 +19,10 @@ RUN yarn install --immutable
 # Build TypeScript backend and React frontend
 FROM base AS build
 
-# Build argument to conditionally install SQLite
-ARG ENABLE_SQLITE=false
-
-# Install all dependencies (including devDependencies for build)
-# Install Python and build tools only if SQLite is enabled
-RUN if [ "$ENABLE_SQLITE" = "true" ]; then \
-      apt-get update && \
-      apt-get install -y python3 make g++ && \
-      apt-get clean && rm -rf /var/lib/apt/lists/*; \
-    else \
-      apt-get update && \
-      apt-get install -y procps && \
-      apt-get clean && rm -rf /var/lib/apt/lists/*; \
-    fi
+# Install procps for healthcheck
+RUN apt-get update && \
+    apt-get install -y procps && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
 
 COPY package.json yarn.lock package-lock.json* ./
 # Configure Yarn to use node_modules and set cache directory
@@ -62,19 +42,14 @@ RUN yarn build:client
 FROM node:20-slim AS release
 WORKDIR /app
 
-# Build arguments for platform detection and SQLite
+# Build arguments for platform detection
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
-ARG ENABLE_SQLITE=false
 
-# Install Caddy, procps, and conditionally install build tools for SQLite
+# Install Caddy and procps
 # Dynamically detect architecture for Caddy download
 RUN apt-get update && \
-    if [ "$ENABLE_SQLITE" = "true" ]; then \
-      apt-get install -y wget python3 make g++ procps; \
-    else \
-      apt-get install -y wget procps; \
-    fi && \
+    apt-get install -y wget procps && \
     ARCH=$(echo "${TARGETPLATFORM:-linux/amd64}" | cut -d '/' -f2) && \
     if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
         CADDY_ARCH="amd64"; \
@@ -96,11 +71,6 @@ COPY --from=build /app/package.json ./
 # Copy node_modules
 COPY --from=dependencies /app/node_modules ./node_modules
 
-# Rebuild native modules for Node.js runtime (only if SQLite is enabled)
-RUN if [ "$ENABLE_SQLITE" = "true" ]; then \
-      npm rebuild better-sqlite3 --build-from-source; \
-    fi
-
 # Copy application files
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
@@ -108,7 +78,7 @@ COPY --from=build /app/public ./public
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
 
-# Create data directory for SQLite database
+# Create data directory for demos and other files
 RUN mkdir -p /app/data
 
 # Expose Caddy port (single entry point)

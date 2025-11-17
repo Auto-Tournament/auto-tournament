@@ -65,7 +65,15 @@ cp .env.example .env
 docker compose -f docker/docker-compose.local.yml up -d --build
 ```
 
-**Database:** The application supports both PostgreSQL (default for Docker) and SQLite (for local development without Docker). The database schema is automatically initialized on first startup.
+**Database:** PostgreSQL is required for all setups. The database schema is automatically initialized on first startup. For local development, use `yarn db` to start PostgreSQL, or run manually with Docker:
+```bash
+docker run -d --name matchzy-postgres \
+  -e POSTGRES_USER=postgres \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=matchzy_tournament \
+  -p 5432:5432 \
+  postgres:16-alpine
+```
 
 ---
 

@@ -8,7 +8,7 @@ export interface Server {
   host: string;
   port: number;
   password: string;
-  enabled: number; // SQLite uses 0/1 for boolean
+  enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
   created_at: number;
   updated_at: number;
 }

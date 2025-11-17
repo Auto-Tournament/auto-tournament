@@ -1,45 +1,12 @@
 /**
- * Database schema definitions
- * Converts SQLite-specific syntax to database-agnostic SQL
+ * Database schema definitions for PostgreSQL
  */
-
-export interface SchemaDefinition {
-  sqlite: string;
-  postgres: string;
-}
 
 /**
- * Convert SQLite SQL to PostgreSQL-compatible SQL
+ * Get PostgreSQL schema SQL
  */
-function sqliteToPostgres(sql: string): string {
-  return sql
-    // INTEGER PRIMARY KEY AUTOINCREMENT -> SERIAL PRIMARY KEY
-    .replace(/INTEGER PRIMARY KEY AUTOINCREMENT/gi, 'SERIAL PRIMARY KEY')
-    // INTEGER PRIMARY KEY -> SERIAL PRIMARY KEY (for auto-increment)
-    .replace(/INTEGER PRIMARY KEY CHECK \(id = 1\)/gi, 'SERIAL PRIMARY KEY CHECK (id = 1)')
-    // TEXT -> VARCHAR or TEXT (PostgreSQL handles both)
-    .replace(/\bTEXT\b/gi, 'TEXT')
-    // INTEGER -> INTEGER (same)
-    .replace(/\bINTEGER\b/gi, 'INTEGER')
-    // strftime('%s', 'now') -> EXTRACT(EPOCH FROM NOW())::INTEGER
-    .replace(/strftime\('%s', 'now'\)/gi, "EXTRACT(EPOCH FROM NOW())::INTEGER")
-    // CREATE TABLE IF NOT EXISTS -> same
-    // CREATE INDEX IF NOT EXISTS -> same
-    // FOREIGN KEY -> same
-    // ON DELETE -> same
-    // DEFAULT -> same
-    // NOT NULL -> same
-    // UNIQUE -> same
-    // PRIMARY KEY -> same
-    // CHECK -> same
-    ;
-}
-
-/**
- * Get schema SQL for a specific database type
- */
-export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
-  const sqliteSchema = `
+export function getSchemaSQL(_dbType: 'postgres'): string {
+  return `
     -- Servers table
     CREATE TABLE IF NOT EXISTS servers (
       id TEXT PRIMARY KEY,
@@ -48,15 +15,15 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
       port INTEGER NOT NULL,
       password TEXT NOT NULL,
       enabled INTEGER NOT NULL DEFAULT 1,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-      updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     -- Application settings table
     CREATE TABLE IF NOT EXISTS app_settings (
       key TEXT PRIMARY KEY,
       value TEXT,
-      updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     -- Teams table (must be created before matches due to foreign key)
@@ -66,15 +33,15 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
       tag TEXT,
       discord_role_id TEXT,
       players TEXT NOT NULL,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-      updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now'))
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     CREATE INDEX IF NOT EXISTS idx_teams_name ON teams(name);
 
     -- Tournament settings table
     CREATE TABLE IF NOT EXISTS tournament (
-      id INTEGER PRIMARY KEY CHECK (id = 1),
+      id SERIAL PRIMARY KEY CHECK (id = 1),
       name TEXT NOT NULL,
       type TEXT NOT NULL,
       format TEXT NOT NULL,
@@ -82,15 +49,15 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
       maps TEXT NOT NULL,
       team_ids TEXT NOT NULL,
       settings TEXT,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
-      updated_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       started_at INTEGER,
       completed_at INTEGER
     );
 
     -- Matches table
     CREATE TABLE IF NOT EXISTS matches (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       slug TEXT NOT NULL UNIQUE,
       tournament_id INTEGER DEFAULT 1,
       round INTEGER NOT NULL,
@@ -106,7 +73,7 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
       veto_state TEXT,
       current_map TEXT,
       map_number INTEGER DEFAULT 0,
-      created_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       loaded_at INTEGER,
       completed_at INTEGER,
       FOREIGN KEY (server_id) REFERENCES servers(id) ON DELETE SET NULL,
@@ -125,11 +92,11 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
 
     -- Match events table
     CREATE TABLE IF NOT EXISTS match_events (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       match_slug TEXT NOT NULL,
       event_type TEXT NOT NULL,
       event_data TEXT NOT NULL,
-      received_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      received_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE
     );
 
@@ -138,14 +105,14 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
 
     -- Match map results table
     CREATE TABLE IF NOT EXISTS match_map_results (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      id SERIAL PRIMARY KEY,
       match_slug TEXT NOT NULL,
       map_number INTEGER NOT NULL,
       map_name TEXT,
       team1_score INTEGER NOT NULL DEFAULT 0,
       team2_score INTEGER NOT NULL DEFAULT 0,
       winner_team TEXT,
-      completed_at INTEGER NOT NULL DEFAULT (strftime('%s', 'now')),
+      completed_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       UNIQUE(match_slug, map_number),
       FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE
     );
@@ -155,12 +122,5 @@ export function getSchemaSQL(dbType: 'sqlite' | 'postgres'): string {
 
     CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
   `;
-
-  if (dbType === 'sqlite') {
-    return sqliteSchema;
-  }
-
-  // Convert to PostgreSQL
-  return sqliteToPostgres(sqliteSchema);
 }
 

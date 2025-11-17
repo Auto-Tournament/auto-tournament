@@ -23,7 +23,6 @@ services:
 
   matchzy-tournament:
     # Pull from Docker Hub (pre-built image - no cloning needed)
-    # Note: Production image is built without SQLite (ENABLE_SQLITE=false by default)
     image: sivertio/matchzy-auto-tournament:latest
 
     # To build from source instead, use docker/docker-compose.local.yml:
@@ -52,7 +51,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=${DB_NAME:-matchzy_tournament}
     volumes:
-      # Persist SQLite database and demos (if using SQLite)
+      # Persist demos and other data
       - ./data:/app/data
     # Configure webhook URL and Steam API key from the in-app Settings page after startup.
     healthcheck:

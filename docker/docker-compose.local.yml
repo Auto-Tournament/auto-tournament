@@ -3,7 +3,7 @@
 # Use this when you've cloned the repository and want to build from source
 
 services:
-  # PostgreSQL service (always available in development - no SQLite rebuild needed)
+  # PostgreSQL service (required for all setups)
   postgres:
     image: postgres:16-alpine
     container_name: matchzy-postgres-dev
@@ -27,7 +27,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      # No SQLite rebuild needed - always use PostgreSQL in dev
+      # PostgreSQL required for all setups
     container_name: matchzy-tournament-api-dev
     restart: unless-stopped
     depends_on:

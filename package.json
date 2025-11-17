@@ -17,7 +17,11 @@
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
         "docs:serve": "mkdocs serve --config-file docs/mkdocs.yml",
-        "docs:build": "mkdocs build --config-file docs/mkdocs.yml"
+        "docs:build": "mkdocs build --config-file docs/mkdocs.yml",
+        "db": "docker ps --format '{{.Names}}' | grep -q '^matchzy-postgres$' && echo '✅ PostgreSQL container is already running' || (docker ps -a --format '{{.Names}}' | grep -q '^matchzy-postgres$' && (docker start matchzy-postgres && echo '✅ Started existing PostgreSQL container') || (docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine && echo '✅ Created and started PostgreSQL container'))",
+        "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '✅ Stopped PostgreSQL container' || echo '⚠️  PostgreSQL container not running'",
+        "db:restart": "yarn db:stop && sleep 1 && yarn db",
+        "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '✅ Removed PostgreSQL container' || echo '⚠️  PostgreSQL container not found'"
     },
     "keywords": [
         "cs2",
@@ -33,7 +37,6 @@
         "@emotion/styled": "^11.14.1",
         "@mui/icons-material": "^7.3.4",
         "@mui/material": "^7.3.4",
-        "better-sqlite3": "^11.7.0",
         "brackets-manager": "^1.7.1",
         "brackets-memory-db": "^1.0.5",
         "brackets-model": "^1.5.1",
@@ -54,7 +57,6 @@
         "swagger-ui-express": "^5.0.1"
     },
     "devDependencies": {
-        "@types/better-sqlite3": "^7.6.8",
         "@types/cors": "^2.8.17",
         "@types/express": "^4.17.21",
         "@types/node": "^20.10.5",

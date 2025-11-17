@@ -8,7 +8,7 @@ Thank you for your interest in contributing! This project welcomes contributions
 
 - Node.js 18+
 - Docker (optional, for full stack testing)
-- PostgreSQL (optional, only if using PostgreSQL for local development)
+- PostgreSQL (required - can run with Docker for local development)
 - A CS2 server with MatchZy plugin (for testing)
 
 ### Local Setup
@@ -23,26 +23,50 @@ npm install
 
 # Copy environment file
 cp .env.example .env
+
+# Start PostgreSQL for local development
+yarn db
+
 # Edit .env with your configuration
-# For local development, SQLite is recommended (no database setup needed)
-# Set DB_TYPE=sqlite in .env, or use PostgreSQL if you prefer
+# Set DB_HOST=localhost, DB_PORT=5432, DB_USER=postgres, DB_PASSWORD=postgres, DB_NAME=matchzy_tournament
 
 # Start development server
 npm run dev
 ```
 
-??? info "Database Options for Local Development"
+??? info "PostgreSQL for Local Development"
 
-    **SQLite (Recommended for Development):**
-    - No setup required - works out of the box
-    - Set `DB_TYPE=sqlite` in `.env` (or leave unset, defaults to SQLite for local dev)
-    - Database file: `data/tournament.db`
+    **PostgreSQL is required** for all setups (Docker and local development).
 
-    **PostgreSQL (Optional):**
-    - Requires PostgreSQL installed locally or Docker
-    - Set `DB_TYPE=postgresql` in `.env`
-    - Configure `DATABASE_URL` or individual `DB_*` environment variables
-    - Useful for testing PostgreSQL-specific features
+    **Quick Setup with Yarn (recommended):**
+    ```bash
+    yarn db           # Start PostgreSQL container
+    yarn db:stop      # Stop PostgreSQL container
+    yarn db:restart   # Restart PostgreSQL container
+    yarn db:remove    # Remove PostgreSQL container
+    ```
+
+    The `yarn db` command will:
+    - Start the container if it already exists but is stopped
+    - Create and start a new container if it doesn't exist
+    - Do nothing if the container is already running
+
+    **Manual Setup with Docker:**
+    ```bash
+    docker run -d --name matchzy-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=matchzy_tournament \
+      -p 5432:5432 \
+      postgres:16-alpine
+    ```
+
+    Then configure your `.env` file with:
+    - `DB_HOST=localhost`
+    - `DB_PORT=5432`
+    - `DB_USER=postgres`
+    - `DB_PASSWORD=postgres`
+    - `DB_NAME=matchzy_tournament`
 
 **Access:**
 
@@ -183,13 +207,13 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     ```
 
     This script will:
-    - Build the Docker image from source (no SQLite rebuild needed - uses PostgreSQL)
-    - Start the container with docker-compose.local.yml
+    - Build the Docker image from source
+    - Start the container with docker-compose.local.yml (includes PostgreSQL service)
     - Verify all services are running (PostgreSQL, Caddy, Node backend)
     - Test health endpoints, frontend, and API
     - Clean up automatically
 
-    **Note:** The local build compose file uses PostgreSQL (faster builds, no native module rebuilds). For local development outside Docker, SQLite is still recommended.
+    **Note:** PostgreSQL is required for all setups. The Docker Compose file includes a PostgreSQL service.
 
     **Manual Testing:**
 

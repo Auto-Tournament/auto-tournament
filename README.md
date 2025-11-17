@@ -90,9 +90,16 @@ volumes:
 ```
 
 **Database Configuration:**
-- **Docker (both compose files)**: PostgreSQL is used by default (no SQLite rebuild needed, faster builds)
-- **Local development (without Docker)**: SQLite is recommended (no database setup needed)
-- Switch databases by setting `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file (SQLite only available outside Docker)
+- **PostgreSQL is required** for all setups (Docker and local development)
+- For local development, use `yarn db` to start PostgreSQL, or run manually:
+  ```bash
+  docker run -d --name matchzy-postgres \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_DB=matchzy_tournament \
+    -p 5432:5432 \
+    postgres:16-alpine
+  ```
 
 **Generate secure tokens:**
 ```bash

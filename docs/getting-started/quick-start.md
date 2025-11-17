@@ -85,6 +85,7 @@ DB_NAME=matchzy_tournament
 ```
 
 **3. Start:**
+
 ```bash
 docker compose up -d
 ```
@@ -105,8 +106,22 @@ docker compose up -d
 
 **Database:**
 
-- **Docker (production & development)**: PostgreSQL by default (no SQLite rebuild needed, faster builds)
-- **Local development (without Docker)**: SQLite recommended (no database setup needed)
+- **PostgreSQL is required** for all setups (Docker and local development)
+- For local development, use the convenient Yarn command:
+  ```bash
+  yarn db           # Start PostgreSQL container
+  yarn db:stop      # Stop PostgreSQL container
+  yarn db:restart   # Restart PostgreSQL container
+  ```
+  Or run PostgreSQL manually with Docker:
+  ```bash
+  docker run -d --name matchzy-postgres \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_DB=matchzy_tournament \
+    -p 5432:5432 \
+    postgres:16-alpine
+  ```
 - The database schema is automatically initialized on first startup
 
 ??? info "Advanced: Docker Architecture"
@@ -130,14 +145,23 @@ docker compose up -d
 ??? info "Docker Compose Files"
 
     The repository includes two compose files:
-    
+
     - **`docker/docker-compose.yml`**: Uses pre-built image from Docker Hub (no cloning needed)
     - **`docker/docker-compose.local.yml`**: Builds from source (requires cloned repository)
-    
-    **Database Options:**
-    - **Docker (both compose files)**: Uses PostgreSQL by default. PostgreSQL service included. Data persists in the `postgres-data` volume.
-    - **Local development (without Docker)**: SQLite recommended. Set `DB_TYPE=sqlite` in your `.env` file. Data persists in `data/tournament.db`.
-    - **Switch databases**: Set `DB_TYPE=sqlite` or `DB_TYPE=postgresql` in your `.env` file (SQLite only available outside Docker).
+
+    **Database:**
+    - **PostgreSQL is required** for all setups (Docker and local development)
+    - **Docker (both compose files)**: PostgreSQL service included. Data persists in the `postgres-data` volume.
+    - **Local development (without Docker)**: PostgreSQL required. Use `yarn db` to start PostgreSQL, or run manually:
+      ```bash
+      docker run -d --name matchzy-postgres \
+        -e POSTGRES_USER=postgres \
+        -e POSTGRES_PASSWORD=postgres \
+        -e POSTGRES_DB=matchzy_tournament \
+        -p 5432:5432 \
+        postgres:16-alpine
+      ```
+      Then configure your `.env` file with the connection details.
 
     After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
 
@@ -160,7 +184,16 @@ docker compose up -d
     **Frontend:** `http://localhost:5173`
     **API:** `http://localhost:3000`
 
-    **Database:** For local development without Docker, SQLite is recommended (no database setup needed). Set `DB_TYPE=sqlite` in your `.env` file. Docker setups always use PostgreSQL.
+    **Database:** PostgreSQL is required. Use `yarn db` to start PostgreSQL, or run manually:
+    ```bash
+    docker run -d --name matchzy-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=matchzy_tournament \
+      -p 5432:5432 \
+      postgres:16-alpine
+    ```
+    Then configure your `.env` file with `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament`.
 
 ## Environment Setup
 
@@ -177,16 +210,17 @@ Edit `.env`:
 API_TOKEN=<token-from-above>       # Admin authentication
 SERVER_TOKEN=<different-token>     # CS2 server authentication
 
-# Database Configuration (optional - defaults shown)
-# Docker (production & development): PostgreSQL by default
-# Local dev (without Docker): SQLite recommended (no setup needed)
-DB_TYPE=postgresql                 # Database type: postgresql (default for Docker) or sqlite (local dev only)
-DB_USER=postgres                   # PostgreSQL username (only if DB_TYPE=postgresql)
-DB_PASSWORD=postgres               # PostgreSQL password (only if DB_TYPE=postgresql)
-DB_NAME=matchzy_tournament         # PostgreSQL database name (only if DB_TYPE=postgresql)
+# Database Configuration (PostgreSQL required)
+# For local development, use: yarn db
+# Or run manually: docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine
+DB_TYPE=postgresql                 # Database type: postgresql (required)
+DB_HOST=localhost                  # PostgreSQL host (use 'postgres' for Docker Compose, 'localhost' for local dev)
+DB_PORT=5432                       # PostgreSQL port
+DB_USER=postgres                   # PostgreSQL username
+DB_PASSWORD=postgres               # PostgreSQL password
+DB_NAME=matchzy_tournament         # PostgreSQL database name
 # DATABASE_URL can be used instead of individual DB_* vars
-# DATABASE_URL=postgresql://user:password@host:port/database
-# DB_PATH=/app/data/tournament.db  # SQLite database path (only if DB_TYPE=sqlite, local dev only)
+# DATABASE_URL=postgresql://postgres:postgres@localhost:5432/matchzy_tournament
 
 PORT=3000                          # API port (default: 3000)
 ```
