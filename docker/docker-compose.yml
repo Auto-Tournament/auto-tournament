@@ -11,6 +11,8 @@ services:
     restart: unless-stopped
     ports:
       - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
+    env_file:
+      - .env # Load environment variables from .env file in docker/ directory (if it exists)
     environment:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)
