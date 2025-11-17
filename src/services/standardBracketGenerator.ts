@@ -26,7 +26,7 @@ export class StandardBracketGenerator implements IBracketGenerator {
    */
   async generate(
     tournament: TournamentResponse,
-    _getMatchesCallback: () => BracketMatch[]
+    _getMatchesCallback: () => Promise<BracketMatch[]>
   ): Promise<BracketGeneratorResult> {
     const { teamIds, type, settings } = tournament;
 

@@ -11,16 +11,14 @@ class SteamService {
   private readonly baseUrl = 'http://api.steampowered.com';
 
   constructor() {
-    if (!settingsService.isSteamApiConfigured()) {
-      log.warn('Steam API key not configured. Configure it from the Settings page to enable Steam vanity resolution.');
-    }
+    // Note: Cannot use async in constructor, so we check lazily
   }
 
   /**
    * Check if Steam API is available
    */
-  isAvailable(): boolean {
-    return settingsService.isSteamApiConfigured();
+  async isAvailable(): Promise<boolean> {
+    return await settingsService.isSteamApiConfigured();
   }
 
   /**
@@ -32,7 +30,7 @@ class SteamService {
    * - Steam ID64: 76561197960287930
    */
   async resolveSteamId(input: string): Promise<string | null> {
-    const apiKey = settingsService.getSteamApiKey();
+    const apiKey = await settingsService.getSteamApiKey();
     if (!apiKey) {
       log.warn('Cannot resolve Steam ID - Steam API key is not configured');
       return null;
@@ -86,7 +84,7 @@ class SteamService {
    * Returns name and avatar URL
    */
   async getPlayerInfo(steamId: string): Promise<SteamPlayer | null> {
-    const apiKey = settingsService.getSteamApiKey();
+    const apiKey = await settingsService.getSteamApiKey();
     if (!apiKey) {
       return null;
     }

@@ -24,7 +24,7 @@ if (!fs.existsSync(DEMOS_DIR)) {
  * Protected by server token validation
  * Follows MatchZy recommended pattern with streaming
  */
-router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Response) => {
+router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
@@ -41,7 +41,7 @@ router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Respo
     });
 
     // Get match details
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
 
     if (!match) {
       log.warn(`Demo upload rejected: Match ${matchSlug} not found`);
@@ -78,12 +78,12 @@ router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Respo
     req.pipe(writeStream);
 
     // Wait for request to end and reply with 200
-    req.on('end', () => {
+    req.on('end', async () => {
       writeStream.end();
 
       // Update match with demo file path (store relative path)
       const relativePath = path.join(matchSlug, filename);
-      db.update('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
+      await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       log.success(`Demo uploaded for match ${matchSlug}`, {
         filename,
@@ -134,12 +134,12 @@ router.post('/:matchSlug/upload', validateServerToken, (req: Request, res: Respo
  * Download demo file for a match
  * Protected by API token
  */
-router.get('/:matchSlug/download', requireAuth, (req: Request, res: Response) => {
+router.get('/:matchSlug/download', requireAuth, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
     // Get match details
-    const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
 
     if (!match) {
       return res.status(404).json({
@@ -198,11 +198,11 @@ router.get('/:matchSlug/download', requireAuth, (req: Request, res: Response) =>
  * Get demo file info without downloading
  * Protected by API token
  */
-router.get('/:matchSlug/info', requireAuth, (req: Request, res: Response) => {
+router.get('/:matchSlug/info', requireAuth, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 
-    const match = db.queryOne<DbMatchRow>('SELECT demo_file_path FROM matches WHERE slug = ?', [
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT demo_file_path FROM matches WHERE slug = ?', [
       matchSlug,
     ]);
 

@@ -8,13 +8,13 @@ const router = Router();
  * GET /team/:teamId/history
  * Get match history for a team (public, no auth required)
  */
-router.get('/:teamId/history', (req: Request, res: Response) => {
+router.get('/:teamId/history', async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 10;
 
     // Check if team exists
-    const team = db.queryOne<{ id: string; name: string; tag: string }>(
+    const team = await db.queryOneAsync<{ id: string; name: string; tag: string }>(
       'SELECT id, name, tag FROM teams WHERE id = ?',
       [teamId]
     );
@@ -27,7 +27,7 @@ router.get('/:teamId/history', (req: Request, res: Response) => {
     }
 
     // Get match history (completed matches)
-    const matches = db.query<
+    const matches = await db.queryAsync<
       DbMatchRow & {
         team1_name?: string;
         team1_tag?: string;
@@ -49,7 +49,7 @@ router.get('/:teamId/history', (req: Request, res: Response) => {
       [teamId, teamId, limit]
     );
 
-    const history = matches.map((match) => {
+    const history = await Promise.all(matches.map(async (match) => {
       const isTeam1 = match.team1_id === teamId;
       const opponent = isTeam1
         ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
@@ -58,7 +58,7 @@ router.get('/:teamId/history', (req: Request, res: Response) => {
       const won = match.winner_id === teamId;
 
       // Get scores from latest series_end event
-      const scoreEvent = db.queryOne<DbEventRow>(
+      const scoreEvent = await db.queryOneAsync<DbEventRow>(
         `SELECT event_data FROM match_events 
          WHERE match_slug = ? AND event_type = 'series_end' 
          ORDER BY received_at DESC LIMIT 1`,
@@ -96,7 +96,7 @@ router.get('/:teamId/history', (req: Request, res: Response) => {
         opponentScore,
         completedAt: match.completed_at,
       };
-    });
+    }));
 
     return res.json({
       success: true,
@@ -121,12 +121,12 @@ router.get('/:teamId/history', (req: Request, res: Response) => {
  * GET /team/:teamId/stats
  * Get performance statistics for a team (public, no auth required)
  */
-router.get('/:teamId/stats', (req: Request, res: Response) => {
+router.get('/:teamId/stats', async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
 
     // Check if team exists
-    const team = db.queryOne<{ id: string; name: string; tag: string }>(
+    const team = await db.queryOneAsync<{ id: string; name: string; tag: string }>(
       'SELECT id, name, tag FROM teams WHERE id = ?',
       [teamId]
     );
@@ -139,18 +139,20 @@ router.get('/:teamId/stats', (req: Request, res: Response) => {
     }
 
     // Get all completed matches
-    const totalMatches = db.queryOne<{ count: number }>(
+    const totalMatchesResult = await db.queryOneAsync<{ count: number }>(
       `SELECT COUNT(*) as count FROM matches 
        WHERE (team1_id = ? OR team2_id = ?) AND status = 'completed'`,
       [teamId, teamId]
-    )?.count || 0;
+    );
+    const totalMatches = totalMatchesResult?.count || 0;
 
     // Get wins
-    const wins = db.queryOne<{ count: number }>(
+    const winsResult = await db.queryOneAsync<{ count: number }>(
       `SELECT COUNT(*) as count FROM matches 
        WHERE winner_id = ? AND status = 'completed'`,
       [teamId]
-    )?.count || 0;
+    );
+    const wins = winsResult?.count || 0;
 
     // Get losses (completed matches where they didn't win)
     const losses = totalMatches - wins;
@@ -159,14 +161,14 @@ router.get('/:teamId/stats', (req: Request, res: Response) => {
     const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
 
     // Get current tournament standing (if tournament exists)
-    const tournament = db.queryOne<{ id: number; name: string; status: string }>(
+    const tournament = await db.queryOneAsync<{ id: number; name: string; status: string }>(
       'SELECT id, name, status FROM tournament WHERE id = 1'
     );
 
     let standing = null;
     if (tournament && tournament.status !== 'setup') {
       // Get all teams and their wins, sorted
-      const allTeams = db.query<{ team_id: string; wins: number; name: string }>(
+      const allTeams = await db.queryAsync<{ team_id: string; wins: number; name: string }>(
         `SELECT 
           t.id as team_id,
           t.name,

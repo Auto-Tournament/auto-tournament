@@ -8,6 +8,7 @@ Thank you for your interest in contributing! This project welcomes contributions
 
 - Node.js 18+
 - Docker (optional, for full stack testing)
+- PostgreSQL (required - can run with Docker for local development)
 - A CS2 server with MatchZy plugin (for testing)
 
 ### Local Setup
@@ -22,11 +23,56 @@ npm install
 
 # Copy environment file
 cp .env.example .env
+
+# Start PostgreSQL for local development
+yarn db
+
 # Edit .env with your configuration
+# Set DB_HOST=localhost, DB_PORT=5432, DB_USER=postgres, DB_PASSWORD=postgres, DB_NAME=matchzy_tournament
 
 # Start development server
 npm run dev
 ```
+
+??? info "PostgreSQL for Local Development"
+
+    **PostgreSQL is required** for all setups (Docker and local development).
+
+    **Quick Setup with Yarn (recommended):**
+    ```bash
+    yarn db           # Start PostgreSQL container
+    yarn db:stop      # Stop PostgreSQL container
+    yarn db:restart   # Restart PostgreSQL container
+    yarn db:remove    # Remove PostgreSQL container
+    ```
+
+    The `yarn db` command will:
+    - Start the container if it already exists but is stopped
+    - Create and start a new container if it doesn't exist
+    - Do nothing if the container is already running
+
+    **Manual Setup with Docker:**
+    ```bash
+    docker run -d --name matchzy-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=matchzy_tournament \
+      -p 5432:5432 \
+      postgres:16-alpine
+    ```
+
+    Then set environment variables:
+    ```bash
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    export DB_USER=postgres
+    export DB_PASSWORD=postgres
+    export DB_NAME=matchzy_tournament
+    
+    # Also set your API_TOKEN (admin password)
+    export API_TOKEN=admin123  # Or any password you want
+    export SERVER_TOKEN=server123
+    ```
 
 **Access:**
 
@@ -60,8 +106,8 @@ matchzy-auto-tournament/
 │   └── requirements.txt          # Python dependencies for docs
 ├── docker/                       # Docker configuration
 │   ├── Dockerfile               # Multi-stage build
-│   ├── docker-compose.yml       # Production compose
-│   ├── docker-compose.dev.yml   # Development compose
+│   ├── docker-compose.yml       # Docker Hub image (pre-built)
+│   ├── docker-compose.local.yml # Local build from source
 │   └── Caddyfile                # Reverse proxy config
 └── scripts/                      # Utility scripts
     ├── release.sh               # Docker Hub release automation
@@ -167,11 +213,13 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
     ```
 
     This script will:
-    - Build the Docker image
-    - Start the container with docker-compose
-    - Verify all services are running (Caddy, Node backend)
+    - Build the Docker image from source
+    - Start the container with docker-compose.local.yml (includes PostgreSQL service)
+    - Verify all services are running (PostgreSQL, Caddy, Node backend)
     - Test health endpoints, frontend, and API
     - Clean up automatically
+
+    **Note:** PostgreSQL is required for all setups. The Docker Compose file includes a PostgreSQL service.
 
     **Manual Testing:**
 

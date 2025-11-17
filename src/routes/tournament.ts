@@ -33,7 +33,7 @@ router.use(requireAuth);
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const tournament = tournamentService.getTournament();
+    const tournament = await tournamentService.getTournament();
 
     if (!tournament) {
       return res.status(404).json({
@@ -225,7 +225,7 @@ router.delete('/', async (_req: Request, res: Response) => {
     log.info('Deleting tournament...');
 
     // First, end all matches on servers (same as reset)
-    const loadedMatches = db.query<DbMatchRow>(
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status IN ('loaded', 'live')
@@ -271,7 +271,7 @@ router.delete('/', async (_req: Request, res: Response) => {
     }
 
     // Now delete the tournament (will also delete matches via CASCADE)
-    tournamentService.deleteTournament();
+    await tournamentService.deleteTournament();
 
     log.success(`Tournament deleted successfully. ${matchesEnded} match(es) ended on servers.`);
 
@@ -314,7 +314,7 @@ router.delete('/', async (_req: Request, res: Response) => {
  */
 router.get('/bracket', async (_req: Request, res: Response) => {
   try {
-    const bracket = tournamentService.getBracket();
+    const bracket = await tournamentService.getBracket();
 
     if (!bracket) {
       return res.status(404).json({
@@ -404,7 +404,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     log.info('Resetting tournament to setup mode...');
 
     // First, end all matches on servers
-    const loadedMatches = db.query<DbMatchRow>(
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
       `SELECT * FROM matches 
        WHERE tournament_id = 1 
        AND status IN ('loaded', 'live')
@@ -450,7 +450,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     }
 
     // Now reset the tournament in the database
-    const tournament = tournamentService.resetTournament();
+    const tournament = await tournamentService.resetTournament();
 
     log.success(`Tournament reset to setup mode. ${matchesEnded} match(es) ended on servers.`);
 
@@ -500,7 +500,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
     // Get base URL for webhook configuration
-    const baseUrl = getWebhookBaseUrl(req);
+    const baseUrl = await getWebhookBaseUrl(req);
 
     const result = await matchAllocationService.startTournament(baseUrl);
 
@@ -557,7 +557,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
 router.post('/restart', requireAuth, async (req: Request, res: Response) => {
   try {
     // Get base URL for webhook configuration
-    const baseUrl = getWebhookBaseUrl(req);
+    const baseUrl = await getWebhookBaseUrl(req);
 
     const result = await matchAllocationService.restartTournament(baseUrl);
 
@@ -622,12 +622,12 @@ router.post('/wipe-database', async (_req: Request, res: Response) => {
     log.warn('⚠️  DATABASE WIPE REQUESTED - Deleting all data');
 
     // Delete in correct order to avoid foreign key constraints
-    tournamentService.deleteTournament(); // This already deletes tournament, matches, and events
+    await tournamentService.deleteTournament(); // This already deletes tournament, matches, and events
 
     // Also delete teams and servers
     const { db } = await import('../config/database');
-    db.exec('DELETE FROM teams');
-    db.exec('DELETE FROM servers');
+    await db.execAsync('DELETE FROM teams');
+    await db.execAsync('DELETE FROM servers');
 
     log.success('✅ Database wiped successfully');
 
@@ -684,12 +684,12 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
 
     // Handle special cases for foreign key constraints
     if (table === 'tournament') {
-      tournamentService.deleteTournament();
+      await tournamentService.deleteTournament();
     } else if (table === 'matches') {
-      db.exec('DELETE FROM match_events');
-      db.exec('DELETE FROM matches');
+      await db.execAsync('DELETE FROM match_events');
+      await db.execAsync('DELETE FROM matches');
     } else {
-      db.exec(`DELETE FROM ${table}`);
+      await db.execAsync(`DELETE FROM ${table}`);
     }
 
     log.success(`✅ Table ${table} wiped successfully`);

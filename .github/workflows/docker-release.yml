@@ -31,11 +31,53 @@ jobs:
           file: docker/Dockerfile
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: |
+            ENABLE_SQLITE=false
           tags: |
             ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}
             ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ inputs.version }}
+          name: Release v${{ inputs.version }}
+          body: |
+            ## 🐳 Docker Release v${{ inputs.version }}
+
+            ### Docker Images
+
+            - `sivertio/matchzy-auto-tournament:${{ inputs.version }}`
+            - `sivertio/matchzy-auto-tournament:latest`
+
+            ### Pull Command
+
+            ```bash
+            docker pull sivertio/matchzy-auto-tournament:${{ inputs.version }}
+            ```
+
+            ### Docker Hub
+
+            https://hub.docker.com/r/sivertio/matchzy-auto-tournament
+
+            ### Platforms
+
+            - `linux/amd64` (Intel/AMD 64-bit)
+            - `linux/arm64` (ARM 64-bit, e.g., Apple Silicon, AWS Graviton)
+
+            ### Quick Start
+
+            ```bash
+            docker compose -f docker/docker-compose.yml up -d
+            ```
+
+            See [Getting Started Guide](https://mat.sivert.io/getting-started/quick-start) for full setup instructions.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Create release summary
         run: |
@@ -44,12 +86,14 @@ jobs:
           echo "**Version:** ${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Images pushed:**" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "- \`${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:latest\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`sivertio/matchzy-auto-tournament:${{ inputs.version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- \`sivertio/matchzy-auto-tournament:latest\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Pull command:**" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`bash" >> $GITHUB_STEP_SUMMARY
-          echo "docker pull ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "docker pull sivertio/matchzy-auto-tournament:${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY
           echo "\`\`\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Docker Hub:** https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament" >> $GITHUB_STEP_SUMMARY
+          echo "**Docker Hub:** https://hub.docker.com/r/sivertio/matchzy-auto-tournament" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ GitHub Release created: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v${{ inputs.version }}" >> $GITHUB_STEP_SUMMARY

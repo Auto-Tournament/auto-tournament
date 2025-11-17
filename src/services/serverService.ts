@@ -14,10 +14,10 @@ export class ServerService {
   /**
    * Get all servers (optionally filter by enabled status)
    */
-  getAllServers(onlyEnabled = false): ServerResponse[] {
+  async getAllServers(onlyEnabled = false): Promise<ServerResponse[]> {
     const servers = onlyEnabled
-      ? db.getAll<Server>('servers', 'enabled = ?', [1])
-      : db.getAll<Server>('servers');
+      ? await db.getAllAsync<Server>('servers', 'enabled = ?', [1])
+      : await db.getAllAsync<Server>('servers');
 
     return servers.map(this.toResponse);
   }
@@ -25,16 +25,16 @@ export class ServerService {
   /**
    * Get server by ID
    */
-  getServerById(id: string): ServerResponse | null {
-    const server = db.getOne<Server>('servers', 'id = ?', [id]);
+  async getServerById(id: string): Promise<ServerResponse | null> {
+    const server = await db.getOneAsync<Server>('servers', 'id = ?', [id]);
     return server ? this.toResponse(server) : null;
   }
 
   /**
    * Check if a server with the same host:port already exists
    */
-  private getServerByHostPort(host: string, port: number, excludeId?: string): Server | null {
-    const servers = db.getAll<Server>('servers', 'host = ? AND port = ?', [host, port]);
+  private async getServerByHostPort(host: string, port: number, excludeId?: string): Promise<Server | null> {
+    const servers = await db.getAllAsync<Server>('servers', 'host = ? AND port = ?', [host, port]);
 
     // If excludeId is provided, filter it out (for updates)
     if (excludeId) {
@@ -48,13 +48,13 @@ export class ServerService {
   /**
    * Create a new server
    */
-  createServer(input: CreateServerInput, upsert = false): ServerResponse {
+  async createServer(input: CreateServerInput, upsert = false): Promise<ServerResponse> {
     // Check if server with this ID already exists
-    const existing = this.getServerById(input.id);
+    const existing = await this.getServerById(input.id);
     if (existing) {
       if (upsert) {
         // Update existing server instead of throwing error
-        return this.updateServer(input.id, {
+        return await this.updateServer(input.id, {
           name: input.name,
           host: input.host,
           port: input.port,
@@ -65,7 +65,7 @@ export class ServerService {
     }
 
     // Check if server with same host:port already exists
-    const duplicate = this.getServerByHostPort(input.host, input.port);
+    const duplicate = await this.getServerByHostPort(input.host, input.port);
     if (duplicate) {
       throw new Error(
         `A server with host:port '${input.host}:${input.port}' already exists (ID: ${duplicate.id}, Name: ${duplicate.name})`
@@ -77,7 +77,7 @@ export class ServerService {
       throw new Error('Port must be between 1 and 65535');
     }
 
-    db.insert('servers', {
+    await db.insertAsync('servers', {
       id: input.id,
       name: input.name,
       host: input.host,
@@ -87,14 +87,16 @@ export class ServerService {
     });
 
     log.serverCreated(input.id, input.name);
-    return this.getServerById(input.id)!;
+    const result = await this.getServerById(input.id);
+    if (!result) throw new Error('Failed to retrieve created server');
+    return result;
   }
 
   /**
    * Update a server
    */
-  updateServer(id: string, input: UpdateServerInput): ServerResponse {
-    const existing = this.getServerById(id);
+  async updateServer(id: string, input: UpdateServerInput): Promise<ServerResponse> {
+    const existing = await this.getServerById(id);
     if (!existing) {
       throw new Error(`Server with ID '${id}' not found`);
     }
@@ -110,7 +112,7 @@ export class ServerService {
 
     // Only check if host or port is actually changing
     if (input.host !== undefined || input.port !== undefined) {
-      const duplicate = this.getServerByHostPort(newHost, newPort, id);
+      const duplicate = await this.getServerByHostPort(newHost, newPort, id);
       if (duplicate) {
         throw new Error(
           `A server with host:port '${newHost}:${newPort}' already exists (ID: ${duplicate.id}, Name: ${duplicate.name})`
@@ -128,35 +130,37 @@ export class ServerService {
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
-    db.update('servers', updateData, 'id = ?', [id]);
+    await db.updateAsync('servers', updateData, 'id = ?', [id]);
 
     log.serverUpdated(id, input.name || existing.name);
-    return this.getServerById(id)!;
+    const result = await this.getServerById(id);
+    if (!result) throw new Error('Failed to retrieve updated server');
+    return result;
   }
 
   /**
    * Delete a server
    */
-  deleteServer(id: string): void {
-    const existing = this.getServerById(id);
+  async deleteServer(id: string): Promise<void> {
+    const existing = await this.getServerById(id);
     if (!existing) {
       throw new Error(`Server with ID '${id}' not found`);
     }
 
-    db.delete('servers', 'id = ?', [id]);
+    await db.deleteAsync('servers', 'id = ?', [id]);
     log.serverDeleted(id, existing.name);
   }
 
   /**
    * Enable/disable a server
    */
-  setServerEnabled(id: string, enabled: boolean): ServerResponse {
-    const existing = this.getServerById(id);
+  async setServerEnabled(id: string, enabled: boolean): Promise<ServerResponse> {
+    const existing = await this.getServerById(id);
     if (!existing) {
       throw new Error(`Server with ID '${id}' not found`);
     }
 
-    db.update(
+    await db.updateAsync(
       'servers',
       {
         enabled: enabled ? 1 : 0,
@@ -167,25 +171,27 @@ export class ServerService {
     );
 
     log.success(`Server ${enabled ? 'enabled' : 'disabled'}: ${existing.name} (${id})`);
-    return this.getServerById(id)!;
+    const result = await this.getServerById(id);
+    if (!result) throw new Error('Failed to retrieve server after enable/disable');
+    return result;
   }
 
   /**
    * Create multiple servers at once
    */
-  createServers(
+  async createServers(
     inputs: CreateServerInput[],
     upsert = false
-  ): {
+  ): Promise<{
     successful: ServerResponse[];
     failed: Array<{ id: string; error: string }>;
-  } {
+  }> {
     const successful: ServerResponse[] = [];
     const failed: Array<{ id: string; error: string }> = [];
 
     for (const input of inputs) {
       try {
-        const server = this.createServer(input, upsert);
+        const server = await this.createServer(input, upsert);
         successful.push(server);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
@@ -200,16 +206,16 @@ export class ServerService {
   /**
    * Update multiple servers at once
    */
-  updateServers(updates: Array<{ id: string; updates: UpdateServerInput }>): {
+  async updateServers(updates: Array<{ id: string; updates: UpdateServerInput }>): Promise<{
     successful: ServerResponse[];
     failed: Array<{ id: string; error: string }>;
-  } {
+  }> {
     const successful: ServerResponse[] = [];
     const failed: Array<{ id: string; error: string }> = [];
 
     for (const item of updates) {
       try {
-        const server = this.updateServer(item.id, item.updates);
+        const server = await this.updateServer(item.id, item.updates);
         successful.push(server);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';

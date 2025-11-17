@@ -21,16 +21,16 @@ class TeamService {
   /**
    * Get all teams
    */
-  getAllTeams(): TeamResponse[] {
-    const teams = db.getAll<Team>('teams');
+  async getAllTeams(): Promise<TeamResponse[]> {
+    const teams = await db.getAllAsync<Team>('teams');
     return teams.map((team) => this.toResponse(team));
   }
 
   /**
    * Get team by ID
    */
-  getTeamById(id: string): TeamResponse | null {
-    const team = db.getOne<Team>('teams', 'id = ?', [id]);
+  async getTeamById(id: string): Promise<TeamResponse | null> {
+    const team = await db.getOneAsync<Team>('teams', 'id = ?', [id]);
     return team ? this.toResponse(team) : null;
   }
 
@@ -49,7 +49,7 @@ class TeamService {
   /**
    * Create a new team
    */
-  createTeam(input: CreateTeamInput, upsert = false): TeamResponse {
+  async createTeam(input: CreateTeamInput, upsert = false): Promise<TeamResponse> {
     // Validate team ID
     if (!input.id || input.id.trim() === '') {
       throw new Error('Team ID is required');
@@ -69,10 +69,10 @@ class TeamService {
     this.validateNoDuplicatePlayers(input.players);
 
     // Check if team exists
-    const existing = this.getTeamById(input.id);
+    const existing = await this.getTeamById(input.id);
     if (existing) {
       if (upsert) {
-        return this.updateTeam(input.id, {
+        return await this.updateTeam(input.id, {
           name: input.name,
           tag: input.tag,
           discordRoleId: input.discordRoleId,
@@ -83,7 +83,7 @@ class TeamService {
     }
 
     // Create team
-    db.insert('teams', {
+    await db.insertAsync('teams', {
       id: input.id,
       name: input.name,
       tag: input.tag || null,
@@ -95,14 +95,16 @@ class TeamService {
       id: input.id,
       playerCount: input.players.length,
     });
-    return this.getTeamById(input.id)!;
+    const result = await this.getTeamById(input.id);
+    if (!result) throw new Error('Failed to retrieve created team');
+    return result;
   }
 
   /**
    * Update a team
    */
-  updateTeam(id: string, input: UpdateTeamInput): TeamResponse {
-    const existing = this.getTeamById(id);
+  async updateTeam(id: string, input: UpdateTeamInput): Promise<TeamResponse> {
+    const existing = await this.getTeamById(id);
     if (!existing) {
       throw new Error(`Team with ID '${id}' not found`);
     }
@@ -121,38 +123,40 @@ class TeamService {
     if (input.discordRoleId !== undefined) updateData.discord_role_id = input.discordRoleId || null;
     if (input.players !== undefined) updateData.players = JSON.stringify(input.players);
 
-    db.update('teams', updateData, 'id = ?', [id]);
+    await db.updateAsync('teams', updateData, 'id = ?', [id]);
 
     log.success(`Team updated: ${input.name || existing.name} (${id})`, { id });
-    return this.getTeamById(id)!;
+    const result = await this.getTeamById(id);
+    if (!result) throw new Error('Failed to retrieve updated team');
+    return result;
   }
 
   /**
    * Delete a team
    */
-  deleteTeam(id: string): void {
-    const existing = this.getTeamById(id);
+  async deleteTeam(id: string): Promise<void> {
+    const existing = await this.getTeamById(id);
     if (!existing) {
       throw new Error(`Team with ID '${id}' not found`);
     }
 
-    db.delete('teams', 'id = ?', [id]);
+    await db.deleteAsync('teams', 'id = ?', [id]);
     log.success(`Team deleted: ${existing.name} (${id})`, { id });
   }
 
   /**
    * Create multiple teams at once
    */
-  createTeams(
+  async createTeams(
     inputs: CreateTeamInput[],
     upsert = false
-  ): { successful: TeamResponse[]; failed: { id: string; error: string }[] } {
+  ): Promise<{ successful: TeamResponse[]; failed: { id: string; error: string }[] }> {
     const successful: TeamResponse[] = [];
     const failed: { id: string; error: string }[] = [];
 
     for (const input of inputs) {
       try {
-        const team = this.createTeam(input, upsert);
+        const team = await this.createTeam(input, upsert);
         successful.push(team);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
@@ -167,16 +171,16 @@ class TeamService {
   /**
    * Batch update teams
    */
-  updateTeams(updates: { id: string; updates: UpdateTeamInput }[]): {
+  async updateTeams(updates: { id: string; updates: UpdateTeamInput }[]): Promise<{
     successful: TeamResponse[];
     failed: { id: string; error: string }[];
-  } {
+  }> {
     const successful: TeamResponse[] = [];
     const failed: { id: string; error: string }[] = [];
 
     for (const item of updates) {
       try {
-        const team = this.updateTeam(item.id, item.updates);
+        const team = await this.updateTeam(item.id, item.updates);
         successful.push(team);
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';

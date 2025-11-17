@@ -13,8 +13,8 @@ import { settingsService } from '../services/settingsService';
  *
  * @throws Error if no webhook URL has been configured
  */
-export function getWebhookBaseUrl(_req: Request): string {
-  return settingsService.requireWebhookUrl();
+export async function getWebhookBaseUrl(_req: Request): Promise<string> {
+  return await settingsService.requireWebhookUrl();
 }
 
 /**

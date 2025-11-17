@@ -114,17 +114,16 @@ Scalability and deployment options.
 
 ### Current Features
 
-- ✅ SQLite with better-sqlite3 (file-based)
+- ✅ **PostgreSQL support** (required for all setups - production & development)
 - ✅ Docker support with Caddy reverse proxy
 - ✅ Automatic schema initialization
 - ✅ Volume persistence for data
+- ✅ Connection pooling (PostgreSQL)
+- ✅ No native module rebuilds in production (PostgreSQL)
 
-### Planned Features (High Priority)
+### Planned Features
 
-- 🎯 **PostgreSQL support** (v1.1)
 - 🎯 **MySQL/MariaDB support** (v1.1)
-- 🎯 **Migration tool from SQLite** (v1.1)
-- ⏳ Connection pooling
 - ⏳ Automatic database backups
 - ⏳ Point-in-time recovery
 - ⏳ High availability setup

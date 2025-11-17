@@ -7,9 +7,9 @@ const router = Router();
 
 router.use(requireAuth);
 
-const mapSettingsResponse = () => {
-  const webhookUrl = settingsService.getWebhookUrl();
-  const steamApiKey = settingsService.getSteamApiKey();
+const mapSettingsResponse = async () => {
+  const webhookUrl = await settingsService.getWebhookUrl();
+  const steamApiKey = await settingsService.getSteamApiKey();
 
   return {
     webhookUrl,
@@ -19,14 +19,14 @@ const mapSettingsResponse = () => {
   };
 };
 
-router.get('/', (_req: Request, res: Response) => {
+router.get('/', async (_req: Request, res: Response) => {
   return res.json({
     success: true,
-    settings: mapSettingsResponse(),
+    settings: await mapSettingsResponse(),
   });
 });
 
-router.put('/', (req: Request, res: Response) => {
+router.put('/', async (req: Request, res: Response) => {
   const { webhookUrl, steamApiKey } = req.body as {
     webhookUrl?: unknown;
     steamApiKey?: unknown;
@@ -40,7 +40,7 @@ router.put('/', (req: Request, res: Response) => {
           error: 'webhookUrl must be a string or null',
         });
       }
-      settingsService.setSetting('webhook_url', typeof webhookUrl === 'string' ? webhookUrl : null);
+      await settingsService.setSetting('webhook_url', typeof webhookUrl === 'string' ? webhookUrl : null);
     }
 
     if (steamApiKey !== undefined) {
@@ -50,7 +50,7 @@ router.put('/', (req: Request, res: Response) => {
           error: 'steamApiKey must be a string or null',
         });
       }
-      settingsService.setSetting(
+      await settingsService.setSetting(
         'steam_api_key',
         typeof steamApiKey === 'string' ? steamApiKey : null
       );
@@ -58,7 +58,7 @@ router.put('/', (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      settings: mapSettingsResponse(),
+      settings: await mapSettingsResponse(),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to update settings';

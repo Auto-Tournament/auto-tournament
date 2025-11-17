@@ -42,56 +42,129 @@
 
 > **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Installation guide</a>
 
-```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+### Option 1: Docker (Recommended - No cloning needed)
 
-# 1. Create environment file
-cp .env.example .env
-
-# 2. Generate secure tokens
-openssl rand -hex 32  # Copy for API_TOKEN
-openssl rand -hex 32  # Copy for SERVER_TOKEN
-
-# 3. Edit .env and add:
-#    - API_TOKEN (admin login)
-#    - SERVER_TOKEN (CS2 server auth)
-nano .env
-
-# 4. Start everything
-docker compose -f docker/docker-compose.yml up -d
-
-# OR build locally (until first release)
-# docker compose -f docker/docker-compose.dev.yml up -d --build
-```
-
-**Access at:** `http://localhost:3069`
-
-<details>
-<summary><b>Or use Docker Compose</b></summary>
-
-Create `docker-compose.yml`:
+Create `docker-compose.yml` in any directory:
 
 ```yaml
-version: '3.8'
-
 services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    # No port binding needed - DB is only accessible within Docker network
+    # Uncomment if you need external access for backups/management:
+    # ports:
+    #   - '5432:5432'
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   matchzy-tournament:
     image: sivertio/matchzy-auto-tournament:latest
     container_name: matchzy-tournament
     restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
     ports:
       - '3069:3069'
     environment:
       - API_TOKEN=${API_TOKEN}
       - SERVER_TOKEN=${SERVER_TOKEN}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
     volumes:
-      - ./data:/app/data
+      - ./data:/app/data # For demos and other data
+
+volumes:
+  postgres-data:
 ```
+
+**Database Configuration:**
+
+- **PostgreSQL is required** for all setups (Docker and local development)
+- For local development, use `yarn db` to start PostgreSQL, or run manually:
+  ```bash
+  docker run -d --name matchzy-postgres \
+    -e POSTGRES_USER=postgres \
+    -e POSTGRES_PASSWORD=postgres \
+    -e POSTGRES_DB=matchzy_tournament \
+    -p 5432:5432 \
+    postgres:16-alpine
+  ```
+
+**Generate password-style tokens:**
+
+```bash
+# Generate tokens (they will be displayed)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+
+# Show the generated tokens
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+
+# Export them
+export API_TOKEN
+export SERVER_TOKEN
+```
+
+**Note:** The `API_TOKEN` is your admin password - you can use any password you want (e.g., `mypassword123`). You can also set them manually:
+
+**Option A: Export in shell:**
+
+```bash
+export API_TOKEN=<your-password>
+export SERVER_TOKEN=<your-server-token>
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_NAME=matchzy_tournament
+```
+
+**Option B: Edit compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual password.
+
+**Start:**
+
+```bash
+docker compose up -d
+```
+
+**Access at:** `http://localhost:3069`
 
 Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
 
-Run: `docker compose up -d`
+</details>
+
+<details>
+<summary><b>Option 2: Build from Source</b></summary>
+
+If you want to build from source or contribute:
+
+```bash
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+
+# Set environment variables (generate password-style tokens)
+API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+echo "Your API_TOKEN (admin password): $API_TOKEN"
+echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+export API_TOKEN
+export SERVER_TOKEN
+
+# Build and start from source
+docker compose -f docker/docker-compose.local.yml up -d --build
+```
+
+**Access at:** `http://localhost:3069`
 
 </details>
 

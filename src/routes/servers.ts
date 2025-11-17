@@ -12,10 +12,10 @@ router.use(requireAuth);
  * GET /api/servers
  * Get all servers
  */
-router.get('/', (req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
     const onlyEnabled = req.query.enabled === 'true';
-    const servers = serverService.getAllServers(onlyEnabled);
+    const servers = await serverService.getAllServers(onlyEnabled);
 
     return res.json({
       success: true,
@@ -37,7 +37,7 @@ router.get('/', (req: Request, res: Response) => {
  * Query param: ?upsert=true to update if exists instead of error
  * NOTE: This must be before /:id routes to avoid matching "batch" as an ID
  */
-router.post('/batch', (req: Request, res: Response) => {
+router.post('/batch', async (req: Request, res: Response) => {
   try {
     const servers: CreateServerInput[] = req.body;
     const upsert = req.query.upsert === 'true';
@@ -49,7 +49,7 @@ router.post('/batch', (req: Request, res: Response) => {
       });
     }
 
-    const result = serverService.createServers(servers, upsert);
+    const result = await serverService.createServers(servers, upsert);
 
     return res.status(result.failed.length > 0 ? 207 : 201).json({
       success: result.failed.length === 0,
@@ -78,7 +78,7 @@ router.post('/batch', (req: Request, res: Response) => {
  * Update multiple servers at once
  * NOTE: This must be before /:id routes to avoid matching "batch" as an ID
  */
-router.patch('/batch', (req: Request, res: Response) => {
+router.patch('/batch', async (req: Request, res: Response) => {
   try {
     const updates: Array<{ id: string; updates: UpdateServerInput }> = req.body;
 
@@ -99,7 +99,7 @@ router.patch('/batch', (req: Request, res: Response) => {
       }
     }
 
-    const result = serverService.updateServers(updates);
+    const result = await serverService.updateServers(updates);
 
     return res.status(result.failed.length > 0 ? 207 : 200).json({
       success: result.failed.length === 0,
@@ -125,10 +125,10 @@ router.patch('/batch', (req: Request, res: Response) => {
  * GET /api/servers/:id
  * Get a specific server
  */
-router.get('/:id', (req: Request, res: Response) => {
+router.get('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const server = serverService.getServerById(id);
+    const server = await serverService.getServerById(id);
 
     if (!server) {
       return res.status(404).json({
@@ -155,7 +155,7 @@ router.get('/:id', (req: Request, res: Response) => {
  * Create a new server
  * Query param: ?upsert=true to update if exists instead of error
  */
-router.post('/', (req: Request, res: Response) => {
+router.post('/', async (req: Request, res: Response) => {
   try {
     const input: CreateServerInput = req.body;
     const upsert = req.query.upsert === 'true';
@@ -168,7 +168,7 @@ router.post('/', (req: Request, res: Response) => {
       });
     }
 
-    const server = serverService.createServer(input, upsert);
+    const server = await serverService.createServer(input, upsert);
 
     return res.status(201).json({
       success: true,
@@ -191,12 +191,12 @@ router.post('/', (req: Request, res: Response) => {
  * PUT /api/servers/:id
  * Update a server
  */
-router.put('/:id', (req: Request, res: Response) => {
+router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const input: UpdateServerInput = req.body;
 
-    const server = serverService.updateServer(id, input);
+    const server = await serverService.updateServer(id, input);
 
     return res.json({
       success: true,
@@ -219,12 +219,12 @@ router.put('/:id', (req: Request, res: Response) => {
  * PATCH /api/servers/:id
  * Partially update a server
  */
-router.patch('/:id', (req: Request, res: Response) => {
+router.patch('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const input: UpdateServerInput = req.body;
 
-    const server = serverService.updateServer(id, input);
+    const server = await serverService.updateServer(id, input);
 
     return res.json({
       success: true,
@@ -247,10 +247,10 @@ router.patch('/:id', (req: Request, res: Response) => {
  * DELETE /api/servers/:id
  * Delete a server
  */
-router.delete('/:id', (req: Request, res: Response) => {
+router.delete('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    serverService.deleteServer(id);
+    await serverService.deleteServer(id);
 
     return res.json({
       success: true,
@@ -272,10 +272,10 @@ router.delete('/:id', (req: Request, res: Response) => {
  * POST /api/servers/:id/enable
  * Enable a server
  */
-router.post('/:id/enable', (req: Request, res: Response) => {
+router.post('/:id/enable', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const server = serverService.setServerEnabled(id, true);
+    const server = await serverService.setServerEnabled(id, true);
 
     return res.json({
       success: true,
@@ -298,10 +298,10 @@ router.post('/:id/enable', (req: Request, res: Response) => {
  * POST /api/servers/:id/disable
  * Disable a server
  */
-router.post('/:id/disable', (req: Request, res: Response) => {
+router.post('/:id/disable', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const server = serverService.setServerEnabled(id, false);
+    const server = await serverService.setServerEnabled(id, false);
 
     return res.json({
       success: true,

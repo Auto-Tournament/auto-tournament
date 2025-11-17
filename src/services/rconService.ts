@@ -12,7 +12,7 @@ export class RconService {
    * Send a command to a specific server
    */
   async sendCommand(serverId: string, command: string): Promise<RconCommandResponse> {
-    const server = serverService.getServerById(serverId);
+    const server = await serverService.getServerById(serverId);
 
     if (!server) {
       return {
@@ -51,7 +51,7 @@ export class RconService {
    * Broadcast a command to all enabled servers
    */
   async broadcastCommand(command: string): Promise<RconCommandResponse[]> {
-    const servers = serverService.getAllServers(true); // Get only enabled servers
+    const servers = await serverService.getAllServers(true); // Get only enabled servers
 
     if (servers.length === 0) {
       return [

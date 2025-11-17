@@ -20,7 +20,7 @@ import { recordMapResult, getMapResults } from './matchMapResultService';
 /**
  * Main event handler - routes events to specific handlers
  */
-export function handleMatchEvent(event: MatchZyEvent): void {
+export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
   // Use type assertion to access event-specific properties
   const eventData = event as unknown as Record<string, unknown>;
 
@@ -63,16 +63,16 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         }
       );
       {
-        const match = resolveMatch(event.matchid);
+        const match = await resolveMatch(event.matchid);
         if (match) {
           updateLiveStats(match, parseScorePayload(eventData, 'postgame'));
-          handleMapCompletion(match, event, eventData);
+          await handleMapCompletion(match, event, eventData);
         }
       }
       break;
 
     case 'series_end':
-      handleSeriesEnd(event);
+      await handleSeriesEnd(event);
       break;
 
     // Map Events
@@ -82,12 +82,12 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         team1: eventData.team1_name,
         team2: eventData.team2_name,
       });
-      const liveMatch = resolveMatch(event.matchid);
+      const liveMatch = await resolveMatch(event.matchid);
       if (liveMatch) {
-        updateMatchStatus(liveMatch, 'live');
+        await updateMatchStatus(liveMatch, 'live');
         playerConnectionService.markAllReady(liveMatch.slug);
         updateLiveStats(liveMatch, parseScorePayload(eventData, 'live'));
-        db.update(
+        await db.updateAsync(
           'matches',
           { current_map: eventData.map_name, map_number: eventData.map_number },
           'id = ?',
@@ -101,7 +101,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
 
     // Player connection events
     case 'player_connect': {
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       const playerInfo = eventData.player as { steamid?: string; name?: string; team?: string };
       const steamId = playerInfo?.steamid;
       if (!match || !steamId) {
@@ -123,7 +123,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
     }
 
     case 'player_disconnect': {
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       const steamId = (eventData.player as { steamid?: string })?.steamid;
       if (!match || !steamId) {
         log.warn('Player disconnect event received without match or steamId', {
@@ -137,7 +137,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
 
     case 'player_ready':
     case 'player_unready': {
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       const steamId = (eventData.player as { steamid?: string })?.steamid;
       if (!match || !steamId) {
         break;
@@ -158,11 +158,11 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         score: `${eventData.team1_score}-${eventData.team2_score}`,
         reason: eventData.reason,
       });
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       if (match) {
         const updates = parseScorePayload(eventData, 'live');
         const stats = matchLiveStatsService.update(match.slug, updates);
-        db.update(
+        await db.updateAsync(
           'matches',
           {
             current_map: stats.mapName ?? match.current_map,
@@ -182,7 +182,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
 
     case 'knife_round_started': {
       log.info(`Knife round started`, { matchId: event.matchid, mapNumber: eventData.map_number });
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       if (match) {
         updateLiveStats(match, { status: 'knife' });
       }
@@ -194,7 +194,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
       });
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       if (match) {
         updateLiveStats(match, { status: 'warmup' });
       }
@@ -207,7 +207,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
-        const match = resolveMatch(event.matchid) ?? null;
+        const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
         updateLiveStats(match, parseScorePayload(eventData, 'live'));
       }
@@ -220,7 +220,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
-      const match = resolveMatch(event.matchid) ?? null;
+      const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
         updateLiveStats(match, parseScorePayload(eventData, 'halftime'));
       }
@@ -232,7 +232,7 @@ export function handleMatchEvent(event: MatchZyEvent): void {
         matchId: event.matchid,
         mapNumber: eventData.map_number,
       });
-      const match = resolveMatch(event.matchid);
+      const match = await resolveMatch(event.matchid);
       if (match) {
         updateLiveStats(match, { status: 'live' });
       }
@@ -270,27 +270,27 @@ export function handleMatchEvent(event: MatchZyEvent): void {
   }
 }
 
-function resolveMatch(identifier: string | number): DbMatchRow | null {
+async function resolveMatch(identifier: string | number): Promise<DbMatchRow | null> {
   const identifierStr = String(identifier);
   const numericId = Number(identifierStr);
 
   if (!Number.isNaN(numericId)) {
-    const byId = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
     if (byId) {
       return byId;
     }
   }
 
-  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]) ?? null;
+  return (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ?? null;
 }
 
-function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): void {
+async function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): Promise<void> {
   if (match.status === status) {
     return;
   }
 
-  db.update('matches', { status }, 'id = ?', [match.id]);
-  const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
+  await db.updateAsync('matches', { status }, 'id = ?', [match.id]);
+  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
   if (updatedMatch) {
     emitMatchUpdate(updatedMatch);
     emitBracketUpdate({
@@ -423,11 +423,11 @@ function parseNumber(value: unknown): number | undefined {
   return undefined;
 }
 
-function handleMapCompletion(
+async function handleMapCompletion(
   match: DbMatchRow,
   originalEvent: MatchZyEvent,
   eventData: Record<string, unknown>
-): void {
+): Promise<void> {
   const config = parseMatchConfig(match.config);
   const totalMaps = config?.num_maps ?? 1;
   const requiredWins = Math.max(1, Math.ceil(totalMaps / 2));
@@ -448,7 +448,7 @@ function handleMapCompletion(
     ((eventData.winner as { team?: string } | undefined)?.team as 'team1' | 'team2' | undefined) ??
     (team1ScoreFinal === team2ScoreFinal ? 'none' : team1ScoreFinal > team2ScoreFinal ? 'team1' : 'team2');
 
-  recordMapResult({
+  await recordMapResult({
     matchSlug: match.slug,
     mapNumber: completedMapNumber,
     mapName,
@@ -472,7 +472,7 @@ function handleMapCompletion(
   const maxMapIndex = Math.max(0, totalMaps - 1);
   const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
   const targetMapNumber = seriesFinished ? completedMapNumber : upcomingIndex;
-  db.update(
+  await db.updateAsync(
     'matches',
     {
       current_map: null,
@@ -504,10 +504,11 @@ function handleMapCompletion(
     mapName: null,
   });
 
+  const mapResults = await getMapResults(match.slug);
   emitMatchUpdate({
     slug: match.slug,
     liveStats: nextStats,
-    mapResults: getMapResults(match.slug),
+    mapResults,
   });
 }
 
@@ -551,9 +552,9 @@ function extractNestedNumber(
 /**
  * Handle series end event - update match status and advance tournament
  */
-function handleSeriesEnd(event: MatchZyEvent): void {
+async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   const eventData = event as unknown as Record<string, unknown>;
-  const match = resolveMatch(event.matchid);
+  const match = await resolveMatch(event.matchid);
   if (!match) {
     log.error(`Match not found for series_end event: ${event.matchid}`);
     return;
@@ -577,7 +578,7 @@ function handleSeriesEnd(event: MatchZyEvent): void {
   }
 
   // Update match status to completed
-  db.update(
+  await db.updateAsync(
     'matches',
     {
       status: 'completed',
@@ -591,7 +592,7 @@ function handleSeriesEnd(event: MatchZyEvent): void {
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
 
   // Emit match update
-  const updatedMatch = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
+  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
   if (updatedMatch) {
     emitMatchUpdate(updatedMatch);
   }
@@ -602,7 +603,7 @@ function handleSeriesEnd(event: MatchZyEvent): void {
   }
 
   // For double elimination, advance loser to losers bracket
-  const tournament = db.queryOne<{ type: string }>('SELECT type FROM tournament WHERE id = ?', [
+  const tournament = await db.queryOneAsync<{ type: string }>('SELECT type FROM tournament WHERE id = ?', [
     match.tournament_id ?? 1,
   ]);
   if (tournament?.type === 'double_elimination') {
@@ -614,19 +615,19 @@ function handleSeriesEnd(event: MatchZyEvent): void {
 
   // Check for round completion (Swiss)
   if (tournament?.type === 'swiss') {
-    checkAndAdvanceRound(match.round);
+    await checkAndAdvanceRound(match.round);
   }
 
   // Check if tournament is complete
-  checkTournamentCompletion();
+  await checkTournamentCompletion();
 }
 
 /**
  * Check if a round is complete and advance to next round (Swiss)
  */
-function checkAndAdvanceRound(completedRound: number): void {
+async function checkAndAdvanceRound(completedRound: number): Promise<void> {
   // Get all matches in this round
-  const roundMatches = db.query<DbMatchRow>(
+  const roundMatches = await db.queryAsync<DbMatchRow>(
     'SELECT * FROM matches WHERE tournament_id = 1 AND round = ?',
     [completedRound]
   );
@@ -642,7 +643,7 @@ function checkAndAdvanceRound(completedRound: number): void {
   log.success(`Round ${completedRound} completed! Checking for next round matches...`);
 
   // Check if there are matches in the next round
-  const nextRoundMatches = db.query<DbMatchRow>(
+  const nextRoundMatches = await db.queryAsync<DbMatchRow>(
     'SELECT * FROM matches WHERE tournament_id = 1 AND round = ? AND status = "pending"',
     [completedRound + 1]
   );
@@ -656,11 +657,11 @@ function checkAndAdvanceRound(completedRound: number): void {
 
   // Swiss system: pair teams based on current standings
   // For now, we just mark matches as ready if both teams are set
-  nextRoundMatches.forEach((match) => {
+  for (const match of nextRoundMatches) {
     if (match.team1_id && match.team2_id) {
-      db.update('matches', { status: 'ready' }, 'id = ?', [match.id]);
+      await db.updateAsync('matches', { status: 'ready' }, 'id = ?', [match.id]);
       log.info(`Match ${match.slug} is ready`);
       emitBracketUpdate({ action: 'match_ready', matchSlug: match.slug });
     }
-  });
+  }
 }

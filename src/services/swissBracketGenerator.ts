@@ -21,7 +21,7 @@ const shuffleArray = <T>(array: T[]): void => {
 class SwissBracketGenerator implements IBracketGenerator {
   async generate(
     tournament: TournamentResponse,
-    getMatchesCallback: () => BracketMatch[]
+    getMatchesCallback: () => Promise<BracketMatch[]>
   ): Promise<BracketMatch[]> {
     const teamIds = [...tournament.teamIds];
     const teamCount = teamIds.length;
@@ -56,7 +56,7 @@ class SwissBracketGenerator implements IBracketGenerator {
         // Determine initial status using shared helper
         const status = determineInitialMatchStatus(team1Id, team2Id, tournament.format, round);
 
-        db.insert('matches', {
+        await db.insertAsync('matches', {
           slug,
           tournament_id: tournament.id,
           round,
@@ -73,7 +73,7 @@ class SwissBracketGenerator implements IBracketGenerator {
       }
     }
 
-    return getMatchesCallback();
+    return await getMatchesCallback();
   }
 }
 

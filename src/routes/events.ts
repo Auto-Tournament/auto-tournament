@@ -34,27 +34,27 @@ router.get('/test', (_req: Request, res: Response) => {
  * POST /api/events
  * Receive MatchZy events via webhook (legacy endpoint without server ID)
  */
-router.post('/', (req: Request, res: Response) => {
-  handleEventRequest(req, res, undefined);
+router.post('/', async (req: Request, res: Response) => {
+  await handleEventRequest(req, res, undefined);
 });
 
 /**
  * POST /api/events/:matchSlugOrServerId
  * Receive MatchZy events via webhook with match slug or server ID in URL
  */
-router.post('/:matchSlugOrServerId', (req: Request, res: Response) => {
+router.post('/:matchSlugOrServerId', async (req: Request, res: Response) => {
   const identifier = req.params.matchSlugOrServerId;
-  handleEventRequest(req, res, identifier);
+  await handleEventRequest(req, res, identifier);
 });
 
 /**
  * Handle incoming event request
  */
-function handleEventRequest(
+async function handleEventRequest(
   req: Request,
   res: Response,
   matchSlugOrServerIdFromUrl?: string
-): Response {
+): Promise<Response> {
   // Log raw request for debugging
   console.log('\n🔍 RAW REQUEST RECEIVED:');
   console.log('Headers:', JSON.stringify(req.headers, null, 2));
@@ -76,13 +76,15 @@ function handleEventRequest(
 
     // Determine match slug from URL or payload
     const matchFromUrl = matchSlugOrServerIdFromUrl
-      ? db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlugOrServerIdFromUrl]) ||
-        db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [
+      ? (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
           matchSlugOrServerIdFromUrl,
-        ])
+        ])) ||
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [
+          matchSlugOrServerIdFromUrl,
+        ]))
       : null;
 
-    const matchFromPayload = findMatchByIdentifier(event.matchid);
+    const matchFromPayload = await findMatchByIdentifier(event.matchid);
     const resolvedMatch = matchFromUrl || matchFromPayload;
 
     const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
@@ -97,8 +99,7 @@ function handleEventRequest(
     console.log('---\n');
 
     // Get server ID
-    const serverId =
-      resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
+    const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
 
     console.log(
       `🖥️ Server ID: ${serverId} (from ${
@@ -131,7 +132,7 @@ function handleEventRequest(
     // Store event in database
     if (resolvedMatch) {
       try {
-        db.insert('match_events', {
+        await db.insertAsync('match_events', {
           match_slug: actualMatchSlug,
           event_type: event.event,
           event_data: JSON.stringify(event),
@@ -152,7 +153,7 @@ function handleEventRequest(
     // Add to event buffer
 
     // Process the event
-    handleMatchEvent(event);
+    await handleMatchEvent(event);
 
     // Emit real-time event via Socket.io
     emitMatchEvent(actualMatchSlug, event as unknown as Record<string, unknown>);
@@ -172,7 +173,7 @@ function handleEventRequest(
   }
 }
 
-function findMatchByIdentifier(identifier: string | number): DbMatchRow | null {
+async function findMatchByIdentifier(identifier: string | number): Promise<DbMatchRow | null> {
   if (identifier === undefined || identifier === null) {
     return null;
   }
@@ -181,13 +182,13 @@ function findMatchByIdentifier(identifier: string | number): DbMatchRow | null {
   const numericId = Number(identifierStr);
 
   if (!Number.isNaN(numericId)) {
-    const byId = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
     if (byId) {
       return byId;
     }
   }
 
-  return db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr]) ?? null;
+  return (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ?? null;
 }
 
 /**
@@ -207,10 +208,11 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
 
     let match: DbMatchRow | null = null;
     if (matchSlug !== undefined && matchSlug !== null) {
-      match = findMatchByIdentifier(matchSlug);
+      match = await findMatchByIdentifier(matchSlug);
     }
     if (!match) {
-      match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId]) ?? null;
+      match =
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId])) ?? null;
     }
 
     if (!match) {
@@ -238,7 +240,7 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
       });
     }
 
-    applyMatchReport(match.slug, parsedReport);
+    await applyMatchReport(match.slug, parsedReport);
 
     log.info('[MatchReport] Report ingested via plugin POST', {
       matchSlug: match.slug,
@@ -268,7 +270,8 @@ router.get('/connections/:matchSlug', async (req: Request, res: Response) => {
 
     const existingStatus = playerConnectionService.getStatus(matchSlug);
     const isStale =
-      !existingStatus || Date.now() - (existingStatus.lastUpdated ?? 0) > CONNECTION_SNAPSHOT_TTL_MS;
+      !existingStatus ||
+      Date.now() - (existingStatus.lastUpdated ?? 0) > CONNECTION_SNAPSHOT_TTL_MS;
 
     if (force || isStale) {
       await refreshConnectionsFromServer(matchSlug, { force });
@@ -345,7 +348,7 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
  * GET /api/events/:matchSlug
  * Get all events for a specific match
  */
-router.get('/:matchSlug', requireAuth, (req: Request, res: Response) => {
+router.get('/:matchSlug', requireAuth, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
     const limit = req.query.limit ? parseInt(req.query.limit as string) : 100;
@@ -362,7 +365,7 @@ router.get('/:matchSlug', requireAuth, (req: Request, res: Response) => {
     query += ' ORDER BY received_at DESC LIMIT ?';
     params.push(limit);
 
-    const events = db.query<DbEventRow>(query, params);
+    const events = await db.queryAsync<DbEventRow>(query, params);
 
     return res.json({
       success: true,

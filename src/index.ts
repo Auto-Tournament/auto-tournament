@@ -281,6 +281,17 @@ initializeSocket(httpServer);
 // Cleanup old event logs (keep last 30 days)
 cleanupOldLogs(30);
 
+// Initialize database before starting server
+(async () => {
+  try {
+    await db.init();
+    log.success('Database initialized successfully');
+  } catch (error) {
+    log.error('Failed to initialize database', error as Error);
+    process.exit(1);
+  }
+})();
+
 const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
   log.server('='.repeat(60));
   log.server('🎮  MatchZy Auto Tournament API');
@@ -327,13 +338,13 @@ async function bootstrapServerWebhooks(): Promise<void> {
 
   let baseUrl: string;
   try {
-    baseUrl = settingsService.requireWebhookUrl();
+    baseUrl = await settingsService.requireWebhookUrl();
   } catch (error) {
     log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
     return;
   }
 
-  const enabledServers = serverService.getAllServers(true);
+  const enabledServers = await serverService.getAllServers(true);
   if (enabledServers.length === 0) {
     log.info('No enabled servers found for webhook bootstrap.');
     return;

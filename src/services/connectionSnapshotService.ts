@@ -124,7 +124,7 @@ export async function refreshConnectionsFromServer(
 
   const refreshPromise = (async () => {
     try {
-      const match = db.queryOne<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
       if (!match || !match.server_id) {
         return;
       }
@@ -134,7 +134,7 @@ export async function refreshConnectionsFromServer(
         return;
       }
 
-      applyMatchReport(match.slug, report);
+      await applyMatchReport(match.slug, report);
     } catch (error) {
       log.error(`Failed to refresh connections via match report for match ${matchSlug}`, error);
     } finally {
@@ -226,7 +226,7 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
   return null;
 }
 
-export function applyMatchReport(matchSlug: string, report: MatchReport): void {
+export async function applyMatchReport(matchSlug: string, report: MatchReport): Promise<void> {
   const connectedPlayers = extractConnectedPlayers(report, matchSlug);
   playerConnectionService.setConnections(matchSlug, connectedPlayers);
   log.info('[Connections] Parsed players from match report', {
@@ -234,7 +234,7 @@ export function applyMatchReport(matchSlug: string, report: MatchReport): void {
     connectedPlayers,
   });
 
-  updateLiveStatsFromReport(matchSlug, report);
+  await updateLiveStatsFromReport(matchSlug, report);
 }
 
 function extractConnectedPlayers(report: MatchReport, matchSlug: string): ConnectedPlayer[] {
@@ -297,7 +297,7 @@ function extractConnectedPlayers(report: MatchReport, matchSlug: string): Connec
   return players;
 }
 
-function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): void {
+async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): Promise<void> {
   const matchInfo = report.match;
   if (!matchInfo) {
     return;
@@ -317,7 +317,7 @@ function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): void
     playerStats: playerStats,
   });
 
-  persistMatchMetaFromReport(matchSlug, matchInfo);
+  await persistMatchMetaFromReport(matchSlug, matchInfo);
 
   emitMatchUpdate({
     slug: matchSlug,
@@ -326,7 +326,7 @@ function updateLiveStatsFromReport(matchSlug: string, report: MatchReport): void
   });
 }
 
-function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchReport['match']): void {
+async function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchReport['match']): Promise<void> {
   if (!matchInfo) return;
 
   const updates: Record<string, unknown> = {};
@@ -345,7 +345,7 @@ function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchReport['m
   }
 
   try {
-    db.update('matches', updates, 'slug = ?', [matchSlug]);
+    await db.updateAsync('matches', updates, 'slug = ?', [matchSlug]);
   } catch (error) {
     log.warn('[MatchReport] Failed to persist match meta from report', {
       matchSlug,

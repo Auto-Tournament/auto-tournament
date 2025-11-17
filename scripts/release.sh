@@ -2,21 +2,25 @@
 set -e
 
 # MatchZy Auto Tournament - Docker Release Script
-# This script builds and publishes Docker images to Docker Hub
+# Optimized for local builds (much faster than GitHub Actions)
+# Builds multi-architecture Docker images (linux/amd64, linux/arm64)
 
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
+BUILDER_NAME="matchzy-builder"
 
 echo -e "${GREEN}MatchZy Auto Tournament - Docker Release${NC}"
 echo "========================================="
+echo -e "${BLUE}Optimized for local builds (faster than GitHub Actions)${NC}"
 echo ""
 
 # Check if Docker is running
@@ -31,13 +35,86 @@ if ! docker buildx version > /dev/null 2>&1; then
     exit 1
 fi
 
-# Create and use buildx builder if it doesn't exist
-BUILDER_NAME="matchzy-builder"
+# Ask about remote builder (for NAS or remote build server)
+echo -e "${YELLOW}Builder options:${NC}"
+echo "  1. Local builder (default - uses your machine)"
+echo "  2. Remote builder via SSH (e.g., NAS with powerful specs)"
+echo ""
+read -p "Use remote builder? (y/n, default: n) " -n 1 -r
+echo
+USE_REMOTE_BUILDER=$REPLY
+
+if [[ $USE_REMOTE_BUILDER =~ ^[Yy]$ ]]; then
+    echo ""
+    echo -e "${YELLOW}How does this work?${NC}"
+    echo -e "  ${BLUE}SSH method (recommended):${NC} Script connects via SSH to your NAS"
+    echo -e "    and runs Docker BuildKit in a container on the remote Docker daemon."
+    echo -e "    All build operations happen on the remote machine."
+    echo ""
+    echo -e "${YELLOW}Enter remote Docker host:${NC}"
+    echo -e "  ${BLUE}SSH format:${NC} ssh://user@nas.local"
+    echo -e "    (Requires SSH key-based auth or password)"
+    echo -e "  ${BLUE}TCP format:${NC} tcp://nas.local:2376"
+    echo -e "    (Requires Docker daemon exposed via TCP - less secure)"
+    echo ""
+    read -p "Remote host (e.g., ssh://user@nas.local): " REMOTE_HOST
+    if [ -z "$REMOTE_HOST" ]; then
+        echo -e "${RED}Error: Remote host is required${NC}"
+        exit 1
+    fi
+    
+    echo ""
+    echo -e "${YELLOW}Creating remote builder...${NC}"
+    echo -e "${BLUE}Connecting to ${REMOTE_HOST}...${NC}"
+    
+    REMOTE_BUILDER_NAME="${BUILDER_NAME}-remote"
+    if docker buildx inspect "${REMOTE_BUILDER_NAME}" > /dev/null 2>&1; then
+        echo -e "${YELLOW}Removing existing remote builder...${NC}"
+        docker buildx rm "${REMOTE_BUILDER_NAME}" > /dev/null 2>&1 || true
+    fi
+    
+    # For SSH: docker-container driver connects via SSH and runs buildkit container remotely
+    # For TCP: docker-container driver connects to remote Docker daemon via TCP
+    docker buildx create --name "${REMOTE_BUILDER_NAME}" --driver docker-container \
+        --driver-opt "network=host" \
+        --driver-opt "env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000" \
+        --buildkitd-flags "--allow-insecure-entitlement network.host --oci-worker-max-parallelism 8" \
+        "${REMOTE_HOST}" || {
+        echo -e "${RED}Failed to create remote builder.${NC}"
+        echo -e "${YELLOW}Troubleshooting:${NC}"
+        echo "  - For SSH: Ensure SSH key-based auth is set up, or use: ssh-copy-id user@nas.local"
+        echo "  - For TCP: Ensure Docker daemon is configured to listen on TCP port"
+        echo "  - Test connection: docker -H ${REMOTE_HOST} info"
+        echo ""
+        read -p "Continue with local builder? (y/n) " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            exit 1
+        fi
+        BUILDER_NAME="matchzy-builder"
+    }
+    
+    if docker buildx inspect "${REMOTE_BUILDER_NAME}" > /dev/null 2>&1; then
+        BUILDER_NAME="${REMOTE_BUILDER_NAME}"
+        echo -e "${GREEN}✅ Remote builder created successfully!${NC}"
+        echo -e "${BLUE}All builds will run on: ${REMOTE_HOST}${NC}"
+        echo -e "${BLUE}Using optimized settings for powerful remote machine${NC}"
+    fi
+fi
+
+# Create and use buildx builder if it doesn't exist (local builder)
 if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    echo -e "${YELLOW}Creating Docker Buildx builder...${NC}"
-    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+    echo -e "${YELLOW}Creating Docker Buildx builder (optimized for speed)...${NC}"
+    docker buildx create \
+        --name "${BUILDER_NAME}" \
+        --driver docker-container \
+        --driver-opt "env.BUILDKIT_STEP_LOG_MAX_SIZE=10000000" \
+        --buildkitd-flags "--allow-insecure-entitlement network.host --oci-worker-max-parallelism 4" \
+        --use
+    echo -e "${GREEN}✅ Builder created with optimizations for parallel builds${NC}"
 else
     docker buildx use "${BUILDER_NAME}"
+    echo -e "${GREEN}✅ Using existing builder: ${BUILDER_NAME}${NC}"
 fi
 
 # Check if logged in to Docker Hub
@@ -89,15 +166,21 @@ SKIP_TEST=$REPLY
 
 echo ""
 echo -e "${YELLOW}Step 1/3: Building and pushing multi-platform Docker images...${NC}"
-echo -e "${YELLOW}(This may take several minutes for multi-platform builds)${NC}"
+echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
+echo -e "${BLUE}Using builder: ${BUILDER_NAME}${NC}"
+echo -e "${YELLOW}(Building locally - much faster than GitHub Actions!)${NC}"
+echo ""
 
-# Build and push multi-platform images using buildx
+# Build and push multi-platform images using buildx with optimizations
 docker buildx build \
     --platform linux/amd64,linux/arm64 \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:${VERSION}" \
     --tag "${DOCKER_IMAGE}:latest" \
     --push \
+    --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
+    --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
+    --progress=plain \
     .
 
 if [ $? -ne 0 ]; then
@@ -165,6 +248,10 @@ rm -f /tmp/image_inspect.txt
 echo ""
 echo -e "${GREEN}✅ Successfully released ${DOCKER_IMAGE}:${VERSION}${NC}"
 echo ""
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}Release Summary${NC}"
+echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo ""
 echo "Docker Hub: https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}"
 echo ""
 echo "Images are available for:"
@@ -177,9 +264,14 @@ echo -e "  ${YELLOW}docker pull ${DOCKER_IMAGE}:latest${NC}"
 echo ""
 echo "Docker will automatically select the correct platform for their system."
 echo ""
+echo -e "${BLUE}Build cache saved to: ${DOCKER_IMAGE}:buildcache${NC}"
+echo -e "${BLUE}(Future builds will be faster using this cache)${NC}"
+echo ""
 echo "Next steps:"
 echo "  1. Create GitHub release: https://github.com/sivert-io/matchzy-auto-tournament/releases/new"
 echo "  2. Update README.md with new version"
 echo "  3. Update docs if needed"
+echo ""
+echo -e "${GREEN}✨ Built locally - way faster than GitHub Actions!${NC}"
 echo ""
 

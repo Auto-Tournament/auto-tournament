@@ -410,7 +410,7 @@ router.post('/broadcast', async (req: Request, res: Response) => {
     } else {
       // Broadcast to all enabled servers
       const { serverService } = await import('../services/serverService');
-      const servers = serverService.getAllServers(true);
+      const servers = await serverService.getAllServers(true);
       results = await Promise.all(
         servers.map((server) => rconService.sendCommand(server.id, `css_asay ${sanitizedMessage}`))
       );

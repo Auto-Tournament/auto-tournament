@@ -1,5 +1,5 @@
 /**
- * Database row types for better-sqlite3 queries
+ * Database row types for PostgreSQL queries
  */
 
 export interface DbMatchRow {
