@@ -242,7 +242,7 @@
  *     tags:
  *       - RCON
  *     summary: Reload admins
- *     description: Execute css_reload_admins command
+ *     description: Execute reload_admins command
  *     security:
  *       - bearerAuth: []
  *     requestBody:
