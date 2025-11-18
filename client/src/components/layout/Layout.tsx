@@ -6,23 +6,13 @@ import {
   Button,
   Container,
   IconButton,
-  Tooltip,
   Snackbar,
   Alert,
-  Paper,
 } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Book,
-  BookSharp,
-  DeveloperBoard,
-  DeveloperMode,
-  DocumentScanner,
-  LibraryAdd,
   LibraryBooks,
   Logout,
-  Notes,
-  QuestionAnswer,
 } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';

@@ -347,7 +347,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
   let baseUrl: string;
   try {
     baseUrl = await settingsService.requireWebhookUrl();
-  } catch (error) {
+  } catch {
     log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
     return;
   }

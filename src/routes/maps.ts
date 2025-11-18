@@ -222,7 +222,7 @@ router.post('/:id/upload-image', async (req: Request, res: Response) => {
     let imageBuffer: Buffer;
     try {
       imageBuffer = Buffer.from(base64Data, 'base64');
-    } catch (err) {
+    } catch {
       return res.status(400).json({
         success: false,
         error: 'Invalid base64 data',

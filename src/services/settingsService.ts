@@ -93,13 +93,13 @@ class SettingsService {
 
   private validateWebhookUrl(url: string): void {
     try {
-      // eslint-disable-next-line no-new
       new URL(url);
     } catch {
-      throw new Error('Invalid webhook URL. Please provide a full URL including protocol (e.g., https://example.com)');
+      throw new Error(
+        'Invalid webhook URL. Please provide a full URL including protocol (e.g., https://example.com)'
+      );
     }
   }
 }
 
 export const settingsService = new SettingsService();
-

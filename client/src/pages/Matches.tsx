@@ -63,7 +63,6 @@ export default function Matches() {
       'match:update',
       (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
         const matchSlug = 'slug' in data ? data.slug : undefined;
-        const matchId = 'id' in data ? data.id : undefined;
 
         // Handle connection status updates
         if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
@@ -91,18 +90,18 @@ export default function Matches() {
           return [...list, updatedMatch];
         };
 
-        const removeMatch = (list: Match[], updatedMatch: Match) =>
+        const removeMatch = (list: Match[]) =>
           list.filter((m) => !matchIdOrSlugEquals(m));
 
         if (match.status === 'pending' || match.status === 'ready') {
           setUpcomingMatches((prev) => upsertMatch(prev, match));
-          setLiveMatches((prev) => removeMatch(prev, match));
+          setLiveMatches((prev) => removeMatch(prev));
         } else if (match.status === 'live' || match.status === 'loaded') {
-          setUpcomingMatches((prev) => removeMatch(prev, match));
+          setUpcomingMatches((prev) => removeMatch(prev));
           setLiveMatches((prev) => upsertMatch(prev, match));
         } else if (match.status === 'completed') {
-          setUpcomingMatches((prev) => removeMatch(prev, match));
-          setLiveMatches((prev) => removeMatch(prev, match));
+          setUpcomingMatches((prev) => removeMatch(prev));
+          setLiveMatches((prev) => removeMatch(prev));
           setMatchHistory((prev) => {
             const exists = prev.some(matchIdOrSlugEquals);
             if (exists) {
