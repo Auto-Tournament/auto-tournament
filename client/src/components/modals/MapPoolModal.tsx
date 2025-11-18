@@ -121,9 +121,21 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           />
 
           <Box>
-            <Typography variant="body2" color="text.secondary" mb={1}>
-              Select Maps ({selectedMapIds.length} selected)
-            </Typography>
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography variant="body2" color="text.secondary">
+                Select Maps ({selectedMapIds.length} selected)
+              </Typography>
+              {!loadingMaps && availableMaps.length > 0 && (
+                <Button
+                  size="small"
+                  variant="outlined"
+                  onClick={() => setSelectedMapIds(availableMaps.map((m) => m.id))}
+                  disabled={selectedMapIds.length === availableMaps.length}
+                >
+                  Add all
+                </Button>
+              )}
+            </Box>
             {loadingMaps ? (
               <Box display="flex" justifyContent="center" p={2}>
                 <CircularProgress size={24} />

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Box, Typography, Card, CardContent, Stack, Divider } from '@mui/material';
+import React, { useState, useRef, useEffect } from 'react';
+import { Box, Card, CardContent, Stack, Divider } from '@mui/material';
 import { TOURNAMENT_TYPES } from '../../constants/tournament';
 import { Team } from '../../types';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
@@ -56,6 +56,9 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
 }) => {
   const [selectedMapPool, setSelectedMapPool] = useState<string>('active-duty');
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+  const [checklistPosition, setChecklistPosition] = useState({ top: 24, left: 24 });
+  const checklistRef = useRef<HTMLDivElement>(null);
 
   const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools } =
     useTournamentFormData({
@@ -63,6 +66,69 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
       selectedMapPool,
       onMapsChange,
     });
+
+  // Update checklist position based on form position
+  useEffect(() => {
+    let rafId: number | null = null;
+
+    const updatePosition = () => {
+      if (formRef.current && checklistRef.current) {
+        const formRect = formRef.current.getBoundingClientRect();
+        const checklistRect = checklistRef.current.getBoundingClientRect();
+
+        // Calculate center of viewport vertically
+        const viewportHeight = window.innerHeight;
+        const checklistHeight = checklistRect.height;
+        const centeredTop = (viewportHeight - checklistHeight) / 2;
+
+        // Constrain to form's height - ensure checklist stays within form bounds
+        const formTop = formRect.top;
+        const formBottom = formRect.bottom;
+        const minTop = formTop + 24; // Minimum: 24px from form top
+        const maxTop = formBottom - checklistHeight - 24; // Maximum: checklist bottom 24px from form bottom
+
+        // Clamp the centered position to stay within form bounds
+        const finalTop = Math.max(minTop, Math.min(centeredTop, maxTop));
+
+        setChecklistPosition({
+          top: finalTop,
+          left: formRect.left,
+        });
+      }
+    };
+
+    const handleUpdate = () => {
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      rafId = requestAnimationFrame(updatePosition);
+    };
+
+    // Update on mount
+    updatePosition();
+
+    // Update on scroll and resize
+    window.addEventListener('scroll', handleUpdate, true);
+    window.addEventListener('resize', handleUpdate);
+
+    // Also update when content might change
+    const resizeObserver = new ResizeObserver(handleUpdate);
+    if (formRef.current) {
+      resizeObserver.observe(formRef.current);
+    }
+    if (checklistRef.current) {
+      resizeObserver.observe(checklistRef.current);
+    }
+
+    return () => {
+      window.removeEventListener('scroll', handleUpdate, true);
+      window.removeEventListener('resize', handleUpdate);
+      if (rafId !== null) {
+        cancelAnimationFrame(rafId);
+      }
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // Initialize map pool selection based on current maps
   React.useEffect(() => {
@@ -119,23 +185,26 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   };
 
   return (
-    <Card sx={{ position: 'relative', overflow: 'visible' }}>
+    <Card ref={formRef} sx={{ position: 'relative', overflow: 'visible' }}>
       <CardContent sx={{ position: 'relative', overflow: 'visible' }}>
-        <Box display="flex" alignItems="flex-start" gap={3} mb={3}>
-          <Box flex={1}>
-            <Typography variant="h6" gutterBottom>
-              {tournamentExists ? 'Edit Tournament' : 'Create Tournament'}
-            </Typography>
-          </Box>
-          <Box sx={{ minWidth: '200px', mt: 1 }}>
-            <TournamentTypeChecklist
-              tournamentName={name}
-              tournamentType={TOURNAMENT_TYPES.find((t) => t.value === type)}
-              format={format}
-              teamCount={selectedTeams.length}
-              mapsCount={maps.length}
-            />
-          </Box>
+        <Box
+          ref={checklistRef}
+          sx={{
+            position: 'fixed',
+            top: `${checklistPosition.top}px`,
+            left: `${checklistPosition.left}px`,
+            transform: 'translateX(-100%)',
+            zIndex: 1000,
+            paddingRight: '24px',
+          }}
+        >
+          <TournamentTypeChecklist
+            tournamentName={name}
+            tournamentType={TOURNAMENT_TYPES.find((t) => t.value === type)}
+            format={format}
+            teamCount={selectedTeams.length}
+            mapsCount={maps.length}
+          />
         </Box>
 
         <Stack spacing={3}>

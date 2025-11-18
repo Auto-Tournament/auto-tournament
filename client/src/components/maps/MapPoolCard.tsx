@@ -30,7 +30,17 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
         },
       }}
     >
-      <CardContent sx={{ flexGrow: 1 }}>
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          pt: 2,
+          px: 2,
+          pb: 1.5,
+          '&:last-child': {
+            pb: 1.5,
+          },
+        }}
+      >
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Typography variant="h6" component="div">
             {pool.name}
@@ -40,28 +50,15 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {pool.mapIds.length} map{pool.mapIds.length !== 1 ? 's' : ''}
         </Typography>
-        <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
+        <Box display="flex" flexWrap="wrap" gap={0.5}>
           {pool.mapIds.slice(0, 5).map((mapId) => (
-            <Chip
-              key={mapId}
-              label={getMapDisplayName(mapId)}
-              size="small"
-              variant="outlined"
-            />
+            <Chip key={mapId} label={getMapDisplayName(mapId)} size="small" variant="outlined" />
           ))}
           {pool.mapIds.length > 5 && (
-            <Chip
-              label={`+${pool.mapIds.length - 5} more`}
-              size="small"
-              variant="outlined"
-            />
+            <Chip label={`+${pool.mapIds.length - 5} more`} size="small" variant="outlined" />
           )}
         </Box>
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto' }}>
-          {pool.isDefault ? 'Default map pool' : 'Click to edit or delete'}
-        </Typography>
       </CardContent>
     </Card>
   );
 }
-

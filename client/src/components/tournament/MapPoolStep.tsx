@@ -55,8 +55,8 @@ export function MapPoolStep({
     selectedMapPool === 'active-duty'
       ? mapPools.find((p) => p.isDefault)
       : selectedMapPool !== 'custom'
-        ? mapPools.find((p) => p.id.toString() === selectedMapPool)
-        : null;
+      ? mapPools.find((p) => p.id.toString() === selectedMapPool)
+      : null;
 
   const poolHasCorrectMaps = selectedPool && selectedPool.mapIds.length === 7;
   const shouldShowVetoError = isVetoFormat && maps.length !== 7 && !poolHasCorrectMaps;
@@ -181,4 +181,3 @@ export function MapPoolStep({
     </Box>
   );
 }
-

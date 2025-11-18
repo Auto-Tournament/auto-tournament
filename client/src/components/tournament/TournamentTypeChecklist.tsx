@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
+import { Card, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { TOURNAMENT_TYPES } from '../../constants/tournament';
@@ -68,7 +68,7 @@ export function TournamentTypeChecklist({
   const allMet = requirements.every((req) => req.met);
 
   return (
-    <Box>
+    <Card sx={{ p: 2 }}>
       <List dense sx={{ py: 0 }}>
         {requirements.map((requirement, index) => (
           <ListItem key={index} sx={{ px: 0, py: 0.25 }}>
@@ -92,6 +92,6 @@ export function TournamentTypeChecklist({
           </ListItem>
         ))}
       </List>
-    </Box>
+    </Card>
   );
 }

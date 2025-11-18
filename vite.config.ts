@@ -11,7 +11,7 @@ export default defineConfig({
   server: {
     port: 5173,
     allowedHosts: ['cs.sivert.io'],
-    // Development proxy: forwards /api/* and /socket.io/* to Express server on port 3000
+    // Development proxy: forwards /api/*, /socket.io/*, and /map-images/* to Express server on port 3000
     // Production: Caddy proxies both to Express on same port (no proxy needed)
     proxy: {
       '/api': {
@@ -22,6 +22,10 @@ export default defineConfig({
         target: 'http://localhost:3000',
         changeOrigin: true,
         ws: true, // Enable WebSocket proxying
+      },
+      '/map-images': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
       },
     },
   },

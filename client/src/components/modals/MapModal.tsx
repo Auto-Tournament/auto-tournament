@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -11,6 +11,8 @@ import {
   Alert,
   CircularProgress,
 } from '@mui/material';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { api } from '../../utils/api';
 import type { Map, MapResponse } from '../../types/api.types';
 
@@ -28,6 +30,9 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [previewUrl, setPreviewUrl] = useState<string>('');
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
   const isEditing = !!map;
 
@@ -36,6 +41,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       setId(map.id);
       setDisplayName(map.displayName);
       setImageUrl(map.imageUrl || '');
+      setPreviewUrl(map.imageUrl || '');
     } else {
       resetForm();
     }
@@ -45,7 +51,80 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setId('');
     setDisplayName('');
     setImageUrl('');
+    setPreviewUrl('');
+    setSelectedFile(null);
     setError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setSelectedFile(null);
+      return;
+    }
+
+    // Validate file type
+    const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setError('Invalid file type. Please select a PNG, JPG, GIF, or WebP image.');
+      setSelectedFile(null);
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('File size too large. Please select an image smaller than 5MB.');
+      setSelectedFile(null);
+      return;
+    }
+
+    setSelectedFile(file);
+    setError('');
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setPreviewUrl(result);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const uploadImageFile = async (mapId: string, file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        try {
+          const base64Data = e.target?.result as string;
+
+          // Upload image
+          const response = await api.post<{ success: boolean; imageUrl: string }>(
+            `/api/maps/${mapId}/upload-image`,
+            {
+              imageData: base64Data,
+            }
+          );
+
+          if (response.success && response.imageUrl) {
+            resolve(response.imageUrl);
+          } else {
+            reject(new Error('Failed to upload image'));
+          }
+        } catch (err) {
+          const error = err as { error?: string; message?: string };
+          reject(new Error(error.error || error.message || 'Failed to upload image'));
+        }
+      };
+
+      reader.onerror = () => {
+        reject(new Error('Failed to read image file'));
+      };
+
+      reader.readAsDataURL(file);
+    });
   };
 
   const handleDownloadImage = async () => {
@@ -65,14 +144,24 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       const response = await fetch(imageUrl, { method: 'HEAD' });
       if (response.ok) {
         setImageUrl(imageUrl);
+        setPreviewUrl(imageUrl);
       } else {
-        setError(`Image not found for ${id}. You can manually enter an image URL.`);
+        setError(`Image not found for ${id}. You can upload an image instead.`);
       }
     } catch (err) {
-      setError('Failed to fetch image. You can manually enter an image URL.');
+      setError('Failed to fetch image. You can upload an image instead.');
       console.error(err);
     } finally {
       setUploading(false);
+    }
+  };
+
+  const handleRemoveImage = () => {
+    setImageUrl('');
+    setPreviewUrl('');
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
     }
   };
 
@@ -97,10 +186,31 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setError('');
 
     try {
+      let finalImageUrl = imageUrl.trim() || null;
+
+      // If there's a selected file, upload it first
+      if (selectedFile) {
+        try {
+          const uploadedUrl = await uploadImageFile(id.trim(), selectedFile);
+          finalImageUrl = uploadedUrl;
+          setImageUrl(uploadedUrl);
+          setPreviewUrl(uploadedUrl);
+          setSelectedFile(null);
+          if (fileInputRef.current) {
+            fileInputRef.current.value = '';
+          }
+        } catch (err) {
+          const error = err as Error;
+          setError(error.message || 'Failed to upload image');
+          setSaving(false);
+          return;
+        }
+      }
+
       const payload = {
         id: id.trim(),
         displayName: displayName.trim(),
-        imageUrl: imageUrl.trim() || null,
+        imageUrl: finalImageUrl,
       };
 
       if (isEditing) {
@@ -148,48 +258,77 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           />
 
           <Box>
-            <TextField
-              label="Image URL"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://..."
-              fullWidth
-              helperText="Map preview image URL"
-            />
-            {!isEditing && id && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={handleDownloadImage}
-                disabled={uploading}
-                sx={{ mt: 1 }}
-              >
-                {uploading ? (
-                  <>
-                    <CircularProgress size={16} sx={{ mr: 1 }} />
-                    Fetching...
-                  </>
-                ) : (
-                  'Fetch from GitHub'
-                )}
-              </Button>
-            )}
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Map Image
+            </Typography>
+            <Box display="flex" flexDirection="column" gap={1}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/png,image/jpeg,image/jpg,image/gif,image/webp"
+                onChange={handleFileSelect}
+                style={{ display: 'none' }}
+                id="map-image-upload"
+              />
+              <label htmlFor="map-image-upload">
+                <Button
+                  variant="outlined"
+                  component="span"
+                  startIcon={<CloudUploadIcon />}
+                  fullWidth
+                  disabled={saving || !id}
+                >
+                  Upload Image
+                </Button>
+              </label>
+              {!isEditing && id && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={handleDownloadImage}
+                  disabled={uploading || saving}
+                >
+                  {uploading ? (
+                    <>
+                      <CircularProgress size={16} sx={{ mr: 1 }} />
+                      Fetching...
+                    </>
+                  ) : (
+                    'Fetch from GitHub'
+                  )}
+                </Button>
+              )}
+            </Box>
+            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
+              Upload a PNG, JPG, GIF, or WebP image (max 5MB)
+            </Typography>
           </Box>
 
-          {imageUrl && (
+          {previewUrl && (
             <Box>
-              <Typography variant="caption" color="text.secondary">
-                Preview:
-              </Typography>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                <Typography variant="caption" color="text.secondary">
+                  Preview:
+                </Typography>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  size="small"
+                  startIcon={<DeleteIcon />}
+                  onClick={handleRemoveImage}
+                  disabled={saving}
+                >
+                  Remove Image
+                </Button>
+              </Box>
               <Box
                 component="img"
-                src={imageUrl}
+                src={previewUrl}
                 alt={displayName || id}
                 sx={{
                   width: '100%',
                   maxHeight: 200,
                   objectFit: 'contain',
-                  mt: 1,
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 1,

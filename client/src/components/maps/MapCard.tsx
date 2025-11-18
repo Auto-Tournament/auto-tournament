@@ -68,15 +68,24 @@ export function MapCard({ map, onClick }: MapCardProps) {
           </Box>
         )}
       </Box>
-      <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+      <CardContent
+        sx={{
+          flexGrow: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          pt: 2,
+          px: 2,
+          pb: 1.5,
+          '&:last-child': {
+            pb: 1.5,
+          },
+        }}
+      >
         <Typography variant="h6" component="div" gutterBottom>
           {map.displayName}
         </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+        <Typography variant="body2" color="text.secondary">
           {map.id}
-        </Typography>
-        <Typography variant="caption" color="text.secondary" sx={{ mt: 'auto' }}>
-          Click to edit or delete
         </Typography>
       </CardContent>
     </Card>

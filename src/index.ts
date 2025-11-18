@@ -44,8 +44,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -266,6 +267,9 @@ app.use('/api/map-pools', mapPoolsRoutes);
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
 app.use('/app', express.static(publicPath));
+
+// Serve map images statically
+app.use('/map-images', express.static(path.join(publicPath, 'map-images')));
 app.get('/app/*', (_req: Request, res: Response) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
