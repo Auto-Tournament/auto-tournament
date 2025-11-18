@@ -119,7 +119,7 @@ export default function Layout() {
                   onClick={() => navigate(item.path)}
                   startIcon={<Icon />}
                   sx={{
-                    color: 'white',
+                    color: 'inherit',
                     backgroundColor: isActive(item.path)
                       ? 'rgba(255, 255, 255, 0.1)'
                       : 'transparent',

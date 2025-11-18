@@ -1,27 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  IconButton,
-  CircularProgress,
-  Alert,
-  CardMedia,
-  Chip,
-  Tabs,
-  Tab,
-} from '@mui/material';
+import { Box, Button, Typography, CircularProgress, Alert, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import { api } from '../utils/api';
 import MapModal from '../components/modals/MapModal';
-import { EmptyState } from '../components/shared/EmptyState';
+import MapActionsModal from '../components/modals/MapActionsModal';
+import MapPoolModal from '../components/modals/MapPoolModal';
+import MapPoolActionsModal from '../components/modals/MapPoolActionsModal';
+import { MapsTab } from '../components/maps/MapsTab';
+import { MapPoolsTab } from '../components/maps/MapPoolsTab';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../types/api.types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 
@@ -35,10 +23,16 @@ export default function Maps() {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [mapToDelete, setMapToDelete] = useState<Map | null>(null);
   const [deleting, setDeleting] = useState(false);
+  const [actionsModalOpen, setActionsModalOpen] = useState(false);
+  const [selectedMap, setSelectedMap] = useState<Map | null>(null);
   const [deletePoolConfirmOpen, setDeletePoolConfirmOpen] = useState(false);
   const [poolToDelete, setPoolToDelete] = useState<MapPool | null>(null);
   const [deletingPool, setDeletingPool] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
+  const [mapPoolModalOpen, setMapPoolModalOpen] = useState(false);
+  const [editingMapPool, setEditingMapPool] = useState<MapPool | null>(null);
+  const [poolActionsModalOpen, setPoolActionsModalOpen] = useState(false);
+  const [selectedMapPool, setSelectedMapPool] = useState<MapPool | null>(null);
 
   // Set dynamic page title
   useEffect(() => {
@@ -73,14 +67,48 @@ export default function Maps() {
     loadMapPools();
   }, []);
 
-  const getMapDisplayName = (mapId: string): string => {
-    const map = maps.find((m) => m.id === mapId);
-    return map ? map.displayName : mapId;
+  const handleMapPoolCardClick = (pool: MapPool) => {
+    setSelectedMapPool(pool);
+    setPoolActionsModalOpen(true);
+  };
+
+  const handleOpenMapPoolModal = (pool?: MapPool) => {
+    setEditingMapPool(pool || null);
+    setMapPoolModalOpen(true);
+    setPoolActionsModalOpen(false);
+  };
+
+  const handleCloseMapPoolModal = () => {
+    setMapPoolModalOpen(false);
+    setEditingMapPool(null);
+  };
+
+  const handleClosePoolActionsModal = () => {
+    setPoolActionsModalOpen(false);
+    setSelectedMapPool(null);
+  };
+
+  const handleEditPoolFromActions = () => {
+    if (selectedMapPool) {
+      handleOpenMapPoolModal(selectedMapPool);
+    }
   };
 
   const handleDeletePoolClick = (pool: MapPool) => {
     setPoolToDelete(pool);
     setDeletePoolConfirmOpen(true);
+    setPoolActionsModalOpen(false);
+  };
+
+  const handleDeletePoolFromActions = () => {
+    if (selectedMapPool) {
+      handleDeletePoolClick(selectedMapPool);
+    }
+  };
+
+  const handleMapPoolSave = async () => {
+    await loadMapPools();
+    handleCloseMapPoolModal();
   };
 
   const handleDeletePoolConfirm = async () => {
@@ -100,14 +128,38 @@ export default function Maps() {
     }
   };
 
+  const handleMapCardClick = (map: Map) => {
+    setSelectedMap(map);
+    setActionsModalOpen(true);
+  };
+
   const handleOpenModal = (map?: Map) => {
     setEditingMap(map || null);
     setModalOpen(true);
+    setActionsModalOpen(false);
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setEditingMap(null);
+  };
+
+  const handleCloseActionsModal = () => {
+    setActionsModalOpen(false);
+    setSelectedMap(null);
+  };
+
+  const handleEditFromActions = () => {
+    if (selectedMap) {
+      handleOpenModal(selectedMap);
+    }
+  };
+
+  const handleDeleteFromActions = () => {
+    if (selectedMap) {
+      handleDeleteClick(selectedMap);
+      setActionsModalOpen(false);
+    }
   };
 
   const handleSave = async () => {
@@ -159,6 +211,15 @@ export default function Maps() {
             Add Map
           </Button>
         )}
+        {activeTab === 1 && (
+          <Button
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenMapPoolModal()}
+          >
+            Create Map Pool
+          </Button>
+        )}
       </Box>
 
       <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
@@ -173,153 +234,43 @@ export default function Maps() {
       )}
 
       {activeTab === 0 && (
-        <>
-          {maps.length === 0 ? (
-            <EmptyState
-              icon={<MapIcon sx={{ fontSize: 64 }} />}
-              title="No maps found"
-              description="Get started by adding your first map"
-              action={
-                <Button
-                  variant="contained"
-                  startIcon={<AddIcon />}
-                  onClick={() => handleOpenModal()}
-                >
-                  Add Map
-                </Button>
-              }
-            />
-          ) : (
-            <Grid container spacing={2}>
-              {maps.map((map) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={map.id}>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      transition: 'transform 0.2s, box-shadow 0.2s',
-                      '&:hover': {
-                        transform: 'translateY(-4px)',
-                        boxShadow: 4,
-                      },
-                    }}
-                  >
-                    {map.imageUrl && (
-                      <CardMedia
-                        component="img"
-                        height="140"
-                        image={map.imageUrl}
-                        alt={map.displayName}
-                        sx={{ objectFit: 'cover' }}
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.style.display = 'none';
-                        }}
-                      />
-                    )}
-                    <CardContent sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                      <Typography variant="h6" component="div" gutterBottom>
-                        {map.displayName}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {map.id}
-                      </Typography>
-                      <Box sx={{ mt: 'auto', display: 'flex', gap: 1 }}>
-                        <IconButton
-                          size="small"
-                          color="primary"
-                          onClick={() => handleOpenModal(map)}
-                          aria-label="edit map"
-                        >
-                          <EditIcon />
-                        </IconButton>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleDeleteClick(map)}
-                          aria-label="delete map"
-                        >
-                          <DeleteIcon />
-                        </IconButton>
-                      </Box>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </>
+        <MapsTab maps={maps} onAddMap={() => handleOpenModal()} onMapClick={handleMapCardClick} />
       )}
 
       {activeTab === 1 && (
-        <>
-          {mapPools.length === 0 ? (
-            <EmptyState
-              icon={<CollectionsIcon sx={{ fontSize: 64 }} />}
-              title="No map pools found"
-              description="Map pools will appear here. Create them from the tournament page."
-            />
-          ) : (
-            <Grid container spacing={2}>
-              {mapPools.map((pool) => (
-                <Grid item xs={12} sm={6} md={4} key={pool.id}>
-                  <Card
-                    sx={{
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                    }}
-                  >
-                    <CardContent sx={{ flexGrow: 1 }}>
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                        <Typography variant="h6" component="div">
-                          {pool.name}
-                        </Typography>
-                        {pool.isDefault && <Chip label="Default" size="small" color="primary" />}
-                      </Box>
-                      <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {pool.mapIds.length} map{pool.mapIds.length !== 1 ? 's' : ''}
-                      </Typography>
-                      <Box display="flex" flexWrap="wrap" gap={0.5} mb={2}>
-                        {pool.mapIds.slice(0, 5).map((mapId) => (
-                          <Chip
-                            key={mapId}
-                            label={getMapDisplayName(mapId)}
-                            size="small"
-                            variant="outlined"
-                          />
-                        ))}
-                        {pool.mapIds.length > 5 && (
-                          <Chip
-                            label={`+${pool.mapIds.length - 5} more`}
-                            size="small"
-                            variant="outlined"
-                          />
-                        )}
-                      </Box>
-                      {!pool.isDefault && (
-                        <Box sx={{ mt: 'auto' }}>
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDeletePoolClick(pool)}
-                            aria-label="delete map pool"
-                          >
-                            <DeleteIcon />
-                          </IconButton>
-                        </Box>
-                      )}
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          )}
-        </>
+        <MapPoolsTab
+          mapPools={mapPools}
+          maps={maps}
+          onCreatePool={() => handleOpenMapPoolModal()}
+          onPoolClick={handleMapPoolCardClick}
+        />
       )}
 
       <MapModal open={modalOpen} map={editingMap} onClose={handleCloseModal} onSave={handleSave} />
+
+      <MapActionsModal
+        open={actionsModalOpen}
+        map={selectedMap}
+        onClose={handleCloseActionsModal}
+        onEdit={handleEditFromActions}
+        onDelete={handleDeleteFromActions}
+      />
+
+      <MapPoolModal
+        open={mapPoolModalOpen}
+        mapPool={editingMapPool}
+        onClose={handleCloseMapPoolModal}
+        onSave={handleMapPoolSave}
+      />
+
+      <MapPoolActionsModal
+        open={poolActionsModalOpen}
+        mapPool={selectedMapPool}
+        maps={maps}
+        onClose={handleClosePoolActionsModal}
+        onEdit={handleEditPoolFromActions}
+        onDelete={handleDeletePoolFromActions}
+      />
 
       <ConfirmDialog
         open={deleteConfirmOpen}
