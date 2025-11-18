@@ -324,7 +324,7 @@ router.post('/end-warmup', async (req: Request, res: Response) => {
 
 /**
  * POST /api/rcon/reload-admins
- * Reload admin configuration (css_reload_admins)
+ * Reload admin configuration (reload_admins)
  */
 router.post('/reload-admins', async (req: Request, res: Response) => {
   try {
@@ -337,7 +337,7 @@ router.post('/reload-admins', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_reload_admins');
+    const result = await rconService.sendCommand(serverId, 'reload_admins');
     const statusCode = result.success ? 200 : 400;
 
     return res.status(statusCode).json(result);
