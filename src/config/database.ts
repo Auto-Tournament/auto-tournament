@@ -5,7 +5,7 @@
 
 import { Pool } from 'pg';
 import { log } from '../utils/logger';
-import { getSchemaSQL } from './database.schema';
+import { getSchemaSQL, getDefaultMapsSQL, getDefaultMapPoolsSQL } from './database.schema';
 
 /**
  * Helper to convert ? placeholders to PostgreSQL placeholders ($1, $2, etc.)
@@ -30,11 +30,9 @@ class DatabaseManager {
     // PostgreSQL - will be initialized asynchronously
     const connString =
       process.env.DATABASE_URL ||
-      `postgresql://${process.env.DB_USER || 'postgres'}:${
-        process.env.DB_PASSWORD || 'postgres'
-      }@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${
-        process.env.DB_NAME || 'matchzy_tournament'
-      }`;
+      `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
+        process.env.DB_HOST || 'localhost'
+      }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
 
     this.postgresPool = new Pool({
       connectionString: connString,
@@ -43,9 +41,7 @@ class DatabaseManager {
       connectionTimeoutMillis: 2000,
     });
 
-    log.database(
-      `[PostgreSQL] Database pool created: ${connString.replace(/:[^:@]+@/, ':****@')}`
-    );
+    log.database(`[PostgreSQL] Database pool created: ${connString.replace(/:[^:@]+@/, ':****@')}`);
   }
 
   /**
@@ -86,12 +82,12 @@ class DatabaseManager {
       // Remove comments first, then split
       const cleanedSchema = schema
         .split('\n')
-        .map(line => {
+        .map((line) => {
           const commentIndex = line.indexOf('--');
           return commentIndex >= 0 ? line.substring(0, commentIndex) : line;
         })
         .join('\n');
-      
+
       const statements = cleanedSchema
         .split(';')
         .map((s) => s.trim().replace(/\n\s*\n/g, '\n')) // Normalize whitespace
@@ -103,14 +99,22 @@ class DatabaseManager {
         try {
           if (statement.trim().length > 0) {
             await client.query(statement);
-            log.database(`[PostgreSQL] Statement ${i + 1}/${statements.length} executed successfully`);
+            log.database(
+              `[PostgreSQL] Statement ${i + 1}/${statements.length} executed successfully`
+            );
           }
         } catch (err) {
           const error = err as Error & { code?: string };
           if (error.code === '42P07' || error.message.includes('already exists')) {
-            log.database(`[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`);
+            log.database(
+              `[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`
+            );
           } else {
-            log.error(`[PostgreSQL] Schema error on statement ${i + 1}/${statements.length}: ${error.message}`);
+            log.error(
+              `[PostgreSQL] Schema error on statement ${i + 1}/${statements.length}: ${
+                error.message
+              }`
+            );
             log.error(`[PostgreSQL] Failed statement: ${statement.substring(0, 200)}`);
             // Don't throw - continue with other statements
           }
@@ -144,6 +148,28 @@ class DatabaseManager {
         } catch (err) {
           // Ignore errors
         }
+      }
+
+      // Insert default maps
+      try {
+        const defaultMapsSQL = getDefaultMapsSQL();
+        await client.query(defaultMapsSQL);
+        log.database('[PostgreSQL] Default maps inserted');
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Failed to insert default maps: ${error.message}`);
+        // Don't throw - continue
+      }
+
+      // Insert default map pools
+      try {
+        const defaultMapPoolsSQL = getDefaultMapPoolsSQL();
+        await client.query(defaultMapPoolsSQL);
+        log.database('[PostgreSQL] Default map pools inserted');
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Failed to insert default map pools: ${error.message}`);
+        // Don't throw - continue
       }
 
       log.success('[PostgreSQL] Database schema initialized');

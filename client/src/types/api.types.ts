@@ -207,3 +207,40 @@ export interface SettingsResponse extends ApiResponse {
     webhookConfigured: boolean;
   };
 }
+
+// Map types
+export interface Map {
+  id: string;
+  displayName: string;
+  imageUrl: string | null;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface MapsResponse extends ApiResponse {
+  maps: Map[];
+  count: number;
+}
+
+export interface MapResponse extends ApiResponse {
+  map: Map;
+}
+
+// Map pool types
+export interface MapPool {
+  id: number;
+  name: string;
+  mapIds: string[];
+  isDefault: boolean;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface MapPoolsResponse extends ApiResponse {
+  mapPools: MapPool[];
+  count: number;
+}
+
+export interface MapPoolResponse extends ApiResponse {
+  mapPool: MapPool;
+}

@@ -32,6 +32,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
+import MapIcon from '@mui/icons-material/Map';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
@@ -50,6 +51,7 @@ export default function Layout() {
     { label: 'Matches', path: '/matches', icon: SportsEsportsIcon },
     { label: 'Teams', path: '/teams', icon: GroupsIcon },
     { label: 'Servers', path: '/servers', icon: StorageIcon },
+    { label: 'Maps', path: '/maps', icon: MapIcon },
     { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
     { label: 'Settings', path: '/settings', icon: SettingsIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),

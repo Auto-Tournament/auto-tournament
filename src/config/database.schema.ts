@@ -121,6 +121,121 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_match_map_results_map ON match_map_results(map_number);
 
     CREATE INDEX IF NOT EXISTS idx_servers_enabled ON servers(enabled);
+
+    -- Maps table
+    CREATE TABLE IF NOT EXISTS maps (
+      id TEXT PRIMARY KEY,
+      display_name TEXT NOT NULL,
+      image_url TEXT,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_maps_id ON maps(id);
+
+    -- Map pools table
+    CREATE TABLE IF NOT EXISTS map_pools (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL UNIQUE,
+      map_ids TEXT NOT NULL,
+      is_default INTEGER NOT NULL DEFAULT 0,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_map_pools_name ON map_pools(name);
+    CREATE INDEX IF NOT EXISTS idx_map_pools_default ON map_pools(is_default);
   `;
 }
 
+/**
+ * Default maps to insert on schema initialization
+ */
+export function getDefaultMapsSQL(): string {
+  const maps = [
+    {
+      id: 'de_ancient',
+      display_name: 'Ancient',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_ancient.png',
+    },
+    {
+      id: 'de_anubis',
+      display_name: 'Anubis',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_anubis.png',
+    },
+    {
+      id: 'de_dust2',
+      display_name: 'Dust II',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_dust2.png',
+    },
+    {
+      id: 'de_inferno',
+      display_name: 'Inferno',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_inferno.png',
+    },
+    {
+      id: 'de_mirage',
+      display_name: 'Mirage',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_mirage.png',
+    },
+    {
+      id: 'de_nuke',
+      display_name: 'Nuke',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_nuke.png',
+    },
+    {
+      id: 'de_vertigo',
+      display_name: 'Vertigo',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png',
+    },
+  ];
+
+  const now = Math.floor(Date.now() / 1000);
+  const values = maps
+    .map(
+      (map) =>
+        `('${map.id}', '${map.display_name.replace(/'/g, "''")}', '${
+          map.image_url
+        }', ${now}, ${now})`
+    )
+    .join(',\n    ');
+
+  return `
+    INSERT INTO maps (id, display_name, image_url, created_at, updated_at)
+    VALUES
+      ${values}
+    ON CONFLICT (id) DO NOTHING;
+  `;
+}
+
+/**
+ * Default map pools to insert on schema initialization
+ */
+export function getDefaultMapPoolsSQL(): string {
+  const now = Math.floor(Date.now() / 1000);
+
+  // Active Duty map pool (all 7 competitive maps)
+  const activeDutyMapIds = JSON.stringify([
+    'de_ancient',
+    'de_anubis',
+    'de_dust2',
+    'de_inferno',
+    'de_mirage',
+    'de_nuke',
+    'de_vertigo',
+  ]);
+
+  return `
+    INSERT INTO map_pools (name, map_ids, is_default, created_at, updated_at)
+    VALUES
+      ('Active Duty', '${activeDutyMapIds}', 1, ${now}, ${now})
+    ON CONFLICT (name) DO NOTHING;
+  `;
+}

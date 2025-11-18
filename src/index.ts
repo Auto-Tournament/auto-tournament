@@ -35,6 +35,8 @@ import teamStatsRoutes from './routes/teamStats';
 import logsRoutes from './routes/logs';
 import vetoRoutes from './routes/veto';
 import settingsRoutes from './routes/settings';
+import mapsRoutes from './routes/maps';
+import mapPoolsRoutes from './routes/mapPools';
 
 const app = express();
 const httpServer = createServer(app);
@@ -258,6 +260,8 @@ app.use('/api/team', teamMatchRoutes); // Public team match data
 app.use('/api/team', teamStatsRoutes); // Public team stats/history
 app.use('/api/veto', vetoRoutes); // Map veto system
 app.use('/api/settings', settingsRoutes);
+app.use('/api/maps', mapsRoutes);
+app.use('/api/map-pools', mapPoolsRoutes);
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
