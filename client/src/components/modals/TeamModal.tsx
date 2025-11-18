@@ -295,13 +295,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
-                  helperText="Enter Steam ID64, vanity URL, or profile link (press Enter to search)"
                 />
                 <Button
                   variant="outlined"
                   onClick={handleResolveSteam}
                   disabled={resolving || !newPlayerSteamId.trim()}
-                  sx={{ minWidth: '100px' }}
+                  size="small"
                 >
                   {resolving ? 'Resolving...' : <SearchIcon />}
                 </Button>
@@ -320,6 +319,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   variant="contained"
                   onClick={handleAddPlayer}
                   disabled={resolving}
+                  size="small"
                   sx={{ minWidth: '56px' }}
                 >
                   <AddIcon />
@@ -367,7 +367,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               Cancel
             </Button>
           )}
-          <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: isEditing ? 0 : 'auto' }}>
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={saving}
+            sx={{ ml: isEditing ? 0 : 'auto' }}
+          >
             {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Team'}
           </Button>
         </DialogActions>
