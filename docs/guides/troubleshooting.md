@@ -183,9 +183,9 @@
 docker compose logs api
 
 # Common issues:
-# - Port already in use: change PORT in .env
-# - Database locked: rm data/tournament.db (WARNING: deletes data)
-# - Missing .env: cp .env.example .env
+# - Port already in use: change PORT environment variable
+# - Database connection issues: check DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME env vars
+# - Missing environment variables: ensure API_TOKEN, SERVER_TOKEN, and DB_* vars are set
 ```
 
 ### Can't Access from Other Machines
@@ -205,9 +205,9 @@ docker compose ps
 ### Enable Debug Logging
 
 ```bash
-# .env
-LOG_LEVEL=debug
-NODE_ENV=development
+# Set environment variables
+export LOG_LEVEL=debug
+export NODE_ENV=development
 ```
 
 Restart API to see detailed logs.
