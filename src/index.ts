@@ -81,13 +81,16 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Swagger Documentation
+// swagger-ui-express types don't perfectly match Express middleware types
 app.use(
   '/api-docs',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...(swaggerUi.serve as any),
-  swaggerUi.setup(swaggerSpec, {
+   
+  (swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'MatchZy API Docs',
-  }) as any
+  }) as any)
 );
 
 // Swagger JSON

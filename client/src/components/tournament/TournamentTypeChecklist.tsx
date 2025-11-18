@@ -65,8 +65,6 @@ export function TournamentTypeChecklist({
     });
   }
 
-  const allMet = requirements.every((req) => req.met);
-
   return (
     <Card sx={{ p: 2 }}>
       <List dense sx={{ py: 0 }}>

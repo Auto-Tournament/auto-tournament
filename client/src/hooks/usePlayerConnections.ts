@@ -37,65 +37,77 @@ export const usePlayerConnections = (matchSlug: string | null) => {
     timestamp: 0,
   }))[0];
 
-  const shouldSkipFetch = (slug: string, force: boolean) => {
-    if (force) return false;
-    return (
-      lastFetchRef.slug === slug &&
-      Date.now() - lastFetchRef.timestamp < 5000 // 5s cache window
-    );
-  };
-
-  const recordFetch = (slug: string) => {
-    lastFetchRef.slug = slug;
-    lastFetchRef.timestamp = Date.now();
-  };
-
-  const loadStatus = useCallback(async ({ force = false }: { force?: boolean } = {}) => {
-    if (!matchSlug) {
-      setStatus(null);
-      return;
-    }
-
-    if (shouldSkipFetch(matchSlug, force)) {
-      return;
-    }
-
-    recordFetch(matchSlug);
-    setLoading(true);
-    try {
-      console.log(`[usePlayerConnections] Loading status for match: ${matchSlug}`);
-      const response = await api.get<ConnectionStatusResponse>(
-        `/api/events/connections/${matchSlug}`
+  const shouldSkipFetch = useCallback(
+    (slug: string, force: boolean) => {
+      if (force) return false;
+      return (
+        lastFetchRef.slug === slug && Date.now() - lastFetchRef.timestamp < 5000 // 5s cache window
       );
-      console.log(`[usePlayerConnections] Response:`, response);
+    },
+    // lastFetchRef is stable (created with useState initializer), so it doesn't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
 
-      if (response.success) {
-        const newStatus: ConnectionStatus = {
-          matchSlug: response.matchSlug || matchSlug,
-          connectedPlayers: response.connectedPlayers || [],
-          team1Connected: response.team1Connected || 0,
-          team2Connected: response.team2Connected || 0,
-          totalConnected: response.totalConnected || 0,
-          lastUpdated: response.lastUpdated || Date.now(),
-        };
-        console.log(`[usePlayerConnections] Setting status:`, newStatus);
-        setStatus(newStatus);
+  const recordFetch = useCallback(
+    (slug: string) => {
+      lastFetchRef.slug = slug;
+      lastFetchRef.timestamp = Date.now();
+    },
+    // lastFetchRef is stable (created with useState initializer), so it doesn't need to be in deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    []
+  );
+
+  const loadStatus = useCallback(
+    async ({ force = false }: { force?: boolean } = {}) => {
+      if (!matchSlug) {
+        setStatus(null);
+        return;
       }
-    } catch (error) {
-      console.error('Failed to load connection status:', error);
-      // Still set an empty status to show 0/10
-      setStatus({
-        matchSlug,
-        connectedPlayers: [],
-        team1Connected: 0,
-        team2Connected: 0,
-        totalConnected: 0,
-        lastUpdated: Date.now(),
-      });
-    } finally {
-      setLoading(false);
-    }
-  }, [matchSlug]);
+
+      if (shouldSkipFetch(matchSlug, force)) {
+        return;
+      }
+
+      recordFetch(matchSlug);
+      setLoading(true);
+      try {
+        console.log(`[usePlayerConnections] Loading status for match: ${matchSlug}`);
+        const response = await api.get<ConnectionStatusResponse>(
+          `/api/events/connections/${matchSlug}`
+        );
+        console.log(`[usePlayerConnections] Response:`, response);
+
+        if (response.success) {
+          const newStatus: ConnectionStatus = {
+            matchSlug: response.matchSlug || matchSlug,
+            connectedPlayers: response.connectedPlayers || [],
+            team1Connected: response.team1Connected || 0,
+            team2Connected: response.team2Connected || 0,
+            totalConnected: response.totalConnected || 0,
+            lastUpdated: response.lastUpdated || Date.now(),
+          };
+          console.log(`[usePlayerConnections] Setting status:`, newStatus);
+          setStatus(newStatus);
+        }
+      } catch (error) {
+        console.error('Failed to load connection status:', error);
+        // Still set an empty status to show 0/10
+        setStatus({
+          matchSlug,
+          connectedPlayers: [],
+          team1Connected: 0,
+          team2Connected: 0,
+          totalConnected: 0,
+          lastUpdated: Date.now(),
+        });
+      } finally {
+        setLoading(false);
+      }
+    },
+    [matchSlug, recordFetch, shouldSkipFetch]
+  );
 
   useEffect(() => {
     loadStatus({ force: true });

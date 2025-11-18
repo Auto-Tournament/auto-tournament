@@ -1,4 +1,4 @@
-import { createTheme, alpha } from '@mui/material/styles';
+import { createTheme } from '@mui/material/styles';
 
 // Material Design 3 Purple theme with maximum roundness
 export const theme = createTheme({

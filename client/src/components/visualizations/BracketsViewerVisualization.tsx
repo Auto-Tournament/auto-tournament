@@ -1,10 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { TransformWrapper, TransformComponent, type ReactZoomPanPinchRef } from 'react-zoom-pan-pinch';
+import {
+  TransformWrapper,
+  TransformComponent,
+  type ReactZoomPanPinchRef,
+} from 'react-zoom-pan-pinch';
 import { render } from '../../brackets-viewer';
 import type { Match } from '../../types';
 import type { Id, Stage, ParticipantResult } from 'brackets-model';
+import type { Group, Round, Match as ViewerMatch, Participant } from '../../types/brackets-viewer';
 import '../../brackets-viewer/style.scss';
 
 interface BracketsViewerVisualizationProps {
@@ -52,9 +57,7 @@ export default function BracketsViewerVisualization({
     const { state, zoomToElement } = transformInstance;
     if (!state || typeof zoomToElement !== 'function') return;
 
-    const matchElement = container.querySelector<HTMLElement>(
-      `.match[data-match-id="${matchId}"]`
-    );
+    const matchElement = container.querySelector<HTMLElement>(`.match[data-match-id="${matchId}"]`);
     if (!matchElement) return;
 
     const currentScale = state?.scale ?? 1;
@@ -115,18 +118,22 @@ export default function BracketsViewerVisualization({
 
     const getStageName = () => {
       switch (tournamentType) {
-        case 'single_elimination': return 'Single Elimination';
-        case 'double_elimination': return 'Double Elimination';
-        case 'round_robin': return 'Round Robin';
-        default: return 'Tournament';
+        case 'single_elimination':
+          return 'Single Elimination';
+        case 'double_elimination':
+          return 'Double Elimination';
+        case 'round_robin':
+          return 'Round Robin';
+        default:
+          return 'Tournament';
       }
     };
 
     // Group matches into their respective groups
-    const groups: any[] = [];
-    const rounds: any[] = [];
-    const viewerMatches: any[] = [];
-    const participants: any[] = [];
+    const groups: Group[] = [];
+    const rounds: Round[] = [];
+    const viewerMatches: ViewerMatch[] = [];
+    const participants: Participant[] = [];
 
     // Collect unique teams
     const teamSet = new Set<string>();
@@ -223,11 +230,7 @@ export default function BracketsViewerVisualization({
       if (team?.id) {
         const participantId = teamIdMap.get(team.id);
         const result =
-          match.winner?.id && team.id
-            ? match.winner.id === team.id
-              ? 'win'
-              : 'loss'
-            : undefined;
+          match.winner?.id && team.id ? (match.winner.id === team.id ? 'win' : 'loss') : undefined;
 
         return {
           id: participantId ?? null,
@@ -263,8 +266,7 @@ export default function BracketsViewerVisualization({
 
       roundMatches.forEach((m) => {
         const viewerMatchId = m.id ?? fallbackMatchId++;
-        const parentPositions =
-          parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
+        const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
         const opponent1Position = parentPositions[0] ?? seedingPositions[0];
@@ -302,8 +304,7 @@ export default function BracketsViewerVisualization({
 
       roundMatches.forEach((m) => {
         const viewerMatchId = m.id ?? fallbackMatchId++;
-        const parentPositions =
-          parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
+        const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           m.round === 1 ? [(m.matchNumber - 1) * 2 + 1, (m.matchNumber - 1) * 2 + 2] : [];
         const opponent1Position = parentPositions[0] ?? seedingPositions[0];
@@ -337,8 +338,7 @@ export default function BracketsViewerVisualization({
         });
 
         const viewerMatchId = gfMatch.id ?? fallbackMatchId++;
-        const parentPositions =
-          parentMatchPositions.get((gfMatch.id ?? viewerMatchId) as Id) ?? [];
+        const parentPositions = parentMatchPositions.get((gfMatch.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           gfMatch.round === 1
             ? [(gfMatch.matchNumber - 1) * 2 + 1, (gfMatch.matchNumber - 1) * 2 + 2]
@@ -393,7 +393,8 @@ export default function BracketsViewerVisualization({
   }, [matches, tournamentType]);
 
   useEffect(() => {
-    if (!containerRef.current || !viewerData) return;
+    const container = containerRef.current;
+    if (!container || !viewerData) return;
 
     const { data, matchLookup } = viewerData;
     matchLookupRef.current = matchLookup;
@@ -426,8 +427,7 @@ export default function BracketsViewerVisualization({
         if (cancelled) return;
 
         // Apply custom styles based on theme
-        const bracketContainer = containerRef.current;
-        if (bracketContainer) {
+        if (container) {
           const primaryBackground = theme.palette.background.default;
           const secondaryBackground =
             theme.palette.mode === 'dark'
@@ -438,21 +438,21 @@ export default function BracketsViewerVisualization({
               ? alpha(theme.palette.background.paper, 0.6)
               : theme.palette.background.paper;
 
-          bracketContainer.style.setProperty('--primary-background', primaryBackground);
-          bracketContainer.style.setProperty('--secondary-background', secondaryBackground);
-          bracketContainer.style.setProperty('--match-background', matchBackground);
-          bracketContainer.style.setProperty('--font-color', theme.palette.text.primary);
-          bracketContainer.style.setProperty('--label-color', theme.palette.text.secondary);
-          bracketContainer.style.setProperty('--hint-color', theme.palette.text.secondary);
-          bracketContainer.style.setProperty('--connector-color', theme.palette.divider);
-          bracketContainer.style.setProperty('--border-color', theme.palette.divider);
-          bracketContainer.style.setProperty(
+          container.style.setProperty('--primary-background', primaryBackground);
+          container.style.setProperty('--secondary-background', secondaryBackground);
+          container.style.setProperty('--match-background', matchBackground);
+          container.style.setProperty('--font-color', theme.palette.text.primary);
+          container.style.setProperty('--label-color', theme.palette.text.secondary);
+          container.style.setProperty('--hint-color', theme.palette.text.secondary);
+          container.style.setProperty('--connector-color', theme.palette.divider);
+          container.style.setProperty('--border-color', theme.palette.divider);
+          container.style.setProperty(
             '--border-hover-color',
             alpha(theme.palette.text.primary, 0.4)
           );
-          bracketContainer.style.setProperty('--border-selected-color', theme.palette.primary.main);
-          bracketContainer.style.setProperty('--win-color', theme.palette.success.main);
-          bracketContainer.style.setProperty('--loss-color', theme.palette.error.main);
+          container.style.setProperty('--border-selected-color', theme.palette.primary.main);
+          container.style.setProperty('--win-color', theme.palette.success.main);
+          container.style.setProperty('--loss-color', theme.palette.error.main);
         }
 
         const transformInstance = transformRef.current;
@@ -474,8 +474,8 @@ export default function BracketsViewerVisualization({
     // Cleanup
     return () => {
       cancelled = true;
-      if (containerRef.current) {
-        containerRef.current.innerHTML = '';
+      if (container) {
+        container.innerHTML = '';
       }
     };
   }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch, updateMatchClickTargets]);
