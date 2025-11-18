@@ -160,7 +160,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
         </Box>
       </DialogTitle>
 
-      <DialogContent dividers>
+      <DialogContent dividers sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>
           {/* Instructions */}
           <Alert severity="info" icon={<InfoIcon />}>
@@ -275,16 +275,13 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
         </Stack>
       </DialogContent>
 
-      <DialogActions>
-        <Button onClick={handleClose} disabled={importing}>
-          Cancel
-        </Button>
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         {!parsedTeams ? (
-          <Button onClick={handlePreview} variant="contained" disabled={!jsonInput || importing}>
+          <Button onClick={handlePreview} variant="contained" disabled={!jsonInput || importing} sx={{ ml: 'auto' }}>
             Preview
           </Button>
         ) : (
-          <Button onClick={handleImport} variant="contained" disabled={importing}>
+          <Button onClick={handleImport} variant="contained" disabled={importing} sx={{ ml: 'auto' }}>
             {importing ? 'Importing...' : `Import ${parsedTeams.length} Teams`}
           </Button>
         )}

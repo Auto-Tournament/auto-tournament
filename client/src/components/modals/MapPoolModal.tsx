@@ -108,8 +108,8 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{isEditing ? 'Edit Map Pool' : 'Create Map Pool'}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+      <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Map Pool Name"
             value={name}
@@ -135,9 +135,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
                 value={selectedMapIds}
                 onChange={(_, newValue) => setSelectedMapIds(newValue)}
                 getOptionLabel={(option) => getMapDisplayName(option)}
-                renderInput={(params) => (
-                  <TextField {...params} placeholder="Choose maps..." />
-                )}
+                renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
                 renderTags={(value, getTagProps) =>
                   value.map((option, index) => (
                     <Chip
@@ -158,15 +156,21 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} variant="contained" disabled={saving || loadingMaps}>
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+        {isEditing && (
+          <Button onClick={onClose} disabled={saving || loadingMaps}>
+            Cancel
+          </Button>
+        )}
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={saving || loadingMaps}
+          sx={{ ml: isEditing ? 0 : 'auto' }}
+        >
           {saving ? <CircularProgress size={24} /> : isEditing ? 'Update' : 'Create'}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-

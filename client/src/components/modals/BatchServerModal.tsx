@@ -198,14 +198,14 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>Batch Create Servers</DialogTitle>
-      <DialogContent>
+      <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         {error && (
           <Alert severity="error" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
             {error}
           </Alert>
         )}
 
-        <Stack spacing={2} mt={1}>
+        <Stack spacing={2}>
           <Alert severity="info">
             Create multiple servers with sequential ports. Perfect for LAN setups with servers on the
             same machine.
@@ -345,10 +345,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
         </Stack>
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
-        <Button onClick={handleClose} disabled={saving}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} variant="contained" disabled={saving}>
+        <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: 'auto' }}>
           {saving ? 'Creating...' : `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`}
         </Button>
       </DialogActions>

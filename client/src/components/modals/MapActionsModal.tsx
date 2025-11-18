@@ -78,9 +78,6 @@ export default function MapActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant="outlined">
-          Cancel
-        </Button>
         <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
           Edit
         </Button>

@@ -74,9 +74,6 @@ export default function MapPoolActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onClose} variant="outlined">
-          Cancel
-        </Button>
         {!mapPool.isDefault && (
           <>
             <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>

@@ -178,6 +178,80 @@ class DatabaseManager {
     }
   }
 
+  /**
+   * Reset database by dropping all tables and reinitializing schema
+   * This will recreate all tables and insert default data (maps, map pools)
+   */
+  async resetDatabase(): Promise<void> {
+    if (!this.postgresPool) {
+      throw new Error('Database not initialized');
+    }
+
+    const client = await this.postgresPool.connect();
+    try {
+      log.warn('[PostgreSQL] Resetting database - dropping all tables');
+
+      // Disable foreign key checks temporarily by dropping tables in correct order
+      // Drop tables in reverse order of dependencies to avoid foreign key constraint errors
+      const tablesToDrop = [
+        'match_map_results',
+        'match_events',
+        'matches',
+        'tournament',
+        'teams',
+        'map_pools',
+        'maps',
+        'app_settings',
+        'servers',
+      ];
+
+      // Drop all tables (CASCADE will handle foreign keys)
+      for (const table of tablesToDrop) {
+        try {
+          await client.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+          log.database(`[PostgreSQL] Dropped table: ${table}`);
+        } catch (err) {
+          const error = err as Error;
+          // Ignore "table does not exist" errors
+          if (!error.message.includes('does not exist')) {
+            log.warn(`[PostgreSQL] Error dropping table ${table}: ${error.message}`);
+          }
+        }
+      }
+
+      // Reset sequences (in case any were created)
+      try {
+        await client.query(`
+          DO $$ 
+          DECLARE 
+            r RECORD;
+          BEGIN
+            FOR r IN (SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public') 
+            LOOP
+              EXECUTE 'DROP SEQUENCE IF EXISTS ' || quote_ident(r.sequence_name) || ' CASCADE';
+            END LOOP;
+          END $$;
+        `);
+        log.database('[PostgreSQL] Reset all sequences');
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Error resetting sequences: ${error.message}`);
+      }
+
+      // Reset initialized flag so schema can be recreated
+      this.initialized = false;
+
+      // Reinitialize schema (this will create tables and insert default data)
+      log.database('[PostgreSQL] Reinitializing schema...');
+      await this.initializeSchemaAsync();
+      this.initialized = true;
+
+      log.success('[PostgreSQL] Database reset completed successfully');
+    } finally {
+      client.release();
+    }
+  }
+
   private safeJson(value: unknown): string {
     try {
       return JSON.stringify(value, (k, v) => {

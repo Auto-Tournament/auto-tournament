@@ -65,8 +65,8 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>Save Map Pool</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+      <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Map Pool Name"
             value={name}
@@ -88,11 +88,8 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} variant="contained" disabled={saving}>
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+        <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: 'auto' }}>
           {saving ? <CircularProgress size={24} /> : 'Save'}
         </Button>
       </DialogActions>

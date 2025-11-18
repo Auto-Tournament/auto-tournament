@@ -218,14 +218,14 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>{isEditing ? 'Edit Server' : 'Add Server'}</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+          <Box display="flex" flexDirection="column" gap={2}>
             <TextField
               label="Server Name"
               value={name}
@@ -325,10 +325,12 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               Delete Server
             </Button>
           )}
-          <Button onClick={onClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} variant="contained" disabled={saving}>
+          {isEditing && (
+            <Button onClick={onClose} disabled={saving}>
+              Cancel
+            </Button>
+          )}
+          <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: isEditing ? 0 : 'auto' }}>
             {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Server'}
           </Button>
         </DialogActions>

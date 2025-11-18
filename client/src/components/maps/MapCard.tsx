@@ -34,7 +34,7 @@ export function MapCard({ map, onClick }: MapCardProps) {
           height: '140px',
           width: '100%',
           position: 'relative',
-          backgroundColor: 'background.paper',
+          backgroundColor: 'background.surface2',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -82,4 +82,3 @@ export function MapCard({ map, onClick }: MapCardProps) {
     </Card>
   );
 }
-

@@ -122,8 +122,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>{isEditing ? 'Edit Map' : 'Add Map'}</DialogTitle>
-      <DialogContent>
-        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
+      <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Map ID"
             value={id}
@@ -209,11 +209,18 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           )}
         </Box>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>
-          Cancel
-        </Button>
-        <Button onClick={handleSave} variant="contained" disabled={saving}>
+      <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
+        {isEditing && (
+          <Button onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+        )}
+        <Button
+          onClick={handleSave}
+          variant="contained"
+          disabled={saving}
+          sx={{ ml: isEditing ? 0 : 'auto' }}
+        >
           {saving ? <CircularProgress size={24} /> : isEditing ? 'Update' : 'Create'}
         </Button>
       </DialogActions>

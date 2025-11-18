@@ -609,38 +609,35 @@ router.post('/restart', requireAuth, async (req: Request, res: Response) => {
  *   post:
  *     tags:
  *       - Tournament
- *     summary: Wipe entire database (DEV ONLY)
- *     description: Deletes all tournaments, matches, events, teams, and servers. USE WITH CAUTION!
+ *     summary: Reset entire database (DEV ONLY)
+ *     description: Drops all tables and reinitializes the database schema with default data (maps, map pools). This resets the database to its initial state as if starting fresh. USE WITH CAUTION!
  *     security:
  *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Database wiped successfully
+ *         description: Database reset successfully
  */
 router.post('/wipe-database', async (_req: Request, res: Response) => {
   try {
-    log.warn('⚠️  DATABASE WIPE REQUESTED - Deleting all data');
+    log.warn('⚠️  DATABASE WIPE REQUESTED - Resetting database to initial state');
 
-    // Delete in correct order to avoid foreign key constraints
-    await tournamentService.deleteTournament(); // This already deletes tournament, matches, and events
-
-    // Also delete teams and servers
     const { db } = await import('../config/database');
-    await db.execAsync('DELETE FROM teams');
-    await db.execAsync('DELETE FROM servers');
+    
+    // Reset database: drops all tables and reinitializes schema with default data
+    await db.resetDatabase();
 
-    log.success('✅ Database wiped successfully');
+    log.success('✅ Database reset successfully - all tables recreated with default data');
 
     return res.json({
       success: true,
-      message: 'Database wiped successfully. All data has been deleted.',
+      message: 'Database reset successfully. All tables have been recreated and default data (maps, map pools) has been inserted.',
     });
   } catch (error) {
-    log.error('Error wiping database', error as Error);
+    log.error('Error resetting database', error as Error);
     const err = error as Error;
     return res.status(500).json({
       success: false,
-      error: err.message || 'Failed to wipe database',
+      error: err.message || 'Failed to reset database',
     });
   }
 });
