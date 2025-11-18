@@ -71,6 +71,8 @@ Tests are organized using tags for easy filtering:
 - `@tournament` - Tournament page tests
 - `@bracket` - Bracket page tests
 - `@matches` - Matches page tests
+- `@maps` - Maps page tests
+- `@map-pools` - Map pools tests
 - `@settings` - Settings page tests
 - `@dashboard` - Dashboard page tests
 - `@navigation` - Navigation tests
@@ -94,6 +96,7 @@ tests/
 ├── tournament.spec.ts # Tournament page tests (@tournament, @crud)
 ├── bracket.spec.ts   # Bracket page tests (@bracket, @navigation)
 ├── matches.spec.ts   # Matches page tests (@matches, @navigation)
+├── maps.spec.ts      # Maps and Map Pools tests (@maps, @map-pools, @crud)
 ├── settings.spec.ts   # Settings page tests (@settings, @configuration)
 └── example.spec.ts   # Example/template tests (@example)
 ```
