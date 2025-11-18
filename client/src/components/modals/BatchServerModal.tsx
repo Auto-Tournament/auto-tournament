@@ -43,7 +43,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
   const [count, setCount] = useState('3');
-  const [ports, setPorts] = useState<string[]>(['27015', '27016', '27017']);
+  const [ports, setPorts] = useState<string[]>(['27015', '27025', '27035']);
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
   const [error, setError] = useState('');
@@ -55,7 +55,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     setBaseId('');
     setHost('');
     setCount('3');
-    setPorts(['27015', '27016', '27017']);
+    setPorts(['27015', '27025', '27035']);
     setPassword('');
     setEnabled(true);
     setError('');
@@ -66,14 +66,18 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     setCount(newCount);
     const countNum = parseInt(newCount) || 3;
     const validCount = Math.min(Math.max(countNum, 1), 50);
-    
+
     // Adjust ports array
     setPorts((prevPorts) => {
       const newPorts = [...prevPorts];
-      // Add more ports if needed
+      // Get the base port (first port or default to 27015)
+      const basePort = parseInt(newPorts[0]) || 27015;
+
+      // Generate ports incrementing by 10
       while (newPorts.length < validCount) {
-        const lastPort = parseInt(newPorts[newPorts.length - 1]) || 27015;
-        newPorts.push(String(lastPort + 1));
+        const portIndex = newPorts.length;
+        const portValue = basePort + portIndex * 10;
+        newPorts.push(String(portValue));
       }
       // Remove excess ports
       return newPorts.slice(0, validCount);
@@ -135,7 +139,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
 
     try {
       const servers: ServerConfig[] = [];
-      
+
       // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
         const portNum = parseInt(ports[i - 1]);
@@ -168,9 +172,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
         onSave();
         handleClose();
       } else {
-        setError(
-          `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`
-        );
+        setError(`Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`);
       }
     } catch (err) {
       const error = err as Error;
@@ -207,8 +209,8 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
 
         <Stack spacing={2}>
           <Alert severity="info">
-            Create multiple servers with sequential ports. Perfect for LAN setups with servers on the
-            same machine.
+            Create multiple servers with ports incrementing by 10 (e.g., 27015, 27025, 27035...).
+            Perfect for LAN setups with servers on the same machine.
           </Alert>
 
           <TextField
@@ -352,4 +354,3 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     </Dialog>
   );
 }
-
