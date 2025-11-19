@@ -47,7 +47,36 @@ export function MapPoolStep({
     return map ? map.displayName : mapId;
   };
 
-  const allMapIds = availableMaps.map((m) => m.id);
+  const getMapType = (mapId: string): string => {
+    if (mapId.startsWith('de_')) return 'Defusal';
+    if (mapId.startsWith('cs_')) return 'Hostage';
+    if (mapId.startsWith('ar_')) return 'Arms Race';
+    return 'Unknown';
+  };
+
+  const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
+    if (mapId.startsWith('de_')) return 'primary';
+    if (mapId.startsWith('cs_')) return 'secondary';
+    if (mapId.startsWith('ar_')) return 'success';
+    return 'default';
+  };
+
+  // Sort maps by prefix: de_, ar_, cs_
+  const sortedMaps = [...availableMaps].sort((a, b) => {
+    const prefixOrder: Record<string, number> = { de_: 0, ar_: 1, cs_: 2 };
+    const aPrefix = a.id.substring(0, 3);
+    const bPrefix = b.id.substring(0, 3);
+    const aOrder = prefixOrder[aPrefix] ?? 999;
+    const bOrder = prefixOrder[bPrefix] ?? 999;
+    
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    // If same prefix, sort alphabetically by ID
+    return a.id.localeCompare(b.id);
+  });
+
+  const allMapIds = sortedMaps.map((m) => m.id);
   const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
 
   // Check if selected pool has 7 maps
@@ -150,9 +179,26 @@ export function MapPoolStep({
               value={maps}
               onChange={(_, newValue) => onMapsChange(newValue)}
               disabled={!canEdit || saving || loadingMaps}
+              disableCloseOnSelect
               sx={{ flex: 1 }}
               getOptionLabel={(option) => getMapDisplayName(option)}
               renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+              renderOption={(props, option) => (
+                <Box component="li" {...props} key={option}>
+                  <Box display="flex" alignItems="center" gap={1} width="100%">
+                    <Typography variant="body2" sx={{ flex: 1 }}>
+                      {getMapDisplayName(option)}
+                    </Typography>
+                    <Chip
+                      label={getMapType(option)}
+                      size="small"
+                      color={getMapTypeColor(option)}
+                      variant="outlined"
+                      sx={{ height: 20, fontSize: '0.7rem' }}
+                    />
+                  </Box>
+                </Box>
+              )}
               renderTags={(value, getTagProps) =>
                 value.map((option, index) => (
                   <Chip
