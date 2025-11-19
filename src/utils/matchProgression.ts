@@ -235,15 +235,15 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
 async function autoAllocateServerToMatch(matchSlug: string): Promise<void> {
   try {
     const webhookUrl = await settingsService.getWebhookUrl();
-    const baseUrl = webhookUrl || 'http://localhost:3000';
 
     if (!webhookUrl) {
       log.warn(
-        'Webhook URL is not configured. Falling back to http://localhost:3000 for auto allocation.'
+        'Webhook URL is not configured. Skipping auto-allocation for match. Configure the webhook URL in Settings.'
       );
+      return;
     }
 
-    const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
+    const result = await matchAllocationService.allocateSingleMatch(matchSlug, webhookUrl);
 
     if (result.success) {
       log.success(`Auto-allocated match ${matchSlug} to server ${result.serverId}`);

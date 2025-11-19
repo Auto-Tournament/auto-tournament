@@ -56,6 +56,9 @@ export async function loadMatchOnServer(
 
     let webhookConfigured = false;
 
+    // Helper to add small delay between RCON commands to avoid overwhelming the server
+    const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
     // Configure webhook (if SERVER_TOKEN is set and not skipped)
     if (!skipWebhook && serverToken) {
       log.debug(`Configuring webhook for match ${matchSlug} on server ${serverId}`);
@@ -68,6 +71,8 @@ export async function loadMatchOnServer(
           command: cmd,
           error: result.error,
         });
+        // Small delay between commands to avoid overwhelming the server
+        await delay(200);
       }
       const webhookUrl = `${baseUrl}/api/events/${matchSlug}`;
       log.webhookConfigured(serverId, webhookUrl);
@@ -75,6 +80,9 @@ export async function loadMatchOnServer(
     } else if (!skipWebhook && !serverToken) {
       log.warn(`No SERVER_TOKEN set, skipping webhook configuration for ${serverId}`);
     }
+
+    // Small delay before next set of commands
+    await delay(300);
 
     // Configure demo upload URL
     const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
@@ -96,6 +104,9 @@ export async function loadMatchOnServer(
       log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
     }
 
+    // Small delay before auth commands
+    await delay(300);
+
     // Configure bearer token auth for match config loading (uses same SERVER_TOKEN)
     if (serverToken) {
       log.debug(`Configuring match config auth for ${serverId}`);
@@ -108,11 +119,16 @@ export async function loadMatchOnServer(
           command: cmd,
           error: result.error,
         });
+        // Small delay between commands
+        await delay(200);
       }
       log.info(`✓ Match config auth configured for ${serverId}`);
     } else {
       log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
     }
+
+    // Delay before sending the load command to ensure previous commands are processed
+    await delay(500);
 
     // Load match on server
     log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
@@ -179,8 +195,13 @@ export async function loadMatchOnServer(
                 error: result.error,
               });
             }
+            // Small delay between reapply commands
+            await delay(200);
           }
         }
+
+        // Small delay before demo command
+        await delay(300);
 
         const demoCmd = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
         const demoReResult = await rconService.sendCommand(serverId, demoCmd);
@@ -199,7 +220,9 @@ export async function loadMatchOnServer(
       };
 
       try {
-        await new Promise((resolve) => setTimeout(resolve, 5000));
+        // Wait longer after match load - server needs time to process the match load
+        // MatchZy can be busy during this time, so we wait 8 seconds instead of 5
+        await new Promise((resolve) => setTimeout(resolve, 8000));
         await reapplyCommands();
       } catch (reapplyError) {
         log.warn('Post-load MatchZy reconfiguration failed', reapplyError as Error);

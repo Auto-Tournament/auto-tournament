@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Box, Card, CardContent, Stack, Divider } from '@mui/material';
+import { Box, Card, CardContent, Stack, Divider, Alert, Button, Typography } from '@mui/material';
+import { Error as ErrorIcon, Add as AddIcon } from '@mui/icons-material';
 import { TOURNAMENT_TYPES } from '../../constants/tournament';
 import { Team } from '../../types';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
@@ -222,6 +223,35 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
         </Box>
 
         <Stack spacing={3}>
+          {/* No Servers Warning - Show prominently at the top */}
+          {!loadingServers && serverCount === 0 && (
+            <Alert
+              severity="error"
+              icon={<ErrorIcon />}
+              action={
+                <Button
+                  color="inherit"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={() => (window.location.href = '/servers')}
+                  sx={{ fontWeight: 600 }}
+                >
+                  Add Server
+                </Button>
+              }
+              sx={{ mb: 2 }}
+            >
+              <Box>
+                <Typography variant="body1" fontWeight={600} gutterBottom>
+                  No servers configured
+                </Typography>
+                <Typography variant="body2">
+                  You need to add at least one CS2 server before creating a tournament. Matches cannot be loaded without servers.
+                </Typography>
+              </Box>
+            </Alert>
+          )}
+
           <TournamentNameStep
             name={name}
             canEdit={canEdit}

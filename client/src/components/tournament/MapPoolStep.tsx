@@ -172,52 +172,42 @@ export function MapPoolStep({
       {/* Custom Map Selection (only shown when Custom is selected) */}
       {selectedMapPool === 'custom' && (
         <Box>
-          <Box display="flex" gap={1} alignItems="flex-start" mb={1}>
-            <Autocomplete
-              multiple
-              options={allMapIds}
-              value={maps}
-              onChange={(_, newValue) => onMapsChange(newValue)}
-              disabled={!canEdit || saving || loadingMaps}
-              disableCloseOnSelect
-              sx={{ flex: 1 }}
-              getOptionLabel={(option) => getMapDisplayName(option)}
-              renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
-              renderOption={(props, option) => (
-                <Box component="li" {...props} key={option}>
-                  <Box display="flex" alignItems="center" gap={1} width="100%">
-                    <Typography variant="body2" sx={{ flex: 1 }}>
-                      {getMapDisplayName(option)}
-                    </Typography>
-                    <Chip
-                      label={getMapType(option)}
-                      size="small"
-                      color={getMapTypeColor(option)}
-                      variant="outlined"
-                      sx={{ height: 20, fontSize: '0.7rem' }}
-                    />
-                  </Box>
-                </Box>
-              )}
-              renderTags={(value, getTagProps) =>
-                value.map((option, index) => (
+          <Autocomplete
+            multiple
+            options={allMapIds}
+            value={maps}
+            onChange={(_, newValue) => onMapsChange(newValue)}
+            disabled={!canEdit || saving || loadingMaps}
+            disableCloseOnSelect
+            fullWidth
+            getOptionLabel={(option) => getMapDisplayName(option)}
+            renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+            renderOption={(props, option) => (
+              <Box component="li" {...props} key={option}>
+                <Box display="flex" alignItems="center" gap={1} width="100%">
+                  <Typography variant="body2" sx={{ flex: 1 }}>
+                    {getMapDisplayName(option)}
+                  </Typography>
                   <Chip
-                    label={getMapDisplayName(option)}
-                    {...getTagProps({ index })}
-                    key={option}
+                    label={getMapType(option)}
+                    size="small"
+                    color={getMapTypeColor(option)}
+                    variant="outlined"
+                    sx={{ height: 20, fontSize: '0.7rem' }}
                   />
-                ))
-              }
-            />
-            <Button
-              variant="outlined"
-              onClick={() => onMapsChange([...allMapIds])}
-              disabled={!canEdit || saving || allMapIds.length === 0 || loadingMaps}
-              sx={{ mt: 1 }}
-            >
-              Add All ({allMapIds.length})
-            </Button>
-          </Box>
+                </Box>
+              </Box>
+            )}
+            renderTags={(value, getTagProps) =>
+              value.map((option, index) => (
+                <Chip
+                  label={getMapDisplayName(option)}
+                  {...getTagProps({ index })}
+                  key={option}
+                />
+              ))
+            }
+          />
           {maps.length > 0 && (
             <Button
               variant="outlined"
