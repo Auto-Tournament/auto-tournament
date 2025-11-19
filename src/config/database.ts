@@ -150,11 +150,39 @@ class DatabaseManager {
         }
       }
 
-      // Insert default maps
+      // Insert default maps (only if maps table is empty - first initialization or after wipe)
+      // This prevents fetching from wiki on every server restart/reload
+      // But ensures maps are regenerated when database is wiped
       try {
-        const defaultMapsSQL = getDefaultMapsSQL();
-        await client.query(defaultMapsSQL);
-        log.database('[PostgreSQL] Default maps inserted');
+        // The maps table should exist at this point (created by schema SQL above)
+        // But handle the case where it might not exist yet
+        let mapsCount = 0;
+        try {
+          const mapsCheck = await client.query('SELECT COUNT(*) as count FROM maps');
+          mapsCount = parseInt(mapsCheck.rows[0]?.count || '0', 10);
+        } catch (err) {
+          const error = err as Error;
+          // If table doesn't exist, that's unexpected but we'll skip map insertion
+          if (error.message.includes('does not exist')) {
+            log.warn('[PostgreSQL] Maps table does not exist, skipping map insertion');
+            return;
+          }
+          throw err; // Re-throw other errors
+        }
+
+        if (mapsCount === 0) {
+          // Maps table is empty - this is first initialization or after database wipe
+          // Fetch fresh maps from wiki
+          log.database('[PostgreSQL] Maps table is empty, fetching and inserting default maps from wiki...');
+          const defaultMapsSQL = await getDefaultMapsSQL();
+          await client.query(defaultMapsSQL);
+          log.success('[PostgreSQL] Default maps inserted (fetched from wiki)');
+        } else {
+          // Maps already exist - skip fetching from wiki (saves time and API calls)
+          log.database(
+            `[PostgreSQL] Maps table already has ${mapsCount} maps, skipping map insertion`
+          );
+        }
       } catch (err) {
         const error = err as Error;
         log.warn(`[PostgreSQL] Failed to insert default maps: ${error.message}`);
@@ -242,7 +270,8 @@ class DatabaseManager {
       this.initialized = false;
 
       // Reinitialize schema (this will create tables and insert default data)
-      log.database('[PostgreSQL] Reinitializing schema...');
+      // Maps will be regenerated from wiki since maps table is now empty
+      log.database('[PostgreSQL] Reinitializing schema and regenerating maps from wiki...');
       await this.initializeSchemaAsync();
       this.initialized = true;
 

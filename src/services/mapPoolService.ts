@@ -128,6 +128,28 @@ export class MapPoolService {
   }
 
   /**
+   * Set a map pool as the default
+   * This will unset the current default and set the new one
+   */
+  async setDefaultMapPool(id: number): Promise<MapPoolResponse> {
+    const pool = await this.getMapPoolById(id);
+    if (!pool) {
+      throw new Error(`Map pool with ID ${id} not found`);
+    }
+
+    // Unset current default
+    await db.updateAsync('map_pools', { is_default: 0 }, 'is_default = $1', [1]);
+
+    // Set new default
+    await db.updateAsync('map_pools', { is_default: 1, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+
+    log.success(`Default map pool set to: ${pool.name}`);
+    const result = await this.getMapPoolById(id);
+    if (!result) throw new Error('Failed to retrieve updated map pool');
+    return result;
+  }
+
+  /**
    * Delete a map pool
    */
   async deleteMapPool(id: number): Promise<void> {

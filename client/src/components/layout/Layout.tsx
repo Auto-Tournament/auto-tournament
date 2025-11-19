@@ -89,7 +89,7 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static" elevation={0}>
+      <AppBar position="fixed" elevation={0} sx={{ top: 0, zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             edge="start"
@@ -145,7 +145,11 @@ export default function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 4,
+          pt: (theme) => ({
+            xs: `calc(56px + ${theme.spacing(4)})`, // Mobile toolbar height
+            sm: `calc(64px + ${theme.spacing(4)})`, // Desktop toolbar height
+          }),
+          pb: 4,
           backgroundColor: 'background.default',
         }}
       >

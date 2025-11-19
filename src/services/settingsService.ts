@@ -65,7 +65,16 @@ class SettingsService {
 
   async getWebhookUrl(): Promise<string | null> {
     const value = await this.getSetting('webhook_url');
-    return value ? this.normalizeUrl(value) : null;
+    if (value) {
+      return this.normalizeUrl(value);
+    }
+    
+    // In dev mode, return default localhost URL if not configured
+    if (process.env.NODE_ENV !== 'production') {
+      return 'https://localhost:3000';
+    }
+    
+    return null;
   }
 
   async requireWebhookUrl(): Promise<string> {

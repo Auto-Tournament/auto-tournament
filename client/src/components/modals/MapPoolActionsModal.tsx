@@ -14,6 +14,7 @@ import {
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
+import StarBorderIcon from '@mui/icons-material/StarBorder';
 import type { MapPool, Map } from '../../types/api.types';
 
 interface MapPoolActionsModalProps {
@@ -23,6 +24,7 @@ interface MapPoolActionsModalProps {
   onClose: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  onSetDefault?: () => void;
 }
 
 export default function MapPoolActionsModal({
@@ -32,6 +34,7 @@ export default function MapPoolActionsModal({
   onClose,
   onEdit,
   onDelete,
+  onSetDefault,
 }: MapPoolActionsModalProps) {
   if (!mapPool) return null;
 
@@ -74,15 +77,18 @@ export default function MapPoolActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
+        <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
+          Edit
+        </Button>
+        {!mapPool.isDefault && onSetDefault && (
+          <Button onClick={onSetDefault} variant="outlined" startIcon={<StarBorderIcon />}>
+            Set as Default
+          </Button>
+        )}
         {!mapPool.isDefault && (
-          <>
-            <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
-              Edit
-            </Button>
-            <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
-              Delete
-            </Button>
-          </>
+          <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
+            Delete
+          </Button>
         )}
       </DialogActions>
     </Dialog>

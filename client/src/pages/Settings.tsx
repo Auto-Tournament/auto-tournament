@@ -82,6 +82,7 @@ export default function Settings() {
     }
   };
 
+
   return (
     <Box>
       <Box display="flex" alignItems="center" gap={2} mb={4}>

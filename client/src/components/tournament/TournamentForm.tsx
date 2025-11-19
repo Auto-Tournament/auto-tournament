@@ -170,7 +170,8 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
     setSelectedMapPool(poolId);
 
     if (poolId === 'custom') {
-      return;
+      // Clear maps when switching to custom so user can start fresh
+      onMapsChange([]);
     } else if (poolId === 'active-duty') {
       const activeDutyPool = mapPools.find((p) => p.isDefault);
       if (activeDutyPool) {

@@ -115,6 +115,42 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * PUT /api/map-pools/:id/set-default
+ * Set a map pool as the default
+ * This route must be defined before /:id to ensure proper matching
+ */
+router.put('/:id/set-default', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const poolId = parseInt(id, 10);
+
+    if (isNaN(poolId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid map pool ID',
+      });
+    }
+
+    const pool = await mapPoolService.setDefaultMapPool(poolId);
+
+    return res.json({
+      success: true,
+      message: 'Default map pool updated successfully',
+      mapPool: pool,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to set default map pool';
+    const statusCode = message.includes('not found') ? 404 : 400;
+
+    console.error('Error setting default map pool:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
  * PUT /api/map-pools/:id
  * Update a map pool
  */

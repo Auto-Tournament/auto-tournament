@@ -150,9 +150,34 @@ export function getSchemaSQL(): string {
 
 /**
  * Default maps to insert on schema initialization
+ * Tries to fetch from wiki first, falls back to hardcoded maps if fetch fails
  */
-export function getDefaultMapsSQL(): string {
-  const maps = [
+export async function getDefaultMapsSQL(): Promise<string> {
+  // Try fetching from wiki first
+  const { fetchCS2MapsFromWiki } = await import('../utils/fetchCS2Maps');
+  let maps = await fetchCS2MapsFromWiki();
+
+  // Fallback to hardcoded maps if fetch failed or returned empty
+  if (maps.length === 0) {
+    const fallbackMaps = getFallbackMaps();
+    return generateMapsSQL(fallbackMaps);
+  }
+
+  // Convert fetched maps to the format expected by generateMapsSQL
+  const formattedMaps = maps.map((map) => ({
+    id: map.id,
+    display_name: map.displayName,
+    image_url: map.imageUrl,
+  }));
+
+  return generateMapsSQL(formattedMaps);
+}
+
+/**
+ * Fallback hardcoded maps (used if wiki fetch fails)
+ */
+function getFallbackMaps(): Array<{ id: string; display_name: string; image_url: string }> {
+  return [
     {
       id: 'de_ancient',
       display_name: 'Ancient',
@@ -195,8 +220,81 @@ export function getDefaultMapsSQL(): string {
       image_url:
         'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png',
     },
+    {
+      id: 'de_cache',
+      display_name: 'Cache',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_cache.png',
+    },
+    {
+      id: 'de_overpass',
+      display_name: 'Overpass',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_overpass.png',
+    },
+    {
+      id: 'de_train',
+      display_name: 'Train',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_train.png',
+    },
+    {
+      id: 'de_cbble',
+      display_name: 'Cobblestone',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_cbble.png',
+    },
+    {
+      id: 'de_office',
+      display_name: 'Office',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_office.png',
+    },
+    {
+      id: 'cs_office',
+      display_name: 'CS Office',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/cs_office.png',
+    },
+    {
+      id: 'de_agency',
+      display_name: 'Agency',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_agency.png',
+    },
+    {
+      id: 'de_italy',
+      display_name: 'Italy',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_italy.png',
+    },
+    {
+      id: 'de_canals',
+      display_name: 'Canals',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_canals.png',
+    },
+    {
+      id: 'cs_lake',
+      display_name: 'Lake',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/cs_lake.png',
+    },
+    {
+      id: 'de_shortdust',
+      display_name: 'Shortdust',
+      image_url:
+        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_shortdust.png',
+    },
   ];
+}
 
+/**
+ * Generate SQL from maps array
+ */
+function generateMapsSQL(
+  maps: Array<{ id: string; display_name: string; image_url: string }>
+): string {
   const now = Math.floor(Date.now() / 1000);
   const values = maps
     .map(

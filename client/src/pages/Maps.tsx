@@ -111,6 +111,24 @@ export default function Maps() {
     handleCloseMapPoolModal();
   };
 
+  const handleSetDefaultMapPool = async () => {
+    if (!selectedMapPool) return;
+
+    try {
+      await api.put(`/api/map-pools/${selectedMapPool.id}/set-default`);
+      await loadMapPools();
+      // Update selectedMapPool to reflect the change
+      const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools');
+      const updatedPool = poolsResponse.mapPools?.find((p) => p.id === selectedMapPool.id);
+      if (updatedPool) {
+        setSelectedMapPool(updatedPool);
+      }
+    } catch (err) {
+      setError('Failed to set default map pool');
+      console.error(err);
+    }
+  };
+
   const handleDeletePoolConfirm = async () => {
     if (!poolToDelete) return;
 
@@ -270,6 +288,7 @@ export default function Maps() {
         onClose={handleClosePoolActionsModal}
         onEdit={handleEditPoolFromActions}
         onDelete={handleDeletePoolFromActions}
+        onSetDefault={handleSetDefaultMapPool}
       />
 
       <ConfirmDialog
