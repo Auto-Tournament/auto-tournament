@@ -4,8 +4,8 @@
 
 import type { CS2MapData } from '../types/veto.types';
 
-// Map images - using ghostcap-gaming/cs2-map-images for better quality
-const MAP_IMAGE_BASE = 'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2';
+// Map images - using sivert-io/cs2-server-manager
+const MAP_IMAGE_BASE = 'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
 
 export const CS2_MAPS: CS2MapData[] = [
   {

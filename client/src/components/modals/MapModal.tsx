@@ -138,7 +138,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
     try {
       // Download from GitHub repo
-      const imageUrl = `https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/${id}.png`;
+      const imageUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${id}.png`;
 
       // Test if image exists
       const response = await fetch(imageUrl, { method: 'HEAD' });

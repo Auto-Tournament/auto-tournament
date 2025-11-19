@@ -182,109 +182,109 @@ function getFallbackMaps(): Array<{ id: string; display_name: string; image_url:
       id: 'de_ancient',
       display_name: 'Ancient',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_ancient.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_ancient.png',
     },
     {
       id: 'de_anubis',
       display_name: 'Anubis',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_anubis.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_anubis.png',
     },
     {
       id: 'de_dust2',
       display_name: 'Dust II',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_dust2.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_dust2.png',
     },
     {
       id: 'de_inferno',
       display_name: 'Inferno',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_inferno.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_inferno.png',
     },
     {
       id: 'de_mirage',
       display_name: 'Mirage',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_mirage.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_mirage.png',
     },
     {
       id: 'de_nuke',
       display_name: 'Nuke',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_nuke.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_nuke.png',
     },
     {
       id: 'de_vertigo',
       display_name: 'Vertigo',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_vertigo.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_vertigo.png',
     },
     {
       id: 'de_cache',
       display_name: 'Cache',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_cache.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_cache.png',
     },
     {
       id: 'de_overpass',
       display_name: 'Overpass',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_overpass.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_overpass.png',
     },
     {
       id: 'de_train',
       display_name: 'Train',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_train.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_train.png',
     },
     {
       id: 'de_cbble',
       display_name: 'Cobblestone',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_cbble.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_cbble.png',
     },
     {
       id: 'de_office',
       display_name: 'Office',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_office.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_office.png',
     },
     {
       id: 'cs_office',
       display_name: 'CS Office',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/cs_office.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/cs_office.png',
     },
     {
       id: 'de_agency',
       display_name: 'Agency',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_agency.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_agency.png',
     },
     {
       id: 'de_italy',
       display_name: 'Italy',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_italy.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_italy.png',
     },
     {
       id: 'de_canals',
       display_name: 'Canals',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_canals.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_canals.png',
     },
     {
       id: 'cs_lake',
       display_name: 'Lake',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/cs_lake.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/cs_lake.png',
     },
     {
       id: 'de_shortdust',
       display_name: 'Shortdust',
       image_url:
-        'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/de_shortdust.png',
+        'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/de_shortdust.png',
     },
   ];
 }

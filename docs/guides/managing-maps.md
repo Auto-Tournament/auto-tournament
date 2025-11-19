@@ -86,7 +86,7 @@ The Maps tab displays all available maps in your system:
 
    **Map Image** (optional):
    - Upload PNG, JPG, GIF, or WebP (max 5MB)
-   - Or click **"Fetch from GitHub"** to auto-download from [ghostcap-gaming/cs2-map-images](https://github.com/ghostcap-gaming/cs2-map-images)
+   - Or click **"Fetch from GitHub"** to auto-download from [sivert-io/cs2-server-manager](https://github.com/sivert-io/cs2-server-manager)
    - Preview shown before saving
 
 3. Click **"Create"**
@@ -207,7 +207,7 @@ When creating a map, you can fetch images automatically:
 
 1. Enter Map ID (e.g., `de_dust2`)
 2. Click **"Fetch from GitHub"**
-3. System downloads from [ghostcap-gaming/cs2-map-images](https://github.com/ghostcap-gaming/cs2-map-images)
+3. System downloads from [sivert-io/cs2-server-manager](https://github.com/sivert-io/cs2-server-manager)
 4. Image preview appears if found
 
 ### Manual Image Upload

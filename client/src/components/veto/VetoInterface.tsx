@@ -134,7 +134,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         image:
           mapData?.imageUrl ||
           fallbackData?.image ||
-          `https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/${mapId}.png`,
+          `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.png`,
       };
     });
     // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
