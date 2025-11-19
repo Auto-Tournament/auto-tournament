@@ -54,7 +54,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   onCancel,
   onDelete,
 }) => {
-  const [selectedMapPool, setSelectedMapPool] = useState<string>('active-duty');
+  const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const formRef = useRef<HTMLDivElement>(null);
   const [checklistPosition, setChecklistPosition] = useState({ top: 24, left: 24 });
@@ -69,15 +69,18 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
 
   // Initialize selectedMapPool based on default map pool when mapPools load
   React.useEffect(() => {
-    if (mapPools.length > 0 && maps.length === 0) {
-      // Only initialize if no maps are selected yet
+    if (mapPools.length > 0 && !selectedMapPool && maps.length === 0) {
+      // Only initialize if not already set and no maps are selected
       const defaultPool = mapPools.find((p) => p.isDefault);
       if (defaultPool) {
         // Use the default pool's ID, not hardcoded 'active-duty'
         setSelectedMapPool(defaultPool.id.toString());
+      } else if (mapPools.length > 0) {
+        // Fallback to first pool if no default exists
+        setSelectedMapPool(mapPools[0].id.toString());
       }
     }
-  }, [mapPools, maps.length]);
+  }, [mapPools, selectedMapPool, maps.length]);
 
   // Update checklist position based on form position
   useEffect(() => {
@@ -144,7 +147,9 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
 
   // Initialize map pool selection based on current maps
   React.useEffect(() => {
-    if (maps.length > 0 && mapPools.length > 0) {
+    // Only auto-detect pool if maps are set and we're not already on custom
+    // This prevents overriding user's explicit "custom" selection
+    if (maps.length > 0 && mapPools.length > 0 && selectedMapPool !== 'custom') {
       // Check if maps match the default pool (could be Active Duty or a custom default)
       const defaultPool = mapPools.find((p) => p.isDefault);
       if (
@@ -166,7 +171,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
         setSelectedMapPool('custom');
       }
     }
-  }, [maps, mapPools]);
+  }, [maps, mapPools, selectedMapPool]);
 
   // Calculate required servers for first round
   const getRequiredServers = (teamCount: number): number => {

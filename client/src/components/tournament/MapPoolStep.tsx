@@ -85,10 +85,11 @@ export function MapPoolStep({
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Choose a map pool</InputLabel>
         <Select
-          value={selectedMapPool}
+          value={selectedMapPool || ''}
           label="Choose a map pool"
           onChange={(e) => onMapPoolChange(e.target.value)}
           disabled={!canEdit || saving || loadingMaps}
+          displayEmpty
         >
           {/* Show default pool first (could be Active Duty or a custom default) */}
           {mapPools
