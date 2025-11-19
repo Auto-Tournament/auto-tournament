@@ -12,12 +12,14 @@ import {
   IconButton,
   Tooltip,
   Divider,
+  CircularProgress,
 } from '@mui/material';
 import SettingsIcon from '@mui/icons-material/Settings';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import SyncIcon from '@mui/icons-material/Sync';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 
@@ -31,6 +33,7 @@ export default function Settings() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [showSteamKey, setShowSteamKey] = useState(false);
+  const [syncingMaps, setSyncingMaps] = useState(false);
 
   const fetchSettings = async () => {
     setLoading(true);
@@ -79,6 +82,37 @@ export default function Settings() {
       setError(message);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSyncMaps = async () => {
+    setSyncingMaps(true);
+    setError(null);
+    setSuccess(null);
+
+    try {
+      const response = await api.post<{
+        success: boolean;
+        message: string;
+        stats: { total: number; added: number; skipped: number; errors: number };
+        errors?: string[];
+      }>('/api/maps/sync');
+
+      if (response.success) {
+        setSuccess(
+          `Map sync completed! ${response.stats.added} new map(s) added, ${response.stats.skipped} already existed.`
+        );
+        if (response.errors && response.errors.length > 0) {
+          setError(`Some maps failed to sync: ${response.errors.join(', ')}`);
+        }
+      } else {
+        setError('Failed to sync maps');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to sync maps';
+      setError(message);
+    } finally {
+      setSyncingMaps(false);
     }
   };
 
@@ -183,6 +217,26 @@ export default function Settings() {
                   <OpenInNewIcon />
                 </IconButton>
               </Stack>
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                Map Management
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Sync CS2 maps from the GitHub repository. Only new maps will be added; existing maps
+                will be skipped.
+              </Typography>
+              <Button
+                variant="outlined"
+                startIcon={syncingMaps ? <CircularProgress size={16} /> : <SyncIcon />}
+                onClick={handleSyncMaps}
+                disabled={syncingMaps || loading}
+              >
+                {syncingMaps ? 'Syncing Maps...' : 'Sync CS2 Maps'}
+              </Button>
             </Box>
 
             <Box display="flex" gap={2}>

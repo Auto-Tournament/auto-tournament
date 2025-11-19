@@ -3,6 +3,7 @@ import { mapService } from '../services/mapService';
 import { CreateMapInput, UpdateMapInput } from '../types/map.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { fetchCS2MapsFromWiki } from '../utils/fetchCS2Maps';
 import path from 'path';
 import fs from 'fs';
 
@@ -259,6 +260,81 @@ router.post('/:id/upload-image', async (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to process image upload',
+    });
+  }
+});
+
+/**
+ * POST /api/maps/sync
+ * Sync maps from GitHub repository (only adds new maps, doesn't duplicate existing ones)
+ */
+router.post('/sync', async (_req: Request, res: Response) => {
+  try {
+    log.info('Starting map sync from GitHub repository...');
+
+    // Fetch maps from GitHub
+    const fetchedMaps = await fetchCS2MapsFromWiki();
+
+    if (fetchedMaps.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'No maps found in GitHub repository',
+      });
+    }
+
+    // Get all existing maps to check for duplicates
+    const existingMaps = await mapService.getAllMaps();
+    const existingMapIds = new Set(existingMaps.map((m) => m.id));
+
+    // Add only new maps (that don't already exist)
+    let addedCount = 0;
+    const errors: string[] = [];
+
+    for (const mapData of fetchedMaps) {
+      if (existingMapIds.has(mapData.id)) {
+        // Map already exists, skip it
+        continue;
+      }
+
+      try {
+        await mapService.createMap(
+          {
+            id: mapData.id,
+            displayName: mapData.displayName,
+            imageUrl: mapData.imageUrl,
+          },
+          false // Don't upsert - we already checked it doesn't exist
+        );
+        addedCount++;
+        log.info(`Added new map: ${mapData.displayName} (${mapData.id})`);
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+        errors.push(`${mapData.id}: ${errorMessage}`);
+        log.warn(`Failed to add map ${mapData.id}`, { error });
+      }
+    }
+
+    const skippedCount = fetchedMaps.length - addedCount - errors.length;
+
+    log.success(`Map sync completed: ${addedCount} added, ${skippedCount} skipped, ${errors.length} errors`);
+
+    return res.json({
+      success: true,
+      message: `Sync completed: ${addedCount} new map(s) added, ${skippedCount} already existed`,
+      stats: {
+        total: fetchedMaps.length,
+        added: addedCount,
+        skipped: skippedCount,
+        errors: errors.length,
+      },
+      errors: errors.length > 0 ? errors : undefined,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to sync maps';
+    log.error('Error syncing maps from GitHub', error);
+    return res.status(500).json({
+      success: false,
+      error: message,
     });
   }
 });
