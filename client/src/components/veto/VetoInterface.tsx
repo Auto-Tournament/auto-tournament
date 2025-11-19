@@ -372,6 +372,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
           const mapData = allMaps.get(lastPickedMap?.mapName || '');
           const fallbackData = getMapData(lastPickedMap?.mapName || '');
+          
+          // Construct image URL with fallback chain
+          const mapImageUrl =
+            mapData?.imageUrl ||
+            fallbackData?.image ||
+            (lastPickedMap?.mapName
+              ? `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${lastPickedMap.mapName}.png`
+              : '');
 
           return (
             <Card sx={{ mb: 3 }}>
@@ -383,7 +391,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     overflow: 'hidden',
                     borderRadius: 2,
                     mb: 3,
-                    backgroundImage: `url(${mapData?.imageUrl || fallbackData?.image || ''})`,
+                    backgroundImage: `url(${mapImageUrl})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     height: 250,
