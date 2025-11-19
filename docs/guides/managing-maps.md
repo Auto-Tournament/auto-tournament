@@ -8,12 +8,55 @@ Complete guide to managing maps and creating custom map pools for your tournamen
 
 The Maps & Map Pools page allows you to:
 
+- ✅ **Automatic map import** - Latest maps imported on first start
 - ✅ Add custom maps with images
 - ✅ Create reusable map pools
 - ✅ Select map pools during tournament creation
 - ✅ Use the default Active Duty pool (7 competitive maps)
 
 **Access:** Navigate to **Maps** in the sidebar
+
+---
+
+## Automatic Map Import
+
+The system automatically imports the latest CS2 maps when you first start the project or when the maps table is empty.
+
+### How It Works
+
+**On First Start:**
+- When you start the API for the first time, the system detects an empty maps table
+- Automatically fetches all available maps from the [CS2 Server Manager repository](https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails)
+- Imports all maps with `de_`, `cs_`, and `ar_` prefixes
+- Creates map pools automatically:
+  - **Active Duty** - Competitive maps (default)
+  - **Defusal only** - All defusal maps (`de_` prefix)
+  - **Hostage only** - All hostage maps (`cs_` prefix)
+  - **Arms Race only** - All arms race maps (`ar_` prefix)
+
+**After Clearing Maps:**
+- If you delete all maps and restart the API, the system will automatically re-import maps
+- This ensures you always have the latest maps available
+
+### Map Naming
+
+Maps are automatically named based on their file names:
+- Prefixes (`de_`, `cs_`, `ar_`) are removed
+- Underscores (`_`) are converted to spaces
+- First letter of each word is capitalized
+- Special cases handled (e.g., `de_dust2` → "Dust II")
+
+**Examples:**
+- `de_ancient` → "Ancient"
+- `de_dust2` → "Dust II"
+- `cs_office` → "Office"
+- `ar_shoots` → "Shoots"
+
+### Fallback Behavior
+
+If the GitHub repository is unavailable:
+- System falls back to a hardcoded list of common maps
+- Ensures the system always has maps available even without internet access
 
 ---
 
@@ -74,6 +117,10 @@ The Maps tab displays all available maps in your system:
 The Map Pools tab shows:
 
 - **Default Pool** - Active Duty pool (7 competitive maps) - marked with "Default" chip
+- **Automatic Pools** - Created automatically based on map types:
+  - **Defusal only** - All defusal maps (`de_` prefix)
+  - **Hostage only** - All hostage maps (`cs_` prefix)
+  - **Arms Race only** - All arms race maps (`ar_` prefix)
 - **Custom Pools** - Your created pools showing:
   - Pool name
   - Number of maps
@@ -179,7 +226,9 @@ When creating a map, you can fetch images automatically:
 
 ---
 
-## Default Active Duty Pool
+## Default Map Pools
+
+### Active Duty Pool
 
 The **Active Duty** pool includes 7 competitive maps:
 
@@ -195,7 +244,32 @@ This pool is:
 - ✅ Always available
 - ✅ Pre-configured with 7 maps
 - ✅ Recommended for BO1/BO3/BO5 tournaments
+- ✅ Marked as default pool
 - ✅ Cannot be edited or deleted
+
+### Automatic Type-Based Pools
+
+The system automatically creates pools based on map types:
+
+**Defusal only Pool:**
+- Contains all maps with `de_` prefix (defusal maps)
+- Automatically updated when new defusal maps are imported
+- Useful for defusal-only tournaments
+
+**Hostage only Pool:**
+- Contains all maps with `cs_` prefix (hostage rescue maps)
+- Automatically updated when new hostage maps are imported
+- Useful for hostage rescue tournaments
+
+**Arms Race only Pool:**
+- Contains all maps with `ar_` prefix (arms race maps)
+- Automatically updated when new arms race maps are imported
+- Useful for arms race tournaments
+
+These pools are:
+- ✅ Created automatically on first start
+- ✅ Updated when maps are re-imported
+- ✅ Can be edited or deleted (will be recreated on next import)
 
 ---
 

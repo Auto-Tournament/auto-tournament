@@ -151,7 +151,7 @@ class DatabaseManager {
       }
 
       // Insert default maps (only if maps table is empty - first initialization or after wipe)
-      // This prevents fetching from wiki on every server restart/reload
+      // This prevents fetching from GitHub on every server restart/reload
       // But ensures maps are regenerated when database is wiped
       try {
         // The maps table should exist at this point (created by schema SQL above)
@@ -172,11 +172,11 @@ class DatabaseManager {
 
         if (mapsCount === 0) {
           // Maps table is empty - this is first initialization or after database wipe
-          // Fetch fresh maps from wiki
-          log.database('[PostgreSQL] Maps table is empty, fetching and inserting default maps from wiki...');
+          // Fetch fresh maps from GitHub repository
+          log.database('[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...');
           const defaultMapsSQL = await getDefaultMapsSQL();
           await client.query(defaultMapsSQL);
-          log.success('[PostgreSQL] Default maps inserted (fetched from wiki)');
+          log.success('[PostgreSQL] Default maps inserted (fetched from GitHub)');
         } else {
           // Maps already exist - skip fetching from wiki (saves time and API calls)
           log.database(
@@ -191,7 +191,7 @@ class DatabaseManager {
 
       // Insert default map pools
       try {
-        const defaultMapPoolsSQL = getDefaultMapPoolsSQL();
+        const defaultMapPoolsSQL = await getDefaultMapPoolsSQL(client);
         await client.query(defaultMapPoolsSQL);
         log.database('[PostgreSQL] Default map pools inserted');
       } catch (err) {
@@ -270,8 +270,8 @@ class DatabaseManager {
       this.initialized = false;
 
       // Reinitialize schema (this will create tables and insert default data)
-      // Maps will be regenerated from wiki since maps table is now empty
-      log.database('[PostgreSQL] Reinitializing schema and regenerating maps from wiki...');
+      // Maps will be regenerated from GitHub since maps table is now empty
+      log.database('[PostgreSQL] Reinitializing schema and regenerating maps from GitHub...');
       await this.initializeSchemaAsync();
       this.initialized = true;
 

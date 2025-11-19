@@ -1,27 +1,36 @@
 #!/usr/bin/env tsx
 /**
- * Script to fetch and parse CS2 maps from Valve Developer Community wiki
+ * Script to fetch and parse CS2 maps from GitHub repository
  * 
  * Usage: tsx scripts/fetch-cs2-maps.ts
  * 
- * This script fetches the official CS2 maps list from:
- * https://developer.valvesoftware.com/wiki/Counter-Strike_2/Maps
+ * This script fetches CS2 map thumbnails from:
+ * https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
  * 
- * It extracts all "Current Maps" and generates the maps array format
+ * It extracts all map files (de_, cs_, ar_ prefixes) and generates the maps array format
  * used in database.schema.ts
  */
 
 import fetch from 'node-fetch';
-import * as cheerio from 'cheerio';
 import { writeFile } from 'fs/promises';
 
-const WIKI_URL = 'https://developer.valvesoftware.com/wiki/Counter-Strike_2/Maps';
-const GITHUB_IMAGE_BASE = 'https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2';
+const GITHUB_REPO_API = 'https://api.github.com/repos/sivert-io/cs2-server-manager/contents/map_thumbnails';
+const GITHUB_RAW_BASE = 'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
 
 interface MapData {
   id: string;
   displayName: string;
   imageUrl: string;
+}
+
+/**
+ * GitHub API response for file contents
+ */
+interface GitHubFile {
+  name: string;
+  path: string;
+  download_url: string;
+  type: string;
 }
 
 /**
@@ -51,116 +60,63 @@ function mapIdToDisplayName(mapId: string): string {
 }
 
 /**
- * Fetch and parse the CS2 maps wiki page
+ * Extract map ID from filename (e.g., "de_dust2.png" -> "de_dust2")
  */
-async function fetchCS2Maps(): Promise<MapData[]> {
-  console.log(`Fetching CS2 maps from ${WIKI_URL}...`);
+function extractMapId(filename: string): string | null {
+  // Remove file extension
+  const nameWithoutExt = filename.replace(/\.(png|jpg|jpeg|gif|webp)$/i, '');
   
-  const response = await fetch(WIKI_URL);
-  if (!response.ok) {
-    throw new Error(`Failed to fetch wiki page: ${response.statusText}`);
+  // Check if it starts with de_, cs_, or ar_
+  if (/^(de_|cs_|ar_)/.test(nameWithoutExt)) {
+    return nameWithoutExt;
   }
   
-  const html = await response.text();
-  const $ = cheerio.load(html);
+  return null;
+}
+
+/**
+ * Fetch and parse CS2 maps from GitHub repository
+ */
+async function fetchCS2Maps(): Promise<MapData[]> {
+  console.log(`Fetching CS2 maps from GitHub repository: ${GITHUB_REPO_API}...`);
+  
+  const response = await fetch(GITHUB_REPO_API, {
+    headers: {
+      'Accept': 'application/vnd.github.v3+json',
+      'User-Agent': 'matchzy-auto-tournament',
+    },
+  });
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch GitHub repository: ${response.statusText}`);
+  }
+  
+  const files = (await response.json()) as GitHubFile[];
+  
+  if (!Array.isArray(files)) {
+    throw new Error('Invalid response from GitHub API: expected array of files');
+  }
   
   const maps: MapData[] = [];
   
-  // Find all tables on the page
-  const tables = $('table.wikitable');
-  
-  if (tables.length === 0) {
-    throw new Error('Could not find any tables on the page');
-  }
-  
-  // Find the "Current Maps" section heading
-  const currentMapsHeading = $('h2, h3').filter((_, el) => {
-    const text = $(el).text().trim();
-    return text.includes('Current Maps');
-  }).first();
-  
-  if (currentMapsHeading.length === 0) {
-    throw new Error('Could not find "Current Maps" section');
-  }
-  
-  // Find the table that comes after the Current Maps heading
-  // Look for the first table after the heading
-  let targetTable = null;
-  currentMapsHeading.nextAll().each((_, el) => {
-    if ($(el).is('table.wikitable')) {
-      targetTable = $(el);
-      return false; // Break the loop
-    }
-  });
-  
-  if (!targetTable || targetTable.length === 0) {
-    // Fallback: use the first table
-    targetTable = tables.first();
-    console.log('Warning: Using first table as fallback');
-  }
-  
-  console.log('Parsing maps table...');
-  
-  // Parse table rows (skip header row)
-  let isFirstRow = true;
-  targetTable.find('tr').each((index, row) => {
-    const $row = $(row);
-    const cells = $row.find('td');
-    
-    // Skip header row (usually has th elements or is the first row)
-    if (isFirstRow) {
-      isFirstRow = false;
-      // Check if this is actually a header row
-      if ($row.find('th').length > 0 || cells.length === 0) {
-        return;
-      }
+  // Filter and process files
+  for (const file of files) {
+    // Only process files (not directories)
+    if (file.type !== 'file') {
+      continue;
     }
     
-    if (cells.length < 3) {
-      return; // Skip rows without enough cells
-    }
-    
-    // Column 1: Icon (we can skip this)
-    // Column 2: Map Name (display name)
-    // Column 3: Internal Name (map ID)
-    let mapName = $(cells[1]).text().trim();
-    let internalName = $(cells[2]).text().trim();
-    
-    // Handle wiki link format: [[de_ancient|Ancient]] or [[de_ancient]]
-    // Extract the actual map ID from wiki links
-    const internalNameMatch = internalName.match(/\[\[([^\|\]]+)(?:\|[^\]]+)?\]\]/);
-    if (internalNameMatch) {
-      internalName = internalNameMatch[1];
-    }
-    
-    // Clean up the internal name
-    const mapId = internalName.trim();
-    
+    // Extract map ID from filename
+    const mapId = extractMapId(file.name);
     if (!mapId) {
-      return; // Skip empty rows
+      continue; // Skip files that don't match de_, cs_, or ar_ pattern
     }
     
-    // Skip if it's not a valid map ID format (de_, cs_, ar_)
-    if (!/^(de_|cs_|ar_)/.test(mapId)) {
-      return;
-    }
+    // Generate display name from map ID
+    const displayName = mapIdToDisplayName(mapId);
     
-    // Clean up map name (remove wiki links, etc.)
-    const mapNameMatch = mapName.match(/\[\[[^\|]+\|([^\]]+)\]\]/);
-    if (mapNameMatch) {
-      mapName = mapNameMatch[1];
-    } else {
-      const simpleLinkMatch = mapName.match(/\[\[([^\]]+)\]\]/);
-      if (simpleLinkMatch) {
-        mapName = simpleLinkMatch[1];
-      }
-    }
-    
-    // Generate display name if map name is empty or use the provided one
-    const displayName = mapName || mapIdToDisplayName(mapId);
-    
-    // Generate image URL
-    const imageUrl = `${GITHUB_IMAGE_BASE}/${mapId}.png`;
+    // Use the download_url from GitHub API, or construct raw URL
+    const imageUrl = file.download_url || `${GITHUB_RAW_BASE}/${file.name}`;
     
     maps.push({
       id: mapId,
@@ -169,7 +125,7 @@ async function fetchCS2Maps(): Promise<MapData[]> {
     });
     
     console.log(`  Found: ${mapId} - ${displayName}`);
-  });
+  }
   
   return maps;
 }

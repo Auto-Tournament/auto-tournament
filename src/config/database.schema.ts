@@ -150,10 +150,10 @@ export function getSchemaSQL(): string {
 
 /**
  * Default maps to insert on schema initialization
- * Tries to fetch from wiki first, falls back to hardcoded maps if fetch fails
+ * Tries to fetch from GitHub repository first, falls back to hardcoded maps if fetch fails
  */
 export async function getDefaultMapsSQL(): Promise<string> {
-  // Try fetching from wiki first
+  // Try fetching from GitHub repository first
   const { fetchCS2MapsFromWiki } = await import('../utils/fetchCS2Maps');
   let maps = await fetchCS2MapsFromWiki();
 
@@ -174,7 +174,7 @@ export async function getDefaultMapsSQL(): Promise<string> {
 }
 
 /**
- * Fallback hardcoded maps (used if wiki fetch fails)
+ * Fallback hardcoded maps (used if GitHub fetch fails)
  */
 function getFallbackMaps(): Array<{ id: string; display_name: string; image_url: string }> {
   return [
@@ -315,12 +315,34 @@ function generateMapsSQL(
 
 /**
  * Default map pools to insert on schema initialization
+ * Creates pools based on map types (de_, cs_, ar_) and Active Duty pool
  */
-export function getDefaultMapPoolsSQL(): string {
+export async function getDefaultMapPoolsSQL(client: {
+  query: (sql: string) => Promise<{ rows: Array<{ id: string }> }>;
+}): Promise<string> {
   const now = Math.floor(Date.now() / 1000);
 
-  // Active Duty map pool (all 7 competitive maps)
-  const activeDutyMapIds = JSON.stringify([
+  // Query all maps from the database
+  const mapsResult = await client.query('SELECT id FROM maps ORDER BY id');
+  const allMapIds = mapsResult.rows.map((row) => row.id);
+
+  // Group maps by prefix
+  const defusalMaps: string[] = [];
+  const hostageMaps: string[] = [];
+  const armsRaceMaps: string[] = [];
+
+  for (const mapId of allMapIds) {
+    if (mapId.startsWith('de_')) {
+      defusalMaps.push(mapId);
+    } else if (mapId.startsWith('cs_')) {
+      hostageMaps.push(mapId);
+    } else if (mapId.startsWith('ar_')) {
+      armsRaceMaps.push(mapId);
+    }
+  }
+
+  // Active Duty map pool (all 7 competitive maps, filtered to only include maps that exist)
+  const activeDutyMapIds = [
     'de_ancient',
     'de_anubis',
     'de_dust2',
@@ -328,12 +350,60 @@ export function getDefaultMapPoolsSQL(): string {
     'de_mirage',
     'de_nuke',
     'de_vertigo',
-  ]);
+  ];
+  const activeDutyMaps = activeDutyMapIds.filter((id) => allMapIds.includes(id));
+
+  const pools: Array<{ name: string; mapIds: string[]; isDefault: number }> = [];
+
+  // Add Active Duty pool if we have any of those maps
+  if (activeDutyMaps.length > 0) {
+    pools.push({
+      name: 'Active Duty',
+      mapIds: activeDutyMaps,
+      isDefault: 1,
+    });
+  }
+
+  // Add Defusal pool if we have de_ maps
+  if (defusalMaps.length > 0) {
+    pools.push({
+      name: 'Defusal only',
+      mapIds: defusalMaps,
+      isDefault: 0,
+    });
+  }
+
+  // Add Hostage pool if we have cs_ maps
+  if (hostageMaps.length > 0) {
+    pools.push({
+      name: 'Hostage only',
+      mapIds: hostageMaps,
+      isDefault: 0,
+    });
+  }
+
+  // Add Arms Race pool if we have ar_ maps
+  if (armsRaceMaps.length > 0) {
+    pools.push({
+      name: 'Arms Race only',
+      mapIds: armsRaceMaps,
+      isDefault: 0,
+    });
+  }
+
+  // Generate SQL for all pools
+  const values = pools
+    .map((pool) => {
+      const mapIdsJson = JSON.stringify(pool.mapIds).replace(/'/g, "''");
+      const escapedName = pool.name.replace(/'/g, "''");
+      return `('${escapedName}', '${mapIdsJson}', ${pool.isDefault}, ${now}, ${now})`;
+    })
+    .join(',\n      ');
 
   return `
     INSERT INTO map_pools (name, map_ids, is_default, created_at, updated_at)
     VALUES
-      ('Active Duty', '${activeDutyMapIds}', 1, ${now}, ${now})
+      ${values}
     ON CONFLICT (name) DO NOTHING;
   `;
 }
