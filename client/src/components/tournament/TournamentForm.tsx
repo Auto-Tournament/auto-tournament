@@ -67,6 +67,18 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
       onMapsChange,
     });
 
+  // Initialize selectedMapPool based on default map pool when mapPools load
+  React.useEffect(() => {
+    if (mapPools.length > 0 && maps.length === 0) {
+      // Only initialize if no maps are selected yet
+      const defaultPool = mapPools.find((p) => p.isDefault);
+      if (defaultPool) {
+        // Use the default pool's ID, not hardcoded 'active-duty'
+        setSelectedMapPool(defaultPool.id.toString());
+      }
+    }
+  }, [mapPools, maps.length]);
+
   // Update checklist position based on form position
   useEffect(() => {
     let rafId: number | null = null;
@@ -133,20 +145,20 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   // Initialize map pool selection based on current maps
   React.useEffect(() => {
     if (maps.length > 0 && mapPools.length > 0) {
-      // Check if maps match Active Duty pool
-      const activeDutyPool = mapPools.find((p) => p.isDefault);
+      // Check if maps match the default pool (could be Active Duty or a custom default)
+      const defaultPool = mapPools.find((p) => p.isDefault);
       if (
-        activeDutyPool &&
-        JSON.stringify([...maps].sort()) === JSON.stringify([...activeDutyPool.mapIds].sort())
+        defaultPool &&
+        JSON.stringify([...maps].sort()) === JSON.stringify([...defaultPool.mapIds].sort())
       ) {
-        setSelectedMapPool('active-duty');
+        // Use the default pool's ID, not hardcoded 'active-duty'
+        setSelectedMapPool(defaultPool.id.toString());
         return;
       }
 
-      // Check if maps match any custom pool
+      // Check if maps match any other pool
       const matchingPool = mapPools.find(
-        (p) =>
-          !p.isDefault && JSON.stringify([...maps].sort()) === JSON.stringify([...p.mapIds].sort())
+        (p) => JSON.stringify([...maps].sort()) === JSON.stringify([...p.mapIds].sort())
       );
       if (matchingPool) {
         setSelectedMapPool(matchingPool.id.toString());
@@ -172,12 +184,8 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
     if (poolId === 'custom') {
       // Clear maps when switching to custom so user can start fresh
       onMapsChange([]);
-    } else if (poolId === 'active-duty') {
-      const activeDutyPool = mapPools.find((p) => p.isDefault);
-      if (activeDutyPool) {
-        onMapsChange(activeDutyPool.mapIds);
-      }
     } else {
+      // Find the pool by ID (could be default pool or any custom pool)
       const pool = mapPools.find((p) => p.id.toString() === poolId);
       if (pool) {
         onMapsChange(pool.mapIds);

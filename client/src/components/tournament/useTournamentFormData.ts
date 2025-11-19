@@ -49,13 +49,13 @@ export function useTournamentFormData({
           // Maps already set, don't auto-initialize
           return;
         } else {
-          // No maps selected - if Active Duty is selected by default, load its maps
+          // No maps selected - load maps from the selected pool (could be default or any pool)
           // Only do this once on initial load to avoid infinite loops
-          if (!hasInitializedMaps.current && selectedMapPool === 'active-duty') {
-            const activeDutyPool = loadedPools.find((p) => p.isDefault);
-            if (activeDutyPool) {
+          if (!hasInitializedMaps.current && selectedMapPool !== 'custom') {
+            const selectedPool = loadedPools.find((p) => p.id.toString() === selectedMapPool);
+            if (selectedPool) {
               hasInitializedMaps.current = true;
-              onMapsChange(activeDutyPool.mapIds);
+              onMapsChange(selectedPool.mapIds);
             }
           }
         }

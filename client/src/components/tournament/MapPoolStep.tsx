@@ -52,9 +52,7 @@ export function MapPoolStep({
 
   // Check if selected pool has 7 maps
   const selectedPool =
-    selectedMapPool === 'active-duty'
-      ? mapPools.find((p) => p.isDefault)
-      : selectedMapPool !== 'custom'
+    selectedMapPool !== 'custom'
       ? mapPools.find((p) => p.id.toString() === selectedMapPool)
       : null;
 
@@ -92,7 +90,15 @@ export function MapPoolStep({
           onChange={(e) => onMapPoolChange(e.target.value)}
           disabled={!canEdit || saving || loadingMaps}
         >
-          <MenuItem value="active-duty">Active Duty</MenuItem>
+          {/* Show default pool first (could be Active Duty or a custom default) */}
+          {mapPools
+            .filter((p) => p.isDefault)
+            .map((pool) => (
+              <MenuItem key={pool.id} value={pool.id.toString()}>
+                {pool.name}
+              </MenuItem>
+            ))}
+          {/* Show all non-default pools */}
           {mapPools
             .filter((p) => !p.isDefault)
             .map((pool) => (
