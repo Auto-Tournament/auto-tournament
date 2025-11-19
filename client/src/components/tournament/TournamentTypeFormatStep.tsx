@@ -23,6 +23,7 @@ interface TournamentTypeFormatStepProps {
   type: string;
   format: string;
   selectedTeams: string[];
+  maps: string[];
   serverCount: number;
   requiredServers: number;
   hasEnoughServers: boolean;
@@ -37,6 +38,7 @@ export function TournamentTypeFormatStep({
   type,
   format,
   selectedTeams,
+  maps,
   serverCount,
   requiredServers,
   hasEnoughServers,
@@ -104,7 +106,13 @@ export function TournamentTypeFormatStep({
               disabled={!canEdit || saving}
             >
               {TOURNAMENT_TYPES.map((option) => {
-                const isValid = isTournamentTypeValid(option, selectedTeams.length);
+                // Check team count validity
+                const isTeamCountValid = isTournamentTypeValid(option, selectedTeams.length);
+                // Check maps validity (veto formats need exactly 7 maps, others need at least 1)
+                const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
+                const isMapsValid = isVetoFormat ? maps.length === 7 : maps.length > 0;
+                // Both must be valid for green checkmark
+                const isValid = isTeamCountValid && isMapsValid;
                 return (
                   <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
                     <Box display="flex" alignItems="center" gap={1} width="100%">

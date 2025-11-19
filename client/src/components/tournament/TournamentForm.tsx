@@ -261,6 +261,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
             type={type}
             format={format}
             selectedTeams={selectedTeams}
+            maps={maps}
             serverCount={serverCount}
             requiredServers={requiredServers}
             hasEnoughServers={hasEnoughServers}
