@@ -109,6 +109,38 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     };
   }, [matchSlug, onComplete, loadVetoState]);
 
+  // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
+  const mapsToShow = useMemo(() => {
+    if (!vetoState) return [];
+    
+    // Use allMaps if available (preserves original order), otherwise reconstruct
+    const originalMapOrder = vetoState.allMaps
+      ? [...vetoState.allMaps] // Create a copy to ensure immutability
+      : [
+          ...vetoState.availableMaps,
+          ...vetoState.bannedMaps,
+          ...vetoState.pickedMaps.map((p) => p.mapName),
+        ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
+
+    return originalMapOrder.map((mapId) => {
+      const mapData = allMaps.get(mapId);
+      const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
+      return {
+        name: mapId,
+        displayName:
+          mapData?.displayName ||
+          fallbackData?.displayName ||
+          mapId.replace('de_', '').replace('cs_', ''),
+        image:
+          mapData?.imageUrl ||
+          fallbackData?.image ||
+          `https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/${mapId}.png`,
+      };
+    });
+    // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vetoState?.allMaps?.join(','), allMaps.size]);
+
   const handleMapAction = async (mapName: string) => {
     if (!vetoState || vetoState.status === 'completed' || !isMyTurn) return;
 
@@ -255,40 +287,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
-  // Determine action color and text
-  // Use original map order from vetoState.allMaps (preserves tournament map order)
-  // Maps stay in their original positions - only their state changes (available/banned/picked)
-  // Memoize based on allMaps order (which never changes) to prevent reordering on re-renders
-  const mapsToShow = useMemo(() => {
-    if (!vetoState) return [];
-    
-    // Use allMaps if available (preserves original order), otherwise reconstruct
-    const originalMapOrder = vetoState.allMaps
-      ? [...vetoState.allMaps] // Create a copy to ensure immutability
-      : [
-          ...vetoState.availableMaps,
-          ...vetoState.bannedMaps,
-          ...vetoState.pickedMaps.map((p) => p.mapName),
-        ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
-
-    return originalMapOrder.map((mapId) => {
-      const mapData = allMaps.get(mapId);
-      const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
-      return {
-        name: mapId,
-        displayName:
-          mapData?.displayName ||
-          fallbackData?.displayName ||
-          mapId.replace('de_', '').replace('cs_', ''),
-        image:
-          mapData?.imageUrl ||
-          fallbackData?.image ||
-          `https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/${mapId}.png`,
-      };
-    });
-    // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [vetoState?.allMaps?.join(','), allMaps.size]);
 
   return (
     <Box>
