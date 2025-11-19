@@ -56,7 +56,17 @@ export function MatchInfoCard({
       ? match.maps[mapNumber]
       : match.maps[0]) ||
     null;
-  const currentMapData = currentMapSlug ? getMapData(currentMapSlug) : null;
+  const currentMapData = useMemo(() => {
+    if (!currentMapSlug) return null;
+    const mapData = getMapData(currentMapSlug);
+    if (mapData) return mapData;
+    // Fallback: construct map data from slug
+    return {
+      name: currentMapSlug,
+      displayName: currentMapSlug.replace('de_', '').replace('cs_', ''),
+      image: `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${currentMapSlug}.png`,
+    };
+  }, [currentMapSlug]);
   const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =

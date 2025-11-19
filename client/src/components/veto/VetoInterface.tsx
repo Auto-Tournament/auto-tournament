@@ -112,7 +112,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
   const mapsToShow = useMemo(() => {
     if (!vetoState) return [];
-    
+
     // Use allMaps if available (preserves original order), otherwise reconstruct
     const originalMapOrder = vetoState.allMaps
       ? [...vetoState.allMaps] // Create a copy to ensure immutability
@@ -287,7 +287,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
-
   return (
     <Box>
       {/* Match Header */}
@@ -372,7 +371,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
           const mapData = allMaps.get(lastPickedMap?.mapName || '');
           const fallbackData = getMapData(lastPickedMap?.mapName || '');
-          
+
           // Construct image URL with fallback chain
           const mapImageUrl =
             mapData?.imageUrl ||
