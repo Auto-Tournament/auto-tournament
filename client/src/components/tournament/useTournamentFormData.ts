@@ -35,8 +35,8 @@ export function useTournamentFormData({
         );
         setServerCount(enabledServers.length);
 
-        // Load map pools
-        const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools');
+        // Load map pools (filter disabled pools for tournament selection)
+        const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools?enabled=true');
         const loadedPools = poolsResponse.mapPools || [];
         setMapPools(loadedPools);
 

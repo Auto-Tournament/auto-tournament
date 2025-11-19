@@ -7,6 +7,7 @@ export interface DbMapPoolRow {
   name: string;
   map_ids: string; // JSON array of map IDs
   is_default: number; // 0 or 1
+  enabled: number; // 0 or 1
   created_at: number;
   updated_at: number;
 }
@@ -16,6 +17,7 @@ export interface MapPool {
   name: string;
   mapIds: string[];
   isDefault: boolean;
+  enabled: boolean;
   createdAt: number;
   updatedAt: number;
 }
@@ -23,11 +25,13 @@ export interface MapPool {
 export interface CreateMapPoolInput {
   name: string;
   mapIds: string[];
+  enabled?: boolean; // Optional, defaults to true
 }
 
 export interface UpdateMapPoolInput {
   name?: string;
   mapIds?: string[];
+  enabled?: boolean;
 }
 
 export interface MapPoolResponse {
@@ -35,6 +39,7 @@ export interface MapPoolResponse {
   name: string;
   mapIds: string[];
   isDefault: boolean;
+  enabled: boolean;
   createdAt: number;
   updatedAt: number;
 }

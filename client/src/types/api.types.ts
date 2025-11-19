@@ -232,6 +232,7 @@ export interface MapPool {
   name: string;
   mapIds: string[];
   isDefault: boolean;
+  enabled: boolean;
   createdAt: number;
   updatedAt: number;
 }

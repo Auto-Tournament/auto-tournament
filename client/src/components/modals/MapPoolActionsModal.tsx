@@ -15,7 +15,10 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import CancelIcon from '@mui/icons-material/Cancel';
 import type { MapPool, Map } from '../../types/api.types';
+import { api } from '../../utils/api';
 
 interface MapPoolActionsModalProps {
   open: boolean;
@@ -25,6 +28,7 @@ interface MapPoolActionsModalProps {
   onEdit: () => void;
   onDelete: () => void;
   onSetDefault?: () => void;
+  onToggleEnabled?: () => void;
 }
 
 export default function MapPoolActionsModal({
@@ -35,6 +39,7 @@ export default function MapPoolActionsModal({
   onEdit,
   onDelete,
   onSetDefault,
+  onToggleEnabled,
 }: MapPoolActionsModalProps) {
   if (!mapPool) return null;
 
@@ -60,6 +65,20 @@ export default function MapPoolActionsModal({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
+              Status
+            </Typography>
+            <Box display="flex" gap={1} mb={2}>
+              {mapPool.isDefault && <Chip label="Default" size="small" color="primary" />}
+              <Chip
+                label={mapPool.enabled ? 'Enabled' : 'Disabled'}
+                size="small"
+                color={mapPool.enabled ? 'success' : 'default'}
+                variant={mapPool.enabled ? 'filled' : 'outlined'}
+              />
+            </Box>
+          </Box>
+          <Box>
+            <Typography variant="body2" color="text.secondary" gutterBottom>
               Maps ({mapPool.mapIds.length})
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={0.5}>
@@ -80,6 +99,16 @@ export default function MapPoolActionsModal({
         <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
           Edit
         </Button>
+        {onToggleEnabled && (
+          <Button
+            onClick={onToggleEnabled}
+            variant="outlined"
+            color={mapPool.enabled ? 'warning' : 'success'}
+            startIcon={mapPool.enabled ? <CancelIcon /> : <CheckCircleIcon />}
+          >
+            {mapPool.enabled ? 'Disable' : 'Enable'}
+          </Button>
+        )}
         {!mapPool.isDefault && onSetDefault && (
           <Button onClick={onSetDefault} variant="outlined" startIcon={<StarBorderIcon />}>
             Set as Default

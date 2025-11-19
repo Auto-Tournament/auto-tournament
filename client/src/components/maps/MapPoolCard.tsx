@@ -19,11 +19,14 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
       onClick={() => onClick(pool)}
       elevation={1}
       sx={{
+        width: '100%',
+        minWidth: '340px',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
         cursor: 'pointer',
         transition: 'transform 0.2s, box-shadow 0.2s',
+        opacity: pool.enabled ? 1 : 0.7,
         '&:hover': {
           transform: 'translateY(-4px)',
           boxShadow: 4,
@@ -45,7 +48,10 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
           <Typography variant="h6" component="div">
             {pool.name}
           </Typography>
-          {pool.isDefault && <Chip label="Default" size="small" color="primary" />}
+          <Box display="flex" gap={0.5}>
+            {pool.isDefault && <Chip label="Default" size="small" color="primary" />}
+            {!pool.enabled && <Chip label="Disabled" size="small" color="default" variant="outlined" />}
+          </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
           {pool.mapIds.length} map{pool.mapIds.length !== 1 ? 's' : ''}

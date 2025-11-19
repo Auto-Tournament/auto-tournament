@@ -13,7 +13,10 @@ interface MapsTabProps {
 }
 
 export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
-  if (maps.length === 0) {
+  // Sort maps alphabetically by ID
+  const sortedMaps = [...maps].sort((a, b) => a.id.localeCompare(b.id));
+
+  if (sortedMaps.length === 0) {
     return (
       <EmptyState
         icon={<MapIcon sx={{ fontSize: 64 }} />}
@@ -30,7 +33,7 @@ export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
 
   return (
     <Grid container spacing={2}>
-      {maps.map((map) => (
+      {sortedMaps.map((map) => (
         <Grid item key={map.id}>
           <MapCard map={map} onClick={onMapClick} />
         </Grid>

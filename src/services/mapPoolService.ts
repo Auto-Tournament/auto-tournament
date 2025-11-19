@@ -13,13 +13,19 @@ import { log } from '../utils/logger';
 export class MapPoolService {
   /**
    * Get all map pools
+   * @param enabledOnly - If true, only return enabled pools
    */
-  async getAllMapPools(): Promise<MapPoolResponse[]> {
-    const pools = await db.getAllAsync<DbMapPoolRow>('map_pools', undefined, undefined);
-    // Sort: default first, then by name
+  async getAllMapPools(enabledOnly = false): Promise<MapPoolResponse[]> {
+    const where = enabledOnly ? 'enabled = $1' : undefined;
+    const params = enabledOnly ? [1] : undefined;
+    const pools = await db.getAllAsync<DbMapPoolRow>('map_pools', where, params);
+    // Sort: default first, then enabled, then by name
     pools.sort((a, b) => {
       if (a.is_default !== b.is_default) {
         return b.is_default - a.is_default; // Default first
+      }
+      if (a.enabled !== b.enabled) {
+        return b.enabled - a.enabled; // Enabled first
       }
       return a.name.localeCompare(b.name);
     });
@@ -79,6 +85,7 @@ export class MapPoolService {
       name: input.name.trim(),
       map_ids: JSON.stringify(input.mapIds),
       is_default: 0,
+      enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1, // Default to enabled
     });
 
     log.success(`Map pool created: ${input.name}`);
@@ -118,6 +125,7 @@ export class MapPoolService {
 
     if (input.name !== undefined) updateData.name = input.name.trim();
     if (input.mapIds !== undefined) updateData.map_ids = JSON.stringify(input.mapIds);
+    if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
 
     await db.updateAsync('map_pools', updateData, 'id = $1', [id]);
 
@@ -167,6 +175,23 @@ export class MapPoolService {
   }
 
   /**
+   * Enable or disable a map pool
+   */
+  async setMapPoolEnabled(id: number, enabled: boolean): Promise<MapPoolResponse> {
+    const pool = await this.getMapPoolById(id);
+    if (!pool) {
+      throw new Error(`Map pool with ID ${id} not found`);
+    }
+
+    await db.updateAsync('map_pools', { enabled: enabled ? 1 : 0, updated_at: Math.floor(Date.now() / 1000) }, 'id = $1', [id]);
+
+    log.success(`Map pool ${enabled ? 'enabled' : 'disabled'}: ${pool.name}`);
+    const result = await this.getMapPoolById(id);
+    if (!result) throw new Error('Failed to retrieve updated map pool');
+    return result;
+  }
+
+  /**
    * Convert database row to response
    */
   private toResponse(pool: DbMapPoolRow): MapPoolResponse {
@@ -183,6 +208,7 @@ export class MapPoolService {
       name: pool.name,
       mapIds,
       isDefault: pool.is_default === 1,
+      enabled: pool.enabled === 1,
       createdAt: pool.created_at,
       updatedAt: pool.updated_at,
     };

@@ -11,10 +11,12 @@ router.use(requireAuth);
 /**
  * GET /api/map-pools
  * Get all map pools
+ * Query param: ?enabled=true to only get enabled pools
  */
-router.get('/', async (_req: Request, res: Response) => {
+router.get('/', async (req: Request, res: Response) => {
   try {
-    const pools = await mapPoolService.getAllMapPools();
+    const enabledOnly = req.query.enabled === 'true';
+    const pools = await mapPoolService.getAllMapPools(enabledOnly);
 
     return res.json({
       success: true,
@@ -107,6 +109,76 @@ router.post('/', async (req: Request, res: Response) => {
     const statusCode = message.includes('already exists') ? 409 : 400;
 
     console.error('Error creating map pool:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * PUT /api/map-pools/:id/enable
+ * Enable a map pool
+ */
+router.put('/:id/enable', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const poolId = parseInt(id, 10);
+
+    if (isNaN(poolId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid map pool ID',
+      });
+    }
+
+    const pool = await mapPoolService.setMapPoolEnabled(poolId, true);
+
+    return res.json({
+      success: true,
+      message: 'Map pool enabled successfully',
+      mapPool: pool,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to enable map pool';
+    const statusCode = message.includes('not found') ? 404 : 400;
+
+    console.error('Error enabling map pool:', error);
+    return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * PUT /api/map-pools/:id/disable
+ * Disable a map pool
+ */
+router.put('/:id/disable', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const poolId = parseInt(id, 10);
+
+    if (isNaN(poolId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid map pool ID',
+      });
+    }
+
+    const pool = await mapPoolService.setMapPoolEnabled(poolId, false);
+
+    return res.json({
+      success: true,
+      message: 'Map pool disabled successfully',
+      mapPool: pool,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to disable map pool';
+    const statusCode = message.includes('not found') ? 404 : 400;
+
+    console.error('Error disabling map pool:', error);
     return res.status(statusCode).json({
       success: false,
       error: message,

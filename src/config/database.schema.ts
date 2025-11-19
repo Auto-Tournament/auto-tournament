@@ -139,12 +139,14 @@ export function getSchemaSQL(): string {
       name TEXT NOT NULL UNIQUE,
       map_ids TEXT NOT NULL,
       is_default INTEGER NOT NULL DEFAULT 0,
+      enabled INTEGER NOT NULL DEFAULT 1,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
 
     CREATE INDEX IF NOT EXISTS idx_map_pools_name ON map_pools(name);
     CREATE INDEX IF NOT EXISTS idx_map_pools_default ON map_pools(is_default);
+    CREATE INDEX IF NOT EXISTS idx_map_pools_enabled ON map_pools(enabled);
   `;
 }
 
@@ -353,7 +355,7 @@ export async function getDefaultMapPoolsSQL(client: {
   ];
   const activeDutyMaps = activeDutyMapIds.filter((id) => allMapIds.includes(id));
 
-  const pools: Array<{ name: string; mapIds: string[]; isDefault: number }> = [];
+  const pools: Array<{ name: string; mapIds: string[]; isDefault: number; enabled: number }> = [];
 
   // Add Active Duty pool if we have any of those maps
   if (activeDutyMaps.length > 0) {
@@ -361,6 +363,7 @@ export async function getDefaultMapPoolsSQL(client: {
       name: 'Active Duty',
       mapIds: activeDutyMaps,
       isDefault: 1,
+      enabled: 1, // Active Duty is enabled by default
     });
   }
 
@@ -370,6 +373,7 @@ export async function getDefaultMapPoolsSQL(client: {
       name: 'Defusal only',
       mapIds: defusalMaps,
       isDefault: 0,
+      enabled: 0, // Disabled by default - for future "no veto" mode
     });
   }
 
@@ -379,6 +383,7 @@ export async function getDefaultMapPoolsSQL(client: {
       name: 'Hostage only',
       mapIds: hostageMaps,
       isDefault: 0,
+      enabled: 0, // Disabled by default - for future "no veto" mode
     });
   }
 
@@ -388,6 +393,7 @@ export async function getDefaultMapPoolsSQL(client: {
       name: 'Arms Race only',
       mapIds: armsRaceMaps,
       isDefault: 0,
+      enabled: 0, // Disabled by default - for future "no veto" mode
     });
   }
 
@@ -396,14 +402,17 @@ export async function getDefaultMapPoolsSQL(client: {
     .map((pool) => {
       const mapIdsJson = JSON.stringify(pool.mapIds).replace(/'/g, "''");
       const escapedName = pool.name.replace(/'/g, "''");
-      return `('${escapedName}', '${mapIdsJson}', ${pool.isDefault}, ${now}, ${now})`;
+      return `('${escapedName}', '${mapIdsJson}', ${pool.isDefault}, ${pool.enabled}, ${now}, ${now})`;
     })
     .join(',\n      ');
 
   return `
-    INSERT INTO map_pools (name, map_ids, is_default, created_at, updated_at)
+    INSERT INTO map_pools (name, map_ids, is_default, enabled, created_at, updated_at)
     VALUES
       ${values}
-    ON CONFLICT (name) DO NOTHING;
+    ON CONFLICT (name) DO UPDATE SET
+      map_ids = EXCLUDED.map_ids,
+      enabled = EXCLUDED.enabled,
+      updated_at = EXCLUDED.updated_at;
   `;
 }

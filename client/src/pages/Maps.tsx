@@ -129,6 +129,25 @@ export default function Maps() {
     }
   };
 
+  const handleToggleMapPoolEnabled = async () => {
+    if (!selectedMapPool) return;
+
+    try {
+      const endpoint = selectedMapPool.enabled ? 'disable' : 'enable';
+      await api.put(`/api/map-pools/${selectedMapPool.id}/${endpoint}`);
+      await loadMapPools();
+      // Update selectedMapPool to reflect the change
+      const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools');
+      const updatedPool = poolsResponse.mapPools?.find((p) => p.id === selectedMapPool.id);
+      if (updatedPool) {
+        setSelectedMapPool(updatedPool);
+      }
+    } catch (err) {
+      setError('Failed to toggle map pool status');
+      console.error(err);
+    }
+  };
+
   const handleDeletePoolConfirm = async () => {
     if (!poolToDelete) return;
 
@@ -289,6 +308,7 @@ export default function Maps() {
         onEdit={handleEditPoolFromActions}
         onDelete={handleDeletePoolFromActions}
         onSetDefault={handleSetDefaultMapPool}
+        onToggleEnabled={handleToggleMapPoolEnabled}
       />
 
       <ConfirmDialog

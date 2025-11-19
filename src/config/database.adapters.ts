@@ -86,6 +86,7 @@ export class PostgresAdapter implements DatabaseAdapter {
         { table: 'matches', column: 'veto_state', type: 'TEXT' },
         { table: 'matches', column: 'current_map', type: 'TEXT' },
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
+        { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
       ];
 
       for (const migration of migrations) {

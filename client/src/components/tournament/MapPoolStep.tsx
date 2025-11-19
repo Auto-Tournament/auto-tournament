@@ -122,15 +122,15 @@ export function MapPoolStep({
         >
           {/* Show default pool first (could be Active Duty or a custom default) */}
           {mapPools
-            .filter((p) => p.isDefault)
+            .filter((p) => p.isDefault && p.enabled)
             .map((pool) => (
               <MenuItem key={pool.id} value={pool.id.toString()}>
                 {pool.name}
               </MenuItem>
             ))}
-          {/* Show all non-default pools */}
+          {/* Show all non-default enabled pools */}
           {mapPools
-            .filter((p) => !p.isDefault)
+            .filter((p) => !p.isDefault && p.enabled)
             .map((pool) => (
               <MenuItem key={pool.id} value={pool.id.toString()}>
                 {pool.name}
