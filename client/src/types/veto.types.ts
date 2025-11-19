@@ -33,6 +33,7 @@ export interface VetoState {
   availableMaps: string[];
   bannedMaps: string[];
   pickedMaps: VetoMapResult[];
+  allMaps?: string[]; // Original order of all maps (for display purposes)
   actions: VetoAction[];
   currentTurn: VetoTeam;
   currentAction: VetoActionType;
@@ -55,4 +56,3 @@ export interface CS2MapData {
   displayName: string;
   image: string;
 }
-

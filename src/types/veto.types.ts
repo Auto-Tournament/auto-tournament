@@ -15,6 +15,7 @@ export interface VetoState {
     mapNumber: number;
     sideTeam1?: 'CT' | 'T';
   }>;
+  allMaps?: string[]; // Original order of all maps (for display purposes)
   actions: Array<{
     step: number;
     team: string;
@@ -36,4 +37,3 @@ export interface VetoAction {
   side?: 'CT' | 'T';
   teamSlug?: string;
 }
-

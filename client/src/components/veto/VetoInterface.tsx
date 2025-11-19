@@ -14,9 +14,11 @@ import {
 } from '@mui/material';
 import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
-import { CS2_MAPS, getMapData } from '../../constants/maps';
+import { getMapData } from '../../constants/maps';
 import { getVetoOrder } from '../../constants/vetoOrders';
+import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
+import type { MapsResponse } from '../../types/api.types';
 
 interface VetoInterfaceProps {
   matchSlug: string;
@@ -36,6 +38,30 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [allMaps, setAllMaps] = useState<
+    Map<string, { id: string; displayName: string; imageUrl: string | null }>
+  >(new Map());
+
+  const loadMaps = useCallback(async () => {
+    try {
+      const response = await api.get<MapsResponse>('/api/maps');
+      const mapsMap = new Map<
+        string,
+        { id: string; displayName: string; imageUrl: string | null }
+      >();
+      response.maps?.forEach((map) => {
+        mapsMap.set(map.id, {
+          id: map.id,
+          displayName: map.displayName,
+          imageUrl: map.imageUrl,
+        });
+      });
+      setAllMaps(mapsMap);
+    } catch (err) {
+      console.error('Error loading maps:', err);
+      // Continue without map data - will use fallback display names
+    }
+  }, []);
 
   const loadVetoState = useCallback(async () => {
     setLoading(true);
@@ -60,6 +86,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       setLoading(false);
     }
   }, [matchSlug, onComplete]);
+
+  useEffect(() => {
+    loadMaps();
+  }, [loadMaps]);
 
   useEffect(() => {
     loadVetoState();
@@ -184,13 +214,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         </Typography>
         <Grid container spacing={2}>
           {vetoState.pickedMaps.map((pick) => {
-            const mapData = getMapData(pick.mapName);
+            const mapData = allMaps.get(pick.mapName);
+            const fallbackData = getMapData(pick.mapName);
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
                   mapName={pick.mapName}
-                  displayName={mapData?.displayName || pick.mapName}
-                  imageUrl={mapData?.image || ''}
+                  displayName={mapData?.displayName || fallbackData?.displayName || pick.mapName}
+                  imageUrl={mapData?.imageUrl || fallbackData?.image || ''}
                   state="picked"
                   mapNumber={pick.mapNumber}
                   side={pick.sideTeam1}
@@ -225,8 +256,31 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       : currentTeamSlug === vetoState.team2Id);
 
   // Determine action color and text
-  // Show ALL maps, not just available ones (banned maps will be faded)
-  const mapsToShow = CS2_MAPS;
+  // Use original map order from vetoState.allMaps (preserves tournament map order)
+  // Maps stay in their original positions - only their state changes (available/banned/picked)
+  const originalMapOrder =
+    vetoState.allMaps ||
+    [
+      ...vetoState.availableMaps,
+      ...vetoState.bannedMaps,
+      ...vetoState.pickedMaps.map((p) => p.mapName),
+    ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
+
+  const mapsToShow = originalMapOrder.map((mapId) => {
+    const mapData = allMaps.get(mapId);
+    const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
+    return {
+      name: mapId,
+      displayName:
+        mapData?.displayName ||
+        fallbackData?.displayName ||
+        mapId.replace('de_', '').replace('cs_', ''),
+      image:
+        mapData?.imageUrl ||
+        fallbackData?.image ||
+        `https://raw.githubusercontent.com/ghostcap-gaming/cs2-map-images/main/cs2/${mapId}.png`,
+    };
+  });
 
   return (
     <Box>
@@ -310,7 +364,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {currentAction === 'side_pick' &&
         (() => {
           const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
-          const mapData = getMapData(lastPickedMap?.mapName);
+          const mapData = allMaps.get(lastPickedMap?.mapName || '');
+          const fallbackData = getMapData(lastPickedMap?.mapName || '');
 
           return (
             <Card sx={{ mb: 3 }}>
@@ -322,7 +377,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     overflow: 'hidden',
                     borderRadius: 2,
                     mb: 3,
-                    backgroundImage: `url(${mapData?.image})`,
+                    backgroundImage: `url(${mapData?.imageUrl || fallbackData?.image || ''})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     height: 250,
@@ -348,7 +403,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       color="white"
                       sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
                     >
-                      {mapData?.displayName || lastPickedMap?.mapName}
+                      {mapData?.displayName || fallbackData?.displayName || lastPickedMap?.mapName}
                     </Typography>
                     <Typography
                       variant="h6"
@@ -463,7 +518,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       }
                       sx={{ mx: 1 }}
                     />
-                    {getMapData(action.mapName)?.displayName || action.mapName}
+                    {allMaps.get(action.mapName || '')?.displayName ||
+                      getMapData(action.mapName || '')?.displayName ||
+                      action.mapName}
                     {action.side && ` (Starting ${action.side})`}
                   </Typography>
                 </Box>
