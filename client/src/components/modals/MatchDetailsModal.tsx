@@ -629,7 +629,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       position: 'relative',
                       overflow: 'hidden',
                       backgroundImage: activeMapKey
-                        ? `url(${getMapData(activeMapKey)?.image})`
+                        ? `url(${
+                            getMapData(activeMapKey)?.image ||
+                            `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${activeMapKey}.png`
+                          })`
                         : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',

@@ -248,12 +248,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           {vetoState.pickedMaps.map((pick) => {
             const mapData = allMaps.get(pick.mapName);
             const fallbackData = getMapData(pick.mapName);
+            const imageUrl =
+              mapData?.imageUrl ||
+              fallbackData?.image ||
+              `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${pick.mapName}.png`;
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
                   mapName={pick.mapName}
                   displayName={mapData?.displayName || fallbackData?.displayName || pick.mapName}
-                  imageUrl={mapData?.imageUrl || fallbackData?.image || ''}
+                  imageUrl={imageUrl}
                   state="picked"
                   mapNumber={pick.mapNumber}
                   side={pick.sideTeam1}
