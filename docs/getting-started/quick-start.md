@@ -1,29 +1,22 @@
 # Quick Start
 
-Get up and running in 5 minutes.
+Get MatchZy Auto Tournament running in minutes using Docker.
 
-## Choose Your Setup Path
+## Prerequisites
 
-### Option A — CS2 Server Manager (recommended)
+- **Docker** and **Docker Compose** installed ([Install Docker](https://docs.docker.com/engine/install/))
+- **CS2 Server(s)** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) (setup instructions below)
 
-If you just want working CS2 servers with the right plugins, use the automated **[CS2 Server Manager](../guides/cs2-server-manager.md)**. It installs SteamCMD, CounterStrikeSharp, the MatchZy enhanced fork, and CS2-AutoUpdater, then keeps everything patched with `manage.sh`.
+## Step 1: Install the Tournament Platform
 
-- Best for LAN hosts or new admins.
-- Deploy 3–5 servers, all preconfigured for MatchZy Auto Tournament.
-- Overrides (`overrides/game/csgo/`) survive updates.
+**1. Create a directory and the Docker Compose file:**
 
-### Option B — Manual install (advanced users)
+```bash
+mkdir matchzy-tournament
+cd matchzy-tournament
+```
 
-- CS2 dedicated server(s) with [modified MatchZy](https://github.com/sivert-io/matchzy/releases)
-- Node.js 18+ or Docker
-- RCON access to each server
-- Follow the [CS2 Server Setup Guide](server-setup.md) if you’re provisioning by hand.
-
-## Installation
-
-### Docker (Recommended - No cloning needed)
-
-**1. Create `docker-compose.yml` in any directory:**
+Create `docker-compose.yml` with this content:
 
 ```yaml
 services:
@@ -32,17 +25,13 @@ services:
     container_name: matchzy-postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=matchzy_tournament
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    # No port binding needed - DB is only accessible within Docker network
-    # Uncomment if you need external access for backups/management:
-    # ports:
-    #   - '5432:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -57,14 +46,11 @@ services:
     ports:
       - '3069:3069'
     environment:
-      - API_TOKEN=${API_TOKEN:-change-this-to-a-secure-token}
-      - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-matchzy_tournament}
+      # This is your password to sign in to the admin panel
+      - API_TOKEN=your-admin-password-here
+      # This token is used by CS2 servers to authenticate webhooks (should be different from API_TOKEN)
+      - SERVER_TOKEN=your-server-token-here
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/matchzy_tournament
     volumes:
       - ./data:/app/data
 
@@ -72,283 +58,137 @@ volumes:
   postgres-data:
 ```
 
-**2. Set environment variables (choose one method):**
+**2. Edit the tokens in `docker-compose.yml`:**
 
-**Option A: Generate and export in your shell:**
+Open `docker-compose.yml` and replace:
 
-```bash
-# Generate password-style tokens (these will be displayed)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+- `your-admin-password-here` with a simple password you'll use to login (e.g., `mypassword123`)
+- `your-server-token-here` with a different token for CS2 servers (e.g., `server-token-456`)
 
-# Show the generated tokens
-echo "Your API_TOKEN (admin password): $API_TOKEN"
-echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
+These don't need to be super secure—just something you can remember.
 
-# Export them
-export API_TOKEN
-export SERVER_TOKEN
-
-# Optional: Override database defaults
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-export DB_NAME=matchzy_tournament
-```
-
-**Option B: Edit the compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual password in the compose file.
-
-**Note:** The `API_TOKEN` is your admin password - it doesn't need to be super secure, just use something you can remember or save. Typical passwords work fine (e.g., `mypassword123` or `admin2024`).
-
-**3. Start:**
+**3. Start the platform:**
 
 ```bash
 docker compose up -d
 ```
 
-**Access:** `http://localhost:3069` (or `https://your-domain.com` in production)
+**4. Access the dashboard:**
 
-??? example "Build from Source (Optional)"
+Open `http://localhost:3069` in your browser.
 
-    If you've cloned the repository and want to build from source:
+**5. Login:**
 
-    ```bash
-    git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-    cd matchzy-auto-tournament
-    
-    # Set environment variables (tokens will be displayed)
-    API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-    SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-    echo "Your API_TOKEN (admin password): $API_TOKEN"
-    echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-    export API_TOKEN
-    export SERVER_TOKEN
-    
-    docker compose -f docker/docker-compose.local.yml up -d --build
-    ```
+You'll see the login form in the center of the screen. Enter the password you set for `API_TOKEN` in the `docker-compose.yml` file.
 
-**Database:**
+That's it! The tournament platform is now running. 🎉
 
-- **PostgreSQL is required** for all setups (Docker and local development)
-- For local development, use the convenient Yarn command:
-  ```bash
-  yarn db           # Start PostgreSQL container
-  yarn db:stop      # Stop PostgreSQL container
-  yarn db:restart   # Restart PostgreSQL container
-  ```
-  Or run PostgreSQL manually with Docker:
-  ```bash
-  docker run -d --name matchzy-postgres \
-    -e POSTGRES_USER=postgres \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_DB=matchzy_tournament \
-    -p 5432:5432 \
-    postgres:16-alpine
-  ```
-- The database schema is automatically initialized on first startup
+## Step 2: Set Up CS2 Servers
 
-??? info "Advanced: Docker Architecture"
+You need at least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) installed.
 
-    The Docker setup uses Caddy as a reverse proxy that serves:
+### CS2 Server Manager (Recommended) ⭐
 
-    - Frontend app at `/` (root)
-    - API at `/api`
+The easiest way to set up CS2 servers. One command installs everything:
 
-    **Everything runs on port 3069** — just proxy/expose this single port for production deployments.
-
-    **Multi-Architecture Support:**
-
-    The Docker image automatically detects and supports multiple architectures:
-    - `amd64` / `x86_64` (Intel/AMD 64-bit)
-    - `arm64` / `aarch64` (ARM 64-bit, e.g., Apple Silicon, Raspberry Pi 4+)
-    - `armv7` / `armv6` (ARM 32-bit, e.g., older Raspberry Pi)
-
-    The build process automatically downloads the correct Caddy binary for your platform.
-
-??? info "Docker Compose Files"
-
-    The repository includes two compose files:
-
-    - **`docker/docker-compose.yml`**: Uses pre-built image from Docker Hub (no cloning needed)
-    - **`docker/docker-compose.local.yml`**: Builds from source (requires cloned repository)
-
-    **Database:**
-    - **PostgreSQL is required** for all setups (Docker and local development)
-    - **Docker (both compose files)**: PostgreSQL service included. Data persists in the `postgres-data` volume.
-    - **Local development (without Docker)**: PostgreSQL required. Use `yarn db` to start PostgreSQL, or run manually:
-      ```bash
-      docker run -d --name matchzy-postgres \
-        -e POSTGRES_USER=postgres \
-        -e POSTGRES_PASSWORD=postgres \
-        -e POSTGRES_DB=matchzy_tournament \
-        -p 5432:5432 \
-        postgres:16-alpine
-      ```
-        Then set `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament` via shell environment variables or edit the compose file.
-
-    After startup, configure the webhook URL and Steam API key from the **Settings** page in the dashboard.
-
-??? example "Advanced: Local Development (without Docker)"
-
-        ```bash
-        # Install dependencies
-        npm install
-
-        # Set environment variables (generate password-style tokens)
-        API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-        SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-        echo "Your API_TOKEN (admin password): $API_TOKEN"
-        echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-        export API_TOKEN
-        export SERVER_TOKEN
-        export DB_HOST=localhost
-        export DB_PORT=5432
-        export DB_USER=postgres
-        export DB_PASSWORD=postgres
-        export DB_NAME=matchzy_tournament
-
-        # Start in dev mode
-        npm run dev
-        ```
-
-    **Frontend:** `http://localhost:5173`
-    **API:** `http://localhost:3000`
-
-    **Database:** PostgreSQL is required. Use `yarn db` to start PostgreSQL, or run manually:
-    ```bash
-    docker run -d --name matchzy-postgres \
-      -e POSTGRES_USER=postgres \
-      -e POSTGRES_PASSWORD=postgres \
-      -e POSTGRES_DB=matchzy_tournament \
-      -p 5432:5432 \
-      postgres:16-alpine
-    ```
-        Then set `DB_HOST=localhost`, `DB_PORT=5432`, `DB_USER=postgres`, `DB_PASSWORD=postgres`, and `DB_NAME=matchzy_tournament` via shell environment variables.
-
-## Environment Setup
-
-Set environment variables (via shell or edit compose file directly):
+**Quick install (interactive):**
 
 ```bash
-# Required - Generate password-style tokens (these will be displayed)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-
-# Display the generated tokens
-echo "Your API_TOKEN (admin password): $API_TOKEN"
-echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-
-# Export them
-export API_TOKEN
-export SERVER_TOKEN
-
-# Database Configuration (PostgreSQL required)
-# For local development, use: yarn db
-# Or run manually: docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine
-export DB_HOST=localhost                  # PostgreSQL host (use 'postgres' for Docker Compose, 'localhost' for local dev)
-export DB_PORT=5432                       # PostgreSQL port
-export DB_USER=postgres                   # PostgreSQL username
-export DB_PASSWORD=postgres               # PostgreSQL password
-export DB_NAME=matchzy_tournament         # PostgreSQL database name
-
-# Optional
-export PORT=3000                          # API port (default: 3000)
-
-# Or use DATABASE_URL instead of individual DB_* vars
-# export DATABASE_URL=postgresql://postgres:postgres@localhost:5432/matchzy_tournament
+wget https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/install.sh
+bash install.sh
 ```
 
-??? info "What do these tokens do?"
+**Auto-install (non-interactive, installs 5 servers):**
 
-    - **API_TOKEN**: Your admin password - used to login to the admin panel. You can use any password you want (e.g., `mypassword123`). The generated token is just a suggestion.
-    - **SERVER_TOKEN**: CS2 servers use this to authenticate webhooks. Should be different from your API_TOKEN.
-    - Configure the webhook URL and Steam API key from the in-app **Settings** page once the server is running.
+```bash
+wget https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/install.sh
+bash install.sh --auto --servers 5
+```
 
-## First Login
+**Customize the installation:**
 
-1. Navigate to `http://localhost:3069` (or your domain)
-2. Click **"Login"** (top right)
-3. Enter your `API_TOKEN` (the password you generated above - it was displayed after running the generation command)
-4. You're in! 🎉
+Set environment variables before running the installer to customize your setup:
 
-## Add Your First Team
+```bash
+# Set number of servers (default: 3, max: 5)
+export NUM_SERVERS=5
 
-1. Go to **Teams**
-2. Click **"Create Team"**
-3. Fill in:
-   ```
-   Team Name: Team Awesome
-   Team Tag: AWE
-   ```
-4. Add players (minimum 5):
-   ```
-   Steam ID: 76561199486434142
-   Name: Player1
-   ```
-   Repeat for all players
-5. Click **"Create Team"**
+# Set RCON password (default: ntlan2025)
+export RCON_PASSWORD=my-secure-password
 
-Repeat for all teams (minimum 2 for a tournament).
+# Run the installer
+wget https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/install.sh
+bash install.sh --auto --servers $NUM_SERVERS
+```
 
-## Next Steps
+**Available options:**
 
-👉 **[CS2 Server Setup](server-setup.md)** - Install the modified MatchZy plugin on your CS2 server(s)
+- `NUM_SERVERS` - Number of servers to install (3-5, default: 3)
+- `RCON_PASSWORD` - RCON password for all servers (default: `ntlan2025`)
 
-👉 **[First Tournament Guide](first-tournament.md)** - Step-by-step tournament setup
+That's it! The installer will:
 
-👉 **Prefer automation?** Skip manual installs and use the **[CS2 Server Manager](../guides/cs2-server-manager.md)** to provision everything in minutes.
+- Download and install SteamCMD
+- Set up CounterStrikeSharp + Metamod:Source
+- Install the MatchZy enhanced fork
+- Configure servers with auto-updates
+- Start all servers automatically
 
-??? abstract "Advanced: Network Configuration"
+**Add servers to the tournament platform:**
 
-    **Private Network (LAN):**
+- Go to **Servers** in the dashboard
+- Click **"Add Server"**
+- Enter server IP, RCON port, and RCON password (default: `ntlan2025`)
 
-    - Everything on `192.168.x.x` - works out of the box
-    - Share team pages with local IPs
+See the [CS2 Server Manager Guide](../guides/cs2-server-manager.md) for detailed instructions and management commands.
 
-    **Public Internet:**
+??? example "Manual Server Setup (Advanced)"
 
-    - Get a domain or use public IP
-    - **Docker:** Expose/proxy port **3069** only - Caddy serves both app and API
-      - Set the webhook base URL in **Settings** to your public domain (e.g. `https://your-domain.com`)
-    - **Local dev:** Expose port **3000** for API, **5173** for frontend
-      - In **Settings**, use your machine IP (e.g. `http://your-ip:3000`)
+    If you already have CS2 servers, install the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) manually.
 
-    **Recommended:** Run on private network, expose via reverse proxy if needed.
+    See the [CS2 Server Setup Guide](server-setup.md) for step-by-step instructions.
 
-    **Single Port Architecture:**
+## Step 3: Configure Settings
 
-    With Docker, CS2 servers hit `your-domain.com/api/events/...` (port 3069).
-    Caddy routes `/api` internally - no need to expose port 3000!
+1. Go to **Settings** in the dashboard
+2. Set the **Webhook URL** (how your CS2 servers reach the API):
+   - **Local/LAN:** `http://your-server-ip:3069` (e.g., `http://192.168.1.50:3069`)
+   - **Public:** `https://your-domain.com`
+3. Enter your **Steam Web API Key** (get one from [Steam](https://steamcommunity.com/dev/apikey))
+4. Click **"Save Settings"**
 
-## Troubleshooting
+## Step 4: Create Your First Tournament
 
-??? failure "Can't login?"
+1. **Add Teams:**
 
-    - Verify API_TOKEN matches what you're entering (check shell env var or compose file)
-    - Restart API after changing tokens: `docker compose restart`
+   - Go to **Teams** → **"Create Team"**
+   - Enter team name, tag, and add at least 5 players (Steam IDs)
 
-??? failure "Server shows offline?"
+2. **Create Tournament:**
 
-    - Check RCON password is correct (shell env var or compose file)
-    - Verify CS2 server is running
-    - Test RCON connectivity from your API server:
-        ```bash
-        # Replace with your CS2 server's IP and RCON port
-        nc -zv 192.168.1.100 27015
-        ```
-        Should show "succeeded" if connection works
+   - Go to **Tournaments** → **"Create Tournament"**
+   - Choose format (Single/Double Elimination, Round Robin, Swiss)
+   - Select teams and configure match settings
 
-??? failure "Events not arriving?"
+3. **Start Matches:**
+   - Matches will automatically start when servers are available
+   - Teams can access their match pages via the public links
 
-    - Test CS2 server can reach API (run this from your CS2 server):
-        ```bash
-        # Docker: Test via Caddy
-        curl http://192.168.1.50:3069/api/events/test
+👉 **Need more help?** See the [First Tournament Guide](first-tournament.md) for detailed steps.
 
-        # Local dev: Test direct API
-        curl http://192.168.1.50:3000/api/events/test
-        ```
-        Should return `{"message":"Test received"}`
-    - Verify the webhook URL in **Settings → Webhook URL** matches how your CS2 servers reach the API
-    - Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
+## Updating
 
-**Need more help?** See the **[Troubleshooting Guide](../guides/troubleshooting.md)**
+To update to the latest version:
+
+```bash
+docker compose pull
+docker compose up -d
+```
+
+Your data (teams, tournaments, matches) is stored in PostgreSQL and persists across updates.
+
+## Need Help?
+
+- **Troubleshooting:** See the [Troubleshooting Guide](../guides/troubleshooting.md)
+- **Advanced Setup:** See the [CS2 Server Setup Guide](server-setup.md) for manual installation
+- **Development:** See the [Development Guide](../development/contributing.md) for local development setup

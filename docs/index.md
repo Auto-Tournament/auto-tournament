@@ -32,64 +32,23 @@ One click from bracket creation to final scores
 
 ---
 
-## Quick Start Paths
+## Quick Start
 
-### 😊 Recommended: CS2 Server Manager
+Get up and running in minutes with Docker:
 
-Use the companion **[CS2 Server Manager](guides/cs2-server-manager.md)** to deploy 3–5 CS2 servers that already include:
+1. **Install the tournament platform** using Docker (see [Quick Start Guide](getting-started/quick-start.md))
+2. **Set up CS2 servers** using the [CS2 Server Manager](guides/cs2-server-manager.md) (recommended) or manual setup
+3. **Create your first tournament** and start playing!
 
-- CounterStrikeSharp + Metamod:Source
-- MatchZy enhanced fork + CS2 AutoUpdater
-- Pre-configured webhooks and RCON
-
-Best for LANs, new admins, or anyone who wants a working fleet in minutes.
-
-### 🛠️ Docker Setup (no cloning needed)
-
-Create `docker-compose.yml` and set environment variables (see [Quick Start Guide](getting-started/quick-start.md) for full example):
-
-```bash
-# Create docker-compose.yml with PostgreSQL service and matchzy-tournament image
-# Set API_TOKEN and SERVER_TOKEN environment variables (see Quick Start Guide)
-docker compose up -d
-```
-
-**Dashboard access:** `http://localhost:3069`
-
-### 🛠️ Build from Source (for contributors)
-
-```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
-
-# Set environment variables (tokens will be displayed)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-echo "Your API_TOKEN (admin password): $API_TOKEN"
-echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-export API_TOKEN
-export SERVER_TOKEN
-
-docker compose -f docker/docker-compose.local.yml up -d --build
-```
-
-**Database:** PostgreSQL is required for all setups. The database schema is automatically initialized on first startup. For local development, use `yarn db` to start PostgreSQL, or run manually with Docker:
-```bash
-docker run -d --name matchzy-postgres \
-  -e POSTGRES_USER=postgres \
-  -e POSTGRES_PASSWORD=postgres \
-  -e POSTGRES_DB=matchzy_tournament \
-  -p 5432:5432 \
-  postgres:16-alpine
-```
+👉 **[Read the complete Quick Start Guide](getting-started/quick-start.md)** for step-by-step instructions.
 
 ---
 
 ## Requirements
 
-- CS2 servers with [modified MatchZy plugin](https://github.com/sivert-io/matchzy/releases) :material-download:
-- Node.js 18+ or Docker :material-docker:
-- RCON access to servers :material-server-network:
+- **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
+- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) :material-download:
+- **RCON access** to your CS2 servers :material-server-network:
 
 ---
 
