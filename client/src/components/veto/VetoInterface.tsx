@@ -256,8 +256,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             const displaySide = isViewingTeam1
               ? pick.sideTeam1
               : isViewingTeam2
-                ? pick.sideTeam2
-                : pick.sideTeam1; // Fallback to team1 if unknown
+              ? pick.sideTeam2
+              : pick.sideTeam1; // Fallback to team1 if unknown
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
@@ -499,8 +499,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               ? isViewingTeam1
                 ? pickedMap.sideTeam1
                 : isViewingTeam2
-                  ? pickedMap.sideTeam2
-                  : pickedMap.sideTeam1 // Fallback to team1 if unknown
+                ? pickedMap.sideTeam2
+                : pickedMap.sideTeam1 // Fallback to team1 if unknown
               : undefined;
 
             return (
