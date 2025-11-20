@@ -252,6 +252,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               mapData?.imageUrl ||
               fallbackData?.image ||
               `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${pick.mapName}.png`;
+            // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
+            const displaySide = isViewingTeam1
+              ? pick.sideTeam1
+              : isViewingTeam2
+                ? pick.sideTeam2
+                : pick.sideTeam1; // Fallback to team1 if unknown
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
@@ -260,7 +266,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   imageUrl={imageUrl}
                   state="picked"
                   mapNumber={pick.mapNumber}
-                  side={pick.sideTeam1}
+                  side={displaySide}
                 />
               </Grid>
             );
@@ -277,6 +283,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // Use team names from veto state (backend) or props as fallback
   const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
   const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
+
+  // Determine which team is viewing (for displaying correct side badge)
+  const isViewingTeam1 =
+    currentTeamSlug && vetoState.team1Id && currentTeamSlug === vetoState.team1Id;
+  const isViewingTeam2 =
+    currentTeamSlug && vetoState.team2Id && currentTeamSlug === vetoState.team2Id;
 
   // Get current team name
   const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
@@ -482,6 +494,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               : 'available';
 
             const pickedMap = vetoState.pickedMaps.find((p) => p.mapName === map.name);
+            // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
+            const displaySide = pickedMap
+              ? isViewingTeam1
+                ? pickedMap.sideTeam1
+                : isViewingTeam2
+                  ? pickedMap.sideTeam2
+                  : pickedMap.sideTeam1 // Fallback to team1 if unknown
+              : undefined;
 
             return (
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={map.name}>
@@ -491,7 +511,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   imageUrl={map.image}
                   state={mapState}
                   mapNumber={pickedMap?.mapNumber}
-                  side={pickedMap?.sideTeam1}
+                  side={displaySide}
                   onClick={() => handleMapAction(map.name)}
                   disabled={mapState !== 'available' || !isMyTurn}
                 />
