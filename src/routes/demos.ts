@@ -36,6 +36,22 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
     const matchzyMatchId = req.header('MatchZy-MatchId');
     const matchzyMapNumber = req.header('MatchZy-MapNumber');
 
+    // ========================================
+    // 🎬 DEMO UPLOAD RECEIVED - HUGE LOG BLOCK
+    // ========================================
+    console.log('\n');
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log('🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬');
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log(`📦 Match Slug:     ${matchSlug}`);
+    console.log(`📄 Filename:       ${matchzyFilename || 'NOT PROVIDED'}`);
+    console.log(`🆔 Match ID:        ${matchzyMatchId || 'NOT PROVIDED'}`);
+    console.log(`🗺️  Map Number:     ${matchzyMapNumber || 'NOT PROVIDED'}`);
+    console.log(`⏰ Timestamp:       ${new Date().toISOString()}`);
+    console.log(`📊 Content-Length:  ${req.headers['content-length'] || 'unknown'} bytes`);
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log('\n');
+
     log.info('[Demo Upload] Upload request received', {
       matchSlug,
       filename: matchzyFilename,
@@ -131,13 +147,33 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
         fileSize = stats.size;
       }
 
+      const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
+
+      // ========================================
+      // ✅ DEMO UPLOAD SUCCESS - HUGE LOG BLOCK
+      // ========================================
+      console.log('\n');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('✅✅✅  DEMO UPLOAD COMPLETED SUCCESSFULLY  ✅✅✅');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`📄 Filename:       ${filename}`);
+      console.log(`🆔 Match ID:        ${matchzyMatchId || 'N/A'}`);
+      console.log(`🗺️  Map Number:     ${matchzyMapNumber || 'N/A'}`);
+      console.log(`💾 File Size:       ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
+      console.log(`📁 Relative Path:   ${relativePath}`);
+      console.log(`💿 Full Path:       ${filepath}`);
+      console.log(`⏰ Completed At:     ${new Date().toISOString()}`);
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('\n');
+
       log.success('[Demo Upload] Demo uploaded successfully', {
         matchSlug,
         filename,
         matchId: matchzyMatchId,
         mapNumber: matchzyMapNumber,
         path: relativePath,
-        fileSize: `${(fileSize / 1024 / 1024).toFixed(2)} MB`,
+        fileSize: `${fileSizeMB} MB`,
         filepath,
       });
 
@@ -173,6 +209,16 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
 
     // If there is a problem writing the file, reply with 500
     writeStream.on('error', (err) => {
+      console.log('\n');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('❌❌❌  DEMO UPLOAD FAILED - FILE WRITE ERROR  ❌❌❌');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`📄 Filename:       ${matchzyFilename || 'N/A'}`);
+      console.log(`❌ Error:           ${err.message}`);
+      console.log(`💿 File Path:      ${filepath}`);
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('\n');
       log.error('Error writing demo file', err);
       res.status(500).json({
         success: false,
@@ -182,6 +228,14 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
 
     // Handle request errors
     req.on('error', (error) => {
+      console.log('\n');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('❌❌❌  DEMO UPLOAD FAILED - REQUEST ERROR  ❌❌❌');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`❌ Error:           ${error instanceof Error ? error.message : String(error)}`);
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('\n');
       log.error('Error receiving demo upload', error);
       if (!res.headersSent) {
         res.status(500).json({
@@ -322,6 +376,18 @@ router.get(
  * Get demo upload configuration status for a match
  * Shows if demo upload is configured and expected upload URL
  * Protected by API token
+ * 
+ * HOW TO VERIFY DEMO UPLOAD IS ENABLED:
+ * 1. Check this endpoint: GET /api/demos/:matchSlug/status
+ *    - demoUploadConfigured should be true
+ *    - expectedUploadUrl should be a valid URL
+ * 2. When loading a match, check logs for:
+ *    - "✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅"
+ *    - Or "❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌"
+ * 3. When a demo is uploaded, you'll see:
+ *    - "🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬"
+ *    - "✅✅✅  DEMO UPLOAD COMPLETED SUCCESSFULLY  ✅✅✅"
+ * 4. Verify webhook_url is set in Settings (required for demo upload URL)
  */
 router.get('/:matchSlug/status', requireAuth, async (req: Request, res: Response) => {
   try {
