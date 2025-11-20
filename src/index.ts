@@ -37,6 +37,8 @@ import vetoRoutes from './routes/veto';
 import settingsRoutes from './routes/settings';
 import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
+import recoveryRoutes from './routes/recovery';
+import { recoverActiveMatches } from './services/matchRecoveryService';
 
 const app = express();
 const httpServer = createServer(app);
@@ -266,6 +268,7 @@ app.use('/api/veto', vetoRoutes); // Map veto system
 app.use('/api/settings', settingsRoutes);
 app.use('/api/maps', mapsRoutes);
 app.use('/api/map-pools', mapPoolsRoutes);
+app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
@@ -316,8 +319,16 @@ const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
   log.server(`Event logs: data/logs/events/ (30 day retention)`);
   log.server('='.repeat(60));
 
-  bootstrapServerWebhooks().catch((error) => {
-    log.warn('Failed to auto-configure server webhooks on startup', { error });
+  // Bootstrap webhooks and recover active matches
+  Promise.all([
+    bootstrapServerWebhooks().catch((error) => {
+      log.warn('Failed to auto-configure server webhooks on startup', { error });
+    }),
+    recoverActiveMatches().catch((error) => {
+      log.warn('Failed to recover active matches on startup', { error });
+    }),
+  ]).then(() => {
+    log.success('[Startup] All startup tasks completed');
   });
 });
 

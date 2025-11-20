@@ -128,6 +128,7 @@ class DatabaseManager {
         { table: 'matches', column: 'current_map', type: 'TEXT' },
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
+        { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
       ];
 
       for (const migration of migrations) {

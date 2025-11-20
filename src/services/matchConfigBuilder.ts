@@ -117,11 +117,31 @@ export const generateMatchConfig = async (
           console.log('maplist', maplist);
 
           // 2c) Translate side picks (UI is per-map; backend previously only had a global toggle)
-          per_map_sides = ordered.map((p) => {
-            if (p.sideTeam1 === 'CT') return 'team1_ct';
-            if (p.sideTeam1 === 'T') return 'team2_ct';
-            // If side wasn't chosen (e.g., your flow decides by knife), fall back to knife
-            return 'knife';
+          // MatchZy format: 'team1_ct' means team1 starts CT, 'team2_ct' means team2 starts CT (team1 starts T)
+          per_map_sides = ordered.map((p, index) => {
+            let result: PerMapSide;
+            if (p.sideTeam1 === 'CT') {
+              result = 'team1_ct';
+            } else if (p.sideTeam1 === 'T') {
+              result = 'team2_ct';
+            } else {
+              result = 'knife';
+            }
+            log.debug('Translating side pick to MatchZy format', {
+              mapName: p.mapName,
+              mapIndex: index,
+              sideTeam1: p.sideTeam1,
+              matchZySide: result,
+            });
+            return result;
+          });
+          // Ensure per_map_sides matches the number of maps
+          per_map_sides = per_map_sides.slice(0, numMaps);
+          
+          log.info('Per-map sides configured from veto', {
+            maplist,
+            per_map_sides,
+            matchSlug: slug,
           });
         }
       } catch (e) {
@@ -131,14 +151,20 @@ export const generateMatchConfig = async (
     }
   }
 
-  // 3) Global map_sides is too coarse for mixed choices. Keep a safe default,
-  //    but also include per_map_sides so your allocator / gameserver can apply it precisely.
-  //    If your server *does* support per-map sides natively, translate `per_map_sides`
-  //    to whatever structure it expects right here.
-  const anyKnife = per_map_sides.some((s) => s === 'knife');
-  const map_sides_global: Array<'team1_ct' | 'team2_ct' | 'knife'> = anyKnife
-    ? ['team1_ct', 'team2_ct', 'knife']
-    : ['team1_ct', 'team2_ct'];
+  // 3) Use per_map_sides for map_sides - MatchZy expects map_sides array to correspond
+  //    to each map in maplist. If we have veto picks, use them; otherwise use defaults.
+  let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'>;
+  if (maplist && maplist.length > 0 && per_map_sides.some((s) => s !== 'knife')) {
+    // Use the per-map sides from veto
+    map_sides = per_map_sides.slice(0, numMaps) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
+  } else {
+    // Fallback: use default pattern if no veto sides were chosen
+    const anyKnife = per_map_sides.some((s) => s === 'knife');
+    map_sides = (anyKnife
+      ? ['team1_ct', 'team2_ct', 'knife']
+      : ['team1_ct', 'team2_ct']
+    ).slice(0, numMaps) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
+  }
 
   const config: MatchConfig = {
     matchid: existingMatch?.id ?? slug ?? 'tbd',
@@ -151,7 +177,7 @@ export const generateMatchConfig = async (
     // veto
     skip_veto: true,
     maplist, // ordered maps from the veto
-    map_sides: map_sides_global,
+    map_sides, // per-map sides matching maplist order
 
     // >>> new: carry per-map sides chosen in the UI <<<
     // Your allocator / match loader should read this and configure the server accordingly.
@@ -183,6 +209,14 @@ export const generateMatchConfig = async (
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
   };
 
-  log.info('Match configgg:', config);
+  log.info('Match config generated', {
+    matchSlug: slug,
+    matchId: config.matchid,
+    numMaps: config.num_maps,
+    maplist: config.maplist,
+    map_sides: config.map_sides,
+    team1: config.team1.name,
+    team2: config.team2.name,
+  });
   return config;
 };

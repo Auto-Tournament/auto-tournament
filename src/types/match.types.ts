@@ -87,6 +87,7 @@ export interface MatchMapResult {
   team1Score: number;
   team2Score: number;
   winnerTeam?: 'team1' | 'team2' | 'none' | null;
+  demoFilePath?: string | null;
   completedAt: number;
 }
 

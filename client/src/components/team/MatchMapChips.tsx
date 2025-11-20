@@ -18,6 +18,7 @@ export function MatchMapChips({ match, currentMapNumber }: MatchMapChipsProps) {
       activeMapIndex={currentMapNumber}
       activeMapLabel={match.currentMap || null}
       mapResults={match.mapResults || []}
+      matchSlug={match.slug}
     />
   );
 }

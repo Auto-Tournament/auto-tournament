@@ -293,6 +293,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         : result.winnerTeam === 'team2'
         ? 'team1'
         : result.winnerTeam,
+      demoFilePath: result.demoFilePath,
       completedAt: result.completedAt,
     }));
 

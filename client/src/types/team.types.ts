@@ -153,6 +153,7 @@ export interface MatchMapResult {
   team2Score: number;
   winner?: 'team1' | 'team2' | 'none' | null;
   winnerTeam?: 'team1' | 'team2' | 'none' | null;
+  demoFilePath?: string | null;
   completedAt: number;
 }
 
