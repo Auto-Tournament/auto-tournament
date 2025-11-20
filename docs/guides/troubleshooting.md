@@ -249,6 +249,70 @@ npm run build
 npm start
 ```
 
+## Advanced Setup
+
+### Build from Source
+
+If you've cloned the repository and want to build from source:
+
+```bash
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+docker compose -f docker/docker-compose.local.yml up -d --build
+```
+
+### Local Development (without Docker)
+
+For development with hot-reload:
+
+```bash
+# Install dependencies
+yarn install
+
+# Start PostgreSQL (or use your own)
+yarn db
+
+# Set environment variables
+export API_TOKEN=your-admin-password
+export SERVER_TOKEN=your-server-token
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_NAME=matchzy_tournament
+
+# Start in dev mode
+yarn dev
+```
+
+**Frontend:** `http://localhost:5173`  
+**API:** `http://localhost:3000`
+
+### Docker Architecture
+
+The Docker setup uses Caddy as a reverse proxy:
+- Frontend app at `/` (root)
+- API at `/api`
+- Everything runs on port **3069** — just expose this single port for production
+
+**Multi-Architecture Support:**
+- `amd64` / `x86_64` (Intel/AMD 64-bit)
+- `arm64` / `aarch64` (ARM 64-bit, e.g., Apple Silicon, Raspberry Pi 4+)
+- `armv7` / `armv6` (ARM 32-bit, e.g., older Raspberry Pi)
+
+### Network Configuration
+
+**Private Network (LAN):**
+- Everything on `192.168.x.x` - works out of the box
+- Share team pages with local IPs
+
+**Public Internet:**
+- Get a domain or use public IP
+- Expose/proxy port **3069** only
+- Set webhook base URL in **Settings** to your public domain
+
+**Recommended:** Run on private network, expose via reverse proxy if needed.
+
 ## Getting Help
 
 If you're still stuck:
