@@ -51,8 +51,8 @@
 **Fix:**
 
 1. Check CS2 can reach API (from your CS2 server):
-    - Docker: `curl http://192.168.1.50:3069/api/events/test`
-    - Local dev: `curl http://192.168.1.50:3000/api/events/test`
+   - Docker: `curl http://192.168.1.50:3069/api/events/test`
+   - Local dev: `curl http://192.168.1.50:3000/api/events/test`
 2. Verify `matchzy_remote_log_url` is set correctly
 3. Verify `matchzy_remote_log_header_value` matches SERVER_TOKEN
 4. Click "Check Status" to reconfigure webhooks
@@ -153,12 +153,12 @@
 **Fix:**
 
 1. Test API is reachable (from CS2 server):
-    - Docker: `curl http://192.168.1.50:3069/api/events/test`
-    - Local dev: `curl http://192.168.1.50:3000/api/events/test`
+   - Docker: `curl http://192.168.1.50:3069/api/events/test`
+   - Local dev: `curl http://192.168.1.50:3000/api/events/test`
 2. Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
 3. Verify the webhook URL in the dashboard **Settings** matches your setup:
-    - Docker: typically `https://your-domain.com`
-    - Local dev: `http://your-ip:3000`
+   - Docker: typically `https://your-domain.com`
+   - Local dev: `http://your-ip:3000`
 4. Use IP address instead of hostname if DNS issues
 
 ### CS2 Server Unreachable
@@ -288,14 +288,38 @@ yarn dev
 **Frontend:** `http://localhost:5173`  
 **API:** `http://localhost:3000`
 
+**Configure Webhook URL:**
+
+When you start the dev server, you'll see output like:
+
+```
+[CLIENT]   VITE v5.4.21  ready in 450 ms
+[CLIENT]
+[CLIENT]   ➜  Local:   http://localhost:5173/
+[CLIENT]   ➜  Network: http://192.168.2.5:5173/
+[CLIENT]   ➜  Network: http://100.110.237.14:5173/
+[CLIENT]   ➜  Network: http://192.168.10.158:5173/
+```
+
+1. Go to **Settings** in the dashboard
+2. Set the **Webhook URL** to the API endpoint:
+   - **If CS2 servers are on the same machine:** `http://localhost:3000`
+   - **If CS2 servers are on the network:** Use one of the Network IPs shown above, but change the port to `3000` (e.g., `http://192.168.2.5:3000`)
+   - Use whichever IP your CS2 servers can reach
+3. Click **"Save Settings"**
+
+> **Note:** The frontend runs on port `5173`, but webhooks must point to the API on port `3000`.
+
 ### Docker Architecture
 
 The Docker setup uses Caddy as a reverse proxy:
+
 - Frontend app at `/` (root)
 - API at `/api`
 - Everything runs on port **3069** — just expose this single port for production
 
 **Multi-Architecture Support:**
+
 - `amd64` / `x86_64` (Intel/AMD 64-bit)
 - `arm64` / `aarch64` (ARM 64-bit, e.g., Apple Silicon, Raspberry Pi 4+)
 - `armv7` / `armv6` (ARM 32-bit, e.g., older Raspberry Pi)
@@ -303,10 +327,12 @@ The Docker setup uses Caddy as a reverse proxy:
 ### Network Configuration
 
 **Private Network (LAN):**
+
 - Everything on `192.168.x.x` - works out of the box
 - Share team pages with local IPs
 
 **Public Internet:**
+
 - Get a domain or use public IP
 - Expose/proxy port **3069** only
 - Set webhook base URL in **Settings** to your public domain

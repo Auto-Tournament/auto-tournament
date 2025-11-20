@@ -1,6 +1,10 @@
 # CS2 Server Setup
 
-Before you can add servers to the tournament system, you need to install the required plugins on your CS2 dedicated server(s).
+Manual installation guide for setting up CS2 servers with the enhanced MatchZy plugin.
+
+> **💡 Recommended:** Use the **[CS2 Server Manager](../guides/cs2-server-manager.md)** for automated setup. It installs everything you need with one command—perfect for most users.
+
+This guide is for users who want to manually install the plugins on existing CS2 servers.
 
 ---
 
@@ -15,26 +19,19 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ---
 
-!!! tip "Prefer an automated setup?"
+## Install Enhanced MatchZy
 
-    Use the companion **[CS2 Server Manager](../guides/cs2-server-manager.md)** if you want ready-to-go servers (SteamCMD + CounterStrikeSharp + MatchZy + CS2-AutoUpdater). One command deploys 3–5 servers with the correct plugins and webhook configuration—perfect for LANs or first-time server admins.[^1]
+!!! danger "Enhanced MatchZy Required"
 
----
+    This project requires an **enhanced fork of MatchZy** that exposes additional events for full automation.
+    
+    The official MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this enhanced build.
 
-## Install MatchZy (Enhanced Version)
-
-Important:
-: !!! danger "Enhanced MatchZy required"
-
-        This project ships with an enhanced fork of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
-
-        The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this enhanced build.
-
-### Download
+### Step 1: Download
 
 **Latest Release:** [github.com/sivert-io/matchzy/releases](https://github.com/sivert-io/matchzy/releases)
 
-### Installation
+### Step 2: Install
 
 ```bash
 # Navigate to your CS2 server directory
@@ -46,11 +43,11 @@ unzip MatchZy-*.zip
 # Restart your CS2 server
 ```
 
-### Verify Installation
+### Step 3: Verify
 
 Type `css_plugins list` in server console. You should see **MatchZy by WD-** listed.
 
-### Expected Structure
+**Expected file structure:**
 
 ```
 csgo/
@@ -66,7 +63,7 @@ The plugin zip file already contains the full `addons/counterstrikesharp/plugins
 
 ---
 
-## Enable RCON
+## Configure RCON
 
 Add these to your server's `autoexec.cfg` or `server.cfg`:
 
@@ -79,42 +76,47 @@ hostport 27015
 
 ---
 
-## Configure Webhook URL
+## Configure Webhooks
 
-The system auto-configures webhooks when you load matches, but you need to ensure your CS2 server can reach your tournament system API.
+The tournament system auto-configures webhooks when you load matches, but you need to ensure your CS2 server can reach your tournament system API.
 
 **Test connectivity from your CS2 server:**
 
 ```bash
 # For Docker (port 3069)
-curl http://192.168.1.50:3069/api/events/test
+curl http://your-tournament-ip:3069/api/events/test
 
 # For local dev (port 3000)
-curl http://192.168.1.50:3000/events/test
+curl http://your-tournament-ip:3000/api/events/test
 ```
 
 Should return: `{"message":"Test received"}`
 
+**Configure in dashboard:**
+
+1. Go to **Settings** in the tournament dashboard
+2. Set the **Webhook URL** to how your CS2 servers reach the API:
+   - **Local/LAN:** `http://your-server-ip:3069` (e.g., `http://192.168.1.50:3069`)
+   - **Public:** `https://your-domain.com`
+3. Click **"Save Settings"**
+
 ---
 
-## Firewall Configuration
+## Network Configuration
 
 Make sure your CS2 server can reach the tournament system API:
 
-### For Docker Setup (port 3069)
-
+**For Docker Setup (port 3069):**
 - Allow outbound connections from CS2 server to tournament system on port **3069**
 - CS2 server will send webhook events to: `http://your-tournament-ip:3069/api/events/...`
 
-### For Local Dev (port 3000)
-
+**For Local Dev (port 3000):**
 - Allow outbound connections from CS2 server to tournament system on port **3000**
-- CS2 server will send webhook events to: `http://your-tournament-ip:3000/events/...`
+- CS2 server will send webhook events to: `http://your-tournament-ip:3000/api/events/...`
 
-Tip:
-: !!! note
+!!! note "Private Network (LAN)"
 
-        If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
+    If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
 
 ---
 
@@ -155,7 +157,7 @@ Should show MatchZy by WD-.
 
 ```bash
 # From the tournament system server
-nc -zv 192.168.1.100 27015
+nc -zv server-ip 27015
 ```
 
 Should show "succeeded" if connection works.
@@ -163,9 +165,8 @@ Should show "succeeded" if connection works.
 ### Webhooks Not Arriving
 
 **Check the webhook URL in the dashboard Settings:**
-
 - Should match your tournament system's public URL or LAN IP
-- Docker: typically `https://your-domain.com`
+- Docker: typically `https://your-domain.com` or `http://your-ip:3069`
 - Local dev: `http://your-ip:3000`
 
 **Test from CS2 server:**
@@ -185,5 +186,3 @@ Once your CS2 server is configured:
 👉 **[Add Your First Server](first-tournament.md#add-your-first-server)** - Add the server to your tournament system
 
 👉 **[First Tournament Guide](first-tournament.md)** - Create your first tournament
-
-[^1]: CS2 Server Manager repository — <https://github.com/sivert-io/cs2-server-manager>.
