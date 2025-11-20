@@ -21,14 +21,14 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ---
 
-## Install MatchZy (Modified Version)
+## Install MatchZy (Enhanced Version)
 
 Important:
-:   !!! danger "Modified MatchZy required"
+: !!! danger "Enhanced MatchZy required"
 
-        This project ships with a forked version of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
+        This project ships with an enhanced fork of [MatchZy](https://github.com/shobhit-pathak/MatchZy) that exposes additional events for full automation.
 
-        The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this modified build.
+        The upstream MatchZy release does **not** emit the data we rely on, so make sure every CS2 server installs this enhanced build.
 
 ### Download
 
@@ -112,7 +112,7 @@ Make sure your CS2 server can reach the tournament system API:
 - CS2 server will send webhook events to: `http://your-tournament-ip:3000/events/...`
 
 Tip:
-:   !!! note
+: !!! note
 
         If your tournament system and CS2 servers are on the same private network (e.g., `192.168.x.x`), no additional firewall configuration is usually needed.
 
@@ -122,7 +122,7 @@ Tip:
 
 If you're running multiple CS2 servers:
 
-1. Install the modified MatchZy plugin on **each server**
+1. Install the enhanced MatchZy plugin on **each server**
 2. All servers should use the **same RCON password** (or you can use different ones)
 3. Each server will need network access to the tournament system API
 4. Add each server individually in the tournament system (Admin Tools → Servers)
@@ -187,4 +187,3 @@ Once your CS2 server is configured:
 👉 **[First Tournament Guide](first-tournament.md)** - Create your first tournament
 
 [^1]: CS2 Server Manager repository — <https://github.com/sivert-io/cs2-server-manager>.
-

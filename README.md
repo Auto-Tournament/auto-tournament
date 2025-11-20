@@ -5,7 +5,7 @@
   
   ⚡ **Automated CS2 tournament management — one click from bracket creation to final scores**
   
-  <p>Complete tournament automation for Counter-Strike 2 using the MatchZy plugin. Zero manual server configuration.</p>
+  <p>Complete tournament automation for Counter-Strike 2 using the enhanced MatchZy plugin. Zero manual server configuration.</p>
 
 [![License: PolyForm Noncommercial](https://img.shields.io/badge/License-PolyForm%20Noncommercial-orange.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
@@ -40,11 +40,21 @@
 
 ## 🚀 Quick Start
 
-> **⚠️ Prerequisites:** Requires a [custom MatchZy plugin](#️-cs2-server-plugin) — <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Installation guide</a>
+### Prerequisites
 
-### Option 1: Docker (Recommended - No cloning needed)
+- **Docker** and **Docker Compose** installed ([Install Docker](https://docs.docker.com/engine/install/))
+- **CS2 Server(s)** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
 
-Create `docker-compose.yml` in any directory:
+### Step 1: Install the Tournament Platform
+
+**1. Create a directory and the Docker Compose file:**
+
+```bash
+mkdir matchzy-tournament
+cd matchzy-tournament
+```
+
+Create `docker-compose.yml` with this content:
 
 ```yaml
 services:
@@ -53,24 +63,20 @@ services:
     container_name: matchzy-postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=${DB_USER:-postgres}
-      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
-      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=matchzy_tournament
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    # No port binding needed - DB is only accessible within Docker network
-    # Uncomment if you need external access for backups/management:
-    # ports:
-    #   - '5432:5432'
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
       timeout: 5s
       retries: 5
 
   matchzy-tournament:
     image: sivertio/matchzy-auto-tournament:latest
-    container_name: matchzy-tournament
+    container_name: matchzy-tournament-api
     restart: unless-stopped
     depends_on:
       postgres:
@@ -78,122 +84,68 @@ services:
     ports:
       - '3069:3069'
     environment:
-      - API_TOKEN=${API_TOKEN}
-      - SERVER_TOKEN=${SERVER_TOKEN}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # This is your password to sign in to the admin panel
+      - API_TOKEN=your-admin-password-here
+      # This token is used by CS2 servers to authenticate webhooks (should be different from API_TOKEN)
+      - SERVER_TOKEN=your-server-token-here
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/matchzy_tournament
     volumes:
-      - ./data:/app/data # For demos and other data
+      - ./data:/app/data
 
 volumes:
   postgres-data:
 ```
 
-**Database Configuration:**
+**2. Edit the tokens in `docker-compose.yml`:**
 
-- **PostgreSQL is required** for all setups (Docker and local development)
-- For local development, use `yarn db` to start PostgreSQL, or run manually:
-  ```bash
-  docker run -d --name matchzy-postgres \
-    -e POSTGRES_USER=postgres \
-    -e POSTGRES_PASSWORD=postgres \
-    -e POSTGRES_DB=matchzy_tournament \
-    -p 5432:5432 \
-    postgres:16-alpine
-  ```
+Open `docker-compose.yml` and replace:
 
-**Generate password-style tokens:**
+- `your-admin-password-here` with a simple password you'll use to login (e.g., `mypassword123`)
+- `your-server-token-here` with a different token for CS2 servers (e.g., `server-token-456`)
 
-```bash
-# Generate tokens (they will be displayed)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+These don't need to be super secure—just something you can remember.
 
-# Show the generated tokens
-echo "Your API_TOKEN (admin password): $API_TOKEN"
-echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-
-# Export them
-export API_TOKEN
-export SERVER_TOKEN
-```
-
-**Note:** The `API_TOKEN` is your admin password - you can use any password you want (e.g., `mypassword123`). You can also set them manually:
-
-**Option A: Export in shell:**
-
-```bash
-export API_TOKEN=<your-password>
-export SERVER_TOKEN=<your-server-token>
-export DB_USER=postgres
-export DB_PASSWORD=postgres
-export DB_NAME=matchzy_tournament
-```
-
-**Option B: Edit compose file directly** - Replace `${API_TOKEN:-change-this-to-a-secure-token}` with your actual password.
-
-**Start:**
+**3. Start the platform:**
 
 ```bash
 docker compose up -d
 ```
 
-**Access at:** `http://localhost:3069`
+**4. Access the dashboard:**
 
-Configure webhooks and the Steam API key from the in-app **Settings** page after startup.
+Open `http://localhost:3069` in your browser.
 
-</details>
+**5. Login:**
 
-<details>
-<summary><b>Option 2: Build from Source</b></summary>
+You'll see the login form in the center of the screen. Enter the password you set for `API_TOKEN` in the `docker-compose.yml` file.
 
-If you want to build from source or contribute:
+That's it! The tournament platform is now running. 🎉
+
+### Step 2: Set Up CS2 Servers
+
+You need at least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) installed.
+
+**Recommended: CS2 Server Manager** ⭐
+
+The easiest way to set up CS2 servers. One command installs everything:
 
 ```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
-
-# Set environment variables (generate password-style tokens)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-echo "Your API_TOKEN (admin password): $API_TOKEN"
-echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
-export API_TOKEN
-export SERVER_TOKEN
-
-# Build and start from source
-docker compose -f docker/docker-compose.local.yml up -d --build
+wget https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/install.sh
+bash install.sh
 ```
 
-**Access at:** `http://localhost:3069`
-
-</details>
-
-**👉 <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">Full setup guide with detailed configuration</a>**
-
----
-
-## 🧩 Bracket Viewer Fork
-
-The frontend bundles a lightly modified copy of [`brackets-viewer.js`](https://github.com/Drarig29/brackets-viewer.js) inside `client/src/brackets-viewer`. Our fork adds:
-
-- Material UI theming hooks and dark-mode variables
-- Automatic seeding + match positioning interop with MatchZy data
-- Smooth zoom-to-match navigation for the bracket modal workflow
-
-When upgrading to a newer upstream release, follow the notes in the [development docs](https://mat.sivert.io/development/architecture/#frontend-bracket-viewer) to re-apply local patches.
+**👉 <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">See the complete Quick Start Guide</a>** for detailed CS2 server setup, configuration, and tournament creation.
 
 ---
 
 ## ⚙️ CS2 Server Plugin
 
 > [!CAUTION]
-> This project requires a **modified version of MatchZy** with enhanced event tracking.
+> This project requires an **enhanced version of MatchZy** with additional event tracking.
 >
 > The official MatchZy release does not expose all the granular match and player events required for full automation.
 
 **Download:** <a href="https://github.com/sivert-io/matchzy/releases" target="_blank">sivert-io/matchzy/releases</a>
-
-Extract to your CS2 server's `csgo/` directory and restart.
 
 **👉 <a href="https://mat.sivert.io/getting-started/quick-start/#cs2-server-setup" target="_blank">Complete installation guide</a>**
 
@@ -203,15 +155,14 @@ Requires <a href="https://docs.cssharp.dev/guides/getting-started/" target="_bla
 
 ## 🖥️ CS2 Server Manager
 
-Need a quick way to spin up several CS2 servers that are pre-wired for MatchZy Auto Tournament? Check out the companion project **[CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)**.[^1]
+Need a quick way to spin up several CS2 servers that are pre-wired for MatchZy Auto Tournament? Check out the companion project **[CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)**.
 
 - Deploys 3–5 dedicated servers (SteamCMD + CounterStrikeSharp) in minutes
 - Installs the MatchZy enhanced fork, CounterStrikeSharp, Metamod:Source, and CS2-AutoUpdater automatically
 - Ships with `manage.sh` for interactive or scripted installs, updates, and repairs
 - Preserves your overrides (`overrides/game/csgo/`) across updates, including MatchZy configs
-- Supports tmux-powered console access, log tailing, and debug mode per server
 
-> **Docs:** New walkthrough available at [`docs/guides/cs2-server-manager.md`](docs/guides/cs2-server-manager.md) with prerequisites, install steps, and troubleshooting tips.
+**👉 <a href="https://mat.sivert.io/guides/cs2-server-manager/" target="_blank">CS2 Server Manager Guide</a>**
 
 ---
 
@@ -234,5 +185,3 @@ MIT License - see [LICENSE](LICENSE) for details
 <div align="center">
   <strong>Made with ❤️ for the CS2 community</strong>
 </div>
-
-[^1]: CS2 Server Manager GitHub repository – <https://github.com/sivert-io/cs2-server-manager>.
