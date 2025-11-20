@@ -93,7 +93,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         const allMapsSet = new Set([
           ...vetoState.availableMaps,
           ...vetoState.bannedMaps,
-          ...vetoState.pickedMaps.map((p) => p.mapName),
+          ...vetoState.pickedMaps.map((p: { mapName: string }) => p.mapName),
         ]);
         // Use tournament maps order, filtering to only include maps that exist in veto state
         vetoState.allMaps = tournamentMaps.filter((mapId: string) => allMapsSet.has(mapId));
