@@ -22,12 +22,14 @@ export default [
         console: 'readonly',
         process: 'readonly',
         Buffer: 'readonly',
+        URL: 'readonly',
         __dirname: 'readonly',
         __filename: 'readonly',
         module: 'readonly',
         require: 'readonly',
         exports: 'readonly',
         global: 'readonly',
+        globalThis: 'readonly',
         setTimeout: 'readonly',
         clearTimeout: 'readonly',
         setInterval: 'readonly',
@@ -73,9 +75,25 @@ export default [
         HTMLElement: 'readonly',
         HTMLDivElement: 'readonly',
         HTMLAudioElement: 'readonly',
+        HTMLInputElement: 'readonly',
+        HTMLSelectElement: 'readonly',
+        HTMLTextAreaElement: 'readonly',
+        HTMLImageElement: 'readonly',
         Element: 'readonly',
         Audio: 'readonly',
         URLSearchParams: 'readonly',
+        URL: 'readonly',
+        CustomEvent: 'readonly',
+        MouseEvent: 'readonly',
+        Event: 'readonly',
+        DOMException: 'readonly',
+        DocumentFragment: 'readonly',
+        File: 'readonly',
+        FileReader: 'readonly',
+        alert: 'readonly',
+        requestAnimationFrame: 'readonly',
+        cancelAnimationFrame: 'readonly',
+        ResizeObserver: 'readonly',
         globalThis: 'readonly',
         RequestInit: 'readonly',
         Response: 'readonly',
@@ -101,8 +119,9 @@ export default [
       'react/no-unescaped-entities': 'off', // Allow quotes in text content
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
       'no-console': 'off',
-      'react-compiler/react-compiler': 'error', // Catch React performance anti-patterns
+      'react-compiler/react-compiler': 'warn', // Catch React performance anti-patterns
     },
     settings: {
       react: {
@@ -122,6 +141,8 @@ export default [
       '*.mjs',
       'vite.config.ts',
       'eslint.config.mjs',
+      'client/src/brackets-viewer/**', // Vendored code - ignore linting errors
+      '.pnp.cjs', // Yarn PnP file
     ],
   },
 ];

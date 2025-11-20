@@ -349,6 +349,18 @@ class TournamentService {
         matchCount?.count || 0
       } match(es) and cleared all veto states.`
     );
+
+    // Regenerate bracket after reset
+    try {
+      await this.generateBracket();
+      log.success('Bracket regenerated after tournament reset');
+    } catch (err) {
+      log.error('Failed to regenerate bracket after reset', err);
+      throw new Error(
+        `Tournament reset completed but bracket regeneration failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+      );
+    }
+
     const result = await this.getTournament();
     if (!result) throw new Error('Failed to retrieve tournament after reset');
     return result;

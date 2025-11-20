@@ -6,23 +6,13 @@ import {
   Button,
   Container,
   IconButton,
-  Tooltip,
   Snackbar,
   Alert,
-  Paper,
 } from '@mui/material';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import {
-  Book,
-  BookSharp,
-  DeveloperBoard,
-  DeveloperMode,
-  DocumentScanner,
-  LibraryAdd,
   LibraryBooks,
   Logout,
-  Notes,
-  QuestionAnswer,
 } from '@mui/icons-material';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AccountTreeIcon from '@mui/icons-material/AccountTree';
@@ -32,6 +22,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CampaignIcon from '@mui/icons-material/Campaign';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
+import MapIcon from '@mui/icons-material/Map';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
@@ -50,6 +41,7 @@ export default function Layout() {
     { label: 'Matches', path: '/matches', icon: SportsEsportsIcon },
     { label: 'Teams', path: '/teams', icon: GroupsIcon },
     { label: 'Servers', path: '/servers', icon: StorageIcon },
+    { label: 'Maps', path: '/maps', icon: MapIcon },
     { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
     { label: 'Settings', path: '/settings', icon: SettingsIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),
@@ -97,7 +89,7 @@ export default function Layout() {
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-      <AppBar position="static" elevation={0}>
+      <AppBar position="fixed" elevation={0} sx={{ top: 0, zIndex: (theme) => theme.zIndex.drawer + 1 }}>
         <Toolbar>
           <IconButton
             edge="start"
@@ -117,7 +109,7 @@ export default function Layout() {
                   onClick={() => navigate(item.path)}
                   startIcon={<Icon />}
                   sx={{
-                    color: 'white',
+                    color: 'inherit',
                     backgroundColor: isActive(item.path)
                       ? 'rgba(255, 255, 255, 0.1)'
                       : 'transparent',
@@ -153,7 +145,11 @@ export default function Layout() {
         component="main"
         sx={{
           flexGrow: 1,
-          py: 4,
+          pt: (theme) => ({
+            xs: `calc(56px + ${theme.spacing(4)})`, // Mobile toolbar height
+            sm: `calc(64px + ${theme.spacing(4)})`, // Desktop toolbar height
+          }),
+          pb: 4,
           backgroundColor: 'background.default',
         }}
       >

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
   Box,
   Typography,
@@ -14,9 +14,11 @@ import {
 } from '@mui/material';
 import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
-import { CS2_MAPS, getMapData } from '../../constants/maps';
+import { getMapData } from '../../constants/maps';
 import { getVetoOrder } from '../../constants/vetoOrders';
+import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
+import type { MapsResponse } from '../../types/api.types';
 
 interface VetoInterfaceProps {
   matchSlug: string;
@@ -36,6 +38,30 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [allMaps, setAllMaps] = useState<
+    Map<string, { id: string; displayName: string; imageUrl: string | null }>
+  >(new Map());
+
+  const loadMaps = useCallback(async () => {
+    try {
+      const response = await api.get<MapsResponse>('/api/maps');
+      const mapsMap = new Map<
+        string,
+        { id: string; displayName: string; imageUrl: string | null }
+      >();
+      response.maps?.forEach((map) => {
+        mapsMap.set(map.id, {
+          id: map.id,
+          displayName: map.displayName,
+          imageUrl: map.imageUrl,
+        });
+      });
+      setAllMaps(mapsMap);
+    } catch (err) {
+      console.error('Error loading maps:', err);
+      // Continue without map data - will use fallback display names
+    }
+  }, []);
 
   const loadVetoState = useCallback(async () => {
     setLoading(true);
@@ -62,6 +88,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }, [matchSlug, onComplete]);
 
   useEffect(() => {
+    loadMaps();
+  }, [loadMaps]);
+
+  useEffect(() => {
     loadVetoState();
 
     // Setup Socket.IO for real-time veto updates
@@ -78,6 +108,38 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       newSocket.close();
     };
   }, [matchSlug, onComplete, loadVetoState]);
+
+  // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
+  const mapsToShow = useMemo(() => {
+    if (!vetoState) return [];
+
+    // Use allMaps if available (preserves original order), otherwise reconstruct
+    const originalMapOrder = vetoState.allMaps
+      ? [...vetoState.allMaps] // Create a copy to ensure immutability
+      : [
+          ...vetoState.availableMaps,
+          ...vetoState.bannedMaps,
+          ...vetoState.pickedMaps.map((p) => p.mapName),
+        ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
+
+    return originalMapOrder.map((mapId) => {
+      const mapData = allMaps.get(mapId);
+      const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
+      return {
+        name: mapId,
+        displayName:
+          mapData?.displayName ||
+          fallbackData?.displayName ||
+          mapId.replace('de_', '').replace('cs_', ''),
+        image:
+          mapData?.imageUrl ||
+          fallbackData?.image ||
+          `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.png`,
+      };
+    });
+    // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vetoState?.allMaps?.join(','), allMaps.size]);
 
   const handleMapAction = async (mapName: string) => {
     if (!vetoState || vetoState.status === 'completed' || !isMyTurn) return;
@@ -184,13 +246,18 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         </Typography>
         <Grid container spacing={2}>
           {vetoState.pickedMaps.map((pick) => {
-            const mapData = getMapData(pick.mapName);
+            const mapData = allMaps.get(pick.mapName);
+            const fallbackData = getMapData(pick.mapName);
+            const imageUrl =
+              mapData?.imageUrl ||
+              fallbackData?.image ||
+              `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${pick.mapName}.png`;
             return (
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
                   mapName={pick.mapName}
-                  displayName={mapData?.displayName || pick.mapName}
-                  imageUrl={mapData?.image || ''}
+                  displayName={mapData?.displayName || fallbackData?.displayName || pick.mapName}
+                  imageUrl={imageUrl}
                   state="picked"
                   mapNumber={pick.mapNumber}
                   side={pick.sideTeam1}
@@ -223,10 +290,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     (currentStepConfig?.team === 'team1'
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
-
-  // Determine action color and text
-  // Show ALL maps, not just available ones (banned maps will be faded)
-  const mapsToShow = CS2_MAPS;
 
   return (
     <Box>
@@ -310,7 +373,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {currentAction === 'side_pick' &&
         (() => {
           const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
-          const mapData = getMapData(lastPickedMap?.mapName);
+          const mapData = allMaps.get(lastPickedMap?.mapName || '');
+          const fallbackData = getMapData(lastPickedMap?.mapName || '');
+
+          // Construct image URL with fallback chain
+          const mapImageUrl =
+            mapData?.imageUrl ||
+            fallbackData?.image ||
+            (lastPickedMap?.mapName
+              ? `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${lastPickedMap.mapName}.png`
+              : '');
 
           return (
             <Card sx={{ mb: 3 }}>
@@ -322,7 +394,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     overflow: 'hidden',
                     borderRadius: 2,
                     mb: 3,
-                    backgroundImage: `url(${mapData?.image})`,
+                    backgroundImage: `url(${mapImageUrl})`,
                     backgroundSize: 'cover',
                     backgroundPosition: 'center',
                     height: 250,
@@ -348,7 +420,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       color="white"
                       sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
                     >
-                      {mapData?.displayName || lastPickedMap?.mapName}
+                      {mapData?.displayName || fallbackData?.displayName || lastPickedMap?.mapName}
                     </Typography>
                     <Typography
                       variant="h6"
@@ -463,7 +535,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       }
                       sx={{ mx: 1 }}
                     />
-                    {getMapData(action.mapName)?.displayName || action.mapName}
+                    {allMaps.get(action.mapName || '')?.displayName ||
+                      getMapData(action.mapName || '')?.displayName ||
+                      action.mapName}
                     {action.side && ` (Starting ${action.side})`}
                   </Typography>
                 </Box>

@@ -77,19 +77,20 @@ Power of 2 (2, 4, 8, 16) recommended for elimination brackets.
 
 ### Map Pool (for BO1/BO3/BO5)
 
-Select maps for veto (current CS2 competitive pool):
+Select a map pool from the dropdown:
 
-```
-[x] Ancient
-[x] Anubis
-[x] Dust2
-[x] Inferno
-[x] Mirage
-[x] Nuke
-[x] Vertigo
-```
+**Options:**
+- **Active Duty** - Default 7 competitive maps (recommended)
+  - Ancient, Anubis, Dust II, Inferno, Mirage, Nuke, Vertigo
+- **Custom Pools** - Any pools you've created (see [Managing Maps](../guides/managing-maps.md))
+- **Custom** - Manually select maps for this tournament
 
-Need exactly 7 maps for proper veto flow.
+**Requirements:**
+- ⚠️ Need exactly 7 maps for proper veto flow
+- Active Duty pool automatically has 7 maps
+- Custom pools must have exactly 7 maps (warning shown if not)
+
+> **Tip:** Create reusable map pools in the **Maps** page for quick selection in future tournaments.
 
 ## Step 2: Generate Bracket
 

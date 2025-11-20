@@ -84,7 +84,7 @@ Contributions are welcome! Whether you're fixing bugs, adding features, improvin
 
 MIT License - see [LICENSE](LICENSE) for details
 
-**Credits:** <a href="https://github.com/ghostcap-gaming/cs2-map-images" target="_blank">ghostcap-gaming/cs2-map-images</a> • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a> • <a href="https://github.com/Drarig29/brackets-viewer.js" target="_blank">brackets-viewer.js</a> (customized copy vendored in `client/src/brackets-viewer`)
+**Credits:** <a href="https://github.com/sivert-io/cs2-server-manager" target="_blank">sivert-io/cs2-server-manager</a> (map images) • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a> • <a href="https://github.com/Drarig29/brackets-viewer.js" target="_blank">brackets-viewer.js</a> (customized copy vendored in `client/src/brackets-viewer`)
 
 ---
 

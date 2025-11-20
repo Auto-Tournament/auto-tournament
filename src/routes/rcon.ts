@@ -57,6 +57,42 @@ router.get('/test', async (_req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/rcon/test-connection
+ * Test RCON connection to a server without requiring it to be saved
+ */
+router.post('/test-connection', async (req: Request, res: Response) => {
+  try {
+    const { host, port, password, name } = req.body;
+
+    if (!host || !port || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'host, port, and password are required',
+      });
+    }
+
+    const portNum = parseInt(String(port));
+    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+      return res.status(400).json({
+        success: false,
+        error: 'port must be a number between 1 and 65535',
+      });
+    }
+
+    const result = await rconService.testConnectionByParams(host, portNum, password, name);
+    const statusCode = result.success ? 200 : 400;
+
+    return res.status(statusCode).json(result);
+  } catch (error) {
+    console.error('Error testing connection:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to test connection',
+    });
+  }
+});
+
+/**
  * Predefined MatchZy commands - Safe and controlled
  */
 

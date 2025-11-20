@@ -85,6 +85,63 @@ export class RconService {
   }
 
   /**
+   * Test connection to a server by host, port, and password (without requiring server to be saved)
+   */
+  async testConnectionByParams(
+    host: string,
+    port: number,
+    password: string,
+    serverName?: string
+  ): Promise<RconCommandResponse> {
+    const client = new Rcon({
+      host,
+      port,
+      password,
+      timeout: 5000,
+    });
+
+    try {
+      const executeWithTimeout = async () => {
+        await client.connect();
+        const response = await client.send('status');
+        return response;
+      };
+
+      await Promise.race([
+        executeWithTimeout(),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('RCON connection timeout (10s)')), 10000)
+        ),
+      ]);
+
+      return {
+        success: true,
+        serverId: `${host}:${port}`,
+        serverName: serverName || `${host}:${port}`,
+        command: 'status',
+        response: 'Connection successful',
+        timestamp: Date.now(),
+      };
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      return {
+        success: false,
+        serverId: `${host}:${port}`,
+        serverName: serverName || `${host}:${port}`,
+        command: 'status',
+        error: errorMessage,
+        timestamp: Date.now(),
+      };
+    } finally {
+      try {
+        client.disconnect();
+      } catch {
+        // Ignore disconnect errors
+      }
+    }
+  }
+
+  /**
    * Execute a command on a specific server with proper connection handling
    */
   private async executeCommand(

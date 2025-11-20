@@ -23,6 +23,7 @@ One click from bracket creation to final scores
 
 - :material-trophy: **Full Automation** — Create tournaments, generate brackets, start matches. System handles server allocation and progression.
 - :material-map: **Map Veto System** — FaceIT-style interactive pick/ban for BO1/BO3/BO5 with real-time turn-based security.
+- :material-folder-multiple: **Custom Maps & Pools** — Manage maps, create reusable map pools, and select pools during tournament creation.
 - :material-lightning-bolt: **Real-Time Updates** — Live scores, player tracking, bracket updates. WebSocket-powered, zero refresh needed.
 - :material-account-group: **Public Team Pages** — No-auth pages for teams to view matches and veto. Share a link, teams handle the rest.
 - :material-console: **Admin Controls** — Pause, restore, add players, broadcast messages. Full RCON integration for match control.

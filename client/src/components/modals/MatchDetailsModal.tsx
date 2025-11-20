@@ -98,6 +98,29 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     return null;
   };
 
+  const derivedSeriesWins = useMemo(() => {
+    if (!match) {
+      return { team1: 0, team2: 0 };
+    }
+    if (match.mapResults && match.mapResults.length > 0) {
+      return match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) {
+            acc.team1 += 1;
+          } else if (result.team2Score > result.team1Score) {
+            acc.team2 += 1;
+          }
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+    }
+    return {
+      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
+      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
+    };
+  }, [match, liveStats]);
+
   if (!match) return null;
 
   const mapRoundsTeam1 = liveStats?.team1Score ?? match.team1Score ?? 0;
@@ -130,25 +153,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     match.config?.num_maps ??
     (mapList.length > 0 ? mapList.length : match.mapResults?.length) ??
     undefined;
-  const derivedSeriesWins = useMemo(() => {
-    if (match.mapResults && match.mapResults.length > 0) {
-      return match.mapResults.reduce(
-        (acc, result) => {
-          if (result.team1Score > result.team2Score) {
-            acc.team1 += 1;
-          } else if (result.team2Score > result.team1Score) {
-            acc.team2 += 1;
-          }
-          return acc;
-        },
-        { team1: 0, team2: 0 }
-      );
-    }
-    return {
-      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
-      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
-    };
-  }, [match.mapResults, liveStats, match.team1Score, match.team2Score]);
 
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
@@ -625,7 +629,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       position: 'relative',
                       overflow: 'hidden',
                       backgroundImage: activeMapKey
-                        ? `url(${getMapData(activeMapKey)?.image})`
+                        ? `url(${
+                            getMapData(activeMapKey)?.image ||
+                            `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${activeMapKey}.png`
+                          })`
                         : 'none',
                       backgroundSize: 'cover',
                       backgroundPosition: 'center',

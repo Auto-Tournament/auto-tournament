@@ -48,10 +48,25 @@ declare module 'brackets-viewer' {
     group_id: number;
   }
 
+  export interface MatchGame {
+    id: number;
+    match_id: number;
+    number: number;
+    status: number;
+    opponent1?: {
+      result?: string;
+      score?: number;
+    } | null;
+    opponent2?: {
+      result?: string;
+      score?: number;
+    } | null;
+  }
+
   export interface BracketData {
     stages: Stage[];
     matches: Match[];
-    matchGames: any[];
+    matchGames: MatchGame[];
     participants: Participant[];
     groups: Group[];
     rounds: Round[];

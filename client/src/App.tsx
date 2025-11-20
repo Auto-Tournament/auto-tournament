@@ -13,6 +13,7 @@ import AdminTools from './pages/AdminTools';
 import Settings from './pages/Settings';
 import Development from './pages/Development';
 import TeamMatch from './pages/TeamMatch';
+import Maps from './pages/Maps';
 import Layout from './components/layout/Layout';
 import { theme } from './theme';
 
@@ -69,10 +70,10 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
-      
+
       {/* Public team match view - no auth required */}
       <Route path="/team/:teamId" element={<TeamMatch />} />
-      
+
       <Route
         path="/"
         element={
@@ -89,6 +90,7 @@ function AppRoutes() {
         <Route path="matches" element={<Matches />} />
         <Route path="admin" element={<AdminTools />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="maps" element={<Maps />} />
         {(import.meta as unknown as { env: { DEV: boolean } }).env.DEV && (
           <Route path="dev" element={<Development />} />
         )}

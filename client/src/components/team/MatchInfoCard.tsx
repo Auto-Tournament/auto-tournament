@@ -1,10 +1,9 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-import { getMapData, getMapDisplayName } from '../../constants/maps';
+import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
-import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, MatchMapResult } from '../../types';
+import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchRosterAccordion } from './MatchRosterAccordion';
@@ -49,14 +48,7 @@ export function MatchInfoCard({
   const connectionStatus = match.connectionStatus || null;
   const mapRoundsTeam1 = liveStats?.team1Score ?? 0;
   const mapRoundsTeam2 = liveStats?.team2Score ?? 0;
-  const seriesWinsTeam1 = liveStats?.team1SeriesScore ?? 0;
-  const seriesWinsTeam2 = liveStats?.team2SeriesScore ?? 0;
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
-  const totalMaps =
-    liveStats?.totalMaps ??
-    match.config?.num_maps ??
-    (match.maps.length > 0 ? match.maps.length : Math.max(match.mapResults.length, 1)) ??
-    1;
   const currentMapSlug =
     liveStats?.mapName ||
     match.currentMap ||
@@ -64,12 +56,17 @@ export function MatchInfoCard({
       ? match.maps[mapNumber]
       : match.maps[0]) ||
     null;
-  const currentMapData = currentMapSlug ? getMapData(currentMapSlug) : null;
-  const currentMapLabel = currentMapSlug
-    ? getMapDisplayName(currentMapSlug) || currentMapSlug
-    : null;
-  const mapDisplayNumber =
-    typeof mapNumber === 'number' ? Math.min(mapNumber + 1, totalMaps) : null;
+  const currentMapData = useMemo(() => {
+    if (!currentMapSlug) return null;
+    const mapData = getMapData(currentMapSlug);
+    if (mapData) return mapData;
+    // Fallback: construct map data from slug
+    return {
+      name: currentMapSlug,
+      displayName: currentMapSlug.replace('de_', '').replace('cs_', ''),
+      image: `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${currentMapSlug}.png`,
+    };
+  }, [currentMapSlug]);
   const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =
@@ -241,7 +238,10 @@ export function MatchInfoCard({
             />
 
             {match.status !== 'live' && (
-              <Alert severity={playersReady ? 'success' : 'info'} icon={<PeopleIcon fontSize="small" />}>
+              <Alert
+                severity={playersReady ? 'success' : 'info'}
+                icon={<PeopleIcon fontSize="small" />}
+              >
                 {playersReady
                   ? 'All required players are connected. Match can start.'
                   : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}

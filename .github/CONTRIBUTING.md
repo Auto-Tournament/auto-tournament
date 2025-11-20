@@ -23,17 +23,15 @@ For detailed contribution guidelines, please see:
    yarn install
    ```
 
-3. **Start PostgreSQL**
+3. **Setup Environment**
 
    ```bash
+   # Start PostgreSQL
    yarn db
-   ```
 
-4. **Set Environment Variables**
-
-   ```bash
-   export API_TOKEN=your-admin-password
-   export SERVER_TOKEN=your-server-token
+   # Set environment variables
+   export API_TOKEN=admin123
+   export SERVER_TOKEN=server123
    export DB_HOST=localhost
    export DB_PORT=5432
    export DB_USER=postgres
@@ -41,15 +39,10 @@ For detailed contribution guidelines, please see:
    export DB_NAME=matchzy_tournament
    ```
 
-5. **Start Development**
-
+4. **Start Development**
    ```bash
    yarn dev
    ```
-
-**Access:**
-- Frontend: `http://localhost:5173`
-- API: `http://localhost:3000`
 
 ## 📝 Guidelines
 

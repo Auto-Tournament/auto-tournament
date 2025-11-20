@@ -316,8 +316,44 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 
 ---
 
+## Maps & Map Pools
+
+### Custom Map Management
+
+**Features:**
+- ✅ **Automatic map import** - Latest maps imported from GitHub on first start
+- ✅ Add custom maps with Map ID and display name
+- ✅ Upload map images or fetch from GitHub automatically
+- ✅ Edit map details (display name, image)
+- ✅ Delete unused maps
+
+**Automatic Import:**
+- Fetches maps from [CS2 Server Manager repository](https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails)
+- Imports all `de_`, `cs_`, and `ar_` maps automatically
+- Creates map pools by type (Defusal, Hostage, Arms Race)
+- Runs on first start or when maps table is empty
+
+### Map Pool System
+
+**Create Reusable Pools:**
+- ✅ Build custom map pools for different tournament types
+- ✅ Active Duty pool (7 competitive maps) always available
+- ✅ **Automatic pools** - Defusal only, Hostage only, and Arms Race only pools created automatically
+- ✅ Select pools during tournament creation
+- ✅ Save custom selections as new pools
+
+**Tournament Integration:**
+- Select from Active Duty, custom pools, or create custom selection
+- System validates 7 maps required for veto formats (BO1/BO3/BO5)
+- Map pools used in Round Robin/Swiss for rotation
+
+> 📖 **[Managing Maps](../guides/managing-maps.md)** — Complete guide to maps and map pools
+
+---
+
 ## Next Steps
 
+- 🗺️ **[Managing Maps](../guides/managing-maps.md)** — Maps and map pools guide
 - 🎮 **[Map Veto System](map-veto.md)** — Interactive pick/ban flow
 - 📖 **[Running Matches](../guides/running-matches.md)** — Match management guide
 - 🎯 **[First Tournament](../getting-started/first-tournament.md)** — Step-by-step tutorial

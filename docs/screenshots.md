@@ -98,6 +98,34 @@ Powerful RCON commands and match controls for tournament administrators.
 
 ---
 
+## Maps & Map Pools Management
+
+### Maps Page
+
+Manage all your maps with visual cards, add custom maps, and upload map images.
+
+![Maps Page](assets/preview/13-maps-page.png)
+
+### Map Pools Tab
+
+Create reusable map pools for your tournaments. View all pools with map counts and previews.
+
+![Map Pools Tab](assets/preview/14-map-pools-tab.png)
+
+### Creating Map Pools
+
+Select maps from your collection to create custom map pools for different tournament types.
+
+![Map Pool Creation](assets/preview/15-map-pool-creation.png)
+
+### Tournament Map Pool Selection
+
+Choose from Active Duty, custom pools, or create a custom selection during tournament setup.
+
+![Tournament Map Pool Selection](assets/preview/16-tournament-map-pool-selection.png)
+
+---
+
 ## Key Features Shown
 
 ✅ **Onboarding System** - Step-by-step getting started guide  
@@ -108,6 +136,7 @@ Powerful RCON commands and match controls for tournament administrators.
 ✅ **Match Management** - Live match tracking and status updates  
 ✅ **Match Details** - Player roster with live connection status (0/10 players)  
 ✅ **Map Veto** - Interactive pick/ban system with map previews  
+✅ **Maps & Map Pools** - Custom map management with reusable pools  
 ✅ **Public Team Pages** - No-auth pages for team access  
 ✅ **Admin Controls** - Comprehensive RCON command interface with match control buttons  
 

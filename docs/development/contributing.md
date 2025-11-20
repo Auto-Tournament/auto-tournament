@@ -25,8 +25,8 @@ yarn install
 yarn db
 
 # Set environment variables
-export API_TOKEN=your-admin-password
-export SERVER_TOKEN=your-server-token
+export API_TOKEN=admin123  # Or any password you want
+export SERVER_TOKEN=server123
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_USER=postgres
@@ -39,7 +39,7 @@ yarn dev
 
 ??? info "PostgreSQL for Local Development"
 
-    **PostgreSQL is required** for local development.
+    **PostgreSQL is required** for all setups (Docker and local development).
 
     **Quick Setup with Yarn (recommended):**
     ```bash
@@ -53,6 +53,29 @@ yarn dev
     - Start the container if it already exists but is stopped
     - Create and start a new container if it doesn't exist
     - Do nothing if the container is already running
+
+    **Manual Setup with Docker:**
+    ```bash
+    docker run -d --name matchzy-postgres \
+      -e POSTGRES_USER=postgres \
+      -e POSTGRES_PASSWORD=postgres \
+      -e POSTGRES_DB=matchzy_tournament \
+      -p 5432:5432 \
+      postgres:16-alpine
+    ```
+
+    Then set environment variables:
+    ```bash
+    export DB_HOST=localhost
+    export DB_PORT=5432
+    export DB_USER=postgres
+    export DB_PASSWORD=postgres
+    export DB_NAME=matchzy_tournament
+
+    # Also set your API_TOKEN (admin password)
+    export API_TOKEN=admin123  # Or any password you want
+    export SERVER_TOKEN=server123
+    ```
 
 **Access:**
 
@@ -167,52 +190,6 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
 2. Add emitter in `src/services/socketService.ts`
 3. Add listener in frontend `src/hooks/useWebSocket.ts`
 
-??? example "Testing"
-
-    ```bash
-    # Run backend build (TypeScript compilation)
-    yarn build
-
-    # Run backend in development
-    yarn dev
-
-    # Build frontend
-    yarn build:client
-
-    # Build both
-    yarn build:all
-    ```
-
-    **Docker Testing:**
-
-    Test the full Docker build and deployment:
-
-    ```bash
-    # Run comprehensive Docker test script
-    bash scripts/test-docker.sh
-    ```
-
-    This script will:
-    - Build the Docker image from source
-    - Start the container with docker-compose.local.yml (includes PostgreSQL service)
-    - Verify all services are running (PostgreSQL, Caddy, Node backend)
-    - Test health endpoints, frontend, and API
-    - Clean up automatically
-
-    **Note:** PostgreSQL is required for all setups. The Docker Compose file includes a PostgreSQL service.
-
-    **Manual Testing:**
-
-    1. Start the development server
-    2. Create a test tournament
-    3. Test the full flow:
-       - Team creation
-       - Tournament creation
-       - Bracket generation
-       - Map veto
-       - Match loading
-       - Live scoring
-
 ## Pull Request Process
 
 1. **Fork** the repository
@@ -229,6 +206,34 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
 - Include screenshots for UI changes
 - Ensure the build passes
 - Keep PRs focused (one feature per PR)
+
+### Testing Pull Requests
+
+If you want to test a pull request before it's merged:
+
+**Quick Start:**
+
+```bash
+# Clone and checkout PR branch
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+git fetch origin pull/11/head:pr-11-customizable-map-pool
+git checkout pr-11-customizable-map-pool
+
+# Local Development
+yarn install
+yarn db
+export API_TOKEN=admin123
+yarn dev
+# Access at http://localhost:5173
+
+# OR Docker Compose
+export API_TOKEN=admin123
+docker compose -f docker/docker-compose.local.yml up -d --build
+# Access at http://localhost:3069
+```
+
+📖 **[Complete Testing Guide](testing-pr.md)** — Detailed instructions for testing PRs, including setup options, testing checklists, and bug reporting.
 
 ## Commit Messages
 

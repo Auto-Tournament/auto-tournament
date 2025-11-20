@@ -43,6 +43,15 @@ export const theme = createTheme({
     background: {
       default: '#1C1B1F', // M3 Dark background
       paper: '#2B2930',
+      // Surface levels for Material Design 3 elevation system (0-7)
+      surface0: '#2B2930', // Level 0 (same as paper)
+      surface1: '#332D3C', // Level 1
+      surface2: '#3A3542', // Level 2
+      surface3: '#2B2930', // Level 3 (default container)
+      surface4: '#25232A', // Level 4
+      surface5: '#1F1D24', // Level 5
+      surface6: '#332D3C', // Level 6
+      surface7: '#3A3542', // Level 7
     },
     text: {
       primary: '#E6E1E5',

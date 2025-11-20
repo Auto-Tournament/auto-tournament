@@ -71,6 +71,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         availableMaps: [...tournamentMaps],
         bannedMaps: [],
         pickedMaps: [],
+        allMaps: [...tournamentMaps], // Store original order for display
         actions: [],
         currentTurn: vetoOrder[0].team,
         currentAction: vetoOrder[0].action,
@@ -85,6 +86,18 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       vetoState.team2Id = match.team2_id;
       vetoState.team1Name = team1?.name || 'Team 1';
       vetoState.team2Name = team2?.name || 'Team 2';
+
+      // Ensure allMaps exists for backward compatibility (reconstruct from current state)
+      if (!vetoState.allMaps) {
+        // Reconstruct original order by combining all maps
+        const allMapsSet = new Set([
+          ...vetoState.availableMaps,
+          ...vetoState.bannedMaps,
+          ...vetoState.pickedMaps.map((p) => p.mapName),
+        ]);
+        // Use tournament maps order, filtering to only include maps that exist in veto state
+        vetoState.allMaps = tournamentMaps.filter((mapId: string) => allMapsSet.has(mapId));
+      }
     }
 
     return res.json({
@@ -161,6 +174,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         availableMaps: [...tournamentMaps],
         bannedMaps: [],
         pickedMaps: [],
+        allMaps: [...tournamentMaps], // Store original order for display
         actions: [],
         currentTurn: vetoOrder[0].team,
         currentAction: vetoOrder[0].action,
@@ -175,6 +189,18 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       vetoState.team2Id = match.team2_id;
       vetoState.team1Name = team1?.name || 'Team 1';
       vetoState.team2Name = team2?.name || 'Team 2';
+      
+      // Ensure allMaps exists for backward compatibility (reconstruct from current state)
+      if (!vetoState.allMaps) {
+        // Reconstruct original order by combining all maps
+        const allMapsSet = new Set([
+          ...vetoState.availableMaps,
+          ...vetoState.bannedMaps,
+          ...vetoState.pickedMaps.map((p: { mapName: string }) => p.mapName),
+        ]);
+        // Use tournament maps order, filtering to only include maps that exist in veto state
+        vetoState.allMaps = tournamentMaps.filter((mapId: string) => allMapsSet.has(mapId));
+      }
     }
 
     if (vetoState.status === 'completed') {

@@ -226,7 +226,7 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
     try {
       parsedReport =
         typeof report === 'string' ? (JSON.parse(report) as MatchReport) : (report as MatchReport);
-    } catch (error) {
+    } catch {
       return res.status(400).json({
         success: false,
         error: 'Report must be valid JSON',

@@ -237,14 +237,14 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     <>
       <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
         <DialogTitle>{isEditing ? 'Edit Team' : 'Create New Team'}</DialogTitle>
-        <DialogContent>
+        <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
           {error && (
             <Alert severity="error" sx={{ mb: 2 }}>
               {error}
             </Alert>
           )}
 
-          <Box display="flex" flexDirection="column" gap={2} mt={1}>
+          <Box display="flex" flexDirection="column" gap={2}>
             <TextField
               label="Team Name"
               value={name}
@@ -295,13 +295,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
-                  helperText="Enter Steam ID64, vanity URL, or profile link (press Enter to search)"
                 />
                 <Button
                   variant="outlined"
                   onClick={handleResolveSteam}
                   disabled={resolving || !newPlayerSteamId.trim()}
-                  sx={{ minWidth: '100px' }}
+                  size="small"
                 >
                   {resolving ? 'Resolving...' : <SearchIcon />}
                 </Button>
@@ -320,6 +319,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   variant="contained"
                   onClick={handleAddPlayer}
                   disabled={resolving}
+                  size="small"
                   sx={{ minWidth: '56px' }}
                 >
                   <AddIcon />
@@ -362,10 +362,17 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               Delete Team
             </Button>
           )}
-          <Button onClick={onClose} disabled={saving}>
-            Cancel
-          </Button>
-          <Button onClick={handleSave} variant="contained" disabled={saving}>
+          {isEditing && (
+            <Button onClick={onClose} disabled={saving}>
+              Cancel
+            </Button>
+          )}
+          <Button
+            onClick={handleSave}
+            variant="contained"
+            disabled={saving}
+            sx={{ ml: isEditing ? 0 : 'auto' }}
+          >
             {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Team'}
           </Button>
         </DialogActions>

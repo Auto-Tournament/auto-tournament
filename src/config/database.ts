@@ -5,7 +5,7 @@
 
 import { Pool } from 'pg';
 import { log } from '../utils/logger';
-import { getSchemaSQL } from './database.schema';
+import { getSchemaSQL, getDefaultMapsSQL, getDefaultMapPoolsSQL } from './database.schema';
 
 /**
  * Helper to convert ? placeholders to PostgreSQL placeholders ($1, $2, etc.)
@@ -30,11 +30,9 @@ class DatabaseManager {
     // PostgreSQL - will be initialized asynchronously
     const connString =
       process.env.DATABASE_URL ||
-      `postgresql://${process.env.DB_USER || 'postgres'}:${
-        process.env.DB_PASSWORD || 'postgres'
-      }@${process.env.DB_HOST || 'localhost'}:${process.env.DB_PORT || '5432'}/${
-        process.env.DB_NAME || 'matchzy_tournament'
-      }`;
+      `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
+        process.env.DB_HOST || 'localhost'
+      }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
 
     this.postgresPool = new Pool({
       connectionString: connString,
@@ -43,9 +41,7 @@ class DatabaseManager {
       connectionTimeoutMillis: 2000,
     });
 
-    log.database(
-      `[PostgreSQL] Database pool created: ${connString.replace(/:[^:@]+@/, ':****@')}`
-    );
+    log.database(`[PostgreSQL] Database pool created: ${connString.replace(/:[^:@]+@/, ':****@')}`);
   }
 
   /**
@@ -86,12 +82,12 @@ class DatabaseManager {
       // Remove comments first, then split
       const cleanedSchema = schema
         .split('\n')
-        .map(line => {
+        .map((line) => {
           const commentIndex = line.indexOf('--');
           return commentIndex >= 0 ? line.substring(0, commentIndex) : line;
         })
         .join('\n');
-      
+
       const statements = cleanedSchema
         .split(';')
         .map((s) => s.trim().replace(/\n\s*\n/g, '\n')) // Normalize whitespace
@@ -103,14 +99,22 @@ class DatabaseManager {
         try {
           if (statement.trim().length > 0) {
             await client.query(statement);
-            log.database(`[PostgreSQL] Statement ${i + 1}/${statements.length} executed successfully`);
+            log.database(
+              `[PostgreSQL] Statement ${i + 1}/${statements.length} executed successfully`
+            );
           }
         } catch (err) {
           const error = err as Error & { code?: string };
           if (error.code === '42P07' || error.message.includes('already exists')) {
-            log.database(`[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`);
+            log.database(
+              `[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`
+            );
           } else {
-            log.error(`[PostgreSQL] Schema error on statement ${i + 1}/${statements.length}: ${error.message}`);
+            log.error(
+              `[PostgreSQL] Schema error on statement ${i + 1}/${statements.length}: ${
+                error.message
+              }`
+            );
             log.error(`[PostgreSQL] Failed statement: ${statement.substring(0, 200)}`);
             // Don't throw - continue with other statements
           }
@@ -123,6 +127,7 @@ class DatabaseManager {
         { table: 'matches', column: 'veto_state', type: 'TEXT' },
         { table: 'matches', column: 'current_map', type: 'TEXT' },
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
+        { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
       ];
 
       for (const migration of migrations) {
@@ -141,12 +146,137 @@ class DatabaseManager {
               `ALTER TABLE ${migration.table} ADD COLUMN ${migration.column} ${migration.type}`
             );
           }
-        } catch (err) {
+        } catch {
           // Ignore errors
         }
       }
 
+      // Insert default maps (only if maps table is empty - first initialization or after wipe)
+      // This prevents fetching from GitHub on every server restart/reload
+      // But ensures maps are regenerated when database is wiped
+      try {
+        // The maps table should exist at this point (created by schema SQL above)
+        // But handle the case where it might not exist yet
+        let mapsCount = 0;
+        try {
+          const mapsCheck = await client.query('SELECT COUNT(*) as count FROM maps');
+          mapsCount = parseInt(mapsCheck.rows[0]?.count || '0', 10);
+        } catch (err) {
+          const error = err as Error;
+          // If table doesn't exist, that's unexpected but we'll skip map insertion
+          if (error.message.includes('does not exist')) {
+            log.warn('[PostgreSQL] Maps table does not exist, skipping map insertion');
+            return;
+          }
+          throw err; // Re-throw other errors
+        }
+
+        if (mapsCount === 0) {
+          // Maps table is empty - this is first initialization or after database wipe
+          // Fetch fresh maps from GitHub repository
+          log.database('[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...');
+          const defaultMapsSQL = await getDefaultMapsSQL();
+          await client.query(defaultMapsSQL);
+          log.success('[PostgreSQL] Default maps inserted (fetched from GitHub)');
+        } else {
+          // Maps already exist - skip fetching from wiki (saves time and API calls)
+          log.database(
+            `[PostgreSQL] Maps table already has ${mapsCount} maps, skipping map insertion`
+          );
+        }
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Failed to insert default maps: ${error.message}`);
+        // Don't throw - continue
+      }
+
+      // Insert default map pools
+      try {
+        const defaultMapPoolsSQL = await getDefaultMapPoolsSQL(client);
+        await client.query(defaultMapPoolsSQL);
+        log.database('[PostgreSQL] Default map pools inserted');
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Failed to insert default map pools: ${error.message}`);
+        // Don't throw - continue
+      }
+
       log.success('[PostgreSQL] Database schema initialized');
+    } finally {
+      client.release();
+    }
+  }
+
+  /**
+   * Reset database by dropping all tables and reinitializing schema
+   * This will recreate all tables and insert default data (maps, map pools)
+   */
+  async resetDatabase(): Promise<void> {
+    if (!this.postgresPool) {
+      throw new Error('Database not initialized');
+    }
+
+    const client = await this.postgresPool.connect();
+    try {
+      log.warn('[PostgreSQL] Resetting database - dropping all tables');
+
+      // Disable foreign key checks temporarily by dropping tables in correct order
+      // Drop tables in reverse order of dependencies to avoid foreign key constraint errors
+      const tablesToDrop = [
+        'match_map_results',
+        'match_events',
+        'matches',
+        'tournament',
+        'teams',
+        'map_pools',
+        'maps',
+        'app_settings',
+        'servers',
+      ];
+
+      // Drop all tables (CASCADE will handle foreign keys)
+      for (const table of tablesToDrop) {
+        try {
+          await client.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
+          log.database(`[PostgreSQL] Dropped table: ${table}`);
+        } catch (err) {
+          const error = err as Error;
+          // Ignore "table does not exist" errors
+          if (!error.message.includes('does not exist')) {
+            log.warn(`[PostgreSQL] Error dropping table ${table}: ${error.message}`);
+          }
+        }
+      }
+
+      // Reset sequences (in case any were created)
+      try {
+        await client.query(`
+          DO $$ 
+          DECLARE 
+            r RECORD;
+          BEGIN
+            FOR r IN (SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public') 
+            LOOP
+              EXECUTE 'DROP SEQUENCE IF EXISTS ' || quote_ident(r.sequence_name) || ' CASCADE';
+            END LOOP;
+          END $$;
+        `);
+        log.database('[PostgreSQL] Reset all sequences');
+      } catch (err) {
+        const error = err as Error;
+        log.warn(`[PostgreSQL] Error resetting sequences: ${error.message}`);
+      }
+
+      // Reset initialized flag so schema can be recreated
+      this.initialized = false;
+
+      // Reinitialize schema (this will create tables and insert default data)
+      // Maps will be regenerated from GitHub since maps table is now empty
+      log.database('[PostgreSQL] Reinitializing schema and regenerating maps from GitHub...');
+      await this.initializeSchemaAsync();
+      this.initialized = true;
+
+      log.success('[PostgreSQL] Database reset completed successfully');
     } finally {
       client.release();
     }

@@ -35,6 +35,8 @@ import teamStatsRoutes from './routes/teamStats';
 import logsRoutes from './routes/logs';
 import vetoRoutes from './routes/veto';
 import settingsRoutes from './routes/settings';
+import mapsRoutes from './routes/maps';
+import mapPoolsRoutes from './routes/mapPools';
 
 const app = express();
 const httpServer = createServer(app);
@@ -42,8 +44,9 @@ const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -78,13 +81,16 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 
 // Swagger Documentation
+// swagger-ui-express types don't perfectly match Express middleware types
 app.use(
   '/api-docs',
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...(swaggerUi.serve as any),
   swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'MatchZy API Docs',
-  }) as any
+  }) as // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  any
 );
 
 // Swagger JSON
@@ -258,10 +264,15 @@ app.use('/api/team', teamMatchRoutes); // Public team match data
 app.use('/api/team', teamStatsRoutes); // Public team stats/history
 app.use('/api/veto', vetoRoutes); // Map veto system
 app.use('/api/settings', settingsRoutes);
+app.use('/api/maps', mapsRoutes);
+app.use('/api/map-pools', mapPoolsRoutes);
 
 // Serve frontend at /app
 const publicPath = path.join(__dirname, '../public');
 app.use('/app', express.static(publicPath));
+
+// Serve map images statically
+app.use('/map-images', express.static(path.join(publicPath, 'map-images')));
 app.get('/app/*', (_req: Request, res: Response) => {
   res.sendFile(path.join(publicPath, 'index.html'));
 });
@@ -339,7 +350,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
   let baseUrl: string;
   try {
     baseUrl = await settingsService.requireWebhookUrl();
-  } catch (error) {
+  } catch {
     log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
     return;
   }

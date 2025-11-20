@@ -159,15 +159,13 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
-        <Button onClick={onCancel} variant="outlined" color="inherit">
-          Cancel
-        </Button>
         <Button
           onClick={onConfirm}
           variant="contained"
           color={isLive && hasStructuralChanges ? 'warning' : 'primary'}
           disabled={changes.length === 0}
           autoFocus
+          sx={{ ml: 'auto' }}
         >
           {isLive && hasStructuralChanges ? 'Apply Changes (Risky!)' : 'Apply Changes'}
         </Button>
