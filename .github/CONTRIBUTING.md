@@ -20,20 +20,36 @@ For detailed contribution guidelines, please see:
 2. **Install Dependencies**
 
    ```bash
-   npm install
+   yarn install
    ```
 
-3. **Setup Environment**
+3. **Start PostgreSQL**
 
    ```bash
-   cp .env.example .env
-   # Edit .env with your test tokens
+   yarn db
    ```
 
-4. **Start Development**
+4. **Set Environment Variables**
+
    ```bash
-   npm run dev
+   export API_TOKEN=your-admin-password
+   export SERVER_TOKEN=your-server-token
+   export DB_HOST=localhost
+   export DB_PORT=5432
+   export DB_USER=postgres
+   export DB_PASSWORD=postgres
+   export DB_NAME=matchzy_tournament
    ```
+
+5. **Start Development**
+
+   ```bash
+   yarn dev
+   ```
+
+**Access:**
+- Frontend: `http://localhost:5173`
+- API: `http://localhost:3000`
 
 ## 📝 Guidelines
 

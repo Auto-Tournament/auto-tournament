@@ -245,8 +245,8 @@ docker compose down
 docker compose up -d --build
 
 # Or without Docker:
-npm run build
-npm start
+yarn build
+yarn start
 ```
 
 ## Advanced Setup
