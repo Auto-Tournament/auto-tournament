@@ -19,24 +19,27 @@ git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 
 # Install dependencies
-npm install
-
-# Copy environment file
-cp .env.example .env
+yarn install
 
 # Start PostgreSQL for local development
 yarn db
 
-# Edit .env with your configuration
-# Set DB_HOST=localhost, DB_PORT=5432, DB_USER=postgres, DB_PASSWORD=postgres, DB_NAME=matchzy_tournament
+# Set environment variables
+export API_TOKEN=your-admin-password
+export SERVER_TOKEN=your-server-token
+export DB_HOST=localhost
+export DB_PORT=5432
+export DB_USER=postgres
+export DB_PASSWORD=postgres
+export DB_NAME=matchzy_tournament
 
 # Start development server
-npm run dev
+yarn dev
 ```
 
 ??? info "PostgreSQL for Local Development"
 
-    **PostgreSQL is required** for all setups (Docker and local development).
+    **PostgreSQL is required** for local development.
 
     **Quick Setup with Yarn (recommended):**
     ```bash
@@ -50,29 +53,6 @@ npm run dev
     - Start the container if it already exists but is stopped
     - Create and start a new container if it doesn't exist
     - Do nothing if the container is already running
-
-    **Manual Setup with Docker:**
-    ```bash
-    docker run -d --name matchzy-postgres \
-      -e POSTGRES_USER=postgres \
-      -e POSTGRES_PASSWORD=postgres \
-      -e POSTGRES_DB=matchzy_tournament \
-      -p 5432:5432 \
-      postgres:16-alpine
-    ```
-
-    Then set environment variables:
-    ```bash
-    export DB_HOST=localhost
-    export DB_PORT=5432
-    export DB_USER=postgres
-    export DB_PASSWORD=postgres
-    export DB_NAME=matchzy_tournament
-    
-    # Also set your API_TOKEN (admin password)
-    export API_TOKEN=admin123  # Or any password you want
-    export SERVER_TOKEN=server123
-    ```
 
 **Access:**
 
@@ -161,7 +141,7 @@ export const ComponentName: FC<ComponentNameProps> = ({ prop1, prop2 }) => {
 
 ### Code Style
 
-- Use ESLint configuration (run `npm run lint`)
+- Use ESLint configuration (run `yarn lint`)
 - Format with Prettier
 - Use meaningful variable names
 - Add comments for complex logic
@@ -191,16 +171,16 @@ See [Architecture Documentation](architecture.md#adding-new-tournament-types) fo
 
     ```bash
     # Run backend build (TypeScript compilation)
-    npm run build
+    yarn build
 
     # Run backend in development
-    npm run dev
+    yarn dev
 
     # Build frontend
-    npm run build:client
+    yarn build:client
 
     # Build both
-    npm run build:all
+    yarn build:all
     ```
 
     **Docker Testing:**

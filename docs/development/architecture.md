@@ -152,7 +152,7 @@ When updating to a newer upstream release:
 1. Pull the new source from the upstream repository.
 2. Re-run the build script from the upstream project to regenerate assets (SCSS → CSS, TypeScript → JS).
 3. Copy the distribution files back into `client/src/brackets-viewer/`.
-4. Re-apply local adjustments (search for `// MatchZy` comments) and run `npm run lint`.
+4. Re-apply local adjustments (search for `// MatchZy` comments) and run `yarn lint`.
 5. Validate the bracket view for single elimination, double elimination, losers bracket transfers, and Swiss layouts.
 
 Keeping the fork checked in ensures deterministic builds and avoids shipping multiple runtime bundles.
