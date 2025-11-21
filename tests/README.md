@@ -22,6 +22,27 @@ End-to-end tests for MatchZy Auto Tournament using Playwright.
 yarn test
 ```
 
+### Run tests with filters (automated)
+```bash
+# Run only veto tests (fully automated with Docker)
+yarn test --grep @veto
+
+# Run only CS Major tests
+yarn test --grep @cs-major
+
+# Run only authentication tests
+yarn test --grep @auth
+
+# Run only teams tests
+yarn test --grep @teams
+
+# Run only CRUD tests
+yarn test --grep @crud
+
+# Combine filters (run tests matching both tags)
+yarn test --grep "@veto|@cs-major"
+```
+
 ### Run tests manually (requires server and database running)
 ```bash
 # Make sure PostgreSQL is running: yarn db
@@ -30,7 +51,7 @@ yarn test
 yarn test:manual
 ```
 
-### Run tests with specific tags
+### Run tests with specific tags (manual mode)
 ```bash
 # Run only authentication tests
 yarn test:manual --grep @auth
@@ -79,6 +100,11 @@ Tests are organized using tags for easy filtering:
 - `@configuration` - Configuration/settings tests
 - `@crud` - Create, Read, Update, Delete operations
 - `@example` - Example/template tests
+- `@veto` - Veto system tests
+- `@cs-major` - CS Major format tests
+- `@e2e-flow` - End-to-end flow tests
+- `@setup` - Test setup/configuration tests
+- `@verification` - Verification/assertion tests
 
 ## Environment Variables
 

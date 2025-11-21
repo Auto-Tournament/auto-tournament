@@ -291,9 +291,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         });
       }
 
-      // For BO3, if this is the last step and there's exactly one map remaining, it's the decider map
+      // For BO1 and BO3, if this is the last step and there's exactly one map remaining, it's the decider map
       // We need to add it to pickedMaps before setting the side
-      if (format === 'bo3' && vetoState.currentStep === vetoState.totalSteps && vetoState.availableMaps.length === 1) {
+      if ((format === 'bo1' || format === 'bo3') && vetoState.currentStep === vetoState.totalSteps && vetoState.availableMaps.length === 1) {
         const deciderMap = vetoState.availableMaps[0];
         vetoState.pickedMaps.push({
           mapNumber: vetoState.pickedMaps.length + 1,
@@ -302,7 +302,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
           knifeRound: false, // Not a knife round, side is picked
         });
         vetoState.availableMaps = [];
-        log.info(`Added decider map ${deciderMap} for BO3 before side pick`);
+        log.info(`Added decider map ${deciderMap} for ${format.toUpperCase()} before side pick`);
       }
 
       // Set side for the last picked map
@@ -350,9 +350,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       vetoState.completedAt = Math.floor(Date.now() / 1000);
 
       // Add remaining map as decider (if applicable)
-      // Note: For BO3, the decider map is already added during the last side_pick step
-      // This is only for BO1 (where decider is automatic) or BO5 (if not handled in side_pick)
-      if (vetoState.availableMaps.length === 1 && format !== 'bo3') {
+      // Note: For BO1 and BO3, the decider map is already added during the last side_pick step
+      // This is only for BO5 (if not handled in side_pick) or edge cases
+      if (vetoState.availableMaps.length === 1 && format !== 'bo1' && format !== 'bo3') {
         const deciderMap = vetoState.availableMaps[0];
         vetoState.pickedMaps.push({
           mapNumber: vetoState.pickedMaps.length + 1,

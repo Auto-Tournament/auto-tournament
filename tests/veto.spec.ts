@@ -7,12 +7,33 @@ import { test, expect } from '@playwright/test';
  * @tag sides
  */
 
-test.describe('Veto System', () => {
+/**
+ * Veto System Tests
+ * These tests run sequentially to ensure proper setup order
+ */
+test.describe.serial('Veto System', () => {
   const apiToken = process.env.API_TOKEN || 'admin123';
+  const baseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
   let tournamentName: string;
   let team1Id: string;
   let team2Id: string;
   let matchSlug: string;
+
+  test.beforeAll(async ({ request }) => {
+    // Configure webhook URL before all tests (required for match loading)
+    const webhookUrl = `${baseUrl}`;
+    try {
+      await request.put('/api/settings', {
+        headers: {
+          Authorization: `Bearer ${apiToken}`,
+        },
+        data: { webhookUrl },
+      });
+    } catch (error) {
+      // Don't fail if settings endpoint doesn't exist - webhook might be optional
+      console.warn('Could not configure webhook URL:', error);
+    }
+  });
 
   test.beforeEach(async ({ page, request }) => {
     // Login before each test
@@ -25,25 +46,54 @@ test.describe('Veto System', () => {
     const timestamp = Date.now();
     const team1Name = `Veto Test Team 1 ${timestamp}`;
     const team2Name = `Veto Test Team 2 ${timestamp}`;
+    const team1IdValue = `veto-test-team-1-${timestamp}`;
+    const team2IdValue = `veto-test-team-2-${timestamp}`;
 
-    // Create Team 1
+    // Create players array with proper Player format (steamId and name)
+    const players = [
+      { steamId: '76561198000000001', name: 'Player 1' },
+      { steamId: '76561198000000002', name: 'Player 2' },
+      { steamId: '76561198000000003', name: 'Player 3' },
+      { steamId: '76561198000000004', name: 'Player 4' },
+      { steamId: '76561198000000005', name: 'Player 5' },
+    ];
+
+    // Create Team 1 (requires authentication)
     const team1Response = await request.post('/api/teams', {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
       data: {
+        id: team1IdValue,
         name: team1Name,
-        players: ['player1', 'player2', 'player3', 'player4', 'player5'],
+        players: players,
       },
     });
+    
+    if (!team1Response.ok()) {
+      const errorText = await team1Response.text();
+      console.error('Team 1 creation failed:', errorText);
+    }
     expect(team1Response.ok()).toBeTruthy();
     const team1Data = await team1Response.json();
     team1Id = team1Data.team.id;
 
-    // Create Team 2
+    // Create Team 2 (requires authentication)
     const team2Response = await request.post('/api/teams', {
+      headers: {
+        Authorization: `Bearer ${apiToken}`,
+      },
       data: {
+        id: team2IdValue,
         name: team2Name,
-        players: ['player1', 'player2', 'player3', 'player4', 'player5'],
+        players: players,
       },
     });
+    
+    if (!team2Response.ok()) {
+      const errorText = await team2Response.text();
+      console.error('Team 2 creation failed:', errorText);
+    }
     expect(team2Response.ok()).toBeTruthy();
     const team2Data = await team2Response.json();
     team2Id = team2Data.team.id;
@@ -72,68 +122,52 @@ test.describe('Veto System', () => {
     });
     expect(startResponse.ok()).toBeTruthy();
 
-    // Get the match slug from the bracket
-    await page.goto('/matches');
-    await page.waitForLoadState('networkidle');
+    // Get match slug from API (more reliable than scraping the page)
+    const matchesResponse = await request.get('/api/matches');
+    const matchesData = await matchesResponse.json();
+    expect(matchesData.matches).toBeDefined();
+    expect(matchesData.matches.length).toBeGreaterThan(0);
     
-    // Find the match in the list
-    const matchRow = page.locator('tr').filter({ hasText: team1Name }).filter({ hasText: team2Name }).first();
-    const matchLink = matchRow.locator('a[href*="/match/"]');
-    const href = await matchLink.getAttribute('href');
-    if (href) {
-      matchSlug = href.split('/match/')[1];
-    } else {
-      // Fallback: try to get from API
-      const matchesResponse = await request.get('/api/matches');
-      const matchesData = await matchesResponse.json();
-      if (matchesData.matches && matchesData.matches.length > 0) {
-        matchSlug = matchesData.matches[0].slug;
-      } else {
-        throw new Error('Could not find match for veto test');
-      }
-    }
+    const match = matchesData.matches.find((m: any) => 
+      (m.team1?.id === team1Id && m.team2?.id === team2Id) || 
+      (m.team1?.id === team2Id && m.team2?.id === team1Id)
+    );
+    expect(match).toBeDefined();
+    matchSlug = match.slug;
+    expect(matchSlug).toBeTruthy();
   });
 
-  test('should correctly assign sides when team1 picks CT (team2 gets T)', {
+  test('should correctly assign sides when team2 picks CT (CS Major format)', {
     tag: ['@veto', '@sides'],
   }, async ({ page, request }) => {
-    // Complete the veto process via API (ban 6 maps, then pick side)
-    const maps = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
-    
-    // BO1 veto order: ban-ban-ban-ban-ban-ban-side_pick (team1 picks side)
-    // Step 1: Team1 bans de_mirage
+    // CS Major BO1 format: Team A (team1) removes 2, Team B (team2) removes 3, Team A removes 1, Team B picks side
+    // Step 1-2: Team1 (Team A) removes 2 maps
     await request.post(`/api/veto/${matchSlug}/action`, {
       data: { mapName: 'de_mirage', teamSlug: team1Id },
     });
-
-    // Step 2: Team2 bans de_inferno
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { mapName: 'de_inferno', teamSlug: team2Id },
+      data: { mapName: 'de_inferno', teamSlug: team1Id },
     });
 
-    // Step 3: Team1 bans de_ancient
+    // Step 3-5: Team2 (Team B) removes 3 maps
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { mapName: 'de_ancient', teamSlug: team1Id },
+      data: { mapName: 'de_ancient', teamSlug: team2Id },
     });
-
-    // Step 4: Team2 bans de_anubis
     await request.post(`/api/veto/${matchSlug}/action`, {
       data: { mapName: 'de_anubis', teamSlug: team2Id },
     });
-
-    // Step 5: Team1 bans de_dust2
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { mapName: 'de_dust2', teamSlug: team1Id },
+      data: { mapName: 'de_dust2', teamSlug: team2Id },
     });
 
-    // Step 6: Team2 bans de_vertigo
+    // Step 6: Team1 (Team A) removes 1 map
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { mapName: 'de_vertigo', teamSlug: team2Id },
+      data: { mapName: 'de_vertigo', teamSlug: team1Id },
     });
 
-    // Step 7: Team1 picks side (CT)
+    // Step 7: Team2 (Team B) picks side (CT) - CS Major format
     const sidePickResponse = await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { side: 'CT', teamSlug: team1Id },
+      data: { side: 'CT', teamSlug: team2Id },
     });
     expect(sidePickResponse.ok()).toBeTruthy();
     const sidePickData = await sidePickResponse.json();
@@ -145,8 +179,8 @@ test.describe('Veto System', () => {
     
     const pickedMap = vetoState.pickedMaps[0];
     expect(pickedMap.mapName).toBe('de_nuke'); // Last remaining map
-    expect(pickedMap.sideTeam1).toBe('CT');
-    expect(pickedMap.sideTeam2).toBe('T'); // Team2 should get opposite side
+    expect(pickedMap.sideTeam2).toBe('CT'); // Team2 (Team B) picked CT
+    expect(pickedMap.sideTeam1).toBe('T'); // Team1 (Team A) gets opposite side
 
     // Verify match config has correct side assignment
     const matchResponse = await request.get(`/api/matches/${matchSlug}`);
@@ -157,30 +191,43 @@ test.describe('Veto System', () => {
     expect(config.maplist).toContain('de_nuke');
     expect(config.map_sides).toBeDefined();
     
-    // For BO1, team1_ct means team1 starts CT (which matches our veto)
-    // Since team1 picked CT, the first map should have team1_ct
+    // Since team2 picked CT, team2 starts CT, so map_sides[0] should be 'team2_ct'
     if (config.map_sides && config.map_sides.length > 0) {
-      expect(config.map_sides[0]).toBe('team1_ct');
+      expect(config.map_sides[0]).toBe('team2_ct');
     }
   });
 
-  test('should correctly assign sides when team1 picks T (team2 gets CT)', {
+  test('should correctly assign sides when team2 picks T (CS Major format)', {
     tag: ['@veto', '@sides'],
   }, async ({ page, request }) => {
-    // Complete the veto process via API
-    // Step 1-6: Ban maps
-    const mapsToBan = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo'];
-    const banOrder = [team1Id, team2Id, team1Id, team2Id, team1Id, team2Id];
-    
-    for (let i = 0; i < mapsToBan.length; i++) {
-      await request.post(`/api/veto/${matchSlug}/action`, {
-        data: { mapName: mapsToBan[i], teamSlug: banOrder[i] },
-      });
-    }
+    // CS Major BO1 format: Team A (team1) removes 2, Team B (team2) removes 3, Team A removes 1, Team B picks side
+    // Step 1-2: Team1 (Team A) removes 2 maps
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_mirage', teamSlug: team1Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_inferno', teamSlug: team1Id },
+    });
 
-    // Step 7: Team1 picks side (T)
+    // Step 3-5: Team2 (Team B) removes 3 maps
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_ancient', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_anubis', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_dust2', teamSlug: team2Id },
+    });
+
+    // Step 6: Team1 (Team A) removes 1 map
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_vertigo', teamSlug: team1Id },
+    });
+
+    // Step 7: Team2 (Team B) picks side (T) - CS Major format
     const sidePickResponse = await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { side: 'T', teamSlug: team1Id },
+      data: { side: 'T', teamSlug: team2Id },
     });
     expect(sidePickResponse.ok()).toBeTruthy();
     const sidePickData = await sidePickResponse.json();
@@ -191,8 +238,8 @@ test.describe('Veto System', () => {
     expect(vetoState.pickedMaps).toHaveLength(1);
     
     const pickedMap = vetoState.pickedMaps[0];
-    expect(pickedMap.sideTeam1).toBe('T');
-    expect(pickedMap.sideTeam2).toBe('CT'); // Team2 should get opposite side
+    expect(pickedMap.sideTeam2).toBe('T'); // Team2 (Team B) picked T
+    expect(pickedMap.sideTeam1).toBe('CT'); // Team1 (Team A) gets opposite side
 
     // Verify match config
     const matchResponse = await request.get(`/api/matches/${matchSlug}`);
@@ -200,43 +247,59 @@ test.describe('Veto System', () => {
     const matchData = await matchResponse.json();
     const config = JSON.parse(matchData.match.config);
     
-    // Since team1 picked T, team2 starts CT, so map_sides[0] should be 'team2_ct'
+    // Since team2 picked T, team1 starts CT, so map_sides[0] should be 'team1_ct'
     if (config.map_sides && config.map_sides.length > 0) {
-      expect(config.map_sides[0]).toBe('team2_ct');
+      expect(config.map_sides[0]).toBe('team1_ct');
     }
   });
 
   test('should display correct side badge for team1 when viewing veto interface', {
     tag: ['@veto', '@ui'],
   }, async ({ page, request }) => {
-    // Complete veto with team1 picking CT
-    const mapsToBan = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo'];
-    const banOrder = [team1Id, team2Id, team1Id, team2Id, team1Id, team2Id];
-    
-    for (let i = 0; i < mapsToBan.length; i++) {
-      await request.post(`/api/veto/${matchSlug}/action`, {
-        data: { mapName: mapsToBan[i], teamSlug: banOrder[i] },
-      });
-    }
-
+    // CS Major BO1 format: Team A (team1) removes 2, Team B (team2) removes 3, Team A removes 1, Team B picks side
+    // Step 1-2: Team1 removes 2 maps
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { side: 'CT', teamSlug: team1Id },
+      data: { mapName: 'de_mirage', teamSlug: team1Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_inferno', teamSlug: team1Id },
+    });
+
+    // Step 3-5: Team2 removes 3 maps
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_ancient', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_anubis', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_dust2', teamSlug: team2Id },
+    });
+
+    // Step 6: Team1 removes 1 map
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_vertigo', teamSlug: team1Id },
+    });
+
+    // Step 7: Team2 picks side (CT) - CS Major format
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { side: 'CT', teamSlug: team2Id },
     });
 
     // View veto interface as team1
     await page.goto(`/team/${team1Id}/match`);
     await page.waitForLoadState('networkidle');
 
-    // Check that the side badge shows "CT" for team1
-    const ctBadge = page.locator('text=/CT|Counter-Terrorist/i').first();
-    await expect(ctBadge).toBeVisible({ timeout: 5000 });
+    // Since team2 picked CT, team1 gets T, so team1 should see T badge
+    const tBadge = page.locator('text=/T|Terrorist/i').first();
+    await expect(tBadge).toBeVisible({ timeout: 5000 });
 
-    // Verify the picked map card shows CT badge
+    // Verify the picked map card shows T badge for team1
     const mapCard = page.locator('[data-state="picked"]').or(page.locator('text=de_nuke')).first();
-    const sideChip = mapCard.locator('text=CT').or(mapCard.locator('[aria-label*="CT"]'));
+    const sideChip = mapCard.locator('text=T').or(mapCard.locator('[aria-label*="T"]'));
     const sideChipVisible = await sideChip.isVisible().catch(() => false);
     
-    // If the side badge is visible, it should show CT
+    // If the side badge is visible, it should show T for team1
     if (sideChipVisible) {
       await expect(sideChip).toBeVisible();
     }
@@ -245,34 +308,50 @@ test.describe('Veto System', () => {
   test('should display correct side badge for team2 when viewing veto interface', {
     tag: ['@veto', '@ui'],
   }, async ({ page, request }) => {
-    // Complete veto with team1 picking CT (so team2 gets T)
-    const mapsToBan = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo'];
-    const banOrder = [team1Id, team2Id, team1Id, team2Id, team1Id, team2Id];
-    
-    for (let i = 0; i < mapsToBan.length; i++) {
-      await request.post(`/api/veto/${matchSlug}/action`, {
-        data: { mapName: mapsToBan[i], teamSlug: banOrder[i] },
-      });
-    }
-
+    // CS Major BO1 format: Team A (team1) removes 2, Team B (team2) removes 3, Team A removes 1, Team B picks side
+    // Step 1-2: Team1 removes 2 maps
     await request.post(`/api/veto/${matchSlug}/action`, {
-      data: { side: 'CT', teamSlug: team1Id },
+      data: { mapName: 'de_mirage', teamSlug: team1Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_inferno', teamSlug: team1Id },
+    });
+
+    // Step 3-5: Team2 removes 3 maps
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_ancient', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_anubis', teamSlug: team2Id },
+    });
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_dust2', teamSlug: team2Id },
+    });
+
+    // Step 6: Team1 removes 1 map
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { mapName: 'de_vertigo', teamSlug: team1Id },
+    });
+
+    // Step 7: Team2 picks side (CT) - CS Major format
+    await request.post(`/api/veto/${matchSlug}/action`, {
+      data: { side: 'CT', teamSlug: team2Id },
     });
 
     // View veto interface as team2
     await page.goto(`/team/${team2Id}/match`);
     await page.waitForLoadState('networkidle');
 
-    // Check that the side badge shows "T" for team2 (since team1 picked CT)
-    const tBadge = page.locator('text=/T|Terrorist/i').first();
-    await expect(tBadge).toBeVisible({ timeout: 5000 });
+    // Check that the side badge shows "CT" for team2 (since team2 picked CT)
+    const ctBadge = page.locator('text=/CT|Counter-Terrorist/i').first();
+    await expect(ctBadge).toBeVisible({ timeout: 5000 });
 
-    // Verify the picked map card shows T badge
+    // Verify the picked map card shows CT badge
     const mapCard = page.locator('[data-state="picked"]').or(page.locator('text=de_nuke')).first();
-    const sideChip = mapCard.locator('text=T').or(mapCard.locator('[aria-label*="T"]'));
+    const sideChip = mapCard.locator('text=CT').or(mapCard.locator('[aria-label*="CT"]'));
     const sideChipVisible = await sideChip.isVisible().catch(() => false);
     
-    // If the side badge is visible, it should show T for team2
+    // If the side badge is visible, it should show CT for team2
     if (sideChipVisible) {
       await expect(sideChip).toBeVisible();
     }
@@ -313,32 +392,33 @@ test.describe('Veto System', () => {
     );
     const bo3MatchSlug = bo3Match?.slug || matchSlug;
 
-    // BO3 veto order:
-    // 1. Team1 bans
-    // 2. Team2 bans
-    // 3. Team1 picks Map 1
-    // 4. Team2 picks side on Map 1 (let's say CT)
-    // 5. Team2 picks Map 2
-    // 6. Team1 picks side on Map 2 (let's say T)
-    // 7. Team1 bans
-    // 8. Team2 bans
+    // CS Major BO3 veto order (9 steps):
+    // 1. Team A (team1) removes 1
+    // 2. Team B (team2) removes 1
+    // 3. Team A picks Map 1
+    // 4. Team B picks side on Map 1
+    // 5. Team B picks Map 2
+    // 6. Team A picks side on Map 2
+    // 7. Team B removes 1
+    // 8. Team A removes 1
+    // 9. Team B picks side on Map 3 (decider)
 
-    // Step 1: Team1 bans de_mirage
+    // Step 1: Team1 (Team A) removes 1
     await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { mapName: 'de_mirage', teamSlug: team1Id },
     });
 
-    // Step 2: Team2 bans de_inferno
+    // Step 2: Team2 (Team B) removes 1
     await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { mapName: 'de_inferno', teamSlug: team2Id },
     });
 
-    // Step 3: Team1 picks de_ancient (Map 1)
+    // Step 3: Team1 (Team A) picks de_ancient (Map 1)
     await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { mapName: 'de_ancient', teamSlug: team1Id },
     });
 
-    // Step 4: Team2 picks side CT on Map 1
+    // Step 4: Team2 (Team B) picks side CT on Map 1
     const sidePick1Response = await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { side: 'CT', teamSlug: team2Id },
     });
@@ -346,12 +426,12 @@ test.describe('Veto System', () => {
     expect(sidePick1Data.veto.pickedMaps[0].sideTeam2).toBe('CT');
     expect(sidePick1Data.veto.pickedMaps[0].sideTeam1).toBe('T'); // Opposite
 
-    // Step 5: Team2 picks de_anubis (Map 2)
+    // Step 5: Team2 (Team B) picks de_anubis (Map 2)
     await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { mapName: 'de_anubis', teamSlug: team2Id },
     });
 
-    // Step 6: Team1 picks side T on Map 2
+    // Step 6: Team1 (Team A) picks side T on Map 2
     const sidePick2Response = await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { side: 'T', teamSlug: team1Id },
     });
@@ -366,13 +446,19 @@ test.describe('Veto System', () => {
     expect(sidePick2Data.veto.pickedMaps[1].sideTeam1).toBe('T');
     expect(sidePick2Data.veto.pickedMaps[1].sideTeam2).toBe('CT');
 
-    // Step 7-8: Ban remaining maps
+    // Step 7: Team2 (Team B) removes 1
     await request.post(`/api/veto/${bo3MatchSlug}/action`, {
-      data: { mapName: 'de_dust2', teamSlug: team1Id },
+      data: { mapName: 'de_dust2', teamSlug: team2Id },
     });
 
+    // Step 8: Team1 (Team A) removes 1
+    await request.post(`/api/veto/${bo3MatchSlug}/action`, {
+      data: { mapName: 'de_vertigo', teamSlug: team1Id },
+    });
+
+    // Step 9: Team2 (Team B) picks side on Map 3 (decider) - CS Major format
     const finalResponse = await request.post(`/api/veto/${bo3MatchSlug}/action`, {
-      data: { mapName: 'de_vertigo', teamSlug: team2Id },
+      data: { side: 'CT', teamSlug: team2Id },
     });
     const finalData = await finalResponse.json();
     
@@ -380,11 +466,12 @@ test.describe('Veto System', () => {
     expect(finalData.veto.status).toBe('completed');
     
     // Should have 3 maps (2 picked + 1 decider)
-    expect(finalData.veto.pickedMaps.length).toBeGreaterThanOrEqual(2);
+    expect(finalData.veto.pickedMaps.length).toBe(3);
     
-    // Verify sides are correct for both maps
+    // Verify sides are correct for all maps
     const map1 = finalData.veto.pickedMaps.find((m: any) => m.mapNumber === 1);
     const map2 = finalData.veto.pickedMaps.find((m: any) => m.mapNumber === 2);
+    const map3 = finalData.veto.pickedMaps.find((m: any) => m.mapNumber === 3);
     
     if (map1 && map1.sideTeam1 && map1.sideTeam2) {
       expect(map1.sideTeam1).toBe('T');
@@ -394,6 +481,13 @@ test.describe('Veto System', () => {
     if (map2 && map2.sideTeam1 && map2.sideTeam2) {
       expect(map2.sideTeam1).toBe('T');
       expect(map2.sideTeam2).toBe('CT');
+    }
+    
+    // Map 3 (decider): team2 picked CT
+    if (map3 && map3.sideTeam1 && map3.sideTeam2) {
+      expect(map3.sideTeam2).toBe('CT');
+      expect(map3.sideTeam1).toBe('T');
+      expect(map3.knifeRound).toBe(false); // No knife round, side is picked
     }
   });
 
@@ -429,6 +523,18 @@ test.describe('Veto System', () => {
     const sidePickResponse = await request.post(`/api/veto/${matchSlug}/action`, {
       data: { side: 'CT', teamSlug: team2Id },
     });
+    
+    if (!sidePickResponse.ok()) {
+      const errorText = await sidePickResponse.text();
+      console.error('BO1 side pick failed:', {
+        status: sidePickResponse.status(),
+        statusText: sidePickResponse.statusText(),
+        error: errorText,
+        matchSlug,
+        team2Id,
+      });
+    }
+    
     expect(sidePickResponse.ok()).toBeTruthy();
     const sidePickData = await sidePickResponse.json();
 
@@ -463,14 +569,39 @@ test.describe('Veto System', () => {
     await request.post('/api/tournament/start', {
       headers: { Authorization: `Bearer ${apiToken}` },
     });
+    expect(bo3TournamentResponse.ok()).toBeTruthy();
 
-    const matchesResponse = await request.get('/api/matches');
-    const matchesData = await matchesResponse.json();
-    const bo3Match = matchesData.matches.find((m: any) => 
-      (m.team1_id === team1Id && m.team2_id === team2Id) || 
-      (m.team1_id === team2Id && m.team2_id === team1Id)
-    );
+    // Wait a bit for bracket to be generated and matches to be created
+    await page.waitForTimeout(2000);
+
+    // Get match slug - try multiple times if needed
+    let bo3Match;
+    let attempts = 0;
+    const maxAttempts = 5;
+    while (attempts < maxAttempts) {
+      const matchesResponse = await request.get('/api/matches');
+      const matchesData = await matchesResponse.json();
+      
+      if (matchesData.matches && matchesData.matches.length > 0) {
+        bo3Match = matchesData.matches.find((m: any) => 
+          (m.team1?.id === team1Id && m.team2?.id === team2Id) || 
+          (m.team1?.id === team2Id && m.team2?.id === team1Id) ||
+          (m.team1_id === team1Id && m.team2_id === team2Id) ||
+          (m.team1_id === team2Id && m.team2_id === team1Id)
+        );
+        
+        if (bo3Match) {
+          break;
+        }
+      }
+      
+      attempts++;
+      await page.waitForTimeout(500);
+    }
+    
+    expect(bo3Match).toBeDefined();
     const bo3MatchSlug = bo3Match?.slug;
+    expect(bo3MatchSlug).toBeTruthy();
 
     // CS Major BO3 format: 9 steps
     // 1. Team A removes 1
@@ -517,6 +648,18 @@ test.describe('Veto System', () => {
     const finalResponse = await request.post(`/api/veto/${bo3MatchSlug}/action`, {
       data: { side: 'CT', teamSlug: team2Id },
     });
+    
+    if (!finalResponse.ok()) {
+      const errorText = await finalResponse.text();
+      console.error('BO3 side pick failed:', {
+        status: finalResponse.status(),
+        statusText: finalResponse.statusText(),
+        error: errorText,
+        bo3MatchSlug,
+        team2Id,
+      });
+    }
+    
     expect(finalResponse.ok()).toBeTruthy();
     const finalData = await finalResponse.json();
 
