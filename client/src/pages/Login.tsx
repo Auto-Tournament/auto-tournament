@@ -166,6 +166,10 @@ export default function Login() {
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
               </Stack>
+
+              <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
+                Version {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+              </Typography>
             </Stack>
           </Stack>
         </Card>

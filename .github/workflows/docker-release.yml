@@ -7,6 +7,9 @@ on:
         description: 'Version to release (e.g., 1.0.0)'
         required: true
         type: string
+  push:
+    tags:
+      - 'v*'
 
 jobs:
   release:
@@ -16,6 +19,21 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for tags
+
+      - name: Extract version from tag or input
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            # Extract version from tag (e.g., v1.0.0 -> 1.0.0)
+            VERSION=${GITHUB_REF#refs/tags/v}
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+          else
+            # Use input version from workflow_dispatch
+            echo "version=${{ inputs.version }}" >> $GITHUB_OUTPUT
+          fi
+          echo "Extracted version: $VERSION"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -36,12 +54,54 @@ jobs:
           build-args: |
             ENABLE_SQLITE=false
           tags: |
-            ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}
+            ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ steps.version.outputs.version }}
             ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
       - name: Create GitHub Release
+        if: github.event_name == 'push'
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release v${{ steps.version.outputs.version }}
+          body: |
+            ## 🐳 Docker Release v${{ steps.version.outputs.version }}
+
+            ### Docker Images
+
+            - `${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ steps.version.outputs.version }}`
+            - `${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:latest`
+
+            ### Pull Command
+
+            ```bash
+            docker pull ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ steps.version.outputs.version }}
+            ```
+
+            ### Docker Hub
+
+            https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament
+
+            ### Platforms
+
+            - `linux/amd64` (Intel/AMD 64-bit)
+            - `linux/arm64` (ARM 64-bit, e.g., Apple Silicon, AWS Graviton)
+
+            ### Quick Start
+
+            ```bash
+            docker compose -f docker/docker-compose.yml up -d
+            ```
+
+            See [Getting Started Guide](https://mat.sivert.io/getting-started/quick-start) for full setup instructions.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create GitHub Release (workflow_dispatch)
+        if: github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v1
         with:
           tag_name: v${{ inputs.version }}
@@ -51,18 +111,18 @@ jobs:
 
             ### Docker Images
 
-            - `sivertio/matchzy-auto-tournament:${{ inputs.version }}`
-            - `sivertio/matchzy-auto-tournament:latest`
+            - `${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}`
+            - `${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:latest`
 
             ### Pull Command
 
             ```bash
-            docker pull sivertio/matchzy-auto-tournament:${{ inputs.version }}
+            docker pull ${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament:${{ inputs.version }}
             ```
 
             ### Docker Hub
 
-            https://hub.docker.com/r/sivertio/matchzy-auto-tournament
+            https://hub.docker.com/r/${{ secrets.DOCKER_USERNAME }}/matchzy-auto-tournament
 
             ### Platforms
 

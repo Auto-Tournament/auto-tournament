@@ -248,6 +248,14 @@ export default function Settings() {
                 Reset
               </Button>
             </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography variant="body2" color="text.secondary" align="center">
+                Version {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+              </Typography>
+            </Box>
           </Stack>
         </Paper>
       )}

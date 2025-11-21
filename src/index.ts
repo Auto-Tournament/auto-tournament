@@ -39,6 +39,7 @@ import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
 import { recoverActiveMatches } from './services/matchRecoveryService';
+import packageJson from '../package.json';
 
 const app = express();
 const httpServer = createServer(app);
@@ -116,7 +117,7 @@ app.get('/api-docs.json', (_req: Request, res: Response) => {
 app.get('/', (_req: Request, res: Response) => {
   res.json({
     message: 'MatchZy Auto Tournament API',
-    version: '1.0.0',
+    version: packageJson.version,
     status: 'running',
     documentation: {
       swagger: 'GET /api-docs (Interactive UI)',

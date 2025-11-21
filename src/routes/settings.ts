@@ -2,8 +2,17 @@ import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { settingsService } from '../services/settingsService';
 import { log } from '../utils/logger';
+import packageJson from '../../package.json';
 
 const router = Router();
+
+// Public version endpoint
+router.get('/version', async (_req: Request, res: Response) => {
+  return res.json({
+    success: true,
+    version: packageJson.version,
+  });
+});
 
 router.use(requireAuth);
 
