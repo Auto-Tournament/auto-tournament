@@ -3,7 +3,8 @@ FROM node:20-slim AS base
 WORKDIR /app
 
 # Enable Yarn via corepack (built into Node.js 20+)
-RUN corepack enable && corepack prepare yarn@stable --activate
+# Pin yarn version to 4.11.0 to match local development and ensure lockfile consistency
+RUN corepack enable && corepack prepare yarn@4.11.0 --activate
 
 # Global Yarn config (reused in all stages that inherit from base)
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
