@@ -8,8 +8,11 @@
 - Teams notified to start veto
 - Teams visit their team page
 - Complete map veto (see [Map Veto](../features/map-veto.md))
-- System auto-allocates server after veto
-- Match loads automatically
+- System attempts to auto-allocate server immediately
+- If no server available, system polls every 10 seconds for available servers
+- Match status shows "WAITING FOR SERVER" until server is assigned
+- Server assigned automatically when available (updates via WebSocket)
+- Match loads automatically on server
 
 **For Round Robin/Swiss (no veto):**
 - System immediately allocates servers

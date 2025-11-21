@@ -190,10 +190,15 @@ Both teams see the veto progress **live** via WebSocket:
 
 1. ✅ **Veto marked complete** in database
 2. ✅ **Match config generated** with picked maps
-3. ✅ **Server auto-allocated** from available server pool
-4. ✅ **Match loaded** via RCON (`matchzy_loadmatch_url`)
-5. ✅ **Teams notified** — Match status changes to "Loaded"
-6. ✅ **Connect info shown** — Server IP, port, connect command
+3. ✅ **Server allocation attempted** — System tries to allocate from available server pool
+4. ⏳ **If no server available** — Backend polls every 10 seconds for available servers
+5. ✅ **Server auto-allocated** when one becomes available
+6. ✅ **Match loaded** via RCON (`matchzy_loadmatch_url`)
+7. ✅ **Teams notified via WebSocket** — Match status updates in real-time to "Loaded"
+8. ✅ **Connect info shown** — Server IP, port, connect command
+
+!!! info "Server Allocation"
+    If no servers are available immediately after veto completion, the system automatically polls every 10 seconds in the background. Teams will see "WAITING FOR SERVER" status, and the match will be assigned as soon as a server becomes available. All updates are sent via WebSocket, so no page refresh is needed!
 
 Teams then connect to the server and play!
 
