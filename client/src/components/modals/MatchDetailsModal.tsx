@@ -74,6 +74,30 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const { status: tournamentStatus } = useTournamentStatus();
   const tournamentStarted = tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
 
+  // Calculate derived series wins before early return (React hooks rule)
+  const derivedSeriesWins = useMemo(() => {
+    if (!match) {
+      return { team1: 0, team2: 0 };
+    }
+    if (match.mapResults && match.mapResults.length > 0) {
+      return match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) {
+            acc.team1 += 1;
+          } else if (result.team2Score > result.team1Score) {
+            acc.team2 += 1;
+          }
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+    }
+    return {
+      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
+      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
+    };
+  }, [match, liveStats?.team1SeriesScore, liveStats?.team2SeriesScore]);
+
   // Timer effect for live matches
   useEffect(() => {
     if (!match || match.status !== 'live' || !match.loadedAt) {
@@ -98,29 +122,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     return null;
   };
 
-  const derivedSeriesWins = useMemo(() => {
-    if (!match) {
-      return { team1: 0, team2: 0 };
-    }
-    if (match.mapResults && match.mapResults.length > 0) {
-      return match.mapResults.reduce(
-        (acc, result) => {
-          if (result.team1Score > result.team2Score) {
-            acc.team1 += 1;
-          } else if (result.team2Score > result.team1Score) {
-            acc.team2 += 1;
-          }
-          return acc;
-        },
-        { team1: 0, team2: 0 }
-      );
-    }
-    return {
-      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
-      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
-    };
-  }, [match, liveStats]);
-
   if (!match) return null;
 
   const mapRoundsTeam1 = liveStats?.team1Score ?? match.team1Score ?? 0;
@@ -132,8 +133,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       ? (match.config.maplist.filter(Boolean) as string[])
       : [];
   const mapResultsFallback =
-    match.mapResults?.map((result) => result.mapName).filter((name): name is string => Boolean(name)) ??
-    [];
+    match.mapResults
+      ?.map((result) => result.mapName)
+      .filter((name): name is string => Boolean(name)) ?? [];
   const mapsToShow =
     configMaps.length > 0
       ? configMaps
@@ -681,6 +683,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     activeMapIndex={activeMapNumber}
                     activeMapLabel={currentMapLabel}
                     mapResults={match.mapResults || []}
+                    matchSlug={match.slug}
                   />
                 ) : (
                   <Typography variant="body2" color="text.secondary" fontStyle="italic">

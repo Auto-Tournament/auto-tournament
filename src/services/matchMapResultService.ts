@@ -10,6 +10,7 @@ export interface MatchMapResultRecord {
   team1Score: number;
   team2Score: number;
   winnerTeam: WinnerTeam;
+  demoFilePath?: string | null;
   completedAt: number;
 }
 
@@ -21,15 +22,17 @@ const UPSERT_SQL = `
     team1_score,
     team2_score,
     winner_team,
+    demo_file_path,
     completed_at
   )
-  VALUES (?, ?, ?, ?, ?, ?, ?)
+  VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   ON CONFLICT(match_slug, map_number)
   DO UPDATE SET
     map_name = excluded.map_name,
     team1_score = excluded.team1_score,
     team2_score = excluded.team2_score,
     winner_team = excluded.winner_team,
+    demo_file_path = COALESCE(excluded.demo_file_path, match_map_results.demo_file_path),
     completed_at = excluded.completed_at
 `;
 
@@ -66,6 +69,7 @@ export async function recordMapResult(params: {
       payload.team1Score,
       payload.team2Score,
       payload.winnerTeam,
+      null, // demo_file_path - will be set when demo is uploaded
       payload.completedAt,
     ]);
     log.debug('[MatchMapResults] Stored map result', payload);
@@ -84,9 +88,10 @@ export async function getMapResults(matchSlug: string): Promise<MatchMapResultRe
     team1_score: number;
     team2_score: number;
     winner_team?: string | null;
+    demo_file_path?: string | null;
     completed_at: number;
   }>(
-    `SELECT map_number, map_name, team1_score, team2_score, winner_team, completed_at
+    `SELECT map_number, map_name, team1_score, team2_score, winner_team, demo_file_path, completed_at
      FROM match_map_results
      WHERE match_slug = ?
      ORDER BY map_number ASC`,
@@ -100,6 +105,7 @@ export async function getMapResults(matchSlug: string): Promise<MatchMapResultRe
     team1Score: row.team1_score ?? 0,
     team2Score: row.team2_score ?? 0,
     winnerTeam: (row.winner_team as WinnerTeam) ?? null,
+    demoFilePath: row.demo_file_path ?? null,
     completedAt: row.completed_at,
   }));
 }
@@ -111,4 +117,3 @@ export async function clearMapResults(matchSlug: string): Promise<void> {
     log.error('[MatchMapResults] Failed to clear map results', { error, matchSlug });
   }
 }
-

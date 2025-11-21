@@ -45,7 +45,9 @@ export async function loadMatchOnServer(
     log.info(`🎮 Loading match ${matchSlug} on server ${serverId}`);
 
     // Get match config
-    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      matchSlug,
+    ]);
     if (!match) {
       log.error(`Match ${matchSlug} not found in database`);
       return { success: false, error: 'Match not found' };
@@ -86,10 +88,23 @@ export async function loadMatchOnServer(
 
     // Configure demo upload URL
     const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+    const uploadUrl = `${baseUrl}/api/demos/${matchSlug}/upload`;
+
+    console.log('\n');
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log('🎬  CONFIGURING DEMO UPLOAD');
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log(`📦 Match Slug:     ${matchSlug}`);
+    console.log(`🖥️  Server ID:       ${serverId}`);
+    console.log(`🔗 Upload URL:      ${uploadUrl}`);
+    console.log(`💻 RCON Command:    ${demoUploadCommand}`);
+    console.log('═══════════════════════════════════════════════════════════════════════════════');
+    console.log('\n');
+
     log.debug(`Configuring demo upload for match ${matchSlug}`, {
       serverId,
       command: demoUploadCommand,
-      uploadUrl: `${baseUrl}/api/demos/${matchSlug}/upload`,
+      uploadUrl,
     });
     const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
     results.push({
@@ -99,8 +114,42 @@ export async function loadMatchOnServer(
     });
     const demoUploadConfigured = demoResult.success;
     if (demoResult.success) {
+      console.log('\n');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log('✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`🖥️  Server ID:       ${serverId}`);
+      console.log(`🔗 Upload URL:      ${uploadUrl}`);
+      console.log(
+        `✅ Status:          MatchZy will upload demos to this URL after match/map completion`
+      );
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log('\n');
       log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
     } else {
+      console.log('\n');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log('❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`🖥️  Server ID:       ${serverId}`);
+      console.log(`❌ Error:           ${demoResult.error || 'Unknown error'}`);
+      console.log(`💻 Command:         ${demoUploadCommand}`);
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
+      console.log('\n');
       log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
     }
 
@@ -238,9 +287,10 @@ export async function loadMatchOnServer(
       log.matchLoaded(matchSlug, serverId, webhookConfigured);
 
       // Emit websocket events to notify clients
-      const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-        matchSlug,
-      ]);
+      const updatedMatch = await db.queryOneAsync<DbMatchRow>(
+        'SELECT * FROM matches WHERE slug = ?',
+        [matchSlug]
+      );
       if (updatedMatch) {
         emitMatchUpdate(updatedMatch);
         emitBracketUpdate({ action: 'match_loaded', matchSlug });

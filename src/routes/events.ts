@@ -39,6 +39,73 @@ router.post('/', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/events/report
+ * Allows the server plugin to push a full match report directly via HTTP
+ * Must be defined BEFORE the catch-all route to avoid matching /report as a parameter
+ */
+router.post('/report', validateServerToken, async (req: Request, res: Response) => {
+  try {
+    const { serverId, matchSlug, report } = req.body ?? {};
+
+    if (!serverId || !report) {
+      return res.status(400).json({
+        success: false,
+        error: 'serverId and report are required',
+      });
+    }
+
+    let match: DbMatchRow | null = null;
+    if (matchSlug !== undefined && matchSlug !== null) {
+      match = await findMatchByIdentifier(matchSlug);
+    }
+    if (!match) {
+      match =
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId])) ?? null;
+    }
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match not found for provided identifiers',
+      });
+    }
+
+    let parsedReport: MatchReport;
+    try {
+      parsedReport =
+        typeof report === 'string' ? (JSON.parse(report) as MatchReport) : (report as MatchReport);
+    } catch {
+      return res.status(400).json({
+        success: false,
+        error: 'Report must be valid JSON',
+      });
+    }
+
+    if (!parsedReport || typeof parsedReport !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: 'Report payload is invalid',
+      });
+    }
+
+    await applyMatchReport(match.slug, parsedReport);
+
+    log.info('[MatchReport] Report ingested via plugin POST', {
+      matchSlug: match.slug,
+      serverId,
+    });
+
+    return res.json({ success: true });
+  } catch (error) {
+    log.error('Failed to ingest match report via plugin POST', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to ingest match report',
+    });
+  }
+});
+
+/**
  * POST /api/events/:matchSlugOrServerId
  * Receive MatchZy events via webhook with match slug or server ID in URL
  */
@@ -190,72 +257,6 @@ async function findMatchByIdentifier(identifier: string | number): Promise<DbMat
 
   return (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ?? null;
 }
-
-/**
- * POST /api/events/report
- * Allows the server plugin to push a full match report directly via HTTP
- */
-router.post('/report', validateServerToken, async (req: Request, res: Response) => {
-  try {
-    const { serverId, matchSlug, report } = req.body ?? {};
-
-    if (!serverId || !report) {
-      return res.status(400).json({
-        success: false,
-        error: 'serverId and report are required',
-      });
-    }
-
-    let match: DbMatchRow | null = null;
-    if (matchSlug !== undefined && matchSlug !== null) {
-      match = await findMatchByIdentifier(matchSlug);
-    }
-    if (!match) {
-      match =
-        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId])) ?? null;
-    }
-
-    if (!match) {
-      return res.status(404).json({
-        success: false,
-        error: 'Match not found for provided identifiers',
-      });
-    }
-
-    let parsedReport: MatchReport;
-    try {
-      parsedReport =
-        typeof report === 'string' ? (JSON.parse(report) as MatchReport) : (report as MatchReport);
-    } catch {
-      return res.status(400).json({
-        success: false,
-        error: 'Report must be valid JSON',
-      });
-    }
-
-    if (!parsedReport || typeof parsedReport !== 'object') {
-      return res.status(400).json({
-        success: false,
-        error: 'Report payload is invalid',
-      });
-    }
-
-    await applyMatchReport(match.slug, parsedReport);
-
-    log.info('[MatchReport] Report ingested via plugin POST', {
-      matchSlug: match.slug,
-      serverId,
-    });
-
-    return res.json({ success: true });
-  } catch (error) {
-    log.error('Failed to ingest match report via plugin POST', error);
-    return res.status(500).json({
-      success: false,
-      error: 'Failed to ingest match report',
-    });
-  }
-});
 
 /**
  * GET /api/events/connections/:matchSlug
