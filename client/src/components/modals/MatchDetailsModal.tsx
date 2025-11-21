@@ -228,7 +228,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     match.status,
                     false,
                     match.vetoCompleted,
-                    tournamentStarted
+                    tournamentStarted,
+                    Boolean(match.serverId)
                   )}
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600 }}
@@ -283,7 +284,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   match.config?.expected_players_total || 10,
                   false,
                   match.vetoCompleted,
-                  tournamentStarted
+                  tournamentStarted,
+                  Boolean(match.serverId)
                 )}
               </Typography>
               <Typography variant="caption" color="text.secondary">

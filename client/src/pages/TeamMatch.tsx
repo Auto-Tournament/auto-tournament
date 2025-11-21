@@ -159,11 +159,14 @@ export default function TeamMatch() {
     setVetoCompleted(true);
     console.log('Veto completed! Selected maps:', veto.pickedMaps);
 
-    // Reload match data to get updated status
+    // Reload match data to get updated status and server assignment
     setTimeout(() => {
       loadTeamMatch();
     }, 1000);
   };
+
+  // No polling needed - rely on websockets for server assignment updates
+  // The backend will poll for available servers and emit updates via websockets
 
   const getRoundLabel = (round: number) => {
     if (round === 1) return 'Round 1';

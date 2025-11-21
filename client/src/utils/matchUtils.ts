@@ -30,17 +30,22 @@ export const getStatusLabel = (
   status: string,
   walkover: boolean = false,
   vetoCompleted?: boolean,
-  tournamentStarted?: boolean
+  tournamentStarted?: boolean,
+  hasServer?: boolean
 ): string => {
   if (walkover) return 'WALKOVER';
 
   switch (status) {
     case 'pending':
       if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT TO START';
+      // If veto is completed but no server, show waiting for server
+      if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
       return 'VETO PENDING';
     case 'ready':
       if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
       if (vetoCompleted === false) return 'MAP VETO';
+      // If veto is completed but no server, show waiting for server
+      if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
       return 'READY';
     case 'loaded':
       return 'WARMUP';
@@ -62,7 +67,8 @@ export const getDetailedStatusLabel = (
   expectedPlayers?: number,
   walkover: boolean = false,
   vetoCompleted?: boolean,
-  tournamentStarted?: boolean
+  tournamentStarted?: boolean,
+  hasServer?: boolean
 ): string => {
   if (walkover) return 'WALKOVER';
 
@@ -74,6 +80,10 @@ export const getDetailedStatusLabel = (
       if (tournamentStarted === false) {
         return 'Waiting for tournament to start...';
       }
+      // If veto is completed but no server, show waiting for server
+      if (vetoCompleted === true && hasServer === false) {
+        return 'Veto complete - Waiting for server assignment...';
+      }
       // Tournament started, match pending means waiting for veto
       return 'Waiting for map veto to begin...';
     case 'ready':
@@ -83,6 +93,9 @@ export const getDetailedStatusLabel = (
       }
       if (vetoCompleted === false) {
         return 'Teams voting for maps...';
+      }
+      if (vetoCompleted === true && hasServer === false) {
+        return 'Veto complete - Waiting for server assignment...';
       }
       return 'Veto complete - Waiting for server...';
     case 'loaded':
