@@ -39,6 +39,7 @@ import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
 import { recoverActiveMatches } from './services/matchRecoveryService';
+import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
 
 const app = express();
@@ -336,6 +337,7 @@ const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
 // Graceful shutdown
 process.on('SIGINT', () => {
   log.warn('Received SIGINT, shutting down gracefully...');
+  matchAllocationService.stopAllPolling();
   server.close(() => {
     db.close();
     log.server('Server closed');
@@ -345,6 +347,7 @@ process.on('SIGINT', () => {
 
 process.on('SIGTERM', () => {
   log.warn('Received SIGTERM, shutting down gracefully...');
+  matchAllocationService.stopAllPolling();
   server.close(() => {
     db.close();
     log.server('Server closed');

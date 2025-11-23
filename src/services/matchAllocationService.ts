@@ -724,6 +724,17 @@ export class MatchAllocationService {
   }
 
   /**
+   * Stop all polling intervals (cleanup on shutdown)
+   */
+  stopAllPolling(): void {
+    for (const [matchSlug, interval] of this.pollingIntervals.entries()) {
+      clearInterval(interval);
+      log.debug(`Stopped polling for match ${matchSlug} during cleanup`);
+    }
+    this.pollingIntervals.clear();
+  }
+
+  /**
    * Convert database row to BracketMatch
    */
   private async rowToMatch(row: DbMatchRow): Promise<BracketMatch> {
