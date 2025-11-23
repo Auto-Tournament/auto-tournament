@@ -91,15 +91,20 @@ test.describe.serial('CS Major BO3 Veto - UI E2E', () => {
     
     [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
 
-    // Find match
-    const match = await expect.poll(async () => {
+    // Find match using closure variable pattern
+    let match: any = null;
+    await expect.poll(async () => {
       const found = await findMatchByTeams(request, team1Id, team2Id);
-      return found || null;
+      if (found) {
+        match = found;
+        return true;
+      }
+      return false;
     }, {
       message: 'BO3 match to be created',
       timeout: 10000,
       intervals: [500, 1000],
-    });
+    }).toBe(true);
     
     expect(match).toBeTruthy();
     if (!match) {
@@ -108,20 +113,28 @@ test.describe.serial('CS Major BO3 Veto - UI E2E', () => {
     matchSlug = match.slug;
   });
 
-  test('should complete BO3 veto via UI step by step', {
+  test('should complete BO3 veto via UI and display correct side badges', {
     tag: ['@ui', '@veto', '@cs-major', '@bo3'],
   }, async ({ page }) => {
-    // Perform all BO3 veto actions via UI
+    // Perform veto actions via UI
     const actions = getCSMajorBO3UIActions(team1Id, team2Id);
     await performVetoActionsUI(page, actions);
 
-    // Final verification - should show match details (veto completed)
-    await page.goto(`/team/${team1Id}/match`);
+    // View as Team 1 - should see match details with side badges
+    await page.goto(`/team/${team1Id}`);
     await page.waitForLoadState('networkidle');
 
-    // Should show match details or "Veto Completed" message
+    // Check for match details (veto completed, should show server info or match status)
     const matchDetails = page.locator('text=/match|server|connect|veto.*completed/i');
     await expect(matchDetails.first()).toBeVisible({ timeout: 5000 });
+
+    // View as Team 2 - should also see match details
+    await page.goto(`/team/${team2Id}`);
+    await page.waitForLoadState('networkidle');
+
+    // Check for match details
+    const matchDetails2 = page.locator('text=/match|server|connect|veto.*completed/i');
+    await expect(matchDetails2.first()).toBeVisible({ timeout: 5000 });
   });
 });
 

@@ -50,10 +50,31 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
 
     [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
 
-    // Find match
-    const match = await findMatchByTeams(request, team1Id, team2Id);
+    // Find match - poll until it's created (tournament start creates matches)
+    let match: any = null;
+    await expect
+      .poll(
+        async () => {
+          const found = await findMatchByTeams(request, team1Id, team2Id);
+          if (found) {
+            match = found;
+            return true;
+          }
+          return false;
+        },
+        {
+          message: 'Match to be created after tournament start',
+          timeout: 10000,
+          intervals: [500, 1000],
+        }
+      )
+      .toBe(true);
+
     expect(match).toBeTruthy();
-    matchSlug = match!.slug;
+    if (!match) {
+      throw new Error('Match not found after tournament creation');
+    }
+    matchSlug = match.slug;
   });
 
   test(
@@ -62,6 +83,11 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
       tag: ['@api', '@veto', '@cs-major', '@bo1'],
     },
     async ({ request }) => {
+      // Verify match exists and tournament is started before executing veto
+      const matchCheck = await findMatchByTeams(request, team1Id, team2Id);
+      expect(matchCheck).toBeTruthy();
+      expect(matchCheck?.slug).toBe(matchSlug);
+
       // Execute CS Major BO1 veto (7 steps)
       const actions = getCSMajorBO1Actions(team1Id, team2Id);
       const finalResponse = await executeVetoActions(request, matchSlug, actions);
@@ -98,11 +124,32 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
       tag: ['@api', '@veto', '@cs-major', '@verification'],
     },
     async ({ request }) => {
-      // Veto should already be completed by the previous test (sequential execution with 1 worker)
-      // Just verify the veto state and config - no need to re-execute veto
+      // Check if veto is already completed, if not, run it
+      let vetoState = await getVetoState(request, matchSlug);
+      if (!vetoState || vetoState.status !== 'completed') {
+        // Execute CS Major BO1 veto (7 steps)
+        const actions = getCSMajorBO1Actions(team1Id, team2Id);
+        await executeVetoActions(request, matchSlug, actions);
 
-      // Get veto state (should already be completed)
-      const vetoState = await getVetoState(request, matchSlug);
+        // Wait for veto to complete
+        let polledVetoState: any = null;
+        await expect.poll(
+          async () => {
+            const state = await getVetoState(request, matchSlug);
+            if (state?.status === 'completed') {
+              polledVetoState = state;
+              return true;
+            }
+            return false;
+          },
+          {
+            timeout: 5000,
+            intervals: [500, 1000],
+          }
+        ).toBe(true);
+        vetoState = polledVetoState;
+      }
+
       expect(vetoState).toBeTruthy();
       expect(vetoState.status).toBe('completed');
       expect(vetoState.tournament.format).toBe('bo1');
@@ -233,11 +280,32 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
       tag: ['@api', '@veto', '@cs-major', '@bo3', '@verification'],
     },
     async ({ request }) => {
-      // Veto should already be completed by the previous test (sequential execution with 1 worker)
-      // Just verify the config - no need to re-execute veto
+      // Check if veto is already completed, if not, run it
+      let vetoState = await getVetoState(request, matchSlug);
+      if (!vetoState || vetoState.status !== 'completed') {
+        // Execute CS Major BO3 veto (9 steps)
+        const actions = getCSMajorBO3Actions(team1Id, team2Id);
+        await executeVetoActions(request, matchSlug, actions);
 
-      // Verify veto is completed
-      const vetoState = await getVetoState(request, matchSlug);
+        // Wait for veto to complete
+        let polledVetoState: any = null;
+        await expect.poll(
+          async () => {
+            const state = await getVetoState(request, matchSlug);
+            if (state?.status === 'completed') {
+              polledVetoState = state;
+              return true;
+            }
+            return false;
+          },
+          {
+            timeout: 5000,
+            intervals: [500, 1000],
+          }
+        ).toBe(true);
+        vetoState = polledVetoState;
+      }
+
       expect(vetoState).toBeTruthy();
       expect(vetoState.status).toBe('completed');
 

@@ -29,7 +29,19 @@ export async function executeVetoAction(
 
     if (!response.ok()) {
       const errorText = await response.text();
-      console.error('Veto action failed:', errorText);
+      console.error('Veto action failed:', {
+        status: response.status(),
+        statusText: response.statusText(),
+        error: errorText,
+        matchSlug,
+        action,
+      });
+      
+      // If match not found, tournament might not be started
+      if (response.status() === 404) {
+        console.error('Match not found. Ensure tournament is started and match exists.');
+      }
+      
       return null;
     }
 

@@ -84,15 +84,22 @@ test.describe.serial('Veto API', () => {
     });
     expect(tournament).toBeTruthy();
 
-    // Find match
-    const match = await expect.poll(async () => {
-      return await findMatchByTeams(request, team1Id, team2Id);
+    // Find match using closure variable pattern
+    let match: any = null;
+    await expect.poll(async () => {
+      const found = await findMatchByTeams(request, team1Id, team2Id);
+      if (found) {
+        match = found;
+        return true;
+      }
+      return false;
     }, {
       message: 'BO3 match to be created',
       timeout: 10000,
       intervals: [500, 1000],
-    }).resolves.toBeTruthy();
+    }).toBe(true);
 
+    expect(match).toBeTruthy();
     expect(match?.slug).toBeTruthy();
 
     // Execute CS Major BO3 veto (9 steps)

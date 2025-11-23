@@ -87,9 +87,27 @@ test.describe.serial('Teams UI', () => {
       await playerNameInput.fill('Test Player');
       await page.waitForTimeout(500);
 
-      // Try to add player (press Enter or find add button)
-      await playerNameInput.press('Enter');
-      await page.waitForTimeout(1500);
+      // Click the Add button to add the player
+      // The Add button is a contained button (variant="contained") with AddIcon
+      // It's in the same flex Box as the player name input
+      // Find it by looking for a contained button (not outlined) with an icon
+      // The Resolve button is outlined, the Add button is contained
+      const addButton = modal.locator('button.MuiButton-contained').filter({
+        has: page.locator('svg'),
+      });
+
+      // Verify it's visible and click it
+      await expect(addButton).toBeVisible({ timeout: 5000 });
+      await addButton.click();
+      await page.waitForTimeout(1000);
+
+      // Verify player was added (check that player count increased to 1 and error is gone)
+      const playersHeading = modal.getByText(/players \(\d+\)/i);
+      await expect(playersHeading).toContainText(/players \(1\)/i, { timeout: 5000 });
+
+      // Also verify the "No players added yet" alert is gone
+      const noPlayersAlert = modal.getByText(/no players added yet/i);
+      await expect(noPlayersAlert).not.toBeVisible({ timeout: 2000 });
 
       // Submit form
       const submitButton = modal.getByRole('button', { name: /create team/i });
@@ -115,7 +133,7 @@ test.describe.serial('Teams UI', () => {
 
       // Wait for modal to close (indicates save completed)
       await expect(modal).not.toBeVisible({ timeout: 10000 });
-      
+
       // Wait for page to refresh/update
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
@@ -125,6 +143,7 @@ test.describe.serial('Teams UI', () => {
       await expect(teamInList.first()).toBeVisible({ timeout: 15000 });
 
       // Step 3: Edit team
+      let updatedName: string | undefined;
       await page.reload();
       await page.waitForLoadState('networkidle');
 
@@ -148,7 +167,7 @@ test.describe.serial('Teams UI', () => {
 
           // Modify team name
           const nameInput = editModal.getByLabel(/name/i);
-          const updatedName = `${teamName} Updated`;
+          updatedName = `${teamName} Updated`;
           await nameInput.fill(updatedName);
 
           // Save
@@ -178,7 +197,7 @@ test.describe.serial('Teams UI', () => {
         // Find the team card and click edit button
         const teamCard = teamCardText.locator('..').locator('..').locator('..').first();
         const editButton = teamCard.getByRole('button', { name: /edit/i }).first();
-        
+
         const editButtonVisible = await editButton.isVisible().catch(() => false);
         if (editButtonVisible) {
           await editButton.click();
