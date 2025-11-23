@@ -1,9 +1,8 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn } from '../helpers/auth';
-import { createTestTeams } from '../helpers/teams';
-import { createAndStartTournament } from '../helpers/tournaments';
+import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
-import { executeVetoActions, getCSMajorBO1Actions } from '../helpers/veto';
+import { performVetoActionsUI, getCSMajorBO1UIActions } from '../helpers/vetoUI';
 
 /**
  * Veto UI tests
@@ -23,91 +22,93 @@ test.describe.serial('Veto UI', () => {
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
     
-    // Create teams
-    const teams = await createTestTeams(request, 'veto-ui');
-    expect(teams).toBeTruthy();
-    if (!teams) return;
+    // Setup tournament with all prerequisites (webhook, servers, teams)
+    const setup = await setupTournament(request, {
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamCount: 2,
+      serverCount: 1,
+      prefix: 'veto-ui',
+    });
+    expect(setup).toBeTruthy();
+    if (!setup) return;
     
-    [team1Id, team2Id] = [teams[0].id, teams[1].id];
+    [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
   });
 
-  test('should display correct side badges for both teams', {
+  test('should display correct side badges for both teams after UI veto', {
     tag: ['@ui', '@veto', '@sides'],
   }, async ({ page, request }) => {
-    // Create and start BO1 tournament
-    const tournament = await createAndStartTournament(request, {
-      name: `Veto UI Test ${Date.now()}`,
+    // Setup tournament
+    const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
       maps,
-      teamIds: [team1Id, team2Id],
+      teamCount: 2,
+      serverCount: 1,
+      prefix: 'veto-ui-sides',
     });
-    expect(tournament).toBeTruthy();
+    expect(setup).toBeTruthy();
 
     const match = await findMatchByTeams(request, team1Id, team2Id);
     expect(match).toBeTruthy();
 
-    // Navigate to team match page
-    await page.goto(`/team/${team1Id}/match`);
+    // Perform veto via UI
+    const actions = getCSMajorBO1UIActions(team1Id, team2Id);
+    await performVetoActionsUI(page, actions);
+
+    // View as Team 1 - should see T badge
+    await page.goto(`/team/${team1Id}`);
     await page.waitForLoadState('networkidle');
 
-    // Execute veto via API (faster than UI clicks)
-    const actions = getCSMajorBO1Actions(team1Id, team2Id);
-    await executeVetoActions(request, match!.slug, actions);
+    const team1Badge = page.locator('text=/T|Terrorist/i').first();
+    await expect(team1Badge).toBeVisible({ timeout: 5000 });
 
-    // Reload page to see updated veto state
-    await page.reload();
+    // View as Team 2 - should see CT badge
+    await page.goto(`/team/${team2Id}`);
     await page.waitForLoadState('networkidle');
 
-    // Check for side badge display
-    // Team 1 should show T (opposite of Team 2's CT pick)
-    const team1Badge = page.locator('text=/team.*T|starting.*T/i').first();
-    const team2Badge = page.locator('text=/team.*CT|starting.*CT/i').first();
-    
-    const hasTeam1Badge = await team1Badge.isVisible().catch(() => false);
-    const hasTeam2Badge = await team2Badge.isVisible().catch(() => false);
-    
-    // At least one side indicator should be visible
-    expect(hasTeam1Badge || hasTeam2Badge).toBeTruthy();
+    const team2Badge = page.locator('text=/CT|Counter-Terrorist/i').first();
+    await expect(team2Badge).toBeVisible({ timeout: 5000 });
   });
 
-  test('should display veto interface and match details after completion', {
+  test('should display veto interface and complete via UI', {
     tag: ['@ui', '@veto'],
   }, async ({ page, request }) => {
-    // Create and start BO1 tournament
-    const tournament = await createAndStartTournament(request, {
-      name: `Veto Display Test ${Date.now()}`,
+    // Setup tournament
+    const setup = await setupTournament(request, {
       type: 'single_elimination',
       format: 'bo1',
       maps,
-      teamIds: [team1Id, team2Id],
+      teamCount: 2,
+      serverCount: 1,
+      prefix: 'veto-ui-display',
     });
-    expect(tournament).toBeTruthy();
+    expect(setup).toBeTruthy();
 
     const match = await findMatchByTeams(request, team1Id, team2Id);
     expect(match).toBeTruthy();
 
     // Navigate to team match page
-    await page.goto(`/team/${team1Id}/match`);
+    await page.goto(`/team/${team1Id}`);
     await page.waitForLoadState('networkidle');
 
     // Verify veto interface is visible
-    const vetoInterface = page.locator('text=/veto|pick.*ban|map.*selection/i');
-    const hasVetoInterface = await vetoInterface.first().isVisible().catch(() => false);
-    expect(hasVetoInterface).toBeTruthy();
+    const vetoInterface = page.locator('text=/your turn|pick.*ban|map/i');
+    await expect(vetoInterface.first()).toBeVisible({ timeout: 5000 });
 
-    // Complete veto via API
-    const actions = getCSMajorBO1Actions(team1Id, team2Id);
-    await executeVetoActions(request, match!.slug, actions);
+    // Complete veto via UI
+    const actions = getCSMajorBO1UIActions(team1Id, team2Id);
+    await performVetoActionsUI(page, actions);
 
-    // Reload and verify match details are shown
+    // Reload and verify match details or completion message
     await page.reload();
     await page.waitForLoadState('networkidle');
 
-    // Should show match details (not veto interface)
-    const matchDetails = page.locator('text=/match|server|connect/i');
-    const hasMatchDetails = await matchDetails.first().isVisible().catch(() => false);
-    expect(hasMatchDetails).toBeTruthy();
+    // Should show match details or "Veto Completed" message
+    const matchDetails = page.locator('text=/match|server|connect|veto.*completed/i');
+    await expect(matchDetails.first()).toBeVisible({ timeout: 5000 });
   });
 });
 

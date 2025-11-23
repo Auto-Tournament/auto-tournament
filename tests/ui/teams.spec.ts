@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn } from '../helpers/auth';
-import { createTestTeams, deleteTeam } from '../helpers/teams';
 
 /**
  * Teams UI tests
@@ -167,16 +166,58 @@ test.describe.serial('Teams UI', () => {
         }
       }
 
-      // Step 4: Delete team via API (cleanup)
-      // Find team ID from the page or use API to find it
-      const teamsResponse = await request.get('/api/teams', {
-        headers: { Authorization: `Bearer ${process.env.API_TOKEN || 'admin123'}` },
-      });
-      if (teamsResponse.ok()) {
-        const teamsData = await teamsResponse.json();
-        const teamToDelete = teamsData.teams?.find((t: any) => t.name.includes('UI Test Team'));
-        if (teamToDelete) {
-          await deleteTeam(request, teamToDelete.id);
+      // Step 4: Delete team via UI
+      await page.reload();
+      await page.waitForLoadState('networkidle');
+
+      // Find the team card (use updated name if it was edited, otherwise original)
+      const teamCardText = page.getByText(updatedName || teamName, { exact: false });
+      const teamCardVisible = await teamCardText.isVisible().catch(() => false);
+
+      if (teamCardVisible) {
+        // Find the team card and click edit button
+        const teamCard = teamCardText.locator('..').locator('..').locator('..').first();
+        const editButton = teamCard.getByRole('button', { name: /edit/i }).first();
+        
+        const editButtonVisible = await editButton.isVisible().catch(() => false);
+        if (editButtonVisible) {
+          await editButton.click();
+
+          // Wait for edit modal
+          const editModal = page.getByRole('dialog');
+          await expect(editModal).toBeVisible();
+
+          // Find and click delete button
+          const deleteButton = editModal.getByRole('button', { name: /delete team/i });
+          const deleteButtonVisible = await deleteButton.isVisible().catch(() => false);
+
+          if (deleteButtonVisible) {
+            await deleteButton.click();
+
+            // Wait for confirmation dialog
+            const confirmDialog = page.getByRole('dialog').filter({ hasText: /delete.*team/i });
+            await expect(confirmDialog).toBeVisible({ timeout: 2000 });
+
+            // Confirm deletion
+            const confirmButton = confirmDialog.getByRole('button', { name: /^delete$/i });
+            await Promise.all([
+              page
+                .waitForResponse(
+                  (resp) =>
+                    resp.url().includes('/api/teams') && resp.request().method() === 'DELETE',
+                  { timeout: 10000 }
+                )
+                .catch(() => null),
+              confirmButton.click(),
+            ]);
+
+            // Wait for deletion to complete
+            await page.waitForTimeout(2000);
+            await page.waitForLoadState('networkidle');
+
+            // Verify team is no longer visible
+            await expect(teamCardText).not.toBeVisible({ timeout: 5000 });
+          }
         }
       }
     }

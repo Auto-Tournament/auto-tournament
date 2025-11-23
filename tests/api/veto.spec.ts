@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn } from '../helpers/auth';
-import { createTestTeams } from '../helpers/teams';
+import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
 import { executeVetoActions, getVetoState, getCSMajorBO1Actions, getCSMajorBO3Actions } from '../helpers/veto';
@@ -23,12 +23,19 @@ test.describe.serial('Veto API', () => {
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
     
-    // Create teams
-    const teams = await createTestTeams(request, 'veto-api');
-    expect(teams).toBeTruthy();
-    if (!teams) return;
+    // Setup tournament with all prerequisites (webhook, servers, teams)
+    const setup = await setupTournament(request, {
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamCount: 2,
+      serverCount: 1,
+      prefix: 'veto-api',
+    });
+    expect(setup).toBeTruthy();
+    if (!setup) return;
     
-    [team1Id, team2Id] = [teams[0].id, teams[1].id];
+    [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
   });
 
   test('should complete CS Major BO1 veto and assign sides correctly', {
