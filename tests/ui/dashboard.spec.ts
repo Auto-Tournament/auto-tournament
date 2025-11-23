@@ -1,32 +1,40 @@
 import { test, expect } from '@playwright/test';
+import { ensureSignedIn } from '../helpers/auth';
 
 /**
- * Dashboard page tests
+ * Dashboard UI tests
+ * Tests dashboard page functionality
+ *
+ * @tag ui
  * @tag dashboard
  * @tag navigation
  */
 
-test.describe('Dashboard Page', () => {
+test.describe.serial('Dashboard Page', () => {
   test.beforeEach(async ({ page }) => {
-    // Login before each test
-    const apiToken = process.env.API_TOKEN || 'admin123';
-    await page.goto('/login');
-    await page.getByLabel(/api token/i).fill(apiToken);
-    await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).not.toHaveURL(/\/login/);
-  });
-
-  test('should display dashboard', { tag: ['@dashboard'] }, async ({ page }) => {
-    await page.goto('/');
-    await expect(page).toHaveTitle(/Dashboard/i);
-
-    // Check for dashboard heading
-    await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+    // Ensure signed in (checks first, only signs in if needed)
+    await ensureSignedIn(page);
   });
 
   test(
+    'should display dashboard',
+    {
+      tag: ['@ui', '@dashboard'],
+    },
+    async ({ page }) => {
+      await page.goto('/');
+      await expect(page).toHaveTitle(/Dashboard/i);
+
+      // Check for dashboard heading
+      await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+    }
+  );
+
+  test(
     'should display navigation cards',
-    { tag: ['@dashboard', '@navigation'] },
+    {
+      tag: ['@ui', '@dashboard', '@navigation'],
+    },
     async ({ page }) => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
@@ -43,7 +51,9 @@ test.describe('Dashboard Page', () => {
 
   test(
     'should navigate to all pages from dashboard cards',
-    { tag: ['@dashboard', '@navigation'] },
+    {
+      tag: ['@ui', '@dashboard', '@navigation'],
+    },
     async ({ page }) => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
@@ -69,14 +79,20 @@ test.describe('Dashboard Page', () => {
     }
   );
 
-  test('should display onboarding checklist', { tag: ['@dashboard'] }, async ({ page }) => {
-    await page.goto('/');
+  test(
+    'should display onboarding checklist',
+    {
+      tag: ['@ui', '@dashboard'],
+    },
+    async ({ page }) => {
+      await page.goto('/');
 
-    // Check for onboarding checklist (may or may not be visible depending on state)
-    const checklist = page.locator('text=/onboarding|checklist|setup/i');
-    const isVisible = await checklist.isVisible().catch(() => false);
+      // Check for onboarding checklist (may or may not be visible depending on state)
+      const checklist = page.locator('text=/onboarding|checklist|setup/i');
+      const isVisible = await checklist.isVisible().catch(() => false);
 
-    // Checklist might not always be visible, so we just check if page loads correctly
-    await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
-  });
+      // Checklist might not always be visible, so we just check if page loads correctly
+      await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+    }
+  );
 });
