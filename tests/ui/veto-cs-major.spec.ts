@@ -106,15 +106,19 @@ test.describe.serial('CS Major BO3 Veto - UI E2E', () => {
 
     // Find match
     const match = await expect.poll(async () => {
-      return await findMatchByTeams(request, team1Id, team2Id);
+      const found = await findMatchByTeams(request, team1Id, team2Id);
+      return found || null;
     }, {
       message: 'BO3 match to be created',
       timeout: 10000,
       intervals: [500, 1000],
-    }).resolves.toBeTruthy();
+    });
     
     expect(match).toBeTruthy();
-    matchSlug = match!.slug;
+    if (!match) {
+      throw new Error('Match not found after tournament creation');
+    }
+    matchSlug = match.slug;
   });
 
   test('should visually display BO3 veto process step by step', {

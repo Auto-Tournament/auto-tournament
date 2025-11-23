@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
+import { getAuthHeader } from '../helpers/auth';
 import { createTestServer, deleteServer, type Server } from '../helpers/servers';
 
 /**
@@ -15,7 +16,7 @@ test.describe.serial('Server API', () => {
   let context: Awaited<ReturnType<typeof setupTestContext>>;
   let createdServer: Server | null = null;
 
-  test.beforeAll(async ({ page, request }) => {
+  test.beforeEach(async ({ page, request }) => {
     context = await setupTestContext(page, request);
   });
 
@@ -42,8 +43,10 @@ test.describe.serial('Server API', () => {
     const deleteResult = await deleteServer(request, server!.id);
     expect(deleteResult).toBe(true);
 
-    // Verify server is deleted
-    const getDeletedResponse = await request.get(`/api/servers/${server!.id}`);
+    // Verify server is deleted (with auth header)
+    const getDeletedResponse = await request.get(`/api/servers/${server!.id}`, {
+      headers: getAuthHeader(),
+    });
     expect(getDeletedResponse.status()).toBe(404);
   });
 });

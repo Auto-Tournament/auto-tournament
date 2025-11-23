@@ -114,7 +114,12 @@ test.describe.serial('Teams UI', () => {
         submitButton.click({ timeout: 5000 }).catch(() => submitButton.click({ force: true })),
       ]);
 
-      await page.waitForTimeout(2000);
+      // Wait for modal to close (indicates save completed)
+      await expect(modal).not.toBeVisible({ timeout: 10000 });
+      
+      // Wait for page to refresh/update
+      await page.waitForLoadState('networkidle');
+      await page.waitForTimeout(1000);
 
       // Step 2: Verify team appears in list
       const teamInList = page.getByText(teamName, { exact: false });

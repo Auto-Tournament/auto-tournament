@@ -15,7 +15,7 @@ test.describe.serial('Server UI', () => {
   let context: Awaited<ReturnType<typeof setupTestContext>>;
   let createdServer: Server | null = null;
 
-  test.beforeAll(async ({ page, request }) => {
+  test.beforeEach(async ({ page, request }) => {
     context = await setupTestContext(page, request);
   });
 

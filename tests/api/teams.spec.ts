@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
+import { getAuthHeader } from '../helpers/auth';
 import { createTeam, createTestTeams, updateTeam, deleteTeam, type Team } from '../helpers/teams';
 
 /**
@@ -15,7 +16,7 @@ test.describe.serial('Teams API', () => {
   let context: Awaited<ReturnType<typeof setupTestContext>>;
   let createdTeam: Team | null = null;
 
-  test.beforeAll(async ({ page, request }) => {
+  test.beforeEach(async ({ page, request }) => {
     context = await setupTestContext(page, request);
   });
 
@@ -60,8 +61,10 @@ test.describe.serial('Teams API', () => {
     const deleteResult = await deleteTeam(request, team!.id);
     expect(deleteResult).toBe(true);
 
-    // Step 5: Verify team is deleted
-    const getDeletedResponse = await request.get(`/api/teams/${team!.id}`);
+    // Step 5: Verify team is deleted (with auth header)
+    const getDeletedResponse = await request.get(`/api/teams/${team!.id}`, {
+      headers: getAuthHeader(),
+    });
     expect(getDeletedResponse.status()).toBe(404);
   });
 

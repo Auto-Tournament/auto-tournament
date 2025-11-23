@@ -59,15 +59,21 @@ export async function signInViaAPI(page: Page): Promise<boolean> {
  * @param page Playwright page
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
+  // Navigate to a page first (required for localStorage access)
+  await page.goto('/');
+  
   // Check if already signed in
-  const token = await page.evaluate(() => localStorage.getItem('api_token'));
-  if (token === API_TOKEN) {
-    // Verify we're not on login page
-    await page.goto('/');
-    const url = page.url();
-    if (!url.includes('/login')) {
-      return; // Already signed in
+  try {
+    const token = await page.evaluate(() => localStorage.getItem('api_token'));
+    if (token === API_TOKEN) {
+      // Verify we're not on login page
+      const url = page.url();
+      if (!url.includes('/login')) {
+        return; // Already signed in
+      }
     }
+  } catch (error) {
+    // If localStorage access fails, just sign in
   }
   
   // Sign in via API (faster)

@@ -41,11 +41,21 @@ export async function createTournament(
 
     if (!response.ok()) {
       const errorText = await response.text();
-      console.error('Tournament creation failed:', errorText);
+      console.error('Tournament creation failed:', {
+        status: response.status(),
+        statusText: response.statusText(),
+        error: errorText,
+        input: { name: input.name, type: input.type, format: input.format, teamCount: input.teamIds.length },
+      });
       return null;
     }
 
     const data = await response.json();
+    // API returns { success: true, tournament, message }
+    if (!data.tournament) {
+      console.error('Tournament creation response missing tournament:', data);
+      return null;
+    }
     return data.tournament;
   } catch (error) {
     console.error('Tournament creation error:', error);
@@ -80,13 +90,29 @@ export async function createAndStartTournament(
   request: APIRequestContext,
   input: CreateTournamentInput
 ): Promise<Tournament | null> {
+  // Delete any existing tournament first to avoid conflicts
+  try {
+    await request.delete('/api/tournament', {
+      headers: getAuthHeader(),
+    });
+    // Wait a bit for deletion to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
+  } catch (error) {
+    // Ignore errors if no tournament exists
+  }
+
   const tournament = await createTournament(request, input);
   if (!tournament) {
+    console.error('Failed to create tournament:', input.name);
     return null;
   }
 
+  // Wait a bit for bracket generation
+  await new Promise(resolve => setTimeout(resolve, 1000));
+
   const started = await startTournament(request);
   if (!started) {
+    console.error('Failed to start tournament:', input.name);
     return null;
   }
 
