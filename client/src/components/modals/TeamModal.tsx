@@ -203,6 +203,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       }
 
       onSave();
+      onClose();
       resetForm();
     } catch (err) {
       const error = err as Error;

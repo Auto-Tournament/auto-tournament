@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
 
 /**
  * Teams UI tests
@@ -11,8 +11,20 @@ import { ensureSignedIn } from '../helpers/auth';
  */
 
 test.describe.serial('Teams UI', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    
+    // Set webhook URL to dismiss the alert that covers buttons
+    const baseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
+    try {
+      await request.put('/api/settings', {
+        headers: getAuthHeader(),
+        data: { webhookUrl: baseUrl },
+      });
+    } catch (error) {
+      // Non-blocking - continue even if webhook setting fails
+      console.warn('Could not set webhook URL:', error);
+    }
   });
 
   test(
@@ -43,6 +55,22 @@ test.describe.serial('Teams UI', () => {
     async ({ page, request }) => {
       await page.goto('/teams');
       await page.waitForLoadState('networkidle');
+      
+      // Dismiss webhook alert if present (it might cover buttons)
+      const webhookAlert = page.getByText(/webhook.*not configured/i);
+      const alertVisible = await webhookAlert.isVisible().catch(() => false);
+      if (alertVisible) {
+        // Try to close the alert or scroll it out of the way
+        const closeButton = page.getByRole('button', { name: /open settings/i }).or(
+          page.locator('button').filter({ hasText: /close|dismiss/i })
+        );
+        const closeButtonVisible = await closeButton.first().isVisible().catch(() => false);
+        if (closeButtonVisible) {
+          // Scroll to top to move alert out of the way
+          await page.evaluate(() => window.scrollTo(0, 0));
+          await page.waitForTimeout(500);
+        }
+      }
 
       // Step 1: Create team via UI
       const createButton = page.getByRole('button', { name: /add team|create team/i }).first();
@@ -119,7 +147,7 @@ test.describe.serial('Teams UI', () => {
       }
 
       // Wait for creation
-      await Promise.all([
+      const [response] = await Promise.all([
         page
           .waitForResponse(
             (resp) =>
@@ -131,7 +159,13 @@ test.describe.serial('Teams UI', () => {
         submitButton.click({ timeout: 5000 }).catch(() => submitButton.click({ force: true })),
       ]);
 
+      // Verify the API call succeeded
+      if (response) {
+        expect(response.ok()).toBeTruthy();
+      }
+
       // Wait for modal to close (indicates save completed)
+      // The modal should close after onSave() and onClose() are called
       await expect(modal).not.toBeVisible({ timeout: 10000 });
 
       // Wait for page to refresh/update
