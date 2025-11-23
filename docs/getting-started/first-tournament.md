@@ -54,8 +54,8 @@ Description: 8-team single elimination
 **Match Format:**
 
 - **BO1** - One map, veto required (7 maps → ban 6, pick sides)
-- **BO3** - Three maps, veto required (7 maps → ban 2, pick 2, decider)
-- **BO5** - Five maps, veto required (7 maps → ban 2, pick all)
+- **BO3** - Three maps, veto required (7 maps → ban 4, pick 2, decider with side pick)
+- **BO5** - Five maps, veto required (7 maps → ban 2, pick 4, decider with knife round)
 - **Round Robin/Swiss** - Pre-set maps, no veto
 
 ### Select Teams
@@ -80,12 +80,14 @@ Power of 2 (2, 4, 8, 16) recommended for elimination brackets.
 Select a map pool from the dropdown:
 
 **Options:**
+
 - **Active Duty** - Default 7 competitive maps (recommended)
   - Ancient, Anubis, Dust II, Inferno, Mirage, Nuke, Vertigo
 - **Custom Pools** - Any pools you've created (see [Managing Maps](../guides/managing-maps.md))
 - **Custom** - Manually select maps for this tournament
 
 **Requirements:**
+
 - ⚠️ Need exactly 7 maps for proper veto flow
 - Active Duty pool automatically has 7 maps
 - Custom pools must have exactly 7 maps (warning shown if not)
@@ -170,31 +172,30 @@ Visual bracket updates in real-time:
 
 (For BO1/BO3/BO5 matches)
 
-### BO1 Example:
+### BO1 Example (CS Major Format):
 
 ```
-1. Team A bans map
-2. Team B bans map
-3. Team A bans map
-4. Team B bans map
-5. Team A bans map
-6. Team B bans map
-7. Last map auto-picked
-8. Team B picks starting side
+1. Team A bans 1 map (first of 2)
+2. Team A bans 1 map (second of 2)
+3. Team B bans 1 map (first of 3)
+4. Team B bans 1 map (second of 3)
+5. Team B bans 1 map (third of 3)
+6. Team A bans 1 map
+7. Team B picks starting side on remaining map
 ```
 
-### BO3 Example:
+### BO3 Example (CS Major Format):
 
 ```
-1. Team A bans map
-2. Team B bans map
+1. Team A bans 1 map
+2. Team B bans 1 map
 3. Team A picks Map 1
 4. Team B picks side for Map 1
 5. Team B picks Map 2
 6. Team A picks side for Map 2
-7. Team A bans map
-8. Team B bans map
-9. Last map is Map 3 (knife round)
+7. Team B bans 1 map
+8. Team A bans 1 map
+9. Team B picks side for Map 3 (decider)
 ```
 
 Teams see turn-based interface with:

@@ -21,11 +21,11 @@ Round Robin and Swiss tournaments use **preset maps** and **don't require veto**
 ### BO1 Format (7 Steps) - CS Major Standard
 
 ```
-1. Team A removes 2 maps (first)
-2. Team A removes 2 maps (second)
-3. Team B removes 3 maps (first)
-4. Team B removes 3 maps (second)
-5. Team B removes 3 maps (third)
+1. Team A removes 1 map (first of 2)
+2. Team A removes 1 map (second of 2)
+3. Team B removes 1 map (first of 3)
+4. Team B removes 1 map (second of 3)
+5. Team B removes 1 map (third of 3)
 6. Team A removes 1 map
 7. Team B chooses starting side on remaining map
 
@@ -69,7 +69,10 @@ Result: 4 picked maps + 1 decider (with knife round)
 
 ## Custom Veto Formatting
 
-The system supports **custom veto orders** that comply with CS Major rules. Tournament organizers can define custom veto sequences while ensuring they follow professional Counter-Strike standards.
+!!! info "Coming Soon"
+Custom veto orders are currently only available via API. A user interface for configuring custom veto orders in tournament settings is planned for a future release.
+
+The backend system supports **custom veto orders** that comply with CS Major rules. Tournament organizers can define custom veto sequences via the API while ensuring they follow professional Counter-Strike standards.
 
 ### CS Major Compliance
 
@@ -82,25 +85,34 @@ All veto formats are validated to ensure compliance with the [Counter-Strike Maj
 - ✅ Sequential step numbering starting from 1
 - ✅ Valid team assignments (team1/team2) and actions (ban/pick/side_pick)
 
-### Using Custom Veto Orders
+### Using Custom Veto Orders (API Only)
 
-Custom veto orders can be configured in tournament settings. If a custom order is provided and passes validation, it will be used instead of the standard format. If validation fails, the system automatically falls back to the standard CS Major format.
+Custom veto orders can be configured when creating a tournament via the API by including a `settings.customVetoOrder` object in the request body. If a custom order is provided and passes validation, it will be used instead of the standard format. If validation fails, the system automatically falls back to the standard CS Major format.
 
-**Example Custom BO3 Format:**
+**Example API Request with Custom BO3 Format:**
+
 ```json
+POST /api/tournament
 {
-  "customVetoOrder": {
-    "bo3": [
-      { "step": 1, "team": "team1", "action": "ban" },
-      { "step": 2, "team": "team2", "action": "ban" },
-      { "step": 3, "team": "team1", "action": "pick" },
-      { "step": 4, "team": "team2", "action": "side_pick" },
-      { "step": 5, "team": "team2", "action": "pick" },
-      { "step": 6, "team": "team1", "action": "side_pick" },
-      { "step": 7, "team": "team1", "action": "ban" },
-      { "step": 8, "team": "team2", "action": "ban" },
-      { "step": 9, "team": "team2", "action": "side_pick" }
-    ]
+  "name": "My Tournament",
+  "type": "single_elimination",
+  "format": "bo3",
+  "maps": ["de_mirage", "de_inferno", "de_ancient", "de_anubis", "de_dust2", "de_vertigo", "de_nuke"],
+  "teamIds": ["team1", "team2"],
+  "settings": {
+    "customVetoOrder": {
+      "bo3": [
+        { "step": 1, "team": "team1", "action": "ban" },
+        { "step": 2, "team": "team2", "action": "ban" },
+        { "step": 3, "team": "team1", "action": "pick" },
+        { "step": 4, "team": "team2", "action": "side_pick" },
+        { "step": 5, "team": "team2", "action": "pick" },
+        { "step": 6, "team": "team1", "action": "side_pick" },
+        { "step": 7, "team": "team2", "action": "ban" },
+        { "step": 8, "team": "team1", "action": "ban" },
+        { "step": 9, "team": "team2", "action": "side_pick" }
+      ]
+    }
   }
 }
 ```
@@ -199,7 +211,7 @@ Both teams see the veto progress **live** via WebSocket:
 8. ✅ **Connect info shown** — Server IP, port, connect command
 
 !!! info "Server Allocation"
-    If no servers are available immediately after veto completion, the system automatically polls every 10 seconds in the background. Teams will see "WAITING FOR SERVER" status, and the match will be assigned as soon as a server becomes available. All updates are sent via WebSocket, so no page refresh is needed!
+If no servers are available immediately after veto completion, the system automatically polls every 10 seconds in the background. Teams will see "WAITING FOR SERVER" status, and the match will be assigned as soon as a server becomes available. All updates are sent via WebSocket, so no page refresh is needed!
 
 Teams then connect to the server and play!
 
@@ -209,17 +221,22 @@ Teams then connect to the server and play!
 
 Both teams and admins can see the complete veto history:
 
+**BO3 Example:**
+
 ```
 Veto History
 
 Step 1: Team Alpha BANNED Ancient
 Step 2: Team Beta BANNED Vertigo
 Step 3: Team Alpha PICKED Mirage (Starting T)
-Step 4: Team Beta PICKED Dust2 (Starting CT)
-Step 5: Team Alpha BANNED Nuke
-Step 6: Team Beta BANNED Inferno
+Step 4: Team Beta PICKED SIDE on Mirage (Starting CT)
+Step 5: Team Beta PICKED Dust2 (Starting CT)
+Step 6: Team Alpha PICKED SIDE on Dust2 (Starting T)
+Step 7: Team Beta BANNED Nuke
+Step 8: Team Alpha BANNED Inferno
+Step 9: Team Beta PICKED SIDE on Anubis (Decider, Starting CT)
 
-Decider: Anubis (Knife Round)
+Decider: Anubis (Side chosen by Team Beta)
 ```
 
 ---
