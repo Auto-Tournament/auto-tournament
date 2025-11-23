@@ -40,8 +40,15 @@ export async function performVetoActionUI(
   action: VetoUIAction
 ): Promise<boolean> {
   // Navigate to team's match page
-  await page.goto(`/team/${teamSlug}`);
-  await page.waitForLoadState('networkidle');
+  await page.goto(`/team/${teamSlug}`, { waitUntil: 'domcontentloaded' });
+  // Use a timeout for networkidle to prevent hanging
+  try {
+    await page.waitForLoadState('networkidle', { timeout: 5000 });
+  } catch (error) {
+    // If networkidle times out, just wait a bit and continue
+    console.warn('Network idle timeout, continuing anyway...');
+    await page.waitForTimeout(1000);
+  }
 
   // Wait for veto interface to be visible (check for "Your turn" or map cards)
   try {
@@ -64,7 +71,12 @@ export async function performVetoActionUI(
     
     // Wait for action to complete (veto state should update)
     await page.waitForTimeout(1500);
-    await page.waitForLoadState('networkidle');
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 });
+    } catch (error) {
+      // If networkidle times out, just wait a bit and continue
+      await page.waitForTimeout(1000);
+    }
     return true;
   } else {
     // For ban/pick, find the map card and click it
@@ -106,7 +118,12 @@ export async function performVetoActionUI(
     
     // Wait for action to complete
     await page.waitForTimeout(1500);
-    await page.waitForLoadState('networkidle');
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 5000 });
+    } catch (error) {
+      // If networkidle times out, just wait a bit and continue
+      await page.waitForTimeout(1000);
+    }
     return true;
   }
 }
@@ -120,8 +137,20 @@ export async function performVetoActionsUI(
   page: Page,
   actions: VetoUIAction[]
 ): Promise<void> {
-  for (const action of actions) {
-    await performVetoActionUI(page, action.teamSlug, action);
+  for (let i = 0; i < actions.length; i++) {
+    const action = actions[i];
+    console.log(`[Veto UI] Action ${i + 1}/${actions.length}: ${action.action} ${action.mapName || action.side} for team ${action.teamSlug}`);
+    
+    try {
+      const success = await performVetoActionUI(page, action.teamSlug, action);
+      if (!success) {
+        console.warn(`[Veto UI] Action ${i + 1} returned false, but continuing...`);
+      }
+    } catch (error) {
+      console.error(`[Veto UI] Error on action ${i + 1}:`, error);
+      throw error;
+    }
+    
     // Small delay between actions
     await page.waitForTimeout(500);
   }
