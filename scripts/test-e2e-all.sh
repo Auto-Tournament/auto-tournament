@@ -106,13 +106,33 @@ if [[ "$*" == *"--ui"* ]]; then
   echo -e "${BLUE}Running in UI mode (interactive)${NC}"
 fi
 
+# Extract all Playwright arguments (everything except --ui which we handle separately)
+# This allows passing through --grep, --project, and other Playwright options
+PLAYWRIGHT_ARGS=()
+SKIP_UI=false
+for arg in "$@"; do
+  if [[ "$arg" == "--ui" ]]; then
+    # Skip --ui, we handle it separately
+    SKIP_UI=true
+    continue
+  else
+    # Pass through all other arguments (like --grep, --project, etc.)
+    PLAYWRIGHT_ARGS+=("$arg")
+  fi
+done
+
+# Show what filters are being applied
+if [ ${#PLAYWRIGHT_ARGS[@]} -gt 0 ]; then
+  echo -e "${BLUE}Playwright filters: ${PLAYWRIGHT_ARGS[*]}${NC}"
+fi
+
 # Run tests (skip webServer since Docker Compose handles it)
 # Note: timeout command may not be available on macOS, so we run without it
 # The test timeout is handled by Playwright's own timeout settings
 if [ "$UI_MODE" = true ]; then
-  SKIP_WEBSERVER=1 yarn test:manual --ui
+  SKIP_WEBSERVER=1 yarn test:manual --ui "${PLAYWRIGHT_ARGS[@]}"
 else
-  SKIP_WEBSERVER=1 yarn test:manual
+  SKIP_WEBSERVER=1 yarn test:manual "${PLAYWRIGHT_ARGS[@]}"
 fi
 TEST_EXIT_CODE=$?
 

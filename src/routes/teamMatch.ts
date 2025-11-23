@@ -233,9 +233,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       }
     }
 
-    // Get tournament status
-    const tournament = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM tournament WHERE id = ?',
+    // Get tournament status and format
+    const tournament = await db.queryOneAsync<{ status: string; format: string }>(
+      'SELECT status, format FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
 
@@ -279,7 +279,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
-    const normalizedLiveStats = liveStats ? normalizeLiveStatsForTeamView(liveStats, isTeam1) : null;
+    const normalizedLiveStats = liveStats
+      ? normalizeLiveStatsForTeamView(liveStats, isTeam1)
+      : null;
     const rawMapResults = await getMapResults(match.slug);
     const normalizedMapResults = rawMapResults.map((result) => ({
       mapNumber: result.mapNumber,
@@ -359,7 +361,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
         mapResults: normalizedMapResults,
         veto: vetoSummary,
-        matchFormat: config.num_maps ? `BO${config.num_maps}` : 'BO3',
+        matchFormat: (tournament?.format as 'bo1' | 'bo3' | 'bo5') || 'bo3',
         loadedAt: match.loaded_at,
         config: {
           maplist: config.maplist,

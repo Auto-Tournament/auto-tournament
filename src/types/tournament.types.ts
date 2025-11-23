@@ -8,12 +8,23 @@ export type TournamentStatus = 'setup' | 'ready' | 'in_progress' | 'completed' |
 
 export type MatchFormat = 'bo1' | 'bo3' | 'bo5';
 
+export interface VetoStep {
+  step: number;
+  team: 'team1' | 'team2';
+  action: 'ban' | 'pick' | 'side_pick';
+}
+
 export interface TournamentSettings {
   matchFormat: MatchFormat;
   thirdPlaceMatch: boolean;
   autoAdvance: boolean;
   checkInRequired: boolean;
   seedingMethod: 'random' | 'manual';
+  customVetoOrder?: {
+    bo1?: VetoStep[];
+    bo3?: VetoStep[];
+    bo5?: VetoStep[];
+  };
 }
 
 export interface Tournament {

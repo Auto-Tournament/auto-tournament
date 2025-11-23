@@ -40,9 +40,9 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       [match.team2_id]
     );
 
-    // Get tournament to determine format
-    const tournament = await db.queryOneAsync<{ format: string; maps: string }>(
-      'SELECT format, maps FROM tournament WHERE id = ?',
+    // Get tournament to determine format and settings
+    const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
+      'SELECT format, maps, settings FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
 
@@ -55,13 +55,15 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
 
     const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
     const tournamentMaps = JSON.parse(tournament.maps);
+    const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
+    const customVetoOrder = tournamentSettings.customVetoOrder;
 
     // Parse existing veto state or create new one
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
 
     if (!vetoState) {
-      // Initialize veto state
-      const vetoOrder = getVetoOrder(format);
+      // Initialize veto state using custom veto order if available
+      const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length);
       vetoState = {
         matchSlug,
         format,
@@ -143,9 +145,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       [match.team2_id]
     );
 
-    // Get tournament
-    const tournament = await db.queryOneAsync<{ format: string; maps: string }>(
-      'SELECT format, maps FROM tournament WHERE id = ?',
+    // Get tournament with settings
+    const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
+      'SELECT format, maps, settings FROM tournament WHERE id = ?',
       [match.tournament_id]
     );
 
@@ -158,7 +160,9 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
     const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
     const tournamentMaps = JSON.parse(tournament.maps);
-    const vetoOrder = getVetoOrder(format);
+    const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
+    const customVetoOrder = tournamentSettings.customVetoOrder;
+    const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length);
 
     // Get current veto state
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
@@ -277,7 +281,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         timestamp: Math.floor(Date.now() / 1000),
       });
     } else if (currentAction === 'side_pick') {
-      log.debug('Processing side pick', { side, currentAction, teamSlug });
+      log.debug('Processing side pick', { side, currentAction, teamSlug, format, currentStep: vetoState.currentStep, totalSteps: vetoState.totalSteps });
 
       if (!side || !['CT', 'T'].includes(side)) {
         log.warn('Invalid side selection', { side });
@@ -285,6 +289,20 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
           success: false,
           error: 'Invalid side selection',
         });
+      }
+
+      // For BO1 and BO3, if this is the last step and there's exactly one map remaining, it's the decider map
+      // We need to add it to pickedMaps before setting the side
+      if ((format === 'bo1' || format === 'bo3') && vetoState.currentStep === vetoState.totalSteps && vetoState.availableMaps.length === 1) {
+        const deciderMap = vetoState.availableMaps[0];
+        vetoState.pickedMaps.push({
+          mapNumber: vetoState.pickedMaps.length + 1,
+          mapName: deciderMap,
+          pickedBy: 'decider',
+          knifeRound: false, // Not a knife round, side is picked
+        });
+        vetoState.availableMaps = [];
+        log.info(`Added decider map ${deciderMap} for ${format.toUpperCase()} before side pick`);
       }
 
       // Set side for the last picked map
@@ -332,13 +350,15 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       vetoState.completedAt = Math.floor(Date.now() / 1000);
 
       // Add remaining map as decider (if applicable)
-      if (vetoState.availableMaps.length === 1) {
+      // Note: For BO1 and BO3, the decider map is already added during the last side_pick step
+      // This is only for BO5 (if not handled in side_pick) or edge cases
+      if (vetoState.availableMaps.length === 1 && format !== 'bo1' && format !== 'bo3') {
         const deciderMap = vetoState.availableMaps[0];
         vetoState.pickedMaps.push({
           mapNumber: vetoState.pickedMaps.length + 1,
           mapName: deciderMap,
           pickedBy: 'decider',
-          knifeRound: true, // Decider map always has knife
+          knifeRound: format === 'bo5', // BO5 decider has knife, BO1 doesn't apply
         });
         vetoState.availableMaps = [];
       }
@@ -413,12 +433,21 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
               log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
               console.log(`Server: ${result.serverId}`);
             } else {
-              log.error(`❌ Failed to load match ${matchSlug} after veto: ${result.error}`);
-              console.error('Allocation error:', result.error);
+              log.warn(`⚠️ Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
+              console.log('Allocation error:', result.error);
+              
+              // Start polling for available servers (checks every 10 seconds)
+              // The backend will keep checking for available servers and assign one when found
+              console.log(`[VETO] Starting background polling for available servers...`);
+              matchAllocationService.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {
             log.error(`❌ Error loading match after veto`, err as Error);
             console.error('Exception during allocation:', err);
+            
+            // Start polling even on exception if match is still ready
+            console.log(`[VETO] Starting background polling for available servers after error...`);
+            matchAllocationService.startPollingForServer(matchSlug, baseUrl);
           }
         });
       }

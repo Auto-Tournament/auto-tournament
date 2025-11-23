@@ -18,33 +18,34 @@ Round Robin and Swiss tournaments use **preset maps** and **don't require veto**
 
 ## Veto Flow
 
-### BO1 Format (7 Steps)
+### BO1 Format (7 Steps) - CS Major Standard
 
 ```
-1. Team A bans a map
-2. Team B bans a map
-3. Team A bans a map
-4. Team B bans a map
-5. Team A bans a map
-6. Team B bans a map
-7. Team A picks starting side on remaining map
+1. Team A removes 1 map (first of 2)
+2. Team A removes 1 map (second of 2)
+3. Team B removes 1 map (first of 3)
+4. Team B removes 1 map (second of 3)
+5. Team B removes 1 map (third of 3)
+6. Team A removes 1 map
+7. Team B chooses starting side on remaining map
 
 Result: 1 map with chosen side
 ```
 
-### BO3 Format (8 Steps)
+### BO3 Format (9 Steps) - CS Major Standard
 
 ```
-1. Team A bans a map
-2. Team B bans a map
+1. Team A removes 1 map
+2. Team B removes 1 map
 3. Team A picks Map 1
-4. Team B picks starting side on Map 1
+4. Team B chooses starting side on Map 1
 5. Team B picks Map 2
-6. Team A picks starting side on Map 2
-7. Team A bans a map
-8. Team B bans a map
+6. Team A chooses starting side on Map 2
+7. Team B removes 1 map
+8. Team A removes 1 map
+9. Team B chooses starting side on Map 3 (decider)
 
-Result: 2 picked maps + 1 decider (with knife round)
+Result: 2 picked maps + 1 decider map (with side chosen by Team B)
 ```
 
 ### BO5 Format (10 Steps)
@@ -62,6 +63,58 @@ Result: 2 picked maps + 1 decider (with knife round)
 10. Team A picks starting side on Map 4
 
 Result: 4 picked maps + 1 decider (with knife round)
+```
+
+---
+
+## Custom Veto Formatting
+
+!!! info "Coming Soon"
+Custom veto orders are currently only available via API. A user interface for configuring custom veto orders in tournament settings is planned for a future release.
+
+The backend system supports **custom veto orders** that comply with CS Major rules. Tournament organizers can define custom veto sequences via the API while ensuring they follow professional Counter-Strike standards.
+
+### CS Major Compliance
+
+All veto formats are validated to ensure compliance with the [Counter-Strike Major Supplemental Rulebook](https://github.com/ValveSoftware/counter-strike_rules_and_regs/blob/main/major-supplemental-rulebook.md):
+
+- ✅ **BO1**: Must ban 6 maps (leaving 1), then pick starting side
+- ✅ **BO3**: Must pick 2 maps with side picks, ban 4 maps (2 initial + 2 final, leaving 1 decider)
+- ✅ **BO5**: Must pick 4 maps with side picks, ban 2 maps (leaving 1 decider)
+- ✅ Side picks must come after map picks
+- ✅ Sequential step numbering starting from 1
+- ✅ Valid team assignments (team1/team2) and actions (ban/pick/side_pick)
+
+### Using Custom Veto Orders (API Only)
+
+Custom veto orders can be configured when creating a tournament via the API by including a `settings.customVetoOrder` object in the request body. If a custom order is provided and passes validation, it will be used instead of the standard format. If validation fails, the system automatically falls back to the standard CS Major format.
+
+**Example API Request with Custom BO3 Format:**
+
+```json
+POST /api/tournament
+{
+  "name": "My Tournament",
+  "type": "single_elimination",
+  "format": "bo3",
+  "maps": ["de_mirage", "de_inferno", "de_ancient", "de_anubis", "de_dust2", "de_vertigo", "de_nuke"],
+  "teamIds": ["team1", "team2"],
+  "settings": {
+    "customVetoOrder": {
+      "bo3": [
+        { "step": 1, "team": "team1", "action": "ban" },
+        { "step": 2, "team": "team2", "action": "ban" },
+        { "step": 3, "team": "team1", "action": "pick" },
+        { "step": 4, "team": "team2", "action": "side_pick" },
+        { "step": 5, "team": "team2", "action": "pick" },
+        { "step": 6, "team": "team1", "action": "side_pick" },
+        { "step": 7, "team": "team2", "action": "ban" },
+        { "step": 8, "team": "team1", "action": "ban" },
+        { "step": 9, "team": "team2", "action": "side_pick" }
+      ]
+    }
+  }
+}
 ```
 
 ---
@@ -150,10 +203,15 @@ Both teams see the veto progress **live** via WebSocket:
 
 1. ✅ **Veto marked complete** in database
 2. ✅ **Match config generated** with picked maps
-3. ✅ **Server auto-allocated** from available server pool
-4. ✅ **Match loaded** via RCON (`matchzy_loadmatch_url`)
-5. ✅ **Teams notified** — Match status changes to "Loaded"
-6. ✅ **Connect info shown** — Server IP, port, connect command
+3. ✅ **Server allocation attempted** — System tries to allocate from available server pool
+4. ⏳ **If no server available** — Backend polls every 10 seconds for available servers
+5. ✅ **Server auto-allocated** when one becomes available
+6. ✅ **Match loaded** via RCON (`matchzy_loadmatch_url`)
+7. ✅ **Teams notified via WebSocket** — Match status updates in real-time to "Loaded"
+8. ✅ **Connect info shown** — Server IP, port, connect command
+
+!!! info "Server Allocation"
+If no servers are available immediately after veto completion, the system automatically polls every 10 seconds in the background. Teams will see "WAITING FOR SERVER" status, and the match will be assigned as soon as a server becomes available. All updates are sent via WebSocket, so no page refresh is needed!
 
 Teams then connect to the server and play!
 
@@ -163,17 +221,22 @@ Teams then connect to the server and play!
 
 Both teams and admins can see the complete veto history:
 
+**BO3 Example:**
+
 ```
 Veto History
 
 Step 1: Team Alpha BANNED Ancient
 Step 2: Team Beta BANNED Vertigo
 Step 3: Team Alpha PICKED Mirage (Starting T)
-Step 4: Team Beta PICKED Dust2 (Starting CT)
-Step 5: Team Alpha BANNED Nuke
-Step 6: Team Beta BANNED Inferno
+Step 4: Team Beta PICKED SIDE on Mirage (Starting CT)
+Step 5: Team Beta PICKED Dust2 (Starting CT)
+Step 6: Team Alpha PICKED SIDE on Dust2 (Starting T)
+Step 7: Team Beta BANNED Nuke
+Step 8: Team Alpha BANNED Inferno
+Step 9: Team Beta PICKED SIDE on Anubis (Decider, Starting CT)
 
-Decider: Anubis (Knife Round)
+Decider: Anubis (Side chosen by Team Beta)
 ```
 
 ---

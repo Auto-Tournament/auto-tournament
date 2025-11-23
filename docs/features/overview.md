@@ -61,15 +61,16 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 
 The system shows context-aware status messages:
 
-| Status  | Condition              | Message                                        |
-| ------- | ---------------------- | ---------------------------------------------- |
-| Pending | Tournament not started | "Waiting for tournament to start..."           |
-| Ready   | Veto not complete      | "Teams voting for maps..."                     |
-| Ready   | Veto complete          | "Veto complete - Waiting for server..."        |
-| Loaded  | 0 players              | "Server ready - Waiting for players (0/10)"    |
-| Loaded  | Some players           | "Waiting for players (3/10)"                   |
-| Loaded  | All players            | "All players connected - Waiting for ready up" |
-| Live    | -                      | "Match in progress"                            |
+| Status        | Condition                   | Message                                                                   |
+| ------------- | --------------------------- | ------------------------------------------------------------------------- |
+| Pending       | Tournament not started      | "Waiting for tournament to start..."                                      |
+| Pending       | Veto not complete           | "VETO PENDING" / "Waiting for map veto to begin..."                       |
+| Pending/Ready | Veto complete, no server    | "WAITING FOR SERVER" / "Veto complete - Waiting for server assignment..." |
+| Ready         | Server assigned, not loaded | "READY"                                                                   |
+| Loaded        | 0 players                   | "WARMUP" / "Server ready - Waiting for players (0/10)"                    |
+| Loaded        | Some players                | "WARMUP" / "Waiting for players (3/10)"                                   |
+| Loaded        | All players                 | "WARMUP" / "All players connected - Waiting for ready up"                 |
+| Live          | -                           | "LIVE" / "Match in progress"                                              |
 
 ---
 
@@ -111,13 +112,19 @@ Shows **live roster** of all 10 players with status:
 
 When tournament starts or veto completes:
 
-1. System finds available servers (online + not in use)
-2. Allocates server to match
-3. Generates match config with teams and maps
-4. Sends RCON: `matchzy_loadmatch_url "http://api/matches/{slug}.json"`
-5. Configures webhook: `matchzy_remote_log_url "http://api/events/{slug}"`
-6. Configures demo upload
-7. Match goes to warmup
+1. System attempts to find available servers (online + not in use)
+2. **If server available:** Allocates immediately
+3. **If no server available:** Backend polls every 10 seconds for available servers
+4. Allocates server to match when found
+5. Generates match config with teams and maps
+6. Sends RCON: `matchzy_loadmatch_url "http://api/matches/{slug}.json"`
+7. Configures webhook: `matchzy_remote_log_url "http://api/events/{slug}"`
+8. Configures demo upload
+9. Match goes to warmup
+10. Updates sent via WebSocket — teams see server info automatically
+
+!!! tip "Waiting for Server"
+If all servers are busy, matches show "WAITING FOR SERVER" status. The system automatically checks every 10 seconds and assigns servers as they become available. No manual intervention needed!
 
 **All automatic!**
 
@@ -321,6 +328,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 ### Custom Map Management
 
 **Features:**
+
 - ✅ **Automatic map import** - Latest maps imported from GitHub on first start
 - ✅ Add custom maps with Map ID and display name
 - ✅ Upload map images or fetch from GitHub automatically
@@ -328,6 +336,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 - ✅ Delete unused maps
 
 **Automatic Import:**
+
 - Fetches maps from [CS2 Server Manager repository](https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails)
 - Imports all `de_`, `cs_`, and `ar_` maps automatically
 - Creates map pools by type (Defusal, Hostage, Arms Race)
@@ -336,6 +345,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 ### Map Pool System
 
 **Create Reusable Pools:**
+
 - ✅ Build custom map pools for different tournament types
 - ✅ Active Duty pool (7 competitive maps) always available
 - ✅ **Automatic pools** - Defusal only, Hostage only, and Arms Race only pools created automatically
@@ -343,6 +353,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 - ✅ Save custom selections as new pools
 
 **Tournament Integration:**
+
 - Select from Active Duty, custom pools, or create custom selection
 - System validates 7 maps required for veto formats (BO1/BO3/BO5)
 - Map pools used in Round Robin/Swiss for rotation

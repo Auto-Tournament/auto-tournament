@@ -59,7 +59,6 @@ function TeamSoundControls({ team }: { team: Team | null }) {
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
   const [vetoCompleted, setVetoCompleted] = useState(false);
-  const [matchFormat] = useState<'bo1' | 'bo3' | 'bo5'>('bo3');
 
   const previousMatchStatus = useRef<string | null>(null);
   const previousVetoReady = useRef<boolean>(false);
@@ -80,6 +79,18 @@ export default function TeamMatch() {
   } = useTeamMatchData(teamId);
   const { tournament } = useTournamentStatus();
   const tournamentName = tournament?.name ?? null;
+
+  // Get match format from match data (fallback to 'bo1' if not available)
+  const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
+
+  // Check if veto is completed based on match's veto status
+  useEffect(() => {
+    if (match?.veto?.status === 'completed') {
+      setVetoCompleted(true);
+    } else if (match?.veto?.status === 'in_progress' || match?.veto?.status === 'pending') {
+      setVetoCompleted(false);
+    }
+  }, [match?.veto?.status]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -129,11 +140,17 @@ export default function TeamMatch() {
         matchStatus: match.status,
         matchFormat,
         vetoCompleted,
+        vetoStatus: match.veto?.status,
         shouldShowVeto:
           tournamentStatus === 'in_progress' &&
-          match.status === 'ready' &&
+          match.status === 'pending' &&
           !vetoCompleted &&
+          match.veto?.status !== 'completed' &&
           ['bo1', 'bo3', 'bo5'].includes(matchFormat),
+        shouldShowMatch:
+          ['loaded', 'live'].includes(match.status) ||
+          (match.status === 'ready' && (vetoCompleted || match.veto?.status === 'completed')) ||
+          (match.status === 'pending' && match.veto?.status === 'completed'),
       });
     }
   }, [match, tournamentStatus, matchFormat, vetoCompleted]);
@@ -142,11 +159,14 @@ export default function TeamMatch() {
     setVetoCompleted(true);
     console.log('Veto completed! Selected maps:', veto.pickedMaps);
 
-    // Reload match data to get updated status
+    // Reload match data to get updated status and server assignment
     setTimeout(() => {
       loadTeamMatch();
     }, 1000);
   };
+
+  // No polling needed - rely on websockets for server assignment updates
+  // The backend will poll for available servers and emit updates via websockets
 
   const getRoundLabel = (round: number) => {
     if (round === 1) return 'Round 1';

@@ -25,9 +25,13 @@
         "test": "bash scripts/test-e2e-all.sh",
         "test:manual": "playwright test",
         "test:ui": "bash scripts/test-e2e-all.sh --ui",
+        "test:api": "playwright test tests/api",
+        "test:api:manual": "playwright test tests/api --ui",
+        "test:ui:manual": "playwright test tests/ui --ui",
+        "test:veto": "playwright test --grep @veto",
+        "test:cs-major": "playwright test --grep @cs-major",
         "test:report": "playwright show-report",
-        "test:install": "playwright install",
-        "fetch-maps": "tsx scripts/fetch-cs2-maps.ts"
+        "test:install": "playwright install"
     },
     "keywords": [
         "cs2",

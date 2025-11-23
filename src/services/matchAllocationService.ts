@@ -650,6 +650,90 @@ export class MatchAllocationService {
     }
   }
 
+  // Track polling intervals to avoid duplicate polling
+  private pollingIntervals = new Map<string, NodeJS.Timeout>();
+
+  /**
+   * Start polling for available servers for a specific match
+   * Checks every 10 seconds and stops when server is allocated or match is no longer ready
+   */
+  startPollingForServer(matchSlug: string, baseUrl: string): void {
+    // Don't start duplicate polling for the same match
+    if (this.pollingIntervals.has(matchSlug)) {
+      log.debug(`Already polling for match ${matchSlug}, skipping duplicate`);
+      return;
+    }
+
+    log.info(`🔄 Starting server polling for match ${matchSlug} (checking every 10 seconds)`);
+
+    const pollInterval = setInterval(async () => {
+      try {
+        // Check if match still exists and is ready
+        const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+        
+        if (!match) {
+          log.debug(`Match ${matchSlug} no longer exists, stopping polling`);
+          this.stopPollingForServer(matchSlug);
+          return;
+        }
+
+        // If match already has a server, stop polling
+        if (match.server_id) {
+          log.success(`Match ${matchSlug} already has server ${match.server_id}, stopping polling`);
+          this.stopPollingForServer(matchSlug);
+          return;
+        }
+
+        // If match is no longer in ready status, stop polling
+        if (match.status !== 'ready') {
+          log.debug(`Match ${matchSlug} is no longer ready (status: ${match.status}), stopping polling`);
+          this.stopPollingForServer(matchSlug);
+          return;
+        }
+
+        // Try to allocate server
+        log.debug(`[Polling] Attempting to allocate server for match ${matchSlug}...`);
+        const result = await this.allocateSingleMatch(matchSlug, baseUrl);
+
+        if (result.success) {
+          log.success(`✅ [Polling] Successfully allocated server ${result.serverId} to match ${matchSlug}`);
+          this.stopPollingForServer(matchSlug);
+        } else {
+          log.debug(`[Polling] No server available for match ${matchSlug}: ${result.error}`);
+          // Continue polling on next interval
+        }
+      } catch (error) {
+        log.error(`Error during polling for match ${matchSlug}`, error);
+        // Continue polling even on error
+      }
+    }, 10000); // Check every 10 seconds
+
+    this.pollingIntervals.set(matchSlug, pollInterval);
+  }
+
+  /**
+   * Stop polling for a specific match
+   */
+  stopPollingForServer(matchSlug: string): void {
+    const interval = this.pollingIntervals.get(matchSlug);
+    if (interval) {
+      clearInterval(interval);
+      this.pollingIntervals.delete(matchSlug);
+      log.debug(`Stopped polling for match ${matchSlug}`);
+    }
+  }
+
+  /**
+   * Stop all polling intervals (cleanup on shutdown)
+   */
+  stopAllPolling(): void {
+    for (const [matchSlug, interval] of this.pollingIntervals.entries()) {
+      clearInterval(interval);
+      log.debug(`Stopped polling for match ${matchSlug} during cleanup`);
+    }
+    this.pollingIntervals.clear();
+  }
+
   /**
    * Convert database row to BracketMatch
    */

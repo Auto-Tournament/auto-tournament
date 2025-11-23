@@ -1,8 +1,8 @@
 #!/bin/bash
 set -e
 
-# MatchZy Auto Tournament - Complete Release Script
-# Handles version bumping, PR creation, tagging, Docker build, and GitHub release
+# MatchZy Auto Tournament - Release Script
+# Builds project, builds Docker image, bumps version, commits, and releases
 
 # Colors for output
 RED='\033[0;31m'
@@ -19,7 +19,7 @@ BUILDER_NAME="matchzy-release"
 REPO_OWNER="sivert-io"
 REPO_NAME="matchzy-auto-tournament"
 
-echo -e "${GREEN}MatchZy Auto Tournament - Complete Release${NC}"
+echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
 echo "========================================="
 echo ""
 
@@ -63,7 +63,7 @@ fi
 # Get current version from package.json
 if [ -f "package.json" ]; then
     CURRENT_VERSION=$(grep '"version"' package.json | head -1 | awk -F '"' '{print $4}')
-    echo -e "Current version in package.json: ${GREEN}${CURRENT_VERSION}${NC}"
+    echo -e "Current version: ${GREEN}${CURRENT_VERSION}${NC}"
 else
     echo -e "${RED}Error: package.json not found${NC}"
     exit 1
@@ -81,25 +81,18 @@ if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-# Check if version changed
-if [ "$NEW_VERSION" = "$CURRENT_VERSION" ]; then
-    echo -e "${YELLOW}Version unchanged. Skipping version bump.${NC}"
-    SKIP_VERSION_BUMP=true
-else
-    SKIP_VERSION_BUMP=false
-fi
-
 # Confirm release
 echo ""
 echo -e "Release plan:"
-if [ "$SKIP_VERSION_BUMP" = "false" ]; then
-    echo -e "  ${BLUE}1.${NC} Bump version from ${CURRENT_VERSION} to ${GREEN}${NEW_VERSION}${NC}"
-    echo -e "  ${BLUE}2.${NC} Create branch: ${GREEN}release/${NEW_VERSION}${NC}"
-    echo -e "  ${BLUE}3.${NC} Create PR to main"
-fi
-echo -e "  ${BLUE}$([ "$SKIP_VERSION_BUMP" = "false" ] && echo "4" || echo "1").${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
-echo -e "  ${BLUE}$([ "$SKIP_VERSION_BUMP" = "false" ] && echo "5" || echo "2").${NC} Build and push Docker images: ${GREEN}${DOCKER_IMAGE}:${NEW_VERSION}${NC}"
-echo -e "  ${BLUE}$([ "$SKIP_VERSION_BUMP" = "false" ] && echo "6" || echo "3").${NC} Create GitHub release"
+echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
+echo -e "  ${BLUE}2.${NC} Build Docker image (test build)"
+echo -e "  ${BLUE}3.${NC} Update release branch (rebase onto main)"
+echo -e "  ${BLUE}4.${NC} Bump version to ${GREEN}${NEW_VERSION}${NC} on release branch"
+echo -e "  ${BLUE}5.${NC} Create PR and merge to main"
+echo -e "  ${BLUE}6.${NC} Rebase release branch back onto main"
+echo -e "  ${BLUE}7.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
+echo -e "  ${BLUE}8.${NC} Push Docker images to Docker Hub"
+echo -e "  ${BLUE}9.${NC} Create GitHub release"
 echo ""
 read -p "Continue? (y/n) " -n 1 -r
 echo
@@ -110,7 +103,7 @@ fi
 
 # Ensure we're on main and up to date
 echo ""
-echo -e "${YELLOW}Step 1: Ensuring we're on main branch and up to date...${NC}"
+echo -e "${YELLOW}Ensuring main branch is up to date...${NC}"
 git fetch origin
 CURRENT_BRANCH=$(git branch --show-current)
 if [ "$CURRENT_BRANCH" != "main" ]; then
@@ -119,76 +112,160 @@ if [ "$CURRENT_BRANCH" != "main" ]; then
 fi
 git pull origin main
 
-# Bump version if needed
-if [ "$SKIP_VERSION_BUMP" = "false" ]; then
-    echo ""
-    echo -e "${YELLOW}Step 2: Bumping version in package.json...${NC}"
-    
-    # Create release branch
-    BRANCH_NAME="release/${NEW_VERSION}"
-    if git show-ref --verify --quiet refs/heads/"${BRANCH_NAME}"; then
-        echo -e "${YELLOW}Branch ${BRANCH_NAME} already exists. Deleting...${NC}"
-        git branch -D "${BRANCH_NAME}" 2>/dev/null || true
+# Step 1: Build project
+echo ""
+echo -e "${YELLOW}Step 1: Building project...${NC}"
+yarn build
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Project build failed${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Project build successful${NC}"
+
+# Step 2: Build Docker image (test build)
+echo ""
+echo -e "${YELLOW}Step 2: Building Docker image (test build)...${NC}"
+
+# Set up Docker Buildx builder
+if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+    echo -e "${GREEN}✅ Builder created${NC}"
+else
+    docker buildx use "${BUILDER_NAME}"
+    echo -e "${GREEN}✅ Using existing builder${NC}"
+fi
+
+# Test build (single platform for speed, don't push)
+docker buildx build \
+    --platform linux/amd64 \
+    --file docker/Dockerfile \
+    --tag "${DOCKER_IMAGE}:test-build" \
+    --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
+    --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
+    --progress=plain \
+    .
+
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Docker build failed${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ Docker build successful${NC}"
+
+# Step 3: Set up or update release branch
+echo ""
+echo -e "${YELLOW}Step 3: Setting up release branch...${NC}"
+RELEASE_BRANCH="release"
+
+# Check if release branch exists locally
+if git show-ref --verify --quiet refs/heads/"${RELEASE_BRANCH}"; then
+    echo -e "${GREEN}Release branch exists locally${NC}"
+    git checkout "${RELEASE_BRANCH}"
+    # Rebase release branch onto main to keep it up to date
+    echo -e "${YELLOW}Rebasing release branch onto main...${NC}"
+    git rebase origin/main
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
+        exit 1
     fi
-    git checkout -b "${BRANCH_NAME}"
-    
-    # Update version in package.json (works on both macOS and Linux)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+else
+    # Check if release branch exists on remote
+    if git show-ref --verify --quiet refs/remotes/origin/"${RELEASE_BRANCH}"; then
+        echo -e "${GREEN}Release branch exists on remote, checking out...${NC}"
+        git checkout -b "${RELEASE_BRANCH}" "origin/${RELEASE_BRANCH}"
+        # Rebase onto main
+        echo -e "${YELLOW}Rebasing release branch onto main...${NC}"
+        git rebase origin/main
+        if [ $? -ne 0 ]; then
+            echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
+            exit 1
+        fi
     else
-        # Linux
-        sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+        # Create new release branch from main
+        echo -e "${GREEN}Creating new release branch from main...${NC}"
+        git checkout -b "${RELEASE_BRANCH}"
     fi
-    
-    # Commit version bump
-    git add package.json
-    git commit -m "chore: bump version to ${NEW_VERSION}"
-    
-    # Push branch
-    echo -e "${YELLOW}Pushing branch to origin...${NC}"
-    git push -u origin "${BRANCH_NAME}" || git push origin "${BRANCH_NAME}" --force
-    
-    # Create PR
-    echo ""
-    echo -e "${YELLOW}Step 3: Creating PR to main...${NC}"
-    PR_BODY="## Release ${NEW_VERSION}
+fi
+
+# Push release branch to ensure it's up to date on remote
+echo -e "${YELLOW}Pushing release branch to origin...${NC}"
+git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+
+# Step 4: Bump version
+echo ""
+echo -e "${YELLOW}Step 4: Bumping version to ${NEW_VERSION}...${NC}"
+
+# We're on the release branch
+
+# Update version in package.json (works on both macOS and Linux)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    # macOS
+    sed -i '' "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+else
+    # Linux
+    sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+fi
+
+# Step 5: Commit version bump
+echo ""
+echo -e "${YELLOW}Step 5: Committing version bump...${NC}"
+git add package.json
+git commit -m "chore: bump version to ${NEW_VERSION}"
+
+# Push branch
+echo -e "${YELLOW}Pushing release branch to origin...${NC}"
+git push origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+
+# Create PR and merge
+echo ""
+echo -e "${YELLOW}Step 6: Creating PR to merge version bump...${NC}"
+PR_BODY="## Release ${NEW_VERSION}
 
 This PR bumps the version to ${NEW_VERSION} in preparation for release.
 
 ### Changes
-- Bumped version from ${CURRENT_VERSION} to ${NEW_VERSION} in package.json
+- Bumped version from ${CURRENT_VERSION} to ${NEW_VERSION} in package.json"
 
-### Next Steps
-After this PR is merged, the release process will:
-1. Create git tag v${NEW_VERSION}
-2. Build and push Docker images
-3. Create GitHub release"
+PR_URL=$(gh pr create --base main --head "${RELEASE_BRANCH}" \
+    --title "chore: bump version to ${NEW_VERSION}" \
+    --body "$PR_BODY" \
+    --repo "${REPO_OWNER}/${REPO_NAME}")
+
+if [ $? -eq 0 ]; then
+    echo -e "${GREEN}✅ PR created: ${PR_URL}${NC}"
+    echo ""
+    echo -e "${YELLOW}Merging PR...${NC}"
+    gh pr merge "${RELEASE_BRANCH}" --merge --repo "${REPO_OWNER}/${REPO_NAME}"
     
-    PR_URL=$(gh pr create --base main --head "${BRANCH_NAME}" \
-        --title "chore: bump version to ${NEW_VERSION}" \
-        --body "$PR_BODY" \
-        --repo "${REPO_OWNER}/${REPO_NAME}")
-    
-    if [ $? -eq 0 ]; then
-        echo -e "${GREEN}✅ PR created: ${PR_URL}${NC}"
-        echo ""
-        echo -e "${YELLOW}⚠️  Waiting for PR to be merged before continuing...${NC}"
-        echo -e "${BLUE}Please merge the PR, then press Enter to continue with tagging and Docker release.${NC}"
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}⚠️  Could not auto-merge PR. Please merge manually: ${PR_URL}${NC}"
+        echo -e "${BLUE}Press Enter after the PR is merged to continue...${NC}"
         read -r
-    else
-        echo -e "${RED}Failed to create PR${NC}"
-        exit 1
     fi
     
     # Switch back to main and pull
     git checkout main
     git pull origin main
+    
+    # Rebase release branch onto main to keep it up to date
+    echo ""
+    echo -e "${YELLOW}Updating release branch to match main...${NC}"
+    git checkout "${RELEASE_BRANCH}"
+    git rebase origin/main
+    if [ $? -ne 0 ]; then
+        echo -e "${YELLOW}⚠️  Rebase had conflicts, but continuing...${NC}"
+    fi
+    git push origin "${RELEASE_BRANCH}" --force-with-lease
+    
+    # Switch back to main for tagging
+    git checkout main
+else
+    echo -e "${RED}Failed to create PR${NC}"
+    exit 1
 fi
 
-# Create git tag
+# Step 7: Create and push git tag
 echo ""
-echo -e "${YELLOW}Step $([ "$SKIP_VERSION_BUMP" = "false" ] && echo "4" || echo "1"): Creating git tag v${NEW_VERSION}...${NC}"
+echo -e "${YELLOW}Step 7: Creating git tag v${NEW_VERSION}...${NC}"
 if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
     echo -e "${YELLOW}Tag v${NEW_VERSION} already exists. Deleting...${NC}"
     git tag -d "v${NEW_VERSION}"
@@ -198,20 +275,9 @@ fi
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 git push origin "v${NEW_VERSION}"
 
-# Set up Docker Buildx builder
+# Step 8: Build and push Docker images
 echo ""
-echo -e "${YELLOW}Step $([ "$SKIP_VERSION_BUMP" = "false" ] && echo "5" || echo "2"): Setting up Docker Buildx...${NC}"
-if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-    echo -e "${GREEN}✅ Builder created${NC}"
-else
-    docker buildx use "${BUILDER_NAME}"
-    echo -e "${GREEN}✅ Using existing builder${NC}"
-fi
-
-# Build and push Docker images
-echo ""
-echo -e "${YELLOW}Step $([ "$SKIP_VERSION_BUMP" = "false" ] && echo "6" || echo "3"): Building and pushing Docker images...${NC}"
+echo -e "${YELLOW}Step 8: Building and pushing Docker images...${NC}"
 echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
 
@@ -227,7 +293,7 @@ docker buildx build \
     .
 
 if [ $? -ne 0 ]; then
-    echo -e "${RED}Failed to build and push Docker images${NC}"
+    echo -e "${RED}❌ Failed to build and push Docker images${NC}"
     exit 1
 fi
 
@@ -243,9 +309,9 @@ fi
 echo -e "${GREEN}✅ Verified images for both platforms${NC}"
 rm -f /tmp/image_inspect.txt
 
-# Create GitHub release
+# Step 9: Create GitHub release
 echo ""
-echo -e "${YELLOW}Step $([ "$SKIP_VERSION_BUMP" = "false" ] && echo "7" || echo "4"): Creating GitHub release...${NC}"
+echo -e "${YELLOW}Step 9: Creating GitHub release...${NC}"
 
 RELEASE_BODY="## 🐳 Docker Release v${NEW_VERSION}
 

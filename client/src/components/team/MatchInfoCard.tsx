@@ -180,10 +180,12 @@ export function MatchInfoCard({
   }
 
   // Veto Phase - tournament started, show veto interface
+  // Show veto interface if veto is not completed (check both state and match.veto.status)
+  const isVetoNotCompleted = !vetoCompleted && match.veto?.status !== 'completed';
   if (
     tournamentStatus === 'in_progress' &&
     match.status === 'pending' &&
-    !vetoCompleted &&
+    isVetoNotCompleted &&
     ['bo1', 'bo3', 'bo5'].includes(matchFormat)
   ) {
     return (
@@ -211,7 +213,16 @@ export function MatchInfoCard({
   }
 
   // Active Match - show full match details
-  if (['loaded', 'live'].includes(match.status) || (match.status === 'ready' && vetoCompleted)) {
+  // Show match details if:
+  // 1. Match is loaded/live, OR
+  // 2. Match is ready and veto is completed, OR
+  // 3. Match status is pending but veto is completed (veto just finished, status update pending)
+  const isVetoCompleted = vetoCompleted || match.veto?.status === 'completed';
+  if (
+    ['loaded', 'live'].includes(match.status) ||
+    (match.status === 'ready' && isVetoCompleted) ||
+    (match.status === 'pending' && isVetoCompleted && ['bo1', 'bo3', 'bo5'].includes(matchFormat))
+  ) {
     return (
       <Card>
         <CardContent>

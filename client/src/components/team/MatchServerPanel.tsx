@@ -25,7 +25,12 @@ export function MatchServerPanel({
   if (!server) {
     return (
       <Alert severity="info">
-        Server will be assigned when the match is ready. Please check back soon.
+        <Typography variant="body2" fontWeight={600} gutterBottom>
+          ⏳ Waiting for Server Assignment
+        </Typography>
+        <Typography variant="body2">
+          A server will be automatically assigned shortly. This page will update automatically when the server is ready.
+        </Typography>
       </Alert>
     );
   }
@@ -112,6 +117,21 @@ export function MatchServerPanel({
       )}
 
       <Box display="flex" flexDirection="column" gap={2}>
+        {/* Server info */}
+        <Box>
+          <Typography variant="body2" color="text.secondary" gutterBottom>
+            Server: {server.name}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" fontFamily="monospace">
+            {server.host}:{server.port}
+          </Typography>
+          {server.status && (
+            <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+              Status: {server.statusDescription?.label || server.status}
+            </Typography>
+          )}
+        </Box>
+
         <Button
           variant="contained"
           size="large"
@@ -119,6 +139,7 @@ export function MatchServerPanel({
           color={connected ? 'success' : 'primary'}
           startIcon={<SportsEsportsIcon />}
           onClick={onConnect}
+          disabled={!server.host || !server.port} // Disable if server details missing
           sx={{ py: 1.5 }}
         >
           {connected ? '✓ Connecting...' : 'Connect to Server'}
@@ -130,6 +151,7 @@ export function MatchServerPanel({
           fullWidth
           startIcon={copied ? null : <ContentCopyIcon />}
           onClick={onCopy}
+          disabled={!server.host || !server.port} // Disable if server details missing
         >
           {copied ? '✓ Copied!' : 'Copy Console Command'}
         </Button>

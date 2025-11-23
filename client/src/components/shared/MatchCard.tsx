@@ -122,7 +122,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Chip
-              label={getStatusLabel(match.status, false, vetoCompleted, tournamentStarted)}
+              label={getStatusLabel(match.status, false, vetoCompleted, tournamentStarted, Boolean(match.serverId))}
               size="small"
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}

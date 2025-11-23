@@ -35,7 +35,7 @@ interface UseTeamMatchDataReturn {
   error: string;
   tournamentStatus: string;
   setTournamentStatus: (status: string) => void;
-  loadTeamMatch: () => Promise<void>;
+  loadTeamMatch: (silent?: boolean) => Promise<void>;
   loadMatchHistory: () => Promise<void>;
   loadTeamStats: () => Promise<void>;
 }
