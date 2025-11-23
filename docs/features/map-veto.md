@@ -76,7 +76,7 @@ The system supports **custom veto orders** that comply with CS Major rules. Tour
 All veto formats are validated to ensure compliance with the [Counter-Strike Major Supplemental Rulebook](https://github.com/ValveSoftware/counter-strike_rules_and_regs/blob/main/major-supplemental-rulebook.md):
 
 - ✅ **BO1**: Must ban 6 maps (leaving 1), then pick starting side
-- ✅ **BO3**: Must pick 2 maps with side picks, ban 2 maps (leaving 1 decider)
+- ✅ **BO3**: Must pick 2 maps with side picks, ban 4 maps (2 initial + 2 final, leaving 1 decider)
 - ✅ **BO5**: Must pick 4 maps with side picks, ban 2 maps (leaving 1 decider)
 - ✅ Side picks must come after map picks
 - ✅ Sequential step numbering starting from 1
