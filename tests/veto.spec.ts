@@ -571,36 +571,23 @@ test.describe.serial('Veto System', () => {
     });
     expect(bo3TournamentResponse.ok()).toBeTruthy();
 
-    // Wait a bit for bracket to be generated and matches to be created
-    await page.waitForTimeout(2000);
-
-    // Get match slug - try multiple times if needed
-    let bo3Match;
-    let attempts = 0;
-    const maxAttempts = 5;
-    while (attempts < maxAttempts) {
+    // Get match slug using expect.poll for cleaner code
+    const bo3Match = await expect.poll(async () => {
       const matchesResponse = await request.get('/api/matches');
       const matchesData = await matchesResponse.json();
-      
-      if (matchesData.matches && matchesData.matches.length > 0) {
-        bo3Match = matchesData.matches.find((m: any) => 
-          (m.team1?.id === team1Id && m.team2?.id === team2Id) || 
-          (m.team1?.id === team2Id && m.team2?.id === team1Id) ||
-          (m.team1_id === team1Id && m.team2_id === team2Id) ||
-          (m.team1_id === team2Id && m.team2_id === team1Id)
-        );
-        
-        if (bo3Match) {
-          break;
-        }
-      }
-      
-      attempts++;
-      await page.waitForTimeout(500);
-    }
-    
-    expect(bo3Match).toBeDefined();
-    const bo3MatchSlug = bo3Match?.slug;
+      return matchesData.matches?.find((m: any) => 
+        (m.team1?.id === team1Id && m.team2?.id === team2Id) || 
+        (m.team1?.id === team2Id && m.team2?.id === team1Id) ||
+        (m.team1_id === team1Id && m.team2_id === team2Id) ||
+        (m.team1_id === team2Id && m.team2_id === team1Id)
+      );
+    }, {
+      message: 'BO3 match to be created',
+      timeout: 10000,
+      intervals: [500, 1000]
+    }).resolves.toBeTruthy();
+
+    const bo3MatchSlug = bo3Match.slug;
     expect(bo3MatchSlug).toBeTruthy();
 
     // CS Major BO3 format: 9 steps

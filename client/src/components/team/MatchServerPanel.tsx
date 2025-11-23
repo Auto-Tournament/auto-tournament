@@ -139,7 +139,7 @@ export function MatchServerPanel({
           color={connected ? 'success' : 'primary'}
           startIcon={<SportsEsportsIcon />}
           onClick={onConnect}
-          disabled={!server || (!server.host && !server.port)} // Disable if server details missing
+          disabled={!server.host || !server.port} // Disable if server details missing
           sx={{ py: 1.5 }}
         >
           {connected ? '✓ Connecting...' : 'Connect to Server'}
@@ -151,7 +151,7 @@ export function MatchServerPanel({
           fullWidth
           startIcon={copied ? null : <ContentCopyIcon />}
           onClick={onCopy}
-          disabled={!server || (!server.host && !server.port)} // Disable if server details missing
+          disabled={!server.host || !server.port} // Disable if server details missing
         >
           {copied ? '✓ Copied!' : 'Copy Console Command'}
         </Button>

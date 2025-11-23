@@ -98,7 +98,8 @@ Custom veto orders can be configured in tournament settings. If a custom order i
       { "step": 5, "team": "team2", "action": "pick" },
       { "step": 6, "team": "team1", "action": "side_pick" },
       { "step": 7, "team": "team1", "action": "ban" },
-      { "step": 8, "team": "team2", "action": "ban" }
+      { "step": 8, "team": "team2", "action": "ban" },
+      { "step": 9, "team": "team2", "action": "side_pick" }
     ]
   }
 }

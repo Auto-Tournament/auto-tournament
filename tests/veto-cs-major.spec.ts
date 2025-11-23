@@ -227,8 +227,14 @@ test.describe.serial('CS Major Veto Format - Complete E2E Flow', () => {
     expect(vetoState.pickedMaps[0].sideTeam2).toBe('CT'); // Team B picked CT
     expect(vetoState.pickedMaps[0].sideTeam1).toBe('T'); // Team A gets opposite
     
-    // Wait a bit for config to be generated and saved
-    await page.waitForTimeout(1000);
+    // Poll for config to be generated and available at the endpoint
+    await expect.poll(async () => {
+      const configResponse = await request.get(`/api/matches/${testState.matchSlug}.json`);
+      return configResponse.ok();
+    }, {
+      timeout: 5000,
+      intervals: [100, 250, 500]
+    }).toBe(true);
   });
 
   // Step 6: Verify Match Config via JSON endpoint
@@ -238,25 +244,17 @@ test.describe.serial('CS Major Veto Format - Complete E2E Flow', () => {
     // Verify match slug is set
     expect(testState.matchSlug).toBeTruthy();
     
-    // Wait a bit for veto state to be saved to database
-    await page.waitForTimeout(1000);
-    
-    // Poll until veto state is completed (with timeout)
-    let vetoCheckData;
-    let attempts = 0;
-    const maxAttempts = 10;
-    while (attempts < maxAttempts) {
+    // Poll until veto state is completed using expect.poll for cleaner code
+    const vetoCheckData = await expect.poll(async () => {
       const vetoCheckResponse = await request.get(`/api/veto/${testState.matchSlug}`);
       expect(vetoCheckResponse.ok()).toBeTruthy();
-      vetoCheckData = await vetoCheckResponse.json();
-      
-      if (vetoCheckData.veto.status === 'completed') {
-        break;
-      }
-      
-      attempts++;
-      await page.waitForTimeout(500);
-    }
+      const data = await vetoCheckResponse.json();
+      return data.veto.status === 'completed' ? data : null;
+    }, {
+      message: 'Veto state to be completed',
+      timeout: 5000,
+      intervals: [500, 1000]
+    }).resolves.toBeTruthy();
     
     // Verify veto state is completed
     expect(vetoCheckData.veto.status).toBe('completed');
@@ -269,8 +267,14 @@ test.describe.serial('CS Major Veto Format - Complete E2E Flow', () => {
     expect(pickedMap.sideTeam1).toBeDefined();
     expect(pickedMap.sideTeam2).toBeDefined();
     
-    // Wait a bit more for config to be generated
-    await page.waitForTimeout(1000);
+    // Poll for config to be generated at the endpoint
+    await expect.poll(async () => {
+      const configResponse = await request.get(`/api/matches/${testState.matchSlug}.json`);
+      return configResponse.ok();
+    }, {
+      timeout: 5000,
+      intervals: [100, 250, 500]
+    }).toBe(true);
     
     // Fetch match config from JSON endpoint (same URL MatchZy uses: /api/matches/{slug}.json)
     const configResponse = await request.get(`/api/matches/${testState.matchSlug}.json`);
