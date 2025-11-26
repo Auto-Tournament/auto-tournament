@@ -1,6 +1,7 @@
 export interface NormalizedPlayer {
   steamid: string;
   name: string;
+  avatar?: string;
 }
 
 /**
@@ -29,20 +30,23 @@ function normalizeSinglePlayer(player: unknown, fallbackKey: string): Normalized
     const p = player as {
       steamid?: string;
       steamId?: string;
-      name?: string | { name?: string; steamId?: string };
+      name?: string | { name?: string; steamId?: string; avatar?: string };
+      avatar?: string;
     };
 
     if (typeof p.name === 'object' && p.name !== null) {
-      const nested = p.name as { name?: string; steamId?: string };
+      const nested = p.name as { name?: string; steamId?: string; avatar?: string };
       return {
         steamid: nested.steamId || p.steamid || p.steamId || fallbackKey,
         name: nested.name || fallbackKey,
+        avatar: nested.avatar || p.avatar,
       };
     }
 
     return {
       steamid: p.steamid || p.steamId || fallbackKey,
       name: typeof p.name === 'string' ? p.name : fallbackKey,
+      avatar: p.avatar,
     };
   }
 
