@@ -57,13 +57,27 @@ export async function createTestTeams(
   request: APIRequestContext,
   prefix: string = 'test'
 ): Promise<[Team, Team] | null> {
+  // Real Steam IDs for testing avatars - public profiles that should exist
+  const realSteamIds = [
+    '76561197960287930', // Gabe Newell (public profile)
+    '76561198013825972', // Popular public profile
+    '76561198067146383', // Popular public profile
+    '76561198021466528', // Popular public profile
+    '76561198059949467', // Popular public profile
+    '76561198077860982', // Popular public profile
+    '76561198041282941', // Popular public profile
+    '76561198012563928', // Popular public profile
+    '76561198063472351', // Popular public profile
+    '76561198084126937', // Popular public profile
+  ];
+
   const timestamp = Date.now();
   const players = [
-    { steamId: '76561198000000001', name: 'Player 1' },
-    { steamId: '76561198000000002', name: 'Player 2' },
-    { steamId: '76561198000000003', name: 'Player 3' },
-    { steamId: '76561198000000004', name: 'Player 4' },
-    { steamId: '76561198000000005', name: 'Player 5' },
+    { steamId: realSteamIds[0], name: 'Player 1' },
+    { steamId: realSteamIds[1], name: 'Player 2' },
+    { steamId: realSteamIds[2], name: 'Player 3' },
+    { steamId: realSteamIds[3], name: 'Player 4' },
+    { steamId: realSteamIds[4], name: 'Player 5' },
   ];
   
   const team1 = await createTeam(request, {
@@ -76,10 +90,18 @@ export async function createTestTeams(
     return null;
   }
   
+  const team2Players = [
+    { steamId: realSteamIds[5], name: 'Player 1' },
+    { steamId: realSteamIds[6], name: 'Player 2' },
+    { steamId: realSteamIds[7], name: 'Player 3' },
+    { steamId: realSteamIds[8], name: 'Player 4' },
+    { steamId: realSteamIds[9], name: 'Player 5' },
+  ];
+  
   const team2 = await createTeam(request, {
     id: `${prefix}-team-b-${timestamp}`,
     name: `${prefix} Team B ${timestamp}`,
-    players,
+    players: team2Players,
   });
   
   if (!team2) {

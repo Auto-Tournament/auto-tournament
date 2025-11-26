@@ -101,6 +101,21 @@ async function ensureTeams(
     // Ignore errors, will create new teams
   }
 
+  // Real Steam IDs for testing avatars - public profiles that should exist
+  // These will cycle through as needed for multiple teams
+  const realSteamIds = [
+    '76561197960287930', // Gabe Newell (public profile)
+    '76561198013825972', // Popular public profile
+    '76561198067146383', // Popular public profile
+    '76561198021466528', // Popular public profile
+    '76561198059949467', // Popular public profile
+    '76561198077860982', // Popular public profile
+    '76561198041282941', // Popular public profile
+    '76561198012563928', // Popular public profile
+    '76561198063472351', // Popular public profile
+    '76561198084126937', // Popular public profile
+  ];
+
   // Create new teams if needed
   const teams: Team[] = [];
   for (let i = 0; i < count; i++) {
@@ -109,11 +124,11 @@ async function ensureTeams(
       id: `${prefix}-team-${i}-${timestamp}`,
       name: `${prefix} Team ${i + 1} ${timestamp}`,
       players: [
-        { steamId: `7656119800000000${i}1`, name: 'Player 1' },
-        { steamId: `7656119800000000${i}2`, name: 'Player 2' },
-        { steamId: `7656119800000000${i}3`, name: 'Player 3' },
-        { steamId: `7656119800000000${i}4`, name: 'Player 4' },
-        { steamId: `7656119800000000${i}5`, name: 'Player 5' },
+        { steamId: realSteamIds[(i * 5 + 0) % realSteamIds.length], name: 'Player 1' },
+        { steamId: realSteamIds[(i * 5 + 1) % realSteamIds.length], name: 'Player 2' },
+        { steamId: realSteamIds[(i * 5 + 2) % realSteamIds.length], name: 'Player 3' },
+        { steamId: realSteamIds[(i * 5 + 3) % realSteamIds.length], name: 'Player 4' },
+        { steamId: realSteamIds[(i * 5 + 4) % realSteamIds.length], name: 'Player 5' },
       ],
     });
 

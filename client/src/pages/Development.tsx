@@ -89,10 +89,20 @@ const Development: React.FC = () => {
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
 
-      const createSteamId = (teamIndex: number, playerIndex: number) =>
-        `7656119${(10000000 + teamIndex * 10 + playerIndex)
-          .toString()
-          .padStart(8, '0')}`;
+      // Real Steam IDs for testing avatars - public profiles that should exist
+      // These will cycle through as needed for multiple teams
+      const realSteamIds = [
+        '76561197960287930', // Gabe Newell (public profile)
+        '76561198013825972', // Popular public profile
+        '76561198067146383', // Popular public profile
+        '76561198021466528', // Popular public profile
+        '76561198059949467', // Popular public profile
+        '76561198077860982', // Popular public profile
+        '76561198041282941', // Popular public profile
+        '76561198012563928', // Popular public profile
+        '76561198063472351', // Popular public profile
+        '76561198084126937', // Popular public profile
+      ];
 
       for (let i = 0; i < count; i++) {
         const teamName = teamNames[i % teamNames.length];
@@ -106,7 +116,7 @@ const Development: React.FC = () => {
           name: fullName,
           tag: teamName.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase() || 'TST',
           players: Array.from({ length: 5 }, (_, playerIndex) => ({
-            steamId: createSteamId(i, playerIndex),
+            steamId: realSteamIds[(i * 5 + playerIndex) % realSteamIds.length],
             name: `Player ${playerIndex + 1}`,
           })),
         });
