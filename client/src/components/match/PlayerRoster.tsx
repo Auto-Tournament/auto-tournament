@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Grid, Paper, Chip, Stack } from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Stack, Avatar } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
@@ -89,6 +89,15 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 ) : (
                   <PersonOffIcon sx={{ color: 'action.disabled', fontSize: 20 }} />
                 )}
+
+                {/* Avatar */}
+                <Avatar
+                  src={player.avatar}
+                  alt={player.name}
+                  sx={{ width: 32, height: 32 }}
+                >
+                  {player.name.charAt(0).toUpperCase()}
+                </Avatar>
 
                 {/* Player Name */}
                 <Typography

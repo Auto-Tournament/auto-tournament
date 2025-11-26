@@ -69,7 +69,11 @@ router.post('/resolve', async (req: Request, res: Response) => {
     log.success(`Resolved Steam player: ${player.name} (${player.steamId})`);
     return res.json({
       success: true,
-      player,
+      player: {
+        steamId: player.steamId,
+        name: player.name,
+        avatar: player.avatarUrl,
+      },
     });
   } catch (error) {
     log.error('Error in Steam resolve endpoint', error);
@@ -126,7 +130,11 @@ router.get('/player/:steamId', async (req: Request, res: Response) => {
 
     return res.json({
       success: true,
-      player,
+      player: {
+        steamId: player.steamId,
+        name: player.name,
+        avatar: player.avatarUrl,
+      },
     });
   } catch (error) {
     log.error('Error fetching Steam player info', error);

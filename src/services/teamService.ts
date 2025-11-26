@@ -1,6 +1,7 @@
 import { db } from '../config/database';
 import { Team, CreateTeamInput, UpdateTeamInput, TeamResponse, Player } from '../types/team.types';
 import { log } from '../utils/logger';
+import { steamService } from './steamService';
 
 class TeamService {
   /**
@@ -47,6 +48,48 @@ class TeamService {
   }
 
   /**
+   * Enrich players with Steam avatars
+   * Fetches avatars for players that don't have one yet
+   * Gracefully handles Steam API unavailability
+   */
+  private async enrichPlayersWithAvatars(players: Player[]): Promise<Player[]> {
+    // Check if Steam API is available
+    const isSteamAvailable = await steamService.isAvailable();
+    if (!isSteamAvailable) {
+      log.debug('Steam API not available, skipping avatar fetch');
+      return players;
+    }
+
+    // Enrich players with avatars in parallel
+    const enrichedPlayers = await Promise.all(
+      players.map(async (player) => {
+        // If player already has an avatar, keep it
+        if (player.avatar) {
+          return player;
+        }
+
+        try {
+          // Fetch player info from Steam API
+          const steamPlayer = await steamService.getPlayerInfo(player.steamId);
+          if (steamPlayer?.avatarUrl) {
+            return {
+              ...player,
+              avatar: steamPlayer.avatarUrl,
+            };
+          }
+        } catch (error) {
+          log.warn(`Failed to fetch avatar for player ${player.steamId}`, error);
+        }
+
+        // Return player as-is if avatar fetch failed
+        return player;
+      })
+    );
+
+    return enrichedPlayers;
+  }
+
+  /**
    * Create a new team
    */
   async createTeam(input: CreateTeamInput, upsert = false): Promise<TeamResponse> {
@@ -68,6 +111,9 @@ class TeamService {
     // Validate no duplicate Steam IDs
     this.validateNoDuplicatePlayers(input.players);
 
+    // Enrich players with avatars from Steam API
+    const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
+
     // Check if team exists
     const existing = await this.getTeamById(input.id);
     if (existing) {
@@ -76,7 +122,7 @@ class TeamService {
           name: input.name,
           tag: input.tag,
           discordRoleId: input.discordRoleId,
-          players: input.players,
+          players: enrichedPlayers,
         });
       }
       throw new Error(`Team with ID '${input.id}' already exists`);
@@ -88,7 +134,7 @@ class TeamService {
       name: input.name,
       tag: input.tag || null,
       discord_role_id: input.discordRoleId || null,
-      players: JSON.stringify(input.players),
+      players: JSON.stringify(enrichedPlayers),
     });
 
     log.success(`Team created: ${input.name} (${input.id})`, {
@@ -121,7 +167,11 @@ class TeamService {
     if (input.name !== undefined) updateData.name = input.name;
     if (input.tag !== undefined) updateData.tag = input.tag || null;
     if (input.discordRoleId !== undefined) updateData.discord_role_id = input.discordRoleId || null;
-    if (input.players !== undefined) updateData.players = JSON.stringify(input.players);
+    if (input.players !== undefined) {
+      // Enrich players with avatars from Steam API
+      const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
+      updateData.players = JSON.stringify(enrichedPlayers);
+    }
 
     await db.updateAsync('teams', updateData, 'id = ?', [id]);
 

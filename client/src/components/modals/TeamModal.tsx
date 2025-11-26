@@ -14,6 +14,8 @@ import {
   Typography,
   Alert,
   Divider,
+  Avatar,
+  ListItemAvatar,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -71,6 +73,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerSteamId, setNewPlayerSteamId] = useState('');
   const [newPlayerName, setNewPlayerName] = useState('');
+  const [newPlayerAvatar, setNewPlayerAvatar] = useState<string | undefined>(undefined);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -98,6 +101,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setPlayers([]);
     setNewPlayerSteamId('');
     setNewPlayerName('');
+    setNewPlayerAvatar(undefined);
     setError('');
   };
 
@@ -129,6 +133,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       if (response.player) {
         setNewPlayerSteamId(response.player.steamId);
         setNewPlayerName(response.player.name);
+        setNewPlayerAvatar(response.player.avatar);
         setError('');
       }
     } catch (err) {
@@ -158,9 +163,16 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       return;
     }
 
-    setPlayers([...players, { steamId: trimmedSteamId, name: newPlayerName.trim() }]);
+    const playerToAdd: Player = {
+      steamId: trimmedSteamId,
+      name: newPlayerName.trim(),
+      avatar: newPlayerAvatar,
+    };
+    
+    setPlayers([...players, playerToAdd]);
     setNewPlayerSteamId('');
     setNewPlayerName('');
+    setNewPlayerAvatar(undefined);
     setError('');
   };
 
@@ -343,7 +355,11 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                       </IconButton>
                     }
                   >
-                    <PersonIcon sx={{ mr: 2, color: 'text.secondary' }} />
+                    <ListItemAvatar>
+                      <Avatar src={player.avatar} alt={player.name}>
+                        {player.name.charAt(0).toUpperCase()}
+                      </Avatar>
+                    </ListItemAvatar>
                     <ListItemText
                       primary={player.name}
                       secondary={player.steamId}

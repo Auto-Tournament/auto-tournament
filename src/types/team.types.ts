@@ -5,6 +5,7 @@
 export interface Player {
   steamId: string;
   name: string;
+  avatar?: string;
 }
 
 export interface Team {
