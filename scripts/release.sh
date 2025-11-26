@@ -31,7 +31,15 @@ if ! command -v gh &> /dev/null; then
 fi
 
 if ! docker info > /dev/null 2>&1; then
-    echo -e "${RED}Error: Docker is not running. Please start Docker Desktop.${NC}"
+    echo -e "${RED}Error: Docker is not running.${NC}"
+    echo -e "${YELLOW}Please start OrbStack or Docker Desktop.${NC}"
+    exit 1
+fi
+
+# Verify Docker is actually accessible
+if ! docker ps > /dev/null 2>&1; then
+    echo -e "${RED}Error: Docker daemon is not accessible.${NC}"
+    echo -e "${YELLOW}Please ensure OrbStack or Docker Desktop is running and try again.${NC}"
     exit 1
 fi
 
@@ -152,6 +160,16 @@ echo ""
 echo -e "${YELLOW}Ensuring main branch is up to date...${NC}"
 git fetch origin
 CURRENT_BRANCH=$(git branch --show-current)
+
+# Stash any uncommitted changes before switching branches
+if ! git diff-index --quiet HEAD --; then
+    echo -e "${YELLOW}Stashing uncommitted changes before branch operations...${NC}"
+    git stash push -m "Release script: stashing uncommitted changes"
+    STASHED_CHANGES=true
+else
+    STASHED_CHANGES=false
+fi
+
 if [ "$CURRENT_BRANCH" != "main" ]; then
     echo -e "${YELLOW}Switching to main branch...${NC}"
     git checkout main
@@ -203,11 +221,12 @@ else
     echo -e "${GREEN}✅ Builder created${NC}"
 fi
 
-# Test build (single platform for speed, don't push)
+# Test build (single platform for speed, load into local Docker)
 docker buildx build \
     --platform linux/amd64 \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:test-build" \
+    --load \
     --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
     --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
     --progress=plain \
@@ -233,6 +252,10 @@ if git show-ref --verify --quiet refs/heads/"${RELEASE_BRANCH}"; then
     git rebase origin/main
     if [ $? -ne 0 ]; then
         echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
+        if [ "$STASHED_CHANGES" = true ]; then
+            echo -e "${YELLOW}Restoring stashed changes...${NC}"
+            git stash pop > /dev/null 2>&1 || true
+        fi
         exit 1
     fi
 else
@@ -245,6 +268,10 @@ else
         git rebase origin/main
         if [ $? -ne 0 ]; then
             echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
+            if [ "$STASHED_CHANGES" = true ]; then
+                echo -e "${YELLOW}Restoring stashed changes...${NC}"
+                git stash pop > /dev/null 2>&1 || true
+            fi
             exit 1
         fi
     else
@@ -252,6 +279,12 @@ else
         echo -e "${GREEN}Creating new release branch from main...${NC}"
         git checkout -b "${RELEASE_BRANCH}"
     fi
+fi
+
+# Restore stashed changes after switching to release branch
+if [ "$STASHED_CHANGES" = true ]; then
+    echo -e "${YELLOW}Restoring stashed changes on release branch...${NC}"
+    git stash pop > /dev/null 2>&1 || echo -e "${YELLOW}⚠️  Note: Some stashed changes may have conflicts${NC}"
 fi
 
 # Push release branch to ensure it's up to date on remote
