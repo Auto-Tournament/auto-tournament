@@ -39,9 +39,9 @@ class TeamService {
    * Validate that a team doesn't have duplicate Steam IDs
    */
   private validateNoDuplicatePlayers(players: Player[]): void {
-    const steamIds = players.map(p => p.steamId.toLowerCase());
+    const steamIds = players.map((p) => p.steamId.toLowerCase());
     const uniqueSteamIds = new Set(steamIds);
-    
+
     if (steamIds.length !== uniqueSteamIds.size) {
       throw new Error('Team cannot have duplicate Steam IDs');
     }
@@ -60,6 +60,8 @@ class TeamService {
       return players;
     }
 
+    const AVATAR_FETCH_TIMEOUT = 5000; // 5 seconds
+
     // Enrich players with avatars in parallel
     const enrichedPlayers = await Promise.all(
       players.map(async (player) => {
@@ -69,8 +71,15 @@ class TeamService {
         }
 
         try {
-          // Fetch player info from Steam API
-          const steamPlayer = await steamService.getPlayerInfo(player.steamId);
+          // Fetch player info from Steam API with timeout
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('Timeout')), AVATAR_FETCH_TIMEOUT)
+          );
+          const steamPlayer = await Promise.race([
+            steamService.getPlayerInfo(player.steamId),
+            timeoutPromise,
+          ]);
+
           if (steamPlayer?.avatarUrl) {
             return {
               ...player,
@@ -78,7 +87,7 @@ class TeamService {
             };
           }
         } catch (error) {
-          log.warn(`Failed to fetch avatar for player ${player.steamId}`, error);
+          log.warn(`Failed to fetch avatar for player ${player.steamId}`, { error });
         }
 
         // Return player as-is if avatar fetch failed
