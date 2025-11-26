@@ -60,6 +60,51 @@ if ! docker info | grep -q "Username"; then
     fi
 fi
 
+# Cleanup Docker: Stop containers, remove images, prune everything for clean slate
+echo ""
+echo -e "${YELLOW}Cleaning up Docker for fresh build...${NC}"
+
+# Stop and remove any running containers related to this project
+echo -e "${BLUE}Stopping and removing containers...${NC}"
+CONTAINERS=$(docker ps -a --filter "name=matchzy" --format "{{.ID}}" 2>/dev/null || true)
+if [ -n "$CONTAINERS" ]; then
+    echo "$CONTAINERS" | while read -r id; do
+        [ -n "$id" ] && docker stop "$id" 2>/dev/null || true
+        [ -n "$id" ] && docker rm "$id" 2>/dev/null || true
+    done
+fi
+
+# Remove Docker images related to this project
+echo -e "${BLUE}Removing Docker images...${NC}"
+IMAGES=$(docker images "${DOCKER_IMAGE}"* --format "{{.ID}}" 2>/dev/null | sort -u || true)
+if [ -n "$IMAGES" ]; then
+    echo "$IMAGES" | while read -r id; do
+        [ -n "$id" ] && docker rmi -f "$id" 2>/dev/null || true
+    done
+fi
+
+# Remove test build image if it exists
+TEST_IMAGE=$(docker images "${DOCKER_IMAGE}:test-build" --format "{{.ID}}" 2>/dev/null | head -1 || true)
+if [ -n "$TEST_IMAGE" ]; then
+    docker rmi -f "$TEST_IMAGE" 2>/dev/null || true
+fi
+
+# Prune build cache and builder cache
+echo -e "${BLUE}Pruning Docker build cache...${NC}"
+docker builder prune -af --filter "until=24h" 2>/dev/null || true
+
+# Prune system (removes unused data, but not volumes by default to avoid data loss)
+echo -e "${BLUE}Pruning Docker system...${NC}"
+docker system prune -af 2>/dev/null || true
+
+# Clean up buildx builder cache if it exists
+if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    echo -e "${BLUE}Pruning buildx builder cache...${NC}"
+    docker buildx prune -af 2>/dev/null || true
+fi
+
+echo -e "${GREEN}✅ Docker cleanup complete${NC}"
+
 # Get current version from package.json
 if [ -f "package.json" ]; then
     CURRENT_VERSION=$(grep '"version"' package.json | head -1 | awk -F '"' '{print $4}')
@@ -84,6 +129,7 @@ fi
 # Confirm release
 echo ""
 echo -e "Release plan:"
+echo -e "  ${BLUE}0.${NC} Clean up Docker (stop containers, remove images, prune cache)"
 echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
 echo -e "  ${BLUE}2.${NC} Build Docker image (test build)"
 echo -e "  ${BLUE}3.${NC} Update release branch (rebase onto main)"
@@ -126,13 +172,35 @@ echo -e "${GREEN}✅ Project build successful${NC}"
 echo ""
 echo -e "${YELLOW}Step 2: Building Docker image (test build)...${NC}"
 
+# Ensure we're using OrbStack context (or default if OrbStack not available)
+if docker context ls | grep -q "orbstack \*"; then
+    echo -e "${GREEN}✅ Using OrbStack context${NC}"
+elif docker context show | grep -q "orbstack"; then
+    docker context use orbstack
+    echo -e "${GREEN}✅ Switched to OrbStack context${NC}"
+else
+    echo -e "${YELLOW}⚠️  OrbStack context not found, using default${NC}"
+fi
+
 # Set up Docker Buildx builder
-if ! docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    # Check if builder endpoint is valid
+    BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
+    if [ -n "$BUILDER_ENDPOINT" ] && [ "$BUILDER_ENDPOINT" != "desktop-linux" ]; then
+        docker buildx use "${BUILDER_NAME}"
+        echo -e "${GREEN}✅ Using existing builder${NC}"
+        # Bootstrap the builder if it's inactive
+        echo -e "${BLUE}Booting builder...${NC}"
+        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+    else
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid endpoint, removing and recreating...${NC}"
+        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder recreated${NC}"
+    fi
+else
     docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
     echo -e "${GREEN}✅ Builder created${NC}"
-else
-    docker buildx use "${BUILDER_NAME}"
-    echo -e "${GREEN}✅ Using existing builder${NC}"
 fi
 
 # Test build (single platform for speed, don't push)
