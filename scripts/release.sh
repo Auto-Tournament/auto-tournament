@@ -295,86 +295,145 @@ git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --
 echo ""
 echo -e "${YELLOW}Step 4: Bumping version to ${NEW_VERSION}...${NC}"
 
-# We're on the release branch
+VERSION_BUMPED=false
 
-# Update version in package.json (works on both macOS and Linux)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    # macOS
-    sed -i '' "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+# Check if version actually needs to change
+if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
+    echo -e "${YELLOW}⚠️  Version is already ${NEW_VERSION}. Skipping version bump.${NC}"
 else
-    # Linux
-    sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+    # We're on the release branch
+    
+    # Update version in package.json (works on both macOS and Linux)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i '' "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+    else
+        # Linux
+        sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
+    fi
+    
+    # Step 5: Commit version bump
+    echo ""
+    echo -e "${YELLOW}Step 5: Committing version bump...${NC}"
+    
+    # Check if there are actually changes to commit
+    if ! git diff --quiet package.json; then
+        git add package.json
+        git commit -m "chore: bump version to ${NEW_VERSION}"
+        echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION}${NC}"
+        VERSION_BUMPED=true
+    else
+        echo -e "${YELLOW}⚠️  No changes detected in package.json. Version may already be ${NEW_VERSION}.${NC}"
+    fi
 fi
-
-# Step 5: Commit version bump
-echo ""
-echo -e "${YELLOW}Step 5: Committing version bump...${NC}"
-git add package.json
-git commit -m "chore: bump version to ${NEW_VERSION}"
 
 # Push branch
 echo -e "${YELLOW}Pushing release branch to origin...${NC}"
 git push origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
 
-# Create PR and merge
-echo ""
-echo -e "${YELLOW}Step 6: Creating PR to merge version bump...${NC}"
-PR_BODY="## Release ${NEW_VERSION}
+# Check if there are commits between main and release branch
+COMMITS_AHEAD=$(git rev-list --count origin/main..origin/"${RELEASE_BRANCH}" 2>/dev/null || echo "0")
+
+# Create PR and merge (only if there are commits to merge)
+if [ "$COMMITS_AHEAD" -gt 0 ]; then
+    echo ""
+    echo -e "${YELLOW}Step 6: Creating PR to merge version bump...${NC}"
+    PR_BODY="## Release ${NEW_VERSION}
 
 This PR bumps the version to ${NEW_VERSION} in preparation for release.
 
 ### Changes
 - Bumped version from ${CURRENT_VERSION} to ${NEW_VERSION} in package.json"
 
-PR_URL=$(gh pr create --base main --head "${RELEASE_BRANCH}" \
-    --title "chore: bump version to ${NEW_VERSION}" \
-    --body "$PR_BODY" \
-    --repo "${REPO_OWNER}/${REPO_NAME}")
+    PR_URL=$(gh pr create --base main --head "${RELEASE_BRANCH}" \
+        --title "chore: bump version to ${NEW_VERSION}" \
+        --body "$PR_BODY" \
+        --repo "${REPO_OWNER}/${REPO_NAME}")
 
-if [ $? -eq 0 ]; then
-    echo -e "${GREEN}✅ PR created: ${PR_URL}${NC}"
-    echo ""
-    echo -e "${YELLOW}Merging PR...${NC}"
-    gh pr merge "${RELEASE_BRANCH}" --merge --repo "${REPO_OWNER}/${REPO_NAME}"
-    
-    if [ $? -ne 0 ]; then
-        echo -e "${YELLOW}⚠️  Could not auto-merge PR. Please merge manually: ${PR_URL}${NC}"
-        echo -e "${BLUE}Press Enter after the PR is merged to continue...${NC}"
-        read -r
+    if [ $? -eq 0 ]; then
+        echo -e "${GREEN}✅ PR created: ${PR_URL}${NC}"
+        echo ""
+        echo -e "${YELLOW}Merging PR...${NC}"
+        gh pr merge "${RELEASE_BRANCH}" --merge --repo "${REPO_OWNER}/${REPO_NAME}"
+        
+        if [ $? -ne 0 ]; then
+            echo -e "${YELLOW}⚠️  Could not auto-merge PR. Please merge manually: ${PR_URL}${NC}"
+            echo -e "${BLUE}Press Enter after the PR is merged to continue...${NC}"
+            read -r
+        fi
+        
+        # Switch back to main and pull
+        git checkout main
+        git pull origin main
+        
+        # Rebase release branch onto main to keep it up to date
+        echo ""
+        echo -e "${YELLOW}Updating release branch to match main...${NC}"
+        git checkout "${RELEASE_BRANCH}"
+        git rebase origin/main
+        if [ $? -ne 0 ]; then
+            echo -e "${YELLOW}⚠️  Rebase had conflicts, but continuing...${NC}"
+        fi
+        git push origin "${RELEASE_BRANCH}" --force-with-lease
+        
+        # Switch back to main for tagging
+        git checkout main
+    else
+        echo -e "${RED}Failed to create PR${NC}"
+        exit 1
     fi
+else
+    echo ""
+    echo -e "${YELLOW}Step 6: Skipping PR creation (no commits to merge)${NC}"
+    echo -e "${BLUE}Release branch is already up to date with main.${NC}"
     
-    # Switch back to main and pull
+    # Ensure we're on main for tagging
     git checkout main
     git pull origin main
-    
-    # Rebase release branch onto main to keep it up to date
-    echo ""
-    echo -e "${YELLOW}Updating release branch to match main...${NC}"
-    git checkout "${RELEASE_BRANCH}"
-    git rebase origin/main
-    if [ $? -ne 0 ]; then
-        echo -e "${YELLOW}⚠️  Rebase had conflicts, but continuing...${NC}"
-    fi
-    git push origin "${RELEASE_BRANCH}" --force-with-lease
-    
-    # Switch back to main for tagging
-    git checkout main
-else
-    echo -e "${RED}Failed to create PR${NC}"
-    exit 1
 fi
 
 # Step 7: Create and push git tag
 echo ""
 echo -e "${YELLOW}Step 7: Creating git tag v${NEW_VERSION}...${NC}"
+
+# Fetch tags from remote first
+git fetch origin --tags --force 2>/dev/null || true
+
+# Check if tag exists locally or remotely
+TAG_EXISTS_LOCAL=false
+TAG_EXISTS_REMOTE=false
+
 if git rev-parse "v${NEW_VERSION}" >/dev/null 2>&1; then
-    echo -e "${YELLOW}Tag v${NEW_VERSION} already exists. Deleting...${NC}"
-    git tag -d "v${NEW_VERSION}"
-    git push origin ":refs/tags/v${NEW_VERSION}" 2>/dev/null || true
+    TAG_EXISTS_LOCAL=true
 fi
 
+if git ls-remote --tags origin "refs/tags/v${NEW_VERSION}" | grep -q "v${NEW_VERSION}"; then
+    TAG_EXISTS_REMOTE=true
+fi
+
+# Delete existing tags if they exist
+if [ "$TAG_EXISTS_LOCAL" = true ] || [ "$TAG_EXISTS_REMOTE" = true ]; then
+    echo -e "${YELLOW}Tag v${NEW_VERSION} already exists. Deleting for re-release...${NC}"
+    
+    # Delete local tag
+    if [ "$TAG_EXISTS_LOCAL" = true ]; then
+        git tag -d "v${NEW_VERSION}" 2>/dev/null || true
+        echo -e "${BLUE}Deleted local tag v${NEW_VERSION}${NC}"
+    fi
+    
+    # Delete remote tag
+    if [ "$TAG_EXISTS_REMOTE" = true ]; then
+        git push origin ":refs/tags/v${NEW_VERSION}" 2>/dev/null || true
+        echo -e "${BLUE}Deleted remote tag v${NEW_VERSION}${NC}"
+        # Wait a moment for deletion to propagate
+        sleep 1
+    fi
+fi
+
+# Create and push the tag
 git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 git push origin "v${NEW_VERSION}"
+echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 
 # Step 8: Build and push Docker images
 echo ""
@@ -414,6 +473,13 @@ rm -f /tmp/image_inspect.txt
 echo ""
 echo -e "${YELLOW}Step 9: Creating GitHub release...${NC}"
 
+# Check if GitHub release already exists
+if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/null 2>&1; then
+    echo -e "${YELLOW}GitHub release v${NEW_VERSION} already exists. Deleting for re-release...${NC}"
+    gh release delete "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" --yes 2>/dev/null || true
+    echo -e "${BLUE}Deleted existing GitHub release${NC}"
+fi
+
 RELEASE_BODY="## 🐳 Docker Release v${NEW_VERSION}
 
 ### Docker Images
@@ -452,7 +518,7 @@ gh release create "v${NEW_VERSION}" \
 if [ $? -eq 0 ]; then
     echo -e "${GREEN}✅ GitHub release created${NC}"
 else
-    echo -e "${YELLOW}⚠️  Failed to create GitHub release (tag may already exist)${NC}"
+    echo -e "${YELLOW}⚠️  Failed to create GitHub release. It may already exist or there was an error.${NC}"
 fi
 
 # Summary
