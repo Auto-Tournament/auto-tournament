@@ -17,6 +17,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -26,6 +27,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import DownloadIcon from '@mui/icons-material/Download';
 import {
   formatDate,
   formatDuration,
@@ -720,6 +722,25 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     <Typography variant="body2" color="text.secondary">
                       <strong>Completed:</strong> {formatDate(match.completedAt)}
                     </Typography>
+                  )}
+                  {match.demoFilePath && (
+                    <Box mt={1}>
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<DownloadIcon />}
+                        onClick={() => {
+                          const link = document.createElement('a');
+                          link.href = `/api/demos/${match.slug}/download`;
+                          link.download = match.demoFilePath || '';
+                          document.body.appendChild(link);
+                          link.click();
+                          document.body.removeChild(link);
+                        }}
+                      >
+                        Download Match Demo
+                      </Button>
+                    </Box>
                   )}
                 </Stack>
               </AccordionDetails>

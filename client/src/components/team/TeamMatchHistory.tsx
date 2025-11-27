@@ -1,6 +1,7 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, Grid, Chip } from '@mui/material';
+import { Box, Card, CardContent, Typography, Grid, Chip, IconButton, Tooltip } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
+import DownloadIcon from '@mui/icons-material/Download';
 import { formatDate } from '../../utils/matchUtils';
 import type { TeamMatchHistory } from '../../types';
 
@@ -33,18 +34,36 @@ export function TeamMatchHistoryCard({ matchHistory }: TeamMatchHistoryProps) {
             >
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
-                  <Chip
-                    label={historyMatch.won ? 'WIN' : 'LOSS'}
-                    size="small"
-                    color={historyMatch.won ? 'success' : 'error'}
-                    sx={{ fontWeight: 600 }}
-                  />
-                  <Chip
-                    label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontWeight: 600 }}
-                  />
+                  <Box display="flex" gap={1} alignItems="center">
+                    <Chip
+                      label={historyMatch.won ? 'WIN' : 'LOSS'}
+                      size="small"
+                      color={historyMatch.won ? 'success' : 'error'}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
+                  <Tooltip title="Download match demo">
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        const link = document.createElement('a');
+                        link.href = `/api/demos/${historyMatch.slug}/download`;
+                        link.download = '';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                      }}
+                      sx={{ color: 'primary.main' }}
+                    >
+                      <DownloadIcon fontSize="small" />
+                    </IconButton>
+                  </Tooltip>
                 </Box>
                 <Typography variant="body2" fontWeight={600} gutterBottom>
                   vs {historyMatch.opponent?.name || 'Unknown'}
