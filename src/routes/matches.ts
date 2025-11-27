@@ -13,6 +13,7 @@ import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
+import { teamService } from '../services/teamService';
 import { getMapResults } from '../services/matchMapResultService';
 
 const router = Router();
@@ -153,19 +154,65 @@ router.get('/', async (req: Request, res: Response) => {
       const config = row.config ? JSON.parse(row.config as string) : {};
       const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
-      // Transform config to include properly formatted team players
+      // Normalize players and enrich with avatars from team data
+      const normalizedTeam1Players = config.team1
+        ? normalizeConfigPlayers(config.team1.players)
+        : [];
+      const normalizedTeam2Players = config.team2
+        ? normalizeConfigPlayers(config.team2.players)
+        : [];
+
+      // Enrich players with avatars from team records if team IDs are available
+      let enrichedTeam1Players = normalizedTeam1Players;
+      let enrichedTeam2Players = normalizedTeam2Players;
+
+      if (config.team1?.id && row.team1_id) {
+        try {
+          const team1Data = await teamService.getTeamById(config.team1.id);
+          if (team1Data?.players) {
+            const avatarMap = new Map(
+              team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+            );
+            enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
+              ...p,
+              avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+            }));
+          }
+        } catch (error) {
+          log.debug(`Failed to enrich team1 players with avatars: ${error}`);
+        }
+      }
+
+      if (config.team2?.id && row.team2_id) {
+        try {
+          const team2Data = await teamService.getTeamById(config.team2.id);
+          if (team2Data?.players) {
+            const avatarMap = new Map(
+              team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+            );
+            enrichedTeam2Players = normalizedTeam2Players.map((p) => ({
+              ...p,
+              avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+            }));
+          }
+        } catch (error) {
+          log.debug(`Failed to enrich team2 players with avatars: ${error}`);
+        }
+      }
+
+      // Transform config to include properly formatted team players with avatars
       const transformedConfig = {
         ...config,
         team1: config.team1
           ? {
               ...config.team1,
-              players: normalizeConfigPlayers(config.team1.players),
+              players: enrichedTeam1Players,
             }
           : undefined,
         team2: config.team2
           ? {
               ...config.team2,
-              players: normalizeConfigPlayers(config.team2.players),
+              players: enrichedTeam2Players,
             }
           : undefined,
       };

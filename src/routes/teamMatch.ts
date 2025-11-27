@@ -4,6 +4,7 @@ import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
+import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
@@ -37,28 +38,29 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
 
     console.log(`[TeamMatch] Team found: ${team.name}`);
 
-    // Parse players JSON
-    let parsedPlayers: Array<{ steamId: string; name: string }> = [];
+    // Parse players JSON (preserve avatar field)
+    let parsedPlayers: Array<{ steamId: string; name: string; avatar?: string }> = [];
     if (team.players) {
       try {
         const playersObj = JSON.parse(team.players);
-        // Convert {index: {name, steamId}} to [{steamId, name}]
+        // Convert {index: {name, steamId, avatar}} to [{steamId, name, avatar}]
         parsedPlayers = Object.values(playersObj).map((playerData: unknown) => {
           if (typeof playerData === 'string') {
             // Old format: {steamId: name}
             return { steamId: 'unknown', name: playerData };
           }
-          // New format: {index: {name, steamId}}
+          // New format: {index: {name, steamId, avatar}}
           if (
             playerData &&
             typeof playerData === 'object' &&
             'steamId' in playerData &&
             'name' in playerData
           ) {
-            const player = playerData as { steamId?: string; name?: string };
+            const player = playerData as { steamId?: string; name?: string; avatar?: string };
             return {
               steamId: player.steamId || 'unknown',
               name: player.name || 'Unknown',
+              avatar: player.avatar, // Preserve avatar if present
             };
           }
           return { steamId: 'unknown', name: 'Unknown' };
@@ -299,6 +301,43 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       completedAt: result.completedAt,
     }));
 
+    // Normalize and enrich config players with avatars from team data
+    const normalizedTeam1Players = config.team1
+      ? normalizeConfigPlayers(config.team1.players)
+      : [];
+    const normalizedTeam2Players = config.team2
+      ? normalizeConfigPlayers(config.team2.players)
+      : [];
+
+    // Enrich players with avatars from team records
+    const enrichPlayers = async (
+      normalizedPlayers: Array<{ steamid: string; name: string }>,
+      teamId?: string
+    ) => {
+      if (!teamId) return normalizedPlayers;
+      try {
+        const teamData = await teamService.getTeamById(teamId);
+        if (teamData?.players) {
+          const avatarMap = new Map(
+            teamData.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+          );
+          return normalizedPlayers.map((p) => ({
+            ...p,
+            avatar: avatarMap.get(p.steamid.toLowerCase()),
+          }));
+        }
+      } catch (error) {
+        console.debug(`Failed to enrich players with avatars: ${error}`);
+      }
+      return normalizedPlayers;
+    };
+
+    // Enrich both teams in parallel
+    const [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
+      enrichPlayers(normalizedTeam1Players, config.team1?.id),
+      enrichPlayers(normalizedTeam2Players, config.team2?.id),
+    ]);
+
     return res.json({
       success: true,
       team: {
@@ -376,7 +415,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
                 name: config.team1.name,
                 tag: config.team1.tag,
                 flag: config.team1.flag,
-                players: normalizeConfigPlayers(config.team1.players),
+                players: enrichedTeam1Players,
               }
             : undefined,
           team2: config.team2
@@ -385,7 +424,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
                 name: config.team2.name,
                 tag: config.team2.tag,
                 flag: config.team2.flag,
-                players: normalizeConfigPlayers(config.team2.players),
+                players: enrichedTeam2Players,
               }
             : undefined,
         },
