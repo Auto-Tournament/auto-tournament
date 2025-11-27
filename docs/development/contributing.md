@@ -83,6 +83,73 @@ yarn dev
 - API: `http://localhost:3000`
 - API Docs: `http://localhost:3000/api-docs`
 
+## Docker Development
+
+For testing the full stack in Docker (matching production environment), you can use the convenient yarn scripts:
+
+### Quick Start
+
+```bash
+# Build and start local Docker containers (builds from source)
+yarn docker:local:up
+
+# View logs
+yarn docker:local:logs
+
+# Stop containers
+yarn docker:local:down
+```
+
+### Production Docker Compose
+
+```bash
+# Start production containers (uses pre-built image from Docker Hub)
+yarn docker:up
+
+# View logs
+yarn docker:logs
+
+# Stop containers
+yarn docker:down
+```
+
+### Custom Port Configuration
+
+You can bind to a different host port using the `HOST_PORT` environment variable:
+
+**Linux/Mac:**
+
+```bash
+HOST_PORT=27016 yarn docker:local:up
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$env:HOST_PORT=27016; yarn docker:local:up
+```
+
+**Windows (CMD):**
+
+```cmd
+set HOST_PORT=27016 && yarn docker:local:up
+```
+
+The default port is `3069` if `HOST_PORT` is not set. The container port always remains `3069` (for Caddy configuration), but the host port can be customized.
+
+### Available Scripts
+
+| Script                   | Description                                   |
+| ------------------------ | --------------------------------------------- |
+| `yarn docker:up`         | Start production containers (pre-built image) |
+| `yarn docker:down`       | Stop production containers                    |
+| `yarn docker:logs`       | View production logs (follow mode)            |
+| `yarn docker:local:up`   | Start local containers (builds from source)   |
+| `yarn docker:local:down` | Stop local containers                         |
+| `yarn docker:local:logs` | View local logs (follow mode)                 |
+
+All scripts include the `--build` flag to rebuild images when starting, and containers run in detached mode (`-d`).
+
 ## Project Structure
 
 ```
@@ -227,10 +294,14 @@ export API_TOKEN=admin123
 yarn dev
 # Access at http://localhost:5173
 
-# OR Docker Compose
+# OR Docker Compose (using yarn scripts)
 export API_TOKEN=admin123
-docker compose -f docker/docker-compose.local.yml up -d --build
+yarn docker:local:up
 # Access at http://localhost:3069
+
+# Or with custom port
+HOST_PORT=27016 yarn docker:local:up
+# Access at http://localhost:27016
 ```
 
 📖 **[Complete Testing Guide](testing-pr.md)** — Detailed instructions for testing PRs, including setup options, testing checklists, and bug reporting.
