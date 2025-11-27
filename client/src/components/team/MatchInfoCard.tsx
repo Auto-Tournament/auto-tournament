@@ -1,7 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Box, Card, CardContent, Typography, Alert, Button, Tooltip } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import DownloadIcon from '@mui/icons-material/Download';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
@@ -279,28 +278,6 @@ export function MatchInfoCard({
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
 
-            {/* Demo download button - show if match is completed and has any map demos */}
-            {match.status === 'completed' &&
-              match.mapResults.some((mr) => mr.demoFilePath) && (
-                <Box>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<DownloadIcon />}
-                    onClick={() => {
-                      const link = document.createElement('a');
-                      link.href = `/api/demos/${match.slug}/download`;
-                      link.download = '';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                    }}
-                    fullWidth
-                  >
-                    Download Match Demo
-                  </Button>
-                </Box>
-              )}
 
             <MatchRosterAccordion team={team} match={match} />
 

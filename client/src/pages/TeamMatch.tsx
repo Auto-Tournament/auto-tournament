@@ -266,7 +266,7 @@ export default function TeamMatch() {
           <PlayerRosterCard team={team} />
 
           <TeamStatsCard stats={stats} standing={standing} />
-          <TeamMatchHistoryCard matchHistory={matchHistory} />
+          <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
         </Stack>
       </Container>
     </Box>
