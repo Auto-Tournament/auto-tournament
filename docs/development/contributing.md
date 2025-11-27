@@ -168,6 +168,30 @@ yarn docker:local:rebuild
 yarn docker:local:logs
 ```
 
+**Rebuilding with Custom Port:**
+
+The `HOST_PORT` environment variable also works with the rebuild command. The container will be recreated with the new port mapping:
+
+**Linux/Mac:**
+
+```bash
+HOST_PORT=27016 yarn docker:local:rebuild
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$env:HOST_PORT=27016; yarn docker:local:rebuild
+```
+
+**Windows (CMD):**
+
+```cmd
+set HOST_PORT=27016 && yarn docker:local:rebuild
+```
+
+This will rebuild the container and bind it to port 27016. If the container was previously running on a different port, it will be stopped and recreated with the new port mapping.
+
 **Important:** Your PostgreSQL data is stored in a Docker volume (`postgres-data`) which persists across rebuilds. The database will only be lost if you explicitly remove the volume with `docker volume rm postgres-data`.
 
 ### Available Scripts
