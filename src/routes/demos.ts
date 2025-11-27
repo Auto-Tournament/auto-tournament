@@ -41,19 +41,31 @@ router.post(
   // This follows MatchZy API specification exactly
   express.raw({ type: 'application/octet-stream', limit: '500mb' }),
   async (req: Request, res: Response) => {
-    try {
-      const { matchSlug } = req.params;
+    const { matchSlug } = req.params;
 
+    try {
       // Read MatchZy headers (with Get5 fallbacks for compatibility)
       // Headers are normalized to lowercase by Express
+      // Headers can be string | string[], so we take the first value if it's an array
+      const getHeaderValue = (value: string | string[] | undefined): string | undefined => {
+        if (Array.isArray(value)) {
+          return value[0];
+        }
+        return value;
+      };
+
       const matchzyFilename =
-        req.headers['matchzy-filename'] || req.headers['get5-filename'];
+        getHeaderValue(req.headers['matchzy-filename']) ||
+        getHeaderValue(req.headers['get5-filename']);
       const matchzyMatchId =
-        req.headers['matchzy-matchid'] || req.headers['get5-matchid'];
+        getHeaderValue(req.headers['matchzy-matchid']) ||
+        getHeaderValue(req.headers['get5-matchid']);
       const matchzyMapNumber =
-        req.headers['matchzy-mapnumber'] || req.headers['get5-mapnumber'];
+        getHeaderValue(req.headers['matchzy-mapnumber']) ||
+        getHeaderValue(req.headers['get5-mapnumber']);
       const matchzyRoundNumber =
-        req.headers['matchzy-roundnumber'] || req.headers['get5-roundnumber'];
+        getHeaderValue(req.headers['matchzy-roundnumber']) ||
+        getHeaderValue(req.headers['get5-roundnumber']);
 
       // Validate required headers (per MatchZy API spec)
       if (!matchzyFilename || !matchzyMatchId || matchzyMapNumber === undefined) {
@@ -150,7 +162,7 @@ router.post(
       }
 
       // Use MatchZy's filename (already validated above)
-      const filename = matchzyFilename;
+      const filename = matchzyFilename as string; // Type assertion safe - validated above
       const filepath = path.join(matchFolder, filename);
 
       // Write binary data to file (req.body is a Buffer from express.raw())
@@ -166,13 +178,13 @@ router.post(
       const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
 
       // Update match with demo file path (store relative path)
-      const relativePath = path.join(matchSlug, filename);
+      const relativePath = path.join(matchSlug, filename as string);
 
       // Store demo path in match record (for backward compatibility)
       await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       // Also store demo path per map if map number is provided
-      const mapNumber = parseInt(matchzyMapNumber, 10);
+      const mapNumber = parseInt(matchzyMapNumber as string, 10);
       if (!isNaN(mapNumber)) {
         try {
           // Update the map result with demo file path
@@ -251,12 +263,12 @@ router.post(
       }
 
       // Return success response (per MatchZy API spec - 200-299 status codes are success)
-      res.status(200).json({
+      return res.status(200).json({
         success: true,
         message: 'Demo uploaded successfully',
-        matchId: matchzyMatchId,
-        mapNumber: parseInt(matchzyMapNumber, 10),
-        filename: filename,
+        matchId: matchzyMatchId as string,
+        mapNumber: parseInt(matchzyMapNumber as string, 10),
+        filename: filename as string,
         fileSize: fileSize,
         savedPath: relativePath,
       });
@@ -277,12 +289,13 @@ router.post(
 
       log.error('Error processing demo upload', error);
       if (!res.headersSent) {
-        res.status(500).json({
+        return res.status(500).json({
           success: false,
           error: 'Failed to process demo upload',
           message: error instanceof Error ? error.message : String(error),
         });
       }
+      return;
     }
   }
 );

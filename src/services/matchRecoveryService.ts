@@ -10,7 +10,6 @@ import { rconService } from './rconService';
 import { refreshConnectionsFromServer, fetchMatchReport, applyMatchReport } from './connectionSnapshotService';
 import {
   getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommand,
   getMatchZyDemoUploadCommands,
 } from '../utils/matchzyRconCommands';
 import { settingsService } from './settingsService';
