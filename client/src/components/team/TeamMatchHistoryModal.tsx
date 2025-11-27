@@ -11,13 +11,9 @@ import {
   Divider,
   CircularProgress,
   Alert,
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { formatDate, getRoundLabel } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
 import type { Match, TeamMatchHistory } from '../../types';

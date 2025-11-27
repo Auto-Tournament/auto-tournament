@@ -8,7 +8,6 @@ interface MapChipListProps {
   activeMapIndex: number | null;
   activeMapLabel?: string | null;
   mapResults: MatchMapResult[];
-  matchSlug?: string; // Optional now since we don't use it here anymore
 }
 
 export function MapChipList({
@@ -16,7 +15,6 @@ export function MapChipList({
   activeMapIndex,
   activeMapLabel,
   mapResults,
-  matchSlug,
 }: MapChipListProps) {
   return (
     <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">

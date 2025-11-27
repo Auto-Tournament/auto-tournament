@@ -715,7 +715,7 @@ export class MatchAllocationService {
   }
 
   // Track polling intervals to avoid duplicate polling
-  private pollingIntervals = new Map<string, NodeJS.Timeout>();
+  private pollingIntervals = new Map<string, ReturnType<typeof setInterval>>();
 
   /**
    * Start polling for available servers for a specific match

@@ -15,7 +15,7 @@ export function MapDemoDownloads({
   mapResults,
   matchSlug,
 }: MapDemoDownloadsProps) {
-  const handleDownloadDemo = (mapNumber: number, mapName: string) => {
+  const handleDownloadDemo = (mapNumber: number, _mapName: string) => {
     const link = document.createElement('a');
     link.href = `/api/demos/${matchSlug}/download/${mapNumber}`;
     link.download = '';
