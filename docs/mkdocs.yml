@@ -157,6 +157,8 @@ nav:
       - Verifying Demo Uploads: guides/verifying-demo-uploads.md
       - Match Recovery: guides/match-recovery.md
       - Troubleshooting: guides/troubleshooting.md
+  - Advanced:
+      - Server Allocation Status: guides/server-allocation-status.md
   - For Teams:
       - Team Pages: guides/team-pages.md
   - Development:
