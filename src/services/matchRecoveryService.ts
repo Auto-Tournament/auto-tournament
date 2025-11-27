@@ -8,7 +8,11 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { rconService } from './rconService';
 import { refreshConnectionsFromServer, fetchMatchReport, applyMatchReport } from './connectionSnapshotService';
-import { getMatchZyWebhookCommands, getMatchZyDemoUploadCommand } from '../utils/matchzyRconCommands';
+import {
+  getMatchZyWebhookCommands,
+  getMatchZyDemoUploadCommand,
+  getMatchZyDemoUploadCommands,
+} from '../utils/matchzyRconCommands';
 import { settingsService } from './settingsService';
 import type { DbMatchRow } from '../types/database.types';
 
@@ -135,16 +139,22 @@ async function recoverMatch(
           log.success(`[Recovery] Reconfigured webhook for ${match.slug}`);
         }
 
-        // Reconfigure demo upload
-        const demoCmd = getMatchZyDemoUploadCommand(baseUrl, match.slug);
-        const demoResult = await rconService.sendCommand(match.server_id, demoCmd);
-        if (demoResult.success) {
+        // Reconfigure demo upload (with headers for authentication)
+        const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, match.slug, serverToken);
+        let demoSuccess = true;
+        for (const cmd of demoUploadCommands) {
+          const cmdResult = await rconService.sendCommand(match.server_id, cmd);
+          if (!cmdResult.success) {
+            demoSuccess = false;
+            log.warn(`[Recovery] Failed to reconfigure demo upload for ${match.slug}`, {
+              command: cmd,
+              error: cmdResult.error,
+            });
+          }
+        }
+        if (demoSuccess) {
           result.demoReconfigured = true;
           log.success(`[Recovery] Reconfigured demo upload for ${match.slug}`);
-        } else {
-          log.warn(`[Recovery] Failed to reconfigure demo upload for ${match.slug}`, {
-            error: demoResult.error,
-          });
         }
       } catch (reconfigError) {
         log.warn(`[Recovery] Failed to reconfigure webhook/demo for ${match.slug}`, {

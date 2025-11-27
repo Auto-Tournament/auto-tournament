@@ -1,4 +1,4 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { validateServerToken } from '../middleware/serverAuth';
 import { db } from '../config/database';
@@ -25,87 +25,145 @@ if (!fs.existsSync(DEMOS_DIR)) {
  * POST /api/demos/:matchSlug/upload
  * Upload demo file from MatchZy server
  * Protected by server token validation
- * Follows MatchZy recommended pattern with streaming
+ * Follows MatchZy API specification for demo uploads
+ * 
+ * Headers expected:
+ * - MatchZy-FileName (required)
+ * - MatchZy-MatchId (required)
+ * - MatchZy-MapNumber (required)
+ * - MatchZy-RoundNumber (always present)
+ * - Get5-* headers (compatibility, always present)
  */
-router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res: Response) => {
-  try {
-    const { matchSlug } = req.params;
+router.post(
+  '/:matchSlug/upload',
+  validateServerToken,
+  // CRITICAL: Use express.raw() to handle binary data correctly
+  // This follows MatchZy API specification exactly
+  express.raw({ type: 'application/octet-stream', limit: '500mb' }),
+  async (req: Request, res: Response) => {
+    try {
+      const { matchSlug } = req.params;
 
-    // Read MatchZy headers
-    const matchzyFilename = req.header('MatchZy-FileName');
-    const matchzyMatchId = req.header('MatchZy-MatchId');
-    const matchzyMapNumber = req.header('MatchZy-MapNumber');
+      // Read MatchZy headers (with Get5 fallbacks for compatibility)
+      // Headers are normalized to lowercase by Express
+      const matchzyFilename =
+        req.headers['matchzy-filename'] || req.headers['get5-filename'];
+      const matchzyMatchId =
+        req.headers['matchzy-matchid'] || req.headers['get5-matchid'];
+      const matchzyMapNumber =
+        req.headers['matchzy-mapnumber'] || req.headers['get5-mapnumber'];
+      const matchzyRoundNumber =
+        req.headers['matchzy-roundnumber'] || req.headers['get5-roundnumber'];
 
-    // ========================================
-    // 🎬 DEMO UPLOAD RECEIVED - HUGE LOG BLOCK
-    // ========================================
-    console.log('\n');
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log('🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬');
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log(`📦 Match Slug:     ${matchSlug}`);
-    console.log(`📄 Filename:       ${matchzyFilename || 'NOT PROVIDED'}`);
-    console.log(`🆔 Match ID:        ${matchzyMatchId || 'NOT PROVIDED'}`);
-    console.log(`🗺️  Map Number:     ${matchzyMapNumber || 'NOT PROVIDED'}`);
-    console.log(`⏰ Timestamp:       ${new Date().toISOString()}`);
-    console.log(`📊 Content-Length:  ${req.headers['content-length'] || 'unknown'} bytes`);
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log('\n');
+      // Validate required headers (per MatchZy API spec)
+      if (!matchzyFilename || !matchzyMatchId || matchzyMapNumber === undefined) {
+        const missingHeaders: string[] = [];
+        if (!matchzyFilename) missingHeaders.push('MatchZy-FileName (or Get5-FileName)');
+        if (!matchzyMatchId) missingHeaders.push('MatchZy-MatchId (or Get5-MatchId)');
+        if (matchzyMapNumber === undefined)
+          missingHeaders.push('MatchZy-MapNumber (or Get5-MapNumber)');
 
-    log.info('[Demo Upload] Upload request received', {
-      matchSlug,
-      filename: matchzyFilename,
-      matchId: matchzyMatchId,
-      mapNumber: matchzyMapNumber,
-      headers: {
-        'MatchZy-FileName': matchzyFilename || 'not provided',
-        'MatchZy-MatchId': matchzyMatchId || 'not provided',
-        'MatchZy-MapNumber': matchzyMapNumber || 'not provided',
-      },
-    });
+        log.warn('[Demo Upload] Missing required headers', {
+          matchSlug,
+          missingHeaders,
+          received: {
+            filename: matchzyFilename || 'missing',
+            matchId: matchzyMatchId || 'missing',
+            mapNumber: matchzyMapNumber ?? 'missing',
+          },
+        });
 
-    // Get match details
-    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-      matchSlug,
-    ]);
+        return res.status(400).json({
+          success: false,
+          error: 'Missing required headers',
+          required: ['MatchZy-FileName', 'MatchZy-MatchId', 'MatchZy-MapNumber'],
+          missing: missingHeaders,
+        });
+      }
 
-    if (!match) {
-      log.warn(`Demo upload rejected: Match ${matchSlug} not found`);
-      res.status(404).json({
-        success: false,
-        error: `Match '${matchSlug}' not found`,
+      // Validate request body exists and is a Buffer
+      if (!req.body || !Buffer.isBuffer(req.body)) {
+        log.warn('[Demo Upload] Invalid request body - expected binary data', {
+          matchSlug,
+          bodyType: typeof req.body,
+          isBuffer: Buffer.isBuffer(req.body),
+        });
+
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid request body - expected binary demo file data',
+        });
+      }
+
+      // ========================================
+      // 🎬 DEMO UPLOAD RECEIVED - HUGE LOG BLOCK
+      // ========================================
+      console.log('\n');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`📄 Filename:       ${matchzyFilename}`);
+      console.log(`🆔 Match ID:        ${matchzyMatchId}`);
+      console.log(`🗺️  Map Number:     ${matchzyMapNumber}`);
+      console.log(`🎯 Round Number:    ${matchzyRoundNumber || 'NOT PROVIDED'}`);
+      console.log(`⏰ Timestamp:       ${new Date().toISOString()}`);
+      console.log(
+        `📊 File Size:       ${req.body.length} bytes (${(req.body.length / 1024 / 1024).toFixed(2)} MB)`
+      );
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('\n');
+
+      log.info('[Demo Upload] Upload request received', {
+        matchSlug,
+        filename: matchzyFilename,
+        matchId: matchzyMatchId,
+        mapNumber: matchzyMapNumber,
+        roundNumber: matchzyRoundNumber,
+        fileSize: req.body.length,
+        fileSizeMB: (req.body.length / 1024 / 1024).toFixed(2),
+        headers: {
+          'MatchZy-FileName': matchzyFilename,
+          'MatchZy-MatchId': matchzyMatchId,
+          'MatchZy-MapNumber': matchzyMapNumber,
+          'MatchZy-RoundNumber': matchzyRoundNumber || 'not provided',
+        },
       });
-      return;
-    }
 
-    // Create match-specific folder (following MatchZy pattern)
-    const matchFolder = path.join(DEMOS_DIR, matchSlug);
-    if (!fs.existsSync(matchFolder)) {
-      fs.mkdirSync(matchFolder, { recursive: true });
-    }
+      // Get match details
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
 
-    // Use MatchZy's filename if provided, otherwise generate our own
-    let filename: string;
-    if (matchzyFilename) {
-      filename = matchzyFilename;
-    } else {
-      // Fallback: Generate filename
-      const timestamp = new Date().toISOString().replace(/[:.]/g, '-').replace('T', '_');
-      const mapNumber = matchzyMapNumber || '0';
-      filename = `${timestamp}_${matchSlug}_map${mapNumber}.dem`;
-    }
+      if (!match) {
+        log.warn(`Demo upload rejected: Match ${matchSlug} not found`);
+        return res.status(404).json({
+          success: false,
+          error: `Match '${matchSlug}' not found`,
+        });
+      }
 
-    const filepath = path.join(matchFolder, filename);
+      // Create match-specific folder (following MatchZy pattern)
+      const matchFolder = path.join(DEMOS_DIR, matchSlug);
+      if (!fs.existsSync(matchFolder)) {
+        fs.mkdirSync(matchFolder, { recursive: true });
+      }
 
-    // Create write stream (following MatchZy pattern)
-    const writeStream = fs.createWriteStream(filepath);
+      // Use MatchZy's filename (already validated above)
+      const filename = matchzyFilename;
+      const filepath = path.join(matchFolder, filename);
 
-    // Pipe the request body into the stream (efficient streaming)
-    req.pipe(writeStream);
+      // Write binary data to file (req.body is a Buffer from express.raw())
+      fs.writeFileSync(filepath, req.body);
 
-    // Wait for request to end and reply with 200
-    req.on('end', async () => {
-      writeStream.end();
+      // Verify file was written
+      if (!fs.existsSync(filepath)) {
+        throw new Error('File was not written to disk');
+      }
+
+      const stats = fs.statSync(filepath);
+      const fileSize = stats.size;
+      const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
 
       // Update match with demo file path (store relative path)
       const relativePath = path.join(matchSlug, filename);
@@ -114,40 +172,29 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
       await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       // Also store demo path per map if map number is provided
-      if (matchzyMapNumber) {
-        const mapNumber = parseInt(matchzyMapNumber, 10);
-        if (!isNaN(mapNumber)) {
-          try {
-            // Update the map result with demo file path
-            await db.runAsync(
-              `UPDATE match_map_results 
-               SET demo_file_path = ? 
-               WHERE match_slug = ? AND map_number = ?`,
-              [relativePath, matchSlug, mapNumber]
-            );
-            log.debug('[Demo Upload] Stored demo path for map', {
-              matchSlug,
-              mapNumber,
-              demoPath: relativePath,
-            });
-          } catch (error) {
-            log.warn('[Demo Upload] Failed to store demo path for map', {
-              matchSlug,
-              mapNumber,
-              error: error instanceof Error ? error.message : String(error),
-            });
-          }
+      const mapNumber = parseInt(matchzyMapNumber, 10);
+      if (!isNaN(mapNumber)) {
+        try {
+          // Update the map result with demo file path
+          await db.runAsync(
+            `UPDATE match_map_results 
+             SET demo_file_path = ? 
+             WHERE match_slug = ? AND map_number = ?`,
+            [relativePath, matchSlug, mapNumber]
+          );
+          log.debug('[Demo Upload] Stored demo path for map', {
+            matchSlug,
+            mapNumber,
+            demoPath: relativePath,
+          });
+        } catch (error) {
+          log.warn('[Demo Upload] Failed to store demo path for map', {
+            matchSlug,
+            mapNumber,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
-
-      // Verify file was written
-      let fileSize = 0;
-      if (fs.existsSync(filepath)) {
-        const stats = fs.statSync(filepath);
-        fileSize = stats.size;
-      }
-
-      const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
 
       // ========================================
       // ✅ DEMO UPLOAD SUCCESS - HUGE LOG BLOCK
@@ -158,8 +205,9 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log(`📦 Match Slug:     ${matchSlug}`);
       console.log(`📄 Filename:       ${filename}`);
-      console.log(`🆔 Match ID:        ${matchzyMatchId || 'N/A'}`);
-      console.log(`🗺️  Map Number:     ${matchzyMapNumber || 'N/A'}`);
+      console.log(`🆔 Match ID:        ${matchzyMatchId}`);
+      console.log(`🗺️  Map Number:     ${matchzyMapNumber}`);
+      console.log(`🎯 Round Number:    ${matchzyRoundNumber || 'N/A'}`);
       console.log(`💾 File Size:       ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
       console.log(`📁 Relative Path:   ${relativePath}`);
       console.log(`💿 Full Path:       ${filepath}`);
@@ -172,8 +220,10 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
         filename,
         matchId: matchzyMatchId,
         mapNumber: matchzyMapNumber,
+        roundNumber: matchzyRoundNumber,
         path: relativePath,
         fileSize: `${fileSizeMB} MB`,
+        fileSizeBytes: fileSize,
         filepath,
       });
 
@@ -200,60 +250,42 @@ router.post('/:matchSlug/upload', validateServerToken, async (req: Request, res:
         });
       }
 
+      // Return success response (per MatchZy API spec - 200-299 status codes are success)
       res.status(200).json({
         success: true,
         message: 'Demo uploaded successfully',
-        filename,
+        matchId: matchzyMatchId,
+        mapNumber: parseInt(matchzyMapNumber, 10),
+        filename: filename,
+        fileSize: fileSize,
+        savedPath: relativePath,
       });
-    });
-
-    // If there is a problem writing the file, reply with 500
-    writeStream.on('error', (err) => {
+    } catch (error) {
       console.log('\n');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('❌❌❌  DEMO UPLOAD FAILED - FILE WRITE ERROR  ❌❌❌');
+      console.log('❌❌❌  DEMO UPLOAD FAILED - ERROR  ❌❌❌');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`📄 Filename:       ${matchzyFilename || 'N/A'}`);
-      console.log(`❌ Error:           ${err.message}`);
-      console.log(`💿 File Path:      ${filepath}`);
+      console.log(
+        `❌ Error:           ${error instanceof Error ? error.message : String(error)}`
+      );
+      if (error instanceof Error && error.stack) {
+        console.log(`📋 Stack:           ${error.stack}`);
+      }
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
-      log.error('Error writing demo file', err);
-      res.status(500).json({
-        success: false,
-        error: 'Error writing demo file: ' + err.message,
-      });
-    });
 
-    // Handle request errors
-    req.on('error', (error) => {
-      console.log('\n');
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('❌❌❌  DEMO UPLOAD FAILED - REQUEST ERROR  ❌❌❌');
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`❌ Error:           ${error instanceof Error ? error.message : String(error)}`);
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('\n');
-      log.error('Error receiving demo upload', error);
+      log.error('Error processing demo upload', error);
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          error: 'Failed to receive demo file',
+          error: 'Failed to process demo upload',
+          message: error instanceof Error ? error.message : String(error),
         });
       }
-    });
-  } catch (error) {
-    log.error('Error processing demo upload', error);
-    if (!res.headersSent) {
-      res.status(500).json({
-        success: false,
-        error: 'Failed to process demo upload',
-      });
     }
   }
-});
+);
 
 /**
  * GET /api/demos/:matchSlug/download/:mapNumber?

@@ -153,6 +153,9 @@ nav:
       - Managing Teams: guides/managing-teams.md
       - Managing Maps: guides/managing-maps.md
       - Running Matches: guides/running-matches.md
+      - Enabling Demo Uploads: guides/enabling-demo-uploads.md
+      - Verifying Demo Uploads: guides/verifying-demo-uploads.md
+      - Match Recovery: guides/match-recovery.md
       - Troubleshooting: guides/troubleshooting.md
   - For Teams:
       - Team Pages: guides/team-pages.md

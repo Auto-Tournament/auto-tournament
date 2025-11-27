@@ -45,7 +45,25 @@ export function getMatchZyReportUploadCommands(
 }
 
 /**
- * Get RCON command to configure MatchZy demo upload
+ * Get RCON commands to configure MatchZy demo upload
+ * Returns array of commands to set URL and authentication headers
+ * (Similar to webhook configuration)
+ */
+export function getMatchZyDemoUploadCommands(
+  baseUrl: string,
+  matchSlug: string,
+  serverToken: string
+): string[] {
+  return [
+    `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`,
+    `matchzy_demo_upload_header_key "X-MatchZy-Token"`,
+    `matchzy_demo_upload_header_value "${serverToken}"`,
+  ];
+}
+
+/**
+ * @deprecated Use getMatchZyDemoUploadCommands() instead
+ * Kept for backward compatibility
  */
 export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {
   return `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`;

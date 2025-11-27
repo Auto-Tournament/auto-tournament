@@ -10,6 +10,7 @@ import { log } from '../utils/logger';
 import {
   getMatchZyWebhookCommands,
   getMatchZyDemoUploadCommand,
+  getMatchZyDemoUploadCommands,
   getMatchZyLoadMatchAuthCommands,
 } from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
@@ -86,71 +87,102 @@ export async function loadMatchOnServer(
     // Small delay before next set of commands
     await delay(300);
 
-    // Configure demo upload URL
-    const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+    // Configure demo upload URL and headers (if SERVER_TOKEN is set)
+    let demoUploadConfigured = false;
     const uploadUrl = `${baseUrl}/api/demos/${matchSlug}/upload`;
 
-    console.log('\n');
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log('🎬  CONFIGURING DEMO UPLOAD');
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log(`📦 Match Slug:     ${matchSlug}`);
-    console.log(`🖥️  Server ID:       ${serverId}`);
-    console.log(`🔗 Upload URL:      ${uploadUrl}`);
-    console.log(`💻 RCON Command:    ${demoUploadCommand}`);
-    console.log('═══════════════════════════════════════════════════════════════════════════════');
-    console.log('\n');
-
-    log.debug(`Configuring demo upload for match ${matchSlug}`, {
-      serverId,
-      command: demoUploadCommand,
-      uploadUrl,
-    });
-    const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
-    results.push({
-      success: demoResult.success,
-      command: demoUploadCommand,
-      error: demoResult.error,
-    });
-    const demoUploadConfigured = demoResult.success;
-    if (demoResult.success) {
+    if (serverToken) {
       console.log('\n');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log('✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log('🎬  CONFIGURING DEMO UPLOAD');
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log(`📦 Match Slug:     ${matchSlug}`);
       console.log(`🖥️  Server ID:       ${serverId}`);
       console.log(`🔗 Upload URL:      ${uploadUrl}`);
-      console.log(
-        `✅ Status:          MatchZy will upload demos to this URL after match/map completion`
-      );
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
+      console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
-      log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
+
+      log.debug(`Configuring demo upload for match ${matchSlug}`, {
+        serverId,
+        uploadUrl,
+      });
+
+      const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, matchSlug, serverToken);
+      let allCommandsSucceeded = true;
+      const commandErrors: string[] = [];
+
+      for (const cmd of demoUploadCommands) {
+        log.debug(`Sending demo upload command: ${cmd}`, { serverId });
+        const result = await rconService.sendCommand(serverId, cmd);
+        results.push({
+          success: result.success,
+          command: cmd,
+          error: result.error,
+        });
+        if (!result.success) {
+          allCommandsSucceeded = false;
+          if (result.error) {
+            commandErrors.push(result.error);
+          }
+        }
+        // Small delay between commands to avoid overwhelming the server
+        await delay(200);
+      }
+
+      demoUploadConfigured = allCommandsSucceeded;
+
+      if (allCommandsSucceeded) {
+        console.log('\n');
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log('✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅');
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log(`📦 Match Slug:     ${matchSlug}`);
+        console.log(`🖥️  Server ID:       ${serverId}`);
+        console.log(`🔗 Upload URL:      ${uploadUrl}`);
+        console.log(`🔑 Auth Header:     X-MatchZy-Token`);
+        console.log(
+          `✅ Status:          MatchZy will upload demos to this URL after match/map completion`
+        );
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log('\n');
+        log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
+      } else {
+        console.log('\n');
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log('❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌');
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log(`📦 Match Slug:     ${matchSlug}`);
+        console.log(`🖥️  Server ID:       ${serverId}`);
+        console.log(`❌ Errors:          ${commandErrors.join('; ') || 'Unknown error'}`);
+        console.log(
+          '═══════════════════════════════════════════════════════════════════════════════'
+        );
+        console.log('\n');
+        log.warn(`Failed to configure demo upload for ${matchSlug}`, {
+          errors: commandErrors,
+        });
+      }
     } else {
-      console.log('\n');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log('❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`🖥️  Server ID:       ${serverId}`);
-      console.log(`❌ Error:           ${demoResult.error || 'Unknown error'}`);
-      console.log(`💻 Command:         ${demoUploadCommand}`);
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log('\n');
-      log.warn(`Failed to configure demo upload for ${matchSlug}`, { error: demoResult.error });
+      log.warn(`No SERVER_TOKEN set, skipping demo upload header configuration for ${serverId}`);
+      // Still try to set URL without auth headers (for backward compatibility)
+      const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+      const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
+      results.push({
+        success: demoResult.success,
+        command: demoUploadCommand,
+        error: demoResult.error,
+      });
+      demoUploadConfigured = demoResult.success;
     }
 
     // Small delay before auth commands
@@ -252,19 +284,43 @@ export async function loadMatchOnServer(
         // Small delay before demo command
         await delay(300);
 
-        const demoCmd = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
-        const demoReResult = await rconService.sendCommand(serverId, demoCmd);
-        results.push({
-          success: demoReResult.success,
-          command: `[reload] ${demoCmd}`,
-          error: demoReResult.error,
-        });
-        if (!demoReResult.success) {
-          log.warn(`Failed to reapply demo upload command post-load`, {
-            serverId,
-            matchSlug,
+        // Reapply demo upload commands (with headers for authentication)
+        if (serverToken) {
+          const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, matchSlug, serverToken);
+          for (const cmd of demoUploadCommands) {
+            const cmdResult = await rconService.sendCommand(serverId, cmd);
+            results.push({
+              success: cmdResult.success,
+              command: `[reload] ${cmd}`,
+              error: cmdResult.error,
+            });
+            if (!cmdResult.success) {
+              log.warn(`Failed to reapply demo upload command post-load`, {
+                serverId,
+                matchSlug,
+                command: cmd,
+                error: cmdResult.error,
+              });
+            }
+            // Small delay between reapply commands
+            await delay(200);
+          }
+        } else {
+          // Fallback to old method if no server token
+          const demoCmd = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
+          const demoReResult = await rconService.sendCommand(serverId, demoCmd);
+          results.push({
+            success: demoReResult.success,
+            command: `[reload] ${demoCmd}`,
             error: demoReResult.error,
           });
+          if (!demoReResult.success) {
+            log.warn(`Failed to reapply demo upload command post-load`, {
+              serverId,
+              matchSlug,
+              error: demoReResult.error,
+            });
+          }
         }
       };
 
