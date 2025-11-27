@@ -137,16 +137,51 @@ set HOST_PORT=27016 && yarn docker:local:up
 
 The default port is `3069` if `HOST_PORT` is not set. The container port always remains `3069` (for Caddy configuration), but the host port can be customized.
 
+### Rebuilding After Code Changes
+
+When you've pulled the latest code and want to rebuild only the application container (without affecting the PostgreSQL database):
+
+```bash
+# Pull latest code changes
+git pull
+
+# Rebuild only the application container (database stays intact)
+yarn docker:local:rebuild
+```
+
+This command:
+
+- Rebuilds only the `matchzy-tournament` container from your latest code
+- Keeps the PostgreSQL container running (database data is preserved)
+- Uses the `--no-deps` flag to avoid rebuilding dependent services
+
+**Workflow Example:**
+
+```bash
+# 1. Pull latest changes
+git pull origin main
+
+# 2. Rebuild app container (keeps database)
+yarn docker:local:rebuild
+
+# 3. View logs to verify it's working
+yarn docker:local:logs
+```
+
+**Important:** Your PostgreSQL data is stored in a Docker volume (`postgres-data`) which persists across rebuilds. The database will only be lost if you explicitly remove the volume with `docker volume rm postgres-data`.
+
 ### Available Scripts
 
-| Script                   | Description                                   |
-| ------------------------ | --------------------------------------------- |
-| `yarn docker:up`         | Start production containers (pre-built image) |
-| `yarn docker:down`       | Stop production containers                    |
-| `yarn docker:logs`       | View production logs (follow mode)            |
-| `yarn docker:local:up`   | Start local containers (builds from source)   |
-| `yarn docker:local:down` | Stop local containers                         |
-| `yarn docker:local:logs` | View local logs (follow mode)                 |
+| Script                      | Description                                            |
+| --------------------------- | ------------------------------------------------------ |
+| `yarn docker:up`            | Start production containers (pre-built image)          |
+| `yarn docker:down`          | Stop production containers                             |
+| `yarn docker:logs`          | View production logs (follow mode)                     |
+| `yarn docker:local:up`      | Start local containers (builds from source)            |
+| `yarn docker:local:down`    | Stop local containers                                  |
+| `yarn docker:local:logs`    | View local logs (follow mode)                          |
+| `yarn docker:local:rebuild` | **Rebuild only app container** (keeps database intact) |
+| `yarn docker:rebuild`       | Rebuild only app container (production)                |
 
 All scripts include the `--build` flag to rebuild images when starting, and containers run in detached mode (`-d`).
 
