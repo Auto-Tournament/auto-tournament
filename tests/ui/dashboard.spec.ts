@@ -39,14 +39,8 @@ test.describe.serial('Dashboard Page', () => {
       await page.goto('/');
       await page.waitForLoadState('networkidle');
 
-      // Dashboard no longer has navigation cards - they were removed
-      // Instead, it shows the onboarding checklist
-      // Check that dashboard loads correctly
+      // Verify dashboard loads with onboarding checklist (visible depending on setup state)
       await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
-      
-      // Onboarding checklist should be visible (may show different states)
-      const checklist = page.locator('text=/onboarding|checklist|setup|complete/i');
-      const isVisible = await checklist.isVisible().catch(() => false);
       
       // Just verify the page loaded - checklist visibility depends on setup state
       expect(page.url()).toContain('/');

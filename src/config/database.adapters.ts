@@ -119,8 +119,12 @@ export class PostgresAdapter implements DatabaseAdapter {
             CREATE INDEX idx_tournament_templates_type ON tournament_templates(type);
           `);
         }
-      } catch {
-        // Ignore errors (table might already exist)
+      } catch (err) {
+        // Only ignore "table already exists" errors, log others
+        const error = err as Error;
+        if (!error.message.includes('already exists') && !error.message.includes('duplicate')) {
+          log.warn(`[PostgreSQL] Table creation warning: ${error.message}`);
+        }
       }
 
       for (const migration of migrations) {

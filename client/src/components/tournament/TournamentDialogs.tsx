@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Typography, Alert, Box } from '@mui/material';
 import ConfirmDialog from '../modals/ConfirmDialog';
 
@@ -35,6 +36,8 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
   onStartConfirm,
   onStartCancel,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <>
       <ConfirmDialog
@@ -187,7 +190,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
         onConfirm={onStartConfirm}
         onCancel={() => {
           onStartCancel();
-          window.location.href = '/servers';
+          navigate('/servers');
         }}
         confirmColor="warning"
       />

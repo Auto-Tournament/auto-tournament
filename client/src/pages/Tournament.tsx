@@ -469,10 +469,10 @@ const Tournament: React.FC = () => {
     }
 
     // Servers available or check failed - start immediately
-    await startTournamentDirectly();
+    await performTournamentStart();
   };
 
-  const startTournamentDirectly = async () => {
+  const performTournamentStart = async () => {
     setStarting(true);
     setError('');
     setShowStartConfirm(false);
@@ -643,7 +643,7 @@ const Tournament: React.FC = () => {
         onRegenerateCancel={() => setShowRegenerateConfirm(false)}
         onResetConfirm={handleReset}
         onResetCancel={() => setShowResetConfirm(false)}
-        onStartConfirm={startTournamentDirectly}
+        onStartConfirm={performTournamentStart}
         onStartCancel={() => setShowStartConfirm(false)}
       />
 

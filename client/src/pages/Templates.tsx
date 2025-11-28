@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Box,
   Container,
@@ -50,6 +51,7 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export default function Templates() {
+  const navigate = useNavigate();
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -280,7 +282,7 @@ export default function Templates() {
     const params = new URLSearchParams({
       template: template.id.toString(),
     });
-    window.location.href = `/tournament?${params.toString()}`;
+    navigate(`/tournament?${params.toString()}`);
   };
 
   if (loading) {
@@ -302,7 +304,7 @@ export default function Templates() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => (window.location.href = '/tournament')}
+          onClick={() => navigate('/tournament')}
         >
           Create Template from Tournament
         </Button>

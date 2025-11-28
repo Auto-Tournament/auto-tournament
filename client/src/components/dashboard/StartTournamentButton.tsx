@@ -70,10 +70,10 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     }
 
     // Servers available or check failed - start immediately
-    await startTournamentDirectly();
+    await performTournamentStart();
   };
 
-  const startTournamentDirectly = async () => {
+  const performTournamentStart = async () => {
     setStarting(true);
     setError('');
     setShowConfirm(false);
@@ -169,11 +169,11 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         }
         confirmLabel="Yes, Start Anyway"
         cancelLabel="Check Servers"
-        onConfirm={startTournamentDirectly}
+        onConfirm={performTournamentStart}
         onCancel={() => {
           setShowConfirm(false);
           // Navigate to servers page
-          window.location.href = '/servers';
+          navigate('/servers');
         }}
         confirmColor="warning"
       />

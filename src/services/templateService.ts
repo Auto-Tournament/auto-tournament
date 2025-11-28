@@ -104,7 +104,7 @@ class TemplateService {
 
     const created = await this.getTemplate(result.lastInsertRowid as number);
     if (!created) {
-      throw new Error('Failed to create template');
+      throw new Error('Template created but could not be retrieved. Please try again.');
     }
 
     log.success(`Template created: ${name}`);
@@ -147,7 +147,7 @@ class TemplateService {
 
     const updated = await this.getTemplate(id);
     if (!updated) {
-      throw new Error('Failed to update template');
+      throw new Error(`Template updated but could not be retrieved (ID: ${id}). Please try again.`);
     }
 
     log.success(`Template updated: ${updated.name}`);

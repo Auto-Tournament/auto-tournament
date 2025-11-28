@@ -103,7 +103,7 @@ export function TournamentFormSteps({
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [servers, setServers] = useState<Server[]>([]);
 
-  const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools } =
+  const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools, refreshServers } =
     useTournamentFormData({
       maps,
       selectedMapPool,
@@ -437,8 +437,8 @@ export function TournamentFormSteps({
           try {
             const response = await api.get<{ servers: Server[] }>('/api/servers');
             setServers(response.servers || []);
-            // Reload server count via useTournamentFormData hook
-            window.location.reload(); // Simple way to refresh server count
+            // Refresh server count in the form data hook
+            await refreshServers();
           } catch (err) {
             console.error('Failed to reload servers:', err);
           }
@@ -455,8 +455,8 @@ export function TournamentFormSteps({
           try {
             const response = await api.get<{ servers: Server[] }>('/api/servers');
             setServers(response.servers || []);
-            // Reload server count via useTournamentFormData hook
-            window.location.reload(); // Simple way to refresh server count
+            // Refresh server count in the form data hook
+            await refreshServers();
           } catch (err) {
             console.error('Failed to reload servers:', err);
           }

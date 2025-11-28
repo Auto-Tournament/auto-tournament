@@ -121,21 +121,12 @@ test.describe.serial('Authentication', () => {
       // Find logout button - use getByRole for accessibility
       const logoutButton = page.getByRole('button', { name: /sign out/i });
 
-      // Wait for button to be in DOM
-      await expect(logoutButton).toBeAttached({ timeout: 10000 });
-
-      // Click the button using JavaScript evaluation (bypasses all actionability checks)
-      await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const signOutButton = buttons.find((btn) =>
-          btn.textContent?.toLowerCase().includes('sign out')
-        );
-        if (signOutButton) {
-          signOutButton.click();
-        } else {
-          throw new Error('Sign out button not found');
-        }
-      });
+      // Wait for button to be visible and clickable
+      await expect(logoutButton).toBeVisible({ timeout: 10000 });
+      
+      // Scroll to ensure button is in view and click
+      await logoutButton.scrollIntoViewIfNeeded();
+      await logoutButton.click({ force: true });
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);
