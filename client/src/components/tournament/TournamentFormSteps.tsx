@@ -20,8 +20,11 @@ import { TournamentFormActions } from './TournamentFormActions';
 import { useTournamentFormData } from './useTournamentFormData';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
 import TeamModal from '../modals/TeamModal';
+import { TeamImportModal } from '../modals/TeamImportModal';
+import ServerModal from '../modals/ServerModal';
+import BatchServerModal from '../modals/BatchServerModal';
 import { api } from '../../utils/api';
-import type { Team } from '../../types';
+import type { Team, Server } from '../../types';
 import type { MapPoolsResponse } from '../../types/api.types';
 
 interface TournamentFormStepsProps {
@@ -35,6 +38,7 @@ interface TournamentFormStepsProps {
   saving: boolean;
   tournamentExists: boolean;
   hasChanges?: boolean;
+  mapPoolId?: number | null;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -45,6 +49,7 @@ interface TournamentFormStepsProps {
   onDelete: () => void;
   onSaveTemplate?: (mapPoolId: number | null) => void;
   onRefreshTeams?: () => void;
+  onBackToWelcome?: () => void;
 }
 
 const STEPS = ['Name & Type', 'Maps', 'Teams', 'Review'];
@@ -61,6 +66,7 @@ export function TournamentFormSteps({
   saving,
   tournamentExists,
   hasChanges = true,
+  mapPoolId,
   onNameChange,
   onTypeChange,
   onFormatChange,
@@ -71,6 +77,7 @@ export function TournamentFormSteps({
   onDelete,
   onSaveTemplate,
   onRefreshTeams,
+  onBackToWelcome,
 }: TournamentFormStepsProps) {
   // Load saved step from sessionStorage on mount
   const [activeStep, setActiveStep] = useState(() => {
@@ -90,6 +97,11 @@ export function TournamentFormSteps({
   const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [teamImportModalOpen, setTeamImportModalOpen] = useState(false);
+  const [serverModalOpen, setServerModalOpen] = useState(false);
+  const [batchServerModalOpen, setBatchServerModalOpen] = useState(false);
+  const [editingServer, setEditingServer] = useState<Server | null>(null);
+  const [servers, setServers] = useState<Server[]>([]);
 
   const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools } =
     useTournamentFormData({
@@ -98,17 +110,41 @@ export function TournamentFormSteps({
       onMapsChange,
     });
 
-  // Initialize selectedMapPool based on default map pool when mapPools load
+  // Load servers for the modals
   React.useEffect(() => {
-    if (mapPools.length > 0 && !selectedMapPool && maps.length === 0) {
-      const defaultPool = mapPools.find((p) => p.isDefault);
-      if (defaultPool) {
-        setSelectedMapPool(defaultPool.id.toString());
-      } else if (mapPools.length > 0) {
-        setSelectedMapPool(mapPools[0].id.toString());
+    const loadServers = async () => {
+      try {
+        const response = await api.get<{ servers: Server[] }>('/api/servers');
+        setServers(response.servers || []);
+      } catch (err) {
+        console.error('Failed to load servers:', err);
+      }
+    };
+    loadServers();
+  }, []);
+
+  // Initialize selectedMapPool based on mapPoolId prop or default map pool when mapPools load
+  React.useEffect(() => {
+    if (mapPools.length > 0 && !selectedMapPool) {
+      // If mapPoolId is provided (e.g., from template), use it
+      if (mapPoolId !== null && mapPoolId !== undefined) {
+        const pool = mapPools.find((p) => p.id === mapPoolId);
+        if (pool) {
+          setSelectedMapPool(pool.id.toString());
+          return;
+        }
+      }
+      // Otherwise, use default pool or first pool if maps are empty
+      if (maps.length === 0) {
+        const defaultPool = mapPools.find((p) => p.isDefault);
+        if (defaultPool) {
+          setSelectedMapPool(defaultPool.id.toString());
+        } else if (mapPools.length > 0) {
+          setSelectedMapPool(mapPools[0].id.toString());
+        }
       }
     }
-  }, [mapPools, selectedMapPool, maps.length]);
+  }, [mapPools, selectedMapPool, maps.length, mapPoolId]);
 
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);
@@ -140,6 +176,9 @@ export function TournamentFormSteps({
   const handleBack = () => {
     if (activeStep > 0) {
       setActiveStep(activeStep - 1);
+    } else if (activeStep === 0 && onBackToWelcome) {
+      // If on first step and callback provided, go back to welcome screen
+      onBackToWelcome();
     }
   };
 
@@ -179,13 +218,18 @@ export function TournamentFormSteps({
               selectedTeams={selectedTeams}
               maps={maps}
               serverCount={serverCount}
-              requiredServers={1}
+              requiredServers={Math.ceil(selectedTeams.length / 2)}
               hasEnoughServers={serverCount > 0}
               loadingServers={loadingServers}
               canEdit={canEdit}
               saving={saving}
               onTypeChange={onTypeChange}
               onFormatChange={onFormatChange}
+              onAddServer={() => {
+                setEditingServer(null);
+                setServerModalOpen(true);
+              }}
+              onBatchAddServers={() => setBatchServerModalOpen(true)}
             />
           </Stack>
         );
@@ -215,6 +259,7 @@ export function TournamentFormSteps({
             saving={saving}
             onTeamsChange={onTeamsChange}
             onCreateTeam={() => setTeamModalOpen(true)}
+            onImportTeams={() => setTeamImportModalOpen(true)}
           />
         );
       case 3:
@@ -292,11 +337,11 @@ export function TournamentFormSteps({
 
         <Box display="flex" justifyContent="space-between">
           <Button
-            disabled={activeStep === 0 || saving}
+            disabled={saving}
             onClick={handleBack}
             startIcon={<ArrowBack />}
           >
-            Back
+            {activeStep === 0 && onBackToWelcome ? 'Back to Welcome' : 'Back'}
           </Button>
 
           {activeStep < STEPS.length - 1 ? (
@@ -366,6 +411,58 @@ export function TournamentFormSteps({
           if (newTeamId && !selectedTeams.includes(newTeamId)) {
             onTeamsChange([...selectedTeams, newTeamId]);
           }
+        }}
+      />
+
+      <TeamImportModal
+        open={teamImportModalOpen}
+        onClose={() => setTeamImportModalOpen(false)}
+        onImport={async () => {
+          // The modal handles the import, just refresh teams
+          if (onRefreshTeams) {
+            await onRefreshTeams();
+          }
+          setTeamImportModalOpen(false);
+        }}
+      />
+
+      <ServerModal
+        open={serverModalOpen}
+        server={editingServer}
+        servers={servers}
+        onClose={() => {
+          setServerModalOpen(false);
+          setEditingServer(null);
+        }}
+        onSave={async () => {
+          // Reload servers after saving
+          try {
+            const response = await api.get<{ servers: Server[] }>('/api/servers');
+            setServers(response.servers || []);
+            // Reload server count via useTournamentFormData hook
+            window.location.reload(); // Simple way to refresh server count
+          } catch (err) {
+            console.error('Failed to reload servers:', err);
+          }
+          setServerModalOpen(false);
+          setEditingServer(null);
+        }}
+      />
+
+      <BatchServerModal
+        open={batchServerModalOpen}
+        onClose={() => setBatchServerModalOpen(false)}
+        onSave={async () => {
+          // Reload servers after saving
+          try {
+            const response = await api.get<{ servers: Server[] }>('/api/servers');
+            setServers(response.servers || []);
+            // Reload server count via useTournamentFormData hook
+            window.location.reload(); // Simple way to refresh server count
+          } catch (err) {
+            console.error('Failed to reload servers:', err);
+          }
+          setBatchServerModalOpen(false);
         }}
       />
     </Card>

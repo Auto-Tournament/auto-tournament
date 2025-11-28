@@ -76,8 +76,8 @@ export function TournamentWelcomeScreen({
           </Typography>
         </Box>
 
-        <Grid container spacing={3}>
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={3} justifyContent="center">
+          <Grid item xs={12} sm={templates.length > 0 && !loading ? 6 : 12}>
             <Card
               variant="outlined"
               sx={{
@@ -103,57 +103,68 @@ export function TournamentWelcomeScreen({
             </Card>
           </Grid>
 
-          <Grid item xs={12} md={6}>
-            <Card variant="outlined" sx={{ height: '100%' }}>
-              <CardContent>
-                <Box textAlign="center" mb={3}>
-                  <DescriptionIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Load from Template
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={3}>
-                    Use a saved template to quickly create a tournament
-                  </Typography>
-                </Box>
+          {!loading && templates.length > 0 && (
+            <Grid item xs={12} sm={6}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box textAlign="center" mb={3}>
+                    <DescriptionIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      Load from Template
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={3}>
+                      Use a saved template to quickly create a tournament
+                    </Typography>
+                  </Box>
 
-                {loading ? (
+                  <FormControl fullWidth sx={{ mb: 2 }}>
+                    <InputLabel>Select Template</InputLabel>
+                    <Select
+                      value={selectedTemplateId}
+                      label="Select Template"
+                      onChange={(e) => setSelectedTemplateId(e.target.value as number | '')}
+                    >
+                      {templates.map((template) => (
+                        <MenuItem key={template.id} value={template.id}>
+                          {template.name}
+                          {template.description && ` - ${template.description}`}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <Button
+                    variant="contained"
+                    fullWidth
+                    onClick={handleLoadTemplate}
+                    disabled={!selectedTemplateId}
+                  >
+                    Load Template
+                  </Button>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
+
+          {loading && (
+            <Grid item xs={12} sm={6}>
+              <Card variant="outlined" sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box textAlign="center" mb={3}>
+                    <DescriptionIcon sx={{ fontSize: 48, color: 'secondary.main', mb: 2 }} />
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      Load from Template
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={3}>
+                      Use a saved template to quickly create a tournament
+                    </Typography>
+                  </Box>
                   <Box display="flex" justifyContent="center" py={2}>
                     <CircularProgress size={24} />
                   </Box>
-                ) : templates.length === 0 ? (
-                  <Alert severity="info">
-                    No templates available. Create a template from an existing tournament.
-                  </Alert>
-                ) : (
-                  <>
-                    <FormControl fullWidth sx={{ mb: 2 }}>
-                      <InputLabel>Select Template</InputLabel>
-                      <Select
-                        value={selectedTemplateId}
-                        label="Select Template"
-                        onChange={(e) => setSelectedTemplateId(e.target.value as number | '')}
-                      >
-                        {templates.map((template) => (
-                          <MenuItem key={template.id} value={template.id}>
-                            {template.name}
-                            {template.description && ` - ${template.description}`}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                    </FormControl>
-                    <Button
-                      variant="contained"
-                      fullWidth
-                      onClick={handleLoadTemplate}
-                      disabled={!selectedTemplateId}
-                    >
-                      Load Template
-                    </Button>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          </Grid>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
         </Grid>
       </CardContent>
     </Card>

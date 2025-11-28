@@ -10,6 +10,7 @@ interface TeamSelectionStepProps {
   saving: boolean;
   onTeamsChange: (teams: string[]) => void;
   onCreateTeam?: () => void;
+  onImportTeams?: () => void;
 }
 
 export function TeamSelectionStep({
@@ -19,6 +20,7 @@ export function TeamSelectionStep({
   saving,
   onTeamsChange,
   onCreateTeam,
+  onImportTeams,
 }: TeamSelectionStepProps) {
   return (
     <Box>
@@ -44,14 +46,26 @@ export function TeamSelectionStep({
           icon={<WarningIcon />}
           sx={{ mb: 2 }}
           action={
-            <Button
-              color="inherit"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
-            >
-              Create Team
-            </Button>
+            <Box display="flex" gap={1}>
+              {onImportTeams && (
+                <Button
+                  color="inherit"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={onImportTeams}
+                >
+                  Import Teams
+                </Button>
+              )}
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
+              >
+                Create Team
+              </Button>
+            </Box>
           }
         >
           <Typography variant="body2">

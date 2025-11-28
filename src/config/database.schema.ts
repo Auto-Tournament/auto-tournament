@@ -158,6 +158,7 @@ export function getSchemaSQL(): string {
       format TEXT NOT NULL,
       map_pool_id INTEGER,
       maps TEXT,
+      team_ids TEXT,
       settings TEXT NOT NULL,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,

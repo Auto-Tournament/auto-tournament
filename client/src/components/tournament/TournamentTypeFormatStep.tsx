@@ -9,7 +9,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  Chip,
 } from '@mui/material';
 import {
   Warning as WarningIcon,
@@ -31,13 +30,14 @@ interface TournamentTypeFormatStepProps {
   saving: boolean;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
+  onAddServer?: () => void;
+  onBatchAddServers?: () => void;
 }
 
 export function TournamentTypeFormatStep({
   type,
   format,
   selectedTeams,
-  maps,
   serverCount,
   requiredServers,
   hasEnoughServers,
@@ -46,6 +46,8 @@ export function TournamentTypeFormatStep({
   saving,
   onTypeChange,
   onFormatChange,
+  onAddServer,
+  onBatchAddServers,
 }: TournamentTypeFormatStepProps) {
   return (
     <Box>
@@ -76,14 +78,26 @@ export function TournamentTypeFormatStep({
           icon={<WarningIcon />}
           sx={{ mb: 2 }}
           action={
-            <Button
-              color="inherit"
-              size="small"
-              startIcon={<AddIcon />}
-              onClick={() => (window.location.href = '/servers')}
-            >
-              Add Server
-            </Button>
+            <Box display="flex" gap={1}>
+              {onBatchAddServers && (
+                <Button
+                  color="inherit"
+                  size="small"
+                  startIcon={<AddIcon />}
+                  onClick={onBatchAddServers}
+                >
+                  Batch Add
+                </Button>
+              )}
+              <Button
+                color="inherit"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={onAddServer || (() => (window.location.href = '/servers'))}
+              >
+                Add Server
+              </Button>
+            </Box>
           }
         >
           <Typography variant="body2">

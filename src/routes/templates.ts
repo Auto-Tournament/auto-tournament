@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { templateService } from '../services/templateService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import type { CreateTemplateInput, UpdateTemplateInput } from '../types/tournament.types';
+import type { CreateTemplateInput, UpdateTemplateInput, TournamentTemplate } from '../types/tournament.types';
 
 const router = Router();
 
@@ -100,19 +100,41 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const template = await templateService.createTemplate(input);
+    // Check if template with same name (case-insensitive) already exists
+    const existing = await templateService.getTemplateByName(input.name);
+    let template: TournamentTemplate;
 
-    return res.json({
-      success: true,
-      template,
-      message: 'Template created successfully',
-    });
+    if (existing) {
+      // Update existing template
+      template = await templateService.updateTemplate(existing.id, {
+        description: input.description,
+        type: input.type,
+        format: input.format,
+        mapPoolId: input.mapPoolId,
+        maps: input.maps,
+        teamIds: input.teamIds,
+        settings: input.settings,
+      });
+      return res.json({
+        success: true,
+        template,
+        message: 'Template updated successfully',
+      });
+    } else {
+      // Create new template
+      template = await templateService.createTemplate(input);
+      return res.json({
+        success: true,
+        template,
+        message: 'Template created successfully',
+      });
+    }
   } catch (error) {
-    log.error('Error creating template', error as Error);
+    log.error('Error creating/updating template', error as Error);
     const err = error as Error;
     return res.status(400).json({
       success: false,
-      error: err.message || 'Failed to create template',
+      error: err.message || 'Failed to create/update template',
     });
   }
 });

@@ -44,6 +44,7 @@ export interface TournamentTemplate {
   format: 'bo1' | 'bo3' | 'bo5';
   mapPoolId?: number | null;
   maps: string[];
+  teamIds?: string[];
   settings: TournamentSettings;
   createdAt: number;
   updatedAt: number;

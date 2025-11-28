@@ -22,6 +22,7 @@ interface SaveTemplateModalProps {
     format: string;
     maps: string[];
     mapPoolId?: number | null;
+    teamIds?: string[];
     settings?: TournamentSettings;
   };
 }
@@ -60,6 +61,7 @@ export default function SaveTemplateModal({
         format: tournamentData.format,
         mapPoolId: tournamentData.mapPoolId,
         maps: tournamentData.maps,
+        teamIds: tournamentData.teamIds,
         settings: tournamentData.settings,
       });
       onSave();

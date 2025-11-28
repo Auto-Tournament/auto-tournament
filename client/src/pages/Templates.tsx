@@ -31,7 +31,7 @@ import {
   ContentCopy as CopyIcon,
 } from '@mui/icons-material';
 import { api } from '../utils/api';
-import type { TournamentTemplate, TournamentSettings } from '../types/tournament.types';
+import type { TournamentTemplate } from '../types/tournament.types';
 import type { TournamentResponse } from '../types';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
@@ -272,7 +272,7 @@ export default function Templates() {
           return;
         }
       }
-    } catch (err) {
+    } catch {
       // No tournament exists, continue
     }
 

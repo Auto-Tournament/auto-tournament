@@ -154,6 +154,7 @@ export interface TournamentTemplate {
   format: MatchFormat;
   mapPoolId?: number | null;
   maps: string[];
+  teamIds?: string[];
   settings: TournamentSettings;
   createdAt: number;
   updatedAt: number;
@@ -167,6 +168,7 @@ export interface TournamentTemplateRow {
   format: MatchFormat;
   map_pool_id?: number | null;
   maps?: string | null;
+  team_ids?: string | null;
   settings: string; // JSON string
   created_at: number;
   updated_at: number;
@@ -179,6 +181,7 @@ export interface CreateTemplateInput {
   format: MatchFormat;
   mapPoolId?: number | null;
   maps?: string[];
+  teamIds?: string[];
   settings?: Partial<TournamentSettings>;
 }
 
@@ -189,5 +192,6 @@ export interface UpdateTemplateInput {
   format?: MatchFormat;
   mapPoolId?: number | null;
   maps?: string[];
+  teamIds?: string[];
   settings?: Partial<TournamentSettings>;
 }

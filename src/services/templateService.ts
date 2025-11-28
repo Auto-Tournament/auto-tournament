@@ -19,6 +19,7 @@ class TemplateService {
       : DEFAULT_SETTINGS;
 
     const maps: string[] = row.maps ? JSON.parse(row.maps) : [];
+    const teamIds: string[] = row.team_ids ? JSON.parse(row.team_ids) : [];
 
     return {
       id: row.id,
@@ -28,6 +29,7 @@ class TemplateService {
       format: row.format,
       mapPoolId: row.map_pool_id || undefined,
       maps,
+      teamIds: teamIds.length > 0 ? teamIds : undefined,
       settings,
       createdAt: row.created_at,
       updatedAt: row.updated_at,
@@ -60,10 +62,24 @@ class TemplateService {
   }
 
   /**
+   * Get template by name (case-insensitive)
+   */
+  async getTemplateByName(name: string): Promise<TournamentTemplate | null> {
+    const row = await db.queryOneAsync<TournamentTemplateRow>(
+      'SELECT * FROM tournament_templates WHERE LOWER(name) = LOWER(?)',
+      [name]
+    );
+
+    if (!row) return null;
+
+    return this.rowToTemplate(row);
+  }
+
+  /**
    * Create a new template
    */
   async createTemplate(input: CreateTemplateInput): Promise<TournamentTemplate> {
-    const { name, description, type, format, mapPoolId, maps, settings } = input;
+    const { name, description, type, format, mapPoolId, maps, teamIds, settings } = input;
 
     const templateSettings: TournamentSettings = {
       ...DEFAULT_SETTINGS,
@@ -80,6 +96,7 @@ class TemplateService {
       format,
       map_pool_id: mapPoolId || null,
       maps: maps ? JSON.stringify(maps) : null,
+      team_ids: teamIds && teamIds.length > 0 ? JSON.stringify(teamIds) : null,
       settings: JSON.stringify(templateSettings),
       created_at: now,
       updated_at: now,
@@ -113,6 +130,9 @@ class TemplateService {
     if (input.format !== undefined) updates.format = input.format;
     if (input.mapPoolId !== undefined) updates.map_pool_id = input.mapPoolId || null;
     if (input.maps !== undefined) updates.maps = input.maps ? JSON.stringify(input.maps) : null;
+    if (input.teamIds !== undefined) {
+      updates.team_ids = input.teamIds && input.teamIds.length > 0 ? JSON.stringify(input.teamIds) : null;
+    }
 
     if (input.settings !== undefined || input.format !== undefined) {
       const templateSettings: TournamentSettings = {
