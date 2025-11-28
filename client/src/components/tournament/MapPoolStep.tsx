@@ -212,8 +212,8 @@ export function MapPoolStep({
         </Select>
       </FormControl>
 
-      {/* Map Preview */}
-      {maps.length > 0 && (
+      {/* Map Preview - Only show when Custom is selected */}
+      {selectedMapPool === 'custom' && maps.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Selected Maps ({maps.length}):
