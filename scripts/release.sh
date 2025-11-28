@@ -466,9 +466,11 @@ else
         prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
         
         # Extract PR titles from merge commits
+        # Reverse order so oldest PRs are first (git log shows newest first by default)
         extract_pr_titles() {
             local log_range="$1"
-            git log ${log_range} --merges --format="%B" | \
+            local temp_output
+            temp_output=$(git log ${log_range} --merges --format="%B" | \
                 awk '
                     /^Merge pull request/ {
                         # Skip the merge line and blank line, get the next non-empty line (PR title)
@@ -478,7 +480,14 @@ else
                             print "- " $0
                         }
                     }
-                ' | head -30
+                ' | head -30)
+            
+            # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                echo "$temp_output" | tail -r
+            else
+                echo "$temp_output" | tac
+            fi
         }
         
         if [ -z "$prev_tag" ]; then
@@ -797,9 +806,11 @@ get_changelog() {
     
     # Extract PR titles from merge commits
     # Format: "Merge pull request #XX..." followed by blank line, then PR title
+    # Reverse order so oldest PRs are first (git log shows newest first by default)
     extract_pr_titles() {
         local log_range="$1"
-        git log ${log_range} --merges --format="%B" | \
+        local temp_output
+        temp_output=$(git log ${log_range} --merges --format="%B" | \
             awk '
                 /^Merge pull request/ {
                     # Skip the merge line and blank line, get the next non-empty line (PR title)
@@ -809,7 +820,14 @@ get_changelog() {
                         print "- " $0
                     }
                 }
-            ' | head -30
+            ' | head -30)
+        
+        # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "$temp_output" | tail -r
+        else
+            echo "$temp_output" | tac
+        fi
     }
     
     if [ -z "$prev_tag" ]; then

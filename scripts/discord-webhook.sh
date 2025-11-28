@@ -87,9 +87,11 @@ get_changelog() {
     
     # Extract PR titles from merge commits
     # Format: "Merge pull request #XX..." followed by blank line, then PR title
+    # Reverse order so oldest PRs are first (git log shows newest first by default)
     extract_pr_titles() {
         local log_range="$1"
-        git log ${log_range} --merges --format="%B" | \
+        local temp_output
+        temp_output=$(git log ${log_range} --merges --format="%B" | \
             awk '
                 /^Merge pull request/ {
                     # Skip the merge line and blank line, get the next non-empty line (PR title)
@@ -99,7 +101,14 @@ get_changelog() {
                         print "- " $0
                     }
                 }
-            ' | head -20
+            ' | head -20)
+        
+        # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "$temp_output" | tail -r
+        else
+            echo "$temp_output" | tac
+        fi
     }
     
     if [ -z "$prev_tag" ]; then
@@ -158,19 +167,6 @@ if [ ${#CHANGELOG} -gt "$MAX_CHANGELOG_LENGTH" ]; then
     echo -e "${BLUE}⚠️  Changelog truncated to ${#CHANGELOG} characters (Discord limit: 1024)${NC}"
 fi
 
-# Create update instructions
-UPDATE_INSTRUCTIONS="# Pull the new version
-docker pull ${DOCKER_IMAGE}:${NEW_VERSION}
-
-# Stop and remove the old container
-docker compose -f docker/docker-compose.yml down
-
-# Update the image tag in docker-compose.yml to :${NEW_VERSION}
-# Or use :latest to always get the newest version
-
-# Start with the new version
-docker compose -f docker/docker-compose.yml up -d"
-
 # Create Discord webhook payload using jq for proper JSON handling
 TEMP_JSON=$(mktemp)
 DEBUG_MODE="${DEBUG:-false}"
@@ -180,14 +176,12 @@ echo -e "${YELLOW}Creating webhook payload...${NC}"
 if command -v jq &> /dev/null; then
     # Use jq to build the JSON payload properly
     echo "$CHANGELOG" > /tmp/changelog.txt
-    echo "$UPDATE_INSTRUCTIONS" > /tmp/update.txt
     
     jq -n \
         --arg content "🚀 **New Release: v${NEW_VERSION}**" \
         --arg title "MatchZy Auto Tournament v${NEW_VERSION}" \
         --arg description "A new version has been released!" \
         --arg changelog "$(cat /tmp/changelog.txt)" \
-        --arg update "$(cat /tmp/update.txt)" \
         --arg dockerhub "https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}" \
         --arg github "https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" \
         --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
@@ -201,11 +195,6 @@ if command -v jq &> /dev/null; then
               {
                 name: "📦 Changelog",
                 value: $changelog,
-                inline: false
-              },
-              {
-                name: "🔄 Update Instructions",
-                value: ("```bash\n" + $update + "\n```"),
                 inline: false
               },
               {
@@ -226,11 +215,10 @@ if command -v jq &> /dev/null; then
           }]
         }' > "$TEMP_JSON"
     
-    rm -f /tmp/changelog.txt /tmp/update.txt
+    rm -f /tmp/changelog.txt
 else
     # Fallback: manual JSON construction (less reliable but works without jq)
     ESCAPED_CHANGELOG=$(echo "$CHANGELOG" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
-    ESCAPED_UPDATE=$(echo "$UPDATE_INSTRUCTIONS" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
     
     cat > "$TEMP_JSON" <<EOF
 {
@@ -243,11 +231,6 @@ else
       {
         "name": "📦 Changelog",
         "value": "${ESCAPED_CHANGELOG}",
-        "inline": false
-      },
-      {
-        "name": "🔄 Update Instructions",
-        "value": "\\\`\\\`\\\`bash\\n${ESCAPED_UPDATE}\\n\\\`\\\`\\\`",
         "inline": false
       },
       {
