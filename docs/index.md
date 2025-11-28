@@ -57,6 +57,9 @@ Get up and running in minutes with Docker:
 
 [:material-github: GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues){ .md-button }
 [:material-chat: Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions){ .md-button }
+[:fontawesome-brands-discord: Discord Community](https://discord.gg/n7gHYau7aW){ .md-button .md-button--primary }
+
+Join our Discord server for real-time support, feature discussions, and to connect with other tournament hosts!
 
 ---
 

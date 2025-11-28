@@ -343,9 +343,11 @@ The Docker setup uses Caddy as a reverse proxy:
 
 If you're still stuck:
 
-1. Check GitHub Issues: https://github.com/sivert-io/matchzy-auto-tournament/issues
-2. Start a Discussion: https://github.com/sivert-io/matchzy-auto-tournament/discussions
-3. Include:
+1. **Join our Discord Community**: [https://discord.gg/n7gHYau7aW](https://discord.gg/n7gHYau7aW) - Get real-time support, share ideas, and connect with other tournament hosts
+2. Check GitHub Issues: https://github.com/sivert-io/matchzy-auto-tournament/issues
+3. Start a Discussion: https://github.com/sivert-io/matchzy-auto-tournament/discussions
+
+When asking for help, please include:
    - What you were trying to do
    - Error messages (API logs, CS2 console)
    - Browser console errors (if frontend issue)
