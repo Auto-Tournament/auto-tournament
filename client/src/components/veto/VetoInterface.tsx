@@ -229,6 +229,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return <Alert severity="warning">Veto not available for this match</Alert>;
   }
 
+  // Determine which team is viewing (must be defined before early returns)
+  const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
+  const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
+  const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
+  const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
+
   if (vetoState.status === 'completed') {
     return (
       <Box>
@@ -279,16 +285,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const vetoOrder = getVetoOrder(vetoState.format);
   const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
   const currentAction = currentStepConfig?.action;
-
-  // Use team names from veto state (backend) or props as fallback
-  const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
-  const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
-
-  // Determine which team is viewing (for displaying correct side badge)
-  const isViewingTeam1 =
-    currentTeamSlug && vetoState.team1Id && currentTeamSlug === vetoState.team1Id;
-  const isViewingTeam2 =
-    currentTeamSlug && vetoState.team2Id && currentTeamSlug === vetoState.team2Id;
 
   // Get current team name
   const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
