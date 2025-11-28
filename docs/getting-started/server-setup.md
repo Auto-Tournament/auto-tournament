@@ -179,6 +179,22 @@ Should return success message.
 
 ---
 
+## Enable Demo Uploads
+
+To enable automatic demo file uploads from your MatchZy servers:
+
+1. **Server-side configuration** (add to config files):
+   - Enable GOTV in `server.cfg`
+   - Enable demo recording in MatchZy `config.cfg`
+
+2. **System-side configuration** (automatic):
+   - Set Webhook URL in Settings
+   - Set `SERVER_TOKEN` environment variable
+
+📖 **[Complete Demo Upload Guide](../guides/enabling-demo-uploads.md)** - Full setup instructions
+
+---
+
 ## Next Steps
 
 Once your CS2 server is configured:
@@ -186,3 +202,5 @@ Once your CS2 server is configured:
 👉 **[Add Your First Server](first-tournament.md#add-your-first-server)** - Add the server to your tournament system
 
 👉 **[First Tournament Guide](first-tournament.md)** - Create your first tournament
+
+👉 **[Enable Demo Uploads](../guides/enabling-demo-uploads.md)** - Set up automatic demo file uploads

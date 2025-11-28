@@ -1,14 +1,29 @@
-import React from 'react';
-import { Box, Card, CardContent, Typography, Grid, Chip } from '@mui/material';
+import React, { useState } from 'react';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Stack,
+  Chip,
+  CardActionArea,
+} from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
 import { formatDate } from '../../utils/matchUtils';
 import type { TeamMatchHistory } from '../../types';
+import { TeamMatchHistoryModal } from './TeamMatchHistoryModal';
 
 interface TeamMatchHistoryProps {
   matchHistory: TeamMatchHistory[];
+  teamId?: string;
 }
 
-export function TeamMatchHistoryCard({ matchHistory }: TeamMatchHistoryProps) {
+export function TeamMatchHistoryCard({
+  matchHistory,
+  teamId,
+}: TeamMatchHistoryProps) {
+  const [selectedMatch, setSelectedMatch] = useState<TeamMatchHistory | null>(null);
+
   if (matchHistory.length === 0) {
     return null;
   }
@@ -21,45 +36,51 @@ export function TeamMatchHistoryCard({ matchHistory }: TeamMatchHistoryProps) {
           Match History
         </Typography>
       </Box>
-      <Grid container spacing={2}>
+      <Stack spacing={2}>
         {matchHistory.map((historyMatch) => (
-          <Grid size={{ xs: 12, sm: 6 }} key={historyMatch.slug}>
-            <Card
-              sx={{
-                borderLeft: 4,
-                borderColor: historyMatch.won ? 'success.main' : 'error.main',
-                height: '100%',
-              }}
-            >
+          <Card
+            key={historyMatch.slug}
+            sx={{
+              borderLeft: 4,
+              borderColor: historyMatch.won ? 'success.main' : 'error.main',
+            }}
+          >
+            <CardActionArea onClick={() => setSelectedMatch(historyMatch)}>
               <CardContent>
                 <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
-                  <Chip
-                    label={historyMatch.won ? 'WIN' : 'LOSS'}
-                    size="small"
-                    color={historyMatch.won ? 'success' : 'error'}
-                    sx={{ fontWeight: 600 }}
-                  />
-                  <Chip
-                    label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
-                    size="small"
-                    variant="outlined"
-                    sx={{ fontWeight: 600 }}
-                  />
+                  <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
+                    <Chip
+                      label={historyMatch.won ? 'WIN' : 'LOSS'}
+                      size="small"
+                      color={historyMatch.won ? 'success' : 'error'}
+                      sx={{ fontWeight: 600 }}
+                    />
+                    <Chip
+                      label={`${historyMatch.teamScore} - ${historyMatch.opponentScore}`}
+                      size="small"
+                      variant="outlined"
+                      sx={{ fontWeight: 600 }}
+                    />
+                  </Box>
                 </Box>
-                <Typography variant="body2" fontWeight={600} gutterBottom>
+                <Typography variant="body1" fontWeight={600} gutterBottom>
                   vs {historyMatch.opponent?.name || 'Unknown'}
+                  {historyMatch.opponent?.tag && ` (${historyMatch.opponent.tag})`}
                 </Typography>
-                <Typography variant="caption" color="text.secondary" display="block">
-                  Match #{historyMatch.matchNumber}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {formatDate(historyMatch.completedAt)}
+                <Typography variant="body2" color="text.secondary" display="block">
+                  Match #{historyMatch.matchNumber} • {formatDate(historyMatch.completedAt)}
                 </Typography>
               </CardContent>
-            </Card>
-          </Grid>
+            </CardActionArea>
+          </Card>
         ))}
-      </Grid>
+      </Stack>
+
+      <TeamMatchHistoryModal
+        matchHistory={selectedMatch}
+        teamId={teamId}
+        onClose={() => setSelectedMatch(null)}
+      />
     </Box>
   );
 }

@@ -102,6 +102,7 @@ export default [
         setInterval: 'readonly',
         clearInterval: 'readonly',
         Promise: 'readonly',
+        __APP_VERSION__: 'readonly', // Defined by Vite
       },
     },
     plugins: {
@@ -136,6 +137,7 @@ export default [
       'node_modules/**',
       'dist/**',
       'public/**',
+      'site/**', // Generated documentation site
       'data/**',
       '*.js',
       '*.mjs',

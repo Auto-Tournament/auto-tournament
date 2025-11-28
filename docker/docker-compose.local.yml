@@ -1,6 +1,11 @@
 # Local build compose file - builds from source instead of pulling from Docker Hub
 # Usage: docker compose -f docker/docker-compose.local.yml up -d --build
 # Use this when you've cloned the repository and want to build from source
+#
+# To bind to a different host port, set HOST_PORT environment variable:
+#   HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
+# Or with yarn: HOST_PORT=27016 yarn docker:local:up
+# Default port is 3069 if HOST_PORT is not set
 
 services:
   # PostgreSQL service (required for all setups)
@@ -34,7 +39,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
+      - '${HOST_PORT:-3069}:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     environment:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)

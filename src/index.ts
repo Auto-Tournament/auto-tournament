@@ -297,63 +297,65 @@ initializeSocket(httpServer);
 // Cleanup old event logs (keep last 30 days)
 cleanupOldLogs(30);
 
-// Initialize database before starting server
+// Initialize database and start server
 (async () => {
   try {
+    // Initialize database first (including schema)
     await db.init();
     log.success('Database initialized successfully');
+
+    // Now start the server after database is ready
+    const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
+      log.server('='.repeat(60));
+      log.server('🎮  MatchZy Auto Tournament API');
+      log.server('='.repeat(60));
+      log.server(`Server running on port ${PORT}`);
+      log.server(`Listening on: 0.0.0.0:${PORT} (all network interfaces)`);
+      log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      log.server(`API Docs: http://localhost:${PORT}/api-docs`);
+      log.server(`Health check: http://localhost:${PORT}/health`);
+      log.server(`WebSocket: Enabled ✓`);
+      log.server(`Event logs: data/logs/events/ (30 day retention)`);
+      log.server('='.repeat(60));
+
+      // Bootstrap webhooks and recover active matches (now database is ready)
+      Promise.all([
+        bootstrapServerWebhooks().catch((error) => {
+          log.warn('Failed to auto-configure server webhooks on startup', { error });
+        }),
+        recoverActiveMatches().catch((error) => {
+          log.warn('Failed to recover active matches on startup', { error });
+        }),
+      ]).then(() => {
+        log.success('[Startup] All startup tasks completed');
+      });
+    });
+
+    // Graceful shutdown handlers
+    process.on('SIGINT', () => {
+      log.warn('Received SIGINT, shutting down gracefully...');
+      matchAllocationService.stopAllPolling();
+      server.close(() => {
+        db.close();
+        log.server('Server closed');
+        process.exit(0);
+      });
+    });
+
+    process.on('SIGTERM', () => {
+      log.warn('Received SIGTERM, shutting down gracefully...');
+      matchAllocationService.stopAllPolling();
+      server.close(() => {
+        db.close();
+        log.server('Server closed');
+        process.exit(0);
+      });
+    });
   } catch (error) {
     log.error('Failed to initialize database', error as Error);
     process.exit(1);
   }
 })();
-
-const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
-  log.server('='.repeat(60));
-  log.server('🎮  MatchZy Auto Tournament API');
-  log.server('='.repeat(60));
-  log.server(`Server running on port ${PORT}`);
-  log.server(`Listening on: 0.0.0.0:${PORT} (all network interfaces)`);
-  log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
-  log.server(`API Docs: http://localhost:${PORT}/api-docs`);
-  log.server(`Health check: http://localhost:${PORT}/health`);
-  log.server(`WebSocket: Enabled ✓`);
-  log.server(`Event logs: data/logs/events/ (30 day retention)`);
-  log.server('='.repeat(60));
-
-  // Bootstrap webhooks and recover active matches
-  Promise.all([
-    bootstrapServerWebhooks().catch((error) => {
-      log.warn('Failed to auto-configure server webhooks on startup', { error });
-    }),
-    recoverActiveMatches().catch((error) => {
-      log.warn('Failed to recover active matches on startup', { error });
-    }),
-  ]).then(() => {
-    log.success('[Startup] All startup tasks completed');
-  });
-});
-
-// Graceful shutdown
-process.on('SIGINT', () => {
-  log.warn('Received SIGINT, shutting down gracefully...');
-  matchAllocationService.stopAllPolling();
-  server.close(() => {
-    db.close();
-    log.server('Server closed');
-    process.exit(0);
-  });
-});
-
-process.on('SIGTERM', () => {
-  log.warn('Received SIGTERM, shutting down gracefully...');
-  matchAllocationService.stopAllPolling();
-  server.close(() => {
-    db.close();
-    log.server('Server closed');
-    process.exit(0);
-  });
-});
 
 async function bootstrapServerWebhooks(): Promise<void> {
   const serverToken = process.env.SERVER_TOKEN;

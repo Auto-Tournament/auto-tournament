@@ -17,6 +17,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -46,6 +47,7 @@ import { getPhaseDisplay } from '../../types/matchPhase.types';
 import type { Match } from '../../types';
 import { useTournamentStatus } from '../../hooks/useTournamentStatus';
 import { MapChipList } from '../match/MapChipList';
+import { MapDemoDownloads } from '../match/MapDemoDownloads';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -680,13 +682,23 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </AccordionSummary>
               <AccordionDetails>
                 {mapsToShow.length > 0 ? (
-                  <MapChipList
-                    maps={mapsToShow}
-                    activeMapIndex={activeMapNumber}
-                    activeMapLabel={currentMapLabel}
-                    mapResults={match.mapResults || []}
-                    matchSlug={match.slug}
-                  />
+                  <Box>
+                    <MapChipList
+                      maps={mapsToShow}
+                      activeMapIndex={activeMapNumber}
+                      activeMapLabel={currentMapLabel}
+                      mapResults={match.mapResults || []}
+                    />
+                    {match.mapResults && match.mapResults.some((mr) => mr.demoFilePath) && (
+                      <Box mt={3}>
+                        <MapDemoDownloads
+                          maps={mapsToShow}
+                          mapResults={match.mapResults}
+                          matchSlug={match.slug}
+                        />
+                      </Box>
+                    )}
+                  </Box>
                 ) : (
                   <Typography variant="body2" color="text.secondary" fontStyle="italic">
                     To be determined via veto

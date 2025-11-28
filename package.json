@@ -31,7 +31,15 @@
         "test:veto": "playwright test --grep @veto",
         "test:cs-major": "playwright test --grep @cs-major",
         "test:report": "playwright show-report",
-        "test:install": "playwright install"
+        "test:install": "playwright install",
+        "docker:up": "docker compose -f docker/docker-compose.yml up -d --build",
+        "docker:down": "docker compose -f docker/docker-compose.yml down",
+        "docker:logs": "docker compose -f docker/docker-compose.yml logs -f",
+        "docker:local:up": "docker compose -f docker/docker-compose.local.yml up -d --build",
+        "docker:local:down": "docker compose -f docker/docker-compose.local.yml down",
+        "docker:local:logs": "docker compose -f docker/docker-compose.local.yml logs -f",
+        "docker:local:rebuild": "docker compose -f docker/docker-compose.local.yml up -d --build --no-deps matchzy-tournament",
+        "docker:rebuild": "docker compose -f docker/docker-compose.yml up -d --build --no-deps matchzy-tournament"
     },
     "keywords": [
         "cs2",

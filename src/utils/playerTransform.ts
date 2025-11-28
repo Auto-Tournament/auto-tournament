@@ -2,11 +2,13 @@ interface RawPlayer {
   steamid?: string;
   steamId?: string;
   name?: string | { name?: string; steamId?: string };
+  avatar?: string;
 }
 
 export interface NormalizedServerPlayer {
   steamid: string;
   name: string;
+  avatar?: string;
 }
 
 /**
@@ -34,16 +36,18 @@ function normalizeSinglePlayer(value: unknown, fallbackKey: string): NormalizedS
     const player = value as RawPlayer;
 
     if (typeof player.name === 'object' && player.name !== null) {
-      const nested = player.name as { name?: string; steamId?: string };
+      const nested = player.name as { name?: string; steamId?: string; avatar?: string };
       return {
         steamid: nested.steamId || player.steamid || player.steamId || fallbackKey,
         name: nested.name || fallbackKey,
+        avatar: nested.avatar || player.avatar,
       };
     }
 
     return {
       steamid: player.steamid || player.steamId || fallbackKey,
       name: typeof player.name === 'string' ? player.name : fallbackKey,
+      avatar: player.avatar,
     };
   }
 

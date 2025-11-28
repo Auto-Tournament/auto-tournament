@@ -305,7 +305,7 @@ These pools are:
 
 ## Next Steps
 
-- 🎮 **[First Tournament](first-tournament.md)** - Create your first tournament with custom maps
+- 🎮 **[First Tournament](../getting-started/first-tournament.md)** - Create your first tournament with custom maps
 - 🗺️ **[Map Veto System](../features/map-veto.md)** - Learn about the veto process
 - 📖 **[Running Matches](running-matches.md)** - Manage matches with your map pools
 

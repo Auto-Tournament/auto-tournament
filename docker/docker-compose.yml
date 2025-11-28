@@ -1,3 +1,11 @@
+# Production compose file - uses pre-built image from Docker Hub
+# Usage: docker compose -f docker/docker-compose.yml up -d --build
+#
+# To bind to a different host port, set HOST_PORT environment variable:
+#   HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d --build
+# Or with yarn: HOST_PORT=27016 yarn docker:up
+# Default port is 3069 if HOST_PORT is not set
+
 services:
   postgres:
     image: postgres:16-alpine
@@ -34,7 +42,7 @@ services:
       postgres:
         condition: service_healthy
     ports:
-      - '3069:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
+      - '${HOST_PORT:-3069}:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     environment:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)

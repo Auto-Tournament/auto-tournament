@@ -4,6 +4,7 @@ import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
 import { loadMatchOnServer } from './matchLoadingService';
+import { serverStatusService, ServerStatus } from './serverStatusService';
 import { log } from '../utils/logger';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
@@ -13,43 +14,109 @@ import type { BracketMatch } from '../types/tournament.types';
  * Service for automatic server allocation to tournament matches
  */
 export class MatchAllocationService {
+  // Grace period in seconds after server becomes idle before allowing allocation
+  // This ensures demo uploads complete and match reset finishes
+  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300;
+
   /**
-   * Get all available servers (enabled, online, and not in use)
+   * Get all available servers (enabled, online, and ready for allocation)
+   * Uses MatchZy's matchzy_tournament_status convar to determine availability
+   *
+   * According to MatchZy server allocation status documentation:
+   * - Only allocate when status is 'idle'
+   * - Wait 5 minutes grace period after status becomes idle
+   * - Check `matchzy_tournament_match` and `matchzy_tournament_updated` convars
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
-    // Check each server's status (online/offline)
+    // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(
       enabledServers.map(async (server) => {
-        const result = await rconService.sendCommand(server.id, 'status');
-        return {
-          server,
-          isOnline: result.success,
-        };
+        try {
+          const serverStatus = await serverStatusService.getServerStatus(server.id);
+          return {
+            server,
+            ...serverStatus,
+          };
+        } catch (error) {
+          log.error(`Failed to check server status for ${server.id}`, error);
+          return {
+            server,
+            status: null,
+            matchSlug: null,
+            updatedAt: null,
+            online: false,
+          };
+        }
       })
     );
 
     // Filter out offline servers
-    const onlineServers = statusChecks.filter((s) => s.isOnline).map((s) => s.server);
+    const onlineServers = statusChecks.filter((s) => s.online);
 
-    // Filter out servers that are currently in use (have an active match)
+    const GRACE_PERIOD_SECONDS = MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
+    const now = Math.floor(Date.now() / 1000);
+
+    // Filter servers based on MatchZy tournament status
     const availableServers: ServerResponse[] = [];
-    for (const server of onlineServers) {
-      const activeMatch = await db.queryOneAsync<{ id: number }>(
-        `SELECT id FROM matches 
-         WHERE server_id = ? 
-         AND status IN ('loaded', 'live') 
-         AND tournament_id = 1`,
-        [server.id]
-      );
-      if (!activeMatch) {
-        availableServers.push(server); // Server is available if no active match
+    for (const check of onlineServers) {
+      const { server, status, matchSlug, updatedAt } = check;
+
+      // Only allocate when status is 'idle'
+      if (status !== ServerStatus.IDLE) {
+        log.debug(
+          `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
+        );
+        continue;
       }
+
+      // Check grace period: if status was recently updated to idle, wait before allocating
+      // This ensures demo uploads complete and match reset finishes
+      if (updatedAt) {
+        const age = now - updatedAt;
+        
+        // If status was recently updated to idle (within grace period), wait
+        if (age < GRACE_PERIOD_SECONDS) {
+          const timeUntilReady = GRACE_PERIOD_SECONDS - age;
+          
+          // Additional check: if match ID exists and is recent, definitely wait
+          if (matchSlug && matchSlug.trim() !== '') {
+            log.debug(
+              `Server ${server.id} (${server.name}) recently ended match '${matchSlug}' (${age}s ago), waiting ${timeUntilReady}s more for grace period`
+            );
+            continue;
+          }
+          
+          // Even without match ID, if status was recently updated, wait a bit
+          // (might be server restart or status reset)
+          log.debug(
+            `Server ${server.id} (${server.name}) recently became idle (${age}s ago), waiting ${timeUntilReady}s more for grace period`
+          );
+          continue;
+        }
+
+        // Status is idle and timestamp is old enough, safe to allocate
+        if (matchSlug && matchSlug.trim() !== '') {
+          log.debug(
+            `Server ${server.id} (${server.name}) is idle with old match ID '${matchSlug}' (${age}s old), ready for allocation`
+          );
+        }
+      } else {
+        // No timestamp available - server might have been idle for a long time
+        // Allow allocation but log it
+        log.debug(
+          `Server ${server.id} (${server.name}) is idle (no timestamp available), assuming ready for allocation`
+        );
+      }
+
+      // Server is available!
+      availableServers.push(server);
+      log.debug(`Server ${server.id} (${server.name}) is available for allocation (idle)`);
     }
 
     log.debug(
-      `Found ${availableServers.length} available servers out of ${enabledServers.length} enabled`
+      `Found ${availableServers.length} available servers out of ${enabledServers.length} enabled (${onlineServers.length} online)`
     );
 
     return availableServers;
@@ -651,7 +718,7 @@ export class MatchAllocationService {
   }
 
   // Track polling intervals to avoid duplicate polling
-  private pollingIntervals = new Map<string, NodeJS.Timeout>();
+  private pollingIntervals = new Map<string, ReturnType<typeof setInterval>>();
 
   /**
    * Start polling for available servers for a specific match

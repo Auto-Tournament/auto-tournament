@@ -1,6 +1,14 @@
+---
+title: Verifying Demo Uploads
+description: How to verify that demo uploads are working correctly in your tournament system.
+---
+
 # Verifying Demo Uploads
 
 This guide explains how to verify that demo uploads are working correctly in the MatchZy Auto Tournament system.
+
+!!! note "Setup Required"
+    Before verifying demo uploads, make sure you've completed the [Demo Upload Setup Guide](enabling-demo-uploads.md).
 
 ## Overview
 
@@ -233,3 +241,10 @@ curl -X POST \
 - `GET /api/demos/:matchSlug/info` - Check if demo file exists
 - `GET /api/demos/:matchSlug/download` - Download demo file
 - `POST /api/demos/:matchSlug/upload` - Upload endpoint (used by MatchZy)
+
+---
+
+## Related Documentation
+
+- **[Enabling Demo Uploads](enabling-demo-uploads.md)** - Complete setup guide for demo uploads
+- **[Server Setup](../getting-started/server-setup.md)** - CS2 server setup guide
