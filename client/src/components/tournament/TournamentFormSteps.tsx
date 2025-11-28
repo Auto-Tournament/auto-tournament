@@ -34,7 +34,6 @@ interface TournamentFormStepsProps {
   saving: boolean;
   tournamentExists: boolean;
   hasChanges?: boolean;
-  settings?: any;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -59,7 +58,6 @@ export function TournamentFormSteps({
   saving,
   tournamentExists,
   hasChanges = true,
-  settings,
   onNameChange,
   onTypeChange,
   onFormatChange,

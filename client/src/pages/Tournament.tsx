@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
-import { TournamentForm } from '../components/tournament/TournamentForm';
 import { TournamentFormSteps } from '../components/tournament/TournamentFormSteps';
 import { TournamentWelcomeScreen } from '../components/tournament/TournamentWelcomeScreen';
 import { TournamentReview } from '../components/tournament/TournamentReview';
@@ -132,7 +131,6 @@ const Tournament: React.FC = () => {
     setCurrentMapPoolId(mapPoolId);
     setSaveTemplateModalOpen(true);
   };
-
 
   // Sync tournament data to form when loaded
   React.useEffect(() => {
@@ -405,11 +403,15 @@ const Tournament: React.FC = () => {
 
       {/* Welcome Screen - Show when no tournament exists */}
       {!tournament && showWelcome && (
-        <TournamentWelcomeScreen onCreateNew={handleCreateNew} onLoadTemplate={handleLoadTemplate} />
+        <TournamentWelcomeScreen
+          onCreateNew={handleCreateNew}
+          onLoadTemplate={handleLoadTemplate}
+        />
       )}
 
       {/* Step-based Form - Show when creating new or editing */}
-      {((!tournament && showForm) || (tournament && tournament.status === 'setup' && isEditing)) && (
+      {((!tournament && showForm) ||
+        (tournament && tournament.status === 'setup' && isEditing)) && (
         <TournamentFormSteps
           name={name}
           type={type}
@@ -421,7 +423,6 @@ const Tournament: React.FC = () => {
           saving={saving}
           tournamentExists={!!tournament}
           hasChanges={hasChanges()}
-          settings={tournament?.settings}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}

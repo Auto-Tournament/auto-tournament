@@ -10,6 +10,7 @@ import {
   Alert,
 } from '@mui/material';
 import { api } from '../../utils/api';
+import type { TournamentSettings } from '../../types/tournament.types';
 
 interface SaveTemplateModalProps {
   open: boolean;
@@ -21,7 +22,7 @@ interface SaveTemplateModalProps {
     format: string;
     maps: string[];
     mapPoolId?: number | null;
-    settings?: any;
+    settings?: TournamentSettings;
   };
 }
 
