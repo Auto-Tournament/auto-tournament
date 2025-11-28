@@ -108,6 +108,83 @@ export function TournamentTypeFormatStep({
         </Alert>
       )}
 
+      {/* Rules and Guidelines based on Tournament Type and Format */}
+      {type && format && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2" fontWeight={600} gutterBottom>
+            Requirements for {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} -{' '}
+            {format.toUpperCase()}:
+          </Typography>
+          <Box component="ul" sx={{ m: 0, pl: 2 }}>
+            {['bo1', 'bo3', 'bo5'].includes(format) && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Map Selection:</strong> You must select exactly <strong>7 maps</strong>{' '}
+                  for the veto system. Teams will ban/pick maps from this pool during the match
+                  setup.
+                </Typography>
+              </li>
+            )}
+            {!['bo1', 'bo3', 'bo5'].includes(format) && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Map Selection:</strong> Select at least <strong>1 map</strong>. Maps will
+                  be used for rotation in {type === 'round_robin' ? 'Round Robin' : 'Swiss System'}{' '}
+                  matches.
+                </Typography>
+              </li>
+            )}
+            {(type === 'single_elimination' || type === 'double_elimination') && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16,
+                  32, 64, or 128).
+                </Typography>
+              </li>
+            )}
+            {type === 'round_robin' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Supports 2-32 teams. Each team plays every other team
+                  once.
+                </Typography>
+              </li>
+            )}
+            {type === 'swiss' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Supports 4-64 teams. Teams with similar records face
+                  each other in each round.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo1' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 1 - First team to win 1 map wins the match.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo3' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 3 - First team to win 2 maps wins the
+                  match.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo5' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 5 - First team to win 3 maps wins the
+                  match.
+                </Typography>
+              </li>
+            )}
+          </Box>
+        </Alert>
+      )}
+
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, sm: 6 }}>
           <FormControl fullWidth>

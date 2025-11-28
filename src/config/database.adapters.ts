@@ -87,6 +87,7 @@ export class PostgresAdapter implements DatabaseAdapter {
         { table: 'matches', column: 'current_map', type: 'TEXT' },
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
+        { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
       ];
 
       // Check if tournament_templates table exists, create if not
@@ -108,6 +109,7 @@ export class PostgresAdapter implements DatabaseAdapter {
               format TEXT NOT NULL,
               map_pool_id INTEGER,
               maps TEXT,
+              team_ids TEXT,
               settings TEXT NOT NULL,
               created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
               updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,

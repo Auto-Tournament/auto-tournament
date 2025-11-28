@@ -129,6 +129,7 @@ class DatabaseManager {
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
         { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
+        { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
       ];
 
       // Check if tournament_templates table exists, create if not
@@ -150,6 +151,7 @@ class DatabaseManager {
               format TEXT NOT NULL,
               map_pool_id INTEGER,
               maps TEXT,
+              team_ids TEXT,
               settings TEXT NOT NULL,
               created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
               updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
