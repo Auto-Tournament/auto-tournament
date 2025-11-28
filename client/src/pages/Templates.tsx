@@ -142,9 +142,9 @@ export default function Templates() {
         <Button
           variant="contained"
           startIcon={<AddIcon />}
-          onClick={() => (window.location.href = '/tournament?saveTemplate=true')}
+          onClick={() => (window.location.href = '/tournament')}
         >
-          Create Template
+          Create Template from Tournament
         </Button>
       </Box>
 

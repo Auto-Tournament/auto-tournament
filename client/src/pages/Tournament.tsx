@@ -3,10 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
 import { TournamentForm } from '../components/tournament/TournamentForm';
+import { TournamentFormSteps } from '../components/tournament/TournamentFormSteps';
+import { TournamentWelcomeScreen } from '../components/tournament/TournamentWelcomeScreen';
 import { TournamentReview } from '../components/tournament/TournamentReview';
 import { TournamentLive } from '../components/tournament/TournamentLive';
 import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
+import SaveTemplateModal from '../components/modals/SaveTemplateModal';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
@@ -46,10 +49,13 @@ const Tournament: React.FC = () => {
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   // Action state
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [saveTemplateModalOpen, setSaveTemplateModalOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -97,8 +103,35 @@ const Tournament: React.FC = () => {
     const templateId = searchParams.get('template');
     if (templateId && !tournament) {
       loadTemplate(parseInt(templateId, 10));
+      setShowWelcome(false);
+      setShowForm(true);
     }
   }, [searchParams, tournament, loadTemplate]);
+
+  const handleCreateNew = () => {
+    setShowWelcome(false);
+    setShowForm(true);
+    setIsEditing(true);
+  };
+
+  const handleLoadTemplate = (template: TournamentTemplate) => {
+    setName(template.name);
+    setType(template.type);
+    setFormat(template.format);
+    setMaps(template.maps || []);
+    setSelectedTeams([]); // Templates don't include teams
+    setShowWelcome(false);
+    setShowForm(true);
+    setIsEditing(true);
+    window.history.replaceState({}, '', '/tournament');
+  };
+
+  const [currentMapPoolId, setCurrentMapPoolId] = useState<number | null>(null);
+
+  const handleSaveTemplate = (mapPoolId: number | null) => {
+    setCurrentMapPoolId(mapPoolId);
+    setSaveTemplateModalOpen(true);
+  };
 
 
   // Sync tournament data to form when loaded
@@ -109,16 +142,20 @@ const Tournament: React.FC = () => {
       setFormat(tournament.format);
       setSelectedTeams(tournament.teamIds || []);
       setMaps(tournament.maps || []);
-      setIsEditing(false); // Close edit mode when tournament loads
+      setIsEditing(false);
+      setShowWelcome(false);
+      setShowForm(false);
     } else {
-      // Only clear if not loading from template
+      // Show welcome screen when no tournament exists
       if (!searchParams.get('template')) {
+        setShowWelcome(true);
+        setShowForm(false);
+        setIsEditing(false);
         setName('');
         setType('single_elimination');
         setFormat('bo3');
         setSelectedTeams([]);
         setMaps([]);
-        setIsEditing(true); // Show form when creating new tournament
       }
     }
   }, [tournament, searchParams]);
@@ -366,9 +403,14 @@ const Tournament: React.FC = () => {
         </Alert>
       )}
 
-      {/* Step 1: Create/Edit Tournament */}
-      {(!tournament || (tournament.status === 'setup' && isEditing)) && (
-        <TournamentForm
+      {/* Welcome Screen - Show when no tournament exists */}
+      {!tournament && showWelcome && (
+        <TournamentWelcomeScreen onCreateNew={handleCreateNew} onLoadTemplate={handleLoadTemplate} />
+      )}
+
+      {/* Step-based Form - Show when creating new or editing */}
+      {((!tournament && showForm) || (tournament && tournament.status === 'setup' && isEditing)) && (
+        <TournamentFormSteps
           name={name}
           type={type}
           format={format}
@@ -379,25 +421,29 @@ const Tournament: React.FC = () => {
           saving={saving}
           tournamentExists={!!tournament}
           hasChanges={hasChanges()}
+          settings={tournament?.settings}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
-          settings={tournament?.settings}
           onSave={handleSave}
           onCancel={() => {
-            // Reset form to tournament values
+            // Reset form to tournament values or go back to welcome
             if (tournament) {
               setName(tournament.name);
               setType(tournament.type);
               setFormat(tournament.format);
               setSelectedTeams(tournament.teamIds || []);
               setMaps(tournament.maps || []);
+              setIsEditing(false);
+            } else {
+              setShowForm(false);
+              setShowWelcome(true);
             }
-            setIsEditing(false);
           }}
           onDelete={() => setShowDeleteConfirm(true)}
+          onSaveTemplate={handleSaveTemplate}
         />
       )}
 
@@ -462,6 +508,23 @@ const Tournament: React.FC = () => {
         isLive={tournament?.status === 'in_progress' || tournament?.status === 'completed'}
         onConfirm={saveChanges}
         onCancel={() => setShowChangePreview(false)}
+      />
+
+      <SaveTemplateModal
+        open={saveTemplateModalOpen}
+        onClose={() => setSaveTemplateModalOpen(false)}
+        onSave={() => {
+          setSuccess('Template saved successfully!');
+          setTimeout(() => setSuccess(''), 3000);
+        }}
+        tournamentData={{
+          name,
+          type,
+          format,
+          maps,
+          mapPoolId: currentMapPoolId,
+          settings: tournament?.settings || {},
+        }}
       />
     </Container>
   );
