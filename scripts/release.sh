@@ -171,7 +171,11 @@ fi
 # Ensure we're on main and up to date
 echo ""
 echo -e "${YELLOW}Ensuring main branch is up to date...${NC}"
-git fetch origin
+
+# Fetch all refs from origin to ensure we have latest state
+echo -e "${BLUE}Fetching latest changes from origin...${NC}"
+git fetch origin --prune
+
 CURRENT_BRANCH=$(git branch --show-current)
 
 # Stash any uncommitted changes before switching branches
@@ -183,11 +187,37 @@ else
     STASHED_CHANGES=false
 fi
 
-if [ "$CURRENT_BRANCH" != "main" ]; then
-    echo -e "${YELLOW}Switching to main branch...${NC}"
-    git checkout main
+# Ensure main branch exists locally
+if ! git show-ref --verify --quiet refs/heads/main; then
+    echo -e "${YELLOW}Creating local main branch from origin/main...${NC}"
+    git checkout -b main origin/main
+else
+    # Switch to main if not already on it
+    if [ "$CURRENT_BRANCH" != "main" ]; then
+        echo -e "${YELLOW}Switching to main branch...${NC}"
+        git checkout main
+    fi
+    
+    # Ensure main is tracking origin/main
+    CURRENT_TRACKING=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null || echo "")
+    if [ "$CURRENT_TRACKING" != "origin/main" ]; then
+        echo -e "${BLUE}Setting main to track origin/main...${NC}"
+        git branch --set-upstream-to=origin/main main
+    fi
+    
+    # Pull latest changes from origin/main
+    echo -e "${BLUE}Pulling latest changes from origin/main...${NC}"
+    git pull --rebase
 fi
-git pull origin main
+
+# Verify we're on the latest origin/main
+echo -e "${BLUE}Verifying we're on latest origin/main...${NC}"
+LOCAL_COMMIT=$(git rev-parse HEAD)
+REMOTE_COMMIT=$(git rev-parse origin/main)
+if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+    echo -e "${YELLOW}Local main is not up to date with origin/main. Resetting...${NC}"
+    git reset --hard origin/main
+fi
 
 # Step 1: Build project
 echo ""
@@ -387,22 +417,46 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
             read -r
         fi
         
-        # Switch back to main and pull
+        # Switch back to main and ensure it's up to date
+        echo -e "${BLUE}Switching back to main and updating...${NC}"
         git checkout main
-        git pull origin main
+        git fetch origin --prune
+        git branch --set-upstream-to=origin/main main 2>/dev/null || true
+        git pull --rebase
+        
+        # Verify we're on latest origin/main
+        LOCAL_COMMIT=$(git rev-parse HEAD)
+        REMOTE_COMMIT=$(git rev-parse origin/main)
+        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+            echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
+            git reset --hard origin/main
+        fi
         
         # Rebase release branch onto main to keep it up to date
         echo ""
         echo -e "${YELLOW}Updating release branch to match main...${NC}"
         git checkout "${RELEASE_BRANCH}"
+        git fetch origin --prune
         git rebase origin/main
         if [ $? -ne 0 ]; then
             echo -e "${YELLOW}⚠️  Rebase had conflicts, but continuing...${NC}"
         fi
         git push origin "${RELEASE_BRANCH}" --force-with-lease
         
-        # Switch back to main for tagging
+        # Switch back to main for tagging and ensure it's up to date
+        echo -e "${BLUE}Switching to main for tagging...${NC}"
         git checkout main
+        git fetch origin --prune
+        git branch --set-upstream-to=origin/main main 2>/dev/null || true
+        git pull --rebase
+        
+        # Verify we're on latest origin/main
+        LOCAL_COMMIT=$(git rev-parse HEAD)
+        REMOTE_COMMIT=$(git rev-parse origin/main)
+        if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+            echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
+            git reset --hard origin/main
+        fi
     else
         echo -e "${RED}Failed to create PR${NC}"
         exit 1
@@ -413,8 +467,19 @@ else
     echo -e "${BLUE}Release branch is already up to date with main.${NC}"
     
     # Ensure we're on main for tagging
+    echo -e "${BLUE}Switching to main and ensuring it's up to date...${NC}"
     git checkout main
-    git pull origin main
+    git fetch origin --prune
+    git branch --set-upstream-to=origin/main main 2>/dev/null || true
+    git pull --rebase
+    
+    # Verify we're on latest origin/main
+    LOCAL_COMMIT=$(git rev-parse HEAD)
+    REMOTE_COMMIT=$(git rev-parse origin/main)
+    if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+        echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
+        git reset --hard origin/main
+    fi
 fi
 
 # Step 8: Create and push git tag
