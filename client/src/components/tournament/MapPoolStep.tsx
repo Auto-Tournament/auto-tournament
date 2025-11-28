@@ -70,7 +70,7 @@ export function MapPoolStep({
     const bPrefix = b.id.substring(0, 3);
     const aOrder = prefixOrder[aPrefix] ?? 999;
     const bOrder = prefixOrder[bPrefix] ?? 999;
-    
+
     if (aOrder !== bOrder) {
       return aOrder - bOrder;
     }
@@ -83,9 +83,7 @@ export function MapPoolStep({
 
   // Check if selected pool has 7 maps
   const selectedPool =
-    selectedMapPool !== 'custom'
-      ? mapPools.find((p) => p.id.toString() === selectedMapPool)
-      : null;
+    selectedMapPool !== 'custom' ? mapPools.find((p) => p.id.toString() === selectedMapPool) : null;
 
   const poolHasCorrectMaps = selectedPool && selectedPool.mapIds.length === 7;
   const shouldShowVetoError = isVetoFormat && maps.length !== 7 && !poolHasCorrectMaps;
@@ -110,50 +108,57 @@ export function MapPoolStep({
       {type && (
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2" fontWeight={600} gutterBottom>
-            Requirements for {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} - {format.toUpperCase()}:
+            Requirements for {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} -{' '}
+            {format.toUpperCase()}:
           </Typography>
           <Box component="ul" sx={{ m: 0, pl: 2 }}>
             {isVetoFormat && (
               <li>
                 <Typography variant="body2">
-                  <strong>Map Selection:</strong> You must select exactly <strong>7 maps</strong> for the veto system.
-                  Teams will ban/pick maps from this pool during the match setup.
+                  <strong>Map Selection:</strong> You must select exactly <strong>7 maps</strong>{' '}
+                  for the veto system. Teams will ban/pick maps from this pool during the match
+                  setup.
                 </Typography>
               </li>
             )}
             {!isVetoFormat && (
               <li>
                 <Typography variant="body2">
-                  <strong>Map Selection:</strong> Select at least <strong>1 map</strong>. Maps will be used for rotation
-                  in {type === 'round_robin' ? 'Round Robin' : 'Swiss System'} matches.
+                  <strong>Map Selection:</strong> Select at least <strong>1 map</strong>. Maps will
+                  be used for rotation in {type === 'round_robin' ? 'Round Robin' : 'Swiss System'}{' '}
+                  matches.
                 </Typography>
               </li>
             )}
             {type === 'single_elimination' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16, 32, 64, or 128).
+                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16,
+                  32, 64, or 128).
                 </Typography>
               </li>
             )}
             {type === 'double_elimination' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16, 32, 64, or 128).
+                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16,
+                  32, 64, or 128).
                 </Typography>
               </li>
             )}
             {type === 'round_robin' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Team Count:</strong> Supports 2-32 teams. Each team plays every other team once.
+                  <strong>Team Count:</strong> Supports 2-32 teams. Each team plays every other team
+                  once.
                 </Typography>
               </li>
             )}
             {type === 'swiss' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Team Count:</strong> Supports 4-64 teams. Teams with similar records face each other.
+                  <strong>Team Count:</strong> Supports 4-64 teams. Teams with similar records face
+                  each other.
                 </Typography>
               </li>
             )}
@@ -167,14 +172,16 @@ export function MapPoolStep({
             {format === 'bo3' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Match Format:</strong> Best of 3 - First team to win 2 maps wins the match.
+                  <strong>Match Format:</strong> Best of 3 - First team to win 2 maps wins the
+                  match.
                 </Typography>
               </li>
             )}
             {format === 'bo5' && (
               <li>
                 <Typography variant="body2">
-                  <strong>Match Format:</strong> Best of 5 - First team to win 3 maps wins the match.
+                  <strong>Match Format:</strong> Best of 5 - First team to win 3 maps wins the
+                  match.
                 </Typography>
               </li>
             )}
@@ -212,8 +219,8 @@ export function MapPoolStep({
         </Select>
       </FormControl>
 
-      {/* Map Preview - Only show when Custom is selected */}
-      {selectedMapPool === 'custom' && maps.length > 0 && (
+      {/* Map Preview */}
+      {maps.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Selected Maps ({maps.length}):
@@ -272,11 +279,7 @@ export function MapPoolStep({
             )}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip
-                  label={getMapDisplayName(option)}
-                  {...getTagProps({ index })}
-                  key={option}
-                />
+                <Chip label={getMapDisplayName(option)} {...getTagProps({ index })} key={option} />
               ))
             }
           />
