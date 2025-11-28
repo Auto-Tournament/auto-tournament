@@ -11,6 +11,17 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
+# Source .env file if it exists (from project root)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+if [ -f "${PROJECT_ROOT}/.env" ]; then
+    echo -e "${BLUE}Sourcing .env file...${NC}"
+    # Export variables from .env, handling comments and empty lines
+    set -a
+    source "${PROJECT_ROOT}/.env"
+    set +a
+fi
+
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
@@ -442,18 +453,147 @@ else
         sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
     fi
     
-    # Step 6: Commit version bump
+    # Update changelog.md
     echo ""
-    echo -e "${YELLOW}Step 6: Committing version bump...${NC}"
+    echo -e "${YELLOW}Updating changelog...${NC}"
+    
+    # Function to get changelog from merged PR titles (same as in Step 10)
+    get_changelog_for_docs() {
+        local prev_tag
+        local current_tag="v${NEW_VERSION}"
+        
+        # Get the previous tag (second most recent, excluding the current one)
+        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+        
+        # Extract PR titles from merge commits
+        extract_pr_titles() {
+            local log_range="$1"
+            git log ${log_range} --merges --format="%B" | \
+                awk '
+                    /^Merge pull request/ {
+                        # Skip the merge line and blank line, get the next non-empty line (PR title)
+                        getline
+                        getline
+                        if (NF > 0) {
+                            print "- " $0
+                        }
+                    }
+                ' | head -30
+        }
+        
+        if [ -z "$prev_tag" ]; then
+            # No previous tag, get all merged PRs up to the current tag
+            if git rev-parse "${current_tag}" >/dev/null 2>&1; then
+                extract_pr_titles "${current_tag}"
+            else
+                # Tag doesn't exist, get recent merged PRs
+                extract_pr_titles ""
+            fi
+        else
+            # Get merged PRs between previous tag and current tag
+            extract_pr_titles "${prev_tag}..${current_tag}"
+        fi
+    }
+    
+    # Get changelog entries
+    CHANGELOG_ENTRIES=$(get_changelog_for_docs)
+    
+    # If changelog is empty, use a default message
+    if [ -z "$CHANGELOG_ENTRIES" ] || [ ${#CHANGELOG_ENTRIES} -lt 10 ]; then
+        CHANGELOG_ENTRIES="- Release v${NEW_VERSION}"
+    fi
+    
+    # Get current date in YYYY-MM-DD format
+    RELEASE_DATE=$(date +%Y-%m-%d)
+    
+    # Get previous version for the link
+    PREV_TAG=$(git tag --sort=-v:refname | grep -v "^v${NEW_VERSION}$" | sed -n '1p' 2>/dev/null || echo "")
+    if [ -z "$PREV_TAG" ]; then
+        PREV_TAG="HEAD"
+    else
+        PREV_TAG="${PREV_TAG}"
+    fi
+    
+    # Update changelog.md
+    CHANGELOG_FILE="docs/changelog.md"
+    if [ -f "$CHANGELOG_FILE" ]; then
+        # Create temporary files
+        TEMP_CHANGELOG=$(mktemp)
+        TEMP_VERSION_SECTION=$(mktemp)
+        
+        # Write the new version section to a temp file
+        cat > "$TEMP_VERSION_SECTION" <<EOF
+## [${NEW_VERSION}] - ${RELEASE_DATE}
+
+### Added
+${CHANGELOG_ENTRIES}
+
+---
+EOF
+        
+        # Insert new version section after the "---" following [Unreleased]
+        # Use awk to insert the file content after the line containing "---" that comes after [Unreleased]
+        awk -v version_file="$TEMP_VERSION_SECTION" '
+            /^## \[Unreleased\]/ { unreleased_found=1; print; next }
+            unreleased_found && /^---$/ { 
+                print
+                print ""
+                while ((getline line < version_file) > 0) {
+                    print line
+                }
+                close(version_file)
+                unreleased_found=0
+                next
+            }
+            { print }
+        ' "$CHANGELOG_FILE" > "$TEMP_CHANGELOG"
+        
+        rm -f "$TEMP_VERSION_SECTION"
+        
+        # Update the [Unreleased] link to point to the new version
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS
+            sed -i '' "s|\[Unreleased\]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v.*\.\.\.HEAD|[Unreleased]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v${NEW_VERSION}...HEAD|" "$TEMP_CHANGELOG"
+        else
+            # Linux
+            sed -i "s|\[Unreleased\]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v.*\.\.\.HEAD|[Unreleased]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v${NEW_VERSION}...HEAD|" "$TEMP_CHANGELOG"
+        fi
+        
+        # Add the new version link if it doesn't exist
+        if ! grep -q "\[${NEW_VERSION}\]:" "$TEMP_CHANGELOG"; then
+            # Add the link after [Unreleased] link
+            if [[ "$OSTYPE" == "darwin"* ]]; then
+                # macOS - need to escape newline properly
+                sed -i '' "/\[Unreleased\]:/a\\
+[${NEW_VERSION}]: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" "$TEMP_CHANGELOG"
+            else
+                # Linux
+                sed -i "/\[Unreleased\]:/a[${NEW_VERSION}]: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" "$TEMP_CHANGELOG"
+            fi
+        fi
+        
+        # Replace the original file
+        mv "$TEMP_CHANGELOG" "$CHANGELOG_FILE"
+        echo -e "${GREEN}✅ Changelog updated${NC}"
+    else
+        echo -e "${YELLOW}⚠️  Changelog file not found: ${CHANGELOG_FILE}${NC}"
+    fi
+    
+    # Step 6: Commit version bump and changelog
+    echo ""
+    echo -e "${YELLOW}Step 6: Committing version bump and changelog...${NC}"
     
     # Check if there are actually changes to commit
-    if ! git diff --quiet package.json; then
+    if ! git diff --quiet package.json "$CHANGELOG_FILE" 2>/dev/null; then
         git add package.json
-        git commit -m "chore: bump version to ${NEW_VERSION}"
-        echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION}${NC}"
+        if [ -f "$CHANGELOG_FILE" ]; then
+            git add "$CHANGELOG_FILE"
+        fi
+        git commit -m "chore: bump version to ${NEW_VERSION} and update changelog"
+        echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION} and changelog updated${NC}"
         VERSION_BUMPED=true
     else
-        echo -e "${YELLOW}⚠️  No changes detected in package.json. Version may already be ${NEW_VERSION}.${NC}"
+        echo -e "${YELLOW}⚠️  No changes detected. Version may already be ${NEW_VERSION}.${NC}"
     fi
 fi
 
@@ -647,6 +787,54 @@ rm -f /tmp/image_inspect.txt
 echo ""
 echo -e "${YELLOW}Step 10: Creating GitHub release...${NC}"
 
+# Function to get changelog from merged PR titles
+get_changelog() {
+    local prev_tag
+    local current_tag="v${NEW_VERSION}"
+    
+    # Get the previous tag (second most recent, excluding the current one)
+    prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
+    
+    # Extract PR titles from merge commits
+    # Format: "Merge pull request #XX..." followed by blank line, then PR title
+    extract_pr_titles() {
+        local log_range="$1"
+        git log ${log_range} --merges --format="%B" | \
+            awk '
+                /^Merge pull request/ {
+                    # Skip the merge line and blank line, get the next non-empty line (PR title)
+                    getline
+                    getline
+                    if (NF > 0) {
+                        print "- " $0
+                    }
+                }
+            ' | head -30
+    }
+    
+    if [ -z "$prev_tag" ]; then
+        # No previous tag, get all merged PRs up to the current tag
+        if git rev-parse "${current_tag}" >/dev/null 2>&1; then
+            extract_pr_titles "${current_tag}"
+        else
+            # Tag doesn't exist, get recent merged PRs
+            extract_pr_titles ""
+        fi
+    else
+        # Get merged PRs between previous tag and current tag
+        extract_pr_titles "${prev_tag}..${current_tag}"
+    fi
+}
+
+# Generate changelog
+echo -e "${BLUE}Generating changelog from merged PRs...${NC}"
+CHANGELOG=$(get_changelog)
+
+# If changelog is empty, use a default message
+if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
+    CHANGELOG="- Release v${NEW_VERSION}"
+fi
+
 # Check if GitHub release already exists
 if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/null 2>&1; then
     echo -e "${YELLOW}GitHub release v${NEW_VERSION} already exists. Deleting for re-release...${NC}"
@@ -655,6 +843,10 @@ if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/n
 fi
 
 RELEASE_BODY="## 🐳 Docker Release v${NEW_VERSION}
+
+### Changelog
+
+${CHANGELOG}
 
 ### Docker Images
 
@@ -699,175 +891,12 @@ fi
 echo ""
 echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
 
-# Webhook URL is already validated at the start, so we can proceed directly
-# Function to get changelog from git commits
-get_changelog() {
-    local prev_tag
-    local current_tag="v${NEW_VERSION}"
-    
-    # Get the previous tag (second most recent, excluding the one we just created)
-    prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
-    
-    if [ -z "$prev_tag" ]; then
-        # No previous tag, get all commits up to the current tag
-        git log "${current_tag}" --pretty=format:"- %s" --no-merges | head -20
-    else
-        # Get commits between previous tag and current tag
-        git log "${prev_tag}..${current_tag}" --pretty=format:"- %s" --no-merges | head -20
-    fi
-}
+# Call the standalone Discord webhook script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+"${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
 
-# Get changelog
-CHANGELOG=$(get_changelog)
-
-# If changelog is empty or too short, use a default message
-if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
-    CHANGELOG="- Release v${NEW_VERSION}"
-fi
-
-# Truncate changelog if too long (Discord has a 2000 character limit per field)
-if [ ${#CHANGELOG} -gt 1500 ]; then
-    CHANGELOG=$(echo "$CHANGELOG" | head -15)
-    CHANGELOG="${CHANGELOG}"$'\n'"- *...and more (see GitHub release for full changelog)*"
-fi
-
-# Create update instructions
-UPDATE_INSTRUCTIONS="# Pull the new version
-docker pull ${DOCKER_IMAGE}:${NEW_VERSION}
-
-# Stop and remove the old container
-docker compose -f docker/docker-compose.yml down
-
-# Update the image tag in docker-compose.yml to :${NEW_VERSION}
-# Or use :latest to always get the newest version
-
-# Start with the new version
-docker compose -f docker/docker-compose.yml up -d"
-
-# Create Discord webhook payload using jq for proper JSON handling
-TEMP_JSON=$(mktemp)
-
-if command -v jq &> /dev/null; then
-    # Use jq to build the JSON payload properly
-    echo "$CHANGELOG" > /tmp/changelog.txt
-    echo "$UPDATE_INSTRUCTIONS" > /tmp/update.txt
-    
-    jq -n \
-        --arg content "🚀 **New Release: v${NEW_VERSION}**" \
-        --arg title "MatchZy Auto Tournament v${NEW_VERSION}" \
-        --arg description "A new version has been released!" \
-        --arg changelog "$(cat /tmp/changelog.txt)" \
-        --arg update "$(cat /tmp/update.txt)" \
-        --arg dockerhub "https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}" \
-        --arg github "https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" \
-        --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        '{
-          content: $content,
-          embeds: [{
-            title: $title,
-            description: $description,
-            color: 3066993,
-            fields: [
-              {
-                name: "📦 Changelog",
-                value: $changelog,
-                inline: false
-              },
-              {
-                name: "🔄 Update Instructions",
-                value: ("```bash\n" + $update + "\n```"),
-                inline: false
-              },
-              {
-                name: "🐳 Docker Hub",
-                value: ("[View on Docker Hub](" + $dockerhub + ")"),
-                inline: true
-              },
-              {
-                name: "🔗 GitHub Release",
-                value: ("[View Release](" + $github + ")"),
-                inline: true
-              }
-            ],
-            footer: {
-              text: "MatchZy Auto Tournament"
-            },
-            timestamp: $timestamp
-          }]
-        }' > "$TEMP_JSON"
-    
-    rm -f /tmp/changelog.txt /tmp/update.txt
-else
-    # Fallback: manual JSON construction (less reliable but works without jq)
-    ESCAPED_CHANGELOG=$(echo "$CHANGELOG" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
-    ESCAPED_UPDATE=$(echo "$UPDATE_INSTRUCTIONS" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
-    
-    cat > "$TEMP_JSON" <<EOF
-{
-  "content": "🚀 **New Release: v${NEW_VERSION}**",
-  "embeds": [{
-    "title": "MatchZy Auto Tournament v${NEW_VERSION}",
-    "description": "A new version has been released!",
-    "color": 3066993,
-    "fields": [
-      {
-        "name": "📦 Changelog",
-        "value": "${ESCAPED_CHANGELOG}",
-        "inline": false
-      },
-      {
-        "name": "🔄 Update Instructions",
-        "value": "\\\`\\\`\\\`bash\\n${ESCAPED_UPDATE}\\n\\\`\\\`\\\`",
-        "inline": false
-      },
-      {
-        "name": "🐳 Docker Hub",
-        "value": "[View on Docker Hub](https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME})",
-        "inline": true
-      },
-      {
-        "name": "🔗 GitHub Release",
-        "value": "[View Release](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION})",
-        "inline": true
-      }
-    ],
-    "footer": {
-      "text": "MatchZy Auto Tournament"
-    },
-    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  }]
-}
-EOF
-fi
-
-# Send webhook
-WEBHOOK_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-    -H "Content-Type: application/json" \
-    -d @"$TEMP_JSON" \
-    "$DISCORD_WEBHOOK_URL" 2>/dev/null)
-
-HTTP_CODE=$(echo "$WEBHOOK_RESPONSE" | tail -n1)
-HTTP_BODY=$(echo "$WEBHOOK_RESPONSE" | sed '$d')
-
-# Clean up temp file
-rm -f "$TEMP_JSON"
-
-if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-    echo -e "${GREEN}✅ Discord notification sent${NC}"
-    
-    # Extract message ID from response (for potential future auto-publishing)
-    if [ -n "$HTTP_BODY" ] && command -v jq &> /dev/null; then
-        MESSAGE_ID=$(echo "$HTTP_BODY" | jq -r '.id // empty' 2>/dev/null)
-        if [ -n "$MESSAGE_ID" ]; then
-            echo -e "${BLUE}Message ID: ${MESSAGE_ID}${NC}"
-            echo -e "${BLUE}Note: For announcement channels, you may need to publish this message manually${NC}"
-        fi
-    fi
-else
-    echo -e "${YELLOW}⚠️  Failed to send Discord notification (HTTP ${HTTP_CODE})${NC}"
-    if [ -n "$HTTP_BODY" ]; then
-        echo -e "${BLUE}Response: ${HTTP_BODY}${NC}"
-    fi
+if [ $? -ne 0 ]; then
+    echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
 fi
 
 # Summary

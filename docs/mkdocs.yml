@@ -167,6 +167,7 @@ nav:
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
       - Testing PRs: development/testing-pr.md
+  - Changelog: changelog.md
   - Roadmap: roadmap.md
 
 # Additional CSS
