@@ -96,6 +96,8 @@ extra:
   social:
     - icon: fontawesome/brands/github
       link: https://github.com/sivert-io/matchzy-auto-tournament
+    - icon: fontawesome/brands/discord
+      link: https://discord.gg/n7gHYau7aW
   generator: false
 
 # Extensions

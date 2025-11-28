@@ -37,6 +37,7 @@ export default [
         setImmediate: 'readonly',
         clearImmediate: 'readonly',
         Promise: 'readonly',
+        NodeJS: 'readonly',
       },
     },
     plugins: {
