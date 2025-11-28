@@ -215,21 +215,10 @@ export function TournamentFormSteps({
             <TournamentTypeFormatStep
               type={type}
               format={format}
-              selectedTeams={selectedTeams}
-              maps={maps}
-              serverCount={serverCount}
-              requiredServers={Math.ceil(selectedTeams.length / 2)}
-              hasEnoughServers={serverCount > 0}
-              loadingServers={loadingServers}
               canEdit={canEdit}
               saving={saving}
               onTypeChange={onTypeChange}
               onFormatChange={onFormatChange}
-              onAddServer={() => {
-                setEditingServer(null);
-                setServerModalOpen(true);
-              }}
-              onBatchAddServers={() => setBatchServerModalOpen(true)}
             />
           </Stack>
         );
@@ -255,11 +244,21 @@ export function TournamentFormSteps({
           <TeamSelectionStep
             teams={teams}
             selectedTeams={selectedTeams}
+            type={type}
+            serverCount={serverCount}
+            requiredServers={Math.ceil(selectedTeams.length / 2)}
+            hasEnoughServers={serverCount >= Math.ceil(selectedTeams.length / 2)}
+            loadingServers={loadingServers}
             canEdit={canEdit}
             saving={saving}
             onTeamsChange={onTeamsChange}
             onCreateTeam={() => setTeamModalOpen(true)}
             onImportTeams={() => setTeamImportModalOpen(true)}
+            onAddServer={() => {
+              setEditingServer(null);
+              setServerModalOpen(true);
+            }}
+            onBatchAddServers={() => setBatchServerModalOpen(true)}
           />
         );
       case 3:
