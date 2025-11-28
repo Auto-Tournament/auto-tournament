@@ -15,7 +15,7 @@ export function MapDemoDownloads({
   mapResults,
   matchSlug,
 }: MapDemoDownloadsProps) {
-  const handleDownloadDemo = (mapNumber: number, _mapName: string) => {
+  const handleDownloadDemo = (mapNumber: number) => {
     const link = document.createElement('a');
     link.href = `/api/demos/${matchSlug}/download/${mapNumber}`;
     link.download = '';
@@ -58,7 +58,7 @@ export function MapDemoDownloads({
             variant="outlined"
             fullWidth
             startIcon={<DownloadIcon />}
-            onClick={() => handleDownloadDemo(mapNumber, mapName)}
+            onClick={() => handleDownloadDemo(mapNumber)}
             sx={{ justifyContent: 'flex-start' }}
           >
             Download {mapName} demo

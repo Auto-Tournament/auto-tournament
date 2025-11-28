@@ -327,7 +327,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           }));
         }
       } catch (error) {
-        console.debug(`Failed to enrich players with avatars: ${error}`);
+        console.debug('Failed to enrich players with avatars:', error);
       }
       return normalizedPlayers;
     };

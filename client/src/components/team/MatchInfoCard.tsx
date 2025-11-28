@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Box, Card, CardContent, Typography, Alert, Button, Tooltip } from '@mui/material';
+import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
@@ -277,7 +277,6 @@ export function MatchInfoCard({
             )}
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
-
 
             <MatchRosterAccordion team={team} match={match} />
 
