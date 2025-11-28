@@ -68,6 +68,75 @@ if ! docker info | grep -q "Username"; then
     fi
 fi
 
+# Function to check available disk space
+check_disk_space() {
+    local required_gb="${1:-10}"  # Default: 10GB
+    local required_bytes=$((required_gb * 1024 * 1024 * 1024))
+    
+    # Get Docker's data directory (varies by platform)
+    local docker_root=""
+    if [ -n "$DOCKER_HOST" ]; then
+        # Remote Docker - can't check easily, skip
+        return 0
+    fi
+    
+    # Try to get Docker's root directory
+    if command -v docker &> /dev/null; then
+        docker_root=$(docker info 2>/dev/null | grep -i "Docker Root Dir" | awk '{print $4}' || echo "")
+    fi
+    
+    # If we can't determine Docker root, check system disk
+    local check_path="${docker_root:-/}"
+    
+    # Get available space (works on macOS and Linux)
+    local available_bytes=0
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        available_bytes=$(df -k "$check_path" | tail -1 | awk '{print $4 * 1024}')
+    else
+        # Linux
+        available_bytes=$(df -B1 "$check_path" | tail -1 | awk '{print $4}')
+    fi
+    
+    if [ -z "$available_bytes" ] || [ "$available_bytes" -eq 0 ]; then
+        echo -e "${YELLOW}⚠️  Could not determine available disk space. Proceeding with caution...${NC}"
+        return 0
+    fi
+    
+    # Convert to GB for display
+    local available_gb=$((available_bytes / 1024 / 1024 / 1024))
+    
+    echo -e "${BLUE}Checking disk space...${NC}"
+    echo -e "  Available: ${available_gb} GB"
+    echo -e "  Required:  ${required_gb} GB"
+    
+    if [ "$available_bytes" -lt "$required_bytes" ]; then
+        echo -e "${RED}❌ Insufficient disk space!${NC}"
+        echo -e "${YELLOW}The Docker build requires at least ${required_gb} GB of free space.${NC}"
+        echo -e "${YELLOW}Available: ${available_gb} GB${NC}"
+        echo ""
+        echo -e "${BLUE}To free up space, you can:${NC}"
+        echo -e "  1. Run: ${GREEN}docker system prune -a${NC} (removes unused images, containers, networks)"
+        echo -e "  2. Run: ${GREEN}docker builder prune -a${NC} (removes build cache)"
+        echo -e "  3. Run: ${GREEN}docker buildx prune -a${NC} (removes buildx cache)"
+        echo -e "  4. Free up space on your disk manually"
+        echo ""
+        echo -e "${YELLOW}You can also override the required space by setting MIN_DISK_SPACE_GB:${NC}"
+        echo -e "  ${GREEN}MIN_DISK_SPACE_GB=5 ./scripts/release.sh${NC}"
+        exit 1
+    fi
+    
+    echo -e "${GREEN}✅ Sufficient disk space available${NC}"
+    return 0
+}
+
+# Check disk space before starting Docker operations
+# Allow override via environment variable (in GB)
+MIN_DISK_SPACE_GB="${MIN_DISK_SPACE_GB:-10}"
+echo ""
+echo -e "${YELLOW}Checking disk space requirements...${NC}"
+check_disk_space "$MIN_DISK_SPACE_GB"
+
 # Cleanup Docker: Stop containers, remove images, prune everything for clean slate
 echo ""
 echo -e "${YELLOW}Cleaning up Docker for fresh build...${NC}"
@@ -232,14 +301,20 @@ echo -e "${GREEN}✅ Project build successful${NC}"
 # Step 2: Run tests
 echo ""
 echo -e "${YELLOW}Step 2: Running tests...${NC}"
-echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
-yarn test
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Tests failed${NC}"
-    echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
-    exit 1
+read -p "Skip tests? (y/n) " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${YELLOW}⚠️  Skipping tests${NC}"
+else
+    echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
+    yarn test
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Tests failed${NC}"
+        echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ All tests passed${NC}"
 fi
-echo -e "${GREEN}✅ All tests passed${NC}"
 
 # Step 3: Build Docker image (test build)
 echo ""
@@ -530,6 +605,15 @@ echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
+
+# Re-check disk space before multi-platform build (requires more space)
+echo -e "${YELLOW}Re-checking disk space before multi-platform build...${NC}"
+# Multi-platform builds need more space, so require 12GB instead of 10GB
+MULTI_PLATFORM_MIN_GB="${MIN_DISK_SPACE_GB:-12}"
+if [ "$MULTI_PLATFORM_MIN_GB" -lt 12 ]; then
+    MULTI_PLATFORM_MIN_GB=12
+fi
+check_disk_space "$MULTI_PLATFORM_MIN_GB"
 
 docker buildx build \
     --platform linux/amd64,linux/arm64 \
