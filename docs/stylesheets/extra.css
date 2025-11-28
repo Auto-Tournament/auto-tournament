@@ -149,3 +149,11 @@
   color: #CAC4D0;
 }
 
+/* Admonition styling to match mkdocs-material style */
+/* Border-left style like the reference documentation */
+.md-typeset .admonition,
+.md-typeset details {
+  border-width: 0;
+  border-left-width: 4px;
+}
+

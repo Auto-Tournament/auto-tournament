@@ -1,6 +1,6 @@
 # MkDocs and plugins for documentation site
 mkdocs>=1.5.0
-mkdocs-material>=9.4.0
+mkdocs-material>=9.7.0
 mkdocs-glightbox>=0.3.5
 mkdocs-git-revision-date-localized-plugin>=1.2.0
 pymdown-extensions>=10.3.0
