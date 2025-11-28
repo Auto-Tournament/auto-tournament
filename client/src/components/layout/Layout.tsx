@@ -66,7 +66,6 @@ export default function Layout() {
     loadSettings();
 
     const handleSettingsUpdated = (event: Event) => {
-      // eslint-disable-next-line no-undef
       const customEvent = event as CustomEvent<SettingsResponse['settings']>;
       setWebhookConfigured(Boolean(customEvent.detail?.webhookConfigured));
     };

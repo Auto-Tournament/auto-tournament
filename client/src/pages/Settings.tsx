@@ -72,7 +72,6 @@ export default function Settings() {
       setWebhookUrl(response.settings.webhookUrl ?? '');
       setSteamApiKey(response.settings.steamApiKey ?? '');
       setSuccess('Settings saved successfully');
-      // eslint-disable-next-line no-undef
       window.dispatchEvent(
         new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
           detail: response.settings,
