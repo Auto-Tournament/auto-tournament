@@ -142,7 +142,7 @@ export default function Templates() {
     const bPrefix = b.id.substring(0, 3);
     const aOrder = prefixOrder[aPrefix] ?? 999;
     const bOrder = prefixOrder[bPrefix] ?? 999;
-    
+
     if (aOrder !== bOrder) {
       return aOrder - bOrder;
     }
@@ -223,7 +223,8 @@ export default function Templates() {
     }
 
     try {
-      const mapPoolId = selectedMapPool && selectedMapPool !== 'custom' ? parseInt(selectedMapPool, 10) : null;
+      const mapPoolId =
+        selectedMapPool && selectedMapPool !== 'custom' ? parseInt(selectedMapPool, 10) : null;
       await api.put(`/api/templates/${editingTemplate.id}`, {
         name: editName,
         description: editDescription || undefined,
@@ -260,10 +261,14 @@ export default function Templates() {
       if (response.success && response.tournament) {
         const status = response.tournament.status;
         if (status === 'in_progress' || status === 'completed') {
-          setError('Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.');
+          setError(
+            'Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.'
+          );
           return;
         } else if (status === 'setup' || status === 'ready') {
-          setError('A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.');
+          setError(
+            'A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.'
+          );
           return;
         }
       }
@@ -376,7 +381,9 @@ export default function Templates() {
                     />
                     {template.maps.length > 0 && (
                       <Chip
-                        label={`${template.maps.length} map${template.maps.length !== 1 ? 's' : ''}`}
+                        label={`${template.maps.length} map${
+                          template.maps.length !== 1 ? 's' : ''
+                        }`}
                         size="small"
                         variant="outlined"
                       />
@@ -388,7 +395,12 @@ export default function Templates() {
                     fullWidth
                     startIcon={<CopyIcon />}
                     onClick={() => handleCreateFromTemplate(template)}
-                    disabled={tournamentStatus === 'in_progress' || tournamentStatus === 'completed' || tournamentStatus === 'setup' || tournamentStatus === 'ready'}
+                    disabled={
+                      tournamentStatus === 'in_progress' ||
+                      tournamentStatus === 'completed' ||
+                      tournamentStatus === 'setup' ||
+                      tournamentStatus === 'ready'
+                    }
                     title={
                       tournamentStatus === 'in_progress' || tournamentStatus === 'completed'
                         ? 'Cannot create tournament while one is in progress or completed'
@@ -512,46 +524,49 @@ export default function Templates() {
 
               {isVetoFormat && editMaps.length !== 7 && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                  Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {editMaps.length}
+                  Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected:{' '}
+                  {editMaps.length}
                 </Alert>
               )}
 
-              <Autocomplete
-                multiple
-                options={allMapIds}
-                value={editMaps}
-                onChange={(_, newValue) => setEditMaps(newValue)}
-                disableCloseOnSelect
-                fullWidth
-                loading={loadingMaps}
-                getOptionLabel={(option) => getMapDisplayName(option)}
-                renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
-                renderOption={(props, option) => (
-                  <Box component="li" {...props} key={option}>
-                    <Box display="flex" alignItems="center" gap={1} width="100%">
-                      <Typography variant="body2" sx={{ flex: 1 }}>
-                        {getMapDisplayName(option)}
-                      </Typography>
-                      <Chip
-                        label={getMapType(option)}
-                        size="small"
-                        color={getMapTypeColor(option)}
-                        variant="outlined"
-                        sx={{ height: 20, fontSize: '0.7rem' }}
-                      />
+              {selectedMapPool === 'custom' && (
+                <Autocomplete
+                  multiple
+                  options={allMapIds}
+                  value={editMaps}
+                  onChange={(_, newValue) => setEditMaps(newValue)}
+                  disableCloseOnSelect
+                  fullWidth
+                  loading={loadingMaps}
+                  getOptionLabel={(option) => getMapDisplayName(option)}
+                  renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+                  renderOption={(props, option) => (
+                    <Box component="li" {...props} key={option}>
+                      <Box display="flex" alignItems="center" gap={1} width="100%">
+                        <Typography variant="body2" sx={{ flex: 1 }}>
+                          {getMapDisplayName(option)}
+                        </Typography>
+                        <Chip
+                          label={getMapType(option)}
+                          size="small"
+                          color={getMapTypeColor(option)}
+                          variant="outlined"
+                          sx={{ height: 20, fontSize: '0.7rem' }}
+                        />
+                      </Box>
                     </Box>
-                  </Box>
-                )}
-                renderTags={(value, getTagProps) =>
-                  value.map((option, index) => (
-                    <Chip
-                      label={getMapDisplayName(option)}
-                      {...getTagProps({ index })}
-                      key={option}
-                    />
-                  ))
-                }
-              />
+                  )}
+                  renderTags={(value, getTagProps) =>
+                    value.map((option, index) => (
+                      <Chip
+                        label={getMapDisplayName(option)}
+                        {...getTagProps({ index })}
+                        key={option}
+                      />
+                    ))
+                  }
+                />
+              )}
             </Box>
           </Stack>
         </DialogContent>
@@ -560,7 +575,11 @@ export default function Templates() {
           <Button
             onClick={handleSaveEdit}
             variant="contained"
-            disabled={!editName.trim() || (isVetoFormat && editMaps.length !== 7) || (!isVetoFormat && editMaps.length === 0)}
+            disabled={
+              !editName.trim() ||
+              (isVetoFormat && editMaps.length !== 7) ||
+              (!isVetoFormat && editMaps.length === 0)
+            }
           >
             Save
           </Button>
@@ -569,4 +588,3 @@ export default function Templates() {
     </Container>
   );
 }
-
