@@ -19,6 +19,15 @@ export class MatchAllocationService {
   private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300;
 
   /**
+   * Get count of available servers (enabled, online, and ready for allocation)
+   * Returns the number of servers that can be allocated
+   */
+  async getAvailableServerCount(): Promise<number> {
+    const availableServers = await this.getAvailableServers();
+    return availableServers.length;
+  }
+
+  /**
    * Get all available servers (enabled, online, and ready for allocation)
    * Uses MatchZy's matchzy_tournament_status convar to determine availability
    *
@@ -405,6 +414,10 @@ export class MatchAllocationService {
       }
     }
 
+    // Check server availability before starting
+    const availableServerCount = await this.getAvailableServerCount();
+    const hasAvailableServers = availableServerCount > 0;
+
     // Determine if this tournament uses veto system
     const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
 
@@ -435,10 +448,15 @@ export class MatchAllocationService {
         emitBracketUpdate({ action: 'tournament_started' });
       }
 
+      let message = 'Tournament started! Teams can now complete map veto. Matches will load after veto completion.';
+      if (!hasAvailableServers) {
+        message += ' No servers are currently available. Matches will be allocated automatically when servers become available.';
+        log.warn('⚠️  Tournament started but no servers are available. Matches will wait for server availability.');
+      }
+
       return {
         success: true,
-        message:
-          'Tournament started! Teams can now complete map veto. Matches will load after veto completion.',
+        message,
         allocated: 0,
         failed: 0,
         results: [],
@@ -446,6 +464,45 @@ export class MatchAllocationService {
     } else {
       // Non-BO formats: Load matches immediately (no veto required)
       log.info('Non-BO format detected - loading matches immediately');
+
+      // Check server availability
+      if (!hasAvailableServers) {
+        log.warn('⚠️  No servers are currently available. Tournament will start but matches will wait for server availability.');
+        
+        // Update tournament status to 'in_progress' even without servers
+        if (tournament.status === 'setup' || tournament.status === 'ready') {
+          await db.updateAsync(
+            'tournament',
+            {
+              status: 'in_progress',
+              started_at: Math.floor(Date.now() / 1000),
+              updated_at: Math.floor(Date.now() / 1000),
+            },
+            'id = ?',
+            [1]
+          );
+          log.success('Tournament started (waiting for servers)');
+          
+          // Emit tournament update
+          emitTournamentUpdate({ id: 1, status: 'in_progress' });
+          emitBracketUpdate({ action: 'tournament_started' });
+        }
+
+        // Start polling for all ready matches
+        const readyMatches = await this.getReadyMatches();
+        for (const match of readyMatches) {
+          this.startPollingForServer(match.slug, baseUrl);
+        }
+        log.info(`Started polling for ${readyMatches.length} ready match(es) - will allocate when servers become available`);
+
+        return {
+          success: true,
+          message: `Tournament started! No servers are currently available. ${readyMatches.length} match(es) will be allocated automatically when servers become available.`,
+          allocated: 0,
+          failed: 0,
+          results: [],
+        };
+      }
 
       // Allocate servers to matches
       log.info('Allocating servers to matches...');
@@ -455,8 +512,17 @@ export class MatchAllocationService {
       allocated = results.filter((r) => r.success).length;
       failed = results.filter((r) => !r.success).length;
 
+      // Start polling for matches that couldn't be allocated
+      const unallocatedMatches = results.filter((r) => !r.success);
+      for (const result of unallocatedMatches) {
+        this.startPollingForServer(result.matchSlug, baseUrl);
+      }
+      if (unallocatedMatches.length > 0) {
+        log.info(`Started polling for ${unallocatedMatches.length} unallocated match(es) - will allocate when servers become available`);
+      }
+
       // Update tournament status to 'in_progress' if starting for the first time
-      if ((tournament.status === 'setup' || tournament.status === 'ready') && allocated > 0) {
+      if ((tournament.status === 'setup' || tournament.status === 'ready') && (allocated > 0 || unallocatedMatches.length > 0)) {
         await db.updateAsync(
           'tournament',
           {
@@ -468,6 +534,10 @@ export class MatchAllocationService {
           [1]
         );
         log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
+        
+        // Emit tournament update
+        emitTournamentUpdate({ id: 1, status: 'in_progress' });
+        emitBracketUpdate({ action: 'tournament_started' });
       }
 
       // Check for pending matches waiting for veto

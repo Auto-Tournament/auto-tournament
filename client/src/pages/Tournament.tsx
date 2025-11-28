@@ -72,6 +72,58 @@ const Tournament: React.FC = () => {
 
   const [searchParams] = useSearchParams();
 
+  // Session storage keys for tournament form data
+  const STORAGE_KEY = 'tournament_form_draft';
+  const STEP_STORAGE_KEY = 'tournament_form_step';
+
+  // Load form data from sessionStorage on mount (only if creating new tournament)
+  useEffect(() => {
+    if (!tournament && !searchParams.get('template')) {
+      try {
+        const saved = sessionStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const data = JSON.parse(saved);
+          if (data.name) setName(data.name);
+          if (data.type) setType(data.type);
+          if (data.format) setFormat(data.format);
+          if (data.maps) setMaps(data.maps);
+          if (data.selectedTeams) setSelectedTeams(data.selectedTeams);
+        }
+      } catch (error) {
+        console.error('Error loading form data from sessionStorage:', error);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount - we intentionally don't want to reload when tournament/searchParams change
+
+  // Save form data to sessionStorage (only when creating new tournament, not editing existing)
+  useEffect(() => {
+    if (!tournament && showForm) {
+      try {
+        const data = {
+          name,
+          type,
+          format,
+          maps,
+          selectedTeams,
+        };
+        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (error) {
+        console.error('Error saving form data to sessionStorage:', error);
+      }
+    }
+  }, [name, type, format, maps, selectedTeams, tournament, showForm]);
+
+  // Clear sessionStorage when tournament is successfully created
+  const clearDraft = React.useCallback(() => {
+    try {
+      sessionStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(STEP_STORAGE_KEY);
+    } catch (error) {
+      console.error('Error clearing draft from sessionStorage:', error);
+    }
+  }, []);
+
   // Load template if specified in URL
   const loadTemplate = React.useCallback(
     async (templateId: number) => {
@@ -87,6 +139,8 @@ const Tournament: React.FC = () => {
           setMaps(template.maps || []);
           setSelectedTeams([]); // Templates don't include teams
           setIsEditing(true);
+          // Clear draft when loading template
+          clearDraft();
           // Clear template param from URL
           window.history.replaceState({}, '', '/tournament');
         }
@@ -95,7 +149,7 @@ const Tournament: React.FC = () => {
         setError('Failed to load template');
       }
     },
-    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, setError]
+    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, setError, clearDraft]
   );
 
   useEffect(() => {
@@ -104,13 +158,29 @@ const Tournament: React.FC = () => {
       loadTemplate(parseInt(templateId, 10));
       setShowWelcome(false);
       setShowForm(true);
+      // Clear draft when loading template from URL
+      clearDraft();
     }
-  }, [searchParams, tournament, loadTemplate]);
+  }, [searchParams, tournament, loadTemplate, clearDraft]);
 
   const handleCreateNew = () => {
     setShowWelcome(false);
     setShowForm(true);
     setIsEditing(true);
+    // Load any saved draft data
+    try {
+      const saved = sessionStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const data = JSON.parse(saved);
+        if (data.name) setName(data.name);
+        if (data.type) setType(data.type);
+        if (data.format) setFormat(data.format);
+        if (data.maps) setMaps(data.maps);
+        if (data.selectedTeams) setSelectedTeams(data.selectedTeams);
+      }
+    } catch (error) {
+      console.error('Error loading draft:', error);
+    }
   };
 
   const handleLoadTemplate = (template: TournamentTemplate) => {
@@ -122,6 +192,8 @@ const Tournament: React.FC = () => {
     setShowWelcome(false);
     setShowForm(true);
     setIsEditing(true);
+    // Clear draft when loading template
+    clearDraft();
     window.history.replaceState({}, '', '/tournament');
   };
 
@@ -143,20 +215,36 @@ const Tournament: React.FC = () => {
       setIsEditing(false);
       setShowWelcome(false);
       setShowForm(false);
+      // Clear draft when tournament exists (we're viewing/editing existing tournament)
+      clearDraft();
     } else {
       // Show welcome screen when no tournament exists
       if (!searchParams.get('template')) {
         setShowWelcome(true);
         setShowForm(false);
         setIsEditing(false);
-        setName('');
-        setType('single_elimination');
-        setFormat('bo3');
-        setSelectedTeams([]);
-        setMaps([]);
+        // Don't clear form fields here - let sessionStorage restore them if available
+        // Only reset if there's no saved draft
+        try {
+          const saved = sessionStorage.getItem(STORAGE_KEY);
+          if (!saved) {
+            setName('');
+            setType('single_elimination');
+            setFormat('bo3');
+            setSelectedTeams([]);
+            setMaps([]);
+          }
+        } catch {
+          // If sessionStorage fails, reset to defaults
+          setName('');
+          setType('single_elimination');
+          setFormat('bo3');
+          setSelectedTeams([]);
+          setMaps([]);
+        }
       }
     }
-  }, [tournament, searchParams]);
+  }, [tournament, searchParams, clearDraft]);
 
   // Determine current step
   const getCurrentStep = (): number => {
@@ -285,6 +373,10 @@ const Tournament: React.FC = () => {
         setSuccess(
           tournament ? 'Tournament updated & brackets regenerated!' : 'Tournament created!'
         );
+        // Clear draft when tournament is successfully created
+        if (!tournament) {
+          clearDraft();
+        }
         await refreshData();
         setTimeout(() => setSuccess(''), 3000);
       } else {
@@ -351,6 +443,27 @@ const Tournament: React.FC = () => {
   };
 
   const handleStart = async () => {
+    // Check server availability first
+    try {
+      const availabilityResponse = await api.get<{ success: boolean; availableServerCount: number }>(
+        '/api/tournament/server-availability'
+      );
+      
+      if (availabilityResponse.success && availabilityResponse.availableServerCount === 0) {
+        // No servers available - show warning modal
+        setShowStartConfirm(true);
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking server availability:', err);
+      // Continue anyway if check fails
+    }
+
+    // Servers available or check failed - start immediately
+    await startTournamentDirectly();
+  };
+
+  const startTournamentDirectly = async () => {
     setStarting(true);
     setError('');
     setShowStartConfirm(false);
@@ -429,6 +542,7 @@ const Tournament: React.FC = () => {
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
           onSave={handleSave}
+          onRefreshTeams={refreshData}
           onCancel={() => {
             // Reset form to tournament values or go back to welcome
             if (tournament) {
@@ -441,6 +555,12 @@ const Tournament: React.FC = () => {
             } else {
               setShowForm(false);
               setShowWelcome(true);
+              // Clear step when canceling new tournament creation
+              try {
+                sessionStorage.removeItem(STEP_STORAGE_KEY);
+              } catch (error) {
+                console.error('Error clearing step from sessionStorage:', error);
+              }
             }
           }}
           onDelete={() => setShowDeleteConfirm(true)}
@@ -461,7 +581,7 @@ const Tournament: React.FC = () => {
           starting={starting}
           saving={saving}
           onEdit={() => setIsEditing(true)}
-          onStart={() => setShowStartConfirm(true)}
+          onStart={handleStart}
           onViewBracket={() => navigate('/bracket')}
           onRegenerate={() => setShowRegenerateConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
@@ -499,7 +619,7 @@ const Tournament: React.FC = () => {
         onRegenerateCancel={() => setShowRegenerateConfirm(false)}
         onResetConfirm={handleReset}
         onResetCancel={() => setShowResetConfirm(false)}
-        onStartConfirm={handleStart}
+        onStartConfirm={startTournamentDirectly}
         onStartCancel={() => setShowStartConfirm(false)}
       />
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
+import { Typography, Alert, Box } from '@mui/material';
 import ConfirmDialog from '../modals/ConfirmDialog';
 
 interface TournamentDialogsProps {
@@ -165,42 +165,31 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
 
       <ConfirmDialog
         open={startOpen}
-        title="Start Tournament"
+        title="⚠️ No Servers Available"
         message={
           <>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              🚀 Ready to start the tournament?
-            </Typography>
-            <Typography variant="body2" fontWeight={600} gutterBottom>
-              This will:
-            </Typography>
-            <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Check all available servers
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                No servers are currently available
               </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Automatically allocate servers to ready matches
+              <Typography variant="body2">
+                The tournament will start, but matches will be postponed until a server becomes available.
+                The system will automatically allocate matches when servers are ready.
               </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Load matches on servers via RCON
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Set servers to warmup mode
-              </Typography>
-              <Typography component="li" variant="body2" color="text.secondary">
-                Change tournament status to IN PROGRESS
-              </Typography>
-            </Box>
-            <Typography variant="body2" color="warning.main" fontWeight={600}>
-              Make sure all servers are online and ready before proceeding.
+            </Alert>
+            <Typography variant="body2" color="text.secondary">
+              Do you want to start the tournament anyway?
             </Typography>
           </>
         }
-        confirmLabel="Start Tournament"
-        cancelLabel="Cancel"
+        confirmLabel="Yes, Start Anyway"
+        cancelLabel="Check Servers"
         onConfirm={onStartConfirm}
-        onCancel={onStartCancel}
-        confirmColor="success"
+        onCancel={() => {
+          onStartCancel();
+          window.location.href = '/servers';
+        }}
+        confirmColor="warning"
       />
     </>
   );

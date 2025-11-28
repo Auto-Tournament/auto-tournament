@@ -19,6 +19,7 @@ import { TeamSelectionStep } from './TeamSelectionStep';
 import { TournamentFormActions } from './TournamentFormActions';
 import { useTournamentFormData } from './useTournamentFormData';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
+import TeamModal from '../modals/TeamModal';
 import { api } from '../../utils/api';
 import type { Team } from '../../types';
 import type { MapPoolsResponse } from '../../types/api.types';
@@ -43,9 +44,11 @@ interface TournamentFormStepsProps {
   onCancel?: () => void;
   onDelete: () => void;
   onSaveTemplate?: (mapPoolId: number | null) => void;
+  onRefreshTeams?: () => void;
 }
 
 const STEPS = ['Name & Type', 'Maps', 'Teams', 'Review'];
+const STEP_STORAGE_KEY = 'tournament_form_step';
 
 export function TournamentFormSteps({
   name,
@@ -67,10 +70,26 @@ export function TournamentFormSteps({
   onCancel,
   onDelete,
   onSaveTemplate,
+  onRefreshTeams,
 }: TournamentFormStepsProps) {
-  const [activeStep, setActiveStep] = useState(0);
+  // Load saved step from sessionStorage on mount
+  const [activeStep, setActiveStep] = useState(() => {
+    try {
+      const saved = sessionStorage.getItem(STEP_STORAGE_KEY);
+      if (saved !== null) {
+        const step = parseInt(saved, 10);
+        if (step >= 0 && step < STEPS.length) {
+          return step;
+        }
+      }
+    } catch (error) {
+      console.error('Error loading step from sessionStorage:', error);
+    }
+    return 0;
+  });
   const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
 
   const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools } =
     useTournamentFormData({
@@ -102,6 +121,15 @@ export function TournamentFormSteps({
       onMapsChange(pool.mapIds);
     }
   };
+
+  // Save step to sessionStorage whenever it changes
+  React.useEffect(() => {
+    try {
+      sessionStorage.setItem(STEP_STORAGE_KEY, activeStep.toString());
+    } catch (error) {
+      console.error('Error saving step to sessionStorage:', error);
+    }
+  }, [activeStep]);
 
   const handleNext = () => {
     if (activeStep < STEPS.length - 1) {
@@ -164,6 +192,7 @@ export function TournamentFormSteps({
       case 1:
         return (
           <MapPoolStep
+            type={type}
             format={format}
             maps={maps}
             mapPools={mapPools}
@@ -185,6 +214,7 @@ export function TournamentFormSteps({
             canEdit={canEdit}
             saving={saving}
             onTeamsChange={onTeamsChange}
+            onCreateTeam={() => setTeamModalOpen(true)}
           />
         );
       case 3:
@@ -286,7 +316,15 @@ export function TournamentFormSteps({
               format={format}
               mapsCount={maps.length}
               canEdit={canEdit}
-              onSave={onSave}
+              onSave={() => {
+                // Clear step when tournament is saved
+                try {
+                  sessionStorage.removeItem(STEP_STORAGE_KEY);
+                } catch (error) {
+                  console.error('Error clearing step from sessionStorage:', error);
+                }
+                onSave();
+              }}
               onCancel={onCancel}
               onDelete={onDelete}
               onSaveTemplate={() => {
@@ -312,6 +350,21 @@ export function TournamentFormSteps({
             setMapPools(poolsResponse.mapPools || []);
           } catch (err) {
             console.error('Failed to reload map pools:', err);
+          }
+        }}
+      />
+
+      <TeamModal
+        open={teamModalOpen}
+        team={null}
+        onClose={() => setTeamModalOpen(false)}
+        onSave={(newTeamId) => {
+          setTeamModalOpen(false);
+          // Refresh teams list
+          onRefreshTeams?.();
+          // Auto-add the newly created team to selected teams
+          if (newTeamId && !selectedTeams.includes(newTeamId)) {
+            onTeamsChange([...selectedTeams, newTeamId]);
           }
         }}
       />

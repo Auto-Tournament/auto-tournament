@@ -9,6 +9,7 @@ interface TeamSelectionStepProps {
   canEdit: boolean;
   saving: boolean;
   onTeamsChange: (teams: string[]) => void;
+  onCreateTeam?: () => void;
 }
 
 export function TeamSelectionStep({
@@ -17,6 +18,7 @@ export function TeamSelectionStep({
   canEdit,
   saving,
   onTeamsChange,
+  onCreateTeam,
 }: TeamSelectionStepProps) {
   return (
     <Box>
@@ -46,7 +48,7 @@ export function TeamSelectionStep({
               color="inherit"
               size="small"
               startIcon={<AddIcon />}
-              onClick={() => (window.location.href = '/teams')}
+              onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
             >
               Create Team
             </Button>
@@ -87,4 +89,3 @@ export function TeamSelectionStep({
     </Box>
   );
 }
-

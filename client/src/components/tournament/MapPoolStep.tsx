@@ -16,6 +16,7 @@ import { Warning as WarningIcon } from '@mui/icons-material';
 import type { MapPool, Map as MapType } from '../../types/api.types';
 
 interface MapPoolStepProps {
+  type?: string;
   format: string;
   maps: string[];
   mapPools: MapPool[];
@@ -30,6 +31,7 @@ interface MapPoolStepProps {
 }
 
 export function MapPoolStep({
+  type,
   format,
   maps,
   mapPools,
@@ -104,11 +106,81 @@ export function MapPoolStep({
           variant="outlined"
         />
       </Box>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {isVetoFormat
-          ? 'Select exactly 7 maps for veto system (BO1/BO3/BO5 requires all 7 competitive maps)'
-          : 'Maps for the tournament (used for rotation in Round Robin/Swiss)'}
-      </Typography>
+      {/* Rules and Guidelines based on Tournament Type and Format */}
+      {type && (
+        <Alert severity="info" sx={{ mb: 2 }}>
+          <Typography variant="body2" fontWeight={600} gutterBottom>
+            Requirements for {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())} - {format.toUpperCase()}:
+          </Typography>
+          <Box component="ul" sx={{ m: 0, pl: 2 }}>
+            {isVetoFormat && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Map Selection:</strong> You must select exactly <strong>7 maps</strong> for the veto system.
+                  Teams will ban/pick maps from this pool during the match setup.
+                </Typography>
+              </li>
+            )}
+            {!isVetoFormat && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Map Selection:</strong> Select at least <strong>1 map</strong>. Maps will be used for rotation
+                  in {type === 'round_robin' ? 'Round Robin' : 'Swiss System'} matches.
+                </Typography>
+              </li>
+            )}
+            {type === 'single_elimination' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16, 32, 64, or 128).
+                </Typography>
+              </li>
+            )}
+            {type === 'double_elimination' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Requires a power-of-2 number of teams (2, 4, 8, 16, 32, 64, or 128).
+                </Typography>
+              </li>
+            )}
+            {type === 'round_robin' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Supports 2-32 teams. Each team plays every other team once.
+                </Typography>
+              </li>
+            )}
+            {type === 'swiss' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Team Count:</strong> Supports 4-64 teams. Teams with similar records face each other.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo1' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 1 - First team to win 1 map wins the match.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo3' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 3 - First team to win 2 maps wins the match.
+                </Typography>
+              </li>
+            )}
+            {format === 'bo5' && (
+              <li>
+                <Typography variant="body2">
+                  <strong>Match Format:</strong> Best of 5 - First team to win 3 maps wins the match.
+                </Typography>
+              </li>
+            )}
+          </Box>
+        </Alert>
+      )}
 
       {/* Map Pool Selection Dropdown */}
       <FormControl fullWidth sx={{ mb: 2 }}>

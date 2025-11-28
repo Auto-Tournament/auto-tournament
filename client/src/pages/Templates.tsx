@@ -17,6 +17,12 @@ import {
   Chip,
   Stack,
   CircularProgress,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  Autocomplete,
+  Divider,
 } from '@mui/material';
 import {
   Delete as DeleteIcon,
@@ -25,7 +31,10 @@ import {
   ContentCopy as CopyIcon,
 } from '@mui/icons-material';
 import { api } from '../utils/api';
-import type { TournamentTemplate } from '../types/tournament.types';
+import type { TournamentTemplate, TournamentSettings } from '../types/tournament.types';
+import type { TournamentResponse } from '../types';
+import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
+import type { Map, MapPool } from '../types/api.types';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -51,11 +60,97 @@ export default function Templates() {
   const [editingTemplate, setEditingTemplate] = useState<TournamentTemplate | null>(null);
   const [editName, setEditName] = useState('');
   const [editDescription, setEditDescription] = useState('');
+  const [editType, setEditType] = useState<string>('');
+  const [editFormat, setEditFormat] = useState<string>('');
+  const [editMaps, setEditMaps] = useState<string[]>([]);
+  const [tournamentStatus, setTournamentStatus] = useState<string | null>(null);
+  const [availableMaps, setAvailableMaps] = useState<Map[]>([]);
+  const [mapPools, setMapPools] = useState<MapPool[]>([]);
+  const [selectedMapPool, setSelectedMapPool] = useState<string>('');
+  const [loadingMaps, setLoadingMaps] = useState(false);
 
   useEffect(() => {
     document.title = 'Tournament Templates';
     loadTemplates();
+    loadTournamentStatus();
+    loadMaps();
+    loadMapPools();
   }, []);
+
+  const loadTournamentStatus = async () => {
+    try {
+      const response = await api.get<TournamentResponse>('/api/tournament');
+      if (response.success && response.tournament) {
+        setTournamentStatus(response.tournament.status);
+      } else {
+        setTournamentStatus(null);
+      }
+    } catch {
+      // No tournament exists
+      setTournamentStatus(null);
+    }
+  };
+
+  const loadMaps = async () => {
+    try {
+      setLoadingMaps(true);
+      const response = await api.get<{ maps: Map[] }>('/api/maps');
+      if (response.maps) {
+        setAvailableMaps(response.maps);
+      }
+    } catch (err) {
+      console.error('Error loading maps:', err);
+    } finally {
+      setLoadingMaps(false);
+    }
+  };
+
+  const loadMapPools = async () => {
+    try {
+      const response = await api.get<{ mapPools: MapPool[] }>('/api/map-pools');
+      if (response.mapPools) {
+        setMapPools(response.mapPools);
+      }
+    } catch (err) {
+      console.error('Error loading map pools:', err);
+    }
+  };
+
+  const getMapDisplayName = (mapId: string): string => {
+    const map = availableMaps.find((m) => m.id === mapId);
+    return map ? map.displayName : mapId;
+  };
+
+  const getMapType = (mapId: string): string => {
+    if (mapId.startsWith('de_')) return 'Defusal';
+    if (mapId.startsWith('cs_')) return 'Hostage';
+    if (mapId.startsWith('ar_')) return 'Arms Race';
+    return 'Unknown';
+  };
+
+  const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
+    if (mapId.startsWith('de_')) return 'primary';
+    if (mapId.startsWith('cs_')) return 'secondary';
+    if (mapId.startsWith('ar_')) return 'success';
+    return 'default';
+  };
+
+  // Sort maps by prefix: de_, ar_, cs_
+  const sortedMaps = [...availableMaps].sort((a, b) => {
+    const prefixOrder: Record<string, number> = { de_: 0, ar_: 1, cs_: 2 };
+    const aPrefix = a.id.substring(0, 3);
+    const bPrefix = b.id.substring(0, 3);
+    const aOrder = prefixOrder[aPrefix] ?? 999;
+    const bOrder = prefixOrder[bPrefix] ?? 999;
+    
+    if (aOrder !== bOrder) {
+      return aOrder - bOrder;
+    }
+    return a.id.localeCompare(b.id);
+  });
+
+  const allMapIds = sortedMaps.map((m) => m.id);
+  const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
 
   const loadTemplates = async () => {
     try {
@@ -94,20 +189,51 @@ export default function Templates() {
     setEditingTemplate(template);
     setEditName(template.name);
     setEditDescription(template.description || '');
+    setEditType(template.type);
+    setEditFormat(template.format);
+    setEditMaps(template.maps || []);
+    // Find if maps match a pool, otherwise use custom
+    const matchingPool = mapPools.find((pool) => {
+      if (pool.mapIds.length !== template.maps.length) return false;
+      return pool.mapIds.every((id) => template.maps.includes(id));
+    });
+    setSelectedMapPool(matchingPool ? matchingPool.id.toString() : 'custom');
+    setError(null);
     setEditDialogOpen(true);
+  };
+
+  const handleCloseEdit = () => {
+    setEditDialogOpen(false);
+    setEditingTemplate(null);
+    setError(null);
   };
 
   const handleSaveEdit = async () => {
     if (!editingTemplate) return;
 
+    // Validate maps for veto formats
+    const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
+    if (isVetoFormat && editMaps.length !== 7) {
+      setError('Veto formats (BO1/BO3/BO5) require exactly 7 maps');
+      return;
+    }
+    if (!isVetoFormat && editMaps.length === 0) {
+      setError('At least one map is required');
+      return;
+    }
+
     try {
+      const mapPoolId = selectedMapPool && selectedMapPool !== 'custom' ? parseInt(selectedMapPool, 10) : null;
       await api.put(`/api/templates/${editingTemplate.id}`, {
         name: editName,
         description: editDescription || undefined,
+        type: editType,
+        format: editFormat,
+        maps: editMaps,
+        mapPoolId,
       });
       setSuccess(`Template "${editName}" updated successfully`);
-      setEditDialogOpen(false);
-      setEditingTemplate(null);
+      handleCloseEdit();
       loadTemplates();
     } catch (err) {
       setError('Failed to update template');
@@ -115,7 +241,36 @@ export default function Templates() {
     }
   };
 
-  const handleCreateFromTemplate = (template: TournamentTemplate) => {
+  const handleMapPoolChange = (poolId: string) => {
+    setSelectedMapPool(poolId);
+    if (poolId === 'custom') {
+      // Keep current maps when switching to custom
+      return;
+    }
+    const pool = mapPools.find((p) => p.id.toString() === poolId);
+    if (pool) {
+      setEditMaps(pool.mapIds);
+    }
+  };
+
+  const handleCreateFromTemplate = async (template: TournamentTemplate) => {
+    // Check if tournament already exists
+    try {
+      const response = await api.get<TournamentResponse>('/api/tournament');
+      if (response.success && response.tournament) {
+        const status = response.tournament.status;
+        if (status === 'in_progress' || status === 'completed') {
+          setError('Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.');
+          return;
+        } else if (status === 'setup' || status === 'ready') {
+          setError('A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.');
+          return;
+        }
+      }
+    } catch (err) {
+      // No tournament exists, continue
+    }
+
     // Navigate to tournament page with template data
     const params = new URLSearchParams({
       template: template.id.toString(),
@@ -233,6 +388,14 @@ export default function Templates() {
                     fullWidth
                     startIcon={<CopyIcon />}
                     onClick={() => handleCreateFromTemplate(template)}
+                    disabled={tournamentStatus === 'in_progress' || tournamentStatus === 'completed' || tournamentStatus === 'setup' || tournamentStatus === 'ready'}
+                    title={
+                      tournamentStatus === 'in_progress' || tournamentStatus === 'completed'
+                        ? 'Cannot create tournament while one is in progress or completed'
+                        : tournamentStatus === 'setup' || tournamentStatus === 'ready'
+                        ? 'A tournament already exists. Delete or reset it first.'
+                        : ''
+                    }
                   >
                     Create Tournament from Template
                   </Button>
@@ -261,30 +424,144 @@ export default function Templates() {
       </Dialog>
 
       {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onClose={() => setEditDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog open={editDialogOpen} onClose={handleCloseEdit} maxWidth="md" fullWidth>
         <DialogTitle>Edit Template</DialogTitle>
         <DialogContent>
-          <TextField
-            fullWidth
-            label="Template Name"
-            value={editName}
-            onChange={(e) => setEditName(e.target.value)}
-            margin="normal"
-            required
-          />
-          <TextField
-            fullWidth
-            label="Description (optional)"
-            value={editDescription}
-            onChange={(e) => setEditDescription(e.target.value)}
-            margin="normal"
-            multiline
-            rows={3}
-          />
+          <Stack spacing={3} sx={{ mt: 1 }}>
+            <TextField
+              fullWidth
+              label="Template Name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              required
+            />
+            <TextField
+              fullWidth
+              label="Description (optional)"
+              value={editDescription}
+              onChange={(e) => setEditDescription(e.target.value)}
+              multiline
+              rows={2}
+            />
+
+            <Box display="flex" gap={2}>
+              <FormControl fullWidth>
+                <InputLabel>Tournament Type</InputLabel>
+                <Select
+                  value={editType}
+                  label="Tournament Type"
+                  onChange={(e) => setEditType(e.target.value)}
+                >
+                  {TOURNAMENT_TYPES.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+
+              <FormControl fullWidth>
+                <InputLabel>Match Format</InputLabel>
+                <Select
+                  value={editFormat}
+                  label="Match Format"
+                  onChange={(e) => {
+                    setEditFormat(e.target.value);
+                    // Reset maps if switching to/from veto format
+                    const newIsVeto = ['bo1', 'bo3', 'bo5'].includes(e.target.value);
+                    const currentIsVeto = ['bo1', 'bo3', 'bo5'].includes(editFormat);
+                    if (newIsVeto !== currentIsVeto) {
+                      setEditMaps([]);
+                      setSelectedMapPool('custom');
+                    }
+                  }}
+                >
+                  {MATCH_FORMATS.map((option) => (
+                    <MenuItem key={option.value} value={option.value}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Box>
+
+            <Divider />
+
+            <Box>
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                Map Pool
+              </Typography>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel>Choose a map pool</InputLabel>
+                <Select
+                  value={selectedMapPool || ''}
+                  label="Choose a map pool"
+                  onChange={(e) => handleMapPoolChange(e.target.value)}
+                  displayEmpty
+                >
+                  {mapPools
+                    .filter((p) => p.enabled)
+                    .map((pool) => (
+                      <MenuItem key={pool.id} value={pool.id.toString()}>
+                        {pool.name}
+                      </MenuItem>
+                    ))}
+                  <MenuItem value="custom">Custom</MenuItem>
+                </Select>
+              </FormControl>
+
+              {isVetoFormat && editMaps.length !== 7 && (
+                <Alert severity="warning" sx={{ mb: 2 }}>
+                  Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {editMaps.length}
+                </Alert>
+              )}
+
+              <Autocomplete
+                multiple
+                options={allMapIds}
+                value={editMaps}
+                onChange={(_, newValue) => setEditMaps(newValue)}
+                disableCloseOnSelect
+                fullWidth
+                loading={loadingMaps}
+                getOptionLabel={(option) => getMapDisplayName(option)}
+                renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+                renderOption={(props, option) => (
+                  <Box component="li" {...props} key={option}>
+                    <Box display="flex" alignItems="center" gap={1} width="100%">
+                      <Typography variant="body2" sx={{ flex: 1 }}>
+                        {getMapDisplayName(option)}
+                      </Typography>
+                      <Chip
+                        label={getMapType(option)}
+                        size="small"
+                        color={getMapTypeColor(option)}
+                        variant="outlined"
+                        sx={{ height: 20, fontSize: '0.7rem' }}
+                      />
+                    </Box>
+                  </Box>
+                )}
+                renderTags={(value, getTagProps) =>
+                  value.map((option, index) => (
+                    <Chip
+                      label={getMapDisplayName(option)}
+                      {...getTagProps({ index })}
+                      key={option}
+                    />
+                  ))
+                }
+              />
+            </Box>
+          </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setEditDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleSaveEdit} variant="contained" disabled={!editName.trim()}>
+          <Button onClick={handleCloseEdit}>Cancel</Button>
+          <Button
+            onClick={handleSaveEdit}
+            variant="contained"
+            disabled={!editName.trim() || (isVetoFormat && editMaps.length !== 7) || (!isVetoFormat && editMaps.length === 0)}
+          >
             Save
           </Button>
         </DialogActions>

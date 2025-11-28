@@ -13,11 +13,10 @@ import {
 } from '@mui/material';
 import {
   Warning as WarningIcon,
-  CheckCircle as CheckCircleIcon,
   Add as AddIcon,
 } from '@mui/icons-material';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
-import { isTournamentTypeValid, validateTeamCountForType } from '../../utils/tournamentValidation';
+import { validateTeamCountForType } from '../../utils/tournamentValidation';
 
 interface TournamentTypeFormatStepProps {
   type: string;
@@ -105,44 +104,18 @@ export function TournamentTypeFormatStep({
               onChange={(e) => onTypeChange(e.target.value)}
               disabled={!canEdit || saving}
             >
-              {TOURNAMENT_TYPES.map((option) => {
-                // Check team count validity
-                const isTeamCountValid = isTournamentTypeValid(option, selectedTeams.length);
-                // Check maps validity (veto formats need exactly 7 maps, others need at least 1)
-                const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
-                const isMapsValid = isVetoFormat ? maps.length === 7 : maps.length > 0;
-                // Both must be valid for green checkmark
-                const isValid = isTeamCountValid && isMapsValid;
-                return (
-                  <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
-                    <Box display="flex" alignItems="center" gap={1} width="100%">
-                      {isValid ? (
-                        <CheckCircleIcon fontSize="small" sx={{ color: 'success.main' }} />
-                      ) : (
-                        <WarningIcon fontSize="small" sx={{ color: 'warning.main' }} />
-                      )}
-                      <Box flex={1}>
-                        <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="body1">{option.label}</Typography>
-                          {!isValid && (
-                            <Chip
-                              label="Not available"
-                              size="small"
-                              color="warning"
-                              sx={{ height: 20 }}
-                            />
-                          )}
-                        </Box>
-                        {option.description && (
-                          <Typography variant="caption" color="text.secondary">
-                            {option.description}
-                          </Typography>
-                        )}
-                      </Box>
-                    </Box>
-                  </MenuItem>
-                );
-              })}
+              {TOURNAMENT_TYPES.map((option) => (
+                <MenuItem key={option.value} value={option.value} disabled={option.disabled}>
+                  <Box>
+                    <Typography variant="body1">{option.label}</Typography>
+                    {option.description && (
+                      <Typography variant="caption" color="text.secondary">
+                        {option.description}
+                      </Typography>
+                    )}
+                  </Box>
+                </MenuItem>
+              ))}
             </Select>
           </FormControl>
         </Grid>
