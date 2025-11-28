@@ -18,7 +18,6 @@ DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
 BUILDER_NAME="matchzy-release"
 REPO_OWNER="sivert-io"
 REPO_NAME="matchzy-auto-tournament"
-DISCORD_WEBHOOK_URL="${DISCORD_WEBHOOK_URL:-https://discord.com/api/webhooks/1443875202961248256/0DTnlR5WwzRmzrvO2rpv5QJCguTC_lQ-c5BCcGLNNeQ2pBBZ7ViRrlQbqoukys2YUX6M}"
 
 echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
 echo "========================================="
@@ -148,7 +147,6 @@ echo -e "  ${BLUE}6.${NC} Rebase release branch back onto main"
 echo -e "  ${BLUE}7.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
 echo -e "  ${BLUE}8.${NC} Push Docker images to Docker Hub"
 echo -e "  ${BLUE}9.${NC} Create GitHub release"
-echo -e "  ${BLUE}10.${NC} Send Discord release notification"
 echo ""
 read -p "Continue? (y/n) " -n 1 -r
 echo
@@ -523,186 +521,6 @@ else
     echo -e "${YELLOW}⚠️  Failed to create GitHub release. It may already exist or there was an error.${NC}"
 fi
 
-# Step 10: Send Discord webhook notification
-echo ""
-echo -e "${YELLOW}Step 10: Sending Discord release notification...${NC}"
-
-# Skip if webhook URL is empty or set to "disabled"
-if [ -z "$DISCORD_WEBHOOK_URL" ] || [ "$DISCORD_WEBHOOK_URL" = "disabled" ]; then
-    echo -e "${YELLOW}⚠️  Discord webhook disabled or not configured. Skipping notification.${NC}"
-    echo -e "${BLUE}Set DISCORD_WEBHOOK_URL environment variable to enable.${NC}"
-else
-    # Function to get changelog from git commits
-    get_changelog() {
-        local prev_tag
-        local current_tag="v${NEW_VERSION}"
-        
-        # Get the previous tag (second most recent, excluding the one we just created)
-        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
-        
-        if [ -z "$prev_tag" ]; then
-            # No previous tag, get all commits up to the current tag
-            git log "${current_tag}" --pretty=format:"- %s" --no-merges | head -20
-        else
-            # Get commits between previous tag and current tag
-            git log "${prev_tag}..${current_tag}" --pretty=format:"- %s" --no-merges | head -20
-        fi
-    }
-
-# Get changelog
-CHANGELOG=$(get_changelog)
-
-# If changelog is empty or too short, use a default message
-if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
-    CHANGELOG="- Release v${NEW_VERSION}"
-fi
-
-# Truncate changelog if too long (Discord has a 2000 character limit per field)
-if [ ${#CHANGELOG} -gt 1500 ]; then
-    CHANGELOG=$(echo "$CHANGELOG" | head -15)
-    CHANGELOG="${CHANGELOG}"$'\n'"- *...and more (see GitHub release for full changelog)*"
-fi
-
-# Create update instructions
-UPDATE_INSTRUCTIONS="# Pull the new version
-docker pull ${DOCKER_IMAGE}:${NEW_VERSION}
-
-# Stop and remove the old container
-docker compose -f docker/docker-compose.yml down
-
-# Update the image tag in docker-compose.yml to :${NEW_VERSION}
-# Or use :latest to always get the newest version
-
-# Start with the new version
-docker compose -f docker/docker-compose.yml up -d"
-
-# Create Discord webhook payload using jq for proper JSON handling
-TEMP_JSON=$(mktemp)
-
-if command -v jq &> /dev/null; then
-    # Use jq to build the JSON payload properly
-    echo "$CHANGELOG" > /tmp/changelog.txt
-    echo "$UPDATE_INSTRUCTIONS" > /tmp/update.txt
-    
-    jq -n \
-        --arg content "🚀 **New Release: v${NEW_VERSION}**" \
-        --arg title "MatchZy Auto Tournament v${NEW_VERSION}" \
-        --arg description "A new version has been released!" \
-        --arg changelog "$(cat /tmp/changelog.txt)" \
-        --arg update "$(cat /tmp/update.txt)" \
-        --arg dockerhub "https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}" \
-        --arg github "https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" \
-        --arg timestamp "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-        '{
-          content: $content,
-          embeds: [{
-            title: $title,
-            description: $description,
-            color: 3066993,
-            fields: [
-              {
-                name: "📦 Changelog",
-                value: $changelog,
-                inline: false
-              },
-              {
-                name: "🔄 Update Instructions",
-                value: ("```bash\n" + $update + "\n```"),
-                inline: false
-              },
-              {
-                name: "🐳 Docker Hub",
-                value: ("[View on Docker Hub](" + $dockerhub + ")"),
-                inline: true
-              },
-              {
-                name: "🔗 GitHub Release",
-                value: ("[View Release](" + $github + ")"),
-                inline: true
-              }
-            ],
-            footer: {
-              text: "MatchZy Auto Tournament"
-            },
-            timestamp: $timestamp
-          }]
-        }' > "$TEMP_JSON"
-    
-    rm -f /tmp/changelog.txt /tmp/update.txt
-else
-    # Fallback: manual JSON construction (less reliable but works without jq)
-    ESCAPED_CHANGELOG=$(echo "$CHANGELOG" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
-    ESCAPED_UPDATE=$(echo "$UPDATE_INSTRUCTIONS" | sed 's/\\/\\\\/g' | sed 's/"/\\"/g' | awk 'BEGIN{ORS="\\n"}{print}' | sed 's/\\n$//')
-    
-    cat > "$TEMP_JSON" <<EOF
-{
-  "content": "🚀 **New Release: v${NEW_VERSION}**",
-  "embeds": [{
-    "title": "MatchZy Auto Tournament v${NEW_VERSION}",
-    "description": "A new version has been released!",
-    "color": 3066993,
-    "fields": [
-      {
-        "name": "📦 Changelog",
-        "value": "${ESCAPED_CHANGELOG}",
-        "inline": false
-      },
-      {
-        "name": "🔄 Update Instructions",
-        "value": "\\\`\\\`\\\`bash\\n${ESCAPED_UPDATE}\\n\\\`\\\`\\\`",
-        "inline": false
-      },
-      {
-        "name": "🐳 Docker Hub",
-        "value": "[View on Docker Hub](https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME})",
-        "inline": true
-      },
-      {
-        "name": "🔗 GitHub Release",
-        "value": "[View Release](https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION})",
-        "inline": true
-      }
-    ],
-    "footer": {
-      "text": "MatchZy Auto Tournament"
-    },
-    "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-  }]
-}
-EOF
-fi
-
-    # Send webhook
-    WEBHOOK_RESPONSE=$(curl -s -w "\n%{http_code}" -X POST \
-        -H "Content-Type: application/json" \
-        -d @"$TEMP_JSON" \
-        "$DISCORD_WEBHOOK_URL" 2>/dev/null)
-
-    HTTP_CODE=$(echo "$WEBHOOK_RESPONSE" | tail -n1)
-    HTTP_BODY=$(echo "$WEBHOOK_RESPONSE" | sed '$d')
-
-    # Clean up temp file
-    rm -f "$TEMP_JSON"
-
-    if [ "$HTTP_CODE" = "200" ] || [ "$HTTP_CODE" = "204" ]; then
-        echo -e "${GREEN}✅ Discord notification sent${NC}"
-        
-        # Extract message ID from response (for potential future auto-publishing)
-        if [ -n "$HTTP_BODY" ] && command -v jq &> /dev/null; then
-            MESSAGE_ID=$(echo "$HTTP_BODY" | jq -r '.id // empty' 2>/dev/null)
-            if [ -n "$MESSAGE_ID" ]; then
-                echo -e "${BLUE}Message ID: ${MESSAGE_ID}${NC}"
-                echo -e "${BLUE}Note: For announcement channels, you may need to publish this message manually${NC}"
-            fi
-        fi
-    else
-        echo -e "${YELLOW}⚠️  Failed to send Discord notification (HTTP ${HTTP_CODE})${NC}"
-        echo -e "${BLUE}Webhook URL: ${DISCORD_WEBHOOK_URL}${NC}"
-        if [ -n "$HTTP_BODY" ]; then
-            echo -e "${BLUE}Response: ${HTTP_BODY}${NC}"
-        fi
-    fi
-fi
 
 # Summary
 echo ""
