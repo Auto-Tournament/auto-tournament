@@ -181,10 +181,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       return;
     }
 
-    console.log('Picking side:', side);
-    console.log('Current team slug:', currentTeamSlug);
-    console.log('Match slug:', matchSlug);
-
     try {
       const response = await fetch(`/api/veto/${matchSlug}/action`, {
         method: 'POST',
@@ -196,7 +192,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       });
 
       const data = await response.json();
-      console.log('Side pick response:', data);
 
       if (data.success) {
         setError('');

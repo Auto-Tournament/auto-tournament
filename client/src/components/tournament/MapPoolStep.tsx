@@ -16,7 +16,6 @@ import { Warning as WarningIcon } from '@mui/icons-material';
 import type { MapPool, Map as MapType } from '../../types/api.types';
 
 interface MapPoolStepProps {
-  type?: string;
   format: string;
   maps: string[];
   mapPools: MapPool[];
@@ -31,7 +30,6 @@ interface MapPoolStepProps {
 }
 
 export function MapPoolStep({
-  type,
   format,
   maps,
   mapPools,

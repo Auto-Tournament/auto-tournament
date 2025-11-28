@@ -225,7 +225,6 @@ export function TournamentFormSteps({
       case 1:
         return (
           <MapPoolStep
-            type={type}
             format={format}
             maps={maps}
             mapPools={mapPools}
