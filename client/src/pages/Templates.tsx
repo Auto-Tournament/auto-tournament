@@ -522,6 +522,26 @@ export default function Templates() {
                 </Select>
               </FormControl>
 
+              {/* Map Preview - Only show when using a preset map pool, not custom */}
+              {selectedMapPool !== 'custom' && editMaps.length > 0 && (
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+                    Selected Maps ({editMaps.length}):
+                  </Typography>
+                  <Box display="flex" flexWrap="wrap" gap={1}>
+                    {editMaps.map((mapId) => (
+                      <Chip
+                        key={mapId}
+                        label={getMapDisplayName(mapId)}
+                        size="small"
+                        color="primary"
+                        variant="outlined"
+                      />
+                    ))}
+                  </Box>
+                </Box>
+              )}
+
               {isVetoFormat && editMaps.length !== 7 && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
                   Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected:{' '}
