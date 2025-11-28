@@ -108,19 +108,6 @@ This document outlines the current features available in MatchZy Auto Tournament
 
 ---
 
-## 📅 Version History
-
-**v1.0.0** (Current)
-
-- Core tournament management platform
-- Automatic bracket generation and server allocation
-- CS Major compliant map veto system
-- Real-time updates and player tracking
-- Admin controls and demo management
-- Public team pages with all match information
-
----
-
 <div align="center">
 
 Made with ❤️ for the CS2 community
