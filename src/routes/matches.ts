@@ -179,7 +179,7 @@ router.get('/', async (req: Request, res: Response) => {
             }));
           }
         } catch (error) {
-          log.debug(`Failed to enrich team1 players with avatars: ${error}`);
+          log.debug(`Failed to enrich team1 players with avatars: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 
@@ -196,7 +196,7 @@ router.get('/', async (req: Request, res: Response) => {
             }));
           }
         } catch (error) {
-          log.debug(`Failed to enrich team2 players with avatars: ${error}`);
+          log.debug(`Failed to enrich team2 players with avatars: ${error instanceof Error ? error.message : String(error)}`);
         }
       }
 

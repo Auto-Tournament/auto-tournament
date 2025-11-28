@@ -14,14 +14,18 @@ import type { BracketMatch } from '../types/tournament.types';
  * Service for automatic server allocation to tournament matches
  */
 export class MatchAllocationService {
+  // Grace period in seconds after server becomes idle before allowing allocation
+  // This ensures demo uploads complete and match reset finishes
+  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300;
+
   /**
    * Get all available servers (enabled, online, and ready for allocation)
    * Uses MatchZy's matchzy_tournament_status convar to determine availability
-   * 
+   *
    * According to MatchZy server allocation status documentation:
    * - Only allocate when status is 'idle'
    * - Wait 5 minutes grace period after status becomes idle
-   * - Check matchzy_tournament_match and matchzy_tournament_updated convars
+   * - Check `matchzy_tournament_match` and `matchzy_tournament_updated` convars
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
@@ -51,8 +55,7 @@ export class MatchAllocationService {
     // Filter out offline servers
     const onlineServers = statusChecks.filter((s) => s.online);
 
-    // Grace period: 5 minutes (300 seconds) after status becomes idle
-    const GRACE_PERIOD_SECONDS = 300;
+    const GRACE_PERIOD_SECONDS = MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
     const now = Math.floor(Date.now() / 1000);
 
     // Filter servers based on MatchZy tournament status

@@ -161,8 +161,12 @@ router.post(
         fs.mkdirSync(matchFolder, { recursive: true });
       }
 
-      // Use MatchZy's filename (already validated above)
-      const filename = matchzyFilename as string; // Type assertion safe - validated above
+      // Use MatchZy's filename (sanitize to prevent path traversal)
+      const sanitizeFilename = (filename: string): string => {
+        // Remove any path separators and resolve to just the filename
+        return path.basename(filename);
+      };
+      const filename = sanitizeFilename(matchzyFilename); // Validated above
       const filepath = path.join(matchFolder, filename);
 
       // Write binary data to file (req.body is a Buffer from express.raw())
@@ -178,13 +182,13 @@ router.post(
       const fileSizeMB = (fileSize / 1024 / 1024).toFixed(2);
 
       // Update match with demo file path (store relative path)
-      const relativePath = path.join(matchSlug, filename as string);
+      const relativePath = path.join(matchSlug, filename);
 
       // Store demo path in match record (for backward compatibility)
       await db.updateAsync('matches', { demo_file_path: relativePath }, 'slug = ?', [matchSlug]);
 
       // Also store demo path per map if map number is provided
-      const mapNumber = parseInt(matchzyMapNumber as string, 10);
+      const mapNumber = parseInt(matchzyMapNumber, 10);
       if (!isNaN(mapNumber)) {
         try {
           // Update the map result with demo file path
@@ -266,9 +270,9 @@ router.post(
       return res.status(200).json({
         success: true,
         message: 'Demo uploaded successfully',
-        matchId: matchzyMatchId as string,
-        mapNumber: parseInt(matchzyMapNumber as string, 10),
-        filename: filename as string,
+        matchId: matchzyMatchId,
+        mapNumber: parseInt(matchzyMapNumber, 10),
+        filename,
         fileSize: fileSize,
         savedPath: relativePath,
       });

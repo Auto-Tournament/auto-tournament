@@ -66,8 +66,8 @@ export function TeamMatchHistoryModal({
     return null;
   }
 
-  // Determine if the viewing team is team1 (once match is loaded)
-  const isTeam1 = teamId && match ? match.team1?.id === teamId : true;
+  // Determine if the viewing team is team1 (undefined if match not loaded yet)
+  const isTeam1 = teamId && match ? match.team1?.id === teamId : undefined;
 
   // Use matchHistory scores (already in correct perspective: team vs opponent)
   // Or calculate from match map results if available
