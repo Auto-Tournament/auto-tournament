@@ -150,15 +150,16 @@ echo ""
 echo -e "Release plan:"
 echo -e "  ${BLUE}0.${NC} Clean up Docker (stop containers, remove images, prune cache)"
 echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
-echo -e "  ${BLUE}2.${NC} Build Docker image (test build)"
-echo -e "  ${BLUE}3.${NC} Update release branch (rebase onto main)"
-echo -e "  ${BLUE}4.${NC} Bump version to ${GREEN}${NEW_VERSION}${NC} on release branch"
-echo -e "  ${BLUE}5.${NC} Create PR and merge to main"
-echo -e "  ${BLUE}6.${NC} Rebase release branch back onto main"
-echo -e "  ${BLUE}7.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
-echo -e "  ${BLUE}8.${NC} Push Docker images to Docker Hub"
-echo -e "  ${BLUE}9.${NC} Create GitHub release"
-echo -e "  ${BLUE}10.${NC} Send Discord release notification"
+echo -e "  ${BLUE}2.${NC} Run tests (yarn test) - ${RED}MUST PASS${NC}"
+echo -e "  ${BLUE}3.${NC} Build Docker image (test build)"
+echo -e "  ${BLUE}4.${NC} Update release branch (rebase onto main)"
+echo -e "  ${BLUE}5.${NC} Bump version to ${GREEN}${NEW_VERSION}${NC} on release branch"
+echo -e "  ${BLUE}6.${NC} Create PR and merge to main"
+echo -e "  ${BLUE}7.${NC} Rebase release branch back onto main"
+echo -e "  ${BLUE}8.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
+echo -e "  ${BLUE}9.${NC} Push Docker images to Docker Hub"
+echo -e "  ${BLUE}10.${NC} Create GitHub release"
+echo -e "  ${BLUE}11.${NC} Send Discord release notification"
 echo ""
 read -p "Continue? (y/n) " -n 1 -r
 echo
@@ -198,9 +199,21 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Project build successful${NC}"
 
-# Step 2: Build Docker image (test build)
+# Step 2: Run tests
 echo ""
-echo -e "${YELLOW}Step 2: Building Docker image (test build)...${NC}"
+echo -e "${YELLOW}Step 2: Running tests...${NC}"
+echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
+yarn test
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Tests failed${NC}"
+    echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✅ All tests passed${NC}"
+
+# Step 3: Build Docker image (test build)
+echo ""
+echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
 
 # Ensure we're using OrbStack context (or default if OrbStack not available)
 if docker context ls | grep -q "orbstack \*"; then
@@ -250,9 +263,9 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Docker build successful${NC}"
 
-# Step 3: Set up or update release branch
+# Step 4: Set up or update release branch
 echo ""
-echo -e "${YELLOW}Step 3: Setting up release branch...${NC}"
+echo -e "${YELLOW}Step 4: Setting up release branch...${NC}"
 RELEASE_BRANCH="release"
 
 # Check if release branch exists locally
@@ -303,9 +316,9 @@ fi
 echo -e "${YELLOW}Pushing release branch to origin...${NC}"
 git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
 
-# Step 4: Bump version
+# Step 5: Bump version
 echo ""
-echo -e "${YELLOW}Step 4: Bumping version to ${NEW_VERSION}...${NC}"
+echo -e "${YELLOW}Step 5: Bumping version to ${NEW_VERSION}...${NC}"
 
 VERSION_BUMPED=false
 
@@ -324,9 +337,9 @@ else
         sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
     fi
     
-    # Step 5: Commit version bump
+    # Step 6: Commit version bump
     echo ""
-    echo -e "${YELLOW}Step 5: Committing version bump...${NC}"
+    echo -e "${YELLOW}Step 6: Committing version bump...${NC}"
     
     # Check if there are actually changes to commit
     if ! git diff --quiet package.json; then
@@ -349,7 +362,7 @@ COMMITS_AHEAD=$(git rev-list --count origin/main..origin/"${RELEASE_BRANCH}" 2>/
 # Create PR and merge (only if there are commits to merge)
 if [ "$COMMITS_AHEAD" -gt 0 ]; then
     echo ""
-    echo -e "${YELLOW}Step 6: Creating PR to merge version bump...${NC}"
+    echo -e "${YELLOW}Step 7: Creating PR to merge version bump...${NC}"
     PR_BODY="## Release ${NEW_VERSION}
 
 This PR bumps the version to ${NEW_VERSION} in preparation for release.
@@ -396,7 +409,7 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
     fi
 else
     echo ""
-    echo -e "${YELLOW}Step 6: Skipping PR creation (no commits to merge)${NC}"
+    echo -e "${YELLOW}Step 7: Skipping PR creation (no commits to merge)${NC}"
     echo -e "${BLUE}Release branch is already up to date with main.${NC}"
     
     # Ensure we're on main for tagging
@@ -404,9 +417,9 @@ else
     git pull origin main
 fi
 
-# Step 7: Create and push git tag
+# Step 8: Create and push git tag
 echo ""
-echo -e "${YELLOW}Step 7: Creating git tag v${NEW_VERSION}...${NC}"
+echo -e "${YELLOW}Step 8: Creating git tag v${NEW_VERSION}...${NC}"
 
 # Fetch tags from remote first
 git fetch origin --tags --force 2>/dev/null || true
@@ -447,9 +460,9 @@ git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}"
 git push origin "v${NEW_VERSION}"
 echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 
-# Step 8: Build and push Docker images
+# Step 9: Build and push Docker images
 echo ""
-echo -e "${YELLOW}Step 8: Building and pushing Docker images...${NC}"
+echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
 
@@ -481,9 +494,9 @@ fi
 echo -e "${GREEN}✅ Verified images for both platforms${NC}"
 rm -f /tmp/image_inspect.txt
 
-# Step 9: Create GitHub release
+# Step 10: Create GitHub release
 echo ""
-echo -e "${YELLOW}Step 9: Creating GitHub release...${NC}"
+echo -e "${YELLOW}Step 10: Creating GitHub release...${NC}"
 
 # Check if GitHub release already exists
 if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/null 2>&1; then
@@ -533,9 +546,9 @@ else
     echo -e "${YELLOW}⚠️  Failed to create GitHub release. It may already exist or there was an error.${NC}"
 fi
 
-# Step 10: Send Discord webhook notification
+# Step 11: Send Discord webhook notification
 echo ""
-echo -e "${YELLOW}Step 10: Sending Discord release notification...${NC}"
+echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
 
 # Webhook URL is already validated at the start, so we can proceed directly
 # Function to get changelog from git commits

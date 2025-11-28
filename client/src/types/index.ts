@@ -29,7 +29,12 @@ export type {
 } from './team.types';
 
 // Tournament types
-export type { Tournament, TournamentSettings, BracketData } from './tournament.types';
+export type {
+  Tournament,
+  TournamentSettings,
+  BracketData,
+  TournamentTemplate,
+} from './tournament.types';
 
 // Veto types
 export type {

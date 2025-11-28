@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, CircularProgress, Alert, Snackbar, Typography, Box } from '@mui/material';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
+import { api } from '../../utils/api';
 
 interface StartTournamentButtonProps {
   variant?: 'text' | 'outlined' | 'contained';
@@ -24,8 +25,55 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [availableServerCount, setAvailableServerCount] = useState<number | null>(null);
+  const [loadingServers, setLoadingServers] = useState(false);
 
-  const handleStart = async () => {
+  // Check server availability when dialog opens (when user clicks "Start Tournament" button)
+  useEffect(() => {
+    if (showConfirm) {
+      loadServerAvailability();
+    }
+  }, [showConfirm]);
+
+  const loadServerAvailability = async () => {
+    try {
+      setLoadingServers(true);
+      const response = await api.get<{ success: boolean; availableServerCount: number }>(
+        '/api/tournament/server-availability'
+      );
+      if (response.success) {
+        setAvailableServerCount(response.availableServerCount);
+      }
+    } catch (err) {
+      console.error('Error loading server availability:', err);
+      setAvailableServerCount(null);
+    } finally {
+      setLoadingServers(false);
+    }
+  };
+
+  const handleStartClick = async () => {
+    // Check server availability first
+    try {
+      const availabilityResponse = await api.get<{ success: boolean; availableServerCount: number }>(
+        '/api/tournament/server-availability'
+      );
+      
+      if (availabilityResponse.success && availabilityResponse.availableServerCount === 0) {
+        // No servers available - show warning modal
+        setShowConfirm(true);
+        return;
+      }
+    } catch (err) {
+      console.error('Error checking server availability:', err);
+      // Continue anyway if check fails
+    }
+
+    // Servers available or check failed - start immediately
+    await performTournamentStart();
+  };
+
+  const performTournamentStart = async () => {
     setStarting(true);
     setError('');
     setShowConfirm(false);
@@ -62,7 +110,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
         size={size}
         fullWidth={fullWidth}
         startIcon={starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />}
-        onClick={() => setShowConfirm(true)}
+        onClick={handleStartClick}
         disabled={starting}
       >
         {starting ? 'Starting...' : 'Start Tournament'}
@@ -96,16 +144,38 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
                 Change tournament status to IN PROGRESS
               </Typography>
             </Box>
-            <Typography variant="body2" color="warning.main" fontWeight={600}>
-              Make sure all servers are online and ready before proceeding.
-            </Typography>
+            {!loadingServers && availableServerCount !== null && availableServerCount === 0 && (
+              <Alert severity="warning" sx={{ mb: 2 }}>
+                <Typography variant="body2" fontWeight={600} gutterBottom>
+                  ⚠️ No servers are currently available
+                </Typography>
+                <Typography variant="body2">
+                  The tournament will start, but matches will be postponed until a server becomes available.
+                  The system will automatically allocate matches when servers are ready.
+                </Typography>
+              </Alert>
+            )}
+            {!loadingServers && availableServerCount !== null && availableServerCount > 0 && (
+              <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mb: 2 }}>
+                ✓ {availableServerCount} server{availableServerCount !== 1 ? 's' : ''} available
+              </Typography>
+            )}
+            {availableServerCount === null && !loadingServers && (
+              <Typography variant="body2" color="warning.main" fontWeight={600}>
+                Make sure all servers are online and ready before proceeding.
+              </Typography>
+            )}
           </>
         }
-        confirmLabel="Start Tournament"
-        cancelLabel="Cancel"
-        onConfirm={handleStart}
-        onCancel={() => setShowConfirm(false)}
-        confirmColor="success"
+        confirmLabel="Yes, Start Anyway"
+        cancelLabel="Check Servers"
+        onConfirm={performTournamentStart}
+        onCancel={() => {
+          setShowConfirm(false);
+          // Navigate to servers page
+          navigate('/servers');
+        }}
+        confirmColor="warning"
       />
 
       <Snackbar

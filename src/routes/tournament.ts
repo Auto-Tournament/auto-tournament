@@ -497,6 +497,36 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
  *       404:
  *         description: No tournament exists
  */
+/**
+ * @openapi
+ * /api/tournament/server-availability:
+ *   get:
+ *     tags:
+ *       - Tournament
+ *     summary: Get available server count
+ *     description: Returns the number of servers currently available for match allocation
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Server availability retrieved successfully
+ */
+router.get('/server-availability', requireAuth, async (_req: Request, res: Response) => {
+  try {
+    const count = await matchAllocationService.getAvailableServerCount();
+    return res.json({
+      success: true,
+      availableServerCount: count,
+    });
+  } catch (error) {
+    log.error('Error checking server availability', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to check server availability',
+    });
+  }
+});
+
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
     // Get base URL for webhook configuration

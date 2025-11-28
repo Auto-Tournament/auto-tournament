@@ -68,7 +68,7 @@ export function MapPoolStep({
     const bPrefix = b.id.substring(0, 3);
     const aOrder = prefixOrder[aPrefix] ?? 999;
     const bOrder = prefixOrder[bPrefix] ?? 999;
-    
+
     if (aOrder !== bOrder) {
       return aOrder - bOrder;
     }
@@ -81,9 +81,7 @@ export function MapPoolStep({
 
   // Check if selected pool has 7 maps
   const selectedPool =
-    selectedMapPool !== 'custom'
-      ? mapPools.find((p) => p.id.toString() === selectedMapPool)
-      : null;
+    selectedMapPool !== 'custom' ? mapPools.find((p) => p.id.toString() === selectedMapPool) : null;
 
   const poolHasCorrectMaps = selectedPool && selectedPool.mapIds.length === 7;
   const shouldShowVetoError = isVetoFormat && maps.length !== 7 && !poolHasCorrectMaps;
@@ -104,12 +102,6 @@ export function MapPoolStep({
           variant="outlined"
         />
       </Box>
-      <Typography variant="body2" color="text.secondary" mb={2}>
-        {isVetoFormat
-          ? 'Select exactly 7 maps for veto system (BO1/BO3/BO5 requires all 7 competitive maps)'
-          : 'Maps for the tournament (used for rotation in Round Robin/Swiss)'}
-      </Typography>
-
       {/* Map Pool Selection Dropdown */}
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Choose a map pool</InputLabel>
@@ -200,11 +192,7 @@ export function MapPoolStep({
             )}
             renderTags={(value, getTagProps) =>
               value.map((option, index) => (
-                <Chip
-                  label={getMapDisplayName(option)}
-                  {...getTagProps({ index })}
-                  key={option}
-                />
+                <Chip label={getMapDisplayName(option)} {...getTagProps({ index })} key={option} />
               ))
             }
           />

@@ -36,3 +36,17 @@ export interface BracketData {
   totalRounds: number;
 }
 
+export interface TournamentTemplate {
+  id: number;
+  name: string;
+  description?: string;
+  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+  format: 'bo1' | 'bo3' | 'bo5';
+  mapPoolId?: number | null;
+  maps: string[];
+  teamIds?: string[];
+  settings: TournamentSettings;
+  createdAt: number;
+  updatedAt: number;
+}
+

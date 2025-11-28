@@ -13,6 +13,7 @@ import { TournamentFormActions } from './TournamentFormActions';
 import { useTournamentFormData } from './useTournamentFormData';
 import { api } from '../../utils/api';
 import type { MapPoolsResponse } from '../../types/api.types';
+import type { TournamentSettings } from '../../types/tournament.types';
 
 interface TournamentFormProps {
   name: string;
@@ -25,6 +26,7 @@ interface TournamentFormProps {
   saving: boolean;
   tournamentExists: boolean;
   hasChanges?: boolean;
+  settings?: TournamentSettings;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -46,6 +48,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   saving,
   tournamentExists,
   hasChanges = true,
+  settings,
   onNameChange,
   onTypeChange,
   onFormatChange,
@@ -246,7 +249,8 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
                   No servers configured
                 </Typography>
                 <Typography variant="body2">
-                  You need to add at least one CS2 server before creating a tournament. Matches cannot be loaded without servers.
+                  You need to add at least one CS2 server before creating a tournament. Matches
+                  cannot be loaded without servers.
                 </Typography>
               </Box>
             </Alert>
@@ -309,6 +313,15 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
             format={format}
             mapsCount={maps.length}
             canEdit={canEdit}
+            name={name}
+            type={type}
+            maps={maps}
+            settings={settings || {}}
+            mapPoolId={
+              selectedMapPool && selectedMapPool !== 'custom' && mapPools.length > 0
+                ? parseInt(selectedMapPool, 10)
+                : null
+            }
             onSave={onSave}
             onCancel={onCancel}
             onDelete={onDelete}

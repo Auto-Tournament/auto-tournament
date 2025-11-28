@@ -21,7 +21,7 @@ import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
-import type { Team, VetoState } from '../types';
+import type { Team } from '../types';
 
 function TeamSoundControls({ team }: { team: Team | null }) {
   const [showSettings, setShowSettings] = useState(false);
@@ -148,9 +148,7 @@ export default function TeamMatch() {
     }
   }, [match, tournamentStatus, matchFormat, vetoCompleted]);
 
-  const handleVetoComplete = async (veto: VetoState) => {
-    console.log('Veto completed! Selected maps:', veto.pickedMaps);
-
+  const handleVetoComplete = async () => {
     // Reload match data to get updated status and server assignment
     setTimeout(() => {
       loadTeamMatch();

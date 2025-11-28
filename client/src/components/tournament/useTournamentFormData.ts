@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../../utils/api';
 import type { MapPool, MapPoolsResponse, MapsResponse, Map as MapType } from '../../types/api.types';
 
@@ -19,6 +19,23 @@ export function useTournamentFormData({
   const [availableMaps, setAvailableMaps] = useState<MapType[]>([]);
   const [loadingMaps, setLoadingMaps] = useState(true);
   const hasInitializedMaps = useRef(false);
+
+  const refreshServers = useCallback(async () => {
+    try {
+      const serversResponse = await fetch('/api/servers', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('api_token')}`,
+        },
+      });
+      const serversData = await serversResponse.json();
+      const enabledServers = (serversData.servers || []).filter(
+        (s: { enabled: boolean }) => s.enabled
+      );
+      setServerCount(enabledServers.length);
+    } catch (err) {
+      console.error('Failed to refresh servers:', err);
+    }
+  }, []);
 
   useEffect(() => {
     const loadData = async () => {
@@ -76,6 +93,7 @@ export function useTournamentFormData({
     availableMaps,
     loadingMaps,
     setMapPools,
+    refreshServers,
   };
 }
 

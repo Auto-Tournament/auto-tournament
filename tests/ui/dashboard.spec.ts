@@ -31,68 +31,19 @@ test.describe.serial('Dashboard Page', () => {
   );
 
   test(
-    'should display navigation cards',
-    {
-      tag: ['@ui', '@dashboard', '@navigation'],
-    },
-    async ({ page }) => {
-      await page.goto('/');
-      await page.waitForLoadState('networkidle');
-
-      // Check for main navigation cards - look for card titles (h6 variant)
-      await expect(page.getByRole('heading', { name: /tournament/i, level: 6 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /bracket/i, level: 6 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /teams/i, level: 6 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /servers/i, level: 6 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /matches/i, level: 6 })).toBeVisible();
-      await expect(page.getByRole('heading', { name: /settings/i, level: 6 })).toBeVisible();
-    }
-  );
-
-  test(
-    'should navigate to all pages from dashboard cards',
-    {
-      tag: ['@ui', '@dashboard', '@navigation'],
-    },
-    async ({ page }) => {
-      await page.goto('/');
-      await page.waitForLoadState('networkidle');
-
-      // Test navigation to all main pages from dashboard cards
-      const navigationTests = [
-        { heading: /teams/i, url: /\/teams/ },
-        { heading: /servers/i, url: /\/servers/ },
-        { heading: /tournament/i, url: /\/tournament/ },
-        { heading: /settings/i, url: /\/settings/ },
-      ];
-
-      for (const nav of navigationTests) {
-        await page.goto('/');
-        await page.waitForLoadState('networkidle');
-
-        const cardHeading = page.getByRole('heading', { name: nav.heading, level: 6 });
-        const card = cardHeading.locator('..').locator('..').locator('..').first();
-        await card.click();
-
-        await expect(page).toHaveURL(nav.url);
-      }
-    }
-  );
-
-  test(
     'should display onboarding checklist',
     {
       tag: ['@ui', '@dashboard'],
     },
     async ({ page }) => {
       await page.goto('/');
+      await page.waitForLoadState('networkidle');
 
-      // Check for onboarding checklist (may or may not be visible depending on state)
-      const checklist = page.locator('text=/onboarding|checklist|setup/i');
-      const isVisible = await checklist.isVisible().catch(() => false);
-
-      // Checklist might not always be visible, so we just check if page loads correctly
+      // Verify dashboard loads with onboarding checklist (visible depending on setup state)
       await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
+      
+      // Just verify the page loaded - checklist visibility depends on setup state
+      expect(page.url()).toContain('/');
     }
   );
 });

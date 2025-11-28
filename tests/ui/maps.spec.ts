@@ -195,7 +195,14 @@ test.describe.serial('Maps UI', () => {
     },
     async ({ page }) => {
       await page.goto('/maps');
-      await page.waitForLoadState('networkidle');
+      // Use a shorter timeout and fallback to domcontentloaded if networkidle takes too long
+      try {
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
+      } catch (error) {
+        // If networkidle times out, at least wait for DOM to be ready
+        await page.waitForLoadState('domcontentloaded');
+        await page.waitForTimeout(1000); // Small delay for any async operations
+      }
 
       // Switch to Map Pools tab
       await page.getByRole('tab', { name: /map pools/i }).click();

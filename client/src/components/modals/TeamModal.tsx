@@ -28,7 +28,7 @@ interface TeamModalProps {
   open: boolean;
   team: Team | null;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (newTeamId?: string) => void;
 }
 
 // Utility to generate team ID from name
@@ -202,6 +202,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         players,
       };
 
+      let newTeamId: string | undefined;
       if (isEditing) {
         await api.put(`/api/teams/${team.id}`, {
           name: payload.name,
@@ -210,10 +211,13 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
           players: payload.players,
         });
       } else {
-        await api.post('/api/teams?upsert=true', payload);
+        const response = await api.post<{ success: boolean; team: Team }>('/api/teams?upsert=true', payload);
+        if (response.success && response.team) {
+          newTeamId = response.team.id;
+        }
       }
 
-      onSave();
+      onSave(newTeamId);
       onClose();
       resetForm();
     } catch (err) {

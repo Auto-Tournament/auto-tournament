@@ -1,6 +1,6 @@
 import React from 'react';
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
-import { DeleteForever as DeleteForeverIcon } from '@mui/icons-material';
+import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
 
 interface TournamentFormActionsProps {
   tournamentExists: boolean;
@@ -12,6 +12,7 @@ interface TournamentFormActionsProps {
   onSave: () => void;
   onCancel?: () => void;
   onDelete: () => void;
+  onSaveTemplate?: () => void;
 }
 
 export function TournamentFormActions({
@@ -24,6 +25,7 @@ export function TournamentFormActions({
   onSave,
   onCancel,
   onDelete,
+  onSaveTemplate,
 }: TournamentFormActionsProps) {
   if (!canEdit) {
     return null;
@@ -65,6 +67,18 @@ export function TournamentFormActions({
               disabled={saving}
             >
               Delete
+            </Button>
+          </Tooltip>
+        )}
+        {onSaveTemplate && (
+          <Tooltip title="Save current tournament configuration as a template">
+            <Button
+              variant="outlined"
+              startIcon={<SaveIcon />}
+              onClick={onSaveTemplate}
+              disabled={saving || !isValidMaps}
+            >
+              Save as Template
             </Button>
           </Tooltip>
         )}

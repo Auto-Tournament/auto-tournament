@@ -129,7 +129,45 @@ class DatabaseManager {
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
         { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
+        { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
       ];
+
+      // Check if tournament_templates table exists, create if not
+      try {
+        const tableCheck = await client.query(
+          `SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'tournament_templates'
+          )`
+        );
+        if (!tableCheck.rows[0].exists) {
+          // Table doesn't exist, create it
+          await client.query(`
+            CREATE TABLE tournament_templates (
+              id SERIAL PRIMARY KEY,
+              name TEXT NOT NULL,
+              description TEXT,
+              type TEXT NOT NULL,
+              format TEXT NOT NULL,
+              map_pool_id INTEGER,
+              maps TEXT,
+              team_ids TEXT,
+              settings TEXT NOT NULL,
+              created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+              updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+              FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+            );
+            CREATE INDEX idx_tournament_templates_name ON tournament_templates(name);
+            CREATE INDEX idx_tournament_templates_type ON tournament_templates(type);
+          `);
+        }
+      } catch (err) {
+        // Only ignore "table already exists" errors, log others
+        const error = err as Error;
+        if (!error.message.includes('already exists') && !error.message.includes('duplicate')) {
+          log.warn(`[PostgreSQL] Table creation warning: ${error.message}`);
+        }
+      }
 
       for (const migration of migrations) {
         try {

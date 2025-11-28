@@ -70,12 +70,20 @@ export async function performVetoActionUI(
     await sideButton.click();
     
     // Wait for action to complete (veto state should update)
-    await page.waitForTimeout(1500);
+    // Use a shorter, more reliable wait approach
     try {
-      await page.waitForLoadState('networkidle', { timeout: 5000 });
+      // Wait for network request to complete (side pick API call)
+      await page.waitForResponse(
+        (response) => response.url().includes('/api/veto/') && response.url().includes('/action'),
+        { timeout: 5000 }
+      ).catch(() => {
+        // If no response, just continue after short delay
+      });
+      // Small delay for state propagation
+      await page.waitForTimeout(500);
     } catch (error) {
-      // If networkidle times out, just wait a bit and continue
-      await page.waitForTimeout(1000);
+      // If waiting fails, use minimal timeout
+      await page.waitForTimeout(500);
     }
     return true;
   } else {

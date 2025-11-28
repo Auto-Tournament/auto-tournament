@@ -38,6 +38,7 @@ import settingsRoutes from './routes/settings';
 import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
+import templatesRoutes from './routes/templates';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
@@ -270,6 +271,7 @@ app.use('/api/veto', vetoRoutes); // Map veto system
 app.use('/api/settings', settingsRoutes);
 app.use('/api/maps', mapsRoutes);
 app.use('/api/map-pools', mapPoolsRoutes);
+app.use('/api/templates', templatesRoutes); // Tournament templates
 app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 
 // Serve frontend at /app

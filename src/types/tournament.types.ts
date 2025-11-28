@@ -145,3 +145,53 @@ export interface BracketResponse {
   matches: BracketMatch[];
   totalRounds: number;
 }
+
+export interface TournamentTemplate {
+  id: number;
+  name: string;
+  description?: string;
+  type: TournamentType;
+  format: MatchFormat;
+  mapPoolId?: number | null;
+  maps: string[];
+  teamIds?: string[];
+  settings: TournamentSettings;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface TournamentTemplateRow {
+  id: number;
+  name: string;
+  description?: string | null;
+  type: TournamentType;
+  format: MatchFormat;
+  map_pool_id?: number | null;
+  maps?: string | null;
+  team_ids?: string | null;
+  settings: string; // JSON string
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CreateTemplateInput {
+  name: string;
+  description?: string;
+  type: TournamentType;
+  format: MatchFormat;
+  mapPoolId?: number | null;
+  maps?: string[];
+  teamIds?: string[];
+  settings?: Partial<TournamentSettings>;
+}
+
+export interface UpdateTemplateInput {
+  name?: string;
+  description?: string;
+  type?: TournamentType;
+  format?: MatchFormat;
+  mapPoolId?: number | null;
+  maps?: string[];
+  teamIds?: string[];
+  settings?: Partial<TournamentSettings>;
+}
