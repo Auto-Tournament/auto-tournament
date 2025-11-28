@@ -15,7 +15,7 @@ import type {
   BracketResponse,
 } from '../types/tournament.types';
 
-const DEFAULT_SETTINGS: TournamentSettings = {
+export const DEFAULT_SETTINGS: TournamentSettings = {
   matchFormat: 'bo3',
   thirdPlaceMatch: false,
   autoAdvance: true,

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, Container, Alert, CircularProgress } from '@mui/material';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
 import { TournamentForm } from '../components/tournament/TournamentForm';
@@ -9,6 +9,8 @@ import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
+import { api } from '../utils/api';
+import type { TournamentTemplate } from '../types/tournament.types';
 
 interface TournamentChange {
   field: string;
@@ -63,6 +65,42 @@ const Tournament: React.FC = () => {
   const [showChangePreview, setShowChangePreview] = useState(false);
   const [changes, setChanges] = useState<TournamentChange[]>([]);
 
+  const [searchParams] = useSearchParams();
+
+  // Load template if specified in URL
+  const loadTemplate = React.useCallback(
+    async (templateId: number) => {
+      try {
+        const response = await api.get<{ success: boolean; template: TournamentTemplate }>(
+          `/api/templates/${templateId}`
+        );
+        if (response.success && response.template) {
+          const template = response.template;
+          setName(template.name);
+          setType(template.type);
+          setFormat(template.format);
+          setMaps(template.maps || []);
+          setSelectedTeams([]); // Templates don't include teams
+          setIsEditing(true);
+          // Clear template param from URL
+          window.history.replaceState({}, '', '/tournament');
+        }
+      } catch (error) {
+        console.error('Error loading template:', error);
+        setError('Failed to load template');
+      }
+    },
+    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, setError]
+  );
+
+  useEffect(() => {
+    const templateId = searchParams.get('template');
+    if (templateId && !tournament) {
+      loadTemplate(parseInt(templateId, 10));
+    }
+  }, [searchParams, tournament, loadTemplate]);
+
+
   // Sync tournament data to form when loaded
   React.useEffect(() => {
     if (tournament) {
@@ -73,15 +111,17 @@ const Tournament: React.FC = () => {
       setMaps(tournament.maps || []);
       setIsEditing(false); // Close edit mode when tournament loads
     } else {
-      // Clear form when no tournament (e.g., after deletion)
-      setName('');
-      setType('single_elimination');
-      setFormat('bo3');
-      setSelectedTeams([]);
-      setMaps([]);
-      setIsEditing(true); // Show form when creating new tournament
+      // Only clear if not loading from template
+      if (!searchParams.get('template')) {
+        setName('');
+        setType('single_elimination');
+        setFormat('bo3');
+        setSelectedTeams([]);
+        setMaps([]);
+        setIsEditing(true); // Show form when creating new tournament
+      }
     }
-  }, [tournament]);
+  }, [tournament, searchParams]);
 
   // Determine current step
   const getCurrentStep = (): number => {
@@ -201,7 +241,7 @@ const Tournament: React.FC = () => {
         format,
         maps,
         teamIds: selectedTeams,
-        settings: { seedingMethod: 'random' },
+        settings: tournament?.settings || { seedingMethod: 'random' },
       };
 
       const response = await saveTournament(payload);
@@ -344,6 +384,7 @@ const Tournament: React.FC = () => {
           onFormatChange={setFormat}
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
+          settings={tournament?.settings}
           onSave={handleSave}
           onCancel={() => {
             // Reset form to tournament values

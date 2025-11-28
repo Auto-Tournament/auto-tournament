@@ -148,6 +148,24 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_map_pools_name ON map_pools(name);
     CREATE INDEX IF NOT EXISTS idx_map_pools_default ON map_pools(is_default);
     CREATE INDEX IF NOT EXISTS idx_map_pools_enabled ON map_pools(enabled);
+
+    -- Tournament templates table
+    CREATE TABLE IF NOT EXISTS tournament_templates (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      type TEXT NOT NULL,
+      format TEXT NOT NULL,
+      map_pool_id INTEGER,
+      maps TEXT,
+      settings TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_tournament_templates_name ON tournament_templates(name);
+    CREATE INDEX IF NOT EXISTS idx_tournament_templates_type ON tournament_templates(type);
   `;
 }
 

@@ -23,6 +23,7 @@ import CampaignIcon from '@mui/icons-material/Campaign';
 import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
 import MapIcon from '@mui/icons-material/Map';
+import DescriptionIcon from '@mui/icons-material/Description';
 import { useAuth } from '../../contexts/AuthContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
@@ -42,6 +43,7 @@ export default function Layout() {
     { label: 'Teams', path: '/teams', icon: GroupsIcon },
     { label: 'Servers', path: '/servers', icon: StorageIcon },
     { label: 'Maps', path: '/maps', icon: MapIcon },
+    { label: 'Templates', path: '/templates', icon: DescriptionIcon },
     { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
     { label: 'Settings', path: '/settings', icon: SettingsIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),

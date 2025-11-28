@@ -131,6 +131,38 @@ class DatabaseManager {
         { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
       ];
 
+      // Check if tournament_templates table exists, create if not
+      try {
+        const tableCheck = await client.query(
+          `SELECT EXISTS (
+            SELECT FROM information_schema.tables 
+            WHERE table_name = 'tournament_templates'
+          )`
+        );
+        if (!tableCheck.rows[0].exists) {
+          // Table doesn't exist, create it
+          await client.query(`
+            CREATE TABLE tournament_templates (
+              id SERIAL PRIMARY KEY,
+              name TEXT NOT NULL,
+              description TEXT,
+              type TEXT NOT NULL,
+              format TEXT NOT NULL,
+              map_pool_id INTEGER,
+              maps TEXT,
+              settings TEXT NOT NULL,
+              created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+              updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+              FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+            );
+            CREATE INDEX idx_tournament_templates_name ON tournament_templates(name);
+            CREATE INDEX idx_tournament_templates_type ON tournament_templates(type);
+          `);
+        }
+      } catch {
+        // Ignore errors (table might already exist)
+      }
+
       for (const migration of migrations) {
         try {
           const checkResult = await client.query(

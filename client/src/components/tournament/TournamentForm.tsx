@@ -25,6 +25,7 @@ interface TournamentFormProps {
   saving: boolean;
   tournamentExists: boolean;
   hasChanges?: boolean;
+  settings?: any;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -46,6 +47,7 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
   saving,
   tournamentExists,
   hasChanges = true,
+  settings,
   onNameChange,
   onTypeChange,
   onFormatChange,
@@ -309,6 +311,15 @@ export const TournamentForm: React.FC<TournamentFormProps> = ({
             format={format}
             mapsCount={maps.length}
             canEdit={canEdit}
+            name={name}
+            type={type}
+            maps={maps}
+            settings={settings || {}}
+            mapPoolId={
+              selectedMapPool && selectedMapPool !== 'custom' && mapPools.length > 0
+                ? parseInt(selectedMapPool, 10)
+                : null
+            }
             onSave={onSave}
             onCancel={onCancel}
             onDelete={onDelete}

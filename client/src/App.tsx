@@ -14,6 +14,7 @@ import Settings from './pages/Settings';
 import Development from './pages/Development';
 import TeamMatch from './pages/TeamMatch';
 import Maps from './pages/Maps';
+import Templates from './pages/Templates';
 import Layout from './components/layout/Layout';
 import { theme } from './theme';
 
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="admin" element={<AdminTools />} />
         <Route path="settings" element={<Settings />} />
         <Route path="maps" element={<Maps />} />
+        <Route path="templates" element={<Templates />} />
         {(import.meta as unknown as { env: { DEV: boolean } }).env.DEV && (
           <Route path="dev" element={<Development />} />
         )}
