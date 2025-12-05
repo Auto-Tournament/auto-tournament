@@ -114,14 +114,14 @@ router.post(
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('DEMO UPLOAD RECEIVED FROM MATCHZY');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`Match Slug:     ${matchSlug}`);
-      console.log(`Filename:       ${matchzyFilename}`);
-      console.log(`Match ID:       ${matchzyMatchId}`);
-      console.log(`Map Number:     ${matchzyMapNumber}`);
-      console.log(`Round Number:   ${matchzyRoundNumber || 'NOT PROVIDED'}`);
-      console.log(`Timestamp:      ${new Date().toISOString()}`);
+      console.log(`Match Slug:      ${matchSlug}`);
+      console.log(`Filename:        ${matchzyFilename}`);
+      console.log(`Match ID:        ${matchzyMatchId}`);
+      console.log(`Map Number:      ${matchzyMapNumber}`);
+      console.log(`Round Number:    ${matchzyRoundNumber || 'NOT PROVIDED'}`);
+      console.log(`Timestamp:       ${new Date().toISOString()}`);
       console.log(
-        `File Size:      ${req.body.length} bytes (${(req.body.length / 1024 / 1024).toFixed(2)} MB)`
+        `File Size:       ${req.body.length} bytes (${(req.body.length / 1024 / 1024).toFixed(2)} MB)`
       );
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
