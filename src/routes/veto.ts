@@ -407,7 +407,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
       // Automatically allocate server and load match after veto completion (async)
       console.log('\n========================================');
-      console.log(`🚀 AUTO-LOADING MATCH AFTER VETO`);
+      console.log(`AUTO-LOADING MATCH AFTER VETO`);
       console.log(`Match: ${matchSlug}`);
       console.log(
         `Picked Maps:`,

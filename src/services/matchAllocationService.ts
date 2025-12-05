@@ -347,7 +347,7 @@ export class MatchAllocationService {
       error?: string;
     }>;
   }> {
-    log.info('🚀 ==================== STARTING TOURNAMENT ====================');
+    log.info('==================== STARTING TOURNAMENT ====================');
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists and is ready
