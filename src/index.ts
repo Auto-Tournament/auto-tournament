@@ -309,14 +309,14 @@ cleanupOldLogs(30);
     // Now start the server after database is ready
     const server = httpServer.listen(Number(PORT), '0.0.0.0', () => {
       log.server('='.repeat(60));
-      log.server('🎮  MatchZy Auto Tournament API');
+      log.server('MatchZy Auto Tournament API');
       log.server('='.repeat(60));
       log.server(`Server running on port ${PORT}`);
       log.server(`Listening on: 0.0.0.0:${PORT} (all network interfaces)`);
       log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
       log.server(`API Docs: http://localhost:${PORT}/api-docs`);
       log.server(`Health check: http://localhost:${PORT}/health`);
-      log.server(`WebSocket: Enabled ✓`);
+      log.server(`WebSocket: Enabled`);
       log.server(`Event logs: data/logs/events/ (30 day retention)`);
       log.server('='.repeat(60));
 

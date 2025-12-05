@@ -22,7 +22,7 @@ export interface VetoState {
     action: string;
     mapName?: string;
     side?: string;
-    timestamp: number;
+    timestamp: string;
   }>;
   currentTurn?: string;
   currentAction?: string;

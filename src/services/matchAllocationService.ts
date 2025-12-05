@@ -158,21 +158,21 @@ export class MatchAllocationService {
       error?: string;
     }>
   > {
-    log.info('📊 Getting available servers...');
+    log.info('[ALLOCATION] Getting available servers...');
     const availableServers = await this.getAvailableServers();
     log.info(`Found ${availableServers.length} available server(s)`);
 
-    log.info('📊 Getting ready matches...');
+    log.info('[ALLOCATION] Getting ready matches...');
     const readyMatches = await this.getReadyMatches();
     log.info(`Found ${readyMatches.length} ready match(es) to allocate`);
 
     if (readyMatches.length === 0) {
-      log.info('✓ No ready matches to allocate');
+      log.info('[ALLOCATION] No ready matches to allocate');
       return [];
     }
 
     if (availableServers.length === 0) {
-      log.warn('⚠️  No available servers for match allocation');
+      log.warn('[ALLOCATION] No available servers for match allocation');
       return readyMatches.map((match) => ({
         matchSlug: match.slug,
         success: false,
@@ -181,7 +181,7 @@ export class MatchAllocationService {
     }
 
     log.info(
-      `🎯 Allocating ${readyMatches.length} match(es) to ${availableServers.length} server(s)`
+      `[ALLOCATION] Allocating ${readyMatches.length} match(es) to ${availableServers.length} server(s)`
     );
 
     const results: Array<{
@@ -197,7 +197,7 @@ export class MatchAllocationService {
       const server = availableServers[serverIndex % availableServers.length];
 
       try {
-        log.info(`➡️  Allocating match ${match.slug} to server ${server.name} (${server.id})`);
+        log.info(`[ALLOCATION] Allocating match ${match.slug} to server ${server.name} (${server.id})`);
 
         // Update match with server_id
         await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
@@ -250,7 +250,7 @@ export class MatchAllocationService {
     }
 
     log.info(
-      `📈 Allocation complete: ${results.filter((r) => r.success).length} successful, ${
+      `[ALLOCATION] Allocation complete: ${results.filter((r) => r.success).length} successful, ${
         results.filter((r) => !r.success).length
       } failed`
     );
@@ -594,7 +594,7 @@ export class MatchAllocationService {
       error?: string;
     }>;
   }> {
-    log.info('🔄 ==================== RESTARTING TOURNAMENT ====================');
+    log.info('[RESTART] ==================== RESTARTING TOURNAMENT ====================');
     log.info(`Base URL: ${baseUrl}`);
 
     // Check if tournament exists
@@ -640,11 +640,11 @@ export class MatchAllocationService {
 
     for (const serverId of serverIds) {
       try {
-        log.info(`🔄 Ending match on server: ${serverId}`);
+        log.info(`[RESTART] Ending match on server: ${serverId}`);
         const result = await rconService.sendCommand(serverId, 'css_restart');
 
         if (result.success) {
-          log.success(`✓ Match ended on server ${serverId}`);
+          log.success(`[RESTART] Match ended on server ${serverId}`);
           restarted++;
 
           // Wait a moment for the server to clean up
@@ -671,14 +671,14 @@ export class MatchAllocationService {
          WHERE tournament_id = 1 
          AND status IN ('loaded', 'live')`
       );
-      log.info(`✓ Reset ${loadedMatches.length} match(es) to 'ready' status`);
+      log.info(`[RESTART] Reset ${loadedMatches.length} match(es) to 'ready' status`);
     }
 
     // Now run the normal start tournament flow
     log.info('Starting tournament allocation after restart...');
     const startResult = await this.startTournament(baseUrl);
 
-    log.info('🔄 ========================================================');
+    log.info('[RESTART] ========================================================');
 
     return {
       success: startResult.success,
@@ -706,7 +706,7 @@ export class MatchAllocationService {
     message: string;
     error?: string;
   }> {
-    log.info(`🔄 Restarting match: ${matchSlug}`);
+    log.info(`[RESTART] Restarting match: ${matchSlug}`);
 
     try {
       // Get the match
@@ -751,7 +751,7 @@ export class MatchAllocationService {
         };
       }
 
-      log.success(`✓ Match ${matchSlug} ended successfully`);
+      log.success(`[RESTART] Match ${matchSlug} ended successfully`);
 
       // Step 2: Wait a few seconds for server to clean up
       await new Promise((resolve) => setTimeout(resolve, 3000));
@@ -764,7 +764,7 @@ export class MatchAllocationService {
       const loadResult = await loadMatchOnServer(matchSlug, serverId, { baseUrl });
 
       if (loadResult.success) {
-        log.success(`✓ Match ${matchSlug} restarted successfully`);
+        log.success(`[RESTART] Match ${matchSlug} restarted successfully`);
         return {
           success: true,
           message: 'Match restarted successfully',
@@ -801,7 +801,7 @@ export class MatchAllocationService {
       return;
     }
 
-    log.info(`🔄 Starting server polling for match ${matchSlug} (checking every 10 seconds)`);
+    log.info(`[POLLING] Starting server polling for match ${matchSlug} (checking every 10 seconds)`);
 
     const pollInterval = setInterval(async () => {
       try {

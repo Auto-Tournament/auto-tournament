@@ -561,7 +561,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   }
   const matchSlug = match.slug;
   log.success(
-    `🏆 SERIES ENDED: ${eventData.team1_name} ${eventData.team1_series_score}-${eventData.team2_series_score} ${eventData.team2_name}`,
+    `[SERIES END] SERIES ENDED: ${eventData.team1_name} ${eventData.team1_series_score}-${eventData.team2_series_score} ${eventData.team2_name}`,
     {
       matchId: event.matchid,
       winner: (eventData.winner as { name?: string })?.name,

@@ -254,7 +254,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         team: currentStepConfig.team,
         action: 'ban',
         mapName,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     } else if (currentAction === 'pick') {
       if (!mapName || !vetoState.availableMaps.includes(mapName)) {
@@ -278,7 +278,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         team: currentStepConfig.team,
         action: 'pick',
         mapName,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     } else if (currentAction === 'side_pick') {
       log.debug('Processing side pick', { side, currentAction, teamSlug, format, currentStep: vetoState.currentStep, totalSteps: vetoState.totalSteps });
@@ -337,7 +337,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         action: 'side_pick',
         mapName: lastPick?.mapName || 'unknown',
         side,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -347,7 +347,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Check if veto is complete
     if (vetoState.currentStep > vetoState.totalSteps) {
       vetoState.status = 'completed';
-      vetoState.completedAt = Math.floor(Date.now() / 1000);
+      vetoState.completedAt = new Date().toISOString();
 
       // Add remaining map as decider (if applicable)
       // Note: For BO1 and BO3, the decider map is already added during the last side_pick step
@@ -363,7 +363,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         vetoState.availableMaps = [];
       }
 
-      log.success(`🎉 Veto completed for match ${matchSlug}`, {
+      log.success(`[VETO] Veto completed for match ${matchSlug}`, {
         pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
       });
 
