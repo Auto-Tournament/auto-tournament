@@ -183,7 +183,7 @@ async function handleEventRequest(
     // Handle events with no match loaded
     if (isNoMatch) {
       console.log(
-        `ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
+        `[INFO] Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
       );
       console.log('   This is normal during server startup or between matches.');
       logWebhookEvent(serverId, actualMatchSlug, event);

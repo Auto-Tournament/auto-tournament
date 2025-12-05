@@ -451,7 +451,7 @@ export class MatchAllocationService {
       let message = 'Tournament started! Teams can now complete map veto. Matches will load after veto completion.';
       if (!hasAvailableServers) {
         message += ' No servers are currently available. Matches will be allocated automatically when servers become available.';
-        log.warn('⚠️  Tournament started but no servers are available. Matches will wait for server availability.');
+        log.warn('[WARNING] Tournament started but no servers are available. Matches will wait for server availability.');
       }
 
       return {
@@ -467,7 +467,7 @@ export class MatchAllocationService {
 
       // Check server availability
       if (!hasAvailableServers) {
-        log.warn('⚠️  No servers are currently available. Tournament will start but matches will wait for server availability.');
+        log.warn('[WARNING] No servers are currently available. Tournament will start but matches will wait for server availability.');
         
         // Update tournament status to 'in_progress' even without servers
         if (tournament.status === 'setup' || tournament.status === 'ready') {
@@ -833,7 +833,7 @@ export class MatchAllocationService {
         const result = await this.allocateSingleMatch(matchSlug, baseUrl);
 
         if (result.success) {
-          log.success(`✅ [Polling] Successfully allocated server ${result.serverId} to match ${matchSlug}`);
+          log.success(`[POLLING] Successfully allocated server ${result.serverId} to match ${matchSlug}`);
           this.stopPollingForServer(matchSlug);
         } else {
           log.debug(`[Polling] No server available for match ${matchSlug}: ${result.error}`);

@@ -203,7 +203,7 @@ export async function loadMatchOnServer(
         // Small delay between commands
         await delay(200);
       }
-      log.info(`✓ Match config auth configured for ${serverId}`);
+      log.info(`[MATCH LOADING] Match config auth configured for ${serverId}`);
     } else {
       log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
     }
@@ -252,7 +252,7 @@ export async function loadMatchOnServer(
     }
 
     if (loadResult.success) {
-      log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
+      log.success(`[MATCH LOADING] Match ${matchSlug} loaded successfully on ${serverId}`);
       matchLiveStatsService.reset(match.slug);
 
       // MatchZy wipes remote log/upload cvars when a new match loads.

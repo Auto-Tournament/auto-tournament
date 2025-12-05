@@ -430,10 +430,10 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
 
             if (result.success) {
-              log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
+              log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
               console.log(`Server: ${result.serverId}`);
             } else {
-              log.warn(`⚠️ Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
+              log.warn(`[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
               console.log('Allocation error:', result.error);
               
               // Start polling for available servers (checks every 10 seconds)
@@ -442,7 +442,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
               matchAllocationService.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {
-            log.error(`❌ Error loading match after veto`, err as Error);
+            log.error(`[VETO] Error loading match after veto`, err as Error);
             console.error('Exception during allocation:', err);
             
             // Start polling even on exception if match is still ready
