@@ -43,7 +43,7 @@ export async function loadMatchOnServer(
   const results: Array<{ success: boolean; command: string; error?: string }> = [];
 
   try {
-    log.info(`🎮 Loading match ${matchSlug} on server ${serverId}`);
+    log.info(`[MATCH LOADING] Loading match ${matchSlug} on server ${serverId}`);
 
     // Get match config
     const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
@@ -94,11 +94,11 @@ export async function loadMatchOnServer(
     if (serverToken) {
       console.log('\n');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('🎬  CONFIGURING DEMO UPLOAD');
+      console.log('CONFIGURING DEMO UPLOAD');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`🖥️  Server ID:       ${serverId}`);
-      console.log(`🔗 Upload URL:      ${uploadUrl}`);
+      console.log(`Match Slug:   ${matchSlug}`);
+      console.log(`Server ID:    ${serverId}`);
+      console.log(`Upload URL:   ${uploadUrl}`);
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
 
@@ -136,34 +136,34 @@ export async function loadMatchOnServer(
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
-        console.log('✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅');
+        console.log('DEMO UPLOAD CONFIGURED SUCCESSFULLY');
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
-        console.log(`📦 Match Slug:     ${matchSlug}`);
-        console.log(`🖥️  Server ID:       ${serverId}`);
-        console.log(`🔗 Upload URL:      ${uploadUrl}`);
-        console.log(`🔑 Auth Header:     X-MatchZy-Token`);
+        console.log(`Match Slug:   ${matchSlug}`);
+        console.log(`Server ID:    ${serverId}`);
+        console.log(`Upload URL:   ${uploadUrl}`);
+        console.log(`Auth Header:  X-MatchZy-Token`);
         console.log(
-          `✅ Status:          MatchZy will upload demos to this URL after match/map completion`
+          `Status:       MatchZy will upload demos to this URL after match/map completion`
         );
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
         console.log('\n');
-        log.info(`✓ Demo upload configured for match ${matchSlug} on ${serverId}`);
+        log.info(`[DEMO UPLOAD] Demo upload configured for match ${matchSlug} on ${serverId}`);
       } else {
         console.log('\n');
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
-        console.log('❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌');
+        console.log('DEMO UPLOAD CONFIGURATION FAILED');
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
-        console.log(`📦 Match Slug:     ${matchSlug}`);
-        console.log(`🖥️  Server ID:       ${serverId}`);
-        console.log(`❌ Errors:          ${commandErrors.join('; ') || 'Unknown error'}`);
+        console.log(`Match Slug:     ${matchSlug}`);
+        console.log(`Server ID:      ${serverId}`);
+        console.log(`Errors:         ${commandErrors.join('; ') || 'Unknown error'}`);
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
@@ -203,7 +203,7 @@ export async function loadMatchOnServer(
         // Small delay between commands
         await delay(200);
       }
-      log.info(`✓ Match config auth configured for ${serverId}`);
+      log.info(`[MATCH LOADING] Match config auth configured for ${serverId}`);
     } else {
       log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
     }
@@ -252,7 +252,7 @@ export async function loadMatchOnServer(
     }
 
     if (loadResult.success) {
-      log.success(`✓ Match ${matchSlug} loaded successfully on ${serverId}`);
+      log.success(`[MATCH LOADING] Match ${matchSlug} loaded successfully on ${serverId}`);
       matchLiveStatsService.reset(match.slug);
 
       // MatchZy wipes remote log/upload cvars when a new match loads.

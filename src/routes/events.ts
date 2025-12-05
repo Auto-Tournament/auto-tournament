@@ -123,7 +123,7 @@ async function handleEventRequest(
   matchSlugOrServerIdFromUrl?: string
 ): Promise<Response> {
   // Log raw request for debugging
-  console.log('\n🔍 RAW REQUEST RECEIVED:');
+  console.log('\n[EVENT] RAW REQUEST RECEIVED:');
   console.log('Headers:', JSON.stringify(req.headers, null, 2));
   console.log('Body:', JSON.stringify(req.body, null, 2));
   console.log('URL Path:', req.path);
@@ -134,7 +134,7 @@ async function handleEventRequest(
 
     // Validate event has required fields
     if (!event.event) {
-      console.log('⚠️ Event missing "event" field');
+      console.log('[EVENT] WARNING: Event missing "event" field');
       return res.status(400).json({
         success: false,
         error: 'Invalid event: missing event type',
@@ -157,11 +157,11 @@ async function handleEventRequest(
     const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
     const isNoMatch = actualMatchSlug === '-1';
 
-    console.log(`📍 Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
+    console.log(`[EVENT] Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
     log.webhookReceived(event.event, actualMatchSlug);
 
     // Log full event payload
-    console.log('\n📡 FULL EVENT RECEIVED:');
+    console.log('\n[EVENT] FULL EVENT RECEIVED:');
     console.log(JSON.stringify(event, null, 2));
     console.log('---\n');
 
@@ -169,7 +169,7 @@ async function handleEventRequest(
     const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
 
     console.log(
-      `🖥️ Server ID: ${serverId} (from ${
+      `[EVENT] Server ID: ${serverId} (from ${
         matchFromUrl
           ? 'URL match lookup'
           : resolvedMatch
@@ -183,7 +183,7 @@ async function handleEventRequest(
     // Handle events with no match loaded
     if (isNoMatch) {
       console.log(
-        `ℹ️ Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
+        `[INFO] Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
       );
       console.log('   This is normal during server startup or between matches.');
       logWebhookEvent(serverId, actualMatchSlug, event);

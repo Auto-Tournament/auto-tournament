@@ -41,7 +41,7 @@ export interface VetoState {
   team2Id?: string;
   team1Name?: string;
   team2Name?: string;
-  completedAt?: number;
+  completedAt?: string;
 }
 
 export interface VetoStep {

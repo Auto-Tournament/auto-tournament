@@ -135,7 +135,7 @@ export async function checkTournamentCompletion(): Promise<void> {
         [1]
       );
 
-      log.success('🏆 Tournament completed! 🏆');
+      log.success('[TOURNAMENT] Tournament completed!');
       emitBracketUpdate({ action: 'tournament_completed' });
     }
   } catch (error) {

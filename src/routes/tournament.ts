@@ -252,7 +252,7 @@ router.delete('/', async (_req: Request, res: Response) => {
           const result = await rconService.sendCommand(serverId, 'css_restart');
 
           if (result.success) {
-            log.success(`✓ Match ended on server ${serverId}`);
+            log.success(`Match ended on server ${serverId}`);
             matchesEnded++;
           } else {
             log.error(`Failed to end match on server ${serverId}`, undefined, {
@@ -431,7 +431,7 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
           const result = await rconService.sendCommand(serverId, 'css_restart');
 
           if (result.success) {
-            log.success(`✓ Match ended on server ${serverId}`);
+            log.success(`Match ended on server ${serverId}`);
             matchesEnded++;
           } else {
             log.error(`Failed to end match on server ${serverId}`, undefined, {
@@ -649,14 +649,14 @@ router.post('/restart', requireAuth, async (req: Request, res: Response) => {
  */
 router.post('/wipe-database', async (_req: Request, res: Response) => {
   try {
-    log.warn('⚠️  DATABASE WIPE REQUESTED - Resetting database to initial state');
+    log.warn('[WARNING] DATABASE WIPE REQUESTED - Resetting database to initial state');
 
     const { db } = await import('../config/database');
     
     // Reset database: drops all tables and reinitializes schema with default data
     await db.resetDatabase();
 
-    log.success('✅ Database reset successfully - all tables recreated with default data');
+    log.success('[DATABASE] Database reset successfully - all tables recreated with default data');
 
     return res.json({
       success: true,
@@ -705,7 +705,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       });
     }
 
-    log.warn(`⚠️  TABLE WIPE REQUESTED - Deleting all data from ${table}`);
+    log.warn(`[WARNING] TABLE WIPE REQUESTED - Deleting all data from ${table}`);
 
     const { db } = await import('../config/database');
 
@@ -719,7 +719,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
       await db.execAsync(`DELETE FROM ${table}`);
     }
 
-    log.success(`✅ Table ${table} wiped successfully`);
+    log.success(`[DATABASE] Table ${table} wiped successfully`);
 
     return res.json({
       success: true,

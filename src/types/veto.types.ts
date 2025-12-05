@@ -22,7 +22,7 @@ export interface VetoState {
     action: string;
     mapName?: string;
     side?: string;
-    timestamp: number;
+    timestamp: string;
   }>;
   currentTurn?: string;
   currentAction?: string;
@@ -30,6 +30,7 @@ export interface VetoState {
   team2Id?: string;
   team1Name?: string;
   team2Name?: string;
+  completedAt?: string;
 }
 
 export interface VetoAction {

@@ -254,7 +254,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         team: currentStepConfig.team,
         action: 'ban',
         mapName,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     } else if (currentAction === 'pick') {
       if (!mapName || !vetoState.availableMaps.includes(mapName)) {
@@ -278,7 +278,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         team: currentStepConfig.team,
         action: 'pick',
         mapName,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     } else if (currentAction === 'side_pick') {
       log.debug('Processing side pick', { side, currentAction, teamSlug, format, currentStep: vetoState.currentStep, totalSteps: vetoState.totalSteps });
@@ -337,7 +337,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         action: 'side_pick',
         mapName: lastPick?.mapName || 'unknown',
         side,
-        timestamp: Math.floor(Date.now() / 1000),
+        timestamp: new Date().toISOString(),
       });
     }
 
@@ -347,7 +347,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Check if veto is complete
     if (vetoState.currentStep > vetoState.totalSteps) {
       vetoState.status = 'completed';
-      vetoState.completedAt = Math.floor(Date.now() / 1000);
+      vetoState.completedAt = new Date().toISOString();
 
       // Add remaining map as decider (if applicable)
       // Note: For BO1 and BO3, the decider map is already added during the last side_pick step
@@ -363,7 +363,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         vetoState.availableMaps = [];
       }
 
-      log.success(`🎉 Veto completed for match ${matchSlug}`, {
+      log.success(`[VETO] Veto completed for match ${matchSlug}`, {
         pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
       });
 
@@ -407,7 +407,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
       // Automatically allocate server and load match after veto completion (async)
       console.log('\n========================================');
-      console.log(`🚀 AUTO-LOADING MATCH AFTER VETO`);
+      console.log(`AUTO-LOADING MATCH AFTER VETO`);
       console.log(`Match: ${matchSlug}`);
       console.log(
         `Picked Maps:`,
@@ -430,10 +430,10 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
 
             if (result.success) {
-              log.success(`✅ Match ${matchSlug} loaded on server ${result.serverId} after veto`);
+              log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
               console.log(`Server: ${result.serverId}`);
             } else {
-              log.warn(`⚠️ Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
+              log.warn(`[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
               console.log('Allocation error:', result.error);
               
               // Start polling for available servers (checks every 10 seconds)
@@ -442,7 +442,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
               matchAllocationService.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {
-            log.error(`❌ Error loading match after veto`, err as Error);
+            log.error(`[VETO] Error loading match after veto`, err as Error);
             console.error('Exception during allocation:', err);
             
             // Start polling even on exception if match is still ready

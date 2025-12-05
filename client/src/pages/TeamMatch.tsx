@@ -112,12 +112,12 @@ export default function TeamMatch() {
 
     if (vetoReady && !previousVetoReady.current) {
       soundNotification.playNotification();
-      console.log('🔔 Notification: Veto is now available!');
+      console.log('Notification: Veto is now available!');
     }
 
     if (serverReady && !previousServerReady.current) {
       soundNotification.playNotification();
-      console.log('🔔 Notification: Server is ready, players can connect!');
+      console.log('Notification: Server is ready, players can connect!');
     }
 
     previousMatchStatus.current = match.status;
@@ -128,7 +128,7 @@ export default function TeamMatch() {
   // Check if match format is in veto debug info
   useEffect(() => {
     if (match) {
-      console.log('🔍 Veto Debug Info:', {
+      console.log('Veto Debug Info:', {
         tournamentStatus,
         matchStatus: match.status,
         matchFormat,

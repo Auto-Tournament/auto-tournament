@@ -108,20 +108,20 @@ router.post(
       }
 
       // ========================================
-      // 🎬 DEMO UPLOAD RECEIVED - HUGE LOG BLOCK
+      // DEMO UPLOAD RECEIVED - HUGE LOG BLOCK
       // ========================================
       console.log('\n');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬');
+      console.log('DEMO UPLOAD RECEIVED FROM MATCHZY');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`📄 Filename:       ${matchzyFilename}`);
-      console.log(`🆔 Match ID:        ${matchzyMatchId}`);
-      console.log(`🗺️  Map Number:     ${matchzyMapNumber}`);
-      console.log(`🎯 Round Number:    ${matchzyRoundNumber || 'NOT PROVIDED'}`);
-      console.log(`⏰ Timestamp:       ${new Date().toISOString()}`);
+      console.log(`Match Slug:      ${matchSlug}`);
+      console.log(`Filename:        ${matchzyFilename}`);
+      console.log(`Match ID:        ${matchzyMatchId}`);
+      console.log(`Map Number:      ${matchzyMapNumber}`);
+      console.log(`Round Number:    ${matchzyRoundNumber || 'NOT PROVIDED'}`);
+      console.log(`Timestamp:       ${new Date().toISOString()}`);
       console.log(
-        `📊 File Size:       ${req.body.length} bytes (${(req.body.length / 1024 / 1024).toFixed(2)} MB)`
+        `File Size:       ${req.body.length} bytes (${(req.body.length / 1024 / 1024).toFixed(2)} MB)`
       );
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
@@ -213,21 +213,21 @@ router.post(
       }
 
       // ========================================
-      // ✅ DEMO UPLOAD SUCCESS - HUGE LOG BLOCK
+      // DEMO UPLOAD SUCCESS - HUGE LOG BLOCK
       // ========================================
       console.log('\n');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('✅✅✅  DEMO UPLOAD COMPLETED SUCCESSFULLY  ✅✅✅');
+      console.log('DEMO UPLOAD COMPLETED SUCCESSFULLY');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`📦 Match Slug:     ${matchSlug}`);
-      console.log(`📄 Filename:       ${filename}`);
-      console.log(`🆔 Match ID:        ${matchzyMatchId}`);
-      console.log(`🗺️  Map Number:     ${matchzyMapNumber}`);
-      console.log(`🎯 Round Number:    ${matchzyRoundNumber || 'N/A'}`);
-      console.log(`💾 File Size:       ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
-      console.log(`📁 Relative Path:   ${relativePath}`);
-      console.log(`💿 Full Path:       ${filepath}`);
-      console.log(`⏰ Completed At:     ${new Date().toISOString()}`);
+      console.log(`Match Slug:      ${matchSlug}`);
+      console.log(`Filename:        ${filename}`);
+      console.log(`Match ID:        ${matchzyMatchId}`);
+      console.log(`Map Number:      ${matchzyMapNumber}`);
+      console.log(`Round Number:    ${matchzyRoundNumber || 'N/A'}`);
+      console.log(`File Size:       ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
+      console.log(`Relative Path:   ${relativePath}`);
+      console.log(`Full Path:       ${filepath}`);
+      console.log(`Completed At:    ${new Date().toISOString()}`);
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
 
@@ -279,14 +279,14 @@ router.post(
     } catch (error) {
       console.log('\n');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log('❌❌❌  DEMO UPLOAD FAILED - ERROR  ❌❌❌');
+      console.log('DEMO UPLOAD FAILED - ERROR');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`📦 Match Slug:     ${matchSlug}`);
+      console.log(`Match Slug:      ${matchSlug}`);
       console.log(
-        `❌ Error:           ${error instanceof Error ? error.message : String(error)}`
+        `Error:           ${error instanceof Error ? error.message : String(error)}`
       );
       if (error instanceof Error && error.stack) {
-        console.log(`📋 Stack:           ${error.stack}`);
+        console.log(`Stack:           ${error.stack}`);
       }
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
@@ -431,11 +431,11 @@ router.get(
  *    - demoUploadConfigured should be true
  *    - expectedUploadUrl should be a valid URL
  * 2. When loading a match, check logs for:
- *    - "✅✅✅  DEMO UPLOAD CONFIGURED SUCCESSFULLY  ✅✅✅"
- *    - Or "❌❌❌  DEMO UPLOAD CONFIGURATION FAILED  ❌❌❌"
+ *    - "DEMO UPLOAD CONFIGURED SUCCESSFULLY"
+ *    - Or "DEMO UPLOAD CONFIGURATION FAILED"
  * 3. When a demo is uploaded, you'll see:
- *    - "🎬🎬🎬  DEMO UPLOAD RECEIVED FROM MATCHZY  🎬🎬🎬"
- *    - "✅✅✅  DEMO UPLOAD COMPLETED SUCCESSFULLY  ✅✅✅"
+ *    - "DEMO UPLOAD RECEIVED FROM MATCHZY"
+ *    - "DEMO UPLOAD COMPLETED SUCCESSFULLY"
  * 4. Verify webhook_url is set in Settings (required for demo upload URL)
  */
 router.get('/:matchSlug/status', requireAuth, async (req: Request, res: Response) => {

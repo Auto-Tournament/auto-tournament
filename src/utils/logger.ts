@@ -4,7 +4,7 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
 
 // In-memory log buffer for recent logs
 export interface LogEntry {
-  timestamp: number;
+  timestamp: string;
   level: string;
   message: string;
   meta?: object;
@@ -16,7 +16,7 @@ const logBuffer: LogEntry[] = [];
 // Helper to add to log buffer
 function addToBuffer(level: string, message: string, meta?: object) {
   logBuffer.push({
-    timestamp: Date.now(),
+    timestamp: new Date().toISOString(),
     level,
     message,
     meta,
@@ -40,49 +40,49 @@ export const logger = pino({
         target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: 'SYS:HH:MM:ss',
-          ignore: 'pid,hostname,emoji',
+          translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
+          ignore: 'pid,hostname',
           singleLine: false,
         },
       }
     : undefined,
 });
 
-// Convenience methods with emojis
+// Convenience methods for structured logging
 export const log = {
   // Server events
   server: (message: string, meta?: object) => {
-    const msg = `🚀 ${message}`;
+    const msg = `[SERVER] ${message}`;
     addToBuffer('info', msg, meta);
     logger.info({ ...meta }, msg);
   },
   database: (message: string, meta?: object) => {
-    const msg = `📦 ${message}`;
+    const msg = `[DATABASE] ${message}`;
     addToBuffer('info', msg, meta);
     logger.info({ ...meta }, msg);
   },
 
   // Match events
   matchCreated: (slug: string, serverId: string) => {
-    const msg = `🎮 Match created: ${slug} on server ${serverId}`;
+    const msg = `[MATCH] Match created: ${slug} on server ${serverId}`;
     const meta = { slug, serverId };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   matchLoaded: (slug: string, serverId: string, webhookConfigured: boolean) => {
-    const msg = `✅ Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`;
+    const msg = `[MATCH] Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`;
     const meta = { slug, serverId, webhookConfigured };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   matchAllocated: (slug: string, serverId: string, serverName: string) => {
-    const msg = `🎯 Match allocated: ${slug} → ${serverName} (${serverId})`;
+    const msg = `[MATCH] Match allocated: ${slug} -> ${serverName} (${serverId})`;
     const meta = { slug, serverId, serverName };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   matchStatusUpdate: (slug: string, status: string) => {
-    const msg = `📊 Match status: ${slug} → ${status}`;
+    const msg = `[MATCH] Match status: ${slug} -> ${status}`;
     const meta = { slug, status };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
@@ -90,13 +90,13 @@ export const log = {
 
   // RCON events
   rconCommand: (serverId: string, command: string, success: boolean) => {
-    const msg = `🎛️  RCON ${success ? '✓' : '✗'}: ${serverId} → ${command}`;
+    const msg = `[RCON] ${success ? 'SUCCESS' : 'FAILED'}: ${serverId} -> ${command}`;
     const meta = { serverId, command, success };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   rconBroadcast: (count: number, command: string) => {
-    const msg = `📢 Broadcast to ${count} servers: ${command}`;
+    const msg = `[RCON] Broadcast to ${count} servers: ${command}`;
     const meta = { count, command };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
@@ -104,13 +104,13 @@ export const log = {
 
   // Webhook events
   webhookReceived: (event: string, matchId: string) => {
-    const msg = `📡 Event received: ${event} (${matchId})`;
+    const msg = `[WEBHOOK] Event received: ${event} (${matchId})`;
     const meta = { event, matchId };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   webhookConfigured: (serverId: string, url: string) => {
-    const msg = `🔗 Webhook configured: ${serverId} → ${url}`;
+    const msg = `[WEBHOOK] Webhook configured: ${serverId} -> ${url}`;
     const meta = { serverId, url };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
@@ -118,19 +118,19 @@ export const log = {
 
   // Server management
   serverCreated: (id: string, name: string) => {
-    const msg = `🖥️  Server created: ${name} (${id})`;
+    const msg = `[SERVER] Server created: ${name} (${id})`;
     const meta = { id, name };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   serverUpdated: (id: string, name: string) => {
-    const msg = `🔧 Server updated: ${name} (${id})`;
+    const msg = `[SERVER] Server updated: ${name} (${id})`;
     const meta = { id, name };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
   },
   serverDeleted: (id: string, name: string) => {
-    const msg = `🗑️  Server deleted: ${name} (${id})`;
+    const msg = `[SERVER] Server deleted: ${name} (${id})`;
     const meta = { id, name };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
@@ -138,7 +138,7 @@ export const log = {
 
   // HTTP requests
   request: (method: string, path: string, statusCode?: number) => {
-    const msg = `🌐 ${method} ${path}${statusCode ? ` → ${statusCode}` : ''}`;
+    const msg = `[HTTP] ${method} ${path}${statusCode ? ` -> ${statusCode}` : ''}`;
     const meta = { method, path, statusCode };
     addToBuffer('info', msg, meta);
     logger.info(meta, msg);
@@ -146,13 +146,13 @@ export const log = {
 
   // Auth
   authSuccess: (endpoint: string) => {
-    const msg = `🔓 Auth success: ${endpoint}`;
+    const msg = `[AUTH] Auth success: ${endpoint}`;
     const meta = { endpoint };
     addToBuffer('debug', msg, meta);
     logger.debug(meta, msg);
   },
   authFailed: (endpoint: string, reason: string) => {
-    const msg = `🔒 Auth failed: ${endpoint} - ${reason}`;
+    const msg = `[AUTH] Auth failed: ${endpoint} - ${reason}`;
     const meta = { endpoint, reason };
     addToBuffer('warn', msg, meta);
     logger.warn(meta, msg);
@@ -160,7 +160,7 @@ export const log = {
 
   // Warnings
   warn: (message: string, meta?: object) => {
-    const msg = `⚠️  ${message}`;
+    const msg = `[WARN] ${message}`;
     addToBuffer('warn', msg, meta);
     logger.warn({ ...meta }, msg);
   },
@@ -169,14 +169,14 @@ export const log = {
   error: (message: string, error?: Error | unknown, meta?: object) => {
     const errorDetails =
       error instanceof Error ? { error: error.message, stack: error.stack } : { error };
-    const msg = `❌ ${message}`;
+    const msg = `[ERROR] ${message}`;
     addToBuffer('error', msg, { ...meta, ...errorDetails });
     logger.error({ ...meta, ...errorDetails }, msg);
   },
 
   // Debug
   debug: (message: string, meta?: object) => {
-    const msg = `🐛 ${message}`;
+    const msg = `[DEBUG] ${message}`;
     addToBuffer('debug', msg, meta);
     logger.debug({ ...meta }, msg);
   },
@@ -189,7 +189,7 @@ export const log = {
 
   // Success
   success: (message: string, meta?: object) => {
-    const msg = `✅ ${message}`;
+    const msg = `[SUCCESS] ${message}`;
     addToBuffer('info', msg, meta);
     logger.info({ ...meta }, msg);
   },
