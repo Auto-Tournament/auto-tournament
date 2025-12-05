@@ -96,9 +96,9 @@ export async function loadMatchOnServer(
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('CONFIGURING DEMO UPLOAD');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`Match Slug:     ${matchSlug}`);
-      console.log(`Server ID:      ${serverId}`);
-      console.log(`Upload URL:     ${uploadUrl}`);
+      console.log(`Match Slug:   ${matchSlug}`);
+      console.log(`Server ID:    ${serverId}`);
+      console.log(`Upload URL:   ${uploadUrl}`);
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
 
