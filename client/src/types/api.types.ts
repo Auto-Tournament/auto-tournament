@@ -116,7 +116,7 @@ export interface VetoStateResponse extends ApiResponse {
 
 // Log types
 export interface LogEntry {
-  timestamp: number;
+  timestamp: string;
   level: string;
   message: string;
   meta?: Record<string, unknown>;
