@@ -281,12 +281,12 @@ router.post(
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('DEMO UPLOAD FAILED - ERROR');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`Match Slug:     ${matchSlug}`);
+      console.log(`Match Slug:      ${matchSlug}`);
       console.log(
-        `Error:          ${error instanceof Error ? error.message : String(error)}`
+        `Error:           ${error instanceof Error ? error.message : String(error)}`
       );
       if (error instanceof Error && error.stack) {
-        console.log(`Stack:          ${error.stack}`);
+        console.log(`Stack:           ${error.stack}`);
       }
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
