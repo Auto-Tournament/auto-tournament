@@ -140,12 +140,12 @@ export async function loadMatchOnServer(
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
         );
-        console.log(`Match Slug:     ${matchSlug}`);
-        console.log(`Server ID:      ${serverId}`);
-        console.log(`Upload URL:     ${uploadUrl}`);
-        console.log(`Auth Header:    X-MatchZy-Token`);
+        console.log(`Match Slug:   ${matchSlug}`);
+        console.log(`Server ID:    ${serverId}`);
+        console.log(`Upload URL:   ${uploadUrl}`);
+        console.log(`Auth Header:  X-MatchZy-Token`);
         console.log(
-          `Status:         MatchZy will upload demos to this URL after match/map completion`
+          `Status:       MatchZy will upload demos to this URL after match/map completion`
         );
         console.log(
           '═══════════════════════════════════════════════════════════════════════════════'
