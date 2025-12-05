@@ -219,15 +219,15 @@ router.post(
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('DEMO UPLOAD COMPLETED SUCCESSFULLY');
       console.log('═══════════════════════════════════════════════════════════════════════════════');
-      console.log(`Match Slug:     ${matchSlug}`);
-      console.log(`Filename:       ${filename}`);
-      console.log(`Match ID:       ${matchzyMatchId}`);
-      console.log(`Map Number:     ${matchzyMapNumber}`);
-      console.log(`Round Number:   ${matchzyRoundNumber || 'N/A'}`);
-      console.log(`File Size:      ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
-      console.log(`Relative Path:  ${relativePath}`);
-      console.log(`Full Path:      ${filepath}`);
-      console.log(`Completed At:   ${new Date().toISOString()}`);
+      console.log(`Match Slug:      ${matchSlug}`);
+      console.log(`Filename:        ${filename}`);
+      console.log(`Match ID:        ${matchzyMatchId}`);
+      console.log(`Map Number:      ${matchzyMapNumber}`);
+      console.log(`Round Number:    ${matchzyRoundNumber || 'N/A'}`);
+      console.log(`File Size:       ${fileSizeMB} MB (${fileSize.toLocaleString()} bytes)`);
+      console.log(`Relative Path:   ${relativePath}`);
+      console.log(`Full Path:       ${filepath}`);
+      console.log(`Completed At:    ${new Date().toISOString()}`);
       console.log('═══════════════════════════════════════════════════════════════════════════════');
       console.log('\n');
 
