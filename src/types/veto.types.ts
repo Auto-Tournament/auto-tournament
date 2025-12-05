@@ -30,6 +30,7 @@ export interface VetoState {
   team2Id?: string;
   team1Name?: string;
   team2Name?: string;
+  completedAt?: string;
 }
 
 export interface VetoAction {

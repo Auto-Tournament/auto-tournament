@@ -40,7 +40,7 @@ export const logger = pino({
         target: 'pino-pretty',
         options: {
           colorize: true,
-          translateTime: 'UTC:yyyy-mm-dd HH:MM:ss',
+          translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
           ignore: 'pid,hostname',
           singleLine: false,
         },
