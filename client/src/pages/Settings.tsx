@@ -249,7 +249,7 @@ export default function Settings() {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="body2" color="text.secondary" mb={4}>
-        Configure webhook endpoints, integrations, and default player settings used across tournaments.
+        Configure the webhook endpoint, default player ELO, and optional Steam integration.
       </Typography>
 
       {loading && (
@@ -266,19 +266,25 @@ export default function Settings() {
                 Webhook URL
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                This URL is used when configuring MatchZy webhooks and demo uploads. It should be
-                reachable from your CS2 servers.
+                Base URL used for MatchZy webhooks and demo uploads. It must be reachable from your
+                CS2 servers.
               </Typography>
-                    <TextField
-                      label="Webhook Base URL"
-                      value={webhookUrl}
-                      onChange={(event) => setWebhookUrl(event.target.value)}
-                      onBlur={handleFieldBlur}
-                      onKeyDown={handleFieldKeyDown}
-                      fullWidth
-                      helperText="Matches and servers will call this URL for webhook events and demo uploads"
-                      inputProps={{ 'data-testid': 'settings-webhook-url-input' }}
-                    />
+              <TextField
+                label="Webhook base URL"
+                value={webhookUrl}
+                onChange={(event) => setWebhookUrl(event.target.value)}
+                onBlur={handleFieldBlur}
+                onKeyDown={handleFieldKeyDown}
+                fullWidth
+                required
+                error={!loading && webhookUrl.trim() === ''}
+                helperText={
+                  !loading && webhookUrl.trim() === ''
+                    ? 'Required. Matches and servers use this URL for webhook events and demo uploads.'
+                    : 'Matches and servers use this URL for webhook events and demo uploads.'
+                }
+                inputProps={{ 'data-testid': 'settings-webhook-url-input' }}
+              />
             </Box>
 
             <Divider />
@@ -288,8 +294,8 @@ export default function Settings() {
                 Default Player ELO
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Default starting ELO assigned to new players when no ELO is specified. Used for shuffle
-                tournaments and any player created via Players/Teams import. FaceIT-style default is 3000.
+                Starting ELO for new players when none is specified (used by shuffle tournaments and
+                player/team imports).
               </Typography>
               <TextField
                 label="Default Player ELO"
@@ -310,7 +316,7 @@ export default function Settings() {
                 onKeyDown={handleFieldKeyDown}
                 fullWidth
                 inputProps={{ min: 1, step: 50, 'data-testid': 'settings-default-player-elo-input' }}
-                helperText="Positive number only. Example: 3000"
+                helperText="Positive number. Example: 3000"
               />
             </Box>
 
@@ -361,8 +367,8 @@ export default function Settings() {
                 Map Management
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Sync CS2 maps from the GitHub repository. Only new maps will be added; existing maps
-                will be skipped.
+                Sync CS2 maps from the GitHub repository. Only new maps are added; existing maps are
+                skipped.
               </Typography>
               <Button
                 variant="outlined"

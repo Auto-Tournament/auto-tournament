@@ -23,7 +23,6 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useOnboardingStatus } from '../../hooks/useOnboardingStatus';
-import { StartTournamentButton } from './StartTournamentButton';
 
 export const OnboardingChecklist: React.FC = () => {
   const navigate = useNavigate();
@@ -281,15 +280,23 @@ export const OnboardingChecklist: React.FC = () => {
           </ListItem>
         </List>
 
-        {/* Start Tournament Button */}
+        {/* Start Tournament CTA */}
         {canStartTournament && (
           <>
             <Divider sx={{ my: 2 }} />
             <Box>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Everything is ready! Start your tournament to begin allocating matches to servers.
+                Everything is ready! Review your configuration and start the tournament from the
+                Tournament page.
               </Typography>
-              <StartTournamentButton fullWidth onSuccess={refresh} />
+              <Button
+                fullWidth
+                variant="contained"
+                color="primary"
+                onClick={() => navigate('/tournament')}
+              >
+                Go to Tournament
+              </Button>
             </Box>
           </>
         )}
