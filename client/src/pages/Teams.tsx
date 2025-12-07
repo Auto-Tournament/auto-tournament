@@ -66,6 +66,7 @@ export default function Teams() {
     try {
       setLoading(true);
       const data = await api.get<TeamsResponse>('/api/teams');
+      // Store all teams (including shuffle-generated) in state; we'll hide shuffle teams in the UI
       setTeams(data.teams || []);
     } catch (err) {
       const errorMessage = 'Failed to load teams';
@@ -130,9 +131,12 @@ export default function Teams() {
     );
   }
 
+  // Hide shuffle-generated temporary teams from admin UI (IDs prefixed with "shuffle-")
+  const visibleTeams = teams.filter((team) => !team.id.startsWith('shuffle-'));
+
   return (
     <Box data-testid="teams-page" sx={{ width: '100%', height: '100%' }}>
-      {teams.length === 0 ? (
+      {visibleTeams.length === 0 ? (
         <Box>
           <EmptyState
             icon={GroupsIcon}
@@ -150,7 +154,7 @@ export default function Teams() {
         </Box>
       ) : (
         <Grid container spacing={2}>
-          {teams.map((team) => {
+          {visibleTeams.map((team) => {
             // Slugify team name for test ID (matches test expectations)
             const teamNameSlug = team.name.toLowerCase().replace(/\s+/g, '-');
             return (

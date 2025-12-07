@@ -37,14 +37,18 @@ export function TeamSelectionStep({
   onAddServer,
   onBatchAddServers,
 }: TeamSelectionStepProps) {
+  // Hide shuffle-generated temporary teams from selection (IDs prefixed with "shuffle-")
+  const selectableTeams = teams.filter((team) => !team.id.startsWith('shuffle-'));
+
   // Team count validation
-  const teamCountValidation = selectedTeams.length > 0 ? validateTeamCountForType(type, selectedTeams.length) : null;
+  const teamCountValidation =
+    selectedTeams.length > 0 ? validateTeamCountForType(type, selectedTeams.length) : null;
 
   return (
     <Box>
       <Box display="flex" alignItems="center" gap={1} mb={2}>
         <Chip
-          label={`${selectedTeams.length} / ${teams.length}`}
+          label={`${selectedTeams.length} / ${selectableTeams.length}`}
           size="small"
           color={selectedTeams.length >= 2 ? 'success' : 'default'}
           variant="outlined"
@@ -96,7 +100,7 @@ export function TeamSelectionStep({
       )}
 
       {/* Not Enough Teams Alert */}
-      {teams.length < 2 && (
+      {selectableTeams.length < 2 && (
         <Alert
           severity="error"
           icon={<WarningIcon />}
@@ -126,7 +130,7 @@ export function TeamSelectionStep({
         >
           <Typography variant="body2">
             You need at least <strong>2 teams</strong> to create a tournament. You currently have{' '}
-            <strong>{teams.length}</strong> team(s).
+            <strong>{selectableTeams.length}</strong> team(s).
           </Typography>
         </Alert>
       )}
@@ -134,9 +138,9 @@ export function TeamSelectionStep({
       <Box display="flex" gap={1} alignItems="flex-start">
         <Autocomplete
           multiple
-          options={teams}
+          options={selectableTeams}
           getOptionLabel={(option) => option.name}
-          value={teams.filter((team) => selectedTeams.includes(team.id))}
+          value={selectableTeams.filter((team) => selectedTeams.includes(team.id))}
           onChange={(_, newValue) => onTeamsChange(newValue.map((t) => t.id))}
           disabled={!canEdit || saving}
           sx={{ flex: 1 }}
@@ -149,8 +153,8 @@ export function TeamSelectionStep({
         />
         <Button
           variant="outlined"
-          onClick={() => onTeamsChange(teams.map((t) => t.id))}
-          disabled={!canEdit || saving || teams.length === 0}
+          onClick={() => onTeamsChange(selectableTeams.map((t) => t.id))}
+          disabled={!canEdit || saving || selectableTeams.length === 0}
           sx={{ mt: 1 }}
         >
           Add All
