@@ -31,10 +31,12 @@ export const OnboardingChecklist: React.FC = () => {
     hasWebhookUrl,
     hasServers,
     hasTeams,
+    hasPlayers,
     hasTournament,
     tournamentStatus,
     serversCount,
     teamsCount,
+    playersCount,
     loading,
     refresh,
   } = useOnboardingStatus();
@@ -53,7 +55,7 @@ export const OnboardingChecklist: React.FC = () => {
   const steps = [
     { completed: hasWebhookUrl, label: 'Set webhook URL' },
     { completed: hasServers, label: 'Add at least one server' },
-    { completed: hasTeams, label: 'Create at least two teams' },
+    { completed: hasTeams || hasPlayers, label: 'Create teams or add players' },
     { completed: hasTournament, label: 'Create a tournament' },
   ];
 
@@ -171,10 +173,10 @@ export const OnboardingChecklist: React.FC = () => {
 
           <Divider />
 
-          {/* Step 2: Create Teams */}
+          {/* Step 2: Create Teams or Players */}
           <ListItem sx={{ px: 0, py: 1.5 }}>
             <ListItemIcon sx={{ minWidth: 40 }}>
-              {hasTeams ? (
+              {hasTeams || hasPlayers ? (
                 <CheckCircleIcon color="success" />
               ) : (
                 <RadioButtonUncheckedIcon color="disabled" />
@@ -183,30 +185,57 @@ export const OnboardingChecklist: React.FC = () => {
             <ListItemText
               primary={
                 <Box display="flex" alignItems="center" gap={1}>
-                  <GroupsIcon fontSize="small" color={hasTeams ? 'success' : 'action'} />
-                  <Typography fontWeight={hasTeams ? 400 : 600}>
-                    Create at least two teams
+                  <GroupsIcon fontSize="small" color={hasTeams || hasPlayers ? 'success' : 'action'} />
+                  <Typography fontWeight={hasTeams || hasPlayers ? 400 : 600}>
+                    Create teams or add players
                   </Typography>
-                  {hasTeams && (
-                    <Chip label={`${teamsCount} team${teamsCount !== 1 ? 's' : ''}`} size="small" />
+                  {(hasTeams || hasPlayers) && (
+                    <Box display="flex" gap={1}>
+                      {hasTeams && (
+                        <Chip
+                          label={`${teamsCount} team${teamsCount !== 1 ? 's' : ''}`}
+                          size="small"
+                        />
+                      )}
+                      {hasPlayers && (
+                        <Chip
+                          label={`${playersCount} player${playersCount !== 1 ? 's' : ''}`}
+                          size="small"
+                        />
+                      )}
+                    </Box>
                   )}
                 </Box>
               }
               secondary={
-                hasTeams
-                  ? 'Teams created with players'
-                  : 'Create teams and add players with their Steam IDs'
+                hasTeams || hasPlayers
+                  ? [
+                      hasTeams ? 'Teams created' : null,
+                      hasPlayers ? 'Players added' : null,
+                    ]
+                      .filter(Boolean)
+                      .join(' • ')
+                  : 'Create teams and/or add players with their Steam IDs'
               }
             />
-            {!hasTeams && (
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => navigate('/teams')}
-                disabled={!hasServers}
-              >
-                Create Teams
-              </Button>
+            {!hasTeams && !hasPlayers && (
+              <Box display="flex" gap={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => navigate('/teams')}
+                  disabled={!hasServers}
+                >
+                  Create Teams
+                </Button>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => navigate('/players')}
+                >
+                  Add Players
+                </Button>
+              </Box>
             )}
           </ListItem>
 
@@ -244,7 +273,7 @@ export const OnboardingChecklist: React.FC = () => {
                 variant="outlined"
                 size="small"
                 onClick={() => navigate('/tournament')}
-                disabled={!hasTeams}
+                disabled={!hasTeams && !hasPlayers}
               >
                 Create Tournament
               </Button>
