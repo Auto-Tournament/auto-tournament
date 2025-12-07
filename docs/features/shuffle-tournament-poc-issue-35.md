@@ -69,14 +69,37 @@ At a high level, the shuffle tournament feature does the following:
 
 This section describes what you, as the admin, actually do in the UI.
 
-### 3.0. Starting the app (Docker dev stack)
+### 3.0. Checking out this PR and starting the app (Docker dev stack)
 
-Before you follow the UI flow below, start a local dev server. The easiest way is to use the Docker dev compose setup that ships with this repo:
+Before you follow the UI flow below, make sure you are actually running **this PR’s code**, then start a local dev server.
 
-**Option A – Using Yarn (recommended):**
+**Step 1 – Get the PR branch locally**
+
+If you don’t have the repo yet:
 
 ```bash
-# From the repo root
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+
+# Fetch and checkout the shuffle-tournament PR branch
+git fetch origin pull/79/head:pr-79-shuffle-tournament
+git checkout pr-79-shuffle-tournament
+```
+
+If you already have the repo cloned, you can either use the same PR ref as above or, if the branch exists locally, switch to it directly:
+
+```bash
+cd matchzy-auto-tournament
+git checkout 35-feature-new-tournament-type
+git pull
+```
+
+**Step 2 – Start the Docker dev server (recommended)**
+
+The easiest way to run this branch is to use the Docker dev compose setup that ships with this repo:
+
+```bash
+# From the repo root, on the PR branch
 export API_TOKEN=admin123
 export SERVER_TOKEN=server123
 yarn docker:local:up
