@@ -87,6 +87,14 @@ plugins:
         - custom-skip-class-name
       auto_caption: false
       caption_position: bottom
+  - exclude:
+      glob:
+        # Internal design/research docs - not needed for day-to-day admin usage
+        - 'features/shuffle-tournament-*.md'
+        - 'features/elo-package-research.md'
+        - 'features/openskill-integration.md'
+        - 'features/team-balancing-research.md'
+        - 'manual-testing-veto.md'
   # - git-revision-date-localized:
   #     enable_creation_date: true
   #     type: timeago
