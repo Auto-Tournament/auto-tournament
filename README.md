@@ -19,15 +19,15 @@
 
 ## ✨ Features
 
-🏆 **Tournament Brackets** — Single/Double Elimination, Round Robin, Swiss with auto-progression  
+🏆 **Tournament Formats** — Single/Double Elimination, Round Robin, Swiss, and Shuffle tournaments with auto-progression  
 🧩 **Custom Bracket Viewer** — Bundled fork of `brackets-viewer.js` with enhanced theming, matchup centering, and MatchZy integration  
-🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5  
-⚡ **Real-Time Updates** — WebSocket-powered live scores and player tracking  
+🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5 with map pools and MR3 overtime support  
+📈 **Player Ratings** — OpenSkill-backed rating engine, ELO-style display, player pages, and public standings  
+📊 **Dashboard & Live Stats** — Onboarding checklist, tournament/server stats, and live match metrics  
+⚡ **Real-Time Updates** — WebSocket-powered live scores, player connections, and status tracking  
 🎮 **Auto Server Allocation** — Matches load automatically when servers are available  
-👥 **Public Team Pages** — No-auth pages for teams to monitor matches and veto  
-🎛️ **Admin Match Controls** — Pause, restore, broadcast, add players via RCON  
-📊 **Player Tracking** — Live connection and ready status for all 10 players  
-🎬 **Demo Management** — Automatic upload and download with streaming
+👥 **Public Team & Match Pages** — No-auth pages for teams and viewers to monitor matches and veto  
+🎬 **Demo Management** — Automatic demo upload, verification, and download
 
 <div align="center">
   <img src="docs/assets/preview/08-bracket-view.png" alt="Tournament Bracket View" width="800">
