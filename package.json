@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "concurrently \"yarn dev:server\" \"yarn dev:client:host\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
         "dev:localhost": "concurrently \"yarn dev:server\" \"yarn dev:client\" --names \"API,CLIENT\" --prefix-colors \"cyan,magenta\"",
-        "dev:server": "tsx watch src/index.ts",
+        "dev:server": "bash scripts/dev-server-with-logs.sh",
         "dev:client": "vite",
         "dev:client:host": "vite --host",
         "dev:debug": "LOG_LEVEL=debug tsx watch src/index.ts",

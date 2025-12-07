@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
+import Grid from '@mui/material/Grid';
 import {
-  Box,
   Card,
   CardContent,
   Typography,
   Chip,
   CircularProgress,
   Alert,
-  Grid,
+  Box,
+  Stack,
 } from '@mui/material';
 import {
   EmojiEvents as TournamentIcon,
@@ -18,7 +19,14 @@ import {
 } from '@mui/icons-material';
 import { LineChart, PieChart } from '@mui/x-charts';
 import { api } from '../../utils/api';
-import type { Tournament, MatchListItem, Server, Player } from '../../types';
+import { getPlayerPageUrl } from '../../utils/playerLinks';
+import type {
+  Tournament,
+  Server,
+  MatchesResponse,
+  PlayersResponse,
+  PlayerDetail,
+} from '../../types';
 
 interface DashboardStatsProps {
   showOnboarding: boolean;
@@ -38,7 +46,7 @@ interface ServerStatusCount {
   total: number;
 }
 
-interface PlayerStats {
+interface PlayerCounts {
   total: number;
   inMatches: number;
   waiting: number;
@@ -47,9 +55,9 @@ interface PlayerStats {
 export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   const [loading, setLoading] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [matches, setMatches] = useState<MatchListItem[]>([]);
+  const [matches, setMatches] = useState<MatchesResponse['matches']>([]);
   const [servers, setServers] = useState<Server[]>([]);
-  const [players, setPlayers] = useState<Player[]>([]);
+  const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [serverStatuses, setServerStatuses] = useState<Record<string, 'online' | 'offline'>>({});
   const [error, setError] = useState<string | null>(null);
 
@@ -73,9 +81,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
         // Load matches
         try {
-          const matchesRes = await api.get<{ success: boolean; matches: MatchListItem[] }>(
-            '/api/matches'
-          );
+          const matchesRes = await api.get<MatchesResponse>('/api/matches');
           if (matchesRes.success && matchesRes.matches) {
             setMatches(matchesRes.matches);
           }
@@ -110,9 +116,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           console.error('Failed to load servers:', e);
         }
 
-        // Load players
+        // Load players (for counts + top players by ELO)
         try {
-          const playersRes = await api.get<{ success: boolean; players: Player[] }>('/api/players');
+          const playersRes = await api.get<PlayersResponse>('/api/players');
           if (playersRes.success && playersRes.players) {
             setPlayers(playersRes.players);
           }
@@ -179,7 +185,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   });
 
   // Calculate player stats
-  const playerStats: PlayerStats = {
+  const playerStats: PlayerCounts = {
     total: players.length,
     inMatches: 0,
     waiting: players.length,
@@ -195,6 +201,12 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   });
 
   playerStats.waiting = Math.max(0, playerStats.total - playerStats.inMatches);
+
+  // Top players by ELO (limit 5)
+  const topPlayers = [...players]
+    .filter((p) => typeof p.currentElo === 'number')
+    .sort((a, b) => b.currentElo - a.currentElo)
+    .slice(0, 5);
 
   // Prepare chart data
   const matchStatusData = [
@@ -234,13 +246,11 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
         Tournament Statistics
       </Typography>
       <Grid container spacing={3}>
-        {/* Tournament Status Card - Large */}
-        <Grid item xs={12} md={8} lg={6}>
+        {/* Row 1: Tournament + Summary stats */}
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <Card
             sx={{
               height: '100%',
-              background:
-                'linear-gradient(135deg, rgba(103, 80, 164, 0.1) 0%, rgba(103, 80, 164, 0.05) 100%)',
             }}
           >
             <CardContent>
@@ -303,7 +313,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
         </Grid>
 
         {/* Match Status Card */}
-        <Grid item xs={12} md={4} lg={3}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -345,7 +355,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
         </Grid>
 
         {/* Server Status Card */}
-        <Grid item xs={12} md={4} lg={3}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -379,7 +389,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
         </Grid>
 
         {/* Player Statistics Card */}
-        <Grid item xs={12} md={4} lg={3}>
+        <Grid size={{ xs: 12, md: 6, lg: 3 }}>
           <Card sx={{ height: '100%' }}>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -413,9 +423,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           </Card>
         </Grid>
 
-        {/* Match Status Pie Chart */}
+        {/* Row 2: Distribution pie charts + top players */}
         {matchStatusData.length > 0 && (
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
@@ -443,7 +453,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
         {/* Server Status Pie Chart */}
         {serverStatusData.length > 0 && (
-          <Grid item xs={12} md={6} lg={4}>
+          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
@@ -469,85 +479,170 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           </Grid>
         )}
 
-        {/* Player Distribution Chart */}
-        {playerDistributionData.length > 0 && (
-          <Grid item xs={12} md={6} lg={4}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent>
-                <Typography variant="h6" fontWeight={600} mb={2}>
-                  Player Distribution
-                </Typography>
-                <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
-                  <PieChart
-                    series={[
-                      {
-                        data: playerDistributionData,
-                        innerRadius: 30,
-                        outerRadius: 100,
-                        paddingAngle: 2,
-                        cornerRadius: 5,
-                      },
-                    ]}
-                    width={350}
-                    height={300}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        )}
-
-        {/* Match Status Over Time */}
-        {recentMatches.length > 0 && (
-          <Grid item xs={12}>
-            <Card>
-              <CardContent>
-                <Box display="flex" alignItems="center" gap={1} mb={2}>
-                  <TrendingUpIcon color="primary" />
-                  <Typography variant="h6" fontWeight={600}>
-                    Recent Match Status
+        {/* Player Distribution + Top Players */}
+        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+          <Stack spacing={2} sx={{ height: '100%' }}>
+            {playerDistributionData.length > 0 && (
+              <Card sx={{ flex: 1 }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} mb={2}>
+                    Player Distribution
                   </Typography>
-                </Box>
-                <Box sx={{ width: '100%', height: 300, overflow: 'auto' }}>
-                  <LineChart
-                    xAxis={[
-                      {
-                        data: recentMatches.map((_, i) => i),
-                        label: 'Match',
-                      },
-                    ]}
-                    yAxis={[
-                      {
-                        label: 'Status',
-                        valueFormatter: (value) => {
-                          if (value === 5) return 'Completed';
-                          if (value === 4) return 'Live';
-                          if (value === 3) return 'Loaded';
-                          if (value === 2) return 'Ready';
-                          return 'Pending';
+                  <Box
+                    sx={{ width: '100%', height: 220, display: 'flex', justifyContent: 'center' }}
+                  >
+                    <PieChart
+                      series={[
+                        {
+                          data: playerDistributionData,
+                          innerRadius: 30,
+                          outerRadius: 90,
+                          paddingAngle: 2,
+                          cornerRadius: 5,
                         },
-                      },
-                    ]}
-                    series={[
-                      {
-                        data: recentMatches.map((match) => {
-                          if (match.status === 'completed') return 5;
-                          if (match.status === 'live') return 4;
-                          if (match.status === 'loaded') return 3;
-                          if (match.status === 'ready') return 2;
-                          return 1;
-                        }),
-                        label: 'Status',
-                        area: true,
-                      },
-                    ]}
-                    width={Math.max(600, recentMatches.length * 80)}
-                    height={300}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                      ]}
+                      width={320}
+                      height={220}
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            )}
+
+            {topPlayers.length > 0 && (
+              <Card sx={{ flex: 1 }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} mb={1}>
+                    Top Players by ELO
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={1}>
+                    Global rating across all tournament types
+                  </Typography>
+                  <Stack spacing={0.75}>
+                    {topPlayers.map((p, index) => (
+                      <Box
+                        key={p.id}
+                        display="flex"
+                        justifyContent="space-between"
+                        alignItems="center"
+                      >
+                        <Typography
+                          variant="body2"
+                          component="a"
+                          href={getPlayerPageUrl(p.id)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          sx={{
+                            textDecoration: 'none',
+                            cursor: 'pointer',
+                            color: 'text.primary',
+                            '&:hover': { textDecoration: 'underline' },
+                          }}
+                        >
+                          {index + 1}. {p.name}
+                        </Typography>
+                        <Chip
+                          label={`ELO ${p.currentElo}`}
+                          size="small"
+                          color={index === 0 ? 'primary' : 'default'}
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Box>
+                    ))}
+                  </Stack>
+                </CardContent>
+              </Card>
+            )}
+          </Stack>
+        </Grid>
+
+        {/* Row 3: Match Status Over Time + Recent Completed Matches */}
+        {recentMatches.length > 0 && (
+          <>
+            <Grid size={{ xs: 12, md: 8 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Box display="flex" alignItems="center" gap={1} mb={2}>
+                    <TrendingUpIcon color="primary" />
+                    <Typography variant="h6" fontWeight={600}>
+                      Recent Match Status
+                    </Typography>
+                  </Box>
+                  <Box sx={{ width: '100%', height: 280, overflow: 'auto' }}>
+                    <LineChart
+                      xAxis={[
+                        {
+                          data: recentMatches.map((_, i) => i),
+                          label: 'Match',
+                        },
+                      ]}
+                      yAxis={[
+                        {
+                          label: 'Status',
+                          valueFormatter: (value) => {
+                            if (value === 5) return 'Completed';
+                            if (value === 4) return 'Live';
+                            if (value === 3) return 'Loaded';
+                            if (value === 2) return 'Ready';
+                            return 'Pending';
+                          },
+                        },
+                      ]}
+                      series={[
+                        {
+                          data: recentMatches.map((match) => {
+                            if (match.status === 'completed') return 5;
+                            if (match.status === 'live') return 4;
+                            if (match.status === 'loaded') return 3;
+                            if (match.status === 'ready') return 2;
+                            return 1;
+                          }),
+                          label: 'Status',
+                          area: true,
+                        },
+                      ]}
+                      width={Math.max(600, recentMatches.length * 80)}
+                      height={280}
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+
+            <Grid size={{ xs: 12, md: 4 }}>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
+                  <Typography variant="h6" fontWeight={600} mb={1}>
+                    Recent Completed Matches
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={1}>
+                    Last {Math.min(5, recentMatches.length)} finished matches
+                  </Typography>
+                  <Stack spacing={0.75}>
+                    {matches
+                      .filter((m) => m.status === 'completed')
+                      .slice(0, 5)
+                      .map((m) => (
+                        <Box
+                          key={m.id}
+                          display="flex"
+                          justifyContent="space-between"
+                          alignItems="center"
+                        >
+                          <Typography variant="body2">{m.slug || `Match #${m.id}`}</Typography>
+                          <Chip label="Completed" size="small" color="success" />
+                        </Box>
+                      ))}
+                    {matches.filter((m) => m.status === 'completed').length === 0 && (
+                      <Typography variant="body2" color="text.secondary">
+                        No completed matches yet.
+                      </Typography>
+                    )}
+                  </Stack>
+                </CardContent>
+              </Card>
+            </Grid>
+          </>
         )}
       </Grid>
     </Box>
