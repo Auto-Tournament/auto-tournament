@@ -71,7 +71,7 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
             label="Map Pool Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., My Custom Pool"
+            placeholder="My Custom Pool"
             required
             fullWidth
             autoFocus

@@ -14,13 +14,14 @@ export function MapCard({ map, onClick }: MapCardProps) {
 
   return (
     <Card
+      data-testid={`map-card-${map.id}`}
       onClick={() => onClick(map)}
       elevation={1}
       sx={{
         height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        width: '256px',
+        width: '100%',
         transition: 'transform 0.2s, box-shadow 0.2s',
         cursor: 'pointer',
         '&:hover': {

@@ -20,7 +20,6 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
       elevation={1}
       sx={{
         width: '100%',
-        minWidth: '340px',
         height: '100%',
         display: 'flex',
         flexDirection: 'column',

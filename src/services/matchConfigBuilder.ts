@@ -10,6 +10,10 @@ export const generateMatchConfig = async (
   team2Id?: string,
   slug?: string
 ): Promise<MatchConfig> => {
+  // Handle shuffle tournaments specially
+  if (tournament.type === 'shuffle') {
+    return generateShuffleMatchConfig(tournament, team1Id, team2Id, slug);
+  }
   // 1) DB reads (await!)
   const team1 = team1Id
     ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
@@ -220,3 +224,170 @@ export const generateMatchConfig = async (
   });
   return config;
 };
+
+/**
+ * Generate match config for shuffle tournaments
+ * Shuffle tournaments: BO1, no veto, fixed map per round, random sides
+ */
+async function generateShuffleMatchConfig(
+  tournament: TournamentResponse,
+  team1Id?: string,
+  team2Id?: string,
+  slug?: string
+): Promise<MatchConfig> {
+  const team1 = team1Id
+    ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
+        team1Id,
+      ])
+    : null;
+  const team2 = team2Id
+    ? await db.queryOneAsync<DbTeamRow & { players: string }>('SELECT * FROM teams WHERE id = ?', [
+        team2Id,
+      ])
+    : null;
+
+  // Get map for this round from match
+  let mapForRound: string | null = null;
+  if (slug) {
+    const match = await db.queryOneAsync<DbMatchRow>(
+      'SELECT current_map, round FROM matches WHERE slug = ?',
+      [slug]
+    );
+    if (match?.current_map) {
+      mapForRound = match.current_map;
+    } else if (match?.round) {
+      // Fallback: get map from sequence
+      const mapSequence = tournament.mapSequence || tournament.maps;
+      if (match.round > 0 && match.round <= mapSequence.length) {
+        mapForRound = mapSequence[match.round - 1];
+      }
+    }
+  }
+
+  // Fallback to first map if not found
+  if (!mapForRound) {
+    const mapSequence = tournament.mapSequence || tournament.maps;
+    mapForRound = mapSequence[0] || tournament.maps[0];
+  }
+
+  // Convert players
+  const convertPlayersToMatchZyFormat = (playersJson: string): Record<string, string> => {
+    try {
+      const parsed = JSON.parse(playersJson || '{}');
+      const result: Record<string, string> = {};
+
+      const keys = Object.keys(parsed);
+      if (keys.length > 0 && keys.every((k) => /^7656\d{13}$/.test(k))) {
+        return parsed;
+      }
+
+      Object.values(parsed).forEach((player: unknown) => {
+        if (
+          player &&
+          typeof player === 'object' &&
+          'steamId' in player &&
+          'name' in player &&
+          typeof (player as { steamId: string; name: string }).steamId === 'string' &&
+          typeof (player as { steamId: string; name: string }).name === 'string'
+        ) {
+          const typedPlayer = player as { steamId: string; name: string };
+          result[typedPlayer.steamId] = typedPlayer.name;
+        }
+      });
+
+      return result;
+    } catch (e) {
+      console.error('Failed to parse players JSON:', e);
+      return {};
+    }
+  };
+
+  const team1Players = team1 ? convertPlayersToMatchZyFormat(team1.players) : {};
+  const team2Players = team2 ? convertPlayersToMatchZyFormat(team2.players) : {};
+  const team1Count = Object.keys(team1Players).length;
+  const team2Count = Object.keys(team2Players).length;
+
+  // Shuffle tournaments: BO1, single map, random side, no veto
+  const maplist = mapForRound ? [mapForRound] : null;
+  const map_sides: Array<'team1_ct' | 'team2_ct'> = [
+    Math.random() > 0.5 ? 'team1_ct' : 'team2_ct',
+  ];
+
+  // Configure round limit and overtime based on tournament settings
+  const roundLimitType = tournament.roundLimitType || 'first_to_13';
+  const maxRounds = tournament.maxRounds || 24;
+  const overtimeMode = tournament.overtimeMode || 'enabled';
+
+  // Build cvars for round limit and overtime configuration
+  const cvars: Record<string, string | number> = {};
+
+  if (roundLimitType === 'first_to_13') {
+    // First to 13: 24 rounds max (12 per half), with optional overtime
+    cvars.mp_maxrounds = 24;
+    cvars.mp_overtime_enable = overtimeMode === 'enabled' ? 1 : 0;
+    
+    if (overtimeMode === 'enabled') {
+      // MR3 format: 3 rounds per half (6 total), 10k start money
+      cvars.mp_overtime_maxrounds = 3; // 3 rounds per half = 6 total rounds
+      cvars.mp_overtime_startmoney = 10000; // 10k start money for MR3
+    }
+  } else if (roundLimitType === 'max_rounds') {
+    // Max rounds: Use configured max rounds, no overtime
+    cvars.mp_maxrounds = maxRounds;
+    cvars.mp_overtime_enable = 0; // No overtime in max rounds mode
+  }
+
+  const config: MatchConfig = {
+    matchid: slug ?? 'tbd',
+    num_maps: 1, // Shuffle tournaments are always BO1
+    players_per_team: Math.max(team1Count, team2Count, tournament.teamSize || 5),
+    min_players_to_ready: 1,
+    min_spectators_to_ready: 0,
+    wingman: false,
+
+    // Shuffle: no veto, fixed map, random side
+    skip_veto: true,
+    maplist,
+    map_sides,
+
+    // Round limit and overtime configuration
+    cvars,
+
+    spectators: { players: {} },
+
+    expected_players_total: team1Count + team2Count,
+    expected_players_team1: team1Count,
+    expected_players_team2: team2Count,
+    team1: team1
+      ? {
+          id: team1.id,
+          name: team1.name,
+          tag: team1.tag || team1.name.substring(0, 4).toUpperCase(),
+          players: team1Players,
+          series_score: 0,
+        }
+      : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+    team2: team2
+      ? {
+          id: team2.id,
+          name: team2.name,
+          tag: team2.tag || team2.name.substring(0, 4).toUpperCase(),
+          players: team2Players,
+          series_score: 0,
+        }
+      : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+  };
+
+  log.info('Shuffle match config generated', {
+    matchSlug: slug,
+    map: mapForRound,
+    team1: config.team1.name,
+    team2: config.team2.name,
+    roundLimitType,
+    maxRounds,
+    overtimeMode,
+    cvars,
+  });
+
+  return config;
+}

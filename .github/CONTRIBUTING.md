@@ -61,6 +61,16 @@ Found a bug? Please [open an issue](https://github.com/sivert-io/matchzy-auto-to
 - Expected vs actual behavior
 - Environment details (OS, Docker version, etc.)
 
+## 🙏 Community Requests
+
+Need help testing something or getting feedback? Use the **Community Request** issue template! This is perfect for:
+- Features that require multiple players to test
+- Cross-platform compatibility testing
+- Getting user experience feedback
+- Performance testing with real-world scenarios
+
+**Contributors who help with Community Requests will be recognized and credited!** 🏆
+
 ## 💬 Questions?
 
 - [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) - Ask questions

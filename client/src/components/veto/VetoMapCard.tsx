@@ -30,6 +30,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
 
   return (
     <Card
+      data-testid={`veto-map-card-${_mapName}`}
       sx={{
         position: 'relative',
         cursor: isClickable ? 'pointer' : 'default',
@@ -82,6 +83,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           }}
         >
           <Chip
+            data-testid="team-side-badge"
             label={side}
             color="primary"
             size="small"

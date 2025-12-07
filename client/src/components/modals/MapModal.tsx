@@ -14,6 +14,7 @@ import {
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map, MapResponse } from '../../types/api.types';
 
 interface MapModalProps {
@@ -24,6 +25,7 @@ interface MapModalProps {
 }
 
 export default function MapModal({ open, map, onClose, onSave }: MapModalProps) {
+  const { showSuccess, showError } = useSnackbar();
   const [id, setId] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -215,22 +217,26 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
       if (isEditing) {
         await api.put<MapResponse>(`/api/maps/${map.id}`, payload);
+        showSuccess('Map updated successfully');
       } else {
         await api.post<MapResponse>('/api/maps', payload);
+        showSuccess('Map created successfully');
       }
 
       onSave();
       onClose();
     } catch (err: unknown) {
       const error = err as { error?: string; message?: string };
-      setError(error.error || error.message || 'Failed to save map');
+      const errorMessage = error.error || error.message || 'Failed to save map';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-modal">
       <DialogTitle>{isEditing ? 'Edit Map' : 'Add Map'}</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -241,10 +247,11 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
               const value = e.target.value.toLowerCase().trim();
               setId(value);
             }}
-            placeholder="e.g., de_dust2"
+            placeholder="de_dust2"
             disabled={isEditing}
             required
-            helperText="Lowercase letters, numbers, and underscores only (e.g., de_dust2)"
+            inputProps={{ 'data-testid': 'map-id-input' }}
+            helperText="Lowercase letters, numbers, and underscores only (de_dust2)"
             fullWidth
           />
 
@@ -252,9 +259,10 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             label="Display Name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="e.g., Dust II"
+            placeholder="Dust II"
             required
             fullWidth
+            inputProps={{ 'data-testid': 'map-display-name-input' }}
           />
 
           <Box>
@@ -355,6 +363,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           </Button>
         )}
         <Button
+          data-testid={isEditing ? 'map-update-button' : 'map-create-button'}
           onClick={handleSave}
           variant="contained"
           disabled={saving}

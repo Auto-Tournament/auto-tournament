@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
   Box,
   Button,
@@ -9,7 +10,6 @@ import {
   Chip,
   IconButton,
   CircularProgress,
-  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import StorageIcon from '@mui/icons-material/Storage';
@@ -23,10 +23,12 @@ import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import type { Server, ServersResponse, ServerStatusResponse } from '../types';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 export default function Servers() {
+  const { setHeaderActions } = usePageHeader();
   const [servers, setServers] = useState<Server[]>([]);
-  const [error, setError] = useState('');
+  const { showError } = useSnackbar();
   const [modalOpen, setModalOpen] = useState(false);
   const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
@@ -58,7 +60,6 @@ export default function Servers() {
         status: s.enabled ? ('checking' as const) : ('disabled' as const),
       }));
       setServers(serversWithStatus);
-      setError('');
 
       // Check status only for enabled servers
       const enabledServers = serverList.filter((s) => s.enabled);
@@ -80,12 +81,51 @@ export default function Servers() {
         })
       );
     } catch (err) {
-      setError('Failed to load servers');
+      showError('Failed to load servers');
       console.error(err);
     } finally {
       setRefreshing(false);
     }
-  }, []);
+  }, [showError]);
+
+  // Set header actions
+  useEffect(() => {
+    if (servers.length > 0) {
+      setHeaderActions(
+        <Box display="flex" gap={2}>
+          <Button
+            variant="outlined"
+            startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+            onClick={loadServers}
+            disabled={refreshing}
+          >
+            {refreshing ? 'Checking...' : 'Refresh Status'}
+          </Button>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={() => setBatchModalOpen(true)}
+          >
+            Batch Add
+          </Button>
+          <Button
+            data-testid="add-server-button"
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenModal()}
+          >
+            Add Server
+          </Button>
+        </Box>
+      );
+    } else {
+      setHeaderActions(null);
+    }
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [servers.length, refreshing, setHeaderActions, loadServers]);
 
   useEffect(() => {
     loadServers();
@@ -107,51 +147,8 @@ export default function Servers() {
   };
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <StorageIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Servers
-          </Typography>
-          <Chip
-            label={servers.length}
-            color="primary"
-            sx={{ fontWeight: 600, fontSize: '0.9rem' }}
-          />
-        </Box>
-        {!error && servers.length > 0 && (
-          <Box display="flex" gap={2}>
-            <Button
-              variant="outlined"
-              startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-              onClick={loadServers}
-              disabled={refreshing}
-            >
-              {refreshing ? 'Checking...' : 'Refresh Status'}
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<AddIcon />}
-              onClick={() => setBatchModalOpen(true)}
-            >
-              Batch Add
-            </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-              Add Server
-            </Button>
-          </Box>
-        )}
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!error &&
-        (servers.length === 0 ? (
+    <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
+      {servers.length === 0 ? (
           <Box>
             <EmptyState
               icon={StorageIcon}
@@ -168,10 +165,11 @@ export default function Servers() {
             </Box>
           </Box>
         ) : (
-          <Grid container spacing={3}>
+          <Grid container spacing={2}>
             {servers.map((server) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={server.id}>
+              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
+                  data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
                   sx={{
                     cursor: 'pointer',
                     transition: 'transform 0.2s, box-shadow 0.2s',
@@ -222,13 +220,21 @@ export default function Servers() {
                           sx={{ fontWeight: 600 }}
                         />
                       </Box>
-                      <IconButton size="small" onClick={() => handleOpenModal(server)}>
+                      <IconButton
+                        data-testid="server-edit-button"
+                        size="small"
+                        onClick={() => handleOpenModal(server)}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
                     </Box>
 
                     <Box display="flex" flexDirection="column" gap={0.5} mb={2}>
-                      <Typography variant="body2" color="text.secondary">
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        data-testid="server-host"
+                      >
                         <strong>Host:</strong> {server.host}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
@@ -244,7 +250,7 @@ export default function Servers() {
               </Grid>
             ))}
           </Grid>
-        ))}
+        )}
 
       <ServerModal
         open={modalOpen}

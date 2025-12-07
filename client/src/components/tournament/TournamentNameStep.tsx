@@ -16,21 +16,16 @@ export function TournamentNameStep({
 }: TournamentNameStepProps) {
   return (
     <Box>
-      <Typography variant="overline" color="primary" fontWeight={600}>
-        Step 1
-      </Typography>
-      <Typography variant="subtitle2" fontWeight={600} mb={1}>
-        Tournament Name
-      </Typography>
-      <TextField
-        label="Tournament Name"
-        value={name}
-        onChange={(e) => onNameChange(e.target.value)}
-        disabled={!canEdit || saving}
-        fullWidth
-        required
-        placeholder="e.g., NTLAN 2025 Spring Tournament"
-      />
+            <TextField
+              label="Tournament Name"
+              value={name}
+              onChange={(e) => onNameChange(e.target.value)}
+              disabled={!canEdit || saving}
+              fullWidth
+              required
+              placeholder="NTLAN 2025 Spring Tournament"
+              inputProps={{ 'data-testid': 'tournament-name-input' }}
+            />
     </Box>
   );
 }

@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Box, Button, Typography, CircularProgress, Alert, Tabs, Tab } from '@mui/material';
+import React, { useState, useEffect, useCallback } from 'react';
+import { usePageHeader } from '../contexts/PageHeaderContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import { Box, Button, CircularProgress, Tabs, Tab } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
 import CollectionsIcon from '@mui/icons-material/Collections';
@@ -14,10 +16,11 @@ import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../types/api.
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 export default function Maps() {
+  const { setHeaderActions } = usePageHeader();
+  const { showSuccess, showError } = useSnackbar();
   const [maps, setMaps] = useState<Map[]>([]);
   const [mapPools, setMapPools] = useState<MapPool[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingMap, setEditingMap] = useState<Map | null>(null);
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -39,33 +42,62 @@ export default function Maps() {
     document.title = 'Maps';
   }, []);
 
-  const loadMaps = async () => {
+  // Set header actions
+  useEffect(() => {
+    setHeaderActions(
+      activeTab === 0 ? (
+        <Button
+          data-testid="add-map-button"
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenModal()}
+        >
+          Add Map
+        </Button>
+      ) : (
+        <Button
+          data-testid="create-map-pool-button"
+          variant="contained"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenMapPoolModal()}
+        >
+          Create Map Pool
+        </Button>
+      )
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [activeTab, setHeaderActions]);
+
+  const loadMaps = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.get<MapsResponse>('/api/maps');
       setMaps(data.maps || []);
-      setError('');
     } catch (err) {
-      setError('Failed to load maps');
+      const errorMessage = 'Failed to load maps';
+      showError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
 
-  const loadMapPools = async () => {
+  const loadMapPools = useCallback(async () => {
     try {
       const data = await api.get<MapPoolsResponse>('/api/map-pools');
       setMapPools(data.mapPools || []);
     } catch (err) {
       console.error('Failed to load map pools:', err);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadMaps();
     loadMapPools();
-  }, []);
+  }, [loadMaps, loadMapPools]);
 
   const handleMapPoolCardClick = (pool: MapPool) => {
     setSelectedMapPool(pool);
@@ -124,7 +156,8 @@ export default function Maps() {
         setSelectedMapPool(updatedPool);
       }
     } catch (err) {
-      setError('Failed to set default map pool');
+      const errorMessage = 'Failed to set default map pool';
+      showError(errorMessage);
       console.error(err);
     }
   };
@@ -143,7 +176,8 @@ export default function Maps() {
         setSelectedMapPool(updatedPool);
       }
     } catch (err) {
-      setError('Failed to toggle map pool status');
+      const errorMessage = 'Failed to toggle map pool status';
+      showError(errorMessage);
       console.error(err);
     }
   };
@@ -158,7 +192,8 @@ export default function Maps() {
       setDeletePoolConfirmOpen(false);
       setPoolToDelete(null);
     } catch (err) {
-      setError('Failed to delete map pool');
+      const errorMessage = 'Failed to delete map pool';
+      showError(errorMessage);
       console.error(err);
     } finally {
       setDeletingPool(false);
@@ -215,11 +250,13 @@ export default function Maps() {
     setDeleting(true);
     try {
       await api.delete(`/api/maps/${mapToDelete.id}`);
+      showSuccess('Map deleted successfully');
       await loadMaps();
       setDeleteConfirmOpen(false);
       setMapToDelete(null);
     } catch (err) {
-      setError('Failed to delete map');
+      const errorMessage = 'Failed to delete map';
+      showError(errorMessage);
       console.error(err);
     } finally {
       setDeleting(false);
@@ -235,40 +272,22 @@ export default function Maps() {
   }
 
   return (
-    <Box sx={{ p: 3 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <MapIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Maps & Map Pools
-          </Typography>
-        </Box>
-        {activeTab === 0 && (
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-            Add Map
-          </Button>
-        )}
-        {activeTab === 1 && (
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenMapPoolModal()}
-          >
-            Create Map Pool
-          </Button>
-        )}
-      </Box>
-
+    <Box data-testid="maps-page" sx={{ width: '100%', height: '100%' }}>
       <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
-        <Tab label="Maps" icon={<MapIcon />} iconPosition="start" />
-        <Tab label="Map Pools" icon={<CollectionsIcon />} iconPosition="start" />
+        <Tab
+          data-testid="maps-tab"
+          label="Maps"
+          icon={<MapIcon />}
+          iconPosition="start"
+        />
+        <Tab
+          data-testid="map-pools-tab"
+          label="Map Pools"
+          icon={<CollectionsIcon />}
+          iconPosition="start"
+        />
       </Tabs>
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
 
       {activeTab === 0 && (
         <MapsTab maps={maps} onAddMap={() => handleOpenModal()} onMapClick={handleMapCardClick} />
@@ -320,7 +339,7 @@ export default function Maps() {
           setDeleteConfirmOpen(false);
           setMapToDelete(null);
         }}
-        confirmText="Delete"
+        confirmLabel="Delete"
         confirmColor="error"
         loading={deleting}
       />
@@ -334,10 +353,11 @@ export default function Maps() {
           setDeletePoolConfirmOpen(false);
           setPoolToDelete(null);
         }}
-        confirmText="Delete"
+        confirmLabel="Delete"
         confirmColor="error"
         loading={deletingPool}
       />
+
     </Box>
   );
 }

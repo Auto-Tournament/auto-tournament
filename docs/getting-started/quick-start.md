@@ -155,7 +155,10 @@ See the [CS2 Server Manager Guide](../guides/cs2-server-manager.md) for detailed
    - **Local/LAN:** `http://your-server-ip:3069` (e.g., `http://192.168.1.50:3069`)
    - **Public:** `https://your-domain.com`
 3. Enter your **Steam Web API Key** (get one from [Steam](https://steamcommunity.com/dev/apikey))
-4. Click **"Save Settings"**
+4. (Optional but recommended) Set the **Default Player ELO** value:
+   - New players created without an explicit ELO (Players page, Teams page, imports) will use this value
+   - Default is **3000** (FaceIT-style) and is used by the rating system and shuffle tournaments
+5. Click **"Save Settings"**
 
 ## Step 4: Create Your First Tournament
 

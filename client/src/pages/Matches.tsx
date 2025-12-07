@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, LinearProgress, Alert, Stack } from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
@@ -188,12 +188,6 @@ export default function Matches() {
   if (loading) {
     return (
       <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Matches
-          </Typography>
-        </Box>
         <LinearProgress />
       </Box>
     );
@@ -202,13 +196,22 @@ export default function Matches() {
   if (error) {
     return (
       <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Matches
-          </Typography>
-        </Box>
-        <Alert severity="error">{error}</Alert>
+        <Typography variant="h6" color="error" gutterBottom>
+          Error loading matches
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {error}
+        </Typography>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="error" onClose={() => setError(null)} variant="filled">
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     );
   }
@@ -217,13 +220,7 @@ export default function Matches() {
     upcomingMatches.length > 0 || liveMatches.length > 0 || matchHistory.length > 0;
 
   return (
-    <Box>
-      <Box display="flex" alignItems="center" gap={2} mb={4}>
-        <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-        <Typography variant="h4" fontWeight={600}>
-          Matches
-        </Typography>
-      </Box>
+    <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
 
       {/* Status Legend */}
       {hasMatches && (
@@ -234,6 +231,7 @@ export default function Matches() {
 
       {!hasMatches && (
         <EmptyState
+          data-testid="matches-empty-state"
           icon={SportsEsportsIcon}
           title="No matches to display"
           description="Create a tournament and generate brackets to see matches here"
@@ -244,7 +242,7 @@ export default function Matches() {
       )}
 
       {hasMatches && (
-        <Stack spacing={4}>
+        <Stack spacing={4} data-testid="matches-list">
           {/* Live Matches Section */}
           {liveMatches.length > 0 && (
             <Box>
@@ -266,12 +264,12 @@ export default function Matches() {
                   Live Matches ({liveMatches.length})
                 </Typography>
               </Box>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {liveMatches.map((match) => {
                   const event = liveEvents.get(match.slug);
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <Box>
                         <MatchCard
                           match={match}
@@ -306,11 +304,11 @@ export default function Matches() {
               <Typography variant="h6" fontWeight={600} mb={2}>
                 Upcoming Matches ({upcomingMatches.length})
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
                         match={match}
                         matchNumber={matchNumber}
@@ -332,11 +330,11 @@ export default function Matches() {
               <Typography variant="h6" fontWeight={600} mb={2}>
                 Match History ({matchHistory.length})
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {matchHistory.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <Box>
                         <MatchCard
                           match={match}

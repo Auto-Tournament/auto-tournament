@@ -42,13 +42,7 @@ export function TeamSelectionStep({
 
   return (
     <Box>
-      <Typography variant="overline" color="primary" fontWeight={600}>
-        Step 2
-      </Typography>
-      <Box display="flex" alignItems="center" gap={1} mb={1}>
-        <Typography variant="subtitle2" fontWeight={600}>
-          Select Teams
-        </Typography>
+      <Box display="flex" alignItems="center" gap={1} mb={2}>
         <Chip
           label={`${selectedTeams.length} / ${teams.length}`}
           size="small"

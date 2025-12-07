@@ -15,7 +15,6 @@ import {
 import RefreshIcon from '@mui/icons-material/Refresh';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import AddIcon from '@mui/icons-material/Add';
-import AccountTreeIcon from '@mui/icons-material/AccountTree';
 import ViewListIcon from '@mui/icons-material/ViewList';
 import AccountTreeOutlinedIcon from '@mui/icons-material/AccountTreeOutlined';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
@@ -26,8 +25,10 @@ import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchCard } from '../components/shared/MatchCard';
+import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
+import { api } from '../utils/api';
 import type { Match } from '../types';
 
 // Interfaces are now imported from useBracket hook
@@ -41,8 +42,6 @@ export default function Bracket() {
     matches,
     totalRounds,
     starting,
-    startSuccess,
-    startError,
     loadBracket,
     startTournament,
   } = useBracket();
@@ -50,12 +49,54 @@ export default function Bracket() {
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [selectedMatchId, setSelectedMatchId] = useState<number | null>(null);
+  const [roundStatus, setRoundStatus] = useState<{
+    roundNumber: number;
+    totalMatches: number;
+    completedMatches: number;
+    pendingMatches: number;
+    isComplete: boolean;
+    map: string;
+  } | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
 
   // Derive the current match from matches array (automatically updates when matches change)
   const selectedMatch = selectedMatchId
     ? matches.find((m) => m.id === selectedMatchId) || null
     : null;
+
+  // Load round status for shuffle tournaments
+  useEffect(() => {
+    if (tournament?.type === 'shuffle' && tournament?.id) {
+      const loadRoundStatus = async () => {
+        try {
+          const response = await api.get<{
+            success: boolean;
+            roundStatus?: {
+              roundNumber: number;
+              totalMatches: number;
+              completedMatches: number;
+              pendingMatches: number;
+              isComplete: boolean;
+              map: string;
+            };
+          }>(`/api/tournament/${tournament.id}/round-status`);
+          
+          if (response.success && response.roundStatus) {
+            setRoundStatus(response.roundStatus);
+          }
+        } catch (err) {
+          console.error('Failed to load round status:', err);
+        }
+      };
+
+      loadRoundStatus();
+      // Refresh every 30 seconds
+      const interval = setInterval(loadRoundStatus, 30000);
+      return () => clearInterval(interval);
+    }
+    // Note: We don't set roundStatus to null here to avoid cascading renders
+    // The status will be cleared when tournament changes or component unmounts
+  }, [tournament?.type, tournament?.id]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -112,13 +153,7 @@ export default function Bracket() {
 
   if (error) {
     return (
-      <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Bracket
-          </Typography>
-        </Box>
+      <Box sx={{ width: '100%', height: '100%' }}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -127,12 +162,6 @@ export default function Bracket() {
   if (!tournament) {
     return (
       <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Bracket
-          </Typography>
-        </Box>
         <EmptyState
           icon={AccountTreeOutlinedIcon}
           title="No bracket to display"
@@ -147,14 +176,8 @@ export default function Bracket() {
 
   if (!matches.length) {
     return (
-      <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Bracket
-          </Typography>
-        </Box>
-        <Card sx={{ textAlign: 'center', py: 8 }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
+        <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
             Bracket not generated yet
@@ -182,6 +205,7 @@ export default function Bracket() {
   return (
     <Box
       ref={fullscreenRef}
+      data-testid="bracket-page"
       sx={{
         bgcolor: 'background.default',
         minHeight: '100vh',
@@ -193,18 +217,6 @@ export default function Bracket() {
       {/* Header - hidden in fullscreen mode */}
       {!isFullscreen && (
         <>
-          {/* Success/Error Alerts */}
-          {startSuccess && (
-            <Alert severity="success" sx={{ mb: 2 }}>
-              {startSuccess}
-            </Alert>
-          )}
-          {startError && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {startError}
-            </Alert>
-          )}
-
           <Box
             sx={{
               display: 'flex',
@@ -215,8 +227,7 @@ export default function Bracket() {
             }}
           >
             <Box display="flex" alignItems="center" gap={2}>
-              <AccountTreeIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-              <Box>
+              <Box data-testid="bracket-tournament-info">
                 <Typography variant="h4" fontWeight={600} gutterBottom>
                   {tournament.name}
                 </Typography>
@@ -311,9 +322,19 @@ export default function Bracket() {
         </IconButton>
       )}
 
+      {/* Round Status for Shuffle Tournaments */}
+      {tournament.type === 'shuffle' && roundStatus && (
+        <RoundStatusCard
+          roundStatus={roundStatus}
+          totalRounds={totalRounds}
+          isActive={!roundStatus.isComplete}
+        />
+      )}
+
       {/* Bracket visualization */}
       {viewMode === 'visual' ? (
         <Box
+          data-testid="bracket-visualization"
           sx={{
             height: isFullscreen ? '100vh' : 'auto',
             pt: 0,
@@ -346,24 +367,38 @@ export default function Bracket() {
             overflowY: isFullscreen ? 'auto' : 'visible',
           }}
         >
-          {Array.from({ length: totalRounds }, (_, i) => i + 1).map((round) => (
-            <Box key={round} mb={4}>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                {getRoundLabel(round, totalRounds)}
-              </Typography>
-              <Stack spacing={2}>
-                {matchesByRound[round]?.map((match) => (
-                  <MatchCard
-                    key={match.id}
-                    match={match}
-                    matchNumber={getGlobalMatchNumber(match)}
-                    roundLabel={getRoundLabel(round, totalRounds)}
-                    onClick={() => handleMatchClick(match)}
-                  />
-                ))}
-              </Stack>
-            </Box>
-          ))}
+          {Array.from({ length: totalRounds }, (_, i) => i + 1).map((round) => {
+            const roundMatches = matchesByRound[round] || [];
+            if (roundMatches.length === 0) return null;
+            
+            return (
+              <Box key={round} mb={4}>
+                <Typography variant="h6" fontWeight={600} mb={2}>
+                  {getRoundLabel(round, totalRounds)}
+                  {tournament.type === 'shuffle' && roundStatus && roundStatus.roundNumber === round && (
+                    <Chip
+                      label={roundStatus.map}
+                      size="small"
+                      sx={{ ml: 1 }}
+                      color="primary"
+                      variant="outlined"
+                    />
+                  )}
+                </Typography>
+                <Stack spacing={2}>
+                  {roundMatches.map((match) => (
+                    <MatchCard
+                      key={match.id}
+                      match={match}
+                      matchNumber={getGlobalMatchNumber(match)}
+                      roundLabel={getRoundLabel(round, totalRounds)}
+                      onClick={() => handleMatchClick(match)}
+                    />
+                  ))}
+                </Stack>
+              </Box>
+            );
+          })}
         </Box>
       )}
 
@@ -376,6 +411,7 @@ export default function Bracket() {
           onClose={() => setSelectedMatchId(null)}
         />
       )}
+
     </Box>
   );
 }

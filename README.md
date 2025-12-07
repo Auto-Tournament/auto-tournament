@@ -38,6 +38,14 @@
 
 ---
 
+## ⚙️ Requirements
+
+- **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
+- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
+- **RCON access** to your CS2 servers
+
+---
+
 ## 🚀 Quick Start
 
 Get up and running in minutes with Docker:
@@ -47,28 +55,6 @@ Get up and running in minutes with Docker:
 3. **Create your first tournament** and start playing!
 
 👉 **[Read the complete Quick Start Guide](https://mat.sivert.io/getting-started/quick-start/)** for step-by-step instructions.
-
----
-
-## ⚙️ Requirements
-
-- **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
-- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
-- **RCON access** to your CS2 servers
-
-👉 **[Complete setup guide](https://mat.sivert.io/getting-started/quick-start/)**
-
----
-
-## 🖥️ CS2 Server Manager
-
-Need a quick way to spin up several CS2 servers? Check out the companion project **[CS2 Server Manager](https://github.com/sivert-io/cs2-server-manager)**.
-
-- Deploys 3–5 dedicated servers in minutes
-- Installs all required plugins automatically
-- Pre-configured for MatchZy Auto Tournament
-
-👉 **[CS2 Server Manager Guide](https://mat.sivert.io/guides/cs2-server-manager/)**
 
 ---
 

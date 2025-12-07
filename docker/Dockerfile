@@ -1,106 +1,120 @@
 # Base image with Node.js and Yarn (via corepack)
-FROM node:20-slim AS base
+# Using Alpine for smallest possible image size
+FROM node:20-alpine AS base
 WORKDIR /app
 
-# Enable Yarn via corepack (built into Node.js 20+)
-# Pin yarn version to 4.11.0 to match local development and ensure lockfile consistency
+# Install necessary build tools for Alpine (only in build stages)
+RUN apk add --no-cache \
+    python3 \
+    make \
+    g++
+
+# Enable Yarn via corepack (Node.js 20+)
+# Pin yarn version to 4.11.0 to match local dev
 RUN corepack enable && corepack prepare yarn@4.11.0 --activate
 
-# Global Yarn config (reused in all stages that inherit from base)
+# Global Yarn config (shared by build-related stages)
 RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
     echo "enableGlobalCache: false" >> .yarnrc.yml
 
 # -------------------------------------------------------------------
-# Dependencies: install all deps once (used for build + runtime)
+# deps: install ALL dependencies (prod + dev) for building
 # -------------------------------------------------------------------
 FROM base AS deps
 
 # Only copy files needed to resolve dependencies
 COPY package.json yarn.lock ./
 
-# Install all dependencies (including devDeps for build)
+# Install all dependencies (including devDeps for build tools)
 RUN yarn install --immutable
 
 # -------------------------------------------------------------------
-# Build: compile TypeScript backend + React frontend
+# build: compile TypeScript backend + React frontend
 # -------------------------------------------------------------------
 FROM base AS build
 
-# Reuse node_modules from deps for faster, consistent builds
+# Reuse node_modules from deps for build (contains devDeps)
 COPY --from=deps /app/node_modules ./node_modules
 
 # Copy the rest of the application source
 COPY . .
 
-# Ensure public directory exists for vite build output or static assets
+# Ensure public directory exists for Vite/static assets
 RUN mkdir -p public
 
-# Build backend and frontend
+# Build arguments for Vite environment variables
+ARG VITE_ENABLE_DEV_PAGE
+ENV VITE_ENABLE_DEV_PAGE=${VITE_ENABLE_DEV_PAGE}
+
+# Build backend and frontend (needs devDeps like TypeScript, Vite, esbuild, etc.)
 RUN yarn build:server
 RUN yarn build:client
 
 # -------------------------------------------------------------------
-# Release: production image with Node.js and Caddy
+# release: lean production image with Node.js and Caddy
+# NO node_modules needed - backend is bundled!
+# Using Alpine for smallest possible image size
 # -------------------------------------------------------------------
-    FROM node:20-slim AS release
-    WORKDIR /app
-    
-    # Build arguments for platform detection
-    ARG TARGETPLATFORM
-    ARG BUILDPLATFORM
-    
-    # Pin Caddy version (bump if you want a newer one)
-    ARG CADDY_VERSION=2.7.3
-    
-    # Install wget + CA bundle and download Caddy from GitHub releases
-    RUN apt-get update && \
-        apt-get install -y wget ca-certificates && \
-        ARCH="$(echo "${TARGETPLATFORM:-linux/amd64}" | cut -d'/' -f2)" && \
-        if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
-            CADDY_ARCH="amd64"; \
-        elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ] || [ "$ARCH" = "aarch64" ]; then \
-            CADDY_ARCH="arm64"; \
-        elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ] || [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv6l" ]; then \
-            CADDY_ARCH="armv7"; \
-        else \
-            echo "Warning: Unsupported architecture $ARCH, falling back to amd64" >&2; \
-            CADDY_ARCH="amd64"; \
-        fi && \
-        wget -O /tmp/caddy.tar.gz \
-          "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/caddy_${CADDY_VERSION}_linux_${CADDY_ARCH}.tar.gz" && \
-        tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy && \
-        chmod +x /usr/local/bin/caddy && \
-        rm -f /tmp/caddy.tar.gz && \
-        apt-get clean && rm -rf /var/lib/apt/lists/*    
+FROM node:20-alpine AS release
+WORKDIR /app
+
+# Build arguments for platform detection
+ARG TARGETPLATFORM
+ARG BUILDPLATFORM
+
+# Pin Caddy version
+ARG CADDY_VERSION=2.7.3
+
+# Install ca-certificates for HTTPS and wget for Caddy download
+# We'll use Node.js for health checks instead of curl (saves ~2-3 MB)
+RUN apk add --no-cache ca-certificates wget && \
+    ARCH="$(echo "${TARGETPLATFORM:-linux/amd64}" | cut -d'/' -f2)" && \
+    if [ "$ARCH" = "amd64" ] || [ "$ARCH" = "x86_64" ]; then \
+        CADDY_ARCH="amd64"; \
+    elif [ "$ARCH" = "arm64" ] || [ "$ARCH" = "arm64v8" ] || [ "$ARCH" = "aarch64" ]; then \
+        CADDY_ARCH="arm64"; \
+    elif [ "$ARCH" = "arm" ] || [ "$ARCH" = "armv7" ] || [ "$ARCH" = "armv6" ] || [ "$ARCH" = "armv7l" ] || [ "$ARCH" = "armv6l" ]; then \
+        CADDY_ARCH="armv7"; \
+    else \
+        echo "Warning: Unsupported architecture $ARCH, falling back to amd64" >&2; \
+        CADDY_ARCH="amd64"; \
+    fi && \
+    wget -O /tmp/caddy.tar.gz \
+      "https://github.com/caddyserver/caddy/releases/download/v${CADDY_VERSION}/caddy_${CADDY_VERSION}_linux_${CADDY_ARCH}.tar.gz" && \
+    tar -xzf /tmp/caddy.tar.gz -C /usr/local/bin caddy && \
+    chmod +x /usr/local/bin/caddy && \
+    rm -f /tmp/caddy.tar.gz && \
+    # Remove wget after use (we'll use Node.js for health checks)
+    apk del wget
 
 # Environment
 ENV NODE_ENV=production
 
-# Copy package.json (if your app reads version/name etc. at runtime)
+# Copy package.json (needed for version info at runtime)
 COPY --from=build /app/package.json ./
 
-# Copy node_modules from deps (includes prod + dev deps; easiest version)
-# If you want only production deps, you can later adjust this stage to prune.
-COPY --from=deps /app/node_modules ./node_modules
+# ⬇️ NO node_modules needed! Backend is bundled with esbuild
+# The bundled dist/index.js contains all dependencies
 
-# Copy built application
+# Copy built application (bundled backend + frontend)
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/public ./public
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
 
-# Create data directory for demos and other files
+# Data directory for demos / uploads / etc.
 RUN mkdir -p /app/data
 
 # Expose Caddy port (single entry point)
 EXPOSE 3069
 
-# Health check through Caddy
+# Health check using Node.js instead of curl (saves ~2-3 MB)
+# Node.js http module is built-in, so no additional dependencies needed
 HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3069/health || exit 1
+  CMD node -e "require('http').get('http://localhost:3069/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))" || exit 1
 
-# Create startup script (Node API + Caddy)
+# Startup script (Node API + Caddy)
 RUN printf '%s\n' \
   '#!/bin/sh' \
   'set -e' \
@@ -116,5 +130,4 @@ RUN printf '%s\n' \
   > /app/start.sh && \
   chmod +x /app/start.sh
 
-# Run the startup script
 CMD ["/app/start.sh"]

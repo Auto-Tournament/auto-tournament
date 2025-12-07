@@ -33,6 +33,19 @@ export function getRecentLogs(limit = 100): LogEntry[] {
   return logBuffer.slice(-limit).reverse(); // Most recent first
 }
 
+/**
+ * Pino logger configuration
+ *
+ * Industry standard approach:
+ * - Development: Pretty-printed, colored logs for easier human reading
+ * - Production: JSON structured logs for log aggregation systems (ELK, Datadog, CloudWatch, etc.)
+ *
+ * JSON in production enables:
+ * - Better performance (no formatting overhead)
+ * - Structured parsing by log aggregation tools
+ * - Smaller log file sizes
+ * - Machine-readable format for automated analysis
+ */
 export const logger = pino({
   level: process.env.LOG_LEVEL || 'info',
   transport: isDevelopment
@@ -45,7 +58,7 @@ export const logger = pino({
           singleLine: false,
         },
       }
-    : undefined,
+    : undefined, // Production: undefined = JSON output (industry standard)
 });
 
 // Convenience methods for structured logging

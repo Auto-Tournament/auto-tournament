@@ -14,6 +14,7 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
+import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
 
 const router = Router();
@@ -149,158 +150,220 @@ router.get('/', async (req: Request, res: Response) => {
       }
     >(query, params);
 
+    // Get tournament type once (optimization to avoid N+1 queries)
+    const tournamentType = await db.queryOneAsync<{ type: string }>(
+      'SELECT type FROM tournament WHERE id = ?',
+      [rows[0]?.tournament_id || 1]
+    );
+    const isShuffleTournament = tournamentType?.type === 'shuffle';
+
     // Transform players from dictionary to array for frontend
-    const matches: MatchListItem[] = await Promise.all(rows.map(async (row) => {
-      const config = row.config ? JSON.parse(row.config as string) : {};
-      const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
+    const matches: MatchListItem[] = await Promise.all(
+      rows.map(async (row) => {
+        const config = row.config ? JSON.parse(row.config as string) : {};
+        const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
-      // Normalize players and enrich with avatars from team data
-      const normalizedTeam1Players = config.team1
-        ? normalizeConfigPlayers(config.team1.players)
-        : [];
-      const normalizedTeam2Players = config.team2
-        ? normalizeConfigPlayers(config.team2.players)
-        : [];
+        // Normalize players and enrich with avatars from team data
+        const normalizedTeam1Players = config.team1
+          ? normalizeConfigPlayers(config.team1.players)
+          : [];
+        const normalizedTeam2Players = config.team2
+          ? normalizeConfigPlayers(config.team2.players)
+          : [];
 
-      // Enrich players with avatars from team records if team IDs are available
-      let enrichedTeam1Players = normalizedTeam1Players;
-      let enrichedTeam2Players = normalizedTeam2Players;
+        // Enrich players with avatars from team records if team IDs are available
+        let enrichedTeam1Players = normalizedTeam1Players;
+        let enrichedTeam2Players = normalizedTeam2Players;
 
-      if (config.team1?.id && row.team1_id) {
-        try {
-          const team1Data = await teamService.getTeamById(config.team1.id);
-          if (team1Data?.players) {
-            const avatarMap = new Map(
-              team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
-            );
-            enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
-              ...p,
-              avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
-            }));
-          }
-        } catch (error) {
-          log.debug(`Failed to enrich team1 players with avatars: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }
-
-      if (config.team2?.id && row.team2_id) {
-        try {
-          const team2Data = await teamService.getTeamById(config.team2.id);
-          if (team2Data?.players) {
-            const avatarMap = new Map(
-              team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
-            );
-            enrichedTeam2Players = normalizedTeam2Players.map((p) => ({
-              ...p,
-              avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
-            }));
-          }
-        } catch (error) {
-          log.debug(`Failed to enrich team2 players with avatars: ${error instanceof Error ? error.message : String(error)}`);
-        }
-      }
-
-      // Transform config to include properly formatted team players with avatars
-      const transformedConfig = {
-        ...config,
-        team1: config.team1
-          ? {
-              ...config.team1,
-              players: enrichedTeam1Players,
+        if (config.team1?.id && row.team1_id) {
+          try {
+            const team1Data = await teamService.getTeamById(config.team1.id);
+            if (team1Data?.players) {
+              const avatarMap = new Map(
+                team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+              );
+              enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
+                ...p,
+                avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+              }));
             }
-          : undefined,
-        team2: config.team2
-          ? {
-              ...config.team2,
-              players: enrichedTeam2Players,
+          } catch (error) {
+            log.debug(
+              `Failed to enrich team1 players with avatars: ${
+                error instanceof Error ? error.message : String(error)
+              }`
+            );
+          }
+        }
+
+        if (config.team2?.id && row.team2_id) {
+          try {
+            const team2Data = await teamService.getTeamById(config.team2.id);
+            if (team2Data?.players) {
+              const avatarMap = new Map(
+                team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+              );
+              enrichedTeam2Players = normalizedTeam2Players.map((p) => ({
+                ...p,
+                avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+              }));
             }
-          : undefined,
-      };
-
-      const match: MatchListItem = {
-        id: row.id,
-        slug: row.slug,
-        round: row.round,
-        matchNumber: row.match_number,
-        team1:
-          row.team1_id && row.team1_name
-            ? {
-                id: row.team1_id,
-                name: row.team1_name,
-                tag: row.team1_tag,
-              }
-            : undefined,
-        team2:
-          row.team2_id && row.team2_name
-            ? {
-                id: row.team2_id,
-                name: row.team2_name,
-                tag: row.team2_tag,
-              }
-            : undefined,
-        winner:
-          row.winner_id && row.winner_name
-            ? {
-                id: row.winner_id,
-                name: row.winner_name,
-                tag: row.winner_tag,
-              }
-            : undefined,
-        status: row.status,
-        serverId: row.server_id,
-        config: transformedConfig,
-        demoFilePath: row.demo_file_path,
-        createdAt: row.created_at ?? 0,
-        loadedAt: row.loaded_at,
-        completedAt: row.completed_at,
-        vetoCompleted: vetoState?.status === 'completed',
-        currentMap: row.current_map ?? undefined,
-        mapNumber: typeof row.map_number === 'number' ? row.map_number : undefined,
-        maps: undefined,
-      };
-
-      const mapResults = await getMapResults(row.slug);
-      if (mapResults.length > 0) {
-        match.mapResults = mapResults;
-      }
-
-      if (Array.isArray(vetoState?.pickedMaps) && vetoState.pickedMaps.length > 0) {
-        const orderedPickedMaps = [...vetoState.pickedMaps].sort(
-          (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
-            (a.mapNumber || 0) - (b.mapNumber || 0)
-        );
-        const pickedMapNames = orderedPickedMaps
-          .map((m: { mapName?: string | null }) => m.mapName)
-          .filter((name): name is string => Boolean(name));
-        if (pickedMapNames.length > 0) {
-          match.maps = pickedMapNames;
+          } catch (error) {
+            log.debug(
+              `Failed to enrich team2 players with avatars: ${
+                error instanceof Error ? error.message : String(error)
+              }`
+            );
+          }
         }
-      }
 
-      if (!match.maps && mapResults.length > 0) {
-        const resultsMaps = mapResults
-          .map((result) => result.mapName)
-          .filter((name): name is string => Boolean(name));
-        if (resultsMaps.length > 0) {
-          match.maps = resultsMaps;
+        // Transform config to include properly formatted team players with avatars
+        const transformedConfig = {
+          ...config,
+          team1: config.team1
+            ? {
+                ...config.team1,
+                players: enrichedTeam1Players,
+              }
+            : undefined,
+          team2: config.team2
+            ? {
+                ...config.team2,
+                players: enrichedTeam2Players,
+              }
+            : undefined,
+        };
+
+        const match: MatchListItem = {
+          id: row.id,
+          slug: row.slug,
+          round: row.round,
+          matchNumber: row.match_number,
+          team1:
+            row.team1_id && row.team1_name
+              ? {
+                  id: row.team1_id,
+                  name: row.team1_name,
+                  tag: row.team1_tag,
+                }
+              : undefined,
+          team2:
+            row.team2_id && row.team2_name
+              ? {
+                  id: row.team2_id,
+                  name: row.team2_name,
+                  tag: row.team2_tag,
+                }
+              : undefined,
+          winner:
+            row.winner_id && row.winner_name
+              ? {
+                  id: row.winner_id,
+                  name: row.winner_name,
+                  tag: row.winner_tag,
+                }
+              : undefined,
+          status: row.status,
+          serverId: row.server_id,
+          config: transformedConfig,
+          demoFilePath: row.demo_file_path,
+          createdAt: row.created_at ?? 0,
+          loadedAt: row.loaded_at,
+          completedAt: row.completed_at,
+          vetoCompleted: vetoState?.status === 'completed',
+          currentMap: row.current_map ?? undefined,
+          mapNumber: typeof row.map_number === 'number' ? row.map_number : undefined,
+          maps: undefined,
+        };
+
+        const mapResults = await getMapResults(row.slug);
+        if (mapResults.length > 0) {
+          match.mapResults = mapResults;
         }
-      }
 
-      // Enrich match with player stats and scores from events
-      await enrichMatch(match, row.slug);
+        if (Array.isArray(vetoState?.pickedMaps) && vetoState.pickedMaps.length > 0) {
+          const orderedPickedMaps = [...vetoState.pickedMaps].sort(
+            (a: { mapNumber?: number }, b: { mapNumber?: number }) =>
+              (a.mapNumber || 0) - (b.mapNumber || 0)
+          );
+          const pickedMapNames = orderedPickedMaps
+            .map((m: { mapName?: string | null }) => m.mapName)
+            .filter((name): name is string => Boolean(name));
+          if (pickedMapNames.length > 0) {
+            match.maps = pickedMapNames;
+          }
+        }
 
-      return match;
-    }));
+        if (!match.maps && mapResults.length > 0) {
+          const resultsMaps = mapResults
+            .map((result) => result.mapName)
+            .filter((name): name is string => Boolean(name));
+          if (resultsMaps.length > 0) {
+            match.maps = resultsMaps;
+          }
+        }
+
+        // Enrich match with player stats and scores from events
+        await enrichMatch(match, row.slug);
+
+        // For shuffle tournaments, enrich players with ELO
+        if (
+          isShuffleTournament &&
+          (enrichedTeam1Players.length > 0 || enrichedTeam2Players.length > 0)
+        ) {
+          try {
+            const allSteamIds = [
+              ...enrichedTeam1Players.map((p) => p.steamid),
+              ...enrichedTeam2Players.map((p) => p.steamid),
+            ];
+
+            if (allSteamIds.length > 0) {
+              const players = await playerService.getPlayersByIds(allSteamIds);
+              const eloMap = new Map(players.map((p) => [p.id.toLowerCase(), p.current_elo]));
+
+              // Add ELO to team1 players
+              enrichedTeam1Players = enrichedTeam1Players.map((p) => ({
+                ...p,
+                elo: eloMap.get(p.steamid.toLowerCase()),
+              }));
+
+              // Add ELO to team2 players
+              enrichedTeam2Players = enrichedTeam2Players.map((p) => ({
+                ...p,
+                elo: eloMap.get(p.steamid.toLowerCase()),
+              }));
+
+              // Update config with enriched players
+              if (transformedConfig.team1) {
+                transformedConfig.team1.players = enrichedTeam1Players;
+              }
+              if (transformedConfig.team2) {
+                transformedConfig.team2.players = enrichedTeam2Players;
+              }
+              match.config = transformedConfig;
+            }
+          } catch (error) {
+            log.debug(
+              `Failed to enrich players with ELO: ${
+                error instanceof Error ? error.message : String(error)
+              }`
+            );
+          }
+        }
+
+        return match;
+      })
+    );
 
     // Get tournament status
-    const tournament = await db.queryOneAsync<{ status: string }>(
+    const tournamentStatus = await db.queryOneAsync<{ status: string }>(
       'SELECT status FROM tournament WHERE id = 1'
     );
 
     return res.json({
       success: true,
       count: matches.length,
-      tournamentStatus: tournament?.status || 'setup',
+      tournamentStatus: tournamentStatus?.status || 'setup',
       matches,
     });
   } catch (error) {

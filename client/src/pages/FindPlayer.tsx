@@ -1,0 +1,153 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Container,
+  Snackbar,
+  Alert,
+  CircularProgress,
+  InputAdornment,
+} from '@mui/material';
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
+import { api } from '../utils/api';
+import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
+
+export default function FindPlayer() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar?: string; currentElo?: number }>>([]);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+
+  useEffect(() => {
+    document.title = 'Find Player';
+  }, []);
+
+  const handleSearch = async () => {
+    if (!query.trim()) {
+      setError('Please enter a Steam ID or profile URL');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+
+    try {
+      const response = await api.get<{
+        success: boolean;
+        player?: { id: string; name: string };
+        players?: Array<{ id: string; name: string }>;
+        error?: string;
+      }>(`/api/players/find?query=${encodeURIComponent(query.trim())}`);
+
+      if (response.success) {
+        if (response.player) {
+          // Single player found - redirect to their page
+          navigate(`/player/${response.player.id}`);
+        } else if (response.players && response.players.length > 0) {
+          // Check if single player or multiple players
+          if (response.players.length === 1) {
+            // Single player found - redirect to their page
+            navigate(`/player/${response.players[0].id}`);
+          } else {
+            // Multiple players found - show selection modal
+            setSearchResults(response.players);
+            setShowResultsModal(true);
+          }
+        } else {
+          setError('Player not found');
+        }
+      } else {
+        setError(response.error || 'Player not found');
+      }
+    } catch (err) {
+      setError('Failed to search for player');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      handleSearch();
+    }
+  };
+
+  return (
+    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="find-player-page">
+      <Container maxWidth="sm">
+        <Card data-testid="find-player-form">
+          <CardContent>
+            <Box textAlign="center" mb={4}>
+              <PersonIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                Find Player
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Enter a Steam ID or Steam profile URL to view player statistics
+              </Typography>
+            </Box>
+
+
+            <Box mb={3}>
+              <TextField
+                fullWidth
+                label="Steam ID or Profile URL"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyPress={handleKeyPress}
+                disabled={loading}
+                inputProps={{ 'data-testid': 'find-player-input' }}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon />
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            <Button
+              data-testid="find-player-button"
+              fullWidth
+              variant="contained"
+              size="large"
+              onClick={handleSearch}
+              disabled={loading || !query.trim()}
+              startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+            >
+              {loading ? 'Searching...' : 'Find Player'}
+            </Button>
+          </CardContent>
+        </Card>
+      </Container>
+
+      <PlayerSearchResultsModal
+        open={showResultsModal}
+        players={searchResults}
+        onClose={() => setShowResultsModal(false)}
+      />
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError('')} variant="filled">
+          {error}
+        </Alert>
+      </Snackbar>
+    </Box>
+  );
+}
+

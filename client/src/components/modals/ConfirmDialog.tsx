@@ -37,6 +37,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       onClose={onCancel}
       maxWidth="sm"
       fullWidth
+      data-testid="confirm-dialog"
       PaperProps={{
         sx: {
           borderRadius: 3,
@@ -62,7 +63,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             fontSize: 28,
           }}
         />
-        <Typography variant="h6" fontWeight={600}>
+        <Typography component="span" variant="h6" fontWeight={600}>
           {title}
         </Typography>
       </DialogTitle>
@@ -73,7 +74,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <Button onClick={onCancel} variant="outlined" color="inherit">
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} variant="contained" color={confirmColor} autoFocus>
+        <Button
+          data-testid="confirm-dialog-confirm-button"
+          onClick={onConfirm}
+          variant="contained"
+          color={confirmColor}
+          autoFocus
+        >
           {confirmLabel}
         </Button>
       </DialogActions>

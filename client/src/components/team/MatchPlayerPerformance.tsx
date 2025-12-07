@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import { getPlayerPageUrl } from '../../utils/playerLinks';
 import type { MatchLiveStats } from '../../types';
 
 type PlayerLine = NonNullable<MatchLiveStats['playerStats']>['team1'][number];
@@ -57,7 +58,22 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
             rows.map((player) => (
               <TableRow key={player.steamId}>
                 <TableCell sx={{ fontWeight: 600 }}>
-                  <Typography variant="body2" color={`${accent}.main`} fontWeight={600}>
+                  <Typography
+                    variant="body2"
+                    color={`${accent}.main`}
+                    fontWeight={600}
+                    component="a"
+                    href={getPlayerPageUrl(player.steamId)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      textDecoration: 'none',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        textDecoration: 'underline',
+                      },
+                    }}
+                  >
                     {player.name}
                   </Typography>
                 </TableCell>

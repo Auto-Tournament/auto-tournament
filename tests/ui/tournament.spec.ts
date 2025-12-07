@@ -26,8 +26,11 @@ test.describe.serial('Tournament UI', () => {
       await expect(page).toHaveTitle(/Tournament Setup/i);
       await page.waitForLoadState('networkidle');
 
+      // Verify tournament page loaded
+      await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 5000 });
+
       // Check for tournament form elements - form might be visible if no tournament exists
-      const nameInput = page.getByLabel(/tournament name/i).or(page.getByLabel(/name/i));
+      const nameInput = page.getByTestId('tournament-name-input');
       const formVisible = await nameInput.isVisible().catch(() => false);
 
       // If form is not visible, tournament might already exist - that's okay
@@ -47,7 +50,7 @@ test.describe.serial('Tournament UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Check if form is visible (means no tournament exists yet)
-      const nameInput = page.getByLabel(/tournament name/i).or(page.getByLabel(/name/i));
+      const nameInput = page.getByTestId('tournament-name-input');
       const formVisible = await nameInput.isVisible().catch(() => false);
 
       if (formVisible) {
@@ -56,7 +59,7 @@ test.describe.serial('Tournament UI', () => {
         await nameInput.fill(tournamentName);
 
         // Submit form if there's a submit button
-        const submitButton = page.getByRole('button', { name: /save|create/i });
+        const submitButton = page.getByTestId('tournament-save-button');
         const submitVisible = await submitButton.isVisible().catch(() => false);
 
         if (submitVisible) {
@@ -65,13 +68,13 @@ test.describe.serial('Tournament UI', () => {
           // Wait for tournament to be created
           await page.waitForTimeout(2000);
           const tournamentCreated = await page
-            .getByText(tournamentName)
+            .getByTestId('tournament-name-display')
             .isVisible()
             .catch(() => false);
           if (!tournamentCreated) {
             // Tournament might be created but name not immediately visible, check for status
             const statusVisible = await page
-              .getByText(/setup|in progress|completed/i)
+              .getByTestId('tournament-status')
               .isVisible()
               .catch(() => false);
             expect(statusVisible).toBeTruthy();
@@ -80,18 +83,15 @@ test.describe.serial('Tournament UI', () => {
       }
 
       // Check for tournament status indicators
-      const statusElements = page.locator('text=/setup|in progress|completed|not started/i');
-      const hasStatus = await statusElements
-        .first()
-        .isVisible()
-        .catch(() => false);
+      const statusElement = page.getByTestId('tournament-status');
+      const hasStatus = await statusElement.isVisible().catch(() => false);
 
       if (hasStatus) {
-        await expect(statusElements.first()).toBeVisible();
+        await expect(statusElement).toBeVisible();
       }
 
       // Look for "View Bracket" or similar button
-      const bracketButton = page.getByRole('button', { name: /view.*bracket|bracket/i });
+      const bracketButton = page.getByTestId('view-bracket-button');
       const bracketButtonVisible = await bracketButton.isVisible().catch(() => false);
 
       if (bracketButtonVisible) {

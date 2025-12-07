@@ -125,28 +125,6 @@ export default function TeamMatch() {
     previousServerReady.current = serverReady;
   }, [match, tournamentStatus, vetoCompleted, matchFormat]);
 
-  // Check if match format is in veto debug info
-  useEffect(() => {
-    if (match) {
-      console.log('Veto Debug Info:', {
-        tournamentStatus,
-        matchStatus: match.status,
-        matchFormat,
-        vetoCompleted,
-        vetoStatus: match.veto?.status,
-        shouldShowVeto:
-          tournamentStatus === 'in_progress' &&
-          match.status === 'pending' &&
-          !vetoCompleted &&
-          match.veto?.status !== 'completed' &&
-          ['bo1', 'bo3', 'bo5'].includes(matchFormat),
-        shouldShowMatch:
-          ['loaded', 'live'].includes(match.status) ||
-          (match.status === 'ready' && (vetoCompleted || match.veto?.status === 'completed')) ||
-          (match.status === 'pending' && match.veto?.status === 'completed'),
-      });
-    }
-  }, [match, tournamentStatus, matchFormat, vetoCompleted]);
 
   const handleVetoComplete = async () => {
     // Reload match data to get updated status and server assignment

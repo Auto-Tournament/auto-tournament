@@ -14,8 +14,9 @@ const API_TOKEN = process.env.API_TOKEN || 'admin123';
 export async function signIn(page: Page): Promise<boolean> {
   try {
     await page.goto('/login');
-    await page.getByLabel(/api token/i).fill(API_TOKEN);
-    await page.getByRole('button', { name: /sign in/i }).click();
+    const input = page.getByTestId('login-api-token-input');
+    await input.fill(API_TOKEN);
+    await page.getByTestId('login-sign-in-button').click();
     
     // Wait for navigation away from login page
     await page.waitForURL((url) => !url.pathname.includes('/login'), { timeout: 5000 });
@@ -36,14 +37,52 @@ export async function signIn(page: Page): Promise<boolean> {
  */
 export async function signInViaAPI(page: Page): Promise<boolean> {
   try {
-    await page.goto('/');
+    // Navigate with increased timeout and fallback
+    // Try multiple strategies: domcontentloaded -> commit -> networkidle
+    let navigationSuccess = false;
+    const strategies = [
+      { waitUntil: 'domcontentloaded' as const, timeout: 30000 },
+      { waitUntil: 'commit' as const, timeout: 15000 },
+      { waitUntil: 'networkidle' as const, timeout: 10000 },
+    ];
+    
+    for (const strategy of strategies) {
+      try {
+        await page.goto('/', strategy);
+        navigationSuccess = true;
+        break;
+      } catch (error) {
+        console.warn(`Navigation with ${strategy.waitUntil} timed out, trying next strategy...`);
+        // Continue to next strategy
+      }
+    }
+    
+    if (!navigationSuccess) {
+      console.error('All navigation strategies failed');
+      return false;
+    }
+    
     await page.evaluate((token) => {
       localStorage.setItem('api_token', token);
     }, API_TOKEN);
     
     // Reload to apply token
-    await page.reload();
-    await page.waitForLoadState('networkidle');
+    try {
+      await page.reload({ waitUntil: 'domcontentloaded', timeout: 30000 });
+    } catch (error) {
+      // If reload times out, try with commit
+      await page.reload({ waitUntil: 'commit', timeout: 10000 });
+    }
+    
+    // Wait for networkidle with timeout (some pages have long-running requests/websockets)
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    } catch (error) {
+      // If networkidle times out, wait for domcontentloaded instead
+      await page.waitForLoadState('domcontentloaded');
+      // Give a small delay for any initial requests
+      await page.waitForTimeout(1000);
+    }
     
     // Verify we're not on login page
     const url = page.url();
@@ -60,7 +99,27 @@ export async function signInViaAPI(page: Page): Promise<boolean> {
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
   // Navigate to a page first (required for localStorage access)
-  await page.goto('/');
+  // Try multiple strategies with fallbacks
+  let navigationSuccess = false;
+  const strategies = [
+    { waitUntil: 'domcontentloaded' as const, timeout: 30000 },
+    { waitUntil: 'commit' as const, timeout: 15000 },
+  ];
+  
+  for (const strategy of strategies) {
+    try {
+      await page.goto('/', strategy);
+      navigationSuccess = true;
+      break;
+    } catch (error) {
+      console.warn(`ensureSignedIn: Navigation with ${strategy.waitUntil} timed out, trying next strategy...`);
+      // Continue to next strategy
+    }
+  }
+  
+  if (!navigationSuccess) {
+    throw new Error('Failed to navigate to page for authentication - server may not be responding');
+  }
   
   // Check if already signed in
   try {

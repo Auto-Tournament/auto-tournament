@@ -11,12 +11,14 @@ import { swissBracketGenerator } from '../swissBracketGenerator';
 /**
  * Registry mapping tournament types to their bracket generators
  * Add new tournament types here to extend the system
+ * Note: Shuffle tournaments don't use bracket generation (matches are generated dynamically)
  */
-export const bracketGenerators: Record<TournamentType, IBracketGenerator> = {
+export const bracketGenerators: Partial<Record<TournamentType, IBracketGenerator>> = {
   single_elimination: standardBracketGenerator,
   double_elimination: standardBracketGenerator,
   round_robin: standardBracketGenerator,
   swiss: swissBracketGenerator,
+  // shuffle: not included - shuffle tournaments generate matches dynamically
 };
 
 /**

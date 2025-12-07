@@ -330,11 +330,32 @@ router.post('/sync', async (_req: Request, res: Response) => {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Failed to sync maps';
+    const errorMessage = error instanceof Error ? error.message : 'Failed to sync maps';
     log.error('Error syncing maps from GitHub', error);
-    return res.status(500).json({
+    
+    // Check if it's a rate limit error
+    const isRateLimit = errorMessage.toLowerCase().includes('rate limit') || 
+                       errorMessage.toLowerCase().includes('rate limit exceeded');
+    
+    // Check if it's a GitHub API error
+    const isGitHubError = errorMessage.toLowerCase().includes('github');
+    
+    let userMessage = errorMessage;
+    let statusCode = 500;
+    
+    if (isRateLimit) {
+      statusCode = 429; // Too Many Requests
+      userMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes, or set GITHUB_TOKEN environment variable to increase the limit.';
+    } else if (isGitHubError) {
+      statusCode = 503; // Service Unavailable
+      userMessage = `Unable to reach GitHub repository. ${errorMessage}. Please try again later.`;
+    }
+    
+    return res.status(statusCode).json({
       success: false,
-      error: message,
+      error: userMessage,
+      errorType: isRateLimit ? 'rate_limit' : isGitHubError ? 'github_error' : 'unknown',
+      originalError: errorMessage,
     });
   }
 });

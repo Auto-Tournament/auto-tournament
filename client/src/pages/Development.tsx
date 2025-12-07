@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  Container,
   Card,
   CardContent,
   Typography,
@@ -20,13 +19,13 @@ import {
   DialogActions,
 } from '@mui/material';
 import {
-  BugReport as BugReportIcon,
   Group as GroupIcon,
   Storage as StorageIcon,
   Delete as DeleteIcon,
   ExpandMore as ExpandMoreIcon,
   DeleteForever as DeleteForeverIcon,
   Warning as WarningIcon,
+  Person as PersonIcon,
 } from '@mui/icons-material';
 
 // Set dynamic page title
@@ -114,7 +113,11 @@ const Development: React.FC = () => {
         teams.push({
           id: `test-team-${slug}`,
           name: fullName,
-          tag: teamName.replace(/[^A-Za-z0-9]/g, '').substring(0, 3).toUpperCase() || 'TST',
+          tag:
+            teamName
+              .replace(/[^A-Za-z0-9]/g, '')
+              .substring(0, 3)
+              .toUpperCase() || 'TST',
           players: Array.from({ length: 5 }, (_, playerIndex) => ({
             steamId: realSteamIds[(i * 5 + playerIndex) % realSteamIds.length],
             name: `Player ${playerIndex + 1}`,
@@ -132,10 +135,24 @@ const Development: React.FC = () => {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create test teams');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || 'Failed to create test teams');
       }
 
-      setMessage({ type: 'success', text: `Successfully created ${count} test teams!` });
+      const result = await response.json();
+      if (result.failed && result.failed.length > 0) {
+        setMessage({
+          type: 'error',
+          text: `Created ${result.successful?.length || 0} team(s), but ${
+            result.failed.length
+          } failed. Check console for details.`,
+        });
+      } else {
+        setMessage({
+          type: 'success',
+          text: `Successfully created ${result.successful?.length || count} test team(s)!`,
+        });
+      }
     } catch (error) {
       console.error('Error creating test teams:', error);
       setMessage({ type: 'error', text: 'Failed to create test teams' });
@@ -157,11 +174,14 @@ const Development: React.FC = () => {
         password: string;
       }> = [];
 
+      // Use a single timestamp to ensure all servers in this batch have unique IDs
+      // Use IP 0.0.0.0 for fake servers that always show as online (for screenshots/testing)
+      const baseTimestamp = Date.now();
       for (let i = 0; i < count; i++) {
         servers.push({
-          id: `test-server-${Date.now()}-${i}`,
+          id: `test-server-${baseTimestamp}-${i}`,
           name: `Test Server #${i + 1}`,
-          host: '192.168.1.1',
+          host: '0.0.0.0', // IP 0.0.0.0 = always online (fake server for testing/screenshots)
           port: 27015 + i,
           password: 'test123',
         });
@@ -177,14 +197,116 @@ const Development: React.FC = () => {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || 'Failed to create test servers');
       }
 
-      setMessage({ type: 'success', text: `Successfully created ${count} test servers!` });
+      const result = await response.json();
+      if (result.failed && result.failed.length > 0) {
+        setMessage({
+          type: 'error',
+          text: `Created ${result.successful?.length || 0} server(s), but ${
+            result.failed.length
+          } failed. Check console for details.`,
+        });
+      } else {
+        setMessage({
+          type: 'success',
+          text: `Successfully created ${result.successful?.length || count} test server(s)!`,
+        });
+      }
     } catch (error) {
       console.error('Error creating test servers:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create test servers';
+      setMessage({ type: 'error', text: errorMessage });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCreateTestPlayers = async (count: number) => {
+    setLoading(true);
+    setMessage(null);
+
+    try {
+      const players: Array<{
+        id: string; // Steam ID
+        name: string;
+        elo?: number;
+      }> = [];
+
+      const playerNames = [
+        'TestPlayer',
+        'DemoUser',
+        'DevGamer',
+        'TestAccount',
+        'DevPlayer',
+        'TestUser',
+        'DemoAccount',
+        'DevAccount',
+        'RandomPlayer',
+        'TestGamer',
+        'DevUser',
+        'DemoGamer',
+        'TestPro',
+        'DevPro',
+        'DemoPro',
+      ];
+
+      // Generate unique Steam IDs
+      // Steam IDs are 17 digits, starting with 7656119 (Steam ID format)
+      // We'll use a base timestamp and add the index to ensure uniqueness
+      const baseTimestamp = Date.now();
+
+      for (let i = 0; i < count; i++) {
+        // Generate unique Steam ID: 7656119 + 10 digits (using timestamp + index)
+        // This ensures each player gets a unique Steam ID
+        const uniquePart = String(baseTimestamp + i)
+          .padStart(10, '0')
+          .slice(-10);
+        const steamId = `7656119${uniquePart}`;
+
+        // Cycle through player names with suffixes for uniqueness
+        const nameIndex = Math.floor(i / playerNames.length);
+        const baseName = playerNames[i % playerNames.length];
+        const name = nameIndex > 0 ? `${baseName} ${nameIndex + 1}` : baseName;
+
+        // Vary ELO between 2500-3500 for testing
+        const elo = 2500 + (i % 10) * 100;
+
+        players.push({
+          id: steamId,
+          name,
+          elo,
+        });
+      }
+
+      const response = await api.post('/api/players/bulk-import', players);
+
+      if (response.success) {
+        const created = response.created || 0;
+        const updated = response.updated || 0;
+        const errors = response.errors || [];
+
+        if (errors.length > 0) {
+          setMessage({
+            type: 'error',
+            text: `Created ${created} player(s), updated ${updated}, but ${errors.length} failed. Check console for details.`,
+          });
+        } else {
+          setMessage({
+            type: 'success',
+            text: `Successfully created ${created} player(s)${
+              updated > 0 ? ` and updated ${updated}` : ''
+            }!`,
+          });
+        }
+      } else {
+        throw new Error(response.error || 'Failed to create test players');
+      }
+    } catch (error) {
+      console.error('Error creating test players:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to create test players';
       setMessage({ type: 'error', text: errorMessage });
     } finally {
       setLoading(false);
@@ -312,14 +434,7 @@ const Development: React.FC = () => {
   };
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box display="flex" alignItems="center" gap={2} mb={3}>
-        <BugReportIcon sx={{ fontSize: 40, color: 'warning.main' }} />
-        <Typography variant="h4" fontWeight={600}>
-          Development Tools
-        </Typography>
-      </Box>
-
+    <Box sx={{ width: '100%', height: '100%' }}>
       <Alert severity="warning" sx={{ mb: 3 }}>
         These tools are only available in development mode. Use them to quickly generate test data
         for testing the application.
@@ -332,8 +447,15 @@ const Development: React.FC = () => {
       )}
 
       <Grid container spacing={3}>
+        {/* Test Data Creation */}
+        <Grid size={{ xs: 12 }}>
+          <Typography variant="h5" fontWeight={600} mb={2}>
+            Create Test Data
+          </Typography>
+        </Grid>
+
         {/* Test Teams */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -383,8 +505,60 @@ const Development: React.FC = () => {
           </Card>
         </Grid>
 
+        {/* Test Players */}
+        <Grid size={{ xs: 12, md: 4 }}>
+          <Card>
+            <CardContent>
+              <Box display="flex" alignItems="center" gap={1} mb={2}>
+                <PersonIcon color="primary" />
+                <Typography variant="h6" fontWeight={600}>
+                  Test Players
+                </Typography>
+              </Box>
+              <Typography variant="body2" color="text.secondary" mb={3}>
+                Create players with ELO ratings for testing shuffle tournaments and player
+                management.
+              </Typography>
+              <Box display="flex" flexDirection="column" gap={2}>
+                <Button
+                  variant="contained"
+                  onClick={() => handleCreateTestPlayers(10)}
+                  disabled={loading}
+                  fullWidth
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Create 10 Players'}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => handleCreateTestPlayers(20)}
+                  disabled={loading}
+                  fullWidth
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Create 20 Players'}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => handleCreateTestPlayers(50)}
+                  disabled={loading}
+                  fullWidth
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Create 50 Players'}
+                </Button>
+                <Button
+                  variant="contained"
+                  onClick={() => handleCreateTestPlayers(100)}
+                  disabled={loading}
+                  fullWidth
+                >
+                  {loading ? <CircularProgress size={24} /> : 'Create 100 Players'}
+                </Button>
+              </Box>
+            </CardContent>
+          </Card>
+        </Grid>
+
         {/* Test Servers */}
-        <Grid size={{ xs: 12, md: 6 }}>
+        <Grid size={{ xs: 12, md: 4 }}>
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={1} mb={2}>
@@ -482,10 +656,15 @@ const Development: React.FC = () => {
                 <AccordionDetails>
                   <Typography variant="body2" color="text.secondary" mb={2}>
                     Delete all data from a specific table. Useful for cleaning up without resetting
-                    everything.
+                    everything. Tables are organized by category.
                   </Typography>
-                  <Grid container spacing={1}>
-                    <Grid size={{ xs: 6 }}>
+
+                  {/* Core Tables */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Core Tables
+                  </Typography>
+                  <Grid container spacing={1} mb={2}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                       <Button
                         variant="outlined"
                         color="warning"
@@ -497,7 +676,7 @@ const Development: React.FC = () => {
                         Wipe Teams
                       </Button>
                     </Grid>
-                    <Grid size={{ xs: 6 }}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                       <Button
                         variant="outlined"
                         color="warning"
@@ -509,7 +688,7 @@ const Development: React.FC = () => {
                         Wipe Servers
                       </Button>
                     </Grid>
-                    <Grid size={{ xs: 6 }}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                       <Button
                         variant="outlined"
                         color="warning"
@@ -521,7 +700,7 @@ const Development: React.FC = () => {
                         Wipe Tournament
                       </Button>
                     </Grid>
-                    <Grid size={{ xs: 6 }}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
                       <Button
                         variant="outlined"
                         color="warning"
@@ -531,6 +710,166 @@ const Development: React.FC = () => {
                         size="small"
                       >
                         Wipe Matches
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  {/* Players & Shuffle */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Players & Shuffle Tournaments
+                  </Typography>
+                  <Grid container spacing={1} mb={2}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('players')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Players
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('player_rating_history')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Rating History
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('player_match_stats')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Match Stats
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('shuffle_tournament_players')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Shuffle Players
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  {/* Maps & Templates */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Maps & Templates
+                  </Typography>
+                  <Grid container spacing={1} mb={2}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('maps')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Maps
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('map_pools')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Map Pools
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('tournament_templates')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Tourn. Templates
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('elo_calculation_templates')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe ELO Templates
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  {/* Match Events */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Match Events & Results
+                  </Typography>
+                  <Grid container spacing={1} mb={2}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('match_events')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Match Events
+                      </Button>
+                    </Grid>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('match_map_results')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe Map Results
+                      </Button>
+                    </Grid>
+                  </Grid>
+
+                  {/* Settings */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Settings
+                  </Typography>
+                  <Grid container spacing={1}>
+                    <Grid size={{ xs: 6, sm: 4 }}>
+                      <Button
+                        variant="outlined"
+                        color="warning"
+                        onClick={() => handleWipeTable('app_settings')}
+                        disabled={loading || wiping}
+                        fullWidth
+                        size="small"
+                      >
+                        Wipe App Settings
                       </Button>
                     </Grid>
                   </Grid>
@@ -635,7 +974,7 @@ const Development: React.FC = () => {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+    </Box>
   );
 };
 

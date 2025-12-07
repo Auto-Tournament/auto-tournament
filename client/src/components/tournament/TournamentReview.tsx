@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Typography,
@@ -6,18 +6,19 @@ import {
   CardContent,
   Button,
   Chip,
-  Alert,
   Grid,
   Divider,
-  Tooltip,
   CircularProgress,
 } from '@mui/material';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
-import VisibilityIcon from '@mui/icons-material/Visibility';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
+import EditIcon from '@mui/icons-material/Edit';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
+import { useSnackbar } from '../../contexts/SnackbarContext';
+import { api } from '../../utils/api';
+import type { Map } from '../../types/api.types';
+import { getMapDisplayName } from '../../constants/maps';
 
 interface TournamentReviewProps {
   tournament: {
@@ -26,12 +27,13 @@ interface TournamentReviewProps {
     format: string;
     teams: Array<{ id: string; name: string }>;
     maps: string[];
+    teamSize?: number; // For shuffle tournaments
   };
   starting: boolean;
   saving: boolean;
+  registeredPlayerCount?: number; // For shuffle tournaments
   onEdit?: () => void;
   onStart: () => void;
-  onViewBracket: () => void;
   onRegenerate: () => void;
   onDelete: () => void;
 }
@@ -40,124 +42,139 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   tournament,
   starting,
   saving,
+  registeredPlayerCount,
   onEdit,
   onStart,
-  onViewBracket,
   onRegenerate,
   onDelete,
 }) => {
+  const { showWarning } = useSnackbar();
+  const isShuffle = tournament.type === 'shuffle';
+  const teamSize = tournament.teamSize || 5;
+  const minPlayers = teamSize * 2;
+  const hasEnoughPlayers = registeredPlayerCount !== undefined ? registeredPlayerCount >= minPlayers : true;
+  const canStart = !isShuffle || hasEnoughPlayers;
+  const [availableMaps, setAvailableMaps] = useState<Map[]>([]);
+
+  useEffect(() => {
+    const loadMaps = async () => {
+      try {
+        const response = await api.get<{ maps: Map[] }>('/api/maps');
+        if (response.maps) {
+          setAvailableMaps(response.maps);
+        }
+      } catch (err) {
+        console.error('Error loading maps:', err);
+      }
+    };
+    loadMaps();
+  }, []);
+
+  const getDisplayName = (mapId: string): string => {
+    const map = availableMaps.find((m) => m.id === mapId);
+    return map ? map.displayName : getMapDisplayName(mapId);
+  };
+
+  const handleStart = () => {
+    if (!canStart && isShuffle) {
+      showWarning(`Need at least ${minPlayers} players to start the tournament (${teamSize}v${teamSize} matches). Currently registered: ${registeredPlayerCount || 0}`);
+      return;
+    }
+    onStart();
+  };
   return (
     <Card sx={{ mb: 3 }}>
       <CardContent>
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          <Typography variant="h5" fontWeight={600}>
-            Review Tournament
-          </Typography>
-          <Chip label="READY TO START" color="success" />
-        </Box>
+        <Typography variant="h5" fontWeight={600} mb={3} data-testid="tournament-name-display">
+          {tournament.name} • {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
+          {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
+        </Typography>
 
-        <Alert severity="info" sx={{ mb: 3 }} icon={<CheckCircleIcon />}>
-          <Typography variant="body2">
-            Tournament is configured and brackets are generated. Review the details below, then
-            click <strong>"Start Tournament"</strong> to allocate servers and begin matches.
-          </Typography>
-        </Alert>
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid size={{ xs: 12, sm: 6 }}>
 
-        <Grid container spacing={3}>
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Tournament Name
-            </Typography>
-            <Typography variant="body1" fontWeight={600} mb={2}>
-              {tournament.name}
-            </Typography>
-
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Format
-            </Typography>
-            <Typography variant="body1" mb={2}>
-              {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
-              {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
-            </Typography>
+            {!isShuffle && (
+              <>
+                <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                  Teams
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
+                  {tournament.teams.map((team) => (
+                    <Chip key={team.id} label={team.name} size="small" variant="outlined" />
+                  ))}
+                </Box>
+              </>
+            )}
           </Grid>
 
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Teams ({tournament.teams.length})
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
-              {tournament.teams.map((team) => (
-                <Chip key={team.id} label={team.name} size="small" />
-              ))}
-            </Box>
-
-            <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-              Map Pool ({tournament.maps.length})
-            </Typography>
-            <Box display="flex" flexWrap="wrap" gap={1}>
-              {tournament.maps.map((map: string) => (
-                <Chip key={map} label={map} size="small" variant="outlined" />
-              ))}
-            </Box>
-          </Grid>
+          {!isShuffle && (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary" gutterBottom>
+                Maps
+              </Typography>
+              <Box display="flex" flexWrap="wrap" gap={1}>
+                {tournament.maps.map((map: string) => (
+                  <Chip key={map} label={getDisplayName(map)} size="small" variant="outlined" />
+                ))}
+              </Box>
+            </Grid>
+          )}
         </Grid>
 
         <Divider sx={{ my: 3 }} />
 
-        <Box display="flex" gap={2} flexWrap="wrap">
-          <Tooltip
-            title="Automatically allocate servers to ready matches and load them via RCON"
-            PopperProps={{ style: { zIndex: 1200 } }}
+        <Box
+          display="flex"
+          gap={2}
+          flexWrap="wrap"
+          alignItems="center"
+          sx={{
+            '& > *': {
+              flexShrink: 0,
+            },
+          }}
+        >
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />}
+            onClick={handleStart}
+            disabled={starting || saving}
+            sx={{
+              flex: { xs: '1 1 100%', sm: '1 1 auto' },
+              minWidth: 200,
+              ...(!canStart && {
+                bgcolor: 'action.disabledBackground',
+                color: 'action.disabled',
+                '&:hover': {
+                  bgcolor: 'action.disabledBackground',
+                },
+              }),
+            }}
           >
-            <span style={{ flex: 1, minWidth: 200 }}>
-              <Button
-                variant="contained"
-                color="success"
-                size="large"
-                fullWidth
-                startIcon={
-                  starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />
-                }
-                onClick={onStart}
-                disabled={starting || saving}
-              >
-                {starting ? 'Starting...' : 'Start Tournament'}
-              </Button>
-            </span>
-          </Tooltip>
+            {starting ? 'Starting...' : 'Start Tournament'}
+          </Button>
+
           {onEdit && (
-            <Tooltip title="Edit tournament settings" PopperProps={{ style: { zIndex: 1200 } }}>
-              <Button variant="outlined" onClick={onEdit} disabled={starting || saving}>
-                Edit
-              </Button>
-            </Tooltip>
-          )}
-          <Tooltip
-            title="View the bracket structure"
-            PopperProps={{ style: { zIndex: 1200 } }}
-          >
-            <Button variant="outlined" startIcon={<VisibilityIcon />} onClick={onViewBracket}>
-              View Bracket
-            </Button>
-          </Tooltip>
-          <Tooltip
-            title="Recreate brackets with same settings (deletes all match data)"
-            PopperProps={{ style: { zIndex: 1200 } }}
-          >
             <Button
               variant="outlined"
-              color="warning"
+              startIcon={<EditIcon />}
+              onClick={onEdit}
+              disabled={starting || saving}
+            >
+              Edit
+            </Button>
+          )}
+
+          <Box display="flex" gap={1} flexWrap="wrap" sx={{ ml: { xs: 0, sm: 'auto' } }}>
+            <Button
+              variant="outlined"
               startIcon={<RefreshIcon />}
               onClick={onRegenerate}
               disabled={saving}
             >
               Regenerate
             </Button>
-          </Tooltip>
-          <Tooltip
-            title="Permanently delete this tournament and all its data"
-            PopperProps={{ style: { zIndex: 1200 } }}
-          >
             <Button
               variant="outlined"
               color="error"
@@ -167,7 +184,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
             >
               Delete
             </Button>
-          </Tooltip>
+          </Box>
         </Box>
       </CardContent>
     </Card>

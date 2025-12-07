@@ -2,6 +2,7 @@ import { db } from '../config/database';
 import { Team, CreateTeamInput, UpdateTeamInput, TeamResponse, Player } from '../types/team.types';
 import { log } from '../utils/logger';
 import { steamService } from './steamService';
+import { playerService } from './playerService';
 
 class TeamService {
   /**
@@ -123,6 +124,16 @@ class TeamService {
     // Enrich players with avatars from Steam API
     const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
 
+    // Auto-create players in players table (for shuffle tournaments)
+    for (const player of enrichedPlayers) {
+      try {
+        await playerService.getOrCreatePlayer(player.steamId, player.name, player.avatar, player.elo);
+      } catch (error) {
+        // Log but don't fail team creation if player creation fails
+        log.warn(`Failed to create player ${player.steamId} in players table`, { error });
+      }
+    }
+
     // Check if team exists
     const existing = await this.getTeamById(input.id);
     if (existing) {
@@ -179,6 +190,17 @@ class TeamService {
     if (input.players !== undefined) {
       // Enrich players with avatars from Steam API
       const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
+      
+      // Auto-create players in players table (for shuffle tournaments)
+      for (const player of enrichedPlayers) {
+        try {
+          await playerService.getOrCreatePlayer(player.steamId, player.name, player.avatar);
+        } catch (error) {
+          // Log but don't fail team update if player creation fails
+          log.warn(`Failed to create player ${player.steamId} in players table`, { error });
+        }
+      }
+      
       updateData.players = JSON.stringify(enrichedPlayers);
     }
 

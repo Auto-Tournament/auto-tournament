@@ -5,6 +5,7 @@ import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
 import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
+import { getPlayerPageUrl } from '../../utils/playerLinks';
 
 interface PlayerRosterProps {
   team1Name: string;
@@ -102,14 +103,23 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 {/* Player Name */}
                 <Typography
                   variant="body2"
+                  component="a"
+                  href={getPlayerPageUrl(player.steamid)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
                     flex: 1,
                     color: status.isReady
                       ? 'success.contrastText'
                       : status.isConnected
-                      ? 'text.primary'
+                      ? 'primary.main'
                       : 'text.disabled',
                     fontWeight: status.isConnected ? 600 : 400,
+                    textDecoration: 'none',
+                    cursor: status.isConnected || status.isReady ? 'pointer' : 'default',
+                    '&:hover': {
+                      textDecoration: status.isConnected || status.isReady ? 'underline' : 'none',
+                    },
                   }}
                 >
                   {player.name}

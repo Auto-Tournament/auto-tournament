@@ -5,6 +5,7 @@ import { tournamentService } from './tournamentService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
 import { loadMatchOnServer } from './matchLoadingService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
+import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
 import { log } from '../utils/logger';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
@@ -397,20 +398,51 @@ export class MatchAllocationService {
     );
 
     if (!matchCount || matchCount.count === 0) {
-      log.warn('No matches found - regenerating bracket before starting');
-      try {
-        await tournamentService.regenerateBracket(true);
-        log.success('Bracket regenerated successfully');
-      } catch (err) {
-        log.error('Failed to regenerate bracket', err);
-        return {
-          success: false,
-          message:
-            'No matches exist and bracket regeneration failed. Please regenerate bracket manually.',
-          allocated: 0,
-          failed: 0,
-          results: [],
-        };
+      // For shuffle tournaments, generate the first round
+      if (tournament.type === 'shuffle') {
+        log.info('No matches found - generating first round for shuffle tournament');
+        try {
+          const result = await advanceToNextRound();
+          if (!result) {
+            log.error('Failed to generate first round for shuffle tournament');
+            return {
+              success: false,
+              message:
+                'No matches exist and first round generation failed. Please check tournament configuration and registered players.',
+              allocated: 0,
+              failed: 0,
+              results: [],
+            };
+          }
+          log.success(`Generated round ${result.roundNumber} with ${result.matches.length} match(es)`);
+        } catch (err) {
+          log.error('Failed to generate first round for shuffle tournament', err);
+          return {
+            success: false,
+            message:
+              'No matches exist and first round generation failed. Please check tournament configuration and registered players.',
+            allocated: 0,
+            failed: 0,
+            results: [],
+          };
+        }
+      } else {
+        // For other tournament types, regenerate bracket
+        log.warn('No matches found - regenerating bracket before starting');
+        try {
+          await tournamentService.regenerateBracket(true);
+          log.success('Bracket regenerated successfully');
+        } catch (err) {
+          log.error('Failed to regenerate bracket', err);
+          return {
+            success: false,
+            message:
+              'No matches exist and bracket regeneration failed. Please regenerate bracket manually.',
+            allocated: 0,
+            failed: 0,
+            results: [],
+          };
+        }
       }
     }
 
@@ -519,6 +551,42 @@ export class MatchAllocationService {
       }
       if (unallocatedMatches.length > 0) {
         log.info(`Started polling for ${unallocatedMatches.length} unallocated match(es) - will allocate when servers become available`);
+      }
+
+      // For shuffle tournaments: auto-generate first round if no matches exist
+      if (tournament.type === 'shuffle') {
+        const existingMatches = await db.queryAsync<DbMatchRow>(
+          'SELECT * FROM matches WHERE tournament_id = 1 LIMIT 1'
+        );
+        
+        if (existingMatches.length === 0) {
+          // No matches exist yet - generate first round automatically
+          try {
+            log.info('Shuffle tournament: Auto-generating first round...');
+            const roundResult = await generateRoundMatches(1);
+            log.success(`Shuffle tournament: Generated ${roundResult.matches.length} matches for round 1`);
+            
+            // Allocate servers to the newly generated matches
+            // Allocate servers to all matches at once
+            const shuffleResults = await this.allocateServersToMatches(baseUrl);
+            
+            const shuffleAllocated = shuffleResults.filter((r) => r.success).length;
+            const shuffleFailed = shuffleResults.length - shuffleAllocated;
+            
+            allocated += shuffleAllocated;
+            failed += shuffleFailed;
+            
+            // Add shuffle results to main results array
+            results.push(...shuffleResults);
+            
+            log.info(`Shuffle tournament: Allocated ${shuffleAllocated} servers, ${shuffleFailed} failed`);
+          } catch (error) {
+            log.error('Failed to auto-generate first round for shuffle tournament', error);
+            throw new Error(
+              `Failed to start shuffle tournament: ${error instanceof Error ? error.message : 'Unknown error'}`
+            );
+          }
+        }
       }
 
       // Update tournament status to 'in_progress' if starting for the first time

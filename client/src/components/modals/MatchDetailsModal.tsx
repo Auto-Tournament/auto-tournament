@@ -11,6 +11,7 @@ import {
   Grid,
   Card,
   CardContent,
+  Snackbar,
   Alert,
   Tooltip,
   Accordion,
@@ -38,6 +39,7 @@ import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useLiveStats } from '../../hooks/useLiveStats';
 import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
 import { getTeamMatchUrl } from '../../utils/teamLinks';
+import { getPlayerPageUrl } from '../../utils/playerLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { PlayerRoster } from '../match/PlayerRoster';
 import { AddBackupPlayer } from '../admin/AddBackupPlayer';
@@ -203,17 +205,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} mt={1}>
-            {/* Error/Success Messages */}
-            {error && (
-              <Alert severity="error" onClose={() => setError('')}>
-                {error}
-              </Alert>
-            )}
-            {success && (
-              <Alert severity="success" onClose={() => setSuccess('')}>
-                {success}
-              </Alert>
-            )}
 
             {/* Status and Timer */}
             <Box
@@ -519,7 +510,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                                       justifyContent="space-between"
                                       alignItems="center"
                                     >
-                                      <Typography variant="body2" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                        component="a"
+                                        href={getPlayerPageUrl(player.steamId)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{
+                                          color: 'primary.main',
+                                          textDecoration: 'none',
+                                          cursor: 'pointer',
+                                          '&:hover': {
+                                            textDecoration: 'underline',
+                                          },
+                                        }}
+                                      >
                                         {player.name}
                                       </Typography>
                                       <Typography
@@ -579,7 +585,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                                       justifyContent="space-between"
                                       alignItems="center"
                                     >
-                                      <Typography variant="body2" fontWeight={600}>
+                                      <Typography
+                                        variant="body2"
+                                        fontWeight={600}
+                                        component="a"
+                                        href={getPlayerPageUrl(player.steamId)}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        sx={{
+                                          color: 'primary.main',
+                                          textDecoration: 'none',
+                                          cursor: 'pointer',
+                                          '&:hover': {
+                                            textDecoration: 'underline',
+                                          },
+                                        }}
+                                      >
                                         {player.name}
                                       </Typography>
                                       <Typography
@@ -779,6 +800,28 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       </Dialog>
 
       <ToastNotification />
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError('')} variant="filled">
+          {error}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!success}
+        autoHideDuration={4000}
+        onClose={() => setSuccess('')}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSuccess('')} variant="filled">
+          {success}
+        </Alert>
+      </Snackbar>
     </>
   );
 };

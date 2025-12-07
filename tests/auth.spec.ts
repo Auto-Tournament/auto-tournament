@@ -35,10 +35,10 @@ test.describe.serial('Authentication', () => {
       await expect(page).toHaveTitle(/Login/i);
 
       // Check for login form elements
-      const passwordInput = page.getByLabel(/api token/i);
+      const passwordInput = page.getByTestId('login-api-token-input');
       await expect(passwordInput).toBeVisible();
 
-      const loginButton = page.getByRole('button', { name: /sign in/i });
+      const loginButton = page.getByTestId('login-sign-in-button');
       await expect(loginButton).toBeVisible();
     }
   );
@@ -85,15 +85,15 @@ test.describe.serial('Authentication', () => {
       await page.goto('/login');
 
       // Enter invalid token
-      const passwordInput = page.getByLabel(/api token/i);
+      const passwordInput = page.getByTestId('login-api-token-input');
       await passwordInput.fill('invalid-token-12345');
 
       // Click login button
-      const loginButton = page.getByRole('button', { name: /sign in/i });
+      const loginButton = page.getByTestId('login-sign-in-button');
       await loginButton.click();
 
       // Should show error message
-      await expect(page.getByText(/invalid|error|failed/i)).toBeVisible();
+      await expect(page.getByTestId('login-error-message')).toBeVisible();
 
       // Should still be on login page
       await expect(page).toHaveURL(/\/login/);
@@ -118,19 +118,9 @@ test.describe.serial('Authentication', () => {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(200);
 
-      // Click the button using JavaScript evaluation (bypasses all actionability checks)
-      // This directly finds and clicks the button via DOM manipulation
-      await page.evaluate(() => {
-        const buttons = Array.from(document.querySelectorAll('button'));
-        const signOutButton = buttons.find((btn) =>
-          btn.textContent?.toLowerCase().includes('sign out')
-        );
-        if (signOutButton) {
-          (signOutButton as HTMLButtonElement).click();
-        } else {
-          throw new Error('Sign out button not found');
-        }
-      });
+      // Click the sign out button
+      const signOutButton = page.getByTestId('sign-out-button');
+      await signOutButton.click();
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);

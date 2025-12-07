@@ -70,6 +70,7 @@ export type {
   TournamentBracketResponse,
   PlayersResponse,
   PlayerResponse,
+  PlayerDetail,
   VetoStateResponse,
   LogEntry,
   LogsResponse,

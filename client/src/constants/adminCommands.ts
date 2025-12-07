@@ -133,7 +133,7 @@ export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
         command: 'map',
         description: 'Change to a different map (css_map <mapname>)',
         requiresInput: true,
-        inputLabel: 'Map name (e.g. de_dust2)',
+        inputLabel: 'Map name (de_dust2)',
         inputType: 'text',
       },
     ],

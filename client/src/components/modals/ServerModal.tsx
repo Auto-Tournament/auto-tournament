@@ -8,7 +8,6 @@ import {
   TextField,
   Box,
   Typography,
-  Alert,
   Switch,
   FormControlLabel,
   InputAdornment,
@@ -17,6 +16,7 @@ import {
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { ServerStatusResponse } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
 
@@ -48,11 +48,13 @@ const slugifyServerName = (name: string): string => {
 };
 
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
+  const { showSuccess, showError } = useSnackbar();
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
@@ -177,8 +179,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           password: payload.password,
           enabled: payload.enabled,
         });
+        showSuccess('Server updated successfully');
       } else {
         await api.post('/api/servers?upsert=true', payload);
+        showSuccess('Server created successfully');
       }
 
       onSave();
@@ -186,7 +190,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       onClose();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to save server');
+      const errorMessage = error.message || 'Failed to save server';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -203,12 +209,15 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setSaving(true);
     try {
       await api.delete(`/api/servers/${server.id}`);
+      showSuccess('Server deleted successfully');
       onSave();
       resetForm();
       onClose();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to delete server');
+      const errorMessage = error.message || 'Failed to delete server';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -216,14 +225,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="server-modal">
         <DialogTitle>{isEditing ? 'Edit Server' : 'Add Server'}</DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
 
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
@@ -233,6 +237,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               placeholder="Match Server #1"
               required
               fullWidth
+              inputProps={{ 'data-testid': 'server-name-input' }}
             />
 
             <TextField
@@ -242,6 +247,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               placeholder="192.168.1.100"
               required
               fullWidth
+              inputProps={{ 'data-testid': 'server-host-input' }}
             />
 
             <TextField
@@ -252,6 +258,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               type="number"
               required
               fullWidth
+              inputProps={{ 'data-testid': 'server-port-input' }}
             />
 
             <TextField
@@ -263,6 +270,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               required
               fullWidth
               helperText="Password for RCON access to the server"
+              inputProps={{ 'data-testid': 'server-password-input' }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">
@@ -321,7 +329,13 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
           {isEditing && (
-            <Button onClick={handleDeleteClick} color="error" disabled={saving} sx={{ mr: 'auto' }}>
+            <Button
+              data-testid="server-delete-button"
+              onClick={handleDeleteClick}
+              color="error"
+              disabled={saving}
+              sx={{ mr: 'auto' }}
+            >
               Delete Server
             </Button>
           )}
@@ -330,7 +344,13 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               Cancel
             </Button>
           )}
-          <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: isEditing ? 0 : 'auto' }}>
+          <Button
+            data-testid="server-save-button"
+            onClick={handleSave}
+            variant="contained"
+            disabled={saving}
+            sx={{ ml: isEditing ? 0 : 'auto' }}
+          >
             {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Server'}
           </Button>
         </DialogActions>

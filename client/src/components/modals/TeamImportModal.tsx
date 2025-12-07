@@ -18,15 +18,18 @@ import {
 import {
   Close as CloseIcon,
   CheckCircle as CheckCircleIcon,
-  Error as ErrorIcon,
   Info as InfoIcon,
   ExpandMore as ExpandMoreIcon,
   ExpandLess as ExpandLessIcon,
+  OpenInNew as OpenInNewIcon,
 } from '@mui/icons-material';
+import Link from '@mui/material/Link';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface Player {
   name: string;
   steamId: string;
+  elo?: number; // Optional ELO rating (defaults to 3000 if not specified)
 }
 
 interface ImportTeam {
@@ -42,22 +45,23 @@ interface TeamImportModalProps {
 }
 
 export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose, onImport }) => {
+  const { showError, showWarning } = useSnackbar();
   const [jsonInput, setJsonInput] = useState('');
   const [parsedTeams, setParsedTeams] = useState<ImportTeam[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [validationError, setValidationError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [expandedTeams, setExpandedTeams] = useState<Set<number>>(new Set());
 
   const handleClose = () => {
     setJsonInput('');
     setParsedTeams(null);
-    setError(null);
+    setValidationError(null);
     setExpandedTeams(new Set());
     onClose();
   };
 
   const validateTeam = (
-    team: { name?: string; players?: Array<{ name?: string; steamId?: string }> },
+    team: { name?: string; players?: Array<{ name?: string; steamId?: string; elo?: number }> },
     index: number
   ): string | null => {
     if (!team.name || typeof team.name !== 'string') {
@@ -82,40 +86,44 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       if (!/^7656119\d{10}$/.test(player.steamId)) {
         return `Team "${team.name}", Player "${player.name}": Invalid Steam ID format (${player.steamId})`;
       }
+      // Validate ELO if provided
+      if (player.elo !== undefined && (typeof player.elo !== 'number' || player.elo < 0 || player.elo > 10000)) {
+        return `Team "${team.name}", Player "${player.name}": ELO must be a number between 0 and 10000`;
+      }
     }
 
     return null;
   };
 
   const handlePreview = () => {
-    setError(null);
+    setValidationError(null);
     setParsedTeams(null);
 
     try {
       const parsed = JSON.parse(jsonInput);
 
       if (!Array.isArray(parsed)) {
-        setError('JSON must be an array of teams');
+        setValidationError('JSON must be an array of teams');
         return;
       }
 
       if (parsed.length === 0) {
-        setError('Array cannot be empty');
+        setValidationError('Array cannot be empty');
         return;
       }
 
       // Validate each team
       for (let i = 0; i < parsed.length; i++) {
-        const validationError = validateTeam(parsed[i], i);
-        if (validationError) {
-          setError(validationError);
+        const validationErr = validateTeam(parsed[i], i);
+        if (validationErr) {
+          setValidationError(validationErr);
           return;
         }
       }
 
       setParsedTeams(parsed);
     } catch (err) {
-      setError(
+      setValidationError(
         err instanceof Error
           ? `JSON Parse Error: ${err.message}`
           : 'Invalid JSON format. Please check your syntax.'
@@ -131,7 +139,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       await onImport(parsedTeams);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to import teams');
+      showError(err instanceof Error ? err.message : 'Failed to import teams');
     } finally {
       setImporting(false);
     }
@@ -171,6 +179,23 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
               Expected format: Array of teams with name, tag (optional), and players (name +
               steamId).
             </Typography>
+            <Typography variant="caption" component="div" sx={{ mt: 1 }}>
+              <Link
+                href="https://mat.sivert.io/guides/managing-teams/#advanced-bulk-import-json"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 0.5,
+                  textDecoration: 'none',
+                  '&:hover': { textDecoration: 'underline' },
+                }}
+              >
+                View documentation with examples
+                <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
+              </Link>
+            </Typography>
           </Alert>
 
           {/* JSON Input */}
@@ -183,6 +208,8 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             placeholder={`[\n  {\n    "name": "Team Name",\n    "tag": "TN",\n    "players": [\n      {\n        "name": "Player 1",\n        "steamId": "76561198123456789"\n      }\n    ]\n  }\n]`}
             fullWidth
             disabled={importing}
+            error={!!validationError}
+            helperText={validationError}
             sx={{
               '& .MuiInputBase-input': {
                 fontFamily: 'monospace',
@@ -190,13 +217,6 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
               },
             }}
           />
-
-          {/* Error Display */}
-          {error && (
-            <Alert severity="error" icon={<ErrorIcon />}>
-              <Typography variant="body2">{error}</Typography>
-            </Alert>
-          )}
 
           {/* Preview */}
           {parsedTeams && parsedTeams.length > 0 && (
@@ -253,8 +273,16 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                               alignItems="center"
                               justifyContent="space-between"
                               py={0.5}
+                              gap={1}
                             >
-                              <Typography variant="body2">{player.name}</Typography>
+                              <Box>
+                                <Typography variant="body2">{player.name}</Typography>
+                                {player.elo !== undefined && (
+                                  <Typography variant="caption" color="text.secondary">
+                                    ELO: {player.elo}
+                                  </Typography>
+                                )}
+                              </Box>
                               <Typography
                                 variant="caption"
                                 fontFamily="monospace"
@@ -277,7 +305,27 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
 
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         {!parsedTeams ? (
-          <Button onClick={handlePreview} variant="contained" disabled={!jsonInput || importing} sx={{ ml: 'auto' }}>
+          <Button
+            onClick={() => {
+              if (!jsonInput.trim()) {
+                showWarning('Please enter JSON data');
+                return;
+              }
+              handlePreview();
+            }}
+            variant="contained"
+            disabled={importing}
+            sx={{
+              ml: 'auto',
+              ...(!jsonInput.trim() && {
+                bgcolor: 'action.disabledBackground',
+                color: 'action.disabled',
+                '&:hover': {
+                  bgcolor: 'action.disabledBackground',
+                },
+              }),
+            }}
+          >
             Preview
           </Button>
         ) : (
@@ -286,6 +334,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
           </Button>
         )}
       </DialogActions>
+
     </Dialog>
   );
 };

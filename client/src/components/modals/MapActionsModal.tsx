@@ -33,7 +33,7 @@ export default function MapActionsModal({
   if (!map) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-actions-modal">
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{map.displayName}</Typography>
@@ -78,7 +78,7 @@ export default function MapActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
+        <Button data-testid="map-edit-button" onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
           Edit
         </Button>
         <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>

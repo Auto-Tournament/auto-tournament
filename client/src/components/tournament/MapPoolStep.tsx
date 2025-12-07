@@ -14,9 +14,12 @@ import {
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
 import type { MapPool, Map as MapType } from '../../types/api.types';
+import { SortableMapList } from './SortableMapList';
+import { validateMapCount, requiresVeto } from '../../utils/tournamentVerification';
 
 interface MapPoolStepProps {
   format: string;
+  type?: string; // Tournament type - needed for shuffle tournament explanation
   maps: string[];
   mapPools: MapPool[];
   availableMaps: MapType[];
@@ -27,10 +30,12 @@ interface MapPoolStepProps {
   onMapPoolChange: (poolId: string) => void;
   onMapsChange: (maps: string[]) => void;
   onSaveMapPool: () => void;
+  onMapRemove?: (mapId: string) => void;
 }
 
 export function MapPoolStep({
   format,
+  type,
   maps,
   mapPools,
   availableMaps,
@@ -41,6 +46,7 @@ export function MapPoolStep({
   onMapPoolChange,
   onMapsChange,
   onSaveMapPool,
+  onMapRemove,
 }: MapPoolStepProps) {
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
@@ -77,35 +83,35 @@ export function MapPoolStep({
   });
 
   const allMapIds = sortedMaps.map((m) => m.id);
-  const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
+  const isShuffle = type === 'shuffle';
 
-  // Check if selected pool has 7 maps
-  const selectedPool =
-    selectedMapPool !== 'custom' ? mapPools.find((p) => p.id.toString() === selectedMapPool) : null;
-
-  const poolHasCorrectMaps = selectedPool && selectedPool.mapIds.length === 7;
-  const shouldShowVetoError = isVetoFormat && maps.length !== 7 && !poolHasCorrectMaps;
+  // Use verification rules system
+  const mapValidation = validateMapCount(maps, type || '', format);
+  const shouldShowVetoError = requiresVeto(type || '', format) && !mapValidation.valid;
 
   return (
     <Box>
-      <Typography variant="overline" color="primary" fontWeight={600}>
-        Step 3
-      </Typography>
-      <Box display="flex" alignItems="center" gap={1} mb={1}>
-        <Typography variant="subtitle2" fontWeight={600}>
-          Map Pool
-        </Typography>
-        <Chip
-          label={`${maps.length} map${maps.length !== 1 ? 's' : ''}`}
-          size="small"
-          color={maps.length > 0 ? 'success' : 'default'}
-          variant="outlined"
-        />
-      </Box>
+
+      {/* Shuffle Tournament Explanation */}
+      {isShuffle && (
+        <Alert severity="info" sx={{ mb: 3 }} data-testid="shuffle-map-sequence-field">
+          <Typography variant="body2" fontWeight={600} gutterBottom>
+            Map Selection for Shuffle Tournaments
+          </Typography>
+          <Typography variant="body2">
+            All selected maps will be played in sequence. Each map represents one round of matches.
+            The number of maps you choose determines the number of rounds that will be played.
+            {maps.length > 0 && (
+              <strong> You have selected {maps.length} map{maps.length !== 1 ? 's' : ''}, so {maps.length} round{maps.length !== 1 ? 's' : ''} will be played.</strong>
+            )}
+          </Typography>
+        </Alert>
+      )}
       {/* Map Pool Selection Dropdown */}
       <FormControl fullWidth sx={{ mb: 2 }}>
         <InputLabel>Choose a map pool</InputLabel>
         <Select
+          data-testid="tournament-map-pool-select"
           value={selectedMapPool || ''}
           label="Choose a map pool"
           onChange={(e) => onMapPoolChange(e.target.value)}
@@ -116,7 +122,7 @@ export function MapPoolStep({
           {mapPools
             .filter((p) => p.isDefault && p.enabled)
             .map((pool) => (
-              <MenuItem key={pool.id} value={pool.id.toString()}>
+              <MenuItem key={pool.id} value={pool.id.toString()} data-testid="tournament-map-pool-option">
                 {pool.name}
               </MenuItem>
             ))}
@@ -124,39 +130,49 @@ export function MapPoolStep({
           {mapPools
             .filter((p) => !p.isDefault && p.enabled)
             .map((pool) => (
-              <MenuItem key={pool.id} value={pool.id.toString()}>
+              <MenuItem key={pool.id} value={pool.id.toString()} data-testid="tournament-map-pool-option">
                 {pool.name}
               </MenuItem>
             ))}
-          <MenuItem value="custom">Custom</MenuItem>
+          <MenuItem value="custom" data-testid="tournament-map-pool-option">Custom</MenuItem>
         </Select>
       </FormControl>
 
-      {/* Map Preview */}
+      {/* Map Preview - Sortable for shuffle tournaments */}
       {maps.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Selected Maps ({maps.length}):
           </Typography>
-          <Box display="flex" flexWrap="wrap" gap={1}>
-            {maps.map((mapId) => (
-              <Chip
-                key={mapId}
-                label={getMapDisplayName(mapId)}
-                size="small"
-                color="primary"
-                variant="outlined"
-              />
-            ))}
-          </Box>
+          {isShuffle ? (
+            <SortableMapList
+              maps={maps}
+              availableMaps={availableMaps}
+              onMapsReorder={onMapsChange}
+              onMapRemove={onMapRemove}
+              disabled={!canEdit || saving}
+            />
+          ) : (
+            <Box display="flex" flexWrap="wrap" gap={1}>
+              {maps.map((mapId) => (
+                <Chip
+                  key={mapId}
+                  label={getMapDisplayName(mapId)}
+                  size="small"
+                  color="primary"
+                  variant="outlined"
+                />
+              ))}
+            </Box>
+          )}
         </Box>
       )}
 
-      {/* Map Pool Validation for Veto Formats */}
-      {shouldShowVetoError && (
+      {/* Map Pool Validation */}
+      {shouldShowVetoError && mapValidation.message && (
         <Alert severity="warning" icon={<WarningIcon />} sx={{ mb: 2 }}>
           <Typography variant="body2">
-            <strong>Map veto requires exactly 7 maps.</strong> You have selected {maps.length}.
+            <strong>{mapValidation.message}</strong>
           </Typography>
         </Alert>
       )}

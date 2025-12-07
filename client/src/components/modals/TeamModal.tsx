@@ -20,9 +20,12 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
+import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
-import type { Team, Player, PlayerResponse } from '../../types';
+import PlayerSelectionModal from './PlayerSelectionModal';
+import type { Team, Player } from '../../types';
 
 interface TeamModalProps {
   open: boolean;
@@ -65,18 +68,21 @@ const generateTeamTag = (name: string): string => {
 };
 
 export default function TeamModal({ open, team, onClose, onSave }: TeamModalProps) {
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [tag, setTag] = useState('');
-  const [discordRoleId, setDiscordRoleId] = useState('');
   const [players, setPlayers] = useState<Player[]>([]);
   const [newPlayerSteamId, setNewPlayerSteamId] = useState('');
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState<string | undefined>(undefined);
+  const [newPlayerElo, setNewPlayerElo] = useState<number | ''>('');
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [resolving, setResolving] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const [playerSelectionModalOpen, setPlayerSelectionModalOpen] = useState(false);
 
   const isEditing = !!team;
 
@@ -85,7 +91,6 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       setId(team.id);
       setName(team.name);
       setTag(team.tag || '');
-      setDiscordRoleId(team.discordRoleId || '');
       setPlayers(team.players || []);
     } else {
       resetForm();
@@ -96,11 +101,11 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setId('');
     setName('');
     setTag('');
-    setDiscordRoleId('');
     setPlayers([]);
     setNewPlayerSteamId('');
     setNewPlayerName('');
     setNewPlayerAvatar(undefined);
+    setNewPlayerElo('');
     setError('');
   };
 
@@ -125,7 +130,10 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setError('');
 
     try {
-      const response: PlayerResponse = await api.post('/api/steam/resolve', {
+      const response: {
+        success: boolean;
+        player?: { steamId: string; name: string; avatar?: string };
+      } = await api.post('/api/steam/resolve', {
         input: newPlayerSteamId.trim(),
       });
 
@@ -150,7 +158,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   const handleAddPlayer = () => {
     if (!newPlayerSteamId.trim() || !newPlayerName.trim()) {
-      setError('Both Steam ID and player name are required');
+      const errorMsg = 'Both Steam ID and player name are required';
+      setError(errorMsg);
+      showWarning(errorMsg);
       return;
     }
 
@@ -158,7 +168,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
     // Check for duplicates (case-insensitive comparison)
     if (players.some((p) => p.steamId.toLowerCase() === trimmedSteamId.toLowerCase())) {
-      setError('This Steam ID is already in the team');
+      const errorMsg = 'This Steam ID is already in the team';
+      setError(errorMsg);
+      showWarning(errorMsg);
       return;
     }
 
@@ -166,17 +178,60 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       steamId: trimmedSteamId,
       name: newPlayerName.trim(),
       avatar: newPlayerAvatar,
+      elo: newPlayerElo !== '' ? Number(newPlayerElo) : undefined,
     };
-    
+
     setPlayers([...players, playerToAdd]);
     setNewPlayerSteamId('');
     setNewPlayerName('');
     setNewPlayerAvatar(undefined);
+    setNewPlayerElo('');
     setError('');
+    showSuccess('Player added to team');
   };
 
   const handleRemovePlayer = (steamId: string) => {
     setPlayers(players.filter((p) => p.steamId !== steamId));
+  };
+
+  const handleSelectPlayers = (selectedPlayerIds: string[]) => {
+    // Convert selected player IDs to Player objects
+    // We'll need to fetch player details or use the ones from the selection modal
+    // For now, we'll add them as basic player objects and let the user fill in details if needed
+    const newPlayers: Player[] = selectedPlayerIds
+      .filter((id) => !players.some((p) => p.steamId.toLowerCase() === id.toLowerCase()))
+      .map((id) => ({
+        steamId: id,
+        name: `Player ${id.substring(0, 8)}`, // Placeholder name
+        avatar: undefined,
+      }));
+
+    if (newPlayers.length > 0) {
+      // Try to fetch player details for selected IDs
+      Promise.all(
+        newPlayers.map(async (player) => {
+          try {
+            const response = await api.get<{
+              success: boolean;
+              player: { id: string; name: string; avatar?: string; currentElo?: number };
+            }>(`/api/players/${player.steamId}`);
+            if (response.success && response.player) {
+              return {
+                steamId: response.player.id,
+                name: response.player.name,
+                avatar: response.player.avatar,
+                elo: response.player.currentElo,
+              };
+            }
+          } catch {
+            // If player doesn't exist, use placeholder
+          }
+          return player;
+        })
+      ).then((resolvedPlayers) => {
+        setPlayers([...players, ...resolvedPlayers]);
+      });
+    }
   };
 
   const handleSave = async () => {
@@ -198,7 +253,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         id: isEditing ? id.trim() : slugifyTeamName(name),
         name: name.trim(),
         tag: tag.trim() || undefined,
-        discordRoleId: discordRoleId.trim() || undefined,
+        discordRoleId: undefined, // Discord notifications not yet implemented
         players,
       };
 
@@ -207,14 +262,19 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         await api.put(`/api/teams/${team.id}`, {
           name: payload.name,
           tag: payload.tag,
-          discordRoleId: payload.discordRoleId,
+          discordRoleId: undefined, // Discord notifications not yet implemented
           players: payload.players,
         });
+        showSuccess('Team updated successfully');
       } else {
-        const response = await api.post<{ success: boolean; team: Team }>('/api/teams?upsert=true', payload);
+        const response = await api.post<{ success: boolean; team: Team }>(
+          '/api/teams?upsert=true',
+          payload
+        );
         if (response.success && response.team) {
           newTeamId = response.team.id;
         }
+        showSuccess('Team created successfully');
       }
 
       onSave(newTeamId);
@@ -222,7 +282,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       resetForm();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to save team');
+      const errorMessage = error.message || 'Failed to save team';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -239,11 +301,14 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setSaving(true);
     try {
       await api.delete(`/api/teams/${team.id}`);
+      showSuccess('Team deleted successfully');
       onSave();
       resetForm();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to delete team');
+      const errorMessage = error.message || 'Failed to delete team';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -251,15 +316,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="team-modal">
         <DialogTitle>{isEditing ? 'Edit Team' : 'Create New Team'}</DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-          {error && (
-            <Alert severity="error" sx={{ mb: 2 }}>
-              {error}
-            </Alert>
-          )}
-
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
               label="Team Name"
@@ -268,6 +327,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               placeholder="Astralis"
               required
               fullWidth
+              inputProps={{ 'data-testid': 'team-name-input' }}
               helperText="Only letters, numbers, and spaces allowed"
             />
 
@@ -277,23 +337,31 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               onChange={(e) => setTag(e.target.value.toUpperCase())}
               placeholder="AST"
               helperText="Auto-generated from team name (max 4 characters)"
-              inputProps={{ maxLength: 4 }}
-              fullWidth
-            />
-
-            <TextField
-              label="Discord Role ID"
-              value={discordRoleId}
-              onChange={(e) => setDiscordRoleId(e.target.value)}
-              placeholder="123456789012345678"
-              helperText="Optional Discord role ID for notifications"
+              inputProps={{ maxLength: 4, 'data-testid': 'team-tag-input' }}
               fullWidth
             />
 
             <Divider sx={{ my: 1 }} />
 
-            <Typography variant="subtitle1" fontWeight={600}>
-              Players ({players.length})
+            <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+              <Typography data-testid="team-players-count" variant="subtitle1" fontWeight={600}>
+                Players ({players.length})
+              </Typography>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<PersonAddIcon />}
+                onClick={() => setPlayerSelectionModalOpen(true)}
+                data-testid="select-players-button"
+              >
+                Select Players
+              </Button>
+            </Box>
+
+            <Divider sx={{ mb: 2 }} />
+
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Add players by pasting Steam URL or selecting from existing players
             </Typography>
 
             <Box display="flex" flexDirection="column" gap={1}>
@@ -311,6 +379,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
+                  inputProps={{ 'data-testid': 'team-steam-id-input' }}
                 />
                 <Button
                   variant="outlined"
@@ -330,8 +399,25 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 1 }}
+                  inputProps={{ 'data-testid': 'team-player-name-input' }}
+                />
+                <TextField
+                  label="ELO (optional)"
+                  type="number"
+                  value={newPlayerElo}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewPlayerElo(value === '' ? '' : Number(value));
+                  }}
+                  placeholder="3000"
+                  size="small"
+                  disabled={resolving}
+                  inputProps={{ min: 0, max: 10000, 'data-testid': 'team-player-elo-input' }}
+                  helperText="Default: 3000"
+                  sx={{ flex: 1, maxWidth: 150 }}
                 />
                 <Button
+                  data-testid="team-add-player-button"
                   variant="contained"
                   onClick={handleAddPlayer}
                   disabled={resolving}
@@ -365,20 +451,37 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                     </ListItemAvatar>
                     <ListItemText
                       primary={player.name}
-                      secondary={player.steamId}
+                      secondary={
+                        <>
+                          <Typography component="span" variant="caption" display="block" fontFamily="monospace">
+                            {player.steamId}
+                          </Typography>
+                          {player.elo !== undefined && (
+                            <Typography component="span" variant="caption" color="text.secondary" display="block">
+                              ELO: {player.elo}
+                            </Typography>
+                          )}
+                        </>
+                      }
                       primaryTypographyProps={{ fontWeight: 500 }}
                     />
                   </ListItem>
                 ))}
               </List>
             ) : (
-              <Alert severity="info">No players added yet. Add at least one player.</Alert>
+              <Alert data-testid="team-no-players-alert" severity="info">No players added yet. Add at least one player.</Alert>
             )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
           {isEditing && (
-            <Button onClick={handleDeleteClick} color="error" disabled={saving} sx={{ mr: 'auto' }}>
+            <Button
+              data-testid="team-delete-button"
+              onClick={handleDeleteClick}
+              color="error"
+              disabled={saving}
+              sx={{ mr: 'auto' }}
+            >
               Delete Team
             </Button>
           )}
@@ -388,6 +491,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             </Button>
           )}
           <Button
+            data-testid="team-save-button"
             onClick={handleSave}
             variant="contained"
             disabled={saving}
@@ -407,6 +511,14 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDeleteOpen(false)}
         confirmColor="error"
+      />
+
+      <PlayerSelectionModal
+        open={playerSelectionModalOpen}
+        teamId={team?.id}
+        selectedPlayerIds={players.map((p) => p.steamId)}
+        onClose={() => setPlayerSelectionModalOpen(false)}
+        onSelect={handleSelectPlayers}
       />
     </>
   );

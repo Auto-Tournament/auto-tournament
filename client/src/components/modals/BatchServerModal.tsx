@@ -25,6 +25,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ErrorIcon from '@mui/icons-material/Error';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface BatchServerModalProps {
   open: boolean;
@@ -50,6 +51,7 @@ interface ServerVerification {
 }
 
 export default function BatchServerModal({ open, onClose, onSave }: BatchServerModalProps) {
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const [baseName, setBaseName] = useState('');
   const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
@@ -57,6 +59,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const [ports, setPorts] = useState<string[]>(['27015', '27025', '27035']);
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -207,28 +210,28 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const handleSave = async () => {
     // Validation
     if (!baseName.trim()) {
-      setError('Base name is required');
+      showWarning('Base name is required');
       return;
     }
 
     if (!baseId.trim()) {
-      setError('Base ID is required');
+      showWarning('Base ID is required');
       return;
     }
 
     if (!host.trim()) {
-      setError('Host is required');
+      showWarning('Host is required');
       return;
     }
 
     const serverCount = parseInt(count);
     if (isNaN(serverCount) || serverCount < 1 || serverCount > 50) {
-      setError('Number of servers must be between 1 and 50');
+      showWarning('Number of servers must be between 1 and 50');
       return;
     }
 
     if (!password.trim()) {
-      setError('RCON password is required');
+      showWarning('RCON password is required');
       return;
     }
 
@@ -236,13 +239,17 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     for (let i = 0; i < serverCount; i++) {
       const portNum = parseInt(ports[i]);
       if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-        setError(`Server #${i + 1} port must be between 1 and 65535`);
+        showWarning(`Server #${i + 1} port must be between 1 and 65535`);
         return;
       }
     }
 
+    if (!allServersVerified()) {
+      showWarning('Please verify all servers before creating');
+      return;
+    }
+
     setSaving(true);
-    setError('');
 
     try {
       const servers: ServerConfig[] = [];
@@ -276,14 +283,19 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       }
 
       if (successCount === serverCount) {
+        showSuccess(`Successfully created ${successCount} server(s)`);
         onSave();
         handleClose();
       } else {
-        setError(`Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`);
+        const errorMessage = `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`;
+        setError(errorMessage);
+        showError(errorMessage);
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to create servers');
+      const errorMessage = error.message || 'Failed to create servers';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -308,152 +320,177 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>Batch Create Servers</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-            {error}
-          </Alert>
-        )}
-
-        <Stack spacing={2}>
+        <Stack spacing={3}>
           <Alert severity="info">
-            Create multiple servers with ports incrementing by 10 (e.g., 27015, 27025, 27035...).
+            Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...).
             Perfect for LAN setups with servers on the same machine.
           </Alert>
 
-          <TextField
-            label="Base ID"
-            value={baseId}
-            onChange={(e) => setBaseId(e.target.value)}
-            placeholder="ntlan"
-            helperText="Server IDs will be: base_1, base_2, base_3..."
-            required
-            fullWidth
-          />
+          {/* Server Identification Group */}
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Server Identification
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="Base ID"
+                value={baseId}
+                onChange={(e) => setBaseId(e.target.value)}
+                placeholder="ntlan"
+                helperText="Server IDs will be: base_1, base_2, base_3..."
+                required
+                fullWidth
+              />
 
-          <TextField
-            label="Base Name"
-            value={baseName}
-            onChange={(e) => setBaseName(e.target.value)}
-            placeholder="NTLAN"
-            helperText="Server names will be: Base #1, Base #2, Base #3..."
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Host / IP Address"
-            value={host}
-            onChange={(e) => {
-              setHost(e.target.value);
-              // Reset verification when host changes
-              setVerificationStatuses(new Map());
-            }}
-            placeholder="192.168.1.100"
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Number of Servers"
-            value={count}
-            onChange={(e) => handleCountChange(e.target.value)}
-            placeholder="3"
-            type="number"
-            inputProps={{ min: 1, max: 50 }}
-            required
-            fullWidth
-            helperText="Max: 50"
-          />
+              <TextField
+                label="Base Name"
+                value={baseName}
+                onChange={(e) => setBaseName(e.target.value)}
+                placeholder="NTLAN"
+                helperText="Server names will be: Base #1, Base #2, Base #3..."
+                required
+                fullWidth
+              />
+            </Stack>
+          </Box>
 
           <Divider />
 
+          {/* Connection Settings Group */}
           <Box>
-            <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-              Assign Ports
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Connection Settings
             </Typography>
-            <Grid container spacing={2}>
-              {Array.from({ length: serverCount }, (_, i) => {
-                const verification = verificationStatuses.get(i);
-                const status = verification?.status || 'pending';
-                return (
-                  <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
-                    <TextField
-                      label={`Server #${i + 1}`}
-                      value={ports[i] || ''}
-                      onChange={(e) => {
-                        handlePortChange(i, e.target.value);
-                        // Reset verification when port changes
-                        const newStatuses = new Map(verificationStatuses);
-                        newStatuses.delete(i);
-                        setVerificationStatuses(newStatuses);
-                      }}
-                      placeholder="27015"
-                      type="number"
-                      inputProps={{ min: 1, max: 65535 }}
-                      required
-                      fullWidth
-                      size="small"
-                      InputProps={{
-                        endAdornment: status === 'checking' ? (
-                          <CircularProgress size={16} />
-                        ) : status === 'success' ? (
-                          <CheckCircleIcon color="success" fontSize="small" />
-                        ) : status === 'error' ? (
-                          <ErrorIcon color="error" fontSize="small" />
-                        ) : null,
-                      }}
-                      helperText={
-                        verification?.status === 'error' ? verification.error : undefined
-                      }
-                      error={verification?.status === 'error'}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
+            <Stack spacing={2}>
+              <TextField
+                label="Host / IP Address"
+                value={host}
+                onChange={(e) => {
+                  setHost(e.target.value);
+                  // Reset verification when host changes
+                  setVerificationStatuses(new Map());
+                }}
+                placeholder="192.168.1.100"
+                required
+                fullWidth
+              />
+
+              <TextField
+                label="RCON Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  // Reset verification when password changes
+                  setVerificationStatuses(new Map());
+                }}
+                placeholder="shared-rcon-password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                fullWidth
+                helperText="Same password for all servers"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
           </Box>
 
-          <TextField
-            label="RCON Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              // Reset verification when password changes
-              setVerificationStatuses(new Map());
-            }}
-            placeholder="shared-rcon-password"
-            type={showPassword ? 'text' : 'password'}
-            required
-            fullWidth
-            helperText="Same password for all servers"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Divider />
 
-          <FormControlLabel
-            control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
-            label={
+          {/* Server Configuration Group */}
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Server Configuration
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="Number of Servers"
+                value={count}
+                onChange={(e) => handleCountChange(e.target.value)}
+                placeholder="3"
+                type="number"
+                inputProps={{ min: 1, max: 50 }}
+                required
+                fullWidth
+                helperText="Max: 50"
+              />
+
               <Box>
-                <Typography variant="body2" fontWeight={500}>
-                  Servers Enabled
+                <Typography variant="body2" fontWeight={500} gutterBottom>
+                  Assign Ports
                 </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  All servers will be created as enabled/disabled
-                </Typography>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {Array.from({ length: serverCount }, (_, i) => {
+                    const verification = verificationStatuses.get(i);
+                    const status = verification?.status || 'pending';
+                    return (
+                      <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
+                        <TextField
+                          label={`Server #${i + 1}`}
+                          value={ports[i] || ''}
+                          onChange={(e) => {
+                            handlePortChange(i, e.target.value);
+                            // Reset verification when port changes
+                            const newStatuses = new Map(verificationStatuses);
+                            newStatuses.delete(i);
+                            setVerificationStatuses(newStatuses);
+                          }}
+                          placeholder="27015"
+                          type="number"
+                          inputProps={{ min: 1, max: 65535 }}
+                          required
+                          fullWidth
+                          size="small"
+                          InputProps={{
+                            endAdornment: status === 'checking' ? (
+                              <CircularProgress size={16} />
+                            ) : status === 'success' ? (
+                              <CheckCircleIcon color="success" fontSize="small" />
+                            ) : status === 'error' ? (
+                              <ErrorIcon color="error" fontSize="small" />
+                            ) : null,
+                          }}
+                          helperText={
+                            verification?.status === 'error' ? verification.error : undefined
+                          }
+                          error={verification?.status === 'error'}
+                        />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
               </Box>
-            }
-          />
+            </Stack>
+          </Box>
+
+          <Divider />
+
+          {/* Options Group */}
+          <Box>
+            <FormControlLabel
+              control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    Servers Enabled
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    All servers will be created as enabled/disabled
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
 
           {preview.length > 0 && (
             <>
@@ -496,8 +533,17 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={saving || !allServersVerified()}
-          sx={{ ml: 'auto' }}
+          disabled={saving}
+          sx={{
+            ml: 'auto',
+            ...(!allServersVerified() && {
+              bgcolor: 'action.disabledBackground',
+              color: 'action.disabled',
+              '&:hover': {
+                bgcolor: 'action.disabledBackground',
+              },
+            }),
+          }}
         >
           {saving
             ? 'Creating...'

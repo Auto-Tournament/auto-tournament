@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface ChangeItem {
   field: string;
@@ -36,6 +37,15 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
   onConfirm,
   onCancel,
 }) => {
+  const { showWarning } = useSnackbar();
+
+  const handleConfirm = () => {
+    if (changes.length === 0) {
+      showWarning('No changes to apply');
+      return;
+    }
+    onConfirm();
+  };
   const formatValue = (value: string | string[]): string => {
     if (Array.isArray(value)) {
       if (value.length === 0) return 'None';
@@ -160,12 +170,20 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button
-          onClick={onConfirm}
+          onClick={handleConfirm}
           variant="contained"
           color={isLive && hasStructuralChanges ? 'warning' : 'primary'}
-          disabled={changes.length === 0}
           autoFocus
-          sx={{ ml: 'auto' }}
+          sx={{
+            ml: 'auto',
+            ...(changes.length === 0 && {
+              bgcolor: 'action.disabledBackground',
+              color: 'action.disabled',
+              '&:hover': {
+                bgcolor: 'action.disabledBackground',
+              },
+            }),
+          }}
         >
           {isLive && hasStructuralChanges ? 'Apply Changes (Risky!)' : 'Apply Changes'}
         </Button>

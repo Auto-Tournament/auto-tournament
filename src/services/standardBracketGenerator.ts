@@ -57,13 +57,18 @@ export class StandardBracketGenerator implements IBracketGenerator {
 
     try {
       // Create the stage (tournament)
+      const seedingArray = participants.map((p) => p.name);
+      log.debug(`Creating stage with ${teamIds.length} teams, seeding: ${JSON.stringify(seedingArray)}`);
+      
       await this.manager.create.stage({
         name: tournament.name,
         tournamentId: 0,
         type: stageType,
-        seeding: participants.map((p) => p.name),
+        seeding: seedingArray,
         settings: stageSettings,
       });
+      
+      log.debug(`Stage created, checking generated matches...`);
 
       // Get the generated matches
       const matches = await this.storage.select('match');
@@ -76,6 +81,31 @@ export class StandardBracketGenerator implements IBracketGenerator {
 
       if (!matches || matches.length === 0) {
         throw new Error(`Failed to generate ${stageType} bracket with ${teamIds.length} teams`);
+      }
+
+      // Debug: Log first round matches to see if teams are assigned
+      const firstRoundMatches = (matches as Match[]).filter((m) => {
+        const roundId = typeof m.round_id === 'number' ? m.round_id : parseInt(String(m.round_id), 10);
+        return roundId === 0; // brackets-manager uses 0-based rounds, so 0 = first round
+      });
+      
+      if (firstRoundMatches.length > 0) {
+        log.debug(`Generated ${firstRoundMatches.length} first round matches`);
+        const matchesWithTeams = firstRoundMatches.filter((m) => 
+          (m.opponent1?.id !== undefined && m.opponent1.id !== null) ||
+          (m.opponent2?.id !== undefined && m.opponent2.id !== null)
+        );
+        log.debug(`${matchesWithTeams.length} first round matches have opponents assigned`);
+        
+        // Detailed logging for debugging
+        firstRoundMatches.forEach((m, idx) => {
+          log.debug(`First round match ${idx + 1}: opponent1.id=${m.opponent1?.id ?? 'null'}, opponent2.id=${m.opponent2?.id ?? 'null'}, opponent1=${JSON.stringify(m.opponent1)}, opponent2=${JSON.stringify(m.opponent2)}`);
+        });
+        
+        if (matchesWithTeams.length === 0) {
+          log.warn('No first round matches have opponents assigned - this may indicate a brackets-manager issue');
+          log.warn(`Tournament has ${teamIds.length} teams, seeding: ${JSON.stringify(participants.map((p) => p.name))}`);
+        }
       }
 
       // Convert brackets-manager matches to our format
@@ -150,18 +180,31 @@ export class StandardBracketGenerator implements IBracketGenerator {
         const roundNum = bmRoundNum + 1;
 
         // Map team IDs (brackets-manager uses indices, we use actual team IDs)
-        const team1Id =
-          bmMatch.opponent1?.id !== undefined &&
-          bmMatch.opponent1.id !== null &&
-          typeof bmMatch.opponent1.id === 'number'
-            ? tournament.teamIds[bmMatch.opponent1.id] || null
-            : null;
-        const team2Id =
-          bmMatch.opponent2?.id !== undefined &&
-          bmMatch.opponent2.id !== null &&
-          typeof bmMatch.opponent2.id === 'number'
-            ? tournament.teamIds[bmMatch.opponent2.id] || null
-            : null;
+        // For first round matches, brackets-manager should assign opponents immediately
+        // opponent.id is the participant index (0-based), which maps to tournament.teamIds[index]
+        let team1Id: string | null = null;
+        let team2Id: string | null = null;
+        
+        // Check opponent1 - brackets-manager uses participant indices
+        if (bmMatch.opponent1) {
+          // opponent.id is the participant index (0, 1, 2, etc.)
+          if (typeof bmMatch.opponent1.id === 'number' && bmMatch.opponent1.id >= 0 && bmMatch.opponent1.id < tournament.teamIds.length) {
+            team1Id = tournament.teamIds[bmMatch.opponent1.id] || null;
+          }
+        }
+        
+        // Check opponent2 - brackets-manager uses participant indices
+        if (bmMatch.opponent2) {
+          // opponent.id is the participant index (0, 1, 2, etc.)
+          if (typeof bmMatch.opponent2.id === 'number' && bmMatch.opponent2.id >= 0 && bmMatch.opponent2.id < tournament.teamIds.length) {
+            team2Id = tournament.teamIds[bmMatch.opponent2.id] || null;
+          }
+        }
+        
+        // Log warning if first round match has no teams (shouldn't happen for single elimination)
+        if (roundNum === 1 && (!team1Id || !team2Id)) {
+          log.warn(`First round match ${slug} missing teams: team1=${team1Id}, team2=${team2Id}, opponent1.id=${bmMatch.opponent1?.id}, opponent2.id=${bmMatch.opponent2?.id}`);
+        }
 
         // Determine status
         let status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';

@@ -46,6 +46,16 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
+    // Fake server for screenshots/testing - always return online
+    // Servers with IP 0.0.0.0 are treated as always online (fake servers)
+    if (server.host === '0.0.0.0') {
+      return res.json({
+        success: true,
+        status: 'online',
+        serverId: id,
+      });
+    }
+
     // Try to connect and send a simple command
     const result = await rconService.sendCommand(id, 'status');
 

@@ -72,9 +72,74 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'text.disabled';
   };
 
+  const isShuffleMatch = () => {
+    // Check if team IDs match shuffle tournament pattern
+    return (
+      (match.team1?.id?.startsWith('shuffle-') || match.team2?.id?.startsWith('shuffle-')) ||
+      (match.config?.team1?.id?.startsWith('shuffle-') || match.config?.team2?.id?.startsWith('shuffle-'))
+    );
+  };
+
+  const normalizeConfigPlayers = (
+    rawPlayers: unknown
+  ): Array<{ name: string; elo?: number }> => {
+    if (!rawPlayers) return [];
+
+    // Already an array of players
+    if (Array.isArray(rawPlayers)) {
+      return rawPlayers
+        .map((p) => {
+          if (!p || typeof p !== 'object') return null;
+          const obj = p as { name?: string; elo?: number };
+          if (!obj.name) return null;
+          return { name: obj.name, elo: obj.elo };
+        })
+        .filter((p): p is { name: string; elo?: number } => p !== null);
+    }
+
+    // MatchZy-style map: { steamId: name } or { steamId: { name, elo? } }
+    if (typeof rawPlayers === 'object') {
+      const entries: Array<{ name: string; elo?: number }> = [];
+      Object.values(rawPlayers as Record<string, unknown>).forEach((value) => {
+        if (typeof value === 'string') {
+          entries.push({ name: value });
+        } else if (value && typeof value === 'object' && 'name' in (value as any)) {
+          const v = value as { name?: string; elo?: number };
+          if (v.name) {
+            entries.push({ name: v.name, elo: v.elo });
+          }
+        }
+      });
+      return entries;
+    }
+
+    return [];
+  };
+
   const getTeamName = (teamId: string | undefined) => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
-    if (team) return team.name;
+    if (team) {
+      // For shuffle tournaments, show player count or player names if available
+      if (isShuffleMatch()) {
+        const configTeam = teamId === match.team1?.id ? match.config?.team1 : match.config?.team2;
+        const configPlayers = normalizeConfigPlayers(configTeam?.players);
+        if (configPlayers.length > 0) {
+          // Show first few player names with ELO if available
+          const playerDisplay = configPlayers
+            .slice(0, 3)
+            .map((p) => (p.elo ? `${p.name} (${p.elo})` : p.name))
+            .join(', ');
+          const remaining = configPlayers.length - 3;
+          return remaining > 0 ? `${playerDisplay} +${remaining}` : playerDisplay;
+        }
+        // Fallback to team name with player count
+        const playerCount = teamId === match.team1?.id 
+          ? (match.team1Players?.length || match.config?.expected_players_team1 || 5)
+          : (match.team2Players?.length || match.config?.expected_players_team2 || 5);
+        return `${team.name} (${playerCount} players)`;
+      }
+      return team.name;
+    }
     if (match.status === 'completed') return '—';
     return 'TBD';
   };
@@ -160,15 +225,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               borderColor: getTeamBorderColor(match.team1?.id),
             }}
           >
-            <Typography
-              variant="body1"
-              fontWeight={isWinner(match.team1?.id) ? 600 : 500}
-              sx={{
-                color: getTeamTextColor(match.team1?.id),
-              }}
-            >
-              {getTeamName(match.team1?.id)}
-            </Typography>
+            <Box flex={1}>
+              <Typography
+                variant="body1"
+                fontWeight={isWinner(match.team1?.id) ? 600 : 500}
+                sx={{
+                  color: getTeamTextColor(match.team1?.id),
+                }}
+              >
+                {getTeamName(match.team1?.id)}
+              </Typography>
+              {isShuffleMatch() && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                  {normalizeConfigPlayers(match.config?.team1?.players).length} players
+                </Typography>
+              )}
+            </Box>
             {isWinner(match.team1?.id) && (
               <Chip
                 label="WINNER"
@@ -210,15 +282,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               borderColor: getTeamBorderColor(match.team2?.id),
             }}
           >
-            <Typography
-              variant="body1"
-              fontWeight={isWinner(match.team2?.id) ? 600 : 500}
-              sx={{
-                color: getTeamTextColor(match.team2?.id),
-              }}
-            >
-              {getTeamName(match.team2?.id)}
-            </Typography>
+            <Box flex={1}>
+              <Typography
+                variant="body1"
+                fontWeight={isWinner(match.team2?.id) ? 600 : 500}
+                sx={{
+                  color: getTeamTextColor(match.team2?.id),
+                }}
+              >
+                {getTeamName(match.team2?.id)}
+              </Typography>
+              {isShuffleMatch() && (
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
+                  {normalizeConfigPlayers(match.config?.team2?.players).length} players
+                </Typography>
+              )}
+            </Box>
             {isWinner(match.team2?.id) && (
               <Chip
                 label="WINNER"

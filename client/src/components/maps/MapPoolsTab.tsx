@@ -35,9 +35,9 @@ export function MapPoolsTab({
   }
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} data-testid="map-pools-list">
       {mapPools.map((pool) => (
-        <Grid item xs={12} sm={6} md={4} key={pool.id} sx={{ display: 'flex' }}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={pool.id} sx={{ display: 'flex' }}>
           <MapPoolCard pool={pool} maps={maps} onClick={onPoolClick} />
         </Grid>
       ))}

@@ -17,8 +17,9 @@ services:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
       - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    # No persistent volume - database data is ephemeral and will be lost on container removal
+    # volumes:
+    #   - postgres-data:/var/lib/postgresql/data
     # No port binding needed - DB is only accessible within Docker network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
@@ -32,6 +33,8 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        VITE_ENABLE_DEV_PAGE: "true" # Enable dev page in local Docker builds
       # PostgreSQL required for all setups
     container_name: matchzy-tournament-api-dev
     restart: unless-stopped
@@ -52,6 +55,7 @@ services:
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=${DB_NAME:-matchzy_tournament}
+      - VITE_ENABLE_DEV_PAGE=true # Enable dev page in local Docker builds
     volumes:
       # Persist demos and other data
       - ./data:/app/data
@@ -71,5 +75,4 @@ networks:
 volumes:
   matchzy-data:
     driver: local
-  postgres-data:
-    driver: local
+  # postgres-data removed - database is now ephemeral

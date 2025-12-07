@@ -25,6 +25,30 @@ export class RconService {
       };
     }
 
+    // Fake server for screenshots/testing - always return success
+    // Servers with IP 0.0.0.0 are treated as always online (fake servers)
+    if (server.host === '0.0.0.0') {
+      return {
+        success: true,
+        serverId,
+        serverName: server.name,
+        command,
+        response: `"${command}" = "fake_response"`, // Mock response format
+        timestamp: Date.now(),
+      };
+    }
+
+    if (!server) {
+      return {
+        success: false,
+        serverId,
+        serverName: 'Unknown',
+        command,
+        error: `Server '${serverId}' not found`,
+        timestamp: Date.now(),
+      };
+    }
+
     if (!server.enabled) {
       return {
         success: false,

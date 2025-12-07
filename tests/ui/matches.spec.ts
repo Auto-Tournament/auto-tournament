@@ -26,8 +26,8 @@ test.describe.serial('Matches UI', () => {
       await expect(page).toHaveTitle(/Matches/i);
       await page.waitForLoadState('networkidle');
 
-      // Check for matches page heading
-      await expect(page.getByRole('heading', { name: /matches/i, level: 4 })).toBeVisible();
+      // Verify matches page loaded
+      await expect(page.getByTestId('matches-page')).toBeVisible({ timeout: 5000 });
     }
   );
 
@@ -41,37 +41,21 @@ test.describe.serial('Matches UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Check for either matches list or empty state
-      const matchesList = page.locator('text=/match|round|status/i');
-      const emptyState = page.locator("text=/no.*matches|haven't.*created|empty/i");
+      const matchesList = page.getByTestId('matches-list');
+      const emptyState = page.getByTestId('matches-empty-state');
 
-      const hasMatches = await matchesList
-        .first()
-        .isVisible()
-        .catch(() => false);
+      const hasMatches = await matchesList.isVisible().catch(() => false);
       const isEmpty = await emptyState.isVisible().catch(() => false);
 
       // Should have either matches or empty state
       expect(hasMatches || isEmpty).toBeTruthy();
 
       // Check for filter/search inputs
-      const searchInput = page
-        .getByPlaceholder(/search|filter/i)
-        .or(page.locator('input[type="search"]'));
+      const searchInput = page.getByTestId('matches-search-input');
       const hasSearch = await searchInput.isVisible().catch(() => false);
 
       if (hasSearch) {
         await expect(searchInput).toBeVisible();
-      }
-
-      // Look for status indicators
-      const statusIndicators = page.locator('text=/pending|ready|loaded|live|completed|status/i');
-      const hasStatus = await statusIndicators
-        .first()
-        .isVisible()
-        .catch(() => false);
-
-      if (hasStatus) {
-        await expect(statusIndicators.first()).toBeVisible();
       }
     }
   );

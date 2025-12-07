@@ -57,8 +57,11 @@ class TournamentService {
   async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
     const { name, type, format, maps, teamIds, settings } = input;
 
-    // Validate team count based on tournament type
-    validateTeamCount(type, teamIds.length);
+    // Shuffle tournaments don't use teams, skip validation
+    if (type !== 'shuffle') {
+      // Validate team count based on tournament type
+      validateTeamCount(type, teamIds.length);
+    }
 
     const tournamentSettings: TournamentSettings = {
       ...DEFAULT_SETTINGS,
@@ -79,7 +82,7 @@ class TournamentService {
       format,
       status: 'setup',
       maps: JSON.stringify(maps),
-      team_ids: JSON.stringify(teamIds),
+      team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
       settings: JSON.stringify(tournamentSettings),
       created_at: now,
       updated_at: now,
@@ -87,21 +90,26 @@ class TournamentService {
 
     log.success(`Tournament created: ${name} (${type})`);
 
-    // Auto-generate bracket
-    try {
-      await this.generateBracket();
-      log.success('Bracket automatically generated');
-    } catch (err) {
-      log.error('Failed to auto-generate bracket', err);
+    // Shuffle tournaments don't use bracket generation
+    if (type !== 'shuffle') {
+      // Auto-generate bracket
+      try {
+        await this.generateBracket();
+        log.success('Bracket automatically generated');
+      } catch (err) {
+        log.error('Failed to auto-generate bracket', err);
 
-      // Clean up: Delete the tournament since bracket generation failed
-      await db.execAsync('DELETE FROM tournament WHERE id = 1');
-      log.warn('Tournament deleted due to bracket generation failure');
+        // Clean up: Delete the tournament since bracket generation failed
+        await db.execAsync('DELETE FROM tournament WHERE id = 1');
+        log.warn('Tournament deleted due to bracket generation failure');
 
-      // Re-throw to prevent returning tournament in broken state
-      throw new Error(
-        `Bracket generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
-      );
+        // Re-throw to prevent returning tournament in broken state
+        throw new Error(
+          `Bracket generation failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
+      }
+    } else {
+      log.info('Shuffle tournament created - bracket generation skipped (not applicable)');
     }
 
     const created = await this.getTournament();

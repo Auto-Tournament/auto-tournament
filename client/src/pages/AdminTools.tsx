@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -14,6 +14,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   TextField,
+  Snackbar,
   Alert,
   Chip,
   CircularProgress,
@@ -41,6 +42,7 @@ interface Server {
 }
 
 const AdminTools: React.FC = () => {
+  const { setHeaderActions } = usePageHeader();
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServerId, setSelectedServerId] = useState<string>('all');
   const [loadingServers, setLoadingServers] = useState(true);
@@ -48,11 +50,7 @@ const AdminTools: React.FC = () => {
 
   const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
 
-  useEffect(() => {
-    loadServers();
-  }, []);
-
-  const loadServers = async () => {
+  const loadServers = React.useCallback(async () => {
     setLoadingServers(true);
     try {
       const response: { servers: Server[] } = await api.get('/api/servers');
@@ -63,7 +61,28 @@ const AdminTools: React.FC = () => {
     } finally {
       setLoadingServers(false);
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    loadServers();
+  }, [loadServers]);
+
+  React.useEffect(() => {
+    setHeaderActions(
+      <Button
+        variant="outlined"
+        startIcon={<RefreshIcon />}
+        onClick={loadServers}
+        disabled={loadingServers}
+      >
+        Refresh Servers
+      </Button>
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, loadingServers, loadServers]);
 
   const handleExecuteCommand = async (command: AdminCommand) => {
     clearMessages();
@@ -97,29 +116,16 @@ const AdminTools: React.FC = () => {
 
   if (loadingServers) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={600}>
-          Admin Tools
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={loadServers}
-          disabled={loadingServers}
-        >
-          Refresh Servers
-        </Button>
-      </Box>
+    <Box sx={{ width: '100%', height: '100%' }}>
 
       <Typography variant="h5" fontWeight={600} mb={3}>
         RCON Commands
@@ -173,17 +179,6 @@ const AdminTools: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* Feedback Messages */}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={clearMessages}>
-          {success}
-        </Alert>
-      )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={clearMessages}>
-          {error}
-        </Alert>
-      )}
 
       {/* Execution Results */}
       {results.length > 0 && (
@@ -345,7 +340,29 @@ const AdminTools: React.FC = () => {
           <LogViewer />
         </AccordionDetails>
       </Accordion>
-    </Container>
+
+      <Snackbar
+        open={!!success}
+        autoHideDuration={4000}
+        onClose={clearMessages}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={clearMessages} variant="filled">
+          {success}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={clearMessages}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={clearMessages} variant="filled">
+          {error}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 };
 

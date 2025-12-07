@@ -45,6 +45,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
             {tournament.name}
           </Typography>
           <Chip
+            data-testid="tournament-status"
             label={tournament.status === 'in_progress' ? 'LIVE' : 'COMPLETED'}
             color={tournament.status === 'in_progress' ? 'warning' : 'success'}
           />
@@ -83,9 +84,11 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           <Tooltip
             title="View the tournament bracket and match details"
             PopperProps={{ style: { zIndex: 1200 } }}
+            enterDelay={500}
           >
             <span style={{ flex: 1, minWidth: 200 }}>
               <Button
+                data-testid="view-bracket-button"
                 variant="contained"
                 fullWidth
                 startIcon={<VisibilityIcon />}
@@ -99,6 +102,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
             <Tooltip
               title="End all active matches on servers and reload them (useful for stuck matches)"
               PopperProps={{ style: { zIndex: 1200 } }}
+              enterDelay={500}
             >
               <Box flex={1} minWidth={200}>
                 <RestartTournamentButton fullWidth variant="outlined" size="medium" />
@@ -108,6 +112,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           <Tooltip
             title="End all matches and reset tournament to setup mode (keeps tournament settings but clears all match data)"
             PopperProps={{ style: { zIndex: 1200 } }}
+            enterDelay={500}
           >
             <span>
               <Button
@@ -124,6 +129,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           <Tooltip
             title="Permanently delete this tournament and all its data"
             PopperProps={{ style: { zIndex: 1200 } }}
+            enterDelay={500}
           >
             <span>
               <Button

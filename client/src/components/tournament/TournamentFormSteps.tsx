@@ -12,10 +12,16 @@ import {
   Typography,
 } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import { TournamentNameStep } from './TournamentNameStep';
-import { TournamentTypeFormatStep } from './TournamentTypeFormatStep';
+import { TournamentTypeSelector } from './TournamentTypeSelector';
+import { TournamentFormatStep } from './TournamentFormatStep';
 import { MapPoolStep } from './MapPoolStep';
 import { TeamSelectionStep } from './TeamSelectionStep';
+import {
+  ShuffleTournamentConfigStep,
+  type ShuffleTournamentSettings,
+} from './ShuffleTournamentConfigStep';
 import { TournamentFormActions } from './TournamentFormActions';
 import { useTournamentFormData } from './useTournamentFormData';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
@@ -26,6 +32,8 @@ import BatchServerModal from '../modals/BatchServerModal';
 import { api } from '../../utils/api';
 import type { Team, Server } from '../../types';
 import type { MapPoolsResponse } from '../../types/api.types';
+import type { EloCalculationTemplate } from '../../types/elo.types';
+import { validateMapCount } from '../../utils/tournamentVerification';
 
 interface TournamentFormStepsProps {
   name: string;
@@ -39,11 +47,14 @@ interface TournamentFormStepsProps {
   tournamentExists: boolean;
   hasChanges?: boolean;
   mapPoolId?: number | null;
+  shuffleSettings?: ShuffleTournamentSettings;
+  eloTemplates?: EloCalculationTemplate[];
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
   onTeamsChange: (teams: string[]) => void;
   onMapsChange: (maps: string[]) => void;
+  onShuffleSettingsChange?: (settings: ShuffleTournamentSettings) => void;
   onSave: () => void;
   onCancel?: () => void;
   onDelete: () => void;
@@ -52,7 +63,7 @@ interface TournamentFormStepsProps {
   onBackToWelcome?: () => void;
 }
 
-const STEPS = ['Name & Type', 'Maps', 'Teams', 'Review'];
+const STEPS = ['Name', 'Type', 'Format', 'Maps', 'Teams', 'Review'];
 const STEP_STORAGE_KEY = 'tournament_form_step';
 
 export function TournamentFormSteps({
@@ -67,11 +78,14 @@ export function TournamentFormSteps({
   tournamentExists,
   hasChanges = true,
   mapPoolId,
+  shuffleSettings,
+  eloTemplates,
   onNameChange,
   onTypeChange,
   onFormatChange,
   onTeamsChange,
   onMapsChange,
+  onShuffleSettingsChange,
   onSave,
   onCancel,
   onDelete,
@@ -103,12 +117,19 @@ export function TournamentFormSteps({
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [servers, setServers] = useState<Server[]>([]);
 
-  const { serverCount, loadingServers, mapPools, availableMaps, loadingMaps, setMapPools, refreshServers } =
-    useTournamentFormData({
-      maps,
-      selectedMapPool,
-      onMapsChange,
-    });
+  const {
+    serverCount,
+    loadingServers,
+    mapPools,
+    availableMaps,
+    loadingMaps,
+    setMapPools,
+    refreshServers,
+  } = useTournamentFormData({
+    maps,
+    selectedMapPool,
+    onMapsChange,
+  });
 
   // Load servers for the modals
   React.useEffect(() => {
@@ -158,6 +179,16 @@ export function TournamentFormSteps({
     }
   };
 
+  const handleMapRemove = (mapId: string) => {
+    // If a map pool is selected (not custom), switch to custom mode
+    if (selectedMapPool && selectedMapPool !== 'custom') {
+      setSelectedMapPool('custom');
+    }
+    // Remove the map from the list
+    const newMaps = maps.filter((id) => id !== mapId);
+    onMapsChange(newMaps);
+  };
+
   // Save step to sessionStorage whenever it changes
   React.useEffect(() => {
     try {
@@ -168,6 +199,14 @@ export function TournamentFormSteps({
   }, [activeStep]);
 
   const handleNext = () => {
+    // Show warnings for missing requirements but allow proceeding
+    const validationMessage = getValidationMessage();
+    
+    if (validationMessage) {
+      showWarning(validationMessage);
+      // Still allow proceeding - don't block
+    }
+    
     if (activeStep < STEPS.length - 1) {
       setActiveStep(activeStep + 1);
     }
@@ -182,11 +221,18 @@ export function TournamentFormSteps({
     }
   };
 
-  const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
-  const isValidMaps = isVetoFormat ? maps.length === 7 : maps.length > 0;
-  const canProceedFromStep0 = name.trim().length > 0 && type && format;
-  const canProceedFromStep1 = isValidMaps;
-  const canProceedFromStep2 = true; // Teams are optional now
+  const { showWarning } = useSnackbar();
+
+  // Use verification rules system
+  const mapValidation = validateMapCount(maps, type, format);
+  const isValidMaps = mapValidation.valid;
+  const canProceedFromStep0 = name.trim().length > 0; // Just name required
+  const canProceedFromStep1 = !!type; // Type required
+  const canProceedFromStep2 = !!format || type === 'shuffle'; // Format required (or shuffle which auto-sets format)
+  const canProceedFromStep3 = isValidMaps;
+  
+  // Step 4 validation - no player validation needed (players registered after creation)
+  const canProceedFromStep4 = true; // Always allow proceeding from step 4
 
   const canProceed = () => {
     switch (activeStep) {
@@ -196,8 +242,30 @@ export function TournamentFormSteps({
         return canProceedFromStep1;
       case 2:
         return canProceedFromStep2;
+      case 3:
+        return canProceedFromStep3;
+      case 4:
+        return canProceedFromStep4;
       default:
         return true;
+    }
+  };
+
+  const getValidationMessage = () => {
+    switch (activeStep) {
+      case 0:
+        return canProceedFromStep0 ? null : 'Tournament name is required';
+      case 1:
+        return canProceedFromStep1 ? null : 'Please select a tournament type';
+      case 2:
+        return canProceedFromStep2 ? null : 'Please select a match format';
+      case 3:
+        return isValidMaps ? null : mapValidation.message || 'Invalid map selection';
+      case 4:
+        // No validation needed for step 4 (players registered after creation)
+        return null;
+      default:
+        return null;
     }
   };
 
@@ -205,27 +273,36 @@ export function TournamentFormSteps({
     switch (activeStep) {
       case 0:
         return (
-          <Stack spacing={3}>
-            <TournamentNameStep
-              name={name}
-              canEdit={canEdit}
-              saving={saving}
-              onNameChange={onNameChange}
-            />
-            <TournamentTypeFormatStep
-              type={type}
-              format={format}
-              canEdit={canEdit}
-              saving={saving}
-              onTypeChange={onTypeChange}
-              onFormatChange={onFormatChange}
-            />
-          </Stack>
+          <TournamentNameStep
+            name={name}
+            canEdit={canEdit}
+            saving={saving}
+            onNameChange={onNameChange}
+          />
         );
       case 1:
         return (
+          <TournamentTypeSelector
+            selectedType={type}
+            onTypeChange={onTypeChange}
+            disabled={!canEdit || saving}
+          />
+        );
+      case 2:
+        return (
+          <TournamentFormatStep
+            type={type}
+            format={format}
+            canEdit={canEdit}
+            saving={saving}
+            onFormatChange={onFormatChange}
+          />
+        );
+      case 3:
+        return (
           <MapPoolStep
             format={format}
+            type={type}
             maps={maps}
             mapPools={mapPools}
             availableMaps={availableMaps}
@@ -235,10 +312,31 @@ export function TournamentFormSteps({
             saving={saving}
             onMapPoolChange={handleMapPoolChange}
             onMapsChange={onMapsChange}
+            onMapRemove={handleMapRemove}
             onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
           />
         );
-      case 2:
+      case 4:
+        // Shuffle tournament configuration or team selection
+        if (type === 'shuffle') {
+          return (
+            <Stack spacing={3}>
+              <Alert severity="info">
+                Shuffle tournaments don&apos;t use fixed teams. Players will be automatically
+                balanced into teams for each match based on their ELO ratings.
+              </Alert>
+              {shuffleSettings && onShuffleSettingsChange && (
+                <ShuffleTournamentConfigStep
+                  settings={shuffleSettings}
+                  canEdit={canEdit}
+                  saving={saving}
+                  onSettingsChange={onShuffleSettingsChange}
+                  eloTemplates={eloTemplates}
+                />
+              )}
+            </Stack>
+          );
+        }
         return (
           <TeamSelectionStep
             teams={teams}
@@ -260,7 +358,7 @@ export function TournamentFormSteps({
             onBatchAddServers={() => setBatchServerModalOpen(true)}
           />
         );
-      case 3:
+      case 5:
         return (
           <Stack spacing={2}>
             <Alert severity="info">
@@ -298,19 +396,54 @@ export function TournamentFormSteps({
                 {maps.join(', ') || 'No maps selected'}
               </Typography>
             </Box>
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Teams ({selectedTeams.length})
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                {selectedTeams.length > 0
-                  ? teams
-                      .filter((t) => selectedTeams.includes(t.id))
-                      .map((t) => t.name)
-                      .join(', ')
-                  : 'No teams selected (optional)'}
-              </Typography>
-            </Box>
+            {type === 'shuffle' && shuffleSettings && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Match Configuration
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Team Size: {shuffleSettings.teamSize}v{shuffleSettings.teamSize}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Round Limit:{' '}
+                  {shuffleSettings.roundLimitType === 'first_to_13'
+                    ? 'First to 13'
+                    : `Max ${shuffleSettings.maxRounds} rounds`}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Overtime:{' '}
+                  {shuffleSettings.overtimeMode === 'enabled'
+                    ? 'Enabled'
+                    : 'Disabled (No Overtime)'}
+                </Typography>
+              </Box>
+            )}
+            {type !== 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Teams ({selectedTeams.length})
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {selectedTeams.length > 0
+                    ? teams
+                        .filter((t) => selectedTeams.includes(t.id))
+                        .map((t) => t.name)
+                        .join(', ')
+                    : 'No teams selected (optional)'}
+                </Typography>
+              </Box>
+            )}
+            {type === 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Player Registration
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Players will be registered after tournament creation. Each map selected represents
+                  one round of matches ({maps.length} rounds total).
+                </Typography>
+              </Box>
+            )}
           </Stack>
         );
       default:
@@ -322,9 +455,21 @@ export function TournamentFormSteps({
     <Card>
       <CardContent>
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {STEPS.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
+          {STEPS.map((label, index) => (
+            <Step key={label} completed={index < activeStep}>
+              <StepLabel
+                onClick={() => {
+                  if (index <= activeStep || canProceed()) {
+                    setActiveStep(index);
+                    sessionStorage.setItem(STEP_STORAGE_KEY, index.toString());
+                  }
+                }}
+                sx={{
+                  cursor: index <= activeStep || canProceed() ? 'pointer' : 'default',
+                }}
+              >
+                {label}
+              </StepLabel>
             </Step>
           ))}
         </Stepper>
@@ -338,16 +483,27 @@ export function TournamentFormSteps({
             disabled={saving}
             onClick={handleBack}
             startIcon={<ArrowBack />}
+            data-testid="tournament-back-button"
           >
             {activeStep === 0 && onBackToWelcome ? 'Back to Welcome' : 'Back'}
           </Button>
 
           {activeStep < STEPS.length - 1 ? (
             <Button
+              data-testid="tournament-next-button"
               variant="contained"
               onClick={handleNext}
-              disabled={!canProceed() || saving}
+              disabled={saving}
               endIcon={<ArrowForward />}
+              sx={{
+                ...(!canProceed() && {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'action.disabled',
+                  '&:hover': {
+                    bgcolor: 'action.disabledBackground',
+                  },
+                }),
+              }}
             >
               Next
             </Button>
@@ -356,6 +512,7 @@ export function TournamentFormSteps({
               tournamentExists={tournamentExists}
               saving={saving}
               hasChanges={hasChanges}
+              type={type}
               format={format}
               mapsCount={maps.length}
               canEdit={canEdit}

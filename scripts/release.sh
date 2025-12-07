@@ -322,6 +322,7 @@ else
     if [ $? -ne 0 ]; then
         echo -e "${RED}❌ Tests failed${NC}"
         echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
+        echo -e "${YELLOW}See .playwright-test-results/test-output-all.log for details${NC}"
         exit 1
     fi
     echo -e "${GREEN}✅ All tests passed${NC}"

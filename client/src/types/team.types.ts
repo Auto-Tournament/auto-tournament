@@ -8,6 +8,7 @@ export interface Player {
   steamId: string;
   name: string;
   avatar?: string;
+  elo?: number; // Optional ELO rating (defaults to 3000 if not specified)
 }
 
 export interface Team {

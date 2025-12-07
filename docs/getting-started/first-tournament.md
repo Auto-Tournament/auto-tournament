@@ -48,6 +48,7 @@ Description: 8-team single elimination
 
 - **Single Elimination** - Fast, one loss and you're out
 - **Double Elimination** - Second chance via lower bracket
+- **Shuffle Tournament** - Individual player competition with dynamic team balancing (see [Shuffle Tournaments Guide](../guides/shuffle-tournaments.md))
 - **Round Robin** - Everyone plays everyone
 - **Swiss System** - Pairs teams by W/L record
 
@@ -287,6 +288,17 @@ See [Running Matches](../guides/running-matches.md) for detailed scenarios.
 - Bracket shows full tournament progression
 - Download demos from match details
 - Export bracket screenshot
+
+### Players, ELO & Stats
+
+- All players added to teams are also created in the global **Players** list with a display ELO.
+- New players without an explicit ELO use your configured **Default Player ELO** from **Settings** (FaceIT-style, 3000 by default).
+- After each match, player ratings are updated automatically using the OpenSkill engine, and detailed stats (ADR, K/D, MVPs, damage, etc.) are stored.
+- You can open any player's public page (`/player/:steamId`) to see:
+  - ELO history for all tournament types (not just shuffle)
+  - Match history with per-map stats
+  - Performance metrics and trends
+
 
 ### Cleanup
 

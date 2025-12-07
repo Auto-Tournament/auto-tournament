@@ -3,6 +3,7 @@ import { Card, List, ListItem, ListItemIcon, ListItemText } from '@mui/material'
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import { TOURNAMENT_TYPES } from '../../constants/tournament';
+import { validateMapCount } from '../../utils/tournamentVerification';
 
 type TournamentType = (typeof TOURNAMENT_TYPES)[number];
 
@@ -50,20 +51,13 @@ export function TournamentTypeChecklist({
     });
   }
 
-  // Maps requirement
-  if (isVetoFormat) {
-    // Veto formats require exactly 7 maps
-    requirements.push({
-      label: '7 maps selected (for veto)',
-      met: mapsCount === 7,
-    });
-  } else {
-    // Other formats just need at least 1 map
-    requirements.push({
-      label: 'Maps selected',
-      met: mapsCount > 0,
-    });
-  }
+  // Maps requirement - use verification rules
+  const dummyMaps = Array(mapsCount).fill('dummy');
+  const mapValidation = validateMapCount(dummyMaps, tournamentType?.value || '', format);
+  requirements.push({
+    label: mapValidation.valid ? 'Maps selected' : (mapValidation.message || 'Maps selected'),
+    met: mapValidation.valid,
+  });
 
   return (
     <Card sx={{ p: 2 }}>

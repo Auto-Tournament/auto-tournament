@@ -1,7 +1,7 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 
-export type AppSettingKey = 'webhook_url' | 'steam_api_key';
+export type AppSettingKey = 'webhook_url' | 'steam_api_key' | 'default_player_elo';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -9,7 +9,7 @@ export interface AppSetting {
   updated_at: number;
 }
 
-const ALLOWED_KEYS: AppSettingKey[] = ['webhook_url', 'steam_api_key'];
+const ALLOWED_KEYS: AppSettingKey[] = ['webhook_url', 'steam_api_key', 'default_player_elo'];
 
 class SettingsService {
   async getSetting(key: AppSettingKey): Promise<string | null> {
@@ -57,6 +57,16 @@ class SettingsService {
         log.success('Steam API key updated');
         return;
       }
+
+      if (key === 'default_player_elo') {
+        const parsed = Number(trimmed);
+        if (!Number.isFinite(parsed) || parsed <= 0) {
+          throw new Error('Default player ELO must be a positive number');
+        }
+        await db.setAppSettingAsync(key, String(Math.round(parsed)));
+        log.success(`Default player ELO updated to ${Math.round(parsed)}`);
+        return;
+      }
     }
 
     await db.setAppSettingAsync(key, null);
@@ -88,6 +98,16 @@ class SettingsService {
   async getSteamApiKey(): Promise<string | null> {
     const value = await this.getSetting('steam_api_key');
     return value ? value.trim() : null;
+  }
+
+  async getDefaultPlayerElo(): Promise<number> {
+    const value = await this.getSetting('default_player_elo');
+    const parsed = value !== null ? Number(value) : NaN;
+    if (Number.isFinite(parsed) && parsed > 0) {
+      return Math.round(parsed);
+    }
+    // Fallback to FaceIT-style default
+    return 3000;
   }
 
   private normalizeUrl(url: string): string {

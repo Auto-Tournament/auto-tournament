@@ -6,12 +6,13 @@ This document outlines the current features available in MatchZy Auto Tournament
 
 ## Tournament Management
 
-- ✅ Tournament formats (Single/Double Elimination, Round Robin, Swiss) - 2-128 teams
-- ✅ Automatic bracket generation
+- ✅ Tournament formats (Single/Double Elimination, Round Robin, Swiss, Shuffle) - 2-128 teams / 10+ players
+- ✅ Automatic bracket generation (for bracketed formats)
 - ✅ Automatic seeding (random)
 - ✅ Bracket regeneration
 - ✅ Third place match option
 - ✅ Real-time bracket updates
+- ✅ Shuffle tournaments (individual player mode with automatic team balancing and leaderboards)
 - 🎯 Tournament templates (save/reuse configurations)
 
 ## Server Management
@@ -95,9 +96,11 @@ This document outlines the current features available in MatchZy Auto Tournament
 
 - ✅ Team statistics (win/loss, win rates)
 - ✅ Match history
-- ✅ Player tracking
+- ✅ Player tracking (players table, team linkage, public player pages)
 - ✅ Event logging (30-day retention)
-- 🎯 Advanced statistics (K/D, ADR, HS%, MVPs)
+- ✅ Advanced statistics (K/D, ADR, HS%, MVPs, damage, utility) on player pages
+- ✅ Player ratings (OpenSkill-based ELO with history and per-match changes)
+- ✅ ELO calculation templates (configurable stat weighting per tournament)
 
 ## API & Integration
 

@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { usePageHeader } from '../contexts/PageHeaderContext';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
   Button,
@@ -9,11 +11,9 @@ import {
   Chip,
   IconButton,
   CircularProgress,
-  Alert,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
-import DiscordIcon from '@mui/icons-material/Forum';
 import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
@@ -23,9 +23,10 @@ import { EmptyState } from '../components/shared/EmptyState';
 import type { Team, TeamsResponse } from '../types';
 
 export default function Teams() {
+  const { setHeaderActions } = usePageHeader();
+  const { showSuccess, showError } = useSnackbar();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
@@ -35,23 +36,50 @@ export default function Teams() {
     document.title = 'Teams';
   }, []);
 
-  const loadTeams = async () => {
+  // Set header actions
+  useEffect(() => {
+    if (teams.length > 0) {
+      setHeaderActions(
+        <Box display="flex" gap={2}>
+          <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+            Import JSON
+          </Button>
+          <Button
+            data-testid="add-team-button"
+            variant="contained"
+            startIcon={<AddIcon />}
+            onClick={() => handleOpenModal()}
+          >
+            Add Team
+          </Button>
+        </Box>
+      );
+    } else {
+      setHeaderActions(null);
+    }
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [teams.length, setHeaderActions]);
+
+  const loadTeams = useCallback(async () => {
     try {
       setLoading(true);
       const data = await api.get<TeamsResponse>('/api/teams');
       setTeams(data.teams || []);
-      setError('');
     } catch (err) {
-      setError('Failed to load teams');
+      const errorMessage = 'Failed to load teams';
+      showError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
 
   useEffect(() => {
     loadTeams();
-  }, []);
+  }, [loadTeams]);
 
   const handleOpenModal = (team?: Team) => {
     setEditingTeam(team || null);
@@ -72,7 +100,7 @@ export default function Teams() {
     importedTeams: Array<{
       name: string;
       tag?: string;
-      players: Array<{ name: string; steamId: string }>;
+      players: Array<{ name: string; steamId: string; elo?: number }>;
     }>
   ) => {
     // Sanitize team names and generate IDs
@@ -91,6 +119,7 @@ export default function Teams() {
     const promises = teamsWithIds.map((team) => api.post('/api/teams', team));
 
     await Promise.all(promises);
+    showSuccess(`Successfully imported ${importedTeams.length} team(s)`);
     await loadTeams();
   };
 
@@ -103,108 +132,75 @@ export default function Teams() {
   }
 
   return (
-    <Box>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
-        <Box display="flex" alignItems="center" gap={2}>
-          <GroupsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Teams
-          </Typography>
-          <Chip label={teams.length} color="primary" sx={{ fontWeight: 600, fontSize: '0.9rem' }} />
-        </Box>
-        {!error && teams.length > 0 && (
-          <Box display="flex" gap={2}>
+    <Box data-testid="teams-page" sx={{ width: '100%', height: '100%' }}>
+      {teams.length === 0 ? (
+        <Box>
+          <EmptyState
+            icon={GroupsIcon}
+            title="No teams yet"
+            description="Create your first team to get started with the tournament"
+            actionLabel="Create Team"
+            actionIcon={AddIcon}
+            onAction={() => handleOpenModal()}
+          />
+          <Box display="flex" justifyContent="center" mt={2}>
             <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-              Import JSON
-            </Button>
-            <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenModal()}>
-              Add Team
+              Or Import Teams from JSON
             </Button>
           </Box>
-        )}
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {!error &&
-        (teams.length === 0 ? (
-          <Box>
-            <EmptyState
-              icon={GroupsIcon}
-              title="No teams yet"
-              description="Create your first team to get started with the tournament"
-              actionLabel="Create Team"
-              actionIcon={AddIcon}
-              onAction={() => handleOpenModal()}
-            />
-            <Box display="flex" justifyContent="center" mt={2}>
-              <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-                Or Import Teams from JSON
-              </Button>
-            </Box>
-          </Box>
-        ) : (
-          <Grid container spacing={3}>
-            {teams.map((team) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={team.id}>
-                <Card
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
-                    },
-                  }}
-                  onClick={() => handleOpenModal(team)}
-                >
-                  <CardContent>
-                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
-                      <Box>
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                          {team.name}
-                        </Typography>
-                        {team.tag && (
-                          <Chip label={team.tag} size="small" sx={{ fontWeight: 600 }} />
-                        )}
-                      </Box>
-                      <Box display="flex" gap={0.5}>
-                        <TeamLinkActions teamId={team.id} />
-                        <IconButton size="small" onClick={() => handleOpenModal(team)}>
-                          <EditIcon fontSize="small" />
-                        </IconButton>
-                      </Box>
-                    </Box>
-
-                    <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <GroupsIcon fontSize="small" color="action" />
-                      <Typography variant="body2" color="text.secondary">
-                        {team.players?.length} {team.players?.length === 1 ? 'player' : 'players'}
+        </Box>
+      ) : (
+        <Grid container spacing={2}>
+          {teams.map((team) => {
+            // Slugify team name for test ID (matches test expectations)
+            const teamNameSlug = team.name.toLowerCase().replace(/\s+/g, '-');
+            return (
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={team.id}>
+              <Card
+                data-testid={`team-card-${teamNameSlug}`}
+                sx={{
+                  cursor: 'pointer',
+                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  '&:hover': {
+                    transform: 'translateY(-4px)',
+                    boxShadow: 6,
+                  },
+                }}
+                onClick={() => handleOpenModal(team)}
+              >
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600} gutterBottom>
+                        {team.name}
                       </Typography>
+                      {team.tag && <Chip label={team.tag} size="small" sx={{ fontWeight: 600 }} />}
                     </Box>
+                    <Box display="flex" gap={0.5}>
+                      <TeamLinkActions teamId={team.id} />
+                      <IconButton
+                        data-testid="team-edit-button"
+                        size="small"
+                        onClick={() => handleOpenModal(team)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    </Box>
+                  </Box>
 
-                    {team.discordRoleId && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <DiscordIcon fontSize="small" color="action" />
-                        <Typography variant="body2" color="text.secondary">
-                          Discord enabled
-                        </Typography>
-                      </Box>
-                    )}
-
-                    <Typography variant="caption" color="text.secondary" display="block" mt={2}>
-                      ID: {team.id}
+                  <Box display="flex" alignItems="center" gap={1} mb={1}>
+                    <GroupsIcon fontSize="small" color="action" />
+                    <Typography variant="body2" color="text.secondary">
+                      {team.players?.length} {team.players?.length === 1 ? 'player' : 'players'}
                     </Typography>
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
-        ))}
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
+            );
+          })}
+        </Grid>
+      )}
 
       <TeamModal
         open={modalOpen}

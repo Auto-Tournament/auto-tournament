@@ -224,7 +224,7 @@ export function MatchInfoCard({
     (match.status === 'pending' && isVetoCompleted && ['bo1', 'bo3', 'bo5'].includes(matchFormat))
   ) {
     return (
-      <Card>
+      <Card data-testid="match-details">
         <CardContent>
           <Box display="flex" flexDirection="column" gap={3}>
             <Box display="flex" justifyContent="space-between" alignItems="center">

@@ -2,16 +2,16 @@ import { useState, useEffect } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const useBracket = () => {
+  const { showSuccess, showError } = useSnackbar();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [totalRounds, setTotalRounds] = useState(0);
   const [starting, setStarting] = useState(false);
-  const [startSuccess, setStartSuccess] = useState('');
-  const [startError, setStartError] = useState('');
 
   const loadBracket = async () => {
     setLoading(true);
@@ -53,8 +53,6 @@ export const useBracket = () => {
 
   const startTournament = async () => {
     setStarting(true);
-    setStartError('');
-    setStartSuccess('');
 
     try {
       const baseUrl = window.location.origin;
@@ -65,19 +63,16 @@ export const useBracket = () => {
       } = await api.post('/api/tournament/start', { baseUrl });
 
       if (response.success) {
-        setStartSuccess(
+        showSuccess(
           `Tournament started! ${response.allocated || 0} matches allocated to servers.`
         );
-        setTimeout(() => {
-          setStartSuccess('');
-        }, 5000);
         await loadBracket();
       } else {
-        setStartError(response.message || 'Failed to start tournament');
+        showError(response.message || 'Failed to start tournament');
       }
     } catch (err) {
       const error = err as Error;
-      setStartError(error.message || 'Failed to start tournament');
+      showError(error.message || 'Failed to start tournament');
     } finally {
       setStarting(false);
     }
@@ -248,8 +243,6 @@ export const useBracket = () => {
     matches,
     totalRounds,
     starting,
-    startSuccess,
-    startError,
     loadBracket,
     startTournament,
   };

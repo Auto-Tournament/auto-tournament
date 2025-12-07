@@ -5,11 +5,13 @@
         "players": [
             {
                 "name": "player1",
-                "steamId": "76561198123456789"
+                "steamId": "76561198123456789",
+                "elo": 3200
             },
             {
                 "name": "player2",
-                "steamId": "76561198234567890"
+                "steamId": "76561198234567890",
+                "elo": 3100
             },
             {
                 "name": "player3",
@@ -17,7 +19,8 @@
             },
             {
                 "name": "player4",
-                "steamId": "76561198456789012"
+                "steamId": "76561198456789012",
+                "elo": 3000
             },
             {
                 "name": "player5",

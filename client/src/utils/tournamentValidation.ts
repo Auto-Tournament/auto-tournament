@@ -22,6 +22,11 @@ export const validateTeamCountForType = (
     return { isValid: false, error: 'Invalid tournament type' };
   }
 
+  // Shuffle tournaments don't use teams, so skip validation
+  if (type === 'shuffle') {
+    return { isValid: true };
+  }
+
   if (!isTournamentTypeValid(tournamentType, teamCount)) {
     if (tournamentType.requirePowerOfTwo && tournamentType.validCounts) {
       return {

@@ -1,0 +1,29 @@
+[
+  {
+    "steamId": "76561198012345678",
+    "name": "Player One",
+    "initialELO": 3200,
+    "avatarUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/..."
+  },
+  {
+    "steamId": "76561198012345679",
+    "name": "Player Two",
+    "initialELO": 3100
+  },
+  {
+    "steamId": "76561198012345680",
+    "name": "Player Three"
+  },
+  {
+    "steamId": "76561198012345681",
+    "name": "Player Four",
+    "initialELO": 3000,
+    "avatarUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/..."
+  },
+  {
+    "steamId": "76561198012345682",
+    "name": "Player Five",
+    "initialELO": 2900
+  }
+]
+

@@ -39,6 +39,8 @@ import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
 import templatesRoutes from './routes/templates';
+import playersRoutes from './routes/players';
+import eloTemplatesRoutes from './routes/eloTemplates';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
@@ -273,9 +275,11 @@ app.use('/api/maps', mapsRoutes);
 app.use('/api/map-pools', mapPoolsRoutes);
 app.use('/api/templates', templatesRoutes); // Tournament templates
 app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
+app.use('/api/players', playersRoutes); // Player management
+app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 
 // Serve frontend at /app
-const publicPath = path.join(__dirname, '../public');
+const publicPath = path.join(process.cwd(), 'public');
 app.use('/app', express.static(publicPath));
 
 // Serve map images statically

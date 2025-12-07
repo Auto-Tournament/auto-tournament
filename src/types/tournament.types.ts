@@ -2,7 +2,7 @@
  * Tournament Types
  */
 
-export type TournamentType = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+export type TournamentType = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle';
 
 export type TournamentStatus = 'setup' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
 
@@ -138,6 +138,13 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
     name: string;
     tag?: string;
   }>;
+  // Shuffle tournament specific fields
+  mapSequence?: string[];
+  teamSize?: number; // Number of players per team (default: 5)
+  roundLimitType?: 'first_to_13' | 'max_rounds';
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
 }
 
 export interface BracketResponse {

@@ -295,7 +295,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       : currentTeamSlug === vetoState.team2Id);
 
   return (
-    <Box>
+    <Box data-testid="veto-interface">
       {/* Match Header */}
       <Paper elevation={2} sx={{ mb: 3, p: 3, bgcolor: 'background.paper' }}>
         <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
@@ -444,6 +444,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <Button
+                      data-testid="veto-side-ct-button"
                       fullWidth
                       variant="contained"
                       color="info"
@@ -457,6 +458,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   </Grid>
                   <Grid size={{ xs: 6 }}>
                     <Button
+                      data-testid="veto-side-t-button"
                       fullWidth
                       variant="contained"
                       color="warning"

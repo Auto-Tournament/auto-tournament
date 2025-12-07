@@ -79,6 +79,7 @@ export function TournamentWelcomeScreen({
           <Grid item xs={12} sm={templates.length > 0 && !loading ? 6 : 12}>
             <Card
               variant="outlined"
+              data-testid="tournament-welcome-create-new"
               sx={{
                 height: '100%',
                 cursor: 'pointer',

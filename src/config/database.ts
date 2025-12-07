@@ -130,6 +130,21 @@ class DatabaseManager {
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
         { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
         { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
+        { table: 'tournament', column: 'map_sequence', type: 'TEXT' },
+        { table: 'tournament', column: 'team_size', type: 'INTEGER DEFAULT 5' },
+        { table: 'tournament', column: 'round_limit_type', type: 'TEXT' },
+        { table: 'tournament', column: 'max_rounds', type: 'INTEGER DEFAULT 24' },
+        { table: 'tournament', column: 'overtime_mode', type: "TEXT DEFAULT 'enabled'" },
+        { table: 'tournament', column: 'elo_template_id', type: 'TEXT' },
+        { table: 'player_rating_history', column: 'base_elo_after', type: 'INTEGER' },
+        { table: 'player_rating_history', column: 'stat_adjustment', type: 'INTEGER' },
+        { table: 'player_rating_history', column: 'template_id', type: 'TEXT' },
+        { table: 'player_match_stats', column: 'flash_assists', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'utility_damage', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'kast', type: 'REAL' },
+        { table: 'player_match_stats', column: 'mvps', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'score', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'rounds_played', type: 'INTEGER' },
       ];
 
       // Check if tournament_templates table exists, create if not
@@ -212,11 +227,24 @@ class DatabaseManager {
 
         if (mapsCount === 0) {
           // Maps table is empty - this is first initialization or after database wipe
-          // Fetch fresh maps from GitHub repository
-          log.database('[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...');
-          const defaultMapsSQL = await getDefaultMapsSQL();
-          await client.query(defaultMapsSQL);
-          log.success('[PostgreSQL] Default maps inserted (fetched from GitHub)');
+          // Fetch fresh maps from GitHub repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
+          // Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting)
+          log.database(
+            '[PostgreSQL] Maps table is empty, fetching and inserting default maps from GitHub...'
+          );
+          try {
+            const defaultMapsSQL = await getDefaultMapsSQL();
+            await client.query(defaultMapsSQL);
+            log.success('[PostgreSQL] Default maps inserted (from GitHub repository or fallback)');
+          } catch (fetchError) {
+            const error = fetchError as Error;
+            log.error(`[PostgreSQL] Failed to initialize maps: ${error.message}`);
+            // Don't throw - fallback maps should have been used, but if that also failed, log and continue
+            // The application can still function without maps (they can be added manually or synced later)
+            log.warn(
+              '[PostgreSQL] Continuing without default maps. Maps can be added manually or synced via /api/maps/sync'
+            );
+          }
         } else {
           // Maps already exist - skip fetching from wiki (saves time and API calls)
           log.database(
@@ -225,8 +253,12 @@ class DatabaseManager {
         }
       } catch (err) {
         const error = err as Error;
+        // If it's a map fetch error, we already logged it above, just re-throw
+        if (error.message.includes('GitHub') || error.message.includes('maps')) {
+          throw err;
+        }
         log.warn(`[PostgreSQL] Failed to insert default maps: ${error.message}`);
-        // Don't throw - continue
+        // Don't throw for other errors - continue
       }
 
       // Insert default map pools
@@ -378,16 +410,26 @@ class DatabaseManager {
     const columns = Object.keys(data);
     const values = Object.values(data);
     const placeholders = values.map((_, i) => `$${i + 1}`).join(', ');
-    const query = `INSERT INTO ${table} (${columns.join(
-      ', '
-    )}) VALUES (${placeholders}) RETURNING id`;
+
+    // Try to return id, but handle tables without id column gracefully
+    let query = `INSERT INTO ${table} (${columns.join(', ')}) VALUES (${placeholders})`;
+    let lastInsertRowid: number | string = 0;
+
+    // Tables that don't have an 'id' column (composite primary keys)
+    const tablesWithoutId = ['shuffle_tournament_players'];
+
+    if (!tablesWithoutId.includes(table)) {
+      query += ' RETURNING id';
+    }
 
     try {
       log.database(
         `[DB] INSERT ${table} columns=[${columns.join(', ')}] values=${this.safeJson(values)}`
       );
       const result = await this.postgresPool.query(query, values);
-      const lastInsertRowid = result.rows[0]?.id || 0;
+      if (result.rows.length > 0 && result.rows[0]?.id !== undefined) {
+        lastInsertRowid = result.rows[0].id;
+      }
       this.logRunResult('INSERT', table, result.rowCount || 0, lastInsertRowid);
       return { changes: result.rowCount || 0, lastInsertRowid };
     } catch (err) {

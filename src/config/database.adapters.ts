@@ -88,6 +88,21 @@ export class PostgresAdapter implements DatabaseAdapter {
         { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
         { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
         { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
+        { table: 'tournament', column: 'map_sequence', type: 'TEXT' },
+        { table: 'tournament', column: 'team_size', type: 'INTEGER DEFAULT 5' },
+        { table: 'tournament', column: 'round_limit_type', type: 'TEXT' },
+        { table: 'tournament', column: 'max_rounds', type: 'INTEGER DEFAULT 24' },
+        { table: 'tournament', column: 'overtime_mode', type: 'TEXT DEFAULT \'enabled\'' },
+        { table: 'tournament', column: 'elo_template_id', type: 'TEXT' },
+        { table: 'player_rating_history', column: 'base_elo_after', type: 'INTEGER' },
+        { table: 'player_rating_history', column: 'stat_adjustment', type: 'INTEGER' },
+        { table: 'player_rating_history', column: 'template_id', type: 'TEXT' },
+        { table: 'player_match_stats', column: 'flash_assists', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'utility_damage', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'kast', type: 'REAL' },
+        { table: 'player_match_stats', column: 'mvps', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'score', type: 'INTEGER' },
+        { table: 'player_match_stats', column: 'rounds_played', type: 'INTEGER' },
       ];
 
       // Check if tournament_templates table exists, create if not

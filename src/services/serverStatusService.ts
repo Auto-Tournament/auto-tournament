@@ -1,4 +1,5 @@
 import { rconService } from './rconService';
+import { serverService } from './serverService';
 import { log } from '../utils/logger';
 
 /**
@@ -38,6 +39,18 @@ export class ServerStatusService {
     online: boolean;
   }> {
     try {
+      // Check if this is a fake server (IP 0.0.0.0) - always return online
+      const server = await serverService.getServerById(serverId);
+      if (server && server.host === '0.0.0.0') {
+        // Fake server for screenshots/testing - always return online with idle status
+        return {
+          status: ServerStatus.IDLE,
+          matchSlug: null,
+          updatedAt: Math.floor(Date.now() / 1000),
+          online: true,
+        };
+      }
+      
       // Try to get status from server
       const statusResult = await rconService.sendCommand(serverId, this.STATUS_VAR);
 

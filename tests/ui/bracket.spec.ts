@@ -18,22 +18,26 @@ test.describe.serial('Bracket UI', () => {
   test('should navigate to and display bracket page', {
     tag: ['@ui', '@bracket'],
   }, async ({ page }) => {
-    await page.goto('/bracket');
+    await page.goto('/bracket', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/\/bracket/);
     await expect(page).toHaveTitle(/Bracket/i);
-    await page.waitForLoadState('networkidle');
     
-    // Check for bracket page heading (more flexible - could be any heading level)
-    const bracketHeading = page.getByRole('heading', { name: /bracket/i });
-    const headingVisible = await bracketHeading.first().isVisible().catch(() => false);
-    // If no heading, check for bracket content or empty state
-    if (!headingVisible) {
-      const bracketContent = page.locator('text=/bracket|tournament|round|match/i');
-      const hasContent = await bracketContent.first().isVisible().catch(() => false);
-      expect(hasContent).toBeTruthy();
-    } else {
-      await expect(bracketHeading.first()).toBeVisible();
+    // Wait for page to load (with fallback if networkidle times out)
+    try {
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
+    } catch (error) {
+      await page.waitForLoadState('domcontentloaded');
+      await page.waitForTimeout(1000);
     }
+    
+    // Verify bracket page loaded - check for either bracket-page, empty state, or loading state
+    const bracketPage = page.getByTestId('bracket-page');
+    const emptyState = page.getByTestId('bracket-empty-state');
+    
+    // Wait for either the bracket page or empty state to be visible
+    await expect(
+      bracketPage.or(emptyState)
+    ).toBeVisible({ timeout: 10000 });
   });
 
   test('should display bracket visualization or empty state with interaction', {
@@ -43,30 +47,19 @@ test.describe.serial('Bracket UI', () => {
     await page.waitForLoadState('networkidle');
     
     // Check for bracket visualization or empty state
-    const bracketVisualization = page.locator('text=/round|match|team|bracket/i');
-    const emptyState = page.locator('text=/no.*tournament|create.*tournament|empty/i');
+    const bracketVisualization = page.getByTestId('bracket-visualization');
+    const emptyState = page.getByTestId('bracket-empty-state');
     
-    const hasBracket = await bracketVisualization.first().isVisible().catch(() => false);
-    const isEmpty = await emptyState.first().isVisible().catch(() => false);
+    const hasBracket = await bracketVisualization.isVisible().catch(() => false);
+    const isEmpty = await emptyState.isVisible().catch(() => false);
     
     // Should have either bracket or empty state
     expect(hasBracket || isEmpty).toBeTruthy();
     
     // Look for tournament information if bracket exists
-    const tournamentInfo = page.locator('text=/tournament|format|type/i');
-    const hasInfo = await tournamentInfo.first().isVisible().catch(() => false);
-    
-    if (hasInfo) {
-      await expect(tournamentInfo.first()).toBeVisible();
-    }
-    
-    // Look for interactive elements (zoom, pan, match cards)
-    const interactiveElements = page.locator('button, [role="button"], [tabindex="0"]');
-    const count = await interactiveElements.count();
-    
-    // Should have some interactive elements if bracket exists
-    if (count > 0) {
-      expect(count).toBeGreaterThan(0);
+    if (hasBracket) {
+      const tournamentInfo = page.getByTestId('bracket-tournament-info');
+      await expect(tournamentInfo).toBeVisible();
     }
   });
 });

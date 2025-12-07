@@ -16,6 +16,12 @@ import {
   checkTournamentCompletion,
 } from '../utils/matchProgression';
 import { recordMapResult, getMapResults } from './matchMapResultService';
+import { updatePlayerRatings } from './ratingService';
+import { teamService } from './teamService';
+import { advanceToNextRound } from './shuffleTournamentService';
+import { matchAllocationService } from './matchAllocationService';
+import { settingsService } from './settingsService';
+import type { Player } from '../types/team.types';
 
 /**
  * Main event handler - routes events to specific handlers
@@ -550,7 +556,7 @@ function extractNestedNumber(
 }
 
 /**
- * Handle series end event - update match status and advance tournament
+ * Handle series end event - update match status, ratings, and advance tournament
  */
 async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   const eventData = event as unknown as Record<string, unknown>;
@@ -613,13 +619,255 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     }
   }
 
+  // Always track player stats and ratings where possible
+  await trackPlayerStatsForMatch(match, winnerId, matchSlug);
+  await updateRatingsForMatch(match, winnerId, matchSlug);
+
   // Check for round completion (Swiss)
   if (tournament?.type === 'swiss') {
     await checkAndAdvanceRound(match.round);
   }
 
+  // Shuffle-specific round progression
+  if (tournament?.type === 'shuffle') {
+    await checkAndAdvanceShuffleRound(match.round);
+  }
+
   // Check if tournament is complete
   await checkTournamentCompletion();
+}
+
+/**
+ * Update player ratings for matches (all tournament types with players)
+ */
+async function updateRatingsForMatch(
+  match: DbMatchRow,
+  winnerId: string,
+  matchSlug: string
+): Promise<void> {
+  try {
+    if (!match.team1_id || !match.team2_id) {
+      log.warn('Cannot update ratings: missing team IDs', { matchSlug });
+      return;
+    }
+
+    // Get teams and extract player Steam IDs
+    const team1 = await teamService.getTeamById(match.team1_id);
+    const team2 = await teamService.getTeamById(match.team2_id);
+
+    if (!team1 || !team2) {
+      log.warn('Cannot update ratings: teams not found', { matchSlug, team1_id: match.team1_id, team2_id: match.team2_id });
+      return;
+    }
+
+    const team1PlayerIds = team1.players.map((p: Player) => p.steamId);
+    const team2PlayerIds = team2.players.map((p: Player) => p.steamId);
+
+    if (team1PlayerIds.length === 0 || team2PlayerIds.length === 0) {
+      log.warn('Cannot update ratings: teams have no players', { matchSlug });
+      return;
+    }
+
+    // Determine which team won
+    const team1Won = match.team1_id === winnerId;
+
+    // Update ratings using OpenSkill
+    await updatePlayerRatings(team1PlayerIds, team2PlayerIds, team1Won, matchSlug);
+
+    log.success(`Updated ratings for match ${matchSlug}`);
+  } catch (error) {
+    log.error('Error updating ratings for match', { error, matchSlug });
+    // Don't throw - rating update failure shouldn't break match completion
+  }
+}
+
+/**
+ * Track individual player stats for matches (all tournament types with players)
+ */
+async function trackPlayerStatsForMatch(
+  match: DbMatchRow,
+  winnerId: string,
+  matchSlug: string
+): Promise<void> {
+  try {
+    if (!match.team1_id || !match.team2_id) {
+      log.warn('Cannot track player stats: missing team IDs', { matchSlug });
+      return;
+    }
+
+    // Get teams
+    const team1 = await teamService.getTeamById(match.team1_id);
+    const team2 = await teamService.getTeamById(match.team2_id);
+
+    if (!team1 || !team2) {
+      log.warn('Cannot track player stats: teams not found', { matchSlug });
+      return;
+    }
+
+    // Determine which team won
+    const team1Won = match.team1_id === winnerId;
+
+    // Get player stats from match events (if available)
+    const playerStatsEvent = await db.queryOneAsync<{
+      event_data: string;
+    }>(
+      `SELECT event_data FROM match_events 
+       WHERE match_slug = ? AND event_type = 'player_stats' 
+       ORDER BY received_at DESC LIMIT 1`,
+      [matchSlug]
+    );
+
+    let team1PlayerStats: Record<string, any> = {};
+    let team2PlayerStats: Record<string, any> = {};
+
+    if (playerStatsEvent) {
+      try {
+        const eventData = JSON.parse(playerStatsEvent.event_data);
+        // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+        if (eventData.team1_players) {
+          team1PlayerStats = eventData.team1_players;
+        }
+        if (eventData.team2_players) {
+          team2PlayerStats = eventData.team2_players;
+        }
+      } catch (error) {
+        log.warn('Failed to parse player stats from event', { error, matchSlug });
+      }
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+
+    // Store stats for team1 players
+    for (const player of team1.players) {
+      const stats = team1PlayerStats[player.steamId] || {};
+      const roundsPlayed = stats.rounds_played || stats.roundsPlayed || 0;
+      const adr = roundsPlayed > 0 ? (stats.damage || 0) / roundsPlayed : 0;
+
+      await db.insertAsync('player_match_stats', {
+        player_id: player.steamId,
+        match_slug: matchSlug,
+        team: 'team1',
+        won_match: team1Won,
+        adr: Math.round(adr * 100) / 100, // Round to 2 decimal places
+        total_damage: stats.damage || 0,
+        kills: stats.kills || 0,
+        deaths: stats.deaths || 0,
+        assists: stats.assists || 0,
+        headshots: stats.headshot_kills || stats.headshotKills || 0,
+        flash_assists: stats.flash_assists || stats.flashAssists || 0,
+        utility_damage: stats.utility_damage || stats.utilityDamage || 0,
+        kast: stats.kast || 0,
+        mvps: stats.mvp || stats.mvps || 0,
+        score: stats.score || 0,
+        rounds_played: roundsPlayed,
+        created_at: now,
+      });
+    }
+
+    // Store stats for team2 players
+    for (const player of team2.players) {
+      const stats = team2PlayerStats[player.steamId] || {};
+      const roundsPlayed = stats.rounds_played || stats.roundsPlayed || 0;
+      const adr = roundsPlayed > 0 ? (stats.damage || 0) / roundsPlayed : 0;
+
+      await db.insertAsync('player_match_stats', {
+        player_id: player.steamId,
+        match_slug: matchSlug,
+        team: 'team2',
+        won_match: !team1Won,
+        adr: Math.round(adr * 100) / 100,
+        total_damage: stats.damage || 0,
+        kills: stats.kills || 0,
+        deaths: stats.deaths || 0,
+        assists: stats.assists || 0,
+        headshots: stats.headshot_kills || stats.headshotKills || 0,
+        flash_assists: stats.flash_assists || stats.flashAssists || 0,
+        utility_damage: stats.utility_damage || stats.utilityDamage || 0,
+        kast: stats.kast || 0,
+        mvps: stats.mvp || stats.mvps || 0,
+        score: stats.score || 0,
+        rounds_played: roundsPlayed,
+        created_at: now,
+      });
+    }
+
+    log.debug(`Tracked player stats for ${team1.players.length + team2.players.length} players`, {
+      matchSlug,
+    });
+  } catch (error) {
+    log.error('Error tracking player stats for shuffle tournament', { error, matchSlug });
+    // Don't throw - stats tracking failure shouldn't break match completion
+  }
+}
+
+/**
+ * Check if shuffle round is complete and advance if needed
+ */
+async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
+  try {
+    const { checkRoundCompletion } = await import('./shuffleTournamentService');
+    const isComplete = await checkRoundCompletion(roundNumber);
+
+    if (isComplete) {
+      log.info(`Round ${roundNumber} is complete, advancing to next round...`);
+      const result = await advanceToNextRound();
+
+      if (result) {
+        log.success(`Advanced to round ${result.roundNumber} with ${result.matches.length} matches`);
+        // Emit bracket update for new matches
+        emitBracketUpdate({ action: 'round_advanced', roundNumber: result.roundNumber });
+
+        // Automatically allocate servers to newly generated matches
+        try {
+          const webhookUrl = await settingsService.getWebhookUrl();
+          if (webhookUrl) {
+            log.info(`Auto-allocating servers to ${result.matches.length} new matches in round ${result.roundNumber}...`);
+            
+            // Allocate servers to all new matches
+            const allocationResults = await Promise.allSettled(
+              result.matches.map(async (match) => {
+                try {
+                  const allocationResult = await matchAllocationService.allocateSingleMatch(match.slug, webhookUrl);
+                  if (allocationResult.success) {
+                    log.success(`Auto-allocated match ${match.slug} to server ${allocationResult.serverId}`);
+                    return { matchSlug: match.slug, success: true, serverId: allocationResult.serverId };
+                  } else {
+                    log.warn(`Could not auto-allocate match ${match.slug}: ${allocationResult.error}`);
+                    // Start polling for this match
+                    matchAllocationService.startPollingForServer(match.slug, webhookUrl);
+                    return { matchSlug: match.slug, success: false, error: allocationResult.error };
+                  }
+                } catch (error) {
+                  log.error(`Error allocating match ${match.slug}`, error);
+                  return { matchSlug: match.slug, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+                }
+              })
+            );
+
+            const successful = allocationResults.filter((r) => r.status === 'fulfilled' && r.value.success).length;
+            const failed = allocationResults.length - successful;
+
+            if (successful > 0) {
+              log.success(`Auto-allocated ${successful} match(es) to servers`);
+            }
+            if (failed > 0) {
+              log.info(`${failed} match(es) will be allocated when servers become available (polling started)`);
+            }
+          } else {
+            log.warn('Webhook URL not configured - cannot auto-allocate servers to new round matches');
+          }
+        } catch (error) {
+          log.error('Error auto-allocating servers to new round matches', error);
+          // Don't throw - server allocation failure shouldn't break round advancement
+        }
+      } else {
+        log.info('Tournament is complete or no more rounds');
+      }
+    }
+  } catch (error) {
+    log.error('Error checking/advancing shuffle round', { error, roundNumber });
+    // Don't throw - round advancement failure shouldn't break match completion
+  }
 }
 
 /**

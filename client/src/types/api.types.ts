@@ -4,7 +4,7 @@
  * Defines the shape of all API responses from the backend
  */
 
-import type { Team, Match, Tournament, Player, TeamStats, TeamStanding } from './index';
+import type { Team, Match, Tournament, TeamStats, TeamStanding } from './index';
 
 // Base response types
 export interface ApiResponse {
@@ -90,12 +90,24 @@ export interface TournamentBracketResponse extends ApiResponse {
 }
 
 // Player types
+export interface PlayerDetail {
+  id: string; // Steam ID
+  name: string;
+  avatar?: string;
+  currentElo: number;
+  startingElo: number;
+  matchCount: number;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface PlayersResponse extends ApiResponse {
-  players: Player[];
+  players: PlayerDetail[];
+  count?: number;
 }
 
 export interface PlayerResponse extends ApiResponse {
-  player: Player;
+  player: PlayerDetail;
 }
 
 // Veto types
@@ -205,6 +217,7 @@ export interface SettingsResponse extends ApiResponse {
     steamApiKey: string | null;
     steamApiKeySet: boolean;
     webhookConfigured: boolean;
+    defaultPlayerElo: number;
   };
 }
 

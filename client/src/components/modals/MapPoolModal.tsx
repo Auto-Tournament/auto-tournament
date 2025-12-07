@@ -135,19 +135,20 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-pool-modal">
       <DialogTitle>{isEditing ? 'Edit Map Pool' : 'Create Map Pool'}</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            label="Map Pool Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., My Custom Pool"
-            required
-            fullWidth
-            autoFocus
-          />
+                <TextField
+                  label="Map Pool Name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="My Custom Pool"
+                  required
+                  fullWidth
+                  autoFocus
+                  inputProps={{ 'data-testid': 'map-pool-name-input' }}
+                />
 
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
@@ -158,8 +159,21 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
                 <Button
                   size="small"
                   variant="outlined"
-                  onClick={() => setSelectedMapIds(sortedMaps.map((m) => m.id))}
-                  disabled={selectedMapIds.length === sortedMaps.length}
+                  onClick={() => {
+                    if (selectedMapIds.length === sortedMaps.length) {
+                      return; // Already all selected
+                    }
+                    setSelectedMapIds(sortedMaps.map((m) => m.id));
+                  }}
+                  sx={{
+                    ...(selectedMapIds.length === sortedMaps.length && {
+                      bgcolor: 'action.disabledBackground',
+                      color: 'action.disabled',
+                      '&:hover': {
+                        bgcolor: 'action.disabledBackground',
+                      },
+                    }),
+                  }}
                 >
                   Add all
                 </Button>
@@ -221,6 +235,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
           </Button>
         )}
         <Button
+          data-testid={isEditing ? 'map-pool-update-button' : 'map-pool-create-button'}
           onClick={handleSave}
           variant="contained"
           disabled={saving || loadingMaps}

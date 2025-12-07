@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
   Box,
-  Container,
   Typography,
   Card,
   CardContent,
@@ -14,6 +14,7 @@ import {
   DialogContent,
   DialogActions,
   TextField,
+  Snackbar,
   Alert,
   Chip,
   Stack,
@@ -51,6 +52,7 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export default function Templates() {
+  const { setHeaderActions } = usePageHeader();
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
@@ -72,12 +74,28 @@ export default function Templates() {
   const [loadingMaps, setLoadingMaps] = useState(false);
 
   useEffect(() => {
-    document.title = 'Tournament Templates';
+    document.title = 'Templates';
     loadTemplates();
     loadTournamentStatus();
     loadMaps();
     loadMapPools();
   }, []);
+
+  useEffect(() => {
+    setHeaderActions(
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => navigate('/tournament')}
+      >
+        Create Template from Tournament
+      </Button>
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, navigate]);
 
   const loadTournamentStatus = async () => {
     try {
@@ -285,43 +303,34 @@ export default function Templates() {
     navigate(`/tournament?${params.toString()}`);
   };
 
+  useEffect(() => {
+    setHeaderActions(
+      <Button
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={() => navigate('/tournament')}
+      >
+        Create Template from Tournament
+      </Button>
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, navigate]);
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={600}>
-          Tournament Templates
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/tournament')}
-        >
-          Create Template from Tournament
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
-      )}
-
+    <Box sx={{ width: '100%', height: '100%' }}>
       {templates.length === 0 ? (
         <Card>
           <CardContent>
@@ -331,9 +340,9 @@ export default function Templates() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {templates.map((template) => (
-            <Grid item xs={12} md={6} key={template.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={template.id}>
               <Card>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
@@ -607,6 +616,28 @@ export default function Templates() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="error" onClose={() => setError(null)} variant="filled">
+          {error}
+        </Alert>
+      </Snackbar>
+
+      <Snackbar
+        open={!!success}
+        autoHideDuration={4000}
+        onClose={() => setSuccess(null)}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      >
+        <Alert severity="success" onClose={() => setSuccess(null)} variant="filled">
+          {success}
+        </Alert>
+      </Snackbar>
+    </Box>
   );
 }

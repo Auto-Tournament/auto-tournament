@@ -26,16 +26,11 @@ test.describe.serial('Settings UI', () => {
       await expect(page).toHaveTitle(/Settings/i);
       await page.waitForLoadState('networkidle');
 
-      // Check for settings page heading
-      await expect(page.getByRole('heading', { name: /settings/i, level: 4 })).toBeVisible();
-
       // Check for webhook URL input
-      const webhookInput = page.getByLabel(/webhook base url/i);
-      await expect(webhookInput).toBeVisible();
+      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 5000 });
 
       // Check for Steam API key input
-      const steamInput = page.getByLabel(/steam web api key/i);
-      await expect(steamInput).toBeVisible();
+      await expect(page.getByTestId('settings-steam-api-key-input')).toBeVisible({ timeout: 5000 });
     }
   );
 
@@ -49,15 +44,15 @@ test.describe.serial('Settings UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Test webhook URL update
-      const webhookInput = page.getByLabel(/webhook base url/i);
-      await expect(webhookInput).toBeVisible();
+      const webhookInput = page.getByTestId('settings-webhook-url-input');
+      await expect(webhookInput).toBeVisible({ timeout: 5000 });
 
       const testWebhookUrl = `https://example.com/webhook/${Date.now()}`;
       await webhookInput.clear();
       await webhookInput.fill(testWebhookUrl);
 
       // Save settings
-      const saveButton = page.getByRole('button', { name: /save settings/i });
+      const saveButton = page.getByTestId('settings-save-button');
       await saveButton.click();
       await page.waitForTimeout(1000);
 
@@ -66,8 +61,8 @@ test.describe.serial('Settings UI', () => {
       expect(savedValue).toBe(testWebhookUrl);
 
       // Test Steam API key update
-      const steamInput = page.getByLabel(/steam web api key/i);
-      await expect(steamInput).toBeVisible();
+      const steamInput = page.getByTestId('settings-steam-api-key-input');
+      await expect(steamInput).toBeVisible({ timeout: 5000 });
 
       const testSteamKey = `TEST_STEAM_KEY_${Date.now()}`;
       await steamInput.clear();
@@ -76,10 +71,6 @@ test.describe.serial('Settings UI', () => {
       await saveButton.click();
       await page.waitForLoadState('networkidle');
       await page.waitForTimeout(1000);
-
-      // Re-find the input after save
-      const steamInputAfterSave = page.getByLabel(/steam web api key/i);
-      expect(steamInputAfterSave).toBeDefined();
 
       // Test clearing webhook URL
       await webhookInput.clear();
