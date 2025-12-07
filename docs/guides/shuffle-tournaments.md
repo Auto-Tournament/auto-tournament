@@ -343,7 +343,7 @@ The tournament winner is determined by:
 - **Veto**: Disabled (no map voting)
 - **Sides**: Randomly assigned (no knife round)
 - **Round Limits**: Configurable (First to 13 or Max Rounds)
-- **Overtime**: Configurable (Enable, Disable, or Metric-based)
+- **Overtime**: Configurable (Enable or Disable). A metric-based overtime mode is a future idea and is **not** available in the current release.
 
 ## API Endpoints
 

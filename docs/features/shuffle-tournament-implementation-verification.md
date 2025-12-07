@@ -466,7 +466,7 @@ This report verifies that the project has implemented all features specified in 
 | Fixed Map Per Round | Same map for all matches in round | ✅ Complete           |
 | Random Sides        | Random CT/T assignment            | ✅ Complete           |
 | Round Limit         | First to 13 or Max Rounds         | ✅ Complete           |
-| Overtime Mode       | Enable/Disable/Metric-based       | ✅ Complete           |
+| Overtime Mode       | Enable/Disable (no metric-based)  | ✅ Complete (metric-based reserved for future) |                                                                             
 
 ### API Endpoints
 

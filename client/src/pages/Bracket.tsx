@@ -418,6 +418,10 @@ export default function Bracket() {
                 Use the <strong>List</strong> view, the <strong>Matches</strong> page, and{' '}
                 <strong>Standings</strong> to track shuffle tournament progress.
               </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                For a full walkthrough of how shuffle works, see the{' '}
+                <strong>Shuffle Tournaments</strong> guide in the documentation.
+              </Typography>
             </Box>
           ) : (
             // All bracket-manager types: single_elimination, double_elimination, round_robin

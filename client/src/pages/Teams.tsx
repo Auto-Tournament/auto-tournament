@@ -133,9 +133,18 @@ export default function Teams() {
 
   // Hide shuffle-generated temporary teams from admin UI (IDs prefixed with "shuffle-")
   const visibleTeams = teams.filter((team) => !team.id.startsWith('shuffle-'));
+  const hasHiddenShuffleTeams = teams.some((team) => team.id.startsWith('shuffle-'));
 
   return (
     <Box data-testid="teams-page" sx={{ width: '100%', height: '100%' }}>
+      {hasHiddenShuffleTeams && (
+        <Box mb={2}>
+          <Typography variant="body2" color="text.secondary">
+            Shuffle tournaments create temporary round teams behind the scenes. Those are hidden
+            here so this list only shows your real teams.
+          </Typography>
+        </Box>
+      )}
       {visibleTeams.length === 0 ? (
         <Box>
           <EmptyState

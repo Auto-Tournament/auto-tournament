@@ -28,53 +28,34 @@
 
 ---
 
-### 2. Overtime Mode: `metric_based` Incomplete / Not Exposed
+### 2. Overtime Mode: `metric_based` (Spec Only, Implementation Uses Enable/Disable)
 
-- **Issue**: Spec and API advertise a `metric_based` overtime mode, but it is neither configurable in the UI nor fully implemented in match config.
-  - Spec: `shuffle-tournament-complex-solution.md` and `docs/guides/shuffle-tournaments.md` describe three options:
-    - Enable Overtime
-    - Stop at Max Rounds
-    - Stop Based on Metric (total damage)
-  - Backend types:
-    - `ShuffleTournamentConfig.overtimeMode: 'enabled' | 'disabled' | 'metric_based'`
-    - DB column `overtime_mode TEXT DEFAULT 'enabled'`
-  - UI (`ShuffleTournamentConfigStep.tsx`):
-    - `overtimeMode` is typed as `'enabled' | 'disabled'` only.
-    - Select options only expose **Enable Overtime** and **No Overtime (Tie at 12-12)**.
-  - Match config (`generateShuffleMatchConfig`):
-    - For `roundLimitType === 'first_to_13'`:
-      - Always sets `mp_maxrounds = 24`.
-      - Sets `mp_overtime_enable = 1` only when `overtimeMode === 'enabled'`.
-      - For `overtimeMode === 'metric_based'`, it falls through and behaves like “disabled” (no overtime, no metric logic).
-    - For `roundLimitType === 'max_rounds'`, `mp_overtime_enable` is always `0`.
-- **Impact**:
-  - API and docs claim support for `metric_based`, but:
-    - UI cannot select it.
-    - No tie-break implementation based on total damage exists.
-  - This is a **spec vs implementation mismatch** and could confuse API consumers relying on `metric_based`.
-- **Suggested options**:
-  - Either fully implement metric-based tie-breaking (including cvar/logic and UI option), **or**:
-    - Remove/undocument `metric_based` from the public API and docs for now.
-    - Restrict `ShuffleTournamentConfig.overtimeMode` to `'enabled' | 'disabled'` until metric-based behavior is implemented.
+- **Current behavior**:
+  - The implementation supports **two** overtime options: `'enabled'` and `'disabled'`.
+  - The public API, Swagger docs, and UI all expose only these two values.
+  - `matchConfigBuilder` sets:
+    - `mp_overtime_enable = 1` when `overtimeMode === 'enabled'`.
+    - `mp_overtime_enable = 0` when `overtimeMode === 'disabled'`.
+- **Spec vs implementation**:
+  - Design docs (`shuffle-tournament-complex-solution.md`) still mention a potential `metric_based` mode (e.g. deciding winners based on total damage).
+  - That mode is **not implemented** and is intentionally **not** part of the public API today.
+- **Resolution**:
+  - Treat `metric_based` as a **future idea** only.
+  - Keep the public surface restricted to `'enabled' | 'disabled'` to avoid confusing admins or API consumers.
 
 ---
 
-### 3. `defaultElo` in Shuffle Config Is Currently Unused
+### 3. `defaultElo` in Shuffle Config (Removed from API)
 
-- **Issue**: The shuffle tournament API accepts `defaultElo`, but it is not wired into tournament behavior.
-  - Helper/test code (`tests/helpers/shuffleTournament.ts`) passes `defaultElo` into `createShuffleTournament`.
-  - Route `/api/tournament/shuffle` forwards it via `ShuffleTournamentConfig`.
-  - `createShuffleTournament` in `src/services/shuffleTournamentService.ts` **does not use** `config.defaultElo` when inserting the tournament row or configuring anything else.
-  - Database schema (`tournament` table) has no field for a per-tournament default ELO (only global player defaults are in `players`).
-  - Actual default ELO behavior is controlled globally via `playerService`:
-    - New players default to 3000 regardless of tournament.
-- **Impact**:
-  - API and tests may give the impression that `defaultElo` affects player ratings for a specific tournament, but it has no effect today.
-  - Potential source of confusion for callers expecting tournament-level default ELO control.
-- **Suggested fix**:
-  - Either:
-    - Implement per-tournament default ELO (add field to `tournament`, use it when creating players for that tournament), **or**
-    - Remove `defaultElo` from the shuffle tournament API and related docs/tests so behavior is unambiguous.
+- **Previous review finding**:
+  - Earlier versions of the design/API mentioned a per-tournament `defaultElo` field for shuffle.
+  - Implementation never actually used `config.defaultElo` when creating tournaments or players.
+- **Current behavior**:
+  - The shuffle tournament API **no longer exposes** a `defaultElo` field.
+  - Default player ELO is controlled **globally** via the settings system and `playerService` (e.g. default 3000).
+- **Resolution**:
+  - All per-tournament `defaultElo` references have been removed from the public API and docs.
+  - This keeps behavior unambiguous: the global default ELO setting is the single source of truth.
 
 ---
 
@@ -113,5 +94,3 @@
 
 Overall, the shuffle tournament flow (creation, registration, automatic team balancing, match generation, round progression, and public standings/leaderboard) is implemented and largely consistent with the complex solution design.  
 The main concrete issues found are **status handling on the public standings page**, **incomplete/hidden `metric_based` overtime mode**, the **unused `defaultElo` field**, and the **match card’s incorrect assumption about shuffle player list format**. These are all fixable in isolation and do not break the core shuffle flow, but they are worth addressing for correctness and to keep implementation fully aligned with the documented behavior.
-
-
