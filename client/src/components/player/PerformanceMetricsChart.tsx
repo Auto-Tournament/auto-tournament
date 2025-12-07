@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, Chip } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 
 interface PerformanceMetricsChartProps {
   matchHistory: Array<{
@@ -14,6 +15,7 @@ interface PerformanceMetricsChartProps {
 export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChartProps) {
   const [chartWidth, setChartWidth] = useState(600);
   const containerRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   useEffect(() => {
     const updateWidth = () => {
@@ -137,7 +139,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
               <path
                 d="M 20 0 L 0 0 0 20"
                 fill="none"
-                stroke="#3A3542"
+                stroke={theme.palette.background.surface2}
                 strokeWidth="0.5"
               />
             </pattern>
@@ -151,7 +153,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
               y1={getAdrY(avgAdr)}
               x2={chartWidth - padding}
               y2={getAdrY(avgAdr)}
-              stroke="#938F99"
+              stroke={theme.palette.text.disabled}
               strokeWidth="1"
               strokeDasharray="4 4"
               opacity={0.5}
@@ -163,7 +165,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
               y1={getKdY(avgKd)}
               x2={chartWidth - padding}
               y2={getKdY(avgKd)}
-              stroke="#938F99"
+              stroke={theme.palette.text.disabled}
               strokeWidth="1"
               strokeDasharray="4 4"
               opacity={0.5}
@@ -175,7 +177,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             <path
               d={adrPath}
               fill="none"
-              stroke="#A6E3D0"
+              stroke={theme.palette.success.main}
               strokeWidth={lineWidth}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -187,7 +189,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             <path
               d={kdPath}
               fill="none"
-              stroke="#A8C7FA"
+              stroke={theme.palette.info.main}
               strokeWidth={lineWidth}
               strokeLinecap="round"
               strokeLinejoin="round"
@@ -205,8 +207,8 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
                 cx={x}
                 cy={y}
                 r={pointRadius}
-                fill="#A6E3D0"
-                stroke="#1C1B1F"
+                fill={theme.palette.success.main}
+                stroke={theme.palette.background.default}
                 strokeWidth="1"
               />
             );
@@ -224,8 +226,8 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
                 cx={x}
                 cy={y}
                 r={pointRadius}
-                fill="#A8C7FA"
-                stroke="#1C1B1F"
+                fill={theme.palette.info.main}
+                stroke={theme.palette.background.default}
                 strokeWidth="1"
               />
             );
@@ -237,7 +239,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={padding}
             textAnchor="end"
             fontSize="10"
-            fill="#CAC4D0"
+            fill={theme.palette.text.secondary}
             dominantBaseline="middle"
           >
             {Math.ceil(maxAdr)}
@@ -247,7 +249,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={chartHeight / 2}
             textAnchor="end"
             fontSize="10"
-            fill="#CAC4D0"
+            fill={theme.palette.text.secondary}
             dominantBaseline="middle"
           >
             {Math.floor(minAdr)}
@@ -259,7 +261,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={chartHeight / 2 + padding}
             textAnchor="end"
             fontSize="10"
-            fill="#CAC4D0"
+            fill={theme.palette.text.secondary}
             dominantBaseline="middle"
           >
             {maxKd.toFixed(2)}
@@ -269,7 +271,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={chartHeight}
             textAnchor="end"
             fontSize="10"
-            fill="#CAC4D0"
+            fill={theme.palette.text.secondary}
             dominantBaseline="middle"
           >
             {minKd.toFixed(2)}
@@ -281,7 +283,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={padding - 5}
             textAnchor="end"
             fontSize="11"
-            fill="#A6E3D0"
+            fill={theme.palette.success.main}
             fontWeight="600"
           >
             ADR
@@ -291,7 +293,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             y={chartHeight / 2 + padding - 5}
             textAnchor="end"
             fontSize="11"
-            fill="#A8C7FA"
+            fill={theme.palette.info.main}
             fontWeight="600"
           >
             K/D

@@ -10,6 +10,7 @@ import {
   Box,
   Stack,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import {
   EmojiEvents as TournamentIcon,
   SportsEsports as MatchIcon,
@@ -53,6 +54,7 @@ interface PlayerCounts {
 }
 
 export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
+  const theme = useTheme();
   const [loading, setLoading] = useState(true);
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<MatchesResponse['matches']>([]);
@@ -229,6 +231,20 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
   // Match status over time (last 7 matches)
   const recentMatches = matches.slice(0, 7).reverse();
+
+  const matchStatusPieColors = [
+    theme.palette.info.main,
+    theme.palette.primary.main,
+    theme.palette.warning.main,
+    theme.palette.success.main,
+    theme.palette.secondary.main,
+  ];
+
+  const serverStatusPieColors = [theme.palette.success.main, theme.palette.error.main];
+
+  const playerDistributionPieColors = [theme.palette.success.main, theme.palette.secondary.main];
+
+  const recentMatchLineColors = [theme.palette.primary.main];
 
   const hasData = tournament || matches.length > 0 || servers.length > 0 || players.length > 0;
 
@@ -433,6 +449,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 </Typography>
                 <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
                   <PieChart
+                    colors={matchStatusPieColors}
                     series={[
                       {
                         data: matchStatusData,
@@ -461,6 +478,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 </Typography>
                 <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
                   <PieChart
+                    colors={serverStatusPieColors}
                     series={[
                       {
                         data: serverStatusData,
@@ -492,6 +510,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                     sx={{ width: '100%', height: 220, display: 'flex', justifyContent: 'center' }}
                   >
                     <PieChart
+                      colors={playerDistributionPieColors}
                       series={[
                         {
                           data: playerDistributionData,
@@ -570,6 +589,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                   </Box>
                   <Box sx={{ width: '100%', height: 280, overflow: 'auto' }}>
                     <LineChart
+                    colors={recentMatchLineColors}
                       xAxis={[
                         {
                           data: recentMatches.map((_, i) => i),

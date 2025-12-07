@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
+import { useTheme, alpha } from '@mui/material/styles';
 
 interface ELOProgressionChartProps {
   history: Array<{
@@ -20,6 +21,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
   const pointRadius = 4;
   const [chartWidth, setChartWidth] = useState(600);
   const containerRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
 
   useEffect(() => {
     const updateWidth = () => {
@@ -115,7 +117,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                   y1={y}
                   x2={chartWidth - padding}
                   y2={y}
-                  stroke="rgba(0, 0, 0, 0.1)"
+                  stroke={alpha(theme.palette.divider, 0.5)}
                   strokeWidth={1}
                   strokeDasharray="4 4"
                 />
@@ -123,7 +125,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                   x={padding - 10}
                   y={y + 4}
                   fontSize="10"
-                  fill="rgba(0, 0, 0, 0.6)"
+                  fill={theme.palette.text.secondary}
                   textAnchor="end"
                 >
                   {Math.round(elo)}
@@ -135,14 +137,14 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
           {/* Area under curve */}
           <path
             d={areaPath}
-            fill="rgba(25, 118, 210, 0.1)"
+            fill={alpha(theme.palette.primary.main, 0.15)}
           />
 
           {/* Line */}
           <path
             d={linePath}
             fill="none"
-            stroke="rgb(25, 118, 210)"
+            stroke={theme.palette.primary.main}
             strokeWidth={2}
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -163,14 +165,14 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                   r={pointRadius}
                   fill={
                     point.isStart
-                      ? 'rgba(0, 0, 0, 0.5)'
+                      ? theme.palette.text.secondary
                       : isWin
-                      ? 'rgb(46, 125, 50)'
+                      ? theme.palette.success.main
                       : isLoss
-                      ? 'rgb(211, 47, 47)'
-                      : 'rgb(25, 118, 210)'
+                      ? theme.palette.error.main
+                      : theme.palette.primary.main
                   }
-                  stroke="white"
+                  stroke={theme.palette.background.paper}
                   strokeWidth={2}
                 />
               </g>
@@ -186,7 +188,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                bgcolor: 'rgba(0, 0, 0, 0.5)',
+                  bgcolor: theme.palette.text.secondary,
               }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -199,7 +201,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                bgcolor: 'rgb(46, 125, 50)',
+                  bgcolor: theme.palette.success.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -212,7 +214,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                bgcolor: 'rgb(211, 47, 47)',
+                  bgcolor: theme.palette.error.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
