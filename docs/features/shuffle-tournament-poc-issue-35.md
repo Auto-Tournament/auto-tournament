@@ -9,19 +9,22 @@
 
 From Issue [#35](https://github.com/sivert-io/matchzy-auto-tournament/issues/35), the core goals were:
 
-- **Individual competition, not fixed teams**  
-  - Players should compete as individuals; there is no “tournament-winning team”.  
+- **Individual competition, not fixed teams**
+
+  - Players should compete as individuals; there is no “tournament-winning team”.
   - The winner is the **player with the most match wins**, with ELO and stats available as tie-breakers.
 
-- **Dynamic, balanced teams every match**  
-  - Instead of fixed rosters, teams are reshuffled every match/round.  
+- **Dynamic, balanced teams every match**
+
+  - Instead of fixed rosters, teams are reshuffled every match/round.
   - Team balancing should use an ELO-like rating (similar to your Excel sheet) so that each team’s average ELO is as close as possible.
 
-- **Fixed map per round, no veto**  
-  - For this tournament type, you don’t need veto or map votes.  
+- **Fixed map per round, no veto**
+
+  - For this tournament type, you don’t need veto or map votes.
   - All matches in a round should use the **same map**, which you configure in advance.
 
-- **Full automation (Complex Option)**  
+- **Full automation (Complex Option)**
   - The POC targets the **complex solution** you described:
     - Internal ELO/skill system (we use **OpenSkill** under the hood – a Bayesian rating system for teams and games, see [openskill.me](https://openskill.me)).
     - Automatic team creation and balancing every round.
@@ -29,8 +32,9 @@ From Issue [#35](https://github.com/sivert-io/matchzy-auto-tournament/issues/35)
 
 The implementation therefore focuses on a **fully automatic shuffle tournament mode** rather than the purely manual “simple” mode.
 
-> **If you’re not familiar with these terms:**  
-> - **ELO** is the classic rating system from chess – a single number that goes up or down after each match.  
+> **If you’re not familiar with these terms:**
+>
+> - **ELO** is the classic rating system from chess – a single number that goes up or down after each match.
 > - **OpenSkill** is a modern rating system that builds on Bayesian statistics and is designed for **team games** and changing teammates. You can think of it as “a smarter ELO under the hood” – we convert it to an ELO-like number in the UI so it stays familiar.
 
 ---
@@ -52,8 +56,8 @@ At a high level, the shuffle tournament feature does the following:
      - **Reshuffles teams** using the updated ratings.
      - Generates the **next round** automatically.
 - Keeps a **player leaderboard** for the tournament:
-  - Primary: **match wins**  
-  - Secondary: **ELO**  
+  - Primary: **match wins**
+  - Secondary: **ELO**
   - Tertiary: **ADR** (average damage per round)
 - Exposes everything on:
   - A public **tournament standings page** for that shuffle tournament.
@@ -65,13 +69,53 @@ At a high level, the shuffle tournament feature does the following:
 
 This section describes what you, as the admin, actually do in the UI.
 
+### 3.0. Starting the app (Docker dev stack)
+
+Before you follow the UI flow below, start a local dev server. The easiest way is to use the Docker dev compose setup that ships with this repo:
+
+**Option A – Using Yarn (recommended):**
+
+```bash
+# From the repo root
+export API_TOKEN=admin123
+export SERVER_TOKEN=server123
+yarn docker:local:up
+
+# App will be available at:
+#   http://localhost:3069
+```
+
+You can change the external port by setting `HOST_PORT`:
+
+```bash
+HOST_PORT=27016 yarn docker:local:up
+# App will be available at http://localhost:27016
+```
+
+**Option B – Raw Docker Compose:**
+
+```bash
+# Default port (3069)
+docker compose -f docker/docker-compose.local.yml up -d --build
+
+# Custom port
+HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
+```
+
+These commands:
+
+- Start PostgreSQL and the MatchZy Tournament app (API + frontend) in Docker
+- Enable the `/dev` page and all shuffle-tournament-related routes used in this POC
+
 ### 3.1. One-Time Setup
 
 1. **Configure servers**
+
    - Use the existing **Servers** page to register your CS2 servers (with MatchZy installed).
    - The shuffle tournament mode uses the same automatic server allocation system as other tournaments.
 
 2. **Configure Default Player ELO**
+
    - In **Settings**, set a **Default Player ELO** (FaceIT-style, default 3000).
    - Any new player created without a specified ELO (Players page, Teams page, imports) will use this value.
 
@@ -154,15 +198,18 @@ When the final round completes:
 From the player’s point of view:
 
 - They **don’t join teams** manually for this tournament type.
+
   - Instead, they are **registered as players** in the shuffle tournament.
   - The system decides which team they are on each round.
 
 - Before Round 1:
+
   - They receive a link (or see a page) where they can:
     - See the current round’s match.
     - Get the **connect IP** and **connect command**.
 
 - During the tournament:
+
   - Each round, they are placed into new teams based on the updated ELO.
   - They can see:
     - Who is on their team.
@@ -177,11 +224,11 @@ From the player’s point of view:
 
 > **Public URLs (Player-Facing)**
 >
-> - **Find Player / Claim Page**: `/player`  
->   - Public entry point where players can search for themselves by **Steam ID** or **Steam profile URL** (no login required).  
+> - **Find Player / Claim Page**: `/player`
+>   - Public entry point where players can search for themselves by **Steam ID** or **Steam profile URL** (no login required).
 >   - When a match is running (including shuffle tournaments), you can share this URL with participants so they can quickly find **their own public player page**.
-> - **Individual Player Page**: `/player/{steamId}`  
->   - Public profile showing ELO, rating history, match stats, and tournament participation (including shuffle tournaments).  
+> - **Individual Player Page**: `/player/{steamId}`
+>   - Public profile showing ELO, rating history, match stats, and tournament participation (including shuffle tournaments).
 >   - This is what the **tournament standings page** links to when you click a player.
 
 ---
@@ -224,7 +271,7 @@ For shuffle tournaments, the leaderboard is:
 
 This matches your original requirement:
 
-- Winner = player with most wins.  
+- Winner = player with most wins.
 - ELO and performance metrics give extra detail and break ties.
 
 ---
@@ -261,6 +308,59 @@ This is intentionally kept simple for v1, but the logic is written so it can be 
 
 ---
 
+## 7. How to run a small test event with your group
+
+If you want to dry-run this PR with your own players before a full LAN, you can treat the Docker dev stack as a “mini production” environment:
+
+1. **Start the Docker dev server**
+
+   - From the repo root:
+     ```bash
+     export API_TOKEN=admin123
+     export SERVER_TOKEN=server123
+     yarn docker:local:up
+     # App at http://localhost:3069 (or http://<your-server-ip>:3069 for other PCs on the LAN)
+     ```
+   - On a dedicated machine, you can also set `HOST_PORT` (e.g. `HOST_PORT=27016 yarn docker:local:up`) and share that port with players.
+
+2. **Log in as admin**
+
+   - Open `http://<server-host>:<port>` in your browser.
+   - Click **Login** and enter the `API_TOKEN` you set above (for the example: `admin123`).
+
+3. **Create/import your real players**
+
+   - Use the **Players** page to:
+     - Import players from CSV/JSON (recommended for large groups), or
+     - Create them manually.
+   - Optionally set starting ELOs to mirror your existing spreadsheet.
+
+4. **Create a shuffle tournament**
+
+   - Go to **Tournaments → Create Tournament**.
+   - Select **Shuffle Tournament**, pick maps (one per round), team size (e.g. 5v5), and round/overtime settings.
+
+5. **Register everyone**
+
+   - On the tournament page, click **Register Players** and add the players who will participate in the test.
+
+6. **Run the test rounds**
+
+   - When ready, click **Start Tournament**.
+   - Players join matches using the same flow as today (team/match pages + connect commands exposed by MatchZy).
+   - Let them play through a few rounds so you can see:
+     - Team balancing behavior.
+     - Rating updates.
+     - Tournament standings.
+
+7. **Review results with your group**
+   - Share the public **tournament standings URL** and **player pages**:
+     - `/tournament/:id/standings` – overall leaderboard.
+     - `/player/:steamId` – individual rating + stats.
+   - Use this dry run to confirm the flow matches what you need before using it for a full LAN.
+
+---
+
 ## 7. Differences vs Your Original “Simple” Proposal
 
 In the issue you described two options: a **simple** Excel-driven manual mode and a **complex** automated mode.
@@ -268,6 +368,7 @@ In the issue you described two options: a **simple** Excel-driven manual mode an
 The POC implemented here is much closer to the **complex** option:
 
 - **What we implemented (complex):**
+
   - Full player system with ratings and history.
   - Automatic team balancing every round using ratings.
   - Automatic match creation and round progression.
@@ -318,6 +419,4 @@ Once you’ve gone through a test event (or at least a few rounds with test data
 - The rating templates and how strongly stats influence ELO.
 - The handling of edge cases (odd players, server shortages, etc.).
 
-This document should give you enough of a **surface-level view** of how the shuffle tournament POC works to spot any conceptual mismatches or missing pieces before you host a real event.  
-
-
+This document should give you enough of a **surface-level view** of how the shuffle tournament POC works to spot any conceptual mismatches or missing pieces before you host a real event.
