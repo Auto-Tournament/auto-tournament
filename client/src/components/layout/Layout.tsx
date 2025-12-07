@@ -136,6 +136,7 @@ export default function Layout() {
   const { logout } = useAuth();
   const { headerActions } = usePageHeader();
   const { showError } = useSnackbar();
+  const hasShownWebhookWarningRef = React.useRef(false);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
@@ -239,7 +240,8 @@ export default function Layout() {
   }, [navigate]);
 
   React.useEffect(() => {
-    if (webhookConfigured === false) {
+    if (webhookConfigured === false && !hasShownWebhookWarningRef.current) {
+      hasShownWebhookWarningRef.current = true;
       showError(
         <Box display="flex" alignItems="center" gap={1}>
           <Box component="span" sx={{ mr: 1 }}>
@@ -256,6 +258,10 @@ export default function Layout() {
           </Button>
         </Box>
       );
+    }
+
+    if (webhookConfigured === true) {
+      hasShownWebhookWarningRef.current = false;
     }
   }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar]);
 
