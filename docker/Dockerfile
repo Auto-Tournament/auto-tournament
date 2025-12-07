@@ -97,8 +97,10 @@ COPY --from=build /app/package.json ./
 # The bundled dist/index.js contains all dependencies
 
 # Copy built application (bundled backend + frontend)
-COPY --from=build /app/dist ./dist
-COPY --from=build /app/public ./public
+# Backend is built into /app/api/dist and frontend into /app/api/public
+# We copy them into /app/dist and /app/public so runtime paths stay consistent.
+COPY --from=build /app/api/dist ./dist
+COPY --from=build /app/api/public ./public
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile
