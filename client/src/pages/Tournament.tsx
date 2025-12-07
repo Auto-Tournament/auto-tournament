@@ -603,9 +603,7 @@ const Tournament: React.FC = () => {
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
         showSuccess(`Tournament started! ${allocated} matches allocated to servers`);
-        setTimeout(() => {
-          navigate('/bracket');
-        }, 2000);
+        // Stay on current view; users can navigate to the bracket from dashboard or bracket link
       } else {
         const message = (response as { message?: string }).message || 'Failed to start tournament';
         showError(message);
