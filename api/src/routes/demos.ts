@@ -12,8 +12,8 @@ import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
 
-// Directory for storing demos (same as database)
-const DEMOS_DIR = path.join(process.cwd(), 'data', 'demos');
+// Directory for storing demos (same as database) - under api/data
+const DEMOS_DIR = path.join(__dirname, '..', '..', 'data', 'demos');
 
 // Ensure demos directory exists
 if (!fs.existsSync(DEMOS_DIR)) {

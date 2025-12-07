@@ -3,18 +3,21 @@ import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
 
-// Read package.json to get version
-const packageJson = JSON.parse(readFileSync(resolve(__dirname, 'package.json'), 'utf-8'));
+// Read client package.json to get version
+const packageJson = JSON.parse(
+  readFileSync(resolve(__dirname, 'package.json'), 'utf-8')
+);
 
 export default defineConfig({
   plugins: [react()],
-  root: './client',
+  root: resolve(__dirname),
   define: {
     __APP_VERSION__: JSON.stringify(packageJson.version),
   },
   envPrefix: 'VITE_',
   build: {
-    outDir: '../public',
+    // Build directly into api/public so the API can serve the SPA at /app
+    outDir: resolve(__dirname, '../api/public'),
     emptyOutDir: true,
   },
   server: {
@@ -39,3 +42,5 @@ export default defineConfig({
     },
   },
 });
+
+

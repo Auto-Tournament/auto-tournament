@@ -207,7 +207,7 @@ for ((i=1; i<=NUM_SHARDS; i++)); do
 
   PLAYWRIGHT_BASE_URL="http://localhost:${port}" \
   SKIP_WEBSERVER=1 \
-  yarn playwright test \
+  yarn playwright test -c tests/playwright.config.ts \
     --shard="${i}/${NUM_SHARDS}" \
     --reporter=list \
     > "${log_file}" 2>&1 &

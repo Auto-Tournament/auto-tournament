@@ -1,0 +1,35 @@
+{
+  "name": "@matchzy/client",
+  "version": "1.2.0",
+  "description": "MatchZy Auto Tournament React client",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "dev:host": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.4",
+    "@mui/material": "^7.3.6",
+    "@mui/x-charts": "^8.21.0",
+    "brackets-manager": "^1.7.1",
+    "brackets-memory-db": "^1.0.5",
+    "brackets-model": "^1.5.1",
+    "i18next": "^23.0.0",
+    "i18next-browser-languagedetector": "^7.0.0",
+    "notistack": "^3.0.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.21.0",
+    "react-zoom-pan-pinch": "^3.7.0",
+    "socket.io-client": "^4.8.1"
+  }
+}
+
+

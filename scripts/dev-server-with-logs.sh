@@ -19,6 +19,6 @@ echo
 
 # Run the TypeScript dev server and tee all output to the log file.
 # NODE_ENV is explicitly set to development so pino uses pretty output.
-NODE_ENV=development tsx watch src/index.ts 2>&1 | tee "$log_file"
+NODE_ENV=development tsx watch api/src/index.ts 2>&1 | tee "$log_file"
 
 

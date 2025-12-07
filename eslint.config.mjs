@@ -8,15 +8,15 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 export default [
   js.configs.recommended,
   
-  // Backend TypeScript files (src/**/*.ts)
+  // Backend TypeScript files (api/src/**/*.ts)
   {
-    files: ['src/**/*.ts'],
+    files: ['api/src/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: './api/tsconfig.json',
       },
       globals: {
         console: 'readonly',
@@ -236,7 +236,8 @@ export default [
       'public/**',
       'site/**', // Generated documentation site
       'data/**',
-      '.venv/**', // Python virtual environment
+      '.venv/**', // (legacy) Python virtual environment at repo root
+      'docs/.venv/**', // Python virtual environment for docs
       '*.js',
       '*.mjs',
       'vite.config.ts',

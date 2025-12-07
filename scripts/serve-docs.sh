@@ -5,14 +5,17 @@ set -e
 
 cd "$(dirname "$0")/.."
 
+# Use a virtual environment scoped to docs to keep the repo root clean
+DOCS_VENV_DIR="docs/.venv"
+
 # Check if virtual environment exists, create if not
-if [ ! -d ".venv" ]; then
-  echo "📦 Creating Python virtual environment..."
-  python3 -m venv .venv
+if [ ! -d "$DOCS_VENV_DIR" ]; then
+  echo "📦 Creating Python virtual environment in $DOCS_VENV_DIR..."
+  python3 -m venv "$DOCS_VENV_DIR"
 fi
 
 # Activate virtual environment
-source .venv/bin/activate
+source "$DOCS_VENV_DIR/bin/activate"
 
 # Install/update dependencies
 echo "📥 Installing/updating MkDocs dependencies..."

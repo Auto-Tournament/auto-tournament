@@ -1,0 +1,31 @@
+{
+  "name": "@matchzy/api",
+  "version": "1.2.0",
+  "description": "MatchZy Auto Tournament API (backend)",
+  "private": true,
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "NODE_ENV=development tsx watch src/index.ts",
+    "build": "node esbuild.config.js",
+    "build:tsc": "tsc -p tsconfig.json",
+    "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "brackets-manager": "^1.7.1",
+    "brackets-memory-db": "^1.0.5",
+    "brackets-model": "^1.5.1",
+    "cors": "^2.8.5",
+    "dathost-rcon-client": "^1.0.3",
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "openskill": "^4.1.0",
+    "pg": "^8.16.3",
+    "pino": "^10.1.0",
+    "socket.io": "^4.8.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1"
+  }
+}
+
+

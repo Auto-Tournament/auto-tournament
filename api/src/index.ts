@@ -278,8 +278,8 @@ app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 
-// Serve frontend at /app
-const publicPath = path.join(process.cwd(), 'public');
+// Serve frontend at /app (built client lives under api/public)
+const publicPath = path.join(__dirname, '..', 'public');
 app.use('/app', express.static(publicPath));
 
 // Serve map images statically
@@ -321,7 +321,7 @@ cleanupOldLogs(30);
       log.server(`API Docs: http://localhost:${PORT}/api-docs`);
       log.server(`Health check: http://localhost:${PORT}/health`);
       log.server(`WebSocket: Enabled`);
-      log.server(`Event logs: data/logs/events/ (30 day retention)`);
+      log.server(`Event logs: api/data/logs/events/ (30 day retention)`);
       log.server('='.repeat(60));
 
       // Bootstrap webhooks and recover active matches (now database is ready)

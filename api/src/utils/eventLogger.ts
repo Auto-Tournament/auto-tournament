@@ -7,7 +7,8 @@ import fs from 'fs';
 import path from 'path';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 
-const LOGS_DIR = path.join(process.cwd(), 'data', 'logs', 'events');
+// Logs live under the api/data directory to keep the repo root clean
+const LOGS_DIR = path.join(__dirname, '..', '..', 'data', 'logs', 'events');
 const ALL_EVENTS_FILE = path.join(LOGS_DIR, 'events-all.txt');
 
 // Ensure logs directory exists

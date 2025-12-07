@@ -9,8 +9,8 @@ import fs from 'fs';
 
 const router = Router();
 
-// Directory for storing map images
-const MAP_IMAGES_DIR = path.join(process.cwd(), 'public', 'map-images');
+// Directory for storing map images - under api/public
+const MAP_IMAGES_DIR = path.join(__dirname, '..', '..', 'public', 'map-images');
 
 // Ensure map images directory exists
 if (!fs.existsSync(MAP_IMAGES_DIR)) {
