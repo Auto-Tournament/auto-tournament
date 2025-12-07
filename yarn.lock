@@ -1071,6 +1071,53 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@matchzy/api@workspace:api":
+  version: 0.0.0-use.local
+  resolution: "@matchzy/api@workspace:api"
+  dependencies:
+    brackets-manager: "npm:^1.7.1"
+    brackets-memory-db: "npm:^1.0.5"
+    brackets-model: "npm:^1.5.1"
+    cors: "npm:^2.8.5"
+    dathost-rcon-client: "npm:^1.0.3"
+    dotenv: "npm:^16.3.1"
+    express: "npm:^4.18.2"
+    node-fetch: "npm:^2.7.0"
+    openskill: "npm:^4.1.0"
+    pg: "npm:^8.16.3"
+    pino: "npm:^10.1.0"
+    socket.io: "npm:^4.8.1"
+    swagger-jsdoc: "npm:^6.2.8"
+    swagger-ui-express: "npm:^5.0.1"
+  languageName: unknown
+  linkType: soft
+
+"@matchzy/client@workspace:client":
+  version: 0.0.0-use.local
+  resolution: "@matchzy/client@workspace:client"
+  dependencies:
+    "@dnd-kit/core": "npm:^6.3.1"
+    "@dnd-kit/sortable": "npm:^10.0.0"
+    "@dnd-kit/utilities": "npm:^3.2.2"
+    "@emotion/react": "npm:^11.14.0"
+    "@emotion/styled": "npm:^11.14.1"
+    "@mui/icons-material": "npm:^7.3.4"
+    "@mui/material": "npm:^7.3.6"
+    "@mui/x-charts": "npm:^8.21.0"
+    brackets-manager: "npm:^1.7.1"
+    brackets-memory-db: "npm:^1.0.5"
+    brackets-model: "npm:^1.5.1"
+    i18next: "npm:^23.0.0"
+    i18next-browser-languagedetector: "npm:^7.0.0"
+    notistack: "npm:^3.0.2"
+    react: "npm:^18.2.0"
+    react-dom: "npm:^18.2.0"
+    react-router-dom: "npm:^6.21.0"
+    react-zoom-pan-pinch: "npm:^3.7.0"
+    socket.io-client: "npm:^4.8.1"
+  languageName: unknown
+  linkType: soft
+
 "@mui/core-downloads-tracker@npm:^7.3.6":
   version: 7.3.6
   resolution: "@mui/core-downloads-tracker@npm:7.3.6"
@@ -5112,14 +5159,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "matchzy-auto-tournament@workspace:."
   dependencies:
-    "@dnd-kit/core": "npm:^6.3.1"
-    "@dnd-kit/sortable": "npm:^10.0.0"
-    "@dnd-kit/utilities": "npm:^3.2.2"
-    "@emotion/react": "npm:^11.14.0"
-    "@emotion/styled": "npm:^11.14.1"
-    "@mui/icons-material": "npm:^7.3.4"
-    "@mui/material": "npm:^7.3.6"
-    "@mui/x-charts": "npm:^8.21.0"
     "@playwright/test": "npm:^1.56.1"
     "@types/cheerio": "npm:^1.0.0"
     "@types/cors": "npm:^2.8.17"
@@ -5135,27 +5174,13 @@ __metadata:
     "@typescript-eslint/eslint-plugin": "npm:^8.46.2"
     "@typescript-eslint/parser": "npm:^8.46.2"
     "@vitejs/plugin-react": "npm:^4.2.1"
-    brackets-manager: "npm:^1.7.1"
-    brackets-memory-db: "npm:^1.0.5"
-    brackets-model: "npm:^1.5.1"
     cheerio: "npm:^1.1.2"
     concurrently: "npm:^9.2.1"
-    cors: "npm:^2.8.5"
-    dathost-rcon-client: "npm:^1.0.3"
-    dotenv: "npm:^16.3.1"
     esbuild: "npm:^0.27.1"
     eslint: "npm:^9.39.0"
     eslint-plugin-react: "npm:^7.37.5"
     eslint-plugin-react-compiler: "npm:^19.1.0-rc.2"
     eslint-plugin-react-hooks: "npm:^7.0.1"
-    express: "npm:^4.18.2"
-    i18next: "npm:^23.0.0"
-    i18next-browser-languagedetector: "npm:^7.0.0"
-    node-fetch: "npm:^2.7.0"
-    notistack: "npm:^3.0.2"
-    openskill: "npm:^4.1.0"
-    pg: "npm:^8.16.3"
-    pino: "npm:^10.1.0"
     pino-pretty: "npm:^13.1.2"
     pixelmatch: "npm:^7.1.0"
     playwright: "npm:^1.56.1"
@@ -5163,12 +5188,7 @@ __metadata:
     react: "npm:^18.2.0"
     react-dom: "npm:^18.2.0"
     react-router-dom: "npm:^6.21.0"
-    react-zoom-pan-pinch: "npm:^3.7.0"
     sass: "npm:^1.93.3"
-    socket.io: "npm:^4.8.1"
-    socket.io-client: "npm:^4.8.1"
-    swagger-jsdoc: "npm:^6.2.8"
-    swagger-ui-express: "npm:^5.0.1"
     tsx: "npm:^4.7.0"
     typescript: "npm:^5.3.3"
     vite: "npm:^5.0.12"

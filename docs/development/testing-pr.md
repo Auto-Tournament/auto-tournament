@@ -46,7 +46,7 @@ git checkout feature/10-feature-customizable-map-pool
 ### Step 2: Install Dependencies
 
 ```bash
-# Install all dependencies (uses Yarn)
+# Install all dependencies for API and client (Yarn workspaces)
 yarn install
 ```
 

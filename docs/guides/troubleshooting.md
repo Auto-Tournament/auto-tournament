@@ -266,7 +266,7 @@ docker compose -f docker/docker-compose.local.yml up -d --build
 For development with hot-reload:
 
 ```bash
-# Install dependencies
+# Install all dependencies for API and client (Yarn workspaces)
 yarn install
 
 # Start PostgreSQL (or use your own)
@@ -281,7 +281,7 @@ export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_NAME=matchzy_tournament
 
-# Start in dev mode
+# Start in dev mode (API + client)
 yarn dev
 ```
 
