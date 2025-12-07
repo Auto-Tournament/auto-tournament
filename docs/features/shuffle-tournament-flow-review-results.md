@@ -93,4 +93,4 @@
 ### Summary
 
 Overall, the shuffle tournament flow (creation, registration, automatic team balancing, match generation, round progression, and public standings/leaderboard) is implemented and largely consistent with the complex solution design.  
-The main concrete issues found are **status handling on the public standings page**, **incomplete/hidden `metric_based` overtime mode**, the **unused `defaultElo` field**, and the **match card’s incorrect assumption about shuffle player list format**. These are all fixable in isolation and do not break the core shuffle flow, but they are worth addressing for correctness and to keep implementation fully aligned with the documented behavior.
+Historically, the main concrete issues were **status handling on the public standings page**, **incomplete/hidden `metric_based` overtime mode**, the **unused `defaultElo` field**, and the **match card’s incorrect assumption about shuffle player list format**. These have since been addressed or explicitly deferred (metric-based overtime), and the remaining gaps are mainly about future fairness/optimization improvements rather than correctness.

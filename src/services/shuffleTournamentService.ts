@@ -363,117 +363,132 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
       const lastTeam = teams[team1Index];
       const lastTeamPlayerIds = lastTeam.players.map((p) => p.id);
 
-      // Check if any of these players should be rotated in (they sat out last round)
-      const shouldRotateIn = lastTeamPlayerIds.some(
+      // Candidates to rotate in are players from the leftover team who did NOT play last round
+      // (i.e. they sat out previously and we want to prioritize getting them into matches)
+      let candidateIds = lastTeamPlayerIds.filter(
         (id) => !playersWhoPlayedLastRound.includes(id)
       );
 
-      if (shouldRotateIn && roundNumber > 1) {
-        // Try to swap with a player from an existing match who played last round
-        // Find a player in an existing match who should sit out (played last round)
-        let swapped = false;
+      if (candidateIds.length > 0 && roundNumber > 1) {
+        // Try to swap as many candidates as possible with players who played last round.
+        // This avoids the same players sitting out multiple rounds in a row when we have options.
+        let swappedAny = false;
+
         for (const match of matches) {
+          if (candidateIds.length === 0) break;
+
           const existingTeam1 = await teamService.getTeamById(match.team1_id || '');
           const existingTeam2 = await teamService.getTeamById(match.team2_id || '');
 
           for (const existingTeam of [existingTeam1, existingTeam2].filter(Boolean)) {
             if (!existingTeam) continue;
+            if (candidateIds.length === 0) break;
 
             for (const existingPlayer of existingTeam.players) {
-              // If this player played last round and we have someone who sat out, swap them
-              if (playersWhoPlayedLastRound.includes(existingPlayer.steamId)) {
-                // Candidates to rotate in are players from the leftover team who did NOT play last round
-                const candidateIds = lastTeamPlayerIds.filter(
-                  (id) => !playersWhoPlayedLastRound.includes(id)
-                );
+              if (candidateIds.length === 0) break;
 
-                if (candidateIds.length > 0) {
-                  // Prefer the candidate with the fewest matches played overall (fair rotation)
-                  let bestCandidateId: string | null = null;
-                  let bestMatchCount = Number.POSITIVE_INFINITY;
+              // Only consider swapping out players who played last round
+              if (!playersWhoPlayedLastRound.includes(existingPlayer.steamId)) {
+                continue;
+              }
 
-                  for (const candidateId of candidateIds) {
-                    const candidateRecord = players.find((p) => p.id === candidateId);
-                    const matchCount = candidateRecord?.match_count ?? 0;
-                    if (matchCount < bestMatchCount) {
-                      bestMatchCount = matchCount;
-                      bestCandidateId = candidateId;
-                    }
-                  }
+              // Prefer the candidate with the fewest matches played overall (fair rotation)
+              let bestCandidateId: string | null = null;
+              let bestMatchCount = Number.POSITIVE_INFINITY;
 
-                  if (bestCandidateId) {
-                    const candidateRecord = players.find((p) => p.id === bestCandidateId);
-                    if (candidateRecord) {
-                      // Swap: remove player who played last round, add player who sat out
-                      const playerToRemove = existingPlayer.steamId;
-                      const updatedPlayers = existingTeam.players
-                        .filter((p) => p.steamId !== playerToRemove)
-                        .concat([
-                          {
-                            steamId: candidateRecord.id,
-                            name: candidateRecord.name,
-                            avatar: candidateRecord.avatar_url,
-                          },
-                        ]);
-
-                      await db.updateAsync(
-                        'teams',
-                        { players: JSON.stringify(updatedPlayers), updated_at: now },
-                        'id = ?',
-                        [existingTeam.id]
-                      );
-
-                      // Update match config
-                      if (!match.slug) continue;
-                      const matchSlug = match.slug;
-                      const updatedMatch = await db.queryOneAsync<DbMatchRow>(
-                        'SELECT * FROM matches WHERE slug = ?',
-                        [matchSlug]
-                      );
-                      if (updatedMatch && updatedMatch.config) {
-                        const matchConfig = JSON.parse(updatedMatch.config);
-                        if (existingTeam.id === match.team1_id) {
-                          matchConfig.team1.players = updatedPlayers.reduce((acc, p) => {
-                            acc[p.steamId] = p.name;
-                            return acc;
-                          }, {} as Record<string, string>);
-                        } else {
-                          matchConfig.team2.players = updatedPlayers.reduce((acc, p) => {
-                            acc[p.steamId] = p.name;
-                            return acc;
-                          }, {} as Record<string, string>);
-                        }
-                        await db.updateAsync(
-                          'matches',
-                          { config: JSON.stringify(matchConfig) },
-                          'id = ?',
-                          [updatedMatch.id]
-                        );
-                      }
-
-                      log.info(
-                        `Rotated player ${candidateRecord.name} into match ${matchSlug}, removed ${existingPlayer.name}`
-                      );
-                      swapped = true;
-                      break;
-                    }
-                  }
+              for (const candidateId of candidateIds) {
+                const candidateRecord = players.find((p) => p.id === candidateId);
+                const matchCount = candidateRecord?.match_count ?? 0;
+                if (matchCount < bestMatchCount) {
+                  bestMatchCount = matchCount;
+                  bestCandidateId = candidateId;
                 }
               }
-              if (swapped) break;
+
+              if (!bestCandidateId) {
+                continue;
+              }
+
+              const candidateRecord = players.find((p) => p.id === bestCandidateId);
+              if (!candidateRecord) {
+                // Remove bad candidate and continue
+                candidateIds = candidateIds.filter((id) => id !== bestCandidateId);
+                continue;
+              }
+
+              // Swap: remove player who played last round, add player who sat out
+              const playerToRemove = existingPlayer.steamId;
+              const updatedPlayers = existingTeam.players
+                .filter((p) => p.steamId !== playerToRemove)
+                .concat([
+                  {
+                    steamId: candidateRecord.id,
+                    name: candidateRecord.name,
+                    avatar: candidateRecord.avatar_url,
+                  },
+                ]);
+
+              await db.updateAsync(
+                'teams',
+                { players: JSON.stringify(updatedPlayers), updated_at: now },
+                'id = ?',
+                [existingTeam.id]
+              );
+
+              // Update match config
+              if (!match.slug) continue;
+              const matchSlug = match.slug;
+              const updatedMatch = await db.queryOneAsync<DbMatchRow>(
+                'SELECT * FROM matches WHERE slug = ?',
+                [matchSlug]
+              );
+              if (updatedMatch && updatedMatch.config) {
+                const matchConfig = JSON.parse(updatedMatch.config);
+                if (existingTeam.id === match.team1_id) {
+                  matchConfig.team1.players = updatedPlayers.reduce((acc, p) => {
+                    acc[p.steamId] = p.name;
+                    return acc;
+                  }, {} as Record<string, string>);
+                } else {
+                  matchConfig.team2.players = updatedPlayers.reduce((acc, p) => {
+                    acc[p.steamId] = p.name;
+                    return acc;
+                  }, {} as Record<string, string>);
+                }
+                await db.updateAsync(
+                  'matches',
+                  { config: JSON.stringify(matchConfig) },
+                  'id = ?',
+                  [updatedMatch.id]
+                );
+              }
+
+              log.info(
+                `Rotated player ${candidateRecord.name} into match ${matchSlug}, removed ${existingPlayer.name}`
+              );
+              swappedAny = true;
+
+              // Remove this candidate so we don't try to place them again
+              candidateIds = candidateIds.filter((id) => id !== bestCandidateId);
             }
-            if (swapped) break;
           }
-          if (swapped) break;
         }
 
-        if (!swapped) {
+        if (!swappedAny) {
           // Couldn't swap, log warning
-          log.warn(`Odd number of teams in round ${roundNumber}, could not rotate players. Last team (${lastTeam.players.map(p => p.name).join(', ')}) will sit out.`);
+          log.warn(
+            `Odd number of teams in round ${roundNumber}, could not rotate players. Last team (${lastTeam.players
+              .map((p) => p.name)
+              .join(', ')}) will sit out.`
+          );
         }
       } else {
         // First round or no rotation needed - skip last team
-        log.info(`Odd number of teams in round ${roundNumber}, skipping last team (${lastTeam.players.map(p => p.name).join(', ')})`);
+        log.info(
+          `Odd number of teams in round ${roundNumber}, skipping last team (${lastTeam.players
+            .map((p) => p.name)
+            .join(', ')})`
+        );
       }
       break;
     }

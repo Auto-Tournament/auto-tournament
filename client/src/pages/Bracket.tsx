@@ -105,11 +105,10 @@ export default function Bracket() {
       const interval = setInterval(loadRoundStatus, 30000);
       return () => clearInterval(interval);
     }
-    // Non-shuffle or no tournament: clear shuffle-specific total rounds
-    setShuffleTotalRounds(null);
-    // Note: We don't set roundStatus to null here to avoid cascading renders
-    // The status will be cleared when tournament changes or component unmounts
-  }, [tournament?.type, tournament?.id]);
+    // Non-shuffle or no tournament:
+    // We intentionally do not reset shuffle-specific state here; guards below ensure
+    // it is only used when the current tournament is a shuffle tournament.
+  }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps]);
 
   // Set dynamic page title
   useEffect(() => {
