@@ -3,16 +3,16 @@ import { SnackbarProvider as NotistackProvider, enqueueSnackbar, VariantType } f
 import { Alert, Slide, TransitionProps } from '@mui/material';
 
 interface SnackbarContextType {
-  showSnackbar: (message: string, severity?: VariantType) => void;
-  showSuccess: (message: string) => void;
-  showError: (message: string) => void;
-  showWarning: (message: string) => void;
+  showSnackbar: (message: ReactNode, severity?: VariantType) => void;
+  showSuccess: (message: ReactNode) => void;
+  showError: (message: ReactNode) => void;
+  showWarning: (message: ReactNode) => void;
 }
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
 
 // Custom snackbar components with forwardRef for notistack
-const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ message }, ref) => (
+const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
   <Alert
     ref={ref}
     severity="success"
@@ -42,7 +42,7 @@ const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({
 ));
 SuccessSnackbar.displayName = 'SuccessSnackbar';
 
-const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ message }, ref) => (
+const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
   <Alert
     ref={ref}
     severity="error"
@@ -71,7 +71,7 @@ const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ m
 ));
 ErrorSnackbar.displayName = 'ErrorSnackbar';
 
-const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ message }, ref) => (
+const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
   <Alert
     ref={ref}
     severity="warning"
@@ -100,7 +100,7 @@ const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({
 ));
 WarningSnackbar.displayName = 'WarningSnackbar';
 
-const InfoSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ message }, ref) => (
+const InfoSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
   <Alert
     ref={ref}
     severity="info"
@@ -152,7 +152,7 @@ const SlideTransition = React.forwardRef<unknown, TransitionProps & { children: 
 SlideTransition.displayName = 'SlideTransition';
 
 export function SnackbarProvider({ children }: { children: ReactNode }) {
-  const showSnackbar = useCallback((msg: string, variant: VariantType = 'success') => {
+  const showSnackbar = useCallback((msg: ReactNode, variant: VariantType = 'success') => {
     enqueueSnackbar(msg, {
       variant,
       autoHideDuration: 6000,
@@ -164,21 +164,21 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showSuccess = useCallback(
-    (msg: string) => {
+    (msg: ReactNode) => {
       showSnackbar(msg, 'success');
     },
     [showSnackbar]
   );
 
   const showError = useCallback(
-    (msg: string) => {
+    (msg: ReactNode) => {
       showSnackbar(msg, 'error');
     },
     [showSnackbar]
   );
 
   const showWarning = useCallback(
-    (msg: string) => {
+    (msg: ReactNode) => {
       showSnackbar(msg, 'warning');
     },
     [showSnackbar]

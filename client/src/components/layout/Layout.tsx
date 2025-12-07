@@ -17,8 +17,6 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
-import Snackbar from '@mui/material/Snackbar';
-import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
 import Stack from '@mui/material/Stack';
 import ListSubheader from '@mui/material/ListSubheader';
@@ -45,6 +43,7 @@ import DescriptionIcon from '@mui/icons-material/Description';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
 
@@ -136,6 +135,7 @@ export default function Layout() {
   const location = useLocation();
   const { logout } = useAuth();
   const { headerActions } = usePageHeader();
+  const { showError } = useSnackbar();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
@@ -153,24 +153,26 @@ export default function Layout() {
 
   const isDevelopment =
     (import.meta as unknown as { env: { DEV: boolean; VITE_ENABLE_DEV_PAGE?: string } }).env.DEV ||
-    (import.meta as unknown as { env: { VITE_ENABLE_DEV_PAGE?: string } }).env.VITE_ENABLE_DEV_PAGE === 'true';
+    (import.meta as unknown as { env: { VITE_ENABLE_DEV_PAGE?: string } }).env
+      .VITE_ENABLE_DEV_PAGE === 'true';
 
   // Page header configuration - maps routes to their titles and icons
-  const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> = {
-    '/': { title: 'Dashboard', icon: DashboardIcon },
-    '/tournament': { title: 'Tournament', icon: EmojiEventsIcon },
-    '/bracket': { title: 'Bracket', icon: AccountTreeIcon },
-    '/matches': { title: 'Matches', icon: SportsEsportsIcon },
-    '/teams': { title: 'Teams', icon: GroupsIcon },
-    '/players': { title: 'Players', icon: PersonIcon },
-    '/servers': { title: 'Servers', icon: StorageIcon },
-    '/maps': { title: 'Maps & Map Pools', icon: MapIcon },
-    '/templates': { title: 'Templates', icon: DescriptionIcon },
-    '/elo-templates': { title: 'ELO Calculation', icon: TrendingUpIcon },
-    '/admin': { title: 'Admin Tools', icon: CampaignIcon },
-    '/settings': { title: 'Settings', icon: SettingsIcon },
-    '/dev': { title: 'Development Tools', icon: BugReportIcon, color: 'warning.main' },
-  };
+  const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
+    {
+      '/': { title: 'Dashboard', icon: DashboardIcon },
+      '/tournament': { title: 'Tournament', icon: EmojiEventsIcon },
+      '/bracket': { title: 'Bracket', icon: AccountTreeIcon },
+      '/matches': { title: 'Matches', icon: SportsEsportsIcon },
+      '/teams': { title: 'Teams', icon: GroupsIcon },
+      '/players': { title: 'Players', icon: PersonIcon },
+      '/servers': { title: 'Servers', icon: StorageIcon },
+      '/maps': { title: 'Maps & Map Pools', icon: MapIcon },
+      '/templates': { title: 'Templates', icon: DescriptionIcon },
+      '/elo-templates': { title: 'ELO Calculation', icon: TrendingUpIcon },
+      '/admin': { title: 'Admin Tools', icon: CampaignIcon },
+      '/settings': { title: 'Settings', icon: SettingsIcon },
+      '/dev': { title: 'Development Tools', icon: BugReportIcon, color: 'warning.main' },
+    };
 
   // Get current page header config
   const currentPageHeader = pageHeaders[location.pathname];
@@ -230,6 +232,32 @@ export default function Layout() {
       window.removeEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
     };
   }, []);
+
+  // Show a single global snackbar when webhook is not configured
+  const handleOpenSettingsFromSnackbar = React.useCallback(() => {
+    navigate('/settings');
+  }, [navigate]);
+
+  React.useEffect(() => {
+    if (webhookConfigured === false) {
+      showError(
+        <Box display="flex" alignItems="center" gap={1}>
+          <Box component="span" sx={{ mr: 1 }}>
+            Webhook URL is not configured. Matches and servers cannot receive events until it is
+            set.
+          </Box>
+          <Button
+            color="inherit"
+            size="small"
+            onClick={handleOpenSettingsFromSnackbar}
+            sx={{ textDecoration: 'underline' }}
+          >
+            Open settings
+          </Button>
+        </Box>
+      );
+    }
+  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';
@@ -706,7 +734,12 @@ export default function Layout() {
               >
                 Documentation
               </Button>
-              <Button color="error" onClick={handleLogout} startIcon={<Logout />} data-testid="sign-out-button">
+              <Button
+                color="error"
+                onClick={handleLogout}
+                startIcon={<Logout />}
+                data-testid="sign-out-button"
+              >
                 Sign out
               </Button>
             </Stack>
@@ -737,12 +770,13 @@ export default function Layout() {
                       placeItems: 'center',
                     }}
                   >
-                    {React.createElement(currentPageHeader.icon, {
-                      sx: {
+                    <Box
+                      component={currentPageHeader.icon}
+                      sx={{
                         fontSize: 40,
                         color: currentPageHeader.color || 'primary.main',
-                      },
-                    })}
+                      }}
+                    />
                   </Box>
                   <Typography variant="h4" fontWeight={600}>
                     {currentPageHeader.title}
@@ -755,37 +789,6 @@ export default function Layout() {
           </Box>
         </Box>
       </Box>
-
-      {/* Webhook Configuration Alert */}
-      <Snackbar
-        open={webhookConfigured === false}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        autoHideDuration={null}
-      >
-        <Alert
-          data-testid="webhook-alert"
-          severity="error"
-          variant="filled"
-          icon={false}
-          sx={{
-            alignItems: 'center',
-            display: 'flex',
-          }}
-          action={
-            <Button
-              data-testid="webhook-alert-close-button"
-              color="inherit"
-              size="small"
-              variant="outlined"
-              onClick={() => navigate('/settings')}
-            >
-              Open Settings
-            </Button>
-          }
-        >
-          Webhook URL is not configured. Matches and servers cannot receive events until it is set.
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

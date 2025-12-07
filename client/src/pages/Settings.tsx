@@ -117,7 +117,7 @@ export default function Settings() {
     } finally {
       setSaving(false);
     }
-  }, [webhookUrl, steamApiKey, showSuccess, showError]);
+  }, [webhookUrl, steamApiKey, defaultPlayerElo, showSuccess, showError]);
 
   const handleFieldBlur = () => {
     // Save immediately when field loses focus (if values changed)
