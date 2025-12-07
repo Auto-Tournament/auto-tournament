@@ -17,6 +17,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  TextField,
 } from '@mui/material';
 import {
   Group as GroupIcon,
@@ -37,6 +38,9 @@ const Development: React.FC = () => {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [confirmWipeOpen, setConfirmWipeOpen] = useState(false);
   const [wiping, setWiping] = useState(false);
+  const [customTeamCount, setCustomTeamCount] = useState(8);
+  const [customPlayerCount, setCustomPlayerCount] = useState(60);
+  const [customServerCount, setCustomServerCount] = useState(3);
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
@@ -88,20 +92,8 @@ const Development: React.FC = () => {
           .replace(/[^a-z0-9]+/g, '-')
           .replace(/(^-|-$)/g, '');
 
-      // Real Steam IDs for testing avatars - public profiles that should exist
-      // These will cycle through as needed for multiple teams
-      const realSteamIds = [
-        '76561197960287930', // Gabe Newell (public profile)
-        '76561198013825972', // Popular public profile
-        '76561198067146383', // Popular public profile
-        '76561198021466528', // Popular public profile
-        '76561198059949467', // Popular public profile
-        '76561198077860982', // Popular public profile
-        '76561198041282941', // Popular public profile
-        '76561198012563928', // Popular public profile
-        '76561198063472351', // Popular public profile
-        '76561198084126937', // Popular public profile
-      ];
+      // Generate unique Steam IDs per player so each team gets unique players
+      const baseTimestamp = Date.now();
 
       for (let i = 0; i < count; i++) {
         const teamName = teamNames[i % teamNames.length];
@@ -118,10 +110,17 @@ const Development: React.FC = () => {
               .replace(/[^A-Za-z0-9]/g, '')
               .substring(0, 3)
               .toUpperCase() || 'TST',
-          players: Array.from({ length: 5 }, (_, playerIndex) => ({
-            steamId: realSteamIds[(i * 5 + playerIndex) % realSteamIds.length],
-            name: `Player ${playerIndex + 1}`,
-          })),
+          players: Array.from({ length: 5 }, (_, playerIndex) => {
+            const globalIndex = i * 5 + playerIndex;
+            const uniquePart = String(baseTimestamp + globalIndex)
+              .padStart(10, '0')
+              .slice(-10);
+            const steamId = `7656119${uniquePart}`;
+            return {
+              steamId,
+              name: `Player ${globalIndex + 1}`,
+            };
+          }),
         });
       }
 
@@ -500,6 +499,27 @@ const Development: React.FC = () => {
                 >
                   {loading ? <CircularProgress size={24} /> : 'Create 16 Teams'}
                 </Button>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    type="number"
+                    label="Custom team count"
+                    size="small"
+                    value={customTeamCount}
+                    onChange={(e) =>
+                      setCustomTeamCount(Math.max(1, Number(e.target.value) || 0))
+                    }
+                    disabled={loading}
+                    inputProps={{ min: 1 }}
+                    fullWidth
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() => customTeamCount > 0 && handleCreateTestTeams(customTeamCount)}
+                    disabled={loading || customTeamCount <= 0}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Create Teams'}
+                  </Button>
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -552,6 +572,29 @@ const Development: React.FC = () => {
                 >
                   {loading ? <CircularProgress size={24} /> : 'Create 100 Players'}
                 </Button>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    type="number"
+                    label="Custom player count"
+                    size="small"
+                    value={customPlayerCount}
+                    onChange={(e) =>
+                      setCustomPlayerCount(Math.max(1, Number(e.target.value) || 0))
+                    }
+                    disabled={loading}
+                    inputProps={{ min: 1 }}
+                    fullWidth
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      customPlayerCount > 0 && handleCreateTestPlayers(customPlayerCount)
+                    }
+                    disabled={loading || customPlayerCount <= 0}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Create Players'}
+                  </Button>
+                </Box>
               </Box>
             </CardContent>
           </Card>
@@ -603,6 +646,29 @@ const Development: React.FC = () => {
                 >
                   {loading ? <CircularProgress size={24} /> : 'Create 10 Servers'}
                 </Button>
+                <Box display="flex" gap={1}>
+                  <TextField
+                    type="number"
+                    label="Custom server count"
+                    size="small"
+                    value={customServerCount}
+                    onChange={(e) =>
+                      setCustomServerCount(Math.max(1, Number(e.target.value) || 0))
+                    }
+                    disabled={loading}
+                    inputProps={{ min: 1 }}
+                    fullWidth
+                  />
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      customServerCount > 0 && handleCreateTestServers(customServerCount)
+                    }
+                    disabled={loading || customServerCount <= 0}
+                  >
+                    {loading ? <CircularProgress size={24} /> : 'Create Servers'}
+                  </Button>
+                </Box>
               </Box>
             </CardContent>
           </Card>
