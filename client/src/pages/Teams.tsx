@@ -14,7 +14,6 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
-import EditIcon from '@mui/icons-material/Edit';
 import { api } from '../utils/api';
 import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
@@ -178,13 +177,6 @@ export default function Teams() {
                     </Box>
                     <Box display="flex" gap={0.5}>
                       <TeamLinkActions teamId={team.id} />
-                      <IconButton
-                        data-testid="team-edit-button"
-                        size="small"
-                        onClick={() => handleOpenModal(team)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
                     </Box>
                   </Box>
 

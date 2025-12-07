@@ -13,7 +13,6 @@ import {
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import StorageIcon from '@mui/icons-material/Storage';
-import EditIcon from '@mui/icons-material/Edit';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -220,13 +219,7 @@ export default function Servers() {
                           sx={{ fontWeight: 600 }}
                         />
                       </Box>
-                      <IconButton
-                        data-testid="server-edit-button"
-                        size="small"
-                        onClick={() => handleOpenModal(server)}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                      {/* Clicking the card already opens the edit modal, so no separate Edit button needed */}
                     </Box>
 
                     <Box display="flex" flexDirection="column" gap={0.5} mb={2}>

@@ -58,6 +58,9 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 **Live** → Match in progress, rounds being played  
 **Completed** → Winner determined, bracket updated
 
+> **Shuffle tournaments (no veto)**  
+> Shuffle tournaments skip the map veto phase entirely. Matches are still created with status `pending`, but once the tournament is started they behave like the “waiting for server” cases below (no "VETO PENDING" or veto-related messaging).
+
 ### Intelligent Match Status Messages
 
 The system shows context-aware status messages:
@@ -72,6 +75,8 @@ The system shows context-aware status messages:
 | Loaded        | Some players                | "WARMUP" / "Waiting for players (3/10)"                                   |
 | Loaded        | All players                 | "WARMUP" / "All players connected - Waiting for ready up"                 |
 | Live          | -                           | "LIVE" / "Match in progress"                                              |
+
+For **shuffle tournaments**, the system automatically treats veto as completed (since there is no voting step), so once the tournament is started and no server is assigned yet, pending/ready matches go straight to the “WAITING FOR SERVER” variants rather than showing any veto-related messages.
 
 ---
 

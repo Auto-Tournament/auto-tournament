@@ -57,6 +57,7 @@ export default function Bracket() {
     isComplete: boolean;
     map: string;
   } | null>(null);
+  const [shuffleTotalRounds, setShuffleTotalRounds] = useState<number | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
 
   // Derive the current match from matches array (automatically updates when matches change)
@@ -79,10 +80,20 @@ export default function Bracket() {
               isComplete: boolean;
               map: string;
             };
+            totalRounds?: number;
+            currentRound?: number;
           }>(`/api/tournament/${tournament.id}/round-status`);
           
           if (response.success && response.roundStatus) {
             setRoundStatus(response.roundStatus);
+            // Prefer backend-provided totalRounds; fall back to map sequence length
+            if (typeof response.totalRounds === 'number') {
+              setShuffleTotalRounds(response.totalRounds);
+            } else if (Array.isArray(tournament.mapSequence)) {
+              setShuffleTotalRounds(tournament.mapSequence.length);
+            } else if (Array.isArray(tournament.maps)) {
+              setShuffleTotalRounds(tournament.maps.length);
+            }
           }
         } catch (err) {
           console.error('Failed to load round status:', err);
@@ -94,6 +105,8 @@ export default function Bracket() {
       const interval = setInterval(loadRoundStatus, 30000);
       return () => clearInterval(interval);
     }
+    // Non-shuffle or no tournament: clear shuffle-specific total rounds
+    setShuffleTotalRounds(null);
     // Note: We don't set roundStatus to null here to avoid cascading renders
     // The status will be cleared when tournament changes or component unmounts
   }, [tournament?.type, tournament?.id]);
@@ -174,6 +187,35 @@ export default function Bracket() {
     );
   }
 
+  // Special-case: Shuffle tournaments don't use a traditional bracket
+  if (tournament.type === 'shuffle' && !matches.length) {
+    return (
+      <Box sx={{ width: '100%', height: '100%' }}>
+        <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
+          <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+          <Typography variant="h6" color="text.secondary" gutterBottom>
+            No bracket for shuffle tournaments
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mb={2}>
+            Shuffle tournaments don&apos;t use a fixed bracket view. Teams are reshuffled each round based on player ELO.
+          </Typography>
+          <Typography variant="body2" color="text.secondary" mb={3}>
+            Use the <strong>Matches</strong> page to monitor live and upcoming matches, and the{' '}
+            <strong>Standings</strong> page to track player rankings.
+          </Typography>
+          <Stack direction="row" spacing={2} justifyContent="center">
+            <Button variant="contained" onClick={() => navigate('/matches')}>
+              Go to Matches
+            </Button>
+            <Button variant="outlined" onClick={() => navigate(`/tournament/${tournament.id}/standings`)}>
+              View Standings
+            </Button>
+          </Stack>
+        </Card>
+      </Box>
+    );
+  }
+
   if (!matches.length) {
     return (
       <Box sx={{ width: '100%', height: '100%' }}>
@@ -201,6 +243,15 @@ export default function Bracket() {
     }
     matchesByRound[match.round].push(match);
   });
+
+  // For shuffle tournaments, prefer shuffleTotalRounds; fall back to max round present
+  const effectiveTotalRounds =
+    tournament.type === 'shuffle'
+      ? shuffleTotalRounds ??
+        (Object.keys(matchesByRound).length
+          ? Math.max(...Object.keys(matchesByRound).map((r) => Number(r)))
+          : 0)
+      : totalRounds;
 
   return (
     <Box
@@ -326,7 +377,7 @@ export default function Bracket() {
       {tournament.type === 'shuffle' && roundStatus && (
         <RoundStatusCard
           roundStatus={roundStatus}
-          totalRounds={totalRounds}
+          totalRounds={shuffleTotalRounds ?? totalRounds}
           isActive={!roundStatus.isComplete}
         />
       )}
@@ -348,6 +399,26 @@ export default function Bracket() {
               totalRounds={totalRounds}
               onMatchClick={handleMatchClick}
             />
+          ) : tournament.type === 'shuffle' ? (
+            // Shuffle tournaments don't have a fixed bracket tree – hide BracketsViewer entirely
+            <Box
+              sx={{
+                py: 6,
+                px: 3,
+                textAlign: 'center',
+              }}
+            >
+              <Typography variant="h6" gutterBottom>
+                No visual bracket for shuffle tournaments
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Matches are generated dynamically each round based on player ELO and team balancing.
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Use the <strong>List</strong> view, the <strong>Matches</strong> page, and{' '}
+                <strong>Standings</strong> to track shuffle tournament progress.
+              </Typography>
+            </Box>
           ) : (
             // All bracket-manager types: single_elimination, double_elimination, round_robin
             <BracketsViewerVisualization
@@ -367,14 +438,14 @@ export default function Bracket() {
             overflowY: isFullscreen ? 'auto' : 'visible',
           }}
         >
-          {Array.from({ length: totalRounds }, (_, i) => i + 1).map((round) => {
+          {Array.from({ length: effectiveTotalRounds }, (_, i) => i + 1).map((round) => {
             const roundMatches = matchesByRound[round] || [];
             if (roundMatches.length === 0) return null;
             
             return (
               <Box key={round} mb={4}>
                 <Typography variant="h6" fontWeight={600} mb={2}>
-                  {getRoundLabel(round, totalRounds)}
+                  {getRoundLabel(round, effectiveTotalRounds)}
                   {tournament.type === 'shuffle' && roundStatus && roundStatus.roundNumber === round && (
                     <Chip
                       label={roundStatus.map}
