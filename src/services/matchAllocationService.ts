@@ -392,13 +392,14 @@ export class MatchAllocationService {
       };
     }
 
-    // Check if bracket/matches exist
-    const matchCount = await db.queryOneAsync<{ count: number }>(
+    // Check if bracket/matches exist (coerce COUNT(*) to number explicitly)
+    const matchCountRow = await db.queryOneAsync<{ count: number | string }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
     );
+    const totalMatches = Number(matchCountRow?.count ?? 0);
 
-    if (!matchCount || matchCount.count === 0) {
-      // For shuffle tournaments, generate the first round
+    if (totalMatches === 0) {
+      // For shuffle tournaments, generate the first round (regardless of BO format / servers)
       if (tournament.type === 'shuffle') {
         log.info('No matches found - generating first round for shuffle tournament');
         try {
@@ -414,7 +415,9 @@ export class MatchAllocationService {
               results: [],
             };
           }
-          log.success(`Generated round ${result.roundNumber} with ${result.matches.length} match(es)`);
+          log.success(
+            `Generated round ${result.roundNumber} with ${result.matches.length} match(es)`
+          );
         } catch (err) {
           log.error('Failed to generate first round for shuffle tournament', err);
           return {
@@ -444,6 +447,51 @@ export class MatchAllocationService {
           };
         }
       }
+    } else if (tournament.type === 'shuffle') {
+      // Extra safety: if tournament is shuffle and there are *no* shuffle matches yet,
+      // ensure we still generate round 1 before proceeding (helps in edge cases with stale data)
+      const shuffleMatchCountRow = await db.queryOneAsync<{ count: number | string }>(
+        "SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1 AND slug LIKE 'shuffle-%'"
+      );
+      const shuffleMatches = Number(shuffleMatchCountRow?.count ?? 0);
+
+      if (shuffleMatches === 0) {
+        log.info(
+          'Shuffle tournament has existing matches but no shuffle rounds yet - generating first round'
+        );
+        try {
+          const result = await advanceToNextRound();
+          if (!result) {
+            log.error(
+              'Failed to generate first round for shuffle tournament (post existing-match check)'
+            );
+            return {
+              success: false,
+              message:
+                'Shuffle tournament has no generated rounds. First round generation failed. Please check configuration and registered players.',
+              allocated: 0,
+              failed: 0,
+              results: [],
+            };
+          }
+          log.success(
+            `Generated round ${result.roundNumber} with ${result.matches.length} match(es) for shuffle tournament`
+          );
+        } catch (err) {
+          log.error(
+            'Failed to generate first round for shuffle tournament (post existing-match check)',
+            err
+          );
+          return {
+            success: false,
+            message:
+              'Shuffle tournament has no generated rounds. First round generation failed. Please check configuration and registered players.',
+            allocated: 0,
+            failed: 0,
+            results: [],
+          };
+        }
+      }
     }
 
     // Check server availability before starting
@@ -451,7 +499,10 @@ export class MatchAllocationService {
     const hasAvailableServers = availableServerCount > 0;
 
     // Determine if this tournament uses veto system
-    const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
+    // Shuffle tournaments *never* use veto, even if format is BO1
+    const requiresVeto =
+      tournament.type !== 'shuffle' &&
+      ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
 
     let results = [];
     let allocated = 0;
