@@ -162,6 +162,16 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
   const livePlayerStats = liveStats?.playerStats ?? null;
+
+  // Detect shuffle matches (temporary shuffle team IDs or config IDs)
+  const isShuffleMatch =
+    match.team1?.id?.startsWith('shuffle-') ||
+    match.team2?.id?.startsWith('shuffle-') ||
+    (match.config as any)?.team1?.id?.startsWith?.('shuffle-') ||
+    (match.config as any)?.team2?.id?.startsWith?.('shuffle-');
+
+  // Shuffle tournaments don't use veto - treat as completed to avoid "VETO PENDING" labels
+  const effectiveVetoCompleted = isShuffleMatch ? true : match.vetoCompleted;
   const normalizedTeam1Players = livePlayerStats?.team1?.length
     ? livePlayerStats.team1.map((player) => ({
         name: player.name,
@@ -219,7 +229,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   label={getStatusLabel(
                     match.status,
                     false,
-                    match.vetoCompleted,
+                    effectiveVetoCompleted,
                     tournamentStarted,
                     Boolean(match.serverId)
                   )}
@@ -275,7 +285,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   connectionStatus?.totalConnected,
                   match.config?.expected_players_total || 10,
                   false,
-                  match.vetoCompleted,
+                  effectiveVetoCompleted,
                   tournamentStarted,
                   Boolean(match.serverId)
                 )}
@@ -457,8 +467,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </Box>
             </Box>
 
-            {/* Player Roster */}
-            {match.config && (match.status === 'loaded' || match.status === 'live') && (
+            {/* Player Roster
+                For shuffle tournaments, we already know the teams before server allocation,
+                so show the roster even while matches are still pending. */}
+            {match.config && (isShuffleMatch || match.status === 'loaded' || match.status === 'live') && (
               <>
                 <Divider />
                 <Box>
