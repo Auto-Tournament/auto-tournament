@@ -439,9 +439,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           </Card>
         </Grid>
 
-        {/* Row 2: Distribution pie charts + top players */}
+        {/* Row 2: Distribution pie charts */}
         {matchStatusData.length > 0 && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 6 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
@@ -450,6 +450,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
                   <PieChart
                     colors={matchStatusPieColors}
+                    margin={{ top: 10, right: 80, bottom: 10, left: 10 }}
                     series={[
                       {
                         data: matchStatusData,
@@ -470,7 +471,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
         {/* Server Status Pie Chart */}
         {serverStatusData.length > 0 && (
-          <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+          <Grid size={{ xs: 12, md: 6, lg: 6 }}>
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
@@ -479,6 +480,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
                   <PieChart
                     colors={serverStatusPieColors}
+                    margin={{ top: 10, right: 80, bottom: 10, left: 10 }}
                     series={[
                       {
                         data: serverStatusData,
@@ -497,83 +499,84 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           </Grid>
         )}
 
-        {/* Player Distribution + Top Players */}
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          <Stack spacing={2} sx={{ height: '100%' }}>
-            {playerDistributionData.length > 0 && (
-              <Card sx={{ flex: 1 }}>
-                <CardContent>
-                  <Typography variant="h6" fontWeight={600} mb={2}>
-                    Player Distribution
-                  </Typography>
-                  <Box
-                    sx={{ width: '100%', height: 220, display: 'flex', justifyContent: 'center' }}
-                  >
-                    <PieChart
-                      colors={playerDistributionPieColors}
-                      series={[
-                        {
-                          data: playerDistributionData,
-                          innerRadius: 30,
-                          outerRadius: 90,
-                          paddingAngle: 2,
-                          cornerRadius: 5,
-                        },
-                      ]}
-                      width={320}
-                      height={220}
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-            )}
+        {/* Row 3: Player Distribution + Top Players (two cards, 50% width each) */}
+        {playerDistributionData.length > 0 && (
+          <Grid size={{ xs: 12, md: 6, lg: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} mb={2}>
+                  Player Distribution
+                </Typography>
+                <Box
+                  sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}
+                >
+                  <PieChart
+                    colors={playerDistributionPieColors}
+                    margin={{ top: 10, right: 80, bottom: 10, left: 10 }}
+                    series={[
+                      {
+                        data: playerDistributionData,
+                        innerRadius: 30,
+                        outerRadius: 100,
+                        paddingAngle: 2,
+                        cornerRadius: 5,
+                      },
+                    ]}
+                    width={350}
+                    height={300}
+                  />
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
-            {topPlayers.length > 0 && (
-              <Card sx={{ flex: 1 }}>
-                <CardContent>
-                  <Typography variant="h6" fontWeight={600} mb={1}>
-                    Top Players by ELO
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={1}>
-                    Global rating across all tournament types
-                  </Typography>
-                  <Stack spacing={0.75}>
-                    {topPlayers.map((p, index) => (
-                      <Box
-                        key={p.id}
-                        display="flex"
-                        justifyContent="space-between"
-                        alignItems="center"
+        {topPlayers.length > 0 && (
+          <Grid size={{ xs: 12, md: 6, lg: 6 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} mb={1}>
+                  Top Players by ELO
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Global rating across all tournament types
+                </Typography>
+                <Stack spacing={0.75}>
+                  {topPlayers.map((p, index) => (
+                    <Box
+                      key={p.id}
+                      display="flex"
+                      justifyContent="space-between"
+                      alignItems="center"
+                    >
+                      <Typography
+                        variant="body2"
+                        component="a"
+                        href={getPlayerPageUrl(p.id)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        sx={{
+                          textDecoration: 'none',
+                          cursor: 'pointer',
+                          color: 'text.primary',
+                          '&:hover': { textDecoration: 'underline' },
+                        }}
                       >
-                        <Typography
-                          variant="body2"
-                          component="a"
-                          href={getPlayerPageUrl(p.id)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          sx={{
-                            textDecoration: 'none',
-                            cursor: 'pointer',
-                            color: 'text.primary',
-                            '&:hover': { textDecoration: 'underline' },
-                          }}
-                        >
-                          {index + 1}. {p.name}
-                        </Typography>
-                        <Chip
-                          label={`ELO ${p.currentElo}`}
-                          size="small"
-                          color={index === 0 ? 'primary' : 'default'}
-                          sx={{ fontWeight: 600 }}
-                        />
-                      </Box>
-                    ))}
-                  </Stack>
-                </CardContent>
-              </Card>
-            )}
-          </Stack>
-        </Grid>
+                        {index + 1}. {p.name}
+                      </Typography>
+                      <Chip
+                        label={`ELO ${p.currentElo}`}
+                        size="small"
+                        color={index === 0 ? 'primary' : 'default'}
+                        sx={{ fontWeight: 600 }}
+                      />
+                    </Box>
+                  ))}
+                </Stack>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
 
         {/* Row 3: Match Status Over Time + Recent Completed Matches */}
         {recentMatches.length > 0 && (
@@ -599,6 +602,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                       yAxis={[
                         {
                           label: 'Status',
+                          width: 90,
                           valueFormatter: (value) => {
                             if (value === 5) return 'Completed';
                             if (value === 4) return 'Live';
@@ -623,6 +627,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                       ]}
                       width={Math.max(600, recentMatches.length * 80)}
                       height={280}
+                      margin={{ top: 30, right: 30, bottom: 40, left: 90 }}
                     />
                   </Box>
                 </CardContent>
