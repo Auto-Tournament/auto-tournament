@@ -23,13 +23,14 @@ const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({
       borderRadius: 2,
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
       fontWeight: 500,
-      backgroundColor: '#4CAF50',
-      color: '#FFFFFF',
+      // Use theme success colors so this matches the global palette
+      backgroundColor: 'success.main',
+      color: 'success.contrastText',
       '& .MuiAlert-icon': {
-        color: '#FFFFFF',
+        color: 'inherit',
       },
       '& .MuiAlert-action .MuiIconButton-root': {
-        color: '#FFFFFF',
+        color: 'inherit',
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
         },
@@ -52,13 +53,13 @@ const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ m
       borderRadius: 2,
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
       fontWeight: 500,
-      backgroundColor: '#EF5350',
-      color: '#FFFFFF',
+      backgroundColor: 'error.main',
+      color: 'error.contrastText',
       '& .MuiAlert-icon': {
-        color: '#FFFFFF',
+        color: 'inherit',
       },
       '& .MuiAlert-action .MuiIconButton-root': {
-        color: '#FFFFFF',
+        color: 'inherit',
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
         },
@@ -81,13 +82,13 @@ const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({
       borderRadius: 2,
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
       fontWeight: 500,
-      backgroundColor: '#FF9800',
-      color: '#FFFFFF',
+      backgroundColor: 'warning.main',
+      color: 'warning.contrastText',
       '& .MuiAlert-icon': {
-        color: '#FFFFFF',
+        color: 'inherit',
       },
       '& .MuiAlert-action .MuiIconButton-root': {
-        color: '#FFFFFF',
+        color: 'inherit',
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
         },
@@ -110,13 +111,13 @@ const InfoSnackbar = React.forwardRef<HTMLDivElement, { message: string }>(({ me
       borderRadius: 2,
       boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
       fontWeight: 500,
-      backgroundColor: '#2196F3',
-      color: '#FFFFFF',
+      backgroundColor: 'info.main',
+      color: 'info.contrastText',
       '& .MuiAlert-icon': {
-        color: '#FFFFFF',
+        color: 'inherit',
       },
       '& .MuiAlert-action .MuiIconButton-root': {
-        color: '#FFFFFF',
+        color: 'inherit',
         '&:hover': {
           backgroundColor: 'rgba(255, 255, 255, 0.1)',
         },

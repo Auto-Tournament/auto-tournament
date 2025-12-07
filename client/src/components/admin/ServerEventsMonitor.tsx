@@ -176,15 +176,15 @@ export const ServerEventsMonitor: React.FC = () => {
     switch (eventType) {
       case 'series_start':
       case 'going_live':
-        return '#4caf50'; // green
+        return '#A6E3D0'; // success (mint)
       case 'series_end':
-        return '#2196f3'; // blue
+        return '#A8C7FA'; // info (soft blue)
       case 'map_result':
-        return '#9c27b0'; // purple
+        return '#D0BCFF'; // primary purple
       case 'round_end':
-        return '#ff9800'; // orange
+        return '#F7CF9A'; // warning amber
       case 'player_death':
-        return '#f44336'; // red
+        return '#FFB4AB'; // error red
       case 'player_connect':
       case 'player_disconnect':
         return '#607d8b'; // blue-grey

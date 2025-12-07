@@ -19,7 +19,8 @@ body {
   --secondary-background: #1e1e1e;
   --match-background: #1e1e1e;
   --connector-color: rgba(255, 255, 255, 0.12);
-  --win-color: #4caf50;
+  /* Match win color aligned with theme.success.main */
+  --win-color: #a6e3d0;
   --loss-color: rgba(255, 255, 255, 0.3);
   --text-color: rgba(255, 255, 255, 0.87);
   --border-color: rgba(255, 255, 255, 0.12);
@@ -37,7 +38,7 @@ body {
 }
 
 .brackets-viewer .participant.win {
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: rgba(166, 227, 208, 0.12);
 }
 
 .brackets-viewer .participant.loss {

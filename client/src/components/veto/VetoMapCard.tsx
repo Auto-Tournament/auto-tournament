@@ -152,7 +152,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: state === 'banned' ? '#333' : '#1976d2',
+            bgcolor: state === 'banned' ? 'background.paper' : 'primary.dark',
             filter: state === 'banned' ? 'grayscale(100%)' : 'none',
           }}
         >
