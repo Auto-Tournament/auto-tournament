@@ -10,23 +10,21 @@ RUN apk add --no-cache \
     g++
 
 # Enable Yarn via corepack (Node.js 20+)
-# Pin yarn version to 4.11.0 to match local dev
-RUN corepack enable && corepack prepare yarn@4.11.0 --activate
-
-# Global Yarn config (shared by build-related stages)
-RUN echo "nodeLinker: node-modules" > .yarnrc.yml && \
-    echo "enableGlobalCache: false" >> .yarnrc.yml
+# Use classic Yarn 1.x to match the repo's lockfile format
+RUN corepack enable && corepack prepare yarn@1.22.19 --activate
 
 # -------------------------------------------------------------------
 # deps: install ALL dependencies (prod + dev) for building
 # -------------------------------------------------------------------
 FROM base AS deps
 
-# Only copy files needed to resolve dependencies
+# Only copy files needed to resolve dependencies (root + workspace manifests)
 COPY package.json yarn.lock ./
+COPY api/package.json ./api/package.json
+COPY client/package.json ./client/package.json
 
-# Install all dependencies (including devDeps for build tools)
-RUN yarn install --immutable
+# Install all dependencies (including devDeps for build tools) for all workspaces
+RUN yarn install
 
 # -------------------------------------------------------------------
 # build: compile TypeScript backend + React frontend
