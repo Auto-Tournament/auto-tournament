@@ -19,6 +19,8 @@ export default defineConfig({
     // Build directly into api/public so the API can serve the SPA at /app
     outDir: resolve(__dirname, '../api/public'),
     emptyOutDir: true,
+    // Increase chunk size warning limit (in kB) to avoid noisy warnings for our main bundle
+    chunkSizeWarningLimit: 3000,
   },
   server: {
     port: 5173,
