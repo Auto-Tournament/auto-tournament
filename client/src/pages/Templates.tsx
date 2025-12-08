@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
@@ -73,14 +73,6 @@ export default function Templates() {
   const [loadingMaps, setLoadingMaps] = useState(false);
 
   useEffect(() => {
-    document.title = 'Templates';
-    loadTemplates();
-    loadTournamentStatus();
-    loadMaps();
-    loadMapPools();
-  }, []);
-
-  useEffect(() => {
     setHeaderActions(
       <Button
         variant="contained"
@@ -96,7 +88,7 @@ export default function Templates() {
     };
   }, [setHeaderActions, navigate]);
 
-  const loadTournamentStatus = async () => {
+  const loadTournamentStatus = useCallback(async () => {
     try {
       const response = await api.get<TournamentResponse>('/api/tournament');
       if (response.success && response.tournament) {
@@ -108,9 +100,9 @@ export default function Templates() {
       // No tournament exists
       setTournamentStatus(null);
     }
-  };
+  }, []);
 
-  const loadMaps = async () => {
+  const loadMaps = useCallback(async () => {
     try {
       setLoadingMaps(true);
       const response = await api.get<{ maps: Map[] }>('/api/maps');
@@ -122,9 +114,9 @@ export default function Templates() {
     } finally {
       setLoadingMaps(false);
     }
-  };
+  }, []);
 
-  const loadMapPools = async () => {
+  const loadMapPools = useCallback(async () => {
     try {
       const response = await api.get<{ mapPools: MapPool[] }>('/api/map-pools');
       if (response.mapPools) {
@@ -133,7 +125,7 @@ export default function Templates() {
     } catch (err) {
       console.error('Error loading map pools:', err);
     }
-  };
+  }, []);
 
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
@@ -171,7 +163,7 @@ export default function Templates() {
   const allMapIds = sortedMaps.map((m) => m.id);
   const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
 
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
       setLoading(true);
       const response = await api.get<{ success: boolean; templates: TournamentTemplate[] }>(
@@ -186,7 +178,15 @@ export default function Templates() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    document.title = 'Templates';
+    loadTemplates();
+    loadTournamentStatus();
+    loadMaps();
+    loadMapPools();
+  }, [loadTemplates, loadTournamentStatus, loadMaps, loadMapPools]);
 
   const handleDelete = async () => {
     if (!templateToDelete) return;

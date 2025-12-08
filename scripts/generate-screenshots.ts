@@ -79,11 +79,12 @@ function appendLogLine(level: string, message: string): void {
           .join(' ');
         appendLogLine(level.toUpperCase(), text);
       } catch {
-        // Ignore logging wrapper errors
+        // Ignore logging wrapper errors, but still write to original console
+        original(...args);
+        return;
       }
       // Still write to original console
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (original as any).apply(console, args as any);
+      original(...args);
     };
   }
 })();
@@ -583,7 +584,6 @@ async function generateTestDataViaUI(page: Page): Promise<void> {
  * Create players via API (fallback/helper)
  * @deprecated Currently unused - kept for reference
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 async function createPlayers(request: APIRequestContext, count: number): Promise<unknown[]> {
   try {
     const players: Array<{ id: string; name: string; elo?: number }> = [];

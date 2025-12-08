@@ -529,7 +529,11 @@ const Tournament: React.FC = () => {
         eloTemplateId: shuffleSettings.eloTemplateId,
       };
 
-      const response = await api.post<{ success: boolean; tournament: any; error?: string }>(
+      const response = await api.post<{
+        success: boolean;
+        tournament: unknown;
+        error?: string;
+      }>(
         '/api/tournament/shuffle',
         payload
       );

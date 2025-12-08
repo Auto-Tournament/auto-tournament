@@ -1,17 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePageHeader } from '../contexts/PageHeaderContext';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Typography,
-  Grid,
-  Chip,
-  IconButton,
-  CircularProgress,
-} from '@mui/material';
+import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import GroupsIcon from '@mui/icons-material/Groups';
 import { api } from '../utils/api';

@@ -41,7 +41,7 @@ interface PlayerImportModalProps {
 }
 
 export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onClose, onImport }) => {
-  const { showWarning, showError } = useSnackbar();
+  const { showWarning } = useSnackbar();
   const [jsonInput, setJsonInput] = useState('');
   const [parsedPlayers, setParsedPlayers] = useState<ImportPlayer[] | null>(null);
   const [error, setError] = useState<string | null>(null);

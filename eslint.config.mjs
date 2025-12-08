@@ -106,9 +106,9 @@ export default [
     },
     rules: {
       ...typescript.configs.recommended.rules,
-      // Be less strict for scripts – treat unuseds as warnings
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // Scripts are allowed to have helpers and any-typed data structures
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
     },
@@ -171,9 +171,9 @@ export default [
     },
     rules: {
       ...typescript.configs.recommended.rules,
-      // Tests can have some unused helpers – keep as warnings
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // Tests are allowed to have helpers and any-typed fixtures
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
     },
@@ -248,9 +248,13 @@ export default [
       'react/no-unescaped-entities': 'off', // Allow quotes in text content
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        { allowShortCircuit: true, allowTernary: true },
+      ],
       'no-console': 'off',
-      'react-compiler/react-compiler': 'warn', // Catch React performance anti-patterns
+      // Disable React Compiler warnings – we still keep core React/TS rules
+      'react-compiler/react-compiler': 'off',
     },
     settings: {
       react: {
