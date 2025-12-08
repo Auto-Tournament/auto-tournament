@@ -327,7 +327,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               placeholder="Astralis"
               required
               fullWidth
-              inputProps={{ 'data-testid': 'team-name-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'team-name-input' },
+              }}
               helperText="Only letters, numbers, and spaces allowed"
             />
 
@@ -337,8 +339,10 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               onChange={(e) => setTag(e.target.value.toUpperCase())}
               placeholder="AST"
               helperText="Auto-generated from team name (max 4 characters)"
-              inputProps={{ maxLength: 4, 'data-testid': 'team-tag-input' }}
               fullWidth
+              slotProps={{
+                htmlInput: { maxLength: 4, 'data-testid': 'team-tag-input' },
+              }}
             />
 
             <Divider sx={{ my: 1 }} />
@@ -379,7 +383,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
-                  inputProps={{ 'data-testid': 'team-steam-id-input' }}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'team-steam-id-input' },
+                  }}
                 />
                 <Button
                   variant="outlined"
@@ -399,7 +405,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 1 }}
-                  inputProps={{ 'data-testid': 'team-player-name-input' }}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'team-player-name-input' },
+                  }}
                 />
                 <TextField
                   label="ELO (optional)"
@@ -412,9 +420,11 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   placeholder="3000"
                   size="small"
                   disabled={resolving}
-                  inputProps={{ min: 0, max: 10000, 'data-testid': 'team-player-elo-input' }}
                   helperText="Default: 3000"
                   sx={{ flex: 1, maxWidth: 150 }}
+                  slotProps={{
+                    htmlInput: { min: 0, max: 10000, 'data-testid': 'team-player-elo-input' },
+                  }}
                 />
                 <Button
                   data-testid="team-add-player-button"

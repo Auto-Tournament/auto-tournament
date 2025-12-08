@@ -74,50 +74,57 @@ export default function Settings() {
     };
   }, [setHeaderActions]);
 
-  const handleSave = useCallback(async (showSuccessMessage = true) => {
-    setSaving(true);
+  const handleSave = useCallback(
+    async (showSuccessMessage = true) => {
+      setSaving(true);
 
-    // Cancel any pending auto-save
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-      saveTimeoutRef.current = null;
-    }
-
-    try {
-      const payload = {
-        webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
-        steamApiKey: steamApiKey.trim() === '' ? null : steamApiKey.trim(),
-        defaultPlayerElo:
-          defaultPlayerElo === '' ? null : Number.isFinite(defaultPlayerElo) ? defaultPlayerElo : null,
-      };
-
-      const response: SettingsResponse = await api.put('/api/settings', payload);
-      const newWebhook = response.settings.webhookUrl ?? '';
-      const newSteamKey = response.settings.steamApiKey ?? '';
-      const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
-      setWebhookUrl(newWebhook);
-      setSteamApiKey(newSteamKey);
-      setInitialWebhookUrl(newWebhook);
-      setInitialSteamApiKey(newSteamKey);
-      setDefaultPlayerElo(newDefaultElo);
-      setInitialDefaultPlayerElo(newDefaultElo);
-      
-      if (showSuccessMessage) {
-        showSuccess('Settings saved');
+      // Cancel any pending auto-save
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
       }
-      
-      window.dispatchEvent(
-        new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
-          detail: response.settings,
-        })
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to save settings';
-      showError(message);
-    } finally {
-      setSaving(false);
-    }
-  }, [webhookUrl, steamApiKey, defaultPlayerElo, showSuccess, showError]);
+
+      try {
+        const payload = {
+          webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
+          steamApiKey: steamApiKey.trim() === '' ? null : steamApiKey.trim(),
+          defaultPlayerElo:
+            defaultPlayerElo === ''
+              ? null
+              : Number.isFinite(defaultPlayerElo)
+              ? defaultPlayerElo
+              : null,
+        };
+
+        const response: SettingsResponse = await api.put('/api/settings', payload);
+        const newWebhook = response.settings.webhookUrl ?? '';
+        const newSteamKey = response.settings.steamApiKey ?? '';
+        const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
+        setWebhookUrl(newWebhook);
+        setSteamApiKey(newSteamKey);
+        setInitialWebhookUrl(newWebhook);
+        setInitialSteamApiKey(newSteamKey);
+        setDefaultPlayerElo(newDefaultElo);
+        setInitialDefaultPlayerElo(newDefaultElo);
+
+        if (showSuccessMessage) {
+          showSuccess('Settings saved');
+        }
+
+        window.dispatchEvent(
+          new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
+            detail: response.settings,
+          })
+        );
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to save settings';
+        showError(message);
+      } finally {
+        setSaving(false);
+      }
+    },
+    [webhookUrl, steamApiKey, defaultPlayerElo, showSuccess, showError]
+  );
 
   const handleFieldBlur = () => {
     // Save immediately when field loses focus (if values changed)
@@ -142,7 +149,7 @@ export default function Settings() {
   useEffect(() => {
     // Don't auto-save on initial load
     if (loading) return;
-    
+
     // Don't auto-save if values haven't changed
     if (
       webhookUrl === initialWebhookUrl &&
@@ -192,7 +199,9 @@ export default function Settings() {
 
       if (response.success) {
         showSuccess(
-          `Map sync completed! ${response.stats?.added || 0} new map(s) added, ${response.stats?.skipped || 0} already existed.`
+          `Map sync completed! ${response.stats?.added || 0} new map(s) added, ${
+            response.stats?.skipped || 0
+          } already existed.`
         );
         if (response.errors && response.errors.length > 0) {
           showError(`Some maps failed to sync: ${response.errors.join(', ')}`);
@@ -200,28 +209,34 @@ export default function Settings() {
       } else {
         // Handle different error types with user-friendly messages
         let errorMessage = response.error || 'Failed to sync maps';
-        
+
         if (response.errorType === 'rate_limit') {
-          errorMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
+          errorMessage =
+            'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
         } else if (response.errorType === 'github_error') {
-          errorMessage = 'Unable to reach GitHub repository. Please check your internet connection and try again later.';
+          errorMessage =
+            'Unable to reach GitHub repository. Please check your internet connection and try again later.';
         }
-        
+
         showError(errorMessage);
       }
     } catch (err: unknown) {
       // Handle API errors (network, 429, 503, etc.)
       let errorMessage = 'Failed to sync maps';
-      
+
       if (err && typeof err === 'object' && 'response' in err) {
-        const apiError = err as { response?: { data?: { error?: string; errorType?: string }; status?: number } };
+        const apiError = err as {
+          response?: { data?: { error?: string; errorType?: string }; status?: number };
+        };
         const status = apiError.response?.status;
         const errorData = apiError.response?.data;
-        
+
         if (status === 429) {
-          errorMessage = 'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
+          errorMessage =
+            'GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.';
         } else if (status === 503) {
-          errorMessage = 'Unable to reach GitHub repository. Please check your internet connection and try again later.';
+          errorMessage =
+            'Unable to reach GitHub repository. Please check your internet connection and try again later.';
         } else if (errorData?.error) {
           errorMessage = errorData.error;
           // Check error type for additional context
@@ -238,13 +253,12 @@ export default function Settings() {
           errorMessage = err.message;
         }
       }
-      
+
       showError(errorMessage);
     } finally {
       setSyncingMaps(false);
     }
   };
-
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
@@ -272,15 +286,13 @@ export default function Settings() {
                 onChange={(event) => setWebhookUrl(event.target.value)}
                 onBlur={handleFieldBlur}
                 onKeyDown={handleFieldKeyDown}
+                helperText="Example: https://your-domain.com"
                 fullWidth
                 required
                 error={!loading && webhookUrl.trim() === ''}
-                helperText={
-                  !loading && webhookUrl.trim() === ''
-                    ? 'Required.'
-                    : ''
-                }
-                inputProps={{ 'data-testid': 'settings-webhook-url-input' }}
+                slotProps={{
+                  htmlInput: { 'data-testid': 'settings-webhook-url-input' },
+                }}
               />
             </Box>
 
@@ -309,7 +321,13 @@ export default function Settings() {
                 onBlur={handleFieldBlur}
                 onKeyDown={handleFieldKeyDown}
                 fullWidth
-                inputProps={{ min: 1, step: 50, 'data-testid': 'settings-default-player-elo-input' }}
+                slotProps={{
+                  htmlInput: {
+                    min: 1,
+                    step: 50,
+                    'data-testid': 'settings-default-player-elo-input',
+                  },
+                }}
                 helperText="Positive number. Example: 3000"
               />
             </Box>
@@ -325,7 +343,9 @@ export default function Settings() {
                   type={showSteamKey ? 'text' : 'password'}
                   fullWidth
                   helperText="Used to resolve vanity URLs and fetch player profiles. Leave blank to disable Steam lookups."
-                  inputProps={{ 'data-testid': 'settings-steam-api-key-input' }}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'settings-steam-api-key-input' },
+                  }}
                   InputProps={{
                     endAdornment: (
                       <InputAdornment position="end">

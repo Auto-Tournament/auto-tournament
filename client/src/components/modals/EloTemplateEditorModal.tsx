@@ -299,7 +299,9 @@ export default function EloTemplateEditorModal({
                     setMaxAdjustment(e.target.value ? parseInt(e.target.value, 10) : undefined)
                   }
                   fullWidth
-                  inputProps={{ min: 0 }}
+                  slotProps={{
+                    htmlInput: { min: 0 },
+                  }}
                   helperText="Maximum positive ELO adjustment per match"
                   disabled={template?.id === 'pure-win-loss'}
                 />
@@ -313,7 +315,9 @@ export default function EloTemplateEditorModal({
                     setMinAdjustment(e.target.value ? parseInt(e.target.value, 10) : undefined)
                   }
                   fullWidth
-                  inputProps={{ max: 0 }}
+                  slotProps={{
+                    htmlInput: { max: 0 },
+                  }}
                   helperText="Maximum negative ELO adjustment per match"
                 />
               </Grid>

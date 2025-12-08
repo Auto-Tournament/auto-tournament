@@ -139,16 +139,18 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
       <DialogTitle>{isEditing ? 'Edit Map Pool' : 'Create Map Pool'}</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                <TextField
-                  label="Map Pool Name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="My Custom Pool"
-                  required
-                  fullWidth
-                  autoFocus
-                  inputProps={{ 'data-testid': 'map-pool-name-input' }}
-                />
+          <TextField
+            label="Map Pool Name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="My Custom Pool"
+            required
+            fullWidth
+            autoFocus
+            slotProps={{
+              htmlInput: { 'data-testid': 'map-pool-name-input' },
+            }}
+          />
 
           <Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>

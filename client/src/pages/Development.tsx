@@ -668,8 +668,10 @@ const Development: React.FC = () => {
                       setCustomTeamCount(Math.max(1, Number(e.target.value) || 0))
                     }
                     disabled={loading}
-                    inputProps={{ min: 1 }}
                     fullWidth
+                    slotProps={{
+                      htmlInput: { min: 1 },
+                    }}
                   />
                   <Button
                     variant="outlined"
@@ -741,8 +743,10 @@ const Development: React.FC = () => {
                       setCustomPlayerCount(Math.max(1, Number(e.target.value) || 0))
                     }
                     disabled={loading}
-                    inputProps={{ min: 1 }}
                     fullWidth
+                    slotProps={{
+                      htmlInput: { min: 1 },
+                    }}
                   />
                   <Button
                     variant="outlined"
@@ -815,8 +819,10 @@ const Development: React.FC = () => {
                       setCustomServerCount(Math.max(1, Number(e.target.value) || 0))
                     }
                     disabled={loading}
-                    inputProps={{ min: 1 }}
                     fullWidth
+                    slotProps={{
+                      htmlInput: { min: 1 },
+                    }}
                   />
                   <Button
                     variant="outlined"

@@ -23,7 +23,6 @@ export const useAdminCommands = () => {
     setExecuting(true);
     setError('');
     setSuccess('');
-    setResults([]);
 
     try {
       let response;
@@ -92,7 +91,6 @@ export const useAdminCommands = () => {
   const clearMessages = () => {
     setError('');
     setSuccess('');
-    setResults([]);
   };
 
   return {

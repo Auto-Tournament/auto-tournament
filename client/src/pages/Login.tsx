@@ -118,7 +118,9 @@ export default function Login() {
                 placeholder="Enter your API token"
                 autoFocus
                 disabled={loading}
-                inputProps={{ 'data-testid': 'login-api-token-input' }}
+                slotProps={{
+                  htmlInput: { 'data-testid': 'login-api-token-input' },
+                }}
               />
 
               {error && (

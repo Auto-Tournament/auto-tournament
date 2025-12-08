@@ -237,7 +237,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               placeholder="Match Server #1"
               required
               fullWidth
-              inputProps={{ 'data-testid': 'server-name-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'server-name-input' },
+              }}
             />
 
             <TextField
@@ -247,7 +249,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               placeholder="192.168.1.100"
               required
               fullWidth
-              inputProps={{ 'data-testid': 'server-host-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'server-host-input' },
+              }}
             />
 
             <TextField
@@ -258,7 +262,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               type="number"
               required
               fullWidth
-              inputProps={{ 'data-testid': 'server-port-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'server-port-input' },
+              }}
             />
 
             <TextField
@@ -270,7 +276,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               required
               fullWidth
               helperText="Password for RCON access to the server"
-              inputProps={{ 'data-testid': 'server-password-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'server-password-input' },
+              }}
               InputProps={{
                 endAdornment: (
                   <InputAdornment position="end">

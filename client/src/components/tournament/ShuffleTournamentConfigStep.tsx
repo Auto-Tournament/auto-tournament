@@ -121,7 +121,9 @@ export function ShuffleTournamentConfigStep({
               value={settings.teamSize === 0 ? '' : settings.teamSize}
               onChange={handleTeamSizeChange}
               disabled={!canEdit || saving}
-              inputProps={{ min: 2, max: 10, 'data-testid': 'shuffle-team-size-field' }}
+              slotProps={{
+                htmlInput: { min: 2, max: 10, 'data-testid': 'shuffle-team-size-field' },
+              }}
               helperText="Number of players per team (default: 5 for 5v5, range: 2-10)"
               error={settings.teamSize > 0 && (settings.teamSize < 2 || settings.teamSize > 10)}
               fullWidth
@@ -172,7 +174,9 @@ export function ShuffleTournamentConfigStep({
                 value={settings.maxRounds === 0 ? '' : settings.maxRounds}
                 onChange={handleMaxRoundsChange}
                 disabled={!canEdit || saving}
-                inputProps={{ min: 1, max: 30, 'data-testid': 'shuffle-max-rounds-field' }}
+                slotProps={{
+                  htmlInput: { min: 1, max: 30, 'data-testid': 'shuffle-max-rounds-field' },
+                }}
                 helperText={
                   settings.maxRounds > 0
                     ? `Winner is first team to reach ${Math.floor(settings.maxRounds / 2) + 1} rounds (max rounds: ${settings.maxRounds})`

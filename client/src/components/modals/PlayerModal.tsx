@@ -203,7 +203,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               disabled={isEditing || resolving}
               fullWidth
               required
-              inputProps={{ 'data-testid': 'player-steam-id-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'player-steam-id-input' },
+              }}
               helperText={
                 isEditing
                   ? 'Steam ID cannot be changed'
@@ -235,7 +237,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               fullWidth
               required
               disabled={resolving}
-              inputProps={{ 'data-testid': 'player-name-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'player-name-input' },
+              }}
             />
 
             <TextField
@@ -244,7 +248,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               value={elo}
               onChange={(e) => setElo(e.target.value === '' ? '' : Number(e.target.value))}
               fullWidth
-              inputProps={{ 'data-testid': 'player-elo-input' }}
+              slotProps={{
+                htmlInput: { 'data-testid': 'player-elo-input' },
+              }}
               helperText={
                 isEditing
                   ? 'Changing ELO will reset the player\'s rating and stats. This action cannot be undone.'

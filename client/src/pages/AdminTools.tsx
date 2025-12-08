@@ -48,7 +48,7 @@ const AdminTools: React.FC = () => {
   const [loadingServers, setLoadingServers] = useState(true);
   const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
 
-  const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
+  const { executing, results, error, success, executeCommand } = useAdminCommands();
   const { showSuccess, showError } = useSnackbar();
 
   // Curate which commands are shown as "quick actions" vs tucked away in advanced tools.
@@ -101,8 +101,6 @@ const AdminTools: React.FC = () => {
   }, [setHeaderActions, loadingServers, loadServers]);
 
   const handleExecuteCommand = async (command: AdminCommand) => {
-    clearMessages();
-
     // Get the command value (input from user if required)
     const value = command.requiresInput ? commandInputs[command.id] : undefined;
 
@@ -133,16 +131,14 @@ const AdminTools: React.FC = () => {
   React.useEffect(() => {
     if (success) {
       showSuccess(success);
-      clearMessages();
     }
-  }, [success, showSuccess, clearMessages]);
+  }, [success, showSuccess]);
 
   React.useEffect(() => {
     if (error) {
       showError(error);
-      clearMessages();
     }
-  }, [error, showError, clearMessages]);
+  }, [error, showError]);
 
   // Flatten all commands so we can build "Quick Actions" and "Advanced" sections
   const allCommands: AdminCommand[] = ADMIN_COMMAND_CATEGORIES.flatMap((category) => category.commands);

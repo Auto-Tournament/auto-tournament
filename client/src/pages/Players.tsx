@@ -179,7 +179,9 @@ export default function Players() {
             placeholder="Search players by name or Steam ID..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            inputProps={{ 'data-testid': 'players-search-input' }}
+            slotProps={{
+              htmlInput: { 'data-testid': 'players-search-input' },
+            }}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">

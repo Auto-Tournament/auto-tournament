@@ -440,10 +440,12 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                 onChange={(e) => handleCountChange(e.target.value)}
                 placeholder="3"
                 type="number"
-                inputProps={{ min: 1, max: 50 }}
                 required
                 fullWidth
                 helperText="Max: 50"
+                slotProps={{
+                  htmlInput: { min: 1, max: 50 },
+                }}
               />
 
               <Box>
@@ -468,7 +470,6 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                           }}
                           placeholder="27015"
                           type="number"
-                          inputProps={{ min: 1, max: 65535 }}
                           required
                           fullWidth
                           size="small"
@@ -478,6 +479,9 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                               wordBreak: 'break-word',
                               mt: 0.25,
                             },
+                          }}
+                          slotProps={{
+                            htmlInput: { min: 1, max: 65535 },
                           }}
                           InputProps={{
                             endAdornment: status === 'checking' ? (

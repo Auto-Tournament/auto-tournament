@@ -250,7 +250,9 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             placeholder="de_dust2"
             disabled={isEditing}
             required
-            inputProps={{ 'data-testid': 'map-id-input' }}
+            slotProps={{
+              htmlInput: { 'data-testid': 'map-id-input' },
+            }}
             helperText="Lowercase letters, numbers, and underscores only (de_dust2)"
             fullWidth
           />
@@ -262,7 +264,9 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             placeholder="Dust II"
             required
             fullWidth
-            inputProps={{ 'data-testid': 'map-display-name-input' }}
+            slotProps={{
+              htmlInput: { 'data-testid': 'map-display-name-input' },
+            }}
           />
 
           <Box>

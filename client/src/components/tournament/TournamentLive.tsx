@@ -94,7 +94,9 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
                   size="small"
                   variant="outlined"
                   autoFocus
-                  inputProps={{ maxLength: 100 }}
+                  slotProps={{
+                    htmlInput: { maxLength: 100 },
+                  }}
                   sx={{ maxWidth: 360 }}
                 />
                 <IconButton

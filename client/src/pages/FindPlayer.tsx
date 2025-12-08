@@ -154,9 +154,11 @@ export default function FindPlayer() {
                     placeholder="Start typing a name or paste a Steam URL…"
                     onKeyPress={handleKeyPress}
                     disabled={loading}
-                    inputProps={{
-                      ...params.inputProps,
-                      'data-testid': 'find-player-input',
+                    slotProps={{
+                      htmlInput: {
+                        ...params.inputProps,
+                        'data-testid': 'find-player-input',
+                      },
                     }}
                     InputProps={{
                       ...params.InputProps,
