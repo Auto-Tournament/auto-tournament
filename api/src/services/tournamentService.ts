@@ -34,6 +34,19 @@ class TournamentService {
     const tournament = this.rowToTournament(row);
     const teams = await this.getTeamsForTournament(tournament.team_ids);
 
+    log.debug('getTournament normalized tournament', {
+      id: tournament.id,
+      type: tournament.type,
+      format: tournament.format,
+      status: tournament.status,
+      mapSequence: tournament.mapSequence,
+      teamSize: tournament.teamSize,
+      roundLimitType: tournament.roundLimitType,
+      maxRounds: tournament.maxRounds,
+      overtimeMode: tournament.overtimeMode,
+      eloTemplateId: tournament.eloTemplateId,
+    });
+
     return {
       id: tournament.id,
       name: tournament.name,
@@ -172,7 +185,9 @@ class TournamentService {
         // Revert changes to teams if bracket generation fails
         if (teamIds) {
           const oldTeamId = existing.teamIds;
-          await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [1]);
+          await db.updateAsync('tournament', { team_ids: JSON.stringify(oldTeamId) }, 'id = ?', [
+            1,
+          ]);
         }
       }
     }
@@ -193,7 +208,7 @@ class TournamentService {
     // First, clear server_id from all matches to clean up references
     await db.execAsync('UPDATE matches SET server_id = NULL WHERE tournament_id = 1');
     log.debug('Cleared server references from matches');
-    
+
     // Delete tournament (CASCADE will also delete matches and events)
     await db.execAsync('DELETE FROM tournament WHERE id = 1');
     log.debug('Tournament deleted from database');
@@ -290,7 +305,9 @@ class TournamentService {
       }
 
       // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
-      await db.updateAsync('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [1]);
+      await db.updateAsync('tournament', { updated_at: Math.floor(Date.now() / 1000) }, 'id = ?', [
+        1,
+      ]);
 
       log.debug(`Bracket generated: ${matches.length} matches created`);
 
@@ -372,7 +389,9 @@ class TournamentService {
     } catch (err) {
       log.error('Failed to regenerate bracket after reset', err);
       throw new Error(
-        `Tournament reset completed but bracket regeneration failed: ${err instanceof Error ? err.message : 'Unknown error'}`
+        `Tournament reset completed but bracket regeneration failed: ${
+          err instanceof Error ? err.message : 'Unknown error'
+        }`
       );
     }
 
@@ -428,21 +447,24 @@ class TournamentService {
 
       // Attach team info if available
       if (row.team1_id) {
-        const team1 = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.team1_id,
-        ]);
+        const team1 = await db.queryOneAsync<DbTeamRow>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.team1_id]
+        );
         if (team1) match.team1 = { id: team1.id, name: team1.name, tag: team1.tag || undefined };
       }
       if (row.team2_id) {
-        const team2 = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.team2_id,
-        ]);
+        const team2 = await db.queryOneAsync<DbTeamRow>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.team2_id]
+        );
         if (team2) match.team2 = { id: team2.id, name: team2.name, tag: team2.tag || undefined };
       }
       if (row.winner_id) {
-        const winner = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
-          row.winner_id,
-        ]);
+        const winner = await db.queryOneAsync<DbTeamRow>(
+          'SELECT id, name, tag FROM teams WHERE id = ?',
+          [row.winner_id]
+        );
         if (winner)
           match.winner = { id: winner.id, name: winner.name, tag: winner.tag || undefined };
       }
@@ -514,6 +536,19 @@ class TournamentService {
    * Convert database row to Tournament object
    */
   private rowToTournament(row: TournamentRow): Tournament {
+    log.debug('rowToTournament raw row', {
+      id: row.id,
+      type: row.type,
+      format: row.format,
+      status: row.status,
+      map_sequence: row.map_sequence,
+      team_size: row.team_size,
+      round_limit_type: row.round_limit_type,
+      max_rounds: row.max_rounds,
+      overtime_mode: row.overtime_mode,
+      elo_template_id: row.elo_template_id,
+    });
+
     return {
       ...row,
       maps: JSON.parse(row.maps),
