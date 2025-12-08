@@ -146,6 +146,13 @@ export default function FindPlayer() {
                   setInputValue(newInputValue);
                   setQuery(newInputValue);
                 }}
+                slotProps={{
+                  // When there are no options to select, don't let the "No players found" popper
+                  // intercept clicks on the Find Player button below.
+                  paper: {
+                    sx: players.length === 0 ? { pointerEvents: 'none' } : undefined,
+                  },
+                }}
                 renderInput={(params) => (
                   <TextField
                     {...params}
