@@ -12,11 +12,19 @@ import {
   Alert,
   CircularProgress,
   InputAdornment,
+  Autocomplete,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
+
+interface PlayerOption {
+  id: string;
+  name: string;
+  avatar?: string;
+  currentElo?: number;
+}
 
 export default function FindPlayer() {
   const navigate = useNavigate();
@@ -25,13 +33,40 @@ export default function FindPlayer() {
   const [error, setError] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar?: string; currentElo?: number }>>([]);
   const [showResultsModal, setShowResultsModal] = useState(false);
+  const [players, setPlayers] = useState<PlayerOption[]>([]);
+  const [playersLoading, setPlayersLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
 
   useEffect(() => {
     document.title = 'Find Player';
   }, []);
 
-  const handleSearch = async () => {
-    if (!query.trim()) {
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        setPlayersLoading(true);
+        const response = await api.get<{
+          success: boolean;
+          players: PlayerOption[];
+        }>('/api/players/public-selection');
+
+        if (response.success && Array.isArray(response.players)) {
+          setPlayers(response.players);
+        }
+      } catch (err) {
+        console.error('Failed to load player list for autocomplete', err);
+      } finally {
+        setPlayersLoading(false);
+      }
+    };
+
+    loadPlayers();
+  }, []);
+
+  const handleSearch = async (rawQuery?: string) => {
+    const effectiveQuery = (rawQuery ?? query).trim();
+
+    if (!effectiveQuery) {
       setError('Please enter a Steam ID or profile URL');
       return;
     }
@@ -45,7 +80,7 @@ export default function FindPlayer() {
         player?: { id: string; name: string };
         players?: Array<{ id: string; name: string }>;
         error?: string;
-      }>(`/api/players/find?query=${encodeURIComponent(query.trim())}`);
+      }>(`/api/players/find?query=${encodeURIComponent(effectiveQuery)}`);
 
       if (response.success) {
         if (response.player) {
@@ -77,7 +112,8 @@ export default function FindPlayer() {
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter' && !loading) {
-      handleSearch();
+      const value = (e.target as HTMLInputElement).value;
+      handleSearch(value);
     }
   };
 
@@ -98,21 +134,45 @@ export default function FindPlayer() {
 
 
             <Box mb={3}>
-              <TextField
-                fullWidth
-                label="Steam ID or Profile URL"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                onKeyPress={handleKeyPress}
-                disabled={loading}
-                inputProps={{ 'data-testid': 'find-player-input' }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon />
-                    </InputAdornment>
-                  ),
+              <Autocomplete
+                options={players}
+                loading={playersLoading}
+                getOptionLabel={(option) => option.name}
+                onChange={(_, newValue) => {
+                  if (newValue && typeof newValue !== 'string') {
+                    navigate(`/player/${newValue.id}`);
+                  }
                 }}
+                inputValue={inputValue}
+                onInputChange={(_, newInputValue) => {
+                  setInputValue(newInputValue);
+                  setQuery(newInputValue);
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    label="Search by name, Steam ID or profile URL"
+                    placeholder="Start typing a name or paste a Steam URL…"
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                    inputProps={{
+                      ...params.inputProps,
+                      'data-testid': 'find-player-input',
+                    }}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {playersLoading ? <CircularProgress size={20} /> : <SearchIcon />}
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  playersLoading ? 'Loading players…' : 'No players found. Try typing a Steam ID or URL.'
+                }
               />
             </Box>
 
@@ -121,8 +181,8 @@ export default function FindPlayer() {
               fullWidth
               variant="contained"
               size="large"
-              onClick={handleSearch}
-              disabled={loading || !query.trim()}
+              onClick={() => handleSearch(inputValue)}
+              disabled={loading || !inputValue.trim()}
               startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
             >
               {loading ? 'Searching...' : 'Find Player'}

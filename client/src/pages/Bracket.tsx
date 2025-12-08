@@ -206,8 +206,8 @@ export default function Bracket() {
             <Button variant="contained" onClick={() => navigate('/matches')}>
               Go to Matches
             </Button>
-            <Button variant="outlined" onClick={() => navigate(`/tournament/${tournament.id}/standings`)}>
-              View Standings
+            <Button variant="outlined" onClick={() => navigate(`/tournament/${tournament.id}/leaderboard`)}>
+              View Leaderboard
             </Button>
           </Stack>
         </Card>

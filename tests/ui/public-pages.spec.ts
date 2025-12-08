@@ -10,7 +10,7 @@ import { getAuthHeader } from '../helpers/auth';
  * @tag ui
  * @tag public
  * @tag shuffle
- * @tag standings
+ * @tag leaderboard
  * @tag players
  */
 

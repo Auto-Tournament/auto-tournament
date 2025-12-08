@@ -42,6 +42,7 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 3. **In Progress** → Tournament active, matches running
    - Matches automatically progress
    - Real-time updates
+  - Tournament title can be renamed (settings remain locked)
 4. **Completed** → All matches finished
    - Final results available
    - Demos ready for download
@@ -374,7 +375,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 
 - ✅ **Players page** – Central directory of all players with name, avatar, Steam ID, and current ELO  
 - ✅ **Team integration** – Team import and team editing automatically create/link players (single source of truth)  
-- ✅ **Public player pages** – `/player/:steamId` with ELO history, match history, and performance metrics  
+- ✅ **Public player pages** – `/player/:steamId` with ELO history, match history, performance metrics, **and current/next match info including server connect details**  
 - ✅ **Find Player flow** – `/player` search by Steam URL/ID
 
 ### OpenSkill-Based Rating Engine
@@ -400,7 +401,8 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 - ✅ **Shuffle tournament format** – Individual player competition with teams reshuffled every round  
 - ✅ **Automatic team balancing** – Greedy + optimization algorithm balances teams by updated ELO each round  
 - ✅ **Automatic rounds** – System generates matches, detects round completion, reshuffles teams, and advances  
-- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public standings page
+- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public standings page  
+- ✅ **Player-centric match access** – Players can keep their `/player/:steamId` page open to always see their current/next shuffle match and server connect info (no per-round team links needed)
 
 ---
 

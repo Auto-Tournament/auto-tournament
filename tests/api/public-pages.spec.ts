@@ -10,7 +10,7 @@ import { createPlayer, getPlayer, type Player } from '../helpers/players';
  * @tag api
  * @tag public
  * @tag shuffle
- * @tag standings
+ * @tag leaderboard
  * @tag players
  */
 

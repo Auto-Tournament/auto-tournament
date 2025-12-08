@@ -1,8 +1,9 @@
 import React from 'react';
-import { Box, Typography, Grid, Paper, Chip, Stack, Avatar } from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Stack, Avatar, IconButton, Tooltip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
@@ -103,10 +104,6 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 {/* Player Name */}
                 <Typography
                   variant="body2"
-                  component="a"
-                  href={getPlayerPageUrl(player.steamid)}
-                  target="_blank"
-                  rel="noopener noreferrer"
                   sx={{
                     flex: 1,
                     color: status.isReady
@@ -115,15 +112,29 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                       ? 'primary.main'
                       : 'text.disabled',
                     fontWeight: status.isConnected ? 600 : 400,
-                    textDecoration: 'none',
-                    cursor: status.isConnected || status.isReady ? 'pointer' : 'default',
-                    '&:hover': {
-                      textDecoration: status.isConnected || status.isReady ? 'underline' : 'none',
-                    },
                   }}
                 >
                   {player.name}
                 </Typography>
+
+                {/* Explicit player page action */}
+                <Tooltip title="Open player page">
+                  <IconButton
+                    size="small"
+                    component="a"
+                    href={getPlayerPageUrl(player.steamid)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    sx={{
+                      color:
+                        status.isReady || status.isConnected
+                          ? 'primary.contrastText'
+                          : 'text.secondary',
+                    }}
+                  >
+                    <OpenInNewIcon fontSize="small" />
+                  </IconButton>
+                </Tooltip>
 
                 {/* Status Badge */}
                 {status.isReady ? (

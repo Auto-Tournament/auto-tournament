@@ -231,10 +231,10 @@ export async function getLeaderboard(
 }
 
 /**
- * Get tournament standings (public endpoint)
+ * Get tournament leaderboard (public endpoint)
  * @param request Playwright API request context
  * @param tournamentId Tournament ID (default: 1)
- * @returns Standings data or null
+ * @returns Leaderboard data or null
  */
 export async function getStandings(
   request: APIRequestContext,
@@ -242,12 +242,12 @@ export async function getStandings(
 ): Promise<any | null> {
   try {
     // Public endpoint - no auth required
-    const response = await request.get(`/api/tournament/${tournamentId}/standings`);
+    const response = await request.get(`/api/tournament/${tournamentId}/leaderboard`);
 
     if (!response.ok()) {
       // Log the error for debugging
       const errorText = await response.text().catch(() => 'Unknown error');
-      console.warn(`Get standings failed (${response.status()}):`, errorText);
+      console.warn(`Get leaderboard failed (${response.status()}):`, errorText);
       return null;
     }
 
@@ -255,13 +255,13 @@ export async function getStandings(
 
     // Check if response has success: false
     if (data.success === false) {
-      console.warn('Get standings returned success: false:', data);
+      console.warn('Get leaderboard returned success: false:', data);
       return null;
     }
 
     return data;
   } catch (error) {
-    console.error('Get standings error:', error);
+    console.error('Get leaderboard error:', error);
     return null;
   }
 }

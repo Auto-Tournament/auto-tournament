@@ -27,7 +27,9 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { api } from '../utils/api';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
+import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import type { PlayerDetail } from '../types/api.types';
+import type { Team, TeamMatchInfo } from '../types';
 
 interface RatingHistoryEntry {
   id: number;
@@ -45,6 +47,7 @@ interface MatchHistoryEntry {
   matchNumber: number;
   status: string;
   completedAt: number;
+  tournamentId?: number;
   team: 'team1' | 'team2';
   wonMatch: boolean;
   adr?: number;
@@ -61,6 +64,9 @@ export default function PlayerProfile() {
   const [matchHistory, setMatchHistory] = useState<MatchHistoryEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentMatch, setCurrentMatch] = useState<TeamMatchInfo | null>(null);
+  const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
 
   const loadPlayerData = async () => {
     if (!steamId) return;
@@ -103,6 +109,46 @@ export default function PlayerProfile() {
       } catch {
         // Match history is optional
       }
+
+      // Load current or upcoming match (for connect info)
+      try {
+        const currentMatchResponse = await api.get<{
+          success: boolean;
+          player: { id: string; name: string; avatar?: string };
+          hasMatch: boolean;
+          tournamentStatus?: string;
+          match?: TeamMatchInfo;
+        }>(`/api/players/${steamId}/current-match`);
+
+        if (currentMatchResponse.success && currentMatchResponse.hasMatch && currentMatchResponse.match) {
+          const match = currentMatchResponse.match;
+          setCurrentMatch(match);
+          setCurrentTournamentStatus(currentMatchResponse.tournamentStatus || 'setup');
+
+          const yourTeam = match.isTeam1 ? match.team1 || null : match.team2 || null;
+          const configPlayers =
+            match.config &&
+            (match.isTeam1 ? match.config.team1?.players || [] : match.config.team2?.players || []);
+
+          setCurrentTeam(
+            yourTeam
+              ? {
+                  id: yourTeam.id,
+                  name: yourTeam.name,
+                  tag: yourTeam.tag,
+                  players: configPlayers,
+                }
+              : null
+          );
+        } else {
+          setCurrentMatch(null);
+          setCurrentTeam(null);
+        }
+      } catch {
+        // Current match info is optional
+        setCurrentMatch(null);
+        setCurrentTeam(null);
+      }
     } catch (err) {
       setError('Failed to load player data');
       console.error(err);
@@ -117,6 +163,15 @@ export default function PlayerProfile() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId]);
+
+  const getRoundLabel = (round: number) => {
+    if (round === 1) return 'Round 1';
+    if (round === 2) return 'Round 2';
+    if (round === 3) return 'Quarterfinals';
+    if (round === 4) return 'Semifinals';
+    if (round === 5) return 'Finals';
+    return `Round ${round}`;
+  };
 
   if (loading) {
     return (
@@ -159,6 +214,9 @@ export default function PlayerProfile() {
       ? matchHistory.reduce((sum, m) => sum + (m.adr || 0), 0) / matchHistory.length
       : 0;
 
+  // Use the most recent match's tournament for leaderboard link (if available)
+  const latestTournamentId = matchHistory.find((m) => m.tournamentId)?.tournamentId;
+
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
       <Container maxWidth="md">
@@ -192,19 +250,53 @@ export default function PlayerProfile() {
                         sx={{ fontWeight: 600 }}
                       />
                     )}
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      startIcon={<EmojiEventsIcon />}
-                      onClick={() => window.open(`/tournament/1/standings`, '_blank')}
-                    >
-                      View Tournament Standings
-                    </Button>
+                    {latestTournamentId && (
+                      <Button
+                        variant="outlined"
+                        size="small"
+                        startIcon={<EmojiEventsIcon />}
+                        onClick={() =>
+                          window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')
+                        }
+                      >
+                        View Tournament Leaderboard
+                      </Button>
+                    )}
                   </Box>
                 </Box>
               </Box>
             </CardContent>
           </Card>
+
+          {/* Current / Upcoming Match (connect info) */}
+          {currentMatch ? (
+            <MatchInfoCard
+              match={currentMatch}
+              team={currentTeam}
+              tournamentStatus={currentTournamentStatus}
+              vetoCompleted={currentMatch.veto?.status === 'completed'}
+              matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
+              onVetoComplete={async () => {
+                setTimeout(() => {
+                  void loadPlayerData();
+                }, 1000);
+              }}
+              getRoundLabel={getRoundLabel}
+            />
+          ) : (
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <SportsEsportsIcon sx={{ fontSize: 56, color: 'text.secondary', mb: 2 }} />
+                <Typography variant="body1" color="text.secondary">
+                  No active match right now
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mt={1}>
+                  Once the next round is generated and your match is ready, it will appear here with
+                  server connect info.
+                </Typography>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Stats Overview */}
           <Grid container spacing={2}>

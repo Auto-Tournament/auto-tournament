@@ -253,9 +253,9 @@ test.describe.serial('Shuffle Tournament API', () => {
   );
 
   test(
-    'should provide public standings endpoint without authentication',
+    'should provide public leaderboard endpoint without authentication',
     {
-      tag: ['@api', '@shuffle', '@standings', '@public'],
+      tag: ['@api', '@shuffle', '@leaderboard', '@public'],
     },
     async ({ request }) => {
       // Setup tournament
@@ -266,7 +266,7 @@ test.describe.serial('Shuffle Tournament API', () => {
       });
       expect(setup).toBeTruthy();
 
-      // Get standings without auth (public endpoint)
+      // Get leaderboard without auth (public endpoint)
       const standings = await getStandings(request);
       expect(standings).toBeTruthy();
       expect(standings?.tournament).toBeDefined();

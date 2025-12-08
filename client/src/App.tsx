@@ -18,7 +18,7 @@ import Development from './pages/Development';
 import TeamMatch from './pages/TeamMatch';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
-import TournamentStandings from './pages/TournamentStandings';
+import TournamentLeaderboard from './pages/TournamentLeaderboard';
 import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
@@ -83,7 +83,7 @@ function AppRoutes() {
       <Route path="/team/:teamId" element={<TeamMatch />} />
       <Route path="/player" element={<FindPlayer />} />
       <Route path="/player/:steamId" element={<PlayerProfile />} />
-      <Route path="/tournament/:id/standings" element={<TournamentStandings />} />
+      <Route path="/tournament/:id/leaderboard" element={<TournamentLeaderboard />} />
 
       <Route
         path="/"

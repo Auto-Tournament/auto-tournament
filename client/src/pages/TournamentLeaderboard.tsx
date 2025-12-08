@@ -47,7 +47,7 @@ interface PlayerLeaderboardEntry {
   averageAdr?: number;
 }
 
-interface TournamentStandingsData {
+interface TournamentLeaderboardData {
   tournament: {
     id: number;
     name: string;
@@ -67,9 +67,9 @@ interface TournamentStandingsData {
   };
 }
 
-export default function TournamentStandings() {
+export default function TournamentLeaderboard() {
   const { id } = useParams<{ id: string }>();
-  const [data, setData] = useState<TournamentStandingsData | null>(null);
+  const [data, setData] = useState<TournamentLeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
@@ -92,16 +92,16 @@ export default function TournamentStandings() {
       setLoading(true);
       setError('');
 
-      const response = await api.get<TournamentStandingsData>(`/api/tournament/${id}/standings`);
+      const response = await api.get<TournamentLeaderboardData>(`/api/tournament/${id}/leaderboard`);
 
       if (response) {
         setData(response);
         if (response.tournament) {
-          document.title = `${response.tournament.name} - Standings`;
+          document.title = `${response.tournament.name} - Leaderboard`;
         }
       }
     } catch (err) {
-      setError('Failed to load tournament standings');
+      setError('Failed to load tournament leaderboard');
       console.error(err);
     } finally {
       setLoading(false);
@@ -218,7 +218,7 @@ export default function TournamentStandings() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_standings.csv`);
+    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -253,7 +253,7 @@ export default function TournamentStandings() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_standings.json`);
+    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.json`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -262,7 +262,7 @@ export default function TournamentStandings() {
   };
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-standings-page">
+    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-leaderboard-page">
       <Container maxWidth="lg">
         <Stack spacing={3}>
           {/* Tournament Header */}
@@ -406,14 +406,14 @@ export default function TournamentStandings() {
 
               {isComplete && (
                 <Alert severity="success" sx={{ mt: 2 }}>
-                  Tournament completed! Check the leaderboard below for final standings.
+                  Tournament completed! Check the leaderboard below for final rankings.
                 </Alert>
               )}
             </CardContent>
           </Card>
 
           {/* Leaderboard */}
-          <Card data-testid="public-standings-leaderboard">
+          <Card data-testid="public-leaderboard">
             <CardContent>
               <Box
                 display="flex"

@@ -663,7 +663,7 @@ export async function advanceToNextRound(): Promise<{
 
     log.success(
       `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. ` +
-        `Final leaderboard available at /tournament/1/standings`
+        `Final leaderboard available at /tournament/1/leaderboard`
     );
     return null;
   }
@@ -767,9 +767,9 @@ export async function getPlayerLeaderboard(): Promise<PlayerLeaderboardEntry[]> 
 }
 
 /**
- * Get tournament standings (public)
+ * Get tournament leaderboard (public)
  */
-export async function getTournamentStandings(): Promise<{
+export async function getTournamentLeaderboard(): Promise<{
   tournament: TournamentResponse;
   leaderboard: PlayerLeaderboardEntry[];
   currentRound: number;

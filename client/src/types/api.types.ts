@@ -59,8 +59,8 @@ export interface TeamStatsResponse extends ApiResponse {
   stats: TeamStats;
 }
 
-export interface TeamStandingsResponse extends ApiResponse {
-  standings: TeamStanding[];
+export interface TeamLeaderboardResponse extends ApiResponse {
+  leaderboard: TeamStanding[];
 }
 
 // Match types

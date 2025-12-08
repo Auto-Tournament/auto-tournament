@@ -259,6 +259,44 @@ const Tournament: React.FC = () => {
     setSaveTemplateModalOpen(true);
   };
 
+  const handleRenameTournament = async (newName: string) => {
+    const trimmedName = newName.trim();
+
+    if (!trimmedName) {
+      showError('Tournament name is required');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await api.put<{
+        success: boolean;
+        tournament: unknown;
+        error?: string;
+      }>('/api/tournament', { name: trimmedName });
+
+      if ('success' in response && response.success) {
+        showSuccess('Tournament name updated');
+        await refreshData();
+      } else {
+        const errorMessage =
+          typeof response === 'object' &&
+          response !== null &&
+          'error' in response &&
+          typeof (response as { error?: string }).error === 'string'
+            ? (response as { error?: string }).error
+            : 'Failed to update tournament name';
+        showError(errorMessage);
+      }
+    } catch (err) {
+      const error = err as Error;
+      showError(error.message || 'Failed to update tournament name');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Sync tournament data to form when loaded
   React.useEffect(() => {
     if (tournament) {
@@ -786,6 +824,8 @@ const Tournament: React.FC = () => {
             status: tournament.status,
             teams: tournament.teams || [],
           }}
+          tournamentId={tournament.id}
+          onRename={handleRenameTournament}
           saving={saving}
           onViewBracket={() => navigate('/bracket')}
           onReset={() => setShowResetConfirm(true)}

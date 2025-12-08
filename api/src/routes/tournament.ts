@@ -16,7 +16,7 @@ import {
   getRegisteredPlayers,
   generateRoundMatches,
   getPlayerLeaderboard,
-  getTournamentStandings,
+  getTournamentLeaderboard,
   type ShuffleTournamentConfig,
 } from '../services/shuffleTournamentService';
 import { eloTemplateService } from '../services/eloTemplateService';
@@ -26,12 +26,12 @@ const router = Router();
 // Public routes (before auth middleware)
 /**
  * @openapi
- * /api/tournament/{id}/standings:
+ * /api/tournament/{id}/leaderboard:
  *   get:
  *     tags:
  *       - Tournament
- *     summary: Get tournament standings (public)
- *     description: Public endpoint to get tournament standings, leaderboard, and current round status. No authentication required.
+ *     summary: Get tournament leaderboard (public)
+ *     description: Public endpoint to get tournament leaderboard and current round status. No authentication required.
  *     parameters:
  *       - in: path
  *         name: id
@@ -40,14 +40,14 @@ const router = Router();
  *           type: string
  *         description: Tournament ID (currently only "1" is supported)
  *     responses:
- *       200:
- *         description: Standings retrieved successfully
+       200:
+ *         description: Leaderboard retrieved successfully
  *       400:
  *         description: Invalid tournament ID
  *       500:
  *         description: Server error
  */
-router.get('/:id/standings', async (req: Request, res: Response) => {
+router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
 
@@ -58,7 +58,7 @@ router.get('/:id/standings', async (req: Request, res: Response) => {
       });
     }
 
-    const standings = await getTournamentStandings();
+    const standings = await getTournamentLeaderboard();
 
     return res.json({
       success: true,
@@ -66,7 +66,7 @@ router.get('/:id/standings', async (req: Request, res: Response) => {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
-    log.error('Error fetching standings', { error });
+    log.error('Error fetching leaderboard', { error });
     return res.status(500).json({
       success: false,
       error: message,

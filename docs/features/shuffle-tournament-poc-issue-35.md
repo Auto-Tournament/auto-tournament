@@ -28,7 +28,7 @@ From Issue [#35](https://github.com/sivert-io/matchzy-auto-tournament/issues/35)
   - The POC targets the **complex solution** you described:
     - Internal ELO/skill system (we use **OpenSkill** under the hood – a Bayesian rating system for teams and games, see [openskill.me](https://openskill.me)).
     - Automatic team creation and balancing every round.
-    - Automatic match creation, round progression, and standings.
+    - Automatic match creation, round progression, and leaderboard.
 
 The implementation therefore focuses on a **fully automatic shuffle tournament mode** rather than the purely manual “simple” mode.
 
