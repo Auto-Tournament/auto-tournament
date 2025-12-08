@@ -61,7 +61,6 @@ export default function MapActionsModal({
                 alt={map.displayName}
                 sx={{
                   width: '100%',
-                  maxHeight: 200,
                   objectFit: 'contain',
                   border: '1px solid',
                   borderColor: 'divider',
@@ -78,7 +77,12 @@ export default function MapActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button data-testid="map-edit-button" onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
+        <Button
+          data-testid="map-edit-button"
+          onClick={onEdit}
+          variant="contained"
+          startIcon={<EditIcon />}
+        >
           Edit
         </Button>
         <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
@@ -88,4 +92,3 @@ export default function MapActionsModal({
     </Dialog>
   );
 }
-

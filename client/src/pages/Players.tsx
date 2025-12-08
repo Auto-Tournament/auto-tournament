@@ -14,15 +14,19 @@ import {
   InputAdornment,
   Avatar,
   Alert,
+  IconButton,
+  Tooltip,
 } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { api } from '../utils/api';
 import PlayerModal from '../components/modals/PlayerModal';
 import { PlayerImportModal } from '../components/modals/PlayerImportModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import type { PlayerDetail, PlayersResponse } from '../types/api.types';
+import { getPlayerPageUrl } from '../utils/playerLinks';
 
 export default function Players() {
   const { setHeaderActions } = usePageHeader();
@@ -234,9 +238,24 @@ export default function Players() {
                         {player.name.charAt(0).toUpperCase()}
                       </Avatar>
                       <Box>
-                        <Typography variant="h6" fontWeight={600} gutterBottom>
-                          {player.name}
-                        </Typography>
+                        <Box display="flex" alignItems="center" gap={1}>
+                          <Typography variant="h6" fontWeight={600} gutterBottom>
+                            {player.name}
+                          </Typography>
+                          <Tooltip title="Open player page">
+                            <IconButton
+                              size="small"
+                              component="a"
+                              href={getPlayerPageUrl(player.id)}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(event) => event.stopPropagation()}
+                              sx={{ ml: -0.5 }}
+                            >
+                              <OpenInNewIcon fontSize="small" />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {player.id}
                         </Typography>

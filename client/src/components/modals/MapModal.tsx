@@ -335,7 +335,6 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                 alt={displayName || id}
                 sx={{
                   width: '100%',
-                  maxHeight: 200,
                   objectFit: 'contain',
                   border: '1px solid',
                   borderColor: 'divider',

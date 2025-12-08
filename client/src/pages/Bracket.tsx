@@ -199,8 +199,23 @@ export default function Bracket() {
             Shuffle tournaments don&apos;t use a fixed bracket view. Teams are reshuffled each round based on player ELO.
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Use the <strong>Matches</strong> page to monitor live and upcoming matches, and the{' '}
-            <strong>Standings</strong> page to track player rankings.
+            Use the{' '}
+            <Box
+              component="a"
+              href="/matches"
+              sx={{ fontWeight: 600, textDecoration: 'underline', color: 'inherit' }}
+            >
+              Matches
+            </Box>{' '}
+            page to monitor live and upcoming matches, and the{' '}
+            <Box
+              component="a"
+              href={`/tournament/${tournament.id}/leaderboard`}
+              sx={{ fontWeight: 600, textDecoration: 'underline', color: 'inherit' }}
+            >
+              Leaderboard
+            </Box>{' '}
+            page to track player rankings.
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">
             <Button variant="contained" onClick={() => navigate('/matches')}>
