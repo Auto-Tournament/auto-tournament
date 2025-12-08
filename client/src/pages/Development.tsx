@@ -32,10 +32,11 @@ import {
 // Set dynamic page title
 document.title = 'Development';
 import { api } from '../utils/api';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 const Development: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const { showSuccess, showError } = useSnackbar();
   const [confirmWipeOpen, setConfirmWipeOpen] = useState(false);
   const [wiping, setWiping] = useState(false);
   const [customTeamCount, setCustomTeamCount] = useState(8);
@@ -44,7 +45,6 @@ const Development: React.FC = () => {
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
-    setMessage(null);
 
     try {
       const teams: Array<{
@@ -140,21 +140,19 @@ const Development: React.FC = () => {
 
       const result = await response.json();
       if (result.failed && result.failed.length > 0) {
-        setMessage({
-          type: 'error',
-          text: `Created ${result.successful?.length || 0} team(s), but ${
+        showError(
+          `Created ${result.successful?.length || 0} team(s), but ${
             result.failed.length
-          } failed. Check console for details.`,
-        });
+          } failed. Check console for details.`
+        );
       } else {
-        setMessage({
-          type: 'success',
-          text: `Successfully created ${result.successful?.length || count} test team(s)!`,
-        });
+        showSuccess(
+          `Successfully created ${result.successful?.length || count} test team(s)!`
+        );
       }
     } catch (error) {
       console.error('Error creating test teams:', error);
-      setMessage({ type: 'error', text: 'Failed to create test teams' });
+      showError('Failed to create test teams');
     } finally {
       setLoading(false);
     }
@@ -162,7 +160,6 @@ const Development: React.FC = () => {
 
   const handleCreateTestServers = async (count: number) => {
     setLoading(true);
-    setMessage(null);
 
     try {
       const servers: Array<{
@@ -202,22 +199,20 @@ const Development: React.FC = () => {
 
       const result = await response.json();
       if (result.failed && result.failed.length > 0) {
-        setMessage({
-          type: 'error',
-          text: `Created ${result.successful?.length || 0} server(s), but ${
+        showError(
+          `Created ${result.successful?.length || 0} server(s), but ${
             result.failed.length
-          } failed. Check console for details.`,
-        });
+          } failed. Check console for details.`
+        );
       } else {
-        setMessage({
-          type: 'success',
-          text: `Successfully created ${result.successful?.length || count} test server(s)!`,
-        });
+        showSuccess(
+          `Successfully created ${result.successful?.length || count} test server(s)!`
+        );
       }
     } catch (error) {
       console.error('Error creating test servers:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create test servers';
-      setMessage({ type: 'error', text: errorMessage });
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -225,7 +220,6 @@ const Development: React.FC = () => {
 
   const handleCreateTestPlayers = async (count: number) => {
     setLoading(true);
-    setMessage(null);
 
     try {
       const players: Array<{
@@ -470,17 +464,15 @@ const Development: React.FC = () => {
         const errors = response.errors || [];
 
         if (errors.length > 0) {
-          setMessage({
-            type: 'error',
-            text: `Created ${created} player(s), updated ${updated}, but ${errors.length} failed. Check console for details.`,
-          });
+          showError(
+            `Created ${created} player(s), updated ${updated}, but ${errors.length} failed. Check console for details.`
+          );
         } else {
-          setMessage({
-            type: 'success',
-            text: `Successfully created ${created} player(s)${
+          showSuccess(
+            `Successfully created ${created} player(s)${
               updated > 0 ? ` and updated ${updated}` : ''
-            }!`,
-          });
+            }!`
+          );
         }
       } else {
         throw new Error(response.error || 'Failed to create test players');
@@ -488,7 +480,7 @@ const Development: React.FC = () => {
     } catch (error) {
       console.error('Error creating test players:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to create test players';
-      setMessage({ type: 'error', text: errorMessage });
+      showError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -504,7 +496,6 @@ const Development: React.FC = () => {
     }
 
     setLoading(true);
-    setMessage(null);
 
     try {
       // Delete all teams that start with 'test-team-'
@@ -551,10 +542,10 @@ const Development: React.FC = () => {
         }
       }
 
-      setMessage({ type: 'success', text: 'Successfully deleted all test data!' });
+      showSuccess('Successfully deleted all test data!');
     } catch (error) {
       console.error('Error deleting test data:', error);
-      setMessage({ type: 'error', text: 'Failed to delete test data' });
+      showError('Failed to delete test data');
     } finally {
       setLoading(false);
     }
@@ -563,16 +554,12 @@ const Development: React.FC = () => {
   const handleWipeDatabase = async () => {
     setConfirmWipeOpen(false);
     setWiping(true);
-    setMessage(null);
 
     try {
       const response: { success: boolean; message: string } = await api.post(
         '/api/tournament/wipe-database'
       );
-      setMessage({
-        type: 'success',
-        text: response.message || 'Database wiped successfully! Redirecting...',
-      });
+      showSuccess(response.message || 'Database wiped successfully! Redirecting...');
 
       // Refresh page after 2 seconds
       setTimeout(() => {
@@ -580,7 +567,7 @@ const Development: React.FC = () => {
       }, 2000);
     } catch (error) {
       console.error('Error wiping database:', error);
-      setMessage({ type: 'error', text: 'Failed to wipe database' });
+      showError('Failed to wipe database');
     } finally {
       setWiping(false);
     }
@@ -596,19 +583,15 @@ const Development: React.FC = () => {
     }
 
     setLoading(true);
-    setMessage(null);
 
     try {
       const response: { success: boolean; message: string } = await api.post(
         `/api/tournament/wipe-table/${table}`
       );
-      setMessage({
-        type: 'success',
-        text: response.message || `Table ${table} wiped successfully!`,
-      });
+      showSuccess(response.message || `Table ${table} wiped successfully!`);
     } catch (error) {
       console.error(`Error wiping ${table}:`, error);
-      setMessage({ type: 'error', text: `Failed to wipe ${table} table` });
+      showError(`Failed to wipe ${table} table`);
     } finally {
       setLoading(false);
     }
@@ -620,12 +603,6 @@ const Development: React.FC = () => {
         These tools are only available in development mode. Use them to quickly generate test data
         for testing the application.
       </Alert>
-
-      {message && (
-        <Alert severity={message.type} sx={{ mb: 3 }} onClose={() => setMessage(null)}>
-          {message.text}
-        </Alert>
-      )}
 
       <Grid container spacing={3}>
         {/* Test Data Creation */}

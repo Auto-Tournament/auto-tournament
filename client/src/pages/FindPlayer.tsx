@@ -8,8 +8,6 @@ import {
   TextField,
   Button,
   Container,
-  Snackbar,
-  Alert,
   CircularProgress,
   InputAdornment,
   Autocomplete,
@@ -18,6 +16,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 interface PlayerOption {
   id: string;
@@ -30,12 +29,12 @@ export default function FindPlayer() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar?: string; currentElo?: number }>>([]);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const { showError } = useSnackbar();
 
   useEffect(() => {
     document.title = 'Find Player';
@@ -67,12 +66,11 @@ export default function FindPlayer() {
     const effectiveQuery = (rawQuery ?? query).trim();
 
     if (!effectiveQuery) {
-      setError('Please enter a Steam ID or profile URL');
+      showError('Please enter a Steam ID or profile URL');
       return;
     }
 
     setLoading(true);
-    setError('');
 
     try {
       const response = await api.get<{
@@ -97,13 +95,13 @@ export default function FindPlayer() {
             setShowResultsModal(true);
           }
         } else {
-          setError('Player not found');
+          showError('Player not found');
         }
       } else {
-        setError(response.error || 'Player not found');
+        showError(response.error || 'Player not found');
       }
     } catch (err) {
-      setError('Failed to search for player');
+      showError('Failed to search for player');
       console.error(err);
     } finally {
       setLoading(false);
@@ -196,17 +194,6 @@ export default function FindPlayer() {
         players={searchResults}
         onClose={() => setShowResultsModal(false)}
       />
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={() => setError('')} variant="filled">
-          {error}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 }

@@ -14,7 +14,6 @@ import {
   DialogContent,
   DialogActions,
   TextField,
-  Snackbar,
   Alert,
   Chip,
   Stack,
@@ -37,6 +36,7 @@ import type { TournamentTemplate } from '../types/tournament.types';
 import type { TournamentResponse } from '../types';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -56,8 +56,7 @@ export default function Templates() {
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { showSuccess, showError } = useSnackbar();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<TournamentTemplate | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -175,7 +174,6 @@ export default function Templates() {
   const loadTemplates = async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await api.get<{ success: boolean; templates: TournamentTemplate[] }>(
         '/api/templates'
       );
@@ -183,7 +181,7 @@ export default function Templates() {
         setTemplates(response.templates);
       }
     } catch (err) {
-      setError('Failed to load templates');
+      showError('Failed to load templates');
       console.error('Error loading templates:', err);
     } finally {
       setLoading(false);
@@ -195,12 +193,12 @@ export default function Templates() {
 
     try {
       await api.delete(`/api/templates/${templateToDelete.id}`);
-      setSuccess(`Template "${templateToDelete.name}" deleted successfully`);
+      showSuccess(`Template "${templateToDelete.name}" deleted successfully`);
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
       loadTemplates();
     } catch (err) {
-      setError('Failed to delete template');
+      showError('Failed to delete template');
       console.error('Error deleting template:', err);
     }
   };
@@ -218,14 +216,12 @@ export default function Templates() {
       return pool.mapIds.every((id) => template.maps.includes(id));
     });
     setSelectedMapPool(matchingPool ? matchingPool.id.toString() : 'custom');
-    setError(null);
     setEditDialogOpen(true);
   };
 
   const handleCloseEdit = () => {
     setEditDialogOpen(false);
     setEditingTemplate(null);
-    setError(null);
   };
 
   const handleSaveEdit = async () => {
@@ -234,11 +230,9 @@ export default function Templates() {
     // Validate maps for veto formats
     const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
     if (isVetoFormat && editMaps.length !== 7) {
-      setError('Veto formats (BO1/BO3/BO5) require exactly 7 maps');
       return;
     }
     if (!isVetoFormat && editMaps.length === 0) {
-      setError('At least one map is required');
       return;
     }
 
@@ -253,11 +247,11 @@ export default function Templates() {
         maps: editMaps,
         mapPoolId,
       });
-      setSuccess(`Template "${editName}" updated successfully`);
+      showSuccess(`Template "${editName}" updated successfully`);
       handleCloseEdit();
       loadTemplates();
     } catch (err) {
-      setError('Failed to update template');
+      showError('Failed to update template');
       console.error('Error updating template:', err);
     }
   };
@@ -281,12 +275,12 @@ export default function Templates() {
       if (response.success && response.tournament) {
         const status = response.tournament.status;
         if (status === 'in_progress' || status === 'completed') {
-          setError(
+          showError(
             'Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.'
           );
           return;
         } else if (status === 'setup' || status === 'ready') {
-          setError(
+          showError(
             'A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.'
           );
           return;

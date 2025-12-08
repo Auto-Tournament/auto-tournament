@@ -15,8 +15,6 @@ import {
   TextField,
   InputAdornment,
   CircularProgress,
-  Snackbar,
-  Alert,
   Chip,
   IconButton,
 } from '@mui/material';
@@ -51,14 +49,12 @@ export default function PlayerSelectionModal({
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [teamPlayerIds, setTeamPlayerIds] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
-  const { showWarning } = useSnackbar();
+  const { showWarning, showError } = useSnackbar();
 
   // Define functions before useEffect hooks that use them
   const loadPlayers = async () => {
     setLoading(true);
-    setError('');
 
     try {
       const response = await api.get<{ success: boolean; players: PlayerDetail[] }>(
@@ -69,10 +65,10 @@ export default function PlayerSelectionModal({
         setPlayers(response.players);
         setFilteredPlayers(response.players);
       } else {
-        setError('Failed to load players');
+        showError('Failed to load players');
       }
     } catch (err) {
-      setError('Failed to load players');
+      showError('Failed to load players');
       console.error(err);
     } finally {
       setLoading(false);
@@ -338,17 +334,6 @@ export default function PlayerSelectionModal({
             }`}
         </Button>
       </DialogActions>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError('')}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={() => setError('')} variant="filled">
-          {error}
-        </Alert>
-      </Snackbar>
     </Dialog>
   );
 }

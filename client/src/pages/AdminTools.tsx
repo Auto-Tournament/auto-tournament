@@ -14,7 +14,6 @@ import {
   AccordionSummary,
   AccordionDetails,
   TextField,
-  Snackbar,
   Alert,
   Chip,
   CircularProgress,
@@ -29,6 +28,7 @@ import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from '../constants/adminC
 import { useAdminCommands } from '../hooks/useAdminCommands';
 import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 // Set dynamic page title
 document.title = 'Admin Tools';
@@ -49,6 +49,7 @@ const AdminTools: React.FC = () => {
   const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
 
   const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
+  const { showSuccess, showError } = useSnackbar();
 
   // Curate which commands are shown as "quick actions" vs tucked away in advanced tools.
   // This keeps the page comprehensive but avoids overwhelming admins with every niche option up front.
@@ -128,6 +129,20 @@ const AdminTools: React.FC = () => {
   const handleInputChange = (commandId: string, value: string) => {
     setCommandInputs((prev) => ({ ...prev, [commandId]: value }));
   };
+
+  React.useEffect(() => {
+    if (success) {
+      showSuccess(success);
+      clearMessages();
+    }
+  }, [success, showSuccess, clearMessages]);
+
+  React.useEffect(() => {
+    if (error) {
+      showError(error);
+      clearMessages();
+    }
+  }, [error, showError, clearMessages]);
 
   // Flatten all commands so we can build "Quick Actions" and "Advanced" sections
   const allCommands: AdminCommand[] = ADMIN_COMMAND_CATEGORIES.flatMap((category) => category.commands);
@@ -404,27 +419,6 @@ const AdminTools: React.FC = () => {
         </AccordionDetails>
       </Accordion>
 
-      <Snackbar
-        open={!!success}
-        autoHideDuration={4000}
-        onClose={clearMessages}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" onClose={clearMessages} variant="filled">
-          {success}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={clearMessages}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={clearMessages} variant="filled">
-          {error}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
