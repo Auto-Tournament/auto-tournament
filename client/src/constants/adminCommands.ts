@@ -31,11 +31,12 @@ export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
         color: 'success',
       },
       {
-        id: 'match-restart',
-        label: 'Restart Match',
+        id: 'match-end',
+        label: 'End Match (css_restart)',
         command: 'restart',
-        description: 'Restart the current match',
-        color: 'warning',
+        description:
+          'Force end the current match on the selected server(s) and reset them back to warmup using css_restart.',
+        color: 'error',
       },
       {
         id: 'force-pause',
@@ -127,6 +128,14 @@ export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
     title: 'Server Management',
     icon: 'dns',
     commands: [
+      {
+        id: 'clean-servers',
+        label: 'Clean Servers (css_restart)',
+        command: 'restart',
+        description:
+          'Destructively end any running match on the selected server(s) and reset them back to warmup using css_restart.',
+        color: 'error',
+      },
       {
         id: 'change-map',
         label: 'Change Map',
