@@ -405,11 +405,14 @@ export class MatchAllocationService {
         try {
           const result = await advanceToNextRound();
           if (!result) {
-            log.error('Failed to generate first round for shuffle tournament');
+            // This should not normally happen for a brand new shuffle tournament where
+            // no rounds have been generated yet. Treat it as a hard failure so the UI
+            // can surface a clear error instead of silently doing nothing.
+            log.error('Failed to generate first round for shuffle tournament (no result returned)');
             return {
               success: false,
               message:
-                'No matches exist and first round generation failed. Please check tournament configuration and registered players.',
+                'First round generation failed for shuffle tournament. Please check tournament configuration and registered players.',
               allocated: 0,
               failed: 0,
               results: [],
@@ -419,11 +422,13 @@ export class MatchAllocationService {
             `Generated round ${result.roundNumber} with ${result.matches.length} match(es)`
           );
         } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
           log.error('Failed to generate first round for shuffle tournament', err);
           return {
             success: false,
             message:
-              'No matches exist and first round generation failed. Please check tournament configuration and registered players.',
+              `First round generation failed for shuffle tournament: ${errorMessage}. ` +
+              'Please check tournament configuration and registered players.',
             allocated: 0,
             failed: 0,
             results: [],
@@ -462,13 +467,16 @@ export class MatchAllocationService {
         try {
           const result = await advanceToNextRound();
           if (!result) {
+            // In this path we know matches exist but none are shuffle rounds yet.
+            // If advanceToNextRound returns null, it usually means the current round
+            // is not complete. Surface a more helpful explanation.
             log.error(
-              'Failed to generate first round for shuffle tournament (post existing-match check)'
+              'Failed to generate first round for shuffle tournament (post existing-match check, no result returned)'
             );
             return {
               success: false,
               message:
-                'Shuffle tournament has no generated rounds. First round generation failed. Please check configuration and registered players.',
+                'Cannot generate next shuffle round: current round is not complete or tournament state is inconsistent. Please ensure all matches are completed before advancing.',
               allocated: 0,
               failed: 0,
               results: [],
@@ -478,6 +486,7 @@ export class MatchAllocationService {
             `Generated round ${result.roundNumber} with ${result.matches.length} match(es) for shuffle tournament`
           );
         } catch (err) {
+          const errorMessage = err instanceof Error ? err.message : String(err);
           log.error(
             'Failed to generate first round for shuffle tournament (post existing-match check)',
             err
@@ -485,7 +494,8 @@ export class MatchAllocationService {
           return {
             success: false,
             message:
-              'Shuffle tournament has no generated rounds. First round generation failed. Please check configuration and registered players.',
+              `First round generation failed for shuffle tournament: ${errorMessage}. ` +
+              'Please check configuration and registered players.',
             allocated: 0,
             failed: 0,
             results: [],

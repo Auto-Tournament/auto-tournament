@@ -72,7 +72,11 @@ export async function createShuffleTournament(
     );
   }
 
-  // Delete existing tournament (only one at a time)
+  // Clean up any existing shuffle tournament data (we only support a single shuffle tournament with id = 1)
+  // This ensures we can safely recreate the tournament multiple times in tests without PK conflicts.
+  await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
+  await db.execAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = 1');
+  await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
   await db.execAsync('DELETE FROM tournament WHERE id = 1');
 
   // Create tournament
