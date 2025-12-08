@@ -611,27 +611,7 @@ export default function Templates() {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={!!error}
-        autoHideDuration={6000}
-        onClose={() => setError(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="error" onClose={() => setError(null)} variant="filled">
-          {error}
-        </Alert>
-      </Snackbar>
-
-      <Snackbar
-        open={!!success}
-        autoHideDuration={4000}
-        onClose={() => setSuccess(null)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert severity="success" onClose={() => setSuccess(null)} variant="filled">
-          {success}
-        </Alert>
-      </Snackbar>
+      {/* Error/success feedback for this page is handled via the global SnackbarContext */}
     </Box>
   );
 }

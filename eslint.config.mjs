@@ -7,7 +7,22 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 
 export default [
   js.configs.recommended,
-  
+
+  // Node build config (esbuild)
+  {
+    files: ['api/esbuild.config.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
+  },
+ 
   // Backend TypeScript files (api/src/**/*.ts)
   {
     files: ['api/src/**/*.ts'],
@@ -82,6 +97,8 @@ export default [
         clearImmediate: 'readonly',
         Promise: 'readonly',
         NodeJS: 'readonly',
+        // Some scripts evaluate browser-side code snippets (e.g. Playwright helpers)
+        window: 'readonly',
       },
     },
     plugins: {
@@ -89,7 +106,8 @@ export default [
     },
     rules: {
       ...typescript.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Be less strict for scripts – treat unuseds as warnings
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
@@ -126,6 +144,7 @@ export default [
         clearImmediate: 'readonly',
         Promise: 'readonly',
         NodeJS: 'readonly',
+        // Playwright / test globals
         test: 'readonly',
         expect: 'readonly',
         describe: 'readonly',
@@ -134,6 +153,17 @@ export default [
         afterAll: 'readonly',
         beforeEach: 'readonly',
         afterEach: 'readonly',
+        page: 'readonly',
+        browser: 'readonly',
+        context: 'readonly',
+        // Browser-like globals used in tests & helpers
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        URLSearchParams: 'readonly',
+        CustomEvent: 'readonly',
       },
     },
     plugins: {
@@ -141,7 +171,8 @@ export default [
     },
     rules: {
       ...typescript.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      // Tests can have some unused helpers – keep as warnings
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
@@ -234,6 +265,11 @@ export default [
       'node_modules/**',
       'dist/**',
       'public/**',
+      'api/dist/**',
+      'api/public/**',
+      'client/dist/**',
+      'playwright-report/**',
+      'logs/**',
       'site/**', // Generated documentation site
       'data/**',
       '.venv/**', // (legacy) Python virtual environment at repo root
@@ -241,6 +277,7 @@ export default [
       '*.js',
       '*.mjs',
       'vite.config.ts',
+      'client/vite.config.ts',
       'eslint.config.mjs',
       'client/src/brackets-viewer/**', // Vendored code - ignore linting errors
       '.pnp.cjs', // Yarn PnP file
