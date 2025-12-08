@@ -141,7 +141,7 @@ export const generateMatchConfig = async (
           });
           // Ensure per_map_sides matches the number of maps
           per_map_sides = per_map_sides.slice(0, numMaps);
-          
+
           log.info('Per-map sides configured from veto', {
             maplist,
             per_map_sides,
@@ -164,14 +164,16 @@ export const generateMatchConfig = async (
   } else {
     // Fallback: use default pattern if no veto sides were chosen
     const anyKnife = per_map_sides.some((s) => s === 'knife');
-    map_sides = (anyKnife
-      ? ['team1_ct', 'team2_ct', 'knife']
-      : ['team1_ct', 'team2_ct']
-    ).slice(0, numMaps) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
+    map_sides = (anyKnife ? ['team1_ct', 'team2_ct', 'knife'] : ['team1_ct', 'team2_ct']).slice(
+      0,
+      numMaps
+    ) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
   }
 
   const config: MatchConfig = {
-    matchid: existingMatch?.id ?? slug ?? 'tbd',
+    // MatchZy expects numeric matchid; fall back to 0 only if we somehow
+    // don't have a DB row yet (should be rare, but keeps config valid).
+    matchid: existingMatch?.id ?? 0,
     num_maps: numMaps,
     players_per_team: playersPerTeam,
     min_players_to_ready: 1,
@@ -313,9 +315,7 @@ async function generateShuffleMatchConfig(
 
   // Shuffle tournaments: BO1, single map, random side, no veto
   const maplist = mapForRound ? [mapForRound] : null;
-  const map_sides: Array<'team1_ct' | 'team2_ct'> = [
-    Math.random() > 0.5 ? 'team1_ct' : 'team2_ct',
-  ];
+  const map_sides: Array<'team1_ct' | 'team2_ct'> = [Math.random() > 0.5 ? 'team1_ct' : 'team2_ct'];
 
   // Configure round limit and overtime based on tournament settings
   const roundLimitType = tournament.roundLimitType || 'first_to_13';
@@ -329,7 +329,7 @@ async function generateShuffleMatchConfig(
     // First to 13: 24 rounds max (12 per half), with optional overtime
     cvars.mp_maxrounds = 24;
     cvars.mp_overtime_enable = overtimeMode === 'enabled' ? 1 : 0;
-    
+
     if (overtimeMode === 'enabled') {
       // MR3 format: 3 rounds per half (6 total), 10k start money
       cvars.mp_overtime_maxrounds = 3; // 3 rounds per half = 6 total rounds
@@ -342,8 +342,9 @@ async function generateShuffleMatchConfig(
   }
 
   const config: MatchConfig = {
-    // MatchZy expects matchid to be an integer; use the numeric DB id when available
-    matchid: matchId ?? slug ?? 'tbd',
+    // MatchZy expects matchid to be an integer; use the numeric DB id when available.
+    // Fall back to 0 only if the match row is unexpectedly missing.
+    matchid: matchId ?? 0,
     num_maps: 1, // Shuffle tournaments are always BO1
     players_per_team: Math.max(team1Count, team2Count, tournament.teamSize || 5),
     min_players_to_ready: 1,

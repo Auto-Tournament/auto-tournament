@@ -15,7 +15,9 @@ export interface MatchTeam {
 }
 
 export interface MatchConfig {
-  matchid: number | string;
+  // MatchZy expects matchid to be an integer (DB match ID).
+  // We enforce number here so config builders must supply a numeric ID.
+  matchid: number;
   skip_veto: true;
   min_players_to_ready?: number;
   players_per_team: number;
