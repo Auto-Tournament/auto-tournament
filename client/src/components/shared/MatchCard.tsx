@@ -169,14 +169,19 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     >
       <CardContent>
         {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
           <Box>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
               Match #{matchNumber}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {roundLabel || getRoundLabel(match.round)}
             </Typography>
+            {match.serverName && (
+              <Typography variant="caption" color="text.secondary" display="block">
+                Server: {match.serverName}
+              </Typography>
+            )}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             <Chip
