@@ -548,6 +548,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     config.map_sides = [Math.random() > 0.5 ? 'team1_ct' : 'team2_ct']; // Random side
 
     // Create match
+    // Shuffle tournaments skip veto, so matches are immediately ready for server allocation
     await db.insertAsync('matches', {
       slug: matchSlug,
       tournament_id: 1,
@@ -558,7 +559,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
       winner_id: null,
       server_id: null,
       config: JSON.stringify(config),
-      status: 'pending',
+      status: 'ready', // Changed from 'pending' to 'ready' since skip_veto = true
       next_match_id: null,
       current_map: map,
       map_number: 0,
