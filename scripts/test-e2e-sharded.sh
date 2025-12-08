@@ -6,7 +6,8 @@ set -euo pipefail
 # Default: 4 shards
 
 NUM_SHARDS="${1:-4}"
-RESULTS_DIR=".playwright-test-results"
+# Store all aggregated test and Docker logs under the central logs directory
+RESULTS_DIR="logs/test-results"
 IMAGE_TAG="matchzy-test:sharded"
 NETWORK_NAME="matchzy-test-network"
 PG_CONTAINER="matchzy-test-postgres"
@@ -233,8 +234,6 @@ done
 # Tear down Docker (explicit, then EXIT trap is basically a no-op)
 ########################
 
-cleanup_docker
-
 ########################
 # Logs
 ########################
@@ -243,17 +242,26 @@ COMBINED_LOG="${RESULTS_DIR}/test-output-all.log"
 echo "▶ Combining shard logs into ${COMBINED_LOG}"
 cat "${RESULTS_DIR}"/test-output-shard-*.log > "${COMBINED_LOG}" 2>/dev/null || true
 
-echo "▶ Cleaning up per-shard logs..."
+echo "▶ Exporting API and database logs for each shard into ${RESULTS_DIR}"
+for ((i=1; i<=NUM_SHARDS; i++)); do
+  api_container="${API_PREFIX}-${i}"
+  api_log="${RESULTS_DIR}/api-logs-shard-${i}.log"
+  echo "  - Capturing logs for ${api_container} -> ${api_log}"
+  docker logs "${api_container}" > "${api_log}" 2>&1 || echo "    (no logs for ${api_container})"
+done
+
+db_log="${RESULTS_DIR}/postgres.log"
+echo "  - Capturing logs for ${PG_CONTAINER} -> ${db_log}"
+docker logs "${PG_CONTAINER}" > "${db_log}" 2>&1 || echo "    (no logs for ${PG_CONTAINER})"
+
+echo "▶ Cleaning up per-shard Playwright logs..."
 rm -f "${RESULTS_DIR}/test-output-shard-"*.log 2>/dev/null || true
 
 ########################
-# Prune results dir (keep only combined log)
+# Prune results dir (keep logs; no aggressive cleanup)
 ########################
 
-echo "▶ Cleaning up test artifacts in ${RESULTS_DIR}, keeping only $(basename "${COMBINED_LOG}")"
-if [ -d "${RESULTS_DIR}" ]; then
-  find "${RESULTS_DIR}" -mindepth 1 -maxdepth 1 ! -name "$(basename "${COMBINED_LOG}")" -exec rm -rf {} +
-fi
+echo "▶ Test artifacts preserved in ${RESULTS_DIR} (combined Playwright log and Docker logs)"
 
 ########################
 # Final status
