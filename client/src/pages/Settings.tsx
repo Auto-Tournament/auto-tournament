@@ -262,15 +262,12 @@ export default function Settings() {
         <Paper sx={{ p: 3, mb: 3 }}>
           <Stack spacing={3}>
             <Box>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Webhook URL
-              </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Base URL used for MatchZy webhooks and demo uploads. It must be reachable from your
-                CS2 servers.
+                Base URL for MatchZy webhooks and demo uploads. It must be reachable from your CS2
+                servers.
               </Typography>
               <TextField
-                label="Webhook base URL"
+                label="Webhook URL"
                 value={webhookUrl}
                 onChange={(event) => setWebhookUrl(event.target.value)}
                 onBlur={handleFieldBlur}
@@ -280,8 +277,8 @@ export default function Settings() {
                 error={!loading && webhookUrl.trim() === ''}
                 helperText={
                   !loading && webhookUrl.trim() === ''
-                    ? 'Required. Matches and servers use this URL for webhook events and demo uploads.'
-                    : 'Matches and servers use this URL for webhook events and demo uploads.'
+                    ? 'Required.'
+                    : ''
                 }
                 inputProps={{ 'data-testid': 'settings-webhook-url-input' }}
               />
@@ -290,9 +287,6 @@ export default function Settings() {
             <Divider />
 
             <Box>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Default Player ELO
-              </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
                 Starting ELO for new players when none is specified (used by shuffle tournaments and
                 player/team imports).
@@ -321,33 +315,27 @@ export default function Settings() {
             </Box>
 
             <Box>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Steam API Key
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                Used to resolve vanity URLs and fetch player profiles. Leave blank to disable Steam
-                lookups.
-              </Typography>
               <Stack direction={{ xs: 'column', sm: 'row' }} alignItems="flex-center" spacing={1}>
-                      <TextField
-                        label="Steam Web API Key"
-                        value={steamApiKey}
-                        onChange={(event) => setSteamApiKey(event.target.value)}
-                        onBlur={handleFieldBlur}
-                        onKeyDown={handleFieldKeyDown}
-                        type={showSteamKey ? 'text' : 'password'}
-                        fullWidth
-                        inputProps={{ 'data-testid': 'settings-steam-api-key-input' }}
-                        InputProps={{
-                          endAdornment: (
-                            <InputAdornment position="end">
-                              <IconButton onClick={() => setShowSteamKey((prev) => !prev)} edge="end">
-                                {showSteamKey ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                              </IconButton>
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
+                <TextField
+                  label="Steam Web API Key"
+                  value={steamApiKey}
+                  onChange={(event) => setSteamApiKey(event.target.value)}
+                  onBlur={handleFieldBlur}
+                  onKeyDown={handleFieldKeyDown}
+                  type={showSteamKey ? 'text' : 'password'}
+                  fullWidth
+                  helperText="Used to resolve vanity URLs and fetch player profiles. Leave blank to disable Steam lookups."
+                  inputProps={{ 'data-testid': 'settings-steam-api-key-input' }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton onClick={() => setShowSteamKey((prev) => !prev)} edge="end">
+                          {showSteamKey ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
                 <IconButton
                   href={STEAM_API_DOC_URL}
                   target="_blank"
