@@ -72,17 +72,17 @@ export async function createShuffleTournament(
     }
 
     const data = await response.json();
-    
+
     if (!data.success) {
       console.error('Shuffle tournament creation returned success: false', data);
       return null;
     }
-    
+
     if (!data.tournament) {
       console.error('Shuffle tournament creation response missing tournament object', data);
       return null;
     }
-    
+
     return data.tournament;
   } catch (error) {
     console.error('Shuffle tournament creation error:', error);
@@ -109,18 +109,18 @@ export async function registerPlayers(
     let data: any;
     try {
       data = await response.json();
-    } catch (error) {
+    } catch {
       // If response is not JSON, still return a structure with error
       console.error('Player registration failed: response is not JSON');
       return {
         registered: 0,
-        errors: playerIds.map(id => ({ 
-          playerId: id, 
-          error: 'Failed to parse response as JSON' 
+        errors: playerIds.map((id) => ({
+          playerId: id,
+          error: 'Failed to parse response as JSON',
         })),
       };
     }
-    
+
     // Handle both success and error responses
     // API returns 400 with { success: false, error: "..." } when tournament is not in setup
     // API returns 207 with { success: false, registered: 0, errors: [...] } when some fail
@@ -130,7 +130,7 @@ export async function registerPlayers(
       if (response.status() === 400 && data.error) {
         return {
           registered: 0,
-          errors: playerIds.map(id => ({ playerId: id, error: data.error })),
+          errors: playerIds.map((id) => ({ playerId: id, error: data.error })),
         };
       }
       // For other errors, try to parse the response
@@ -144,7 +144,7 @@ export async function registerPlayers(
       if (data.error) {
         return {
           registered: 0,
-          errors: playerIds.map(id => ({ playerId: id, error: data.error })),
+          errors: playerIds.map((id) => ({ playerId: id, error: data.error })),
         };
       }
       // If we get here, we have an unexpected error structure
@@ -152,9 +152,9 @@ export async function registerPlayers(
       console.warn('Player registration failed with unexpected structure:', data);
       return {
         registered: 0,
-        errors: playerIds.map(id => ({ 
-          playerId: id, 
-          error: data.error || `HTTP ${response.status()}: ${JSON.stringify(data)}` 
+        errors: playerIds.map((id) => ({
+          playerId: id,
+          error: data.error || `HTTP ${response.status()}: ${JSON.stringify(data)}`,
         })),
       };
     }
@@ -168,9 +168,9 @@ export async function registerPlayers(
     // Even on error, return a structure so tests can check the error
     return {
       registered: 0,
-      errors: playerIds.map(id => ({ 
-        playerId: id, 
-        error: error instanceof Error ? error.message : 'Unknown error' 
+      errors: playerIds.map((id) => ({
+        playerId: id,
+        error: error instanceof Error ? error.message : 'Unknown error',
       })),
     };
   }
@@ -252,13 +252,13 @@ export async function getStandings(
     }
 
     const data = await response.json();
-    
+
     // Check if response has success: false
     if (data.success === false) {
       console.warn('Get standings returned success: false:', data);
       return null;
     }
-    
+
     return data;
   } catch (error) {
     console.error('Get standings error:', error);
@@ -286,7 +286,19 @@ export async function getRoundStatus(
     }
 
     const data = await response.json();
-    return data;
+
+    // API returns { success, roundStatus, currentRound, totalRounds }
+    // For tests, we primarily care about the RoundStatus object
+    if (data.roundStatus) {
+      // Preserve round metadata as extra fields in case tests need them
+      return {
+        ...data.roundStatus,
+        currentRound: data.currentRound,
+        totalRounds: data.totalRounds,
+      };
+    }
+
+    return null;
   } catch (error) {
     console.error('Get round status error:', error);
     return null;
@@ -413,7 +425,7 @@ export async function setupShuffleTournament(
     console.error(`Failed to create players (got null)`);
     return null;
   }
-  
+
   if (players.length < playerCount) {
     console.warn(`Created ${players.length} players (requested ${playerCount}), continuing...`);
     // Don't fail if we got some players, just warn
@@ -438,7 +450,9 @@ export async function setupShuffleTournament(
   const registration = await registerPlayers(request, playerIds);
   if (!registration || registration.registered < playerCount) {
     console.error(
-      `Failed to register all players (registered ${registration?.registered || 0} of ${playerCount})`
+      `Failed to register all players (registered ${
+        registration?.registered || 0
+      } of ${playerCount})`
     );
     return null;
   }
@@ -459,4 +473,3 @@ export async function setupShuffleTournament(
     webhookUrl,
   };
 }
-
