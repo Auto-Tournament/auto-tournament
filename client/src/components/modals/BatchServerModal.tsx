@@ -50,6 +50,27 @@ interface ServerVerification {
   error?: string;
 }
 
+const formatVerificationError = (error?: string): string | undefined => {
+  if (!error) return undefined;
+
+  // If backend returned a JSON blob (e.g. full RCON response), try to extract the useful bit
+  try {
+    const parsed = JSON.parse(error);
+    if (parsed && typeof parsed === 'object') {
+      // Prefer a concise message if available
+      if (typeof (parsed as any).error === 'string') {
+        return (parsed as any).error;
+      }
+      // Fall back to pretty-printed JSON
+      return JSON.stringify(parsed, null, 2);
+    }
+  } catch {
+    // Not JSON, fall through to raw string
+  }
+
+  return error;
+};
+
 export default function BatchServerModal({ open, onClose, onSave }: BatchServerModalProps) {
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [baseName, setBaseName] = useState('');
@@ -451,6 +472,13 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                           required
                           fullWidth
                           size="small"
+                          FormHelperTextProps={{
+                            sx: {
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              mt: 0.25,
+                            },
+                          }}
                           InputProps={{
                             endAdornment: status === 'checking' ? (
                               <CircularProgress size={16} />
@@ -461,7 +489,9 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                             ) : null,
                           }}
                           helperText={
-                            verification?.status === 'error' ? verification.error : undefined
+                            verification?.status === 'error'
+                              ? formatVerificationError(verification.error)
+                              : undefined
                           }
                           error={verification?.status === 'error'}
                         />

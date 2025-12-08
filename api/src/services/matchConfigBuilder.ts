@@ -248,11 +248,15 @@ async function generateShuffleMatchConfig(
 
   // Get map for this round from match
   let mapForRound: string | null = null;
+  let matchId: number | null = null;
   if (slug) {
     const match = await db.queryOneAsync<DbMatchRow>(
-      'SELECT current_map, round FROM matches WHERE slug = ?',
+      'SELECT id, current_map, round FROM matches WHERE slug = ?',
       [slug]
     );
+    if (match) {
+      matchId = match.id;
+    }
     if (match?.current_map) {
       mapForRound = match.current_map;
     } else if (match?.round) {
@@ -338,7 +342,8 @@ async function generateShuffleMatchConfig(
   }
 
   const config: MatchConfig = {
-    matchid: slug ?? 'tbd',
+    // MatchZy expects matchid to be an integer; use the numeric DB id when available
+    matchid: matchId ?? slug ?? 'tbd',
     num_maps: 1, // Shuffle tournaments are always BO1
     players_per_team: Math.max(team1Count, team2Count, tournament.teamSize || 5),
     min_players_to_ready: 1,
