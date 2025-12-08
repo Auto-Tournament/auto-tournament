@@ -75,6 +75,43 @@ test.describe.serial('Shuffle Tournament API', () => {
   );
 
   test(
+    'should respect custom team size configuration (e.g. 2 players per team)',
+    {
+      tag: ['@api', '@shuffle', '@tournament'],
+    },
+    async ({ request }) => {
+      // Create shuffle tournament with custom team size
+      const response = await request.post('/api/tournament/shuffle', {
+        headers: getAuthHeader(),
+        data: {
+          name: 'Custom Team Size Shuffle',
+          mapSequence: ['de_mirage'],
+          roundLimitType: 'max_rounds',
+          maxRounds: 24,
+          overtimeMode: 'enabled',
+          teamSize: 2,
+        },
+      });
+
+      expect(response.ok()).toBeTruthy();
+      const data = await response.json();
+      expect(data.success).toBeTruthy();
+      expect(data.tournament.teamSize).toBe(2);
+
+      // Verify generic tournament endpoint exposes shuffle-specific fields
+      const tournamentResponse = await request.get('/api/tournament', {
+        headers: getAuthHeader(),
+      });
+      expect(tournamentResponse.ok()).toBeTruthy();
+      const tournamentData = await tournamentResponse.json();
+      expect(tournamentData.success).toBeTruthy();
+      expect(tournamentData.tournament.type).toBe('shuffle');
+      expect(tournamentData.tournament.teamSize).toBe(2);
+      expect(tournamentData.tournament.mapSequence).toEqual(['de_mirage']);
+    }
+  );
+
+  test(
     'should reject shuffle tournament creation with invalid configuration',
     {
       tag: ['@api', '@shuffle', '@tournament'],

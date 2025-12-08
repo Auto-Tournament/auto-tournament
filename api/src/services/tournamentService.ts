@@ -43,6 +43,13 @@ class TournamentService {
       maps: tournament.maps,
       teamIds: tournament.team_ids,
       settings: tournament.settings,
+      // Shuffle tournament specific fields (only populated for type === 'shuffle')
+      mapSequence: tournament.mapSequence,
+      teamSize: tournament.teamSize,
+      roundLimitType: tournament.roundLimitType,
+      maxRounds: tournament.maxRounds,
+      overtimeMode: tournament.overtimeMode,
+      eloTemplateId: tournament.eloTemplateId || undefined,
       created_at: tournament.created_at,
       updated_at: tournament.updated_at,
       started_at: tournament.started_at,
@@ -512,6 +519,14 @@ class TournamentService {
       maps: JSON.parse(row.maps),
       team_ids: JSON.parse(row.team_ids),
       settings: JSON.parse(row.settings),
+      // Normalize shuffle-specific fields
+      mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
+      teamSize: row.team_size === null || row.team_size === undefined ? undefined : row.team_size,
+      roundLimitType: (row.round_limit_type as 'first_to_13' | 'max_rounds' | null) || undefined,
+      maxRounds:
+        row.max_rounds === null || row.max_rounds === undefined ? undefined : row.max_rounds,
+      overtimeMode: (row.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+      eloTemplateId: row.elo_template_id ?? null,
     };
   }
 }

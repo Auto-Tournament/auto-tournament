@@ -36,6 +36,13 @@ export interface Tournament {
   maps: string[]; // JSON array
   team_ids: string[]; // JSON array
   settings: TournamentSettings; // JSON object
+  // Shuffle tournament specific fields (parsed / normalized)
+  mapSequence?: string[]; // Maps in order (number of rounds)
+  teamSize?: number; // Number of players per team (default: 5)
+  roundLimitType?: 'first_to_13' | 'max_rounds';
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  eloTemplateId?: string | null;
   created_at: number;
   updated_at: number;
   started_at?: number;
@@ -51,6 +58,13 @@ export interface TournamentRow {
   maps: string; // JSON string
   team_ids: string; // JSON string
   settings: string; // JSON string
+  // Shuffle tournament specific fields (raw DB columns)
+  map_sequence?: string | null;
+  team_size?: number | null;
+  round_limit_type?: string | null;
+  max_rounds?: number | null;
+  overtime_mode?: string | null;
+  elo_template_id?: string | null;
   created_at: number;
   updated_at: number;
   started_at?: number;

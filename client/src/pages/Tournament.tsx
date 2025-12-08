@@ -17,6 +17,8 @@ import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
 import type { TournamentTemplate } from '../types/tournament.types';
+import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
+import type { EloCalculationTemplate } from '../types/elo.types';
 
 interface TournamentChange {
   field: string;
@@ -47,14 +49,14 @@ const Tournament: React.FC = () => {
   const [format, setFormat] = useState('bo3');
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [maps, setMaps] = useState<string[]>([]);
-  const [shuffleSettings, setShuffleSettings] = useState({
+  const [shuffleSettings, setShuffleSettings] = useState<ShuffleTournamentSettings>({
     teamSize: 5,
-    roundLimitType: 'first_to_13' as const,
+    roundLimitType: 'first_to_13',
     maxRounds: 24,
-    overtimeMode: 'enabled' as const,
-    eloTemplateId: 'pure-win-loss' as string,
+    overtimeMode: 'enabled',
+    eloTemplateId: 'pure-win-loss',
   });
-  const [eloTemplates, setEloTemplates] = useState<Array<{ id: string; name: string; description?: string; enabled: boolean }>>([]);
+  const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
 
   // Auto-set format to bo1 when shuffle is selected
   useEffect(() => {
@@ -83,9 +85,10 @@ const Tournament: React.FC = () => {
   useEffect(() => {
     const loadEloTemplates = async () => {
       try {
-        const response = await api.get<{ success: boolean; templates: Array<{ id: string; name: string; description?: string; enabled: boolean }> }>(
-          '/api/elo-templates'
-        );
+        const response = await api.get<{
+          success: boolean;
+          templates: EloCalculationTemplate[];
+        }>('/api/elo-templates');
         if (response.success) {
           setEloTemplates(response.templates);
         }
@@ -326,13 +329,37 @@ const Tournament: React.FC = () => {
   // Check if form has changes compared to tournament
   const hasChanges = (): boolean => {
     if (!tournament) return true; // Creating new tournament
-
+    // Basic tournament fields
     if (name !== tournament.name) return true;
     if (type !== tournament.type) return true;
     if (format !== tournament.format) return true;
     if (JSON.stringify(selectedTeams.sort()) !== JSON.stringify(tournament.teamIds.sort()))
       return true;
     if (JSON.stringify(maps.sort()) !== JSON.stringify(tournament.maps.sort())) return true;
+
+    // Shuffle tournament specific fields
+    if (tournament.type === 'shuffle') {
+      const currentTeamSize = tournament.teamSize || 5;
+      if (shuffleSettings.teamSize !== currentTeamSize) return true;
+
+      const currentRoundLimitType = tournament.roundLimitType || 'first_to_13';
+      if (shuffleSettings.roundLimitType !== currentRoundLimitType) return true;
+
+      const currentMaxRounds = tournament.maxRounds || 24;
+      if (
+        shuffleSettings.roundLimitType === 'max_rounds' &&
+        shuffleSettings.maxRounds !== currentMaxRounds
+      ) {
+        return true;
+      }
+
+      const currentOvertimeMode = tournament.overtimeMode || 'enabled';
+      if (shuffleSettings.overtimeMode !== currentOvertimeMode) return true;
+
+      const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
+      const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
+      if (selectedEloTemplate !== currentEloTemplate) return true;
+    }
 
     return false;
   };
@@ -355,7 +382,10 @@ const Tournament: React.FC = () => {
         showError('Team size must be between 2 and 10 players');
         return;
       }
-      if (shuffleSettings.roundLimitType === 'max_rounds' && (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30)) {
+      if (
+        shuffleSettings.roundLimitType === 'max_rounds' &&
+        (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30)
+      ) {
         showError('Max rounds must be between 1 and 30');
         return;
       }
@@ -470,7 +500,9 @@ const Tournament: React.FC = () => {
         const minPlayers = (shuffleSettings.teamSize || 5) * 2;
         showSuccess(
           `Shuffle tournament "${name}" created successfully! ` +
-            `Next step: Register at least ${minPlayers} players to start the tournament (${shuffleSettings.teamSize || 5}v${shuffleSettings.teamSize || 5} matches).`
+            `Next step: Register at least ${minPlayers} players to start the tournament (${
+              shuffleSettings.teamSize || 5
+            }v${shuffleSettings.teamSize || 5} matches).`
         );
         clearDraft();
         await refreshData();
@@ -480,8 +512,8 @@ const Tournament: React.FC = () => {
     } catch (err) {
       const error = err as Error;
       showError(
-        error.message || 'Failed to create shuffle tournament. ' +
-          'Please check your settings and try again.'
+        error.message ||
+          'Failed to create shuffle tournament. ' + 'Please check your settings and try again.'
       );
     } finally {
       setSaving(false);
@@ -629,7 +661,6 @@ const Tournament: React.FC = () => {
       {/* Stepper */}
       <TournamentStepper currentStep={getCurrentStep()} />
 
-
       {/* Welcome Screen - Show when no tournament exists */}
       {!tournament && showWelcome && (
         <TournamentWelcomeScreen
@@ -733,7 +764,9 @@ const Tournament: React.FC = () => {
               }}
               starting={starting}
               saving={saving}
-              registeredPlayerCount={tournament.type === 'shuffle' ? registeredPlayerCount : undefined}
+              registeredPlayerCount={
+                tournament.type === 'shuffle' ? registeredPlayerCount : undefined
+              }
               onEdit={() => setIsEditing(true)}
               onStart={handleStart}
               onRegenerate={() => setShowRegenerateConfirm(true)}
@@ -802,7 +835,6 @@ const Tournament: React.FC = () => {
           settings: tournament?.settings,
         }}
       />
-
     </Box>
   );
 };
