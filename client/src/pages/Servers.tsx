@@ -278,23 +278,23 @@ export default function Servers() {
                       <Typography variant="body2" color="text.secondary">
                         <strong>Port:</strong> {server.port}
                       </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        <strong>Current match:</strong>{' '}
-                        {server.currentMatch && server.status === 'online'
-                          ? server.currentMatch
-                          : 'None'}
-                      </Typography>
                     </Box>
-
                     {server.currentMatch && server.status === 'online' && (
-                      <Box display="flex" justifyContent="flex-end" mt={1}>
+                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
+                        <Chip
+                          label={server.currentMatch}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
+                          sx={{ fontWeight: 600, maxWidth: '60%', textOverflow: 'ellipsis', overflow: 'hidden' }}
+                        />
                         <Button
                           size="small"
                           variant="outlined"
                           onClick={(event) => handleViewCurrentMatch(server, event)}
                           disabled={loadingMatchServerId === server.id}
                         >
-                          {loadingMatchServerId === server.id ? 'Loading match...' : 'View Match'}
+                          {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
                         </Button>
                       </Box>
                     )}

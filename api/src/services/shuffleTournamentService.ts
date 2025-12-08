@@ -362,6 +362,76 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   // Track which players are assigned to matches (for future use if needed)
   // const assignedPlayerIds = new Set<string>();
 
+  // Pool of friendly team names used for temporary shuffle teams
+  // We cycle through these names so they are readable and re-usable across rounds.
+  const FRIENDLY_TEAM_NAMES = [
+    'Phoenix',
+    'Falcon',
+    'Wolf',
+    'Lion',
+    'Eagle',
+    'Raven',
+    'Dragon',
+    'Titan',
+    'Viper',
+    'Cobra',
+    'Jaguar',
+    'Panther',
+    'Bear',
+    'Shark',
+    'Falcon',
+    'Hawk',
+    'Alpha',
+    'Bravo',
+    'Charlie',
+    'Delta',
+    'Echo',
+    'Foxtrot',
+    'Gamma',
+    'Omega',
+    'Nova',
+    'Aurora',
+    'Comet',
+    'Nebula',
+    'Orion',
+    'Blaze',
+    'Ember',
+    'Inferno',
+    'Glacier',
+    'Avalanche',
+    'Thunder',
+    'Storm',
+    'Cyclone',
+    'Tempest',
+    'Mirage',
+    'Oasis',
+    'Harbor',
+    'Citadel',
+    'Sentinel',
+    'Vanguard',
+    'Guardian',
+    'Shadow',
+    'Spectre',
+    'Phantom',
+    'Rogue',
+    'Nomad',
+    'Ranger',
+    'Pioneer',
+    'Vertex',
+    'Zenith',
+    'Apex',
+    'Summit',
+    'Peak',
+    'Crimson',
+    'Azure',
+    'Emerald',
+    'Gold',
+    'Silver',
+    'Titanium',
+    'Platinum',
+    'Diamond',
+  ];
+
   // Create matches for each team pair
   for (let matchNum = 0; matchNum < teams.length / 2; matchNum++) {
     const team1Index = matchNum * 2;
@@ -504,6 +574,12 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     const team1Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team1`;
     const team2Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team2`;
 
+    // Derive friendly, human-readable team names from the pool (round-stable but match-specific)
+    const team1FriendlyIndex = ((roundNumber - 1) * 16 + matchNum * 2) % FRIENDLY_TEAM_NAMES.length;
+    const team2FriendlyIndex = (team1FriendlyIndex + 1) % FRIENDLY_TEAM_NAMES.length;
+    const team1FriendlyName = FRIENDLY_TEAM_NAMES[team1FriendlyIndex];
+    const team2FriendlyName = FRIENDLY_TEAM_NAMES[team2FriendlyIndex];
+
     // Convert players to team format
     const team1Players: Player[] = team1.players.map((p) => ({
       steamId: p.id,
@@ -520,7 +596,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     // Create teams in database
     await db.insertAsync('teams', {
       id: team1Id,
-      name: `Round ${roundNumber} Match ${matchNum + 1} - Team 1`,
+      name: `Team ${team1FriendlyName}`,
       tag: `R${roundNumber}M${matchNum + 1}T1`,
       players: JSON.stringify(team1Players),
       created_at: now,
@@ -529,7 +605,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
 
     await db.insertAsync('teams', {
       id: team2Id,
-      name: `Round ${roundNumber} Match ${matchNum + 1} - Team 2`,
+      name: `Team ${team2FriendlyName}`,
       tag: `R${roundNumber}M${matchNum + 1}T2`,
       players: JSON.stringify(team2Players),
       created_at: now,
