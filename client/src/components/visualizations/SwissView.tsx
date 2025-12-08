@@ -107,12 +107,12 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
   return (
     <Box>
       <Grid container spacing={3}>
-        {/* Standings */}
+        {/* Leaderboard */}
         <Grid size={{ xs: 12, md: 5 }}>
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                🏆 Current Standings
+                🏆 Current Leaderboard
               </Typography>
               <TableContainer>
                 <Table size="small">

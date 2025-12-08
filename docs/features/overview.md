@@ -401,7 +401,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 - ✅ **Shuffle tournament format** – Individual player competition with teams reshuffled every round  
 - ✅ **Automatic team balancing** – Greedy + optimization algorithm balances teams by updated ELO each round  
 - ✅ **Automatic rounds** – System generates matches, detects round completion, reshuffles teams, and advances  
-- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public standings page  
+- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public leaderboard page  
 - ✅ **Player-centric match access** – Players can keep their `/player/:steamId` page open to always see their current/next shuffle match and server connect info (no per-round team links needed)
 
 ---

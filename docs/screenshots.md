@@ -145,11 +145,11 @@ Teams can connect directly to the match server using the connect button or copy 
 
 ![Connect to Server](assets/preview/connect-to-server.png)
 
-### Tournament Standings
+### Tournament Leaderboard
 
-Public standings page showing tournament progress and team rankings. Available for shuffle tournaments.
+Public leaderboard page showing tournament progress and player rankings. Available for shuffle tournaments.
 
-![Tournament Standings](assets/preview/tournament-standings.png)
+![Tournament Leaderboard](assets/preview/tournament-standings.png)
 
 ---
 

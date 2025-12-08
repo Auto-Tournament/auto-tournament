@@ -22,7 +22,7 @@
 🏆 **Tournament Formats** — Single/Double Elimination, Round Robin, Swiss, and Shuffle tournaments with auto-progression  
 🧩 **Custom Bracket Viewer** — Bundled fork of `brackets-viewer.js` with enhanced theming, matchup centering, and MatchZy integration  
 🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5 with map pools and MR3 overtime support  
-📈 **Player Ratings** — OpenSkill-backed rating engine, ELO-style display, player pages, and public standings  
+📈 **Player Ratings** — OpenSkill-backed rating engine, ELO-style display, player pages, and public leaderboards  
 📊 **Dashboard & Live Stats** — Onboarding checklist, tournament/server stats, and live match metrics  
 ⚡ **Real-Time Updates** — WebSocket-powered live scores, player connections, and status tracking  
 🎮 **Auto Server Allocation** — Matches load automatically when servers are available  

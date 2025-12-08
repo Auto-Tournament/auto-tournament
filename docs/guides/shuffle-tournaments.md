@@ -147,9 +147,9 @@ If you have an odd number of players (e.g., 61 instead of 60):
 
 ## Viewing Tournament Progress
 
-### Public Tournament Standings
+### Public Tournament Leaderboard
 
-Navigate to `/tournament/:id/standings` (public, no authentication required)
+Navigate to `/tournament/:id/leaderboard` (public, no authentication required)
 
 **Displays:**
 

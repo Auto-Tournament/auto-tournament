@@ -1704,23 +1704,23 @@ async function generateScreenshots(): Promise<void> {
       }
     }
 
-    // Take screenshot of public tournament standings if tournament exists and is shuffle type
-    // Standings are only available for shuffle tournaments
+    // Take screenshot of public tournament leaderboard if tournament exists and is shuffle type
+    // Leaderboard is only available for shuffle tournaments
     if (testData.tournament && testData.tournament.type === 'shuffle') {
       try {
-        console.log('📸 Taking public tournament standings screenshot (shuffle tournament)...');
-        await page.goto(`${BASE_URL}/tournament/${testData.tournament.id}/standings`);
+        console.log('📸 Taking public tournament leaderboard screenshot (shuffle tournament)...');
+        await page.goto(`${BASE_URL}/tournament/${testData.tournament.id}/leaderboard`);
         await takeScreenshot(page, {
-          path: `/tournament/${testData.tournament.id}/standings`,
-          name: 'tournament-standings',
+          path: `/tournament/${testData.tournament.id}/leaderboard`,
+          name: 'tournament-leaderboard',
           waitFor: 'table, .MuiCard-root, .MuiPaper-root, .MuiTable-root',
           waitTime: 1500,
         });
       } catch (error) {
-        console.error('❌ Failed to screenshot tournament standings:', error);
+        console.error('❌ Failed to screenshot tournament leaderboard:', error);
       }
     } else if (testData.tournament) {
-      console.log('⏭️  Skipping tournament standings (only available for shuffle tournaments)');
+      console.log('⏭️  Skipping tournament leaderboard (only available for shuffle tournaments)');
     }
 
     // Take screenshot of team page, veto process, and connect to server

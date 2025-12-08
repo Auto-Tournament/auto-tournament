@@ -1227,13 +1227,13 @@ router.get('/:id/round-status', async (req: Request, res: Response) => {
       });
     }
 
-    const standings = await getTournamentStandings();
+    const leaderboardData = await getTournamentLeaderboard();
 
     return res.json({
       success: true,
-      roundStatus: standings.roundStatus,
-      currentRound: standings.currentRound,
-      totalRounds: standings.totalRounds,
+      roundStatus: leaderboardData.roundStatus,
+      currentRound: leaderboardData.currentRound,
+      totalRounds: leaderboardData.totalRounds,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
