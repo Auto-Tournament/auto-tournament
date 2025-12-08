@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { io } from 'socket.io-client';
 import {
   Box,
   Card,
@@ -75,24 +76,18 @@ export default function TournamentLeaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [exportMenuAnchor, setExportMenuAnchor] = useState<HTMLElement | null>(null);
 
-  useEffect(() => {
-    if (id) {
-      loadStandings();
-      // Refresh every 30 seconds
-      const interval = setInterval(loadStandings, 30000);
-      return () => clearInterval(interval);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
-
-  const loadStandings = async () => {
+  const loadStandings = async (showLoading = true) => {
     if (!id) return;
 
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
       setError('');
 
-      const response = await api.get<TournamentLeaderboardData>(`/api/tournament/${id}/leaderboard`);
+      const response = await api.get<TournamentLeaderboardData>(
+        `/api/tournament/${id}/leaderboard`
+      );
 
       if (response) {
         setData(response);
@@ -104,9 +99,93 @@ export default function TournamentLeaderboard() {
       setError('Failed to load tournament leaderboard');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   };
+
+  // Initial load + periodic refresh as a fallback
+  useEffect(() => {
+    if (!id) return;
+
+    void loadStandings(true);
+    // Refresh every 30 seconds without blocking UI
+    const interval = setInterval(() => {
+      void loadStandings(false);
+    }, 30000);
+
+    return () => clearInterval(interval);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  // WebSocket-based realtime updates
+  useEffect(() => {
+    if (!id) return;
+
+    const socket = io();
+
+    const refreshLeaderboardSilently = () => {
+      void loadStandings(false);
+    };
+
+    const handleMatchUpdate = (payload: Record<string, unknown>) => {
+      if (!payload) return;
+      const status =
+        (payload.status as string | undefined) ??
+        (payload as { match_status?: string }).match_status ??
+        undefined;
+
+      if (status === 'completed') {
+        refreshLeaderboardSilently();
+      }
+    };
+
+    const tournamentActionsToRefresh = new Set([
+      'tournament_reset',
+      'tournament_restarted',
+      'tournament_updated',
+      'tournament_completed',
+      'tournament_started',
+    ]);
+
+    const handleTournamentUpdate = (event: Record<string, unknown> | undefined) => {
+      if (!event) return;
+      const action = event.action as string | undefined;
+      if (action && tournamentActionsToRefresh.has(action)) {
+        refreshLeaderboardSilently();
+      }
+    };
+
+    const bracketActionsToRefresh = new Set([
+      'round_advanced',
+      'match_loaded',
+      'match_restarted',
+      'server_assigned',
+      'match_allocated',
+      'bracket_regenerated',
+    ]);
+
+    const handleBracketUpdate = (event: Record<string, unknown> | undefined) => {
+      if (!event) return;
+      const action = event.action as string | undefined;
+      if (!action || bracketActionsToRefresh.has(action)) {
+        refreshLeaderboardSilently();
+      }
+    };
+
+    socket.on('match:update', handleMatchUpdate);
+    socket.on('tournament:update', handleTournamentUpdate);
+    socket.on('bracket:update', handleBracketUpdate);
+
+    return () => {
+      socket.off('match:update', handleMatchUpdate);
+      socket.off('tournament:update', handleTournamentUpdate);
+      socket.off('bracket:update', handleBracketUpdate);
+      socket.close();
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const handlePlayerClick = (playerId: string) => {
     window.open(`/player/${playerId}`, '_blank');
@@ -253,7 +332,10 @@ export default function TournamentLeaderboard() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.json`);
+    link.setAttribute(
+      'download',
+      `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.json`
+    );
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -262,7 +344,12 @@ export default function TournamentLeaderboard() {
   };
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-leaderboard-page">
+    <Box
+      minHeight="100vh"
+      bgcolor="background.default"
+      py={6}
+      data-testid="public-leaderboard-page"
+    >
       <Container maxWidth="lg">
         <Stack spacing={3}>
           {/* Tournament Header */}
