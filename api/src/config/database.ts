@@ -279,8 +279,11 @@ class DatabaseManager {
   }
 
   /**
-   * Reset database by dropping all tables and reinitializing schema
-   * This will recreate all tables and insert default data (maps, map pools)
+   * Reset database by dropping and recreating the public schema
+   * This will effectively wipe the entire database schema (all tables, views, sequences, etc.)
+   * and then recreate everything using the same initialization logic as on startup.
+   *
+   * DEV ONLY: This is intended for development tools where a full wipe is desired.
    */
   async resetDatabase(): Promise<void> {
     if (!this.postgresPool) {
@@ -289,53 +292,20 @@ class DatabaseManager {
 
     const client = await this.postgresPool.connect();
     try {
-      log.warn('[PostgreSQL] Resetting database - dropping all tables');
+      log.warn('[PostgreSQL] Resetting database - dropping and recreating public schema');
 
-      // Disable foreign key checks temporarily by dropping tables in correct order
-      // Drop tables in reverse order of dependencies to avoid foreign key constraint errors
-      const tablesToDrop = [
-        'match_map_results',
-        'match_events',
-        'matches',
-        'tournament',
-        'teams',
-        'map_pools',
-        'maps',
-        'app_settings',
-        'servers',
-      ];
-
-      // Drop all tables (CASCADE will handle foreign keys)
-      for (const table of tablesToDrop) {
-        try {
-          await client.query(`DROP TABLE IF EXISTS ${table} CASCADE`);
-          log.database(`[PostgreSQL] Dropped table: ${table}`);
-        } catch (err) {
-          const error = err as Error;
-          // Ignore "table does not exist" errors
-          if (!error.message.includes('does not exist')) {
-            log.warn(`[PostgreSQL] Error dropping table ${table}: ${error.message}`);
-          }
-        }
-      }
-
-      // Reset sequences (in case any were created)
+      // Drop and recreate the public schema. This removes ALL user tables, views, sequences, etc.
+      // This is more robust than maintaining a hard-coded list of tables.
       try {
         await client.query(`
-          DO $$ 
-          DECLARE 
-            r RECORD;
-          BEGIN
-            FOR r IN (SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema = 'public') 
-            LOOP
-              EXECUTE 'DROP SEQUENCE IF EXISTS ' || quote_ident(r.sequence_name) || ' CASCADE';
-            END LOOP;
-          END $$;
+          DROP SCHEMA IF EXISTS public CASCADE;
+          CREATE SCHEMA public;
         `);
-        log.database('[PostgreSQL] Reset all sequences');
+        log.database('[PostgreSQL] Public schema dropped and recreated');
       } catch (err) {
         const error = err as Error;
-        log.warn(`[PostgreSQL] Error resetting sequences: ${error.message}`);
+        log.error(`[PostgreSQL] Failed to recreate public schema during reset: ${error.message}`);
+        throw err;
       }
 
       // Reset initialized flag so schema can be recreated
