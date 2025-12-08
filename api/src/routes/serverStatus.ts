@@ -5,6 +5,7 @@ import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
+import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 
 const router = Router();
 
@@ -53,49 +54,82 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         success: true,
         status: 'online',
         serverId: id,
+        isAvailable: true,
+        currentMatch: null,
       });
     }
 
-    // Try to connect and send a simple command
-    const result = await rconService.sendCommand(id, 'status');
+    // Prefer detailed status from the MatchZy plugin ConVars (includes current match slug)
+    const statusInfo = await Promise.race([
+      serverStatusService.getServerStatus(id),
+      new Promise<{
+        status: null;
+        matchSlug: null;
+        updatedAt: null;
+        online: false;
+      }>((resolve) =>
+        setTimeout(
+          () =>
+            resolve({
+              status: null,
+              matchSlug: null,
+              updatedAt: null,
+              online: false,
+            }),
+          2000
+        )
+      ),
+    ]);
 
-    if (result.success) {
-      log.debug(`Server ${id} is online`);
-
-      // Configure webhook automatically when server is online
-      const serverToken = process.env.SERVER_TOKEN || '';
-      if (serverToken) {
-        try {
-          const baseUrl = await getWebhookBaseUrl(req);
-          // For server status check, use generic webhook without match slug
-          // Match-specific webhook will be configured when match is loaded
-          const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
-          
-          for (const cmd of webhookCommands) {
-            await rconService.sendCommand(id, cmd);
-          }
-          
-          const webhookUrl = `${baseUrl}/api/events`;
-          log.webhookConfigured(id, webhookUrl);
-        } catch (error) {
-          // Don't fail status check if webhook setup fails
-          log.warn(`Failed to configure webhook for server ${id}`, { error });
-        }
-      }
-
-      return res.json({
-        success: true,
-        status: 'online',
-        serverId: id,
-      });
-    } else {
-      log.warn(`Server ${id} is offline or unreachable`, { error: result.error });
+    if (!statusInfo.online) {
+      log.warn(`Server ${id} is offline or unreachable (status check failed)`);
       return res.json({
         success: true,
         status: 'offline',
         serverId: id,
+        isAvailable: false,
+        currentMatch: null,
       });
     }
+
+    log.debug(`Server ${id} is online`, {
+      pluginStatus: statusInfo.status,
+      matchSlug: statusInfo.matchSlug,
+    });
+
+    // Configure webhook automatically when server is online
+    const serverToken = process.env.SERVER_TOKEN || '';
+    if (serverToken) {
+      try {
+        const baseUrl = await getWebhookBaseUrl(req);
+        // For server status check, use generic webhook without match slug
+        // Match-specific webhook will be configured when match is loaded
+        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken);
+
+        for (const cmd of webhookCommands) {
+          await rconService.sendCommand(id, cmd);
+        }
+
+        const webhookUrl = `${baseUrl}/api/events`;
+        log.webhookConfigured(id, webhookUrl);
+      } catch (error) {
+        // Don't fail status check if webhook setup fails
+        log.warn(`Failed to configure webhook for server ${id}`, { error });
+      }
+    }
+
+    const isAvailable =
+      !statusInfo.matchSlug ||
+      statusInfo.status === ServerStatus.IDLE ||
+      statusInfo.status === ServerStatus.POSTGAME;
+
+    return res.json({
+      success: true,
+      status: 'online',
+      serverId: id,
+      isAvailable,
+      currentMatch: statusInfo.matchSlug,
+    });
   } catch (error) {
     log.error('Error checking server status', error);
     return res.status(500).json({

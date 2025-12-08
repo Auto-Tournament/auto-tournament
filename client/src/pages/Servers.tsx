@@ -20,9 +20,11 @@ import BlockIcon from '@mui/icons-material/Block';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
+import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import type { Server, ServersResponse, ServerStatusResponse } from '../types';
+import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { getRoundLabel } from '../utils/matchUtils';
 
 export default function Servers() {
   const { setHeaderActions } = usePageHeader();
@@ -32,18 +34,26 @@ export default function Servers() {
   const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
+  const [loadingMatchServerId, setLoadingMatchServerId] = useState<string | null>(null);
 
   // Set dynamic page title
   useEffect(() => {
     document.title = 'Servers';
   }, []);
 
-  const checkServerStatus = async (serverId: string): Promise<'online' | 'offline'> => {
+  const checkServerStatus = async (
+    serverId: string
+  ): Promise<{ status: 'online' | 'offline'; currentMatch: string | null }> => {
     try {
       const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);
-      return response.status === 'online' ? 'online' : 'offline';
+      const isOnline = response.status === 'online';
+      return {
+        status: isOnline ? 'online' : ('offline' as const),
+        currentMatch: response.currentMatch ?? null,
+      };
     } catch {
-      return 'offline';
+      return { status: 'offline', currentMatch: null };
     }
   };
 
@@ -63,8 +73,8 @@ export default function Servers() {
       // Check status only for enabled servers
       const enabledServers = serverList.filter((s) => s.enabled);
       const statusPromises = enabledServers.map(async (server: Server) => {
-        const status = await checkServerStatus(server.id);
-        return { id: server.id, status };
+        const { status, currentMatch } = await checkServerStatus(server.id);
+        return { id: server.id, status, currentMatch };
       });
 
       const statuses = await Promise.all(statusPromises);
@@ -76,7 +86,14 @@ export default function Servers() {
             return { ...server, status: 'disabled' as const };
           }
           const statusInfo = statuses.find((s) => s.id === server.id);
-          return { ...server, status: statusInfo?.status || 'offline' };
+          return {
+            ...server,
+            status: statusInfo?.status || 'offline',
+            currentMatch:
+              statusInfo?.currentMatch !== undefined
+                ? statusInfo.currentMatch
+                : server.currentMatch ?? null,
+          };
         })
       );
     } catch (err) {
@@ -143,6 +160,34 @@ export default function Servers() {
   const handleSave = async () => {
     await loadServers();
     handleCloseModal();
+  };
+
+  const handleViewCurrentMatch = async (server: Server, event: React.MouseEvent) => {
+    event.stopPropagation();
+
+    if (!server.id) return;
+
+    setLoadingMatchServerId(server.id);
+    try {
+      const response = await api.get<MatchesResponse & { tournamentStatus?: string }>(
+        `/api/matches?serverId=${encodeURIComponent(server.id)}`
+      );
+
+      if (response.success && Array.isArray(response.matches) && response.matches.length > 0) {
+        const activeMatches = response.matches.filter(
+          (m) => m.status === 'live' || m.status === 'loaded'
+        );
+        const matchToShow = activeMatches[0] || response.matches[0];
+        setSelectedMatch(matchToShow as Match);
+      } else {
+        showError('No matches found for this server');
+      }
+    } catch (err) {
+      console.error('Failed to load current match for server', err);
+      showError('Failed to load current match for this server');
+    } finally {
+      setLoadingMatchServerId(null);
+    }
   };
 
   return (
@@ -233,7 +278,26 @@ export default function Servers() {
                       <Typography variant="body2" color="text.secondary">
                         <strong>Port:</strong> {server.port}
                       </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Current match:</strong>{' '}
+                        {server.currentMatch && server.status === 'online'
+                          ? server.currentMatch
+                          : 'None'}
+                      </Typography>
                     </Box>
+
+                    {server.currentMatch && server.status === 'online' && (
+                      <Box display="flex" justifyContent="flex-end" mt={1}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(event) => handleViewCurrentMatch(server, event)}
+                          disabled={loadingMatchServerId === server.id}
+                        >
+                          {loadingMatchServerId === server.id ? 'Loading match...' : 'View Match'}
+                        </Button>
+                      </Box>
+                    )}
 
                     <Typography variant="caption" color="text.secondary" display="block" mt={2}>
                       ID: {server.id}
@@ -258,6 +322,15 @@ export default function Servers() {
         onClose={() => setBatchModalOpen(false)}
         onSave={handleSave}
       />
+
+      {selectedMatch && (
+        <MatchDetailsModal
+          match={selectedMatch}
+          matchNumber={selectedMatch.matchNumber || selectedMatch.id}
+          roundLabel={getRoundLabel(selectedMatch.round)}
+          onClose={() => setSelectedMatch(null)}
+        />
+      )}
     </Box>
   );
 }
