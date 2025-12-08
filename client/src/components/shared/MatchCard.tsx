@@ -90,9 +90,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       return rawPlayers
         .map((p) => {
           if (!p || typeof p !== 'object') return null;
-          const obj = p as { name?: string; elo?: number };
-          if (!obj.name) return null;
-          return { name: obj.name, elo: obj.elo };
+          const candidate = p as { name?: unknown; elo?: unknown };
+          if (typeof candidate.name !== 'string') return null;
+          return {
+            name: candidate.name,
+            elo: typeof candidate.elo === 'number' ? candidate.elo : undefined,
+          };
         })
         .filter((p): p is { name: string; elo?: number } => p !== null);
     }
@@ -103,11 +106,17 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       Object.values(rawPlayers as Record<string, unknown>).forEach((value) => {
         if (typeof value === 'string') {
           entries.push({ name: value });
-        } else if (value && typeof value === 'object' && 'name' in (value as any)) {
-          const v = value as { name?: string; elo?: number };
-          if (v.name) {
-            entries.push({ name: v.name, elo: v.elo });
-          }
+        } else if (
+          value &&
+          typeof value === 'object' &&
+          'name' in value &&
+          typeof (value as { name?: unknown }).name === 'string'
+        ) {
+          const v = value as { name: string; elo?: unknown };
+          entries.push({
+            name: v.name,
+            elo: typeof v.elo === 'number' ? v.elo : undefined,
+          });
         }
       });
       return entries;

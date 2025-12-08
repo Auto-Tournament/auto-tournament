@@ -167,8 +167,14 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const isShuffleMatch =
     match.team1?.id?.startsWith('shuffle-') ||
     match.team2?.id?.startsWith('shuffle-') ||
-    (match.config as any)?.team1?.id?.startsWith?.('shuffle-') ||
-    (match.config as any)?.team2?.id?.startsWith?.('shuffle-');
+    (typeof match.config === 'object' &&
+      match.config !== null &&
+      'team1' in match.config &&
+      (match.config.team1 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-')) ||
+    (typeof match.config === 'object' &&
+      match.config !== null &&
+      'team2' in match.config &&
+      (match.config.team2 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-'));
 
   // Shuffle tournaments don't use veto - treat as completed to avoid "VETO PENDING" labels
   const effectiveVetoCompleted = isShuffleMatch ? true : match.vetoCompleted;

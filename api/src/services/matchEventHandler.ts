@@ -717,12 +717,15 @@ async function trackPlayerStatsForMatch(
       [matchSlug]
     );
 
-    let team1PlayerStats: Record<string, any> = {};
-    let team2PlayerStats: Record<string, any> = {};
+    let team1PlayerStats: Record<string, Record<string, unknown>> = {};
+    let team2PlayerStats: Record<string, Record<string, unknown>> = {};
 
     if (playerStatsEvent) {
       try {
-        const eventData = JSON.parse(playerStatsEvent.event_data);
+        const eventData = JSON.parse(playerStatsEvent.event_data) as {
+          team1_players?: Record<string, Record<string, unknown>>;
+          team2_players?: Record<string, Record<string, unknown>>;
+        };
         // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
         if (eventData.team1_players) {
           team1PlayerStats = eventData.team1_players;

@@ -374,7 +374,7 @@ async function takeScreenshot(page: Page, config: ScreenshotConfig): Promise<voi
     await page.waitForTimeout(300);
     // Scroll back to top
     await page.evaluate(() => {
-      // eslint-disable-next-line no-undef
+       
       window.scrollTo(0, 0);
     });
     await page.waitForTimeout(200);
@@ -2177,7 +2177,7 @@ async function generateScreenshots(): Promise<void> {
 
                 // Scroll to top to show full page
                 await page.evaluate(() => {
-                  // eslint-disable-next-line no-undef
+                   
                   window.scrollTo(0, 0);
                 });
                 await page.waitForTimeout(500);
@@ -2201,7 +2201,7 @@ async function generateScreenshots(): Promise<void> {
                 await page.waitForTimeout(1000);
 
                 await page.evaluate(() => {
-                  // eslint-disable-next-line no-undef
+                   
                   window.scrollTo(0, 0);
                 });
                 await page.waitForTimeout(500);

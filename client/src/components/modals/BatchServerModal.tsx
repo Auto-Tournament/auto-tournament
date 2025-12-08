@@ -55,11 +55,16 @@ const formatVerificationError = (error?: string): string | undefined => {
 
   // If backend returned a JSON blob (e.g. full RCON response), try to extract the useful bit
   try {
-    const parsed = JSON.parse(error);
+    const parsed: unknown = JSON.parse(error);
     if (parsed && typeof parsed === 'object') {
       // Prefer a concise message if available
-      if (typeof (parsed as any).error === 'string') {
-        return (parsed as any).error;
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'error' in parsed &&
+        typeof (parsed as { error?: string }).error === 'string'
+      ) {
+        return (parsed as { error?: string }).error;
       }
       // Fall back to pretty-printed JSON
       return JSON.stringify(parsed, null, 2);

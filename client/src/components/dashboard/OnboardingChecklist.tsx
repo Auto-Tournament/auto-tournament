@@ -37,7 +37,6 @@ export const OnboardingChecklist: React.FC = () => {
     teamsCount,
     playersCount,
     loading,
-    refresh,
   } = useOnboardingStatus();
 
   if (loading) {
