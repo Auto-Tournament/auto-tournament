@@ -55,7 +55,9 @@ export async function createShuffleTournament(
 
   // Validate config
   if (!config.name || config.name.trim() === '') {
-    throw new Error('Tournament name is required. Please provide a name for your shuffle tournament.');
+    throw new Error(
+      'Tournament name is required. Please provide a name for your shuffle tournament.'
+    );
   }
 
   if (!config.mapSequence || config.mapSequence.length === 0) {
@@ -240,7 +242,10 @@ export async function setRegisteredPlayers(playerIds: string[]): Promise<{
   // Remove players that are no longer in the list
   for (const playerId of toRemove) {
     try {
-      await db.deleteAsync('shuffle_tournament_players', 'tournament_id = ? AND player_id = ?', [1, playerId]);
+      await db.deleteAsync('shuffle_tournament_players', 'tournament_id = ? AND player_id = ?', [
+        1,
+        playerId,
+      ]);
       unregistered++;
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
@@ -369,9 +374,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
 
       // Candidates to rotate in are players from the leftover team who did NOT play last round
       // (i.e. they sat out previously and we want to prioritize getting them into matches)
-      let candidateIds = lastTeamPlayerIds.filter(
-        (id) => !playersWhoPlayedLastRound.includes(id)
-      );
+      let candidateIds = lastTeamPlayerIds.filter((id) => !playersWhoPlayedLastRound.includes(id));
 
       if (candidateIds.length > 0 && roundNumber > 1) {
         // Try to swap as many candidates as possible with players who played last round.
@@ -459,12 +462,9 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
                     return acc;
                   }, {} as Record<string, string>);
                 }
-                await db.updateAsync(
-                  'matches',
-                  { config: JSON.stringify(matchConfig) },
-                  'id = ?',
-                  [updatedMatch.id]
-                );
+                await db.updateAsync('matches', { config: JSON.stringify(matchConfig) }, 'id = ?', [
+                  updatedMatch.id,
+                ]);
               }
 
               log.info(
@@ -566,10 +566,9 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
       created_at: now,
     });
 
-    const match = await db.queryOneAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE slug = ?',
-      [matchSlug]
-    );
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      matchSlug,
+    ]);
 
     if (match) {
       matches.push(match);
@@ -601,12 +600,12 @@ export async function checkRoundCompletion(roundNumber: number): Promise<boolean
 
   // Check if all matches are completed
   const allComplete = matches.every((m) => m.status === 'completed');
-  
+
   if (!allComplete) {
     const completed = matches.filter((m) => m.status === 'completed').length;
     log.debug(`Round ${roundNumber} progress: ${completed}/${matches.length} matches completed`);
   }
-  
+
   return allComplete;
 }
 
@@ -629,7 +628,7 @@ export async function advanceToNextRound(): Promise<{
   );
 
   const currentRound = currentRoundResult?.max_round || 0;
-  
+
   if (currentRound === 0) {
     log.info('No rounds have been generated yet. Starting from round 1.');
   }
@@ -872,4 +871,3 @@ async function getShuffleTournament(): Promise<TournamentResponse | null> {
     eloTemplateId: row.elo_template_id || undefined,
   } as TournamentResponse;
 }
-

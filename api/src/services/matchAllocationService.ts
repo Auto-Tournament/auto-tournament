@@ -685,8 +685,8 @@ export class MatchAllocationService {
            AND status = 'pending'`
         );
 
-        const requiresVeto = ['bo1', 'bo3', 'bo5'].includes(tournament.format.toLowerCase());
-
+        // Reuse the earlier requiresVeto flag so that shuffle tournaments
+        // (which skip veto entirely) are never treated as waiting on veto.
         if (pendingMatches.length > 0 && requiresVeto) {
           message = `No matches ready for allocation. ${pendingMatches.length} match(es) are waiting for map veto to be completed by teams. Matches will auto-allocate after veto completion.`;
         } else if (pendingMatches.length > 0) {
