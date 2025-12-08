@@ -44,6 +44,29 @@ export class MatchAllocationService {
     const statusChecks = await Promise.all(
       enabledServers.map(async (server) => {
         try {
+          // First, perform a lightweight connectivity check using the standard
+          // `status` command. This mirrors the manual "Test server" check in
+          // the UI and avoids trying to allocate obviously-dead servers.
+          const connectionResult = await rconService.testConnection(server.id);
+
+          if (!connectionResult.success) {
+            log.warn(
+              `[ALLOCATION] Server ${server.id} (${server.name}) is offline or unreachable, skipping from allocation`,
+              { error: connectionResult.error }
+            );
+
+            return {
+              server,
+              status: null,
+              matchSlug: null,
+              updatedAt: null,
+              online: false,
+            };
+          }
+
+          // If the basic RCON connection works, query the MatchZy tournament
+          // status convars to determine whether the server is actually idle
+          // and ready to be used for a match.
           const serverStatus = await serverStatusService.getServerStatus(server.id);
           return {
             server,
