@@ -80,7 +80,8 @@ test.describe.serial('Public Pages UI', () => {
       // Enter Steam ID
       const input = page.getByTestId('find-player-input');
       await input.fill(player.id);
-      await page.getByTestId('find-player-button').click();
+      // Trigger search via keyboard to avoid autocomplete "no options" popper intercepting button clicks
+      await input.press('Enter');
 
       // Should redirect to player page
       await page.waitForURL(`**/player/${player.id}`, { timeout: 10000 });
@@ -101,7 +102,7 @@ test.describe.serial('Public Pages UI', () => {
         name: 'Player Page Test',
         initialELO: 3000,
       });
-      
+
       if (!player) {
         test.skip();
         return;
@@ -141,4 +142,3 @@ test.describe.serial('Public Pages UI', () => {
     }
   );
 });
-

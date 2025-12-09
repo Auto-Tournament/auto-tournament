@@ -340,7 +340,25 @@ export async function startShuffleTournament(request: APIRequestContext): Promis
     const response = await request.post('/api/tournament/start', {
       headers: getAuthHeader(),
     });
-    return response.ok();
+
+    if (!response.ok()) {
+      // Log detailed error context to help debug flaky test failures
+      let errorText: string | undefined;
+      try {
+        errorText = await response.text();
+      } catch {
+        // ignore parse errors
+      }
+
+      console.error('startShuffleTournament: /api/tournament/start failed', {
+        status: response.status(),
+        statusText: response.statusText(),
+        body: errorText,
+      });
+      return false;
+    }
+
+    return true;
   } catch (error) {
     console.error('Tournament start error:', error);
     return false;
