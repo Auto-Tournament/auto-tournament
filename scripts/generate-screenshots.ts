@@ -876,14 +876,14 @@ async function generateTestData(
     console.warn('⚠️  Could not configure webhook:', error);
   }
 
-  // Create tournament (8 teams, single elimination, BO3 for veto) - but don't start it yet
+  // Create tournament (4 teams, double elimination, BO3 for veto) - but don't start it yet
   console.log('🏟️  Creating tournament...');
   const tournament = await createTournament(request, {
     name: 'Screenshot Tournament',
-    type: 'single_elimination',
+    type: 'double_elimination',
     format: 'bo3',
     maps: standardMaps,
-    teamIds: teams.slice(0, 8).map((t) => t.id),
+    teamIds: teams.slice(0, 4).map((t) => t.id),
   });
   if (!tournament) {
     console.warn('⚠️  Failed to create tournament, continuing without it...');
@@ -1403,10 +1403,10 @@ async function generateScreenshots(): Promise<void> {
       ];
       const tournament = await createTournament(request, {
         name: 'Screenshot Tournament',
-        type: 'single_elimination',
+        type: 'double_elimination',
         format: 'bo3',
         maps: standardMaps,
-        teamIds: teams.slice(0, 8).map((t) => t.id),
+        teamIds: teams.slice(0, 4).map((t) => t.id),
       });
       if (tournament) {
         testData.tournament = tournament;
