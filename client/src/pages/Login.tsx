@@ -163,7 +163,7 @@ export default function Login() {
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
                 <Link
-                  href="https://mat.sivert.io/"
+                  href="https://me.sivert.io/"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{

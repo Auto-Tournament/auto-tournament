@@ -414,6 +414,6 @@ If you have questions about testing or need help:
 
 - Open a [GitHub Discussion](https://github.com/sivert-io/matchzy-auto-tournament/discussions)
 - Comment on [PR #11](https://github.com/sivert-io/matchzy-auto-tournament/pull/11)
-- Check the [documentation](https://mat.sivert.io/)
+- Check the [documentation](https://me.sivert.io/)
 
 **Thank you for testing! 🎉**

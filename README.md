@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 <a href="https://mat.sivert.io/" target="_blank">Full Documentation</a>** • <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">Quick Start</a> • <a href="https://mat.sivert.io/features/overview/" target="_blank">Features</a> • <a href="https://mat.sivert.io/roadmap/" target="_blank">Roadmap</a> • <a href="https://mat.sivert.io/guides/troubleshooting/" target="_blank">Troubleshooting</a> • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord Support</a>
+**📚 <a href="https://me.sivert.io/" target="_blank">Full Documentation</a>** • <a href="https://me.sivert.io/getting-started/quick-start/" target="_blank">Quick Start</a> • <a href="https://me.sivert.io/features/overview/" target="_blank">Features</a> • <a href="https://me.sivert.io/roadmap/" target="_blank">Roadmap</a> • <a href="https://me.sivert.io/guides/troubleshooting/" target="_blank">Troubleshooting</a> • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord Support</a>
 
 </div>
 
@@ -34,7 +34,7 @@
   <p><em>Double-elimination bracket with synchronized winner and loser paths plus interactive match zoom</em></p>
 </div>
 
-**👉 <a href="https://mat.sivert.io/screenshots/" target="_blank">View More Screenshots</a>**
+**👉 <a href="https://me.sivert.io/screenshots/" target="_blank">View More Screenshots</a>**
 
 ---
 
@@ -54,7 +54,7 @@ Get up and running in minutes with Docker:
 2. **Set up CS2 servers** using the CS2 Server Manager (recommended) or manual setup
 3. **Create your first tournament** and start playing!
 
-👉 **[Read the complete Quick Start Guide](https://mat.sivert.io/getting-started/quick-start/)** for step-by-step instructions.
+👉 **[Read the complete Quick Start Guide](https://me.sivert.io/getting-started/quick-start/)** for step-by-step instructions.
 
 ---
 

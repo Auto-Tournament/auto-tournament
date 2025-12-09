@@ -180,7 +180,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onCl
           </Typography>
           <Typography variant="caption" component="div">
             <Link
-              href="https://mat.sivert.io/guides/shuffle-tournaments/#bulk-import-players-with-elo"
+              href="https://me.sivert.io/guides/shuffle-tournaments/#bulk-import-players-with-elo"
               target="_blank"
               rel="noopener noreferrer"
               sx={{
