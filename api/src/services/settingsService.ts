@@ -1,7 +1,11 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 
-export type AppSettingKey = 'webhook_url' | 'steam_api_key' | 'default_player_elo';
+export type AppSettingKey =
+  | 'webhook_url'
+  | 'steam_api_key'
+  | 'default_player_elo'
+  | 'simulate_matches';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -9,7 +13,12 @@ export interface AppSetting {
   updated_at: number;
 }
 
-const ALLOWED_KEYS: AppSettingKey[] = ['webhook_url', 'steam_api_key', 'default_player_elo'];
+const ALLOWED_KEYS: AppSettingKey[] = [
+  'webhook_url',
+  'steam_api_key',
+  'default_player_elo',
+  'simulate_matches',
+];
 
 class SettingsService {
   async getSetting(key: AppSettingKey): Promise<string | null> {
@@ -57,7 +66,6 @@ class SettingsService {
         log.success('Steam API key updated');
         return;
       }
-
       if (key === 'default_player_elo') {
         const parsed = Number(trimmed);
         if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -65,6 +73,14 @@ class SettingsService {
         }
         await db.setAppSettingAsync(key, String(Math.round(parsed)));
         log.success(`Default player ELO updated to ${Math.round(parsed)}`);
+        return;
+      }
+
+      if (key === 'simulate_matches') {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled = normalized === '1' || normalized === 'true' || normalized === 'yes';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`Simulate matches ${isEnabled ? 'enabled' : 'disabled'}`);
         return;
       }
     }
@@ -108,6 +124,25 @@ class SettingsService {
     }
     // Fallback to FaceIT-style default
     return 3000;
+  }
+
+  /**
+   * Returns true when simulation mode should be enabled for generated MatchZy configs.
+   *
+   * This is intended as a **development-only** helper; in production environments
+   * it always returns false regardless of the stored setting.
+   */
+  async isSimulationModeEnabled(): Promise<boolean> {
+    // Hard-disable simulation in production for safety.
+    if (process.env.NODE_ENV === 'production') {
+      return false;
+    }
+
+    const value = await this.getSetting('simulate_matches');
+    if (!value) return false;
+
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   private normalizeUrl(url: string): string {

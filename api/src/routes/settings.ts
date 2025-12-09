@@ -20,6 +20,7 @@ const mapSettingsResponse = async () => {
   const webhookUrl = await settingsService.getWebhookUrl();
   const steamApiKey = await settingsService.getSteamApiKey();
   const defaultPlayerElo = await settingsService.getDefaultPlayerElo();
+  const simulateMatches = await settingsService.isSimulationModeEnabled();
 
   return {
     webhookUrl,
@@ -27,6 +28,7 @@ const mapSettingsResponse = async () => {
     steamApiKeySet: Boolean(steamApiKey),
     webhookConfigured: Boolean(webhookUrl),
     defaultPlayerElo,
+    simulateMatches,
   };
 };
 
@@ -38,10 +40,11 @@ router.get('/', async (_req: Request, res: Response) => {
 });
 
 router.put('/', async (req: Request, res: Response) => {
-  const { webhookUrl, steamApiKey, defaultPlayerElo } = req.body as {
+  const { webhookUrl, steamApiKey, defaultPlayerElo, simulateMatches } = req.body as {
     webhookUrl?: unknown;
     steamApiKey?: unknown;
     defaultPlayerElo?: unknown;
+    simulateMatches?: unknown;
   };
 
   try {
@@ -85,6 +88,27 @@ router.put('/', async (req: Request, res: Response) => {
           : null;
 
       await settingsService.setSetting('default_player_elo', value);
+    }
+
+    if (simulateMatches !== undefined) {
+      // This is a **developer-only** option – ignore it completely in production.
+      if (process.env.NODE_ENV === 'production') {
+        log.warn(
+          'Received simulateMatches setting update in production environment – ignoring for safety'
+        );
+      } else {
+        if (typeof simulateMatches !== 'boolean' && simulateMatches !== null) {
+          return res.status(400).json({
+            success: false,
+            error: 'simulateMatches must be a boolean or null',
+          });
+        }
+
+        const value =
+          simulateMatches === null ? null : simulateMatches === true ? '1' : '0';
+
+        await settingsService.setSetting('simulate_matches', value);
+      }
     }
 
     return res.json({

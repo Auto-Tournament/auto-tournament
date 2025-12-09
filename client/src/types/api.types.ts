@@ -218,6 +218,7 @@ export interface SettingsResponse extends ApiResponse {
     steamApiKeySet: boolean;
     webhookConfigured: boolean;
     defaultPlayerElo: number;
+    simulateMatches: boolean;
   };
 }
 

@@ -3,6 +3,25 @@ import type { DbTeamRow, DbMatchRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { log } from '../utils/logger';
+import { settingsService } from './settingsService';
+
+/**
+ * Determine whether matches should be simulated (bots instead of real players).
+ *
+ * This is intended as a dev-mode helper. In production, it always returns false
+ * regardless of the stored setting so we never accidentally run live events in
+ * simulation mode.
+ */
+async function getSimulationFlag(): Promise<boolean> {
+  try {
+    return await settingsService.isSimulationModeEnabled();
+  } catch (error) {
+    log.warn('Failed to read simulate_matches setting, defaulting simulation=false', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return false;
+  }
+}
 
 export const generateMatchConfig = async (
   tournament: TournamentResponse,
@@ -170,6 +189,8 @@ export const generateMatchConfig = async (
     ) as Array<'team1_ct' | 'team2_ct' | 'knife'>;
   }
 
+  const simulation = await getSimulationFlag();
+
   const config: MatchConfig = {
     // MatchZy expects numeric matchid; fall back to 0 only if we somehow
     // don't have a DB row yet (should be rare, but keeps config valid).
@@ -213,6 +234,7 @@ export const generateMatchConfig = async (
           series_score: 0,
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+    simulation,
   };
 
   log.info('Match config generated', {
@@ -341,6 +363,8 @@ async function generateShuffleMatchConfig(
     cvars.mp_overtime_enable = 0; // No overtime in max rounds mode
   }
 
+  const simulation = await getSimulationFlag();
+
   const config: MatchConfig = {
     // MatchZy expects matchid to be an integer; use the numeric DB id when available.
     // Fall back to 0 only if the match row is unexpectedly missing.
@@ -382,6 +406,7 @@ async function generateShuffleMatchConfig(
           series_score: 0,
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
+    simulation,
   };
 
   log.info('Shuffle match config generated', {

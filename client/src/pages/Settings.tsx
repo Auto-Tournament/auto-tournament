@@ -14,6 +14,8 @@ import {
   Divider,
   CircularProgress,
 } from '@mui/material';
+import Switch from '@mui/material/Switch';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -36,7 +38,11 @@ export default function Settings() {
   const [initialSteamApiKey, setInitialSteamApiKey] = useState('');
   const [defaultPlayerElo, setDefaultPlayerElo] = useState<number | ''>('');
   const [initialDefaultPlayerElo, setInitialDefaultPlayerElo] = useState<number | ''>('');
+  const [simulateMatches, setSimulateMatches] = useState(false);
+  const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const isDev = import.meta.env.DEV;
 
   const fetchSettings = useCallback(async () => {
     setLoading(true);
@@ -46,12 +52,15 @@ export default function Settings() {
       const webhook = response.settings.webhookUrl ?? '';
       const steamKey = response.settings.steamApiKey ?? '';
       const defaultElo = response.settings.defaultPlayerElo ?? 3000;
+      const simulate = response.settings.simulateMatches ?? false;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
       setInitialSteamApiKey(steamKey);
       setDefaultPlayerElo(defaultElo);
       setInitialDefaultPlayerElo(defaultElo);
+      setSimulateMatches(simulate);
+      setInitialSimulateMatches(simulate);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load settings';
       showError(message);
@@ -94,18 +103,24 @@ export default function Settings() {
               : Number.isFinite(defaultPlayerElo)
               ? defaultPlayerElo
               : null,
+          // Only send developer options from dev builds to keep this feature
+          // clearly scoped to development environments.
+          ...(isDev && { simulateMatches }),
         };
 
         const response: SettingsResponse = await api.put('/api/settings', payload);
         const newWebhook = response.settings.webhookUrl ?? '';
         const newSteamKey = response.settings.steamApiKey ?? '';
         const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
+        const newSimulate = response.settings.simulateMatches ?? false;
         setWebhookUrl(newWebhook);
         setSteamApiKey(newSteamKey);
         setInitialWebhookUrl(newWebhook);
         setInitialSteamApiKey(newSteamKey);
         setDefaultPlayerElo(newDefaultElo);
         setInitialDefaultPlayerElo(newDefaultElo);
+        setSimulateMatches(newSimulate);
+        setInitialSimulateMatches(newSimulate);
 
         if (showSuccessMessage) {
           showSuccess('Settings saved');
@@ -131,7 +146,8 @@ export default function Settings() {
     if (
       webhookUrl !== initialWebhookUrl ||
       steamApiKey !== initialSteamApiKey ||
-      defaultPlayerElo !== initialDefaultPlayerElo
+      defaultPlayerElo !== initialDefaultPlayerElo ||
+      (isDev && simulateMatches !== initialSimulateMatches)
     ) {
       void handleSave(true); // Show success message
     }
@@ -154,7 +170,8 @@ export default function Settings() {
     if (
       webhookUrl === initialWebhookUrl &&
       steamApiKey === initialSteamApiKey &&
-      defaultPlayerElo === initialDefaultPlayerElo
+      defaultPlayerElo === initialDefaultPlayerElo &&
+      (!isDev || simulateMatches === initialSimulateMatches)
     )
       return;
 
@@ -444,6 +461,35 @@ export default function Settings() {
                 Version {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
               </Typography>
             </Box>
+
+            {isDev && (
+              <>
+                <Divider />
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Developer Options
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Experimental features for local development. These options should not be used in
+                    production environments.
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={simulateMatches}
+                        onChange={(event) => setSimulateMatches(event.target.checked)}
+                        inputProps={{ 'data-testid': 'settings-simulate-matches-toggle' }}
+                      />
+                    }
+                    label="Simulate matches (use bot-driven demo matches instead of real players)"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block" mt={1}>
+                    When enabled, generated MatchZy configs include <code>\"simulation\": true</code>{' '}
+                    so servers can run fully automated demo matches for development and testing.
+                  </Typography>
+                </Box>
+              </>
+            )}
           </Stack>
         </Paper>
       )}
