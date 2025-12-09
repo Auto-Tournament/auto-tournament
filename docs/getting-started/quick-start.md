@@ -5,7 +5,7 @@ Get MatchZy Auto Tournament running in minutes using Docker.
 ## Prerequisites
 
 - **Docker** and **Docker Compose** installed ([Install Docker](https://docs.docker.com/engine/install/))
-- **CS2 Server(s)** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) (setup instructions below)
+- **CS2 Server(s)** with the [enhanced MatchZy plugin](https://me.sivert.io) (setup instructions below)
 
 ## Step 1: Install the Tournament Platform
 
@@ -85,7 +85,7 @@ That's it! The tournament platform is now running. 🎉
 
 ## Step 2: Set Up CS2 Servers
 
-You need at least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) installed.
+You need at least one CS2 server with the [enhanced MatchZy plugin](https://me.sivert.io) installed.
 
 ### CS2 Server Manager (Recommended) ⭐
 
@@ -144,7 +144,7 @@ See the [CS2 Server Manager Guide](../guides/cs2-server-manager.md) for detailed
 
 ??? example "Manual Server Setup (Advanced)"
 
-    If you already have CS2 servers, install the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) manually.
+    If you already have CS2 servers, install the [enhanced MatchZy plugin](https://me.sivert.io) manually.
 
     See the [CS2 Server Setup Guide](server-setup.md) for step-by-step instructions.
 

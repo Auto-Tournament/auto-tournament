@@ -177,6 +177,9 @@ nav:
       - Testing PRs: development/testing-pr.md
   - Changelog: changelog.md
   - Roadmap: roadmap.md
+  - Related:
+      - CS2 Server Manager: https://sivert-io.github.io/cs2-server-manager/
+      - MatchZy Enhanced: https://me.sivert.io
 
 # Additional CSS
 extra_css:

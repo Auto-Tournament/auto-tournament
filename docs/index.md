@@ -19,6 +19,13 @@ One click from bracket creation to final scores
 
 ---
 
+## Related projects
+
+- [CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/) – multi-server CS2 deployment and management.
+- [MatchZy Enhanced](https://me.sivert.io) – enhanced MatchZy plugin for in-server automation.
+
+---
+
 ## Features
 
 - :material-trophy: **Full Automation** — Create tournaments, generate brackets, start matches. System handles server allocation and progression.
@@ -48,7 +55,7 @@ Get up and running in minutes with Docker:
 ## Requirements
 
 - **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
-- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) :material-download:
+- **CS2 servers** with the [enhanced MatchZy plugin](https://me.sivert.io) :material-download:
 - **RCON access** to your CS2 servers :material-server-network:
 
 ---
