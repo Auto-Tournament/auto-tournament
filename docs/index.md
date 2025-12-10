@@ -4,28 +4,42 @@ hide:
   - toc
 ---
 
-<div align="center" markdown>
-
 # MatchZy Auto Tournament
 
-### **Run CS2 tournaments with one click**
+Automated tournament management for Counter-Strike 2.
 
-Create tournaments, generate brackets, and let MAT handle the matches.
+Run CS2 tournaments from bracket creation to final scores with a single dashboard and full server integration.
 
-[Get Started :material-rocket-launch:](getting-started/quick-start.md){ .md-button .md-button--primary }
-[View Features :material-star:](features/overview.md){ .md-button }
+Designed to work hand-in-hand with:
 
-</div>
+- **[CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/)** – multi-server CS2 deployment and management.
+- **[MatchZy Enhanced](https://me.sivert.io)** – enhanced MatchZy plugin for in-server automation.
 
----
+## What it does
 
-## Why MAT?
+- **Automated brackets & match flow**: Create tournaments, generate brackets, and let MAT handle match lifecycle and progression.
+- **Server allocation & monitoring**: Register CS2 servers, monitor status, and automatically load matches when servers are free.
+- **Team & player management**: Create teams, manage rosters, and keep player ratings in sync with shuffle tournaments.
+- **Public team pages & veto**: Share links so teams can view matches, run veto, and see server info without admin access.
+- **Demo uploads & match history**: Store demos and match data for later review, statistics, and recovery.
 
-- :material-trophy: **Full automation** – From bracket creation to final scores with minimal admin work.
-- :material-view-dashboard: **Simple admin dashboard** – Clear overview of tournaments, matches, teams, and servers.
-- :material-account-group: **Self-service for teams** – Public team pages for veto, match info, and live tracking.
+See the **[Feature Overview](features/overview.md)** for a deeper look at everything MAT can do.
 
-[:octicons-arrow-right-24: See all features](features/overview.md)
+## Quick Start
+
+For most setups, you can run MatchZy Auto Tournament with Docker:
+
+```bash
+mkdir matchzy-tournament
+cd matchzy-tournament
+
+# 1. Create docker-compose.yml (see Getting Started for the full example)
+# 2. Then start the stack:
+docker compose up -d
+```
+
+Open `http://localhost:3069` in your browser and log in with the password you set as `API_TOKEN`.  
+Read the **[Getting Started](getting-started/quick-start.md)** guide for the complete configuration.
 
 ---
 

@@ -22,10 +22,10 @@ echo "📥 Installing/updating MkDocs dependencies..."
 pip install -q -r docs/requirements.txt
 
 # Serve docs
-echo "🚀 Starting MkDocs server..."
+echo "🚀 Starting MkDocs development server with live reload..."
 echo "📖 Documentation will be available at http://127.0.0.1:8000"
 echo "🛑 Press Ctrl+C to stop the server"
 echo ""
 
-mkdocs serve --config-file docs/mkdocs.yml
+mkdocs serve --config-file docs/mkdocs.yml --dirtyreload
 

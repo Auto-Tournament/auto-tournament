@@ -1,14 +1,81 @@
 /* Match the project's Material Design 3 Purple theme using HSL (same hue as accent) */
 
 :root {
-  /* Light mode overrides */
-  --md-primary-fg-color: hsl(258, 40%, 45%);         /* Primary purple for light mode (~#6750A4) */
-  --md-primary-fg-color--light: hsl(258, 100%, 87%); /* Light purple accent (~#D0BCFF) */
-  --md-primary-fg-color--dark: hsl(258, 40%, 28%);   /* Darker primary purple */
-
-  /* Accent color used for links, buttons, active states */
+  /* Base accent shared across schemes (used by buttons, links, etc.) */
   --md-accent-fg-color: hsl(258, 100%, 87%);         /* Accent purple (~#D0BCFF) */
-  --md-typeset-a-color: hsl(258, 100%, 87%);         /* Content links in light mode */
+}
+
+/* Light mode – "inverted" version of the slate theme with a purple-tinted background */
+[data-md-color-scheme="default"] {
+  /* Header/Navbar - light purple-tinted background */
+  --md-primary-fg-color: hsl(258, 35%, 96%);         /* Light surface */
+  --md-primary-fg-color--light: hsl(258, 100%, 87%); /* Accent for icons/text */
+  --md-primary-fg-color--dark: hsl(258, 40%, 35%);   /* Darker purple for contrast */
+  --md-primary-bg-color: hsl(258, 35%, 96%);         /* Matches header background */
+
+  /* Accent - bright purple for links, buttons, active states */
+  --md-accent-fg-color: hsl(258, 100%, 87%);
+  --md-accent-fg-color--transparent: hsla(258, 100%, 87%, 0.1);
+
+  /* Background colors with subtle purple hue */
+  --md-default-bg-color: hsl(258, 35%, 96%);         /* Page background (very light purple) */
+  --md-default-fg-color: hsl(258, 25%, 16%);         /* Main text */
+  --md-default-fg-color--light: hsl(270, 15%, 40%);  /* Secondary text */
+
+  /* Code block colors in light mode */
+  --md-code-bg-color: hsl(258, 40%, 98%);            /* Very light purple for code blocks */
+  --md-code-fg-color: hsl(258, 25%, 16%);
+
+  /* Links in light mode */
+  --md-typeset-a-color: hsl(258, 100%, 60%);         /* Slightly darker for contrast */
+
+  /* Table of contents active item */
+  --md-typeset-table-color: hsl(258, 40%, 98%);
+}
+
+/* Enhanced purple highlights for light mode */
+[data-md-color-scheme="default"] {
+  /* Sidebar active nav item */
+  .md-nav__link--active {
+    color: hsl(258, 40%, 35%) !important;
+  }
+
+  /* Hover states */
+  .md-nav__link:hover {
+    color: hsl(258, 100%, 60%) !important;
+  }
+
+  /* Search highlights */
+  .md-search-result__meta {
+    background-color: hsl(258, 40%, 98%);
+  }
+
+  /* Admonition headers */
+  .md-typeset .admonition-title {
+    background-color: hsla(258, 100%, 87%, 0.1);
+  }
+
+  /* Tabs styling */
+  .md-tabs {
+    background-color: hsl(258, 35%, 96%);
+    border-bottom: 0.05rem solid hsla(258, 100%, 87%, 0.1);
+  }
+
+  /* Header background (slightly tinted) */
+  .md-header {
+    background-color: hsl(258, 35%, 96%);
+    box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.04), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.06);
+  }
+
+  /* Sidebar background */
+  .md-sidebar {
+    background-color: transparent;
+  }
+
+  /* Breadcrumb path color */
+  .md-path {
+    color: hsl(270, 15%, 40%);
+  }
 }
 
 [data-md-color-scheme="slate"] {
@@ -173,5 +240,13 @@
 .md-typeset a:not(.md-button):not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-search-result__link):hover {
   opacity: 0.9;
 }
+
+/* In light mode, make content links a darker purple for better contrast */
+[data-md-color-scheme="default"]
+  .md-typeset
+  a:not(.md-button):not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-search-result__link) {
+  color: hsl(258, 100%, 35%) !important;
+}
+
 
 
