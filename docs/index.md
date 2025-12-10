@@ -6,9 +6,7 @@ hide:
 
 # MatchZy Auto Tournament
 
-Automated tournament management for Counter-Strike 2.
-
-Run CS2 tournaments from bracket creation to final scores with a single dashboard and full server integration.
+Automated tournament management for Counter-Strike 2. Run CS2 tournaments from bracket creation to final scores with a single dashboard and full server integration.
 
 Designed to work hand-in-hand with:
 
