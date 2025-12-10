@@ -9,9 +9,9 @@ For full detail, see [Running Matches](running-matches.md).
 
 ## 1. Find your matches
 
-1. Go to the **Matches** page in the sidebar.
-2. Use filters (if available) to narrow down by tournament or status.
-3. Click a match to open its **details view**.
+1. Click **Matches** in the sidebar.
+2. Scroll to find the match under **Live**, **Upcoming**, or **History**.
+3. Click a match card to open its **details view**.
 
 From here you can see:
 

@@ -1,63 +1,65 @@
-/* Match the project's Material Design 3 Purple theme */
+/* Match the project's Material Design 3 Purple theme using HSL (same hue as accent) */
 
 :root {
   /* Light mode overrides */
-  --md-primary-fg-color: #6750A4;        /* Purple for light mode */
-  --md-primary-fg-color--light: #D0BCFF;
-  --md-primary-fg-color--dark: #381E72;
-  --md-accent-fg-color: #D0BCFF;         /* Bright purple for accents */
-  --md-typeset-a-color: #6750A4;         /* Content links in light mode */
+  --md-primary-fg-color: hsl(258, 40%, 45%);         /* Primary purple for light mode (~#6750A4) */
+  --md-primary-fg-color--light: hsl(258, 100%, 87%); /* Light purple accent (~#D0BCFF) */
+  --md-primary-fg-color--dark: hsl(258, 40%, 28%);   /* Darker primary purple */
+
+  /* Accent color used for links, buttons, active states */
+  --md-accent-fg-color: hsl(258, 100%, 87%);         /* Accent purple (~#D0BCFF) */
+  --md-typeset-a-color: hsl(258, 100%, 87%);         /* Content links in light mode */
 }
 
 [data-md-color-scheme="slate"] {
-  /* Dark mode - match project exactly */
+  /* Dark mode */
 
-  /* Header/Navbar - truly dark background */
-  --md-primary-fg-color: #1C1B1F;        /* Dark background - same as body */
-  --md-primary-fg-color--light: #E8DEF8;
-  --md-primary-fg-color--dark: #0D0D0F;
-  --md-primary-bg-color: #E6E1E5;
+  /* Header/Navbar - dark purple-tinted background */
+  --md-primary-fg-color: hsl(258, 25%, 9%);          /* Dark purple-tinted background */
+  --md-primary-fg-color--light: hsl(258, 70%, 86%);  /* Lighter purple for text/icons */
+  --md-primary-fg-color--dark: hsl(258, 15%, 5%);    /* Very dark */
+  --md-primary-bg-color: hsl(285, 20%, 90%);         /* Same neutral bg as original (#E6E1E5) */
 
   /* Accent - bright purple for links, buttons, active states */
-  --md-accent-fg-color: #D0BCFF;         /* M3 Purple primary - same as frontend */
-  --md-accent-fg-color--transparent: rgba(208, 188, 255, 0.1);
+  --md-accent-fg-color: hsl(258, 100%, 87%);         /* Accent purple (~#D0BCFF) */
+  --md-accent-fg-color--transparent: hsla(258, 100%, 87%, 0.1);
 
-  /* Background colors to match project */
-  --md-default-bg-color: #1C1B1F;        /* Same as project background.default */
-  --md-default-fg-color: #E6E1E5;        /* Same as project text.primary */
-  --md-default-fg-color--light: #CAC4D0; /* Same as project text.secondary */
+  /* Background colors with subtle purple hue */
+  --md-default-bg-color: hsl(258, 25%, 9%);          /* Purple-tinted dark background */
+  --md-default-fg-color: hsl(285, 20%, 90%);         /* Text primary (~#E6E1E5) */
+  --md-default-fg-color--light: hsl(270, 15%, 76%);  /* Text secondary (~#CAC4D0) */
 
-  /* Code block colors */
-  --md-code-bg-color: #2B2930;           /* Same as project paper background */
-  --md-code-fg-color: #E6E1E5;
+  /* Code block colors with purple hue */
+  --md-code-bg-color: hsl(258, 23%, 15%);            /* Purple-tinted code background */
+  --md-code-fg-color: hsl(285, 20%, 90%);            /* Same as text primary */
 
-  /* Links - use bright purple */
-  --md-typeset-a-color: #D0BCFF;         /* Content links in dark mode */
+  /* Links - use bright purple in dark mode */
+  --md-typeset-a-color: hsl(258, 100%, 87%);
 
   /* Table of contents active item */
-  --md-typeset-table-color: #2B2930;
+  --md-typeset-table-color: hsl(258, 23%, 15%);
 }
 
 /* Enhanced purple highlights for dark mode */
 [data-md-color-scheme="slate"] {
   /* Sidebar active nav item */
   .md-nav__link--active {
-    color: #D0BCFF !important;
+    color: hsl(258, 100%, 87%) !important;
   }
 
   /* Hover states */
   .md-nav__link:hover {
-    color: #E8DEF8 !important;
+    color: hsl(258, 70%, 86%) !important;
   }
 
   /* Search highlights */
   .md-search-result__meta {
-    background-color: #2B2930;
+    background-color: hsl(258, 23%, 15%);
   }
 
   /* Admonition headers */
   .md-typeset .admonition-title {
-    background-color: rgba(208, 188, 255, 0.1);
+    background-color: hsla(258, 100%, 87%, 0.1);
   }
 }
 
@@ -68,47 +70,52 @@
 
 /* Primary button - filled purple */
 .md-button--primary {
-  background-color: #6750A4 !important;
+  background-color: hsl(258, 40%, 45%) !important;
   color: white !important;
-  border-color: #6750A4 !important;
+  border-color: hsl(258, 40%, 45%) !important;
 }
 
 .md-button--primary:hover {
-  background-color: #7965AF !important;
-  border-color: #7965AF !important;
+  background-color: hsl(258, 55%, 55%) !important;
+  border-color: hsl(258, 55%, 55%) !important;
 }
 
 [data-md-color-scheme="slate"] .md-button--primary {
-  background-color: #D0BCFF !important;
-  color: #1C1B1F !important;
-  border-color: #D0BCFF !important;
+  background-color: hsl(258, 100%, 87%) !important;
+  color: hsl(258, 25%, 9%) !important;
+  border-color: hsl(258, 100%, 87%) !important;
 }
 
 [data-md-color-scheme="slate"] .md-button--primary:hover {
   background-color: transparent !important;
-  color: #D0BCFF !important;
-  border-color: #D0BCFF !important;
+  color: hsl(258, 100%, 87%) !important;
+  border-color: hsl(258, 100%, 87%) !important;
 }
 
 /* Secondary button - outlined purple */
 .md-button:not(.md-button--primary) {
-  color: #6750A4 !important;
-  border-color: #6750A4 !important;
+  color: hsl(258, 40%, 45%) !important;
+  border-color: hsl(258, 40%, 45%) !important;
 }
 
 .md-button:not(.md-button--primary):hover {
-  background-color: rgba(103, 80, 164, 0.1) !important;
-  border-color: #7965AF !important;
+  background-color: hsla(258, 100%, 87%, 0.1) !important;
+  border-color: hsl(258, 55%, 55%) !important;
 }
 
 [data-md-color-scheme="slate"] .md-button:not(.md-button--primary) {
-  color: #D0BCFF !important;
-  border-color: #D0BCFF !important;
+  color: hsl(258, 100%, 87%) !important;
+  border-color: hsl(258, 100%, 87%) !important;
 }
 
 [data-md-color-scheme="slate"] .md-button:not(.md-button--primary):hover {
-  background-color: rgba(208, 188, 255, 0.1) !important;
-  border-color: #E8DEF8 !important;
+  background-color: hsla(258, 100%, 87%, 0.1) !important;
+  border-color: hsl(258, 70%, 86%) !important;
+}
+
+/* Additional purple-tinted backgrounds */
+[data-md-color-scheme="slate"] .md-header {
+  background-color: hsl(258, 25%, 9%);
 }
 
 /* Logo styling */
@@ -119,7 +126,7 @@
 
 /* Clean separator between header and content */
 [data-md-color-scheme="slate"] .md-header {
-  box-shadow: 0 0 0.2rem rgba(0,0,0,.1), 0 0.2rem 0.4rem rgba(0,0,0,.2);
+  box-shadow: 0 0 0.2rem rgba(0, 0, 0, 0.1), 0 0.2rem 0.4rem rgba(0, 0, 0, 0.2);
 }
 
 /* Improve sidebar appearance */
@@ -131,13 +138,13 @@
 [data-md-color-scheme="slate"] .md-typeset .admonition,
 [data-md-color-scheme="slate"] .md-typeset details {
   border: none;
-  box-shadow: 0 0.2rem 0.5rem rgba(0,0,0,.05), 0 0 0.05rem rgba(0,0,0,.1);
+  box-shadow: 0 0.2rem 0.5rem rgba(0, 0, 0, 0.05), 0 0 0.05rem rgba(0, 0, 0, 0.1);
 }
 
 /* Tabs styling */
 [data-md-color-scheme="slate"] .md-tabs {
-  background-color: #1C1B1F;
-  border-bottom: 0.05rem solid rgba(208, 188, 255, 0.1);
+  background-color: hsl(258, 25%, 9%);
+  border-bottom: 0.05rem solid hsla(258, 100%, 87%, 0.1);
 }
 
 /* Code blocks with subtle borders */
@@ -147,7 +154,7 @@
 
 /* Navigation path breadcrumbs */
 [data-md-color-scheme="slate"] .md-path {
-  color: #CAC4D0;
+  color: hsl(270, 15%, 76%);
 }
 
 /* Admonition styling to match mkdocs-material style */
