@@ -44,8 +44,8 @@ This document outlines the current features available in MatchZy Auto Tournament
 
 ## Player Pages (Public)
 
-- ✅ Public player pages (`/player/:steamId`) with ELO history, match history, and detailed stats  
-- ✅ Find Player flow (`/player`) for searching by Steam URL or Steam ID  
+- ✅ Public player pages (`/player/:steamId`) with ELO history, match history, and detailed stats
+- ✅ Find Player flow (`/player`) for searching by Steam URL or Steam ID
 - ✅ Current/next match panel with server connect info so players can always find their match (especially in shuffle tournaments with reshuffled teams)
 
 ## Map Veto System

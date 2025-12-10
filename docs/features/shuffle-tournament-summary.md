@@ -1,9 +1,9 @@
 # Shuffle Tournament Type – Feature Summary
 
 > **Audience**: High-level feature overview  
-> **Technical design**: See `shuffle-tournament-complex-solution.md`  
-> **Admin usage**: See `guides/shuffle-tournaments.md`  
-> **Implementation status**: See `shuffle-tournament-implementation-verification.md`
+> **Technical design**: See [Shuffle Tournament – Complex Solution](./shuffle-tournament-complex-solution.md)  
+> **Admin usage**: See [Shuffle Tournaments](../guides/shuffle-tournaments.md)  
+> **Implementation status**: See [Shuffle Tournament Implementation Verification](./shuffle-tournament-implementation-verification.md)
 
 ## Overview
 

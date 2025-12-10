@@ -155,7 +155,7 @@ These commands:
 
 ### 3.2. Creating a Shuffle Tournament
 
-1. Go to **Tournaments → Create Tournament**.
+1. Click **Tournament** in the sidebar, then click **Create Tournament**.
 2. Choose **Tournament Type: Shuffle Tournament**.
 3. Configure **match structure**:
    - **Team size** (default 5 for 5v5; configurable).
@@ -360,7 +360,7 @@ If you want to dry-run this PR with your own players before a full LAN, you can 
 
 4. **Create a shuffle tournament**
 
-   - Go to **Tournaments → Create Tournament**.
+   - Click **Tournament** in the sidebar, then click **Create Tournament**.
    - Select **Shuffle Tournament**, pick maps (one per round), team size (e.g. 5v5), and round/overtime settings.
 
 5. **Register everyone**

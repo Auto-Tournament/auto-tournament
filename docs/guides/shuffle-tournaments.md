@@ -438,6 +438,6 @@ curl http://localhost:3000/api/tournament/1/standings
 
 ## See Also
 
-- [Players Page Guide](./managing-players.md) - Managing players
+- [Managing Teams](./managing-teams.md) - Managing teams and players
 - [Running Matches](./running-matches.md) - Match flow and controls
 - [Team Pages](./team-pages.md) - Team page features

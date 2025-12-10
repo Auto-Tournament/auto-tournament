@@ -127,7 +127,7 @@ If you're running multiple CS2 servers:
 1. Install the enhanced MatchZy plugin on **each server**
 2. All servers should use the **same RCON password** (or you can use different ones)
 3. Each server will need network access to the tournament system API
-4. Add each server individually in the tournament system (Admin Tools → Servers)
+4. Add each server individually in the tournament system (click **Servers** in the sidebar)
 
 ---
 

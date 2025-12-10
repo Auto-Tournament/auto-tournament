@@ -10,12 +10,12 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 
 **Supported Formats:**
 
-| Format             | Teams/Players | Matches         | Description              |
-| ------------------ | ------------- | --------------- | ------------------------ |
-| Single Elimination | 2-128 teams   | ~N              | One loss = eliminated    |
-| Double Elimination | 2-128 teams   | ~2N             | Two losses = eliminated  |
-| Round Robin        | 2-32 teams    | N(N-1)/2        | Everyone plays everyone  |
-| Swiss              | 4-64 teams    | ~log₂(N) rounds | Similar records face off |
+| Format             | Teams/Players | Matches         | Description                                         |
+| ------------------ | ------------- | --------------- | --------------------------------------------------- |
+| Single Elimination | 2-128 teams   | ~N              | One loss = eliminated                               |
+| Double Elimination | 2-128 teams   | ~2N             | Two losses = eliminated                             |
+| Round Robin        | 2-32 teams    | N(N-1)/2        | Everyone plays everyone                             |
+| Swiss              | 4-64 teams    | ~log₂(N) rounds | Similar records face off                            |
 | Shuffle Tournament | 10+ players   | Dynamic         | Individual competition, teams reshuffled each round |
 
 **Features:**
@@ -42,7 +42,9 @@ A comprehensive look at everything MatchZy Auto Tournament can do.
 3. **In Progress** → Tournament active, matches running
    - Matches automatically progress
    - Real-time updates
-  - Tournament title can be renamed (settings remain locked)
+
+- Tournament title can be renamed (settings remain locked)
+
 4. **Completed** → All matches finished
    - Final results available
    - Demos ready for download
@@ -373,35 +375,36 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 
 ### Global Player System
 
-- ✅ **Players page** – Central directory of all players with name, avatar, Steam ID, and current ELO  
-- ✅ **Team integration** – Team import and team editing automatically create/link players (single source of truth)  
-- ✅ **Public player pages** – `/player/:steamId` with ELO history, match history, performance metrics, **and current/next match info including server connect details**  
+- ✅ **Players page** – Central directory of all players with name, avatar, Steam ID, and current ELO
+- ✅ **Team integration** – Team import and team editing automatically create/link players (single source of truth)
+- ✅ **Public player pages** – `/player/:steamId` with ELO history, match history, performance metrics, **and current/next match info including server connect details**
 - ✅ **Find Player flow** – `/player` search by Steam URL/ID
 
 ### OpenSkill-Based Rating Engine
 
-- ✅ **OpenSkill-backed ratings** – Bayesian rating with FaceIT-style ELO scale for all tournament types  
-- ✅ **Configurable default player ELO** – Global “Default Player ELO” in Settings (3000 by default)  
-- ✅ **Per-match rating updates** – Ratings update automatically when matches complete  
+- ✅ **OpenSkill-backed ratings** – Bayesian rating with FaceIT-style ELO scale for all tournament types
+- ✅ **Configurable default player ELO** – Global “Default Player ELO” in Settings (3000 by default)
+- ✅ **Per-match rating updates** – Ratings update automatically when matches complete
 - ✅ **Rating history** – `player_rating_history` tracks before/after ELO and OpenSkill values per match
 
-> ℹ️ **Background reading**  
-> - **OpenSkill**: modern Bayesian rating system for teams and games – see the official docs at [openskill.me](https://openskill.me).  
-> - **ELO-style ratings**: classic chess-inspired rating model; we present OpenSkill results as an ELO-like number so it feels familiar.  
+> ℹ️ **Background reading**
+>
+> - **OpenSkill**: modern Bayesian rating system for teams and games – see the official docs at [openskill.me](https://openskill.me).
+> - **ELO-style ratings**: classic chess-inspired rating model; we present OpenSkill results as an ELO-like number so it feels familiar.
 > - **Bayesian ratings vs. simple ELO**: Bayesian systems (like TrueSkill/OpenSkill) handle uncertainty and team games better than naive win–loss ELO.
 
 ### ELO Calculation Templates
 
-- ✅ **ELO templates** – Define how stats (ADR, K/D, assists, utility, MVPs, etc.) adjust base ELO  
-- ✅ **Per-tournament configuration** – Select template per tournament or use pure win/loss mode  
+- ✅ **ELO templates** – Define how stats (ADR, K/D, assists, utility, MVPs, etc.) adjust base ELO
+- ✅ **Per-tournament configuration** – Select template per tournament or use pure win/loss mode
 - ✅ **Stat storage** – Detailed per-match stats stored in `player_match_stats` and surfaced on player pages
 
 ### Shuffle Tournament Mode
 
-- ✅ **Shuffle tournament format** – Individual player competition with teams reshuffled every round  
-- ✅ **Automatic team balancing** – Greedy + optimization algorithm balances teams by updated ELO each round  
-- ✅ **Automatic rounds** – System generates matches, detects round completion, reshuffles teams, and advances  
-- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public leaderboard page  
+- ✅ **Shuffle tournament format** – Individual player competition with teams reshuffled every round
+- ✅ **Automatic team balancing** – Greedy + optimization algorithm balances teams by updated ELO each round
+- ✅ **Automatic rounds** – System generates matches, detects round completion, reshuffles teams, and advances
+- ✅ **Player leaderboard** – Tournament-specific leaderboard sorted by wins → ELO → ADR with public leaderboard page
 - ✅ **Player-centric match access** – Players can keep their `/player/:steamId` page open to always see their current/next shuffle match and server connect info (no per-round team links needed)
 
 ---

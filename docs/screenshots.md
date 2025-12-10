@@ -1,6 +1,6 @@
 # Screenshots
 
-Take a tour of MatchZy Auto Tournament's interface. Click any image to view in full size.
+Take a tour of MatchZy Auto Tournament 's interface. Click any image to view in full size.
 
 ---
 
@@ -241,7 +241,7 @@ Configure ELO calculation templates with custom weights and formulas.
 ✅ **Map Veto** - Interactive pick/ban system with map previews  
 ✅ **Maps & Map Pools** - Custom map management with reusable pools  
 ✅ **Public Team Pages** - No-auth pages for team access  
-✅ **Admin Controls** - Comprehensive RCON command interface with match control buttons  
+✅ **Admin Controls** - Comprehensive RCON command interface with match control buttons
 
 ---
 
@@ -253,4 +253,3 @@ Configure ELO calculation templates with custom weights and formulas.
 [View Features](features/overview.md){ .md-button }
 
 </div>
-

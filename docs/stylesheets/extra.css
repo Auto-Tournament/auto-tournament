@@ -6,33 +6,34 @@
   --md-primary-fg-color--light: #D0BCFF;
   --md-primary-fg-color--dark: #381E72;
   --md-accent-fg-color: #D0BCFF;         /* Bright purple for accents */
+  --md-typeset-a-color: #6750A4;         /* Content links in light mode */
 }
 
 [data-md-color-scheme="slate"] {
   /* Dark mode - match project exactly */
-  
+
   /* Header/Navbar - truly dark background */
   --md-primary-fg-color: #1C1B1F;        /* Dark background - same as body */
   --md-primary-fg-color--light: #E8DEF8;
   --md-primary-fg-color--dark: #0D0D0F;
   --md-primary-bg-color: #E6E1E5;
-  
+
   /* Accent - bright purple for links, buttons, active states */
   --md-accent-fg-color: #D0BCFF;         /* M3 Purple primary - same as frontend */
   --md-accent-fg-color--transparent: rgba(208, 188, 255, 0.1);
-  
+
   /* Background colors to match project */
   --md-default-bg-color: #1C1B1F;        /* Same as project background.default */
   --md-default-fg-color: #E6E1E5;        /* Same as project text.primary */
   --md-default-fg-color--light: #CAC4D0; /* Same as project text.secondary */
-  
+
   /* Code block colors */
   --md-code-bg-color: #2B2930;           /* Same as project paper background */
   --md-code-fg-color: #E6E1E5;
-  
+
   /* Links - use bright purple */
-  --md-typeset-a-color: #D0BCFF;
-  
+  --md-typeset-a-color: #D0BCFF;         /* Content links in dark mode */
+
   /* Table of contents active item */
   --md-typeset-table-color: #2B2930;
 }
@@ -43,17 +44,17 @@
   .md-nav__link--active {
     color: #D0BCFF !important;
   }
-  
+
   /* Hover states */
   .md-nav__link:hover {
     color: #E8DEF8 !important;
   }
-  
+
   /* Search highlights */
   .md-search-result__meta {
     background-color: #2B2930;
   }
-  
+
   /* Admonition headers */
   .md-typeset .admonition-title {
     background-color: rgba(208, 188, 255, 0.1);
@@ -156,4 +157,14 @@
   border-width: 0;
   border-left-width: 4px;
 }
+
+/* Only content links (markdown content) use accent color - exclude nav, buttons, etc. */
+.md-typeset a:not(.md-button):not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-search-result__link) {
+  color: var(--md-accent-fg-color) !important;
+}
+
+.md-typeset a:not(.md-button):not(.md-nav__link):not(.md-header__button):not(.md-footer__link):not(.md-search-result__link):hover {
+  opacity: 0.9;
+}
+
 

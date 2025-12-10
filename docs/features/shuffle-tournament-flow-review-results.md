@@ -6,7 +6,7 @@
 
 > **Note**  
 > All issues identified in this document have since been addressed in code and documentation.  
-> For the up-to-date status, see `shuffle-tournament-implementation-verification.md` and the admin guide `guides/shuffle-tournaments.md`.
+> For the up-to-date status, see [Shuffle Tournament Implementation Verification](./shuffle-tournament-implementation-verification.md) and the admin guide [Shuffle Tournaments](../guides/shuffle-tournaments.md).
 
 ---
 

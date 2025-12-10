@@ -8,7 +8,7 @@ description: How to verify that demo uploads are working correctly in your tourn
 This guide explains how to verify that demo uploads are working correctly in the MatchZy Auto Tournament system.
 
 !!! note "Setup Required"
-    Before verifying demo uploads, make sure you've completed the [Demo Upload Setup Guide](enabling-demo-uploads.md).
+Before verifying demo uploads, make sure you've completed the [Demo Upload Setup Guide](enabling-demo-uploads.md).
 
 ## Overview
 

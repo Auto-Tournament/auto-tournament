@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
+
 - Features and improvements that are in development
 
 ---
@@ -17,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.2.0] - 2025-01-XX
 
 ### Added
+
 - Core tournament management platform
 - Automatic bracket generation and server allocation
 - CS Major compliant map veto system
@@ -29,6 +31,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0] - 2025-01-XX
 
 ### Added
+
 - Initial release
 - Core tournament management platform
 - Automatic bracket generation and server allocation
@@ -42,4 +45,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v1.2.0...HEAD
 [1.2.0]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.2.0
 [1.0.0]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.0.0
-

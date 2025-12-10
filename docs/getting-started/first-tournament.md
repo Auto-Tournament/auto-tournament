@@ -1,6 +1,6 @@
 # Your First Tournament
 
-Step-by-step guide to running a complete tournament.
+Step-by-step guide to running a complete tournament with MatchZy Auto Tournament .
 
 ## Before You Start
 
@@ -16,7 +16,7 @@ Make sure you have:
 
 Add your configured CS2 server to the system:
 
-1. Go to **Admin Tools** → **Servers**
+1. Click **Servers** in the sidebar
 2. Click **"Add Server"**
 3. Fill in:
    ```
@@ -298,7 +298,6 @@ See [Running Matches](../guides/running-matches.md) for detailed scenarios.
   - ELO history for all tournament types (not just shuffle)
   - Match history with per-map stats
   - Performance metrics and trends
-
 
 ### Cleanup
 

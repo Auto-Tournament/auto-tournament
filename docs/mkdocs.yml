@@ -3,8 +3,8 @@ site_name: MatchZy Auto Tournament
 site_url: https://me.sivert.io/
 site_author: Sivert Gullberg Hansen
 site_description: >-
-  Automated tournament management API for CS2 MatchZy - one click from match 
-  creation to final scores with real-time match tracking and statistics
+  Automated CS2 tournament management platform MatchZy Auto Tournament  - one click
+  from match creation to final scores with real-time match tracking and statistics
 
 # Repository
 repo_name: sivert-io/matchzy-auto-tournament
@@ -147,37 +147,50 @@ markdown_extensions:
       custom_checkbox: true
   - pymdownx.tilde
 
-# Page tree
+# Page tree (audience-focused navigation)
 nav:
-  - Home: index.md
+  - Home:
+      - Overview: index.md
+      - Features:
+          - Overview: features/overview.md
+          - Map Veto: features/map-veto.md
+      - Screenshots: screenshots.md
   - Getting Started:
-      - Quick Start: getting-started/quick-start.md
-      - CS2 Server Setup: getting-started/server-setup.md
-      - CS2 Server Manager: guides/cs2-server-manager.md
-      - First Tournament: getting-started/first-tournament.md
-  - Features:
-      - Overview: features/overview.md
-      - Map Veto: features/map-veto.md
-  - Screenshots: screenshots.md
-  - Admin Guide:
-      - Managing Teams: guides/managing-teams.md
-      - Managing Maps: guides/managing-maps.md
-      - Running Matches: guides/running-matches.md
-      - Enabling Demo Uploads: guides/enabling-demo-uploads.md
-      - Verifying Demo Uploads: guides/verifying-demo-uploads.md
-      - Match Recovery: guides/match-recovery.md
-      - Troubleshooting: guides/troubleshooting.md
-  - Advanced:
-      - Server Allocation Status: guides/server-allocation-status.md
-  - For Teams:
-      - Team Pages: guides/team-pages.md
-  - Development:
+      - Getting Started: getting-started/quick-start.md
+      - Your First Tournament: getting-started/first-tournament.md
+  - Guides:
+      - Admin Journey:
+          - Dashboard & Sidebar: guides/admin-dashboard.md
+          - Settings: guides/admin-settings.md
+      - How to:
+          - How to set up a tournament: guides/how-to-set-up-a-tournament.md
+          - How to manage matches: guides/how-to-manage-matches.md
+          - How to create teams: guides/how-to-create-teams.md
+          - How to find players: guides/how-to-find-players.md
+          - What to do when something breaks: guides/what-to-do-when-something-breaks.md
+      - Managing:
+          - Managing Teams: guides/managing-teams.md
+          - Managing Maps: guides/managing-maps.md
+          - Running Matches: guides/running-matches.md
+          - Enabling Demo Uploads: guides/enabling-demo-uploads.md
+          - Verifying Demo Uploads: guides/verifying-demo-uploads.md
+      - Troubleshooting:
+          - Troubleshooting: guides/troubleshooting.md
+          - Match Recovery: guides/match-recovery.md
+      - For Teams:
+          - Team Pages: guides/team-pages.md
+  - For Developers:
+      - Server & Local Setup:
+          - Configure your first server: getting-started/server-setup.md
+          - CS2 Server Manager: guides/cs2-server-manager.md
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
       - Testing PRs: development/testing-pr.md
-  - Changelog: changelog.md
-  - Roadmap: roadmap.md
+      - Advanced:
+          - Server Allocation Status: guides/server-allocation-status.md
   - Related:
+      - Changelog: changelog.md
+      - Roadmap: roadmap.md
       - CS2 Server Manager: https://sivert-io.github.io/cs2-server-manager/
       - MatchZy Enhanced: https://me.sivert.io
 
