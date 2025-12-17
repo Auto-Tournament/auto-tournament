@@ -231,20 +231,31 @@ export default function PlayerProfile() {
     );
   }
 
+  // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
+  const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
+    const bySlug = new Map<string, MatchHistoryEntry>();
+    for (const match of matchHistory) {
+      if (!bySlug.has(match.slug)) {
+        bySlug.set(match.slug, match);
+      }
+    }
+    return Array.from(bySlug.values());
+  }, [matchHistory]);
+
   const eloChange = player.currentElo - player.startingElo;
   const winRate =
-    matchHistory.length > 0
-      ? (matchHistory.filter((m) => m.wonMatch).length / matchHistory.length) * 100
+    uniqueMatchHistory.length > 0
+      ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
       : 0;
-  const wins = matchHistory.filter((m) => m.wonMatch).length;
-  const losses = matchHistory.length - wins;
+  const wins = uniqueMatchHistory.filter((m) => m.wonMatch).length;
+  const losses = uniqueMatchHistory.length - wins;
   const averageAdr =
-    matchHistory.length > 0
-      ? matchHistory.reduce((sum, m) => sum + (m.adr || 0), 0) / matchHistory.length
+    uniqueMatchHistory.length > 0
+      ? uniqueMatchHistory.reduce((sum, m) => sum + (m.adr || 0), 0) / uniqueMatchHistory.length
       : 0;
 
   // Use the most recent match's tournament for leaderboard link (if available)
-  const latestTournamentId = matchHistory.find((m) => m.tournamentId)?.tournamentId;
+  const latestTournamentId = uniqueMatchHistory.find((m) => m.tournamentId)?.tournamentId;
 
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
@@ -395,9 +406,9 @@ export default function PlayerProfile() {
           )}
 
           {/* Performance Metrics Chart */}
-          {matchHistory.length > 0 && (
+          {uniqueMatchHistory.length > 0 && (
             <PerformanceMetricsChart
-              matchHistory={matchHistory.map((match) => ({
+              matchHistory={uniqueMatchHistory.map((match) => ({
                 adr: match.adr,
                 kills: match.kills,
                 deaths: match.deaths,
@@ -502,7 +513,7 @@ export default function PlayerProfile() {
           )}
 
           {/* Match History */}
-          {matchHistory.length > 0 && (
+          {uniqueMatchHistory.length > 0 && (
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -521,7 +532,7 @@ export default function PlayerProfile() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {matchHistory.slice(0, 10).map((match) => (
+                      {uniqueMatchHistory.slice(0, 10).map((match) => (
                         <TableRow key={match.slug}>
                           <TableCell>
                             <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
@@ -552,20 +563,20 @@ export default function PlayerProfile() {
                     </TableBody>
                   </Table>
                 </TableContainer>
-                {matchHistory.length > 10 && (
+                {uniqueMatchHistory.length > 10 && (
                   <Typography
                     variant="caption"
                     color="text.secondary"
                     sx={{ mt: 1, display: 'block' }}
                   >
-                    Showing last 10 matches. Total: {matchHistory.length}
+                    Showing last 10 matches. Total: {uniqueMatchHistory.length}
                   </Typography>
                 )}
               </CardContent>
             </Card>
           )}
 
-          {matchHistory.length === 0 && ratingHistory.length === 0 && (
+          {uniqueMatchHistory.length === 0 && ratingHistory.length === 0 && (
             <Card>
               <CardContent>
                 <Box textAlign="center" py={4}>

@@ -194,19 +194,18 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **ELO calculation anomalies (winners losing ELO, huge swings, negative values)**
 
-  - [ ] Add logging around rating updates:
-    - In `api/src/services/ratingService.ts` / `updatePlayerRatings`, log per match:
-      - `oldElo`, `baseElo`, `statAdjustment`, `finalElo`, `matchResult`, `template_id`.
-  - [ ] Re‑verify conversion constants and use:
-    - `ELO_OFFSET`, `ELO_SCALE`, sigma handling in `eloToOpenSkill` and `openSkillToDisplayElo`.
-    - Make sure we don’t double‑apply offset/scale.
-  - [ ] Check the currently selected ELO template for shuffle tournaments:
-    - `api/src/services/eloTemplateService.ts` (`pure-win-loss` defaults).
-    - `client/src/components/tournament/ShuffleTournamentConfigStep.tsx` and `client/src/pages/Tournament.tsx` to ensure `eloTemplateId` is set as expected.
-  - [ ] Verify rating history queries and responses:
-    - `api/src/services/ratingService.ts#getRatingHistory`.
-    - `api/src/routes/players.ts` (`/api/players/:playerId/rating-history`).
-    - `client/src/pages/PlayerProfile.tsx` consumption of rating history data.
+  - [x] Add logging around rating updates:
+    - In `api/src/services/ratingService.ts` / `updatePlayerRatings`, per-player updates already log `oldElo`, `baseElo`, `statAdjustment`, `finalElo`, `eloChange`, `matchResult`, and `templateId` via `log.debug`, and a `log.success` entry summarizes how many players were updated for a given match.
+  - [x] Re‑verify conversion constants and use:
+    - `ELO_OFFSET` and `ELO_SCALE` implement the documented direct mapping (3000 display ELO ↔ mu 25) with `eloToOpenSkill` and `openSkillToDisplayElo`, and are only applied once on each conversion (no double offset/scale).
+    - Sigma handling uses `DEFAULT_SIGMA` with a monotone decrease by match count and a floor of 2.0, matching the intended “more stable with experience” behavior.
+  - [x] Check the currently selected ELO template for shuffle tournaments:
+    - `api/src/services/eloTemplateService.ts` ensures `pure-win-loss` exists and stays enabled as the default.
+    - `api/src/services/shuffleTournamentService.ts` persists `elo_template_id` from shuffle config, and `client/src/components/tournament/ShuffleTournamentConfigStep.tsx` / `client/src/pages/Tournament.tsx` default to `'pure-win-loss'` and only apply stat adjustments when a non-default enabled template is selected.
+  - [x] Verify rating history queries and responses:
+    - `api/src/services/ratingService.ts#getRatingHistory` returns `base_elo_after`, `stat_adjustment`, and `template_id` alongside before/after/delta fields.
+    - `/api/players/:playerId/rating-history` in `api/src/routes/players.ts` exposes that data as-is.
+    - `client/src/pages/PlayerProfile.tsx` consumes those fields in `ratingHistory` and surfaces them in the ELO History table.
   - [ ] Once Excel sheet is available:
     - Run the same sample matches through both the Excel logic and our engine.
     - Adjust template weights / scaling until changes are in a sane range and direction.
@@ -219,7 +218,8 @@ These will be asked in the public reply so we can tighten the design around thei
   - [ ] Check `/api/players/:playerId/matches` implementation in `api/src/routes/players.ts` to ensure:
     - We don’t join the same match twice.
     - We don’t combine both team1/team2 records for the same player.
-  - [ ] Update `client/src/pages/PlayerProfile.tsx` aggregation logic if needed so wins/losses are calculated from unique matches.
+  - [x] Update `client/src/pages/PlayerProfile.tsx` aggregation logic if needed so wins/losses are calculated from unique matches:
+    - Player profile now deduplicates match history rows by `slug` before computing wins, losses, win rate, and ADR aggregates, and before rendering the match history table and performance chart, so repeated `player_match_stats` rows for the same match no longer cause visible double counting.
 
 - [ ] **Missing stats (match page, player profile, exports)**
   - [ ] Confirm stats ingestion:
