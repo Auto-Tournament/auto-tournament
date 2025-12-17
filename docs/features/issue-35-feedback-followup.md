@@ -298,12 +298,12 @@ These will be asked in the public reply so we can tighten the design around thei
       - Clear the previously selected Active Duty maps.
       - Optionally show a small hint explaining that selection was reset.
 
-- [ ] **Overtime configuration presets**
+- [x] **Overtime configuration presets**
 
-  - [ ] Extend match / tournament configuration:
-    - Add an OT amount dropdown (1 / 2 / 3 / Custom) where overtime is configured:
-      - Likely in team‑based tournament config (`client/src/components/tournament/TeamSelectionStep.tsx`) and/or shuffle config.
-    - Map that to the right cvars in `api/src/services/matchConfigBuilder.ts` (e.g. number of OT segments).
+- [x] Extend match / tournament configuration:
+  - Add an OT amount dropdown (1 / 2 / 3 / Custom) where overtime is configured:
+    - Implemented in shuffle configuration (`client/src/components/tournament/ShuffleTournamentConfigStep.tsx`) with presets and a custom field.
+  - Map that to the right cvars in `api/src/services/matchConfigBuilder.ts` (e.g. number of OT segments).
 
 - [x] **In‑game chat prefix + knife round toggles (tied to MatchZy ConVars)**
 

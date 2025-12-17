@@ -55,6 +55,7 @@ export function getSchemaSQL(): string {
       round_limit_type TEXT, -- 'first_to_13' or 'max_rounds'
       max_rounds INTEGER DEFAULT 24, -- Used when round_limit_type is 'max_rounds'
       overtime_mode TEXT DEFAULT 'enabled', -- 'enabled' or 'disabled'
+      overtime_segments INTEGER, -- Optional: max number of overtime segments (MatchZy overtime_limit). NULL/0 = unlimited.
       elo_template_id TEXT, -- Reference to elo_calculation_templates table (nullable)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,

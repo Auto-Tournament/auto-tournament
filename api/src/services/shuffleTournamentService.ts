@@ -20,6 +20,12 @@ export interface ShuffleTournamentConfig {
   roundLimitType: 'first_to_13' | 'max_rounds';
   maxRounds?: number; // Required if roundLimitType is 'max_rounds', default: 24
   overtimeMode: 'enabled' | 'disabled';
+  /**
+   * Optional: max number of overtime segments (maps) allowed before match ends in a draw.
+   * Mapped to MatchZy's overtime limit cvar. If undefined or 0, MatchZy default (unlimited)
+   * behavior is used.
+   */
+  overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
 }
 
@@ -102,6 +108,10 @@ export async function createShuffleTournament(
     round_limit_type: config.roundLimitType,
     max_rounds: config.maxRounds || 24,
     overtime_mode: config.overtimeMode || 'enabled',
+    overtime_segments:
+      typeof config.overtimeSegments === 'number' && config.overtimeSegments > 0
+        ? config.overtimeSegments
+        : null,
     elo_template_id: config.eloTemplateId || null,
     created_at: now,
     updated_at: now,
@@ -111,6 +121,7 @@ export async function createShuffleTournament(
     rounds: config.mapSequence.length,
     roundLimitType: config.roundLimitType,
     overtimeMode: config.overtimeMode,
+    overtimeSegments: config.overtimeSegments,
   });
 
   const tournament = await getShuffleTournament();
@@ -991,6 +1002,7 @@ async function getShuffleTournament(): Promise<TournamentResponse | null> {
     max_rounds?: number;
     overtime_mode?: string;
     elo_template_id?: string | null;
+    overtime_segments?: number | null;
     created_at: number;
     updated_at: number;
     started_at?: number;
@@ -1020,6 +1032,10 @@ async function getShuffleTournament(): Promise<TournamentResponse | null> {
     roundLimitType: (row.round_limit_type as 'first_to_13' | 'max_rounds') || undefined,
     maxRounds: row.max_rounds,
     overtimeMode: (row.overtime_mode as 'enabled' | 'disabled') || undefined,
+    overtimeSegments:
+      row.overtime_segments === null || row.overtime_segments === undefined
+        ? undefined
+        : row.overtime_segments,
     eloTemplateId: row.elo_template_id || undefined,
   } as TournamentResponse;
 }

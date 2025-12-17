@@ -19,6 +19,11 @@ export interface ShuffleTournamentSettings {
   roundLimitType: 'first_to_13' | 'max_rounds';
   maxRounds: number;
   overtimeMode: 'enabled' | 'disabled';
+  /**
+   * Optional: max number of overtime segments (maps) allowed before match ends in a draw.
+   * When unset, MatchZy default (usually unlimited) behavior is used.
+   */
+  overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
 }
 
@@ -67,6 +72,49 @@ export function ShuffleTournamentConfigStep({
     onSettingsChange({
       ...settings,
       overtimeMode: event.target.value as 'enabled' | 'disabled',
+    });
+  };
+
+  const derivedOvertimePreset = React.useMemo(() => {
+    if (!settings.overtimeSegments || settings.overtimeSegments <= 0) {
+      return 'custom';
+    }
+    if (settings.overtimeSegments === 1) return '1';
+    if (settings.overtimeSegments === 2) return '2';
+    if (settings.overtimeSegments === 3) return '3';
+    return 'custom';
+  }, [settings.overtimeSegments]);
+
+  const handleOvertimeSegmentsPresetChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as '1' | '2' | '3' | 'custom';
+    if (value === 'custom') {
+      // Leave existing custom value (or undefined) as-is; user can edit in the numeric field.
+      onSettingsChange({
+        ...settings,
+      });
+      return;
+    }
+
+    const numeric = parseInt(value, 10);
+    onSettingsChange({
+      ...settings,
+      overtimeSegments: Number.isFinite(numeric) ? numeric : undefined,
+    });
+  };
+
+  const handleOvertimeSegmentsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = event.target.value;
+    if (inputValue === '') {
+      onSettingsChange({
+        ...settings,
+        overtimeSegments: undefined,
+      });
+      return;
+    }
+    const value = parseInt(inputValue, 10);
+    onSettingsChange({
+      ...settings,
+      overtimeSegments: Number.isFinite(value) && value > 0 ? value : undefined,
     });
   };
 
@@ -193,34 +241,90 @@ export function ShuffleTournamentConfigStep({
           </Grid>
         )}
 
-        {/* Overtime Mode - Only shown when roundLimitType is first_to_13 */}
+        {/* Overtime Mode & Presets - Only shown when roundLimitType is first_to_13 */}
         {settings.roundLimitType === 'first_to_13' && (
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Tooltip
-              title="Controls what happens when a match is tied at 12-12. When enabled, standard CS2 overtime rules apply (MR3 format - first to 4 rounds with 10k start money)."
-              arrow
-              placement="top"
-              enterDelay={500}
-            >
-              <FormControl fullWidth data-testid="shuffle-overtime-field">
-                <InputLabel>Overtime Mode</InputLabel>
-                <Select
-                  value={settings.overtimeMode}
-                  label="Overtime Mode"
-                  onChange={handleOvertimeModeChange}
-                  disabled={!canEdit || saving}
+          <>
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Tooltip
+                title="Controls what happens when a match is tied at 12-12. When enabled, standard CS2 overtime rules apply (MR3 format - first to 4 rounds with 10k start money)."
+                arrow
+                placement="top"
+                enterDelay={500}
+              >
+                <FormControl fullWidth data-testid="shuffle-overtime-field">
+                  <InputLabel>Overtime Mode</InputLabel>
+                  <Select
+                    value={settings.overtimeMode}
+                    label="Overtime Mode"
+                    onChange={handleOvertimeModeChange}
+                    disabled={!canEdit || saving}
+                  >
+                    <MenuItem value="enabled">Enable Overtime</MenuItem>
+                    <MenuItem value="disabled">No Overtime (Tie at 12-12)</MenuItem>
+                  </Select>
+                  <FormHelperText>
+                    {settings.overtimeMode === 'enabled'
+                      ? 'Standard CS2 overtime rules apply (MR3 format - first to 4 rounds wins)'
+                      : 'Match ends at 12-12 tie, no overtime. Winner determined by score or tie.'}
+                  </FormHelperText>
+                </FormControl>
+              </Tooltip>
+            </Grid>
+
+            {settings.overtimeMode === 'enabled' && (
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Tooltip
+                  title="Limit how many overtime segments (MR3 blocks) can be played before the match ends in a draw. When left as Custom with no value, MatchZy uses its default (usually unlimited)."
+                  arrow
+                  placement="top"
+                  enterDelay={500}
                 >
-                  <MenuItem value="enabled">Enable Overtime</MenuItem>
-                  <MenuItem value="disabled">No Overtime (Tie at 12-12)</MenuItem>
-                </Select>
-                <FormHelperText>
-                  {settings.overtimeMode === 'enabled'
-                    ? 'Standard CS2 overtime rules apply (MR3 format - first to 4 rounds wins)'
-                    : 'Match ends at 12-12 tie, no overtime. Winner determined by score or tie.'}
-                </FormHelperText>
-              </FormControl>
-            </Tooltip>
-          </Grid>
+                  <Box display="flex" flexDirection="column" gap={1}>
+                    <FormControl fullWidth>
+                      <InputLabel>Overtime Segments</InputLabel>
+                      <Select
+                        value={derivedOvertimePreset}
+                        label="Overtime Segments"
+                        onChange={handleOvertimeSegmentsPresetChange}
+                        disabled={!canEdit || saving}
+                      >
+                        <MenuItem value="1">1 overtime</MenuItem>
+                        <MenuItem value="2">2 overtimes</MenuItem>
+                        <MenuItem value="3">3 overtimes</MenuItem>
+                        <MenuItem value="custom">Custom / Unlimited</MenuItem>
+                      </Select>
+                      <FormHelperText>
+                        Choose a preset number of overtimes, or select Custom to specify your own
+                        limit or leave it unlimited.
+                      </FormHelperText>
+                    </FormControl>
+                    {derivedOvertimePreset === 'custom' && (
+                      <TextField
+                        label="Custom Overtime Segments"
+                        type="number"
+                        value={
+                          settings.overtimeSegments && settings.overtimeSegments > 0
+                            ? settings.overtimeSegments
+                            : ''
+                        }
+                        onChange={handleOvertimeSegmentsChange}
+                        disabled={!canEdit || saving}
+                        slotProps={{
+                          htmlInput: {
+                            min: 1,
+                            max: 10,
+                            'data-testid': 'shuffle-overtime-segments-field',
+                          },
+                        }}
+                        helperText="Positive number of overtime segments. Leave blank for MatchZy default (usually unlimited)."
+                        fullWidth
+                      />
+                    )}
+                  </Box>
+                </Tooltip>
+              </Grid>
+            )}
+          </>
         )}
 
         {/* ELO Calculation Template */}

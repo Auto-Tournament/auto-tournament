@@ -44,6 +44,7 @@ class TournamentService {
       roundLimitType: tournament.roundLimitType,
       maxRounds: tournament.maxRounds,
       overtimeMode: tournament.overtimeMode,
+      overtimeSegments: tournament.overtimeSegments,
       eloTemplateId: tournament.eloTemplateId,
     });
 
@@ -62,6 +63,7 @@ class TournamentService {
       roundLimitType: tournament.roundLimitType,
       maxRounds: tournament.maxRounds,
       overtimeMode: tournament.overtimeMode,
+      overtimeSegments: tournament.overtimeSegments,
       eloTemplateId: tournament.eloTemplateId || undefined,
       created_at: tournament.created_at,
       updated_at: tournament.updated_at,
@@ -546,6 +548,7 @@ class TournamentService {
       round_limit_type: row.round_limit_type,
       max_rounds: row.max_rounds,
       overtime_mode: row.overtime_mode,
+      overtime_segments: row.overtime_segments,
       elo_template_id: row.elo_template_id,
     });
 
@@ -561,6 +564,10 @@ class TournamentService {
       maxRounds:
         row.max_rounds === null || row.max_rounds === undefined ? undefined : row.max_rounds,
       overtimeMode: (row.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+      overtimeSegments:
+        row.overtime_segments === null || row.overtime_segments === undefined
+          ? undefined
+          : row.overtime_segments,
       eloTemplateId: row.elo_template_id ?? null,
     };
   }

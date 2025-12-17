@@ -55,6 +55,7 @@ const Tournament: React.FC = () => {
     roundLimitType: 'first_to_13',
     maxRounds: 24,
     overtimeMode: 'enabled',
+    overtimeSegments: undefined,
     eloTemplateId: 'pure-win-loss',
   });
   const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
@@ -313,6 +314,7 @@ const Tournament: React.FC = () => {
           roundLimitType: tournament.roundLimitType || 'first_to_13',
           maxRounds: tournament.maxRounds || 24,
           overtimeMode: tournament.overtimeMode || 'enabled',
+          overtimeSegments: tournament.overtimeSegments,
           eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
         });
       }
@@ -394,6 +396,14 @@ const Tournament: React.FC = () => {
 
       const currentOvertimeMode = tournament.overtimeMode || 'enabled';
       if (shuffleSettings.overtimeMode !== currentOvertimeMode) return true;
+
+      const currentOvertimeSegments = tournament.overtimeSegments;
+      if (
+        (shuffleSettings.overtimeSegments || undefined) !==
+        (currentOvertimeSegments === null ? undefined : currentOvertimeSegments)
+      ) {
+        return true;
+      }
 
       const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
       const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
@@ -527,6 +537,7 @@ const Tournament: React.FC = () => {
         roundLimitType: shuffleSettings.roundLimitType,
         maxRounds: shuffleSettings.maxRounds,
         overtimeMode: shuffleSettings.overtimeMode,
+        overtimeSegments: shuffleSettings.overtimeSegments,
         eloTemplateId: shuffleSettings.eloTemplateId,
       };
 

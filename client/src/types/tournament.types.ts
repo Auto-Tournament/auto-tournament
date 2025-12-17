@@ -25,6 +25,7 @@ export interface Tournament {
   roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
   eloTemplateId?: string;
 }
 

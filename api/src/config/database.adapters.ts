@@ -93,6 +93,7 @@ export class PostgresAdapter implements DatabaseAdapter {
         { table: 'tournament', column: 'round_limit_type', type: 'TEXT' },
         { table: 'tournament', column: 'max_rounds', type: 'INTEGER DEFAULT 24' },
         { table: 'tournament', column: 'overtime_mode', type: 'TEXT DEFAULT \'enabled\'' },
+        { table: 'tournament', column: 'overtime_segments', type: 'INTEGER' },
         { table: 'tournament', column: 'elo_template_id', type: 'TEXT' },
         { table: 'player_rating_history', column: 'base_elo_after', type: 'INTEGER' },
         { table: 'player_rating_history', column: 'stat_adjustment', type: 'INTEGER' },

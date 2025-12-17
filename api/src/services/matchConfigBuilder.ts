@@ -343,6 +343,7 @@ async function generateShuffleMatchConfig(
   const roundLimitType = tournament.roundLimitType || 'first_to_13';
   const maxRounds = tournament.maxRounds || 24;
   const overtimeMode = tournament.overtimeMode || 'enabled';
+  const overtimeSegments = tournament.overtimeSegments;
 
   // Build cvars for round limit and overtime configuration
   const cvars: Record<string, string | number> = {};
@@ -356,6 +357,12 @@ async function generateShuffleMatchConfig(
       // MR3 format: 3 rounds per half (6 total), 10k start money
       cvars.mp_overtime_maxrounds = 3; // 3 rounds per half = 6 total rounds
       cvars.mp_overtime_startmoney = 10000; // 10k start money for MR3
+
+      // Optional: limit number of overtime segments if configured.
+      // When unset or <= 0, we let MatchZy/CS2 use the default (usually unlimited).
+      if (typeof overtimeSegments === 'number' && overtimeSegments > 0) {
+        cvars.mp_overtime_limit = overtimeSegments;
+      }
     }
   } else if (roundLimitType === 'max_rounds') {
     // Max rounds: Use configured max rounds, no overtime

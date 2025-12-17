@@ -417,6 +417,16 @@ export function TournamentFormSteps({
                     ? 'Enabled'
                     : 'Disabled (No Overtime)'}
                 </Typography>
+                {shuffleSettings.overtimeMode === 'enabled' && (
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Overtime Segments:{' '}
+                    {shuffleSettings.overtimeSegments && shuffleSettings.overtimeSegments > 0
+                      ? `${shuffleSettings.overtimeSegments} ${
+                          shuffleSettings.overtimeSegments === 1 ? 'segment' : 'segments'
+                        }`
+                      : 'MatchZy default (usually unlimited)'}
+                  </Typography>
+                )}
               </Box>
             )}
             {type !== 'shuffle' && (

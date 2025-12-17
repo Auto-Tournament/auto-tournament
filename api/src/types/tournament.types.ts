@@ -42,6 +42,7 @@ export interface Tournament {
   roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
   eloTemplateId?: string | null;
   created_at: number;
   updated_at: number;
@@ -64,6 +65,7 @@ export interface TournamentRow {
   round_limit_type?: string | null;
   max_rounds?: number | null;
   overtime_mode?: string | null;
+  overtime_segments?: number | null;
   elo_template_id?: string | null;
   created_at: number;
   updated_at: number;
@@ -158,6 +160,7 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
   roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
 }
 
