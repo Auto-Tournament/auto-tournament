@@ -42,6 +42,7 @@ import templatesRoutes from './routes/templates';
 import playersRoutes from './routes/players';
 import eloTemplatesRoutes from './routes/eloTemplates';
 import testRoutes from './routes/test';
+import authSteamRoutes from './routes/authSteam';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
@@ -279,6 +280,7 @@ app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
+app.use('/api/auth', authSteamRoutes); // Steam-based player login (players only)
 
 // Serve frontend at /app (built client lives under api/public)
 const publicPath = path.join(__dirname, '..', 'public');

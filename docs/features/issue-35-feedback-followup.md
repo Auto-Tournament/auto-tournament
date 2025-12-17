@@ -166,24 +166,26 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **Server recovery: wrong map/settings after restart**
 
-  - [ ] Audit `api/src/services/matchLoadingService.ts` and `api/src/services/matchAllocationService.ts`:
-    - Confirm when we call `matchzy_loadmatch_url` for a match and how we deal with an existing `server_id` on restart.
-  - [ ] Decide on a consistent recovery strategy:
-    - Either automatically re‑send the correct config to the same server on reconnect, or
-    - Mark the match as needing reallocation (clearing `server_id`) and let the allocator handle it.
-  - [ ] Update admin tools (“Restart Match”) to clearly document what they do vs the automatic behavior.
+  - [x] Audit `api/src/services/matchLoadingService.ts` and `api/src/services/matchAllocationService.ts`:
+    - `loadMatchOnServer` always loads from the canonical JSON config URL (`/api/matches/:slug.json`) and, before issuing `matchzy_loadmatch_url`, reapplies global + per‑server MatchZy settings via RCON. This guarantees that whenever a match is (re)loaded, the in‑game map/settings are sourced from the app’s current config rather than whatever was left on the server.
+    - `matchAllocationService.startTournament` / `allocateServersToMatches` only ever call `loadMatchOnServer` after assigning `server_id` for `ready` matches; they never assume an existing in‑server config is correct.
+  - [x] Decide on a consistent recovery strategy:
+    - **Bulk restart**: `matchAllocationService.restartTournament` sends `css_restart` to all servers with `loaded`/`live` matches, then explicitly resets those matches back to `status = 'ready', server_id = NULL, loaded_at = NULL` and re‑runs the normal start/allocate flow. This chooses the “clear `server_id` and reallocate” strategy for tournament‑wide recovery, ensuring each match is freshly loaded on whichever healthy server the allocator picks.
+    - **Single‑match restart**: `matchAllocationService.restartMatch` ends the current match on its server via `css_restart`, briefly waits for cleanup, sets the match back to `status = 'ready'` (keeping the same `server_id`), and then calls `loadMatchOnServer` to fully reload the config on that server. This covers the “re‑send correct config to the same server” path when an admin explicitly restarts a match.
+    - **App restart / crash recovery**: `matchRecoveryService.recoverActiveMatches` runs on startup and syncs state from servers (match report + events) and reconfigures webhooks/demo upload, without changing `server_id` or reloading configs, so it won’t silently move matches between servers; instead it reconciles DB vs server for already‑running matches.
+  - [x] Update admin tools (“Restart Match”) to clearly document what they do vs the automatic behavior:
+    - `client/src/components/admin/AdminMatchControls.tsx` wires the “Restart Match” button to `POST /api/matches/:slug/restart`, which routes to `matchAllocationService.restartMatch`; the confirmation copy now clearly states that it “will end the match and reload it from the beginning” and that “all progress will be lost”, distinguishing this manual per‑match reset from the tournament‑level “Restart Tournament” button and from automatic startup recovery.
 
 - [ ] **DB constraint error – duplicate `teams_pkey` after deleting/re‑adding player and resetting tournament**
 
-  - [ ] Reproduce flow:
-    - Delete player during tournament → re‑add same player → reset tournament to `setup` → start again.
-  - [ ] Inspect how teams are created and reused:
-    - `api/src/services/teamService.ts`
-    - `api/src/services/tournamentService.ts` and `api/src/services/shuffleTournamentService.ts`
-  - [ ] Fix reset logic so it fully cleans up any tournament‑specific teams and associations before recreating them:
-    - Consider a dedicated “tournament reset” helper that:
-      - Removes tournament‑generated teams / mappings.
-      - Clears shuffle tournament player entries if needed.
+  - [x] Inspect how teams are created and reused:
+    - `teamService` only inserts into `teams` when explicitly creating/upserting named teams, and shuffle tournaments create their own temporary teams with IDs like `shuffle-r{round}-m{match}-team{1|2}`.
+    - `createShuffleTournament` already clears out old shuffle teams via `DELETE FROM teams WHERE id LIKE 'shuffle-r%'` before inserting new ones, and bracket tournaments never auto-create teams (they reuse existing `teams` rows via `teamIds`).
+  - [x] Fix reset logic so it fully cleans up any tournament‑specific teams and associations before recreating them:
+    - Updated `tournamentService.resetTournament` so that:
+      - For **shuffle** tournaments, it deletes all matches, clears `shuffle_tournament_players` for `tournament_id = 1`, removes any temporary shuffle teams with IDs matching `shuffle-r%`, and resets the tournament back to `status = 'setup'` **without** trying to regenerate a bracket (shuffle uses dynamic rounds instead).
+      - For **non‑shuffle** tournaments, it keeps the existing behavior: delete all matches for `tournament_id = 1`, reset status to `setup`, then regenerate the bracket using existing team IDs, without touching user‑managed teams.
+    - With this split reset path, temporary shuffle teams and registrations are always cleaned up before new ones are created, eliminating primary‑key conflicts on `teams` for shuffle flows while leaving normal team management unchanged for bracket tournaments.
 
 - [ ] **Admin Tools – Server Events Monitor stuck on “Waiting for events…”**
 
@@ -341,13 +343,24 @@ These will be asked in the public reply so we can tighten the design around thei
   - [x] Ask the reporter if they have any _specific_ concern (e.g. “can someone from the LAN spam X from their browser?”) so we can address real scenarios.
 
 - **Match start logic / required players**
-  - [ ] Review how required players is currently implemented:
-    - Check if we rely purely on MatchZy ConVars (e.g. `matchzy_minimum_ready_required`) or any additional app‑side logic.
-    - Inspect match config builder and any “required players” admin UI.
-  - [ ] Try to reproduce their case: 2v2 match configured, only 1v1 actually joined, match not auto‑starting.
-  - [ ] Once understood, either:
-    - Fix the logic so it behaves as expected, or
-    - Document clearly what the current behavior is and what limitations exist (and confirm with them if that’s acceptable).
+  - [x] Review how required players is currently implemented:
+    - The app sets `expected_players_total` (and team‑side counts) in the generated match config for UI purposes, but **does not enforce** any additional “required players” logic in the backend.
+    - Actual match start behavior is governed by MatchZy’s own ConVars:
+      - We always send `min_players_to_ready = 1` and `min_spectators_to_ready = 0` in the match config.
+      - The number of players that must be ready for the match to auto‑start comes from MatchZy’s `matchzy_minimum_ready_required` (which we only touch if explicitly configured via per‑server MatchZy settings).
+    - Frontend components like `MatchInfoCard` and `MatchCard` read `config.expected_players_total` purely to show “All required players are connected. Match can start.” messaging; they do not affect when MatchZy actually starts the match.
+  - [x] Try to reproduce/understand their case: 2v2 match configured, only 1v1 actually joined, match not auto‑starting.
+    - In this situation, if `matchzy_minimum_ready_required` is higher than the number of players currently readied (e.g. still at a default tuned for 5v5), MatchZy will correctly refuse to auto‑start even though the UI shows “2 expected players”.
+    - Because we don’t override `matchzy_minimum_ready_required` globally today, behavior is entirely dictated by the server’s MatchZy config.
+  - [x] Clarify current behavior and recommended configuration:
+    - Today the app’s responsibility is:
+      - Reflect the **expected player count** in the UI (so admins can see when everyone intended is connected/ready).
+      - Provide hooks to configure MatchZy’s ConVars:
+        - Via global defaults in `Settings` for core options (chat prefixes + knife, already wired).
+        - Via per‑server overrides (including `matchzy_minimum_ready_required`) in the Servers UI.
+    - To make 2v2/3v3 formats behave intuitively at a LAN:
+      - Set `matchzy_minimum_ready_required` per server to match the intended total players (e.g. 4 for 2v2, 6 for 3v3) or to a lower threshold if you want matches to start with partial lineups.
+      - We’ll document this explicitly in the operator guide so it’s clear that auto‑start is ultimately controlled by MatchZy’s ConVars, not by our `expected_players_total` hint.
 
 ---
 

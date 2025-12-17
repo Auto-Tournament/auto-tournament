@@ -366,6 +366,37 @@ class TournamentService {
     // Delete all matches (this also clears all veto states stored in matches)
     await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
 
+    // Shuffle tournaments have their own dynamic match/round generation and
+    // temporary teams. Resetting should NOT attempt to regenerate a static bracket.
+    if (tournament.type === 'shuffle') {
+      // Clean up shuffle-specific state
+      await db.execAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = 1');
+      await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
+
+      await db.updateAsync(
+        'tournament',
+        {
+          status: 'setup',
+          updated_at: Math.floor(Date.now() / 1000),
+          started_at: null,
+          completed_at: null,
+        },
+        'id = ?',
+        [1]
+      );
+
+      log.success(
+        `Shuffle tournament reset to setup mode. Deleted ${
+          matchCount?.count || 0
+        } match(es) and cleared shuffle teams/registrations.`
+      );
+
+      const result = await this.getTournament();
+      if (!result) throw new Error('Failed to retrieve tournament after reset');
+      return result;
+    }
+
+    // Non-shuffle tournaments: reset and regenerate bracket as before
     await db.updateAsync(
       'tournament',
       {

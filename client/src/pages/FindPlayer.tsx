@@ -12,11 +12,13 @@ import {
   InputAdornment,
   Autocomplete,
 } from '@mui/material';
+import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import { SteamIcon } from '../components/icons/SteamIcon';
 
 interface PlayerOption {
   id: string;
@@ -29,7 +31,9 @@ export default function FindPlayer() {
   const navigate = useNavigate();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
-  const [searchResults, setSearchResults] = useState<Array<{ id: string; name: string; avatar?: string; currentElo?: number }>>([]);
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: string; name: string; avatar?: string; currentElo?: number }>
+  >([]);
   const [showResultsModal, setShowResultsModal] = useState(false);
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
@@ -125,6 +129,10 @@ export default function FindPlayer() {
     }
   };
 
+  const handleSteamLogin = () => {
+    window.location.href = '/api/auth/steam';
+  };
+
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="find-player-page">
       <Container maxWidth="sm">
@@ -136,10 +144,10 @@ export default function FindPlayer() {
                 Find Player
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Enter a Steam ID or Steam profile URL to view player statistics
+                Enter a Steam ID or Steam profile URL to view player statistics, or log in with
+                Steam to jump straight to your profile.
               </Typography>
             </Box>
-
 
             <Box mb={3}>
               <Autocomplete
@@ -193,22 +201,36 @@ export default function FindPlayer() {
                   />
                 )}
                 noOptionsText={
-                  playersLoading ? 'Loading players…' : 'No players found. Try typing a Steam ID or URL.'
+                  playersLoading
+                    ? 'Loading players…'
+                    : 'No players found. Try typing a Steam ID or URL.'
                 }
               />
             </Box>
 
-            <Button
-              data-testid="find-player-button"
-              fullWidth
-              variant="contained"
-              size="large"
-              onClick={() => handleSearch(inputValue)}
-              disabled={loading || !inputValue.trim()}
-              startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
-            >
-              {loading ? 'Searching...' : 'Find Player'}
-            </Button>
+            <Stack spacing={2}>
+              <Button
+                data-testid="find-player-button"
+                fullWidth
+                variant="contained"
+                size="large"
+                onClick={() => handleSearch(inputValue)}
+                disabled={loading || !inputValue.trim()}
+                startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+              >
+                {loading ? 'Searching...' : 'Find Player'}
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={handleSteamLogin}
+                startIcon={<SteamIcon />}
+              >
+                Login with Steam
+              </Button>
+            </Stack>
           </CardContent>
         </Card>
       </Container>
@@ -221,4 +243,3 @@ export default function FindPlayer() {
     </Box>
   );
 }
-
