@@ -24,6 +24,7 @@ import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
+import NotFound from './pages/NotFound';
 import { theme } from './theme';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -112,7 +113,7 @@ function AppRoutes() {
           <Route path="dev" element={<Development />} />
         )}
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }
