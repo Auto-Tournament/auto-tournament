@@ -87,6 +87,10 @@ export function MatchInfoCard({
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
 
+  const serverStatus = match.server?.status ?? null;
+  const isServerOnline = serverStatus === 'online';
+  const effectiveServer = isServerOnline ? match.server : null;
+
   const isShuffleMatch =
     match.team1?.id?.startsWith('shuffle-') ||
     match.team2?.id?.startsWith('shuffle-') ||
@@ -271,7 +275,7 @@ export function MatchInfoCard({
             )}
 
             <MatchServerPanel
-              server={match.server}
+              server={effectiveServer}
               currentMapData={currentMapData}
               connected={connected}
               copied={copied}

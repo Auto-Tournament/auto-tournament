@@ -154,9 +154,9 @@ These will be asked in the public reply so we can tighten the design around thei
   - [ ] Update backend status handling so UI can reliably detect a dead server:
     - Review `api/src/services/serverStatusService.ts` and `api/src/services/matchAllocationService.ts` to ensure offline/error states are propagated.
     - Make sure we clear or reset `server_id` on affected matches when the server is confirmed dead (or mark matches as needing reassignment).
-  - [ ] Update frontend views that show “Server Ready / Waiting for Players” to react to server offline / error:
-    - Likely: `client/src/pages/Servers.tsx`, `client/src/components/team/MatchServerPanel.tsx`, `client/src/pages/TeamMatch.tsx` / `client/src/components/team/MatchInfoCard.tsx`.
-    - Ensure that when status flips to offline/error, the tournament view goes back to a “Waiting for server assignment” state instead of being stuck.
+  - [x] Update frontend views that show “Server Ready / Waiting for Players” to react to server offline / error:
+    - `client/src/components/team/MatchInfoCard.tsx` now treats non-`online` server statuses the same as "no server assigned" when rendering `MatchServerPanel`, so the team view falls back to the “Waiting for Server Assignment” message instead of showing connect/copy actions for an offline server.
+    - This keeps the tournament view in a clear waiting state while backend logic (restart/reallocation) handles reassigning a healthy server.
 
 - [ ] **Server recovery: wrong map/settings after restart**
 
