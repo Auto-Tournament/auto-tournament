@@ -45,8 +45,7 @@ export default function Settings() {
   const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
   const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState('');
   const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
-  const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] =
-    useState(true);
+  const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
 
@@ -123,8 +122,7 @@ export default function Settings() {
               : Number.isFinite(defaultPlayerElo)
               ? defaultPlayerElo
               : null,
-          matchzyChatPrefix:
-            matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
+          matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
           matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
@@ -441,7 +439,7 @@ export default function Settings() {
                   target="_blank"
                   rel="noopener noreferrer"
                   color="primary"
-                  sx={{ width: '56px' }}
+                  sx={{ width: '56px', height: '56px' }}
                 >
                   <OpenInNewIcon />
                 </IconButton>
@@ -451,7 +449,9 @@ export default function Settings() {
                   variant="outlined"
                   size="small"
                   disabled={loading || steamStatusChecking}
-                  startIcon={steamStatusChecking ? <CircularProgress size={14} /> : <VisibilityIcon />}
+                  startIcon={
+                    steamStatusChecking ? <CircularProgress size={14} /> : <VisibilityIcon />
+                  }
                   onClick={async () => {
                     setSteamStatusChecking(true);
                     try {
@@ -498,8 +498,8 @@ export default function Settings() {
                 MatchZy Chat & Knife Defaults
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Control the in-game chat prefixes and whether knife rounds are enabled by default for
-                new matches. Changes are pushed via RCON before each match is loaded.
+                Control the in-game chat prefixes and whether knife rounds are enabled by default
+                for new matches. Changes are pushed via RCON before each match is loaded.
               </Typography>
               <Stack spacing={2}>
                 <TextField
@@ -508,7 +508,7 @@ export default function Settings() {
                   onChange={(event) => setMatchzyChatPrefix(event.target.value)}
                   onBlur={handleFieldBlur}
                   onKeyDown={handleFieldKeyDown}
-                  helperText='Example: "[MatchZy]" – leave blank to use the plugin default.'
+                  helperText='Default: "[MAT]". Leave blank to reset to the default prefix.'
                   fullWidth
                 />
                 <TextField
@@ -517,23 +517,23 @@ export default function Settings() {
                   onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
                   onBlur={handleFieldBlur}
                   onKeyDown={handleFieldKeyDown}
-                  helperText='Example: "[Admin]" – leave blank to use the plugin default.'
+                  helperText='Default: "[ADMIN]". Leave blank to reset to the default admin prefix.'
                   fullWidth
                 />
                 <FormControlLabel
                   control={
                     <Switch
                       checked={matchzyKnifeEnabledDefault}
-                      onChange={(event) =>
-                        setMatchzyKnifeEnabledDefault(event.target.checked)
-                      }
+                      onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
                     />
                   }
-                  label="Enable knife rounds by default for new matches"
+                  label="Enable knife rounds by default for new matches (when sides are not pre-selected)"
                 />
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Some changes may require a map reload or server restart depending on your MatchZy
-                  configuration.
+                  This flag only affects matches where MatchZy would normally run a knife round (for
+                  example, when no starting sides are chosen in the match config). Explicit side
+                  picks or shuffle\'s auto-assigned sides are not overridden. Some changes may
+                  require a map reload or server restart depending on your MatchZy configuration.
                 </Typography>
               </Stack>
             </Box>
@@ -635,8 +635,9 @@ export default function Settings() {
                     label="Simulate matches (use bot-driven demo matches instead of real players)"
                   />
                   <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                    When enabled, generated MatchZy configs include <code>\"simulation\": true</code>{' '}
-                    so servers can run fully automated demo matches for development and testing.
+                    When enabled, generated MatchZy configs include{' '}
+                    <code>\"simulation\": true</code> so servers can run fully automated demo
+                    matches for development and testing.
                   </Typography>
                 </Box>
               </>

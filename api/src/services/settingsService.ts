@@ -155,12 +155,16 @@ class SettingsService {
 
   async getMatchzyChatPrefix(): Promise<string | null> {
     const value = await this.getSetting('matchzy_chat_prefix');
-    return value ? value.trim() : null;
+    const trimmed = value ? value.trim() : '';
+    // Default to a sensible prefix if none is configured explicitly
+    return trimmed !== '' ? trimmed : '[MAT]';
   }
 
   async getMatchzyAdminChatPrefix(): Promise<string | null> {
     const value = await this.getSetting('matchzy_admin_chat_prefix');
-    return value ? value.trim() : null;
+    const trimmed = value ? value.trim() : '';
+    // Default to a sensible admin prefix if none is configured explicitly
+    return trimmed !== '' ? trimmed : '[ADMIN]';
   }
 
   async isKnifeRoundEnabledByDefault(): Promise<boolean> {
