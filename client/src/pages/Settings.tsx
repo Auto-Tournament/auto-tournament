@@ -40,6 +40,13 @@ export default function Settings() {
   const [initialDefaultPlayerElo, setInitialDefaultPlayerElo] = useState<number | ''>('');
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
+  const [matchzyChatPrefix, setMatchzyChatPrefix] = useState('');
+  const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] = useState('');
+  const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
+  const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState('');
+  const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
+  const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] =
+    useState(true);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
 
@@ -54,6 +61,12 @@ export default function Settings() {
       const steamKey = response.settings.steamApiKey ?? '';
       const defaultElo = response.settings.defaultPlayerElo ?? 3000;
       const simulate = response.settings.simulateMatches ?? false;
+      const chatPrefix = response.settings.matchzyChatPrefix ?? '';
+      const adminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
+      const knifeEnabled =
+        response.settings.matchzyKnifeEnabledDefault !== undefined
+          ? response.settings.matchzyKnifeEnabledDefault
+          : true;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
@@ -62,6 +75,12 @@ export default function Settings() {
       setInitialDefaultPlayerElo(defaultElo);
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
+      setMatchzyChatPrefix(chatPrefix);
+      setInitialMatchzyChatPrefix(chatPrefix);
+      setMatchzyAdminChatPrefix(adminChatPrefix);
+      setInitialMatchzyAdminChatPrefix(adminChatPrefix);
+      setMatchzyKnifeEnabledDefault(knifeEnabled);
+      setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load settings';
       showError(message);
@@ -104,6 +123,11 @@ export default function Settings() {
               : Number.isFinite(defaultPlayerElo)
               ? defaultPlayerElo
               : null,
+          matchzyChatPrefix:
+            matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
+          matchzyAdminChatPrefix:
+            matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
+          matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches }),
@@ -114,6 +138,12 @@ export default function Settings() {
         const newSteamKey = response.settings.steamApiKey ?? '';
         const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
         const newSimulate = response.settings.simulateMatches ?? false;
+        const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
+        const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
+        const newKnifeEnabled =
+          response.settings.matchzyKnifeEnabledDefault !== undefined
+            ? response.settings.matchzyKnifeEnabledDefault
+            : true;
         setWebhookUrl(newWebhook);
         setSteamApiKey(newSteamKey);
         setInitialWebhookUrl(newWebhook);
@@ -122,6 +152,12 @@ export default function Settings() {
         setInitialDefaultPlayerElo(newDefaultElo);
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
+        setMatchzyChatPrefix(newChatPrefix);
+        setInitialMatchzyChatPrefix(newChatPrefix);
+        setMatchzyAdminChatPrefix(newAdminChatPrefix);
+        setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
+        setMatchzyKnifeEnabledDefault(newKnifeEnabled);
+        setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
 
         if (showSuccessMessage) {
           showSuccess('Settings saved');
@@ -148,6 +184,9 @@ export default function Settings() {
       webhookUrl !== initialWebhookUrl ||
       steamApiKey !== initialSteamApiKey ||
       defaultPlayerElo !== initialDefaultPlayerElo ||
+      matchzyChatPrefix !== initialMatchzyChatPrefix ||
+      matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
+      matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
       (isDev && simulateMatches !== initialSimulateMatches)
     ) {
       void handleSave(true); // Show success message
@@ -172,6 +211,9 @@ export default function Settings() {
       webhookUrl === initialWebhookUrl &&
       steamApiKey === initialSteamApiKey &&
       defaultPlayerElo === initialDefaultPlayerElo &&
+      matchzyChatPrefix === initialMatchzyChatPrefix &&
+      matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
+      matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
       (!isDev || simulateMatches === initialSimulateMatches)
     )
       return;
@@ -195,9 +237,15 @@ export default function Settings() {
     webhookUrl,
     steamApiKey,
     defaultPlayerElo,
+    matchzyChatPrefix,
+    matchzyAdminChatPrefix,
+    matchzyKnifeEnabledDefault,
     initialWebhookUrl,
     initialSteamApiKey,
     initialDefaultPlayerElo,
+    initialMatchzyChatPrefix,
+    initialMatchzyAdminChatPrefix,
+    initialMatchzyKnifeEnabledDefault,
     loading,
     handleSave,
   ]);
@@ -430,6 +478,51 @@ export default function Settings() {
             </Box>
 
             <Divider />
+
+            <Box>
+              <Typography variant="h6" fontWeight={600} gutterBottom>
+                MatchZy Chat & Knife Defaults
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                Control the in-game chat prefixes and whether knife rounds are enabled by default for
+                new matches. Changes are pushed via RCON before each match is loaded.
+              </Typography>
+              <Stack spacing={2}>
+                <TextField
+                  label="Chat Prefix"
+                  value={matchzyChatPrefix}
+                  onChange={(event) => setMatchzyChatPrefix(event.target.value)}
+                  onBlur={handleFieldBlur}
+                  onKeyDown={handleFieldKeyDown}
+                  helperText='Example: "[MatchZy]" – leave blank to use the plugin default.'
+                  fullWidth
+                />
+                <TextField
+                  label="Admin Chat Prefix"
+                  value={matchzyAdminChatPrefix}
+                  onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
+                  onBlur={handleFieldBlur}
+                  onKeyDown={handleFieldKeyDown}
+                  helperText='Example: "[Admin]" – leave blank to use the plugin default.'
+                  fullWidth
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={matchzyKnifeEnabledDefault}
+                      onChange={(event) =>
+                        setMatchzyKnifeEnabledDefault(event.target.checked)
+                      }
+                    />
+                  }
+                  label="Enable knife rounds by default for new matches"
+                />
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Some changes may require a map reload or server restart depending on your MatchZy
+                  configuration.
+                </Typography>
+              </Stack>
+            </Box>
 
             <Box>
               <Typography variant="h6" fontWeight={600} gutterBottom>

@@ -181,14 +181,14 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **Admin Tools – Server Events Monitor stuck on “Waiting for events…”**
 
-  - [ ] Verify backend events + sockets:
+  - [x] Verify backend events + sockets:
     - `api/src/routes/events.ts` (webhook ingestion).
     - `api/src/utils/matchzyRconCommands.ts` (remote log URL + headers).
     - `api/src/services/socketService.ts` (emitting `server:event`).
-  - [ ] Ensure at least one event path is wired for the POC:
+  - [x] Ensure at least one event path is wired for the POC:
     - Confirm MatchZy is sending events to `/api/events/:matchSlugOrServerId` with the right header.
     - Confirm `logWebhookEvent` + DB insert are working.
-  - [ ] Improve frontend feedback in `client/src/components/admin/ServerEventsMonitor.tsx`:
+  - [x] Improve frontend feedback in `client/src/components/admin/ServerEventsMonitor.tsx`:
     - Show a clear “No events received yet – check webhook configuration” message if nothing arrives after N seconds.
     - Optionally surface the last error from `/api/events/test` or similar.
 
@@ -305,13 +305,13 @@ These will be asked in the public reply so we can tighten the design around thei
       - Likely in team‑based tournament config (`client/src/components/tournament/TeamSelectionStep.tsx`) and/or shuffle config.
     - Map that to the right cvars in `api/src/services/matchConfigBuilder.ts` (e.g. number of OT segments).
 
-- [ ] **In‑game chat prefix + knife round toggles (tied to MatchZy ConVars)**
+- [x] **In‑game chat prefix + knife round toggles (tied to MatchZy ConVars)**
 
-  - [ ] Chat prefix:
-    - Surface `matchzy_chat_prefix` and `matchzy_admin_chat_prefix` in the MatchZy settings UI (see 4.0 ConVars section).
-  - [ ] Knife round:
-    - Surface `matchzy_knife_enabled_default` as a simple toggle for whether knife rounds are enabled by default.
-  - [ ] Ensure these values are pushed via RCON before loading matches (see ConVars section).
+- [x] Chat prefix:
+  - Surface `matchzy_chat_prefix` and `matchzy_admin_chat_prefix` in the MatchZy settings UI (see 4.0 ConVars section).
+- [x] Knife round:
+  - Surface `matchzy_knife_enabled_default` as a simple toggle for whether knife rounds are enabled by default.
+- [x] Ensure these values are pushed via RCON before loading matches (see ConVars section).
 
 - [ ] **Steam SSO (nice to have)**
   - [ ] Design login flow:

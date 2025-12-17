@@ -31,6 +31,8 @@ export const ServerEventsMonitor: React.FC = () => {
   const [error, setError] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [noEventsHint, setNoEventsHint] = useState(false);
+  const [eventsHealthError, setEventsHealthError] = useState('');
 
   const socketRef = useRef<Socket | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
@@ -47,6 +49,22 @@ export const ServerEventsMonitor: React.FC = () => {
   // Load servers with events
   useEffect(() => {
     loadServers();
+  }, []);
+
+  // Lightweight health check for events API so we can surface backend issues in the UI
+  useEffect(() => {
+    const checkEventsHealth = async () => {
+      try {
+        await api.get('/api/events/test');
+        setEventsHealthError('');
+      } catch (err) {
+        console.error('Failed to reach /api/events/test', err);
+        setEventsHealthError(
+          'Events API health check failed. Verify that the API is running and /api/events/test is reachable.'
+        );
+      }
+    };
+    void checkEventsHealth();
   }, []);
 
   // Setup WebSocket connection
@@ -146,6 +164,7 @@ export const ServerEventsMonitor: React.FC = () => {
   const handleServerChange = (serverId: string) => {
     setSelectedServerId(serverId);
     setEvents([]);
+    setNoEventsHint(false);
   };
 
   const handleClear = () => {
@@ -161,6 +180,22 @@ export const ServerEventsMonitor: React.FC = () => {
       loadEvents();
     }
   }, [selectedServerId, loadEvents]);
+
+  // After N seconds with no events for a selected server, show a stronger hint to check webhook config
+  useEffect(() => {
+    if (!selectedServerId || events.length > 0) {
+      setNoEventsHint(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (events.length === 0 && selectedServerId) {
+        setNoEventsHint(true);
+      }
+    }, 15000); // 15 seconds
+
+    return () => clearTimeout(timeout);
+  }, [selectedServerId, events.length]);
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -263,6 +298,12 @@ export const ServerEventsMonitor: React.FC = () => {
           </Alert>
         )}
 
+        {eventsHealthError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {eventsHealthError}
+          </Alert>
+        )}
+
         {/* Events Console */}
         <Paper
           variant="outlined"
@@ -279,9 +320,16 @@ export const ServerEventsMonitor: React.FC = () => {
               Select a server to view events
             </Typography>
           ) : events.length === 0 ? (
-            <Typography color="text.secondary" textAlign="center" sx={{ mt: 20 }}>
-              No events yet. Waiting for events from server...
-            </Typography>
+            <Box sx={{ mt: 20 }}>
+              <Typography color="text.secondary" textAlign="center" mb={1}>
+                No events received yet for this server.
+              </Typography>
+              <Typography color="text.secondary" variant="body2" textAlign="center">
+                {noEventsHint
+                  ? 'Still no events after 15 seconds – check that your CS2 server is configured to send MatchZy webhooks to /api/events/:matchSlugOrServerId with the correct X-MatchZy-Token.'
+                  : 'Waiting for events from server...'}
+              </Typography>
+            </Box>
           ) : (
             <Box>
               {events.map((event, index) => (

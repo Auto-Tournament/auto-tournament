@@ -5,7 +5,10 @@ export type AppSettingKey =
   | 'webhook_url'
   | 'steam_api_key'
   | 'default_player_elo'
-  | 'simulate_matches';
+  | 'simulate_matches'
+  | 'matchzy_chat_prefix'
+  | 'matchzy_admin_chat_prefix'
+  | 'matchzy_knife_enabled_default';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -18,6 +21,9 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'steam_api_key',
   'default_player_elo',
   'simulate_matches',
+  'matchzy_chat_prefix',
+  'matchzy_admin_chat_prefix',
+  'matchzy_knife_enabled_default',
 ];
 
 class SettingsService {
@@ -83,6 +89,27 @@ class SettingsService {
         log.success(`Simulate matches ${isEnabled ? 'enabled' : 'disabled'}`);
         return;
       }
+
+      if (key === 'matchzy_chat_prefix' || key === 'matchzy_admin_chat_prefix') {
+        await db.setAppSettingAsync(key, trimmed);
+        log.success(
+          `MatchZy ${key === 'matchzy_chat_prefix' ? 'chat prefix' : 'admin chat prefix'} updated`
+        );
+        return;
+      }
+
+      if (key === 'matchzy_knife_enabled_default') {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`MatchZy knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
     }
 
     await db.setAppSettingAsync(key, null);
@@ -94,7 +121,7 @@ class SettingsService {
     if (value) {
       return this.normalizeUrl(value);
     }
-    
+
     return null;
   }
 
@@ -124,6 +151,27 @@ class SettingsService {
     }
     // Fallback to FaceIT-style default
     return 3000;
+  }
+
+  async getMatchzyChatPrefix(): Promise<string | null> {
+    const value = await this.getSetting('matchzy_chat_prefix');
+    return value ? value.trim() : null;
+  }
+
+  async getMatchzyAdminChatPrefix(): Promise<string | null> {
+    const value = await this.getSetting('matchzy_admin_chat_prefix');
+    return value ? value.trim() : null;
+  }
+
+  async isKnifeRoundEnabledByDefault(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_knife_enabled_default');
+    if (!value) {
+      // Defer to MatchZy plugin defaults when not explicitly configured
+      return true;
+    }
+
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   /**

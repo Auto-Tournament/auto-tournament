@@ -12,9 +12,11 @@ import {
   getMatchZyDemoUploadCommand,
   getMatchZyDemoUploadCommands,
   getMatchZyLoadMatchAuthCommands,
+  getMatchZyCoreSettingsCommands,
 } from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
+import { settingsService } from './settingsService';
 
 export interface MatchLoadOptions {
   skipWebhook?: boolean;
@@ -93,13 +95,19 @@ export async function loadMatchOnServer(
 
     if (serverToken) {
       console.log('\n');
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
       console.log('CONFIGURING DEMO UPLOAD');
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
       console.log(`Match Slug:   ${matchSlug}`);
       console.log(`Server ID:    ${serverId}`);
       console.log(`Upload URL:   ${uploadUrl}`);
-      console.log('═══════════════════════════════════════════════════════════════════════════════');
+      console.log(
+        '═══════════════════════════════════════════════════════════════════════════════'
+      );
       console.log('\n');
 
       log.debug(`Configuring demo upload for match ${matchSlug}`, {
@@ -206,6 +214,41 @@ export async function loadMatchOnServer(
       log.info(`[MATCH LOADING] Match config auth configured for ${serverId}`);
     } else {
       log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
+    }
+
+    // Small delay before applying core MatchZy settings (chat prefixes, knife round default)
+    await delay(300);
+
+    try {
+      const [chatPrefix, adminChatPrefix, knifeEnabledDefault] = await Promise.all([
+        settingsService.getMatchzyChatPrefix(),
+        settingsService.getMatchzyAdminChatPrefix(),
+        settingsService.isKnifeRoundEnabledByDefault(),
+      ]);
+
+      const coreSettingsCommands = getMatchZyCoreSettingsCommands({
+        chatPrefix,
+        adminChatPrefix,
+        knifeEnabledDefault,
+      });
+
+      if (coreSettingsCommands.length > 0) {
+        log.debug(
+          `[MATCH LOADING] Applying MatchZy core settings (chat prefixes + knife toggle) on ${serverId}`
+        );
+        for (const cmd of coreSettingsCommands) {
+          const result = await rconService.sendCommand(serverId, cmd);
+          results.push({
+            success: result.success,
+            command: cmd,
+            error: result.error,
+          });
+          // Small delay between commands
+          await delay(200);
+        }
+      }
+    } catch (settingsError) {
+      log.warn('Failed to apply MatchZy core settings before match load', settingsError as Error);
     }
 
     // Delay before sending the load command to ensure previous commands are processed

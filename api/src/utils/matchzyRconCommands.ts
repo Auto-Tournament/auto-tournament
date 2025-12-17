@@ -6,10 +6,14 @@
  * Get RCON commands to configure MatchZy webhook
  * Uses match slug in URL path for better event tracking
  */
-export function getMatchZyWebhookCommands(baseUrl: string, serverToken: string, matchSlug?: string): string[] {
+export function getMatchZyWebhookCommands(
+  baseUrl: string,
+  serverToken: string,
+  matchSlug?: string
+): string[] {
   // Encode match slug in URL path if provided (e.g., /api/events/r1m1)
   const webhookUrl = matchSlug ? `${baseUrl}/api/events/${matchSlug}` : `${baseUrl}/api/events`;
-  
+
   return [
     `matchzy_remote_log_url "${webhookUrl}"`,
     `matchzy_remote_log_header_key "X-MatchZy-Token"`,
@@ -67,6 +71,33 @@ export function getMatchZyDemoUploadCommands(
  */
 export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string): string {
   return `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`;
+}
+
+/**
+ * Get RCON commands for core MatchZy settings that we want to control from the app:
+ * - Chat prefixes
+ * - Knife round enabled-by-default toggle
+ */
+export function getMatchZyCoreSettingsCommands(options: {
+  chatPrefix: string | null;
+  adminChatPrefix: string | null;
+  knifeEnabledDefault: boolean | null;
+}): string[] {
+  const commands: string[] = [];
+
+  if (options.chatPrefix !== null) {
+    commands.push(`matchzy_chat_prefix "${options.chatPrefix}"`);
+  }
+
+  if (options.adminChatPrefix !== null) {
+    commands.push(`matchzy_admin_chat_prefix "${options.adminChatPrefix}"`);
+  }
+
+  if (options.knifeEnabledDefault !== null) {
+    commands.push(`matchzy_knife_enabled_default ${options.knifeEnabledDefault ? '1' : '0'}`);
+  }
+
+  return commands;
 }
 
 /**
