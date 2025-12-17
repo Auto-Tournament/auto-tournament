@@ -15,6 +15,7 @@ export function getSchemaSQL(): string {
       port INTEGER NOT NULL,
       password TEXT NOT NULL,
       enabled INTEGER NOT NULL DEFAULT 1,
+      matchzy_config TEXT, -- JSON blob with per-server MatchZy ConVar overrides
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );

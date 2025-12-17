@@ -129,18 +129,24 @@ These will be asked in the public reply so we can tighten the design around thei
     - `matchzy_hostname_format`
     - `matchzy_match_start_message`
   - Backend:
-    - [ ] Extend server persistence to store per‑server MatchZy config (e.g. JSON column on `servers` table in `api/src/config/database.schema.ts` and corresponding mapping in `serverService` + API in `api/src/routes/servers.ts`).
-    - [ ] Optionally add global default MatchZy settings in `app_settings` via `settingsService` and `api/src/routes/settings.ts`, used as a fallback when a server has no overrides.
-    - [ ] Add helper(s) to materialize a list of `matchzy_*` RCON commands from stored settings (likely in `api/src/utils/matchzyRconCommands.ts`).
-    - [ ] Decide when to push these settings:
-      - Candidate hooks: when a server is first added/updated; when a tournament is created; or immediately before loading a match in `matchLoadingService` / `matchAllocationService`.
-      - Start simple: push config before calling `matchzy_loadmatch_url` for a given server, and optionally provide a “Sync MatchZy settings now” button in admin tools.
+    - [x] Extend server persistence to store per‑server MatchZy config:
+      - Added `matchzy_config` JSON column on the `servers` table in `api/src/config/database.schema.ts` with a corresponding migration in `database.adapters.ts`.
+      - Updated `api/src/types/server.types.ts` and `api/src/services/serverService.ts` so create/update requests accept a typed `matchzyConfig` object and serialize it into `matchzy_config`, and responses expose a parsed `matchzyConfig` back to the client.
+    - [x] Add helper(s) to materialize a list of `matchzy_*` RCON commands from stored settings:
+      - Introduced `getMatchZyServerConfigCommands` in `api/src/utils/matchzyRconCommands.ts` to turn a typed per‑server config into concrete `matchzy_*` commands (chat prefixes, knife toggle, minimum_ready_required, pause/stop behavior, whitelist, playout/reset, autostart mode, demo path/name/upload URL).
+    - [x] Decide when to push these settings:
+      - `api/src/services/matchLoadingService.ts#loadMatchOnServer` now:
+        - Applies global MatchZy defaults (chat prefixes + knife toggle) via `getMatchZyCoreSettingsCommands` from `settingsService`.
+        - Then loads any per‑server `matchzy_config` overrides for the target server and applies them via `getMatchZyServerConfigCommands`, so per‑server values win over globals.
+        - All of this happens just before `matchzy_loadmatch_url`, ensuring each match load reapplies the desired config.
   - Frontend:
-    - [ ] Add UI for editing these settings:
-      - Either as a **global defaults** section on `Settings` (e.g. “MatchZy Server Defaults”) and/or
-      - As per‑server overrides in `ServerModal` / `Servers` page (with a compact advanced panel for power users).
-    - [ ] Extend `client/src/types/api.types.ts` and related server types to include the new settings shape.
-    - [ ] Make sure the UX clearly explains that these are MatchZy ConVars and may require a server restart or `exec MatchZy/config.cfg` on the game side for non‑RCON‑managed changes.
+    - [x] Add UI for editing these settings:
+      - Extended `client/src/types/api.types.ts` `Server` type with a `matchzyConfig` payload matching the backend shape.
+      - Added a compact “MatchZy Overrides (optional)” section to `client/src/components/modals/ServerModal.tsx` that lets admins set per‑server overrides for `matchzy_chat_prefix`, `matchzy_admin_chat_prefix`, and `matchzy_knife_enabled_default` (with an indeterminate state meaning “inherit global default”).
+    - [x] Wire API shape:
+      - `ServerModal` now reads `server.matchzyConfig` when editing and sends `matchzyConfig` on create/update via `/api/servers` and `/api/servers/:id`.
+    - [x] UX explanation:
+      - The modal copy explains that these are optional MatchZy overrides and that leaving fields blank keeps using the global defaults from `Settings`.
 
 ---
 
@@ -300,6 +306,7 @@ These will be asked in the public reply so we can tighten the design around thei
 - [x] **Overtime configuration presets**
 
 - [x] Extend match / tournament configuration:
+
   - Add an OT amount dropdown (1 / 2 / 3 / Custom) where overtime is configured:
     - Implemented in shuffle configuration (`client/src/components/tournament/ShuffleTournamentConfigStep.tsx`) with presets and a custom field.
   - Map that to the right cvars in `api/src/services/matchConfigBuilder.ts` (e.g. number of OT segments).

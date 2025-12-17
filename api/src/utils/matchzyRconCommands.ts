@@ -101,6 +101,119 @@ export function getMatchZyCoreSettingsCommands(options: {
 }
 
 /**
+ * Get RCON commands for per-server MatchZy configuration overrides.
+ * All fields are optional; null/undefined means "do not touch this ConVar".
+ */
+export function getMatchZyServerConfigCommands(config: {
+  chatPrefix?: string | null;
+  adminChatPrefix?: string | null;
+  knifeEnabledDefault?: boolean | null;
+  minimumReadyRequired?: number | null;
+  pauseAfterRestore?: boolean | null;
+  stopCommandAvailable?: boolean | null;
+  stopCommandNoDamage?: boolean | null;
+  whitelistEnabledDefault?: boolean | null;
+  kickWhenNoMatchLoaded?: boolean | null;
+  playoutEnabledDefault?: boolean | null;
+  resetCvarsOnSeriesEnd?: boolean | null;
+  usePauseCommandForTacticalPause?: boolean | null;
+  autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+  demoPath?: string | null;
+  demoNameFormat?: string | null;
+  demoUploadUrl?: string | null;
+}): string[] {
+  const commands: string[] = [];
+
+  if (config.chatPrefix !== undefined && config.chatPrefix !== null) {
+    commands.push(`matchzy_chat_prefix "${config.chatPrefix}"`);
+  }
+  if (config.adminChatPrefix !== undefined && config.adminChatPrefix !== null) {
+    commands.push(`matchzy_admin_chat_prefix "${config.adminChatPrefix}"`);
+  }
+  if (config.knifeEnabledDefault !== undefined && config.knifeEnabledDefault !== null) {
+    commands.push(`matchzy_knife_enabled_default ${config.knifeEnabledDefault ? '1' : '0'}`);
+  }
+
+  if (
+    config.minimumReadyRequired !== undefined &&
+    config.minimumReadyRequired !== null &&
+    Number.isFinite(config.minimumReadyRequired)
+  ) {
+    commands.push(`matchzy_minimum_ready_required ${config.minimumReadyRequired}`);
+  }
+  if (config.pauseAfterRestore !== undefined && config.pauseAfterRestore !== null) {
+    commands.push(
+      `matchzy_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`
+    );
+  }
+  if (config.stopCommandAvailable !== undefined && config.stopCommandAvailable !== null) {
+    commands.push(
+      `matchzy_stop_command_available ${config.stopCommandAvailable ? '1' : '0'}`
+    );
+  }
+  if (config.stopCommandNoDamage !== undefined && config.stopCommandNoDamage !== null) {
+    commands.push(
+      `matchzy_stop_command_no_damage ${config.stopCommandNoDamage ? '1' : '0'}`
+    );
+  }
+  if (
+    config.whitelistEnabledDefault !== undefined &&
+    config.whitelistEnabledDefault !== null
+  ) {
+    commands.push(
+      `matchzy_whitelist_enabled_default ${config.whitelistEnabledDefault ? '1' : '0'}`
+    );
+  }
+  if (
+    config.kickWhenNoMatchLoaded !== undefined &&
+    config.kickWhenNoMatchLoaded !== null
+  ) {
+    commands.push(
+      `matchzy_kick_when_no_match_loaded ${config.kickWhenNoMatchLoaded ? '1' : '0'}`
+    );
+  }
+  if (config.playoutEnabledDefault !== undefined && config.playoutEnabledDefault !== null) {
+    commands.push(
+      `matchzy_playout_enabled_default ${config.playoutEnabledDefault ? '1' : '0'}`
+    );
+  }
+  if (
+    config.resetCvarsOnSeriesEnd !== undefined &&
+    config.resetCvarsOnSeriesEnd !== null
+  ) {
+    commands.push(
+      `matchzy_reset_cvars_on_series_end ${config.resetCvarsOnSeriesEnd ? '1' : '0'}`
+    );
+  }
+  if (
+    config.usePauseCommandForTacticalPause !== undefined &&
+    config.usePauseCommandForTacticalPause !== null
+  ) {
+    commands.push(
+      `matchzy_use_pause_command_for_tactical_pause ${
+        config.usePauseCommandForTacticalPause ? '1' : '0'
+      }`
+    );
+  }
+
+  if (config.autostartMode !== undefined && config.autostartMode !== null) {
+    commands.push(`matchzy_autostart_mode "${config.autostartMode}"`);
+  }
+
+  if (config.demoPath !== undefined && config.demoPath !== null) {
+    commands.push(`matchzy_demo_path "${config.demoPath}"`);
+  }
+  if (config.demoNameFormat !== undefined && config.demoNameFormat !== null) {
+    commands.push(`matchzy_demo_name_format "${config.demoNameFormat}"`);
+  }
+  if (config.demoUploadUrl !== undefined && config.demoUploadUrl !== null) {
+    commands.push(`matchzy_demo_upload_url "${config.demoUploadUrl}"`);
+  }
+
+  return commands;
+}
+
+/**
  * Get RCON commands to disable MatchZy webhook
  */
 export function getDisableWebhookCommands(): string[] {

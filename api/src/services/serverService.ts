@@ -77,6 +77,11 @@ export class ServerService {
       throw new Error('Port must be between 1 and 65535');
     }
 
+    const matchzyConfig =
+      input.matchzyConfig && Object.keys(input.matchzyConfig).length > 0
+        ? JSON.stringify(input.matchzyConfig)
+        : null;
+
     await db.insertAsync('servers', {
       id: input.id,
       name: input.name,
@@ -84,6 +89,7 @@ export class ServerService {
       port: input.port,
       password: input.password,
       enabled: input.enabled !== undefined ? (input.enabled ? 1 : 0) : 1,
+      matchzy_config: matchzyConfig,
     });
 
     log.serverCreated(input.id, input.name);
@@ -129,6 +135,12 @@ export class ServerService {
     if (input.port !== undefined) updateData.port = input.port;
     if (input.password !== undefined) updateData.password = input.password;
     if (input.enabled !== undefined) updateData.enabled = input.enabled ? 1 : 0;
+
+    if (input.matchzyConfig !== undefined) {
+      const hasKeys =
+        input.matchzyConfig && Object.keys(input.matchzyConfig).length > 0;
+      updateData.matchzy_config = hasKeys ? JSON.stringify(input.matchzyConfig) : null;
+    }
 
     await db.updateAsync('servers', updateData, 'id = ?', [id]);
 
@@ -231,6 +243,16 @@ export class ServerService {
    * Convert database row to response (includes password for RCON)
    */
   private toResponse(server: Server): ServerResponse {
+    let matchzyConfig: ServerResponse['matchzyConfig'] = null;
+    if (server.matchzy_config) {
+      try {
+        matchzyConfig = JSON.parse(server.matchzy_config);
+      } catch {
+        matchzyConfig = null;
+        log.warn('Failed to parse matchzy_config for server', { id: server.id });
+      }
+    }
+
     return {
       id: server.id,
       name: server.name,
@@ -238,6 +260,7 @@ export class ServerService {
       port: server.port,
       password: server.password,
       enabled: server.enabled === 1,
+      matchzyConfig,
       created_at: server.created_at,
       updated_at: server.updated_at,
     };

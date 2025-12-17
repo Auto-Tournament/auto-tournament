@@ -13,10 +13,12 @@ import {
   getMatchZyDemoUploadCommands,
   getMatchZyLoadMatchAuthCommands,
   getMatchZyCoreSettingsCommands,
+  getMatchZyServerConfigCommands,
 } from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { settingsService } from './settingsService';
+import type { MatchzyServerConfig } from '../types/server.types';
 
 export interface MatchLoadOptions {
   skipWebhook?: boolean;
@@ -226,17 +228,41 @@ export async function loadMatchOnServer(
         settingsService.isKnifeRoundEnabledByDefault(),
       ]);
 
+      // Global defaults applied first
       const coreSettingsCommands = getMatchZyCoreSettingsCommands({
         chatPrefix,
         adminChatPrefix,
         knifeEnabledDefault,
       });
 
-      if (coreSettingsCommands.length > 0) {
-        log.debug(
-          `[MATCH LOADING] Applying MatchZy core settings (chat prefixes + knife toggle) on ${serverId}`
+      // Per-server overrides (if any) applied afterwards
+      let serverConfig: MatchzyServerConfig | null = null;
+      try {
+        const serverRow = await db.queryOneAsync<{ matchzy_config: string | null }>(
+          'SELECT matchzy_config FROM servers WHERE id = ?',
+          [serverId]
         );
-        for (const cmd of coreSettingsCommands) {
+        if (serverRow?.matchzy_config) {
+          serverConfig = JSON.parse(serverRow.matchzy_config) as MatchzyServerConfig;
+        }
+      } catch (configError) {
+        log.warn('Failed to load per-server MatchZy config', {
+          serverId,
+          error: configError instanceof Error ? configError.message : String(configError),
+        });
+      }
+
+      const perServerCommands = serverConfig
+        ? getMatchZyServerConfigCommands(serverConfig)
+        : [];
+
+      const allSettingsCommands = [...coreSettingsCommands, ...perServerCommands];
+
+      if (allSettingsCommands.length > 0) {
+        log.debug(
+          `[MATCH LOADING] Applying MatchZy settings on ${serverId} (global + per-server overrides)`
+        );
+        for (const cmd of allSettingsCommands) {
           const result = await rconService.sendCommand(serverId, cmd);
           results.push({
             success: result.success,

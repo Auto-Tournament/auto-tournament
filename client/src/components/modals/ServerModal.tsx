@@ -17,22 +17,13 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import type { ServerStatusResponse } from '../../types/api.types';
+import type { Server as ApiServer, ServerStatusResponse } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
-
-interface Server {
-  id: string;
-  name: string;
-  host: string;
-  port: number;
-  password: string;
-  enabled: boolean;
-}
 
 interface ServerModalProps {
   open: boolean;
-  server: Server | null;
-  servers: Server[]; // All existing servers for duplicate checking
+  server: ApiServer | null;
+  servers: ApiServer[]; // All existing servers for duplicate checking
   onClose: () => void;
   onSave: () => void;
 }
@@ -54,6 +45,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
+  const [chatPrefix, setChatPrefix] = useState<string>('');
+  const [adminChatPrefix, setAdminChatPrefix] = useState<string>('');
+  const [knifeEnabledDefault, setKnifeEnabledDefault] = useState<boolean | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -71,6 +65,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPort(server.port.toString());
       setPassword(server.password);
       setEnabled(server.enabled);
+      setChatPrefix(server.matchzyConfig?.chatPrefix ?? '');
+      setAdminChatPrefix(server.matchzyConfig?.adminChatPrefix ?? '');
+      setKnifeEnabledDefault(
+        server.matchzyConfig?.knifeEnabledDefault ?? null
+      );
     } else {
       resetForm();
     }
@@ -82,6 +81,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setPort('27015');
     setPassword('');
     setEnabled(true);
+    setChatPrefix('');
+    setAdminChatPrefix('');
+    setKnifeEnabledDefault(null);
     setError('');
     setTestResult(null);
   };
@@ -169,6 +171,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         port: portNum,
         password: password.trim(),
         enabled,
+        matchzyConfig: {
+          chatPrefix: chatPrefix.trim() || null,
+          adminChatPrefix: adminChatPrefix.trim() || null,
+          knifeEnabledDefault,
+        },
       };
 
       if (isEditing) {
@@ -178,6 +185,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           port: payload.port,
           password: payload.password,
           enabled: payload.enabled,
+          matchzyConfig: payload.matchzyConfig,
         });
         showSuccess('Server updated successfully');
       } else {
@@ -307,6 +315,58 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 </Box>
               }
             />
+
+            <Box mt={1}>
+              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                MatchZy Overrides (optional)
+              </Typography>
+              <Typography variant="caption" color="text.secondary" display="block" mb={1}>
+                These settings override the global MatchZy defaults for this server only. Leave blank
+                to use global values from Settings.
+              </Typography>
+              <Box display="flex" flexDirection="column" gap={1.5}>
+                <TextField
+                  label="Chat Prefix Override"
+                  value={chatPrefix}
+                  onChange={(e) => setChatPrefix(e.target.value)}
+                  placeholder="[MatchZy]"
+                  fullWidth
+                  helperText="Overrides matchzy_chat_prefix on this server (optional)"
+                />
+                <TextField
+                  label="Admin Chat Prefix Override"
+                  value={adminChatPrefix}
+                  onChange={(e) => setAdminChatPrefix(e.target.value)}
+                  placeholder="[ADMIN]"
+                  fullWidth
+                  helperText="Overrides matchzy_admin_chat_prefix on this server (optional)"
+                />
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={knifeEnabledDefault === true}
+                      indeterminate={knifeEnabledDefault === null}
+                      onChange={(e) =>
+                        setKnifeEnabledDefault(
+                          e.target.checked ? true : knifeEnabledDefault === null ? false : null
+                        )
+                      }
+                    />
+                  }
+                  label={
+                    <Box>
+                      <Typography variant="body2" fontWeight={500}>
+                        Knife Round Enabled by Default (override)
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        When set, overrides matchzy_knife_enabled_default for this server. Leave in
+                        indeterminate state to use global default.
+                      </Typography>
+                    </Box>
+                  }
+                />
+              </Box>
+            </Box>
 
             {isEditing && (
               <Box>

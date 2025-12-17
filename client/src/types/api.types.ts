@@ -27,6 +27,24 @@ export interface Server {
   status?: 'online' | 'offline' | 'checking' | 'disabled' | string;
   isAvailable?: boolean;
   currentMatch?: string | null;
+  matchzyConfig?: {
+    chatPrefix?: string | null;
+    adminChatPrefix?: string | null;
+    knifeEnabledDefault?: boolean | null;
+    minimumReadyRequired?: number | null;
+    pauseAfterRestore?: boolean | null;
+    stopCommandAvailable?: boolean | null;
+    stopCommandNoDamage?: boolean | null;
+    whitelistEnabledDefault?: boolean | null;
+    kickWhenNoMatchLoaded?: boolean | null;
+    playoutEnabledDefault?: boolean | null;
+    resetCvarsOnSeriesEnd?: boolean | null;
+    usePauseCommandForTacticalPause?: boolean | null;
+    autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+    demoPath?: string | null;
+    demoNameFormat?: string | null;
+    demoUploadUrl?: string | null;
+  } | null;
 }
 
 export interface ServersResponse extends ApiResponse {
