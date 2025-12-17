@@ -279,10 +279,10 @@ These will be asked in the public reply so we can tighten the design around thei
     - Hide “Series Maps Won” for shuffle matches where teams change each map.
 
 - [ ] **Player profile – copy console command + ELO graph**
-  - [ ] Ensure “Copy Console Command” is wired correctly:
+  - [x] Ensure “Copy Console Command” is wired correctly:
     - Reuse `MatchServerPanel` behaviour where `onCopy` populates a `connect` line and updates the `copied` state.
     - Check how `MatchInfoCard` is used in `PlayerProfile` and pass through the appropriate `onCopy` handler.
-  - [ ] ELO graph flat line:
+  - [x] ELO graph flat line:
     - Once rating history anomalies are fixed (see 4.1), confirm `ELOProgressionChart` in `client/src/components/player/ELOProgressionChart.tsx`:
       - Uses the `eloBefore`/`eloAfter` values from rating history correctly.
       - Shows multiple points when multiple matches exist.
@@ -293,7 +293,7 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **Map selection – clear Active Duty maps when switching to Custom**
 
-  - [ ] In the tournament creation flow (`client/src/pages/Tournament.tsx`, `client/src/components/tournament/TournamentFormSteps.tsx`):
+  - [x] In the tournament creation flow (`client/src/pages/Tournament.tsx`, `client/src/components/tournament/TournamentFormSteps.tsx`):
     - When the user switches map pool from “Active Duty” to “Custom”:
       - Clear the previously selected Active Duty maps.
       - Optionally show a small hint explaining that selection was reset.
@@ -327,12 +327,12 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - **API security**
 
-  - [ ] Double‑check that all admin routes are behind `requireAuth`:
-    - `api/src/routes/tournament.ts`, `api/src/routes/servers.ts`, `api/src/routes/settings.ts`, etc.
-  - [ ] Document in the reply (and possibly in `docs/guides/server-setup.md`) that:
-    - Admin actions require the API token.
-    - Public endpoints are limited to player pages, standings, etc.
-  - [ ] Ask the reporter if they have any _specific_ concern (e.g. “can someone from the LAN spam X from their browser?”) so we can address real scenarios.
+  - [x] Double‑check that all admin routes are behind `requireAuth`:
+    - Verified `requireAuth` is applied for `api/src/routes/tournament.ts`, `api/src/routes/servers.ts`, `api/src/routes/settings.ts`, `api/src/routes/maps.ts`, `api/src/routes/mapPools.ts`, `api/src/routes/teams.ts`, `api/src/routes/serverStatus.ts`, `api/src/routes/rcon.ts`, `api/src/routes/demos.ts` (except for the public demo upload endpoints which perform their own token validation), `api/src/routes/events.ts` (admin views), `api/src/routes/eloTemplates.ts`, `api/src/routes/templates.ts`, `api/src/routes/recovery.ts`, `api/src/routes/logs.ts`, and Steam admin tools in `api/src/routes/steam.ts`. Player‑facing pages (`/api/players/:id`, `/api/players/:id/matches`, `/api/players/:id/rating-history`, `/api/tournament/:id/leaderboard`, etc.) remain public as intended.
+  - [x] Document in the reply (and possibly in `docs/guides/server-setup.md`) that:
+    - Admin actions require the API token for all non‑public routes under `/api`.
+    - Public endpoints are limited to player pages, standings/leaderboard views, and match/demo upload webhooks secured via per‑server tokens.
+  - [x] Ask the reporter if they have any _specific_ concern (e.g. “can someone from the LAN spam X from their browser?”) so we can address real scenarios.
 
 - **Match start logic / required players**
   - [ ] Review how required players is currently implemented:

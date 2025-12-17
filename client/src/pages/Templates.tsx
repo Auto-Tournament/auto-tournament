@@ -74,11 +74,7 @@ export default function Templates() {
 
   useEffect(() => {
     setHeaderActions(
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={() => navigate('/tournament')}
-      >
+      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
         Create Template from Tournament
       </Button>
     );
@@ -259,7 +255,8 @@ export default function Templates() {
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);
     if (poolId === 'custom') {
-      // Keep current maps when switching to custom
+      // Clear maps when switching to custom so user can start from an empty selection
+      setEditMaps([]);
       return;
     }
     const pool = mapPools.find((p) => p.id.toString() === poolId);
@@ -299,11 +296,7 @@ export default function Templates() {
 
   useEffect(() => {
     setHeaderActions(
-      <Button
-        variant="contained"
-        startIcon={<AddIcon />}
-        onClick={() => navigate('/tournament')}
-      >
+      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
         Create Template from Tournament
       </Button>
     );

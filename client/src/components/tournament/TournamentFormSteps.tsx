@@ -170,7 +170,8 @@ export function TournamentFormSteps({
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);
     if (poolId === 'custom') {
-      // Custom map selection - don't change maps
+      // Clear maps when switching to custom so user can start fresh
+      onMapsChange([]);
       return;
     }
     const pool = mapPools.find((p) => p.id.toString() === poolId);
