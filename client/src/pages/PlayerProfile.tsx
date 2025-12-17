@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
   Button,
+  Link,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -228,15 +229,29 @@ export default function PlayerProfile() {
   if (error || !player) {
     return (
       <Box minHeight="100vh" bgcolor="background.default" py={6}>
-        <Container maxWidth="md">
-          <Alert severity="error" data-testid="player-not-found-error">{error || 'Player not found'}</Alert>
-          <Box mt={2}>
-            <Typography variant="body2" color="text.secondary">
-              <a href="/player" style={{ color: 'inherit' }}>
-                Search for a player
-              </a>
-            </Typography>
-          </Box>
+        <Container maxWidth="sm">
+          <Card>
+            <CardContent sx={{ textAlign: 'center', py: 4 }}>
+              <Alert
+                severity="warning"
+                sx={{ mb: 2 }}
+                data-testid="player-not-found-error"
+              >
+                {error || 'No player is registered for this Steam ID yet.'}
+              </Alert>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                If you just logged in with Steam, ask a tournament admin to register you or create a
+                player with this Steam ID.
+              </Typography>
+              <Button
+                variant="outlined"
+                component={RouterLink}
+                to="/player"
+              >
+                Back to Find Player
+              </Button>
+            </CardContent>
+          </Card>
         </Container>
       </Box>
     );

@@ -136,8 +136,13 @@ router.get('/steam/callback', async (req: Request, res: Response) => {
     });
 
     // Redirect player to their public profile page
-    const baseUrl = getBaseUrl(req);
-    const redirectTo = `${baseUrl}/app/player/${steamId}`;
+    // In production this will typically be the same host as the API (behind a reverse proxy).
+    // In development you can override this with FRONTEND_BASE_URL (e.g. http://localhost:5173).
+    const configuredFrontendBaseUrl = process.env.FRONTEND_BASE_URL;
+    const baseUrl = configuredFrontendBaseUrl && configuredFrontendBaseUrl.trim().length > 0
+      ? configuredFrontendBaseUrl.trim().replace(/\/+$/, '')
+      : getBaseUrl(req);
+    const redirectTo = `${baseUrl}/player/${steamId}`;
     return res.redirect(302, redirectTo);
   } catch (error) {
     log.error('Steam OpenID callback failed', error as Error);
