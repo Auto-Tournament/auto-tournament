@@ -87,6 +87,16 @@ export function MatchInfoCard({
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
 
+  const isShuffleMatch =
+    match.team1?.id?.startsWith('shuffle-') ||
+    match.team2?.id?.startsWith('shuffle-') ||
+    (match.config?.team1 && typeof match.config.team1 === 'object'
+      ? (match.config.team1 as { id?: string }).id?.startsWith('shuffle-')
+      : false) ||
+    (match.config?.team2 && typeof match.config.team2 === 'object'
+      ? (match.config.team2 as { id?: string }).id?.startsWith('shuffle-')
+      : false);
+
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
       return match.mapResults.reduce(
@@ -246,6 +256,7 @@ export function MatchInfoCard({
               leftSeriesWins={deriveSeriesWins.team1}
               rightSeriesWins={deriveSeriesWins.team2}
               liveStatusDisplay={liveStatusDisplay}
+              hideSeriesWins={isShuffleMatch}
             />
 
             {match.status !== 'live' && (

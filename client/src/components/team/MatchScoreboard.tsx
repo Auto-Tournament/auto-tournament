@@ -12,6 +12,7 @@ interface MatchScoreboardProps {
     label: string;
     chipColor: 'success' | 'info' | 'warning' | 'default';
   } | null;
+  hideSeriesWins?: boolean;
 }
 
 export function MatchScoreboard({
@@ -22,6 +23,7 @@ export function MatchScoreboard({
   leftSeriesWins,
   rightSeriesWins,
   liveStatusDisplay,
+  hideSeriesWins,
 }: MatchScoreboardProps) {
   return (
     <Paper
@@ -36,12 +38,16 @@ export function MatchScoreboard({
           <Typography variant="h4" fontWeight={700} color="primary.main">
             {leftName}
           </Typography>
-          <Typography variant="h1" fontWeight={900} color="primary.main">
-            {leftSeriesWins}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Series Maps Won
-          </Typography>
+          {!hideSeriesWins && (
+            <>
+              <Typography variant="h1" fontWeight={900} color="primary.main">
+                {leftSeriesWins}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Series Maps Won
+              </Typography>
+            </>
+          )}
           <Typography variant="h4" fontWeight={700} color="primary.main">
             {leftMapRounds}
           </Typography>
@@ -66,12 +72,16 @@ export function MatchScoreboard({
           <Typography variant="h4" fontWeight={700} color="error.main">
             {rightName || 'TBD'}
           </Typography>
-          <Typography variant="h1" fontWeight={900} color="error.main">
-            {rightSeriesWins}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Series Maps Won
-          </Typography>
+          {!hideSeriesWins && (
+            <>
+              <Typography variant="h1" fontWeight={900} color="error.main">
+                {rightSeriesWins}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Series Maps Won
+              </Typography>
+            </>
+          )}
           <Typography variant="h4" fontWeight={700} color="error.main">
             {rightMapRounds}
           </Typography>

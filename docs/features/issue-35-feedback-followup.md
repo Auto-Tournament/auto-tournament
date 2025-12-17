@@ -273,9 +273,9 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **Shuffle‑specific labels (bracket + match views)**
 
-  - [ ] Bracket page (`client/src/pages/Bracket.tsx`):
+  - [x] Bracket page (`client/src/pages/Bracket.tsx`):
     - For `tournament.type === 'shuffle'`, hide or replace “Finals / Semi‑Finals” labels with something that makes sense for shuffle (e.g. just “Round X”).
-  - [ ] Match page / cards (`client/src/components/shared/MatchCard.tsx`, `client/src/components/team/MatchInfoCard.tsx`):
+  - [x] Match page / cards (`client/src/components/shared/MatchCard.tsx`, `client/src/components/team/MatchInfoCard.tsx`):
     - Hide “Series Maps Won” for shuffle matches where teams change each map.
 
 - [ ] **Player profile – copy console command + ELO graph**

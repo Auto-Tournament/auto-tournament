@@ -267,6 +267,13 @@ export default function Bracket() {
           : 0)
       : totalRounds;
 
+  const getBracketRoundLabel = (round: number): string => {
+    if (tournament.type === 'shuffle') {
+      return `Round ${round}`;
+    }
+    return getRoundLabel(round, effectiveTotalRounds);
+  };
+
   return (
     <Box
       ref={fullscreenRef}
@@ -463,7 +470,7 @@ export default function Bracket() {
             return (
               <Box key={round} mb={4}>
                 <Typography variant="h6" fontWeight={600} mb={2}>
-                  {getRoundLabel(round, effectiveTotalRounds)}
+                  {getBracketRoundLabel(round)}
                   {tournament.type === 'shuffle' && roundStatus && roundStatus.roundNumber === round && (
                     <Chip
                       label={roundStatus.map}
@@ -480,7 +487,7 @@ export default function Bracket() {
                       key={match.id}
                       match={match}
                       matchNumber={getGlobalMatchNumber(match)}
-                      roundLabel={getRoundLabel(round, totalRounds)}
+                      roundLabel={getBracketRoundLabel(round)}
                       onClick={() => handleMatchClick(match)}
                     />
                   ))}
@@ -496,7 +503,11 @@ export default function Bracket() {
         <MatchDetailsModal
           match={selectedMatch}
           matchNumber={getGlobalMatchNumber(selectedMatch)}
-          roundLabel={getRoundLabel(selectedMatch.round, totalRounds)}
+          roundLabel={
+            tournament.type === 'shuffle'
+              ? `Round ${selectedMatch.round}`
+              : getRoundLabel(selectedMatch.round, totalRounds)
+          }
           onClose={() => setSelectedMatchId(null)}
         />
       )}
