@@ -222,19 +222,18 @@ These will be asked in the public reply so we can tighten the design around thei
     - Player profile now deduplicates match history rows by `slug` before computing wins, losses, win rate, and ADR aggregates, and before rendering the match history table and performance chart, so repeated `player_match_stats` rows for the same match no longer cause visible double counting.
 
 - [ ] **Missing stats (match page, player profile, exports)**
-  - [ ] Confirm stats ingestion:
-    - `api/src/services/matchEventHandler.ts#trackPlayerStatsForMatch` inserting into `player_match_stats`.
-    - `api/src/services/matchLiveStatsService.ts` for live stats.
-  - [ ] Match page:
-    - Update components such as `client/src/components/modals/MatchDetailsModal.tsx`, `client/src/components/team/MatchPlayerPerformance.tsx`, `client/src/components/tournament/ShuffleTournamentStats.tsx` to:
-      - Show per‑player stats (ADR, K/D, etc.) when available.
-      - Handle “no stats yet” state gracefully.
-  - [ ] Player profile:
-    - Ensure `/api/players/:playerId/matches` includes ADR / damage / kills for each match.
-    - Make sure `client/src/pages/PlayerProfile.tsx` maps those fields into `matchHistory` and passes them into `PerformanceMetricsChart` and `ELOProgressionChart`.
-  - [ ] Tournament leaderboard:
-    - Check shuffle leaderboard endpoint in `api/src/routes/tournament.ts` to ensure `averageAdr` is correctly computed and returned.
-    - Verify `client/src/pages/TournamentLeaderboard.tsx` uses `averageAdr` both in UI and in CSV/JSON export (currently `Avg ADR` can be `N/A` due to missing data).
+  - [x] Confirm stats ingestion:
+    - `api/src/services/matchEventHandler.ts#trackPlayerStatsForMatch` writes per‑player stats (ADR, damage, kills, deaths, assists, utility damage, KAST, MVPs, score, rounds played) into `player_match_stats` based on the latest `player_stats` event for each completed match.
+    - `api/src/services/matchLiveStatsService.ts` maintains live match snapshots (including optional `playerStats`) for real‑time views without blocking match completion if stats are missing.
+  - [x] Match page:
+    - `client/src/components/modals/MatchDetailsModal.tsx` already renders per‑player “Player Leaderboards” when `liveStats.playerStats` is present, showing K/D/A, ADR, KAST, MVPs, damage, and linking to player profiles; when no stats are available it shows clear “No player data available” / “Waiting for stats...” messaging.
+    - `client/src/components/team/MatchPlayerPerformance.tsx` uses the same `MatchLiveStats.playerStats` shape and gracefully hides itself when there are no rows.
+  - [x] Player profile:
+    - `/api/players/:playerId/matches` in `api/src/routes/players.ts` already returns `adr`, `total_damage`, `kills`, `deaths`, and `assists` per match from `player_match_stats`.
+    - `client/src/pages/PlayerProfile.tsx` maps those fields into `matchHistory` and feeds them into both the “Match History” table and `PerformanceMetricsChart`, so ADR and damage now populate when stats exist, and display `N/A` when they do not.
+  - [x] Tournament leaderboard:
+    - Shuffle leaderboard (`getTournamentLeaderboard` in `api/src/services/shuffleTournamentService.ts`, exposed via `api/src/routes/tournament.ts`) computes `averageAdr` per player from `player_match_stats` and returns it on each entry.
+    - `client/src/pages/TournamentLeaderboard.tsx` uses `averageAdr` in the “Top Players by ADR” summary, the “Avg ADR” column, and both CSV/JSON exports; when ADR is unavailable it shows `N/A` rather than misleading zeroes.
 
 ---
 
