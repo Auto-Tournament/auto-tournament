@@ -246,6 +246,14 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
   const recentMatchLineColors = [theme.palette.primary.main];
 
+  const formatMatchStatus = (value: number): string => {
+    if (value === 5) return 'Completed';
+    if (value === 4) return 'Live';
+    if (value === 3) return 'Loaded';
+    if (value === 2) return 'Ready';
+    return 'Pending';
+  };
+
   const hasData = tournament || matches.length > 0 || servers.length > 0 || players.length > 0;
 
   if (!hasData && !showOnboarding) {
@@ -603,13 +611,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                         {
                           label: 'Status',
                           width: 90,
-                          valueFormatter: (value) => {
-                            if (value === 5) return 'Completed';
-                            if (value === 4) return 'Live';
-                            if (value === 3) return 'Loaded';
-                            if (value === 2) return 'Ready';
-                            return 'Pending';
-                          },
+                          valueFormatter: (value) => formatMatchStatus(Number(value)),
                         },
                       ]}
                       series={[
@@ -623,6 +625,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                           }),
                           label: 'Status',
                           area: true,
+                          valueFormatter: (value) => formatMatchStatus(Number(value)),
                         },
                       ]}
                       width={Math.max(600, recentMatches.length * 80)}

@@ -201,12 +201,12 @@ export function TournamentFormSteps({
   const handleNext = () => {
     // Show warnings for missing requirements but allow proceeding
     const validationMessage = getValidationMessage();
-    
+
     if (validationMessage) {
       showWarning(validationMessage);
       // Still allow proceeding - don't block
     }
-    
+
     if (activeStep < STEPS.length - 1) {
       setActiveStep(activeStep + 1);
     }
@@ -230,7 +230,7 @@ export function TournamentFormSteps({
   const canProceedFromStep1 = !!type; // Type required
   const canProceedFromStep2 = !!format || type === 'shuffle'; // Format required (or shuffle which auto-sets format)
   const canProceedFromStep3 = isValidMaps;
-  
+
   // Step 4 validation - no player validation needed (players registered after creation)
   const canProceedFromStep4 = true; // Always allow proceeding from step 4
 

@@ -258,11 +258,11 @@ These will be asked in the public reply so we can tighten the design around thei
 
   - [ ] Identify where raw numeric codes are being rendered:
     - `client/src/components/dashboard/DashboardStats.tsx` (line charts / recent matches).
-  - [ ] Map internal status codes to human‑readable labels (Pending / Ready / Loaded / Live / Completed) and use those both for tooltips and any text display.
+  - [x] Map internal status codes to human‑readable labels (Pending / Ready / Loaded / Live / Completed) and use those both for tooltips and any text display.
 
 - [ ] **Tournament map order tile with a single map**
 
-  - [ ] In `client/src/pages/Tournament.tsx` / `client/src/components/tournament/TournamentFormSteps.tsx`:
+  - [x] In `client/src/pages/Tournament.tsx` / `client/src/components/tournament/TournamentFormSteps.tsx`:
     - Fix layout so the single map appears centered/normal instead of anchored at the bottom.
 
 - [ ] **“Regenerate” button states**

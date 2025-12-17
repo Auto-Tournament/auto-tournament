@@ -121,6 +121,40 @@ export function ShuffleMapsCard({ maps }: ShuffleMapsCardProps) {
           <Typography variant="body2" color="text.secondary" sx={{ mt: 'auto' }}>
             No maps selected
           </Typography>
+        ) : maps.length === 1 ? (
+          // Special layout for a single map: center the tile instead of anchoring it at the bottom
+          <Box
+            sx={{
+              flex: 1,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: '100%',
+            }}
+          >
+            <Box
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                py: 0.5,
+              }}
+            >
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ minWidth: 24, mr: 1 }}
+              >
+                1.
+              </Typography>
+              <Typography variant="body2" fontWeight={500} sx={{ textAlign: 'left' }}>
+                {(() => {
+                  const onlyMapId = maps[0];
+                  const map = availableMaps.find((m) => m.id === onlyMapId);
+                  return map ? map.displayName : getMapDisplayName(onlyMapId);
+                })()}
+              </Typography>
+            </Box>
+          </Box>
         ) : (
           <Grid container spacing={1} sx={{ width: '100%', mt: 'auto' }}>
             {mapRows.map((row, rowIndex) =>
