@@ -13,6 +13,7 @@ import Tournament from './pages/Tournament';
 import Bracket from './pages/Bracket';
 import Matches from './pages/Matches';
 import AdminTools from './pages/AdminTools';
+import PublicPages from './pages/PublicPages';
 import Settings from './pages/Settings';
 import Development from './pages/Development';
 import TeamMatch from './pages/TeamMatch';
@@ -101,6 +102,7 @@ function AppRoutes() {
         <Route path="bracket" element={<Bracket />} />
         <Route path="matches" element={<Matches />} />
         <Route path="admin" element={<AdminTools />} />
+        <Route path="public" element={<PublicPages />} />
         <Route path="settings" element={<Settings />} />
         <Route path="maps" element={<Maps />} />
         <Route path="templates" element={<Templates />} />

@@ -41,6 +41,7 @@ import BuildIcon from '@mui/icons-material/Build';
 import MapIcon from '@mui/icons-material/Map';
 import DescriptionIcon from '@mui/icons-material/Description';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
+import PublicIcon from '@mui/icons-material/Public';
 import { useAuth } from '../../contexts/AuthContext';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -173,6 +174,7 @@ export default function Layout() {
       '/admin': { title: 'Admin Tools', icon: CampaignIcon },
       '/settings': { title: 'Settings', icon: SettingsIcon },
       '/dev': { title: 'Development Tools', icon: BugReportIcon, color: 'warning.main' },
+      '/public': { title: 'Public Links', icon: PublicIcon },
     };
 
   // Get current page header config
@@ -200,6 +202,7 @@ export default function Layout() {
 
   const systemNavItems = [
     { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
+    { label: 'Public Links', path: '/public', icon: PublicIcon },
     ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),
   ];
 
