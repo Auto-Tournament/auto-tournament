@@ -383,7 +383,7 @@ export default function Settings() {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="body2" color="text.secondary" mb={4}>
-        Configure integrations, in-game behavior, rating defaults, and developer options.
+        Configure core integrations, in-game defaults, and developer options.
       </Typography>
 
       {loading && (
@@ -418,8 +418,7 @@ export default function Settings() {
                     MatchZy Webhook
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Base URL for MatchZy webhooks and demo uploads. It must be reachable from your
-                    CS2 servers.
+                    MatchZy webhook URL that your CS2 servers can reach.
                   </Typography>
                   <TextField
                     label="Webhook URL"
@@ -454,7 +453,7 @@ export default function Settings() {
                       onKeyDown={handleFieldKeyDown}
                       type={showSteamKey ? 'text' : 'password'}
                       fullWidth
-                      helperText="Used to resolve vanity URLs and fetch player profiles. Leave blank to disable Steam lookups."
+                      helperText="Resolves Steam vanity URLs and player info. Leave blank to disable lookups."
                       slotProps={{
                         htmlInput: { 'data-testid': 'settings-steam-api-key-input' },
                       }}
@@ -532,8 +531,7 @@ export default function Settings() {
                     Map Synchronization
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Sync CS2 maps from the GitHub repository. Only new maps are added; existing maps
-                    are skipped.
+                    Sync CS2 maps from the GitHub repository.
                   </Typography>
                   <Button
                     variant="outlined"
@@ -554,8 +552,7 @@ export default function Settings() {
                     Default Player ELO
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Starting ELO for new players when none is specified (used by shuffle tournaments
-                    and player/team imports).
+                    Starting ELO for new players when none is specified.
                   </Typography>
                   <TextField
                     label="Default Player ELO"
@@ -590,9 +587,7 @@ export default function Settings() {
                     MatchZy Chat & Knife Defaults
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Control the in-game chat prefixes and whether knife rounds are enabled by
-                    default for new matches. Changes are pushed via RCON before each match is
-                    loaded.
+                    Configure in-game chat prefixes and default knife round behavior.
                   </Typography>
                   <Stack spacing={2}>
                     <TextField
@@ -623,11 +618,8 @@ export default function Settings() {
                       label="Enable knife rounds by default for new matches (when sides are not pre-selected)"
                     />
                     <Typography variant="caption" color="text.secondary" display="block">
-                      This flag only affects matches where MatchZy would normally run a knife round
-                      (for example, when no starting sides are chosen in the match config). Explicit
-                      side picks or shuffle&apos;s auto-assigned sides are not overridden. Some
-                      changes may require a map reload or server restart depending on your MatchZy
-                      configuration.
+                      Applies only when MatchZy would normally run a knife round; explicit side
+                      picks or shuffle-assigned sides are not changed.
                     </Typography>
                   </Stack>
                 </Box>
@@ -642,8 +634,7 @@ export default function Settings() {
                       Developer Options
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mb={2}>
-                      Experimental features for local development. These options should not be used
-                      in production environments.
+                      Local development helpers only; don&apos;t enable in production.
                     </Typography>
                     <FormControlLabel
                       control={
@@ -656,9 +647,7 @@ export default function Settings() {
                       label="Simulate matches (use bot-driven demo matches instead of real players)"
                     />
                     <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                      When enabled, generated MatchZy configs include{' '}
-                      <code>\"simulation\": true</code> so servers can run fully automated demo
-                      matches for development and testing.
+                      When enabled, generated MatchZy configs include <code>\"simulation\": true</code> for automated demo matches.
                     </Typography>
                   </Box>
                 </Stack>
@@ -695,10 +684,8 @@ export default function Settings() {
             <DialogTitle id="reset-settings-dialog-title">Reset settings?</DialogTitle>
             <DialogContent>
               <Typography variant="body2" color="text.secondary">
-                This will reset all settings on this page (integrations, match & rating, and
-                developer options) back to their defaults. Existing tournaments and servers are not
-                modified, but new matches and lookups will use the default values. Are you sure you
-                want to continue?
+                Reset all settings on this page back to defaults. Existing tournaments and servers
+                are not changed, but new matches and lookups will use the default values. Continue?
               </Typography>
             </DialogContent>
             <DialogActions>
