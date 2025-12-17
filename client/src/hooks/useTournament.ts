@@ -19,6 +19,7 @@ export const useTournament = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasBracket, setHasBracket] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -45,24 +46,34 @@ export const useTournament = () => {
               const bracketResponse = await api.get<
                 TournamentBracketResponse & { matches: Match[] }
               >('/api/tournament/bracket');
-              if (!bracketResponse.matches || bracketResponse.matches.length === 0) {
+
+              if (bracketResponse.matches && bracketResponse.matches.length > 0) {
+                setHasBracket(true);
+              } else {
+                setHasBracket(false);
                 setError(
                   'Warning: Tournament exists but has no bracket. This may be from a failed bracket generation. ' +
-                    'Consider deleting and recreating the tournament.'
+                    'Use "Save & Generate Brackets" on the setup form before trying to regenerate.'
                 );
               }
             } catch {
-              // Bracket endpoint failed
+              // Bracket endpoint failed – treat as no bracket yet
+              setHasBracket(false);
             }
+          } else {
+            // Non-setup tournaments have already generated matches/bracket
+            setHasBracket(true);
           }
         }
       } catch {
         // No tournament exists yet
         setTournament(null);
+        setHasBracket(false);
       }
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to load data');
+      setHasBracket(false);
     } finally {
       setLoading(false);
     }
@@ -147,5 +158,6 @@ export const useTournament = () => {
     startTournament,
     restartTournament,
     refreshData: loadData,
+    hasBracket,
   };
 };

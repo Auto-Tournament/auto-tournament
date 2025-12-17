@@ -9,6 +9,7 @@ import {
   Grid,
   Divider,
   CircularProgress,
+  Tooltip,
 } from '@mui/material';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
 import RefreshIcon from '@mui/icons-material/Refresh';
@@ -36,6 +37,7 @@ interface TournamentReviewProps {
   onStart: () => void;
   onRegenerate: () => void;
   onDelete: () => void;
+  hasBracket?: boolean;
 }
 
 export const TournamentReview: React.FC<TournamentReviewProps> = ({
@@ -47,6 +49,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   onStart,
   onRegenerate,
   onDelete,
+  hasBracket,
 }) => {
   const { showWarning } = useSnackbar();
   const isShuffle = tournament.type === 'shuffle';
@@ -54,6 +57,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   const minPlayers = teamSize * 2;
   const hasEnoughPlayers = registeredPlayerCount !== undefined ? registeredPlayerCount >= minPlayers : true;
   const canStart = !isShuffle || hasEnoughPlayers;
+  const canRegenerate = !isShuffle && (hasBracket ?? true);
   const [availableMaps, setAvailableMaps] = useState<Map[]>([]);
 
   useEffect(() => {
@@ -167,14 +171,27 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           )}
 
           <Box display="flex" gap={1} flexWrap="wrap" sx={{ ml: { xs: 0, sm: 'auto' } }}>
-            <Button
-              variant="outlined"
-              startIcon={<RefreshIcon />}
-              onClick={onRegenerate}
-              disabled={saving}
-            >
-              Regenerate
-            </Button>
+            {!isShuffle && (
+              <Tooltip
+                title={
+                  canRegenerate
+                    ? 'Delete all current matches and regenerate the bracket with the same settings.'
+                    : 'Generate the bracket at least once (Save & Generate Brackets) before you can regenerate.'
+                }
+                enterDelay={500}
+              >
+                <Box component="span">
+                  <Button
+                    variant="outlined"
+                    startIcon={<RefreshIcon />}
+                    onClick={onRegenerate}
+                    disabled={saving || !canRegenerate}
+                  >
+                    Regenerate
+                  </Button>
+                </Box>
+              </Tooltip>
+            )}
             <Button
               variant="outlined"
               color="error"

@@ -35,6 +35,7 @@ const Tournament: React.FC = () => {
     tournament,
     teams,
     loading,
+    hasBracket,
     saveTournament,
     deleteTournament,
     regenerateBracket,
@@ -809,6 +810,7 @@ const Tournament: React.FC = () => {
               registeredPlayerCount={
                 tournament.type === 'shuffle' ? registeredPlayerCount : undefined
               }
+            hasBracket={hasBracket}
               onEdit={() => setIsEditing(true)}
               onStart={handleStart}
               onRegenerate={() => setShowRegenerateConfirm(true)}

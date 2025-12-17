@@ -267,7 +267,7 @@ These will be asked in the public reply so we can tighten the design around thei
 
 - [ ] **“Regenerate” button states**
 
-  - [ ] In the bracket / tournament creation views (`client/src/pages/Bracket.tsx`, `client/src/components/tournament/TournamentForm.tsx`):
+  - [x] In the bracket / tournament creation views (`client/src/pages/Bracket.tsx`, `client/src/components/tournament/TournamentForm.tsx`):
     - Disable the “Regenerate” button until an initial bracket or match set is actually generated.
     - Add hover text when disabled explaining why.
 
