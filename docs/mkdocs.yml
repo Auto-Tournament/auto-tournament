@@ -1,6 +1,6 @@
 # Project information
 site_name: MatchZy Auto Tournament
-site_url: https://me.sivert.io/
+site_url: https://mat.sivert.io/
 site_author: Sivert Gullberg Hansen
 site_description: >-
   Automated CS2 tournament management platform MatchZy Auto Tournament  - one click
@@ -192,7 +192,7 @@ nav:
       - Changelog: changelog.md
       - Roadmap: roadmap.md
       - CS2 Server Manager: https://sivert-io.github.io/cs2-server-manager/
-      - MatchZy Enhanced: https://me.sivert.io
+      - MatchZy Enhanced: https://mat.sivert.io
 
 # Additional CSS
 extra_css:

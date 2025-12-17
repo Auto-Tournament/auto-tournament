@@ -893,7 +893,7 @@ https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}
 docker compose -f docker/docker-compose.yml up -d
 \`\`\`
 
-See [Getting Started Guide](https://me.sivert.io/getting-started/quick-start) for full setup instructions."
+See [Getting Started Guide](https://mat.sivert.io/getting-started/quick-start) for full setup instructions."
 
 gh release create "v${NEW_VERSION}" \
     --title "Release v${NEW_VERSION}" \

@@ -175,7 +175,18 @@ export default function Settings() {
         setSaving(false);
       }
     },
-    [webhookUrl, steamApiKey, defaultPlayerElo, showSuccess, showError]
+    [
+      webhookUrl,
+      steamApiKey,
+      defaultPlayerElo,
+      matchzyChatPrefix,
+      matchzyAdminChatPrefix,
+      matchzyKnifeEnabledDefault,
+      simulateMatches,
+      isDev,
+      showSuccess,
+      showError,
+    ]
   );
 
   const handleFieldBlur = () => {
@@ -246,6 +257,9 @@ export default function Settings() {
     initialMatchzyChatPrefix,
     initialMatchzyAdminChatPrefix,
     initialMatchzyKnifeEnabledDefault,
+    simulateMatches,
+    initialSimulateMatches,
+    isDev,
     loading,
     handleSave,
   ]);

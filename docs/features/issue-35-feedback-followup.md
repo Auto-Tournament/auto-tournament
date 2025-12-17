@@ -322,12 +322,14 @@ These will be asked in the public reply so we can tighten the design around thei
 - [x] Ensure these values are pushed via RCON before loading matches (see ConVars section).
 
 - [ ] **Steam SSO (nice to have)**
-  - [ ] Design login flow:
-    - Add a Steam login endpoint (`/auth/steam`) on the API, using OpenID / Steam Web API.
-    - Non‑admin users should be redirected to their player page (`/player/:steamId`) after login.
-    - Keep admin access gated behind existing token flow (or a separate admin login).
-  - [ ] Update frontend routing / header:
-    - Add a “Login with Steam” entry point for players on public pages.
+  - [x] Design login flow (players only, keep admin model unchanged):
+    - Added a Steam OpenID flow under `/api/auth`:
+      - `GET /api/auth/steam` starts the Steam login by redirecting the browser to the Steam OpenID endpoint.
+      - `GET /api/auth/steam/callback` verifies the OpenID assertion with Steam, extracts the Steam64 ID from `openid.claimed_id`, sets a lightweight `player_steam_id` cookie, and redirects the user to the built client at `/app/player/:steamId`.
+    - This flow is intentionally **players-only**: it does not grant any admin rights and does not touch the existing API token–based `requireAuth` model for admin routes.
+    - A simple `GET /api/auth/me` endpoint reflects the `player_steam_id` cookie (`{ authenticated: true, steamId }` or `false`) so the frontend can show “My Profile” style convenience UI in the future without using it for authorization.
+  - [x] Update frontend routing / header:
+    - On the public `FindPlayer` page (`client/src/pages/FindPlayer.tsx`), added a “Login with Steam” button (using `SteamIcon`) that simply navigates to `/api/auth/steam`, letting players jump directly to their own `/player/:steamId` profile without introducing a heavier sign‑in flow.
 
 ---
 

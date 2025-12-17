@@ -40,7 +40,11 @@ interface PlayerImportModalProps {
   onImport: (players: ImportPlayer[]) => Promise<void>;
 }
 
-export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onClose, onImport }) => {
+export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
+  open,
+  onClose,
+  onImport,
+}) => {
   const { showWarning } = useSnackbar();
   const [jsonInput, setJsonInput] = useState('');
   const [parsedPlayers, setParsedPlayers] = useState<ImportPlayer[] | null>(null);
@@ -66,7 +70,10 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onCl
     if (!player.name || typeof player.name !== 'string') {
       return `Player ${index + 1} (${player.steamId}): Missing or invalid name`;
     }
-    if (player.initialELO !== undefined && (typeof player.initialELO !== 'number' || player.initialELO < 0)) {
+    if (
+      player.initialELO !== undefined &&
+      (typeof player.initialELO !== 'number' || player.initialELO < 0)
+    ) {
       return `Player "${player.name}": initialELO must be a positive number or omitted`;
     }
     return null;
@@ -175,12 +182,13 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onCl
       <DialogContent>
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2" gutterBottom>
-            Import players from JSON or CSV format. Required fields: <strong>steamId</strong>, <strong>name</strong>.
-            Optional: <strong>initialELO</strong> (defaults to 3000), <strong>avatarUrl</strong>.
+            Import players from JSON or CSV format. Required fields: <strong>steamId</strong>,{' '}
+            <strong>name</strong>. Optional: <strong>initialELO</strong> (defaults to 3000),{' '}
+            <strong>avatarUrl</strong>.
           </Typography>
           <Typography variant="caption" component="div">
             <Link
-              href="https://me.sivert.io/guides/shuffle-tournaments/#bulk-import-players-with-elo"
+              href="https://mat.sivert.io/guides/shuffle-tournaments/#bulk-import-players-with-elo"
               target="_blank"
               rel="noopener noreferrer"
               sx={{
@@ -233,7 +241,6 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onCl
             />
           )}
         </Box>
-
 
         {parsedPlayers && parsedPlayers.length > 0 && (
           <Paper sx={{ p: 2, maxHeight: 400, overflow: 'auto' }}>
@@ -322,11 +329,15 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({ open, onCl
         onClose={() => setError('')}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
       >
-        <Alert severity="error" onClose={() => setError('')} variant="filled" sx={{ whiteSpace: 'pre-wrap' }}>
+        <Alert
+          severity="error"
+          onClose={() => setError('')}
+          variant="filled"
+          sx={{ whiteSpace: 'pre-wrap' }}
+        >
           {error}
         </Alert>
       </Snackbar>
     </Dialog>
   );
 };
-

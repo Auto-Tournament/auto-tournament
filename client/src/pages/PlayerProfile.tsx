@@ -71,6 +71,17 @@ export default function PlayerProfile() {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
 
+  // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
+  const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
+    const bySlug = new Map<string, MatchHistoryEntry>();
+    for (const match of matchHistory) {
+      if (!bySlug.has(match.slug)) {
+        bySlug.set(match.slug, match);
+      }
+    }
+    return Array.from(bySlug.values());
+  }, [matchHistory]);
+
   const loadPlayerData = async () => {
     if (!steamId) return;
 
@@ -230,17 +241,6 @@ export default function PlayerProfile() {
       </Box>
     );
   }
-
-  // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
-  const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
-    const bySlug = new Map<string, MatchHistoryEntry>();
-    for (const match of matchHistory) {
-      if (!bySlug.has(match.slug)) {
-        bySlug.set(match.slug, match);
-      }
-    }
-    return Array.from(bySlug.values());
-  }, [matchHistory]);
 
   const eloChange = player.currentElo - player.startingElo;
   const winRate =

@@ -87,7 +87,10 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
         return `Team "${team.name}", Player "${player.name}": Invalid Steam ID format (${player.steamId})`;
       }
       // Validate ELO if provided
-      if (player.elo !== undefined && (typeof player.elo !== 'number' || player.elo < 0 || player.elo > 10000)) {
+      if (
+        player.elo !== undefined &&
+        (typeof player.elo !== 'number' || player.elo < 0 || player.elo > 10000)
+      ) {
         return `Team "${team.name}", Player "${player.name}": ELO must be a number between 0 and 10000`;
       }
     }
@@ -181,7 +184,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             </Typography>
             <Typography variant="caption" component="div" sx={{ mt: 1 }}>
               <Link
-                href="https://me.sivert.io/guides/managing-teams/#advanced-bulk-import-json"
+                href="https://mat.sivert.io/guides/managing-teams/#advanced-bulk-import-json"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{
@@ -329,12 +332,16 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             Preview
           </Button>
         ) : (
-          <Button onClick={handleImport} variant="contained" disabled={importing} sx={{ ml: 'auto' }}>
+          <Button
+            onClick={handleImport}
+            variant="contained"
+            disabled={importing}
+            sx={{ ml: 'auto' }}
+          >
             {importing ? 'Importing...' : `Import ${parsedTeams.length} Teams`}
           </Button>
         )}
       </DialogActions>
-
     </Dialog>
   );
 };

@@ -25,7 +25,7 @@ router.get('/steam', (req: Request, res: Response) => {
     const returnTo = `${baseUrl}/api/auth/steam/callback`;
     const realm = baseUrl;
 
-    const params = new URLSearchParams({
+    const params = new globalThis.URLSearchParams({
       'openid.ns': STEAM_OPENID_NS,
       'openid.mode': 'checkid_setup',
       'openid.return_to': returnTo,
@@ -68,7 +68,7 @@ router.get('/steam/callback', async (req: Request, res: Response) => {
     }
 
     // Prepare verification payload to Steam
-    const verificationParams = new URLSearchParams();
+    const verificationParams = new globalThis.URLSearchParams();
     Object.entries(query).forEach(([key, value]) => {
       if (Array.isArray(value)) {
         // Steam never sends arrays here, but handle defensively
@@ -81,7 +81,7 @@ router.get('/steam/callback', async (req: Request, res: Response) => {
     // Per OpenID spec: switch mode to "check_authentication"
     verificationParams.set('openid.mode', 'check_authentication');
 
-    const response = await fetch(STEAM_OPENID_ENDPOINT, {
+    const response = await globalThis.fetch(STEAM_OPENID_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',

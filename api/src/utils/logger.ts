@@ -1,6 +1,48 @@
-import pino from 'pino';
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
+
+/**
+ * Create a Pino logger instance with compatibility for older Node.js 18 releases.
+ *
+ * `pino@10` relies on `diagnostics_channel.tracingChannel`, which was added in Node 18.19.0.
+ * On older 18.x versions (like 18.12.1), we polyfill `tracingChannel` to fall back to `channel`
+ * so that Pino can initialize without crashing.
+ */
+function createPinoLogger() {
+  try {
+    const diagnosticsChannel = require('node:diagnostics_channel');
+
+    if (
+      diagnosticsChannel &&
+      typeof diagnosticsChannel.tracingChannel !== 'function' &&
+      typeof diagnosticsChannel.channel === 'function'
+    ) {
+      // Polyfill for older Node versions: use `channel` as a stand-in for `tracingChannel`
+      // This preserves basic diagnostics behavior without requiring a newer Node runtime.
+      diagnosticsChannel.tracingChannel = diagnosticsChannel.channel;
+    }
+  } catch {
+    // If diagnostics_channel is unavailable for some reason, continue without polyfill.
+  }
+
+  const pino = require('pino');
+
+  return pino({
+    level: process.env.LOG_LEVEL || 'info',
+    transport: isDevelopment
+      ? {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
+            ignore: 'pid,hostname',
+            singleLine: false,
+          },
+        }
+      : undefined, // Production: undefined = JSON output (industry standard)
+  });
+}
 
 // In-memory log buffer for recent logs
 export interface LogEntry {
@@ -46,20 +88,7 @@ export function getRecentLogs(limit = 100): LogEntry[] {
  * - Smaller log file sizes
  * - Machine-readable format for automated analysis
  */
-export const logger = pino({
-  level: process.env.LOG_LEVEL || 'info',
-  transport: isDevelopment
-    ? {
-        target: 'pino-pretty',
-        options: {
-          colorize: true,
-          translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
-          ignore: 'pid,hostname',
-          singleLine: false,
-        },
-      }
-    : undefined, // Production: undefined = JSON output (industry standard)
-});
+export const logger = createPinoLogger();
 
 // Convenience methods for structured logging
 export const log = {

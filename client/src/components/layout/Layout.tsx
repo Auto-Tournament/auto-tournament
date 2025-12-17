@@ -733,7 +733,7 @@ export default function Layout() {
             <Stack direction="row" alignItems="center" spacing={1}>
               <Button
                 color="inherit"
-                href="https://me.sivert.io/"
+                href="https://mat.sivert.io/"
                 target="_blank"
                 rel="noopener noreferrer"
                 startIcon={<LibraryBooks />}
