@@ -29,7 +29,7 @@ After completing the guide, verify the plugin is loaded by typing `meta list` in
 
 ### Step 1: Download
 
-**Latest Release:** [MatchZy Enhanced](https://me.sivert.io)
+**Latest Release:** [MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced)
 
 ### Step 2: Install
 

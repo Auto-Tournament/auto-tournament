@@ -192,7 +192,7 @@ nav:
       - Changelog: changelog.md
       - Roadmap: roadmap.md
       - CS2 Server Manager: https://sivert-io.github.io/cs2-server-manager/
-      - MatchZy Enhanced: https://mat.sivert.io
+      - MatchZy Enhanced: https://github.com/sivert-io/MatchZy-Enhanced
 
 # Additional CSS
 extra_css:

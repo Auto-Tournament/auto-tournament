@@ -11,7 +11,7 @@ Automated tournament management for Counter-Strike 2. Run CS2 tournaments from b
 Designed to work hand-in-hand with:
 
 - **[CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/)** – multi-server CS2 deployment and management.
-- **[MatchZy Enhanced](https://me.sivert.io)** – enhanced MatchZy plugin for in-server automation.
+- **[MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced)** – enhanced MatchZy plugin for in-server automation.
 
 ## What it does
 
@@ -52,7 +52,7 @@ Read the **[Getting Started](getting-started/quick-start.md)** guide for the com
 ## Related projects
 
 - [CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/) – multi-server CS2 deployment and management.
-- [MatchZy Enhanced](https://me.sivert.io) – enhanced MatchZy plugin for in-server automation.
+- [MatchZy Enhanced](https://github.com/sivert-io/MatchZy-Enhanced) – enhanced MatchZy plugin for in-server automation.
 
 ---
 

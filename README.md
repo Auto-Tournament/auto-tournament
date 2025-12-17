@@ -41,7 +41,7 @@
 ## ⚙️ Requirements
 
 - **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
-- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases)
+- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy-Enhanced/releases)
 - **RCON access** to your CS2 servers
 
 ---

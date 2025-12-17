@@ -8,7 +8,7 @@ Make sure you have:
 
 - [x] System installed and running
 - [x] At least 2 teams created with 5+ players each
-- [x] At least one CS2 server with the [enhanced MatchZy plugin](https://me.sivert.io) installed
+- [x] At least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/MatchZy-Enhanced) installed
 
 > **Haven't set up your CS2 server yet?** See the [CS2 Server Setup Guide](server-setup.md) for detailed installation instructions.
 
