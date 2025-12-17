@@ -179,7 +179,9 @@ export function ShuffleTournamentConfigStep({
                 }}
                 helperText={
                   settings.maxRounds > 0
-                    ? `Winner is first team to reach ${Math.floor(settings.maxRounds / 2) + 1} rounds (max rounds: ${settings.maxRounds})`
+                    ? `Winner is first team to reach ${
+                        Math.floor(settings.maxRounds / 2) + 1
+                      } rounds (max rounds: ${settings.maxRounds})`
                     : 'Maximum number of rounds per match (default: 24, max: 30)'
                 }
                 error={
@@ -224,7 +226,7 @@ export function ShuffleTournamentConfigStep({
         {/* ELO Calculation Template */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title="Select how player statistics influence ELO adjustments. OpenSkill calculates base ELO from win/loss, then stat-based adjustments are applied based on the selected template."
+            title="Choose how ELO is calculated for this tournament. By default, the 'Pure Win/Loss' template only uses match result (win/loss); stats are tracked but do not change ELO. Other templates are optional and add stat-based adjustments on top of the OpenSkill win/loss change if you want Excel-style behavior."
             arrow
             placement="top"
             enterDelay={500}
@@ -267,7 +269,7 @@ export function ShuffleTournamentConfigStep({
               <FormHelperText>
                 {eloTemplates.find((t) => t.id === (settings.eloTemplateId || 'pure-win-loss'))
                   ?.description ||
-                  'ELO calculated purely from win/loss (OpenSkill only, no stat adjustments)'}
+                  'Pure Win/Loss (default): only match result affects ELO. Player stats are still recorded for leaderboards and exports, but they do not change the rating unless you select a custom template.'}
               </FormHelperText>
             </FormControl>
           </Tooltip>

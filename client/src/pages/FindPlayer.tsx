@@ -34,6 +34,7 @@ export default function FindPlayer() {
   const [players, setPlayers] = useState<PlayerOption[]>([]);
   const [playersLoading, setPlayersLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
+  const [inputError, setInputError] = useState<string | null>(null);
   const { showError } = useSnackbar();
 
   useEffect(() => {
@@ -66,11 +67,12 @@ export default function FindPlayer() {
     const effectiveQuery = (rawQuery ?? query).trim();
 
     if (!effectiveQuery) {
-      showError('Please enter a Steam ID or profile URL');
+      setInputError('Please enter a Steam ID, Steam name, or profile URL');
       return;
     }
 
     setLoading(true);
+    setInputError(null);
 
     try {
       const response = await api.get<{
@@ -78,6 +80,7 @@ export default function FindPlayer() {
         player?: { id: string; name: string };
         players?: Array<{ id: string; name: string }>;
         error?: string;
+        steamApiConfigured?: boolean;
       }>(`/api/players/find?query=${encodeURIComponent(effectiveQuery)}`);
 
       if (response.success) {
@@ -95,13 +98,20 @@ export default function FindPlayer() {
             setShowResultsModal(true);
           }
         } else {
-          showError('Player not found');
+          setInputError('Player not found. Check the Steam ID or URL and try again.');
         }
       } else {
-        showError(response.error || 'Player not found');
+        // Show a clear, inline error near the input instead of failing silently
+        setInputError(
+          response.error ||
+            (response.steamApiConfigured === false
+              ? 'Steam API is not configured. Vanity URLs cannot be resolved – enter a Steam ID64 instead or ask an admin to set the Steam Web API key in Settings.'
+              : 'Player not found. Check the Steam ID or URL and try again.')
+        );
       }
     } catch (err) {
       showError('Failed to search for player');
+      setInputError('Failed to search for player. Please try again.');
       console.error(err);
     } finally {
       setLoading(false);
@@ -145,6 +155,9 @@ export default function FindPlayer() {
                 onInputChange={(_, newInputValue) => {
                   setInputValue(newInputValue);
                   setQuery(newInputValue);
+                  if (inputError) {
+                    setInputError(null);
+                  }
                 }}
                 slotProps={{
                   // When there are no options to select, don't let the "No players found" popper
@@ -161,6 +174,8 @@ export default function FindPlayer() {
                     placeholder="Start typing a name or paste a Steam URL…"
                     onKeyPress={handleKeyPress}
                     disabled={loading}
+                    error={!!inputError}
+                    helperText={inputError || undefined}
                     slotProps={{
                       htmlInput: {
                         ...params.inputProps,

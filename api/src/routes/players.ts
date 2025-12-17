@@ -50,6 +50,7 @@ router.get('/find', async (req: Request, res: Response) => {
 
     // Extract Steam ID from various formats
     let resolvedSteamId: string | null = null;
+    const steamApiAvailable = await steamService.isAvailable();
 
     // Direct Steam ID (64-bit)
     if (/^7656\d{13}$/.test(searchQuery)) {
@@ -66,13 +67,11 @@ router.get('/find', async (req: Request, res: Response) => {
       // Try to resolve via Steam API if available
       else if (searchQuery.includes('/id/')) {
         try {
-          if (await steamService.isAvailable()) {
+          if (steamApiAvailable) {
             const resolvedId = await steamService.resolveSteamId(searchQuery);
             if (resolvedId) {
               resolvedSteamId = resolvedId;
             }
-          } else {
-            log.debug('Steam API not configured, cannot resolve vanity URL');
           }
         } catch (error) {
           log.debug(
@@ -84,7 +83,7 @@ router.get('/find', async (req: Request, res: Response) => {
       }
     }
     // Try to resolve as vanity URL/ID if Steam API is available
-    else if (await steamService.isAvailable()) {
+    else if (steamApiAvailable) {
       try {
         const resolvedId = await steamService.resolveSteamId(searchQuery);
         if (resolvedId) {
@@ -122,9 +121,21 @@ router.get('/find', async (req: Request, res: Response) => {
       });
     }
 
-    return res.status(404).json({
+    // No players found - provide clearer errors for vanity URLs vs general search
+    if (!steamApiAvailable && searchQuery.includes('steamcommunity.com')) {
+      log.debug('Steam API not configured, cannot resolve vanity URL in /api/players/find');
+      return res.json({
+        success: false,
+        error:
+          'Steam API is not configured, so Steam vanity URLs cannot be resolved. Enter a Steam ID64 instead, or ask an admin to set the Steam Web API key on the Settings page.',
+        steamApiConfigured: false,
+      });
+    }
+
+    return res.json({
       success: false,
       error: 'Player not found',
+      steamApiConfigured: steamApiAvailable,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

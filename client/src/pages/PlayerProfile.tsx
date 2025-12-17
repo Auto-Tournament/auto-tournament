@@ -37,6 +37,9 @@ interface RatingHistoryEntry {
   eloBefore: number;
   eloAfter: number;
   eloChange: number;
+  baseEloAfter?: number | null;
+  statAdjustment?: number | null;
+  templateId?: string | null;
   matchResult: 'win' | 'loss';
   createdAt: number;
 }
@@ -88,11 +91,37 @@ export default function PlayerProfile() {
 
       // Load rating history
       try {
-        const historyResponse = await api.get<{ success: boolean; history: RatingHistoryEntry[] }>(
+        const historyResponse = await api.get<{
+          success: boolean;
+          history: Array<{
+            match_slug: string;
+            elo_before: number;
+            elo_after: number;
+            elo_change: number;
+            base_elo_after?: number | null;
+            stat_adjustment?: number | null;
+            template_id?: string | null;
+            match_result: 'win' | 'loss';
+            created_at: number;
+          }>;
+        }>(
           `/api/players/${steamId}/rating-history`
         );
         if (historyResponse.success && historyResponse.history) {
-          setRatingHistory(historyResponse.history);
+          setRatingHistory(
+            historyResponse.history.map((entry, index) => ({
+              id: index,
+              matchSlug: entry.match_slug,
+              eloBefore: entry.elo_before,
+              eloAfter: entry.elo_after,
+              eloChange: entry.elo_change,
+              baseEloAfter: entry.base_elo_after ?? null,
+              statAdjustment: entry.stat_adjustment ?? null,
+              templateId: entry.template_id ?? null,
+              matchResult: entry.match_result,
+              createdAt: entry.created_at,
+            }))
+          );
         }
       } catch {
         // Rating history is optional
@@ -391,8 +420,11 @@ export default function PlayerProfile() {
                       <TableRow>
                         <TableCell>Match</TableCell>
                         <TableCell align="right">ELO Before</TableCell>
-                        <TableCell align="right">ELO After</TableCell>
-                        <TableCell align="right">Change</TableCell>
+                        <TableCell align="right">Base ELO After</TableCell>
+                        <TableCell align="right">Stat Adj.</TableCell>
+                        <TableCell align="right">Final ELO</TableCell>
+                        <TableCell align="right">Total Change</TableCell>
+                        <TableCell>Template</TableCell>
                         <TableCell>Result</TableCell>
                       </TableRow>
                     </TableHead>
@@ -404,7 +436,31 @@ export default function PlayerProfile() {
                               {entry.matchSlug}
                             </Typography>
                           </TableCell>
-                          <TableCell align="right">{entry.eloBefore}</TableCell>
+                          <TableCell align="right">
+                            {entry.eloBefore}
+                          </TableCell>
+                          <TableCell align="right">
+                            {entry.baseEloAfter ?? '—'}
+                          </TableCell>
+                          <TableCell align="right">
+                            {entry.statAdjustment !== undefined && entry.statAdjustment !== null ? (
+                              <Chip
+                                label={`${
+                                  entry.statAdjustment > 0 ? '+' : ''
+                                }${entry.statAdjustment}`}
+                                size="small"
+                                color={
+                                  entry.statAdjustment > 0
+                                    ? 'success'
+                                    : entry.statAdjustment < 0
+                                    ? 'error'
+                                    : 'default'
+                                }
+                              />
+                            ) : (
+                              '—'
+                            )}
+                          </TableCell>
                           <TableCell align="right">
                             <strong>{entry.eloAfter}</strong>
                           </TableCell>
@@ -414,6 +470,11 @@ export default function PlayerProfile() {
                               size="small"
                               color={entry.eloChange > 0 ? 'success' : 'error'}
                             />
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body2" color="text.secondary" noWrap>
+                              {entry.templateId || 'Pure Win/Loss'}
+                            </Typography>
                           </TableCell>
                           <TableCell>
                             <Chip

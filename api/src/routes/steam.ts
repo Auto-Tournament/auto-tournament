@@ -10,6 +10,61 @@ router.use(requireAuth);
 
 /**
  * @openapi
+ * /api/steam/status:
+ *   get:
+ *     tags:
+ *       - Steam
+ *     summary: Check Steam API connectivity
+ *     description: Verifies whether a Steam Web API key is configured and reachable.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Steam API is configured and available
+ *       200:
+ *         description: Steam API is not configured
+ *       503:
+ *         description: Steam API key is set but Steam could not be reached
+ */
+router.get('/status', async (_req: Request, res: Response) => {
+  try {
+    const available = await steamService.isAvailable();
+    if (!available) {
+      return res.json({
+        success: false,
+        configured: false,
+        error: 'Steam API key is not set. Configure it on the Settings page to enable vanity URL lookups.',
+      });
+    }
+
+    // Try a lightweight resolve call to verify connectivity (without failing hard on errors)
+    try {
+      await steamService.resolveSteamId('76561197960287930'); // Well-known test ID; will short-circuit as already ID64
+    } catch (error) {
+      log.warn('Steam API key appears configured but connectivity test failed', { error });
+      return res.status(503).json({
+        success: false,
+        configured: true,
+        error: 'Steam API key is set but Steam could not be reached. Check your network or key.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      configured: true,
+      message: 'Steam API key is set and reachable.',
+    });
+  } catch (error) {
+    log.error('Error in Steam status endpoint', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to check Steam API status',
+    });
+  }
+});
+
+/**
+ * @openapi
  * /api/steam/resolve:
  *   post:
  *     tags:

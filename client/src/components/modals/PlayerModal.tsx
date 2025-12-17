@@ -33,7 +33,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [elo, setElo] = useState<number | ''>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -74,10 +74,12 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     setError('');
 
     try {
-      const response: { success: boolean; player?: { steamId: string; name: string; avatar?: string } } =
-        await api.post('/api/steam/resolve', {
-          input: steamId.trim(),
-        });
+      const response: {
+        success: boolean;
+        player?: { steamId: string; name: string; avatar?: string };
+      } = await api.post('/api/steam/resolve', {
+        input: steamId.trim(),
+      });
 
       if (response.player) {
         setSteamId(response.player.steamId);
@@ -194,7 +196,6 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
           </Box>
         </DialogTitle>
         <DialogContent>
-
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
             <TextField
               label="Steam ID or Profile URL"
@@ -203,13 +204,15 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               disabled={isEditing || resolving}
               fullWidth
               required
+              error={!!error}
               slotProps={{
                 htmlInput: { 'data-testid': 'player-steam-id-input' },
               }}
               helperText={
-                isEditing
+                error ||
+                (isEditing
                   ? 'Steam ID cannot be changed'
-                  : 'Enter Steam ID64, vanity URL, or profile URL. Click "Resolve" to auto-fill name and avatar.'
+                  : 'Enter Steam ID64, vanity URL, or profile URL. Click "Resolve" to auto-fill name and avatar.')
               }
             />
 
@@ -253,7 +256,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               }}
               helperText={
                 isEditing
-                  ? 'Changing ELO will reset the player\'s rating and stats. This action cannot be undone.'
+                  ? "Changing ELO will reset the player's rating and stats. This action cannot be undone."
                   : 'Leave empty to use default (3000).'
               }
             />
@@ -294,13 +297,15 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             onClick={handleSave}
             disabled={saving || resolving}
             sx={{
-              ...((!steamId.trim() || !name.trim()) && !saving && !resolving && {
-                bgcolor: 'action.disabledBackground',
-                color: 'action.disabled',
-                '&:hover': {
+              ...((!steamId.trim() || !name.trim()) &&
+                !saving &&
+                !resolving && {
                   bgcolor: 'action.disabledBackground',
-                },
-              }),
+                  color: 'action.disabled',
+                  '&:hover': {
+                    bgcolor: 'action.disabledBackground',
+                  },
+                }),
             }}
           >
             {saving ? 'Saving...' : isEditing ? 'Save' : 'Create'}
@@ -326,4 +331,3 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     </>
   );
 }
-

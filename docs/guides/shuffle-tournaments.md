@@ -130,11 +130,21 @@ Before each round:
 - **Rating System**: Uses OpenSkill (Bayesian rating system)
 - **Admin Interface**: Simple "ELO" number (system handles conversion internally)
 - **Default Starting ELO**: 3000 (FaceIT-style)
-- **Rating Updates**: Based on team result (win/loss)
+- **Rating Updates**: Based on **team result (win/loss)**:
   - All players on winning team get ELO increase
   - All players on losing team get ELO decrease
   - ELO change depends on opponent team's average ELO
-- **No Individual Performance Adjustment**: ELO changes based solely on team result
+
+#### Default ELO mode (Pure Win/Loss)
+
+- **Pure Win/Loss is the default template** used for all tournaments (including shuffle) unless you explicitly pick another ELO template.
+- With **Pure Win/Loss** selected:
+  - OpenSkill updates ratings **only from the match result** (win or loss).
+  - Individual stats (kills, ADR, MVPs, etc.) are **tracked for leaderboards and exports but do not change ELO**.
+  - This is the **safest, most predictable mode** and is recommended if you want Excel-style “result-only” ratings.
+- Advanced ELO templates are **optional**:
+  - You can configure them in the **ELO Templates** admin page.
+  - When a non-default template is enabled and selected for a tournament, it adds **stat-based adjustments on top of the OpenSkill win/loss change**.
 
 ### Odd Number of Players
 
@@ -167,6 +177,18 @@ Navigate to `/tournament/:id/leaderboard` (public, no authentication required)
 - Win rate
 - Average ADR (if available)
 - ELO change (since tournament start)
+
+#### Global vs event-only ratings
+
+- **Global rating model**:
+  - Each player has **one global ELO** that is shared across **all tournaments and matches**, including shuffle tournaments and team-based events.
+  - When a shuffle match finishes, the rating change is applied to the player’s global ELO (not to a per-event ladder).
+- **Event-only ELO change on the leaderboard**:
+  - The shuffle leaderboard’s “ELO change (since tournament start)” column shows **how much each player’s global ELO has moved during this specific tournament**.
+  - This makes it easy to answer “who gained the most ELO at this LAN?” without resetting everyone’s long-term rating.
+- **Why this matters for LANs**:
+  - You can run multiple shuffle events over time while still letting players build up a long-term rating history.
+  - At the same time, each event has a clear **per-event delta** so you can crown winners based on performance in that LAN only.
 
 ### Player Pages
 

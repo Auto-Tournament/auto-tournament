@@ -41,6 +41,7 @@ export default function Settings() {
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [steamStatusChecking, setSteamStatusChecking] = useState(false);
 
   const isDev = import.meta.env.DEV;
 
@@ -383,6 +384,49 @@ export default function Settings() {
                   <OpenInNewIcon />
                 </IconButton>
               </Stack>
+              <Box mt={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  disabled={loading || steamStatusChecking}
+                  startIcon={steamStatusChecking ? <CircularProgress size={14} /> : <VisibilityIcon />}
+                  onClick={async () => {
+                    setSteamStatusChecking(true);
+                    try {
+                      const response = await api.get<{
+                        success: boolean;
+                        configured?: boolean;
+                        message?: string;
+                        error?: string;
+                      }>('/api/steam/status');
+
+                      if (response.success && response.configured) {
+                        showSuccess(response.message || 'Steam API key is set and reachable.');
+                      } else if (!response.success && response.configured === false) {
+                        showError(
+                          response.error ||
+                            'Steam API key is not set. Vanity URLs cannot be resolved until you add a key.'
+                        );
+                      } else {
+                        showError(
+                          response.error ||
+                            'Steam API key appears set but Steam could not be reached. Check your network or key.'
+                        );
+                      }
+                    } catch (err) {
+                      const message =
+                        err instanceof Error
+                          ? err.message
+                          : 'Failed to check Steam API status. Please try again.';
+                      showError(message);
+                    } finally {
+                      setSteamStatusChecking(false);
+                    }
+                  }}
+                >
+                  {steamStatusChecking ? 'Checking Steam…' : 'Check Steam connectivity'}
+                </Button>
+              </Box>
             </Box>
 
             <Divider />

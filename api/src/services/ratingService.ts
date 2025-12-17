@@ -287,6 +287,9 @@ export async function getRatingHistory(
     mu_after: number;
     sigma_before: number;
     sigma_after: number;
+    base_elo_after: number | null;
+    stat_adjustment: number | null;
+    template_id: string | null;
     match_result: string;
     created_at: number;
   }>
@@ -301,6 +304,9 @@ export async function getRatingHistory(
       mu_after,
       sigma_before,
       sigma_after,
+      base_elo_after,
+      stat_adjustment,
+      template_id,
       match_result,
       created_at
     FROM player_rating_history
