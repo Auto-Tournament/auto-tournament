@@ -139,8 +139,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setError('');
 
     try {
-      // Download from GitHub repo
-      const imageUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${id}.png`;
+      // Download full-size webp image from GitHub repo
+      const imageUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${id}.webp`;
 
       // Test if image exists
       const response = await fetch(imageUrl, { method: 'HEAD' });

@@ -42,6 +42,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     Map<string, { id: string; displayName: string; imageUrl: string | null }>
   >(new Map());
 
+  const MAP_IMAGE_BASE =
+    'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+
+  const getThumbnailUrl = (mapId: string): string =>
+    `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
+
+  const getFullImageUrl = (mapId: string): string =>
+    `${MAP_IMAGE_BASE}/${mapId}.webp`;
+
   const loadMaps = useCallback(async () => {
     try {
       const response = await api.get<MapsResponse>('/api/maps');
@@ -131,10 +140,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           mapData?.displayName ||
           fallbackData?.displayName ||
           mapId.replace('de_', '').replace('cs_', ''),
+        // Use thumbnail for map grid cards
         image:
-          mapData?.imageUrl ||
-          fallbackData?.image ||
-          `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.png`,
+          (mapData?.imageUrl && getThumbnailUrl(mapId)) ||
+          fallbackData?.thumbnail ||
+          getThumbnailUrl(mapId),
       };
     });
     // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
@@ -252,7 +262,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             const imageUrl =
               mapData?.imageUrl ||
               fallbackData?.image ||
-              `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${pick.mapName}.png`;
+              getFullImageUrl(pick.mapName);
             // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
             const displaySide = isViewingTeam1
               ? pick.sideTeam1
@@ -383,9 +393,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           const mapImageUrl =
             mapData?.imageUrl ||
             fallbackData?.image ||
-            (lastPickedMap?.mapName
-              ? `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${lastPickedMap.mapName}.png`
-              : '');
+            (lastPickedMap?.mapName ? getFullImageUrl(lastPickedMap.mapName) : '');
 
           return (
             <Card sx={{ mb: 3 }}>

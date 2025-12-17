@@ -61,10 +61,14 @@ export function MatchInfoCard({
     const mapData = getMapData(currentMapSlug);
     if (mapData) return mapData;
     // Fallback: construct map data from slug
+    const baseUrl =
+      'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
     return {
       name: currentMapSlug,
       displayName: currentMapSlug.replace('de_', '').replace('cs_', ''),
-      image: `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${currentMapSlug}.png`,
+      // Use full-size webp for the large hero image, and thumbnail for smaller usages
+      image: `${baseUrl}/${currentMapSlug}.webp`,
+      thumbnail: `${baseUrl}/${currentMapSlug}_thumb.webp`,
     };
   }, [currentMapSlug]);
   const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;

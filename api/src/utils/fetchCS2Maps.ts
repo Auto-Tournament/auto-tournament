@@ -39,6 +39,10 @@ function getGitHubHeaders(): Record<string, string> {
 export interface MapData {
   id: string;
   displayName: string;
+  /**
+   * Full-size image URL (webp) used for large displays.
+   * Thumbnail URLs can be derived by appending `_thumb` before the extension.
+   */
   imageUrl: string;
 }
 
@@ -94,9 +98,15 @@ function extractMapId(filename: string): string | null {
     return null;
   }
 
+  // Normalize variants to the base map id:
+  // - Strip thumbnail suffixes: _thumb
+  // - Strip numeric variant suffixes: _1, _2, _3, etc. (after the main map id)
+  let baseName = nameWithoutExt.replace(/_thumb$/i, '');
+  baseName = baseName.replace(/_[0-9]+$/i, '');
+
   // Check if it starts with de_, cs_, or ar_
-  if (/^(de_|cs_|ar_)/.test(nameWithoutExt)) {
-    return nameWithoutExt;
+  if (/^(de_|cs_|ar_)/.test(baseName)) {
+    return baseName;
   }
 
   return null;

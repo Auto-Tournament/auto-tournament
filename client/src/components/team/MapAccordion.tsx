@@ -62,15 +62,15 @@ export function MapAccordion({
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
-          {/* Map Image */}
-          {mapData?.image && (
+          {/* Map Thumbnail */}
+          {(mapData?.thumbnail || mapData?.image) && (
             <Box
               sx={{
                 width: 80,
                 height: 45,
                 borderRadius: 1,
                 overflow: 'hidden',
-                backgroundImage: `url(${mapData.image})`,
+                backgroundImage: `url(${mapData.thumbnail || mapData.image})`,
                 backgroundSize: 'cover',
                 backgroundPosition: 'center',
                 flexShrink: 0,
@@ -119,6 +119,7 @@ export function MapAccordion({
       </AccordionSummary>
       <AccordionDetails>
         <Stack spacing={2}>
+          {/* Full-size map image */}
           {mapData?.image && (
             <Box
               sx={{
