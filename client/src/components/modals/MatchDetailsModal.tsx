@@ -49,6 +49,7 @@ import type { Match } from '../../types';
 import { useTournamentStatus } from '../../hooks/useTournamentStatus';
 import { MapChipList } from '../match/MapChipList';
 import { MapDemoDownloads } from '../match/MapDemoDownloads';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -672,28 +673,33 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                     sx={{
                       position: 'relative',
                       overflow: 'hidden',
-                      backgroundImage: activeMapKey
-                        ? `url(${
-                            getMapData(activeMapKey)?.image ||
-                            `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${activeMapKey}.webp`
-                          })`
-                        : 'none',
-                      backgroundSize: 'cover',
-                      backgroundPosition: 'center',
                       height: 200,
                       display: 'flex',
                       alignItems: 'flex-end',
-                      '&::before': {
-                        content: '""',
-                        position: 'absolute',
-                        top: 0,
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
-                      },
                     }}
                   >
+                    {activeMapKey && (
+                      <FadeInImage
+                        src={
+                          getMapData(activeMapKey)?.image ||
+                          `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${activeMapKey}.webp`
+                        }
+                        alt={currentMapLabel || activeMapKey}
+                        sx={{
+                          position: 'absolute',
+                          inset: 0,
+                        }}
+                      >
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            inset: 0,
+                            background:
+                              'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
+                          }}
+                        />
+                      </FadeInImage>
+                    )}
                     <Box sx={{ position: 'relative', p: 2, width: '100%' }}>
                       <Typography variant="h4" fontWeight={700} color="white">
                         {currentMapLabel || 'TBD'}

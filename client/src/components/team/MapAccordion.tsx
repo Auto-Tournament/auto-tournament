@@ -1,19 +1,11 @@
 import React from 'react';
-import {
-  Accordion,
-  AccordionSummary,
-  AccordionDetails,
-  Box,
-  Typography,
-  Button,
-  Chip,
-  Stack,
-} from '@mui/material';
+import { Accordion, AccordionSummary, AccordionDetails, Box, Typography, Button, Chip, Stack } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DownloadIcon from '@mui/icons-material/Download';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { formatDuration } from '../../utils/matchUtils';
 import type { MatchMapResult } from '../../types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapAccordionProps {
   mapNumber: number;
@@ -64,15 +56,13 @@ export function MapAccordion({
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
           {/* Map Thumbnail */}
           {(mapData?.thumbnail || mapData?.image) && (
-            <Box
+            <FadeInImage
+              src={mapData.thumbnail || mapData.image}
+              alt={displayName}
+              width={80}
+              height={45}
               sx={{
-                width: 80,
-                height: 45,
                 borderRadius: 1,
-                overflow: 'hidden',
-                backgroundImage: `url(${mapData.thumbnail || mapData.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
                 flexShrink: 0,
               }}
             />
@@ -121,16 +111,13 @@ export function MapAccordion({
         <Stack spacing={2}>
           {/* Full-size map image */}
           {mapData?.image && (
-            <Box
+            <FadeInImage
+              src={mapData.image}
+              alt={displayName}
+              height={200}
               sx={{
                 width: '100%',
-                height: 200,
                 borderRadius: 2,
-                overflow: 'hidden',
-                backgroundImage: `url(${mapData.image})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                position: 'relative',
               }}
             >
               <Box
@@ -147,7 +134,7 @@ export function MapAccordion({
                   {displayName}
                 </Typography>
               </Box>
-            </Box>
+            </FadeInImage>
           )}
 
           <Box>

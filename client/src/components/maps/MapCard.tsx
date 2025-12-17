@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import type { Map } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapCardProps {
   map: Map;
@@ -35,7 +36,6 @@ export function MapCard({ map, onClick }: MapCardProps) {
           height: '140px',
           width: '100%',
           position: 'relative',
-          backgroundColor: 'background.surface2',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -43,16 +43,12 @@ export function MapCard({ map, onClick }: MapCardProps) {
         }}
       >
         {!showPlaceholder && map.imageUrl ? (
-          <Box
-            component="img"
+          <FadeInImage
             src={map.imageUrl}
             alt={map.displayName}
-            sx={{
-              height: '100%',
-              width: '100%',
-              objectFit: 'cover',
-            }}
-            onError={() => setImageError(true)}
+            height="100%"
+            width="100%"
+            sx={{}}
           />
         ) : (
           <Box

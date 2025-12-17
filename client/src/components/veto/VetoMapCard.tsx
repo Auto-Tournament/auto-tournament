@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide } from '../../types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface VetoMapCardProps {
   mapName: string;
@@ -131,18 +132,12 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
       )}
 
       {!imageError ? (
-        <CardMedia
-          component="img"
-          height="140"
-          image={imageUrl}
+        <FadeInImage
+          src={imageUrl}
           alt={displayName}
+          height={140}
           sx={{
-            objectFit: 'cover',
             filter: state === 'banned' ? 'grayscale(100%)' : 'none',
-          }}
-          onError={() => {
-            // Hide image and use colored background instead
-            setImageError(true);
           }}
         />
       ) : (

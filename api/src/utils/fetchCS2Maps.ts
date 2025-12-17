@@ -165,6 +165,12 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
           continue;
         }
 
+        // Prefer webp assets from the repository. Skip PNG/JPEG/GIF variants
+        // so that we always store and serve WebP URLs from our database.
+        if (!file.name.toLowerCase().endsWith('.webp')) {
+          continue;
+        }
+
         // Extract map ID from filename
         const mapId = extractMapId(file.name);
         if (!mapId) {

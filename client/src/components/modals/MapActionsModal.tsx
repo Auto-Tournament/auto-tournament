@@ -14,6 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapActionsModalProps {
   open: boolean;
@@ -55,20 +56,14 @@ export default function MapActionsModal({
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Preview
               </Typography>
-              <Box
-                component="img"
+              <FadeInImage
                 src={map.imageUrl}
                 alt={map.displayName}
                 sx={{
                   width: '100%',
-                  objectFit: 'contain',
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 1,
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
                 }}
               />
             </Box>

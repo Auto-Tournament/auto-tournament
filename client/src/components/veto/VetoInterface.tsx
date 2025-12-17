@@ -389,59 +389,65 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           const mapData = allMaps.get(lastPickedMap?.mapName || '');
           const fallbackData = getMapData(lastPickedMap?.mapName || '');
 
-          // Construct image URL with fallback chain
-          const mapImageUrl =
-            mapData?.imageUrl ||
-            fallbackData?.image ||
-            (lastPickedMap?.mapName ? getFullImageUrl(lastPickedMap.mapName) : '');
-
           return (
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 {/* Map Display */}
-                <Box
-                  sx={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: 2,
-                    mb: 3,
-                    backgroundImage: `url(${mapImageUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: 250,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background:
-                        'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
-                    },
-                  }}
-                >
-                  <Box sx={{ position: 'relative', textAlign: 'center' }}>
-                    <Typography
-                      variant="h2"
-                      fontWeight={700}
-                      color="white"
-                      sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                {lastPickedMap?.mapName && (
+                  <FadeInImage
+                    src={
+                      mapData?.imageUrl ||
+                      fallbackData?.image ||
+                      getFullImageUrl(lastPickedMap.mapName)
+                    }
+                    alt={mapData?.displayName || fallbackData?.displayName || lastPickedMap.mapName}
+                    height={250}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background:
+                            'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                        },
+                      }}
                     >
-                      {mapData?.displayName || fallbackData?.displayName || lastPickedMap?.mapName}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      color="rgba(255,255,255,0.9)"
-                      sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
-                    >
-                      Choose Your Starting Side
-                    </Typography>
-                  </Box>
-                </Box>
+                      <Box sx={{ position: 'relative', textAlign: 'center' }}>
+                        <Typography
+                          variant="h2"
+                          fontWeight={700}
+                          color="white"
+                          sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                        >
+                          {mapData?.displayName ||
+                            fallbackData?.displayName ||
+                            lastPickedMap.mapName}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          color="rgba(255,255,255,0.9)"
+                          sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                        >
+                          Choose Your Starting Side
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </FadeInImage>
+                )}
 
                 {!isMyTurn && (
                   <Alert severity="info" sx={{ mb: 2 }}>
