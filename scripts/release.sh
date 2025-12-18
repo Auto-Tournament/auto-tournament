@@ -34,6 +34,20 @@ echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
 echo "========================================="
 echo ""
 
+# Early safety confirmation before doing anything destructive
+echo -e "${YELLOW}This script will:${NC}"
+echo "  - Check disk space and Docker status"
+echo "  - Stop and remove existing MatchZy-related containers/images"
+echo "  - Prune Docker build and system caches"
+echo "  - Build, test, tag, and publish a new release"
+echo ""
+read -p "Are you sure you want to continue with the release process? (y/N) " -r EARLY_CONFIRM
+echo
+if [[ ! "$EARLY_CONFIRM" =~ ^[Yy]$ ]]; then
+    echo "Release aborted before making any changes."
+    exit 0
+fi
+
 # Check prerequisites
 if ! command -v gh &> /dev/null; then
     echo -e "${RED}Error: GitHub CLI (gh) is required but not installed.${NC}"
