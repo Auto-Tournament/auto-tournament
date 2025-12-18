@@ -28,6 +28,7 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SyncIcon from '@mui/icons-material/Sync';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
+import { useIsDevelopment } from '../hooks/useIsDevelopment';
 
 const STEAM_API_DOC_URL = 'https://steamcommunity.com/dev/apikey';
 
@@ -86,9 +87,7 @@ export default function Settings() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const isDev = Boolean(
-    (import.meta as unknown as { env?: { DEV?: boolean | string } })?.env?.DEV
-  );
+  const isDev = useIsDevelopment();
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {

@@ -7,6 +7,8 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import BlockIcon from '@mui/icons-material/Block';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
@@ -34,16 +36,23 @@ export default function Servers() {
 
   const checkServerStatus = async (
     serverId: string
-  ): Promise<{ status: 'online' | 'offline'; currentMatch: string | null }> => {
+  ): Promise<{
+    status: 'online' | 'offline';
+    currentMatch: string | null;
+    reachableFromApi?: boolean;
+    serverCanReachApi?: boolean;
+  }> => {
     try {
       const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);
       const isOnline = response.status === 'online';
       return {
         status: isOnline ? 'online' : ('offline' as const),
         currentMatch: response.currentMatch ?? null,
+        reachableFromApi: response.reachableFromApi,
+        serverCanReachApi: response.serverCanReachApi,
       };
     } catch {
-      return { status: 'offline', currentMatch: null };
+      return { status: 'offline', currentMatch: null, reachableFromApi: false, serverCanReachApi: false };
     }
   };
 
@@ -63,8 +72,9 @@ export default function Servers() {
       // Check status only for enabled servers
       const enabledServers = serverList.filter((s) => s.enabled);
       const statusPromises = enabledServers.map(async (server: Server) => {
-        const { status, currentMatch } = await checkServerStatus(server.id);
-        return { id: server.id, status, currentMatch };
+        const { status, currentMatch, reachableFromApi, serverCanReachApi } =
+          await checkServerStatus(server.id);
+        return { id: server.id, status, currentMatch, reachableFromApi, serverCanReachApi };
       });
 
       const statuses = await Promise.all(statusPromises);
@@ -83,6 +93,14 @@ export default function Servers() {
               statusInfo?.currentMatch !== undefined
                 ? statusInfo.currentMatch
                 : server.currentMatch ?? null,
+            reachableFromApi:
+              statusInfo?.reachableFromApi !== undefined
+                ? statusInfo.reachableFromApi
+                : (server as any).reachableFromApi,
+            serverCanReachApi:
+              statusInfo?.serverCanReachApi !== undefined
+                ? statusInfo.serverCanReachApi
+                : (server as any).serverCanReachApi,
           };
         })
       );
@@ -269,6 +287,56 @@ export default function Servers() {
                         <strong>Port:</strong> {server.port}
                       </Typography>
                     </Box>
+                    {server.status === 'online' && (
+                      <Box display="flex" flexDirection="column" gap={0.5} mb={1}>
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <ArrowUpwardIcon
+                            fontSize="small"
+                            sx={{
+                              color:
+                                (server as any).reachableFromApi === false
+                                  ? 'error.main'
+                                  : (server as any).reachableFromApi
+                                  ? 'success.main'
+                                  : 'text.disabled',
+                            }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            API → Server (RCON){' '}
+                            <strong>
+                              {(server as any).reachableFromApi === false
+                                ? 'Unreachable'
+                                : (server as any).reachableFromApi
+                                ? 'Reachable'
+                                : 'Unknown'}
+                            </strong>
+                          </Typography>
+                        </Box>
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <ArrowDownwardIcon
+                            fontSize="small"
+                            sx={{
+                              color:
+                                (server as any).serverCanReachApi === false
+                                  ? 'error.main'
+                                  : (server as any).serverCanReachApi
+                                  ? 'success.main'
+                                  : 'text.disabled',
+                            }}
+                          />
+                          <Typography variant="caption" color="text.secondary">
+                            Server → API (/api/events){' '}
+                            <strong>
+                              {(server as any).serverCanReachApi === false
+                                ? 'Unreachable'
+                                : (server as any).serverCanReachApi
+                                ? 'Reachable'
+                                : 'Unknown'}
+                            </strong>
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
                     {server.currentMatch && server.status === 'online' && (
                       <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
                         <Chip

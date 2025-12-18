@@ -16,6 +16,7 @@ import AdminTools from './pages/AdminTools';
 import PublicPages from './pages/PublicPages';
 import Settings from './pages/Settings';
 import Development from './pages/Development';
+import { useIsDevelopment } from './hooks/useIsDevelopment';
 import TeamMatch from './pages/TeamMatch';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
@@ -72,6 +73,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function AppRoutes() {
   const { isAuthenticated, isLoading } = useAuth();
+  const isDevelopment = useIsDevelopment();
 
   if (isLoading) {
     return null; // Loading state is handled by ProtectedRoute
@@ -108,10 +110,7 @@ function AppRoutes() {
         <Route path="maps" element={<Maps />} />
         <Route path="templates" element={<Templates />} />
         <Route path="elo-templates" element={<ELOTemplates />} />
-        {((import.meta as unknown as { env: { DEV: boolean; VITE_ENABLE_DEV_PAGE?: string } }).env.DEV ||
-          (import.meta as unknown as { env: { VITE_ENABLE_DEV_PAGE?: string } }).env.VITE_ENABLE_DEV_PAGE === 'true') && (
-          <Route path="dev" element={<Development />} />
-        )}
+        {isDevelopment && <Route path="dev" element={<Development />} />}
       </Route>
       <Route path="*" element={<NotFound />} />
     </Routes>

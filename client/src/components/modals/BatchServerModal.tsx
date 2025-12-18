@@ -22,7 +22,7 @@ import {
 import Grid from '@mui/material/Grid';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ErrorIcon from '@mui/icons-material/Error';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -454,9 +454,17 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
               />
 
               <Box>
-                <Typography variant="body2" fontWeight={500} gutterBottom>
-                  Assign Ports
-                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" fontWeight={500} gutterBottom>
+                    Assign Ports
+                  </Typography>
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <ArrowUpwardIcon fontSize="small" color="primary" />
+                    <Typography variant="caption" color="text.secondary">
+                      API → Server (RCON test)
+                    </Typography>
+                  </Box>
+                </Box>
                 <Grid container spacing={2} sx={{ mt: 1 }}>
                   {Array.from({ length: serverCount }, (_, i) => {
                     const verification = verificationStatuses.get(i);
@@ -492,7 +500,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                             endAdornment: status === 'checking' ? (
                               <CircularProgress size={16} />
                             ) : status === 'success' ? (
-                              <CheckCircleIcon color="success" fontSize="small" />
+                              <ArrowUpwardIcon color="success" fontSize="small" />
                             ) : status === 'error' ? (
                               <ErrorIcon color="error" fontSize="small" />
                             ) : null,

@@ -15,6 +15,8 @@ import {
 } from '@mui/material';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Server as ApiServer, ServerStatusResponse } from '../../types/api.types';
@@ -401,26 +403,38 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                       : 'primary'
                   }
                 >
-                  {testing
-                    ? 'Testing...'
-                    : apiToServerOk && serverToApiOk
-                    ? '✓ Server reachable (RCON) & server can reach API'
-                    : apiToServerOk && serverToApiOk === false
-                    ? '⚠ Server reachable, but API not reachable from server'
-                    : apiToServerOk === false
-                    ? '✗ Server unreachable via RCON'
-                    : 'Test connectivity'}
+                  {testing ? 'Testing connectivity…' : 'Test connectivity'}
                 </Button>
                 {apiToServerOk !== null && serverToApiOk !== null && !testing && (
                   <Box mt={1}>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      We can reach server (RCON):{' '}
-                      <strong>{apiToServerOk ? 'Yes' : 'No'}</strong>
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" display="block">
-                      Server can reach API (/api/events):{' '}
-                      <strong>{serverToApiOk ? 'Yes' : 'No'}</strong>
-                    </Typography>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <ArrowUpwardIcon
+                        fontSize="small"
+                        sx={{
+                          color: apiToServerOk ? 'success.main' : 'error.main',
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        API → Server (RCON):{' '}
+                        <strong style={{ color: apiToServerOk ? '#2e7d32' : '#d32f2f' }}>
+                          {apiToServerOk ? 'Reachable' : 'Unreachable'}
+                        </strong>
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1} mt={0.5}>
+                      <ArrowDownwardIcon
+                        fontSize="small"
+                        sx={{
+                          color: serverToApiOk ? 'success.main' : 'error.main',
+                        }}
+                      />
+                      <Typography variant="caption" color="text.secondary">
+                        Server → API (/api/events):{' '}
+                        <strong style={{ color: serverToApiOk ? '#2e7d32' : '#d32f2f' }}>
+                          {serverToApiOk ? 'Reachable' : 'Unreachable'}
+                        </strong>
+                      </Typography>
+                    </Box>
                   </Box>
                 )}
               </Box>

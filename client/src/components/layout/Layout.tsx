@@ -47,6 +47,7 @@ import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
+import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 
 const drawerWidth = 240;
 
@@ -153,10 +154,7 @@ export default function Layout() {
     return false;
   });
 
-  const isDevelopment =
-    (import.meta as unknown as { env: { DEV: boolean; VITE_ENABLE_DEV_PAGE?: string } }).env.DEV ||
-    (import.meta as unknown as { env: { VITE_ENABLE_DEV_PAGE?: string } }).env
-      .VITE_ENABLE_DEV_PAGE === 'true';
+  const isDevelopment = useIsDevelopment();
 
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
