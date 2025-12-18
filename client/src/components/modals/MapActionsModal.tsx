@@ -33,6 +33,9 @@ export default function MapActionsModal({
 }: MapActionsModalProps) {
   if (!map) return null;
 
+  const getDefaultWebpUrlForId = (mapId: string): string =>
+    `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-actions-modal">
       <DialogTitle>
@@ -57,7 +60,11 @@ export default function MapActionsModal({
                 Preview
               </Typography>
               <FadeInImage
-                src={map.imageUrl}
+                src={
+                  map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+                    ? map.imageUrl
+                    : getDefaultWebpUrlForId(map.id)
+                }
                 alt={map.displayName}
                 sx={{
                   width: '100%',
@@ -65,6 +72,7 @@ export default function MapActionsModal({
                   borderColor: 'divider',
                   borderRadius: 1,
                 }}
+                height={256}
               />
             </Box>
           )}

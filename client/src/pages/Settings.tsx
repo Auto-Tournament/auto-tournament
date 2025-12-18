@@ -86,7 +86,9 @@ export default function Settings() {
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
-  const isDev = Boolean((import.meta as any).env?.DEV);
+  const isDev = Boolean(
+    (import.meta as unknown as { env?: { DEV?: boolean | string } })?.env?.DEV
+  );
   const [tabIndex, setTabIndex] = useState(0);
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
@@ -641,7 +643,11 @@ export default function Settings() {
                         <Switch
                           checked={simulateMatches}
                           onChange={(event) => setSimulateMatches(event.target.checked)}
-                          inputProps={{ 'data-testid': 'settings-simulate-matches-toggle' } as any}
+                          inputProps={
+                            {
+                              'data-testid': 'settings-simulate-matches-toggle',
+                            } satisfies React.InputHTMLAttributes<HTMLInputElement>
+                          }
                         />
                       }
                       label="Simulate matches (use bot-driven demo matches instead of real players)"
@@ -676,7 +682,7 @@ export default function Settings() {
             </Button>
           </Box>
 
-          <Dialog
+                    <Dialog
             open={resetDialogOpen}
             onClose={() => setResetDialogOpen(false)}
             aria-labelledby="reset-settings-dialog-title"
@@ -701,7 +707,15 @@ export default function Settings() {
                   }
                   // Save default values to server
                   try {
-                    const response: SettingsResponse = await api.put('/api/settings', {
+                    const resetPayload: {
+                      webhookUrl: null;
+                      steamApiKey: null;
+                      defaultPlayerElo: null;
+                      matchzyChatPrefix: null;
+                      matchzyAdminChatPrefix: null;
+                      matchzyKnifeEnabledDefault: null;
+                      simulateMatches?: boolean;
+                    } = {
                       webhookUrl: null,
                       steamApiKey: null,
                       defaultPlayerElo: null,
@@ -709,7 +723,12 @@ export default function Settings() {
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
                       ...(isDev && { simulateMatches: false }),
-                    } as any);
+                    };
+
+                    const response: SettingsResponse = await api.put(
+                      '/api/settings',
+                      resetPayload
+                    );
 
                     const newWebhook = response.settings.webhookUrl ?? '';
                     const newSteamKey = response.settings.steamApiKey ?? '';

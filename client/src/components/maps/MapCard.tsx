@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Card, CardContent, Typography, Box } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import type { Map } from '../../types/api.types';
@@ -10,8 +10,20 @@ interface MapCardProps {
 }
 
 export function MapCard({ map, onClick }: MapCardProps) {
-  const [imageError, setImageError] = useState(false);
-  const showPlaceholder = !map.imageUrl || imageError;
+  const getPreferredImageUrl = (): string | null => {
+    const baseWebpUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${map.id}.webp`;
+
+    // If there's no stored URL or it's a repo URL, always use the standardized WebP path.
+    if (!map.imageUrl || map.imageUrl.includes('cs2-server-manager')) {
+      return baseWebpUrl;
+    }
+
+    // For custom uploads (non-repo URLs), use the stored URL as-is.
+    return map.imageUrl;
+  };
+
+  const preferredImageUrl = getPreferredImageUrl();
+  const showPlaceholder = !preferredImageUrl;
 
   return (
     <Card
@@ -42,9 +54,9 @@ export function MapCard({ map, onClick }: MapCardProps) {
           overflow: 'hidden',
         }}
       >
-        {!showPlaceholder && map.imageUrl ? (
+        {!showPlaceholder && preferredImageUrl ? (
           <FadeInImage
-            src={map.imageUrl}
+            src={preferredImageUrl}
             alt={map.displayName}
             height="100%"
             width="100%"

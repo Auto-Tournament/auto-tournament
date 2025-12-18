@@ -57,6 +57,28 @@ interface GitHubFile {
 }
 
 /**
+ * Determine preference score for a given GitHub file.
+ *
+ * Higher score = more preferred as the canonical full-size image.
+ * Priority order:
+ *  - 3: Full-size WebP (e.g. de_mirage.webp)
+ *  - 2: Variant WebP (e.g. de_mirage_1.webp)
+ *  - 1: Full-size other formats (png/jpg/gif)
+ *  - 0: Variant/thumbnail other formats
+ */
+function getImagePriority(file: GitHubFile): number {
+  const isWebp = /\.webp$/i.test(file.name);
+  const isThumb = /_thumb\./i.test(file.name);
+  const isVariantNumber = /_[0-9]+\./i.test(file.name);
+  const isVariant = isThumb || isVariantNumber;
+
+  if (isWebp && !isVariant) return 3;
+  if (isWebp && isVariant) return 2;
+  if (!isWebp && !isVariant) return 1;
+  return 0;
+}
+
+/**
  * Convert map ID to display name
  * Examples: de_ancient -> Ancient, de_dust2 -> Dust II
  */
@@ -156,7 +178,15 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
         throw new Error('Invalid response from GitHub API: expected array of files');
       }
 
-      const maps: MapData[] = [];
+      const mapsById = new Map<
+        string,
+        {
+          id: string;
+          displayName: string;
+          imageUrl: string;
+          priority: number;
+        }
+      >();
 
       // Filter and process files
       for (const file of files) {
@@ -177,14 +207,28 @@ export async function fetchCS2MapsFromWiki(): Promise<MapData[]> {
         // Use the download_url from GitHub API, or construct raw URL
         const imageUrl = file.download_url || `${GITHUB_RAW_BASE}/${file.name}`;
 
-        maps.push({
-          id: mapId,
+        const priority = getImagePriority(file);
+        const existing = mapsById.get(mapId);
+
+        // Keep the highest-priority image per map ID
+        if (!existing || priority > existing.priority) {
+          mapsById.set(mapId, {
+            id: mapId,
+            displayName,
+            imageUrl,
+            priority,
+          });
+          log.info(`Selected image for map ${mapId}: ${file.name} (priority ${priority})`);
+        }
+      }
+
+      const maps: MapData[] = Array.from(mapsById.values()).map(
+        ({ id, displayName, imageUrl }) => ({
+          id,
           displayName,
           imageUrl,
-        });
-
-        log.info(`Found map: ${mapId} - ${displayName}`);
-      }
+        })
+      );
 
       if (maps.length === 0) {
         throw new Error(

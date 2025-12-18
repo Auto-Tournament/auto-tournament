@@ -19,6 +19,7 @@ import { getVetoOrder } from '../../constants/vetoOrders';
 import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
 import type { MapsResponse } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface VetoInterfaceProps {
   matchSlug: string;
@@ -45,11 +46,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const MAP_IMAGE_BASE =
     'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
 
-  const getThumbnailUrl = (mapId: string): string =>
-    `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
+  const getThumbnailUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
 
-  const getFullImageUrl = (mapId: string): string =>
-    `${MAP_IMAGE_BASE}/${mapId}.webp`;
+  const getFullImageUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}.webp`;
+
+  const isRepoImageUrl = (url: string | null | undefined): boolean =>
+    !!url && url.includes('cs2-server-manager') && url.includes('map_thumbnails');
 
   const loadMaps = useCallback(async () => {
     try {
@@ -134,6 +136,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return originalMapOrder.map((mapId) => {
       const mapData = allMaps.get(mapId);
       const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
+
+      // Thumbnail strategy:
+      // - For maps with a custom imageUrl (non-repo), show that directly.
+      // - For repo-based maps or missing imageUrl, use the standardized thumbnail URL.
+      let thumbnail: string;
+      if (mapData?.imageUrl && !isRepoImageUrl(mapData.imageUrl)) {
+        thumbnail = mapData.imageUrl;
+      } else {
+        thumbnail = fallbackData?.thumbnail || getThumbnailUrl(mapId);
+      }
+
       return {
         name: mapId,
         displayName:
@@ -141,10 +154,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           fallbackData?.displayName ||
           mapId.replace('de_', '').replace('cs_', ''),
         // Use thumbnail for map grid cards
-        image:
-          (mapData?.imageUrl && getThumbnailUrl(mapId)) ||
-          fallbackData?.thumbnail ||
-          getThumbnailUrl(mapId),
+        image: thumbnail,
       };
     });
     // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
@@ -259,10 +269,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           {vetoState.pickedMaps.map((pick) => {
             const mapData = allMaps.get(pick.mapName);
             const fallbackData = getMapData(pick.mapName);
-            const imageUrl =
-              mapData?.imageUrl ||
-              fallbackData?.image ||
-              getFullImageUrl(pick.mapName);
+            const imageUrl = isRepoImageUrl(mapData?.imageUrl)
+              ? fallbackData?.image || getFullImageUrl(pick.mapName)
+              : mapData?.imageUrl || fallbackData?.image || getFullImageUrl(pick.mapName);
             // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
             const displaySide = isViewingTeam1
               ? pick.sideTeam1
@@ -396,9 +405,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 {lastPickedMap?.mapName && (
                   <FadeInImage
                     src={
-                      mapData?.imageUrl ||
-                      fallbackData?.image ||
-                      getFullImageUrl(lastPickedMap.mapName)
+                      isRepoImageUrl(mapData?.imageUrl)
+                        ? fallbackData?.image || getFullImageUrl(lastPickedMap.mapName)
+                        : mapData?.imageUrl ||
+                          fallbackData?.image ||
+                          getFullImageUrl(lastPickedMap.mapName)
                     }
                     alt={mapData?.displayName || fallbackData?.displayName || lastPickedMap.mapName}
                     height={250}

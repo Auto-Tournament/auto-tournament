@@ -26,7 +26,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   onClick,
   disabled,
 }) => {
-  const [imageError, setImageError] = React.useState(false);
+  const [imageError] = React.useState(false);
   const isClickable = !disabled && state === 'available' && onClick;
 
   return (
@@ -178,4 +178,3 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
     </Card>
   );
 };
-

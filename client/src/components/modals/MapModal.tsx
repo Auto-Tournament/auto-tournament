@@ -16,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map, MapResponse } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapModalProps {
   open: boolean;
@@ -38,12 +39,21 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
   const isEditing = !!map;
 
+  const getDefaultWebpUrlForId = (mapId: string): string =>
+    `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
+
   useEffect(() => {
     if (map) {
       setId(map.id);
       setDisplayName(map.displayName);
-      setImageUrl(map.imageUrl || '');
-      setPreviewUrl(map.imageUrl || '');
+      // For repo-backed maps, always prefer the WebP URL derived from the map ID.
+      // For custom uploads (non-repo URLs), keep the stored imageUrl.
+      const normalizedImageUrl =
+        map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+          ? map.imageUrl
+          : getDefaultWebpUrlForId(map.id);
+      setImageUrl(normalizedImageUrl || '');
+      setPreviewUrl(normalizedImageUrl || '');
     } else {
       resetForm();
     }
@@ -333,21 +343,11 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   Remove Image
                 </Button>
               </Box>
-              <Box
-                component="img"
+              <FadeInImage
                 src={previewUrl}
                 alt={displayName || id}
-                sx={{
-                  width: '100%',
-                  objectFit: 'contain',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
+                height={256}
+                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
               />
             </Box>
           )}

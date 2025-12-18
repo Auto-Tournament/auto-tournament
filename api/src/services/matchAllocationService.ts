@@ -7,6 +7,8 @@ import { loadMatchOnServer } from './matchLoadingService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
 import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
 import { log } from '../utils/logger';
+import { settingsService } from './settingsService';
+import { autoCompleteVetoForMatch } from './vetoSimulationService';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
@@ -564,10 +566,59 @@ export class MatchAllocationService {
         emitBracketUpdate({ action: 'tournament_started' });
       }
 
-      let message = 'Tournament started! Teams can now complete map veto. Matches will load after veto completion.';
+      // In simulation mode, automatically perform veto and side picks for all matches.
+      const simulationEnabled = await settingsService.isSimulationModeEnabled();
+      if (simulationEnabled) {
+        log.info(
+          '[VETO-SIM] Simulation mode enabled – auto-veto will run for all pending matches.'
+        );
+
+        // Fetch all pending matches for this tournament and trigger automated veto in background.
+        const pendingMatches = await db.queryAsync<DbMatchRow>(
+          'SELECT * FROM matches WHERE tournament_id = ? AND status = ?',
+          [tournament.id, 'pending']
+        );
+
+        if (pendingMatches.length === 0) {
+          log.warn(
+            '[VETO-SIM] No pending matches found for tournament; nothing to auto-veto.'
+          );
+        } else {
+          for (const m of pendingMatches) {
+            const slug = m.slug;
+            setImmediate(() => {
+              void autoCompleteVetoForMatch(slug, { stepDelayMs: 1000 });
+            });
+          }
+        }
+
+        let message =
+          'Tournament started in simulation mode. Map veto and side picks will be completed automatically, and matches will load as servers become available.';
+        if (!hasAvailableServers) {
+          message +=
+            ' No servers are currently available; matches will be allocated automatically once servers come online.';
+          log.warn(
+            '[WARNING] Tournament started (simulation mode) but no servers are available. Matches will wait for server availability.'
+          );
+        }
+
+        return {
+          success: true,
+          message,
+          allocated: 0,
+          failed: 0,
+          results: [],
+        };
+      }
+
+      let message =
+        'Tournament started! Teams can now complete map veto. Matches will load after veto completion.';
       if (!hasAvailableServers) {
-        message += ' No servers are currently available. Matches will be allocated automatically when servers become available.';
-        log.warn('[WARNING] Tournament started but no servers are available. Matches will wait for server availability.');
+        message +=
+          ' No servers are currently available. Matches will be allocated automatically when servers become available.';
+        log.warn(
+          '[WARNING] Tournament started but no servers are available. Matches will wait for server availability.'
+        );
       }
 
       return {
