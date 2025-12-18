@@ -90,6 +90,17 @@ export async function autoCompleteVetoForMatch(
     return;
   }
 
+  // Only auto-veto matches that already have both teams assigned.
+  // Bracket "TBD vs TBD" slots (future rounds) should behave exactly like
+  // they would for real players: they are not ready yet, so we do not
+  // simulate bans/picks or attempt to load them onto a server.
+  if (!match.team1_id || !match.team2_id) {
+    log.debug(
+      `[VETO-SIM] Match ${matchSlug} does not have both teams assigned (team1_id=${match.team1_id}, team2_id=${match.team2_id}); skipping auto veto`
+    );
+    return;
+  }
+
   // Only auto-veto for pending matches; anything else is either already in progress or done.
   if (match.status !== 'pending') {
     log.debug(

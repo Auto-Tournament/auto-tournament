@@ -23,6 +23,16 @@ export class MatchAllocationService {
   private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300;
 
   /**
+   * In-memory guard to prevent multiple matches being loaded onto the same server
+   * concurrently from different allocation calls (e.g. auto-veto + polling).
+   *
+   * A server ID is added to this set while `loadMatchOnServer` is in progress
+   * and removed afterwards. `getAvailableServers()` will skip any servers that
+   * are currently marked as "allocating".
+   */
+  private readonly allocatingServers = new Set<string>();
+
+  /**
    * Get count of available servers (enabled, online, and ready for allocation)
    * Returns the number of servers that can be allocated
    */
@@ -89,7 +99,12 @@ export class MatchAllocationService {
     );
 
     // Filter out offline servers
-    const onlineServers = statusChecks.filter((s) => s.online);
+    let onlineServers = statusChecks.filter((s) => s.online);
+
+    // Also filter out servers that are currently in the process of being allocated
+    // a match. This prevents multiple concurrent loads (`matchzy_loadmatch_url`)
+    // from different code paths targeting the same physical server.
+    onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
     const GRACE_PERIOD_SECONDS = MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
     const now = Math.floor(Date.now() / 1000);
@@ -111,11 +126,11 @@ export class MatchAllocationService {
       // This ensures demo uploads complete and match reset finishes
       if (updatedAt) {
         const age = now - updatedAt;
-        
+
         // If status was recently updated to idle (within grace period), wait
         if (age < GRACE_PERIOD_SECONDS) {
           const timeUntilReady = GRACE_PERIOD_SECONDS - age;
-          
+
           // Additional check: if match ID exists and is recent, definitely wait
           if (matchSlug && matchSlug.trim() !== '') {
             log.debug(
@@ -123,7 +138,7 @@ export class MatchAllocationService {
             );
             continue;
           }
-          
+
           // Even without match ID, if status was recently updated, wait a bit
           // (might be server restart or status reset)
           log.debug(
@@ -236,15 +251,18 @@ export class MatchAllocationService {
       const server = availableServers[serverIndex % availableServers.length];
 
       try {
-        log.info(`[ALLOCATION] Allocating match ${match.slug} to server ${server.name} (${server.id})`);
+        log.info(
+          `[ALLOCATION] Allocating match ${match.slug} to server ${server.name} (${server.id})`
+        );
 
         // Update match with server_id
         await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
 
         // Emit websocket event for server assignment
-        const matchWithServer = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-          match.slug,
-        ]);
+        const matchWithServer = await db.queryOneAsync<DbMatchRow>(
+          'SELECT * FROM matches WHERE slug = ?',
+          [match.slug]
+        );
         if (matchWithServer) {
           emitMatchUpdate(matchWithServer);
           emitBracketUpdate({
@@ -310,7 +328,9 @@ export class MatchAllocationService {
   }> {
     try {
       // Check if match already has a server
-      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
       if (!match) {
         return { success: false, error: 'Match not found' };
       }
@@ -331,13 +351,18 @@ export class MatchAllocationService {
 
       const server = availableServers[0];
 
+      // Mark server as "in allocation" to prevent other concurrent allocations
+      // from trying to use the same server at the same time.
+      this.allocatingServers.add(server.id);
+
       // Update match with server_id
       await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
 
       // Emit websocket event for server assignment
-      const matchWithServer = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-        matchSlug,
-      ]);
+      const matchWithServer = await db.queryOneAsync<DbMatchRow>(
+        'SELECT * FROM matches WHERE slug = ?',
+        [matchSlug]
+      );
       if (matchWithServer) {
         emitMatchUpdate(matchWithServer);
         emitBracketUpdate({ action: 'server_assigned', matchSlug, serverId: server.id });
@@ -368,6 +393,10 @@ export class MatchAllocationService {
         success: false,
         error: errorMessage,
       };
+    } finally {
+      // Always clear the "allocating" flag so this server can be considered again
+      // for future matches after the current allocation attempt finishes.
+      this.allocatingServers.clear();
     }
   }
 
@@ -583,19 +612,23 @@ export class MatchAllocationService {
       const simulationEnabled = await settingsService.isSimulationModeEnabled();
       if (simulationEnabled) {
         log.info(
-          '[VETO-SIM] Simulation mode enabled – auto-veto will run for all pending matches.'
+          '[VETO-SIM] Simulation mode enabled – auto-veto will run for all pending matches with resolved teams.'
         );
 
-        // Fetch all pending matches for this tournament and trigger automated veto in background.
+        // Fetch all pending matches that already have both teams assigned.
+        // We deliberately skip future TBD bracket slots where team1_id/team2_id
+        // are not yet known; those matches are not "ready" for veto or loading.
         const pendingMatches = await db.queryAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE tournament_id = ? AND status = ?',
-          [tournament.id, 'pending']
+          `SELECT * FROM matches 
+           WHERE tournament_id = ? 
+             AND status = 'pending'
+             AND team1_id IS NOT NULL
+             AND team2_id IS NOT NULL`,
+          [tournament.id]
         );
 
         if (pendingMatches.length === 0) {
-          log.warn(
-            '[VETO-SIM] No pending matches found for tournament; nothing to auto-veto.'
-          );
+          log.warn('[VETO-SIM] No pending matches found for tournament; nothing to auto-veto.');
         } else {
           for (const m of pendingMatches) {
             const slug = m.slug;
@@ -647,8 +680,10 @@ export class MatchAllocationService {
 
       // Check server availability
       if (!hasAvailableServers) {
-        log.warn('[WARNING] No servers are currently available. Tournament will start but matches will wait for server availability.');
-        
+        log.warn(
+          '[WARNING] No servers are currently available. Tournament will start but matches will wait for server availability.'
+        );
+
         // Update tournament status to 'in_progress' even without servers
         if (tournament.status === 'setup' || tournament.status === 'ready') {
           await db.updateAsync(
@@ -662,7 +697,7 @@ export class MatchAllocationService {
             [1]
           );
           log.success('Tournament started (waiting for servers)');
-          
+
           // Emit tournament update
           emitTournamentUpdate({ id: 1, status: 'in_progress' });
           emitBracketUpdate({ action: 'tournament_started' });
@@ -673,7 +708,9 @@ export class MatchAllocationService {
         for (const match of readyMatches) {
           this.startPollingForServer(match.slug, baseUrl);
         }
-        log.info(`Started polling for ${readyMatches.length} ready match(es) - will allocate when servers become available`);
+        log.info(
+          `Started polling for ${readyMatches.length} ready match(es) - will allocate when servers become available`
+        );
 
         return {
           success: true,
@@ -698,7 +735,9 @@ export class MatchAllocationService {
         this.startPollingForServer(result.matchSlug, baseUrl);
       }
       if (unallocatedMatches.length > 0) {
-        log.info(`Started polling for ${unallocatedMatches.length} unallocated match(es) - will allocate when servers become available`);
+        log.info(
+          `Started polling for ${unallocatedMatches.length} unallocated match(es) - will allocate when servers become available`
+        );
       }
 
       // For shuffle tournaments: auto-generate first round if no matches exist
@@ -706,39 +745,48 @@ export class MatchAllocationService {
         const existingMatches = await db.queryAsync<DbMatchRow>(
           'SELECT * FROM matches WHERE tournament_id = 1 LIMIT 1'
         );
-        
+
         if (existingMatches.length === 0) {
           // No matches exist yet - generate first round automatically
           try {
             log.info('Shuffle tournament: Auto-generating first round...');
             const roundResult = await generateRoundMatches(1);
-            log.success(`Shuffle tournament: Generated ${roundResult.matches.length} matches for round 1`);
-            
+            log.success(
+              `Shuffle tournament: Generated ${roundResult.matches.length} matches for round 1`
+            );
+
             // Allocate servers to the newly generated matches
             // Allocate servers to all matches at once
             const shuffleResults = await this.allocateServersToMatches(baseUrl);
-            
+
             const shuffleAllocated = shuffleResults.filter((r) => r.success).length;
             const shuffleFailed = shuffleResults.length - shuffleAllocated;
-            
+
             allocated += shuffleAllocated;
             failed += shuffleFailed;
-            
+
             // Add shuffle results to main results array
             results.push(...shuffleResults);
-            
-            log.info(`Shuffle tournament: Allocated ${shuffleAllocated} servers, ${shuffleFailed} failed`);
+
+            log.info(
+              `Shuffle tournament: Allocated ${shuffleAllocated} servers, ${shuffleFailed} failed`
+            );
           } catch (error) {
             log.error('Failed to auto-generate first round for shuffle tournament', error);
             throw new Error(
-              `Failed to start shuffle tournament: ${error instanceof Error ? error.message : 'Unknown error'}`
+              `Failed to start shuffle tournament: ${
+                error instanceof Error ? error.message : 'Unknown error'
+              }`
             );
           }
         }
       }
 
       // Update tournament status to 'in_progress' if starting for the first time
-      if ((tournament.status === 'setup' || tournament.status === 'ready') && (allocated > 0 || unallocatedMatches.length > 0)) {
+      if (
+        (tournament.status === 'setup' || tournament.status === 'ready') &&
+        (allocated > 0 || unallocatedMatches.length > 0)
+      ) {
         await db.updateAsync(
           'tournament',
           {
@@ -750,7 +798,7 @@ export class MatchAllocationService {
           [1]
         );
         log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
-        
+
         // Emit tournament update
         emitTournamentUpdate({ id: 1, status: 'in_progress' });
         emitBracketUpdate({ action: 'tournament_started' });
@@ -926,7 +974,9 @@ export class MatchAllocationService {
 
     try {
       // Get the match
-      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
+      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+        matchSlug,
+      ]);
 
       if (!match) {
         return {
@@ -973,7 +1023,9 @@ export class MatchAllocationService {
       await new Promise((resolve) => setTimeout(resolve, 3000));
 
       // Step 3: Reset match status to 'ready'
-      await db.updateAsync('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [matchSlug]);
+      await db.updateAsync('matches', { status: 'ready', loaded_at: null }, 'slug = ?', [
+        matchSlug,
+      ]);
 
       // Step 4: Reload the match on the same server
       log.info(`Reloading match ${matchSlug} on server ${serverId}`);
@@ -1017,13 +1069,17 @@ export class MatchAllocationService {
       return;
     }
 
-    log.info(`[POLLING] Starting server polling for match ${matchSlug} (checking every 10 seconds)`);
+    log.info(
+      `[POLLING] Starting server polling for match ${matchSlug} (checking every 10 seconds)`
+    );
 
     const pollInterval = setInterval(async () => {
       try {
         // Check if match still exists and is ready
-        const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [matchSlug]);
-        
+        const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+          matchSlug,
+        ]);
+
         if (!match) {
           log.debug(`Match ${matchSlug} no longer exists, stopping polling`);
           this.stopPollingForServer(matchSlug);
@@ -1039,7 +1095,9 @@ export class MatchAllocationService {
 
         // If match is no longer in ready status, stop polling
         if (match.status !== 'ready') {
-          log.debug(`Match ${matchSlug} is no longer ready (status: ${match.status}), stopping polling`);
+          log.debug(
+            `Match ${matchSlug} is no longer ready (status: ${match.status}), stopping polling`
+          );
           this.stopPollingForServer(matchSlug);
           return;
         }
@@ -1049,7 +1107,9 @@ export class MatchAllocationService {
         const result = await this.allocateSingleMatch(matchSlug, baseUrl);
 
         if (result.success) {
-          log.success(`[POLLING] Successfully allocated server ${result.serverId} to match ${matchSlug}`);
+          log.success(
+            `[POLLING] Successfully allocated server ${result.serverId} to match ${matchSlug}`
+          );
           this.stopPollingForServer(matchSlug);
         } else {
           log.debug(`[Polling] No server available for match ${matchSlug}: ${result.error}`);

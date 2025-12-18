@@ -2,6 +2,7 @@
 // This ensures all modules can access env vars during initialization
 import dotenv from 'dotenv';
 import path from 'path';
+import os from 'os';
 dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 import express, { Request, Response, NextFunction } from 'express';
@@ -323,8 +324,35 @@ cleanupOldLogs(30);
       log.server(`Server running on port ${PORT}`);
       log.server(`Listening on: all interfaces (IPv4 & IPv6)`);
       log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
-      log.server(`API Docs: http://localhost:${PORT}/api-docs`);
-      log.server(`Health check: http://localhost:${PORT}/health`);
+
+      // Vite-style URL summary (Local + Network)
+      const protocol = 'http';
+      log.server('');
+      log.server('Available endpoints:');
+      log.server(`  Local API:   ${protocol}://localhost:${PORT}/`);
+
+      const interfaces = os.networkInterfaces();
+      const printed = new Set<string>();
+      Object.values(interfaces).forEach((addresses) => {
+        (addresses || [])
+          .filter((addr) => addr.family === 'IPv4' && !addr.internal)
+          .forEach((addr) => {
+            if (printed.has(addr.address)) return;
+            printed.add(addr.address);
+            log.server(`  Network API: ${protocol}://${addr.address}:${PORT}/`);
+          });
+      });
+
+      log.server('');
+      log.server(`  App (static client):   ${protocol}://localhost:${PORT}/app/`);
+      printed.forEach((ip) => {
+        log.server(`  App (network):        ${protocol}://${ip}:${PORT}/app/`);
+      });
+
+      log.server('');
+      log.server(`  API Docs:   ${protocol}://localhost:${PORT}/api-docs`);
+      log.server(`  Health:     ${protocol}://localhost:${PORT}/health`);
+      log.server('');
       log.server(`WebSocket: Enabled`);
       log.server(`Event logs: api/data/logs/events/ (30 day retention)`);
       log.server('='.repeat(60));
@@ -400,7 +428,9 @@ async function bootstrapServerWebhooks(): Promise<void> {
       }
 
       const commands = [
-        ...getMatchZyWebhookCommands(baseUrl, serverToken),
+        // Configure a server-specific webhook for idle/test events. When a match
+        // is loaded, matchLoadingService will override this with a match-specific URL.
+        ...getMatchZyWebhookCommands(baseUrl, serverToken, serverInfo.id),
         ...getMatchZyLoadMatchAuthCommands(serverToken),
         ...getMatchZyReportUploadCommands(baseUrl, serverToken, serverInfo.id),
       ];
@@ -409,7 +439,7 @@ async function bootstrapServerWebhooks(): Promise<void> {
         await rconService.sendCommand(serverInfo.id, cmd);
       }
 
-      log.webhookConfigured(serverInfo.id, `${baseUrl}/api/events`);
+      log.webhookConfigured(serverInfo.id, `${baseUrl}/api/events/${serverInfo.id}`);
       log.success(`Auto-configured MatchZy webhook/auth for ${serverInfo.name} (${serverInfo.id})`);
     } catch (error) {
       log.warn(`Failed to auto-configure webhook for server ${serverInfo.id}`, { error });

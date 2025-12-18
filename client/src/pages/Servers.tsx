@@ -238,39 +238,60 @@ export default function Servers() {
                         <Typography variant="h6" fontWeight={600} gutterBottom>
                           {server.name}
                         </Typography>
-                        <Chip
-                          icon={
+                        {(() => {
+                          const reachableFromApi = (server as any).reachableFromApi;
+                          const serverCanReachApi = (server as any).serverCanReachApi;
+
+                          let label: string;
+                          let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
+                            'default';
+
+                          if (server.status === 'checking') {
+                            label = 'Checking...';
+                            color = 'default';
+                          } else if (!server.enabled || server.status === 'disabled') {
+                            label = 'Disabled';
+                            color = 'default';
+                          } else if (server.status !== 'online') {
+                            label = 'Offline';
+                            color = 'error';
+                          } else if (reachableFromApi && serverCanReachApi) {
+                            label = 'Online (API ↔ Server OK)';
+                            color = 'success';
+                          } else if (reachableFromApi && serverCanReachApi === false) {
+                            label = 'Online (RCON only)';
+                            color = 'warning';
+                          } else if (reachableFromApi === false) {
+                            label = 'RCON failed';
+                            color = 'error';
+                          } else {
+                            label = 'Online (testing)';
+                            color = 'info';
+                          }
+
+                          const icon =
                             server.status === 'checking' ? (
                               <CircularProgress size={16} />
-                            ) : server.status === 'online' ? (
+                            ) : color === 'success' ? (
                               <CheckCircleIcon />
-                            ) : server.status === 'disabled' ? (
+                            ) : color === 'warning' ? (
+                              <RefreshIcon />
+                            ) : server.status === 'disabled' || !server.enabled ? (
                               <BlockIcon />
                             ) : (
                               <CancelIcon />
-                            )
-                          }
-                          label={
-                            server.status === 'checking'
-                              ? 'Checking...'
-                              : server.status === 'online'
-                              ? 'Online'
-                              : server.status === 'disabled'
-                              ? 'Disabled'
-                              : 'Offline'
-                          }
-                          size="small"
-                          color={
-                            server.status === 'checking'
-                              ? 'default'
-                              : server.status === 'online'
-                              ? 'success'
-                              : server.status === 'disabled'
-                              ? 'default'
-                              : 'error'
-                          }
-                          sx={{ fontWeight: 600 }}
-                        />
+                            );
+
+                          return (
+                            <Chip
+                              icon={icon}
+                              label={label}
+                              size="small"
+                              color={color}
+                              sx={{ fontWeight: 600 }}
+                            />
+                          );
+                        })()}
                       </Box>
                       {/* Clicking the card already opens the edit modal, so no separate Edit button needed */}
                     </Box>
