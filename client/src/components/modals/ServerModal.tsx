@@ -52,7 +52,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState(false);
-  const [testResult, setTestResult] = useState<'success' | 'error' | null>(null);
+  const [apiToServerOk, setApiToServerOk] = useState<boolean | null>(null);
+  const [serverToApiOk, setServerToApiOk] = useState<boolean | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -85,7 +86,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setAdminChatPrefix('');
     setKnifeEnabledDefault(null);
     setError('');
-    setTestResult(null);
+    setApiToServerOk(null);
+    setServerToApiOk(null);
   };
 
   const handleNameChange = (value: string) => {
@@ -99,15 +101,31 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     }
 
     setTesting(true);
-    setTestResult(null);
+    setApiToServerOk(null);
+    setServerToApiOk(null);
     setError('');
 
     try {
       const response = await api.get<ServerStatusResponse>(`/api/servers/${server.id}/status`);
-      setTestResult(response.status === 'online' ? 'success' : 'error');
+      const canReach = response.status === 'online';
+      const serverBack = response.serverCanReachApi === true;
+
+      setApiToServerOk(canReach);
+      setServerToApiOk(serverBack);
+
+      if (canReach && serverBack) {
+        showSuccess('Bi-directional connectivity verified: server is online and can reach the API.');
+      } else if (canReach && !serverBack) {
+        showError(
+          'We can reach the server via RCON, but the server could not reach the API endpoint (test event missing).'
+        );
+      } else {
+        showError('Server appears offline or unreachable via RCON.');
+      }
     } catch {
-      setTestResult('error');
       setError('Failed to test connection');
+      setApiToServerOk(false);
+      setServerToApiOk(false);
     } finally {
       setTesting(false);
     }
@@ -376,21 +394,35 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                   disabled={testing}
                   fullWidth
                   color={
-                    testResult === 'success'
+                    apiToServerOk && serverToApiOk
                       ? 'success'
-                      : testResult === 'error'
+                      : apiToServerOk === false || serverToApiOk === false
                       ? 'error'
                       : 'primary'
                   }
                 >
                   {testing
                     ? 'Testing...'
-                    : testResult === 'success'
-                    ? '✓ Connection Successful'
-                    : testResult === 'error'
-                    ? '✗ Connection Failed'
-                    : 'Test RCON Connection'}
+                    : apiToServerOk && serverToApiOk
+                    ? '✓ Server reachable (RCON) & server can reach API'
+                    : apiToServerOk && serverToApiOk === false
+                    ? '⚠ Server reachable, but API not reachable from server'
+                    : apiToServerOk === false
+                    ? '✗ Server unreachable via RCON'
+                    : 'Test connectivity'}
                 </Button>
+                {apiToServerOk !== null && serverToApiOk !== null && !testing && (
+                  <Box mt={1}>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      We can reach server (RCON):{' '}
+                      <strong>{apiToServerOk ? 'Yes' : 'No'}</strong>
+                    </Typography>
+                    <Typography variant="caption" color="text.secondary" display="block">
+                      Server can reach API (/api/events):{' '}
+                      <strong>{serverToApiOk ? 'Yes' : 'No'}</strong>
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             )}
           </Box>

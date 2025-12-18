@@ -6,6 +6,7 @@ import { log } from '../utils/logger';
 import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
+import { getLastServerTestEvent } from '../services/serverConnectivityService';
 
 const router = Router();
 
@@ -81,6 +82,8 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       ),
     ]);
 
+    const reachableFromApi = statusInfo.online;
+
     if (!statusInfo.online) {
       log.warn(`Server ${id} is offline or unreachable (status check failed)`);
       return res.json({
@@ -123,12 +126,39 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       statusInfo.status === ServerStatus.IDLE ||
       statusInfo.status === ServerStatus.POSTGAME;
 
+    // Bi-directional connectivity check:
+    //  - We already know we can reach the server via RCON (reachableFromApi).
+    //  - Now trigger css_te so the server sends a test event back to /api/events.
+    const previousTestEventTs = getLastServerTestEvent(id) ?? 0;
+    let serverCanReachApi = false;
+
+    try {
+      await rconService.sendCommand(id, 'css_te');
+
+      const timeoutMs = 5000;
+      const pollIntervalMs = 250;
+      const deadline = Date.now() + timeoutMs;
+
+      while (Date.now() < deadline) {
+        const lastTs = getLastServerTestEvent(id) ?? 0;
+        if (lastTs > previousTestEventTs) {
+          serverCanReachApi = true;
+          break;
+        }
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+      }
+    } catch (error) {
+      log.warn(`Failed to send css_te connectivity test to server ${id}`, { error });
+    }
+
     return res.json({
       success: true,
       status: 'online',
       serverId: id,
       isAvailable,
       currentMatch: statusInfo.matchSlug,
+      reachableFromApi,
+      serverCanReachApi,
     });
   } catch (error) {
     log.error('Error checking server status', error);

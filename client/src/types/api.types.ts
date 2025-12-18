@@ -61,6 +61,8 @@ export interface ServerStatusResponse extends ApiResponse {
   isAvailable: boolean;
   currentMatch: string | null;
   playerCount?: number;
+  reachableFromApi?: boolean;
+  serverCanReachApi?: boolean;
 }
 
 // Team types

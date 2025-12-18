@@ -14,6 +14,7 @@ import { emitMatchEvent } from '../services/socketService';
 import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
+import { recordServerTestEvent } from '../services/serverConnectivityService';
 import {
   refreshConnectionsFromServer,
   applyMatchReport,
@@ -179,6 +180,14 @@ async function handleEventRequest(
           : 'unknown'
       })`
     );
+
+    // Handle special connectivity test events from MatchZy.
+    // These are used to verify that the server can reach our /api/events endpoint.
+    if (event.event === 'test_event' || event.event === 'MatchZyTestEvent') {
+      if (serverId && serverId !== 'unknown') {
+        recordServerTestEvent(serverId);
+      }
+    }
 
     // Handle events with no match loaded
     if (isNoMatch) {
