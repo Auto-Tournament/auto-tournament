@@ -7,6 +7,7 @@ import { loadMatchOnServer } from './matchLoadingService';
 import { serverStatusService, ServerStatus } from './serverStatusService';
 import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
 import { log } from '../utils/logger';
+import { getLastServerTestEvent } from './serverConnectivityService';
 import { settingsService } from './settingsService';
 import { autoCompleteVetoForMatch } from './vetoSimulationService';
 import type { ServerResponse } from '../types/server.types';
@@ -131,10 +132,10 @@ export class MatchAllocationService {
           continue;
         }
 
-        // Status is idle and timestamp is old enough, safe to allocate
+        // Status is idle and timestamp is old enough, proceed to connectivity checks
         if (matchSlug && matchSlug.trim() !== '') {
           log.debug(
-            `Server ${server.id} (${server.name}) is idle with old match ID '${matchSlug}' (${age}s old), ready for allocation`
+            `Server ${server.id} (${server.name}) is idle with old match ID '${matchSlug}' (${age}s old), proceeding to connectivity checks`
           );
         }
       } else {
@@ -143,6 +144,18 @@ export class MatchAllocationService {
         log.debug(
           `Server ${server.id} (${server.name}) is idle (no timestamp available), assuming ready for allocation`
         );
+      }
+
+      // Bi-directional connectivity safeguard:
+      // Only allocate servers that have sent a recent connectivity test event
+      // so we know they can reach our /api/events webhook.
+      const lastTestEvent = getLastServerTestEvent(server.id);
+      const TEST_EVENT_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
+      if (!lastTestEvent || Date.now() - lastTestEvent > TEST_EVENT_MAX_AGE_MS) {
+        log.warn(
+          `[ALLOCATION] Skipping server ${server.id} (${server.name}) because no recent connectivity test event was received from it.`
+        );
+        continue;
       }
 
       // Server is available!
