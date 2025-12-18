@@ -29,6 +29,7 @@ import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
 import { api } from '../utils/api';
+import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
 
 // Interfaces are now imported from useBracket hook
@@ -41,9 +42,8 @@ export default function Bracket() {
     tournament,
     matches,
     totalRounds,
-    starting,
+    // starting handled by StartTournamentButton
     loadBracket,
-    startTournament,
   } = useBracket();
 
   const [viewMode, setViewMode] = useState<'visual' | 'list'>('visual');
@@ -83,7 +83,7 @@ export default function Bracket() {
             totalRounds?: number;
             currentRound?: number;
           }>(`/api/tournament/${tournament.id}/round-status`);
-          
+
           if (response.success && response.roundStatus) {
             setRoundStatus(response.roundStatus);
             // Prefer backend-provided totalRounds; fall back to map sequence length
@@ -196,7 +196,8 @@ export default function Bracket() {
             No bracket for shuffle tournaments
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={2}>
-            Shuffle tournaments don&apos;t use a fixed bracket view. Teams are reshuffled each round based on player ELO.
+            Shuffle tournaments don&apos;t use a fixed bracket view. Teams are reshuffled each round
+            based on player ELO.
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
             Use the{' '}
@@ -221,7 +222,10 @@ export default function Bracket() {
             <Button variant="contained" onClick={() => navigate('/matches')}>
               Go to Matches
             </Button>
-            <Button variant="outlined" onClick={() => navigate(`/tournament/${tournament.id}/leaderboard`)}>
+            <Button
+              variant="outlined"
+              onClick={() => navigate(`/tournament/${tournament.id}/leaderboard`)}
+            >
               View Leaderboard
             </Button>
           </Stack>
@@ -311,15 +315,7 @@ export default function Bracket() {
             </Box>
             <Box display="flex" gap={2} alignItems="center">
               {tournament.status === 'setup' && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  onClick={startTournament}
-                  disabled={starting}
-                  startIcon={starting ? <CircularProgress size={16} /> : null}
-                >
-                  {starting ? 'Starting...' : '🚀 Start Tournament'}
-                </Button>
+                <StartTournamentButton variant="contained" size="medium" onSuccess={loadBracket} />
               )}
               <ToggleButtonGroup
                 value={viewMode}
@@ -466,20 +462,22 @@ export default function Bracket() {
           {Array.from({ length: effectiveTotalRounds }, (_, i) => i + 1).map((round) => {
             const roundMatches = matchesByRound[round] || [];
             if (roundMatches.length === 0) return null;
-            
+
             return (
               <Box key={round} mb={4}>
                 <Typography variant="h6" fontWeight={600} mb={2}>
                   {getBracketRoundLabel(round)}
-                  {tournament.type === 'shuffle' && roundStatus && roundStatus.roundNumber === round && (
-                    <Chip
-                      label={roundStatus.map}
-                      size="small"
-                      sx={{ ml: 1 }}
-                      color="primary"
-                      variant="outlined"
-                    />
-                  )}
+                  {tournament.type === 'shuffle' &&
+                    roundStatus &&
+                    roundStatus.roundNumber === round && (
+                      <Chip
+                        label={roundStatus.map}
+                        size="small"
+                        sx={{ ml: 1 }}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    )}
                 </Typography>
                 <Stack spacing={2}>
                   {roundMatches.map((match) => (
@@ -511,7 +509,6 @@ export default function Bracket() {
           onClose={() => setSelectedMatchId(null)}
         />
       )}
-
     </Box>
   );
 }

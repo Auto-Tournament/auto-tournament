@@ -9,6 +9,9 @@ export interface Tournament {
   format: 'bo1' | 'bo3' | 'bo5';
   status: 'setup' | 'ready' | 'in_progress' | 'completed';
   maps: string[];
+  // For shuffle tournaments, mapSequence defines the map per round.
+  // For non-shuffle, it will usually be undefined and we fall back to maps.
+  mapSequence?: string[];
   teamIds: string[];
   teams?: Array<{
     id: string;

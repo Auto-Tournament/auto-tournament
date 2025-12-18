@@ -3,6 +3,7 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
+  DialogActions,
   Box,
   Typography,
   IconButton,
@@ -18,6 +19,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Chip,
+  Button,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
@@ -27,6 +29,7 @@ import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import LinkIcon from '@mui/icons-material/Link';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import CodeIcon from '@mui/icons-material/Code';
 import {
   formatDate,
   formatDuration,
@@ -50,6 +53,7 @@ import { useTournamentStatus } from '../../hooks/useTournamentStatus';
 import { MapChipList } from '../match/MapChipList';
 import { MapDemoDownloads } from '../match/MapDemoDownloads';
 import { FadeInImage } from '../common/FadeInImage';
+import { api } from '../../utils/api';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -67,6 +71,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [matchTimer, setMatchTimer] = useState<number>(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [configModalOpen, setConfigModalOpen] = useState(false);
+  const [configJson, setConfigJson] = useState<string | null>(null);
+  const [configLoading, setConfigLoading] = useState(false);
 
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
@@ -118,6 +125,25 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
     return () => clearInterval(interval);
   }, [match]);
+
+  const handleOpenConfigModal = async () => {
+    if (!match?.slug) return;
+    setConfigModalOpen(true);
+    setConfigLoading(true);
+    setError('');
+
+    try {
+      // Fetch raw MatchZy config JSON from the backend
+      const response = await api.get<unknown>(`/api/matches/${match.slug}.json`);
+      setConfigJson(JSON.stringify(response, null, 2));
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load match config';
+      setError(message);
+      setConfigJson(null);
+    } finally {
+      setConfigLoading(false);
+    }
+  };
 
   const getMatchPhaseDisplay = () => {
     if (match?.matchPhase) {
@@ -821,6 +847,21 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             )}
           </Stack>
         </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2 }}>
+          <Box display="flex" justifyContent="space-between" width="100%" alignItems="center">
+            <Typography variant="caption" color="text.secondary">
+              Match slug: <strong>{match.slug}</strong>
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              startIcon={<CodeIcon />}
+              onClick={handleOpenConfigModal}
+            >
+              View Match Config JSON
+            </Button>
+          </Box>
+        </DialogActions>
       </Dialog>
 
       <ToastNotification />
@@ -835,6 +876,52 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
           {error}
         </Alert>
       </Snackbar>
+
+      {/* Match Config JSON Modal */}
+      <Dialog
+        open={configModalOpen}
+        onClose={() => setConfigModalOpen(false)}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="h6" fontWeight={600}>
+              Match Config JSON
+            </Typography>
+            <IconButton onClick={() => setConfigModalOpen(false)} edge="end">
+              <CloseIcon />
+            </IconButton>
+          </Box>
+        </DialogTitle>
+        <DialogContent dividers>
+          {configLoading ? (
+            <Typography variant="body2" color="text.secondary">
+              Loading match config...
+            </Typography>
+          ) : configJson ? (
+            <Box
+              component="pre"
+              sx={{
+                bgcolor: 'background.default',
+                borderRadius: 1,
+                p: 2,
+                fontFamily: 'monospace',
+                fontSize: 12,
+                maxHeight: 500,
+                overflow: 'auto',
+                whiteSpace: 'pre',
+              }}
+            >
+              <code>{configJson}</code>
+            </Box>
+          ) : (
+            <Typography variant="body2" color="text.secondary">
+              No config available for this match.
+            </Typography>
+          )}
+        </DialogContent>
+      </Dialog>
 
       <Snackbar
         open={!!success}

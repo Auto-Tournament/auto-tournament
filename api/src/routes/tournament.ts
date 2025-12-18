@@ -591,6 +591,22 @@ router.get('/server-availability', requireAuth, async (_req: Request, res: Respo
 
 router.post('/start', requireAuth, async (req: Request, res: Response) => {
   try {
+    const { enableSimulation } = (req.body ?? {}) as { enableSimulation?: unknown };
+
+    // Optional one-shot toggle to enable simulation mode at the moment the
+    // tournament is started (dev-only safety; ignored in production).
+    if (enableSimulation === true && process.env.NODE_ENV !== 'production') {
+      try {
+        await settingsService.setSetting('simulate_matches', '1');
+        log.info('[VETO-SIM] Simulation mode enabled via /api/tournament/start payload');
+      } catch (err) {
+        log.warn(
+          '[VETO-SIM] Failed to enable simulation mode via /api/tournament/start payload',
+          err as Error
+        );
+      }
+    }
+
     // Get base URL for webhook configuration
     const baseUrl = await getWebhookBaseUrl(req);
 

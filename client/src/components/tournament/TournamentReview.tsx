@@ -12,12 +12,15 @@ import {
   Tooltip,
 } from '@mui/material';
 import RocketLaunchIcon from '@mui/icons-material/RocketLaunch';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
+import { useIsDevelopment } from '../../hooks/useIsDevelopment';
+import { useSimulationMode } from '../../hooks/useSimulationMode';
 import type { Map } from '../../types/api.types';
 import { getMapDisplayName } from '../../constants/maps';
 
@@ -55,10 +58,13 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   const isShuffle = tournament.type === 'shuffle';
   const teamSize = tournament.teamSize || 5;
   const minPlayers = teamSize * 2;
-  const hasEnoughPlayers = registeredPlayerCount !== undefined ? registeredPlayerCount >= minPlayers : true;
+  const hasEnoughPlayers =
+    registeredPlayerCount !== undefined ? registeredPlayerCount >= minPlayers : true;
   const canStart = !isShuffle || hasEnoughPlayers;
   const canRegenerate = !isShuffle && (hasBracket ?? true);
   const [availableMaps, setAvailableMaps] = useState<Map[]>([]);
+  const isDev = useIsDevelopment();
+  const { simulationEnabled } = useSimulationMode();
 
   useEffect(() => {
     const loadMaps = async () => {
@@ -74,6 +80,11 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
     loadMaps();
   }, []);
 
+  useEffect(() => {
+    // no-op placeholder to keep hooks grouping clear; simulation mode is
+    // handled by useSimulationMode and doesn't need extra effects here.
+  }, [isDev, simulationEnabled]);
+
   const getDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
     return map ? map.displayName : getMapDisplayName(mapId);
@@ -81,7 +92,11 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
 
   const handleStart = () => {
     if (!canStart && isShuffle) {
-      showWarning(`Need at least ${minPlayers} players to start the tournament (${teamSize}v${teamSize} matches). Currently registered: ${registeredPlayerCount || 0}`);
+      showWarning(
+        `Need at least ${minPlayers} players to start the tournament (${teamSize}v${teamSize} matches). Currently registered: ${
+          registeredPlayerCount || 0
+        }`
+      );
       return;
     }
     onStart();
@@ -96,7 +111,6 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
 
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid size={{ xs: 12, sm: 6 }}>
-
             {!isShuffle && (
               <>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
@@ -141,7 +155,15 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           <Button
             variant="contained"
             size="large"
-            startIcon={starting ? <CircularProgress size={20} color="inherit" /> : <RocketLaunchIcon />}
+            startIcon={
+              starting ? (
+                <CircularProgress size={20} color="inherit" />
+              ) : simulationEnabled ? (
+                <SmartToyIcon />
+              ) : (
+                <RocketLaunchIcon />
+              )
+            }
             onClick={handleStart}
             disabled={starting || saving}
             sx={{
@@ -156,7 +178,13 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               }),
             }}
           >
-            {starting ? 'Starting...' : 'Start Tournament'}
+            {starting
+              ? simulationEnabled
+                ? 'Starting Simulation...'
+                : 'Starting...'
+              : simulationEnabled
+              ? 'Start Simulation'
+              : 'Start Tournament'}
           </Button>
 
           {onEdit && (

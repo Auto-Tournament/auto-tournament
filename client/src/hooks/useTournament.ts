@@ -121,10 +121,14 @@ export const useTournament = () => {
     return response;
   };
 
-  const startTournament = async (baseUrl: string) => {
+  const startTournament = async (baseUrl: string, options?: { enableSimulation?: boolean }) => {
+    const payload: Record<string, unknown> = { baseUrl };
+    if (options && typeof options.enableSimulation === 'boolean') {
+      payload.enableSimulation = options.enableSimulation;
+    }
     const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
       '/api/tournament/start',
-      { baseUrl }
+      payload
     );
     // Reload tournament data after starting
     await loadData();
