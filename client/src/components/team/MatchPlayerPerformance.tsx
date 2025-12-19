@@ -1,5 +1,16 @@
 import React from 'react';
-import { Box, Paper, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
+import {
+  Box,
+  Paper,
+  Stack,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Typography,
+} from '@mui/material';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import type { MatchLiveStats } from '../../types';
 
@@ -23,12 +34,6 @@ function formatAdr(player: PlayerLine): string {
   return Math.round(adr).toString();
 }
 
-function formatKastValue(kast: number): string {
-  if (!kast) return '—';
-  const normalized = kast > 1 ? kast : kast * 100;
-  return `${Math.round(normalized)}%`;
-}
-
 function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
   return (
     <TableContainer component={Paper} variant="outlined">
@@ -41,14 +46,13 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
             <TableCell align="right">A</TableCell>
             <TableCell align="right">+/-</TableCell>
             <TableCell align="right">ADR</TableCell>
-            <TableCell align="right">KAST</TableCell>
             <TableCell align="right">MVP</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
           {rows.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={8} align="center">
+              <TableCell colSpan={7} align="center">
                 <Typography variant="body2" color="text.secondary">
                   Waiting for stats...
                 </Typography>
@@ -82,7 +86,6 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
                 <TableCell align="right">{player.assists}</TableCell>
                 <TableCell align="right">{formatKdDiff(player.kills, player.deaths)}</TableCell>
                 <TableCell align="right">{formatAdr(player)}</TableCell>
-                <TableCell align="right">{formatKastValue(player.kast)}</TableCell>
                 <TableCell align="right">{player.mvps ?? 0}</TableCell>
               </TableRow>
             ))

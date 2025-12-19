@@ -3,6 +3,7 @@ import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
 import { enrichMatch } from '../utils/matchEnrichment';
+import { matchLiveStatsService } from './matchLiveStatsService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
   Tournament,
@@ -502,8 +503,26 @@ class TournamentService {
           match.winner = { id: winner.id, name: winner.name, tag: winner.tag || undefined };
       }
 
-      // Enrich match with player stats and scores from events
+      // Enrich match with player stats and scores from persisted events
       await enrichMatch(match, row.slug);
+
+      // Also overlay any in-memory live stats so the bracket immediately reflects
+      // the current series score / map wins on first page load, even before
+      // websocket updates arrive.
+      const liveStats = matchLiveStatsService.getStats(row.slug);
+      if (liveStats) {
+        // Prefer series scores (map wins in BO3/BO5); if not available, fall back
+        // to the current map score.
+        const liveTeam1 = liveStats.team1SeriesScore ?? liveStats.team1Score;
+        const liveTeam2 = liveStats.team2SeriesScore ?? liveStats.team2Score;
+
+        if (typeof liveTeam1 === 'number') {
+          match.team1Score = liveTeam1;
+        }
+        if (typeof liveTeam2 === 'number') {
+          match.team2Score = liveTeam2;
+        }
+      }
 
       matches.push(match);
     }

@@ -304,7 +304,7 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
   }
 
   const playerStats = extractPlayerStats(report);
-  const stats = matchLiveStatsService.update(matchSlug, {
+  const updates: Partial<MatchLiveStats> = {
     status: mapPhaseToLiveStatus(matchInfo.phase),
     team1Score: matchInfo.score?.team1 ?? 0,
     team2Score: matchInfo.score?.team2 ?? 0,
@@ -314,8 +314,17 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
     roundNumber: matchInfo.map?.round ?? 0,
     mapName: matchInfo.map?.name ?? null,
     totalMaps: matchInfo.map?.total ?? report.match?.map?.total ?? 1,
-    playerStats: playerStats,
-  });
+  };
+
+  // Only override live player stats if the report actually contains them.
+  // MatchZy match reports often omit per‑player stats, while the round_end
+  // webhook events include a full players[] array. In that case, we want to
+  // preserve the richer snapshot built from round_end instead of wiping it.
+  if (playerStats) {
+    updates.playerStats = playerStats;
+  }
+
+  const stats = matchLiveStatsService.update(matchSlug, updates);
 
   await persistMatchMetaFromReport(matchSlug, matchInfo);
 
@@ -377,6 +386,16 @@ function extractPlayerStats(report: MatchReport): MatchPlayerStatsSnapshot | nul
           return null;
         }
         const stats = player.stats ?? {};
+
+        // If the report doesn't include any numeric stats for this player yet,
+        // skip creating a line entirely. MatchZy round_end webhooks carry full
+        // cumulative stats, but match reports often only contain roster info
+        // with an empty "stats" object. In that case we *don't* want to
+        // overwrite a richer live snapshot with a bunch of zeroes.
+        if (!stats || typeof stats !== 'object' || Object.keys(stats).length === 0) {
+          return null;
+        }
+
         return {
           steamId,
           name: player.name || 'Unknown',

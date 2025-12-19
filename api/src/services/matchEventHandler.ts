@@ -7,7 +7,12 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitMatchUpdate, emitBracketUpdate } from './socketService';
 import { playerConnectionService } from './playerConnectionService';
-import { matchLiveStatsService, type MatchLiveStats } from './matchLiveStatsService';
+import {
+  matchLiveStatsService,
+  type MatchLiveStats,
+  type MatchPlayerStatsSnapshot,
+  type PlayerStatLine,
+} from './matchLiveStatsService';
 import type { MatchZyEvent } from '../types/matchzy-events.types';
 import type { DbMatchRow } from '../types/database.types';
 import {
@@ -166,7 +171,15 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = await resolveMatch(event.matchid);
       if (match) {
-        const updates = parseScorePayload(eventData, 'live');
+        const updates: Partial<MatchLiveStats> = parseScorePayload(eventData, 'live');
+
+        // Also capture per‑player stats from this round_end payload if present.
+        // MatchZy includes a full "players" array with cumulative stats for each side.
+        const snapshot = extractPlayerStatsFromEvent(eventData);
+        if (snapshot) {
+          updates.playerStats = snapshot;
+        }
+
         const stats = matchLiveStatsService.update(match.slug, updates);
         await db.updateAsync(
           'matches',
@@ -388,6 +401,71 @@ function updateLiveStats(match: DbMatchRow, updates: Partial<MatchLiveStats>): v
   });
 }
 
+function extractPlayerStatsFromEvent(eventData: Record<string, unknown>): MatchPlayerStatsSnapshot | null {
+  const team1 = eventData.team1 as { players?: unknown[] } | undefined;
+  const team2 = eventData.team2 as { players?: unknown[] } | undefined;
+
+  const buildTeam = (team?: { players?: unknown[] }): PlayerStatLine[] => {
+    if (!team?.players || !Array.isArray(team.players)) return [];
+
+    return team.players
+      .map((raw) => {
+        const player = raw as {
+          steamId?: string;
+          steamid?: string;
+          name?: string;
+          stats?: Record<string, unknown>;
+        };
+        const steamId = player.steamId || player.steamid;
+        if (!steamId) return null;
+
+        const stats = player.stats ?? {};
+
+        const pick = (keys: string[], defaultValue = 0): number => {
+          for (const key of keys) {
+            const value = stats[key];
+            if (typeof value === 'number' && Number.isFinite(value)) return value;
+            if (typeof value === 'string' && value.trim() !== '' && !Number.isNaN(Number(value))) {
+              return Number(value);
+            }
+          }
+          return defaultValue;
+        };
+
+        const roundsPlayed = pick(['rounds_played', 'roundsPlayed']);
+
+        return {
+          steamId,
+          name: player.name || 'Unknown',
+          kills: pick(['kills']),
+          deaths: pick(['deaths']),
+          assists: pick(['assists']),
+          flashAssists: pick(['flash_assists', 'flashAssists']),
+          headshotKills: pick(['headshot_kills', 'headshotKills']),
+          damage: pick(['damage']),
+          utilityDamage: pick(['utility_damage', 'utilityDamage']),
+          kast: pick(['kast']),
+          mvps: pick(['mvp', 'mvps']),
+          score: pick(['score']),
+          roundsPlayed,
+        } satisfies PlayerStatLine;
+      })
+      .filter((p): p is PlayerStatLine => Boolean(p));
+  };
+
+  const team1Stats = buildTeam(team1);
+  const team2Stats = buildTeam(team2);
+
+  if (!team1Stats.length && !team2Stats.length) {
+    return null;
+  }
+
+  return {
+    team1: team1Stats,
+    team2: team2Stats,
+  };
+}
+
 function parseScorePayload(
   eventData: Record<string, unknown>,
   status: MatchLiveStats['status']
@@ -502,9 +580,10 @@ async function handleMapCompletion(
     return;
   }
 
+  // Keep the previous map's final round score visible during the short
+  // "between maps" window. We'll reset map rounds to 0 when the next map
+  // actually goes live (via going_live / round_started events).
   const nextStats = matchLiveStatsService.update(match.slug, {
-    team1Score: 0,
-    team2Score: 0,
     status: 'warmup',
     mapNumber: completedMapNumber + 1,
     mapName: null,

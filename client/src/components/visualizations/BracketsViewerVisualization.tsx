@@ -221,6 +221,23 @@ export default function BracketsViewerVisualization({
       }
     };
 
+    const getBracketScores = (match: Match): { team1Score?: number; team2Score?: number } => {
+      const s1 = match.team1Score;
+      const s2 = match.team2Score;
+
+      // If either side has a numeric score, default the other side to 0 so the
+      // bracket shows "0–1" instead of "–1" or "1–-".
+      if (typeof s1 === 'number' || typeof s2 === 'number') {
+        return {
+          team1Score: typeof s1 === 'number' ? s1 : 0,
+          team2Score: typeof s2 === 'number' ? s2 : 0,
+        };
+      }
+
+      // No scores yet (match not started) – let the viewer show dashes.
+      return { team1Score: undefined, team2Score: undefined };
+    };
+
     const buildOpponent = (
       match: Match,
       team: Match['team1'],
@@ -265,6 +282,7 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
@@ -279,8 +297,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -303,6 +321,7 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
@@ -317,8 +336,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -338,6 +357,7 @@ export default function BracketsViewerVisualization({
         });
 
         const viewerMatchId = gfMatch.id ?? fallbackMatchId++;
+        const { team1Score, team2Score } = getBracketScores(gfMatch);
         const parentPositions = parentMatchPositions.get((gfMatch.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           gfMatch.round === 1
@@ -353,8 +373,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: gfMatch.status === 'completed' ? 2 : gfMatch.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, gfMatch.team1Score),
-          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, gfMatch.team2Score),
+          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, team1Score),
+          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, team2Score),
         });
         registerMatch(viewerMatchId as Id, gfMatch);
       }

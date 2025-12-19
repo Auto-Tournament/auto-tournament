@@ -29,7 +29,8 @@ const LIVE_STATUS_DISPLAY: Record<
   knife: { label: 'Knife Round', chipColor: 'warning' },
   live: { label: 'Live', chipColor: 'success' },
   halftime: { label: 'Halftime', chipColor: 'warning' },
-  postgame: { label: 'Postgame', chipColor: 'default' },
+  // Map just ended; server is cleaning up or preparing next map
+  postgame: { label: 'Between Maps', chipColor: 'default' },
 };
 
 export function MatchInfoCard({
@@ -269,6 +270,12 @@ export function MatchInfoCard({
               liveStatusDisplay={liveStatusDisplay}
               hideSeriesWins={isShuffleMatch}
             />
+
+            {liveStats?.status === 'postgame' && match.status !== 'completed' && (
+              <Typography variant="body2" color="text.secondary" mt={1}>
+                Current map has finished. The server is preparing the next map in this series.
+              </Typography>
+            )}
 
             {match.status !== 'live' && (
               <Alert
