@@ -20,6 +20,7 @@ import {
   type ShuffleTournamentConfig,
 } from '../services/shuffleTournamentService';
 import { eloTemplateService } from '../services/eloTemplateService';
+import { settingsService } from '../services/settingsService';
 
 const router = Router();
 

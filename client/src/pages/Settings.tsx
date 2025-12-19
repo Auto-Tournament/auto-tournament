@@ -19,6 +19,7 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
+  Slider,
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -79,7 +80,6 @@ export default function Settings() {
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
-  const [initialSimulationTimescale, setInitialSimulationTimescale] = useState<number>(1);
   const [matchzyChatPrefix, setMatchzyChatPrefix] = useState('');
   const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] = useState('');
   const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
@@ -121,7 +121,6 @@ export default function Settings() {
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
-      setInitialSimulationTimescale(timescale);
       setMatchzyChatPrefix(chatPrefix);
       setInitialMatchzyChatPrefix(chatPrefix);
       setMatchzyAdminChatPrefix(adminChatPrefix);
@@ -200,7 +199,6 @@ export default function Settings() {
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
-        setInitialSimulationTimescale(newTimescale);
         setMatchzyChatPrefix(newChatPrefix);
         setInitialMatchzyChatPrefix(newChatPrefix);
         setMatchzyAdminChatPrefix(newAdminChatPrefix);
@@ -232,6 +230,7 @@ export default function Settings() {
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
       simulateMatches,
+      simulationTimescale,
       isDev,
       showSuccess,
       showError,

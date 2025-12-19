@@ -16,7 +16,6 @@ import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
-import { refreshConnectionsFromServer } from '../services/connectionSnapshotService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';

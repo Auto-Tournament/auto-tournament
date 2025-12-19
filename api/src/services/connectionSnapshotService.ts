@@ -6,6 +6,7 @@ import {
   matchLiveStatsService,
   type MatchPlayerStatsSnapshot,
   type PlayerStatLine,
+  type MatchLiveStats,
 } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
