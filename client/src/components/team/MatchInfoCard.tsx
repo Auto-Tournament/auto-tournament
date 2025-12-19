@@ -92,7 +92,10 @@ export function MatchInfoCard({
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
 
   const serverStatus = match.server?.status ?? null;
-  const isServerOnline = serverStatus === 'online';
+  // Treat any concrete MatchZy status (idle/loading/warmup/live/etc.) as "online enough"
+  // for players to see/connect, and fall back to "waiting for assignment" only when
+  // we *cannot* read status at all (null/undefined) or the plugin reports an explicit error.
+  const isServerOnline = !!serverStatus && serverStatus !== 'error';
   const effectiveServer = isServerOnline ? match.server : null;
 
   const isShuffleMatch =
