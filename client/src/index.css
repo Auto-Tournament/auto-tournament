@@ -38,7 +38,11 @@ body {
 }
 
 .brackets-viewer .participant.win {
-  background-color: rgba(166, 227, 208, 0.12);
+  /* Make winners clearly stand out in the bracket */
+  background-color: rgba(102, 187, 106, 0.18);
+  border-color: #66bb6a;
+  color: #c8e6c9;
+  font-weight: 700;
 }
 
 .brackets-viewer .participant.loss {
