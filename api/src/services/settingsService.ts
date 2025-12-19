@@ -92,6 +92,18 @@ class SettingsService {
         return;
       }
 
+      if (key === 'simulation_timescale') {
+        const parsed = Number(trimmed);
+        if (!Number.isFinite(parsed)) {
+          throw new Error('Simulation timescale must be a number');
+        }
+
+        const clamped = Math.min(4, Math.max(0.1, parsed));
+        await db.setAppSettingAsync(key, String(clamped));
+        log.success(`Simulation timescale updated to ${clamped}`);
+        return;
+      }
+
       if (key === 'matchzy_chat_prefix' || key === 'matchzy_admin_chat_prefix') {
         await db.setAppSettingAsync(key, trimmed);
         log.success(
@@ -194,9 +206,9 @@ class SettingsService {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 1;
 
-    // Clamp to a safe, expected range (1.0 – 3.0) to match the frontend slider.
-    if (parsed < 1) return 1;
-    if (parsed > 3) return 3;
+    // Clamp to a safe, expected range (0.1 – 4.0) to match the frontend slider.
+    if (parsed < 0.1) return 0.1;
+    if (parsed > 4) return 4;
     return parsed;
   }
 

@@ -49,7 +49,7 @@ export interface MatchConfig {
    * Optional simulation speed multiplier for MatchZy.
    *
    * When provided alongside `simulation: true`, this controls how fast the
-   * simulated match runs (e.g. 1.0 = normal speed, 2.0 = 2x, 3.0 = 3x).
+   * simulated match runs (e.g. 1.0 = normal speed, 2.0 = 2x, 4.0 = 4x).
    * We pass this through as `simulation_timescale` in generated configs.
    */
   simulation_timescale?: number;

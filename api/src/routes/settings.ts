@@ -133,27 +133,20 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     if (simulationTimescale !== undefined) {
-      // This is a **developer-only** option – ignore it completely in production.
-      if (process.env.NODE_ENV === 'production') {
-        log.warn(
-          'Received simulationTimescale setting update in production environment – ignoring for safety'
-        );
-      } else {
-        if (typeof simulationTimescale !== 'number' && simulationTimescale !== null) {
-          return res.status(400).json({
-            success: false,
-            error: 'simulationTimescale must be a number or null',
-          });
-        }
-
-        let value: string | null = null;
-        if (typeof simulationTimescale === 'number' && Number.isFinite(simulationTimescale)) {
-          const clamped = Math.min(3, Math.max(1, simulationTimescale));
-          value = String(clamped);
-        }
-
-        await settingsService.setSetting('simulation_timescale', value);
+      if (typeof simulationTimescale !== 'number' && simulationTimescale !== null) {
+        return res.status(400).json({
+          success: false,
+          error: 'simulationTimescale must be a number or null',
+        });
       }
+
+      let value: string | null = null;
+      if (typeof simulationTimescale === 'number' && Number.isFinite(simulationTimescale)) {
+        const clamped = Math.min(4, Math.max(0.1, simulationTimescale));
+        value = String(clamped);
+      }
+
+      await settingsService.setSetting('simulation_timescale', value);
     }
 
     if (matchzyChatPrefix !== undefined) {

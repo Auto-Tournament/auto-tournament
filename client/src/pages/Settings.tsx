@@ -80,6 +80,7 @@ export default function Settings() {
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
+  const [initialSimulationTimescale, setInitialSimulationTimescale] = useState<number>(1);
   const [matchzyChatPrefix, setMatchzyChatPrefix] = useState('');
   const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] = useState('');
   const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
@@ -121,6 +122,7 @@ export default function Settings() {
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
+      setInitialSimulationTimescale(timescale);
       setMatchzyChatPrefix(chatPrefix);
       setInitialMatchzyChatPrefix(chatPrefix);
       setMatchzyAdminChatPrefix(adminChatPrefix);
@@ -199,6 +201,7 @@ export default function Settings() {
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
+        setInitialSimulationTimescale(newTimescale);
         setMatchzyChatPrefix(newChatPrefix);
         setInitialMatchzyChatPrefix(newChatPrefix);
         setMatchzyAdminChatPrefix(newAdminChatPrefix);
@@ -246,7 +249,9 @@ export default function Settings() {
       matchzyChatPrefix !== initialMatchzyChatPrefix ||
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
-      (isDev && simulateMatches !== initialSimulateMatches)
+      (isDev &&
+        (simulateMatches !== initialSimulateMatches ||
+          simulationTimescale !== initialSimulationTimescale))
     ) {
       void handleSave(true); // Show success message
     }
@@ -273,7 +278,9 @@ export default function Settings() {
       matchzyChatPrefix === initialMatchzyChatPrefix &&
       matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
       matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
-      (!isDev || simulateMatches === initialSimulateMatches)
+      (!isDev ||
+        (simulateMatches === initialSimulateMatches &&
+          simulationTimescale === initialSimulationTimescale))
     )
       return;
 
@@ -307,6 +314,8 @@ export default function Settings() {
     initialMatchzyKnifeEnabledDefault,
     simulateMatches,
     initialSimulateMatches,
+    initialSimulationTimescale,
+    simulationTimescale,
     isDev,
     loading,
     handleSave,
@@ -676,9 +685,14 @@ export default function Settings() {
                             const v = Array.isArray(value) ? value[0] : value;
                             setSimulationTimescale(typeof v === 'number' ? v : 1);
                           }}
-                          min={1}
-                          max={3}
-                          step={0.5}
+                          onChangeCommitted={(_e, value) => {
+                            const v = Array.isArray(value) ? value[0] : value;
+                            setSimulationTimescale(typeof v === 'number' ? v : 1);
+                            void handleSave(true);
+                          }}
+                          min={0.1}
+                          max={4}
+                          step={0.1}
                           marks
                           valueLabelDisplay="on"
                           data-testid="settings-simulation-timescale-slider"
