@@ -6,6 +6,7 @@ export type AppSettingKey =
   | 'steam_api_key'
   | 'default_player_elo'
   | 'simulate_matches'
+  | 'simulation_timescale'
   | 'matchzy_chat_prefix'
   | 'matchzy_admin_chat_prefix'
   | 'matchzy_knife_enabled_default';
@@ -21,6 +22,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'steam_api_key',
   'default_player_elo',
   'simulate_matches',
+  'simulation_timescale',
   'matchzy_chat_prefix',
   'matchzy_admin_chat_prefix',
   'matchzy_knife_enabled_default',
