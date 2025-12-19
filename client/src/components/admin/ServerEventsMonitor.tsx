@@ -276,12 +276,12 @@ export const ServerEventsMonitor: React.FC = () => {
           >
             {servers.length === 0 ? (
               <MenuItem value="" disabled>
-                No servers with events yet
+                No servers available
               </MenuItem>
             ) : (
               servers.map((server) => (
                 <MenuItem key={server.id} value={server.id}>
-                  {server.id} ({server.events} events)
+                  {server.name || server.id} ({server.id})
                 </MenuItem>
               ))
             )}
@@ -347,10 +347,11 @@ export const ServerEventsMonitor: React.FC = () => {
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="caption" color="text.secondary">
-            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100) - All servers
+            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100)
+            {selectedServerId ? ` for server ${selectedServerId}` : ''}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Events update in real-time via WebSocket (unfiltered)
+            Events update in real-time via WebSocket
           </Typography>
         </Box>
       </CardContent>

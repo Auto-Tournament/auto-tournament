@@ -10,7 +10,7 @@ import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { logWebhookEvent } from '../utils/eventLogger';
-import { emitMatchEvent } from '../services/socketService';
+import { emitMatchEvent, emitServerEvent } from '../services/socketService';
 import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
@@ -189,6 +189,17 @@ async function handleEventRequest(
       }
     }
 
+    // Emit server-level event for admin monitoring UI (Server Events Monitor).
+    // This allows the frontend to subscribe to `server:event` and
+    // `server:event:{serverId}` streams without needing to join on matches.
+    if (serverId && serverId !== 'unknown') {
+      emitServerEvent(serverId, {
+        timestamp: Date.now(),
+        matchSlug: actualMatchSlug,
+        event,
+      });
+    }
+
     // Handle events with no match loaded
     if (isNoMatch) {
       console.log(
@@ -350,6 +361,65 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
     return res.status(500).json({
       success: false,
       error: 'Failed to fetch live stats',
+    });
+  }
+});
+
+/**
+ * GET /api/events/server/:serverId
+ * Get recent events for a specific server (for admin Server Events Monitor)
+ */
+router.get('/server/:serverId', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.params;
+    const limit = req.query.limit ? parseInt(req.query.limit as string, 10) : 100;
+
+    // Fetch latest events for matches currently (or previously) associated with this server.
+    // We join via matches so we can derive server_id from match_slug.
+    const rows = await db.queryAsync<
+      DbEventRow & {
+        match_slug: string;
+        server_id: string | null;
+      }
+    >(
+      `
+        SELECT me.id,
+               me.match_slug,
+               me.event_type,
+               me.event_data,
+               me.received_at,
+               m.server_id
+        FROM match_events me
+        JOIN matches m ON m.slug = me.match_slug
+        WHERE m.server_id = ?
+        ORDER BY me.received_at DESC
+        LIMIT ?
+      `,
+      [serverId, limit]
+    );
+
+    const events = rows.map((row) => ({
+      timestamp: (row.received_at || 0) * 1000,
+      serverId,
+      matchSlug: row.match_slug,
+      event: (() => {
+        try {
+          return JSON.parse(row.event_data);
+        } catch {
+          return { event: row.event_type, raw: row.event_data };
+        }
+      })(),
+    }));
+
+    return res.json({
+      success: true,
+      events,
+    });
+  } catch (error) {
+    log.error('Error fetching server events', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch server events',
     });
   }
 });
