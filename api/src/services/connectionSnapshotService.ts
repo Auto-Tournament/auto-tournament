@@ -319,10 +319,15 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
 
   await persistMatchMetaFromReport(matchSlug, matchInfo);
 
+  // Also surface the current series score at the top level so the Bracket view
+  // (and any other listeners) can easily display live map wins without having
+  // to deserialize the nested liveStats object.
   emitMatchUpdate({
     slug: matchSlug,
     liveStats: stats,
     status: matchInfo.phase,
+    team1Score: stats.team1SeriesScore,
+    team2Score: stats.team2SeriesScore,
   });
 }
 

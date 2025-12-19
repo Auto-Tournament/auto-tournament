@@ -37,17 +37,7 @@ public/
 Thumbs.db
 
 # Data
-data/*.db
-data/*.db-shm
-data/*.db-wal
-data/logs/*.log
-data/demos/*.dem
-# Docker data directory (runtime database files)
-docker/data/*.db
-docker/data/*.db-shm
-docker/data/*.db-wal
-docker/data/logs/*.log
-docker/data/demos/*.dem
+data
 
 # MkDocs
 site/

@@ -438,7 +438,14 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       }
     }
 
-    await refreshConnectionsFromServer(match.slug);
+    // IMPORTANT: Do NOT force a fresh match report here.
+    // This endpoint may be hit frequently from the public player page, and
+    // we don't want a single player spamming this route to repeatedly ping
+    // the CS2 server via RCON. Instead, we rely on:
+    //   - webhook-driven live stats (match events)
+    //   - periodic/TTL-based refreshes from the team views and /api/events/*
+    //
+    // That means this route only ever reads the most recent cached snapshots.
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
