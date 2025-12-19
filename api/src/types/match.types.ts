@@ -45,6 +45,14 @@ export interface MatchConfig {
    * plugin’s behavior is unambiguous.
    */
   simulation?: boolean;
+  /**
+   * Optional simulation speed multiplier for MatchZy.
+   *
+   * When provided alongside `simulation: true`, this controls how fast the
+   * simulated match runs (e.g. 1.0 = normal speed, 2.0 = 2x, 3.0 = 3x).
+   * We pass this through as `simulation_timescale` in generated configs.
+   */
+  simulation_timescale?: number;
 }
 
 export interface CreateMatchInput {

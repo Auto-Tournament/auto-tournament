@@ -179,6 +179,26 @@ class SettingsService {
   }
 
   /**
+   * Returns the simulation timescale factor for simulated matches.
+   *
+   * This is only meaningful when simulation mode is enabled and is primarily
+   * intended for development. In production, simulation is hard-disabled, so
+   * this value effectively has no impact.
+   */
+  async getSimulationTimescale(): Promise<number> {
+    const value = await this.getSetting('simulation_timescale');
+    if (!value) return 1;
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed)) return 1;
+
+    // Clamp to a safe, expected range (1.0 – 3.0) to match the frontend slider.
+    if (parsed < 1) return 1;
+    if (parsed > 3) return 3;
+    return parsed;
+  }
+
+  /**
    * Returns true when simulation mode should be enabled for generated MatchZy configs.
    *
    * This is intended as a **development-only** helper; in production environments

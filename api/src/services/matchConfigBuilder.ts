@@ -23,6 +23,17 @@ async function getSimulationFlag(): Promise<boolean> {
   }
 }
 
+async function getSimulationTimescale(): Promise<number> {
+  try {
+    return await settingsService.getSimulationTimescale();
+  } catch (error) {
+    log.warn('Failed to read simulation_timescale setting, defaulting to 1.0', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return 1;
+  }
+}
+
 export const generateMatchConfig = async (
   tournament: TournamentResponse,
   team1Id?: string,
@@ -199,6 +210,7 @@ export const generateMatchConfig = async (
   }
 
   const simulation = await getSimulationFlag();
+  const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const config: MatchConfig = {
     // MatchZy expects numeric matchid; fall back to 0 only if we somehow
@@ -244,6 +256,7 @@ export const generateMatchConfig = async (
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     simulation,
+    simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
   };
 
   log.info('Match config generated', {
@@ -380,6 +393,7 @@ async function generateShuffleMatchConfig(
   }
 
   const simulation = await getSimulationFlag();
+  const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const config: MatchConfig = {
     // MatchZy expects matchid to be an integer; use the numeric DB id when available.
@@ -423,6 +437,7 @@ async function generateShuffleMatchConfig(
         }
       : { name: 'TBD', tag: 'TBD', players: {}, series_score: 0 },
     simulation,
+    simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
   };
 
   log.info('Shuffle match config generated', {

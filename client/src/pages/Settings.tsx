@@ -78,6 +78,8 @@ export default function Settings() {
   const [initialDefaultPlayerElo, setInitialDefaultPlayerElo] = useState<number | ''>('');
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
+  const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
+  const [initialSimulationTimescale, setInitialSimulationTimescale] = useState<number>(1);
   const [matchzyChatPrefix, setMatchzyChatPrefix] = useState('');
   const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] = useState('');
   const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
@@ -103,6 +105,7 @@ export default function Settings() {
       const steamKey = response.settings.steamApiKey ?? '';
       const defaultElo = response.settings.defaultPlayerElo ?? 3000;
       const simulate = response.settings.simulateMatches ?? false;
+      const timescale = response.settings.simulationTimescale ?? 1;
       const chatPrefix = response.settings.matchzyChatPrefix ?? '';
       const adminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
       const knifeEnabled =
@@ -117,6 +120,8 @@ export default function Settings() {
       setInitialDefaultPlayerElo(defaultElo);
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
+      setSimulationTimescale(timescale);
+      setInitialSimulationTimescale(timescale);
       setMatchzyChatPrefix(chatPrefix);
       setInitialMatchzyChatPrefix(chatPrefix);
       setMatchzyAdminChatPrefix(adminChatPrefix);
@@ -171,7 +176,7 @@ export default function Settings() {
           matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
-          ...(isDev && { simulateMatches }),
+          ...(isDev && { simulateMatches, simulationTimescale }),
         };
 
         const response: SettingsResponse = await api.put('/api/settings', payload);
@@ -179,6 +184,7 @@ export default function Settings() {
         const newSteamKey = response.settings.steamApiKey ?? '';
         const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
         const newSimulate = response.settings.simulateMatches ?? false;
+        const newTimescale = response.settings.simulationTimescale ?? 1;
         const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
         const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
         const newKnifeEnabled =
@@ -193,6 +199,8 @@ export default function Settings() {
         setInitialDefaultPlayerElo(newDefaultElo);
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
+        setSimulationTimescale(newTimescale);
+        setInitialSimulationTimescale(newTimescale);
         setMatchzyChatPrefix(newChatPrefix);
         setInitialMatchzyChatPrefix(newChatPrefix);
         setMatchzyAdminChatPrefix(newAdminChatPrefix);
@@ -654,6 +662,30 @@ export default function Settings() {
                     <Typography variant="caption" color="text.secondary" display="block" mt={1}>
                       When enabled, generated MatchZy configs include <code>\"simulation\": true</code> for automated demo matches.
                     </Typography>
+                    <Box mt={3}>
+                      <Typography variant="subtitle1" fontWeight={500} gutterBottom>
+                        Simulation Timescale
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary" mb={1}>
+                        Controls how fast simulated matches run. Higher values speed up bots and
+                        round flow. This only applies when simulation is enabled.
+                      </Typography>
+                      <Box px={1}>
+                        <Slider
+                          value={simulationTimescale}
+                          onChange={(_e, value) => {
+                            const v = Array.isArray(value) ? value[0] : value;
+                            setSimulationTimescale(typeof v === 'number' ? v : 1);
+                          }}
+                          min={1}
+                          max={3}
+                          step={0.5}
+                          marks
+                          valueLabelDisplay="on"
+                          data-testid="settings-simulation-timescale-slider"
+                        />
+                      </Box>
+                    </Box>
                   </Box>
                 </Stack>
               </TabPanel>

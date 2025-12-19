@@ -239,6 +239,7 @@ export interface SettingsResponse extends ApiResponse {
     webhookConfigured: boolean;
     defaultPlayerElo: number;
     simulateMatches: boolean;
+    simulationTimescale?: number;
     matchzyChatPrefix?: string | null;
     matchzyAdminChatPrefix?: string | null;
     matchzyKnifeEnabledDefault?: boolean;

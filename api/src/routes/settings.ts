@@ -21,6 +21,7 @@ const mapSettingsResponse = async () => {
   const steamApiKey = await settingsService.getSteamApiKey();
   const defaultPlayerElo = await settingsService.getDefaultPlayerElo();
   const simulateMatches = await settingsService.isSimulationModeEnabled();
+  const simulationTimescale = await settingsService.getSimulationTimescale();
   const matchzyChatPrefix = await settingsService.getMatchzyChatPrefix();
   const matchzyAdminChatPrefix = await settingsService.getMatchzyAdminChatPrefix();
   const matchzyKnifeEnabledDefault = await settingsService.isKnifeRoundEnabledByDefault();
@@ -32,6 +33,7 @@ const mapSettingsResponse = async () => {
     webhookConfigured: Boolean(webhookUrl),
     defaultPlayerElo,
     simulateMatches,
+    simulationTimescale,
     matchzyChatPrefix,
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
@@ -51,6 +53,7 @@ router.put('/', async (req: Request, res: Response) => {
     steamApiKey,
     defaultPlayerElo,
     simulateMatches,
+    simulationTimescale,
     matchzyChatPrefix,
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
@@ -59,6 +62,7 @@ router.put('/', async (req: Request, res: Response) => {
     steamApiKey?: unknown;
     defaultPlayerElo?: unknown;
     simulateMatches?: unknown;
+    simulationTimescale?: unknown;
     matchzyChatPrefix?: unknown;
     matchzyAdminChatPrefix?: unknown;
     matchzyKnifeEnabledDefault?: unknown;
@@ -125,6 +129,30 @@ router.put('/', async (req: Request, res: Response) => {
           simulateMatches === null ? null : simulateMatches === true ? '1' : '0';
 
         await settingsService.setSetting('simulate_matches', value);
+      }
+    }
+
+    if (simulationTimescale !== undefined) {
+      // This is a **developer-only** option – ignore it completely in production.
+      if (process.env.NODE_ENV === 'production') {
+        log.warn(
+          'Received simulationTimescale setting update in production environment – ignoring for safety'
+        );
+      } else {
+        if (typeof simulationTimescale !== 'number' && simulationTimescale !== null) {
+          return res.status(400).json({
+            success: false,
+            error: 'simulationTimescale must be a number or null',
+          });
+        }
+
+        let value: string | null = null;
+        if (typeof simulationTimescale === 'number' && Number.isFinite(simulationTimescale)) {
+          const clamped = Math.min(3, Math.max(1, simulationTimescale));
+          value = String(clamped);
+        }
+
+        await settingsService.setSetting('simulation_timescale', value);
       }
     }
 
