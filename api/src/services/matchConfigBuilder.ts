@@ -29,6 +29,15 @@ export const generateMatchConfig = async (
   team2Id?: string,
   slug?: string
 ): Promise<MatchConfig> => {
+  // Hard safety check: never generate a config where both slots are the same team.
+  // If this happens, it's a bracket progression bug and we should fail fast
+  // instead of spinning up a "Team vs Team" match on a live server.
+  if (team1Id && team2Id && team1Id === team2Id) {
+    throw new Error(
+      `Invalid match configuration: team1 and team2 are both '${team1Id}'. ` +
+        'This indicates a tournament progression bug (duplicate winner advance).'
+    );
+  }
   // Handle shuffle tournaments specially
   if (tournament.type === 'shuffle') {
     return generateShuffleMatchConfig(tournament, team1Id, team2Id, slug);

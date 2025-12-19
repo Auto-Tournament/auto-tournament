@@ -327,7 +327,7 @@ export class MatchAllocationService {
     error?: string;
   }> {
     try {
-      // Check if match already has a server
+      // Check if match already has a server and is structurally valid
       const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
         matchSlug,
       ]);
@@ -341,6 +341,21 @@ export class MatchAllocationService {
 
       if (match.status !== 'ready') {
         return { success: false, error: `Match is not ready (status: ${match.status})` };
+      }
+
+      // Hard safety checks: do not ever allocate / load matches that are not
+      // structurally valid in the bracket.
+      if (!match.team1_id || !match.team2_id) {
+        return {
+          success: false,
+          error: 'Match does not have both teams assigned yet',
+        };
+      }
+      if (match.team1_id === match.team2_id) {
+        return {
+          success: false,
+          error: 'Invalid match: team1 and team2 are the same team',
+        };
       }
 
       // Get first available server

@@ -29,6 +29,17 @@ export async function advanceWinnerToNextMatch(
       return;
     }
 
+    // Defensive guard: avoid advancing the same winner twice into the same next match.
+    // This can happen if we receive both a plugin 'series_end' event and a synthetic
+    // series_end generated from map_end for the same match.
+    if (nextMatch.team1_id === winnerId || nextMatch.team2_id === winnerId) {
+      log.warn('Winner already advanced to next match, skipping duplicate advance', {
+        nextMatchSlug: nextMatch.slug,
+        winnerId,
+      });
+      return;
+    }
+
     // Determine which slot to fill (team1 or team2)
     if (!nextMatch.team1_id) {
       await db.updateAsync('matches', { team1_id: winnerId }, 'id = ?', [nextMatch.id]);
