@@ -237,13 +237,45 @@ export const ServerEventsMonitor: React.FC = () => {
         return '#A8C7FA'; // info (soft blue)
       case 'map_result':
         return '#D0BCFF'; // primary purple
+      case 'map_picked':
+      case 'side_picked':
+      case 'map_vetoed':
+        return '#C4B5FD'; // veto / map flow (violet)
+      case 'round_started':
+      case 'warmup_ended':
+      case 'knife_round_started':
+      case 'knife_round_ended':
+      case 'halftime_started':
+      case 'overtime_started':
+      case 'side_swap':
+      case 'backup_loaded':
+        return '#6EE7B7'; // round / phase transitions (teal)
       case 'round_end':
-        return '#F59E0B'; // amber
+        return '#F59E0B'; // round result (amber)
+      case 'round_mvp':
+        return '#FBBF24'; // MVP highlight (gold)
       case 'player_death':
-        return '#F87171'; // red
+        return '#F87171'; // kills/deaths (red)
       case 'player_connect':
       case 'player_disconnect':
-        return '#93C5FD'; // blue
+        return '#93C5FD'; // connection events (blue)
+      case 'player_ready':
+      case 'player_unready':
+      case 'team_ready':
+      case 'all_players_ready':
+      case 'unpause_requested':
+      case 'match_paused':
+      case 'match_unpaused':
+        return '#FACC15'; // ready / pause system (yellow)
+      case 'bomb_planted':
+      case 'bomb_defused':
+      case 'bomb_exploded':
+        return '#FB923C'; // bomb events (orange)
+      case 'player_stats_update':
+        return '#38BDF8'; // stats updates (sky blue)
+      case 'test_event':
+      case 'MatchZyTestEvent':
+        return '#A855F7'; // connectivity test events (purple)
       default:
         return '#E5E7EB'; // neutral light grey
     }
@@ -402,6 +434,25 @@ const EventItem: React.FC<{
       ? ((event.event as { round_number: number }).round_number as number)
       : undefined;
 
+  // Many score-bearing events include team1_score / team2_score and sometimes
+  // team1_series_score / team2_series_score – surface them when present
+  const {
+    team1_score: rawTeam1Score,
+    team2_score: rawTeam2Score,
+    team1_series_score: rawTeam1Series,
+    team2_series_score: rawTeam2Series,
+  } = event.event as {
+    team1_score?: unknown;
+    team2_score?: unknown;
+    team1_series_score?: unknown;
+    team2_series_score?: unknown;
+  };
+
+  const hasMapScore =
+    typeof rawTeam1Score === 'number' && typeof rawTeam2Score === 'number';
+  const hasSeriesScore =
+    typeof rawTeam1Series === 'number' && typeof rawTeam2Series === 'number';
+
   // When expanding an event, make sure it scrolls into view within the console
   React.useEffect(() => {
     if (expanded && containerRef.current) {
@@ -463,6 +514,32 @@ const EventItem: React.FC<{
           {mapNumber !== undefined ? `, map: ${mapNumber}` : ''}
           {roundNumber !== undefined ? `, round: ${roundNumber}` : ''}
         </Typography>
+        {hasMapScore && (
+          <Typography
+            component="span"
+            sx={{
+              color: '#F9FAFB',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+            }}
+          >
+            {' '}
+            | Score: {rawTeam1Score}-{rawTeam2Score}
+          </Typography>
+        )}
+        {hasSeriesScore && (
+          <Typography
+            component="span"
+            sx={{
+              color: '#E5E7EB',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+            }}
+          >
+            {' '}
+            (Series: {rawTeam1Series}-{rawTeam2Series})
+          </Typography>
+        )}
       </Box>
 
       {/* Event Data (Pretty JSON) */}
