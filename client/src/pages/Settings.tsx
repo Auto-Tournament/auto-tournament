@@ -258,7 +258,6 @@ export default function Settings() {
     if (
       webhookUrl === initialWebhookUrl &&
       steamApiKey === initialSteamApiKey &&
-      defaultPlayerElo === initialDefaultPlayerElo &&
       matchzyChatPrefix === initialMatchzyChatPrefix &&
       matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
       matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
@@ -286,13 +285,11 @@ export default function Settings() {
   }, [
     webhookUrl,
     steamApiKey,
-    defaultPlayerElo,
     matchzyChatPrefix,
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
     initialWebhookUrl,
     initialSteamApiKey,
-    initialDefaultPlayerElo,
     initialMatchzyChatPrefix,
     initialMatchzyAdminChatPrefix,
     initialMatchzyKnifeEnabledDefault,
@@ -703,7 +700,6 @@ export default function Settings() {
                     const resetPayload: {
                       webhookUrl: null;
                       steamApiKey: null;
-                      defaultPlayerElo: null;
                       matchzyChatPrefix: null;
                       matchzyAdminChatPrefix: null;
                       matchzyKnifeEnabledDefault: null;
@@ -711,7 +707,6 @@ export default function Settings() {
                     } = {
                       webhookUrl: null,
                       steamApiKey: null,
-                      defaultPlayerElo: null,
                       matchzyChatPrefix: null,
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
@@ -725,7 +720,6 @@ export default function Settings() {
 
                     const newWebhook = response.settings.webhookUrl ?? '';
                     const newSteamKey = response.settings.steamApiKey ?? '';
-                    const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
                     const newSimulate = response.settings.simulateMatches ?? false;
                     const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
                     const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
