@@ -52,7 +52,7 @@
   - Implementation never actually used `config.defaultElo` when creating tournaments or players.
 - **Current behavior**:
   - The shuffle tournament API **no longer exposes** a `defaultElo` field.
-  - Default player ELO is controlled **globally** via the settings system and `playerService` (e.g. default 3000).
+- Default player Skill Rating is controlled per-player (default 1500 via the OpenSkill mapping); there is no longer a global “Default Player ELO” setting in Settings.
 - **Resolution**:
   - All per-tournament `defaultElo` references have been removed from the public API and docs.
   - This keeps behavior unambiguous: the global default ELO setting is the single source of truth.

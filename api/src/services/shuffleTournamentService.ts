@@ -9,8 +9,8 @@ import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
 import { teamService } from './teamService';
 import { generateMatchConfig } from './matchConfigBuilder';
-import type { TournamentResponse } from '../types/tournament.types';
-import type { DbMatchRow } from '../types/database.types';
+import type { TournamentResponse, TournamentType } from '../types/tournament.types';
+import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type { Player } from '../types/team.types';
 
 export interface ShuffleTournamentConfig {
@@ -40,6 +40,16 @@ export interface PlayerLeaderboardEntry {
   winRate: number;
   eloChange: number; // Change since tournament start
   averageAdr?: number; // Future: average ADR across matches
+}
+
+export interface TeamLeaderboardEntry {
+  teamId: string;
+  name: string;
+  tag?: string | null;
+  matchWins: number;
+  matchLosses: number;
+  matchCount: number;
+  winRate: number;
 }
 
 export interface RoundStatus {
@@ -882,7 +892,18 @@ export async function getPlayerLeaderboard(): Promise<PlayerLeaderboardEntry[]> 
       const wins = matches.filter((m) => m.won_match).length;
       const losses = matches.filter((m) => !m.won_match).length;
       const winRate = matches.length > 0 ? wins / matches.length : 0;
-      const eloChange = player.current_elo - player.starting_elo;
+
+      // Aggregate ELO change for this tournament only (shuffle tournament id = 1)
+      const eloChangeRow = await db.queryOneAsync<{ total_elo_change: number }>(
+        `
+          SELECT COALESCE(SUM(elo_change), 0) as total_elo_change
+          FROM player_rating_history
+          WHERE player_id = ?
+            AND match_slug IN (SELECT slug FROM matches WHERE tournament_id = 1)
+        `,
+        [player.id]
+      );
+      const eloChange = eloChangeRow?.total_elo_change ?? 0;
 
       // Calculate average ADR
       const statsWithAdr = await db.queryAsync<{ adr: number }>(
@@ -931,6 +952,9 @@ export async function getPlayerLeaderboard(): Promise<PlayerLeaderboardEntry[]> 
 
 /**
  * Get tournament leaderboard (public)
+ *
+ * Supports both shuffle tournaments (player-based Swiss style) and
+ * standard bracket tournaments (team-based single/double elimination).
  */
 export async function getTournamentLeaderboard(): Promise<{
   tournament: TournamentResponse;
@@ -938,48 +962,266 @@ export async function getTournamentLeaderboard(): Promise<{
   currentRound: number;
   totalRounds: number;
   roundStatus?: RoundStatus;
+  teams?: TeamLeaderboardEntry[];
 }> {
-  const tournament = await getShuffleTournament();
-  if (!tournament) {
-    throw new Error('No shuffle tournament found');
+  // Load base tournament row (id = 1 for now)
+  const row = await db.queryOneAsync<{
+    id: number;
+    name: string;
+    type: TournamentType;
+    format: string;
+    status: string;
+    maps: string;
+    team_ids: string;
+    settings: string;
+    map_sequence?: string | null;
+    created_at: number;
+    updated_at?: number;
+    started_at?: number;
+    completed_at?: number;
+  }>('SELECT * FROM tournament WHERE id = 1');
+
+  if (!row) {
+    throw new Error('Tournament not found');
   }
 
-  const leaderboard = await getPlayerLeaderboard();
+  // Shuffle tournaments keep the existing behaviour: player-only leaderboard
+  // driven by registered players and Swiss-style rounds.
+  if (row.type === 'shuffle') {
+    const tournament = await getShuffleTournament();
+    if (!tournament) {
+      throw new Error('No shuffle tournament found');
+    }
 
-  // Get current round status
-  const currentRoundResult = await db.queryOneAsync<{ max_round: number }>(
-    'SELECT MAX(round) as max_round FROM matches WHERE tournament_id = 1'
-  );
-  const currentRound = currentRoundResult?.max_round || 0;
-  const totalRounds = tournament.mapSequence?.length || tournament.maps.length;
+    const leaderboard = await getPlayerLeaderboard();
 
-  let roundStatus: RoundStatus | undefined;
-  if (currentRound > 0) {
-    const matches = await db.queryAsync<DbMatchRow>(
-      'SELECT * FROM matches WHERE tournament_id = 1 AND round = ?',
-      [currentRound]
+    const currentRoundResult = await db.queryOneAsync<{ max_round: number }>(
+      'SELECT MAX(round) as max_round FROM matches WHERE tournament_id = 1'
     );
+    const currentRound = currentRoundResult?.max_round || 0;
+    const totalRounds = tournament.mapSequence?.length || tournament.maps.length;
 
-    const completed = matches.filter((m) => m.status === 'completed').length;
-    const mapSequence = tournament.mapSequence || tournament.maps;
-    const map = currentRound <= mapSequence.length ? mapSequence[currentRound - 1] : '';
+    let roundStatus: RoundStatus | undefined;
+    if (currentRound > 0) {
+      const matches = await db.queryAsync<DbMatchRow>(
+        'SELECT * FROM matches WHERE tournament_id = 1 AND round = ?',
+        [currentRound]
+      );
 
-    roundStatus = {
-      roundNumber: currentRound,
-      totalMatches: matches.length,
-      completedMatches: completed,
-      pendingMatches: matches.length - completed,
-      isComplete: completed === matches.length && matches.length > 0,
-      map,
+      const completed = matches.filter((m) => m.status === 'completed').length;
+      const mapSequence = tournament.mapSequence || tournament.maps;
+      const map = currentRound <= mapSequence.length ? mapSequence[currentRound - 1] : '';
+
+      roundStatus = {
+        roundNumber: currentRound,
+        totalMatches: matches.length,
+        completedMatches: completed,
+        pendingMatches: matches.length - completed,
+        isComplete: completed === matches.length && matches.length > 0,
+        map,
+      };
+    }
+
+    return {
+      tournament,
+      leaderboard,
+      currentRound,
+      totalRounds,
+      roundStatus,
     };
   }
 
+  // Standard tournament (single_elimination / double_elimination / round_robin / swiss):
+  // build a simple tournament object, team standings, and player leaderboard
+  const maps = JSON.parse(row.maps || '[]') as string[];
+  const teamIds: string[] = JSON.parse(row.team_ids || '[]');
+  const settings = row.settings ? JSON.parse(row.settings) : {};
+
+  const baseTournament: TournamentResponse = {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    format: row.format as TournamentResponse['format'],
+    status: row.status as TournamentResponse['status'],
+    maps,
+    teamIds,
+    settings,
+    teams: [],
+  };
+
+  // Team standings for this tournament
+  let teams: TeamLeaderboardEntry[] = [];
+  if (teamIds.length > 0) {
+    const placeholders = teamIds.map(() => '?').join(',');
+    const teamRows = await db.queryAsync<DbTeamRow>(
+      `SELECT id, name, tag FROM teams WHERE id IN (${placeholders})`,
+      teamIds
+    );
+
+    // Get all completed matches for win/loss counts
+    const matches = await db.queryAsync<DbMatchRow>(
+      'SELECT team1_id, team2_id, winner_id, round FROM matches WHERE tournament_id = ? AND status = ?',
+      [row.id, 'completed']
+    );
+
+    teams = teamRows.map((team) => {
+      const played = matches.filter(
+        (m) => m.team1_id === team.id || m.team2_id === team.id
+      );
+      const wins = played.filter((m) => m.winner_id === team.id).length;
+      const losses = played.filter(
+        (m) => m.winner_id && m.winner_id !== team.id
+      ).length;
+      const matchCount = played.length;
+      const winRate = matchCount > 0 ? wins / matchCount : 0;
+
+      return {
+        teamId: team.id,
+        name: team.name,
+        tag: team.tag ?? null,
+        matchWins: wins,
+        matchLosses: losses,
+        matchCount,
+        winRate,
+      };
+    });
+
+    // Sort teams by wins desc, then by deepest round reached, then name
+    teams.sort((a, b) => {
+      if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
+      return a.name.localeCompare(b.name);
+    });
+
+    baseTournament.teams = teamRows.map((t) => ({
+      id: t.id,
+      name: t.name,
+      tag: t.tag ?? undefined,
+    }));
+  }
+
+  // Player leaderboard for this tournament, sorted by current ELO
+  const playerRows = await db.queryAsync<{
+    player_id: string;
+    name: string;
+    avatar_url: string | null;
+    current_elo: number;
+    starting_elo: number;
+    match_wins: number;
+    match_losses: number;
+    match_count: number;
+    total_kills: number;
+    total_deaths: number;
+    total_assists: number;
+    total_damage: number;
+    total_rounds: number;
+  }>(
+    `
+      SELECT
+        p.id as player_id,
+        p.name,
+        p.avatar_url,
+        p.current_elo,
+        p.starting_elo,
+        SUM(CASE WHEN pms.won_match THEN 1 ELSE 0 END) as match_wins,
+        SUM(CASE WHEN pms.won_match THEN 0 ELSE 1 END) as match_losses,
+        COUNT(DISTINCT pms.match_slug) as match_count,
+        COALESCE(SUM(pms.kills), 0) as total_kills,
+        COALESCE(SUM(pms.deaths), 0) as total_deaths,
+        COALESCE(SUM(pms.assists), 0) as total_assists,
+        COALESCE(SUM(pms.total_damage), 0) as total_damage,
+        COALESCE(SUM(pms.rounds_played), 0) as total_rounds
+      FROM player_match_stats pms
+      JOIN matches m ON pms.match_slug = m.slug
+      JOIN players p ON p.id = pms.player_id
+      WHERE m.tournament_id = ?
+      GROUP BY p.id, p.name, p.avatar_url, p.current_elo, p.starting_elo
+    `,
+    [row.id]
+  );
+
+  // Aggregate ELO change for this tournament only, treating the first recorded
+  // post-match rating as the "starting point" to avoid huge negative jumps
+  // from initial calibration (e.g. 3000 -> realistic value).
+  const ratingRows = await db.queryAsync<{
+    player_id: string;
+    elo_after: number;
+    created_at: number;
+  }>(
+    `
+      SELECT prh.player_id, prh.elo_after, prh.created_at
+      FROM player_rating_history prh
+      JOIN matches m ON prh.match_slug = m.slug
+      WHERE m.tournament_id = ?
+      ORDER BY prh.player_id, prh.created_at ASC
+    `,
+    [row.id]
+  );
+
+  const eloChangeMap = new Map<string, number>();
+  for (const r of ratingRows) {
+    const existing = eloChangeMap.get(r.player_id);
+    if (existing === undefined) {
+      // First record for this player: initialize with [firstAfter, lastAfter]
+      eloChangeMap.set(r.player_id, NaN); // placeholder, will recalc later
+    }
+  }
+  // Compute per-player first/last elo_after
+  const firstLast = new Map<string, { first: number; last: number }>();
+  for (const r of ratingRows) {
+    const current = firstLast.get(r.player_id);
+    if (!current) {
+      firstLast.set(r.player_id, { first: r.elo_after, last: r.elo_after });
+    } else {
+      current.last = r.elo_after;
+    }
+  }
+  firstLast.forEach((v, playerId) => {
+    eloChangeMap.set(playerId, v.last - v.first);
+  });
+
+  const leaderboard: PlayerLeaderboardEntry[] = playerRows.map((pr) => {
+    const winRate = pr.match_count > 0 ? pr.match_wins / pr.match_count : 0;
+    const averageAdr =
+      pr.total_rounds > 0 ? pr.total_damage / pr.total_rounds : undefined;
+
+    return {
+      playerId: pr.player_id,
+      name: pr.name,
+      avatar: pr.avatar_url || undefined,
+      currentElo: pr.current_elo,
+      startingElo: pr.starting_elo,
+      matchWins: pr.match_wins,
+      matchLosses: pr.match_losses,
+      winRate,
+      eloChange: eloChangeMap.get(pr.player_id) ?? 0,
+      averageAdr: averageAdr ? Math.round(averageAdr * 100) / 100 : undefined,
+    };
+  });
+
+  // Sort players by ELO (desc), then wins, then ADR
+  leaderboard.sort((a, b) => {
+    if (b.currentElo !== a.currentElo) return b.currentElo - a.currentElo;
+    if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
+    const adrA = a.averageAdr ?? 0;
+    const adrB = b.averageAdr ?? 0;
+    return adrB - adrA;
+  });
+
+  // For standard brackets, derive current/total rounds from matches only
+  const currentRoundResult = await db.queryOneAsync<{ max_round: number }>(
+    'SELECT MAX(round) as max_round FROM matches WHERE tournament_id = ?',
+    [row.id]
+  );
+  const currentRound = currentRoundResult?.max_round || 0;
+  const totalRounds = currentRound || 0;
+
   return {
-    tournament,
+    tournament: baseTournament,
     leaderboard,
     currentRound,
     totalRounds,
-    roundStatus,
+    roundStatus: undefined,
+    teams,
   };
 }
 

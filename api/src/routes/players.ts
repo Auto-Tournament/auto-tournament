@@ -666,7 +666,7 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
     const { playerId } = req.params;
     const { tournamentId } = req.query;
 
-    // Get all matches this player participated in
+    // Get all matches this player participated in (with team names for nicer display)
     let query = `
       SELECT 
         m.slug,
@@ -678,6 +678,10 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
         m.team1_id,
         m.team2_id,
         m.winner_id,
+        t1.name as team1_name,
+        t1.tag as team1_tag,
+        t2.name as team2_name,
+        t2.tag as team2_tag,
         pms.team,
         pms.won_match,
         pms.adr,
@@ -687,6 +691,8 @@ router.get('/:playerId/matches', async (req: Request, res: Response) => {
         pms.assists
       FROM player_match_stats pms
       JOIN matches m ON pms.match_slug = m.slug
+      LEFT JOIN teams t1 ON m.team1_id = t1.id
+      LEFT JOIN teams t2 ON m.team2_id = t2.id
       WHERE pms.player_id = ?
     `;
     const params: unknown[] = [playerId];

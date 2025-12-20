@@ -205,7 +205,7 @@ These will be asked in the public reply so we can tighten the design around thei
   - [x] Add logging around rating updates:
     - In `api/src/services/ratingService.ts` / `updatePlayerRatings`, per-player updates already log `oldElo`, `baseElo`, `statAdjustment`, `finalElo`, `eloChange`, `matchResult`, and `templateId` via `log.debug`, and a `log.success` entry summarizes how many players were updated for a given match.
   - [x] Re‑verify conversion constants and use:
-    - `ELO_OFFSET` and `ELO_SCALE` implement the documented direct mapping (3000 display ELO ↔ mu 25) with `eloToOpenSkill` and `openSkillToDisplayElo`, and are only applied once on each conversion (no double offset/scale).
+    - `ELO_OFFSET` and `ELO_SCALE` implement the documented direct mapping from OpenSkill ordinal to our Skill Rating scale (ordinal * 200 + 1500) with `eloToOpenSkill` and `openSkillToDisplayElo`, and are only applied once on each conversion (no double offset/scale).
     - Sigma handling uses `DEFAULT_SIGMA` with a monotone decrease by match count and a floor of 2.0, matching the intended “more stable with experience” behavior.
   - [x] Check the currently selected ELO template for shuffle tournaments:
     - `api/src/services/eloTemplateService.ts` ensures `pure-win-loss` exists and stays enabled as the default.

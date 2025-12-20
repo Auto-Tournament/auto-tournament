@@ -26,7 +26,7 @@ test.describe.serial('Player Management API', () => {
   });
 
   test(
-    'should create a player with initial ELO',
+    'should create a player with initial Skill Rating',
     {
       tag: ['@api', '@players', '@crud'],
     },
@@ -34,19 +34,19 @@ test.describe.serial('Player Management API', () => {
       const player = await createPlayer(request, {
         id: '76561198000000001',
         name: 'Test Player 1',
-        initialELO: 3000,
+        initialELO: 1500,
       });
 
       expect(player).toBeTruthy();
       expect(player?.id).toBe('76561198000000001');
       expect(player?.name).toBe('Test Player 1');
-      expect(player?.currentElo).toBe(3000);
-      expect(player?.startingElo).toBe(3000);
+      expect(player?.currentElo).toBe(1500);
+      expect(player?.startingElo).toBe(1500);
     }
   );
 
   test(
-    'should create a player without ELO (defaults to 3000)',
+    'should create a player without rating (defaults to 1500)',
     {
       tag: ['@api', '@players', '@crud'],
     },
@@ -57,8 +57,8 @@ test.describe.serial('Player Management API', () => {
       });
 
       expect(player).toBeTruthy();
-      expect(player?.currentElo).toBe(3000);
-      expect(player?.startingElo).toBe(3000);
+      expect(player?.currentElo).toBe(1500);
+      expect(player?.startingElo).toBe(1500);
     }
   );
 
@@ -71,7 +71,7 @@ test.describe.serial('Player Management API', () => {
       const players: CreatePlayerInput[] = [
         { id: '76561198000000003', name: 'Bulk Player 1', initialELO: 3100 },
         { id: '76561198000000004', name: 'Bulk Player 2', initialELO: 2900 },
-        { id: '76561198000000005', name: 'Bulk Player 3' }, // No ELO, should default to 3000
+        { id: '76561198000000005', name: 'Bulk Player 3' }, // No rating, should default to 1500
       ];
 
       const imported = await bulkImportPlayers(request, players);
@@ -80,7 +80,7 @@ test.describe.serial('Player Management API', () => {
       expect(imported?.length).toBe(3);
       expect(imported?.find((p) => p.id === '76561198000000003')?.currentElo).toBe(3100);
       expect(imported?.find((p) => p.id === '76561198000000004')?.currentElo).toBe(2900);
-      expect(imported?.find((p) => p.id === '76561198000000005')?.currentElo).toBe(3000);
+      expect(imported?.find((p) => p.id === '76561198000000005')?.currentElo).toBe(1500);
     }
   );
 
@@ -118,18 +118,18 @@ test.describe.serial('Player Management API', () => {
       const created = await createPlayer(request, {
         id: '76561198000000007',
         name: 'ELO Update Test',
-        initialELO: 3000,
+        initialELO: 1500,
       });
       expect(created).toBeTruthy();
-      expect(created?.currentElo).toBe(3000);
+      expect(created?.currentElo).toBe(1500);
 
       // Update ELO
-      const updated = await updatePlayerElo(request, '76561198000000007', 3500);
+      const updated = await updatePlayerElo(request, '76561198000000007', 1900);
 
       expect(updated).toBeTruthy();
-      expect(updated?.currentElo).toBe(3500);
-      // Starting ELO should remain unchanged
-      expect(updated?.startingElo).toBe(3000);
+      expect(updated?.currentElo).toBe(1900);
+      // Starting rating should remain unchanged
+      expect(updated?.startingElo).toBe(1500);
     }
   );
 
@@ -140,7 +140,7 @@ test.describe.serial('Player Management API', () => {
     },
     async ({ request }) => {
       // Create some test players
-      await createTestPlayers(request, 5, 'get-all-test', 3000);
+      await createTestPlayers(request, 5, 'get-all-test', 1500);
 
       // Get all players
       const players = await getAllPlayers(request);
@@ -164,7 +164,7 @@ test.describe.serial('Player Management API', () => {
       tag: ['@api', '@players', '@bulk-import'],
     },
     async ({ request }) => {
-      const players = await createTestPlayers(request, 10, 'varying-elo-test', 3000);
+      const players = await createTestPlayers(request, 10, 'varying-elo-test', 1500);
 
       expect(players).toBeTruthy();
       expect(players?.length).toBe(10);

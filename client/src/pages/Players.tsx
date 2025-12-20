@@ -265,12 +265,14 @@ export default function Players() {
                     </Box>
 
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <Chip
-                        label={`ELO: ${player.currentElo}`}
-                        size="small"
-                        color="primary"
-                        sx={{ fontWeight: 600 }}
-                      />
+                      <Tooltip title="Skill Rating is based on OpenSkill; higher is better.">
+                        <Chip
+                          label={`Skill Rating: ${player.currentElo}`}
+                          size="small"
+                          color="primary"
+                          sx={{ fontWeight: 600 }}
+                        />
+                      </Tooltip>
                       {player.matchCount > 0 && (
                         <Chip
                           label={`${player.matchCount} match${player.matchCount === 1 ? '' : 'es'}`}
@@ -279,13 +281,6 @@ export default function Players() {
                         />
                       )}
                     </Box>
-
-                    {player.currentElo !== player.startingElo && (
-                      <Typography variant="caption" color="text.secondary" display="block">
-                        ELO Change: {player.currentElo > player.startingElo ? '+' : ''}
-                        {player.currentElo - player.startingElo}
-                      </Typography>
-                    )}
                   </CardContent>
                 </Card>
               </Grid>

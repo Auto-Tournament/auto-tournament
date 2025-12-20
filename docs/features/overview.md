@@ -383,7 +383,7 @@ All events logged to: `data/logs/events/{serverId}/{date}.log`
 ### OpenSkill-Based Rating Engine
 
 - ✅ **OpenSkill-backed ratings** – Bayesian rating with FaceIT-style ELO scale for all tournament types
-- ✅ **Configurable default player ELO** – Global “Default Player ELO” in Settings (3000 by default)
+- ✅ **Global Skill Rating system** – Single Skill Rating per player (default ~1500 from OpenSkill), shared across all tournaments and matches
 - ✅ **Per-match rating updates** – Ratings update automatically when matches complete
 - ✅ **Rating history** – `player_rating_history` tracks before/after ELO and OpenSkill values per match
 

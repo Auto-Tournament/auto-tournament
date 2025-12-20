@@ -192,9 +192,10 @@ export function eloToOpenSkill(elo: number, matchCount: number = 0): Rating {
 CREATE TABLE players (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
-  -- Admin-facing "ELO" (for compatibility)
-  current_elo INTEGER NOT NULL DEFAULT 3000,
-  starting_elo INTEGER NOT NULL DEFAULT 3000,
+  -- Admin-facing Skill Rating (for compatibility)
+  -- Our mapping: Skill Rating = ordinal * 200 + 1500
+  current_elo INTEGER NOT NULL DEFAULT 1500,
+  starting_elo INTEGER NOT NULL DEFAULT 1500,
   -- OpenSkill internal values
   openskill_mu REAL NOT NULL DEFAULT 25.0,
   openskill_sigma REAL NOT NULL DEFAULT 8.333,
@@ -226,29 +227,28 @@ CREATE TABLE players (
 );
 ```
 
-**Display**: Always use `ordinal()` and convert to "ELO" for display
+**Display**: Always use `ordinal()` and convert to Skill Rating for display
 
 ## Admin Interface
 
 ### Player Creation/Import
 
-**Admin sees**: Single "ELO" field (as before)
+**Admin sees**: Single "Skill Rating" field
 
-- Default: 3000
+- Default: 1500
 - Can set custom value
 - Simple number input
 
 **System does**: Automatically converts to OpenSkill rating
 
-- ELO 3000 → mu: 25, sigma: 8.333
-- ELO 3200 → mu: 27, sigma: 8.333
+- Skill Rating 1500 → ordinal ≈ 0 → mu: 25, sigma: 8.333
 - etc.
 
 ### Player Display
 
-**Admin sees**: "ELO" number (converted from OpenSkill ordinal)
+**Admin sees**: "Skill Rating" number (converted from OpenSkill ordinal)
 
-- Looks and feels like ELO
+- Looks and feels like Elo-style rating
 - Updates after matches
 - Familiar interface
 
@@ -264,7 +264,7 @@ OpenSkill ratings can be used directly for team balancing:
 
 ```typescript
 function balanceTeamsWithOpenSkill(players: Player[], teamSize: number = 5): Team[] {
-  // Convert ELO to OpenSkill ratings
+// Convert Skill Rating to OpenSkill ratings
   const ratings = players.map((p) => ({
     player: p,
     rating: eloToOpenSkill(p.current_elo),

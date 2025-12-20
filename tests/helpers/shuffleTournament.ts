@@ -437,8 +437,8 @@ export async function setupShuffleTournament(
     }
   }
 
-  // Step 3: Create players
-  const players = await createTestPlayers(request, playerCount, prefix, 3000);
+  // Step 3: Create players (Skill Rating defaults around 1500)
+  const players = await createTestPlayers(request, playerCount, prefix, 1500);
   if (!players) {
     console.error(`Failed to create players (got null)`);
     return null;

@@ -48,6 +48,16 @@ interface PlayerLeaderboardEntry {
   averageAdr?: number;
 }
 
+interface TeamLeaderboardEntry {
+  teamId: string;
+  name: string;
+  tag?: string | null;
+  matchWins: number;
+  matchLosses: number;
+  matchCount: number;
+  winRate: number;
+}
+
 interface TournamentLeaderboardData {
   tournament: {
     id: number;
@@ -56,6 +66,7 @@ interface TournamentLeaderboardData {
     type: string;
   };
   leaderboard: PlayerLeaderboardEntry[];
+  teams?: TeamLeaderboardEntry[];
   currentRound: number;
   totalRounds: number;
   roundStatus?: {
@@ -209,7 +220,7 @@ export default function TournamentLeaderboard() {
 
     const lb = data.leaderboard;
 
-    // Top by wins (then ELO)
+    // Top by wins (then Skill Rating)
     const byWins = [...lb]
       .sort((a, b) => {
         if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
@@ -249,7 +260,7 @@ export default function TournamentLeaderboard() {
     );
   }
 
-  const { tournament, leaderboard, currentRound, totalRounds, roundStatus } = data;
+  const { tournament, leaderboard, currentRound, totalRounds, roundStatus, teams } = data;
 
   // Determine tournament status
   const isComplete = tournament.status === 'completed';
@@ -272,8 +283,8 @@ export default function TournamentLeaderboard() {
       'Wins',
       'Losses',
       'Win Rate',
-      'ELO',
-      'ELO Change',
+      'Skill Rating',
+      'Rating Change',
       'Avg ADR',
     ];
     const rows = filteredLeaderboard.map((player, index) => [
@@ -499,7 +510,89 @@ export default function TournamentLeaderboard() {
             </CardContent>
           </Card>
 
-          {/* Leaderboard */}
+          {/* Team Standings (for standard tournaments) */}
+          {teams && teams.length > 0 && (
+            <Card sx={{ mb: 3 }}>
+              <CardContent>
+                <Box display="flex" alignItems="center" gap={1} mb={2}>
+                  <EmojiEventsIcon color="secondary" />
+                  <Typography variant="h5" fontWeight={600}>
+                    Team Standings
+                  </Typography>
+                  <Chip
+                    label={`${teams.length} teams`}
+                    size="small"
+                    variant="outlined"
+                  />
+                </Box>
+                <TableContainer>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>Team</TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          Wins
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          Losses
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          Matches
+                        </TableCell>
+                        <TableCell align="right" sx={{ fontWeight: 600 }}>
+                          Win Rate
+                        </TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {teams.map((team, index) => (
+                        <TableRow key={team.teamId}>
+                          <TableCell>
+                            <Typography
+                              variant="body1"
+                              fontWeight={index === 0 ? 700 : 600}
+                              color={index === 0 ? 'primary.main' : 'text.primary'}
+                            >
+                              {index + 1}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="body1" fontWeight={600}>
+                              {team.name}
+                              {team.tag ? ` (${team.tag})` : ''}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" fontWeight={600} color="success.main">
+                              {team.matchWins}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            <Typography variant="body1" color="error.main">
+                              {team.matchLosses}
+                            </Typography>
+                          </TableCell>
+                          <TableCell align="right">
+                            {team.matchCount}
+                          </TableCell>
+                          <TableCell align="right">
+                            <Chip
+                              label={`${(team.winRate * 100).toFixed(1)}%`}
+                              size="small"
+                              color={team.winRate >= 0.5 ? 'success' : 'default'}
+                            />
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Player Leaderboard */}
           <Card data-testid="public-leaderboard">
             <CardContent>
               <Box
@@ -585,10 +678,10 @@ export default function TournamentLeaderboard() {
                           Win Rate
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          ELO
+                          Skill Rating
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          ELO Change
+                          Rating Change
                         </TableCell>
                         {leaderboard.some((p) => p.averageAdr) && (
                           <TableCell align="right" sx={{ fontWeight: 600 }}>
@@ -725,12 +818,12 @@ export default function TournamentLeaderboard() {
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
                 In shuffle tournaments, players compete individually. Teams are automatically
-                balanced based on ELO ratings for each match. The player with the most match wins
+                balanced based on Skill Rating for each match. The player with the most match wins
                 wins the tournament.
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
-                profile, match history, and ELO progression.
+                profile, match history, and Skill Rating progression.
               </Typography>
             </CardContent>
           </Card>

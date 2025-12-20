@@ -168,7 +168,7 @@ test.describe.serial('Shuffle Tournament API', () => {
       expect(tournament).toBeTruthy();
 
       // Create players
-      const players = await createTestPlayers(request, 10, 'shuffle-test', 3000);
+      const players = await createTestPlayers(request, 10, 'shuffle-test', 1500);
       expect(players).toBeTruthy();
       expect(players?.length).toBe(10);
 
@@ -444,7 +444,7 @@ test.describe.serial('Shuffle Tournament API', () => {
         expect(tournament).toBeTruthy();
 
         // Create and register players
-        const players = await createTestPlayers(request, testCase.playerCount, 'match-test', 3000);
+        const players = await createTestPlayers(request, testCase.playerCount, 'match-test', 1500);
         expect(players).toBeTruthy();
 
         const registration = await registerPlayers(

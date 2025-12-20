@@ -8,7 +8,7 @@ import { getAuthHeader } from './auth';
 export interface CreatePlayerInput {
   id: string; // Steam ID
   name: string;
-  initialELO?: number; // Optional, defaults to 3000
+  initialELO?: number; // Optional, defaults to 1500 Skill Rating
   avatar?: string;
 }
 
@@ -154,14 +154,14 @@ export async function bulkImportPlayers(
  * @param request Playwright API request context
  * @param count Number of players to create
  * @param prefix Prefix for player names/IDs
- * @param baseElo Base ELO value (default: 3000)
+ * @param baseElo Base Skill Rating value (default: 1500)
  * @returns Array of created players or null
  */
 export async function createTestPlayers(
   request: APIRequestContext,
   count: number,
   prefix: string = 'test',
-  baseElo: number = 3000
+  baseElo: number = 1500
 ): Promise<Player[] | null> {
   // Real Steam IDs for testing - public profiles that should exist
   const realSteamIds = [
@@ -193,8 +193,8 @@ export async function createTestPlayers(
   const playerInputs: CreatePlayerInput[] = [];
   for (let i = 0; i < count; i++) {
     const steamId = realSteamIds[i % realSteamIds.length];
-    // Add variation to ELO for testing team balancing
-    const eloVariation = Math.floor((i % 10) * 50); // 0-450 ELO variation
+    // Add variation to Skill Rating for testing team balancing
+    const eloVariation = Math.floor((i % 10) * 50); // 0-450 rating variation
     playerInputs.push({
       id: `${prefix}-player-${i}-${timestamp}`,
       name: `${prefix} Player ${i + 1} ${timestamp}`,

@@ -25,18 +25,13 @@ If you are developing locally (for example using `http://localhost:4173`), that 
 
 > **Tip:** If you see a warning that the webhook URL is not configured, go to **Settings → Webhook URL**, enter your production domain, and save.
 
-## Default Player ELO
+## Default Player ELO (legacy)
 
-**What it is:**  
-The **Default Player ELO** is the starting rating for new players when no ELO is specified (for example when importing teams or using shuffle tournaments).
+Earlier versions exposed a **Default Player ELO** setting to control the starting rating for new players (e.g. 3000 FaceIT-style).
+The system now uses a fixed Skill Rating mapping from OpenSkill and does **not** expose this as a global setting anymore:
 
-**How to use it:**
-
-- Use a **positive number** (e.g. `3000`).
-- All new players without an explicit ELO will start at this value.
-- You can adjust it later if you change how competitive you want your rating scale to be.
-
-If you are not sure, keeping the default (`3000`) is a safe choice.
+- New players without an explicit rating simply start at the default **Skill Rating 1500**.
+- You can still override a player’s initial rating when creating/importing them, but there is no global “default ELO” knob in Settings.
 
 ## Steam Web API Key (optional)
 

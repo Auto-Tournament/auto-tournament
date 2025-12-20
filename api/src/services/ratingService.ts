@@ -1,6 +1,6 @@
 /**
  * Rating Service
- * Handles OpenSkill rating calculations and ELO conversions
+ * Handles OpenSkill rating calculations and Skill Rating conversions
  */
 
 import { rating, rate, ordinal, type Rating } from 'openskill';
@@ -9,19 +9,21 @@ import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
 import type { PlayerStatLine } from './matchLiveStatsService';
 
-// Conversion constants (Option 3: Direct Mapping from integration doc)
-const ELO_OFFSET = 500;
-const ELO_SCALE = 100;
+// Conversion constants - Option B: closer to OpenSkill docs and classic Elo:
+// - One OpenSkill "sigma" ≈ 200 rating points
+// - Fresh player ordinal ≈ 0 maps to 1500 Skill Rating
+const ELO_OFFSET = 1500;
+const ELO_SCALE = 200;
 const DEFAULT_SIGMA = 8.333;
 
 /**
- * Convert admin's "ELO" input to OpenSkill rating
- * @param elo - Admin-facing ELO number (default: 3000)
+ * Convert admin's "Skill Rating" input to OpenSkill rating
+ * @param elo - Admin-facing Skill Rating number
  * @param matchCount - Number of matches played (for sigma adjustment)
  * @returns OpenSkill Rating object
  */
 export function eloToOpenSkill(elo: number, matchCount: number = 0): Rating {
-  // Direct mapping: 3000 ELO = 25 mu (OpenSkill default)
+  // Direct mapping: 1500 Skill Rating ≈ 25 mu (OpenSkill default via ordinal mapping)
   const mu = (elo - ELO_OFFSET) / ELO_SCALE;
 
   // Sigma decreases with experience

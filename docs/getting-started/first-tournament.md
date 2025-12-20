@@ -289,13 +289,13 @@ See [Running Matches](../guides/running-matches.md) for detailed scenarios.
 - Download demos from match details
 - Export bracket screenshot
 
-### Players, ELO & Stats
+### Players, Skill Rating & Stats
 
-- All players added to teams are also created in the global **Players** list with a display ELO.
-- New players without an explicit ELO use your configured **Default Player ELO** from **Settings** (FaceIT-style, 3000 by default).
+- All players added to teams are also created in the global **Players** list with a display Skill Rating.
+- New players without an explicit rating start at the default Skill Rating (1500) unless you override it when creating/importing the player.
 - After each match, player ratings are updated automatically using the OpenSkill engine, and detailed stats (ADR, K/D, MVPs, damage, etc.) are stored.
 - You can open any player's public page (`/player/:steamId`) to see:
-  - ELO history for all tournament types (not just shuffle)
+  - Skill Rating history for all tournament types (not just shuffle)
   - Match history with per-map stats
   - Performance metrics and trends
 

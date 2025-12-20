@@ -6,7 +6,6 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloToOpenSkill } from './ratingService';
-import { settingsService } from './settingsService';
 
 export interface PlayerRecord {
   id: string; // Steam ID
@@ -83,14 +82,13 @@ class PlayerService {
 
   /**
    * Create a new player
-   * If no ELO is provided, uses configured default (fallback 3000, FaceIT-style)
+   * If no rating is provided, uses the OpenSkill default mapped to our Skill Rating scale.
    */
   async createPlayer(input: CreatePlayerInput): Promise<PlayerResponse> {
-    const elo =
-      input.elo !== undefined ? input.elo : await settingsService.getDefaultPlayerElo();
+    const elo = input.elo !== undefined ? input.elo : 1500;
     const now = Math.floor(Date.now() / 1000);
 
-    // Convert ELO to OpenSkill rating
+    // Convert Skill Rating to OpenSkill rating
     const openskillRating = eloToOpenSkill(elo, 0); // New player, 0 matches
 
     const playerData: Omit<PlayerRecord, 'id'> = {
@@ -218,9 +216,8 @@ class PlayerService {
       return existing;
     }
 
-    // Create with specified ELO or configured default (fallback 3000)
-    const playerElo =
-      elo !== undefined ? elo : await settingsService.getDefaultPlayerElo();
+    // Create with specified Skill Rating or default 1500
+    const playerElo = elo !== undefined ? elo : 1500;
     const now = Math.floor(Date.now() / 1000);
     const openskillRating = eloToOpenSkill(playerElo, 0);
 

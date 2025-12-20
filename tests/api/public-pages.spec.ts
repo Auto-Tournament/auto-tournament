@@ -59,7 +59,7 @@ test.describe.serial('Public Pages API', () => {
       const player = await createPlayer(request, {
         id: '76561198000000101',
         name: 'History Test Player',
-        initialELO: 3000,
+        initialELO: 1500,
       });
       expect(player).toBeTruthy();
 
@@ -83,7 +83,7 @@ test.describe.serial('Public Pages API', () => {
       const player = await createPlayer(request, {
         id: '76561198000000102',
         name: 'Match History Test',
-        initialELO: 3000,
+        initialELO: 1500,
       });
       expect(player).toBeTruthy();
 
@@ -107,7 +107,7 @@ test.describe.serial('Public Pages API', () => {
       const player = await createPlayer(request, {
         id: '76561198000000103',
         name: 'Find Player Test',
-        initialELO: 3000,
+        initialELO: 1500,
       });
       expect(player).toBeTruthy();
 

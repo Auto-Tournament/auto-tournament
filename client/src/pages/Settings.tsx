@@ -75,8 +75,6 @@ export default function Settings() {
   const [syncingMaps, setSyncingMaps] = useState(false);
   const [initialWebhookUrl, setInitialWebhookUrl] = useState('');
   const [initialSteamApiKey, setInitialSteamApiKey] = useState('');
-  const [defaultPlayerElo, setDefaultPlayerElo] = useState<number | ''>('');
-  const [initialDefaultPlayerElo, setInitialDefaultPlayerElo] = useState<number | ''>('');
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
@@ -104,7 +102,6 @@ export default function Settings() {
       const response: SettingsResponse = await api.get('/api/settings');
       const webhook = response.settings.webhookUrl ?? '';
       const steamKey = response.settings.steamApiKey ?? '';
-      const defaultElo = response.settings.defaultPlayerElo ?? 3000;
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
       const chatPrefix = response.settings.matchzyChatPrefix ?? '';
@@ -117,8 +114,6 @@ export default function Settings() {
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
       setInitialSteamApiKey(steamKey);
-      setDefaultPlayerElo(defaultElo);
-      setInitialDefaultPlayerElo(defaultElo);
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
@@ -165,12 +160,6 @@ export default function Settings() {
         const payload = {
           webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
           steamApiKey: steamApiKey.trim() === '' ? null : steamApiKey.trim(),
-          defaultPlayerElo:
-            defaultPlayerElo === ''
-              ? null
-              : Number.isFinite(defaultPlayerElo)
-              ? defaultPlayerElo
-              : null,
           matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
@@ -183,7 +172,6 @@ export default function Settings() {
         const response: SettingsResponse = await api.put('/api/settings', payload);
         const newWebhook = response.settings.webhookUrl ?? '';
         const newSteamKey = response.settings.steamApiKey ?? '';
-        const newDefaultElo = response.settings.defaultPlayerElo ?? 3000;
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
         const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
@@ -196,8 +184,6 @@ export default function Settings() {
         setSteamApiKey(newSteamKey);
         setInitialWebhookUrl(newWebhook);
         setInitialSteamApiKey(newSteamKey);
-        setDefaultPlayerElo(newDefaultElo);
-        setInitialDefaultPlayerElo(newDefaultElo);
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
@@ -228,7 +214,6 @@ export default function Settings() {
     [
       webhookUrl,
       steamApiKey,
-      defaultPlayerElo,
       matchzyChatPrefix,
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
@@ -245,7 +230,6 @@ export default function Settings() {
     if (
       webhookUrl !== initialWebhookUrl ||
       steamApiKey !== initialSteamApiKey ||
-      defaultPlayerElo !== initialDefaultPlayerElo ||
       matchzyChatPrefix !== initialMatchzyChatPrefix ||
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
@@ -564,41 +548,6 @@ export default function Settings() {
 
             <TabPanel value={tabIndex} index={1}>
               <Stack spacing={3}>
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Default Player ELO
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    Starting ELO for new players when none is specified.
-                  </Typography>
-                  <TextField
-                    label="Default Player ELO"
-                    type="number"
-                    value={defaultPlayerElo === '' ? '' : defaultPlayerElo}
-                    onChange={(event) => {
-                      const value = event.target.value;
-                      if (value === '') {
-                        setDefaultPlayerElo('');
-                        return;
-                      }
-                      const parsed = Number(value);
-                      if (Number.isFinite(parsed) && parsed > 0) {
-                        setDefaultPlayerElo(Math.round(parsed));
-                      }
-                    }}
-                    onBlur={handleFieldBlur}
-                    onKeyDown={handleFieldKeyDown}
-                    fullWidth
-                    slotProps={{
-                      htmlInput: {
-                        min: 1,
-                        step: 50,
-                      },
-                    }}
-                    helperText="Positive number. Example: 3000"
-                  />
-                </Box>
-
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     MatchZy Chat & Knife Defaults

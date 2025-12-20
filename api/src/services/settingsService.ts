@@ -4,7 +4,6 @@ import { log } from '../utils/logger';
 export type AppSettingKey =
   | 'webhook_url'
   | 'steam_api_key'
-  | 'default_player_elo'
   | 'simulate_matches'
   | 'simulation_timescale'
   | 'matchzy_chat_prefix'
@@ -20,7 +19,6 @@ export interface AppSetting {
 const ALLOWED_KEYS: AppSettingKey[] = [
   'webhook_url',
   'steam_api_key',
-  'default_player_elo',
   'simulate_matches',
   'simulation_timescale',
   'matchzy_chat_prefix',
@@ -72,15 +70,6 @@ class SettingsService {
       if (key === 'steam_api_key') {
         await db.setAppSettingAsync(key, trimmed);
         log.success('Steam API key updated');
-        return;
-      }
-      if (key === 'default_player_elo') {
-        const parsed = Number(trimmed);
-        if (!Number.isFinite(parsed) || parsed <= 0) {
-          throw new Error('Default player ELO must be a positive number');
-        }
-        await db.setAppSettingAsync(key, String(Math.round(parsed)));
-        log.success(`Default player ELO updated to ${Math.round(parsed)}`);
         return;
       }
 
@@ -155,16 +144,6 @@ class SettingsService {
   async getSteamApiKey(): Promise<string | null> {
     const value = await this.getSetting('steam_api_key');
     return value ? value.trim() : null;
-  }
-
-  async getDefaultPlayerElo(): Promise<number> {
-    const value = await this.getSetting('default_player_elo');
-    const parsed = value !== null ? Number(value) : NaN;
-    if (Number.isFinite(parsed) && parsed > 0) {
-      return Math.round(parsed);
-    }
-    // Fallback to OpenSkill-mapped default (fresh player ≈ 500 ELO on our scale)
-    return 500;
   }
 
   async getMatchzyChatPrefix(): Promise<string | null> {

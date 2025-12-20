@@ -19,7 +19,7 @@ router.use(requireAuth);
 const mapSettingsResponse = async () => {
   const webhookUrl = await settingsService.getWebhookUrl();
   const steamApiKey = await settingsService.getSteamApiKey();
-  const defaultPlayerElo = await settingsService.getDefaultPlayerElo();
+  const defaultPlayerElo = null;
   const simulateMatches = await settingsService.isSimulationModeEnabled();
   const simulationTimescale = await settingsService.getSimulationTimescale();
   const matchzyChatPrefix = await settingsService.getMatchzyChatPrefix();
@@ -51,7 +51,6 @@ router.put('/', async (req: Request, res: Response) => {
   const {
     webhookUrl,
     steamApiKey,
-    defaultPlayerElo,
     simulateMatches,
     simulationTimescale,
     matchzyChatPrefix,
@@ -60,7 +59,6 @@ router.put('/', async (req: Request, res: Response) => {
   } = req.body as {
     webhookUrl?: unknown;
     steamApiKey?: unknown;
-    defaultPlayerElo?: unknown;
     simulateMatches?: unknown;
     simulationTimescale?: unknown;
     matchzyChatPrefix?: unknown;
@@ -90,25 +88,6 @@ router.put('/', async (req: Request, res: Response) => {
         'steam_api_key',
         typeof steamApiKey === 'string' ? steamApiKey : null
       );
-    }
-
-    if (defaultPlayerElo !== undefined) {
-      if (
-        (typeof defaultPlayerElo !== 'number' || !Number.isFinite(defaultPlayerElo)) &&
-        defaultPlayerElo !== null
-      ) {
-        return res.status(400).json({
-          success: false,
-          error: 'defaultPlayerElo must be a number or null',
-        });
-      }
-
-      const value =
-        typeof defaultPlayerElo === 'number' && Number.isFinite(defaultPlayerElo)
-          ? String(Math.round(defaultPlayerElo))
-          : null;
-
-      await settingsService.setSetting('default_player_elo', value);
     }
 
     if (simulateMatches !== undefined) {

@@ -61,7 +61,7 @@ test.describe.serial('Public Pages UI', () => {
       const player = await createPlayer(request, {
         id: '76561198000000201',
         name: 'Find Player Test',
-        initialELO: 3000,
+        initialELO: 1500,
       });
       expect(player).toBeTruthy();
 
@@ -100,7 +100,7 @@ test.describe.serial('Public Pages UI', () => {
       const player = await createPlayer(request, {
         id: '76561198000000202',
         name: 'Player Page Test',
-        initialELO: 3000,
+        initialELO: 1500,
       });
 
       if (!player) {

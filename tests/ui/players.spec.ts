@@ -100,14 +100,14 @@ test.describe.serial('Player Management UI', () => {
       const playersEmptyState = page.getByTestId('players-empty-state');
       const hasList = await playersList.isVisible().catch(() => false);
       const hasEmptyState = await playersEmptyState.isVisible().catch(() => false);
-      
+
       // Should have either list or empty state
       expect(hasList || hasEmptyState).toBeTruthy();
     }
   );
 
   test(
-    'should allow editing player ELO',
+    'should allow editing player Skill Rating',
     {
       tag: ['@ui', '@players', '@elo'],
     },
@@ -115,8 +115,8 @@ test.describe.serial('Player Management UI', () => {
       // Create a test player
       const testPlayer = await createPlayer(request, {
         id: `76561198${Date.now()}`,
-        name: 'ELO Edit Test',
-        initialELO: 3000,
+        name: 'Rating Edit Test',
+        initialELO: 1500,
       });
       expect(testPlayer).toBeTruthy();
 
@@ -133,7 +133,7 @@ test.describe.serial('Player Management UI', () => {
         if (await modal.isVisible().catch(() => false)) {
           await expect(modal).toBeVisible({ timeout: 5000 });
 
-          // Find ELO field and update it
+          // Find Skill Rating field and update it
           const eloField = page.getByTestId('player-elo-input');
           if (await eloField.isVisible().catch(() => false)) {
             await eloField.clear();

@@ -83,7 +83,7 @@ This document details the **complex solution** for implementing a shuffle tourna
 > **Background – What are ELO and OpenSkill?**  
 > - **ELO**: Classic rating system from chess – each player has a single number that goes up or down after each game based on who they played and whether they won or lost.  
 > - **OpenSkill**: A modern Bayesian rating system for competitive games (similar family to Microsoft TrueSkill) that handles **teams**, changing teammates, and uncertainty much better than plain ELO. See the official docs at [openskill.me](https://openskill.me) for a deeper explanation.  
-> - In this design, admins still work with an **ELO-style number** (e.g. 3000), while the system can internally run OpenSkill and convert between ELO and OpenSkill values.
+> - In this design, admins still work with an **Elo-style Skill Rating** (centered around 1500), while the system can internally run OpenSkill and convert between Skill Rating and OpenSkill values.
 
 #### Rating System Options
 
@@ -107,14 +107,14 @@ This document details the **complex solution** for implementing a shuffle tourna
 #### Rating Management
 
 - **Initial Rating Assignment**:
-  - Admin can set starting rating for each player individually
+  - Admin can set starting Skill Rating for each player individually
   - Support for bulk import of starting ratings
-  - **Default Starting Rating**: 3000 (FaceIT-style default for new players)
+  - **Default Starting Skill Rating**: 1500 (OpenSkill ordinal ≈ 0 mapped to 1500)
     - Applied automatically when no rating is specified during player creation
     - Used when creating players from Players page without rating
     - Used when creating players from Teams page without rating
     - Used when bulk importing players without rating field
-  - Default starting rating is configurable globally in application **Settings** (Default Player ELO)
+  - There is no longer a configurable global “Default Player ELO” slider; instead the system uses the fixed Skill Rating mapping.
   - Import from existing system/Excel (future enhancement)
 
 - **Editing Player ELO After Creation**:

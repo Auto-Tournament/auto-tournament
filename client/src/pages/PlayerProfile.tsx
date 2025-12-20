@@ -28,6 +28,7 @@ import { api } from '../utils/api';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
+import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import type { PlayerDetail } from '../types/api.types';
 import type { Team, TeamMatchInfo } from '../types';
 
@@ -51,6 +52,13 @@ interface MatchHistoryEntry {
   status: string;
   completedAt: number;
   tournamentId?: number;
+  team1Id?: string;
+  team2Id?: string;
+  winnerId?: string | null;
+  team1Name?: string | null;
+  team1Tag?: string | null;
+  team2Name?: string | null;
+  team2Tag?: string | null;
   team: 'team1' | 'team2';
   wonMatch: boolean;
   adr?: number;
@@ -70,6 +78,7 @@ export default function PlayerProfile() {
   const [currentMatch, setCurrentMatch] = useState<TeamMatchInfo | null>(null);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
+  const [selectedMatch, setSelectedMatch] = useState<MatchHistoryEntry | null>(null);
 
   // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
   const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
@@ -140,11 +149,56 @@ export default function PlayerProfile() {
 
       // Load match history
       try {
-        const matchesResponse = await api.get<{ success: boolean; matches: MatchHistoryEntry[] }>(
-          `/api/players/${steamId}/matches`
-        );
+        const matchesResponse = await api.get<{
+          success: boolean;
+          matches: Array<{
+            slug: string;
+            round: number;
+            match_number: number;
+            status: string;
+            completed_at: number;
+            tournamentId?: number;
+            team1_id?: string;
+            team2_id?: string;
+            winner_id?: string | null;
+            team1_name?: string | null;
+            team1_tag?: string | null;
+            team2_name?: string | null;
+            team2_tag?: string | null;
+            team: 'team1' | 'team2';
+            won_match: boolean;
+            adr?: number;
+            total_damage?: number;
+            kills?: number;
+            deaths?: number;
+            assists?: number;
+          }>;
+        }>(`/api/players/${steamId}/matches`);
         if (matchesResponse.success && matchesResponse.matches) {
-          setMatchHistory(matchesResponse.matches);
+          setMatchHistory(
+            matchesResponse.matches.map((m) => ({
+              slug: m.slug,
+              round: m.round,
+              matchNumber: m.match_number,
+              status: m.status,
+              completedAt: m.completed_at,
+              tournamentId: m.tournamentId,
+              team1Id: m.team1_id,
+              team2Id: m.team2_id,
+              winnerId: m.winner_id,
+              team1Name: m.team1_name,
+              team1Tag: m.team1_tag,
+              team2Name: m.team2_name,
+              team2Tag: m.team2_tag,
+              team: m.team,
+              wonMatch: m.won_match,
+              adr: m.adr,
+              totalDamage: m.total_damage,
+              kills: m.kills,
+              deaths: m.deaths,
+              assists: m.assists,
+            }))
+          );
         }
       } catch {
         // Match history is optional
@@ -256,7 +310,11 @@ export default function PlayerProfile() {
     );
   }
 
-  const eloChange = player.currentElo - player.startingElo;
+  // Use first recorded rating as a more intuitive "starting" point rather than
+  // the raw DB seed (which might be a calibration value like 3000).
+  const effectiveStartingElo =
+    ratingHistory.length > 0 ? ratingHistory[ratingHistory.length - 1].eloAfter : player.startingElo;
+  const eloChange = player.currentElo - effectiveStartingElo;
   const winRate =
     uniqueMatchHistory.length > 0
       ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
@@ -290,20 +348,16 @@ export default function PlayerProfile() {
                     Steam ID: {player.id}
                   </Typography>
                   <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                    <Chip
-                      data-testid="public-player-elo"
-                      label={`ELO: ${player.currentElo}`}
-                      color="primary"
-                      sx={{ fontWeight: 600, fontSize: '1rem' }}
-                    />
-                    {eloChange !== 0 && (
+                    <Tooltip
+                      title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better."
+                    >
                       <Chip
-                        icon={eloChange > 0 ? <TrendingUpIcon /> : <TrendingDownIcon />}
-                        label={`${eloChange > 0 ? '+' : ''}${eloChange}`}
-                        color={eloChange > 0 ? 'success' : 'error'}
-                        sx={{ fontWeight: 600 }}
+                        data-testid="public-player-elo"
+                        label={`Skill Rating: ${player.currentElo}`}
+                        color="primary"
+                        sx={{ fontWeight: 600, fontSize: '1rem' }}
                       />
-                    )}
+                    </Tooltip>
                     {latestTournamentId && (
                       <Button
                         variant="outlined"
@@ -404,19 +458,19 @@ export default function PlayerProfile() {
             </Grid>
           </Grid>
 
-          {/* ELO Progression Chart */}
+          {/* Skill Rating Progression Chart */}
           {ratingHistory.length > 0 && player && (
-            <ELOProgressionChart
-              history={ratingHistory.map((entry) => ({
-                eloBefore: entry.eloBefore,
-                eloAfter: entry.eloAfter,
-                eloChange: entry.eloChange,
-                matchResult: entry.matchResult,
-                createdAt: entry.createdAt,
-              }))}
-              currentElo={player.currentElo}
-              startingElo={player.startingElo}
-            />
+              <ELOProgressionChart
+                history={ratingHistory.map((entry) => ({
+                  eloBefore: entry.eloBefore,
+                  eloAfter: entry.eloAfter,
+                  eloChange: entry.eloChange,
+                  matchResult: entry.matchResult,
+                  createdAt: entry.createdAt,
+                }))}
+                currentElo={player.currentElo}
+                startingElo={effectiveStartingElo}
+              />
           )}
 
           {/* Performance Metrics Chart */}
@@ -437,17 +491,17 @@ export default function PlayerProfile() {
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  ELO History
+                  Skill Rating History
                 </Typography>
                 <TableContainer>
                   <Table size="small">
                     <TableHead>
                       <TableRow>
                         <TableCell>Match</TableCell>
-                        <TableCell align="right">ELO Before</TableCell>
-                        <TableCell align="right">Base ELO After</TableCell>
+                        <TableCell align="right">Rating Before</TableCell>
+                        <TableCell align="right">Base Rating After</TableCell>
                         <TableCell align="right">Stat Adj.</TableCell>
-                        <TableCell align="right">Final ELO</TableCell>
+                        <TableCell align="right">Final Rating</TableCell>
                         <TableCell align="right">Total Change</TableCell>
                         <TableCell>Template</TableCell>
                         <TableCell>Result</TableCell>
@@ -537,7 +591,7 @@ export default function PlayerProfile() {
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell>Match</TableCell>
+                        <TableCell>Opponent</TableCell>
                         <TableCell align="right">Round</TableCell>
                         <TableCell align="right">K/D</TableCell>
                         <TableCell align="right">ADR</TableCell>
@@ -546,34 +600,52 @@ export default function PlayerProfile() {
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {uniqueMatchHistory.slice(0, 10).map((match) => (
-                        <TableRow key={match.slug}>
-                          <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                              {match.slug}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">R{match.round}</TableCell>
-                          <TableCell align="right">
-                            {match.kills !== undefined && match.deaths !== undefined
-                              ? `${match.kills}/${match.deaths}`
-                              : 'N/A'}
-                          </TableCell>
-                          <TableCell align="right">
-                            {match.adr ? match.adr.toFixed(1) : 'N/A'}
-                          </TableCell>
-                          <TableCell align="right">
-                            {match.totalDamage ? match.totalDamage.toLocaleString() : 'N/A'}
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={match.wonMatch ? 'Win' : 'Loss'}
-                              size="small"
-                              color={match.wonMatch ? 'success' : 'error'}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {uniqueMatchHistory.slice(0, 10).map((match) => {
+                        const isTeam1 = match.team === 'team1';
+                        const opponentName = isTeam1
+                          ? match.team2Name || 'Opponent'
+                          : match.team1Name || 'Opponent';
+                        const opponentTag = isTeam1
+                          ? match.team2Tag || ''
+                          : match.team1Tag || '';
+
+                        return (
+                          <TableRow
+                            key={match.slug}
+                            hover
+                            sx={{ cursor: 'pointer' }}
+                            onClick={() => setSelectedMatch(match)}
+                          >
+                            <TableCell>
+                              <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
+                                vs {opponentName}
+                                {opponentTag ? ` (${opponentTag})` : ''}
+                              </Typography>
+                            </TableCell>
+                            <TableCell align="right">R{match.round}</TableCell>
+                            <TableCell align="right">
+                              {match.kills !== undefined && match.deaths !== undefined
+                                ? `${match.kills}/${match.deaths}`
+                                : 'N/A'}
+                            </TableCell>
+                            <TableCell align="right">
+                              {typeof match.adr === 'number' ? match.adr.toFixed(1) : 'N/A'}
+                            </TableCell>
+                            <TableCell align="right">
+                              {typeof match.totalDamage === 'number'
+                                ? match.totalDamage.toLocaleString()
+                                : 'N/A'}
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                label={match.wonMatch ? 'Win' : 'Loss'}
+                                size="small"
+                                color={match.wonMatch ? 'success' : 'error'}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 </TableContainer>
@@ -601,6 +673,15 @@ export default function PlayerProfile() {
                 </Box>
               </CardContent>
             </Card>
+          )}
+          {selectedMatch && (
+            <PlayerMatchDetailsModal
+              open={!!selectedMatch}
+              matchSlug={selectedMatch.slug}
+              round={selectedMatch.round}
+              matchNumber={selectedMatch.matchNumber}
+              onClose={() => setSelectedMatch(null)}
+            />
           )}
         </Stack>
       </Container>

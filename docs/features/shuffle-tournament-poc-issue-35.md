@@ -139,7 +139,7 @@ These commands:
 
 2. **Configure Default Player ELO**
 
-   - In **Settings**, set a **Default Player ELO** (FaceIT-style, default 3000).
+   - (Legacy) In older builds you could set a **Default Player ELO** (e.g. 3000). The current system instead uses a fixed Skill Rating mapping from OpenSkill (default ~1500) and no longer exposes this as a global setting.
    - Any new player created without a specified ELO (Players page, Teams page, imports) will use this value.
 
 3. **Create players**
@@ -262,7 +262,7 @@ From the player’s point of view:
 
 - Every player has a **starting ELO**, defined as:
   - Either the value you specify when creating/importing that player, or
-  - The **Default Player ELO** configured in Settings (FaceIT-style, default 3000).
+  - The starting Skill Rating per player (default 1500 if not overridden on the player).
 - This is global – the same player’s rating is shared across all tournaments and modes.
 
 ### 5.2. Rating Updates

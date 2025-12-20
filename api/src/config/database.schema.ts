@@ -177,14 +177,14 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_name ON tournament_templates(name);
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_type ON tournament_templates(type);
 
-    -- Players table (for shuffle tournament type)
+    -- Players table
     CREATE TABLE IF NOT EXISTS players (
       id TEXT PRIMARY KEY, -- Steam ID
       name TEXT NOT NULL,
       avatar_url TEXT,
-      -- Admin-facing "ELO" (for compatibility and display)
-      current_elo INTEGER NOT NULL DEFAULT 3000, -- FaceIT-style default
-      starting_elo INTEGER NOT NULL DEFAULT 3000, -- FaceIT-style default
+      -- Admin-facing Skill Rating (for compatibility and display)
+      current_elo INTEGER NOT NULL DEFAULT 1500, -- Skill Rating (ordinal * 200 + 1500)
+      starting_elo INTEGER NOT NULL DEFAULT 1500, -- Initial Skill Rating seed
       -- OpenSkill internal values
       openskill_mu REAL NOT NULL DEFAULT 25.0,
       openskill_sigma REAL NOT NULL DEFAULT 8.333,
