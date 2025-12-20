@@ -101,12 +101,20 @@ export async function autoCompleteVetoForMatch(
     return;
   }
 
-  // Only auto-veto for pending matches; anything else is either already in progress or done.
+  // Prefer to run auto-veto while the match is still 'pending'. However, to
+  // support already-initialized brackets or restart flows, we also allow a
+  // one-time auto-veto for matches in 'ready' status that have no veto_state
+  // and are not yet loaded on a server.
   if (match.status !== 'pending') {
-    log.debug(
-      `[VETO-SIM] Match ${matchSlug} has status '${match.status}', not 'pending' – skipping auto veto`
-    );
-    return;
+    const hasVetoState = Boolean(match.veto_state);
+    const isReadyAndIdle = match.status === 'ready' && !hasVetoState && !match.server_id;
+
+    if (!isReadyAndIdle) {
+      log.debug(
+        `[VETO-SIM] Match ${matchSlug} has status '${match.status}' and is not eligible for auto veto (veto_state=${hasVetoState}, server_id=${match.server_id}); skipping`
+      );
+      return;
+    }
   }
 
   // Load tournament

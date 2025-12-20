@@ -623,22 +623,30 @@ export class MatchAllocationService {
         emitBracketUpdate({ action: 'tournament_started' });
       }
 
-      // In simulation mode, automatically perform veto and side picks for all matches.
+      // In simulation mode, automatically perform veto and side picks for all matches
+      // that are structurally ready (both teams assigned) but have not yet gone
+      // through veto. This includes:
+      // - Fresh bracket matches in 'pending' status, and
+      // - Matches in 'ready' status with no veto_state and no server assigned
+      //   (e.g. finals created before we enabled full auto-veto).
       const simulationEnabled = await settingsService.isSimulationModeEnabled();
       if (simulationEnabled) {
         log.info(
           '[VETO-SIM] Simulation mode enabled – auto-veto will run for all pending matches with resolved teams.'
         );
 
-        // Fetch all pending matches that already have both teams assigned.
-        // We deliberately skip future TBD bracket slots where team1_id/team2_id
-        // are not yet known; those matches are not "ready" for veto or loading.
+        // Fetch all matches that already have both teams assigned and have not
+        // yet completed veto. We deliberately skip future TBD bracket slots
+        // where team1_id/team2_id are not yet known; those matches are not
+        // "ready" for veto or loading.
         const pendingMatches = await db.queryAsync<DbMatchRow>(
           `SELECT * FROM matches 
            WHERE tournament_id = ? 
-             AND status = 'pending'
+             AND status IN ('pending', 'ready')
              AND team1_id IS NOT NULL
-             AND team2_id IS NOT NULL`,
+             AND team2_id IS NOT NULL
+             AND (veto_state IS NULL OR veto_state = '')
+             AND (server_id IS NULL OR server_id = '')`,
           [tournament.id]
         );
 
