@@ -1,8 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
-import DownloadIcon from '@mui/icons-material/Download';
-import { LinearProgress, IconButton, Tooltip } from '@mui/material';
+import { LinearProgress } from '@mui/material';
 import {
   getStatusColor,
   getStatusLabel,
@@ -21,7 +20,6 @@ interface MatchCardProps {
   showPlayerProgress?: boolean; // Show player connection progress bar
   vetoCompleted?: boolean; // Whether veto is complete
   tournamentStarted?: boolean; // Whether tournament has started
-  onDownloadDemo?: (event: React.MouseEvent) => void;
   onClick?: () => void;
 }
 
@@ -35,7 +33,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   showPlayerProgress = false,
   vetoCompleted,
   tournamentStarted,
-  onDownloadDemo,
   onClick,
 }) => {
   const getBorderColor = () => {
@@ -206,21 +203,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
             />
-            {/* For shuffle tournaments the map is fixed and veto-less, so hide the extra map chip */}
-            {!isShuffleMatch() && mapDisplayNumber && totalMaps && (
+            {/* For shuffle tournaments the map is fixed and veto-less, so hide the extra map chip.
+               Also hide the map chip for completed matches to avoid confusing "Map 1/3" labels
+               when the full series is already done. */}
+            {!isShuffleMatch() && match.status !== 'completed' && mapDisplayNumber && totalMaps && (
               <Chip
                 label={`Map ${mapDisplayNumber}/${totalMaps}`}
                 size="small"
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
               />
-            )}
-            {match.demoFilePath && onDownloadDemo && (
-              <Tooltip title="Download demo">
-                <IconButton size="small" onClick={onDownloadDemo} sx={{ color: 'primary.main' }}>
-                  <DownloadIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
             )}
           </Box>
         </Box>

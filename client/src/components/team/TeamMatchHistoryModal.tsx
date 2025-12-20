@@ -11,12 +11,19 @@ import {
   Divider,
   CircularProgress,
   Alert,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { formatDate, getRoundLabel } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
-import type { Match, TeamMatchHistory } from '../../types';
+import type { Match, PlayerStats, TeamMatchHistory } from '../../types';
 
 interface TeamMatchHistoryModalProps {
   matchHistory: TeamMatchHistory | null;
@@ -96,6 +103,55 @@ export function TeamMatchHistoryModal({
       team2Score = isTeam1 ? calculatedSeriesScore.team2 : calculatedSeriesScore.team1;
     }
   }
+
+  const hasPlayerStats =
+    match?.team1Players && match.team1Players.length > 0 && match.team2Players && match.team2Players.length > 0;
+
+  const renderPlayerTable = (rows: PlayerStats[], accent: 'primary' | 'error') => {
+    if (!rows.length) return null;
+
+    const sortedRows = [...rows].sort((a, b) => b.damage - a.damage);
+
+    return (
+      <TableContainer component={Paper} variant="outlined">
+        <Table size="small">
+          <TableHead>
+            <TableRow>
+                <TableCell>Player</TableCell>
+              <TableCell align="right">K</TableCell>
+              <TableCell align="right">D</TableCell>
+              <TableCell align="right">A</TableCell>
+              <TableCell align="right">Damage</TableCell>
+              <TableCell align="right">HS</TableCell>
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {sortedRows.map((player) => (
+              <TableRow key={player.steamId}>
+                  <TableCell
+                    sx={{
+                      fontWeight: 600,
+                      color: `${accent}.main`,
+                      maxWidth: 180,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                    }}
+                  >
+                    {player.name}
+                  </TableCell>
+                <TableCell align="right">{player.kills}</TableCell>
+                <TableCell align="right">{player.deaths}</TableCell>
+                <TableCell align="right">{player.assists}</TableCell>
+                <TableCell align="right">{player.damage}</TableCell>
+                <TableCell align="right">{player.headshots}</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
 
   return (
     <Dialog open={!!matchHistory} onClose={onClose} maxWidth="md" fullWidth>
@@ -233,6 +289,34 @@ export function TeamMatchHistoryModal({
 
             {(!match.maps || match.maps.length === 0) && (
               <Alert severity="info">No maps available for this match.</Alert>
+            )}
+
+            {/* Aggregated player stats across the match/series */}
+            {hasPlayerStats && match.team1 && match.team2 && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Player Stats (All Maps)
+                </Typography>
+                <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
+                  <Box flex={1}>
+                    <Typography variant="subtitle2" color="text.secondary" mb={0.5}>
+                      {match.team1.name}
+                    </Typography>
+                    {renderPlayerTable(match.team1Players ?? [], 'primary')}
+                  </Box>
+                  <Box flex={1}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      mb={0.5}
+                      textAlign={{ xs: 'left', md: 'right' }}
+                    >
+                      {match.team2.name}
+                    </Typography>
+                    {renderPlayerTable(match.team2Players ?? [], 'error')}
+                  </Box>
+                </Stack>
+              </Box>
             )}
           </Stack>
         )}

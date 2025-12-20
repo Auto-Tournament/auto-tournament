@@ -85,11 +85,38 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const { status: tournamentStatus } = useTournamentStatus();
   const tournamentStarted = tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
 
-  // Calculate derived series wins before early return (React hooks rule)
+  // Calculate derived series wins before early return (React hooks rule).
+  // For completed matches, use the persisted series score. While a series is
+  // still in progress, prefer live series scores or count finished maps from
+  // mapResults so we show e.g. "1 - 0" when entering Map 2.
   const derivedSeriesWins = useMemo(() => {
     if (!match) {
       return { team1: 0, team2: 0 };
     }
+
+    const hasSeriesOnMatch =
+      typeof match.team1Score === 'number' || typeof match.team2Score === 'number';
+
+    // Completed series: trust the DB-enriched series score.
+    if (match.status === 'completed' && hasSeriesOnMatch) {
+      return {
+        team1: typeof match.team1Score === 'number' ? match.team1Score : 0,
+        team2: typeof match.team2Score === 'number' ? match.team2Score : 0,
+      };
+    }
+
+    // Live / in-progress series: prefer live series scores from the snapshot.
+    if (
+      liveStats &&
+      (typeof liveStats.team1SeriesScore === 'number' || typeof liveStats.team2SeriesScore === 'number')
+    ) {
+      return {
+        team1: liveStats.team1SeriesScore ?? 0,
+        team2: liveStats.team2SeriesScore ?? 0,
+      };
+    }
+
+    // Fallback: derive from finished maps we have in match.mapResults.
     if (match.mapResults && match.mapResults.length > 0) {
       return match.mapResults.reduce(
         (acc, result) => {
@@ -103,11 +130,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         { team1: 0, team2: 0 }
       );
     }
-    return {
-      team1: liveStats?.team1SeriesScore ?? match.team1Score ?? 0,
-      team2: liveStats?.team2SeriesScore ?? match.team2Score ?? 0,
-    };
-  }, [match, liveStats?.team1SeriesScore, liveStats?.team2SeriesScore]);
+
+    // Last resort: no series score and no map results yet.
+    return { team1: 0, team2: 0 };
+  }, [match, liveStats]);
 
   // Timer effect for live matches
   useEffect(() => {
@@ -175,18 +201,25 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       : mapResultsFallback;
   // For completed matches, always trust persisted map results / DB scores and
   // ignore any late or reset live stats that might report 0-0 after the fact.
-  if (match.status === 'completed' && match.mapResults && match.mapResults.length > 0) {
-    const fallbackResult = match.mapResults[match.mapResults.length - 1];
-    const completedMapNumber =
-      typeof activeMapNumber === 'number' ? activeMapNumber : fallbackResult.mapNumber;
-    const resultForScore =
-      match.mapResults.find((mr) => mr.mapNumber === completedMapNumber) ?? fallbackResult;
+  if (match.status === 'completed') {
+    if (match.mapResults && match.mapResults.length > 0) {
+      const fallbackResult = match.mapResults[match.mapResults.length - 1];
+      const completedMapNumber =
+        typeof activeMapNumber === 'number' ? activeMapNumber : fallbackResult.mapNumber;
+      const resultForScore =
+        match.mapResults.find((mr) => mr.mapNumber === completedMapNumber) ?? fallbackResult;
 
-    mapRoundsTeam1 = resultForScore.team1Score;
-    mapRoundsTeam2 = resultForScore.team2Score;
-    // Keep activeMapNumber consistent with whichever result we used
-    activeMapNumber = resultForScore.mapNumber;
-  } else if (match.status !== 'completed' && liveStats) {
+      mapRoundsTeam1 = resultForScore.team1Score;
+      mapRoundsTeam2 = resultForScore.team2Score;
+      // Keep activeMapNumber consistent with whichever result we used
+      activeMapNumber = resultForScore.mapNumber;
+    } else {
+      // We don't have per-map round scores here (only series wins), so avoid
+      // showing misleading "Map Rounds 1–2" by resetting map rounds to 0–0.
+      mapRoundsTeam1 = 0;
+      mapRoundsTeam2 = 0;
+    }
+  } else if (liveStats) {
     // While match is in progress, prefer live stats so the UI updates in real time.
     mapRoundsTeam1 = liveStats.team1Score ?? mapRoundsTeam1;
     mapRoundsTeam2 = liveStats.team2Score ?? mapRoundsTeam2;

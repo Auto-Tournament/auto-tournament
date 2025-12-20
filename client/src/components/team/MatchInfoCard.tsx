@@ -174,6 +174,7 @@ export function MatchInfoCard({
   };
 
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
+  const isCompletedMatch = match.status === 'completed';
 
   // Tournament Not Started - waiting for tournament to start
   if (
@@ -296,7 +297,10 @@ export function MatchInfoCard({
               leftSeriesWins={deriveSeriesWins.team1}
               rightSeriesWins={deriveSeriesWins.team2}
               liveStatusDisplay={liveStatusDisplay}
-              hideSeriesWins={isShuffleMatch}
+              // For completed matches, showing both "Series Maps Won" and "Map Rounds"
+              // can look like duplicated stats. Hide the series wins row and keep
+              // the per-map round result for the final map instead.
+              hideSeriesWins={isShuffleMatch || isCompletedMatch}
             />
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (

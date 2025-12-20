@@ -29,27 +29,6 @@ export default function Matches() {
     document.title = 'Matches';
   }, []);
 
-  // Download demo file
-  const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation(); // Prevent card click
-    }
-
-    if (!match.demoFilePath) return;
-
-    try {
-      // Create a temporary link to trigger download
-      const link = document.createElement('a');
-      link.href = `/api/demos/${match.slug}/download`;
-      link.download = match.demoFilePath;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('Error downloading demo:', err);
-    }
-  };
-
   // Initialize Socket.io connection
   useEffect(() => {
     // Connect to same origin - works in both dev (proxied) and production (Caddy)
@@ -340,7 +319,6 @@ export default function Matches() {
                           match={match}
                           matchNumber={matchNumber}
                           variant="completed"
-                          onDownloadDemo={(e) => handleDownloadDemo(match, e)}
                           onClick={() => setSelectedMatch(match)}
                         />
                         {match.completedAt && (

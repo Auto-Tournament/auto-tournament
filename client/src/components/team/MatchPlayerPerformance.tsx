@@ -22,19 +22,20 @@ interface MatchPlayerPerformanceProps {
   opponentName?: string | null;
 }
 
-function formatKdDiff(kills: number, deaths: number): string {
-  const diff = kills - deaths;
-  if (diff === 0) return '0';
-  return diff > 0 ? `+${diff}` : `${diff}`;
+function getAdrValue(player: PlayerLine): number {
+  if (!player.roundsPlayed) return 0;
+  return player.damage / Math.max(1, player.roundsPlayed);
 }
 
 function formatAdr(player: PlayerLine): string {
-  if (!player.roundsPlayed) return '—';
-  const adr = player.damage / Math.max(1, player.roundsPlayed);
+  const adr = getAdrValue(player);
+  if (!adr) return '—';
   return Math.round(adr).toString();
 }
 
 function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
+  const sortedRows = [...rows].sort((a, b) => getAdrValue(b) - getAdrValue(a));
+
   return (
     <TableContainer component={Paper} variant="outlined">
       <Table size="small">
@@ -44,7 +45,6 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
             <TableCell align="right">K</TableCell>
             <TableCell align="right">D</TableCell>
             <TableCell align="right">A</TableCell>
-            <TableCell align="right">+/-</TableCell>
             <TableCell align="right">ADR</TableCell>
             <TableCell align="right">MVP</TableCell>
           </TableRow>
@@ -59,9 +59,17 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
               </TableCell>
             </TableRow>
           ) : (
-            rows.map((player) => (
+            sortedRows.map((player) => (
               <TableRow key={player.steamId}>
-                <TableCell sx={{ fontWeight: 600 }}>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    maxWidth: 180,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
                   <Typography
                     variant="body2"
                     color={`${accent}.main`}
@@ -77,6 +85,7 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
                         textDecoration: 'underline',
                       },
                     }}
+                    noWrap
                   >
                     {player.name}
                   </Typography>
@@ -84,7 +93,6 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
                 <TableCell align="right">{player.kills}</TableCell>
                 <TableCell align="right">{player.deaths}</TableCell>
                 <TableCell align="right">{player.assists}</TableCell>
-                <TableCell align="right">{formatKdDiff(player.kills, player.deaths)}</TableCell>
                 <TableCell align="right">{formatAdr(player)}</TableCell>
                 <TableCell align="right">{player.mvps ?? 0}</TableCell>
               </TableRow>
