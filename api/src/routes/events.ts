@@ -28,7 +28,10 @@ const router = Router();
  * GET /api/events/test
  */
 router.get('/test', (_req: Request, res: Response) => {
-  res.send('hello - events route is working');
+  res.json({
+    success: true,
+    message: 'events route is working',
+  });
 });
 
 /**

@@ -317,8 +317,8 @@ const Development: React.FC = () => {
             // Re-use the shared dev name pools so test team players
             // look like real names instead of "Player 1/2/3".
             const firstIndex = globalIndex % DEV_FIRST_NAMES.length;
-            const lastIndex =
-              Math.floor(globalIndex / DEV_FIRST_NAMES.length) % DEV_LAST_NAMES.length;
+            // Use a separate cycle for last names so we don't end up with all "Smith"
+            const lastIndex = globalIndex % DEV_LAST_NAMES.length;
             const firstName = DEV_FIRST_NAMES[firstIndex];
             const lastName = DEV_LAST_NAMES[lastIndex];
 
@@ -449,8 +449,8 @@ const Development: React.FC = () => {
 
         // Generate a reasonably unique full name from the shared dev name pools
         const firstIndex = i % DEV_FIRST_NAMES.length;
-        const lastIndex =
-          Math.floor(i / DEV_FIRST_NAMES.length) % DEV_LAST_NAMES.length;
+        // Cycle last names independently so we don't get stuck on "Smith"
+        const lastIndex = i % DEV_LAST_NAMES.length;
         const firstName = DEV_FIRST_NAMES[firstIndex];
         const lastName = DEV_LAST_NAMES[lastIndex];
         const name = `${firstName} ${lastName}`;
