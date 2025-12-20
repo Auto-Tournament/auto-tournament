@@ -49,11 +49,6 @@ export const ServerEventsMonitor: React.FC = () => {
     }
   }, [events, autoScroll]);
 
-  // Load servers with events
-  useEffect(() => {
-    loadServers();
-  }, []);
-
   // Lightweight health check for events API so we can surface backend issues in the UI
   useEffect(() => {
     const checkEventsHealth = async () => {
@@ -127,7 +122,7 @@ export const ServerEventsMonitor: React.FC = () => {
     };
   }, [selectedServerId, isPaused]);
 
-  const loadServers = async () => {
+  const loadServers = useCallback(async () => {
     try {
       const response = await api.get<{
         success: boolean;
@@ -149,7 +144,12 @@ export const ServerEventsMonitor: React.FC = () => {
     } catch (err) {
       console.error('Failed to load servers:', err);
     }
-  };
+  }, [selectedServerId]);
+
+  // Load servers with events
+  useEffect(() => {
+    void loadServers();
+  }, [loadServers]);
 
   const loadEvents = useCallback(async () => {
     if (!selectedServerId) return;
@@ -422,31 +422,23 @@ const EventItem: React.FC<{
     setExpanded((prev) => !prev);
   };
 
+  const payload = event.event as Record<string, unknown>;
+
   // Many MatchZy events include map_number; surface it when present
-  const mapNumber =
-    typeof (event.event as { map_number?: unknown }).map_number === 'number'
-      ? ((event.event as { map_number: number }).map_number as number)
-      : undefined;
+  const rawMapNumber = payload['map_number'];
+  const mapNumber = typeof rawMapNumber === 'number' ? (rawMapNumber as number) : undefined;
 
   // Some events (round_*) also include round_number
+  const rawRoundNumber = payload['round_number'];
   const roundNumber =
-    typeof (event.event as { round_number?: unknown }).round_number === 'number'
-      ? ((event.event as { round_number: number }).round_number as number)
-      : undefined;
+    typeof rawRoundNumber === 'number' ? (rawRoundNumber as number) : undefined;
 
   // Many score-bearing events include team1_score / team2_score and sometimes
   // team1_series_score / team2_series_score – surface them when present
-  const {
-    team1_score: rawTeam1Score,
-    team2_score: rawTeam2Score,
-    team1_series_score: rawTeam1Series,
-    team2_series_score: rawTeam2Series,
-  } = event.event as {
-    team1_score?: unknown;
-    team2_score?: unknown;
-    team1_series_score?: unknown;
-    team2_series_score?: unknown;
-  };
+  const rawTeam1Score = payload['team1_score'];
+  const rawTeam2Score = payload['team2_score'];
+  const rawTeam1Series = payload['team1_series_score'];
+  const rawTeam2Series = payload['team2_series_score'];
 
   const hasMapScore =
     typeof rawTeam1Score === 'number' && typeof rawTeam2Score === 'number';
