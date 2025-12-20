@@ -509,21 +509,24 @@ class TournamentService {
       // Enrich match with player stats and scores from persisted events
       await enrichMatch(match, row.slug);
 
-      // Also overlay any in-memory live stats so the bracket immediately reflects
-      // the current series score / map wins on first page load, even before
-      // websocket updates arrive.
-      const liveStats = matchLiveStatsService.getStats(row.slug);
-      if (liveStats) {
-        // Prefer series scores (map wins in BO3/BO5); if not available, fall back
-        // to the current map score.
-        const liveTeam1 = liveStats.team1SeriesScore ?? liveStats.team1Score;
-        const liveTeam2 = liveStats.team2SeriesScore ?? liveStats.team2Score;
+      // For matches that are still in progress, optionally overlay in‑memory live
+      // stats so the bracket reflects the most recent series score / map wins.
+      // For completed matches we ALWAYS trust persisted results and DO NOT let
+      // transient live stats overwrite the final series score (e.g. 2–1).
+      if (row.status !== 'completed') {
+        const liveStats = matchLiveStatsService.getStats(row.slug);
+        if (liveStats) {
+          // Prefer series scores (map wins in BO3/BO5); if not available, fall back
+          // to the current map score.
+          const liveTeam1 = liveStats.team1SeriesScore ?? liveStats.team1Score;
+          const liveTeam2 = liveStats.team2SeriesScore ?? liveStats.team2Score;
 
-        if (typeof liveTeam1 === 'number') {
-          match.team1Score = liveTeam1;
-        }
-        if (typeof liveTeam2 === 'number') {
-          match.team2Score = liveTeam2;
+          if (typeof liveTeam1 === 'number') {
+            match.team1Score = liveTeam1;
+          }
+          if (typeof liveTeam2 === 'number') {
+            match.team2Score = liveTeam2;
+          }
         }
       }
 

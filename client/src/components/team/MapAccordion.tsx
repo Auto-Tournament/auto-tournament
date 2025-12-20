@@ -1,5 +1,14 @@
 import React from 'react';
-import { Accordion, AccordionSummary, AccordionDetails, Box, Typography, Button, Chip, Stack } from '@mui/material';
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Box,
+  Typography,
+  Button,
+  Chip,
+  Stack,
+} from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import DownloadIcon from '@mui/icons-material/Download';
 import { getMapData, getMapDisplayName } from '../../constants/maps';
@@ -14,6 +23,13 @@ interface MapAccordionProps {
   matchSlug: string;
   matchLoadedAt?: number;
   previousMapCompletedAt?: number;
+  /**
+   * Optional context: when rendered on a specific team's page, we know which
+   * side is "us" so we can show "Won"/"Lost" instead of "Team 1"/"Team 2".
+   */
+  viewingTeamName?: string;
+  opponentTeamName?: string;
+  viewingTeamIsTeam1?: boolean;
 }
 
 export function MapAccordion({
@@ -23,10 +39,45 @@ export function MapAccordion({
   matchSlug,
   matchLoadedAt,
   previousMapCompletedAt,
+  viewingTeamName,
+  opponentTeamName,
+  viewingTeamIsTeam1,
 }: MapAccordionProps) {
   const mapData = getMapData(mapName);
   const displayName = getMapDisplayName(mapName);
   const hasDemo = !!mapResult?.demoFilePath;
+
+  const hasTeamContext =
+    Boolean(viewingTeamName) &&
+    Boolean(opponentTeamName) &&
+    typeof viewingTeamIsTeam1 === 'boolean';
+
+  const viewingTeamWon =
+    hasTeamContext &&
+    mapResult?.winnerTeam &&
+    mapResult.winnerTeam !== 'none' &&
+    ((mapResult.winnerTeam === 'team1' && viewingTeamIsTeam1) ||
+      (mapResult.winnerTeam === 'team2' && !viewingTeamIsTeam1));
+
+  const viewingTeamLost =
+    hasTeamContext &&
+    mapResult?.winnerTeam &&
+    mapResult.winnerTeam !== 'none' &&
+    !viewingTeamWon;
+
+  const resultLabel = !mapResult
+    ? null
+    : hasTeamContext
+    ? viewingTeamWon
+      ? 'Won'
+      : viewingTeamLost
+      ? 'Lost'
+      : 'Draw'
+    : mapResult.winnerTeam === 'team1'
+    ? 'Team 1'
+    : mapResult.winnerTeam === 'team2'
+    ? 'Team 2'
+    : 'Draw';
 
   // Calculate map duration
   let duration: string | null = null;
@@ -81,11 +132,21 @@ export function MapAccordion({
                   variant="outlined"
                   sx={{ height: 20, fontSize: '0.75rem' }}
                 />
-                {mapResult.winnerTeam && (
+                {resultLabel && (
                   <Chip
-                    label={mapResult.winnerTeam === 'team1' ? 'Team 1' : mapResult.winnerTeam === 'team2' ? 'Team 2' : 'Draw'}
+                    label={resultLabel}
                     size="small"
-                    color={mapResult.winnerTeam === 'team1' || mapResult.winnerTeam === 'team2' ? 'success' : 'default'}
+                    color={
+                      hasTeamContext
+                        ? viewingTeamWon
+                          ? 'success'
+                          : viewingTeamLost
+                          ? 'error'
+                          : 'default'
+                        : mapResult.winnerTeam === 'team1' || mapResult.winnerTeam === 'team2'
+                        ? 'success'
+                        : 'default'
+                    }
                     sx={{ height: 20, fontSize: '0.75rem' }}
                   />
                 )}
@@ -158,17 +219,13 @@ export function MapAccordion({
                       {mapResult.team1Score} - {mapResult.team2Score}
                     </Typography>
                   </Box>
-                  {mapResult.winnerTeam && (
+                  {resultLabel && (
                     <Box display="flex" justifyContent="space-between">
                       <Typography variant="body2" fontWeight={500}>
-                        Winner:
+                        {hasTeamContext ? 'Result:' : 'Winner:'}
                       </Typography>
                       <Typography variant="body2">
-                        {mapResult.winnerTeam === 'team1'
-                          ? 'Team 1'
-                          : mapResult.winnerTeam === 'team2'
-                          ? 'Team 2'
-                          : 'Draw'}
+                        {resultLabel}
                       </Typography>
                     </Box>
                   )}

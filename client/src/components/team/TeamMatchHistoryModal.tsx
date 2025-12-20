@@ -187,12 +187,30 @@ export function TeamMatchHistoryModal({
                 </Typography>
                 <Stack spacing={1}>
                   {match.maps.map((mapName, index) => {
-                    const mapResult = match.mapResults?.find(
-                      (mr) => mr.mapNumber === index
-                    );
-                    const previousMapResult = index > 0
-                      ? match.mapResults?.find((mr) => mr.mapNumber === index - 1)
-                      : undefined;
+                    const mapResult = match.mapResults?.find((mr) => mr.mapNumber === index);
+                    const previousMapResult =
+                      index > 0 ? match.mapResults?.find((mr) => mr.mapNumber === index - 1) : undefined;
+
+                    const viewingTeamIsTeam1 =
+                      teamId && match.team1?.id && match.team1.id === teamId
+                        ? true
+                        : teamId && match.team2?.id && match.team2.id === teamId
+                        ? false
+                        : undefined;
+
+                    const viewingTeamName =
+                      viewingTeamIsTeam1 === undefined
+                        ? undefined
+                        : viewingTeamIsTeam1
+                        ? match.team1?.name
+                        : match.team2?.name;
+
+                    const opponentTeamName =
+                      viewingTeamIsTeam1 === undefined
+                        ? undefined
+                        : viewingTeamIsTeam1
+                        ? match.team2?.name
+                        : match.team1?.name;
 
                     return (
                       <MapAccordion
@@ -203,6 +221,9 @@ export function TeamMatchHistoryModal({
                         matchSlug={match.slug}
                         matchLoadedAt={match.loadedAt}
                         previousMapCompletedAt={previousMapResult?.completedAt}
+                        viewingTeamName={viewingTeamName}
+                        opponentTeamName={opponentTeamName}
+                        viewingTeamIsTeam1={viewingTeamIsTeam1}
                       />
                     );
                   })}

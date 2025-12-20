@@ -129,7 +129,12 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         });
         break;
       }
-      playerConnectionService.playerConnected(match.slug, steamId, playerInfo?.name || 'Unknown', team);
+      playerConnectionService.playerConnected(
+        match.slug,
+        steamId,
+        playerInfo?.name || 'Unknown',
+        team
+      );
       break;
     }
 
@@ -153,11 +158,7 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       if (!match || !steamId) {
         break;
       }
-      playerConnectionService.playerReady(
-        match.slug,
-        steamId,
-        event.event === 'player_ready'
-      );
+      playerConnectionService.playerReady(match.slug, steamId, event.event === 'player_ready');
       break;
     }
 
@@ -226,7 +227,7 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         mapNumber: eventData.map_number,
         score: `${eventData.team1_score}-${eventData.team2_score}`,
       });
-        const match = (await resolveMatch(event.matchid)) ?? null;
+      const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
         updateLiveStats(match, parseScorePayload(eventData, 'live'));
       }
@@ -294,13 +295,18 @@ async function resolveMatch(identifier: string | number): Promise<DbMatchRow | n
   const numericId = Number(identifierStr);
 
   if (!Number.isNaN(numericId)) {
-    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+      numericId,
+    ]);
     if (byId) {
       return byId;
     }
   }
 
-  return (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ?? null;
+  return (
+    (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ??
+    null
+  );
 }
 
 async function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): Promise<void> {
@@ -309,7 +315,9 @@ async function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']
   }
 
   await db.updateAsync('matches', { status }, 'id = ?', [match.id]);
-  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
+  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    match.id,
+  ]);
   if (updatedMatch) {
     emitMatchUpdate(updatedMatch);
     emitBracketUpdate({
@@ -401,7 +409,9 @@ function updateLiveStats(match: DbMatchRow, updates: Partial<MatchLiveStats>): v
   });
 }
 
-function extractPlayerStatsFromEvent(eventData: Record<string, unknown>): MatchPlayerStatsSnapshot | null {
+function extractPlayerStatsFromEvent(
+  eventData: Record<string, unknown>
+): MatchPlayerStatsSnapshot | null {
   const team1 = eventData.team1 as { players?: unknown[] } | undefined;
   const team2 = eventData.team2 as { players?: unknown[] } | undefined;
 
@@ -491,8 +501,15 @@ function parseScorePayload(
   if (roundNumber !== undefined) updates.roundNumber = roundNumber;
   if (team1Score !== undefined) updates.team1Score = team1Score;
   if (team2Score !== undefined) updates.team2Score = team2Score;
-  if (team1SeriesScore !== undefined) updates.team1SeriesScore = team1SeriesScore;
-  if (team2SeriesScore !== undefined) updates.team2SeriesScore = team2SeriesScore;
+  // Only update series scores when we have a positive value; this prevents
+  // resetting an already-correct series score (e.g., 1‑0 after Map 1) back
+  // to 0 when round events on the next map report series_score: 0.
+  if (team1SeriesScore !== undefined && team1SeriesScore > 0) {
+    updates.team1SeriesScore = team1SeriesScore;
+  }
+  if (team2SeriesScore !== undefined && team2SeriesScore > 0) {
+    updates.team2SeriesScore = team2SeriesScore;
+  }
   if (mapName !== undefined) updates.mapName = mapName;
 
   return updates;
@@ -530,7 +547,11 @@ async function handleMapCompletion(
     0;
   const winnerTeam =
     ((eventData.winner as { team?: string } | undefined)?.team as 'team1' | 'team2' | undefined) ??
-    (team1ScoreFinal === team2ScoreFinal ? 'none' : team1ScoreFinal > team2ScoreFinal ? 'team1' : 'team2');
+    (team1ScoreFinal === team2ScoreFinal
+      ? 'none'
+      : team1ScoreFinal > team2ScoreFinal
+      ? 'team1'
+      : 'team2');
 
   await recordMapResult({
     matchSlug: match.slug,
@@ -550,8 +571,7 @@ async function handleMapCompletion(
     extractNestedNumber(eventData, ['team2_series_score']) ??
     0;
 
-  const seriesFinished =
-    team1SeriesScore >= requiredWins || team2SeriesScore >= requiredWins;
+  const seriesFinished = team1SeriesScore >= requiredWins || team2SeriesScore >= requiredWins;
 
   const maxMapIndex = Math.max(0, totalMaps - 1);
   const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
@@ -677,7 +697,9 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
 
   // Emit match update
-  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [match.id]);
+  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    match.id,
+  ]);
   if (updatedMatch) {
     emitMatchUpdate(updatedMatch);
   }
@@ -688,9 +710,10 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   }
 
   // For double elimination, advance loser to losers bracket
-  const tournament = await db.queryOneAsync<{ type: string }>('SELECT type FROM tournament WHERE id = ?', [
-    match.tournament_id ?? 1,
-  ]);
+  const tournament = await db.queryOneAsync<{ type: string }>(
+    'SELECT type FROM tournament WHERE id = ?',
+    [match.tournament_id ?? 1]
+  );
   if (tournament?.type === 'double_elimination') {
     const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
     if (loserId) {
@@ -735,7 +758,11 @@ async function updateRatingsForMatch(
     const team2 = await teamService.getTeamById(match.team2_id);
 
     if (!team1 || !team2) {
-      log.warn('Cannot update ratings: teams not found', { matchSlug, team1_id: match.team1_id, team2_id: match.team2_id });
+      log.warn('Cannot update ratings: teams not found', {
+        matchSlug,
+        team1_id: match.team1_id,
+        team2_id: match.team2_id,
+      });
       return;
     }
 
@@ -895,7 +922,9 @@ async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
       const result = await advanceToNextRound();
 
       if (result) {
-        log.success(`Advanced to round ${result.roundNumber} with ${result.matches.length} matches`);
+        log.success(
+          `Advanced to round ${result.roundNumber} with ${result.matches.length} matches`
+        );
         // Emit bracket update for new matches
         emitBracketUpdate({ action: 'round_advanced', roundNumber: result.roundNumber });
 
@@ -903,40 +932,63 @@ async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
         try {
           const webhookUrl = await settingsService.getWebhookUrl();
           if (webhookUrl) {
-            log.info(`Auto-allocating servers to ${result.matches.length} new matches in round ${result.roundNumber}...`);
-            
+            log.info(
+              `Auto-allocating servers to ${result.matches.length} new matches in round ${result.roundNumber}...`
+            );
+
             // Allocate servers to all new matches
             const allocationResults = await Promise.allSettled(
               result.matches.map(async (match) => {
                 try {
-                  const allocationResult = await matchAllocationService.allocateSingleMatch(match.slug, webhookUrl);
+                  const allocationResult = await matchAllocationService.allocateSingleMatch(
+                    match.slug,
+                    webhookUrl
+                  );
                   if (allocationResult.success) {
-                    log.success(`Auto-allocated match ${match.slug} to server ${allocationResult.serverId}`);
-                    return { matchSlug: match.slug, success: true, serverId: allocationResult.serverId };
+                    log.success(
+                      `Auto-allocated match ${match.slug} to server ${allocationResult.serverId}`
+                    );
+                    return {
+                      matchSlug: match.slug,
+                      success: true,
+                      serverId: allocationResult.serverId,
+                    };
                   } else {
-                    log.warn(`Could not auto-allocate match ${match.slug}: ${allocationResult.error}`);
+                    log.warn(
+                      `Could not auto-allocate match ${match.slug}: ${allocationResult.error}`
+                    );
                     // Start polling for this match
                     matchAllocationService.startPollingForServer(match.slug, webhookUrl);
                     return { matchSlug: match.slug, success: false, error: allocationResult.error };
                   }
                 } catch (error) {
                   log.error(`Error allocating match ${match.slug}`, error);
-                  return { matchSlug: match.slug, success: false, error: error instanceof Error ? error.message : 'Unknown error' };
+                  return {
+                    matchSlug: match.slug,
+                    success: false,
+                    error: error instanceof Error ? error.message : 'Unknown error',
+                  };
                 }
               })
             );
 
-            const successful = allocationResults.filter((r) => r.status === 'fulfilled' && r.value.success).length;
+            const successful = allocationResults.filter(
+              (r) => r.status === 'fulfilled' && r.value.success
+            ).length;
             const failed = allocationResults.length - successful;
 
             if (successful > 0) {
               log.success(`Auto-allocated ${successful} match(es) to servers`);
             }
             if (failed > 0) {
-              log.info(`${failed} match(es) will be allocated when servers become available (polling started)`);
+              log.info(
+                `${failed} match(es) will be allocated when servers become available (polling started)`
+              );
             }
           } else {
-            log.warn('Webhook URL not configured - cannot auto-allocate servers to new round matches');
+            log.warn(
+              'Webhook URL not configured - cannot auto-allocate servers to new round matches'
+            );
           }
         } catch (error) {
           log.error('Error auto-allocating servers to new round matches', error);

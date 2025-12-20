@@ -173,6 +173,8 @@ export function MatchInfoCard({
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
+
   // Tournament Not Started - waiting for tournament to start
   if (
     tournamentStatus !== 'in_progress' &&
@@ -201,6 +203,31 @@ export function MatchInfoCard({
     );
   }
 
+  // Waiting for opponent: tournament live, this team is locked in, but the next-round
+  // opponent has not been decided yet. In this state we should NOT start veto.
+  if (
+    tournamentStatus === 'in_progress' &&
+    match.status === 'pending' &&
+    !hasBothTeamsAssigned &&
+    ['bo1', 'bo3', 'bo5'].includes(matchFormat)
+  ) {
+    return (
+      <Card>
+        <CardContent>
+          <Alert severity="info">
+            <Typography variant="body1" fontWeight={600} gutterBottom>
+              Waiting for Opponent
+            </Typography>
+            <Typography variant="body2">
+              You have advanced to the next round. Your next opponent is not decided yet, so map
+              veto will open once both teams are known.
+            </Typography>
+          </Alert>
+        </CardContent>
+      </Card>
+    );
+  }
+
   // Veto Phase - tournament started, show veto interface
   // Show veto interface if veto is not completed (check both state and match.veto.status)
   const isVetoNotCompleted = !vetoCompleted && match.veto?.status !== 'completed';
@@ -208,6 +235,7 @@ export function MatchInfoCard({
     tournamentStatus === 'in_progress' &&
     match.status === 'pending' &&
     isVetoNotCompleted &&
+    hasBothTeamsAssigned &&
     ['bo1', 'bo3', 'bo5'].includes(matchFormat)
   ) {
     return (

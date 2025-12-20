@@ -64,7 +64,9 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
     }
     if (!match) {
       match =
-        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [serverId])) ?? null;
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [
+          serverId,
+        ])) ?? null;
     }
 
     if (!match) {
@@ -161,7 +163,9 @@ async function handleEventRequest(
     const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
     const isNoMatch = actualMatchSlug === '-1';
 
-    console.log(`[EVENT] Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`);
+    console.log(
+      `[EVENT] Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`
+    );
     log.webhookReceived(event.event, actualMatchSlug);
 
     // Log full event payload
@@ -272,13 +276,18 @@ async function findMatchByIdentifier(identifier: string | number): Promise<DbMat
   const numericId = Number(identifierStr);
 
   if (!Number.isNaN(numericId)) {
-    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [numericId]);
+    const byId = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+      numericId,
+    ]);
     if (byId) {
       return byId;
     }
   }
 
-  return (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ?? null;
+  return (
+    (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ??
+    null
+  );
 }
 
 /**
@@ -338,20 +347,12 @@ router.get('/live/:matchSlug', (req: Request, res: Response) => {
     const stats = matchLiveStatsService.getStats(matchSlug);
 
     if (!stats) {
+      // No in‑memory live stats for this match (likely completed or server restarted).
+      // Return success: false so callers can fall back to persisted DB state
+      // instead of overwriting scores with 0‑0.
       return res.json({
-        success: true,
+        success: false,
         matchSlug,
-        team1Score: 0,
-        team2Score: 0,
-        team1SeriesScore: 0,
-        team2SeriesScore: 0,
-        roundNumber: 0,
-        mapNumber: 0,
-        status: 'warmup',
-        lastEventAt: Date.now(),
-        mapName: null,
-        totalMaps: 1,
-        playerStats: null,
       });
     }
 

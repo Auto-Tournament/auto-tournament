@@ -11,6 +11,7 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import { settingsService } from '../services/settingsService';
+import { autoCompleteVetoForMatch } from '../services/vetoSimulationService';
 
 /**
  * Advance winner to next match in bracket
@@ -163,6 +164,21 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
     const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
     if (!tournament) {
       log.error('Tournament not found');
+      return;
+    }
+
+    // In simulation mode, for BO formats that use veto, delegate to the
+    // automated veto simulator instead of directly marking the match as ready.
+    // This ensures that *all* rounds (r1, r2, etc.) go through the same
+    // auto-veto + auto-load flow once both teams are known.
+    const simulationEnabled = await settingsService.isSimulationModeEnabled();
+    const usesVeto =
+      tournament.format === 'bo1' || tournament.format === 'bo3' || tournament.format === 'bo5';
+    if (simulationEnabled && usesVeto) {
+      log.info(
+        `[VETO-SIM] Simulation mode active – auto-completing veto for newly ready match ${match.slug}`
+      );
+      await autoCompleteVetoForMatch(match.slug);
       return;
     }
 

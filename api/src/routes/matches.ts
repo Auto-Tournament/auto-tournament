@@ -20,6 +20,251 @@ import { getMapResults } from '../services/matchMapResultService';
 const router = Router();
 
 /**
+ * Helper: build a rich MatchListItem (teams, maps, results, players) for a single match row.
+ * This mirrors the shape used by GET /api/matches so team pages and history views
+ * get full details, not just raw config.
+ */
+async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null> {
+  // Fetch match with team and server info
+  const row = await db.queryOneAsync<
+    DbMatchRow & {
+      team1_id?: string;
+      team1_name?: string;
+      team1_tag?: string;
+      team2_id?: string;
+      team2_name?: string;
+      team2_tag?: string;
+      winner_id?: string;
+      winner_name?: string;
+      winner_tag?: string;
+      demo_file_path?: string;
+      server_name?: string | null;
+    }
+  >(
+    `
+      SELECT
+        m.*,
+        t1.id as team1_id, t1.name as team1_name, t1.tag as team1_tag,
+        t2.id as team2_id, t2.name as team2_name, t2.tag as team2_tag,
+        w.id as winner_id, w.name as winner_name, w.tag as winner_tag,
+        s.name as server_name
+      FROM matches m
+      LEFT JOIN teams t1 ON m.team1_id = t1.id
+      LEFT JOIN teams t2 ON m.team2_id = t2.id
+      LEFT JOIN teams w ON m.winner_id = w.id
+      LEFT JOIN servers s ON m.server_id = s.id
+      WHERE m.slug = ?
+      LIMIT 1
+    `,
+    [slug]
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  // Determine if this is a shuffle tournament (enables ELO enrichment)
+  const tournamentType = await db.queryOneAsync<{ type: string }>(
+    'SELECT type FROM tournament WHERE id = ?',
+    [row.tournament_id || 1]
+  );
+  const isShuffleTournament = tournamentType?.type === 'shuffle';
+
+  const config = row.config ? JSON.parse(row.config as string) : {};
+  const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
+
+  // Normalize players from config
+  const normalizedTeam1Players = config.team1
+    ? normalizeConfigPlayers(config.team1.players)
+    : [];
+  const normalizedTeam2Players = config.team2
+    ? normalizeConfigPlayers(config.team2.players)
+    : [];
+
+  // Enrich players with avatars from team records if team IDs are available
+  let enrichedTeam1Players = normalizedTeam1Players;
+  let enrichedTeam2Players = normalizedTeam2Players;
+
+  if (config.team1?.id && row.team1_id) {
+    try {
+      const team1Data = await teamService.getTeamById(config.team1.id);
+      if (team1Data?.players) {
+        const avatarMap = new Map(
+          team1Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+        );
+        enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
+          ...p,
+          avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+        }));
+      }
+    } catch (error) {
+      log.debug(
+        `Failed to enrich team1 players with avatars: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  if (config.team2?.id && row.team2_id) {
+    try {
+      const team2Data = await teamService.getTeamById(config.team2.id);
+      if (team2Data?.players) {
+        const avatarMap = new Map(
+          team2Data.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+        );
+        enrichedTeam2Players = normalizedTeam2Players.map((p) => ({
+          ...p,
+          avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+        }));
+      }
+    } catch (error) {
+      log.debug(
+        `Failed to enrich team2 players with avatars: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  // Transform config to include properly formatted team players with avatars
+  const transformedConfig = {
+    ...config,
+    team1: config.team1
+      ? {
+          ...config.team1,
+          players: enrichedTeam1Players,
+        }
+      : undefined,
+    team2: config.team2
+      ? {
+          ...config.team2,
+          players: enrichedTeam2Players,
+        }
+      : undefined,
+  };
+
+  const match: MatchListItem = {
+    id: row.id,
+    slug: row.slug,
+    round: row.round,
+    matchNumber: row.match_number,
+    team1:
+      row.team1_id && row.team1_name
+        ? {
+            id: row.team1_id,
+            name: row.team1_name,
+            tag: row.team1_tag,
+          }
+        : undefined,
+    team2:
+      row.team2_id && row.team2_name
+        ? {
+            id: row.team2_id,
+            name: row.team2_name,
+            tag: row.team2_tag,
+          }
+        : undefined,
+    winner:
+      row.winner_id && row.winner_name
+        ? {
+            id: row.winner_id,
+            name: row.winner_name,
+            tag: row.winner_tag,
+          }
+        : undefined,
+    status: row.status,
+    serverId: row.server_id,
+    serverName: row.server_name || undefined,
+    config: transformedConfig,
+    demoFilePath: row.demo_file_path,
+    createdAt: row.created_at ?? 0,
+    loadedAt: row.loaded_at,
+    completedAt: row.completed_at,
+    vetoCompleted: vetoState?.status === 'completed',
+    currentMap: row.current_map ?? undefined,
+    mapNumber: typeof row.map_number === 'number' ? row.map_number : undefined,
+    maps: undefined,
+  };
+
+  const mapResults = await getMapResults(row.slug);
+  if (mapResults.length > 0) {
+    match.mapResults = mapResults;
+  }
+
+  if (Array.isArray(vetoState?.pickedMaps) && vetoState.pickedMaps.length > 0) {
+    const orderedPickedMaps = [...vetoState.pickedMaps].sort(
+      (a: { mapNumber?: number }, b: { mapNumber?: number }) => (a.mapNumber || 0) - (b.mapNumber || 0)
+    );
+    const pickedMapNames = orderedPickedMaps
+      .map((m: { mapName?: string | null }) => m.mapName)
+      .filter((name): name is string => Boolean(name));
+    if (pickedMapNames.length > 0) {
+      match.maps = pickedMapNames;
+    }
+  }
+
+  if (!match.maps && mapResults.length > 0) {
+    const resultsMaps = mapResults
+      .map((result) => result.mapName)
+      .filter((name): name is string => Boolean(name));
+    if (resultsMaps.length > 0) {
+      match.maps = resultsMaps;
+    }
+  }
+
+  // Enrich match with player stats and scores from events
+  await enrichMatch(match, row.slug);
+
+  // For shuffle tournaments, enrich players with ELO
+  if (
+    isShuffleTournament &&
+    (enrichedTeam1Players.length > 0 || enrichedTeam2Players.length > 0)
+  ) {
+    try {
+      const allSteamIds = [
+        ...enrichedTeam1Players.map((p) => p.steamid),
+        ...enrichedTeam2Players.map((p) => p.steamid),
+      ];
+
+      if (allSteamIds.length > 0) {
+        const players = await playerService.getPlayersByIds(allSteamIds);
+        const eloMap = new Map(players.map((p) => [p.id.toLowerCase(), p.current_elo]));
+
+        // Add ELO to team1 players
+        enrichedTeam1Players = enrichedTeam1Players.map((p) => ({
+          ...p,
+          elo: eloMap.get(p.steamid.toLowerCase()),
+        }));
+
+        // Add ELO to team2 players
+        enrichedTeam2Players = enrichedTeam2Players.map((p) => ({
+          ...p,
+          elo: eloMap.get(p.steamid.toLowerCase()),
+        }));
+
+        // Update config with enriched players
+        if (transformedConfig.team1) {
+          transformedConfig.team1.players = enrichedTeam1Players;
+        }
+        if (transformedConfig.team2) {
+          transformedConfig.team2.players = enrichedTeam2Players;
+        }
+        match.config = transformedConfig;
+      }
+    } catch (error) {
+      log.debug(
+        `Failed to enrich players with ELO: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
+
+  return match;
+}
+
+/**
  * GET /api/matches/:slug.json
  * Protected endpoint for MatchZy to fetch match configuration
  * Returns a FRESH, on-demand config assembled from DB (reads veto_state)
@@ -386,7 +631,7 @@ router.get('/', async (req: Request, res: Response) => {
 router.get('/:slug', async (req: Request, res: Response) => {
   try {
     const { slug } = req.params;
-    const match = await matchService.getMatchBySlug(slug, getBaseUrl(req));
+    const match = await getMatchDetailsBySlug(slug);
 
     if (!match) {
       return res.status(404).json({

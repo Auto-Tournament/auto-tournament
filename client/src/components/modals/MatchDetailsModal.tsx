@@ -154,9 +154,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   if (!match) return null;
 
-  const mapRoundsTeam1 = liveStats?.team1Score ?? match.team1Score ?? 0;
-  const mapRoundsTeam2 = liveStats?.team2Score ?? match.team2Score ?? 0;
-  const activeMapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
+  // Start from DB-backed scores
+  let mapRoundsTeam1 = match.team1Score ?? 0;
+  let mapRoundsTeam2 = match.team2Score ?? 0;
+  let activeMapNumber: number | null = match.mapNumber ?? null;
   const mapList = Array.isArray(match.config?.maplist) ? match.config.maplist : [];
   const configMaps =
     Array.isArray(match.config?.maplist) && match.config?.maplist.length > 0
@@ -172,6 +173,26 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       : Array.isArray(match.maps) && match.maps.length > 0
       ? match.maps
       : mapResultsFallback;
+  // For completed matches, always trust persisted map results / DB scores and
+  // ignore any late or reset live stats that might report 0-0 after the fact.
+  if (match.status === 'completed' && match.mapResults && match.mapResults.length > 0) {
+    const fallbackResult = match.mapResults[match.mapResults.length - 1];
+    const completedMapNumber =
+      typeof activeMapNumber === 'number' ? activeMapNumber : fallbackResult.mapNumber;
+    const resultForScore =
+      match.mapResults.find((mr) => mr.mapNumber === completedMapNumber) ?? fallbackResult;
+
+    mapRoundsTeam1 = resultForScore.team1Score;
+    mapRoundsTeam2 = resultForScore.team2Score;
+    // Keep activeMapNumber consistent with whichever result we used
+    activeMapNumber = resultForScore.mapNumber;
+  } else if (match.status !== 'completed' && liveStats) {
+    // While match is in progress, prefer live stats so the UI updates in real time.
+    mapRoundsTeam1 = liveStats.team1Score ?? mapRoundsTeam1;
+    mapRoundsTeam2 = liveStats.team2Score ?? mapRoundsTeam2;
+    activeMapNumber = liveStats.mapNumber ?? activeMapNumber;
+  }
+
   const activeMapKey =
     liveStats?.mapName ||
     match.currentMap ||
