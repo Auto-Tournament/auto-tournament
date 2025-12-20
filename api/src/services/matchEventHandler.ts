@@ -612,6 +612,10 @@ async function handleMapCompletion(
   const mapResults = await getMapResults(match.slug);
   emitMatchUpdate({
     slug: match.slug,
+    // Update live series score on all clients (including bracket view) as soon
+    // as a map ends, so BO3s show 1‑0 / 1‑1 / 2‑1 in real time.
+    team1Score: team1SeriesScore,
+    team2Score: team2SeriesScore,
     liveStats: nextStats,
     mapResults,
   });
@@ -696,12 +700,25 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
 
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
 
-  // Emit match update
+  // Emit match + bracket updates so all UIs (including bracket view) can react
   const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
     match.id,
   ]);
   if (updatedMatch) {
-    emitMatchUpdate(updatedMatch);
+    // Emit a rich payload with series score so bracket/matches views can update immediately
+    emitMatchUpdate({
+      id: updatedMatch.id,
+      slug: updatedMatch.slug,
+      status: updatedMatch.status,
+      team1Score,
+      team2Score,
+      winnerId,
+    });
+    emitBracketUpdate({
+      action: 'match_status',
+      matchSlug: updatedMatch.slug,
+      status: updatedMatch.status,
+    });
   }
 
   // If this match has a next_match_id, advance the winner
@@ -848,9 +865,26 @@ async function trackPlayerStatsForMatch(
 
     // Store stats for team1 players
     for (const player of team1.players) {
-      const stats = team1PlayerStats[player.steamId] || {};
-      const roundsPlayed = stats.rounds_played || stats.roundsPlayed || 0;
-      const adr = roundsPlayed > 0 ? (stats.damage || 0) / roundsPlayed : 0;
+      const stats = (team1PlayerStats[player.steamId] || {}) as {
+        rounds_played?: number;
+        roundsPlayed?: number;
+        damage?: number;
+        kills?: number;
+        deaths?: number;
+        assists?: number;
+        headshot_kills?: number;
+        headshotKills?: number;
+        flash_assists?: number;
+        flashAssists?: number;
+        utility_damage?: number;
+        utilityDamage?: number;
+        kast?: number;
+        mvp?: number;
+        mvps?: number;
+        score?: number;
+      };
+      const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
+      const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
 
       await db.insertAsync('player_match_stats', {
         player_id: player.steamId,
@@ -875,9 +909,26 @@ async function trackPlayerStatsForMatch(
 
     // Store stats for team2 players
     for (const player of team2.players) {
-      const stats = team2PlayerStats[player.steamId] || {};
-      const roundsPlayed = stats.rounds_played || stats.roundsPlayed || 0;
-      const adr = roundsPlayed > 0 ? (stats.damage || 0) / roundsPlayed : 0;
+      const stats = (team2PlayerStats[player.steamId] || {}) as {
+        rounds_played?: number;
+        roundsPlayed?: number;
+        damage?: number;
+        kills?: number;
+        deaths?: number;
+        assists?: number;
+        headshot_kills?: number;
+        headshotKills?: number;
+        flash_assists?: number;
+        flashAssists?: number;
+        utility_damage?: number;
+        utilityDamage?: number;
+        kast?: number;
+        mvp?: number;
+        mvps?: number;
+        score?: number;
+      };
+      const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
+      const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
 
       await db.insertAsync('player_match_stats', {
         player_id: player.steamId,
