@@ -110,6 +110,29 @@ export default function BracketsViewerVisualization({
     });
   }, [findOriginalMatch]);
 
+  const updateLiveRoundStyles = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Clear previous state
+    container
+      .querySelectorAll<HTMLElement>('.round--live')
+      .forEach((roundEl) => roundEl.classList.remove('round--live'));
+    container
+      .querySelectorAll<HTMLElement>('.match--live')
+      .forEach((matchEl) => matchEl.classList.remove('match--live'));
+
+    // Mark live matches and their rounds
+    const liveMatches = container.querySelectorAll<HTMLElement>('.match[data-match-status="1"]');
+    liveMatches.forEach((matchEl) => {
+      matchEl.classList.add('match--live');
+      const roundEl = matchEl.closest<HTMLElement>('.round');
+      if (roundEl) {
+        roundEl.classList.add('round--live');
+      }
+    });
+  }, []);
+
   const viewerData = useMemo(() => {
     if (matches.length === 0) {
       matchLookupRef.current.clear();
@@ -473,6 +496,7 @@ export default function BracketsViewerVisualization({
           container.style.setProperty('--border-selected-color', theme.palette.primary.main);
           container.style.setProperty('--win-color', theme.palette.success.main);
           container.style.setProperty('--loss-color', theme.palette.error.main);
+          container.style.setProperty('--live-border-color', theme.palette.primary.main);
         }
 
         const transformInstance = transformRef.current;
@@ -484,6 +508,7 @@ export default function BracketsViewerVisualization({
         }
 
         updateMatchClickTargets();
+        updateLiveRoundStyles();
       } catch (error) {
         console.error('Error rendering bracket:', error);
       }
@@ -498,7 +523,15 @@ export default function BracketsViewerVisualization({
         container.innerHTML = '';
       }
     };
-  }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch, updateMatchClickTargets]);
+  }, [
+    viewerData,
+    theme,
+    onMatchClick,
+    centerMatch,
+    findOriginalMatch,
+    updateMatchClickTargets,
+    updateLiveRoundStyles,
+  ]);
 
   return (
     <Box
