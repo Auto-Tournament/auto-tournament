@@ -450,34 +450,40 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
                 {/* Scores */}
                 <Box textAlign="center" minWidth={120}>
-                  <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
-                    <Typography
-                      variant="h2"
-                      fontWeight={700}
-                      sx={{
-                        color:
-                          match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
-                      }}
-                    >
-                      {seriesWinsTeam1}
-                    </Typography>
-                    <Typography variant="h3" color="text.disabled">
-                      -
-                    </Typography>
-                    <Typography
-                      variant="h2"
-                      fontWeight={700}
-                      sx={{
-                        color:
-                          match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
-                      }}
-                    >
-                      {seriesWinsTeam2}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary" mt={1}>
-                    Series Maps Won
-                  </Typography>
+                  {/* Hide series wins row for completed matches to avoid duplicated stats;
+                      while live, show current series score (e.g. 1–0 when entering Map 2). */}
+                  {match.status !== 'completed' && (
+                    <>
+                      <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
+                        <Typography
+                          variant="h2"
+                          fontWeight={700}
+                          sx={{
+                            color:
+                              match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
+                          }}
+                        >
+                          {seriesWinsTeam1}
+                        </Typography>
+                        <Typography variant="h3" color="text.disabled">
+                          -
+                        </Typography>
+                        <Typography
+                          variant="h2"
+                          fontWeight={700}
+                          sx={{
+                            color:
+                              match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
+                          }}
+                        >
+                          {seriesWinsTeam2}
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" mt={1}>
+                        Series Maps Won
+                      </Typography>
+                    </>
+                  )}
                   <Box display="flex" alignItems="center" justifyContent="center" gap={2} mt={1}>
                     <Typography
                       variant="h4"

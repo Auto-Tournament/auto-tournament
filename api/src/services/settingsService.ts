@@ -163,8 +163,8 @@ class SettingsService {
     if (Number.isFinite(parsed) && parsed > 0) {
       return Math.round(parsed);
     }
-    // Fallback to FaceIT-style default
-    return 3000;
+    // Fallback to OpenSkill-mapped default (fresh player ≈ 500 ELO on our scale)
+    return 500;
   }
 
   async getMatchzyChatPrefix(): Promise<string | null> {
