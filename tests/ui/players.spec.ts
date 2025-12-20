@@ -120,6 +120,11 @@ test.describe.serial('Player Management UI', () => {
       });
       expect(testPlayer).toBeTruthy();
 
+      if (!testPlayer) {
+        test.skip();
+        return;
+      }
+
       await page.goto('/players');
       await page.waitForLoadState('networkidle');
 
