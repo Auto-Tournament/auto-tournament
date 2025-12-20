@@ -180,11 +180,17 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       : null);
   const currentMapLabel = activeMapKey ? getMapDisplayName(activeMapKey) || activeMapKey : null;
   const roundNumber = liveStats?.roundNumber ?? null;
-  const totalMapCount =
-    liveStats?.totalMaps ??
+
+  // Prefer the configured number of maps (BO1/BO3/BO5) when available,
+  // and fall back to liveStats.totalMaps only when config is missing.
+  const configuredTotalMaps =
     match.config?.num_maps ??
     (mapList.length > 0 ? mapList.length : match.mapResults?.length) ??
     undefined;
+
+  const totalMapCount =
+    (configuredTotalMaps && configuredTotalMaps > 0 ? configuredTotalMaps : undefined) ??
+    (liveStats?.totalMaps && liveStats.totalMaps > 0 ? liveStats.totalMaps : undefined);
 
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
@@ -248,7 +254,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         </DialogTitle>
         <DialogContent>
           <Stack spacing={3} mt={1}>
-
             {/* Status and Timer */}
             <Box
               display="flex"
@@ -503,20 +508,21 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             {/* Player Roster
                 For shuffle tournaments, we already know the teams before server allocation,
                 so show the roster even while matches are still pending. */}
-            {match.config && (isShuffleMatch || match.status === 'loaded' || match.status === 'live') && (
-              <>
-                <Divider />
-                <Box>
-                  <PlayerRoster
-                    team1Name={match.team1?.name || 'Team 1'}
-                    team2Name={match.team2?.name || 'Team 2'}
-                    team1Players={match.config?.team1?.players || []}
-                    team2Players={match.config?.team2?.players || []}
-                    connectedPlayers={connectionStatus?.connectedPlayers || []}
-                  />
-                </Box>
-              </>
-            )}
+            {match.config &&
+              (isShuffleMatch || match.status === 'loaded' || match.status === 'live') && (
+                <>
+                  <Divider />
+                  <Box>
+                    <PlayerRoster
+                      team1Name={match.team1?.name || 'Team 1'}
+                      team2Name={match.team2?.name || 'Team 2'}
+                      team1Players={match.config?.team1?.players || []}
+                      team2Players={match.config?.team2?.players || []}
+                      connectedPlayers={connectionStatus?.connectedPlayers || []}
+                    />
+                  </Box>
+                </>
+              )}
 
             {/* Player Leaderboards */}
             {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
