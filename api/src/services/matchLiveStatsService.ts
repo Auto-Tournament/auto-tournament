@@ -81,6 +81,13 @@ class MatchLiveStatsService {
       log.debug('Cleared live stats for match', { matchSlug });
     }
   }
+
+  clearAll(): void {
+    if (this.stats.size > 0) {
+      this.stats.clear();
+      log.debug('Cleared live stats for all matches');
+    }
+  }
 }
 
 export const matchLiveStatsService = new MatchLiveStatsService();

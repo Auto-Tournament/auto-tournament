@@ -367,6 +367,9 @@ class TournamentService {
     // Delete all matches (this also clears all veto states stored in matches)
     await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
 
+    // Also clear any in-memory live stats so new brackets don't inherit stale scores
+    matchLiveStatsService.clearAll();
+
     // Shuffle tournaments have their own dynamic match/round generation and
     // temporary teams. Resetting should NOT attempt to regenerate a static bracket.
     if (tournament.type === 'shuffle') {
