@@ -30,7 +30,7 @@ const LIVE_STATUS_DISPLAY: Record<
   live: { label: 'Live', chipColor: 'success' },
   halftime: { label: 'Halftime', chipColor: 'warning' },
   // Map just ended; server is cleaning up or preparing next map
-  postgame: { label: 'Between Maps', chipColor: 'default' },
+  postgame: { label: 'Map finished – waiting for next map', chipColor: 'default' },
 };
 
 export function MatchInfoCard({
@@ -273,7 +273,7 @@ export function MatchInfoCard({
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
               <Typography variant="body2" color="text.secondary" mt={1}>
-                Current map has finished. The server is preparing the next map in this series.
+                Map finished. Waiting for next map in this series...
               </Typography>
             )}
 
