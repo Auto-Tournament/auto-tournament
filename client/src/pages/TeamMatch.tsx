@@ -179,8 +179,6 @@ export default function TeamMatch() {
           <Stack spacing={3}>
             <TeamSoundControls team={team} />
 
-            <PlayerRosterCard team={team} />
-
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
@@ -193,8 +191,10 @@ export default function TeamMatch() {
               </CardContent>
             </Card>
 
+            <PlayerRosterCard team={team} />
+
             <TeamStatsCard stats={stats} standing={standing} />
-            <TeamMatchHistoryCard matchHistory={matchHistory} />
+            <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
         </Container>
       </Box>
