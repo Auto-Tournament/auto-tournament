@@ -28,19 +28,39 @@ function createPinoLogger() {
 
   const pino = require('pino');
 
+  // In development we prefer pretty-printed logs, but only if the
+  // optional `pino-pretty` dependency is actually available. In
+  // bundled / slim images we don't ship it, so we must gracefully
+  // fall back to JSON to avoid hard crashes like:
+  // "unable to determine transport target for \"pino-pretty\"".
+  let transport: unknown = undefined;
+
+  if (isDevelopment) {
+    try {
+      // Throws if pino-pretty cannot be resolved at runtime
+      // (e.g. in the minimal Docker release image).
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      require.resolve('pino-pretty');
+
+      transport = {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
+          ignore: 'pid,hostname',
+          singleLine: false,
+        },
+      };
+    } catch {
+      // Silent fallback: keep transport undefined so we emit JSON logs.
+      // This keeps containers healthy even without pino-pretty installed.
+      transport = undefined;
+    }
+  }
+
   return pino({
     level: process.env.LOG_LEVEL || 'info',
-    transport: isDevelopment
-      ? {
-          target: 'pino-pretty',
-          options: {
-            colorize: true,
-            translateTime: 'UTC:yyyy-MM-dd HH:mm:ss',
-            ignore: 'pid,hostname',
-            singleLine: false,
-          },
-        }
-      : undefined, // Production: undefined = JSON output (industry standard)
+    transport,
   });
 }
 
