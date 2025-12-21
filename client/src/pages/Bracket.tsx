@@ -62,6 +62,13 @@ export default function Bracket() {
   const [shuffleTotalRounds, setShuffleTotalRounds] = useState<number | null>(null);
   const fullscreenRef = useRef<globalThis.HTMLDivElement>(null);
   const selectedMatchIdRef = useRef<number | null>(null);
+  const [allocationCountdown, setAllocationCountdown] = useState<{
+    nextAllocationInSeconds: number | null;
+    gracePeriodSeconds: number;
+  }>({
+    nextAllocationInSeconds: null,
+    gracePeriodSeconds: 300,
+  });
 
   // Derive the current match from matches array (automatically updates when matches change),
   // but allow overriding with a richer version loaded from /api/matches/:slug when needed.
@@ -105,15 +112,67 @@ export default function Bracket() {
         }
       };
 
+      const loadAllocationStatus = async () => {
+        try {
+          const availability = await api.get<{
+            success: boolean;
+            availableServerCount: number;
+            gracePeriodSeconds?: number;
+            nextAllocationInSeconds?: number | null;
+          }>('/api/tournament/server-availability');
+
+          if (availability.success) {
+            setAllocationCountdown({
+              gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+              nextAllocationInSeconds:
+                typeof availability.nextAllocationInSeconds === 'number'
+                  ? availability.nextAllocationInSeconds
+                  : null,
+            });
+          }
+        } catch (err) {
+          console.error('Failed to load allocation status:', err);
+        }
+      };
+
       loadRoundStatus();
-      // Refresh every 30 seconds
-      const interval = setInterval(loadRoundStatus, 30000);
+      loadAllocationStatus();
+
+      // Refresh round+allocation status every 30 seconds
+      const interval = setInterval(() => {
+        void loadRoundStatus();
+        void loadAllocationStatus();
+      }, 30000);
       return () => clearInterval(interval);
     }
     // Non-shuffle or no tournament:
     // We intentionally do not reset shuffle-specific state here; guards below ensure
     // it is only used when the current tournament is a shuffle tournament.
   }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps]);
+
+  // Local per‑second countdown tick for "next allocation in" display
+  useEffect(() => {
+    if (
+      allocationCountdown.nextAllocationInSeconds === null ||
+      allocationCountdown.nextAllocationInSeconds <= 0
+    ) {
+      return;
+    }
+
+    const timer = setInterval(
+      () =>
+        setAllocationCountdown((prev) => ({
+          ...prev,
+          nextAllocationInSeconds:
+            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
+              ? prev.nextAllocationInSeconds - 1
+              : 0,
+        })),
+      1000
+    );
+
+    return () => clearInterval(timer);
+  }, [allocationCountdown.nextAllocationInSeconds]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -318,6 +377,45 @@ export default function Bracket() {
     return getRoundLabel(round, effectiveTotalRounds);
   };
 
+  // For shuffle tournaments, keep using the backend-provided round metadata
+  // (current round number + map), but recompute completed/pending counts from
+  // the live matches array so "Match Progress" and chip breakdown update
+  // in real time.
+  const liveRoundStatus =
+    tournament.type === 'shuffle' && roundStatus
+      ? (() => {
+          const activeRound = roundStatus.roundNumber;
+          const matchesInRound = matches.filter((m) => m.round === activeRound);
+          const totalMatchesForRound =
+            matchesInRound.length > 0 ? matchesInRound.length : roundStatus.totalMatches;
+          const completedMatchesForRound = matchesInRound.filter(
+            (m) => m.status === 'completed'
+          ).length;
+
+          // Split non‑completed matches into "playing" (loaded/live) vs "pending"
+          // (pending/ready/waiting for server).
+          const playingMatchesForRound = matchesInRound.filter(
+            (m) => m.status === 'live' || m.status === 'loaded'
+          ).length;
+          const pendingMatchesForRound =
+            totalMatchesForRound > 0
+              ? totalMatchesForRound - completedMatchesForRound - playingMatchesForRound
+              : roundStatus.pendingMatches;
+          const isCompleteForRound =
+            totalMatchesForRound > 0 && completedMatchesForRound === totalMatchesForRound;
+
+          return {
+            ...roundStatus,
+            totalMatches: totalMatchesForRound,
+            completedMatches: completedMatchesForRound,
+            pendingMatches: pendingMatchesForRound,
+            isComplete: isCompleteForRound,
+            playingMatches: playingMatchesForRound,
+            waitingMatches: pendingMatchesForRound,
+          };
+        })()
+      : null;
+
   return (
     <Box
       ref={fullscreenRef}
@@ -448,11 +546,12 @@ export default function Bracket() {
       )}
 
       {/* Round Status for Shuffle Tournaments */}
-      {tournament.type === 'shuffle' && roundStatus && (
+      {tournament.type === 'shuffle' && liveRoundStatus && (
         <RoundStatusCard
-          roundStatus={roundStatus}
+          roundStatus={liveRoundStatus}
           totalRounds={shuffleTotalRounds ?? totalRounds}
-          isActive={!roundStatus.isComplete}
+          isActive={!liveRoundStatus.isComplete}
+          allocationCountdownSeconds={allocationCountdown.nextAllocationInSeconds}
         />
       )}
 

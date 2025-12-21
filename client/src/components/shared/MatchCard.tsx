@@ -1,11 +1,6 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
-import {
-  getStatusColor,
-  getStatusLabel,
-  getDetailedStatusLabel,
-  getRoundLabel,
-} from '../../utils/matchUtils';
+import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
 import type { Match } from '../../types';
 
 interface MatchCardProps {
@@ -80,34 +75,54 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'TBD';
   };
 
-  // Derive series maps won (BO formats) for display on the card.
-  // Cards should always show **map wins**, not round scores.
-  let seriesMapsTeam1: number | undefined =
-    typeof match.team1Score === 'number' ? match.team1Score : undefined;
-  let seriesMapsTeam2: number | undefined =
-    typeof match.team2Score === 'number' ? match.team2Score : undefined;
+  // Score display logic:
+  // - While a match is LIVE/LOADED, cards should show current **map rounds** (e.g. 8‑5)
+  //   so they match the live modal.
+  // - Once a match is COMPLETED, cards should show the final **series result** in maps
+  //   (e.g. 1‑0, 2‑1) for BO formats.
+  const deriveSeriesMaps = () => {
+    let seriesMapsTeam1: number | undefined =
+      typeof match.team1Score === 'number' ? match.team1Score : undefined;
+    let seriesMapsTeam2: number | undefined =
+      typeof match.team2Score === 'number' ? match.team2Score : undefined;
 
-  // Fallback: if series scores are missing, derive from mapResults
-  if (
-    (seriesMapsTeam1 === undefined || seriesMapsTeam2 === undefined) &&
-    match.mapResults &&
-    match.mapResults.length > 0
-  ) {
-    const derived = match.mapResults.reduce(
-      (acc, result) => {
-        if (result.team1Score > result.team2Score) acc.team1 += 1;
-        else if (result.team2Score > result.team1Score) acc.team2 += 1;
-        return acc;
-      },
-      { team1: 0, team2: 0 }
-    );
-    seriesMapsTeam1 = derived.team1;
-    seriesMapsTeam2 = derived.team2;
-  }
+    // Fallback: if series scores are missing, derive from mapResults
+    if (
+      (seriesMapsTeam1 === undefined || seriesMapsTeam2 === undefined) &&
+      match.mapResults &&
+      match.mapResults.length > 0
+    ) {
+      const derived = match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) acc.team1 += 1;
+          else if (result.team2Score > result.team1Score) acc.team2 += 1;
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+      seriesMapsTeam1 = derived.team1;
+      seriesMapsTeam2 = derived.team2;
+    }
+
+    return { seriesMapsTeam1, seriesMapsTeam2 };
+  };
+
+  const { seriesMapsTeam1, seriesMapsTeam2 } = deriveSeriesMaps();
+
+  const team1IsWinner = isWinner(match.team1?.id);
+  const team2IsWinner = isWinner(match.team2?.id);
 
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
-    const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
-    return typeof seriesScore === 'number' ? seriesScore : undefined;
+    // For completed matches, prioritize series map wins (e.g. 1‑0, 2‑1).
+    if (match.status === 'completed') {
+      const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
+      return typeof seriesScore === 'number' ? seriesScore : undefined;
+    }
+
+    // For live/loaded/ready/pending matches, show current map rounds (e.g. 8‑5)
+    // using the DB-backed scores which the backend keeps in sync with liveStats.
+    const roundsScore = team === 'team1' ? match.team1Score : match.team2Score;
+    return typeof roundsScore === 'number' ? roundsScore : undefined;
   };
 
   return (
@@ -177,12 +192,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
-                fontWeight={isWinner(match.team1?.id) ? 600 : 500}
+                fontWeight={team1IsWinner ? 600 : 500}
                 sx={{ color: getTeamTextColor(match.team1?.id) }}
               >
                 {getTeamName(match.team1?.id)}
               </Typography>
-              {isWinner(match.team1?.id) && (
+              {team1IsWinner && (
                 <Chip
                   label="WINNER"
                   size="small"
@@ -199,7 +214,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               <Typography
                 variant="h6"
                 fontWeight={700}
-                sx={{ minWidth: 24, textAlign: 'right', ml: 1 }}
+                sx={{
+                  minWidth: 24,
+                  textAlign: 'right',
+                  ml: 1,
+                  // On the green winner background we want a dark score color
+                  // for better contrast; on non-winner rows keep the default.
+                  color: team1IsWinner ? 'grey.900' : 'text.primary',
+                }}
               >
                 {getTeamScoreDisplay('team1')}
               </Typography>
@@ -222,12 +244,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
-                fontWeight={isWinner(match.team2?.id) ? 600 : 500}
+                fontWeight={team2IsWinner ? 600 : 500}
                 sx={{ color: getTeamTextColor(match.team2?.id) }}
               >
                 {getTeamName(match.team2?.id)}
               </Typography>
-              {isWinner(match.team2?.id) && (
+              {team2IsWinner && (
                 <Chip
                   label="WINNER"
                   size="small"
@@ -244,7 +266,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               <Typography
                 variant="h6"
                 fontWeight={700}
-                sx={{ minWidth: 24, textAlign: 'right', ml: 1 }}
+                sx={{
+                  minWidth: 24,
+                  textAlign: 'right',
+                  ml: 1,
+                  color: team2IsWinner ? 'grey.900' : 'text.primary',
+                }}
               >
                 {getTeamScoreDisplay('team2')}
               </Typography>

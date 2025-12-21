@@ -23,10 +23,16 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
-  const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
   const [createMatchOpen, setCreateMatchOpen] = useState(false);
   const { showSuccess } = useSnackbar();
+  const [allocationCountdown, setAllocationCountdown] = useState<{
+    nextAllocationInSeconds: number | null;
+    gracePeriodSeconds: number;
+  }>({
+    nextAllocationInSeconds: null,
+    gracePeriodSeconds: 300,
+  });
 
   // Set dynamic page title
   useEffect(() => {
@@ -45,32 +51,48 @@ export default function Matches() {
     newSocket.on(
       'match:update',
       (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
-        const matchSlug = 'slug' in data ? data.slug : undefined;
-
         // Handle connection status updates
         if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
-          setConnectionCounts((prev) => {
-            const updated = new Map(prev);
-            updated.set(matchSlug!, data.connectionStatus!.totalConnected);
-            return updated;
-          });
+          // We still accept connection status payloads here for backward
+          // compatibility, but the Matches list no longer uses the aggregate
+          // counts directly. The detailed Team view pulls live connection
+          // status from its own hook.
           return;
         }
 
-        const match = data as Match;
+        const match = data as Match & {
+          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
+        };
 
         const matchIdOrSlugEquals = (m: Match) =>
           (match.id !== undefined && m.id === match.id) ||
           (!!match.slug && !!m.slug && m.slug === match.slug);
 
-        const upsertMatch = (list: Match[], updatedMatch: Match) => {
+        const applyLiveScoreOverlay = (base: Match, updates: typeof match): Match => {
+          const next: Match = { ...base, ...updates };
+          const liveStats = updates.liveStats;
+          if (liveStats && next.status !== 'completed') {
+            // For in‑progress matches, use current map rounds from liveStats so
+            // match cards show 8‑5 / 13‑7 etc. instead of staying at 0‑0 until
+            // the map completes. Completed matches keep their persisted series score.
+            if (typeof liveStats.team1Score === 'number') {
+              next.team1Score = liveStats.team1Score;
+            }
+            if (typeof liveStats.team2Score === 'number') {
+              next.team2Score = liveStats.team2Score;
+            }
+          }
+          return next;
+        };
+
+        const upsertMatch = (list: Match[], updatedMatch: typeof match) => {
           const index = list.findIndex(matchIdOrSlugEquals);
           if (index !== -1) {
             const updated = [...list];
-            updated[index] = { ...updated[index], ...updatedMatch };
+            updated[index] = applyLiveScoreOverlay(updated[index], updatedMatch);
             return updated;
           }
-          return [...list, updatedMatch];
+          return [...list, applyLiveScoreOverlay(updatedMatch as Match, updatedMatch)];
         };
 
         const removeMatch = (list: Match[]) =>
@@ -88,9 +110,11 @@ export default function Matches() {
           setMatchHistory((prev) => {
             const exists = prev.some(matchIdOrSlugEquals);
             if (exists) {
-              return prev.map((m) => (matchIdOrSlugEquals(m) ? { ...m, ...match } : m));
+              return prev.map((m) =>
+                matchIdOrSlugEquals(m) ? applyLiveScoreOverlay(m, match) : m
+              );
             }
-            return [match, ...prev];
+            return [applyLiveScoreOverlay(match as Match, match), ...prev];
           });
         }
       }
@@ -113,6 +137,63 @@ export default function Matches() {
       newSocket.disconnect();
     };
   }, []);
+
+  // Poll allocation status periodically so we can show a lightweight
+  // "next servers in Xs" indicator on the Matches page.
+  useEffect(() => {
+    const loadAllocationStatus = async () => {
+      try {
+        const availability = await api.get<{
+          success: boolean;
+          availableServerCount: number;
+          gracePeriodSeconds?: number;
+          nextAllocationInSeconds?: number | null;
+        }>('/api/tournament/server-availability');
+
+        if (availability.success) {
+          setAllocationCountdown({
+            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+            nextAllocationInSeconds:
+              typeof availability.nextAllocationInSeconds === 'number'
+                ? availability.nextAllocationInSeconds
+                : null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load allocation status for Matches page:', err);
+      }
+    };
+
+    void loadAllocationStatus();
+    const interval = setInterval(() => {
+      void loadAllocationStatus();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Local per‑second tick for countdown on this page
+  useEffect(() => {
+    if (
+      allocationCountdown.nextAllocationInSeconds === null ||
+      allocationCountdown.nextAllocationInSeconds <= 0
+    ) {
+      return;
+    }
+
+    const timer = setInterval(
+      () =>
+        setAllocationCountdown((prev) => ({
+          ...prev,
+          nextAllocationInSeconds:
+            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
+              ? prev.nextAllocationInSeconds - 1
+              : 0,
+        })),
+      1000
+    );
+
+    return () => clearInterval(timer);
+  }, [allocationCountdown.nextAllocationInSeconds]);
 
   // Fetch matches
   const fetchMatches = async () => {
@@ -205,13 +286,16 @@ export default function Matches() {
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
 
-      {/* Manual match creation */}
-      <Box display="flex" justifyContent="flex-end" mb={3}>
-        <Button
-          variant="contained"
-          size="small"
-          onClick={() => setCreateMatchOpen(true)}
-        >
+      {/* Manual match creation + allocation countdown */}
+      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+        {allocationCountdown.nextAllocationInSeconds !== null &&
+          allocationCountdown.nextAllocationInSeconds > 0 && (
+            <Typography variant="body2" color="text.secondary">
+              Next servers allocated in{' '}
+              <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+            </Typography>
+          )}
+        <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
           Create Match
         </Button>
       </Box>

@@ -19,18 +19,36 @@ interface RoundStatus {
   pendingMatches: number;
   isComplete: boolean;
   map: string;
+  // Optional finer‑grained breakdown for in‑progress rounds.
+  // When provided, we render "X playing" for active matches and reserve
+  // "pending" only for matches that haven't started / are waiting for a server.
+  playingMatches?: number;
+  waitingMatches?: number;
 }
 
 interface RoundStatusCardProps {
   roundStatus: RoundStatus;
   totalRounds: number;
   isActive?: boolean;
+  allocationCountdownSeconds?: number | null;
 }
 
-export function RoundStatusCard({ roundStatus, totalRounds, isActive = false }: RoundStatusCardProps) {
-  const completionPercentage = roundStatus.totalMatches > 0
-    ? (roundStatus.completedMatches / roundStatus.totalMatches) * 100
-    : 0;
+export function RoundStatusCard({
+  roundStatus,
+  totalRounds,
+  isActive = false,
+  allocationCountdownSeconds,
+}: RoundStatusCardProps) {
+  const completionPercentage =
+    roundStatus.totalMatches > 0
+      ? (roundStatus.completedMatches / roundStatus.totalMatches) * 100
+      : 0;
+
+  const playingCount = roundStatus.playingMatches ?? 0;
+  const waitingCount =
+    roundStatus.waitingMatches !== undefined
+      ? roundStatus.waitingMatches
+      : roundStatus.pendingMatches;
 
   return (
     <Card variant="outlined" sx={{ mb: 2 }}>
@@ -86,19 +104,37 @@ export function RoundStatusCard({ roundStatus, totalRounds, isActive = false }: 
           </Box>
 
           {/* Match Status Summary */}
-          <Box display="flex" gap={2}>
+          <Box display="flex" gap={2} flexWrap="wrap">
             <Chip
               label={`${roundStatus.completedMatches} completed`}
               size="small"
               color="success"
               variant="outlined"
             />
-            <Chip
-              label={`${roundStatus.pendingMatches} pending`}
-              size="small"
-              color="warning"
-              variant="outlined"
-            />
+            {playingCount > 0 && (
+              <Chip
+                label={`${playingCount} playing`}
+                size="small"
+                color="primary"
+                variant="outlined"
+              />
+            )}
+            {waitingCount > 0 && (
+              <Chip
+                label={`${waitingCount} pending`}
+                size="small"
+                color="warning"
+                variant="outlined"
+              />
+            )}
+            {allocationCountdownSeconds !== null && allocationCountdownSeconds > 0 && (
+              <Chip
+                label={`Next servers in ${Math.max(0, allocationCountdownSeconds)}s`}
+                size="small"
+                color="info"
+                variant="outlined"
+              />
+            )}
           </Box>
 
           {roundStatus.isComplete && (

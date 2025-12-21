@@ -241,6 +241,9 @@ export default function Settings() {
       isDev,
       showSuccess,
       showError,
+      showSnackbar,
+      initialSimulateMatches,
+      initialSimulationTimescale,
     ]
   );
 

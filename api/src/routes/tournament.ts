@@ -576,10 +576,12 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
  */
 router.get('/server-availability', requireAuth, async (_req: Request, res: Response) => {
   try {
-    const count = await matchAllocationService.getAvailableServerCount();
+    const status = await matchAllocationService.getAllocationStatus();
     return res.json({
       success: true,
-      availableServerCount: count,
+      availableServerCount: status.availableServerCount,
+      gracePeriodSeconds: status.gracePeriodSeconds,
+      nextAllocationInSeconds: status.nextAllocationInSeconds,
     });
   } catch (error) {
     log.error('Error checking server availability', error);

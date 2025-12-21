@@ -48,6 +48,102 @@ export class MatchAllocationService {
   }
 
   /**
+   * Get high-level allocation status for UI:
+   * - availableServerCount: number of servers that can be allocated *right now*
+   * - gracePeriodSeconds: the effective grace period currently in use
+   * - nextAllocationInSeconds: if all servers are in a grace window, the number
+   *   of seconds until the *first* server exits that window and becomes
+   *   eligible for allocation again. Returns null when no grace window applies.
+   */
+  async getAllocationStatus(): Promise<{
+    availableServerCount: number;
+    gracePeriodSeconds: number;
+    nextAllocationInSeconds: number | null;
+  }> {
+    const enabledServers = await serverService.getAllServers(true);
+    const candidateServers = enabledServers.filter(
+      (server) => !serverAllocationTracker.isBusy(server.id)
+    );
+
+    const statusChecks = await Promise.all(
+      candidateServers.map(async (server) => {
+        try {
+          const connectionResult = await rconService.testConnection(server.id);
+
+          if (!connectionResult.success) {
+            return {
+              server,
+              status: null as ServerStatus | null,
+              matchSlug: null as string | null,
+              updatedAt: null as number | null,
+              online: false,
+            };
+          }
+
+          const serverStatus = await serverStatusService.getServerStatus(server.id);
+          return {
+            server,
+            ...serverStatus,
+          };
+        } catch {
+          return {
+            server,
+            status: null as ServerStatus | null,
+            matchSlug: null as string | null,
+            updatedAt: null as number | null,
+            online: false,
+          };
+        }
+      })
+    );
+
+    let onlineServers = statusChecks.filter((s) => s.online);
+    onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
+
+    const isSimulation = await settingsService.isSimulationModeEnabled();
+    const GRACE_PERIOD_SECONDS = isSimulation
+      ? MatchAllocationService.SIMULATION_GRACE_PERIOD_SECONDS
+      : MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
+    const now = Math.floor(Date.now() / 1000);
+
+    let availableServerCount = 0;
+    let nextAllocationInSeconds: number | null = null;
+
+    for (const check of onlineServers) {
+      const { status, matchSlug, updatedAt } = check;
+
+      const isEffectivelyIdle =
+        status === ServerStatus.IDLE || status === ServerStatus.POSTGAME || status === null;
+      if (!isEffectivelyIdle) {
+        continue;
+      }
+
+      if (updatedAt) {
+        const age = now - updatedAt;
+        if (age < GRACE_PERIOD_SECONDS) {
+          const remaining = GRACE_PERIOD_SECONDS - age;
+
+          // If there is at least one server still in its grace window, we
+          // track the *minimum* remaining time so the UI can show a single
+          // countdown until the next allocation attempt is allowed.
+          if (nextAllocationInSeconds === null || remaining < nextAllocationInSeconds) {
+            nextAllocationInSeconds = remaining;
+          }
+          continue;
+        }
+      }
+
+      availableServerCount += 1;
+    }
+
+    return {
+      availableServerCount,
+      gracePeriodSeconds: GRACE_PERIOD_SECONDS,
+      nextAllocationInSeconds,
+    };
+  }
+
+  /**
    * Get all available servers (enabled, online, and ready for allocation)
    * Uses MatchZy's matchzy_tournament_status convar to determine availability
    *

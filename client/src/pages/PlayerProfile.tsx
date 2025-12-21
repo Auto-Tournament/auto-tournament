@@ -78,6 +78,13 @@ export default function PlayerProfile() {
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
   const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
   const [selectedMatch, setSelectedMatch] = useState<MatchHistoryEntry | null>(null);
+  const [allocationCountdown, setAllocationCountdown] = useState<{
+    nextAllocationInSeconds: number | null;
+    gracePeriodSeconds: number;
+  }>({
+    nextAllocationInSeconds: null,
+    gracePeriodSeconds: 300,
+  });
 
   // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
   const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
@@ -257,6 +264,63 @@ export default function PlayerProfile() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId]);
 
+  // Poll allocation status periodically so players can see when the next servers
+  // will be assigned for upcoming rounds/matches.
+  useEffect(() => {
+    const loadAllocationStatus = async () => {
+      try {
+        const availability = await api.get<{
+          success: boolean;
+          availableServerCount: number;
+          gracePeriodSeconds?: number;
+          nextAllocationInSeconds?: number | null;
+        }>('/api/tournament/server-availability');
+
+        if (availability.success) {
+          setAllocationCountdown({
+            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+            nextAllocationInSeconds:
+              typeof availability.nextAllocationInSeconds === 'number'
+                ? availability.nextAllocationInSeconds
+                : null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load allocation status for Player page:', err);
+      }
+    };
+
+    void loadAllocationStatus();
+    const interval = setInterval(() => {
+      void loadAllocationStatus();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Local per‑second countdown tick for this page
+  useEffect(() => {
+    if (
+      allocationCountdown.nextAllocationInSeconds === null ||
+      allocationCountdown.nextAllocationInSeconds <= 0
+    ) {
+      return;
+    }
+
+    const timer = setInterval(
+      () =>
+        setAllocationCountdown((prev) => ({
+          ...prev,
+          nextAllocationInSeconds:
+            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
+              ? prev.nextAllocationInSeconds - 1
+              : 0,
+        })),
+      1000
+    );
+
+    return () => clearInterval(timer);
+  }, [allocationCountdown.nextAllocationInSeconds]);
+
   const getRoundLabel = (round: number) => {
     if (round === 1) return 'Round 1';
     if (round === 2) return 'Round 2';
@@ -393,6 +457,13 @@ export default function PlayerProfile() {
                         View Tournament Leaderboard
                       </Button>
                     )}
+                    {allocationCountdown.nextAllocationInSeconds !== null &&
+                      allocationCountdown.nextAllocationInSeconds > 0 && (
+                        <Typography variant="body2" color="text.secondary">
+                          Next servers allocated in{' '}
+                          <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+                        </Typography>
+                      )}
                   </Box>
                 </Box>
               </Box>

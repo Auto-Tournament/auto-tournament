@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const useBracket = () => {
-  const { showSuccess, showError, showWarning, showSnackbar } = useSnackbar();
+  const { showSuccess, showError, showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -14,7 +14,7 @@ export const useBracket = () => {
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
 
-  const loadBracket = async () => {
+  const loadBracket = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -50,7 +50,7 @@ export const useBracket = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const startTournament = async () => {
     setStarting(true);
@@ -137,6 +137,32 @@ export const useBracket = () => {
         if (typeof team2Score === 'number' && team2Score !== current.team2Score) {
           next.team2Score = team2Score;
           changed = true;
+        }
+
+        // If we received liveStats with a current map score, overlay those
+        // for in-progress matches so the bracket cards can display live
+        // map rounds (e.g. 8‑5) instead of staying at 0‑0 until the map
+        // finishes. For completed matches we always trust the persisted
+        // series result and never override it with live stats.
+        const liveStats = (payload as {
+          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
+        }).liveStats;
+        const effectiveStatus = newStatus ?? current.status;
+        if (liveStats && effectiveStatus !== 'completed') {
+          if (
+            typeof liveStats.team1Score === 'number' &&
+            liveStats.team1Score !== next.team1Score
+          ) {
+            next.team1Score = liveStats.team1Score;
+            changed = true;
+          }
+          if (
+            typeof liveStats.team2Score === 'number' &&
+            liveStats.team2Score !== next.team2Score
+          ) {
+            next.team2Score = liveStats.team2Score;
+            changed = true;
+          }
         }
 
         const winnerId =
@@ -306,7 +332,7 @@ export const useBracket = () => {
       newSocket.off('bracket:update', handleBracketUpdate);
       newSocket.close();
     };
-  }, []);
+  }, [loadBracket, showSuccess, showSnackbar]);
 
   return {
     loading,

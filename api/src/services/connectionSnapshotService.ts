@@ -10,7 +10,6 @@ import {
 } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
-import { db } from '../config/database';
 
 export type MatchReport = {
   match?: {
