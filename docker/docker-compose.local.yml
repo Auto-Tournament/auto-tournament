@@ -44,7 +44,9 @@ services:
     ports:
       - '${HOST_PORT:-3069}:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     environment:
-      - NODE_ENV=production
+      # Treat local Docker stack as a development environment so that
+      # dev-only features like simulation mode can be enabled from Settings.
+      - NODE_ENV=development
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-admin123}
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
