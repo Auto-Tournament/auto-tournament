@@ -90,7 +90,9 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(new Map());
+  const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(
+    new Map()
+  );
 
   const resetForm = () => {
     setBaseName('');
@@ -193,12 +195,15 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       const serverName = `${baseName.trim()} #${i + 1}`;
 
       try {
-        const result = await api.post('/api/rcon/test-connection', {
-          host: host.trim(),
-          port: portNum,
-          password: password.trim(),
-          name: serverName,
-        });
+        const result = await api.post<{ success: boolean; error?: string }>(
+          '/api/rcon/test-connection',
+          {
+            host: host.trim(),
+            port: portNum,
+            password: password.trim(),
+            name: serverName,
+          }
+        );
 
         newStatuses.set(i, {
           index: i,
@@ -270,9 +275,13 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       }
     }
 
+    // Connectivity verification is recommended but not mandatory.
+    // If some servers failed verification, warn the admin but allow pre-saving
+    // so servers can be configured ahead of time (e.g. before LAN setup is online).
     if (!allServersVerified()) {
-      showWarning('Please verify all servers before creating');
-      return;
+      showWarning(
+        'Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured.'
+      );
     }
 
     setSaving(true);
@@ -313,7 +322,9 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
         onSave();
         handleClose();
       } else {
-        const errorMessage = `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`;
+        const errorMessage = `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join(
+          '\n'
+        )}`;
         setError(errorMessage);
         showError(errorMessage);
       }
@@ -348,8 +359,8 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>
           <Alert severity="info">
-            Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...).
-            Perfect for LAN setups with servers on the same machine.
+            Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect
+            for LAN setups with servers on the same machine.
           </Alert>
 
           {/* Server Identification Group */}
@@ -497,13 +508,14 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
                             htmlInput: { min: 1, max: 65535 },
                           }}
                           InputProps={{
-                            endAdornment: status === 'checking' ? (
-                              <CircularProgress size={16} />
-                            ) : status === 'success' ? (
-                              <ArrowUpwardIcon color="success" fontSize="small" />
-                            ) : status === 'error' ? (
-                              <ErrorIcon color="error" fontSize="small" />
-                            ) : null,
+                            endAdornment:
+                              status === 'checking' ? (
+                                <CircularProgress size={16} />
+                              ) : status === 'success' ? (
+                                <ArrowUpwardIcon color="success" fontSize="small" />
+                              ) : status === 'error' ? (
+                                <ErrorIcon color="error" fontSize="small" />
+                              ) : null,
                           }}
                           helperText={
                             verification?.status === 'error'
