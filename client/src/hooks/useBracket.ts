@@ -5,7 +5,7 @@ import type { Match, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const useBracket = () => {
-  const { showSuccess, showError } = useSnackbar();
+  const { showSuccess, showError, showWarning, showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tournament, setTournament] = useState<Tournament | null>(null);
@@ -103,11 +103,14 @@ export const useBracket = () => {
         const next: Match = { ...current };
         let changed = false;
 
+        let newStatus: Match['status'] | undefined;
+
         const status =
           (payload.status as Match['status'] | undefined) ??
           ((payload as { match_status?: string }).match_status as Match['status'] | undefined);
         if (status && status !== current.status) {
           next.status = status;
+          newStatus = status;
           changed = true;
         }
 
@@ -155,6 +158,22 @@ export const useBracket = () => {
           return prev;
         }
 
+        // Emit snackbars for key match lifecycle transitions
+        if (newStatus === 'completed') {
+          const winnerName = next.winner?.name;
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          showSuccess(
+            winnerName
+              ? `Match completed: ${label} – ${winnerName} won`
+              : `Match completed: ${label}`
+          );
+        } else if (newStatus === 'live') {
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          showSnackbar(`Match is now live: ${label}`, 'info');
+        }
+
         const clone = [...prev];
         clone[index] = next;
         return clone;
@@ -170,6 +189,12 @@ export const useBracket = () => {
 
       if (status) {
         setTournament((prev) => (prev ? { ...prev, status } : prev));
+
+        if (status === 'completed') {
+          showSuccess('Tournament completed! All matches are finished.');
+        } else if (status === 'in_progress' && action === 'tournament_started') {
+          showSuccess('Tournament started – Round 1 is now live.');
+        }
       }
 
       const requiresFullReload = !action
@@ -186,6 +211,14 @@ export const useBracket = () => {
           ].includes(action);
 
       if (requiresFullReload) {
+        if (
+          action === 'round_advanced' &&
+          typeof (event as { roundNumber?: number }).roundNumber === 'number'
+        ) {
+          const roundNumber = (event as { roundNumber: number }).roundNumber;
+          showSnackbar(`Round ${roundNumber} generated – matches are ready to allocate.`, 'info');
+        }
+
         loadBracket();
         return;
       }
@@ -238,6 +271,19 @@ export const useBracket = () => {
         }
 
         if (!changed) return prev;
+
+        if (action === 'server_assigned' || action === 'match_allocated') {
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          const id =
+            (event.serverId as string | undefined) ??
+            (event as { server_id?: string }).server_id ??
+            undefined;
+          showSnackbar(
+            id ? `Allocated server ${id} to match ${label}` : `Allocated server to match ${label}`,
+            'info'
+          );
+        }
         const clone = [...prev];
         clone[index] = next;
         return clone;

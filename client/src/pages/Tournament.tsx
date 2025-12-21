@@ -549,10 +549,7 @@ const Tournament: React.FC = () => {
         success: boolean;
         tournament: unknown;
         error?: string;
-      }>(
-        '/api/tournament/shuffle',
-        payload
-      );
+      }>('/api/tournament/shuffle', payload);
 
       if (response.success) {
         const minPlayers = (shuffleSettings.teamSize || 5) * 2;
@@ -721,7 +718,8 @@ const Tournament: React.FC = () => {
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
         showSuccess(`Tournament started! ${allocated} matches allocated to servers`);
-        // Stay on current view; users can navigate to the bracket from dashboard or bracket link
+        // Refresh tournament data so the UI transitions into the live management view
+        await refreshData();
       } else {
         const message = (response as { message?: string }).message || 'Failed to start tournament';
         showError(message);
@@ -854,7 +852,7 @@ const Tournament: React.FC = () => {
               registeredPlayerCount={
                 tournament.type === 'shuffle' ? registeredPlayerCount : undefined
               }
-            hasBracket={hasBracket}
+              hasBracket={hasBracket}
               onEdit={() => setIsEditing(true)}
               onStart={handleStart}
               onRegenerate={() => setShowRegenerateConfirm(true)}

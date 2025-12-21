@@ -66,7 +66,7 @@ function a11yProps(index: number) {
 
 export default function Settings() {
   const { setHeaderActions } = usePageHeader();
-  const { showSuccess, showError } = useSnackbar();
+  const { showSuccess, showError, showSnackbar } = useSnackbar();
   const [webhookUrl, setWebhookUrl] = useState('');
   const [steamApiKey, setSteamApiKey] = useState('');
   const [loading, setLoading] = useState(true);
@@ -180,6 +180,11 @@ export default function Settings() {
           response.settings.matchzyKnifeEnabledDefault !== undefined
             ? response.settings.matchzyKnifeEnabledDefault
             : true;
+        // Compute deltas before updating state
+        const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
+        const timescaleChanged =
+          isDev && newTimescale !== initialSimulationTimescale;
+
         setWebhookUrl(newWebhook);
         setSteamApiKey(newSteamKey);
         setInitialWebhookUrl(newWebhook);
@@ -197,6 +202,20 @@ export default function Settings() {
 
         if (showSuccessMessage) {
           showSuccess('Settings saved');
+
+          if (simulationToggled) {
+            showSnackbar(
+              newSimulate
+                ? `Simulation mode enabled${isDev ? ` at ${newTimescale.toFixed(1)}x speed` : ''}`
+                : 'Simulation mode disabled',
+              'info'
+            );
+          } else if (timescaleChanged && newSimulate) {
+            showSnackbar(
+              `Simulation timescale updated to ${newTimescale.toFixed(1)}x`,
+              'info'
+            );
+          }
         }
 
         window.dispatchEvent(

@@ -25,6 +25,7 @@ export default function Matches() {
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
   const [createMatchOpen, setCreateMatchOpen] = useState(false);
+  const { showSuccess } = useSnackbar();
 
   // Set dynamic page title
   useEffect(() => {
@@ -358,8 +359,9 @@ export default function Matches() {
       <CreateManualMatchModal
         open={createMatchOpen}
         onClose={() => setCreateMatchOpen(false)}
-        onCreated={() => {
+        onCreated={(slug) => {
           setCreateMatchOpen(false);
+          showSuccess(`Manual match created: ${slug}`);
           void fetchMatches();
         }}
       />
