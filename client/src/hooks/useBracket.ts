@@ -136,6 +136,22 @@ export const useBracket = () => {
           changed = true;
         }
 
+        const winnerId =
+          (payload.winnerId as string | undefined) ||
+          ((payload as { winner_id?: string }).winner_id ?? undefined);
+        if (winnerId && (!current.winner || current.winner.id !== winnerId)) {
+          const winnerTeam =
+            current.team1?.id === winnerId
+              ? current.team1
+              : current.team2?.id === winnerId
+              ? current.team2
+              : undefined;
+          if (winnerTeam) {
+            next.winner = winnerTeam;
+            changed = true;
+          }
+        }
+
         if (!changed) {
           return prev;
         }
