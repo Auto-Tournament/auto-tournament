@@ -183,7 +183,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2" gutterBottom>
             Import players from JSON or CSV format. Required fields: <strong>steamId</strong>,{' '}
-            <strong>name</strong>. Optional: <strong>initialELO</strong> (defaults to 3000),{' '}
+            <strong>name</strong>. Optional: <strong>initialELO</strong> (defaults to 1500),{' '}
             <strong>avatarUrl</strong>.
           </Typography>
           <Typography variant="caption" component="div">
@@ -211,7 +211,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
           rows={10}
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
-          placeholder={`JSON format:\n[\n  {\n    "steamId": "76561198012345678",\n    "name": "Player One",\n    "initialELO": 3000,\n    "avatarUrl": "https://..."\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,3000,https://...`}
+          placeholder={`JSON format:\n[\n  {\n    "steamId": "76561198012345678",\n    "name": "Player One",\n    "initialELO": 1500,\n    "avatarUrl": "https://..."\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://...`}
           sx={{ mb: 2, fontFamily: 'monospace' }}
         />
 

@@ -257,7 +257,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               helperText={
                 isEditing
                   ? "Changing ELO will reset the player's rating and stats. This action cannot be undone."
-                  : 'Leave empty to use default (3000).'
+                  : 'Leave empty to use default (1500 Skill Rating).'
               }
             />
 

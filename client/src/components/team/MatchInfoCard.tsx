@@ -4,6 +4,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
+import { getStatusColor } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchRosterAccordion } from './MatchRosterAccordion';
@@ -23,14 +24,18 @@ interface MatchInfoCardProps {
 
 const LIVE_STATUS_DISPLAY: Record<
   MatchLiveStats['status'],
-  { label: string; chipColor: 'success' | 'info' | 'warning' | 'default' }
+  { label: string; chipColor: 'default' | 'error' | 'info' | 'success' | 'warning' }
 > = {
-  warmup: { label: 'Warmup', chipColor: 'info' },
-  knife: { label: 'Knife Round', chipColor: 'warning' },
-  live: { label: 'Live', chipColor: 'success' },
-  halftime: { label: 'Halftime', chipColor: 'warning' },
+  // Warmup / between-maps states share the same soft blue "pre-live" tone
+  warmup: { label: 'Warmup', chipColor: getStatusColor('loaded') },
+  knife: { label: 'Knife Round', chipColor: getStatusColor('ready') },
+  live: { label: 'Live', chipColor: getStatusColor('live') },
+  halftime: { label: 'Halftime', chipColor: getStatusColor('live') },
   // Map just ended; server is cleaning up or preparing next map
-  postgame: { label: 'Map finished – waiting for next map', chipColor: 'default' },
+  postgame: {
+    label: 'Map finished – waiting for next map',
+    chipColor: getStatusColor('loaded'),
+  },
 };
 
 export function MatchInfoCard({

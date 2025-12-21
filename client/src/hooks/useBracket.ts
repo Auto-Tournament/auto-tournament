@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
@@ -12,6 +12,7 @@ export const useBracket = () => {
   const [matches, setMatches] = useState<Match[]>([]);
   const [totalRounds, setTotalRounds] = useState(0);
   const [starting, setStarting] = useState(false);
+  const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
 
   const loadBracket = async () => {
     setLoading(true);
@@ -190,11 +191,18 @@ export const useBracket = () => {
       if (status) {
         setTournament((prev) => (prev ? { ...prev, status } : prev));
 
-        if (status === 'completed') {
+        const prevStatus = lastTournamentStatusRef.current;
+        // Only announce tournament completion once per transition into "completed"
+        if (status === 'completed' && prevStatus !== 'completed') {
           showSuccess('Tournament completed! All matches are finished.');
         } else if (status === 'in_progress' && action === 'tournament_started') {
-          showSuccess('Tournament started – Round 1 is now live.');
+          // Guard against duplicate "tournament started" toasts as well
+          if (prevStatus !== 'in_progress') {
+            showSuccess('Tournament started – Round 1 is now live.');
+          }
         }
+
+        lastTournamentStatusRef.current = status;
       }
 
       const requiresFullReload = !action

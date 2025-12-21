@@ -144,7 +144,9 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           <Chip
             data-testid="tournament-status"
             label={tournament.status === 'in_progress' ? 'LIVE' : 'COMPLETED'}
-            color={tournament.status === 'in_progress' ? 'warning' : 'success'}
+          // Use the same pastel red/pink accent as other LIVE indicators,
+          // and mint green for completed tournaments.
+          color={tournament.status === 'in_progress' ? 'error' : 'success'}
           />
         </Box>
 

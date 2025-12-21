@@ -1,7 +1,5 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import { LinearProgress } from '@mui/material';
 import {
   getStatusColor,
   getStatusLabel,
@@ -15,9 +13,6 @@ interface MatchCardProps {
   matchNumber: number; // Global match number
   roundLabel?: string; // Optional custom round label
   variant?: 'live' | 'completed' | 'default'; // Visual variant
-  playerCount?: number; // Current player count
-  liveScores?: { team1Score?: number; team2Score?: number }; // Live scores
-  showPlayerProgress?: boolean; // Show player connection progress bar
   vetoCompleted?: boolean; // Whether veto is complete
   tournamentStarted?: boolean; // Whether tournament has started
   onClick?: () => void;
@@ -28,9 +23,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   matchNumber,
   roundLabel,
   variant = 'default',
-  playerCount,
-  liveScores,
-  showPlayerProgress = false,
   vetoCompleted,
   tournamentStarted,
   onClick,
@@ -43,7 +35,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       return 'success.main';
     }
     if (match.status === 'completed') return 'success.main';
-    if (match.status === 'live') return 'warning.main';
+    // Use the same pastel red accent for LIVE across all match cards
+    if (match.status === 'live') return 'error.main';
+    // Loaded = warmup (soft blue), ready/pending stay neutral
     if (match.status === 'loaded') return 'info.main';
     return 'grey.300';
   };
@@ -86,36 +80,34 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'TBD';
   };
 
-  const expectedPlayers = match.config?.expected_players_total || 10;
-  const playerProgress = playerCount !== undefined ? (playerCount / expectedPlayers) * 100 : 0;
+  // Derive series maps won (BO formats) for display on the card.
+  // Cards should always show **map wins**, not round scores.
+  let seriesMapsTeam1: number | undefined =
+    typeof match.team1Score === 'number' ? match.team1Score : undefined;
+  let seriesMapsTeam2: number | undefined =
+    typeof match.team2Score === 'number' ? match.team2Score : undefined;
 
-  // Derive series maps won (BO formats) and current/last map rounds
-  const seriesMapsTeam1 = typeof match.team1Score === 'number' ? match.team1Score : undefined;
-  const seriesMapsTeam2 = typeof match.team2Score === 'number' ? match.team2Score : undefined;
-
-  let mapRoundsTeam1: number | undefined;
-  let mapRoundsTeam2: number | undefined;
-
-  if (match.mapResults && match.mapResults.length > 0) {
-    const lastResult = match.mapResults[match.mapResults.length - 1];
-    mapRoundsTeam1 = lastResult.team1Score;
-    mapRoundsTeam2 = lastResult.team2Score;
-  }
-
-  // While live, prefer liveScores for the current map rounds when provided
-  if (liveScores && (liveScores.team1Score !== undefined || liveScores.team2Score !== undefined)) {
-    mapRoundsTeam1 = liveScores.team1Score ?? mapRoundsTeam1;
-    mapRoundsTeam2 = liveScores.team2Score ?? mapRoundsTeam2;
+  // Fallback: if series scores are missing, derive from mapResults
+  if (
+    (seriesMapsTeam1 === undefined || seriesMapsTeam2 === undefined) &&
+    match.mapResults &&
+    match.mapResults.length > 0
+  ) {
+    const derived = match.mapResults.reduce(
+      (acc, result) => {
+        if (result.team1Score > result.team2Score) acc.team1 += 1;
+        else if (result.team2Score > result.team1Score) acc.team2 += 1;
+        return acc;
+      },
+      { team1: 0, team2: 0 }
+    );
+    seriesMapsTeam1 = derived.team1;
+    seriesMapsTeam2 = derived.team2;
   }
 
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
     const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
-    const mapRounds = team === 'team1' ? mapRoundsTeam1 : mapRoundsTeam2;
-
-    // Prefer series maps won when available (BO formats / bracket view)
-    if (typeof seriesScore === 'number') return seriesScore;
-    if (typeof mapRounds === 'number') return mapRounds;
-    return undefined;
+    return typeof seriesScore === 'number' ? seriesScore : undefined;
   };
 
   return (
@@ -259,55 +251,6 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             )}
           </Box>
         </Stack>
-
-        {/* Player Count Info (for live matches) */}
-        {showPlayerProgress && playerCount !== undefined && (
-          <Box
-            mt={2}
-            p={1.5}
-            bgcolor={
-              match.status === 'loaded'
-                ? playerCount >= expectedPlayers
-                  ? 'success.dark'
-                  : 'warning.dark'
-                : 'info.dark'
-            }
-            borderRadius={1}
-          >
-            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-              <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
-              <Typography variant="body2" fontWeight={600} color="white">
-                {getDetailedStatusLabel(
-                  match.status,
-                  playerCount,
-                  expectedPlayers,
-                  false,
-                  // Shuffle tournaments have no veto – treat as completed to avoid "VETO PENDING"
-                  isShuffleMatch() ? true : vetoCompleted,
-                  tournamentStarted,
-                  Boolean(match.serverId)
-                )}
-              </Typography>
-            </Box>
-            {match.status === 'loaded' && (
-              <Box sx={{ mt: 1 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={playerProgress}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: 'white',
-                      borderRadius: 3,
-                    },
-                  }}
-                />
-              </Box>
-            )}
-          </Box>
-        )}
       </CardContent>
     </Card>
   );

@@ -10,6 +10,7 @@ import {
 } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
+import { db } from '../config/database';
 
 export type MatchReport = {
   match?: {
@@ -327,6 +328,12 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
 
   const stats = matchLiveStatsService.update(matchSlug, updates);
 
+  // Reconcile core match status in the database with the authoritative
+  // phase reported by the plugin. This fixes cases where our webhook
+  // stream missed `going_live` (or other phase events) and left the
+  // match row stuck in 'loaded' while rounds are clearly being played.
+  await reconcileMatchStatusFromPhase(matchSlug, matchInfo.phase);
+
   await persistMatchMetaFromReport(matchSlug, matchInfo);
 
   // Also surface the current series score at the top level so the Bracket view
@@ -471,6 +478,77 @@ function mapPhaseToLiveStatus(phase?: string) {
       return 'postgame';
     default:
       return 'warmup';
+  }
+}
+
+/**
+ * Reconcile the DB `matches.status` field with the phase reported by the
+ * CS2 plugin. This gives the plugin a way to "tell the truth" even if
+ * earlier webhooks were dropped or processed out of order.
+ */
+async function reconcileMatchStatusFromPhase(
+  matchSlug: string,
+  phase: string | undefined
+): Promise<void> {
+  if (!phase) return;
+
+  const normalized = phase.toLowerCase();
+  let targetStatus: string | null = null;
+
+  // Only ever move "forward" in the lifecycle – never regress a completed
+  // match back to live/warmup.
+  switch (normalized) {
+    case 'live':
+    case 'knife':
+    case 'halftime':
+      targetStatus = 'live';
+      break;
+    case 'postgame':
+      // Keep using our existing "completed" semantics at the DB level;
+      // postgame at the plugin level means the series is effectively done.
+      targetStatus = 'completed';
+      break;
+    default:
+      // warmup / veto / etc. don't require reconciliation
+      return;
+  }
+
+  try {
+    const existing = await db.queryOneAsync<{ status: string }>(
+      'SELECT status FROM matches WHERE slug = ?',
+      [matchSlug]
+    );
+    if (!existing) return;
+
+    const current = (existing.status || '').toLowerCase();
+
+    // Simple progression ordering: pending/ready/loaded < live < completed
+    const order: Record<string, number> = {
+      pending: 0,
+      ready: 1,
+      loaded: 2,
+      live: 3,
+      completed: 4,
+    };
+
+    const currentRank = order[current] ?? 0;
+    const targetRank = order[targetStatus] ?? currentRank;
+
+    if (targetRank > currentRank) {
+      await db.updateAsync('matches', { status: targetStatus }, 'slug = ?', [matchSlug]);
+      log.info('[MatchReport] Reconciled match status from plugin phase', {
+        matchSlug,
+        phase: normalized,
+        previousStatus: current,
+        newStatus: targetStatus,
+      });
+    }
+  } catch (error) {
+    log.warn('[MatchReport] Failed to reconcile match status from phase', {
+      matchSlug,
+      phase,
+      error,
+    });
   }
 }
 

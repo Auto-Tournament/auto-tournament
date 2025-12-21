@@ -669,6 +669,14 @@ const Tournament: React.FC = () => {
   };
 
   const handleStart = async () => {
+    // Always refresh the latest tournament state first. If the tournament
+    // is already live/completed (e.g. started from another tab), just
+    // return after the refresh instead of attempting to start again.
+    await refreshData();
+    if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+      return;
+    }
+
     const requiredServers = getRequiredServersForTournament();
 
     // Check server availability first

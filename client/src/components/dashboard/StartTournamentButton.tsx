@@ -32,7 +32,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   onSuccess,
 }) => {
   const navigate = useNavigate();
-  const { startTournament } = useTournament();
+  const { startTournament, refreshData, tournament } = useTournament();
   const [starting, setStarting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
@@ -72,7 +72,20 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   };
 
   const handleStartClick = async () => {
-    // Always show confirmation dialog; it will handle server availability + simulation toggle.
+    // Before showing the confirmation dialog, refresh the latest tournament info.
+    // If the tournament is already live/completed (e.g. started from another tab),
+    // just navigate the user into the bracket instead of attempting to start again.
+    await refreshData();
+    if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+      if (onSuccess) {
+        onSuccess();
+      } else {
+        navigate('/bracket');
+      }
+      return;
+    }
+
+    // Otherwise, show confirmation dialog; it will handle server availability + simulation toggle.
     setShowConfirm(true);
   };
 

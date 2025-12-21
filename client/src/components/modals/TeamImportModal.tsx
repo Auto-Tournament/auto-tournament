@@ -29,7 +29,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 interface Player {
   name: string;
   steamId: string;
-  elo?: number; // Optional ELO rating (defaults to 3000 if not specified)
+  elo?: number; // Optional ELO rating (defaults to 1500 Skill Rating if not specified)
 }
 
 interface ImportTeam {

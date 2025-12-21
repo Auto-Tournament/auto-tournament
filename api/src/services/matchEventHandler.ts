@@ -230,6 +230,13 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
+        // Some MatchZy setups are flaky about emitting the "going_live" event,
+        // but they will always emit round_started once the pistol actually begins.
+        // To avoid matches getting visually "stuck in warmup" on the UI
+        // (status=loaded) while rounds are in fact being played, we treat the
+        // first round_started we see as authoritative and force the match
+        // into the LIVE state as well.
+        await updateMatchStatus(match, 'live');
         updateLiveStats(match, parseScorePayload(eventData, 'live'));
       }
       break;
@@ -255,6 +262,7 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = await resolveMatch(event.matchid);
       if (match) {
+        await updateMatchStatus(match, 'live');
         updateLiveStats(match, { status: 'live' });
       }
       break;

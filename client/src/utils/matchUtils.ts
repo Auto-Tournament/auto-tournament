@@ -152,10 +152,9 @@ export const getStatusExplanation = (
       }
       return 'Match is loaded on the server and in warmup mode. Players should connect and ready up to start.';
     case 'live':
-      if (playerCount !== undefined && playerCount > 0) {
-        return `Match is currently in progress with ${playerCount}/${expected} players connected. Rounds are being played.`;
-      }
-      return 'Match is currently in progress. Players are competing and rounds are being played.';
+      // Cards already show LIVE state; extra copy adds noise. Return empty string
+      // so UIs can choose to hide this line for live matches.
+      return '';
     case 'completed':
       return 'Match has finished. Winner has been determined and bracket has been updated.';
     default:

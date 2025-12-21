@@ -454,8 +454,8 @@ This document details the **complex solution** for implementing a shuffle tourna
 
 ```csv
 steamId,name,initialELO,avatarUrl
-76561198012345678,Player One,3000,https://...
-76561198012345679,Player Two,3200,https://...
+76561198012345678,Player One,1500,https://...
+76561198012345679,Player Two,1700,https://...
 76561198012345680,Player Three,,https://...
 ```
 
@@ -487,7 +487,7 @@ steamId,name,initialELO,avatarUrl
 - `initialELO` (defaults to the configured Default Player ELO if not specified - FaceIT-style default, 3000 by default)
 - `avatarUrl`
 
-**Note**: If `initialELO` is omitted or empty, player will be created with default ELO of 3000.
+**Note**: If `initialELO` is omitted or empty, player will be created with default Skill Rating of 1500.
 
 #### Team Import (Modified)
 
@@ -525,9 +525,12 @@ CREATE TABLE players (
   id TEXT PRIMARY KEY, -- Steam ID
   name TEXT NOT NULL,
   avatar_url TEXT,
-  -- Admin-facing "ELO" (for compatibility and display)
-  current_elo INTEGER NOT NULL DEFAULT 3000, -- FaceIT-style default
-  starting_elo INTEGER NOT NULL DEFAULT 3000, -- FaceIT-style default
+  -- Admin-facing "Skill Rating" (for compatibility and display)
+  current_elo INTEGER NOT NULL DEFAULT 1500, -- OpenSkill-aligned default
+  starting_elo INTEGER NOT NULL DEFAULT 1500, -- OpenSkill-aligned default
+  -- Admin-facing "Skill Rating" (for compatibility and display)
+  current_elo INTEGER NOT NULL DEFAULT 1500, -- OpenSkill-aligned default
+  starting_elo INTEGER NOT NULL DEFAULT 1500, -- OpenSkill-aligned default
   -- OpenSkill internal values
   openskill_mu REAL NOT NULL DEFAULT 25.0,
   openskill_sigma REAL NOT NULL DEFAULT 8.333,
@@ -826,10 +829,10 @@ CREATE TABLE shuffle_tournament_players (
     - "Stop at Max Rounds" (end when max rounds reached)
     - "Stop Based on Metric" (use total team damage if tied)
   - Default: Enable Overtime
-- **ELO Settings**:
-  - Configure ELO parameters
-  - Set default starting ELO (default: 3000, FaceIT-style)
-  - Set K-factor (default: 32, standard chess ELO)
+- **Skill Rating Settings**:
+  - Configure Skill Rating parameters
+  - Set default starting Skill Rating (default: 1500, OpenSkill-aligned)
+  - Set K-factor / adjustment template as needed
 - **Fully Automatic**: Once tournament is created and started, system handles everything automatically
 
 #### Players Page (Admin)
@@ -847,7 +850,7 @@ CREATE TABLE shuffle_tournament_players (
       {
         "steamId": "76561198012345678",
         "name": "Player Name",
-        "initialELO": 3000,
+    "initialELO": 1500,
         "avatarUrl": "https://..."
       },
       {
@@ -857,7 +860,7 @@ CREATE TABLE shuffle_tournament_players (
     ]
     ```
 
-    **Note**: If `initialELO` is omitted, player gets default ELO of 3000.
+    **Note**: If `initialELO` is omitted, player gets default Skill Rating of 1500.
 
     ```
 

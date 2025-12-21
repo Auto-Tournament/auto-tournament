@@ -24,7 +24,7 @@ export interface CreatePlayerInput {
   id: string; // Steam ID
   name: string;
   avatar?: string;
-  elo?: number; // Optional - defaults to 3000
+  elo?: number; // Optional - defaults to 1500 Skill Rating (OpenSkill baseline)
 }
 
 export interface UpdatePlayerInput {

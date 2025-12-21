@@ -4,6 +4,7 @@ import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { CreateManualMatchModal } from '../components/modals/CreateManualMatchModal';
 import { EmptyState } from '../components/shared/EmptyState';
@@ -268,12 +269,6 @@ export default function Matches() {
                           match={match}
                           matchNumber={matchNumber}
                           variant="live"
-                          playerCount={connectionCounts.get(match.slug)}
-                          liveScores={{
-                            team1Score: event?.params?.team1_score,
-                            team2Score: event?.params?.team2_score,
-                          }}
-                          showPlayerProgress={true}
                           onClick={() => setSelectedMatch(match)}
                         />
                         {event && event.event && (

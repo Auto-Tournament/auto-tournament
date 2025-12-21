@@ -19,11 +19,14 @@ import { serverAllocationTracker } from './serverAllocationTracker';
  * Service for automatic server allocation to tournament matches
  */
 export class MatchAllocationService {
-  // Grace period in seconds after server becomes idle before allowing allocation
+  // Grace period in seconds after server becomes idle before allowing allocation.
   // This ensures demo uploads complete and match reset finishes.
-  // For CS2 LAN / shuffle simulations we don't want to wait minutes between rounds,
-  // so this is intentionally short. Adjust here if real-world demos routinely take longer.
-  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 30;
+  //
+  // For "real" tournaments we want to be conservative (5 minutes), but for
+  // simulation mode we still keep a much shorter delay so local testing isn't
+  // painfully slow.
+  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300; // 5 minutes for real matches
+  private static readonly SIMULATION_GRACE_PERIOD_SECONDS = 30; // Fast path for simulated matches
 
   /**
    * In-memory guard to prevent multiple matches being loaded onto the same server
@@ -113,7 +116,10 @@ export class MatchAllocationService {
     // from different code paths targeting the same physical server.
     onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
-    const GRACE_PERIOD_SECONDS = MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
+    const isSimulation = await settingsService.isSimulationModeEnabled();
+    const GRACE_PERIOD_SECONDS = isSimulation
+      ? MatchAllocationService.SIMULATION_GRACE_PERIOD_SECONDS
+      : MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
     const now = Math.floor(Date.now() / 1000);
 
     // Filter servers based on MatchZy tournament status

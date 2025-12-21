@@ -417,10 +417,10 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                     const value = e.target.value;
                     setNewPlayerElo(value === '' ? '' : Number(value));
                   }}
-                  placeholder="3000"
+                  placeholder="1500"
                   size="small"
                   disabled={resolving}
-                  helperText="Default: 3000"
+                  helperText="Default: 1500"
                   sx={{ flex: 1, maxWidth: 150 }}
                   slotProps={{
                     htmlInput: { min: 0, max: 10000, 'data-testid': 'team-player-elo-input' },

@@ -35,7 +35,8 @@ export const getPhaseDisplay = (phase: MatchPhase): { label: string; color: stri
     case 'knife':
       return { label: 'KNIFE ROUND', color: 'warning' };
     case 'veto':
-      return { label: 'VETO PHASE', color: 'secondary' };
+      // Use the same amber "upcoming action" tone as other pre-live states
+      return { label: 'VETO PHASE', color: 'warning' };
     case 'live':
       return { label: 'LIVE', color: 'error' };
     case 'halftime':
