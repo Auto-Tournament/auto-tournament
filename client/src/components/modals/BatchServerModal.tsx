@@ -595,20 +595,9 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
           disabled={saving}
           sx={{
             ml: 'auto',
-            ...(!allServersVerified() && {
-              bgcolor: 'action.disabledBackground',
-              color: 'action.disabled',
-              '&:hover': {
-                bgcolor: 'action.disabledBackground',
-              },
-            }),
           }}
         >
-          {saving
-            ? 'Creating...'
-            : allServersVerified()
-            ? `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`
-            : 'Verify Servers First'}
+          {saving ? 'Creating...' : `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`}
         </Button>
       </DialogActions>
     </Dialog>
