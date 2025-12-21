@@ -24,7 +24,6 @@ export const PlayerMatchDetailsModal: React.FC<PlayerMatchDetailsModalProps> = (
 
   useEffect(() => {
     if (!open || !matchSlug) {
-      setMatch(null);
       return;
     }
 
@@ -44,16 +43,21 @@ export const PlayerMatchDetailsModal: React.FC<PlayerMatchDetailsModalProps> = (
     void loadMatch();
   }, [open, matchSlug]);
 
+  const handleClose = () => {
+    setMatch(null);
+    onClose();
+  };
+
   if (!open) return null;
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
       <DialogContent sx={{ p: 0 }}>
         <MatchDetailsModal
           match={match}
           matchNumber={matchNumber}
           roundLabel={getRoundLabel(round)}
-          onClose={onClose}
+          onClose={handleClose}
         />
       </DialogContent>
     </Dialog>

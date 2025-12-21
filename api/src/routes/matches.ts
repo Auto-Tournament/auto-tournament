@@ -333,7 +333,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
             : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
             ? storedConfig.maplist.length
             : 1,
-        skip_veto: true as true,
+        skip_veto: true,
         spectators: storedConfig.spectators ?? { players: {} },
         team1:
           storedConfig.team1 && storedConfig.team1.name

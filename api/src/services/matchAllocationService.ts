@@ -20,8 +20,10 @@ import { serverAllocationTracker } from './serverAllocationTracker';
  */
 export class MatchAllocationService {
   // Grace period in seconds after server becomes idle before allowing allocation
-  // This ensures demo uploads complete and match reset finishes
-  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300;
+  // This ensures demo uploads complete and match reset finishes.
+  // For CS2 LAN / shuffle simulations we don't want to wait minutes between rounds,
+  // so this is intentionally short. Adjust here if real-world demos routinely take longer.
+  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 30;
 
   /**
    * In-memory guard to prevent multiple matches being loaded onto the same server
@@ -47,8 +49,8 @@ export class MatchAllocationService {
    * Uses MatchZy's matchzy_tournament_status convar to determine availability
    *
    * According to MatchZy server allocation status documentation:
-   * - Only allocate when status is 'idle'
-   * - Wait 5 minutes grace period after status becomes idle
+   * - Only allocate when status is effectively idle (idle / postgame)
+   * - Wait a short grace period after status becomes idle/postgame
    * - Check `matchzy_tournament_match` and `matchzy_tournament_updated` convars
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
@@ -119,10 +121,15 @@ export class MatchAllocationService {
     for (const check of onlineServers) {
       const { server, status, matchSlug, updatedAt } = check;
 
-      // Only allocate when status is 'idle'
-      if (status !== ServerStatus.IDLE) {
+      // Treat both explicit IDLE and POSTGAME as "effectively idle" for allocation purposes.
+      // POSTGAME means the previous match has ended and the server is in cleanup; our
+      // grace-period logic below, plus MatchZy's own safeguards, will prevent unsafe reuse.
+      const isEffectivelyIdle =
+        status === ServerStatus.IDLE || status === ServerStatus.POSTGAME || status === null;
+
+      if (!isEffectivelyIdle) {
         log.debug(
-          `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
+          `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle/postgame)`
         );
         continue;
       }
@@ -298,13 +305,26 @@ export class MatchAllocationService {
           // Double-check the live MatchZy status immediately before allocation
           // so we don't rely solely on the stale snapshot from getAvailableServers.
           const statusInfo = await serverStatusService.getServerStatus(server.id);
-          if (
-            !statusInfo.online ||
-            statusInfo.status !== ServerStatus.IDLE ||
-            (statusInfo.matchSlug && statusInfo.matchSlug.trim() !== '')
-          ) {
+
+          // For the immediate pre-allocation check we consider servers with status
+          // IDLE or POSTGAME (previous match ended) as safe to attempt allocation.
+          // Active states like LIVE / WARMUP / LOADING remain protected.
+          const activeStates = new Set<ServerStatus>([
+            ServerStatus.LOADING,
+            ServerStatus.WARMUP,
+            ServerStatus.KNIFE,
+            ServerStatus.LIVE,
+            ServerStatus.PAUSED,
+            ServerStatus.HALFTIME,
+          ]);
+          const isEffectivelyIdle =
+            statusInfo.status === ServerStatus.IDLE ||
+            statusInfo.status === ServerStatus.POSTGAME ||
+            statusInfo.status === null;
+
+          if (!statusInfo.online || (!isEffectivelyIdle && activeStates.has(statusInfo.status!))) {
             log.debug(
-              `[ALLOCATION] Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
+              `[ALLOCATION] Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle/postgame (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
             );
             continue;
           }

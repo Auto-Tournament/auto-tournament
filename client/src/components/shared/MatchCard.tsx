@@ -77,66 +77,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     );
   };
 
-  const normalizeConfigPlayers = (
-    rawPlayers: unknown
-  ): Array<{ name: string; elo?: number }> => {
-    if (!rawPlayers) return [];
-
-    // Already an array of players
-    if (Array.isArray(rawPlayers)) {
-      return rawPlayers
-        .map((p) => {
-          if (!p || typeof p !== 'object') return null;
-          const candidate = p as { name?: unknown; elo?: unknown };
-          if (typeof candidate.name !== 'string') return null;
-          return {
-            name: candidate.name,
-            elo: typeof candidate.elo === 'number' ? candidate.elo : undefined,
-          };
-        })
-        .filter((p): p is { name: string; elo?: number } => p !== null);
-    }
-
-    // MatchZy-style map: { steamId: name } or { steamId: { name, elo? } }
-    if (typeof rawPlayers === 'object') {
-      const entries: Array<{ name: string; elo?: number }> = [];
-      Object.values(rawPlayers as Record<string, unknown>).forEach((value) => {
-        if (typeof value === 'string') {
-          entries.push({ name: value });
-        } else if (
-          value &&
-          typeof value === 'object' &&
-          'name' in value &&
-          typeof (value as { name?: unknown }).name === 'string'
-        ) {
-          const v = value as { name: string; elo?: unknown };
-          entries.push({
-            name: v.name,
-            elo: typeof v.elo === 'number' ? v.elo : undefined,
-          });
-        }
-      });
-      return entries;
-    }
-
-    return [];
-  };
-
   const getTeamName = (teamId: string | undefined) => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
     if (team) {
-      // For shuffle tournaments, keep the card compact – just show player count, not full roster
-      if (isShuffleMatch()) {
-        const configTeam = teamId === match.team1?.id ? match.config?.team1 : match.config?.team2;
-        const configPlayers = normalizeConfigPlayers(configTeam?.players);
-        const playerCount =
-          configPlayers.length ||
-          (teamId === match.team1?.id
-            ? match.team1Players?.length || match.config?.expected_players_team1 || 5
-            : match.team2Players?.length || match.config?.expected_players_team2 || 5);
-
-        return `${playerCount} players`;
-      }
       return team.name;
     }
     if (match.status === 'completed') return '—';
@@ -145,17 +88,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   const expectedPlayers = match.config?.expected_players_total || 10;
   const playerProgress = playerCount !== undefined ? (playerCount / expectedPlayers) * 100 : 0;
-  const totalMaps =
-    match.config?.num_maps ??
-    (match.config?.maplist && match.config.maplist.length > 0
-      ? match.config.maplist.length
-      : undefined);
-  const mapDisplayNumber =
-    typeof match.mapNumber === 'number'
-      ? totalMaps
-        ? Math.min(match.mapNumber + 1, totalMaps)
-        : match.mapNumber + 1
-      : null;
+
+  // Derive series maps won (BO formats) and current/last map rounds
+  const seriesMapsTeam1 = typeof match.team1Score === 'number' ? match.team1Score : undefined;
+  const seriesMapsTeam2 = typeof match.team2Score === 'number' ? match.team2Score : undefined;
+
+  let mapRoundsTeam1: number | undefined;
+  let mapRoundsTeam2: number | undefined;
+
+  if (match.mapResults && match.mapResults.length > 0) {
+    const lastResult = match.mapResults[match.mapResults.length - 1];
+    mapRoundsTeam1 = lastResult.team1Score;
+    mapRoundsTeam2 = lastResult.team2Score;
+  }
+
+  // While live, prefer liveScores for the current map rounds when provided
+  if (liveScores && (liveScores.team1Score !== undefined || liveScores.team2Score !== undefined)) {
+    mapRoundsTeam1 = liveScores.team1Score ?? mapRoundsTeam1;
+    mapRoundsTeam2 = liveScores.team2Score ?? mapRoundsTeam2;
+  }
 
   return (
     <Card
@@ -203,23 +154,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
             />
-            {/* For shuffle tournaments the map is fixed and veto-less, so hide the extra map chip.
-               Also hide the map chip for completed matches to avoid confusing "Map 1/3" labels
-               when the full series is already done. */}
-            {!isShuffleMatch() && match.status !== 'completed' && mapDisplayNumber && totalMaps && (
-              <Chip
-                label={`Map ${mapDisplayNumber}/${totalMaps}`}
-                size="small"
-                variant="outlined"
-                sx={{ fontWeight: 500 }}
-              />
-            )}
           </Box>
         </Box>
 
-        {/* Teams */}
+        {/* Teams + Score Summary */}
         <Stack spacing={1.5}>
-          {/* Team 1 */}
+          {/* Team rows */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -236,9 +176,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               <Typography
                 variant="body1"
                 fontWeight={isWinner(match.team1?.id) ? 600 : 500}
-                sx={{
-                  color: getTeamTextColor(match.team1?.id),
-                }}
+                sx={{ color: getTeamTextColor(match.team1?.id) }}
               >
                 {getTeamName(match.team1?.id)}
               </Typography>
@@ -255,23 +193,8 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 }}
               />
             )}
-            {liveScores?.team1Score !== undefined && (
-              <Chip
-                label={liveScores.team1Score}
-                size="small"
-                sx={{ fontWeight: 600, minWidth: 40 }}
-              />
-            )}
           </Box>
 
-          {/* VS Divider */}
-          <Box display="flex" justifyContent="center">
-            <Typography variant="body2" color="text.secondary" fontWeight={600}>
-              VS
-            </Typography>
-          </Box>
-
-          {/* Team 2 */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -288,9 +211,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               <Typography
                 variant="body1"
                 fontWeight={isWinner(match.team2?.id) ? 600 : 500}
-                sx={{
-                  color: getTeamTextColor(match.team2?.id),
-                }}
+                sx={{ color: getTeamTextColor(match.team2?.id) }}
               >
                 {getTeamName(match.team2?.id)}
               </Typography>
@@ -307,14 +228,36 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 }}
               />
             )}
-            {liveScores?.team2Score !== undefined && (
-              <Chip
-                label={liveScores.team2Score}
-                size="small"
-                sx={{ fontWeight: 600, minWidth: 40 }}
-              />
-            )}
           </Box>
+
+          {/* Compact score summary */}
+          {(seriesMapsTeam1 !== undefined ||
+            seriesMapsTeam2 !== undefined ||
+            mapRoundsTeam1 !== undefined ||
+            mapRoundsTeam2 !== undefined) && (
+            <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
+              <Box>
+                {seriesMapsTeam1 !== undefined && seriesMapsTeam2 !== undefined && (
+                  <Typography variant="body2" fontWeight={600}>
+                    Series Maps Won: {seriesMapsTeam1} - {seriesMapsTeam2}
+                  </Typography>
+                )}
+                {mapRoundsTeam1 !== undefined && mapRoundsTeam2 !== undefined && (
+                  <Typography variant="body2" color="text.secondary">
+                    Map Rounds:{' '}
+                    <strong>
+                      {mapRoundsTeam1} - {mapRoundsTeam2}
+                    </strong>
+                  </Typography>
+                )}
+              </Box>
+              {isShuffleMatch() && (
+                <Typography variant="caption" color="text.secondary">
+                  Shuffle match
+                </Typography>
+              )}
+            </Box>
+          )}
         </Stack>
 
         {/* Player Count Info (for live matches) */}
@@ -339,8 +282,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   playerCount,
                   expectedPlayers,
                   false,
-                  vetoCompleted,
-                  tournamentStarted
+                  // Shuffle tournaments have no veto – treat as completed to avoid "VETO PENDING"
+                  isShuffleMatch() ? true : vetoCompleted,
+                  tournamentStarted,
+                  Boolean(match.serverId)
                 )}
               </Typography>
             </Box>

@@ -27,6 +27,8 @@ export interface Server {
   status?: 'online' | 'offline' | 'checking' | 'disabled' | string;
   isAvailable?: boolean;
   currentMatch?: string | null;
+  reachableFromApi?: boolean;
+  serverCanReachApi?: boolean;
   matchzyConfig?: {
     chatPrefix?: string | null;
     adminChatPrefix?: string | null;

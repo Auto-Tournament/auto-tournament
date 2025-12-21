@@ -91,9 +91,10 @@ export default function PublicPages() {
                 <Button
                   variant="outlined"
                   startIcon={<LinkIcon />}
-                  disabled
+                  component={RouterLink}
+                  to="/team/test-team-astralis"
                 >
-                  Requires team ID
+                  Open example team
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
@@ -115,23 +116,24 @@ export default function PublicPages() {
                 Tournament Leaderboard (public)
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Public standings page for a specific tournament.
+                Public standings page for the current tournament (defaults to tournament 1).
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
                   variant="outlined"
-                  startIcon={<LinkIcon />}
-                  disabled
+                  startIcon={<OpenInNewIcon />}
+                  component={RouterLink}
+                  to="/tournament/1/leaderboard"
                 >
-                  Requires tournament ID
+                  Open leaderboard
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      URL pattern
+                      Public URL
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
-                      {origin}/tournament/&lt;tournamentId&gt;/leaderboard
+                      {origin}/tournament/1/leaderboard
                     </Typography>
                   </Stack>
                 )}

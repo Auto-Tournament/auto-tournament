@@ -370,7 +370,7 @@ export function TournamentFormSteps({
             onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
           />
         );
-      case 4:
+      case 4: {
         // Shuffle tournament configuration or team selection
         if (type === 'shuffle') {
           const volume = getMatchVolumeEstimate();
@@ -382,8 +382,9 @@ export function TournamentFormSteps({
               </Alert>
               {volume && (
                 <Alert severity="info">
-                  This shuffle tournament will have approximately <strong>{volume.totalRounds}</strong>{' '}
-                  round{volume.totalRounds === 1 ? '' : 's'} (one per selected map).
+                  This shuffle tournament will have approximately{' '}
+                  <strong>{volume.totalRounds}</strong> round{volume.totalRounds === 1 ? '' : 's'}{' '}
+                  (one per selected map).
                 </Alert>
               )}
               {shuffleSettings && onShuffleSettingsChange && (
@@ -407,10 +408,10 @@ export function TournamentFormSteps({
                 {selectedTeams.length === 1 ? '' : 's'} in a{' '}
                 <strong>{type.replace('_', ' ')}</strong> {format.toUpperCase()} tournament, this
                 bracket will have approximately <strong>{volume.totalMatches}</strong> match
-                {volume.totalMatches === 1 ? '' : 'es'} across{' '}
-                <strong>{volume.totalRounds}</strong> round
-                {volume.totalRounds === 1 ? '' : 's'} (up to <strong>{volume.totalMaps}</strong>{' '}
-                map{volume.totalMaps === 1 ? '' : 's'} total).
+                {volume.totalMatches === 1 ? '' : 'es'} across <strong>{volume.totalRounds}</strong>{' '}
+                round
+                {volume.totalRounds === 1 ? '' : 's'} (up to <strong>{volume.totalMaps}</strong> map
+                {volume.totalMaps === 1 ? '' : 's'} total).
               </Alert>
             )}
             <TeamSelectionStep
@@ -434,7 +435,8 @@ export function TournamentFormSteps({
             />
           </Stack>
         );
-      case 5:
+      }
+      case 5: {
         const volumeReview = getMatchVolumeEstimate();
         return (
           <Stack spacing={2}>
@@ -549,6 +551,7 @@ export function TournamentFormSteps({
             )}
           </Stack>
         );
+      }
       default:
         return null;
     }

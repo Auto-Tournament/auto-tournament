@@ -39,7 +39,6 @@ function createPinoLogger() {
     try {
       // Throws if pino-pretty cannot be resolved at runtime
       // (e.g. in the minimal Docker release image).
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
       require.resolve('pino-pretty');
 
       transport = {

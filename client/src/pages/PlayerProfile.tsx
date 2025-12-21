@@ -21,8 +21,6 @@ import {
   Tooltip,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
-import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import TrendingDownIcon from '@mui/icons-material/TrendingDown';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { api } from '../utils/api';
@@ -315,7 +313,6 @@ export default function PlayerProfile() {
   // the raw DB seed (which might be a calibration value like 3000).
   const effectiveStartingElo =
     ratingHistory.length > 0 ? ratingHistory[ratingHistory.length - 1].eloAfter : player.startingElo;
-  const eloChange = player.currentElo - effectiveStartingElo;
   const winRate =
     uniqueMatchHistory.length > 0
       ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
@@ -333,41 +330,27 @@ export default function PlayerProfile() {
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
   const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
-  // Recent form: last 5 matches as W/L string
-  const recentMatches = React.useMemo(
-    () =>
-      [...uniqueMatchHistory].sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
-    [uniqueMatchHistory]
+  // Recent form: last 5 matches as W/L string (no hooks needed here; small arrays)
+  const recentMatches = [...uniqueMatchHistory].sort(
+    (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
   );
-  const recentForm = React.useMemo(
-    () =>
-      recentMatches
-        .slice(0, 5)
-        .map((m) => (m.wonMatch ? 'W' : 'L'))
-        .join(''),
-    [recentMatches]
-  );
+  const recentForm = recentMatches
+    .slice(0, 5)
+    .map((m) => (m.wonMatch ? 'W' : 'L'))
+    .join('');
 
   // Best and toughest matches by ADR
-  const bestAdrMatch = React.useMemo(
-    () =>
-      recentMatches.reduce<MatchHistoryEntry | null>((best, m) => {
-        if (m.adr === undefined) return best;
-        if (!best || (best.adr ?? 0) < m.adr) return m;
-        return best;
-      }, null),
-    [recentMatches]
-  );
-
-  const worstAdrMatch = React.useMemo(
-    () =>
-      recentMatches.reduce<MatchHistoryEntry | null>((worst, m) => {
-        if (m.adr === undefined) return worst;
-        if (!worst || (worst.adr ?? Infinity) > m.adr) return m;
-        return worst;
-      }, null),
-    [recentMatches]
-  );
+  let bestAdrMatch: MatchHistoryEntry | null = null;
+  let worstAdrMatch: MatchHistoryEntry | null = null;
+  for (const m of recentMatches) {
+    if (m.adr === undefined) continue;
+    if (!bestAdrMatch || (bestAdrMatch.adr ?? 0) < m.adr) {
+      bestAdrMatch = m;
+    }
+    if (!worstAdrMatch || (worstAdrMatch.adr ?? Infinity) > m.adr) {
+      worstAdrMatch = m;
+    }
+  }
 
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">

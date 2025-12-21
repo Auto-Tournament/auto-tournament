@@ -96,11 +96,11 @@ export default function Servers() {
             reachableFromApi:
               statusInfo?.reachableFromApi !== undefined
                 ? statusInfo.reachableFromApi
-                : (server as any).reachableFromApi,
+                : server.reachableFromApi,
             serverCanReachApi:
               statusInfo?.serverCanReachApi !== undefined
                 ? statusInfo.serverCanReachApi
-                : (server as any).serverCanReachApi,
+                : server.serverCanReachApi,
           };
         })
       );
@@ -239,8 +239,8 @@ export default function Servers() {
                           {server.name}
                         </Typography>
                         {(() => {
-                          const reachableFromApi = (server as any).reachableFromApi;
-                          const serverCanReachApi = (server as any).serverCanReachApi;
+                          const reachableFromApi = server.reachableFromApi;
+                          const serverCanReachApi = server.serverCanReachApi;
 
                           let label: string;
                           let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
@@ -315,9 +315,9 @@ export default function Servers() {
                             fontSize="small"
                             sx={{
                               color:
-                                (server as any).reachableFromApi === false
+                                server.reachableFromApi === false
                                   ? 'error.main'
-                                  : (server as any).reachableFromApi
+                                  : server.reachableFromApi
                                   ? 'success.main'
                                   : 'text.disabled',
                             }}
@@ -325,9 +325,9 @@ export default function Servers() {
                           <Typography variant="caption" color="text.secondary">
                             API → Server (RCON){' '}
                             <strong>
-                              {(server as any).reachableFromApi === false
+                              {server.reachableFromApi === false
                                 ? 'Unreachable'
-                                : (server as any).reachableFromApi
+                                : server.reachableFromApi
                                 ? 'Reachable'
                                 : 'Unknown'}
                             </strong>
@@ -338,9 +338,9 @@ export default function Servers() {
                             fontSize="small"
                             sx={{
                               color:
-                                (server as any).serverCanReachApi === false
+                                server.serverCanReachApi === false
                                   ? 'error.main'
-                                  : (server as any).serverCanReachApi
+                                  : server.serverCanReachApi
                                   ? 'success.main'
                                   : 'text.disabled',
                             }}
@@ -348,9 +348,9 @@ export default function Servers() {
                           <Typography variant="caption" color="text.secondary">
                             Server → API (/api/events){' '}
                             <strong>
-                              {(server as any).serverCanReachApi === false
+                              {server.serverCanReachApi === false
                                 ? 'Unreachable'
-                                : (server as any).serverCanReachApi
+                                : server.serverCanReachApi
                                 ? 'Reachable'
                                 : 'Unknown'}
                             </strong>

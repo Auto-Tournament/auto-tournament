@@ -9,7 +9,7 @@ import { CreateManualMatchModal } from '../components/modals/CreateManualMatchMo
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
-import { formatDate, getRoundLabel } from '../utils/matchUtils';
+import { getRoundLabel } from '../utils/matchUtils';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 
@@ -334,13 +334,6 @@ export default function Matches() {
                           variant="completed"
                           onClick={() => setSelectedMatch(match)}
                         />
-                        {match.completedAt && (
-                          <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
-                            <Typography variant="caption" color="text.secondary">
-                              Completed: {formatDate(match.completedAt)}
-                            </Typography>
-                          </Box>
-                        )}
                       </Box>
                     </Grid>
                   );
