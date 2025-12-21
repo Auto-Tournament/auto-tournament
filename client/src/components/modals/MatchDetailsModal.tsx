@@ -88,31 +88,47 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   // Calculate derived series wins before early return (React hooks rule).
   // For completed matches, use the persisted series score. While a series is
   // still in progress, prefer live series scores or count finished maps from
-  // mapResults so we show e.g. "1 - 0" when entering Map 2.
+  // mapResults so we show e.g. "1 - 0" when entering Map 2, but never "regress"
+  // below the DB-enriched series score (e.g. 0-2 from the bracket).
   const derivedSeriesWins = useMemo(() => {
     if (!match) {
       return { team1: 0, team2: 0 };
     }
 
-    const hasSeriesOnMatch =
-      typeof match.team1Score === 'number' || typeof match.team2Score === 'number';
+    const dbSeriesTeam1 = typeof match.team1Score === 'number' ? match.team1Score : 0;
+    const dbSeriesTeam2 = typeof match.team2Score === 'number' ? match.team2Score : 0;
+    const hasSeriesOnMatch = dbSeriesTeam1 > 0 || dbSeriesTeam2 > 0;
 
     // Completed series: trust the DB-enriched series score.
     if (match.status === 'completed' && hasSeriesOnMatch) {
       return {
-        team1: typeof match.team1Score === 'number' ? match.team1Score : 0,
-        team2: typeof match.team2Score === 'number' ? match.team2Score : 0,
+        team1: dbSeriesTeam1,
+        team2: dbSeriesTeam2,
       };
     }
 
-    // Live / in-progress series: prefer live series scores from the snapshot.
+    // Live / in-progress series: prefer live series scores from the snapshot, but
+    // never show a score lower than what we already have on the match object.
+    // This keeps the modal consistent with the bracket view (which reads DB scores).
     if (
       liveStats &&
-      (typeof liveStats.team1SeriesScore === 'number' || typeof liveStats.team2SeriesScore === 'number')
+      (typeof liveStats.team1SeriesScore === 'number' ||
+        typeof liveStats.team2SeriesScore === 'number')
     ) {
+      const liveTeam1 = liveStats.team1SeriesScore ?? 0;
+      const liveTeam2 = liveStats.team2SeriesScore ?? 0;
       return {
-        team1: liveStats.team1SeriesScore ?? 0,
-        team2: liveStats.team2SeriesScore ?? 0,
+        team1: Math.max(dbSeriesTeam1, liveTeam1),
+        team2: Math.max(dbSeriesTeam2, liveTeam2),
+      };
+    }
+
+    // If we have a DB series score on the match, use it as a baseline even if
+    // the series is still technically in progress.
+    if (hasSeriesOnMatch) {
+      return {
+        team1: dbSeriesTeam1,
+        team2: dbSeriesTeam2,
       };
     }
 
@@ -460,7 +476,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           fontWeight={700}
                           sx={{
                             color:
-                              match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
+                              match.winner?.id === match.team1?.id
+                                ? 'success.main'
+                                : 'text.primary',
                           }}
                         >
                           {seriesWinsTeam1}
@@ -473,7 +491,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           fontWeight={700}
                           sx={{
                             color:
-                              match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
+                              match.winner?.id === match.team2?.id
+                                ? 'success.main'
+                                : 'text.primary',
                           }}
                         >
                           {seriesWinsTeam2}

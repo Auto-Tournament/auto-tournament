@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack } from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { CreateManualMatchModal } from '../components/modals/CreateManualMatchModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
@@ -23,6 +24,7 @@ export default function Matches() {
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
+  const [createMatchOpen, setCreateMatchOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -201,6 +203,17 @@ export default function Matches() {
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
 
+      {/* Manual match creation */}
+      <Box display="flex" justifyContent="flex-end" mb={3}>
+        <Button
+          variant="contained"
+          size="small"
+          onClick={() => setCreateMatchOpen(true)}
+        >
+          Create Match
+        </Button>
+      </Box>
+
       {/* Status Legend */}
       {hasMatches && (
         <Box mb={3}>
@@ -347,6 +360,16 @@ export default function Matches() {
           onClose={() => setSelectedMatch(null)}
         />
       )}
+
+      {/* Create manual match modal */}
+      <CreateManualMatchModal
+        open={createMatchOpen}
+        onClose={() => setCreateMatchOpen(false)}
+        onCreated={() => {
+          setCreateMatchOpen(false);
+          void fetchMatches();
+        }}
+      />
     </Box>
   );
 }

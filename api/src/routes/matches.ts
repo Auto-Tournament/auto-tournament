@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { loadMatchOnServer } from '../services/matchLoadingService';
-import { CreateMatchInput, MatchListItem } from '../types/match.types';
+import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -305,7 +305,62 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
       });
     }
 
-    // 2) Load the tournament row
+    // Manual / non-bracket matches:
+    // We treat any match with round = 0 as a manually created match. For these,
+    // we return the stored config from the `matches.config` column instead of
+    // generating a fresh tournament-backed config. This allows admins to create
+    // ad hoc matches that are independent from the tournament bracket.
+    if (match.round === 0) {
+      let storedConfig: MatchConfig;
+      try {
+        storedConfig = match.config ? (JSON.parse(match.config) as MatchConfig) : ({} as MatchConfig);
+      } catch (e) {
+        console.error('Failed to parse stored match config for manual match', e);
+        storedConfig = {} as MatchConfig;
+      }
+
+      // Ensure required fields for MatchZy are present.
+      const safeConfig: MatchConfig = {
+        ...storedConfig,
+        matchid: match.id,
+        players_per_team:
+          typeof storedConfig.players_per_team === 'number' && storedConfig.players_per_team > 0
+            ? storedConfig.players_per_team
+            : 5,
+        num_maps:
+          typeof storedConfig.num_maps === 'number' && storedConfig.num_maps > 0
+            ? storedConfig.num_maps
+            : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
+            ? storedConfig.maplist.length
+            : 1,
+        skip_veto: true as true,
+        spectators: storedConfig.spectators ?? { players: {} },
+        team1:
+          storedConfig.team1 && storedConfig.team1.name
+            ? {
+                ...storedConfig.team1,
+                players: storedConfig.team1.players ?? {},
+              }
+            : {
+                name: 'Team 1',
+                players: {},
+              },
+        team2:
+          storedConfig.team2 && storedConfig.team2.name
+            ? {
+                ...storedConfig.team2,
+                players: storedConfig.team2.players ?? {},
+              }
+            : {
+                name: 'Team 2',
+                players: {},
+              },
+      };
+
+      return res.json(safeConfig);
+    }
+
+    // 2) Load the tournament row for bracket-managed matches
     const t = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
       match.tournament_id ?? 1,
     ]);

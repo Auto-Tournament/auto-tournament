@@ -20,8 +20,17 @@ class MatchService {
     }
 
     // Insert match
+    //
+    // NOTE: Manual matches are intentionally **not** part of the tournament
+    // bracket flow. We still persist them in the same `matches` table so that
+    // existing tooling (match list, server status, etc.) can see them, but we
+    // mark them with `round = 0` and `match_number = 0` to distinguish them
+    // from bracket matches (which always use round >= 1).
     await db.insertAsync('matches', {
       slug: input.slug,
+      tournament_id: 1, // Keep association with primary tournament for now
+      round: 0, // 0 = manual / non-bracket match
+      match_number: 0,
       server_id: input.serverId,
       config: JSON.stringify(input.config),
       status: 'pending',
