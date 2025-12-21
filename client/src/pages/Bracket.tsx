@@ -457,7 +457,7 @@ export default function Bracket() {
       )}
 
       {/* Bracket visualization */}
-      {viewMode === 'visual' ? (
+      {effectiveViewMode === 'visual' ? (
         <Box
           data-testid="bracket-visualization"
           sx={{
@@ -542,11 +542,13 @@ export default function Bracket() {
             overflowY: isFullscreen ? 'auto' : 'visible',
           }}
         >
-          {Array.from({ length: effectiveTotalRounds }, (_, i) => i + 1).map((round) => {
+          {Array.from({ length: effectiveTotalRounds }, (_, i) => i + 1)
+            .reverse()
+            .map((round) => {
             const roundMatches = matchesByRound[round] || [];
             if (roundMatches.length === 0) return null;
 
-            return (
+              return (
               <Box key={round} mb={4}>
                 <Typography variant="h6" fontWeight={600} mb={2}>
                   {getBracketRoundLabel(round)}
