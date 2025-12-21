@@ -11,8 +11,10 @@ import {
   Avatar,
 } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
+import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SteamIcon } from '../icons/SteamIcon';
 import type { Team } from '../../types';
+import { getPlayerPageUrl } from '../../utils/playerLinks';
 
 interface PlayerRosterCardProps {
   team: Team | null;
@@ -69,18 +71,36 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
                     {playerName}
                   </Typography>
                 </Box>
-                <Tooltip title="View Steam Profile">
-                  <IconButton
-                    size="small"
-                    color="primary"
-                    component="a"
-                    href={`https://steamcommunity.com/profiles/${playerSteamId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    <SteamIcon fontSize="small" />
-                  </IconButton>
-                </Tooltip>
+                <Box display="flex" alignItems="center" gap={0.5}>
+                  {playerSteamId && (
+                    <Tooltip title="View player stats">
+                      <IconButton
+                        size="small"
+                        color="primary"
+                        component="a"
+                        href={getPlayerPageUrl(playerSteamId)}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <OpenInNewIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                  {playerSteamId && (
+                    <Tooltip title="View Steam profile">
+                      <IconButton
+                        size="small"
+                        color="inherit"
+                        component="a"
+                        href={`https://steamcommunity.com/profiles/${playerSteamId}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <SteamIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
+                </Box>
               </Paper>
             );
           })}

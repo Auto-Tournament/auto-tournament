@@ -18,6 +18,7 @@ import {
   TableHead,
   TableRow,
   Button,
+  Tooltip,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
@@ -328,6 +329,9 @@ export default function PlayerProfile() {
 
   // Use the most recent match's tournament for leaderboard link (if available)
   const latestTournamentId = uniqueMatchHistory.find((m) => m.tournamentId)?.tournamentId;
+  const hasAnyMatches = uniqueMatchHistory.length > 0;
+  const tournamentIsActive = currentTournamentStatus === 'in_progress';
+  const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
@@ -395,13 +399,36 @@ export default function PlayerProfile() {
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 4 }}>
                 <SportsEsportsIcon sx={{ fontSize: 56, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="body1" color="text.secondary">
-                  No active match right now
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Once the next round is generated and your match is ready, it will appear here with
-                  server connect info.
-                </Typography>
+                {tournamentIsCompleted && hasAnyMatches ? (
+                  <>
+                    <Typography variant="body1" color="text.secondary">
+                      Tournament finished – you have no more matches.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      Final record: {wins} win{wins === 1 ? '' : 's'} / {losses} loss
+                      {losses === 1 ? '' : 'es'} in this tournament.
+                    </Typography>
+                  </>
+                ) : tournamentIsActive && hasAnyMatches ? (
+                  <>
+                    <Typography variant="body1" color="text.secondary">
+                      No upcoming match scheduled for you right now.
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      The tournament is still in progress, but your matches are complete.
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1" color="text.secondary">
+                      No active match right now
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      Once the next round is generated and your match is ready, it will appear here
+                      with server connect info.
+                    </Typography>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}

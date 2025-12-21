@@ -171,6 +171,10 @@ export default function TeamMatch() {
     );
   }
 
+  const tournamentIsActive = tournamentStatus === 'in_progress';
+  const tournamentIsCompleted = tournamentStatus === 'completed';
+  const teamHasPlayed = !!(stats && stats.totalMatches > 0);
+
   // No match state
   if (!hasMatch) {
     return (
@@ -182,12 +186,36 @@ export default function TeamMatch() {
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="body1" color="text.secondary" mt={2}>
-                  No matches available right now
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Keep this page open to receive notifications when your match is ready
-                </Typography>
+                {tournamentIsCompleted && teamHasPlayed && standing ? (
+                  <>
+                    <Typography variant="h6" color="text.primary" mt={1} gutterBottom>
+                      Tournament finished
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" mt={1}>
+                      Final placement: #{standing.position} of {standing.totalTeams}
+                    </Typography>
+                  </>
+                ) : tournamentIsActive ? (
+                  <>
+                    <Typography variant="body1" color="text.secondary" mt={2}>
+                      No match scheduled right now
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      Your team is still in the tournament. Keep this page open to be notified when
+                      the next match is ready.
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1" color="text.secondary" mt={2}>
+                      No matches available right now
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      The tournament hasn&apos;t started yet. Once it begins, your matches will
+                      appear here.
+                    </Typography>
+                  </>
+                )}
               </CardContent>
             </Card>
 
