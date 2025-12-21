@@ -34,9 +34,9 @@ services:
       context: ..
       dockerfile: docker/Dockerfile
       args:
-        VITE_ENABLE_DEV_PAGE: "true" # Enable dev page in local Docker builds
+        VITE_ENABLE_DEV_PAGE: 'true' # Enable dev page in local Docker builds
       # PostgreSQL required for all setups
-    container_name: matchzy-tournament-api-dev
+    container_name: matchzy-tournament-dev
     restart: unless-stopped
     depends_on:
       postgres:

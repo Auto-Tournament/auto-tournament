@@ -30,9 +30,6 @@ esbuild.build({
   minify: isProduction,
   sourcemap: !isProduction,
   treeShaking: true,
-  define: {
-    'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || 'production'),
-  },
   // esbuild automatically handles __dirname and __filename for platform: 'node'
 }).catch(() => process.exit(1));
 

@@ -11,7 +11,7 @@ RESULTS_DIR="logs/test-results"
 IMAGE_TAG="matchzy-test:sharded"
 NETWORK_NAME="matchzy-test-network"
 PG_CONTAINER="matchzy-test-postgres"
-API_PREFIX="matchzy-tournament-api-dev-shard"
+API_PREFIX="matchzy-tournament-dev-shard"
 BASE_PORT=3123
 PG_PORT=5433
 

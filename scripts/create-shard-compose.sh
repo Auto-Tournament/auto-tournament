@@ -11,8 +11,8 @@ BEGIN { in_build = 0; build_indent = "" }
 /matchzy-postgres-dev/ {
   gsub(/matchzy-postgres-dev/, "matchzy-postgres-dev-shard-" shard_num)
 }
-/matchzy-tournament-api-dev/ {
-  gsub(/matchzy-tournament-api-dev/, "matchzy-tournament-api-dev-shard-" shard_num)
+/matchzy-tournament-dev/ {
+  gsub(/matchzy-tournament-dev/, "matchzy-tournament-dev-shard-" shard_num)
 }
 /^[[:space:]]*build:/ {
   print "    image: matchzy-test:sharded"

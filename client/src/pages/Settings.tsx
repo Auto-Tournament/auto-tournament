@@ -738,8 +738,6 @@ export default function Settings() {
                     setSteamApiKey(newSteamKey);
                     setInitialWebhookUrl(newWebhook);
                     setInitialSteamApiKey(newSteamKey);
-                    setDefaultPlayerElo(newDefaultElo);
-                    setInitialDefaultPlayerElo(newDefaultElo);
                     setSimulateMatches(newSimulate);
                     setInitialSimulateMatches(newSimulate);
                     setMatchzyChatPrefix(newChatPrefix);
