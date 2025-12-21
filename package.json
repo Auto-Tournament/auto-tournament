@@ -60,7 +60,8 @@
         "docker:local:down": "docker compose -f docker/docker-compose.local.yml down --rmi local",
         "docker:local:logs": "docker compose -f docker/docker-compose.local.yml logs -f",
         "docker:local:rebuild": "docker image prune -f && docker compose -f docker/docker-compose.local.yml up -d --build --no-deps matchzy-tournament && docker image prune -f",
-        "docker:rebuild": "docker image prune -f && docker compose -f docker/docker-compose.yml up -d --build --no-deps matchzy-tournament && docker image prune -f"
+        "docker:rebuild": "docker image prune -f && docker compose -f docker/docker-compose.yml up -d --build --no-deps matchzy-tournament && docker image prune -f",
+        "docker:restart": "yarn docker:down || true && yarn docker:local:down || true && docker rm -f matchzy-tournament-api-dev matchzy-tournament-api 2>/dev/null || true"
     },
     "keywords": [
         "cs2",
