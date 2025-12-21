@@ -122,8 +122,8 @@ export class MatchAllocationService {
         continue;
       }
 
-      // Check grace period: if status was recently updated to idle, wait before allocating
-      // This ensures demo uploads complete and match reset finishes
+      // Check grace period: if status was recently updated to idle, wait before allocating.
+      // This ensures demo uploads complete and match reset finishes.
       if (updatedAt) {
         const age = now - updatedAt;
 
@@ -164,13 +164,43 @@ export class MatchAllocationService {
       // Bi-directional connectivity safeguard:
       // Only allocate servers that have sent a recent connectivity test event
       // so we know they can reach our /api/events webhook.
-      const lastTestEvent = getLastServerTestEvent(server.id);
+      //
+      // If we haven't seen a recent test event, actively trigger css_te here so the
+      // admin doesn't need to manually hit "Test server" in the UI.
+      let lastTestEvent = getLastServerTestEvent(server.id);
       const TEST_EVENT_MAX_AGE_MS = 5 * 60 * 1000; // 5 minutes
-      if (!lastTestEvent || Date.now() - lastTestEvent > TEST_EVENT_MAX_AGE_MS) {
-        log.warn(
-          `[ALLOCATION] Skipping server ${server.id} (${server.name}) because no recent connectivity test event was received from it.`
-        );
-        continue;
+      const nowMs = Date.now();
+      if (!lastTestEvent || nowMs - lastTestEvent > TEST_EVENT_MAX_AGE_MS) {
+        const previousTestEventTs = lastTestEvent ?? 0;
+        try {
+          // Ask the server to send a test event back to /api/events
+          await rconService.sendCommand(server.id, 'css_te');
+
+          const timeoutMs = 5000;
+          const pollIntervalMs = 250;
+          const deadline = Date.now() + timeoutMs;
+
+          while (Date.now() < deadline) {
+            const ts = getLastServerTestEvent(server.id) ?? 0;
+            if (ts > previousTestEventTs) {
+              lastTestEvent = ts;
+              break;
+            }
+            await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+          }
+        } catch (error) {
+          log.warn(`[ALLOCATION] Failed to send css_te connectivity test to server ${server.id}`, {
+            error,
+          });
+        }
+
+        // If we still don't have a fresh test event after the active check, skip this server.
+        if (!lastTestEvent || Date.now() - lastTestEvent > TEST_EVENT_MAX_AGE_MS) {
+          log.warn(
+            `[ALLOCATION] Skipping server ${server.id} (${server.name}) because no recent connectivity test event was received from it.`
+          );
+          continue;
+        }
       }
 
       // Server is available!
