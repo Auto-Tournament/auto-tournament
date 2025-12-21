@@ -1,11 +1,15 @@
-# Local build compose file - builds from source instead of pulling from Docker Hub
-# Usage: docker compose -f docker/docker-compose.local.yml up -d --build
-# Use this when you've cloned the repository and want to build from source
+# Local build compose file - builds from source instead of pulling from Docker Hub.
 #
-# To bind to a different host port, set HOST_PORT environment variable:
-#   HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
-# Or with yarn: HOST_PORT=27016 yarn docker:local:up
-# Default port is 3069 if HOST_PORT is not set
+# First run (or after Dockerfile changes):
+#   docker compose -f docker/docker-compose.local.yml up -d --build
+#   # or: HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
+#
+# Subsequent runs (container restarts without forcing a rebuild):
+#   docker compose -f docker/docker-compose.local.yml up -d
+#
+# Use this when you've cloned the repository and want to build from source.
+#
+# Default port is 3069 if HOST_PORT is not set.
 
 services:
   # PostgreSQL service (required for all setups)
