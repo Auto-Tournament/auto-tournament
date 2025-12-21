@@ -108,6 +108,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     mapRoundsTeam2 = liveScores.team2Score ?? mapRoundsTeam2;
   }
 
+  const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
+    const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
+    const mapRounds = team === 'team1' ? mapRoundsTeam1 : mapRoundsTeam2;
+
+    // Prefer series maps won when available (BO formats / bracket view)
+    if (typeof seriesScore === 'number') return seriesScore;
+    if (typeof mapRounds === 'number') return mapRounds;
+    return undefined;
+  };
+
   return (
     <Card
       sx={{
@@ -157,9 +167,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           </Box>
         </Box>
 
-        {/* Teams + Score Summary */}
+        {/* Teams with right-aligned score */}
         <Stack spacing={1.5}>
-          {/* Team rows */}
+          {/* Team 1 row */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -172,7 +182,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               borderColor: getTeamBorderColor(match.team1?.id),
             }}
           >
-            <Box flex={1}>
+            <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
                 fontWeight={isWinner(match.team1?.id) ? 600 : 500}
@@ -180,21 +190,31 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               >
                 {getTeamName(match.team1?.id)}
               </Typography>
+              {isWinner(match.team1?.id) && (
+                <Chip
+                  label="WINNER"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'success.contrastText',
+                    borderColor: 'success.contrastText',
+                  }}
+                />
+              )}
             </Box>
-            {isWinner(match.team1?.id) && (
-              <Chip
-                label="WINNER"
-                size="small"
-                variant="outlined"
-                sx={{
-                  fontWeight: 600,
-                  color: 'success.contrastText',
-                  borderColor: 'success.contrastText',
-                }}
-              />
+            {getTeamScoreDisplay('team1') !== undefined && (
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ minWidth: 24, textAlign: 'right', ml: 1 }}
+              >
+                {getTeamScoreDisplay('team1')}
+              </Typography>
             )}
           </Box>
 
+          {/* Team 2 row */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -207,7 +227,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               borderColor: getTeamBorderColor(match.team2?.id),
             }}
           >
-            <Box flex={1}>
+            <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
                 fontWeight={isWinner(match.team2?.id) ? 600 : 500}
@@ -215,49 +235,29 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               >
                 {getTeamName(match.team2?.id)}
               </Typography>
-            </Box>
-            {isWinner(match.team2?.id) && (
-              <Chip
-                label="WINNER"
-                size="small"
-                variant="outlined"
-                sx={{
-                  fontWeight: 600,
-                  color: 'success.contrastText',
-                  borderColor: 'success.contrastText',
-                }}
-              />
-            )}
-          </Box>
-
-          {/* Compact score summary */}
-          {(seriesMapsTeam1 !== undefined ||
-            seriesMapsTeam2 !== undefined ||
-            mapRoundsTeam1 !== undefined ||
-            mapRoundsTeam2 !== undefined) && (
-            <Box display="flex" justifyContent="space-between" alignItems="center" mt={0.5}>
-              <Box>
-                {seriesMapsTeam1 !== undefined && seriesMapsTeam2 !== undefined && (
-                  <Typography variant="body2" fontWeight={600}>
-                    Series Maps Won: {seriesMapsTeam1} - {seriesMapsTeam2}
-                  </Typography>
-                )}
-                {mapRoundsTeam1 !== undefined && mapRoundsTeam2 !== undefined && (
-                  <Typography variant="body2" color="text.secondary">
-                    Map Rounds:{' '}
-                    <strong>
-                      {mapRoundsTeam1} - {mapRoundsTeam2}
-                    </strong>
-                  </Typography>
-                )}
-              </Box>
-              {isShuffleMatch() && (
-                <Typography variant="caption" color="text.secondary">
-                  Shuffle match
-                </Typography>
+              {isWinner(match.team2?.id) && (
+                <Chip
+                  label="WINNER"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'success.contrastText',
+                    borderColor: 'success.contrastText',
+                  }}
+                />
               )}
             </Box>
-          )}
+            {getTeamScoreDisplay('team2') !== undefined && (
+              <Typography
+                variant="h6"
+                fontWeight={700}
+                sx={{ minWidth: 24, textAlign: 'right', ml: 1 }}
+              >
+                {getTeamScoreDisplay('team2')}
+              </Typography>
+            )}
+          </Box>
         </Stack>
 
         {/* Player Count Info (for live matches) */}
