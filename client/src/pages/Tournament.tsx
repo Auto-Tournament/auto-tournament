@@ -682,6 +682,14 @@ const Tournament: React.FC = () => {
     setStarting(true);
     setShowStartConfirm(false);
 
+    // UX safeguard: don't let the "Starting..." spinner hang forever if the
+    // backend takes a long time to run server checks/allocations. After a
+    // short grace period, we optimistically clear the loading state and let
+    // the heavy work continue in the background.
+    const spinnerTimeout = setTimeout(() => {
+      setStarting(false);
+    }, 5000);
+
     try {
       const baseUrl = window.location.origin;
       const response = await startTournament(baseUrl);
@@ -698,6 +706,7 @@ const Tournament: React.FC = () => {
       const error = err as Error;
       showError(error.message || 'Failed to start tournament');
     } finally {
+      clearTimeout(spinnerTimeout);
       setStarting(false);
     }
   };

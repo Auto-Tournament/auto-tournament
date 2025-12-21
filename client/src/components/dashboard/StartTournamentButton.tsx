@@ -81,6 +81,13 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     setError('');
     setShowConfirm(false);
 
+    // UX safeguard: if backend server checks / allocations are slow, don't keep
+    // the "Starting..." spinner up forever. After a short grace period we clear
+    // the loading state and let the heavy work run in the background.
+    const spinnerTimeout = setTimeout(() => {
+      setStarting(false);
+    }, 5000);
+
     try {
       // In dev, if user explicitly enabled simulation here and it's not already on,
       // flip the global simulateMatches setting before starting. This lets us enable
@@ -116,6 +123,7 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       const error = err as Error;
       setError(error.message || 'Failed to start tournament');
     } finally {
+      clearTimeout(spinnerTimeout);
       setStarting(false);
     }
   };
