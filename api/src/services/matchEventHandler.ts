@@ -26,6 +26,7 @@ import { teamService } from './teamService';
 import { advanceToNextRound } from './shuffleTournamentService';
 import { matchAllocationService } from './matchAllocationService';
 import { settingsService } from './settingsService';
+import { serverAllocationTracker } from './serverAllocationTracker';
 import type { Player } from '../types/team.types';
 
 /**
@@ -699,6 +700,13 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   );
 
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
+
+  // Mark the server as "preparing" in the allocation tracker so the allocator
+  // can treat it as being in a short postgame window. The underlying MatchZy
+  // plugin will still provide the authoritative status via its convars.
+  if (match.server_id) {
+    serverAllocationTracker.markPreparing(match.server_id, matchSlug);
+  }
 
   // Emit match + bracket updates so all UIs (including bracket view) can react
   const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [

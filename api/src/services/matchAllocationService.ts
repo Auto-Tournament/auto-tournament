@@ -13,6 +13,7 @@ import { autoCompleteVetoForMatch } from './vetoSimulationService';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
+import { serverAllocationTracker } from './serverAllocationTracker';
 
 /**
  * Service for automatic server allocation to tournament matches
@@ -52,10 +53,14 @@ export class MatchAllocationService {
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
+    // Skip servers that we already know are busy from the allocation tracker
+    const candidateServers = enabledServers.filter(
+      (server) => !serverAllocationTracker.isBusy(server.id)
+    );
 
     // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(
-      enabledServers.map(async (server) => {
+      candidateServers.map(async (server) => {
         try {
           // First, perform a lightweight connectivity check using the standard
           // `status` command. This mirrors the manual "Test server" check in
@@ -205,6 +210,7 @@ export class MatchAllocationService {
 
       // Server is available!
       availableServers.push(server);
+      serverAllocationTracker.markIdle(server.id);
       log.debug(`Server ${server.id} (${server.name}) is available for allocation (idle)`);
     }
 
@@ -275,63 +281,98 @@ export class MatchAllocationService {
       error?: string;
     }> = [];
 
-    // Allocate servers to matches (round-robin if we have fewer servers than matches)
+    // Allocate servers to matches (round-robin starting point, but we will
+    // re-check server status for each allocation and fall back to other
+    // servers if MatchZy reports the server as busy or load fails).
     let serverIndex = 0;
     for (const match of readyMatches) {
-      const server = availableServers[serverIndex % availableServers.length];
+      let allocated = false;
+      let lastError: string | undefined;
 
-      try {
-        log.info(
-          `[ALLOCATION] Allocating match ${match.slug} to server ${server.name} (${server.id})`
-        );
+      // Try each available server at most once for this match
+      for (let i = 0; i < availableServers.length; i++) {
+        const idx = (serverIndex + i) % availableServers.length;
+        const server = availableServers[idx];
 
-        // Update match with server_id
-        await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
+        try {
+          // Double-check the live MatchZy status immediately before allocation
+          // so we don't rely solely on the stale snapshot from getAvailableServers.
+          const statusInfo = await serverStatusService.getServerStatus(server.id);
+          if (
+            !statusInfo.online ||
+            statusInfo.status !== ServerStatus.IDLE ||
+            (statusInfo.matchSlug && statusInfo.matchSlug.trim() !== '')
+          ) {
+            log.debug(
+              `[ALLOCATION] Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
+            );
+            continue;
+          }
 
-        // Emit websocket event for server assignment
-        const matchWithServer = await db.queryOneAsync<DbMatchRow>(
-          'SELECT * FROM matches WHERE slug = ?',
-          [match.slug]
-        );
-        if (matchWithServer) {
-          emitMatchUpdate(matchWithServer);
-          emitBracketUpdate({
-            action: 'server_assigned',
-            matchSlug: match.slug,
-            serverId: server.id,
-          });
+          log.info(
+            `[ALLOCATION] Allocating match ${match.slug} to server ${server.name} (${server.id})`
+          );
+
+          // Mark server as "in allocation" to prevent concurrent allocations
+          this.allocatingServers.add(server.id);
+          serverAllocationTracker.markAllocated(server.id, match.slug);
+
+          // Update match with server_id
+          await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
+
+          // Emit websocket event for server assignment
+          const matchWithServer = await db.queryOneAsync<DbMatchRow>(
+            'SELECT * FROM matches WHERE slug = ?',
+            [match.slug]
+          );
+          if (matchWithServer) {
+            emitMatchUpdate(matchWithServer);
+            emitBracketUpdate({
+              action: 'server_assigned',
+              matchSlug: match.slug,
+              serverId: server.id,
+            });
+          }
+
+          // Load match on server and let MatchZy validate the config
+          const loadResult = await loadMatchOnServer(match.slug, server.id, { baseUrl });
+
+          if (loadResult.success) {
+            log.matchAllocated(match.slug, server.id, server.name);
+            results.push({
+              matchSlug: match.slug,
+              serverId: server.id,
+              success: true,
+            });
+            // Advance the round-robin index from the successful server
+            serverIndex = idx + 1;
+            allocated = true;
+            break;
+          } else {
+            // Roll back server_id if loading failed so this match can be retried later.
+            await db.updateAsync('matches', { server_id: null }, 'slug = ?', [match.slug]);
+            lastError = loadResult.error || 'Failed to load match';
+            log.error(
+              `Failed to load match ${match.slug} on ${server.name} (${server.id}), will try another server if available`,
+              undefined,
+              { error: loadResult.error }
+            );
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          lastError = errorMessage;
+          log.error(`Failed to allocate match ${match.slug} to server ${server.id}`, error);
+        } finally {
+          // Clear the "allocating" flag for this server for future attempts
+          this.allocatingServers.delete(availableServers[idx].id);
         }
+      }
 
-        // Load match on server
-        const loadResult = await loadMatchOnServer(match.slug, server.id, { baseUrl });
-
-        if (loadResult.success) {
-          log.matchAllocated(match.slug, server.id, server.name);
-          results.push({
-            matchSlug: match.slug,
-            serverId: server.id,
-            success: true,
-          });
-          serverIndex++; // Move to next server for next match
-        } else {
-          log.error(`Failed to load match ${match.slug} on ${server.name}`, undefined, {
-            error: loadResult.error,
-          });
-          results.push({
-            matchSlug: match.slug,
-            serverId: server.id,
-            success: false,
-            error: loadResult.error || 'Failed to load match',
-          });
-        }
-      } catch (error) {
-        const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-        log.error(`Failed to allocate match ${match.slug} to server ${server.id}`, error);
+      if (!allocated) {
         results.push({
           matchSlug: match.slug,
-          serverId: server.id,
           success: false,
-          error: errorMessage,
+          error: lastError || 'No available servers could load this match',
         });
       }
     }

@@ -7,6 +7,7 @@ import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
+import { serverAllocationTracker } from '../services/serverAllocationTracker';
 
 const router = Router();
 
@@ -127,6 +128,10 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       statusInfo.status === ServerStatus.IDLE ||
       statusInfo.status === ServerStatus.POSTGAME;
 
+    // Combine plugin status with internal allocation tracker state
+    const allocationState = serverAllocationTracker.getState(id);
+    const allocationLabel = allocationState?.state ?? 'unknown';
+
     // Bi-directional connectivity check:
     //  - We already know we can reach the server via RCON (reachableFromApi).
     //  - Now trigger css_te so the server sends a test event back to /api/events.
@@ -160,6 +165,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       currentMatch: statusInfo.matchSlug,
       reachableFromApi,
       serverCanReachApi,
+      pluginStatus: statusInfo.status,
+      allocationState: allocationLabel,
+      allocationMatchSlug: allocationState?.matchSlug ?? null,
     });
   } catch (error) {
     log.error('Error checking server status', error);
