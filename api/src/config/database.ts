@@ -31,7 +31,9 @@ class DatabaseManager {
     const connString =
       process.env.DATABASE_URL ||
       `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
-        process.env.DB_HOST || 'localhost'
+        // Default to explicit IPv4 loopback instead of "localhost" so we don't
+        // accidentally hit ::1 (IPv6) on hosts where Docker only binds 127.0.0.1.
+        process.env.DB_HOST || '127.0.0.1'
       }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
 
     this.postgresPool = new Pool({
