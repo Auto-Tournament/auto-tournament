@@ -431,7 +431,6 @@ const Development: React.FC = () => {
       const players: Array<{
         id: string; // Steam ID
         name: string;
-        elo?: number;
       }> = [];
 
       // Generate unique Steam IDs
@@ -455,13 +454,11 @@ const Development: React.FC = () => {
         const lastName = DEV_LAST_NAMES[lastIndex];
         const name = `${firstName} ${lastName}`;
 
-        // Vary ELO between 2500-3500 for testing
-        const elo = 2500 + (i % 10) * 100;
-
+        // Let the backend apply its default Skill Rating (baseline ~1500)
+        // by omitting any explicit ELO on creation.
         players.push({
           id: steamId,
           name,
-          elo,
         });
       }
 
