@@ -333,6 +333,42 @@ export default function PlayerProfile() {
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
   const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
+  // Recent form: last 5 matches as W/L string
+  const recentMatches = React.useMemo(
+    () =>
+      [...uniqueMatchHistory].sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0)),
+    [uniqueMatchHistory]
+  );
+  const recentForm = React.useMemo(
+    () =>
+      recentMatches
+        .slice(0, 5)
+        .map((m) => (m.wonMatch ? 'W' : 'L'))
+        .join(''),
+    [recentMatches]
+  );
+
+  // Best and toughest matches by ADR
+  const bestAdrMatch = React.useMemo(
+    () =>
+      recentMatches.reduce<MatchHistoryEntry | null>((best, m) => {
+        if (m.adr === undefined) return best;
+        if (!best || (best.adr ?? 0) < m.adr) return m;
+        return best;
+      }, null),
+    [recentMatches]
+  );
+
+  const worstAdrMatch = React.useMemo(
+    () =>
+      recentMatches.reduce<MatchHistoryEntry | null>((worst, m) => {
+        if (m.adr === undefined) return worst;
+        if (!worst || (worst.adr ?? Infinity) > m.adr) return m;
+        return worst;
+      }, null),
+    [recentMatches]
+  );
+
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
       <Container maxWidth="md">
@@ -484,6 +520,54 @@ export default function PlayerProfile() {
               </Card>
             </Grid>
           </Grid>
+
+          {/* Recent form and performance highlights */}
+          {hasAnyMatches && (
+            <Card>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} gutterBottom>
+                  Recent Form & Highlights
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={2}>
+                  <Box>
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Recent Form (last 5)
+                    </Typography>
+                    <Chip
+                      label={
+                        recentForm
+                          ? recentForm.split('').join(' ')
+                          : 'No matches yet'
+                      }
+                      color={wins >= losses ? 'success' : 'default'}
+                    />
+                  </Box>
+                  {bestAdrMatch && (
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Best Match (ADR)
+                      </Typography>
+                      <Typography variant="body2">
+                        {bestAdrMatch.adr?.toFixed(1)} ADR in match #{bestAdrMatch.matchNumber}{' '}
+                        ({getRoundLabel(bestAdrMatch.round)})
+                      </Typography>
+                    </Box>
+                  )}
+                  {worstAdrMatch && (
+                    <Box>
+                      <Typography variant="body2" color="text.secondary" gutterBottom>
+                        Toughest Match (ADR)
+                      </Typography>
+                      <Typography variant="body2">
+                        {worstAdrMatch.adr?.toFixed(1)} ADR in match #{worstAdrMatch.matchNumber}{' '}
+                        ({getRoundLabel(worstAdrMatch.round)})
+                      </Typography>
+                    </Box>
+                  )}
+                </Box>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Skill Rating Progression Chart */}
           {ratingHistory.length > 0 && player && (

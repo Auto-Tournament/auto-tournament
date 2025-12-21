@@ -63,9 +63,7 @@ export const useBracket = () => {
       } = await api.post('/api/tournament/start', { baseUrl });
 
       if (response.success) {
-        showSuccess(
-          `Tournament started! ${response.allocated || 0} matches allocated to servers.`
-        );
+        showSuccess(`Tournament started! ${response.allocated || 0} matches allocated to servers.`);
         await loadBracket();
       } else {
         showError(response.message || 'Failed to start tournament');
@@ -89,7 +87,7 @@ export const useBracket = () => {
         (payload.slug as string | undefined) ||
         (payload.matchSlug as string | undefined) ||
         (payload.match && typeof payload.match === 'object'
-          ? ((payload.match as { slug?: string }).slug ?? undefined)
+          ? (payload.match as { slug?: string }).slug ?? undefined
           : undefined);
 
       if (!slug) {
@@ -105,7 +103,8 @@ export const useBracket = () => {
         const next: Match = { ...current };
         let changed = false;
 
-        const status = (payload.status as Match['status'] | undefined) ??
+        const status =
+          (payload.status as Match['status'] | undefined) ??
           ((payload as { match_status?: string }).match_status as Match['status'] | undefined);
         if (status && status !== current.status) {
           next.status = status;
@@ -182,6 +181,8 @@ export const useBracket = () => {
             'tournament_updated',
             'tournament_completed',
             'tournament_started',
+            // Structural changes that add/remove matches (e.g., next round generated)
+            'round_advanced',
           ].includes(action);
 
       if (requiresFullReload) {
@@ -228,7 +229,8 @@ export const useBracket = () => {
         } else if (action === 'server_assigned' || action === 'match_allocated') {
           const serverId =
             (event.serverId as string | undefined) ??
-            ((event as { server_id?: string }).server_id ?? undefined);
+            (event as { server_id?: string }).server_id ??
+            undefined;
           if (serverId !== undefined && serverId !== current.serverId) {
             next.serverId = serverId || undefined;
             changed = true;
