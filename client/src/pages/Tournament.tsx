@@ -133,6 +133,10 @@ const Tournament: React.FC = () => {
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showStartConfirm, setShowStartConfirm] = useState(false);
+  const [startWarningInfo, setStartWarningInfo] = useState<{
+    requiredServers: number;
+    availableServers: number;
+  } | null>(null);
   const [showChangePreview, setShowChangePreview] = useState(false);
   const [changes, setChanges] = useState<
     Array<{
@@ -656,7 +660,20 @@ const Tournament: React.FC = () => {
     }
   };
 
+  const getRequiredServersForTournament = () => {
+    if (!tournament) return 0;
+    if (tournament.type === 'shuffle') {
+      // Shuffle tournaments reuse servers round-by-round; only one match per server at a time
+      return 1;
+    }
+    const teamCount = tournament.teams?.length || 0;
+    if (teamCount < 2) return 0;
+    return Math.ceil(teamCount / 2);
+  };
+
   const handleStart = async () => {
+    const requiredServers = getRequiredServersForTournament();
+
     // Check server availability first
     try {
       const availabilityResponse = await api.get<{
@@ -664,23 +681,30 @@ const Tournament: React.FC = () => {
         availableServerCount: number;
       }>('/api/tournament/server-availability');
 
-      if (availabilityResponse.success && availabilityResponse.availableServerCount === 0) {
-        // No servers available - show warning modal
-        setShowStartConfirm(true);
-        return;
+      if (availabilityResponse.success) {
+        const available = availabilityResponse.availableServerCount;
+
+        // If we don't have enough available servers to cover the first round's concurrent matches,
+        // show a confirmation dialog so the admin explicitly accepts queued/paused matches.
+        if (requiredServers > 0 && available < requiredServers) {
+          setStartWarningInfo({ requiredServers, availableServers: available });
+          setShowStartConfirm(true);
+          return;
+        }
       }
     } catch (err) {
       console.error('Error checking server availability:', err);
       // Continue anyway if check fails
     }
 
-    // Servers available or check failed - start immediately
+    // Servers are sufficient (or check failed) - start immediately
     await performTournamentStart();
   };
 
   const performTournamentStart = async () => {
     setStarting(true);
     setShowStartConfirm(false);
+    setStartWarningInfo(null);
 
     // UX safeguard: don't let the "Starting..." spinner hang forever if the
     // backend takes a long time to run server checks/allocations. After a
@@ -867,6 +891,7 @@ const Tournament: React.FC = () => {
         startOpen={showStartConfirm}
         tournamentName={tournament?.name}
         tournamentStatus={tournament?.status}
+        startWarning={startWarningInfo ?? undefined}
         onDeleteConfirm={handleDelete}
         onDeleteCancel={() => setShowDeleteConfirm(false)}
         onRegenerateConfirm={handleRegenerate}
@@ -874,7 +899,10 @@ const Tournament: React.FC = () => {
         onResetConfirm={handleReset}
         onResetCancel={() => setShowResetConfirm(false)}
         onStartConfirm={performTournamentStart}
-        onStartCancel={() => setShowStartConfirm(false)}
+        onStartCancel={() => {
+          setShowStartConfirm(false);
+          setStartWarningInfo(null);
+        }}
       />
 
       <TournamentChangePreviewModal

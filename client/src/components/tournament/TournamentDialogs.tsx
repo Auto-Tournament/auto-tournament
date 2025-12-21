@@ -10,6 +10,10 @@ interface TournamentDialogsProps {
   startOpen: boolean;
   tournamentName?: string;
   tournamentStatus?: string;
+  startWarning?: {
+    requiredServers: number;
+    availableServers: number;
+  };
   onDeleteConfirm: () => void;
   onDeleteCancel: () => void;
   onRegenerateConfirm: () => void;
@@ -27,6 +31,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
   startOpen,
   tournamentName,
   tournamentStatus,
+   startWarning,
   onDeleteConfirm,
   onDeleteCancel,
   onRegenerateConfirm,
@@ -37,6 +42,13 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
   onStartCancel,
 }) => {
   const navigate = useNavigate();
+
+  const requiredServers = startWarning?.requiredServers ?? 0;
+  const availableServers = startWarning?.availableServers ?? 0;
+  const hasServerCounts = requiredServers > 0;
+  const noServers = hasServerCounts && availableServers === 0;
+  const insufficientServers =
+    hasServerCounts && availableServers > 0 && availableServers < requiredServers;
 
   return (
     <>
@@ -168,17 +180,54 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
 
       <ConfirmDialog
         open={startOpen}
-        title="⚠️ No Servers Available"
+        title={
+          noServers
+            ? '⚠️ No Servers Available'
+            : insufficientServers
+            ? '⚠️ Not Enough Servers'
+            : '⚠️ Start Tournament Without Servers?'
+        }
         message={
           <>
             <Alert severity="warning" sx={{ mb: 2 }}>
-              <Typography variant="body2" fontWeight={600} gutterBottom>
-                No servers are currently available
-              </Typography>
-              <Typography variant="body2">
-                The tournament will start, but matches will be postponed until a server becomes available.
-                The system will automatically allocate matches when servers are ready.
-              </Typography>
+              {noServers && (
+                <>
+                  <Typography variant="body2" fontWeight={600} gutterBottom>
+                    No servers are currently available
+                  </Typography>
+                  <Typography variant="body2">
+                    The tournament will start, but matches will be postponed until a server becomes
+                    available. The system will automatically allocate matches when servers are
+                    ready.
+                  </Typography>
+                </>
+              )}
+              {insufficientServers && (
+                <>
+                  <Typography variant="body2" fontWeight={600} gutterBottom>
+                    Not enough servers to run all first-round matches concurrently
+                  </Typography>
+                  <Typography variant="body2">
+                    You currently have <strong>{availableServers}</strong> available server
+                    {availableServers === 1 ? '' : 's'}, but the first round expects{' '}
+                    <strong>{requiredServers}</strong> concurrent match
+                    {requiredServers === 1 ? '' : 'es'}. Some matches will queue and start later as
+                    servers free up.
+                  </Typography>
+                </>
+              )}
+              {!noServers && !insufficientServers && (
+                <>
+                  <Typography variant="body2" fontWeight={600} gutterBottom>
+                    Server availability is uncertain
+                  </Typography>
+                  <Typography variant="body2">
+                    The tournament may start with limited or no servers available. Matches will be
+                    postponed until servers become available, and will be allocated automatically
+                    when they are ready.
+                  </Typography>
+                </>
+              )}
             </Alert>
             <Typography variant="body2" color="text.secondary">
               Do you want to start the tournament anyway?

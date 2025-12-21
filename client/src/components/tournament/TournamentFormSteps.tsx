@@ -438,6 +438,8 @@ export function TournamentFormSteps({
       }
       case 5: {
         const volumeReview = getMatchVolumeEstimate();
+        const requiredServers = Math.max(1, Math.ceil(selectedTeams.length / 2));
+        const hasEnoughServers = serverCount >= requiredServers;
         return (
           <Stack spacing={2}>
             <Alert severity="info">
@@ -467,6 +469,20 @@ export function TournamentFormSteps({
                 {format.toUpperCase()}
               </Typography>
             </Box>
+            {type !== 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Servers
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color={hasEnoughServers ? 'text.secondary' : 'error.main'}
+                >
+                  {serverCount} server{serverCount === 1 ? '' : 's'} configured;&nbsp;
+                  <strong>{requiredServers}</strong> required to run all matches in this bracket.
+                </Typography>
+              </Box>
+            )}
             {volumeReview && type !== 'shuffle' && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
