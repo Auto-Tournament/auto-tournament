@@ -373,8 +373,9 @@ class TournamentService {
     // Shuffle tournaments have their own dynamic match/round generation and
     // temporary teams. Resetting should NOT attempt to regenerate a static bracket.
     if (tournament.type === 'shuffle') {
-      // Clean up shuffle-specific state
-      await db.execAsync('DELETE FROM shuffle_tournament_players WHERE tournament_id = 1');
+      // Clean up shuffle-specific state. We intentionally KEEP registrations in
+      // shuffle_tournament_players so admins don't lose their selected player
+      // pool when resetting back to setup.
       await db.execAsync("DELETE FROM teams WHERE id LIKE 'shuffle-r%'");
 
       await db.updateAsync(
@@ -389,11 +390,7 @@ class TournamentService {
         [1]
       );
 
-      log.success(
-        `Shuffle tournament reset to setup mode. Deleted ${
-          matchCount?.count || 0
-        } match(es) and cleared shuffle teams/registrations.`
-      );
+      log.success(`Shuffle tournament reset to setup mode. Deleted ${matchCount?.count || 0} match(es) and cleared shuffle teams (registrations preserved).`);
 
       const result = await this.getTournament();
       if (!result) throw new Error('Failed to retrieve tournament after reset');
