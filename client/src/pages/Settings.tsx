@@ -643,6 +643,12 @@ export default function Settings() {
                           valueLabelDisplay="on"
                           data-testid="settings-simulation-timescale-slider"
                         />
+                        {simulationTimescale > 2 && (
+                          <Typography variant="caption" color="warning.main" sx={{ mt: 1, display: 'block' }}>
+                            Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but
+                            are fine to use for quick local testing.
+                          </Typography>
+                        )}
                       </Box>
                     </Box>
                   </Box>

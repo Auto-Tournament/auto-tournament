@@ -270,6 +270,59 @@ export function TournamentFormSteps({
     }
   };
 
+  const getMatchVolumeEstimate = () => {
+    const teamCount = selectedTeams.length;
+    const mapsPerMatch = format === 'bo3' ? 3 : format === 'bo5' ? 5 : 1;
+
+    if (type === 'shuffle') {
+      return {
+        totalRounds: maps.length,
+        totalMatches: undefined as number | undefined,
+        mapsPerMatch: 1,
+        totalMaps: maps.length,
+      };
+    }
+
+    if (teamCount < 2) {
+      return null;
+    }
+
+    switch (type) {
+      case 'single_elimination': {
+        const totalMatches = Math.max(0, teamCount - 1);
+        const totalRounds = Math.ceil(Math.log2(teamCount));
+        return {
+          totalRounds,
+          totalMatches,
+          mapsPerMatch,
+          totalMaps: totalMatches * mapsPerMatch,
+        };
+      }
+      case 'round_robin': {
+        const totalMatches = (teamCount * (teamCount - 1)) / 2;
+        const totalRounds = Math.max(0, teamCount - 1);
+        return {
+          totalRounds,
+          totalMatches,
+          mapsPerMatch,
+          totalMaps: totalMatches * mapsPerMatch,
+        };
+      }
+      case 'swiss': {
+        const totalRounds = Math.ceil(Math.log2(teamCount));
+        const totalMatches = Math.floor(teamCount / 2) * totalRounds;
+        return {
+          totalRounds,
+          totalMatches,
+          mapsPerMatch,
+          totalMaps: totalMatches * mapsPerMatch,
+        };
+      }
+      default:
+        return null;
+    }
+  };
+
   const renderStepContent = () => {
     switch (activeStep) {
       case 0:
@@ -320,12 +373,19 @@ export function TournamentFormSteps({
       case 4:
         // Shuffle tournament configuration or team selection
         if (type === 'shuffle') {
+          const volume = getMatchVolumeEstimate();
           return (
             <Stack spacing={3}>
               <Alert severity="info">
                 Shuffle tournaments don&apos;t use fixed teams. Players will be automatically
-                balanced into teams for each match based on their ELO ratings.
+                balanced into teams for each match based on their Skill Ratings.
               </Alert>
+              {volume && (
+                <Alert severity="info">
+                  This shuffle tournament will have approximately <strong>{volume.totalRounds}</strong>{' '}
+                  round{volume.totalRounds === 1 ? '' : 's'} (one per selected map).
+                </Alert>
+              )}
               {shuffleSettings && onShuffleSettingsChange && (
                 <ShuffleTournamentConfigStep
                   settings={shuffleSettings}
@@ -338,28 +398,44 @@ export function TournamentFormSteps({
             </Stack>
           );
         }
+        const volume = getMatchVolumeEstimate();
         return (
-          <TeamSelectionStep
-            teams={teams}
-            selectedTeams={selectedTeams}
-            type={type}
-            serverCount={serverCount}
-            requiredServers={Math.ceil(selectedTeams.length / 2)}
-            hasEnoughServers={serverCount >= Math.ceil(selectedTeams.length / 2)}
-            loadingServers={loadingServers}
-            canEdit={canEdit}
-            saving={saving}
-            onTeamsChange={onTeamsChange}
-            onCreateTeam={() => setTeamModalOpen(true)}
-            onImportTeams={() => setTeamImportModalOpen(true)}
-            onAddServer={() => {
-              setEditingServer(null);
-              setServerModalOpen(true);
-            }}
-            onBatchAddServers={() => setBatchServerModalOpen(true)}
-          />
+          <Stack spacing={2}>
+            {volume && (
+              <Alert severity="info">
+                With <strong>{selectedTeams.length}</strong> team
+                {selectedTeams.length === 1 ? '' : 's'} in a{' '}
+                <strong>{type.replace('_', ' ')}</strong> {format.toUpperCase()} tournament, this
+                bracket will have approximately <strong>{volume.totalMatches}</strong> match
+                {volume.totalMatches === 1 ? '' : 'es'} across{' '}
+                <strong>{volume.totalRounds}</strong> round
+                {volume.totalRounds === 1 ? '' : 's'} (up to <strong>{volume.totalMaps}</strong>{' '}
+                map{volume.totalMaps === 1 ? '' : 's'} total).
+              </Alert>
+            )}
+            <TeamSelectionStep
+              teams={teams}
+              selectedTeams={selectedTeams}
+              type={type}
+              serverCount={serverCount}
+              requiredServers={Math.ceil(selectedTeams.length / 2)}
+              hasEnoughServers={serverCount >= Math.ceil(selectedTeams.length / 2)}
+              loadingServers={loadingServers}
+              canEdit={canEdit}
+              saving={saving}
+              onTeamsChange={onTeamsChange}
+              onCreateTeam={() => setTeamModalOpen(true)}
+              onImportTeams={() => setTeamImportModalOpen(true)}
+              onAddServer={() => {
+                setEditingServer(null);
+                setServerModalOpen(true);
+              }}
+              onBatchAddServers={() => setBatchServerModalOpen(true)}
+            />
+          </Stack>
         );
       case 5:
+        const volumeReview = getMatchVolumeEstimate();
         return (
           <Stack spacing={2}>
             <Alert severity="info">
@@ -389,6 +465,22 @@ export function TournamentFormSteps({
                 {format.toUpperCase()}
               </Typography>
             </Box>
+            {volumeReview && type !== 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Estimated Volume
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Approximately <strong>{volumeReview.totalMatches}</strong> match
+                  {volumeReview.totalMatches === 1 ? '' : 'es'} over{' '}
+                  <strong>{volumeReview.totalRounds}</strong> round
+                  {volumeReview.totalRounds === 1 ? '' : 's'} (
+                  <strong>best of {volumeReview.mapsPerMatch}</strong>, up to{' '}
+                  <strong>{volumeReview.totalMaps}</strong> map
+                  {volumeReview.totalMaps === 1 ? '' : 's'} total).
+                </Typography>
+              </Box>
+            )}
             <Box>
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
                 Maps ({maps.length})
