@@ -281,6 +281,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   // Shuffle tournaments don't use veto - treat as completed to avoid "VETO PENDING" labels
   const effectiveVetoCompleted = isShuffleMatch ? true : match.vetoCompleted;
+  const vetoDisabled = isShuffleMatch;
   const normalizedTeam1Players = livePlayerStats?.team1?.length
     ? livePlayerStats.team1.map((player) => ({
         name: player.name,
@@ -375,38 +376,40 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             </Box>
 
             {/* Detailed Status Info */}
-            <Alert
-              severity={
-                match.status === 'completed'
-                  ? 'success'
-                  : match.status === 'live'
-                  ? 'error'
-                  : match.status === 'loaded'
-                  ? 'info'
-                  : 'warning'
-              }
-              icon={false}
-            >
-              <Typography variant="body2" fontWeight={600} mb={0.5}>
-                {getDetailedStatusLabel(
-                  match.status,
-                  connectionStatus?.totalConnected,
-                  match.config?.expected_players_total || 10,
-                  false,
-                  effectiveVetoCompleted,
-                  tournamentStarted,
-                  Boolean(match.serverId)
-                )}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {getStatusExplanation(
-                  match.status,
-                  connectionStatus?.totalConnected,
-                  match.config?.expected_players_total || 10,
-                  tournamentStarted
-                )}
-              </Typography>
-            </Alert>
+            {!(vetoDisabled && (match.status === 'pending' || match.status === 'ready')) && (
+              <Alert
+                severity={
+                  match.status === 'completed'
+                    ? 'success'
+                    : match.status === 'live'
+                    ? 'error'
+                    : match.status === 'loaded'
+                    ? 'info'
+                    : 'warning'
+                }
+                icon={false}
+              >
+                <Typography variant="body2" fontWeight={600} mb={0.5}>
+                  {getDetailedStatusLabel(
+                    match.status,
+                    connectionStatus?.totalConnected,
+                    match.config?.expected_players_total || 10,
+                    false,
+                    effectiveVetoCompleted,
+                    tournamentStarted,
+                    Boolean(match.serverId)
+                  )}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {getStatusExplanation(
+                    match.status,
+                    connectionStatus?.totalConnected,
+                    match.config?.expected_players_total || 10,
+                    tournamentStarted
+                  )}
+                </Typography>
+              </Alert>
+            )}
 
             {/* Server Info */}
             {match.serverName && (

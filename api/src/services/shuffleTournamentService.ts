@@ -384,6 +384,60 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   // const assignedPlayerIds = new Set<string>();
 
   // Pool of friendly team names used for temporary shuffle teams.
+  // We keep these readable but will assign them randomly and ensure that a
+  // given name is only used once per tournament (no duplicates).
+  const FRIENDLY_TEAM_NAMES = [
+  const now = Math.floor(Date.now() / 1000);
+  const matches: DbMatchRow[] = [];
+
+  // Track which players are assigned to matches (for future use if needed)
+  // const assignedPlayerIds = new Set<string>();
+
+  // Build a set of team names that have already been used by previous shuffle
+  // rounds so we never reuse a name within the same tournament.
+  const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
+    "SELECT id, name, tag FROM teams WHERE id LIKE 'shuffle-r%'"
+  );
+  const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
+
+  // Each balanced team becomes its own temporary team row, so we need at least
+  // `teams.length` distinct names for this round.
+  const requiredNames = teams.length;
+
+  // Start from the friendly pool, excluding names already used.
+  const basePool = FRIENDLY_TEAM_NAMES.filter((name) => !usedTeamNames.has(name));
+
+  const availableNames: string[] = [...basePool];
+
+  // If the friendly pool is too small for all shuffle teams across rounds,
+  // generate additional unique fallback names of the form "Team 1", "Team 2",
+  // etc. to guarantee uniqueness without collisions.
+  if (availableNames.length < requiredNames) {
+    let counter = 1;
+    while (availableNames.length < requiredNames) {
+      const candidate = `Team ${existingShuffleTeams.length + availableNames.length + counter}`;
+      if (!usedTeamNames.has(candidate)) {
+        availableNames.push(candidate);
+        usedTeamNames.add(candidate);
+      }
+      counter += 1;
+    }
+  }
+
+  // Shuffle the available names so that assignment within this round is
+  // completely random.
+  for (let i = availableNames.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = availableNames[i];
+    // eslint-disable-next-line no-param-reassign
+    availableNames[i] = availableNames[j];
+    // eslint-disable-next-line no-param-reassign
+    availableNames[j] = tmp;
+  }
+
+  let nextNameIndex = 0;
+
+  // Pool of friendly team names used for temporary shuffle teams.
   // We cycle through these names so they are readable and re-usable across rounds.
   const FRIENDLY_TEAM_NAMES = [
     'Phoenix',
@@ -671,11 +725,13 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     const team1Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team1`;
     const team2Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team2`;
 
-    // Derive friendly, human-readable team names from the pool (round-stable but match-specific)
-    const team1FriendlyIndex = ((roundNumber - 1) * 16 + matchNum * 2) % FRIENDLY_TEAM_NAMES.length;
-    const team2FriendlyIndex = (team1FriendlyIndex + 1) % FRIENDLY_TEAM_NAMES.length;
-    const team1FriendlyName = FRIENDLY_TEAM_NAMES[team1FriendlyIndex];
-    const team2FriendlyName = FRIENDLY_TEAM_NAMES[team2FriendlyIndex];
+    // Pick two distinct, random, globally-unique team names for this match.
+    const team1FriendlyName =
+      availableNames[nextNameIndex] ?? `Team R${roundNumber}M${matchNum + 1}T1`;
+    nextNameIndex += 1;
+    const team2FriendlyName =
+      availableNames[nextNameIndex] ?? `Team R${roundNumber}M${matchNum + 1}T2`;
+    nextNameIndex += 1;
 
     // Convert players to team format
     const team1Players: Player[] = team1.players.map((p) => ({

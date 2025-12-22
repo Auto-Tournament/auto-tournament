@@ -39,6 +39,18 @@ export class MatchAllocationService {
   private readonly allocatingServers = new Set<string>();
 
   /**
+   * Effective grace period to use for allocations in the current mode.
+   * Mirrors the constants above so callers (e.g. shuffle round advancement)
+   * can schedule delayed batch allocations without duplicating timings.
+   */
+  async getEffectiveGracePeriodSeconds(): Promise<number> {
+    const isSimulation = await settingsService.isSimulationModeEnabled();
+    return isSimulation
+      ? MatchAllocationService.SIMULATION_GRACE_PERIOD_SECONDS
+      : MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
+  }
+
+  /**
    * Get count of available servers (enabled, online, and ready for allocation)
    * Returns the number of servers that can be allocated
    */
@@ -573,7 +585,6 @@ export class MatchAllocationService {
 
     log.info(
       `[ALLOCATION] Allocating specific matches: ${uniqueSlugs.length} match(es) requested`,
-      undefined,
       { matchSlugs: uniqueSlugs }
     );
 

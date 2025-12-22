@@ -8,6 +8,8 @@ import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
+import { db } from '../config/database';
+import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
 
@@ -96,9 +98,40 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
+    // Derive a more accurate status by combining plugin ConVars with our DB view of
+    // which matches are actually running on this server. This helps in cases where
+    // the MatchZy plugin has not yet updated its custom status ConVars and is still
+    // reporting "idle" even though a match is already loaded or live.
+    let effectiveStatus = statusInfo.status;
+    let effectiveMatchSlug = statusInfo.matchSlug;
+
+    if (!effectiveStatus || effectiveStatus === ServerStatus.IDLE || effectiveStatus === ServerStatus.POSTGAME) {
+      try {
+        const activeMatch = await db.queryOneAsync<Pick<DbMatchRow, 'slug' | 'status'>>(
+          'SELECT slug, status FROM matches WHERE server_id = ? AND status IN (?, ?) ORDER BY created_at DESC LIMIT 1',
+          [id, 'live', 'loaded']
+        );
+
+        if (activeMatch) {
+          effectiveMatchSlug = activeMatch.slug;
+          if (activeMatch.status === 'live') {
+            effectiveStatus = ServerStatus.LIVE;
+          } else if (activeMatch.status === 'loaded') {
+            // Treat a loaded match with players connecting as "warmup" so the UI
+            // doesn't show the server as idle while the match is staged.
+            effectiveStatus = ServerStatus.WARMUP;
+          }
+        }
+      } catch (dbError) {
+        log.warn(`Failed to derive active match status for server ${id}`, { error: dbError });
+      }
+    }
+
     log.debug(`Server ${id} is online`, {
       pluginStatus: statusInfo.status,
-      matchSlug: statusInfo.matchSlug,
+      pluginMatchSlug: statusInfo.matchSlug,
+      effectiveStatus,
+      effectiveMatchSlug,
     });
 
     // Configure webhook automatically when server is online
@@ -124,9 +157,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     }
 
     const isAvailable =
-      !statusInfo.matchSlug ||
-      statusInfo.status === ServerStatus.IDLE ||
-      statusInfo.status === ServerStatus.POSTGAME;
+      !effectiveMatchSlug ||
+      effectiveStatus === ServerStatus.IDLE ||
+      effectiveStatus === ServerStatus.POSTGAME;
 
     // Combine plugin status with internal allocation tracker state
     const allocationState = serverAllocationTracker.getState(id);
@@ -162,10 +195,10 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       status: 'online',
       serverId: id,
       isAvailable,
-      currentMatch: statusInfo.matchSlug,
+      currentMatch: effectiveMatchSlug,
       reachableFromApi,
       serverCanReachApi,
-      pluginStatus: statusInfo.status,
+      pluginStatus: effectiveStatus,
       allocationState: allocationLabel,
       allocationMatchSlug: allocationState?.matchSlug ?? null,
     });

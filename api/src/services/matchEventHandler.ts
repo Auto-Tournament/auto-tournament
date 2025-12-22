@@ -995,43 +995,60 @@ async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
         // Emit bracket update for new matches
         emitBracketUpdate({ action: 'round_advanced', roundNumber: result.roundNumber });
 
-        // Automatically allocate servers to newly generated matches
+        // Automatically allocate servers to newly generated matches, but enforce
+        // a global grace window between rounds before any of the new matches
+        // are actually loaded. This is independent of the per‑server idle
+        // cooldown and guarantees e.g. a 5‑minute pause between rounds even if
+        // other servers are already free.
         try {
           const webhookUrl = await settingsService.getWebhookUrl();
           if (webhookUrl) {
-            log.info(
-              `Auto-allocating servers to ${result.matches.length} new matches in round ${result.roundNumber}...`
-            );
-
+            const delaySeconds = await matchAllocationService.getEffectiveGracePeriodSeconds();
             const slugs = result.matches.map((m) => m.slug);
-            const allocationResults = await matchAllocationService.allocateSpecificMatches(
-              slugs,
-              webhookUrl
+
+            log.info(
+              `[ALLOCATION] Scheduling batch allocation of ${slugs.length} shuffle match(es) for round ${result.roundNumber} in ${delaySeconds}s (inter-round grace window)`
             );
 
-            const successful = allocationResults.filter((r) => r.success).length;
-            const failed = allocationResults.length - successful;
+            setTimeout(() => {
+              void (async () => {
+                try {
+                  const allocationResults = await matchAllocationService.allocateSpecificMatches(
+                    slugs,
+                    webhookUrl
+                  );
 
-            if (successful > 0) {
-              log.success(`Auto-allocated ${successful} match(es) to servers`);
-            }
+                  const successful = allocationResults.filter((r) => r.success).length;
+                  const failed = allocationResults.length - successful;
 
-            if (failed > 0) {
-              log.info(
-                `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
-              );
-              for (const result of allocationResults.filter((r) => !r.success)) {
-                matchAllocationService.startPollingForServer(result.matchSlug, webhookUrl);
-              }
-            }
+                  if (successful > 0) {
+                    log.success(`Auto-allocated ${successful} match(es) to servers`);
+                  }
+
+                  if (failed > 0) {
+                    log.info(
+                      `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
+                    );
+                    for (const result of allocationResults.filter((r) => !r.success)) {
+                      matchAllocationService.startPollingForServer(result.matchSlug, webhookUrl);
+                    }
+                  }
+                } catch (error) {
+                  log.error(
+                    'Error auto-allocating servers to new round matches after grace window',
+                    error
+                  );
+                }
+              })();
+            }, delaySeconds * 1000);
           } else {
             log.warn(
               'Webhook URL not configured - cannot auto-allocate servers to new round matches'
             );
           }
         } catch (error) {
-          log.error('Error auto-allocating servers to new round matches', error);
-          // Don't throw - server allocation failure shouldn't break round advancement
+          log.error('Error scheduling auto-allocation for new round matches', error);
+          // Don't throw - allocation scheduling failure shouldn't break round advancement
         }
       } else {
         log.info('Tournament is complete or no more rounds');
