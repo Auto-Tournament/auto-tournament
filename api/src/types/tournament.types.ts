@@ -39,7 +39,6 @@ export interface Tournament {
   // Shuffle tournament specific fields (parsed / normalized)
   mapSequence?: string[]; // Maps in order (number of rounds)
   teamSize?: number; // Number of players per team (default: 5)
-  roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
@@ -62,7 +61,6 @@ export interface TournamentRow {
   // Shuffle tournament specific fields (raw DB columns)
   map_sequence?: string | null;
   team_size?: number | null;
-  round_limit_type?: string | null;
   max_rounds?: number | null;
   overtime_mode?: string | null;
   overtime_segments?: number | null;
@@ -157,7 +155,6 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
   // Shuffle tournament specific fields
   mapSequence?: string[];
   teamSize?: number; // Number of players per team (default: 5)
-  roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;

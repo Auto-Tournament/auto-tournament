@@ -875,7 +875,7 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
  *             required:
  *               - name
  *               - mapSequence
- *               - roundLimitType
+ *               - maxRounds
  *               - overtimeMode
  *             properties:
  *               name:
@@ -888,16 +888,11 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
  *                   type: string
  *                 description: Array of maps in order (number of maps = number of rounds)
  *                 example: ["de_dust2", "de_mirage", "de_inferno"]
- *               roundLimitType:
- *                 type: string
- *                 enum: [first_to_13, max_rounds]
- *                 description: Round limit type - "first_to_13" or "max_rounds"
- *                 example: "max_rounds"
  *               maxRounds:
  *                 type: integer
  *                 minimum: 1
  *                 maximum: 30
- *                 description: Maximum rounds per match (required if roundLimitType is "max_rounds")
+ *                 description: Maximum rounds per match (maps end after this many rounds)
  *                 example: 24
  *               overtimeMode:
  *                 type: string
@@ -914,10 +909,15 @@ router.post('/shuffle', async (req: Request, res: Response) => {
   try {
     const config: ShuffleTournamentConfig = req.body;
 
-    if (!config.name || !config.mapSequence || !config.roundLimitType || !config.overtimeMode) {
+    if (
+      !config.name ||
+      !config.mapSequence ||
+      typeof config.maxRounds !== 'number' ||
+      !config.overtimeMode
+    ) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: name, mapSequence, roundLimitType, overtimeMode',
+        error: 'Missing required fields: name, mapSequence, maxRounds, overtimeMode',
       });
     }
 

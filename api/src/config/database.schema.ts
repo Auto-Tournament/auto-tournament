@@ -53,8 +53,7 @@ export function getSchemaSQL(): string {
       -- Shuffle tournament specific fields
       map_sequence TEXT, -- JSON array of maps in order (number of maps = number of rounds)
       team_size INTEGER DEFAULT 5, -- Number of players per team (default: 5 for 5v5)
-      round_limit_type TEXT, -- 'first_to_13' or 'max_rounds'
-      max_rounds INTEGER DEFAULT 24, -- Used when round_limit_type is 'max_rounds'
+      max_rounds INTEGER DEFAULT 24, -- Max rounds per map
       overtime_mode TEXT DEFAULT 'enabled', -- 'enabled' or 'disabled'
       overtime_segments INTEGER, -- Optional: max number of overtime segments (MatchZy overtime_limit). NULL/0 = unlimited.
       elo_template_id TEXT, -- Reference to elo_calculation_templates table (nullable)

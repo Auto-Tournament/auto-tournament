@@ -17,8 +17,11 @@ export interface ShuffleTournamentConfig {
   name: string;
   mapSequence: string[]; // Maps in order (number of maps = number of rounds)
   teamSize: number; // Number of players per team, default: 5
-  roundLimitType: 'first_to_13' | 'max_rounds';
-  maxRounds?: number; // Required if roundLimitType is 'max_rounds', default: 24
+  /**
+   * Shuffle tournaments always use an explicit max-rounds limit.
+   * This directly maps to MatchZy's mp_maxrounds.
+   */
+  maxRounds: number; // Required, default: 24 (validated below)
   overtimeMode: 'enabled' | 'disabled';
   /**
    * Optional: max number of overtime segments (maps) allowed before match ends in a draw.
@@ -83,10 +86,9 @@ export async function createShuffleTournament(
     );
   }
 
-  if (config.roundLimitType === 'max_rounds' && (!config.maxRounds || config.maxRounds < 1)) {
+  if (!config.maxRounds || config.maxRounds < 1) {
     throw new Error(
-      'Invalid max rounds value. When using "Max Rounds" round limit type, ' +
-        'you must specify a maximum number of rounds (minimum: 1).'
+      'Invalid max rounds value. You must specify a maximum number of rounds (minimum: 1).'
     );
   }
 
@@ -115,7 +117,6 @@ export async function createShuffleTournament(
     }),
     map_sequence: JSON.stringify(config.mapSequence),
     team_size: config.teamSize || 5,
-    round_limit_type: config.roundLimitType,
     max_rounds: config.maxRounds || 24,
     overtime_mode: config.overtimeMode || 'enabled',
     overtime_segments:
@@ -129,7 +130,6 @@ export async function createShuffleTournament(
 
   log.success(`Shuffle tournament created: ${config.name}`, {
     rounds: config.mapSequence.length,
-    roundLimitType: config.roundLimitType,
     overtimeMode: config.overtimeMode,
     overtimeSegments: config.overtimeSegments,
   });
@@ -1047,6 +1047,10 @@ export async function getTournamentLeaderboard(): Promise<{
     teamIds,
     settings,
     teams: [],
+    created_at: row.created_at,
+    updated_at: row.updated_at ?? row.created_at,
+    started_at: row.started_at,
+    completed_at: row.completed_at,
   };
 
   // Team standings for this tournament
@@ -1065,13 +1069,9 @@ export async function getTournamentLeaderboard(): Promise<{
     );
 
     teams = teamRows.map((team) => {
-      const played = matches.filter(
-        (m) => m.team1_id === team.id || m.team2_id === team.id
-      );
+      const played = matches.filter((m) => m.team1_id === team.id || m.team2_id === team.id);
       const wins = played.filter((m) => m.winner_id === team.id).length;
-      const losses = played.filter(
-        (m) => m.winner_id && m.winner_id !== team.id
-      ).length;
+      const losses = played.filter((m) => m.winner_id && m.winner_id !== team.id).length;
       const matchCount = played.length;
       const winRate = matchCount > 0 ? wins / matchCount : 0;
 
@@ -1181,8 +1181,7 @@ export async function getTournamentLeaderboard(): Promise<{
 
   const leaderboard: PlayerLeaderboardEntry[] = playerRows.map((pr) => {
     const winRate = pr.match_count > 0 ? pr.match_wins / pr.match_count : 0;
-    const averageAdr =
-      pr.total_rounds > 0 ? pr.total_damage / pr.total_rounds : undefined;
+    const averageAdr = pr.total_rounds > 0 ? pr.total_damage / pr.total_rounds : undefined;
 
     return {
       playerId: pr.player_id,
@@ -1240,7 +1239,6 @@ async function getShuffleTournament(): Promise<TournamentResponse | null> {
     settings: string;
     map_sequence?: string;
     team_size?: number;
-    round_limit_type?: string;
     max_rounds?: number;
     overtime_mode?: string;
     elo_template_id?: string | null;
@@ -1271,7 +1269,6 @@ async function getShuffleTournament(): Promise<TournamentResponse | null> {
     teams: [],
     mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
     teamSize: row.team_size || 5,
-    roundLimitType: (row.round_limit_type as 'first_to_13' | 'max_rounds') || undefined,
     maxRounds: row.max_rounds,
     overtimeMode: (row.overtime_mode as 'enabled' | 'disabled') || undefined,
     overtimeSegments:

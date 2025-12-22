@@ -41,16 +41,15 @@ Configure the number of players per team:
 
 Configure round limits and overtime settings:
 
-**Round Limit Type:**
+**Max Rounds:**
 
-- **First to 13**: Matches play until one team reaches 13 rounds
-- **Max Rounds**: Matches stop at a maximum number of rounds (default: 24)
-  - If max rounds reached, winner determined by current score
+- Each match is capped at a configurable maximum number of rounds (default: 24).
+- If max rounds are reached, the winner is determined by the current score.
 
 **Overtime Mode:**
 
-- **Enable Overtime**: Standard CS2 overtime rules (MR3 format)
-- **Stop at Max Rounds**: Match ends when max rounds reached (no overtime; ties are allowed)
+- **Enable Overtime**: Standard CS2 overtime rules (MR3 format).
+- **Stop at Max Rounds**: Match ends when max rounds reached (no overtime; ties are allowed).
 
 ### Step 4: Player Registration
 
@@ -377,8 +376,7 @@ For programmatic access, the following endpoints are available. All endpoints re
 
 - `POST /api/tournament/shuffle`
 - Creates a new shuffle tournament
-- Required fields: `name`, `mapSequence`, `roundLimitType`, `overtimeMode`
-- Optional: `maxRounds` (if `roundLimitType` is `max_rounds`)
+- Required fields: `name`, `mapSequence`, `maxRounds`, `overtimeMode`
 
 **Get Tournament**
 
@@ -441,7 +439,6 @@ curl -X POST http://localhost:3000/api/tournament/shuffle \
   -d '{
     "name": "LAN Party 2025",
     "mapSequence": ["de_dust2", "de_mirage", "de_inferno"],
-    "roundLimitType": "max_rounds",
     "maxRounds": 24,
     "overtimeMode": "enabled"
   }'

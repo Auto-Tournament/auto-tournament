@@ -361,13 +361,13 @@ async function generateShuffleMatchConfig(
   const maplist = mapForRound ? [mapForRound] : null;
   const map_sides: Array<'team1_ct' | 'team2_ct'> = [Math.random() > 0.5 ? 'team1_ct' : 'team2_ct'];
 
-  // Configure round limit based on tournament settings.
+  // Configure round limit based on shuffle tournament settings.
   // IMPORTANT: This code is ONLY allowed to set cvars["mp_maxrounds"].
   // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
   //
-  // Be defensive about types: depending on the DB driver, maxRounds may come
-  // back as a string (e.g. "6") instead of a number. Normalize it so that
-  // MR6/10/etc are always honoured correctly.
+  // For shuffle we keep this intentionally simple:
+  // - We always treat maxRounds as the authoritative value for mp_maxrounds.
+  // - If maxRounds is missing or invalid, we fall back to 24 (MR24).
   const rawMaxRounds = tournament.maxRounds as unknown;
   const parsedMaxRounds =
     typeof rawMaxRounds === 'number'
@@ -376,25 +376,14 @@ async function generateShuffleMatchConfig(
       ? Number(rawMaxRounds)
       : undefined;
 
-  const hasExplicitMaxRounds =
-    typeof parsedMaxRounds === 'number' && Number.isFinite(parsedMaxRounds);
+  const maxRounds =
+    typeof parsedMaxRounds === 'number' && Number.isFinite(parsedMaxRounds) && parsedMaxRounds > 0
+      ? parsedMaxRounds
+      : 24;
 
-  // If maxRounds is explicitly provided but roundLimitType is missing (older
-  // tournaments), treat that as "max_rounds" so we still honour the admin's
-  // configured MR value instead of silently falling back to first_to_13/MR24.
-  const roundLimitType =
-    tournament.roundLimitType ?? (hasExplicitMaxRounds ? 'max_rounds' : 'first_to_13');
-  const maxRounds = hasExplicitMaxRounds ? (parsedMaxRounds as number) : 24;
-
-  const cvars: Record<string, string | number> = {};
-
-  if (roundLimitType === 'first_to_13') {
-    // Classic MR24 (first to 13 wins)
-    cvars.mp_maxrounds = 24;
-  } else if (roundLimitType === 'max_rounds') {
-    // Use configured maxRounds directly (e.g. MR6 when maxRounds = 6)
-    cvars.mp_maxrounds = maxRounds;
-  }
+  const cvars: Record<string, string | number> = {
+    mp_maxrounds: maxRounds,
+  };
 
   const simulation = await getSimulationFlag();
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
@@ -460,7 +449,6 @@ async function generateShuffleMatchConfig(
     map: mapForRound,
     team1: config.team1.name,
     team2: config.team2.name,
-    roundLimitType,
     maxRounds,
     cvars,
   });

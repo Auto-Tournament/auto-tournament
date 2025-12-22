@@ -510,9 +510,6 @@ const Tournament: React.FC = () => {
         name,
         mapSequence: maps, // Maps in order = rounds
         teamSize: shuffleSettings.teamSize || 5,
-        // Internally we always treat shuffle as using an explicit max-rounds
-        // limit; the UI only exposes the numeric maxRounds field.
-        roundLimitType: 'max_rounds' as const,
         maxRounds: shuffleSettings.maxRounds,
         overtimeMode: 'enabled' as const,
         overtimeSegments: undefined,

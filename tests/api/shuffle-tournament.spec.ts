@@ -58,7 +58,6 @@ test.describe.serial('Shuffle Tournament API', () => {
       const tournament = await createShuffleTournament(request, {
         name: 'Test Shuffle Tournament',
         mapSequence: ['de_mirage', 'de_inferno', 'de_ancient'],
-        roundLimitType: 'max_rounds',
         maxRounds: 24,
         overtimeMode: 'enabled',
       });
@@ -68,7 +67,6 @@ test.describe.serial('Shuffle Tournament API', () => {
       expect(tournament?.format).toBe('bo1');
       expect(tournament?.status).toBe('setup');
       expect(tournament?.mapSequence).toEqual(['de_mirage', 'de_inferno', 'de_ancient']);
-      expect(tournament?.roundLimitType).toBe('max_rounds');
       expect(tournament?.maxRounds).toBe(24);
       expect(tournament?.overtimeMode).toBe('enabled');
     }
@@ -86,7 +84,6 @@ test.describe.serial('Shuffle Tournament API', () => {
         data: {
           name: 'Custom Team Size Shuffle',
           mapSequence: ['de_mirage'],
-          roundLimitType: 'max_rounds',
           maxRounds: 24,
           overtimeMode: 'enabled',
           teamSize: 2,
@@ -121,7 +118,6 @@ test.describe.serial('Shuffle Tournament API', () => {
         headers: getAuthHeader(),
         data: {
           mapSequence: ['de_mirage'],
-          roundLimitType: 'max_rounds',
           overtimeMode: 'enabled',
         },
       });
@@ -133,7 +129,6 @@ test.describe.serial('Shuffle Tournament API', () => {
         data: {
           name: 'Test Tournament',
           mapSequence: [],
-          roundLimitType: 'max_rounds',
           overtimeMode: 'enabled',
         },
       });
@@ -145,7 +140,6 @@ test.describe.serial('Shuffle Tournament API', () => {
         data: {
           name: 'Test Tournament',
           mapSequence: ['de_mirage'],
-          roundLimitType: 'max_rounds',
           maxRounds: 0,
           overtimeMode: 'enabled',
         },

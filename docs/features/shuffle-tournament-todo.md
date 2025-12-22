@@ -29,7 +29,6 @@
   - [✅] Update `client/src/constants/tournament.ts` (TOURNAMENT_TYPES)
 - [✅] Update `tournament` table for shuffle support
   - [✅] Add `map_sequence` field (JSON array)
-  - [✅] Add `round_limit_type` field ('first_to_13' | 'max_rounds')
   - [✅] Add `max_rounds` field (default: 24)
   - [✅] Add `overtime_mode` field ('enabled' | 'disabled' | 'metric_based')
 - [✅] Update `matches` table for shuffle matches

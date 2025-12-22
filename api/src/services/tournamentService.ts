@@ -42,7 +42,6 @@ class TournamentService {
       status: tournament.status,
       mapSequence: tournament.mapSequence,
       teamSize: tournament.teamSize,
-      roundLimitType: tournament.roundLimitType,
       maxRounds: tournament.maxRounds,
       overtimeMode: tournament.overtimeMode,
       overtimeSegments: tournament.overtimeSegments,
@@ -61,7 +60,6 @@ class TournamentService {
       // Shuffle tournament specific fields (only populated for type === 'shuffle')
       mapSequence: tournament.mapSequence,
       teamSize: tournament.teamSize,
-      roundLimitType: tournament.roundLimitType,
       maxRounds: tournament.maxRounds,
       overtimeMode: tournament.overtimeMode,
       overtimeSegments: tournament.overtimeSegments,
@@ -608,7 +606,6 @@ class TournamentService {
       status: row.status,
       map_sequence: row.map_sequence,
       team_size: row.team_size,
-      round_limit_type: row.round_limit_type,
       max_rounds: row.max_rounds,
       overtime_mode: row.overtime_mode,
       overtime_segments: row.overtime_segments,
@@ -623,7 +620,6 @@ class TournamentService {
       // Normalize shuffle-specific fields
       mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
       teamSize: row.team_size === null || row.team_size === undefined ? undefined : row.team_size,
-      roundLimitType: (row.round_limit_type as 'first_to_13' | 'max_rounds' | null) || undefined,
       maxRounds:
         row.max_rounds === null || row.max_rounds === undefined ? undefined : row.max_rounds,
       overtimeMode: (row.overtime_mode as 'enabled' | 'disabled' | null) || undefined,

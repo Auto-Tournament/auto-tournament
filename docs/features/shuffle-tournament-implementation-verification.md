@@ -39,8 +39,8 @@ This report verifies that the project has implemented all features specified in 
 ✅ **`tournament` Table Updates** - Implemented
 
 - Location: `src/config/database.schema.ts` (lines 43-61)
-- Added fields: `map_sequence`, `round_limit_type`, `max_rounds`, `overtime_mode`
-- Supports: 'first_to_13' or 'max_rounds', overtime modes: 'enabled', 'disabled'
+- Added fields: `map_sequence`, `max_rounds`, `overtime_mode`
+- Supports: max-round limits per map and overtime modes: 'enabled', 'disabled'
 
 ✅ **`matches` Table** - Already supports shuffle
 
@@ -459,14 +459,14 @@ This report verifies that the project has implemented all features specified in 
 
 ### Match Configuration
 
-| Feature             | Spec Requirement                  | Implementation Status |
-| ------------------- | --------------------------------- | --------------------- |
-| BO1 Format          | Always BO1 for shuffle            | ✅ Complete           |
-| No Veto             | Skip veto system                  | ✅ Complete           |
-| Fixed Map Per Round | Same map for all matches in round | ✅ Complete           |
-| Random Sides        | Random CT/T assignment            | ✅ Complete           |
-| Round Limit         | First to 13 or Max Rounds         | ✅ Complete           |
-| Overtime Mode       | Enable/Disable (no metric-based)  | ✅ Complete (metric-based reserved for future) |                                                                             
+| Feature             | Spec Requirement                  | Implementation Status                          |
+| ------------------- | --------------------------------- | ---------------------------------------------- |
+| BO1 Format          | Always BO1 for shuffle            | ✅ Complete                                    |
+| No Veto             | Skip veto system                  | ✅ Complete                                    |
+| Fixed Map Per Round | Same map for all matches in round | ✅ Complete                                    |
+| Random Sides        | Random CT/T assignment            | ✅ Complete                                    |
+| Round Limit         | First to 13 or Max Rounds         | ✅ Complete                                    |
+| Overtime Mode       | Enable/Disable (no metric-based)  | ✅ Complete (metric-based reserved for future) |
 
 ### API Endpoints
 

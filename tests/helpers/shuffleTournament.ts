@@ -10,7 +10,6 @@ import { createTestServer, type Server } from './servers';
 export interface CreateShuffleTournamentInput {
   name?: string;
   mapSequence?: string[];
-  roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
 }
@@ -22,7 +21,6 @@ export interface ShuffleTournament {
   format: 'bo1';
   status: string;
   mapSequence: string[];
-  roundLimitType: 'first_to_13' | 'max_rounds';
   maxRounds: number;
   overtimeMode: 'enabled' | 'disabled';
 }
@@ -42,7 +40,6 @@ export async function createShuffleTournament(
   const {
     name,
     mapSequence = DEFAULT_MAPS,
-    roundLimitType = 'max_rounds',
     maxRounds = 24,
     overtimeMode = 'enabled',
   } = input;
@@ -55,7 +52,6 @@ export async function createShuffleTournament(
       data: {
         name: tournamentName,
         mapSequence,
-        roundLimitType,
         maxRounds,
         overtimeMode,
       },
@@ -373,7 +369,6 @@ export interface ShuffleTournamentSetupOptions {
   name?: string;
   playerCount?: number;
   mapSequence?: string[];
-  roundLimitType?: 'first_to_13' | 'max_rounds';
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   serverCount?: number;
@@ -416,7 +411,6 @@ export async function setupShuffleTournament(
     name,
     playerCount = 20,
     mapSequence = DEFAULT_MAPS,
-    roundLimitType = 'max_rounds',
     maxRounds = 24,
     overtimeMode = 'enabled',
     serverCount = 1,
@@ -453,7 +447,6 @@ export async function setupShuffleTournament(
   const tournament = await createShuffleTournament(request, {
     name: name || `${prefix} Tournament ${Date.now()}`,
     mapSequence,
-    roundLimitType,
     maxRounds,
     overtimeMode,
   });

@@ -305,8 +305,9 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
   }
 
   const playerStats = extractPlayerStats(report);
+  const mappedStatus = mapPhaseToLiveStatus(matchInfo.phase);
   const updates: Partial<MatchLiveStats> = {
-    status: mapPhaseToLiveStatus(matchInfo.phase),
+    status: mappedStatus,
     team1Score: matchInfo.score?.team1 ?? 0,
     team2Score: matchInfo.score?.team2 ?? 0,
     team1SeriesScore: matchInfo.score?.series?.team1 ?? 0,
@@ -341,7 +342,9 @@ async function updateLiveStatsFromReport(matchSlug: string, report: MatchReport)
   emitMatchUpdate({
     slug: matchSlug,
     liveStats: stats,
-    status: matchInfo.phase,
+    // Use the mapped status for all UIs so phases like "going_live" and
+    // "warmup_ended" are treated as LIVE rather than a separate state.
+    status: mappedStatus,
     team1Score: stats.team1SeriesScore,
     team2Score: stats.team2SeriesScore,
   });
@@ -469,7 +472,12 @@ function mapPhaseToLiveStatus(phase?: string) {
   switch ((phase || '').toLowerCase()) {
     case 'knife':
       return 'knife';
+    case 'going_live':
+    case 'warmup_ended':
     case 'live':
+      // Treat both "going_live" and "warmup_ended" as fully LIVE so that the
+      // bracket and match cards flip out of WARMUP as soon as the match is
+      // actually about to begin.
       return 'live';
     case 'halftime':
       return 'halftime';

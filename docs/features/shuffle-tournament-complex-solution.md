@@ -632,8 +632,7 @@ CREATE TABLE shuffle_tournament_players (
 - Add `type: 'shuffle'` to TournamentType
 - Add `map_sequence: TEXT` (JSON array of maps in order - number of maps = number of rounds)
 - Add `elo_settings: TEXT` (JSON with ELO configuration)
-- Add `round_limit_type: TEXT` ('first_to_13' or 'max_rounds')
-- Add `max_rounds: INTEGER` (default: 24, used when round_limit_type is 'max_rounds')
+- Add `max_rounds: INTEGER` (default: 24, max rounds per map)
 - Add `overtime_mode: TEXT` ('enabled', 'disabled', 'metric_based')
 - Add `team_size: INTEGER` (default: 5, number of players per team)
 - Add `elo_template_id: TEXT` (references elo_calculation_templates table, nullable)
