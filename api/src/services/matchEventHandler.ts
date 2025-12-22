@@ -1003,54 +1003,26 @@ async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
               `Auto-allocating servers to ${result.matches.length} new matches in round ${result.roundNumber}...`
             );
 
-            // Allocate servers to all new matches
-            const allocationResults = await Promise.allSettled(
-              result.matches.map(async (match) => {
-                try {
-                  const allocationResult = await matchAllocationService.allocateSingleMatch(
-                    match.slug,
-                    webhookUrl
-                  );
-                  if (allocationResult.success) {
-                    log.success(
-                      `Auto-allocated match ${match.slug} to server ${allocationResult.serverId}`
-                    );
-                    return {
-                      matchSlug: match.slug,
-                      success: true,
-                      serverId: allocationResult.serverId,
-                    };
-                  } else {
-                    log.warn(
-                      `Could not auto-allocate match ${match.slug}: ${allocationResult.error}`
-                    );
-                    // Start polling for this match
-                    matchAllocationService.startPollingForServer(match.slug, webhookUrl);
-                    return { matchSlug: match.slug, success: false, error: allocationResult.error };
-                  }
-                } catch (error) {
-                  log.error(`Error allocating match ${match.slug}`, error);
-                  return {
-                    matchSlug: match.slug,
-                    success: false,
-                    error: error instanceof Error ? error.message : 'Unknown error',
-                  };
-                }
-              })
+            const slugs = result.matches.map((m) => m.slug);
+            const allocationResults = await matchAllocationService.allocateSpecificMatches(
+              slugs,
+              webhookUrl
             );
 
-            const successful = allocationResults.filter(
-              (r) => r.status === 'fulfilled' && r.value.success
-            ).length;
+            const successful = allocationResults.filter((r) => r.success).length;
             const failed = allocationResults.length - successful;
 
             if (successful > 0) {
               log.success(`Auto-allocated ${successful} match(es) to servers`);
             }
+
             if (failed > 0) {
               log.info(
-                `${failed} match(es) will be allocated when servers become available (polling started)`
+                `${failed} match(es) could not be allocated immediately; starting polling where appropriate`
               );
+              for (const result of allocationResults.filter((r) => !r.success)) {
+                matchAllocationService.startPollingForServer(result.matchSlug, webhookUrl);
+              }
             }
           } else {
             log.warn(

@@ -110,7 +110,7 @@ export class MatchAllocationService {
     let nextAllocationInSeconds: number | null = null;
 
     for (const check of onlineServers) {
-      const { status, matchSlug, updatedAt } = check;
+      const { status, updatedAt } = check;
 
       const isEffectivelyIdle =
         status === ServerStatus.IDLE || status === ServerStatus.POSTGAME || status === null;
@@ -390,9 +390,10 @@ export class MatchAllocationService {
       error?: string;
     }> = [];
 
-    // Allocate servers to matches (round-robin starting point, but we will
-    // re-check server status for each allocation and fall back to other
-    // servers if MatchZy reports the server as busy or load fails).
+    // Allocate servers to matches using a round-robin strategy across the
+    // current snapshot of available servers. For each allocation we re-check
+    // server status (MatchZy convars) and refuse to over-assign a server that
+    // has already gone live/warmup/loading.
     let serverIndex = 0;
     for (const match of readyMatches) {
       let allocated = false;
@@ -503,6 +504,170 @@ export class MatchAllocationService {
       `[ALLOCATION] Allocation complete: ${results.filter((r) => r.success).length} successful, ${
         results.filter((r) => !r.success).length
       } failed`
+    );
+
+    return results;
+  }
+
+  /**
+   * Allocate servers to a specific list of matches (by slug), using the same
+   * round-robin strategy as allocateServersToMatches but restricted to the
+   * provided matches. Used by shuffle round advancement so that only the
+   * newly generated round's matches are considered.
+   */
+  async allocateSpecificMatches(
+    matchSlugs: string[],
+    baseUrl: string
+  ): Promise<
+    Array<{
+      matchSlug: string;
+      serverId?: string;
+      success: boolean;
+      error?: string;
+    }>
+  > {
+    const uniqueSlugs = Array.from(new Set(matchSlugs));
+    if (uniqueSlugs.length === 0) {
+      return [];
+    }
+
+    log.info(
+      `[ALLOCATION] Allocating specific matches: ${uniqueSlugs.length} match(es) requested`,
+      undefined,
+      { matchSlugs: uniqueSlugs }
+    );
+
+    const availableServers = await this.getAvailableServers();
+    log.info(`Found ${availableServers.length} available server(s) for specific allocation`);
+
+    const allReadyMatches = await this.getReadyMatches();
+    const readyMatches = allReadyMatches.filter((m) => uniqueSlugs.includes(m.slug));
+
+    if (readyMatches.length === 0) {
+      log.info('[ALLOCATION] No ready matches among requested slugs');
+      return uniqueSlugs.map((slug) => ({
+        matchSlug: slug,
+        success: false,
+        error: 'Match is not ready or does not exist',
+      }));
+    }
+
+    if (availableServers.length === 0) {
+      log.warn('[ALLOCATION] No available servers for specific match allocation');
+      return readyMatches.map((match) => ({
+        matchSlug: match.slug,
+        success: false,
+        error: 'No available servers',
+      }));
+    }
+
+    const results: Array<{
+      matchSlug: string;
+      serverId?: string;
+      success: boolean;
+      error?: string;
+    }> = [];
+
+    let serverIndex = 0;
+    for (const match of readyMatches) {
+      let allocated = false;
+      let lastError: string | undefined;
+
+      for (let i = 0; i < availableServers.length; i++) {
+        const idx = (serverIndex + i) % availableServers.length;
+        const server = availableServers[idx];
+
+        try {
+          const statusInfo = await serverStatusService.getServerStatus(server.id);
+
+          const activeStates = new Set<ServerStatus>([
+            ServerStatus.LOADING,
+            ServerStatus.WARMUP,
+            ServerStatus.KNIFE,
+            ServerStatus.LIVE,
+            ServerStatus.PAUSED,
+            ServerStatus.HALFTIME,
+          ]);
+          const isEffectivelyIdle =
+            statusInfo.status === ServerStatus.IDLE ||
+            statusInfo.status === ServerStatus.POSTGAME ||
+            statusInfo.status === null;
+
+          if (!statusInfo.online || (!isEffectivelyIdle && activeStates.has(statusInfo.status!))) {
+            log.debug(
+              `[ALLOCATION] (specific) Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle/postgame (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
+            );
+            continue;
+          }
+
+          log.info(
+            `[ALLOCATION] (specific) Allocating match ${match.slug} to server ${server.name} (${server.id})`
+          );
+
+          this.allocatingServers.add(server.id);
+          serverAllocationTracker.markAllocated(server.id, match.slug);
+
+          await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [match.slug]);
+
+          const matchWithServer = await db.queryOneAsync<DbMatchRow>(
+            'SELECT * FROM matches WHERE slug = ?',
+            [match.slug]
+          );
+          if (matchWithServer) {
+            emitMatchUpdate(matchWithServer);
+            emitBracketUpdate({
+              action: 'server_assigned',
+              matchSlug: match.slug,
+              serverId: server.id,
+            });
+          }
+
+          const loadResult = await loadMatchOnServer(match.slug, server.id, { baseUrl });
+
+          if (loadResult.success) {
+            log.matchAllocated(match.slug, server.id, server.name);
+            results.push({
+              matchSlug: match.slug,
+              serverId: server.id,
+              success: true,
+            });
+            serverIndex = idx + 1;
+            allocated = true;
+            break;
+          } else {
+            await db.updateAsync('matches', { server_id: null }, 'slug = ?', [match.slug]);
+            lastError = loadResult.error || 'Failed to load match';
+            log.error(
+              `(specific) Failed to load match ${match.slug} on ${server.name} (${server.id}), will try another server if available`,
+              undefined,
+              { error: loadResult.error }
+            );
+          }
+        } catch (error) {
+          const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+          lastError = errorMessage;
+          log.error(
+            `(specific) Failed to allocate match ${match.slug} to server ${server.id}`,
+            error
+          );
+        } finally {
+          this.allocatingServers.delete(availableServers[idx].id);
+        }
+      }
+
+      if (!allocated) {
+        results.push({
+          matchSlug: match.slug,
+          success: false,
+          error: lastError || 'No available servers could load this match',
+        });
+      }
+    }
+
+    log.info(
+      `[ALLOCATION] Specific allocation complete: ${
+        results.filter((r) => r.success).length
+      } successful, ${results.filter((r) => !r.success).length} failed`
     );
 
     return results;
