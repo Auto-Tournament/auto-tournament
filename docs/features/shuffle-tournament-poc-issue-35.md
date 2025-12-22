@@ -160,12 +160,13 @@ These commands:
 3. Configure **match structure**:
    - **Team size** (default 5 for 5v5; configurable).
    - **Number of rounds**: you select a sequence of maps; the number of maps = number of rounds.
-   - **Round limit**:
-     - “First to 13” (standard MR15: 16 max rounds) or
-     - “Max rounds” (e.g. 24) with no overtime.
+   - **Round limit** (Max Rounds):
+     - A single configurable **max rounds per map** value (default: 24).
+     - All shuffle matches use this value via `mp_maxrounds`.
+     - When the max is reached, the current score decides the winner (no separate “first to 13” mode).
    - **Overtime**:
-     - “Enable Overtime” (standard CS2 MR3, first to 4, 10k start), or
-     - “Stop at Max Rounds” (no overtime; match can end in a draw).
+     - **Enable Overtime** (standard CS2 MR3, first to 4, 10k start), or
+     - **Disable Overtime** (no overtime; match can end in a draw).
 4. Configure **ELO behavior** (optional, advanced):
    - Choose an **ELO template** (e.g. pure win/loss, or stat-adjusted).
    - This defines to what extent individual stats (ADR, K/D, etc.) influence rating changes.

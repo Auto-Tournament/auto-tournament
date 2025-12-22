@@ -31,31 +31,22 @@ This document details the **complex solution** for implementing a shuffle tourna
 
 ### Round Configuration
 
-- **Round Limit Options**:
-  - **Option 1**: Play until 13 rounds (first to 13 wins)
-  - **Option 2**: Use max rounds limit (default: 24 rounds)
-    - If max rounds reached, winner determined by current score
-- **Admin Configuration**: Admin selects round limit during tournament setup
-  - Choose between "First to 13" or "Max Rounds" (with configurable limit)
-  - Default: Max Rounds = 24
+- **Round Limit**:
+  - Single configurable **Max Rounds** value (default: 24)
+  - All shuffle matches use this max‑rounds value via `mp_maxrounds`
+  - If max rounds are reached, the winner is determined by the current score
+  - There is **no longer a separate "first to 13" toggle** – admins control the limit directly
 
 ### Overtime Handling
 
-- **Overtime Configuration** (when max rounds reached):
-  - **Option 1**: Enable Overtime
-    - Standard CS2 overtime rules (MR3 format - first to 4 rounds with 10k start money)
-    - Continue until winner determined
-    - ✅ **Implemented**: MR3 overtime configuration is set via cvars in match config
-  - **Option 2**: Stop at Max Rounds
-    - Match ends when max rounds reached
-    - Winner determined by current score
-    - ✅ **Implemented**: Overtime is disabled when this mode is selected
-- **Admin Configuration**: Admin selects overtime handling during tournament setup
-  - Default: Enable Overtime (standard CS2 rules)
-- **Implementation Status**: 
-  - ✅ Overtime mode selection is stored in database and applied to MatchZy match config via cvars
-  - ✅ MR3 format (first to 4 rounds, 10k start money) is configured via `mp_overtime_maxrounds` and `mp_overtime_startmoney` cvars
-  - ✅ Round limit configuration: "First to 13" uses 24 max rounds, "Max Rounds" uses configured value
+-- **Overtime Configuration** (when max rounds are reached):
+  - **Enable Overtime**: Standard CS2 overtime rules (MR3 format – first to 4 rounds, 10k start money)
+  - **Disable Overtime**: Match ends when `mp_maxrounds` is reached; ties are allowed
+- **Admin Configuration**:
+  - Admin selects whether overtime is enabled or disabled per tournament
+- **Implementation Status**:
+  - ✅ Overtime mode selection is stored in the `tournament.overtime_mode` column and applied via `mp_overtime_enable`
+  - ✅ `mp_maxrounds` for shuffle matches is always taken from `tournament.maxRounds` (with a default of 24)
 
 ### Map Management
 

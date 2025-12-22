@@ -378,11 +378,10 @@ This report verifies that the project has implemented all features specified in 
   - ✅ Team selection step replaced with shuffle configuration
   - ✅ Map selection (number of maps = number of rounds)
   - ✅ Round configuration UI:
-    - ✅ Round limit type: "First to 13" or "Max Rounds"
-    - ✅ Max rounds value (default: 24, configurable)
+    - ✅ Max rounds per map (default: 24, configurable)
   - ✅ Overtime configuration UI:
     - ✅ Overtime mode selection
-    - ✅ Options: Enable, Disable, Metric-based
+    - ✅ Options: Enable, Disable
   - ✅ Player registration section:
     - ✅ Player registration UI component (ShufflePlayerRegistration)
     - ✅ Register players via player selection modal
@@ -465,7 +464,7 @@ This report verifies that the project has implemented all features specified in 
 | No Veto             | Skip veto system                  | ✅ Complete                                    |
 | Fixed Map Per Round | Same map for all matches in round | ✅ Complete                                    |
 | Random Sides        | Random CT/T assignment            | ✅ Complete                                    |
-| Round Limit         | First to 13 or Max Rounds         | ✅ Complete                                    |
+| Round Limit         | Configurable max rounds per map   | ✅ Complete                                    |
 | Overtime Mode       | Enable/Disable (no metric-based)  | ✅ Complete (metric-based reserved for future) |
 
 ### API Endpoints

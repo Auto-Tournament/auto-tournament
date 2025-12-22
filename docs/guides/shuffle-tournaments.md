@@ -363,7 +363,7 @@ The tournament winner is determined by:
 - **Format**: Always BO1 (Best of 1)
 - **Veto**: Disabled (no map voting)
 - **Sides**: Randomly assigned (no knife round)
-- **Round Limits**: Configurable (First to 13 or Max Rounds)
+- **Round Limits**: Single configurable **Max Rounds** value (default: 24) applied to every map via `mp_maxrounds`
 - **Overtime**: Configurable (Enable or Disable). A metric-based overtime mode is a future idea and is **not** available in the current release.
 
 ## API Endpoints
