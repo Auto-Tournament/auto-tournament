@@ -361,47 +361,60 @@ async function generateShuffleMatchConfig(
   const maplist = mapForRound ? [mapForRound] : null;
   const map_sides: Array<'team1_ct' | 'team2_ct'> = [Math.random() > 0.5 ? 'team1_ct' : 'team2_ct'];
 
-  // Configure round limit and overtime based on tournament settings
-  const roundLimitType = tournament.roundLimitType || 'first_to_13';
-  const maxRounds = tournament.maxRounds || 24;
-  const overtimeMode = tournament.overtimeMode || 'enabled';
-  const overtimeSegments = tournament.overtimeSegments;
+  // Configure round limit based on tournament settings.
+  // IMPORTANT: This code is ONLY allowed to set cvars["mp_maxrounds"].
+  // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
+  //
+  // Be defensive about types: depending on the DB driver, maxRounds may come
+  // back as a string (e.g. "6") instead of a number. Normalize it so that
+  // MR6/10/etc are always honoured correctly.
+  const rawMaxRounds = tournament.maxRounds as unknown;
+  const parsedMaxRounds =
+    typeof rawMaxRounds === 'number'
+      ? rawMaxRounds
+      : typeof rawMaxRounds === 'string' && rawMaxRounds.trim() !== ''
+      ? Number(rawMaxRounds)
+      : undefined;
 
-  // Build cvars for round limit and overtime configuration
+  const hasExplicitMaxRounds =
+    typeof parsedMaxRounds === 'number' && Number.isFinite(parsedMaxRounds);
+
+  // If maxRounds is explicitly provided but roundLimitType is missing (older
+  // tournaments), treat that as "max_rounds" so we still honour the admin's
+  // configured MR value instead of silently falling back to first_to_13/MR24.
+  const roundLimitType =
+    tournament.roundLimitType ?? (hasExplicitMaxRounds ? 'max_rounds' : 'first_to_13');
+  const maxRounds = hasExplicitMaxRounds ? (parsedMaxRounds as number) : 24;
+
   const cvars: Record<string, string | number> = {};
 
   if (roundLimitType === 'first_to_13') {
-    // First to 13: 24 rounds max (12 per half), with optional overtime
+    // Classic MR24 (first to 13 wins)
     cvars.mp_maxrounds = 24;
-    cvars.mp_overtime_enable = overtimeMode === 'enabled' ? 1 : 0;
-
-    if (overtimeMode === 'enabled') {
-      // MR3 format: 3 rounds per half (6 total), 10k start money
-      cvars.mp_overtime_maxrounds = 3; // 3 rounds per half = 6 total rounds
-      cvars.mp_overtime_startmoney = 10000; // 10k start money for MR3
-
-      // Optional: limit number of overtime segments if configured.
-      // When unset or <= 0, we let MatchZy/CS2 use the default (usually unlimited).
-      if (typeof overtimeSegments === 'number' && overtimeSegments > 0) {
-        cvars.mp_overtime_limit = overtimeSegments;
-      }
-    }
   } else if (roundLimitType === 'max_rounds') {
-    // Max rounds: Use configured max rounds, no overtime
+    // Use configured maxRounds directly (e.g. MR6 when maxRounds = 6)
     cvars.mp_maxrounds = maxRounds;
-    cvars.mp_overtime_enable = 0; // No overtime in max rounds mode
   }
 
   const simulation = await getSimulationFlag();
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
+
+  // For shuffle we want players_per_team to reflect the configured teamSize
+  // (e.g. 2 for 2v2) so the plugin's ready logic is correct. Fall back to the
+  // actual player counts when teamSize is not defined.
+  const playersPerTeam =
+    typeof tournament.teamSize === 'number' && tournament.teamSize > 0
+      ? tournament.teamSize
+      : Math.max(team1Count, team2Count, 1);
 
   const config: MatchConfig = {
     // MatchZy expects matchid to be an integer; use the numeric DB id when available.
     // Fall back to 0 only if the match row is unexpectedly missing.
     matchid: matchId ?? 0,
     num_maps: 1, // Shuffle tournaments are always BO1
-    players_per_team: Math.max(team1Count, team2Count, tournament.teamSize || 5),
-    min_players_to_ready: 1,
+    players_per_team: playersPerTeam,
+    // Require a full team to be ready before going live; for example, 2/2 in 2v2.
+    min_players_to_ready: playersPerTeam,
     min_spectators_to_ready: 0,
     wingman: false,
 
@@ -415,9 +428,11 @@ async function generateShuffleMatchConfig(
 
     spectators: { players: {} },
 
-    expected_players_total: team1Count + team2Count,
-    expected_players_team1: team1Count,
-    expected_players_team2: team2Count,
+    // Expected players are purely informational for our own UIs. MatchZy uses
+    // players_per_team + min_players_to_ready as the authoritative values.
+    expected_players_total: playersPerTeam * 2,
+    expected_players_team1: playersPerTeam,
+    expected_players_team2: playersPerTeam,
     team1: team1
       ? {
           id: team1.id,
@@ -447,7 +462,6 @@ async function generateShuffleMatchConfig(
     team2: config.team2.name,
     roundLimitType,
     maxRounds,
-    overtimeMode,
     cvars,
   });
 

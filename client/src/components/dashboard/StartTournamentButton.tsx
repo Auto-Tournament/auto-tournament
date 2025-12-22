@@ -77,11 +77,12 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
     // just navigate the user into the bracket instead of attempting to start again.
     await refreshData();
     if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+      // Tournament is already live/completed – go straight to the management
+      // screen instead of trying to start again.
       if (onSuccess) {
         onSuccess();
-      } else {
-        navigate('/bracket');
       }
+      navigate('/tournament');
       return;
     }
 
@@ -122,13 +123,14 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
 
       if (response.success) {
         setSuccess(`Tournament started! ${response.allocated} matches allocated to servers`);
-        setTimeout(() => {
-          setSuccess('');
-          if (onSuccess) {
-            onSuccess();
-          }
-          navigate('/bracket');
-        }, 2000);
+        // Refresh tournament data so the dashboard immediately sees the
+        // updated status, then navigate straight into the tournament
+        // management screen (`/tournament`).
+        await refreshData();
+        if (onSuccess) {
+          onSuccess();
+        }
+        navigate('/tournament');
       } else {
         setError(response.message || 'Failed to start tournament');
       }

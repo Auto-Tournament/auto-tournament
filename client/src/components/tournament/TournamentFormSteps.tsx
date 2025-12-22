@@ -516,10 +516,7 @@ export function TournamentFormSteps({
                   Team Size: {shuffleSettings.teamSize}v{shuffleSettings.teamSize}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={1}>
-                  Round Limit:{' '}
-                  {shuffleSettings.roundLimitType === 'first_to_13'
-                    ? 'First to 13'
-                    : `Max ${shuffleSettings.maxRounds} rounds`}
+                  Round Limit: Max {shuffleSettings.maxRounds} rounds
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={2}>
                   Overtime:{' '}

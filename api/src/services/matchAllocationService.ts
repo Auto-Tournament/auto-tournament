@@ -112,9 +112,10 @@ export class MatchAllocationService {
     for (const check of onlineServers) {
       const { status, updatedAt } = check;
 
-      const isEffectivelyIdle =
-        status === ServerStatus.IDLE || status === ServerStatus.POSTGAME || status === null;
-      if (!isEffectivelyIdle) {
+      // Follow MatchZy guidance strictly: only treat explicit "idle" as
+      // allocatable. All other states (including "postgame") remain busy.
+      const isIdle = status === ServerStatus.IDLE;
+      if (!isIdle) {
         continue;
       }
 
@@ -223,15 +224,11 @@ export class MatchAllocationService {
     for (const check of onlineServers) {
       const { server, status, matchSlug, updatedAt } = check;
 
-      // Treat both explicit IDLE and POSTGAME as "effectively idle" for allocation purposes.
-      // POSTGAME means the previous match has ended and the server is in cleanup; our
-      // grace-period logic below, plus MatchZy's own safeguards, will prevent unsafe reuse.
-      const isEffectivelyIdle =
-        status === ServerStatus.IDLE || status === ServerStatus.POSTGAME || status === null;
-
-      if (!isEffectivelyIdle) {
+      // Follow MatchZy spec: ONLY allocate when status is "idle". All other
+      // states, including "postgame", are considered busy.
+      if (status !== ServerStatus.IDLE) {
         log.debug(
-          `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle/postgame)`
+          `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
         );
         continue;
       }
@@ -409,25 +406,12 @@ export class MatchAllocationService {
           // so we don't rely solely on the stale snapshot from getAvailableServers.
           const statusInfo = await serverStatusService.getServerStatus(server.id);
 
-          // For the immediate pre-allocation check we consider servers with status
-          // IDLE or POSTGAME (previous match ended) as safe to attempt allocation.
-          // Active states like LIVE / WARMUP / LOADING remain protected.
-          const activeStates = new Set<ServerStatus>([
-            ServerStatus.LOADING,
-            ServerStatus.WARMUP,
-            ServerStatus.KNIFE,
-            ServerStatus.LIVE,
-            ServerStatus.PAUSED,
-            ServerStatus.HALFTIME,
-          ]);
-          const isEffectivelyIdle =
-            statusInfo.status === ServerStatus.IDLE ||
-            statusInfo.status === ServerStatus.POSTGAME ||
-            statusInfo.status === null;
-
-          if (!statusInfo.online || (!isEffectivelyIdle && activeStates.has(statusInfo.status!))) {
+          // Follow MatchZy guidance strictly here as well: only proceed when
+          // the live status is explicit "idle". Any other state (including
+          // "postgame") is treated as busy.
+          if (!statusInfo.online || statusInfo.status !== ServerStatus.IDLE) {
             log.debug(
-              `[ALLOCATION] Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle/postgame (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
+              `[ALLOCATION] Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
             );
             continue;
           }
@@ -537,9 +521,6 @@ export class MatchAllocationService {
       { matchSlugs: uniqueSlugs }
     );
 
-    const availableServers = await this.getAvailableServers();
-    log.info(`Found ${availableServers.length} available server(s) for specific allocation`);
-
     const allReadyMatches = await this.getReadyMatches();
     const readyMatches = allReadyMatches.filter((m) => uniqueSlugs.includes(m.slug));
 
@@ -551,6 +532,35 @@ export class MatchAllocationService {
         error: 'Match is not ready or does not exist',
       }));
     }
+
+    // For shuffle round advancement and other batch-style allocations we want
+    // to avoid starting only a subset of a round's matches while the rest sit
+    // "waiting for server". Follow the MatchZy guidance and poll until we have
+    // enough truly idle servers (status=idle, beyond grace period) to cover
+    // all requested ready matches, or until a reasonable timeout is reached.
+    const requiredServers = readyMatches.length;
+    const POLL_INTERVAL_MS = 10_000; // 10s, per MatchZy best practices
+    const MAX_WAIT_MS = 15 * 60 * 1000; // 15 minutes hard cap
+    const deadline = Date.now() + MAX_WAIT_MS;
+
+    let availableServers = await this.getAvailableServers();
+    while (
+      availableServers.length > 0 &&
+      availableServers.length < requiredServers &&
+      Date.now() < deadline
+    ) {
+      log.info(
+        `[ALLOCATION] Waiting for idle servers before batch allocation: ${availableServers.length}/${requiredServers} available`
+      );
+      await new Promise((resolve) => setTimeout(resolve, POLL_INTERVAL_MS));
+      availableServers = await this.getAvailableServers();
+    }
+
+    // Final snapshot after waiting (or immediate if we already had enough)
+    availableServers = await this.getAvailableServers();
+    log.info(
+      `Found ${availableServers.length} available server(s) for specific match allocation (required=${requiredServers})`
+    );
 
     if (availableServers.length === 0) {
       log.warn('[ALLOCATION] No available servers for specific match allocation');
@@ -580,22 +590,10 @@ export class MatchAllocationService {
         try {
           const statusInfo = await serverStatusService.getServerStatus(server.id);
 
-          const activeStates = new Set<ServerStatus>([
-            ServerStatus.LOADING,
-            ServerStatus.WARMUP,
-            ServerStatus.KNIFE,
-            ServerStatus.LIVE,
-            ServerStatus.PAUSED,
-            ServerStatus.HALFTIME,
-          ]);
-          const isEffectivelyIdle =
-            statusInfo.status === ServerStatus.IDLE ||
-            statusInfo.status === ServerStatus.POSTGAME ||
-            statusInfo.status === null;
-
-          if (!statusInfo.online || (!isEffectivelyIdle && activeStates.has(statusInfo.status!))) {
+          // Same strict rule here: only allocate when the live status is "idle".
+          if (!statusInfo.online || statusInfo.status !== ServerStatus.IDLE) {
             log.debug(
-              `[ALLOCATION] (specific) Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle/postgame (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
+              `[ALLOCATION] (specific) Skipping server ${server.id} (${server.name}) for match ${match.slug} because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
             );
             continue;
           }
@@ -1059,30 +1057,32 @@ export class MatchAllocationService {
       // Non-BO formats: Load matches immediately (no veto required)
       log.info('Non-BO format detected - loading matches immediately');
 
+      // As soon as we begin the allocation process (or start polling when
+      // there are no servers), we consider the tournament "started". This
+      // allows UIs and webhooks to react immediately instead of waiting for
+      // all allocations to complete.
+      if (tournament.status === 'setup' || tournament.status === 'ready') {
+        await db.updateAsync(
+          'tournament',
+          {
+            status: 'in_progress',
+            started_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
+          },
+          'id = ?',
+          [1]
+        );
+        log.success('Tournament started (non-BO format)');
+
+        emitTournamentUpdate({ id: 1, status: 'in_progress' });
+        emitBracketUpdate({ action: 'tournament_started' });
+      }
+
       // Check server availability
       if (!hasAvailableServers) {
         log.warn(
           '[WARNING] No servers are currently available. Tournament will start but matches will wait for server availability.'
         );
-
-        // Update tournament status to 'in_progress' even without servers
-        if (tournament.status === 'setup' || tournament.status === 'ready') {
-          await db.updateAsync(
-            'tournament',
-            {
-              status: 'in_progress',
-              started_at: Math.floor(Date.now() / 1000),
-              updated_at: Math.floor(Date.now() / 1000),
-            },
-            'id = ?',
-            [1]
-          );
-          log.success('Tournament started (waiting for servers)');
-
-          // Emit tournament update
-          emitTournamentUpdate({ id: 1, status: 'in_progress' });
-          emitBracketUpdate({ action: 'tournament_started' });
-        }
 
         // Start polling for all ready matches
         const readyMatches = await this.getReadyMatches();
@@ -1161,28 +1161,6 @@ export class MatchAllocationService {
             );
           }
         }
-      }
-
-      // Update tournament status to 'in_progress' if starting for the first time
-      if (
-        (tournament.status === 'setup' || tournament.status === 'ready') &&
-        (allocated > 0 || unallocatedMatches.length > 0)
-      ) {
-        await db.updateAsync(
-          'tournament',
-          {
-            status: 'in_progress',
-            started_at: Math.floor(Date.now() / 1000),
-            updated_at: Math.floor(Date.now() / 1000),
-          },
-          'id = ?',
-          [1]
-        );
-        log.success(`Tournament started: ${allocated} matches allocated, ${failed} failed`);
-
-        // Emit tournament update
-        emitTournamentUpdate({ id: 1, status: 'in_progress' });
-        emitBracketUpdate({ action: 'tournament_started' });
       }
 
       // Check for pending matches waiting for veto

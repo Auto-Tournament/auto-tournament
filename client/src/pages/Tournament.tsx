@@ -52,10 +52,7 @@ const Tournament: React.FC = () => {
   const [maps, setMaps] = useState<string[]>([]);
   const [shuffleSettings, setShuffleSettings] = useState<ShuffleTournamentSettings>({
     teamSize: 5,
-    roundLimitType: 'first_to_13',
     maxRounds: 24,
-    overtimeMode: 'enabled',
-    overtimeSegments: undefined,
     eloTemplateId: 'pure-win-loss',
   });
   const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
@@ -315,10 +312,7 @@ const Tournament: React.FC = () => {
       if (tournament.type === 'shuffle' && tournament.teamSize) {
         setShuffleSettings({
           teamSize: tournament.teamSize,
-          roundLimitType: tournament.roundLimitType || 'first_to_13',
           maxRounds: tournament.maxRounds || 24,
-          overtimeMode: tournament.overtimeMode || 'enabled',
-          overtimeSegments: tournament.overtimeSegments,
           eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
         });
       }
@@ -387,27 +381,8 @@ const Tournament: React.FC = () => {
       const currentTeamSize = tournament.teamSize || 5;
       if (shuffleSettings.teamSize !== currentTeamSize) return true;
 
-      const currentRoundLimitType = tournament.roundLimitType || 'first_to_13';
-      if (shuffleSettings.roundLimitType !== currentRoundLimitType) return true;
-
       const currentMaxRounds = tournament.maxRounds || 24;
-      if (
-        shuffleSettings.roundLimitType === 'max_rounds' &&
-        shuffleSettings.maxRounds !== currentMaxRounds
-      ) {
-        return true;
-      }
-
-      const currentOvertimeMode = tournament.overtimeMode || 'enabled';
-      if (shuffleSettings.overtimeMode !== currentOvertimeMode) return true;
-
-      const currentOvertimeSegments = tournament.overtimeSegments;
-      if (
-        (shuffleSettings.overtimeSegments || undefined) !==
-        (currentOvertimeSegments === null ? undefined : currentOvertimeSegments)
-      ) {
-        return true;
-      }
+      if (shuffleSettings.maxRounds !== currentMaxRounds) return true;
 
       const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
       const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
@@ -435,10 +410,7 @@ const Tournament: React.FC = () => {
         showError('Team size must be between 2 and 10 players');
         return;
       }
-      if (
-        shuffleSettings.roundLimitType === 'max_rounds' &&
-        (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30)
-      ) {
+      if (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30) {
         showError('Max rounds must be between 1 and 30');
         return;
       }
@@ -538,10 +510,12 @@ const Tournament: React.FC = () => {
         name,
         mapSequence: maps, // Maps in order = rounds
         teamSize: shuffleSettings.teamSize || 5,
-        roundLimitType: shuffleSettings.roundLimitType,
+        // Internally we always treat shuffle as using an explicit max-rounds
+        // limit; the UI only exposes the numeric maxRounds field.
+        roundLimitType: 'max_rounds' as const,
         maxRounds: shuffleSettings.maxRounds,
-        overtimeMode: shuffleSettings.overtimeMode,
-        overtimeSegments: shuffleSettings.overtimeSegments,
+        overtimeMode: 'enabled' as const,
+        overtimeSegments: undefined,
         eloTemplateId: shuffleSettings.eloTemplateId,
       };
 

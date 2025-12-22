@@ -507,21 +507,31 @@ class TournamentService {
       await enrichMatch(match, row.slug);
 
       // For matches that are still in progress, optionally overlay in‑memory live
-      // stats so the bracket reflects the most recent series score / map wins.
+      // stats so the bracket reflects the most recent score. For multi‑map
+      // series we prefer the live **series** score when it is positive
+      // (e.g. 1–0 in a BO3). For BO1 / early maps where seriesScore is still 0,
+      // we instead surface the current **map rounds** (e.g. 8–5) so the UI
+      // doesn't get stuck showing 0–0 until the final result is known.
+      //
       // For completed matches we ALWAYS trust persisted results and DO NOT let
       // transient live stats overwrite the final series score (e.g. 2–1).
       if (row.status !== 'completed') {
         const liveStats = matchLiveStatsService.getStats(row.slug);
         if (liveStats) {
-          // Prefer series scores (map wins in BO3/BO5); if not available, fall back
-          // to the current map score.
-          const liveTeam1 = liveStats.team1SeriesScore ?? liveStats.team1Score;
-          const liveTeam2 = liveStats.team2SeriesScore ?? liveStats.team2Score;
+          // Prefer positive series scores; otherwise fall back to current map rounds.
+          const liveTeam1 =
+            typeof liveStats.team1SeriesScore === 'number' && liveStats.team1SeriesScore > 0
+              ? liveStats.team1SeriesScore
+              : liveStats.team1Score;
+          const liveTeam2 =
+            typeof liveStats.team2SeriesScore === 'number' && liveStats.team2SeriesScore > 0
+              ? liveStats.team2SeriesScore
+              : liveStats.team2Score;
 
-          if (typeof liveTeam1 === 'number') {
+          if (typeof liveTeam1 === 'number' && Number.isFinite(liveTeam1)) {
             match.team1Score = liveTeam1;
           }
-          if (typeof liveTeam2 === 'number') {
+          if (typeof liveTeam2 === 'number' && Number.isFinite(liveTeam2)) {
             match.team2Score = liveTeam2;
           }
         }
