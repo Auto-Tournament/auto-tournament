@@ -56,6 +56,8 @@ const Tournament: React.FC = () => {
     eloTemplateId: 'pure-win-loss',
   });
   const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
+  // Global max rounds per map for non-shuffle tournaments (applies to all maps in the series).
+  const [maxRounds, setMaxRounds] = useState<number>(24);
 
   // Auto-set format to bo1 when shuffle is selected
   useEffect(() => {
@@ -315,6 +317,9 @@ const Tournament: React.FC = () => {
           maxRounds: tournament.maxRounds || 24,
           eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
         });
+      } else {
+        // Non-shuffle tournaments use a global maxRounds for all maps
+        setMaxRounds(tournament.maxRounds || 24);
       }
       setIsEditing(false);
       setShowWelcome(false);
@@ -387,6 +392,10 @@ const Tournament: React.FC = () => {
       const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
       const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
       if (selectedEloTemplate !== currentEloTemplate) return true;
+    } else {
+      // Non-shuffle: compare global maxRounds
+      const currentMaxRounds = tournament.maxRounds || 24;
+      if (maxRounds !== currentMaxRounds) return true;
     }
 
     return false;
@@ -401,6 +410,14 @@ const Tournament: React.FC = () => {
     if (maps.length === 0) {
       showError('Please select at least 1 map');
       return;
+    }
+
+    // Validate global max rounds for non-shuffle tournaments
+    if (type !== 'shuffle') {
+      if (maxRounds < 1 || maxRounds > 30) {
+        showError('Max rounds must be between 1 and 30');
+        return;
+      }
     }
 
     // Shuffle tournaments don't use teams
@@ -558,6 +575,7 @@ const Tournament: React.FC = () => {
         maps,
         teamIds: selectedTeams,
         settings: tournament?.settings || { seedingMethod: 'random' },
+        maxRounds,
       };
 
       const response = await saveTournament(payload);
@@ -750,6 +768,8 @@ const Tournament: React.FC = () => {
           mapPoolId={currentMapPoolId}
           shuffleSettings={shuffleSettings}
           eloTemplates={eloTemplates}
+          maxRounds={maxRounds}
+          onMaxRoundsChange={setMaxRounds}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}

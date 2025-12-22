@@ -78,6 +78,10 @@ export interface CreateTournamentInput {
   maps: string[];
   teamIds: string[];
   settings?: Partial<TournamentSettings>;
+   // Optional global round-limit settings (applies to all tournament types).
+   // For shuffle, maxRounds is required via the dedicated shuffle endpoint.
+   maxRounds?: number;
+   overtimeMode?: 'enabled' | 'disabled';
 }
 
 export interface UpdateTournamentInput {
@@ -87,6 +91,8 @@ export interface UpdateTournamentInput {
   maps?: string[];
   teamIds?: string[];
   settings?: Partial<TournamentSettings>;
+   maxRounds?: number;
+   overtimeMode?: 'enabled' | 'disabled';
 }
 
 export interface BracketMatch {

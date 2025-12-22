@@ -76,7 +76,7 @@ class TournamentService {
    * Create or replace the tournament
    */
   async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
-    const { name, type, format, maps, teamIds, settings } = input;
+    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
 
     // Shuffle tournaments don't use teams, skip validation
     if (type !== 'shuffle') {
@@ -105,6 +105,8 @@ class TournamentService {
       maps: JSON.stringify(maps),
       team_ids: JSON.stringify(teamIds || []), // Shuffle tournaments have no fixed teams
       settings: JSON.stringify(tournamentSettings),
+      max_rounds: maxRounds ?? 24,
+      overtime_mode: overtimeMode ?? 'enabled',
       created_at: now,
       updated_at: now,
     });
@@ -150,7 +152,7 @@ class TournamentService {
       throw new Error('No tournament exists to update');
     }
 
-    const { name, type, format, maps, teamIds, settings } = input;
+    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
 
     // Validate team count if changing teams or type
     if (type || teamIds) {
@@ -169,6 +171,12 @@ class TournamentService {
     if (settings) {
       const merged = { ...existing.settings, ...settings };
       updates.settings = JSON.stringify(merged);
+    }
+    if (typeof maxRounds === 'number') {
+      updates.max_rounds = maxRounds;
+    }
+    if (overtimeMode) {
+      updates.overtime_mode = overtimeMode;
     }
 
     await db.updateAsync('tournament', updates, 'id = ?', [1]);

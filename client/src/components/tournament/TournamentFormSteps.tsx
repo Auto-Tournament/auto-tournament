@@ -10,6 +10,7 @@ import {
   Stack,
   Alert,
   Typography,
+  TextField,
 } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -49,6 +50,8 @@ interface TournamentFormStepsProps {
   mapPoolId?: number | null;
   shuffleSettings?: ShuffleTournamentSettings;
   eloTemplates?: EloCalculationTemplate[];
+  maxRounds?: number;
+  onMaxRoundsChange?: (value: number) => void;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -80,6 +83,8 @@ export function TournamentFormSteps({
   mapPoolId,
   shuffleSettings,
   eloTemplates,
+  maxRounds,
+  onMaxRoundsChange,
   onNameChange,
   onTypeChange,
   onFormatChange,
@@ -414,6 +419,39 @@ export function TournamentFormSteps({
                 {volume.totalMaps === 1 ? '' : 's'} total).
               </Alert>
             )}
+            {typeof maxRounds === 'number' && onMaxRoundsChange && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Match Rules
+                </Typography>
+                <TextField
+                  label="Max Rounds per Map"
+                  type="number"
+                  value={maxRounds}
+                  onChange={(event) => {
+                    const value = parseInt(event.target.value, 10);
+                    onMaxRoundsChange(Number.isNaN(value) ? 0 : value);
+                  }}
+                  disabled={!canEdit || saving}
+                  slotProps={{
+                    htmlInput: {
+                      min: 1,
+                      max: 30,
+                      'data-testid': 'tournament-max-rounds-field',
+                    },
+                  }}
+                  helperText={
+                    maxRounds > 0
+                      ? `Each map plays up to ${maxRounds} rounds; winner is first to ${
+                          Math.floor(maxRounds / 2) + 1
+                        } rounds.`
+                      : 'Maximum number of rounds per map (default: 24, max: 30).'
+                  }
+                  error={maxRounds <= 0 || maxRounds > 30}
+                  fullWidth
+                />
+              </Box>
+            )}
             <TeamSelectionStep
               teams={teams}
               selectedTeams={selectedTeams}
@@ -469,6 +507,17 @@ export function TournamentFormSteps({
                 {format.toUpperCase()}
               </Typography>
             </Box>
+            {type !== 'shuffle' && typeof maxRounds === 'number' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  Match Rules
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Max {maxRounds} rounds per map; winner is first to{' '}
+                  {Math.floor(maxRounds / 2) + 1} rounds.
+                </Typography>
+              </Box>
+            )}
             {type !== 'shuffle' && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>

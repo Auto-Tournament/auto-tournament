@@ -212,6 +212,11 @@ export const generateMatchConfig = async (
   const simulation = await getSimulationFlag();
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
+  const maxRounds = resolveMaxRounds(tournament);
+  const cvars: Record<string, string | number> = {
+    mp_maxrounds: maxRounds,
+  };
+
   const config: MatchConfig = {
     // MatchZy expects numeric matchid; fall back to 0 only if we somehow
     // don't have a DB row yet (should be rare, but keeps config valid).
@@ -232,6 +237,9 @@ export const generateMatchConfig = async (
     // veto_per_map_sides: per_map_sides, // ['team1_ct' | 'team2_ct' | 'knife'] per map index
 
     spectators: { players: {} },
+
+    // Round limit configuration
+    cvars,
 
     // Custom fields used by your frontend
     expected_players_total: team1Count + team2Count,
@@ -265,6 +273,8 @@ export const generateMatchConfig = async (
     numMaps: config.num_maps,
     maplist: config.maplist,
     map_sides: config.map_sides,
+    maxRounds,
+    cvars,
     team1: config.team1.name,
     team2: config.team2.name,
   });

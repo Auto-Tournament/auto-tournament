@@ -90,6 +90,7 @@ export const useTournament = () => {
     maps: string[];
     teamIds: string[];
     settings: { seedingMethod: string };
+    maxRounds?: number;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
       TournamentResponse & { tournament: TournamentDetailed }
