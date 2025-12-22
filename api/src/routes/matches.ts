@@ -386,6 +386,20 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
       started_at: t.started_at,
       completed_at: t.completed_at,
       teams: [], // Not needed for config generation
+      // Carry shuffle / round-limit fields so matchConfigBuilder can honor them.
+      mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+      teamSize:
+        t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
+      maxRounds:
+        t.max_rounds === null || typeof t.max_rounds === 'undefined'
+          ? undefined
+          : t.max_rounds,
+      overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+      overtimeSegments:
+        t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+          ? undefined
+          : t.overtime_segments,
+      eloTemplateId: t.elo_template_id ?? undefined,
     };
 
     // 4) Generate a fresh config (reads veto_state internally)

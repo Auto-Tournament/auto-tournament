@@ -34,6 +34,26 @@ async function getSimulationTimescale(): Promise<number> {
   }
 }
 
+/**
+ * Normalize the tournament's maxRounds into a safe mp_maxrounds value.
+ * - Accepts number or string (from DB / serialized JSON)
+ * - Falls back to 24 (MR24) when missing/invalid.
+ */
+function resolveMaxRounds(tournament: TournamentResponse): number {
+  const raw = tournament.maxRounds as unknown;
+  const parsed =
+    typeof raw === 'number'
+      ? raw
+      : typeof raw === 'string' && raw.trim() !== ''
+      ? Number(raw)
+      : undefined;
+
+  const maxRounds =
+    typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
+
+  return maxRounds;
+}
+
 export const generateMatchConfig = async (
   tournament: TournamentResponse,
   team1Id?: string,
@@ -267,7 +287,7 @@ export const generateMatchConfig = async (
     simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
   };
 
-  log.info('Match config generated', {
+  log.info('Match config generated (standard)', {
     matchSlug: slug,
     matchId: config.matchid,
     numMaps: config.num_maps,
@@ -374,23 +394,7 @@ async function generateShuffleMatchConfig(
   // Configure round limit based on shuffle tournament settings.
   // IMPORTANT: This code is ONLY allowed to set cvars["mp_maxrounds"].
   // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
-  //
-  // For shuffle we keep this intentionally simple:
-  // - We always treat maxRounds as the authoritative value for mp_maxrounds.
-  // - If maxRounds is missing or invalid, we fall back to 24 (MR24).
-  const rawMaxRounds = tournament.maxRounds as unknown;
-  const parsedMaxRounds =
-    typeof rawMaxRounds === 'number'
-      ? rawMaxRounds
-      : typeof rawMaxRounds === 'string' && rawMaxRounds.trim() !== ''
-      ? Number(rawMaxRounds)
-      : undefined;
-
-  const maxRounds =
-    typeof parsedMaxRounds === 'number' && Number.isFinite(parsedMaxRounds) && parsedMaxRounds > 0
-      ? parsedMaxRounds
-      : 24;
-
+  const maxRounds = resolveMaxRounds(tournament);
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
   };

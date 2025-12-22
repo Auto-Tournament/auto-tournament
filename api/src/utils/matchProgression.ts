@@ -197,6 +197,22 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
       started_at: tournament.started_at,
       completed_at: tournament.completed_at,
       teams: [],
+      mapSequence: tournament.map_sequence ? JSON.parse(tournament.map_sequence) : undefined,
+      teamSize:
+        tournament.team_size === null || typeof tournament.team_size === 'undefined'
+          ? undefined
+          : tournament.team_size,
+      maxRounds:
+        tournament.max_rounds === null || typeof tournament.max_rounds === 'undefined'
+          ? undefined
+          : tournament.max_rounds,
+      overtimeMode: (tournament.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+      overtimeSegments:
+        tournament.overtime_segments === null ||
+        typeof tournament.overtime_segments === 'undefined'
+          ? undefined
+          : tournament.overtime_segments,
+      eloTemplateId: tournament.elo_template_id ?? undefined,
     };
 
     // Generate match config using the service

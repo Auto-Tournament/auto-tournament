@@ -45,6 +45,13 @@ export interface DbTournamentRow {
   started_at?: number;
   completed_at?: number;
   settings?: string;
+  // Shuffle / global round-limit fields
+  map_sequence?: string | null;
+  team_size?: number | null;
+  max_rounds?: number | null;
+  overtime_mode?: string | null;
+  overtime_segments?: number | null;
+  elo_template_id?: string | null;
 }
 
 export interface DbEventRow {
