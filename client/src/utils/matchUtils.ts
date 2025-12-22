@@ -46,7 +46,8 @@ export const getStatusLabel = (
       if (vetoCompleted === false) return 'MAP VETO';
       // If veto is completed but no server, show waiting for server
       if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
-      return 'READY';
+      // Veto complete and server assigned – match is queued to be loaded on the server.
+      return 'SERVER ALLOCATED';
     case 'loaded':
       return 'WARMUP';
     case 'live':
@@ -97,7 +98,9 @@ export const getDetailedStatusLabel = (
       if (vetoCompleted === true && hasServer === false) {
         return 'Veto complete - Waiting for server assignment...';
       }
-      return 'Veto complete - Waiting for server...';
+      // Veto is complete and a server has been assigned; the match will be
+      // loaded shortly and move into warmup on that server.
+      return 'Veto complete - Server allocated, waiting to load match...';
     case 'loaded':
       if (playerCount !== undefined) {
         if (playerCount === 0) {

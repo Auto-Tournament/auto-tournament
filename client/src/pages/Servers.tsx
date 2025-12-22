@@ -41,6 +41,9 @@ export default function Servers() {
     currentMatch: string | null;
     reachableFromApi?: boolean;
     serverCanReachApi?: boolean;
+    pluginStatus?: string | null;
+    allocationState?: string | null;
+    allocationMatchSlug?: string | null;
   }> => {
     try {
       const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);
@@ -50,9 +53,20 @@ export default function Servers() {
         currentMatch: response.currentMatch ?? null,
         reachableFromApi: response.reachableFromApi,
         serverCanReachApi: response.serverCanReachApi,
+        pluginStatus: response.pluginStatus ?? null,
+        allocationState: response.allocationState ?? null,
+        allocationMatchSlug: response.allocationMatchSlug ?? null,
       };
     } catch {
-      return { status: 'offline', currentMatch: null, reachableFromApi: false, serverCanReachApi: false };
+      return {
+        status: 'offline',
+        currentMatch: null,
+        reachableFromApi: false,
+        serverCanReachApi: false,
+        pluginStatus: null,
+        allocationState: null,
+        allocationMatchSlug: null,
+      };
     }
   };
 
@@ -72,9 +86,25 @@ export default function Servers() {
       // Check status only for enabled servers
       const enabledServers = serverList.filter((s) => s.enabled);
       const statusPromises = enabledServers.map(async (server: Server) => {
-        const { status, currentMatch, reachableFromApi, serverCanReachApi } =
-          await checkServerStatus(server.id);
-        return { id: server.id, status, currentMatch, reachableFromApi, serverCanReachApi };
+        const {
+          status,
+          currentMatch,
+          reachableFromApi,
+          serverCanReachApi,
+          pluginStatus,
+          allocationState,
+          allocationMatchSlug,
+        } = await checkServerStatus(server.id);
+        return {
+          id: server.id,
+          status,
+          currentMatch,
+          reachableFromApi,
+          serverCanReachApi,
+          pluginStatus,
+          allocationState,
+          allocationMatchSlug,
+        };
       });
 
       const statuses = await Promise.all(statusPromises);
@@ -101,6 +131,18 @@ export default function Servers() {
               statusInfo?.serverCanReachApi !== undefined
                 ? statusInfo.serverCanReachApi
                 : server.serverCanReachApi,
+            pluginStatus:
+              statusInfo?.pluginStatus !== undefined
+                ? statusInfo.pluginStatus
+                : server.pluginStatus ?? null,
+            allocationState:
+              statusInfo?.allocationState !== undefined
+                ? statusInfo.allocationState
+                : server.allocationState ?? null,
+            allocationMatchSlug:
+              statusInfo?.allocationMatchSlug !== undefined
+                ? statusInfo.allocationMatchSlug
+                : server.allocationMatchSlug ?? null,
           };
         })
       );
@@ -356,6 +398,31 @@ export default function Servers() {
                             </strong>
                           </Typography>
                         </Box>
+                        {server.pluginStatus && (
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <Typography variant="caption" color="text.secondary">
+                              <strong>MatchZy:</strong>{' '}
+                              <Chip
+                                label={server.pluginStatus.toUpperCase()}
+                                size="small"
+                                color={
+                                  server.pluginStatus === 'idle'
+                                    ? 'success'
+                                    : server.pluginStatus === 'live'
+                                    ? 'error'
+                                    : server.pluginStatus === 'warmup' ||
+                                      server.pluginStatus === 'loading'
+                                    ? 'info'
+                                    : server.pluginStatus === 'postgame'
+                                    ? 'default'
+                                    : 'warning'
+                                }
+                                variant="outlined"
+                                sx={{ fontWeight: 600, ml: 0.5 }}
+                              />
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
                     )}
                     {server.currentMatch && server.status === 'online' && (

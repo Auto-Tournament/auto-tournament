@@ -65,9 +65,24 @@ export default function Bracket() {
   const [allocationCountdown, setAllocationCountdown] = useState<{
     nextAllocationInSeconds: number | null;
     gracePeriodSeconds: number;
+    availableServerCount: number;
+    requiredServerCount: number;
+    // Snapshot of server states so we can show which ones are still in cooldown
+    // or otherwise not allocatable.
+    servers: Array<{
+      id: string;
+      name: string;
+      status: string | null;
+      inGraceWindow: boolean;
+      secondsUntilReady: number | null;
+      allocatable: boolean;
+    }>;
   }>({
     nextAllocationInSeconds: null,
     gracePeriodSeconds: 300,
+    availableServerCount: 0,
+    requiredServerCount: 0,
+    servers: [],
   });
 
   // Derive the current match from matches array (automatically updates when matches change),
@@ -112,36 +127,11 @@ export default function Bracket() {
         }
       };
 
-      const loadAllocationStatus = async () => {
-        try {
-          const availability = await api.get<{
-            success: boolean;
-            availableServerCount: number;
-            gracePeriodSeconds?: number;
-            nextAllocationInSeconds?: number | null;
-          }>('/api/tournament/server-availability');
-
-          if (availability.success) {
-            setAllocationCountdown({
-              gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
-              nextAllocationInSeconds:
-                typeof availability.nextAllocationInSeconds === 'number'
-                  ? availability.nextAllocationInSeconds
-                  : null,
-            });
-          }
-        } catch (err) {
-          console.error('Failed to load allocation status:', err);
-        }
-      };
-
       loadRoundStatus();
-      loadAllocationStatus();
 
-      // Refresh round+allocation status every 30 seconds
+      // Refresh round status every 30 seconds
       const interval = setInterval(() => {
         void loadRoundStatus();
-        void loadAllocationStatus();
       }, 30000);
       return () => clearInterval(interval);
     }
@@ -149,6 +139,62 @@ export default function Bracket() {
     // We intentionally do not reset shuffle-specific state here; guards below ensure
     // it is only used when the current tournament is a shuffle tournament.
   }, [tournament?.type, tournament?.id, tournament?.mapSequence, tournament?.maps]);
+
+  // Poll allocation status globally so all tournament types can show the
+  // "next servers in Xs" countdown on the Bracket page.
+  useEffect(() => {
+    const loadAllocationStatus = async () => {
+      try {
+        const availability = await api.get<{
+          success: boolean;
+          availableServerCount: number;
+          gracePeriodSeconds?: number;
+          nextAllocationInSeconds?: number | null;
+          requiredServerCount?: number;
+          servers?: Array<{
+            id: string;
+            name: string;
+            online: boolean;
+            status: string | null;
+            matchSlug: string | null;
+            updatedAt: number | null;
+            inGraceWindow: boolean;
+            secondsUntilReady: number | null;
+            allocatable: boolean;
+          }>;
+        }>('/api/tournament/server-availability');
+
+        if (availability.success) {
+          setAllocationCountdown({
+            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+            nextAllocationInSeconds:
+              typeof availability.nextAllocationInSeconds === 'number'
+                ? availability.nextAllocationInSeconds
+                : null,
+            availableServerCount: availability.availableServerCount,
+            requiredServerCount: availability.requiredServerCount ?? 0,
+            servers:
+              availability.servers?.map((s) => ({
+                id: s.id,
+                name: s.name,
+                status: s.status,
+                inGraceWindow: s.inGraceWindow,
+                secondsUntilReady: s.secondsUntilReady,
+                allocatable: s.allocatable,
+              })) ?? [],
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load allocation status for Bracket page:', err);
+      }
+    };
+
+    void loadAllocationStatus();
+    const interval = setInterval(() => {
+      void loadAllocationStatus();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Local per‑second countdown tick for "next allocation in" display
   useEffect(() => {
@@ -180,8 +226,7 @@ export default function Bracket() {
   }, []);
 
   // For shuffle tournaments, we always render the list view (no visual bracket).
-  const effectiveViewMode: 'visual' | 'list' =
-    tournament?.type === 'shuffle' ? 'list' : viewMode;
+  const effectiveViewMode: 'visual' | 'list' = tournament?.type === 'shuffle' ? 'list' : viewMode;
 
   // Calculate global match number
   const getGlobalMatchNumber = (match: Match): number => {
@@ -487,19 +532,6 @@ export default function Bracket() {
                   List
                 </ToggleButton>
               </ToggleButtonGroup>
-              <Chip
-                label={tournament.status.replace('_', ' ').toUpperCase()}
-                color={
-                  tournament.status === 'setup'
-                    ? 'default'
-                    : tournament.status === 'ready'
-                    ? 'info'
-                    : tournament.status === 'in_progress'
-                    ? 'warning'
-                    : 'success'
-                }
-                sx={{ fontWeight: 600 }}
-              />
               <Button
                 variant="outlined"
                 startIcon={<RefreshIcon />}
@@ -518,6 +550,26 @@ export default function Bracket() {
             </Box>
           </Box>
         </>
+      )}
+
+      {/* Allocation / cooldown status helper */}
+      {!isFullscreen && allocationCountdown.requiredServerCount > 0 && (
+        <Box px={2} mb={2}>
+          <Typography variant="body2" color="text.secondary">
+            Waiting for idle servers before batch allocation:{' '}
+            <strong>
+              {allocationCountdown.availableServerCount}/{allocationCountdown.requiredServerCount} ready
+            </strong>
+            {allocationCountdown.nextAllocationInSeconds !== null &&
+              allocationCountdown.nextAllocationInSeconds > 0 && (
+                <>
+                  {' '}
+                  – next reuse in{' '}
+                  <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+                </>
+              )}
+          </Typography>
+        </Box>
       )}
 
       {/* Fullscreen exit button - only visible in fullscreen */}
@@ -644,39 +696,39 @@ export default function Bracket() {
           {Array.from({ length: effectiveTotalRounds }, (_, i) => i + 1)
             .reverse()
             .map((round) => {
-            const roundMatches = matchesByRound[round] || [];
-            if (roundMatches.length === 0) return null;
+              const roundMatches = matchesByRound[round] || [];
+              if (roundMatches.length === 0) return null;
 
               return (
-              <Box key={round} mb={4}>
-                <Typography variant="h6" fontWeight={600} mb={2}>
-                  {getBracketRoundLabel(round)}
-                  {tournament.type === 'shuffle' &&
-                    roundStatus &&
-                    roundStatus.roundNumber === round && (
-                      <Chip
-                        label={roundStatus.map}
-                        size="small"
-                        sx={{ ml: 1 }}
-                        color="primary"
-                        variant="outlined"
+                <Box key={round} mb={4}>
+                  <Typography variant="h6" fontWeight={600} mb={2}>
+                    {getBracketRoundLabel(round)}
+                    {tournament.type === 'shuffle' &&
+                      roundStatus &&
+                      roundStatus.roundNumber === round && (
+                        <Chip
+                          label={roundStatus.map}
+                          size="small"
+                          sx={{ ml: 1 }}
+                          color="primary"
+                          variant="outlined"
+                        />
+                      )}
+                  </Typography>
+                  <Stack spacing={2}>
+                    {roundMatches.map((match) => (
+                      <MatchCard
+                        key={match.id}
+                        match={match}
+                        matchNumber={getGlobalMatchNumber(match)}
+                        roundLabel={getBracketRoundLabel(round)}
+                        onClick={() => handleMatchClick(match)}
                       />
-                    )}
-                </Typography>
-                <Stack spacing={2}>
-                  {roundMatches.map((match) => (
-                    <MatchCard
-                      key={match.id}
-                      match={match}
-                      matchNumber={getGlobalMatchNumber(match)}
-                      roundLabel={getBracketRoundLabel(round)}
-                      onClick={() => handleMatchClick(match)}
-                    />
-                  ))}
-                </Stack>
-              </Box>
-            );
-          })}
+                    ))}
+                  </Stack>
+                </Box>
+              );
+            })}
         </Box>
       )}
 

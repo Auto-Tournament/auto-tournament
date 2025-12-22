@@ -59,6 +59,25 @@ export class MatchAllocationService {
     availableServerCount: number;
     gracePeriodSeconds: number;
     nextAllocationInSeconds: number | null;
+    // How many matches are currently waiting for servers (ready & no server_id)
+    requiredServerCount: number;
+    // Per‑server snapshot so UIs can surface which servers are still busy or
+    // within their cooldown window.
+    servers: Array<{
+      id: string;
+      name: string;
+      online: boolean;
+      status: ServerStatus | null;
+      matchSlug: string | null;
+      updatedAt: number | null;
+      // True when the server is idle but still within the grace period window
+      // before it can be safely reused.
+      inGraceWindow: boolean;
+      secondsUntilReady: number | null;
+      // True when the allocator would currently consider this server
+      // allocatable for a new match.
+      allocatable: boolean;
+    }>;
   }> {
     const enabledServers = await serverService.getAllServers(true);
     const candidateServers = enabledServers.filter(
@@ -108,39 +127,76 @@ export class MatchAllocationService {
 
     let availableServerCount = 0;
     let nextAllocationInSeconds: number | null = null;
+    const servers: Array<{
+      id: string;
+      name: string;
+      online: boolean;
+      status: ServerStatus | null;
+      matchSlug: string | null;
+      updatedAt: number | null;
+      inGraceWindow: boolean;
+      secondsUntilReady: number | null;
+      allocatable: boolean;
+    }> = [];
 
     for (const check of onlineServers) {
-      const { status, updatedAt } = check;
+      const { server, status, matchSlug, updatedAt, online } = check;
 
       // Follow MatchZy guidance strictly: only treat explicit "idle" as
       // allocatable. All other states (including "postgame") remain busy.
       const isIdle = status === ServerStatus.IDLE;
-      if (!isIdle) {
-        continue;
-      }
+      let inGraceWindow = false;
+      let secondsUntilReady: number | null = null;
+      let allocatable = false;
 
-      if (updatedAt) {
-        const age = now - updatedAt;
-        if (age < GRACE_PERIOD_SECONDS) {
-          const remaining = GRACE_PERIOD_SECONDS - age;
+      if (isIdle) {
+        if (updatedAt) {
+          const age = now - updatedAt;
+          if (age < GRACE_PERIOD_SECONDS) {
+            inGraceWindow = true;
+            secondsUntilReady = GRACE_PERIOD_SECONDS - age;
 
-          // If there is at least one server still in its grace window, we
-          // track the *minimum* remaining time so the UI can show a single
-          // countdown until the next allocation attempt is allowed.
-          if (nextAllocationInSeconds === null || remaining < nextAllocationInSeconds) {
-            nextAllocationInSeconds = remaining;
+            // Track the *minimum* remaining time so the UI can show a single
+            // countdown until the next allocation attempt is allowed.
+            if (nextAllocationInSeconds === null || secondsUntilReady < nextAllocationInSeconds) {
+              nextAllocationInSeconds = secondsUntilReady;
+            }
+          } else {
+            allocatable = true;
           }
-          continue;
+        } else {
+          // No timestamp – treat as long‑idle and allocatable.
+          allocatable = true;
         }
       }
 
-      availableServerCount += 1;
+      if (allocatable) {
+        availableServerCount += 1;
+      }
+
+      servers.push({
+        id: server.id,
+        name: server.name,
+        online,
+        status: status ?? null,
+        matchSlug: matchSlug ?? null,
+        updatedAt: updatedAt ?? null,
+        inGraceWindow,
+        secondsUntilReady,
+        allocatable,
+      });
     }
+
+    // How many matches are currently waiting for servers (ready + no server_id)
+    const readyMatches = await this.getReadyMatches();
+    const requiredServerCount = readyMatches.length;
 
     return {
       availableServerCount,
       gracePeriodSeconds: GRACE_PERIOD_SECONDS,
       nextAllocationInSeconds,
+      requiredServerCount,
+      servers,
     };
   }
 

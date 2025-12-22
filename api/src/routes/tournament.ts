@@ -582,6 +582,8 @@ router.get('/server-availability', requireAuth, async (_req: Request, res: Respo
       availableServerCount: status.availableServerCount,
       gracePeriodSeconds: status.gracePeriodSeconds,
       nextAllocationInSeconds: status.nextAllocationInSeconds,
+      requiredServerCount: status.requiredServerCount,
+      servers: status.servers,
     });
   } catch (error) {
     log.error('Error checking server availability', error);

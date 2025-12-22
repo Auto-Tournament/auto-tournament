@@ -29,6 +29,12 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
+  // Optional real-time status values reported by the MatchZy plugin and
+  // allocator. These are populated by /api/servers/:id/status and are used
+  // purely for UI display on the Servers page.
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
   matchzyConfig?: {
     chatPrefix?: string | null;
     adminChatPrefix?: string | null;
@@ -65,6 +71,9 @@ export interface ServerStatusResponse extends ApiResponse {
   playerCount?: number;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
 }
 
 // Team types
