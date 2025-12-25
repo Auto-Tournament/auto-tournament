@@ -566,9 +566,7 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   for (let i = availableNames.length - 1; i > 0; i -= 1) {
     const j = Math.floor(Math.random() * (i + 1));
     const tmp = availableNames[i];
-    // eslint-disable-next-line no-param-reassign
     availableNames[i] = availableNames[j];
-    // eslint-disable-next-line no-param-reassign
     availableNames[j] = tmp;
   }
 
