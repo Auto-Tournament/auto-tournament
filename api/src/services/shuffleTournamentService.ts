@@ -82,7 +82,7 @@ export async function createShuffleTournament(
   if (!config.mapSequence || config.mapSequence.length === 0) {
     throw new Error(
       'At least one map must be selected. ' +
-        'The number of maps you select determines the number of rounds in the tournament.'
+      'The number of maps you select determines the number of rounds in the tournament.'
     );
   }
 
@@ -158,7 +158,7 @@ export async function registerPlayers(playerIds: string[]): Promise<{
   if (tournament.status !== 'setup') {
     throw new Error(
       `Cannot register players. Tournament is in "${tournament.status}" status. ` +
-        'Players can only be registered when tournament is in "setup" status.'
+      'Players can only be registered when tournament is in "setup" status.'
     );
   }
 
@@ -241,7 +241,7 @@ export async function setRegisteredPlayers(playerIds: string[]): Promise<{
   if (tournament.status !== 'setup') {
     throw new Error(
       `Cannot modify player registrations. Tournament is in "${tournament.status}" status. ` +
-        'Players can only be modified when tournament is in "setup" status.'
+      'Players can only be modified when tournament is in "setup" status.'
     );
   }
 
@@ -323,8 +323,8 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   if (roundNumber < 1 || roundNumber > mapSequence.length) {
     throw new Error(
       `Invalid round number: ${roundNumber}. ` +
-        `Tournament has ${mapSequence.length} round(s) (based on ${mapSequence.length} map(s) selected). ` +
-        `Valid round numbers: 1-${mapSequence.length}.`
+      `Tournament has ${mapSequence.length} round(s) (based on ${mapSequence.length} map(s) selected). ` +
+      `Valid round numbers: 1-${mapSequence.length}.`
     );
   }
 
@@ -337,8 +337,8 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   if (players.length < minPlayers) {
     throw new Error(
       `Not enough players registered: ${players.length}. ` +
-        `Shuffle tournaments require at least ${minPlayers} players for ${teamSize}v${teamSize} matches. ` +
-        `Please register ${minPlayers - players.length} more player(s) before generating matches.`
+      `Shuffle tournaments require at least ${minPlayers} players for ${teamSize}v${teamSize} matches. ` +
+      `Please register ${minPlayers - players.length} more player(s) before generating matches.`
     );
   }
 
@@ -386,59 +386,6 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   // Pool of friendly team names used for temporary shuffle teams.
   // We keep these readable but will assign them randomly and ensure that a
   // given name is only used once per tournament (no duplicates).
-  const FRIENDLY_TEAM_NAMES = [
-  const now = Math.floor(Date.now() / 1000);
-  const matches: DbMatchRow[] = [];
-
-  // Track which players are assigned to matches (for future use if needed)
-  // const assignedPlayerIds = new Set<string>();
-
-  // Build a set of team names that have already been used by previous shuffle
-  // rounds so we never reuse a name within the same tournament.
-  const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
-    "SELECT id, name, tag FROM teams WHERE id LIKE 'shuffle-r%'"
-  );
-  const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
-
-  // Each balanced team becomes its own temporary team row, so we need at least
-  // `teams.length` distinct names for this round.
-  const requiredNames = teams.length;
-
-  // Start from the friendly pool, excluding names already used.
-  const basePool = FRIENDLY_TEAM_NAMES.filter((name) => !usedTeamNames.has(name));
-
-  const availableNames: string[] = [...basePool];
-
-  // If the friendly pool is too small for all shuffle teams across rounds,
-  // generate additional unique fallback names of the form "Team 1", "Team 2",
-  // etc. to guarantee uniqueness without collisions.
-  if (availableNames.length < requiredNames) {
-    let counter = 1;
-    while (availableNames.length < requiredNames) {
-      const candidate = `Team ${existingShuffleTeams.length + availableNames.length + counter}`;
-      if (!usedTeamNames.has(candidate)) {
-        availableNames.push(candidate);
-        usedTeamNames.add(candidate);
-      }
-      counter += 1;
-    }
-  }
-
-  // Shuffle the available names so that assignment within this round is
-  // completely random.
-  for (let i = availableNames.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = availableNames[i];
-    // eslint-disable-next-line no-param-reassign
-    availableNames[i] = availableNames[j];
-    // eslint-disable-next-line no-param-reassign
-    availableNames[j] = tmp;
-  }
-
-  let nextNameIndex = 0;
-
-  // Pool of friendly team names used for temporary shuffle teams.
-  // We cycle through these names so they are readable and re-usable across rounds.
   const FRIENDLY_TEAM_NAMES = [
     'Phoenix',
     'Falcon',
@@ -582,6 +529,50 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     'SentinelPrime',
     'VanguardElite',
   ];
+
+  // Build a set of team names that have already been used by previous shuffle
+  // rounds so we never reuse a name within the same tournament.
+  const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
+    "SELECT id, name, tag FROM teams WHERE id LIKE 'shuffle-r%'"
+  );
+  const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
+
+  // Each balanced team becomes its own temporary team row, so we need at least
+  // `teams.length` distinct names for this round.
+  const requiredNames = teams.length;
+
+  // Start from the friendly pool, excluding names already used.
+  const basePool = FRIENDLY_TEAM_NAMES.filter((name) => !usedTeamNames.has(name));
+
+  const availableNames: string[] = [...basePool];
+
+  // If the friendly pool is too small for all shuffle teams across rounds,
+  // generate additional unique fallback names of the form "Team 1", "Team 2",
+  // etc. to guarantee uniqueness without collisions.
+  if (availableNames.length < requiredNames) {
+    let counter = 1;
+    while (availableNames.length < requiredNames) {
+      const candidate = `Team ${existingShuffleTeams.length + availableNames.length + counter}`;
+      if (!usedTeamNames.has(candidate)) {
+        availableNames.push(candidate);
+        usedTeamNames.add(candidate);
+      }
+      counter += 1;
+    }
+  }
+
+  // Shuffle the available names so that assignment within this round is
+  // completely random.
+  for (let i = availableNames.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    const tmp = availableNames[i];
+    // eslint-disable-next-line no-param-reassign
+    availableNames[i] = availableNames[j];
+    // eslint-disable-next-line no-param-reassign
+    availableNames[j] = tmp;
+  }
+
+  let nextNameIndex = 0;
 
   // Create matches for each team pair
   for (let matchNum = 0; matchNum < teams.length / 2; matchNum++) {
@@ -892,7 +883,7 @@ export async function advanceToNextRound(): Promise<{
 
     log.success(
       `Shuffle tournament completed! All ${mapSequence.length} round(s) finished. ` +
-        `Final leaderboard available at /tournament/1/leaderboard`
+      `Final leaderboard available at /tournament/1/leaderboard`
     );
     return null;
   }
