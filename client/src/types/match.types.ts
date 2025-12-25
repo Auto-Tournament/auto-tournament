@@ -56,6 +56,9 @@ export interface MatchConfig {
   expected_players_team2?: number;
   team1?: MatchConfigTeam;
   team2?: MatchConfigTeam;
+  cvars?: {
+    [key: string]: string | number;
+  };
 }
 
 export interface PlayerStats {

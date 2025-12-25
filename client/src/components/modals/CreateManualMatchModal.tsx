@@ -10,9 +10,20 @@ import {
   MenuItem,
   Typography,
   Stack,
+  Chip,
+  Autocomplete,
 } from '@mui/material';
 import { api } from '../../utils/api';
-import type { Server, ServersResponse, MatchConfig, MatchResponse } from '../../types';
+import type {
+  Server,
+  ServersResponse,
+  MatchConfig,
+  MatchResponse,
+  TeamsResponse,
+  Team,
+  MapsResponse,
+  Map as ApiMap,
+} from '../../types';
 
 interface CreateManualMatchModalProps {
   open: boolean;
@@ -27,27 +38,40 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 }) => {
   const [servers, setServers] = useState<Server[]>([]);
   const [loadingServers, setLoadingServers] = useState(false);
+  const [serverStatuses, setServerStatuses] = useState<
+    Map<
+      string,
+      {
+        status: 'online' | 'offline';
+        currentMatch: string | null;
+      }
+    >
+  >(new Map());
+  const [teams, setTeams] = useState<Team[]>([]);
+  const [loadingTeams, setLoadingTeams] = useState(false);
   const [saving, setSaving] = useState(false);
 
   const [slug, setSlug] = useState('');
   const [serverId, setServerId] = useState('');
-  const [team1Name, setTeam1Name] = useState('');
-  const [team1Tag, setTeam1Tag] = useState('');
-  const [team2Name, setTeam2Name] = useState('');
-  const [team2Tag, setTeam2Tag] = useState('');
-  const [mapListText, setMapListText] = useState('de_mirage');
+  const [team1Id, setTeam1Id] = useState('');
+  const [team2Id, setTeam2Id] = useState('');
+  const [availableMaps, setAvailableMaps] = useState<ApiMap[]>([]);
+  const [loadingMaps, setLoadingMaps] = useState(false);
+  const [selectedMaps, setSelectedMaps] = useState<string[]>([]);
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(5);
+  const [bestOf, setBestOf] = useState<'bo1' | 'bo3' | 'bo5'>('bo1');
+  const [knifeMode, setKnifeMode] = useState<'default' | 'enabled' | 'disabled'>('default');
   const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
     setSlug('');
     setServerId('');
-    setTeam1Name('');
-    setTeam1Tag('');
-    setTeam2Name('');
-    setTeam2Tag('');
-    setMapListText('de_mirage');
+    setTeam1Id('');
+    setTeam2Id('');
+    setSelectedMaps([]);
     setPlayersPerTeam(5);
+    setBestOf('bo1');
+    setKnifeMode('default');
     setError(null);
   };
 
@@ -61,6 +85,38 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       if (!serverId && list.length > 0) {
         setServerId(list[0].id);
       }
+
+      // Load lightweight status for each enabled server so the selector can show
+      // whether a server is currently online/busy.
+      const statusMap = new Map<
+        string,
+        {
+          status: 'online' | 'offline';
+          currentMatch: string | null;
+        }
+      >();
+      await Promise.all(
+        list.map(async (server) => {
+          try {
+            const res = await api.get<{
+              success: boolean;
+              status: string;
+              currentMatch: string | null;
+            }>(`/api/servers/${server.id}/status?cached=true`);
+            const isOnline = res.status === 'online';
+            statusMap.set(server.id, {
+              status: isOnline ? 'online' : 'offline',
+              currentMatch: res.currentMatch ?? null,
+            });
+          } catch {
+            statusMap.set(server.id, {
+              status: 'offline',
+              currentMatch: null,
+            });
+          }
+        })
+      );
+      setServerStatuses(statusMap);
     } catch (err) {
       console.error('Failed to load servers for manual match creation', err);
       setServers([]);
@@ -69,48 +125,116 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     }
   }, [serverId]);
 
+  const loadTeams = useCallback(async () => {
+    setLoadingTeams(true);
+    try {
+      const response = await api.get<TeamsResponse>('/api/teams');
+      const list = response.teams || [];
+      setTeams(list);
+    } catch (err) {
+      console.error('Failed to load teams for manual match creation', err);
+      setTeams([]);
+    } finally {
+      setLoadingTeams(false);
+    }
+  }, []);
+
+  const loadMaps = useCallback(async () => {
+    setLoadingMaps(true);
+    try {
+      const response = await api.get<MapsResponse>('/api/maps');
+      const maps = response.maps || [];
+      setAvailableMaps(maps);
+      if (maps.length > 0 && selectedMaps.length === 0) {
+        // Default to the first map if none selected
+        setSelectedMaps([maps[0].id]);
+      }
+    } catch (err) {
+      console.error('Failed to load maps for manual match creation', err);
+      setAvailableMaps([]);
+    } finally {
+      setLoadingMaps(false);
+    }
+  }, [selectedMaps.length]);
+
   useEffect(() => {
     if (open) {
       void loadServers();
+      void loadTeams();
+      void loadMaps();
     } else {
       resetForm();
     }
-  }, [open, loadServers]);
+  }, [open, loadServers, loadTeams, loadMaps]);
 
   const handleSubmit = async () => {
     setError(null);
 
     const trimmedSlug = slug.trim();
-    const trimmedTeam1 = team1Name.trim();
-    const trimmedTeam2 = team2Name.trim();
-    const maps = mapListText
-      .split(',')
-      .map((m) => m.trim())
-      .filter((m) => m.length > 0);
+    const maps = selectedMaps.filter((m) => m.length > 0);
 
-    if (!trimmedSlug || !serverId || !trimmedTeam1 || !trimmedTeam2 || maps.length === 0) {
-      setError('Slug, server, team names, and at least one map are required.');
+    if (!trimmedSlug || !serverId || !team1Id || !team2Id || maps.length === 0) {
+      setError('Slug, server, both teams, and at least one map are required.');
       return;
     }
+
+    if (team1Id === team2Id) {
+      setError('Team 1 and Team 2 must be different teams.');
+      return;
+    }
+
+    const team1 = teams.find((t) => t.id === team1Id);
+    const team2 = teams.find((t) => t.id === team2Id);
+
+    if (!team1 || !team2) {
+      setError('Selected teams could not be found. Please refresh and try again.');
+      return;
+    }
+
+    const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
+    if (maps.length < requiredMaps) {
+      setError(`Series format ${bestOf.toUpperCase()} requires at least ${requiredMaps} map(s).`);
+      return;
+    }
+
+    const selectedMaps = maps.slice(0, requiredMaps);
 
     const safePlayersPerTeam =
       typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
 
+    const toMatchConfigPlayers = (team: Team) =>
+      (team.players || []).map((p) => ({
+        steamid: p.steamId,
+        name: p.name,
+      }));
+
+    const cvars: Record<string, string | number> = {};
+    if (knifeMode === 'enabled') {
+      cvars.matchzy_knife_enabled_default = 1;
+    } else if (knifeMode === 'disabled') {
+      cvars.matchzy_knife_enabled_default = 0;
+    }
+
     const config: MatchConfig = {
-      maplist: maps,
-      num_maps: maps.length,
+      maplist: selectedMaps,
+      num_maps: requiredMaps,
       players_per_team: safePlayersPerTeam,
       expected_players_total: safePlayersPerTeam * 2,
       expected_players_team1: safePlayersPerTeam,
       expected_players_team2: safePlayersPerTeam,
       team1: {
-        name: trimmedTeam1,
-        tag: team1Tag.trim() || undefined,
+        id: team1.id,
+        name: team1.name,
+        tag: team1.tag || undefined,
+        players: toMatchConfigPlayers(team1),
       },
       team2: {
-        name: trimmedTeam2,
-        tag: team2Tag.trim() || undefined,
+        id: team2.id,
+        name: team2.name,
+        tag: team2.tag || undefined,
+        players: toMatchConfigPlayers(team2),
       },
+      ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
     };
 
     setSaving(true);
@@ -171,48 +295,108 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
           >
             {servers.map((server) => (
               <MenuItem key={server.id} value={server.id}>
-                {server.name} ({server.id})
+                <Box display="flex" justifyContent="space-between" alignItems="center" width="100%">
+                  <Box>
+                    {server.name} ({server.id})
+                  </Box>
+                  {serverStatuses.get(server.id) && (
+                    <Chip
+                      size="small"
+                      label={
+                        serverStatuses.get(server.id)?.status === 'online'
+                          ? 'Online'
+                          : 'Offline'
+                      }
+                      color={
+                        serverStatuses.get(server.id)?.status === 'online'
+                          ? 'success'
+                          : 'error'
+                      }
+                    />
+                  )}
+                </Box>
               </MenuItem>
             ))}
           </TextField>
 
-          <Box display="flex" gap={2}>
-            <TextField
-              label="Team 1 Name"
-              value={team1Name}
-              onChange={(e) => setTeam1Name(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Tag"
-              value={team1Tag}
-              onChange={(e) => setTeam1Tag(e.target.value)}
-              sx={{ maxWidth: 120 }}
-            />
-          </Box>
-
-          <Box display="flex" gap={2}>
-            <TextField
-              label="Team 2 Name"
-              value={team2Name}
-              onChange={(e) => setTeam2Name(e.target.value)}
-              fullWidth
-            />
-            <TextField
-              label="Tag"
-              value={team2Tag}
-              onChange={(e) => setTeam2Tag(e.target.value)}
-              sx={{ maxWidth: 120 }}
-            />
-          </Box>
+          <TextField
+            select
+            label="Team 1"
+            value={team1Id}
+            onChange={(e) => {
+              const id = e.target.value;
+              setTeam1Id(id);
+            }}
+            fullWidth
+            disabled={loadingTeams || teams.length === 0}
+            helperText={
+              teams.length === 0
+                ? 'No teams available. Create teams first on the Teams page.'
+                : 'Select Team 1 from existing teams.'
+            }
+          >
+            {teams.map((team) => (
+              <MenuItem key={team.id} value={team.id}>
+                {team.name} ({team.id})
+              </MenuItem>
+            ))}
+          </TextField>
 
           <TextField
-            label="Maps (comma-separated)"
-            value={mapListText}
-            onChange={(e) => setMapListText(e.target.value)}
+            select
+            label="Team 2"
+            value={team2Id}
+            onChange={(e) => {
+              const id = e.target.value;
+              setTeam2Id(id);
+            }}
             fullWidth
-            helperText="Example: de_mirage, de_inferno, de_nuke"
+            disabled={loadingTeams || teams.length === 0}
+            helperText={
+              teams.length === 0
+                ? 'No teams available. Create teams first on the Teams page.'
+                : 'Select Team 2 from existing teams.'
+            }
+          >
+            {teams.map((team) => (
+              <MenuItem key={team.id} value={team.id}>
+                {team.name} ({team.id})
+              </MenuItem>
+            ))}
+          </TextField>
+
+          <Autocomplete
+            multiple
+            options={availableMaps}
+            value={availableMaps.filter((m) => selectedMaps.includes(m.id))}
+            onChange={(_, newValue) => setSelectedMaps(newValue.map((m) => m.id))}
+            fullWidth
+            disableCloseOnSelect
+            disabled={loadingMaps || availableMaps.length === 0}
+            getOptionLabel={(option) => option.displayName || option.id}
+            renderInput={(params) => (
+              <TextField
+                {...params}
+                label="Maps"
+                helperText="Select one or more maps. BO1/3/5 will use the first 1/3/5 in order."
+              />
+            )}
+            openOnFocus
+            blurOnSelect={false}
           />
+
+          <TextField
+            select
+            label="Series format"
+            value={bestOf}
+            onChange={(e) => setBestOf(e.target.value as 'bo1' | 'bo3' | 'bo5')}
+            fullWidth
+            helperText="Controls how many maps this series is played as (BO1, BO3, BO5)."
+          >
+            <MenuItem value="bo1">Best of 1</MenuItem>
+            <MenuItem value="bo3">Best of 3</MenuItem>
+            <MenuItem value="bo5">Best of 5</MenuItem>
+          </TextField>
 
           <TextField
             label="Players per team"
@@ -223,6 +407,19 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             sx={{ maxWidth: 200 }}
             helperText="Number of players per team (used for expected player counts)"
           />
+
+          <TextField
+            select
+            label="Knife round"
+            value={knifeMode}
+            onChange={(e) => setKnifeMode(e.target.value as 'default' | 'enabled' | 'disabled')}
+            fullWidth
+            helperText="Override knife round default just for this match (optional)."
+          >
+            <MenuItem value="default">Use default server setting</MenuItem>
+            <MenuItem value="enabled">Force knife round enabled</MenuItem>
+            <MenuItem value="disabled">Force knife round disabled</MenuItem>
+          </TextField>
 
           {error && (
             <Typography variant="body2" color="error">

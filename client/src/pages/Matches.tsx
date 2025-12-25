@@ -287,18 +287,20 @@ export default function Matches() {
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
 
       {/* Manual match creation + allocation countdown */}
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        {allocationCountdown.nextAllocationInSeconds !== null &&
-          allocationCountdown.nextAllocationInSeconds > 0 && (
-            <Typography variant="body2" color="text.secondary">
-              Next servers allocated in{' '}
-              <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
-            </Typography>
-          )}
-        <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
-          Create Match
-        </Button>
-      </Box>
+      {hasMatches && (
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          {allocationCountdown.nextAllocationInSeconds !== null &&
+            allocationCountdown.nextAllocationInSeconds > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Next servers allocated in{' '}
+                <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+              </Typography>
+            )}
+          <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
+            Create Match
+          </Button>
+        </Box>
+      )}
 
       {/* Status Legend */}
       {hasMatches && (
@@ -308,15 +310,22 @@ export default function Matches() {
       )}
 
       {!hasMatches && (
-        <EmptyState
-          data-testid="matches-empty-state"
-          icon={SportsEsportsIcon}
-          title="No matches to display"
-          description="Create a tournament and generate brackets to see matches here"
-          actionLabel="Create Tournament"
-          actionIcon={AddIcon}
-          onAction={() => navigate('/tournament')}
-        />
+        <Box>
+          <EmptyState
+            data-testid="matches-empty-state"
+            icon={SportsEsportsIcon}
+            title="No matches to display"
+            description="Create a tournament and generate brackets to see matches here"
+            actionLabel="Create Tournament"
+            actionIcon={AddIcon}
+            onAction={() => navigate('/tournament')}
+          />
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="outlined" onClick={() => setCreateMatchOpen(true)}>
+              Or Create Manual Match
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {hasMatches && (

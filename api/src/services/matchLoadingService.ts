@@ -16,6 +16,7 @@ import {
   getMatchZyServerConfigCommands,
 } from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
+import type { MatchConfig } from '../types/match.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { settingsService } from './settingsService';
 import type { MatchzyServerConfig } from '../types/server.types';
@@ -272,6 +273,35 @@ export async function loadMatchOnServer(
           // Small delay between commands
           await delay(200);
         }
+      }
+
+      // Apply per-match cvar overrides from the stored config (if any). This lets
+      // manual matches tweak settings like knife round behavior without changing
+      // global or per-server defaults permanently.
+      try {
+        const parsedConfig = JSON.parse(match.config || '{}') as MatchConfig | { cvars?: Record<string, string | number> };
+        const cvars = (parsedConfig as MatchConfig).cvars;
+        if (cvars && Object.keys(cvars).length > 0) {
+          log.debug(
+            `[MATCH LOADING] Applying per-match cvars for ${matchSlug} on ${serverId}`,
+            { keys: Object.keys(cvars) }
+          );
+          for (const [key, value] of Object.entries(cvars)) {
+            const cmd = `${key} ${value}`;
+            const result = await rconService.sendCommand(serverId, cmd);
+            results.push({
+              success: result.success,
+              command: cmd,
+              error: result.error,
+            });
+            await delay(200);
+          }
+        }
+      } catch (cfgError) {
+        log.warn(
+          `[MATCH LOADING] Failed to apply per-match cvars for ${matchSlug} on ${serverId}`,
+          cfgError as Error
+        );
       }
     } catch (settingsError) {
       log.warn('Failed to apply MatchZy core settings before match load', settingsError as Error);
