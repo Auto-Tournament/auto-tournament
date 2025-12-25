@@ -63,11 +63,11 @@ export class ServerStatusService {
     if (useCache) {
       const cached = this.statusCache.get(serverId);
       if (cached) {
-        const age = Date.now() - cached.cachedAt;
+        const { cachedAt, ...rest } = cached;
+        const age = Date.now() - cachedAt;
         if (age <= STATUS_CACHE_TTL_MS) {
           log.debug(`[STATUS] Using cached status for server ${serverId} (age=${age}ms)`);
-          const { cachedAt, ...result } = cached;
-          return result;
+          return rest;
         }
       }
     }
