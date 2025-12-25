@@ -46,7 +46,12 @@ export default function Servers() {
     allocationMatchSlug?: string | null;
   }> => {
     try {
-      const response = await api.get<ServerStatusResponse>(`/api/servers/${serverId}/status`);
+      // Use the lightweight cached status endpoint for the Servers page so we
+      // don't spam live connectivity checks or show flapping statuses. Manual
+      // "Test Connection" in the server modal still calls the uncached route.
+      const response = await api.get<ServerStatusResponse>(
+        `/api/servers/${serverId}/status?cached=true`
+      );
       const isOnline = response.status === 'online';
       return {
         status: isOnline ? 'online' : ('offline' as const),
@@ -467,6 +472,7 @@ export default function Servers() {
         open={batchModalOpen}
         onClose={() => setBatchModalOpen(false)}
         onSave={handleSave}
+        existingServers={servers}
       />
 
       {selectedMatch && (

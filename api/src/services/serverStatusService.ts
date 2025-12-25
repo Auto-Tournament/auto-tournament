@@ -22,6 +22,8 @@ export enum ServerStatus {
  * Service for managing custom server status ConVars
  * These are the single source of truth for server/match state
  */
+const STATUS_CACHE_TTL_MS = 10_000; // 10 seconds of "buffer" for lightweight status checks
+
 export class ServerStatusService {
   // Custom ConVar names (must be unique to avoid conflicts)
   private readonly STATUS_VAR = 'matchzy_tournament_status';
@@ -29,28 +31,62 @@ export class ServerStatusService {
   private readonly UPDATE_TIME_VAR = 'matchzy_tournament_updated';
 
   /**
+   * In-memory cache of the most recent status per server. This is used as a
+   * short-lived buffer for lightweight views (e.g. Servers page) so that
+   * transient RCON issues or brief reconnects don't immediately flip servers
+   * between "online" and "offline" in the UI.
+   */
+  private readonly statusCache = new Map<
+    string,
+    {
+      status: ServerStatus | null;
+      matchSlug: string | null;
+      updatedAt: number | null;
+      online: boolean;
+      cachedAt: number;
+    }
+  >();
+
+  /**
    * Get the current server status by querying the server directly
    * The CS2 plugin manages these ConVars; we only read them.
    */
-  async getServerStatus(serverId: string): Promise<{
+  async getServerStatus(
+    serverId: string,
+    useCache = false
+  ): Promise<{
     status: ServerStatus | null;
     matchSlug: string | null;
     updatedAt: number | null;
     online: boolean;
   }> {
+    if (useCache) {
+      const cached = this.statusCache.get(serverId);
+      if (cached) {
+        const age = Date.now() - cached.cachedAt;
+        if (age <= STATUS_CACHE_TTL_MS) {
+          log.debug(`[STATUS] Using cached status for server ${serverId} (age=${age}ms)`);
+          const { cachedAt, ...result } = cached;
+          return result;
+        }
+      }
+    }
+
     try {
       // Check if this is a fake server (IP 0.0.0.0) - always return online
       const server = await serverService.getServerById(serverId);
       if (server && server.host === '0.0.0.0') {
         // Fake server for screenshots/testing - always return online with idle status
-        return {
+        const result = {
           status: ServerStatus.IDLE,
           matchSlug: null,
           updatedAt: Math.floor(Date.now() / 1000),
           online: true,
         };
+        this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
+        return result;
       }
-      
+
       // Try to get status from server
       const statusResult = await rconService.sendCommand(serverId, this.STATUS_VAR);
 
@@ -77,20 +113,24 @@ export class ServerStatusService {
       const timeMatch = timeResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
       const updatedAt = timeMatch && timeMatch[2] ? parseInt(timeMatch[2], 10) : null;
 
-      return {
+      const result = {
         status,
         matchSlug,
         updatedAt,
         online: true,
       };
+      this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
+      return result;
     } catch (error) {
       log.error(`Failed to get server status from ${serverId}`, error);
-      return {
+      const result = {
         status: null,
         matchSlug: null,
         updatedAt: null,
         online: false,
       };
+      this.statusCache.set(serverId, { ...result, cachedAt: Date.now() });
+      return result;
     }
   }
 

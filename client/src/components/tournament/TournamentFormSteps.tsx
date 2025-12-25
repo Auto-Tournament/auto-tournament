@@ -787,6 +787,7 @@ export function TournamentFormSteps({
           }
           setBatchServerModalOpen(false);
         }}
+        existingServers={servers}
       />
     </Card>
   );

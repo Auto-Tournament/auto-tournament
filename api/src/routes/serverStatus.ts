@@ -9,7 +9,6 @@ import { serverStatusService, ServerStatus } from '../services/serverStatusServi
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
 import { db } from '../config/database';
-import type { DbMatchRow } from '../types/database.types';
 
 const router = Router();
 
@@ -64,8 +63,12 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     }
 
     // Prefer detailed status from the MatchZy plugin ConVars (includes current match slug)
+    // For lightweight UI checks we allow using a short-lived cache buffer to avoid
+    // flapping between online/offline. Manual checks (e.g. "Test Connection") call
+    // this route without the ?cached=true flag and therefore always bypass the cache.
+    const useCache = req.query.cached === 'true' || req.query.cached === '1';
     const statusInfo = await Promise.race([
-      serverStatusService.getServerStatus(id),
+      serverStatusService.getServerStatus(id, useCache),
       new Promise<{
         status: null;
         matchSlug: null;
@@ -107,7 +110,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 
     if (!effectiveStatus || effectiveStatus === ServerStatus.IDLE || effectiveStatus === ServerStatus.POSTGAME) {
       try {
-        const activeMatch = await db.queryOneAsync<Pick<DbMatchRow, 'slug' | 'status'>>(
+        // Status column in matches can include runtime values like 'loaded' and 'live'
+        // in addition to the narrower compile-time type, so we treat it as a string here.
+        const activeMatch = await db.queryOneAsync<{ slug: string; status: string }>(
           'SELECT slug, status FROM matches WHERE server_id = ? AND status IN (?, ?) ORDER BY created_at DESC LIMIT 1',
           [id, 'live', 'loaded']
         );

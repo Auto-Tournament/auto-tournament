@@ -223,9 +223,24 @@ export class MatchAllocationService {
    */
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
-    // Skip servers that we already know are busy from the allocation tracker
+
+    // Determine which servers are already running a match according to our DB
+    // view (even if the MatchZy plugin has not yet updated its custom ConVars).
+    // This prevents us from loading multiple matches onto the same physical
+    // server when the plugin is still reporting "idle".
+    const busyRows = await db.queryAsync<Pick<DbMatchRow, 'server_id'>>(
+      `SELECT DISTINCT server_id 
+         FROM matches 
+        WHERE server_id IS NOT NULL 
+          AND server_id != '' 
+          AND status IN ('loaded', 'live')`
+    );
+    const dbBusyServers = new Set(busyRows.map((row) => row.server_id));
+
+    // Start from all enabled servers but never consider those that are already
+    // associated with an active match in the database.
     const candidateServers = enabledServers.filter(
-      (server) => !serverAllocationTracker.isBusy(server.id)
+      (server) => !dbBusyServers.has(server.id)
     );
 
     // Check each server's MatchZy tournament status

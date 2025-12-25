@@ -25,12 +25,14 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ErrorIcon from '@mui/icons-material/Error';
 import { api } from '../../utils/api';
+import type { Server } from '../../types';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface BatchServerModalProps {
   open: boolean;
   onClose: () => void;
   onSave: () => void;
+  existingServers?: Server[];
 }
 
 interface ServerConfig {
@@ -76,13 +78,37 @@ const formatVerificationError = (error?: string): string | undefined => {
   return error;
 };
 
-export default function BatchServerModal({ open, onClose, onSave }: BatchServerModalProps) {
+const getDefaultPorts = (baseId: string, existingServers: Server[] | undefined, count: number): string[] => {
+  const trimmedBaseId = baseId.trim();
+
+  // Count how many servers already exist with this base ID (id like "base_1", "base_2", ...).
+  // We then offset the starting port by that count so new servers continue the same 10-port pattern.
+  let existingCountForBaseId = 0;
+  if (trimmedBaseId && existingServers && existingServers.length > 0) {
+    const idPrefix = `${trimmedBaseId}_`;
+    existingCountForBaseId = existingServers.filter((s) => s.id.startsWith(idPrefix)).length;
+  }
+
+  const basePort = 27015 + existingCountForBaseId * 10;
+  const validCount = Math.min(Math.max(count, 1), 50);
+
+  return Array.from({ length: validCount }, (_, idx) => String(basePort + idx * 10));
+};
+
+export default function BatchServerModal({
+  open,
+  onClose,
+  onSave,
+  existingServers,
+}: BatchServerModalProps) {
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [baseName, setBaseName] = useState('');
   const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
   const [count, setCount] = useState('3');
-  const [ports, setPorts] = useState<string[]>(['27015', '27025', '27035']);
+  const [ports, setPorts] = useState<string[]>(() =>
+    getDefaultPorts('', existingServers, parseInt('3', 10))
+  );
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -99,7 +125,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     setBaseId('');
     setHost('');
     setCount('3');
-    setPorts(['27015', '27025', '27035']);
+    setPorts(getDefaultPorts('', existingServers, 3));
     setPassword('');
     setEnabled(true);
     setError('');
@@ -110,23 +136,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const handleCountChange = (newCount: string) => {
     setCount(newCount);
     const countNum = parseInt(newCount) || 3;
-    const validCount = Math.min(Math.max(countNum, 1), 50);
-
-    // Adjust ports array
-    setPorts((prevPorts) => {
-      const newPorts = [...prevPorts];
-      // Get the base port (first port or default to 27015)
-      const basePort = parseInt(newPorts[0]) || 27015;
-
-      // Generate ports incrementing by 10
-      while (newPorts.length < validCount) {
-        const portIndex = newPorts.length;
-        const portValue = basePort + portIndex * 10;
-        newPorts.push(String(portValue));
-      }
-      // Remove excess ports
-      return newPorts.slice(0, validCount);
-    });
+    setPorts(getDefaultPorts(baseId, existingServers, countNum));
   };
 
   const handlePortChange = (index: number, value: string) => {
@@ -135,6 +145,12 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       newPorts[index] = value;
       return newPorts;
     });
+  };
+
+  const handleBaseIdChange = (value: string) => {
+    setBaseId(value);
+    const countNum = parseInt(count) || 3;
+    setPorts(getDefaultPorts(value, existingServers, countNum));
   };
 
   const handleClose = () => {
@@ -289,12 +305,31 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     try {
       const servers: ServerConfig[] = [];
 
+      // Determine starting index based on existing servers with the same base ID
+      const trimmedBaseId = baseId.trim();
+      const trimmedBaseName = baseName.trim();
+      const idPrefix = `${trimmedBaseId}_`;
+
+      let existingMaxIndex = 0;
+      if (existingServers && existingServers.length > 0 && trimmedBaseId) {
+        for (const existing of existingServers) {
+          if (existing.id.startsWith(idPrefix)) {
+            const suffix = existing.id.slice(idPrefix.length);
+            const index = parseInt(suffix, 10);
+            if (!Number.isNaN(index) && index > existingMaxIndex) {
+              existingMaxIndex = index;
+            }
+          }
+        }
+      }
+
       // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
+        const index = existingMaxIndex + i;
         const portNum = parseInt(ports[i - 1]);
         const server: ServerConfig = {
-          id: `${baseId.trim()}_${i}`,
-          name: `${baseName.trim()} #${i}`,
+          id: `${trimmedBaseId}_${index}`,
+          name: `${trimmedBaseName} #${index}`,
           host: host.trim(),
           port: portNum,
           password: password.trim(),
@@ -372,7 +407,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
               <TextField
                 label="Base ID"
                 value={baseId}
-                onChange={(e) => setBaseId(e.target.value)}
+                onChange={(e) => handleBaseIdChange(e.target.value)}
                 placeholder="ntlan"
                 helperText="Server IDs will be: base_1, base_2, base_3..."
                 required

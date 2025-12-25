@@ -38,6 +38,8 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [availableServerCount, setAvailableServerCount] = useState<number | null>(null);
+  const [onlineServerCount, setOnlineServerCount] = useState<number | null>(null);
+  const [busyServerCount, setBusyServerCount] = useState<number | null>(null);
   const [loadingServers, setLoadingServers] = useState(false);
   const [enableSimulation, setEnableSimulation] = useState(false);
   const isDev = useIsDevelopment();
@@ -57,15 +59,29 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   const loadServerAvailability = async () => {
     try {
       setLoadingServers(true);
-      const response = await api.get<{ success: boolean; availableServerCount: number }>(
-        '/api/tournament/server-availability'
-      );
+      const response = await api.get<{
+        success: boolean;
+        availableServerCount: number;
+        requiredServerCount: number;
+        servers: Array<{
+          id: string;
+          name: string;
+          online: boolean;
+          allocatable: boolean;
+        }>;
+      }>('/api/tournament/server-availability');
       if (response.success) {
         setAvailableServerCount(response.availableServerCount);
+        const online = response.servers.filter((s) => s.online).length;
+        const busy = response.servers.filter((s) => s.online && !s.allocatable).length;
+        setOnlineServerCount(online);
+        setBusyServerCount(busy);
       }
     } catch (err) {
       console.error('Error loading server availability:', err);
       setAvailableServerCount(null);
+      setOnlineServerCount(null);
+      setBusyServerCount(null);
     } finally {
       setLoadingServers(false);
     }
@@ -202,17 +218,31 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
             {!loadingServers && availableServerCount !== null && availableServerCount === 0 && (
               <Alert severity="warning" sx={{ mb: 2 }}>
                 <Typography variant="body2" fontWeight={600} gutterBottom>
-                  ⚠️ No servers are currently available
+                  ⚠️ No servers are currently available for new matches
                 </Typography>
-                <Typography variant="body2">
-                  The tournament will start, but matches will be postponed until a server becomes available.
-                  The system will automatically allocate matches when servers are ready.
-                </Typography>
+                {onlineServerCount && onlineServerCount > 0 ? (
+                  <Typography variant="body2">
+                    All {onlineServerCount} online server
+                    {onlineServerCount !== 1 ? 's are' : ' is'} currently busy (loading, warmup, live,
+                    or in cooldown). The tournament will start, and matches will be queued and
+                    automatically allocated as soon as a server becomes idle.
+                  </Typography>
+                ) : (
+                  <Typography variant="body2">
+                    No servers are online or ready right now. The tournament will start, but matches
+                    will be postponed until a server comes online. The system will automatically
+                    allocate matches when servers are ready.
+                  </Typography>
+                )}
               </Alert>
             )}
             {!loadingServers && availableServerCount !== null && availableServerCount > 0 && (
               <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mb: 2 }}>
-                ✓ {availableServerCount} server{availableServerCount !== 1 ? 's' : ''} available
+                ✓ {availableServerCount} server{availableServerCount !== 1 ? 's are' : ' is'} currently
+                available for new matches
+                {busyServerCount && busyServerCount > 0
+                  ? ` (${busyServerCount} busy running matches or in cooldown)`
+                  : ''}
               </Typography>
             )}
             {availableServerCount === null && !loadingServers && (
