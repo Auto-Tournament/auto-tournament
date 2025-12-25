@@ -63,7 +63,16 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      disableEscapeKeyDown
+    >
       <DialogTitle>Save Map Pool</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>

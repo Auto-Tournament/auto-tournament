@@ -12,8 +12,13 @@ import {
   Stack,
   Chip,
   Autocomplete,
+  FormControlLabel,
+  Switch,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import type {
   Server,
   ServersResponse,
@@ -36,6 +41,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   onClose,
   onCreated,
 }) => {
+  const { showError } = useSnackbar();
   const [servers, setServers] = useState<Server[]>([]);
   const [loadingServers, setLoadingServers] = useState(false);
   const [serverStatuses, setServerStatuses] = useState<
@@ -58,9 +64,11 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   const [availableMaps, setAvailableMaps] = useState<ApiMap[]>([]);
   const [loadingMaps, setLoadingMaps] = useState(false);
   const [selectedMaps, setSelectedMaps] = useState<string[]>([]);
+  const [mapsSelectorOpen, setMapsSelectorOpen] = useState(false);
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(5);
   const [bestOf, setBestOf] = useState<'bo1' | 'bo3' | 'bo5'>('bo1');
   const [knifeMode, setKnifeMode] = useState<'default' | 'enabled' | 'disabled'>('default');
+  const [useVeto, setUseVeto] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const resetForm = () => {
@@ -72,7 +80,9 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     setPlayersPerTeam(5);
     setBestOf('bo1');
     setKnifeMode('default');
+    setUseVeto(false);
     setError(null);
+    setMapsSelectorOpen(false);
   };
 
   const loadServers = useCallback(async () => {
@@ -123,7 +133,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     } finally {
       setLoadingServers(false);
     }
-  }, [serverId]);
+  }, []);
 
   const loadTeams = useCallback(async () => {
     setLoadingTeams(true);
@@ -155,7 +165,18 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     } finally {
       setLoadingMaps(false);
     }
-  }, [selectedMaps.length]);
+  }, []);
+
+  const handleDialogClose = (
+    _event: React.SyntheticEvent | Event,
+    reason: 'backdropClick' | 'escapeKeyDown'
+  ) => {
+    // Make it harder to accidentally close: ignore backdrop clicks and ESC.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    onClose();
+  };
 
   useEffect(() => {
     if (open) {
@@ -174,12 +195,16 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     const maps = selectedMaps.filter((m) => m.length > 0);
 
     if (!trimmedSlug || !serverId || !team1Id || !team2Id || maps.length === 0) {
-      setError('Slug, server, both teams, and at least one map are required.');
+      const message = 'Slug, server, both teams, and at least one map are required.';
+      setError(message);
+      showError(message);
       return;
     }
 
     if (team1Id === team2Id) {
-      setError('Team 1 and Team 2 must be different teams.');
+      const message = 'Team 1 and Team 2 must be different teams.';
+      setError(message);
+      showError(message);
       return;
     }
 
@@ -187,13 +212,24 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     const team2 = teams.find((t) => t.id === team2Id);
 
     if (!team1 || !team2) {
-      setError('Selected teams could not be found. Please refresh and try again.');
+      const message = 'Selected teams could not be found. Please refresh and try again.';
+      setError(message);
+      showError(message);
       return;
     }
 
     const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
+    if (useVeto && maps.length !== 7) {
+      const message = 'When veto is enabled, you must select exactly 7 maps for the map pool.';
+      setError(message);
+      showError(message);
+      return;
+    }
+
     if (maps.length < requiredMaps) {
-      setError(`Series format ${bestOf.toUpperCase()} requires at least ${requiredMaps} map(s).`);
+      const message = `Series format ${bestOf.toUpperCase()} requires at least ${requiredMaps} map(s).`;
+      setError(message);
+      showError(message);
       return;
     }
 
@@ -257,14 +293,39 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       const message =
         err instanceof Error ? err.message : 'Failed to create match. Please try again.';
       setError(message);
+      showError(message);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
-      <DialogTitle>Create Manual Match</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={handleDialogClose}
+      fullWidth
+      maxWidth="sm"
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          pr: 2,
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Create Manual Match
+        </Typography>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          size="small"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2} mt={1}>
           <Typography variant="body2" color="text.secondary">
@@ -335,11 +396,13 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 : 'Select Team 1 from existing teams.'
             }
           >
-            {teams.map((team) => (
-              <MenuItem key={team.id} value={team.id}>
-                {team.name} ({team.id})
-              </MenuItem>
-            ))}
+            {teams
+              .filter((team) => team.id !== team2Id)
+              .map((team) => (
+                <MenuItem key={team.id} value={team.id}>
+                  {team.name} ({team.id})
+                </MenuItem>
+              ))}
           </TextField>
 
           <TextField
@@ -358,11 +421,13 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 : 'Select Team 2 from existing teams.'
             }
           >
-            {teams.map((team) => (
-              <MenuItem key={team.id} value={team.id}>
-                {team.name} ({team.id})
-              </MenuItem>
-            ))}
+            {teams
+              .filter((team) => team.id !== team1Id)
+              .map((team) => (
+                <MenuItem key={team.id} value={team.id}>
+                  {team.name} ({team.id})
+                </MenuItem>
+              ))}
           </TextField>
 
           <Autocomplete
@@ -373,14 +438,36 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             fullWidth
             disableCloseOnSelect
             disabled={loadingMaps || availableMaps.length === 0}
+            open={mapsSelectorOpen}
+            onOpen={() => setMapsSelectorOpen(true)}
+            onClose={(_, reason) => {
+              // Keep the selector open when the user is actively choosing maps.
+              // Only close on blur/escape to match the "stay open while selecting" UX.
+              if (reason === 'blur' || reason === 'escape') {
+                setMapsSelectorOpen(false);
+              }
+            }}
             getOptionLabel={(option) => option.displayName || option.id}
-            renderInput={(params) => (
-              <TextField
-                {...params}
-                label="Maps"
-                helperText="Select one or more maps. BO1/3/5 will use the first 1/3/5 in order."
-              />
-            )}
+            renderInput={(params) => {
+              const maps = selectedMaps.filter((m) => m.length > 0);
+              const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
+              let helperText =
+                'Select one or more maps. BO1/3/5 will use the first 1/3/5 in order.';
+
+              if (useVeto && maps.length !== 7) {
+                helperText = `Veto enabled: select exactly 7 maps (currently ${maps.length}).`;
+              } else if (maps.length < requiredMaps) {
+                helperText = `Select at least ${requiredMaps} maps for ${bestOf.toUpperCase()}.`;
+              }
+
+              return (
+                <TextField
+                  {...params}
+                  label="Maps"
+                  helperText={helperText}
+                />
+              );
+            }}
             openOnFocus
             blurOnSelect={false}
           />
@@ -397,6 +484,16 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             <MenuItem value="bo3">Best of 3</MenuItem>
             <MenuItem value="bo5">Best of 5</MenuItem>
           </TextField>
+
+          <FormControlLabel
+            control={
+              <Switch
+                checked={useVeto}
+                onChange={(e) => setUseVeto(e.target.checked)}
+              />
+            }
+            label="Enable veto flow (requires 7-map pool)"
+          />
 
           <TextField
             label="Players per team"
@@ -435,7 +532,18 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={saving || servers.length === 0}
+          disabled={
+            saving ||
+            servers.length === 0 ||
+            !slug.trim() ||
+            !serverId ||
+            !team1Id ||
+            !team2Id ||
+            selectedMaps.filter((m) => m.length > 0).length === 0 ||
+            (useVeto && selectedMaps.filter((m) => m.length > 0).length !== 7) ||
+            selectedMaps.filter((m) => m.length > 0).length <
+              (bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5)
+          }
         >
           {saving ? 'Creating…' : 'Create Match'}
         </Button>

@@ -84,7 +84,16 @@ export default function SaveTemplateModal({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        handleClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      disableEscapeKeyDown
+    >
       <DialogTitle>Save as Template</DialogTitle>
       <DialogContent>
         <TextField

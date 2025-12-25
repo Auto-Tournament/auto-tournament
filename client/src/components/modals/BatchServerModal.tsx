@@ -389,7 +389,16 @@ export default function BatchServerModal({
   const serverCount = parseInt(count) || 3;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        handleClose();
+      }}
+      maxWidth="md"
+      fullWidth
+      disableEscapeKeyDown
+    >
       <DialogTitle>Batch Create Servers</DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>

@@ -60,6 +60,17 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
     onClose();
   };
 
+  const handleDialogClose = (
+    _event: React.SyntheticEvent | Event,
+    reason: 'backdropClick' | 'escapeKeyDown'
+  ) => {
+    // Prevent accidental closes via backdrop or ESC; require explicit Cancel/X.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    handleClose();
+  };
+
   const validatePlayer = (player: unknown, index: number): string | null => {
     if (typeof player !== 'object' || player === null) {
       return `Player ${index + 1}: Invalid player object`;
@@ -170,7 +181,13 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        maxWidth="md"
+        fullWidth
+        disableEscapeKeyDown
+      >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">Import Players</Typography>

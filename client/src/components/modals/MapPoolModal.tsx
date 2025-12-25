@@ -12,7 +12,9 @@ import {
   CircularProgress,
   Autocomplete,
   Chip,
+  IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import type { MapPool, MapPoolResponse, MapsResponse, Map } from '../../types/api.types';
 
@@ -135,8 +137,31 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-pool-modal">
-      <DialogTitle>{isEditing ? 'Edit Map Pool' : 'Create Map Pool'}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      data-testid="map-pool-modal"
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          {isEditing ? 'Edit Map Pool' : 'Create Map Pool'}
+        </Typography>
+        <IconButton onClick={onClose} size="small" aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField

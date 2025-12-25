@@ -21,6 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -314,10 +315,41 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     }
   };
 
+  const handleDialogClose = (
+    _event: React.SyntheticEvent | Event,
+    reason: 'backdropClick' | 'escapeKeyDown'
+  ) => {
+    // Prevent accidental closes via backdrop or ESC; require explicit Cancel/X.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    onClose();
+  };
+
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="team-modal">
-        <DialogTitle>{isEditing ? 'Edit Team' : 'Create New Team'}</DialogTitle>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+        data-testid="team-modal"
+        disableEscapeKeyDown
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="h6" fontWeight={600}>
+            {isEditing ? 'Edit Team' : 'Create New Team'}
+          </Typography>
+          <IconButton onClick={onClose} size="small" aria-label="close">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField

@@ -13,6 +13,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
@@ -251,10 +252,41 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     }
   };
 
+  const handleDialogClose = (
+    _event: React.SyntheticEvent | Event,
+    reason: 'backdropClick' | 'escapeKeyDown'
+  ) => {
+    // Prevent accidental closes via backdrop or ESC; require explicit Cancel/X.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    onClose();
+  };
+
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="server-modal">
-        <DialogTitle>{isEditing ? 'Edit Server' : 'Add Server'}</DialogTitle>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+        data-testid="server-modal"
+        disableEscapeKeyDown
+      >
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Typography variant="h6" fontWeight={600}>
+            {isEditing ? 'Edit Server' : 'Add Server'}
+          </Typography>
+          <IconButton onClick={onClose} size="small" aria-label="close">
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
 
           <Box display="flex" flexDirection="column" gap={2}>

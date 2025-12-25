@@ -10,9 +10,11 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map, MapResponse } from '../../types/api.types';
@@ -246,8 +248,31 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-modal">
-      <DialogTitle>{isEditing ? 'Edit Map' : 'Add Map'}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      data-testid="map-modal"
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          {isEditing ? 'Edit Map' : 'Add Map'}
+        </Typography>
+        <IconButton onClick={onClose} size="small" aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField

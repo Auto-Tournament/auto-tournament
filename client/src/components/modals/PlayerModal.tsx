@@ -123,6 +123,17 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     await performSave();
   };
 
+  const handleDialogClose = (
+    _event: React.SyntheticEvent | Event,
+    reason: 'backdropClick' | 'escapeKeyDown'
+  ) => {
+    // Prevent accidental closes via backdrop or ESC; require explicit Cancel/X.
+    if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+      return;
+    }
+    onClose();
+  };
+
   const performSave = async () => {
     setSaving(true);
     setError('');
@@ -186,7 +197,14 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
   return (
     <>
-      <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="player-modal">
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        maxWidth="sm"
+        fullWidth
+        data-testid="player-modal"
+        disableEscapeKeyDown
+      >
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="h6">{isEditing ? 'Edit Player' : 'Create Player'}</Typography>
