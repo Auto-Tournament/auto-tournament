@@ -131,6 +131,24 @@ export class MatchAllocationService {
     let onlineServers = statusChecks.filter((s) => s.online);
     onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
+    // Treat any server that currently has a loaded/live match in our DB as busy,
+    // even if the MatchZy tournament ConVars still report "idle". This ensures
+    // that manual matches (round = 0) and other non‑tournament flows still show
+    // the server as in use in allocation UIs.
+    const dbBusyRows = await db.queryAsync<{ server_id: string; slug: string }>(
+      `SELECT server_id, slug
+         FROM matches
+        WHERE server_id IS NOT NULL
+          AND server_id != ''
+          AND status IN ('loaded', 'live')`
+    );
+    const dbBusyByServer = new Map<string, { slug: string }>();
+    for (const row of dbBusyRows) {
+      if (row.server_id && !dbBusyByServer.has(row.server_id)) {
+        dbBusyByServer.set(row.server_id, { slug: row.slug });
+      }
+    }
+
     const isSimulation = await settingsService.isSimulationModeEnabled();
     const GRACE_PERIOD_SECONDS = isSimulation
       ? MatchAllocationService.SIMULATION_GRACE_PERIOD_SECONDS
@@ -154,9 +172,15 @@ export class MatchAllocationService {
     for (const check of onlineServers) {
       const { server, status, matchSlug, updatedAt, online } = check;
 
+      const dbBusy = dbBusyByServer.get(server.id) || null;
+      const hasDbMatch = !!dbBusy;
+      const effectiveMatchSlug = matchSlug || dbBusy?.slug || null;
+
       // Follow MatchZy guidance strictly: only treat explicit "idle" as
       // allocatable. All other states (including "postgame") remain busy.
-      const isIdle = status === ServerStatus.IDLE;
+      // Additionally, if our DB view says the server is running a loaded/live
+      // match, we treat it as busy regardless of the plugin ConVars.
+      const isIdle = status === ServerStatus.IDLE && !hasDbMatch;
       let inGraceWindow = false;
       let secondsUntilReady: number | null = null;
       let allocatable = false;
@@ -191,7 +215,7 @@ export class MatchAllocationService {
         name: server.name,
         online,
         status: status ?? null,
-        matchSlug: matchSlug ?? null,
+        matchSlug: effectiveMatchSlug,
         updatedAt: updatedAt ?? null,
         inGraceWindow,
         secondsUntilReady,

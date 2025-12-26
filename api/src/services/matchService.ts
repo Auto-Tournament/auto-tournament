@@ -40,28 +40,38 @@ class MatchService {
         config.simulation_timescale = undefined;
       }
 
-      // Apply mp_maxrounds based on the primary tournament's maxRounds so that
-      // manual matches respect the same round-limit rules as bracket matches.
-      const tournament = await db.queryOneAsync<DbTournamentRow>(
-        'SELECT * FROM tournament WHERE id = ?',
-        [1]
-      );
-      if (tournament) {
-        const raw = tournament.max_rounds as unknown;
-        const parsed =
-          typeof raw === 'number'
-            ? raw
-            : typeof raw === 'string' && raw.trim() !== ''
-            ? Number(raw)
-            : undefined;
+      // Respect a manually provided mp_maxrounds from the match config when present.
+      const hasManualMaxRounds =
+        typeof config.cvars?.mp_maxrounds === 'number' &&
+        Number.isFinite(config.cvars.mp_maxrounds) &&
+        config.cvars.mp_maxrounds > 0;
 
-        const maxRounds =
-          typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
+      // Apply mp_maxrounds based on the primary tournament's maxRounds only when
+      // the manual match config did not already specify a value. This keeps the
+      // manual match modal's "Max rounds" field authoritative while still
+      // providing a sensible default that mirrors tournament-generated matches.
+      if (!hasManualMaxRounds) {
+        const tournament = await db.queryOneAsync<DbTournamentRow>(
+          'SELECT * FROM tournament WHERE id = ?',
+          [1]
+        );
+        if (tournament) {
+          const raw = tournament.max_rounds as unknown;
+          const parsed =
+            typeof raw === 'number'
+              ? raw
+              : typeof raw === 'string' && raw.trim() !== ''
+              ? Number(raw)
+              : undefined;
 
-        config.cvars = {
-          ...(config.cvars || {}),
-          mp_maxrounds: maxRounds,
-        };
+          const maxRounds =
+            typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
+
+          config.cvars = {
+            ...(config.cvars || {}),
+            mp_maxrounds: maxRounds,
+          };
+        }
       }
     } catch (simError) {
       log.warn(

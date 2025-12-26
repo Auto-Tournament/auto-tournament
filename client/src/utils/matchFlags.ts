@@ -1,10 +1,25 @@
-import type { Match } from '../types';
+// Match-like shape shared across different views (Matches page, Team page, modals).
+// We only care about round, team IDs and an optional config with vetoDisabled.
+type MatchLike = {
+  round?: number | null;
+  team1?: { id?: string | null } | null;
+  team2?: { id?: string | null } | null;
+  config?: {
+    vetoDisabled?: boolean;
+    team1?: { id?: string | null } | null;
+    team2?: { id?: string | null } | null;
+    // Allow additional fields without typing them explicitly
+    [key: string]: unknown;
+  } | null;
+  // Allow additional top-level fields without typing them explicitly
+  [key: string]: unknown;
+};
 
 /**
  * Returns true for manual (non‑bracket) matches created via the manual match modal.
  * These are stored with round = 0 in the DB.
  */
-export const isManualMatch = (match: { round?: number | null } | null | undefined): boolean => {
+export const isManualMatch = (match: MatchLike | null | undefined): boolean => {
   return !!match && match.round === 0;
 };
 
@@ -13,7 +28,7 @@ export const isManualMatch = (match: { round?: number | null } | null | undefine
  * or in the embedded config. Shuffle tournaments use synthetic "shuffle-*"
  * team IDs which we key off here.
  */
-export const isShuffleMatch = (match: Match): boolean => {
+export const isShuffleMatch = (match: MatchLike): boolean => {
   return (
     match.team1?.id?.startsWith('shuffle-') ||
     match.team2?.id?.startsWith('shuffle-') ||
@@ -33,7 +48,7 @@ export const isShuffleMatch = (match: Match): boolean => {
  * This is separate from MatchZy's skip_veto flag, which is handled entirely
  * on the server/plugin side.
  */
-export const isVetoDisabledForMatch = (match: Match): boolean => {
+export const isVetoDisabledForMatch = (match: MatchLike): boolean => {
   return isManualMatch(match) || isShuffleMatch(match) || match.config?.vetoDisabled === true;
 };
 

@@ -105,7 +105,7 @@ export function MatchInfoCard({
   const isServerOnline = !!serverStatus && serverStatus !== 'error';
   const effectiveServer = isServerOnline ? match.server : null;
 
-  const isShuffleMatch = isShuffleMatchGlobal(match as unknown as Parameters<typeof isShuffleMatchGlobal>[0]);
+  const isShuffleMatch = isShuffleMatchGlobal(match);
 
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
@@ -174,7 +174,7 @@ export function MatchInfoCard({
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
   const isCompletedMatch = match.status === 'completed';
   const isManualMatch = match.round === 0;
-  const vetoFlowDisabled = isVetoDisabledForMatch(match as unknown as any);
+  const vetoFlowDisabled = isVetoDisabledForMatch(match);
 
   // Tournament Not Started - waiting for tournament to start.
   // Manual matches (round === 0) are independent of the global tournament and
@@ -294,19 +294,19 @@ export function MatchInfoCard({
               </Box>
             </Box>
 
-            <MatchScoreboard
-              leftName={team?.name}
-              rightName={match.opponent?.name}
-              leftMapRounds={mapRoundsTeam1}
-              rightMapRounds={mapRoundsTeam2}
-              leftSeriesWins={deriveSeriesWins.team1}
-              rightSeriesWins={deriveSeriesWins.team2}
-              liveStatusDisplay={liveStatusDisplay}
-              // For completed matches, showing both "Series Maps Won" and "Map Rounds"
-              // can look like duplicated stats. Hide the series wins row and keep
-              // the per-map round result for the final map instead.
-              hideSeriesWins={isShuffleMatch || isCompletedMatch}
-            />
+          <MatchScoreboard
+            leftName={team?.name}
+            rightName={match.opponent?.name}
+            leftMapRounds={mapRoundsTeam1}
+            rightMapRounds={mapRoundsTeam2}
+            leftSeriesWins={deriveSeriesWins.team1}
+            rightSeriesWins={deriveSeriesWins.team2}
+            liveStatusDisplay={liveStatusDisplay}
+            // For BO1 or completed matches, showing both "Series Maps Won" and
+            // "Map Rounds" can look like duplicated stats. Hide the series row
+            // and keep the per‑map round result instead.
+            hideSeriesWins={isShuffleMatch || isCompletedMatch || matchFormat === 'bo1'}
+          />
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
               <Typography variant="body2" color="text.secondary" mt={1}>
