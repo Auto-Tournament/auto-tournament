@@ -51,6 +51,14 @@ export interface MatchConfig {
   maplist?: string[] | null; // null until veto completes
   num_maps?: number;
   players_per_team?: number;
+  /**
+   * Per-map starting sides for MatchZy.
+   * Values are plugin-facing tokens:
+   * - 'team1_ct'  -> Team 1 starts CT on that map
+   * - 'team2_ct'  -> Team 2 starts CT on that map
+   * - 'knife'     -> Knife round decides starting sides
+   */
+  map_sides?: Array<'team1_ct' | 'team2_ct' | 'knife'>;
   expected_players_total?: number;
   expected_players_team1?: number;
   expected_players_team2?: number;

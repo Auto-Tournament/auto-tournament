@@ -182,7 +182,7 @@ export function MatchInfoCard({
   const isCompletedMatch = match.status === 'completed';
   const isManualMatch = match.round === 0;
   const vetoFlowDisabled =
-    isShuffleMatch || match.config?.vetoDisabled === true;
+    isManualMatch || isShuffleMatch || match.config?.vetoDisabled === true;
 
   // Tournament Not Started - waiting for tournament to start.
   // Manual matches (round === 0) are independent of the global tournament and
@@ -243,7 +243,8 @@ export function MatchInfoCard({
 
   // Veto Phase - tournament started, show veto interface
   // Show veto interface if veto is not completed (check both state and match.veto.status)
-  const isVetoNotCompleted = !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
+  const isVetoNotCompleted =
+    !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
   if (
     (isManualMatch || tournamentStatus === 'in_progress') &&
     match.status === 'pending' &&

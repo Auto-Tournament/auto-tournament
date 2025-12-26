@@ -82,8 +82,11 @@ export default function TeamMatch() {
   // Get match format from match data (fallback to 'bo1' if not available)
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
 
-  // Derive veto completion status from match data
-  const vetoCompleted = match?.veto?.status === 'completed';
+  // Derive veto completion status from match data.
+  // Manual matches (round === 0) never use the team veto UI and should behave
+  // as if veto is already completed from the team page's perspective.
+  const vetoCompleted =
+    match?.round === 0 ? true : match?.veto?.status === 'completed';
 
   // Set dynamic page title
   useEffect(() => {

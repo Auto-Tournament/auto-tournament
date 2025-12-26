@@ -301,7 +301,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       'team2' in match.config &&
       (match.config.team2 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-'));
 
-  const vetoDisabled = isShuffleMatch || match.config?.vetoDisabled === true;
+  const isManualMatch = match.round === 0;
+  const vetoDisabled = isManualMatch || isShuffleMatch || match.config?.vetoDisabled === true;
   // Shuffle tournaments and veto-disabled matches don't use veto - treat as
   // completed to avoid "VETO PENDING" labels in chips and status badges.
   const effectiveVetoCompleted = vetoDisabled ? true : match.vetoCompleted;

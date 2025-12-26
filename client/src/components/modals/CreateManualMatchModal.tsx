@@ -10,11 +10,10 @@ import {
   MenuItem,
   Typography,
   Stack,
-  Chip,
-  Autocomplete,
   FormControlLabel,
   Switch,
   IconButton,
+  Chip,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
@@ -26,15 +25,40 @@ import type {
   MatchResponse,
   TeamsResponse,
   Team,
-  MapsResponse,
-  Map as ApiMap,
 } from '../../types';
+import type { MapsResponse, Map as MapType, MapPool, MapPoolsResponse } from '../../types/api.types';
+import { MapPoolStep } from '../tournament/MapPoolStep';
+import SaveMapPoolModal from './SaveMapPoolModal';
 
 interface CreateManualMatchModalProps {
   open: boolean;
   onClose: () => void;
   onCreated: (matchSlug: string) => void;
 }
+
+interface MatchTemplate {
+  id: string;
+  name: string;
+  bestOf: 'bo1' | 'bo3' | 'bo5';
+  useVeto: boolean;
+  startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+  knifeMode: 'default' | 'enabled' | 'disabled';
+  playersPerTeam: number;
+  mapPoolId?: string | null;
+  maps: string[];
+}
+
+const MATCH_TEMPLATES_STORAGE_KEY = 'manual_match_templates';
+
+const generateRandomMatchSlug = (length = 10): string => {
+  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+  let result = '';
+  for (let i = 0; i < length; i += 1) {
+    const index = Math.floor(Math.random() * chars.length);
+    result += chars.charAt(index);
+  }
+  return result;
+};
 
 export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   open,
@@ -61,28 +85,38 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   const [serverId, setServerId] = useState('');
   const [team1Id, setTeam1Id] = useState('');
   const [team2Id, setTeam2Id] = useState('');
-  const [availableMaps, setAvailableMaps] = useState<ApiMap[]>([]);
+  const [maps, setMaps] = useState<string[]>([]);
+  const [mapPools, setMapPools] = useState<MapPool[]>([]);
+  const [availableMaps, setAvailableMaps] = useState<MapType[]>([]);
+  const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [loadingMaps, setLoadingMaps] = useState(false);
-  const [selectedMaps, setSelectedMaps] = useState<string[]>([]);
-  const [mapsSelectorOpen, setMapsSelectorOpen] = useState(false);
+  const [saveMapPoolModalOpen, setSaveMapPoolModalOpen] = useState(false);
   const [playersPerTeam, setPlayersPerTeam] = useState<number>(5);
   const [bestOf, setBestOf] = useState<'bo1' | 'bo3' | 'bo5'>('bo1');
   const [knifeMode, setKnifeMode] = useState<'default' | 'enabled' | 'disabled'>('default');
+  const [startingSide, setStartingSide] = useState<'knife' | 'team1_ct' | 'team2_ct'>('knife');
   const [useVeto, setUseVeto] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [templates, setTemplates] = useState<MatchTemplate[]>([]);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>('');
+  const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
+  const [newTemplateName, setNewTemplateName] = useState('');
 
   const resetForm = () => {
     setSlug('');
     setServerId('');
     setTeam1Id('');
     setTeam2Id('');
-    setSelectedMaps([]);
+    setMaps([]);
+    setSelectedMapPool('');
     setPlayersPerTeam(5);
     setBestOf('bo1');
     setKnifeMode('default');
+    setStartingSide('knife');
     setUseVeto(false);
     setError(null);
-    setMapsSelectorOpen(false);
+    setSelectedTemplateId('');
   };
 
   const loadServers = useCallback(async () => {
@@ -152,15 +186,26 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   const loadMaps = useCallback(async () => {
     setLoadingMaps(true);
     try {
-      const response = await api.get<MapsResponse>('/api/maps');
-      const maps = response.maps || [];
-      setAvailableMaps(maps);
-      if (maps.length > 0 && selectedMaps.length === 0) {
-        // Default to the first map if none selected
-        setSelectedMaps([maps[0].id]);
+      // Load map pools (enabled only) and available maps, mirroring the tournament form.
+      const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools?enabled=true');
+      const loadedPools = poolsResponse.mapPools || [];
+      setMapPools(loadedPools);
+
+      const mapsResponse = await api.get<MapsResponse>('/api/maps');
+      const mapsData = mapsResponse.maps || [];
+      setAvailableMaps(mapsData);
+
+      // Initialize selection from default pool when no maps chosen yet.
+      if (loadedPools.length > 0) {
+        const defaultPool = loadedPools.find((p) => p.isDefault) ?? loadedPools[0];
+        if (defaultPool) {
+          setSelectedMapPool((prev) => prev || defaultPool.id.toString());
+          setMaps((prev) => (prev.length === 0 ? defaultPool.mapIds : prev));
+        }
       }
     } catch (err) {
-      console.error('Failed to load maps for manual match creation', err);
+      console.error('Failed to load map pools/maps for manual match creation', err);
+      setMapPools([]);
       setAvailableMaps([]);
     } finally {
       setLoadingMaps(false);
@@ -178,6 +223,100 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     onClose();
   };
 
+  const team1 = teams.find((t) => t.id === team1Id) || null;
+  const team2 = teams.find((t) => t.id === team2Id) || null;
+  const startingSideDisabled = useVeto || !team1 || !team2;
+
+  const handleMapPoolChange = (poolId: string) => {
+    setSelectedMapPool(poolId);
+    if (poolId === 'custom') {
+      setMaps([]);
+      return;
+    }
+    const pool = mapPools.find((p) => p.id.toString() === poolId);
+    if (pool) {
+      setMaps(pool.mapIds);
+    }
+  };
+
+  const handleMapRemove = (mapId: string) => {
+    if (selectedMapPool && selectedMapPool !== 'custom') {
+      setSelectedMapPool('custom');
+    }
+    const nextMaps = maps.filter((id) => id !== mapId);
+    setMaps(nextMaps);
+  };
+
+  // Load saved match templates from localStorage once
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(MATCH_TEMPLATES_STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw) as MatchTemplate[];
+        if (Array.isArray(parsed)) {
+          setTemplates(parsed);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load manual match templates from localStorage', err);
+    }
+  }, []);
+
+  const persistTemplates = (next: MatchTemplate[]) => {
+    setTemplates(next);
+    try {
+      localStorage.setItem(MATCH_TEMPLATES_STORAGE_KEY, JSON.stringify(next));
+    } catch (err) {
+      console.error('Failed to save manual match templates to localStorage', err);
+    }
+  };
+
+  const handleTemplateChange = (templateId: string) => {
+    setSelectedTemplateId(templateId);
+    if (!templateId) return;
+
+    const template = templates.find((t) => t.id === templateId);
+    if (!template) return;
+
+    setBestOf(template.bestOf);
+    setUseVeto(template.useVeto);
+    setStartingSide(template.startingSide);
+    setKnifeMode(template.knifeMode);
+    setPlayersPerTeam(template.playersPerTeam);
+    setSelectedMapPool(template.mapPoolId || 'custom');
+    setMaps(template.maps || []);
+  };
+
+  const handleOpenSaveTemplate = () => {
+    setNewTemplateName('');
+    setSaveTemplateDialogOpen(true);
+  };
+
+  const handleSaveTemplate = () => {
+    const name = newTemplateName.trim();
+    if (!name || maps.length === 0) {
+      return;
+    }
+
+    const template: MatchTemplate = {
+      id: Date.now().toString(),
+      name,
+      bestOf,
+      useVeto,
+      startingSide,
+      knifeMode,
+      playersPerTeam,
+      mapPoolId: selectedMapPool || null,
+      maps: [...maps],
+    };
+
+    const next = [...templates, template];
+    persistTemplates(next);
+    setSelectedTemplateId(template.id);
+    setSaveTemplateDialogOpen(false);
+  };
+
+  // Load data when dialog opens
   useEffect(() => {
     if (open) {
       void loadServers();
@@ -188,27 +327,34 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     }
   }, [open, loadServers, loadTeams, loadMaps]);
 
+  // Generate slug once per open cycle
+  useEffect(() => {
+    if (open) {
+      setSlug((current) => current || generateRandomMatchSlug());
+    }
+  }, [open]);
+
   const handleSubmit = async () => {
     setError(null);
 
     const trimmedSlug = slug.trim();
-    const maps = selectedMaps.filter((m) => m.length > 0);
+    const selectedMatchMaps = maps.filter((m) => m.length > 0);
 
     // Temporary debug logging to trace manual match creation clicks/behaviour.
     // This will help us see in the browser console whether the handler is
     // firing and what payload we're about to send.
     // eslint-disable-next-line no-console
-    console.log('[CreateManualMatchModal] handleSubmit invoked', {
+      console.log('[CreateManualMatchModal] handleSubmit invoked', {
       trimmedSlug,
       serverId,
       team1Id,
       team2Id,
-      mapsCount: maps.length,
+      mapsCount: selectedMatchMaps.length,
       bestOf,
       useVeto,
     });
 
-    if (!trimmedSlug || !serverId || !team1Id || !team2Id || maps.length === 0) {
+    if (!trimmedSlug || !serverId || !team1Id || !team2Id || selectedMatchMaps.length === 0) {
       const message = 'Slug, server, both teams, and at least one map are required.';
       setError(message);
       showError(message);
@@ -218,7 +364,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         hasServerId: !!serverId,
         hasTeam1Id: !!team1Id,
         hasTeam2Id: !!team2Id,
-        mapsCount: maps.length,
+        mapsCount: selectedMatchMaps.length,
       });
       return;
     }
@@ -247,7 +393,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     }
 
     const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
-    const matchMaps = maps.slice(0, requiredMaps);
+    const matchMaps = selectedMatchMaps.slice(0, requiredMaps);
 
     const safePlayersPerTeam =
       typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
@@ -263,6 +409,15 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       cvars.matchzy_knife_enabled_default = 1;
     } else if (knifeMode === 'disabled') {
       cvars.matchzy_knife_enabled_default = 0;
+    }
+
+    // Map sides: simple, series-wide choice.
+    // - When veto is disabled, we honor the "Who starts CT?" selector.
+    // - When veto is enabled, we defer to the veto flow (no explicit map_sides here).
+    let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'> | undefined;
+    if (!useVeto) {
+      const sideToken: 'team1_ct' | 'team2_ct' | 'knife' = startingSide;
+      map_sides = Array(requiredMaps).fill(sideToken);
     }
 
     const config: MatchConfig = {
@@ -288,6 +443,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         tag: team2.tag || undefined,
         players: toMatchConfigPlayers(team2),
       },
+      ...(map_sides ? { map_sides } : {}),
       ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
     };
 
@@ -331,45 +487,79 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   };
 
   return (
-    <Dialog
-      open={open}
-      onClose={handleDialogClose}
-      fullWidth
-      maxWidth="sm"
-      disableEscapeKeyDown
-    >
-      <DialogTitle
-        sx={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          pr: 2,
-        }}
+    <>
+      <Dialog
+        open={open}
+        onClose={handleDialogClose}
+        fullWidth
+        maxWidth="sm"
+        disableEscapeKeyDown
       >
-        <Typography variant="h6" fontWeight={600}>
-          Create Manual Match
-        </Typography>
-        <IconButton
-          aria-label="close"
-          onClick={onClose}
-          size="small"
+        <DialogTitle
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            pr: 2,
+          }}
         >
-          <CloseIcon fontSize="small" />
-        </IconButton>
-      </DialogTitle>
-      <DialogContent dividers>
-        <Stack spacing={2} mt={1}>
+          <Typography variant="h6" fontWeight={600}>
+            Create Manual Match
+          </Typography>
+          <IconButton
+            aria-label="close"
+            onClick={onClose}
+            size="small"
+          >
+            <CloseIcon fontSize="small" />
+          </IconButton>
+        </DialogTitle>
+        <DialogContent dividers>
+          <Stack spacing={2} mt={1}>
           <Typography variant="body2" color="text.secondary">
             Create a standalone match that is independent from the tournament bracket. You can pick
             any enabled server and basic match settings.
           </Typography>
 
+          {/* Match templates (local to this browser) */}
+          <Box display="flex" gap={1} alignItems="flex-end">
+            <TextField
+              select
+              label="Match template"
+              value={selectedTemplateId}
+              onChange={(e) => handleTemplateChange(e.target.value)}
+              fullWidth
+              helperText={
+                templates.length === 0
+                  ? 'No templates saved yet. Configure a match and save it as a template.'
+                  : 'Load a saved preset for maps, format, sides, and knife/veto settings.'
+              }
+            >
+              <MenuItem value="">
+                <em>None</em>
+              </MenuItem>
+              {templates.map((template) => (
+                <MenuItem key={template.id} value={template.id}>
+                  {template.name}
+                </MenuItem>
+              ))}
+            </TextField>
+            <Button
+              variant="outlined"
+              onClick={handleOpenSaveTemplate}
+              disabled={maps.length === 0}
+              sx={{ whiteSpace: 'nowrap' }}
+            >
+              Save as template
+            </Button>
+          </Box>
+
           <TextField
             label="Match Slug"
             value={slug}
-            onChange={(e) => setSlug(e.target.value)}
             fullWidth
-            helperText="Unique identifier for the match (e.g. astralis_vs_navi_showmatch)"
+            disabled
+            helperText="Automatically generated unique identifier for the match"
           />
 
           <TextField
@@ -461,46 +651,23 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               ))}
           </TextField>
 
-          <Autocomplete
-            multiple
-            options={availableMaps}
-            value={availableMaps.filter((m) => selectedMaps.includes(m.id))}
-            onChange={(_, newValue) => setSelectedMaps(newValue.map((m) => m.id))}
-            fullWidth
-            disableCloseOnSelect
-            disabled={loadingMaps || availableMaps.length === 0}
-            open={mapsSelectorOpen}
-            onOpen={() => setMapsSelectorOpen(true)}
-            onClose={(_, reason) => {
-              // Keep the selector open when the user is actively choosing maps.
-              // Only close on blur/escape to match the "stay open while selecting" UX.
-              if (reason === 'blur' || reason === 'escape') {
-                setMapsSelectorOpen(false);
-              }
-            }}
-            getOptionLabel={(option) => option.displayName || option.id}
-            renderInput={(params) => {
-              const maps = selectedMaps.filter((m) => m.length > 0);
-              const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
-              let helperText =
-                'Select one or more maps. BO1/3/5 will use the first 1/3/5 in order.';
-
-              if (useVeto && maps.length !== 7) {
-                helperText = `Veto enabled: select exactly 7 maps (currently ${maps.length}).`;
-              } else if (maps.length < requiredMaps) {
-                helperText = `Select at least ${requiredMaps} maps for ${bestOf.toUpperCase()}.`;
-              }
-
-              return (
-                <TextField
-                  {...params}
-                  label="Maps"
-                  helperText={helperText}
-                />
-              );
-            }}
-            openOnFocus
-            blurOnSelect={false}
+          <MapPoolStep
+            // Treat this similar to a shuffle map selection for validation (no 7-map veto requirement).
+            format={bestOf}
+            type="shuffle"
+            maps={maps}
+            mapPools={mapPools}
+            availableMaps={availableMaps}
+            selectedMapPool={selectedMapPool}
+            loadingMaps={loadingMaps}
+            canEdit={!saving}
+            saving={saving}
+            onMapPoolChange={handleMapPoolChange}
+            onMapsChange={setMaps}
+            onMapRemove={handleMapRemove}
+            onSaveMapPool={() => setSaveMapPoolModalOpen(true)}
+            hideShuffleExplanation
+            enableOrdering={false}
           />
 
           <TextField
@@ -514,6 +681,30 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             <MenuItem value="bo1">Best of 1</MenuItem>
             <MenuItem value="bo3">Best of 3</MenuItem>
             <MenuItem value="bo5">Best of 5</MenuItem>
+          </TextField>
+
+          <TextField
+            select
+            label="Who starts CT?"
+            value={startingSide}
+            onChange={(e) => setStartingSide(e.target.value as 'knife' | 'team1_ct' | 'team2_ct')}
+            fullWidth
+            disabled={startingSideDisabled}
+            helperText={
+              useVeto
+                ? 'Side will be decided as part of the veto/map flow.'
+                : !team1 || !team2
+                ? 'Select both teams to choose a starting side, or use knife.'
+                : 'Applies to all maps in this series (or use knife to decide).'
+            }
+          >
+            <MenuItem value="team1_ct">
+              {team1 ? `${team1.name} starts CT` : 'Team 1 starts CT'}
+            </MenuItem>
+            <MenuItem value="team2_ct">
+              {team2 ? `${team2.name} starts CT` : 'Team 2 starts CT'}
+            </MenuItem>
+            <MenuItem value="knife">Use knife to decide</MenuItem>
           </TextField>
 
           <FormControlLabel
@@ -555,20 +746,71 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             </Typography>
           )}
         </Stack>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} disabled={saving}>
-          Cancel
-        </Button>
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={saving || servers.length === 0}
-        >
-          {saving ? 'Creating…' : 'Create Match'}
-        </Button>
-      </DialogActions>
-    </Dialog>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={onClose} disabled={saving}>
+            Cancel
+          </Button>
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={saving || servers.length === 0}
+          >
+            {saving ? 'Creating…' : 'Create Match'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      <SaveMapPoolModal
+        open={saveMapPoolModalOpen}
+        mapIds={maps}
+        onClose={() => setSaveMapPoolModalOpen(false)}
+        onSave={async () => {
+          // After saving, reload map pools so the new pool is available for selection.
+          try {
+            const poolsResponse = await api.get<MapPoolsResponse>('/api/map-pools');
+            setMapPools(poolsResponse.mapPools || []);
+          } catch (err) {
+            console.error('Failed to reload map pools:', err);
+          }
+        }}
+      />
+
+      <Dialog
+        open={saveTemplateDialogOpen}
+        onClose={() => setSaveTemplateDialogOpen(false)}
+        maxWidth="xs"
+        fullWidth
+      >
+        <DialogTitle>Save Match Template</DialogTitle>
+        <DialogContent>
+          <Stack spacing={2} mt={1}>
+            <TextField
+              label="Template name"
+              value={newTemplateName}
+              onChange={(e) => setNewTemplateName(e.target.value)}
+              fullWidth
+              autoFocus
+              helperText="For example: BO1 Inferno knife, BO3 map pool, etc."
+            />
+            <Typography variant="body2" color="text.secondary">
+              Current maps, series format, CT side rule, veto toggle, knife mode, and players per
+              team will be saved in this template.
+            </Typography>
+          </Stack>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setSaveTemplateDialogOpen(false)}>Cancel</Button>
+          <Button
+            variant="contained"
+            onClick={handleSaveTemplate}
+            disabled={!newTemplateName.trim() || maps.length === 0}
+          >
+            Save
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </>
   );
 };
 

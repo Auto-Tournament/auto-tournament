@@ -31,6 +31,17 @@ interface MapPoolStepProps {
   onMapsChange: (maps: string[]) => void;
   onSaveMapPool: () => void;
   onMapRemove?: (mapId: string) => void;
+  /**
+   * When true, hides the shuffle‑tournament specific explanation block.
+   * Useful for reusing this component in non‑tournament contexts (e.g. manual matches).
+   */
+  hideShuffleExplanation?: boolean;
+  /**
+   * When false, disables drag-and-drop ordering even for shuffle tournaments and
+   * falls back to a simple chip preview. This is handy for contexts where map
+   * order is irrelevant but we still want shuffle-style validation rules.
+   */
+  enableOrdering?: boolean;
 }
 
 export function MapPoolStep({
@@ -47,6 +58,8 @@ export function MapPoolStep({
   onMapsChange,
   onSaveMapPool,
   onMapRemove,
+  hideShuffleExplanation = false,
+  enableOrdering = true,
 }: MapPoolStepProps) {
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
@@ -93,7 +106,7 @@ export function MapPoolStep({
     <Box>
 
       {/* Shuffle Tournament Explanation */}
-      {isShuffle && (
+      {isShuffle && !hideShuffleExplanation && (
         <Alert severity="info" sx={{ mb: 3 }} data-testid="shuffle-map-sequence-field">
           <Typography variant="body2" fontWeight={600} gutterBottom>
             Map Selection for Shuffle Tournaments
@@ -144,7 +157,7 @@ export function MapPoolStep({
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
             Selected Maps ({maps.length}):
           </Typography>
-          {isShuffle ? (
+          {isShuffle && enableOrdering ? (
             <SortableMapList
               maps={maps}
               availableMaps={availableMaps}
