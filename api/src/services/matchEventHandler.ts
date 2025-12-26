@@ -33,8 +33,7 @@ import type { Player } from '../types/team.types';
  * Main event handler - routes events to specific handlers
  */
 export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
-  // Use type assertion to access event-specific properties
-  const eventData = event as unknown as Record<string, unknown>;
+  const eventData: Record<string, unknown> = event;
 
   switch (event.event) {
     // Match Lifecycle Events
@@ -671,7 +670,7 @@ function extractNestedNumber(
  * Handle series end event - update match status, ratings, and advance tournament
  */
 async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
-  const eventData = event as unknown as Record<string, unknown>;
+  const eventData: Record<string, unknown> = event;
   const match = await resolveMatch(event.matchid);
   if (!match) {
     log.error(`Match not found for series_end event: ${event.matchid}`);

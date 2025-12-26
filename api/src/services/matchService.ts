@@ -57,7 +57,7 @@ class MatchService {
           [1]
         );
         if (tournament) {
-          const raw = tournament.max_rounds as unknown;
+          const raw = tournament.max_rounds;
           const parsed =
             typeof raw === 'number'
               ? raw

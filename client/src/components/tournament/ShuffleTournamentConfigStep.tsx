@@ -18,6 +18,8 @@ export interface ShuffleTournamentSettings {
   teamSize: number; // Number of players per team (default: 5)
   maxRounds: number; // Directly controls mp_maxrounds in the MatchZy config
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number | null;
 }
 
 interface ShuffleTournamentConfigStepProps {
@@ -78,6 +80,37 @@ export function ShuffleTournamentConfigStep({
     onSettingsChange({
       ...settings,
       eloTemplateId: value === 'pure-win-loss' ? 'pure-win-loss' : value,
+    });
+  };
+
+  const handleOvertimeModeChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as 'enabled' | 'disabled';
+    onSettingsChange({
+      ...settings,
+      overtimeMode: value,
+    });
+  };
+
+  const handleOvertimeSegmentsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = event.target.value.trim();
+    if (raw === '') {
+      onSettingsChange({
+        ...settings,
+        overtimeSegments: null,
+      });
+      return;
+    }
+    const parsed = Number(raw);
+    if (!Number.isFinite(parsed) || parsed <= 0) {
+      onSettingsChange({
+        ...settings,
+        overtimeSegments: null,
+      });
+      return;
+    }
+    onSettingsChange({
+      ...settings,
+      overtimeSegments: parsed,
     });
   };
 
@@ -194,6 +227,58 @@ export function ShuffleTournamentConfigStep({
                   'Pure Win/Loss (default): only match result affects ELO. Player stats are still recorded for leaderboards and exports, but they do not change the rating unless you select a custom template.'}
               </FormHelperText>
             </FormControl>
+          </Tooltip>
+        </Grid>
+
+        {/* Overtime Settings */}
+        <Grid size={{ xs: 12, sm: 6 }}>
+          <Tooltip
+            title="Control overtime behavior for shuffle matches. When enabled, standard CS2 overtime is played when scores are tied. You can optionally limit the number of overtime segments or leave it unlimited."
+            arrow
+            placement="top"
+            enterDelay={500}
+          >
+            <Box>
+              <FormControl fullWidth sx={{ mb: 2 }}>
+                <InputLabel id="shuffle-overtime-mode-label">Overtime</InputLabel>
+                <Select
+                  labelId="shuffle-overtime-mode-label"
+                  value={settings.overtimeMode ?? 'enabled'}
+                  label="Overtime"
+                  onChange={handleOvertimeModeChange}
+                  disabled={!canEdit || saving}
+                >
+                  <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
+                  <MenuItem value="disabled">Disabled (no overtime, ties allowed)</MenuItem>
+                </Select>
+                <FormHelperText>
+                  Enable or disable overtime when a match is tied at max rounds.
+                </FormHelperText>
+              </FormControl>
+
+              {settings.overtimeMode !== 'disabled' && (
+                <TextField
+                  label="Overtime segments (optional)"
+                  type="number"
+                  value={settings.overtimeSegments && settings.overtimeSegments > 0
+                    ? settings.overtimeSegments
+                    : ''}
+                  onChange={handleOvertimeSegmentsChange}
+                  disabled={!canEdit || saving}
+                  slotProps={{
+                    htmlInput: { min: 1, max: 10 },
+                  }}
+                  helperText={
+                    settings.overtimeSegments && settings.overtimeSegments > 0
+                      ? `Limit overtime to ${settings.overtimeSegments} segment${
+                          settings.overtimeSegments === 1 ? '' : 's'
+                        }.`
+                      : 'Leave empty for MatchZy default (usually unlimited overtime).'
+                  }
+                  fullWidth
+                />
+              )}
+            </Box>
           </Tooltip>
         </Grid>
       </Grid>

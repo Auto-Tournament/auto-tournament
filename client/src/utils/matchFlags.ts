@@ -1,6 +1,6 @@
 // Match-like shape shared across different views (Matches page, Team page, modals).
 // We only care about round, team IDs and an optional config with vetoDisabled.
-type MatchLike = {
+export type MatchLike = {
   round?: number | null;
   team1?: { id?: string | null } | null;
   team2?: { id?: string | null } | null;

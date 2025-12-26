@@ -250,7 +250,7 @@ async function handleEventRequest(
     await handleMatchEvent(event);
 
     // Emit real-time event via Socket.io
-    emitMatchEvent(actualMatchSlug, event as unknown as Record<string, unknown>);
+    emitMatchEvent(actualMatchSlug, event);
 
     // Respond to MatchZy
     return res.status(200).json({

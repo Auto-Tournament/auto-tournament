@@ -390,6 +390,43 @@ const AdminTools: React.FC = () => {
 
       <Divider sx={{ my: 4 }} />
 
+      {/* Match Recovery Utilities */}
+      <Typography variant="h5" fontWeight={600} mb={2}>
+        Match Recovery
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        If the API or servers were restarted during a tournament and match state looks out of sync
+        (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery
+        pass. This will ask all servers for their current match report, resync scores/phases, and
+        reconfigure webhooks and demo uploads where possible.
+      </Typography>
+      <Button
+        variant="contained"
+        color="warning"
+        onClick={async () => {
+          try {
+            const response = await api.post<{
+              success: boolean;
+              message?: string;
+            }>('/api/recovery/recover');
+
+            if (response.success) {
+              showSuccess(response.message || 'Match recovery completed.');
+            } else {
+              showError(response.message || 'Match recovery failed.');
+            }
+          } catch (err) {
+            const message =
+              err instanceof Error ? err.message : 'Failed to trigger match recovery. Please try again.';
+            showError(message);
+          }
+        }}
+      >
+        Run Match Recovery Now
+      </Button>
+
+      <Divider sx={{ my: 4 }} />
+
       {/* Monitoring & Logs Section - Collapsed by default */}
       <Typography variant="h5" fontWeight={600} mb={3}>
         Monitoring & Logs

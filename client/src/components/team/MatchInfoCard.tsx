@@ -25,17 +25,17 @@ interface MatchInfoCardProps {
 
 const LIVE_STATUS_DISPLAY: Record<
   MatchLiveStats['status'],
-  { label: string; chipColor: 'default' | 'error' | 'info' | 'success' | 'warning' }
+  { label: string; chipColor: 'default' | 'info' | 'success' | 'warning' }
 > = {
   // Warmup / between-maps states share the same soft blue "pre-live" tone
-  warmup: { label: 'Warmup', chipColor: getStatusColor('loaded') },
-  knife: { label: 'Knife Round', chipColor: getStatusColor('ready') },
-  live: { label: 'Live', chipColor: getStatusColor('live') },
-  halftime: { label: 'Halftime', chipColor: getStatusColor('live') },
+  warmup: { label: 'Warmup', chipColor: 'info' },
+  knife: { label: 'Knife Round', chipColor: 'success' },
+  live: { label: 'Live', chipColor: 'warning' },
+  halftime: { label: 'Halftime', chipColor: 'warning' },
   // Map just ended; server is cleaning up or preparing next map
   postgame: {
     label: 'Map finished – waiting for next map',
-    chipColor: getStatusColor('loaded'),
+    chipColor: 'default',
   },
 };
 
@@ -99,13 +99,26 @@ export function MatchInfoCard({
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
 
   const serverStatus = match.server?.status ?? null;
-  // Treat any concrete MatchZy status (idle/loading/warmup/live/etc.) as "online enough"
-  // for players to see/connect, and fall back to "waiting for assignment" only when
-  // we *cannot* read status at all (null/undefined) or the plugin reports an explicit error.
-  const isServerOnline = !!serverStatus && serverStatus !== 'error';
+  // Only treat explicit "online" (or transitional "checking") as truly online.
+  // Offline/disabled/error states mean players should not try to connect and
+  // we should surface a clearer warning instead of implying the server is
+  // ready just because we have stale match state.
+  const isServerOnline =
+    serverStatus === 'online' || serverStatus === 'checking' || serverStatus === 'loading';
   const effectiveServer = isServerOnline ? match.server : null;
 
-  const isShuffleMatch = isShuffleMatchGlobal(match);
+  const isShuffleMatch = isShuffleMatchGlobal({
+    round: match.round,
+    team1: match.team1 ? { id: match.team1.id } : null,
+    team2: match.team2 ? { id: match.team2.id } : null,
+    config: match.config
+      ? {
+          ...match.config,
+          team1: match.config.team1 ? { id: match.config.team1.id } : null,
+          team2: match.config.team2 ? { id: match.config.team2.id } : null,
+        }
+      : null,
+  });
 
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
@@ -174,7 +187,18 @@ export function MatchInfoCard({
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
   const isCompletedMatch = match.status === 'completed';
   const isManualMatch = match.round === 0;
-  const vetoFlowDisabled = isVetoDisabledForMatch(match);
+  const vetoFlowDisabled = isVetoDisabledForMatch({
+    round: match.round,
+    team1: match.team1 ? { id: match.team1.id } : null,
+    team2: match.team2 ? { id: match.team2.id } : null,
+    config: match.config
+      ? {
+          ...match.config,
+          team1: match.config.team1 ? { id: match.config.team1.id } : null,
+          team2: match.config.team2 ? { id: match.config.team2.id } : null,
+        }
+      : null,
+  });
 
   // Tournament Not Started - waiting for tournament to start.
   // Manual matches (round === 0) are independent of the global tournament and
@@ -301,11 +325,20 @@ export function MatchInfoCard({
             rightMapRounds={mapRoundsTeam2}
             leftSeriesWins={deriveSeriesWins.team1}
             rightSeriesWins={deriveSeriesWins.team2}
-            liveStatusDisplay={liveStatusDisplay}
+            liveStatusDisplay={
+              isServerOnline || !liveStats
+                ? liveStatusDisplay
+                : {
+                    label: 'Server offline – waiting for recovery',
+                    chipColor: 'default',
+                  }
+            }
             // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
             // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
             // per‑map round result instead.
-            hideSeriesWins={isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch}
+            hideSeriesWins={
+              isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
+            }
           />
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (

@@ -9,19 +9,16 @@ import { useMemo } from 'react';
  */
 export function useIsDevelopment(): boolean {
   return useMemo(() => {
-    const env =
-      (import.meta as unknown as {
-        env?: {
-          DEV?: boolean | string;
-          VITE_ENABLE_DEV_PAGE?: string;
-        };
-      }).env || {};
+    const env = import.meta.env as {
+      DEV?: boolean | string;
+      VITE_ENABLE_DEV_PAGE?: string;
+    };
 
-    if (env.VITE_ENABLE_DEV_PAGE === 'true') {
+    if (env?.VITE_ENABLE_DEV_PAGE === 'true') {
       return true;
     }
 
-    return Boolean(env.DEV);
+    return Boolean(env?.DEV);
   }, []);
 }
 

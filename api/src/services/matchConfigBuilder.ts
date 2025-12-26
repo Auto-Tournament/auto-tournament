@@ -40,7 +40,7 @@ async function getSimulationTimescale(): Promise<number> {
  * - Falls back to 24 (MR24) when missing/invalid.
  */
 function resolveMaxRounds(tournament: TournamentResponse): number {
-  const raw = tournament.maxRounds as unknown;
+  const raw = tournament.maxRounds;
   const parsed =
     typeof raw === 'number'
       ? raw

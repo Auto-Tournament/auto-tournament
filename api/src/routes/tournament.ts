@@ -1025,7 +1025,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
       if (typeof maxRounds === 'number' && Number.isFinite(maxRounds) && maxRounds > 0) {
         return maxRounds;
       }
-      const raw = tournament.maxRounds as unknown;
+      const raw = tournament.maxRounds;
       const parsed =
         typeof raw === 'number'
           ? raw

@@ -296,7 +296,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     }
 
     // Determine if this player is on team1 or team2 based on config players
-    const config = match.config ? JSON.parse(match.config as unknown as string) : {};
+    const config = match.config ? (JSON.parse(match.config) as Record<string, unknown>) : {};
 
     const normalizedTeam1Players = config.team1
       ? normalizeConfigPlayers(config.team1.players)
@@ -371,7 +371,13 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
 
     if (match.veto_state) {
       try {
-        const vetoState = JSON.parse(match.veto_state as unknown as string);
+        const vetoState = JSON.parse(match.veto_state) as {
+          status?: string;
+          team1Name?: string;
+          team2Name?: string;
+          pickedMaps?: Array<{ mapNumber?: number; mapName?: string }>;
+          actions?: Array<{ step?: number }>;
+        };
         if (vetoState) {
           const orderedPickedMaps = Array.isArray(vetoState.pickedMaps)
             ? [...vetoState.pickedMaps].sort(

@@ -530,8 +530,12 @@ const Tournament: React.FC = () => {
         mapSequence: maps, // Maps in order = rounds
         teamSize: shuffleSettings.teamSize || 5,
         maxRounds: shuffleSettings.maxRounds,
-        overtimeMode: 'enabled' as const,
-        overtimeSegments: undefined,
+        overtimeMode: shuffleSettings.overtimeMode ?? 'enabled',
+        overtimeSegments:
+          typeof shuffleSettings.overtimeSegments === 'number' &&
+          shuffleSettings.overtimeSegments > 0
+            ? shuffleSettings.overtimeSegments
+            : undefined,
         eloTemplateId: shuffleSettings.eloTemplateId,
       };
 

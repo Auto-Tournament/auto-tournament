@@ -376,7 +376,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
             ? {
                 ...storedConfig.team1,
                 players: normalizePlayers(
-                  (storedConfig.team1 as unknown as { players?: unknown }).players
+                  (storedConfig.team1 as { players?: unknown } | undefined)?.players
                 ),
               }
             : {
@@ -388,7 +388,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
             ? {
                 ...storedConfig.team2,
                 players: normalizePlayers(
-                  (storedConfig.team2 as unknown as { players?: unknown }).players
+                  (storedConfig.team2 as { players?: unknown } | undefined)?.players
                 ),
               }
             : {
