@@ -8,7 +8,8 @@ export type AppSettingKey =
   | 'simulation_timescale'
   | 'matchzy_chat_prefix'
   | 'matchzy_admin_chat_prefix'
-  | 'matchzy_knife_enabled_default';
+  | 'matchzy_knife_enabled_default'
+  | 'ratings_enabled';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -24,6 +25,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_chat_prefix',
   'matchzy_admin_chat_prefix',
   'matchzy_knife_enabled_default',
+  'ratings_enabled',
 ];
 
 class SettingsService {
@@ -113,6 +115,19 @@ class SettingsService {
         log.success(`MatchZy knife round default ${isEnabled ? 'enabled' : 'disabled'}`);
         return;
       }
+
+      if (key === 'ratings_enabled') {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`Player rating updates ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
     }
 
     await db.setAppSettingAsync(key, null);
@@ -164,6 +179,17 @@ class SettingsService {
     const value = await this.getSetting('matchzy_knife_enabled_default');
     if (!value) {
       // Defer to MatchZy plugin defaults when not explicitly configured
+      return true;
+    }
+
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async areRatingsEnabled(): Promise<boolean> {
+    const value = await this.getSetting('ratings_enabled');
+    if (!value) {
+      // Default: ratings are enabled unless explicitly disabled.
       return true;
     }
 

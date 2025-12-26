@@ -13,6 +13,7 @@ interface ManualMatchBasicsStepProps {
   templates: MatchTemplate[];
   selectedTemplateId: string;
   onTemplateChange: (templateId: string) => void;
+  onOpenSaveTemplate: () => void;
 
   servers: Server[];
   serverId: string;
@@ -49,6 +50,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
   templates,
   selectedTemplateId,
   onTemplateChange,
+  onOpenSaveTemplate,
   servers,
   serverId,
   onServerChange,
@@ -66,27 +68,38 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
   return (
     <>
       {/* Template first */}
-      <TextField
-        select
-        label="Match template"
-        value={selectedTemplateId}
-        onChange={(e) => onTemplateChange(e.target.value)}
-        fullWidth
-        helperText={
-          templates.length === 0
-            ? 'No templates saved yet. Configure a match and save it as a template.'
-            : 'Load a saved preset for maps, format, sides, and knife/veto settings.'
-        }
-      >
-        <MenuItem value="">
-          <em>None</em>
-        </MenuItem>
-        {templates.map((template) => (
-          <MenuItem key={template.id} value={template.id}>
-            {template.name}
+      <Box display="flex" gap={1}>
+        <TextField
+          select
+          label="Match template"
+          value={selectedTemplateId}
+          onChange={(e) => onTemplateChange(e.target.value)}
+          fullWidth
+          helperText={
+            templates.length === 0
+              ? 'No templates saved yet. Configure a match and save it as a template.'
+              : 'Load a saved preset for maps, format, sides, and knife/veto settings.'
+          }
+        >
+          <MenuItem value="">
+            <em>None</em>
           </MenuItem>
-        ))}
-      </TextField>
+          {templates.map((template) => (
+            <MenuItem key={template.id} value={template.id}>
+              {template.name}
+            </MenuItem>
+          ))}
+        </TextField>
+        <Box display="flex" alignItems="flex-end">
+          <Chip
+            label="Save current as template"
+            color="primary"
+            size="small"
+            onClick={onOpenSaveTemplate}
+            sx={{ cursor: 'pointer', fontWeight: 600 }}
+          />
+        </Box>
+      </Box>
 
       {/* Server */}
       <TextField
@@ -184,11 +197,9 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         helperText={
           teams.length === 0
             ? 'No teams available. Create teams first on the Teams page.'
-            : submitAttempted && !team1Id
-            ? 'Team 1 is required.'
-            : 'Select Team 1 from existing teams.'
+            : 'Optional – select Team 1 from existing teams, or leave empty for a generic team.'
         }
-        error={submitAttempted && !team1Id}
+        error={false}
       >
         {teams
           .filter((team) => team.id !== team2Id)
@@ -210,11 +221,9 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         helperText={
           teams.length === 0
             ? 'No teams available. Create teams first on the Teams page.'
-            : submitAttempted && !team2Id
-            ? 'Team 2 is required.'
-            : 'Select Team 2 from existing teams.'
+            : 'Optional – select Team 2 from existing teams, or leave empty for a generic team.'
         }
-        error={submitAttempted && !team2Id}
+        error={false}
       >
         {teams
           .filter((team) => team.id !== team1Id)

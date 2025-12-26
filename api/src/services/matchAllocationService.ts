@@ -92,12 +92,17 @@ export class MatchAllocationService {
     }>;
   }> {
     const enabledServers = await serverService.getAllServers(true);
-    const candidateServers = enabledServers.filter(
-      (server) => !serverAllocationTracker.isBusy(server.id)
-    );
 
+    // For the high‑level allocation *status* view we intentionally include all
+    // enabled servers, even if the in‑memory allocation tracker currently
+    // considers them "busy" or "preparing". The tracker is an optimisation
+    // aid for the allocator itself, but the authoritative truth about whether
+    // a server is actually idle comes from MatchZy's ConVars plus our DB
+    // (loaded/live matches). By not filtering on `serverAllocationTracker` here
+    // we ensure that UIs – including the manual match creator – always see a
+    // complete snapshot of online servers together with their allocatable flag.
     const statusChecks = await Promise.all(
-      candidateServers.map(async (server) => {
+      enabledServers.map(async (server) => {
         try {
           const connectionResult = await rconService.testConnection(server.id);
 
@@ -462,7 +467,7 @@ export class MatchAllocationService {
     }>
   > {
     log.info('[ALLOCATION] Getting available servers...');
-    const availableServers = await this.getAvailableServers();
+    let availableServers = await this.getAvailableServers();
     log.info(`Found ${availableServers.length} available server(s)`);
 
     log.info('[ALLOCATION] Getting ready matches...');
@@ -561,6 +566,12 @@ export class MatchAllocationService {
             // Advance the round-robin index from the successful server
             serverIndex = idx + 1;
             allocated = true;
+
+            // Consume this server from the local available list so we never
+            // assign multiple matches to the same physical server within a
+            // single allocation pass. The authoritative MatchZy + DB checks
+            // still prevent over-assignment across passes.
+            availableServers = availableServers.filter((s) => s.id !== server.id);
             break;
           } else {
             // Roll back server_id if loading failed so this match can be retried later.
@@ -578,7 +589,7 @@ export class MatchAllocationService {
           log.error(`Failed to allocate match ${match.slug} to server ${server.id}`, error);
         } finally {
           // Clear the "allocating" flag for this server for future attempts
-          this.allocatingServers.delete(availableServers[idx].id);
+          this.allocatingServers.delete(server.id);
         }
       }
 
@@ -737,6 +748,11 @@ export class MatchAllocationService {
             });
             serverIndex = idx + 1;
             allocated = true;
+
+            // As in the bulk allocator, consume this server from the local
+            // list so each physical server handles at most one newly
+            // allocated match in this specific batch.
+            availableServers = availableServers.filter((s) => s.id !== server.id);
             break;
           } else {
             await db.updateAsync('matches', { server_id: null }, 'slug = ?', [match.slug]);
@@ -755,7 +771,7 @@ export class MatchAllocationService {
             error
           );
         } finally {
-          this.allocatingServers.delete(availableServers[idx].id);
+          this.allocatingServers.delete(server.id);
         }
       }
 

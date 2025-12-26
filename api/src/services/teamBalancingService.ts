@@ -113,35 +113,110 @@ function greedyTeamAssignment(
     averageOrdinal: 0,
   }));
 
-  // Assign players greedily
-  for (const { player, ordinal: ordinalValue } of playersWithOrdinal) {
-    // Find team with lowest average ordinal that isn't full
-    let bestTeam: BalancedTeam | null = null;
-    let minAvgOrdinal = Infinity;
+  // Helper to add a player to a team and keep aggregates in sync
+  const addPlayerToTeam = (team: BalancedTeam, player: PlayerRecord, ordinalValue: number) => {
+    team.players.push(player);
+    team.totalELO += player.current_elo;
+    team.totalOrdinal += ordinalValue;
+    team.averageELO = team.totalELO / team.players.length;
+    team.averageOrdinal = team.totalOrdinal / team.players.length;
+  };
 
-    for (const team of teams) {
-      if (team.players.length >= teamSize) continue;
+  // LAN‑friendly rule: for typical shuffle setups (e.g. 40 players, 8 teams),
+  // ensure that:
+  //  - The top N players (by rating) are each placed on a different team
+  //    as "captains".
+  //  - The bottom N players are also spread across teams so low‑rated
+  //    players don’t get stacked on a single lineup.
+  //
+  // This acts as a strong initial scaffold, after which the standard
+  // greedy algorithm fills in the remaining slots.
+  const totalPlayers = playersWithOrdinal.length;
+  const canApplyCaptainSpread = totalPlayers >= numTeams * 2 && numTeams > 1;
 
-      const currentAvg =
-        team.players.length > 0 ? team.totalOrdinal / team.players.length : 0;
+  if (canApplyCaptainSpread) {
+    // Top N captains
+    const topCount = numTeams;
+    const topCaptains = playersWithOrdinal.slice(0, topCount);
 
-      if (currentAvg < minAvgOrdinal) {
-        minAvgOrdinal = currentAvg;
-        bestTeam = team;
+    topCaptains.forEach((entry, idx) => {
+      const team = teams[idx];
+      addPlayerToTeam(team, entry.player, entry.ordinal);
+    });
+
+    // Bottom N players
+    const bottomCount = numTeams;
+    const bottomPlayers = playersWithOrdinal.slice(
+      Math.max(topCount, totalPlayers - bottomCount),
+      totalPlayers
+    );
+
+    bottomPlayers.forEach((entry, idx) => {
+      const teamIndex = idx % numTeams;
+      const team = teams[teamIndex];
+      if (team.players.length < teamSize) {
+        addPlayerToTeam(team, entry.player, entry.ordinal);
       }
-    }
+    });
 
-    if (!bestTeam) {
-      // All teams are full, skip remaining players
-      break;
-    }
+    // Remove captains and bottom players from the pool for the greedy phase
+    const assignedIds = new Set([
+      ...topCaptains.map((e) => e.player.id),
+      ...bottomPlayers.map((e) => e.player.id),
+    ]);
+    const remaining = playersWithOrdinal.filter((e) => !assignedIds.has(e.player.id));
 
-    // Add player to team
-    bestTeam.players.push(player);
-    bestTeam.totalELO += player.current_elo;
-    bestTeam.averageELO = bestTeam.totalELO / bestTeam.players.length;
-    bestTeam.totalOrdinal += ordinalValue;
-    bestTeam.averageOrdinal = bestTeam.totalOrdinal / bestTeam.players.length;
+    // Greedy fill for remaining players
+    for (const { player, ordinal: ordinalValue } of remaining) {
+      // Find team with lowest average ordinal that isn't full
+      let bestTeam: BalancedTeam | null = null;
+      let minAvgOrdinal = Infinity;
+
+      for (const team of teams) {
+        if (team.players.length >= teamSize) continue;
+
+        const currentAvg =
+          team.players.length > 0 ? team.totalOrdinal / team.players.length : 0;
+
+        if (currentAvg < minAvgOrdinal) {
+          minAvgOrdinal = currentAvg;
+          bestTeam = team;
+        }
+      }
+
+      if (!bestTeam) {
+        break;
+      }
+
+      addPlayerToTeam(bestTeam, player, ordinalValue);
+    }
+  } else {
+    // Fallback: original greedy algorithm when we don't have enough players
+    // to apply the captain/bottom spread safely.
+    for (const { player, ordinal: ordinalValue } of playersWithOrdinal) {
+      // Find team with lowest average ordinal that isn't full
+      let bestTeam: BalancedTeam | null = null;
+      let minAvgOrdinal = Infinity;
+
+      for (const team of teams) {
+        if (team.players.length >= teamSize) continue;
+
+        const currentAvg =
+          team.players.length > 0 ? team.totalOrdinal / team.players.length : 0;
+
+        if (currentAvg < minAvgOrdinal) {
+          minAvgOrdinal = currentAvg;
+          bestTeam = team;
+        }
+      }
+
+      if (!bestTeam) {
+        // All teams are full, skip remaining players
+        break;
+      }
+
+      addPlayerToTeam(bestTeam, player, ordinalValue);
+    }
   }
 
   return teams.filter((team) => team.players.length > 0);

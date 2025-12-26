@@ -38,6 +38,12 @@ interface ManualMatchMapsRulesStepProps {
   maxRounds: number;
   onMaxRoundsChange: (value: number) => void;
 
+  // Overtime configuration for manual matches
+  overtimeEnabled: boolean;
+  onOvertimeEnabledChange: (value: boolean) => void;
+  overtimeMaxRounds: number | null;
+  onOvertimeMaxRoundsChange: (value: number | null) => void;
+
   playersPerTeam: number;
   onPlayersPerTeamChange: (value: number) => void;
 }
@@ -63,6 +69,10 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
   hasSeriesMapCountError,
   maxRounds,
   onMaxRoundsChange,
+  overtimeEnabled,
+  onOvertimeEnabledChange,
+  overtimeMaxRounds,
+  onOvertimeMaxRoundsChange,
   playersPerTeam,
   onPlayersPerTeamChange,
 }) => {
@@ -120,30 +130,80 @@ export const ManualMatchMapsRulesStep: React.FC<ManualMatchMapsRulesStepProps> =
           )}
 
           {/* Advanced rules */}
-          <Box display="flex" gap={2} flexWrap="wrap">
-            <TextField
-              label="Max rounds per map"
-              type="number"
-              value={maxRounds}
-              onChange={(e) => onMaxRoundsChange(Number(e.target.value) || 24)}
-              inputProps={{ min: 1, max: 30 }}
-              sx={{ maxWidth: 220, flex: 1, minWidth: 160 }}
-              helperText={
-                maxRounds > 0
-                  ? `Passed to MatchZy as mp_maxrounds. Example: ${maxRounds} = MR${maxRounds}.`
-                  : 'Maximum number of rounds per map (default: 24, max: 30).'
-              }
-            />
+          <Box display="flex" flexDirection="column" gap={2}>
+            <Box display="flex" gap={2} flexWrap="wrap">
+              <TextField
+                label="Max rounds per map"
+                type="number"
+                value={maxRounds}
+                onChange={(e) => onMaxRoundsChange(Number(e.target.value) || 24)}
+                inputProps={{ min: 1, max: 30 }}
+                sx={{ maxWidth: 220, flex: 1, minWidth: 160 }}
+                helperText={
+                  maxRounds > 0
+                    ? `Passed to MatchZy as mp_maxrounds. Example: ${maxRounds} = MR${maxRounds}.`
+                    : 'Maximum number of rounds per map (default: 24, max: 30).'
+                }
+              />
 
-            <TextField
-              label="Players per team"
-              type="number"
-              value={playersPerTeam}
-              onChange={(e) => onPlayersPerTeamChange(Number(e.target.value) || 5)}
-              inputProps={{ min: 1, max: 10 }}
-              sx={{ maxWidth: 200, flex: 1, minWidth: 160 }}
-              helperText="Number of players per team (used for expected player counts)"
-            />
+              <TextField
+                label="Players per team"
+                type="number"
+                value={playersPerTeam}
+                onChange={(e) => onPlayersPerTeamChange(Number(e.target.value) || 5)}
+                inputProps={{ min: 1, max: 10 }}
+                sx={{ maxWidth: 200, flex: 1, minWidth: 160 }}
+                helperText="Number of players per team (used for expected player counts)"
+              />
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" gutterBottom>
+                Overtime
+              </Typography>
+              <FormControlLabel
+                control={
+                  <Switch
+                    checked={overtimeEnabled}
+                    onChange={(e) => onOvertimeEnabledChange(e.target.checked)}
+                    color="primary"
+                  />
+                }
+                label={
+                  overtimeEnabled
+                    ? 'Overtime enabled (standard CS2 overtime when scores are tied)'
+                    : 'No overtime (match can end in a tie when max rounds are reached)'
+                }
+              />
+
+              {overtimeEnabled && (
+                <TextField
+                  label="Overtime rounds per overtime (mp_overtime_maxrounds)"
+                  type="number"
+                  value={overtimeMaxRounds ?? ''}
+                  onChange={(e) => {
+                    const raw = e.target.value.trim();
+                    if (!raw) {
+                      onOvertimeMaxRoundsChange(null);
+                      return;
+                    }
+                    const parsed = Number(raw);
+                    if (Number.isNaN(parsed) || parsed <= 0) {
+                      onOvertimeMaxRoundsChange(null);
+                      return;
+                    }
+                    onOvertimeMaxRoundsChange(parsed);
+                  }}
+                  inputProps={{ min: 2, max: 30 }}
+                  sx={{ maxWidth: 260, mt: 1 }}
+                  helperText={
+                    overtimeMaxRounds && overtimeMaxRounds > 0
+                      ? `Passed to MatchZy as mp_overtime_maxrounds. Example: ${overtimeMaxRounds} = MR${overtimeMaxRounds} in overtime.`
+                      : 'Leave empty to use the server default overtime length (usually MR3 / 6 rounds).'
+                  }
+                />
+              )}
+            </Box>
           </Box>
         </>
     </>

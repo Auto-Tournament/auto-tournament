@@ -8,6 +8,7 @@ import { log } from '../utils/logger';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import type { CreateTournamentInput, UpdateTournamentInput } from '../types/tournament.types';
 import type { DbMatchRow } from '../types/database.types';
+import type { MatchConfig } from '../types/match.types';
 import { emitTournamentUpdate, emitBracketUpdate } from '../services/socketService';
 import {
   createShuffleTournament,
@@ -939,6 +940,327 @@ router.post('/shuffle', async (req: Request, res: Response) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     log.error('Error creating shuffle tournament', { error });
+    return res.status(400).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * POST /api/tournament/:id/manual-matches
+ * Bulk create manual matches for a shuffle tournament.
+ *
+ * This endpoint lets admins hand‑craft shuffle matches by explicitly choosing
+ * which registered players face each other while still keeping the matches
+ * part of the shuffle tournament (ELO, leaderboards, allocation, etc.).
+ *
+ * Behaviour:
+ * - Matches are created with tournament_id = 1 and round = 0 so they are
+ *   treated as "manual" by the MatchZy config endpoint but still counted for
+ *   the shuffle tournament’s stats and server allocation.
+ * - Each match gets two temporary team rows with players derived from the
+ *   registered player list.
+ * - Servers are not assigned here; they will be allocated when the tournament
+ *   is started via the normal allocation flow.
+ */
+router.post('/:id/manual-matches', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+
+    if (id !== '1') {
+      return res.status(400).json({
+        success: false,
+        error: 'Only tournament ID 1 is supported',
+      });
+    }
+
+    const tournament = await tournamentService.getTournament();
+    if (!tournament || tournament.type !== 'shuffle') {
+      return res.status(400).json({
+        success: false,
+        error: 'Manual shuffle matches are only supported for an active shuffle tournament',
+      });
+    }
+
+    type BulkManualMatch = {
+      slug?: string;
+      label?: string;
+      team1PlayerIds: string[];
+      team2PlayerIds: string[];
+      team1Name?: string;
+      team2Name?: string;
+      // Optional per‑match overrides
+      map?: string;
+      maxRounds?: number;
+    };
+
+    const body = req.body as {
+      // Optional global defaults for this batch; individual matches can override.
+      map?: string;
+      maxRounds?: number;
+      matches: BulkManualMatch[];
+    };
+
+    if (!body || typeof body !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must be an object',
+      });
+    }
+
+    const { map, maxRounds, matches } = body;
+
+    if (!Array.isArray(matches) || matches.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Field "matches" must be a non‑empty array',
+      });
+    }
+
+    const hasGlobalMap = typeof map === 'string' && map.trim().length > 0;
+
+    // Normalize a "default" maxRounds: prefer explicit override, then tournament setting, else 24.
+    const resolveMaxRounds = (): number => {
+      if (typeof maxRounds === 'number' && Number.isFinite(maxRounds) && maxRounds > 0) {
+        return maxRounds;
+      }
+      const raw = tournament.maxRounds as unknown;
+      const parsed =
+        typeof raw === 'number'
+          ? raw
+          : typeof raw === 'string' && raw.trim() !== ''
+          ? Number(raw)
+          : undefined;
+      const value =
+        typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
+      return value;
+    };
+
+    const effectiveMaxRounds = resolveMaxRounds();
+
+    // Load registered players once so we can validate and build teams.
+    const registeredPlayers = await getRegisteredPlayers();
+    const registeredById = new Map(registeredPlayers.map((p) => [p.id, p]));
+
+    if (registeredPlayers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'No players are registered for the shuffle tournament. Register players before creating matches.',
+      });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    const created: Array<{ slug: string; id: number }> = [];
+
+    // Helper to generate a safe, mostly‑unique slug when none is provided.
+    const generateSlug = (index: number): string => {
+      // Keep slugs readable and scoped to "manual shuffle" so they are easy to
+      // distinguish from auto‑generated shuffle rounds.
+      return `shuffle-manual-${now}-${index + 1}`;
+    };
+
+    // Insert all matches in a simple for‑loop so we can abort on the first hard error.
+    for (let index = 0; index < matches.length; index += 1) {
+      const matchDef = matches[index];
+
+      const t1Ids = Array.isArray(matchDef.team1PlayerIds)
+        ? matchDef.team1PlayerIds.filter((id) => typeof id === 'string' && id.trim().length > 0)
+        : [];
+      const t2Ids = Array.isArray(matchDef.team2PlayerIds)
+        ? matchDef.team2PlayerIds.filter((id) => typeof id === 'string' && id.trim().length > 0)
+        : [];
+
+      if (t1Ids.length === 0 || t2Ids.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Match ${index + 1}: team1PlayerIds and team2PlayerIds must each contain at least one player ID`,
+        });
+      }
+
+      // Ensure no player appears on both teams in the same match.
+      const overlap = t1Ids.filter((id) => t2Ids.includes(id));
+      if (overlap.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Match ${index + 1}: the following player(s) are assigned to both teams: ${overlap.join(', ')}`,
+        });
+      }
+
+      // Validate that all players are registered for this shuffle tournament.
+      const unknownIds = [...t1Ids, ...t2Ids].filter((id) => !registeredById.has(id));
+      if (unknownIds.length > 0) {
+        return res.status(400).json({
+          success: false,
+          error: `Match ${index + 1}: the following player ID(s) are not registered for this shuffle tournament: ${unknownIds.join(', ')}`,
+        });
+      }
+
+      const team1Players = t1Ids.map((id) => registeredById.get(id)!);
+      const team2Players = t2Ids.map((id) => registeredById.get(id)!);
+
+      // Resolve per‑match map: prefer explicit per‑match map, then global default.
+      const trimmedMatchMap =
+        typeof matchDef.map === 'string' && matchDef.map.trim().length > 0
+          ? matchDef.map.trim()
+          : undefined;
+      const resolvedMap = trimmedMatchMap ?? (hasGlobalMap ? map!.trim() : '');
+      if (!resolvedMap) {
+        return res.status(400).json({
+          success: false,
+          error: `Match ${index + 1}: map is required (provide "map" at the top level or "map" on this match).`,
+        });
+      }
+
+      // Resolve per‑match maxRounds: validate per‑match override when present, else use batch default.
+      let resolvedMaxRounds = effectiveMaxRounds;
+      if (matchDef.maxRounds !== undefined) {
+        if (
+          typeof matchDef.maxRounds !== 'number' ||
+          !Number.isFinite(matchDef.maxRounds) ||
+          matchDef.maxRounds < 1 ||
+          matchDef.maxRounds > 30
+        ) {
+          return res.status(400).json({
+            success: false,
+            error: `Match ${index + 1}: maxRounds must be a number between 1 and 30 when provided.`,
+          });
+        }
+        resolvedMaxRounds = matchDef.maxRounds;
+      }
+
+      // For manual shuffle matches we want players_per_team to reflect the actual
+      // lineup size so MatchZy’s ready logic matches reality (3v3, 4v4, etc.).
+      const playersPerTeam = Math.max(team1Players.length, team2Players.length, 1);
+
+      const cvars: Record<string, string | number> = {
+        mp_maxrounds: resolvedMaxRounds,
+      };
+
+      const team1Id = `shuffle-r0-m${index + 1}-team1`;
+      const team2Id = `shuffle-r0-m${index + 1}-team2`;
+
+      const defaultTeam1Name = matchDef.team1Name || matchDef.label || `Shuffle Team ${index + 1}A`;
+      const defaultTeam2Name = matchDef.team2Name || matchDef.label || `Shuffle Team ${index + 1}B`;
+
+      // Persist temporary teams so that match detail views can enrich players with
+      // avatars and names just like auto‑generated shuffle rounds.
+      await db.insertAsync('teams', {
+        id: team1Id,
+        name: defaultTeam1Name,
+        tag: `MR0M${index + 1}T1`,
+        players: JSON.stringify(
+          team1Players.map((p) => ({
+            steamId: p.id,
+            name: p.name,
+            avatar: p.avatar_url || undefined,
+          }))
+        ),
+        created_at: now,
+        updated_at: now,
+      });
+
+      await db.insertAsync('teams', {
+        id: team2Id,
+        name: defaultTeam2Name,
+        tag: `MR0M${index + 1}T2`,
+        players: JSON.stringify(
+          team2Players.map((p) => ({
+            steamId: p.id,
+            name: p.name,
+            avatar: p.avatar_url || undefined,
+          }))
+        ),
+        created_at: now,
+        updated_at: now,
+      });
+
+      // Build MatchZy‑style player dictionaries for config.
+      const toMatchPlayers = (teamPlayers: typeof team1Players) =>
+        teamPlayers.reduce<Record<string, string>>((acc, p) => {
+          acc[p.id] = p.name;
+          return acc;
+        }, {});
+
+      const team1ConfigPlayers = toMatchPlayers(team1Players);
+      const team2ConfigPlayers = toMatchPlayers(team2Players);
+
+      // Random CT starting side for this single‑map match.
+      const mapSide: 'team1_ct' | 'team2_ct' = Math.random() > 0.5 ? 'team1_ct' : 'team2_ct';
+
+      const slug = (matchDef.slug || '').trim() || generateSlug(index);
+
+      // Construct a minimal manual‑match config. The MatchZy config endpoint for
+      // manual matches will normalize this further (matchid, spectators, etc.).
+      const config: MatchConfig = {
+        matchid: 0,
+        skip_veto: true,
+        players_per_team: playersPerTeam,
+        num_maps: 1,
+        maplist: [resolvedMap],
+        map_sides: [mapSide],
+        spectators: { players: {} },
+        expected_players_total: playersPerTeam * 2,
+        expected_players_team1: playersPerTeam,
+        expected_players_team2: playersPerTeam,
+        cvars,
+        team1: {
+          id: team1Id,
+          name: defaultTeam1Name,
+          tag: `MR0M${index + 1}T1`,
+          players: team1ConfigPlayers,
+        },
+        team2: {
+          id: team2Id,
+          name: defaultTeam2Name,
+          tag: `MR0M${index + 1}T2`,
+          players: team2ConfigPlayers,
+        },
+      };
+
+      await db.insertAsync('matches', {
+        slug,
+        tournament_id: 1,
+        round: 0, // 0 = manual / non‑bracket match, but still tied to the shuffle tournament
+        match_number: 0,
+        team1_id: team1Id,
+        team2_id: team2Id,
+        winner_id: null,
+        server_id: null,
+        config: JSON.stringify(config),
+        status: 'ready',
+        next_match_id: null,
+        current_map: resolvedMap,
+        map_number: 0,
+        created_at: now,
+      });
+
+      const row = await db.queryOneAsync<{ id: number }>(
+        'SELECT id FROM matches WHERE slug = ? LIMIT 1',
+        [slug]
+      );
+      if (row) {
+        created.push({ slug, id: row.id });
+      } else {
+        created.push({ slug, id: 0 });
+      }
+    }
+
+    log.success(
+      `Created ${created.length} manual shuffle match(es) with map '${map}' and maxRounds=${effectiveMaxRounds}`
+    );
+
+    return res.status(201).json({
+      success: true,
+      message: `Created ${created.length} manual shuffle match(es). They will be allocated when the tournament starts.`,
+      created,
+      map,
+      maxRounds: effectiveMaxRounds,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error creating manual shuffle matches', { error });
     return res.status(400).json({
       success: false,
       error: message,

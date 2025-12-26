@@ -2,6 +2,7 @@ import { db } from '../config/database';
 import { Match, MatchConfig, CreateMatchInput, MatchResponse } from '../types/match.types';
 import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
+import { emitMatchUpdate } from './socketService';
 import type { DbTournamentRow } from '../types/database.types';
 
 class MatchService {
@@ -112,8 +113,25 @@ class MatchService {
       throw new Error('Failed to create match');
     }
 
+    const response = this.toResponse(match, baseUrl);
+
+    // Emit a websocket update so UIs (Matches page, player views, etc.) can
+    // immediately reflect newly created manual matches without requiring a
+    // full page refresh.
+    try {
+      emitMatchUpdate({
+        id: response.id,
+        slug: response.slug,
+        status: response.status,
+        serverId: response.serverId,
+        config: response.config,
+      });
+    } catch (socketError) {
+      log.warn('Failed to emit match update after manual match creation', socketError as Error);
+    }
+
     log.matchCreated(input.slug, input.serverId);
-    return this.toResponse(match, baseUrl);
+    return response;
   }
 
   /**

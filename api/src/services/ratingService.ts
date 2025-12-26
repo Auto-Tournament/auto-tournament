@@ -8,6 +8,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
 import type { PlayerStatLine } from './matchLiveStatsService';
+import { settingsService } from './settingsService';
 
 // Conversion constants - Option B: closer to OpenSkill docs and classic Elo:
 // - One OpenSkill "sigma" ≈ 200 rating points
@@ -15,6 +16,12 @@ import type { PlayerStatLine } from './matchLiveStatsService';
 const ELO_OFFSET = 1500;
 const ELO_SCALE = 200;
 const DEFAULT_SIGMA = 8.333;
+
+// Guard rails for display ELO to avoid absurd values (e.g. huge negatives).
+// These only affect the stored/displayed "Skill Rating", not the underlying
+// OpenSkill mu/sigma values.
+const MIN_DISPLAY_ELO = 0;
+const MAX_DISPLAY_ELO = 5000;
 
 /**
  * Convert admin's "Skill Rating" input to OpenSkill rating
@@ -41,7 +48,12 @@ export function eloToOpenSkill(elo: number, matchCount: number = 0): Rating {
  */
 export function openSkillToDisplayElo(rating: Rating): number {
   const ordinalValue = ordinal(rating);
-  return Math.round(ordinalValue * ELO_SCALE + ELO_OFFSET);
+  const raw = Math.round(ordinalValue * ELO_SCALE + ELO_OFFSET);
+  // Clamp to a sane range for display/storage.
+  if (!Number.isFinite(raw)) {
+    return ELO_OFFSET;
+  }
+  return Math.min(MAX_DISPLAY_ELO, Math.max(MIN_DISPLAY_ELO, raw));
 }
 
 /**
@@ -58,6 +70,13 @@ export async function updatePlayerRatings(
   matchSlug: string
 ): Promise<void> {
   try {
+    // Optional global kill‑switch so admins can run tournaments with full
+    // stats but keep their existing Excel/ratings system as the authority.
+    const ratingsEnabled = await settingsService.areRatingsEnabled();
+    if (!ratingsEnabled) {
+      log.info('[RATINGS] Ratings update skipped because ratings_enabled=false', { matchSlug });
+      return;
+    }
     // Fetch all players with their current ratings
     const allPlayerIds = [...team1Players, ...team2Players];
     const players = await Promise.all(
@@ -160,7 +179,8 @@ export async function updatePlayerRatings(
       const player = allPlayers[i];
       const newRating = allNewRatings[i];
 
-      // Convert back to "ELO" for storage/display (base ELO from OpenSkill)
+      // Convert back to "ELO" for storage/display (base ELO from OpenSkill),
+      // then apply stat-based adjustments with additional guard rails.
       const baseElo = openSkillToDisplayElo(newRating);
 
       // Apply stat-based adjustments if template is enabled
@@ -170,10 +190,38 @@ export async function updatePlayerRatings(
       let appliedTemplateId: string | null = null;
 
       if (templateId && playerStats) {
-        const adjustmentResult = await eloTemplateService.applyTemplate(templateId, baseElo, playerStats);
+        const adjustmentResult = await eloTemplateService.applyTemplate(
+          templateId,
+          baseElo,
+          playerStats
+        );
         statAdjustment = adjustmentResult.adjustment;
         appliedTemplateId = adjustmentResult.templateId;
+
+        // Clamp stat-based adjustments to a sane per‑match window so a single
+        // outlier game cannot completely destroy a player's rating.
+        const MAX_ABSOLUTE_ADJUSTMENT = 400; // ~2 divisions worth in one match
+        if (Number.isFinite(statAdjustment)) {
+          if (statAdjustment > MAX_ABSOLUTE_ADJUSTMENT) {
+            statAdjustment = MAX_ABSOLUTE_ADJUSTMENT;
+          } else if (statAdjustment < -MAX_ABSOLUTE_ADJUSTMENT) {
+            statAdjustment = -MAX_ABSOLUTE_ADJUSTMENT;
+          }
+        } else {
+          statAdjustment = 0;
+        }
+
         finalElo = baseElo + statAdjustment;
+      }
+
+      // Final clamp on ELO after adjustments.
+      if (!Number.isFinite(finalElo)) {
+        finalElo = baseElo;
+      }
+      if (finalElo < MIN_DISPLAY_ELO) {
+        finalElo = MIN_DISPLAY_ELO;
+      } else if (finalElo > MAX_DISPLAY_ELO) {
+        finalElo = MAX_DISPLAY_ELO;
       }
 
       // Store old values for history

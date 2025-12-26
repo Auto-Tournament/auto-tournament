@@ -85,6 +85,8 @@ export default function Settings() {
   const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState('');
   const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
   const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
+  const [ratingsEnabled, setRatingsEnabled] = useState(true);
+  const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -110,6 +112,8 @@ export default function Settings() {
         response.settings.matchzyKnifeEnabledDefault !== undefined
           ? response.settings.matchzyKnifeEnabledDefault
           : true;
+      const ratingsEnabledValue =
+        response.settings.ratingsEnabled !== undefined ? response.settings.ratingsEnabled : true;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
@@ -124,6 +128,8 @@ export default function Settings() {
       setInitialMatchzyAdminChatPrefix(adminChatPrefix);
       setMatchzyKnifeEnabledDefault(knifeEnabled);
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
+      setRatingsEnabled(ratingsEnabledValue);
+      setInitialRatingsEnabled(ratingsEnabledValue);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load settings';
       showError(message);
@@ -164,6 +170,7 @@ export default function Settings() {
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
           matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
+          ratingsEnabled,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -179,6 +186,10 @@ export default function Settings() {
         const newKnifeEnabled =
           response.settings.matchzyKnifeEnabledDefault !== undefined
             ? response.settings.matchzyKnifeEnabledDefault
+            : true;
+        const newRatingsEnabled =
+          response.settings.ratingsEnabled !== undefined
+            ? response.settings.ratingsEnabled
             : true;
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
@@ -199,6 +210,8 @@ export default function Settings() {
         setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
         setMatchzyKnifeEnabledDefault(newKnifeEnabled);
         setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
+        setRatingsEnabled(newRatingsEnabled);
+        setInitialRatingsEnabled(newRatingsEnabled);
 
         if (showSuccessMessage) {
           showSuccess('Settings saved');
@@ -236,6 +249,7 @@ export default function Settings() {
       matchzyChatPrefix,
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
+      ratingsEnabled,
       simulateMatches,
       simulationTimescale,
       isDev,
@@ -244,6 +258,7 @@ export default function Settings() {
       showSnackbar,
       initialSimulateMatches,
       initialSimulationTimescale,
+      initialRatingsEnabled,
     ]
   );
 
@@ -255,6 +270,7 @@ export default function Settings() {
       matchzyChatPrefix !== initialMatchzyChatPrefix ||
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
+      ratingsEnabled !== initialRatingsEnabled ||
       (isDev &&
         (simulateMatches !== initialSimulateMatches ||
           simulationTimescale !== initialSimulationTimescale))
@@ -607,6 +623,32 @@ export default function Settings() {
                       picks or shuffle-assigned sides are not changed.
                     </Typography>
                   </Stack>
+                </Box>
+
+                <Divider />
+
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Rating Updates
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Control whether completed matches update player Skill Ratings. Disable this for
+                    events where an external system (for example your Excel sheet) is the source of
+                    truth for ratings.
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={ratingsEnabled}
+                        onChange={(event) => setRatingsEnabled(event.target.checked)}
+                      />
+                    }
+                    label="Update player ratings from completed matches"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    When disabled, all matches will still track stats (ADR, K/D, etc.), but player
+                    Skill Ratings will remain unchanged.
+                  </Typography>
                 </Box>
               </Stack>
             </TabPanel>

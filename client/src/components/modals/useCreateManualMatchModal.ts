@@ -20,6 +20,8 @@ export interface MatchTemplate {
   knifeMode: 'default' | 'enabled' | 'disabled';
   playersPerTeam: number;
   maxRounds: number;
+  overtimeEnabled: boolean;
+  overtimeMaxRounds?: number | null;
   mapPoolId?: string | null;
   maps: string[];
 }
@@ -99,6 +101,8 @@ export function useCreateManualMatchModal({
   const [startingSide, setStartingSide] = useState<'knife' | 'team1_ct' | 'team2_ct'>('knife');
   const [useVeto, setUseVeto] = useState(false);
   const [maxRounds, setMaxRounds] = useState<number>(24);
+  const [overtimeEnabled, setOvertimeEnabled] = useState<boolean>(true);
+  const [overtimeMaxRounds, setOvertimeMaxRounds] = useState<number | null>(null);
   const [mapSideSelections, setMapSideSelections] = useState<
     Array<'knife' | 'team1_ct' | 'team2_ct'>
   >(['knife']);
@@ -120,6 +124,8 @@ export function useCreateManualMatchModal({
     setSelectedMapPool('');
     setPlayersPerTeam(5);
     setMaxRounds(24);
+    setOvertimeEnabled(true);
+    setOvertimeMaxRounds(null);
     setBestOf('bo1');
     setKnifeMode('default');
     setStartingSide('knife');
@@ -301,6 +307,13 @@ export function useCreateManualMatchModal({
       } else if (knifeMode === 'disabled') {
         cvars.matchzy_knife_enabled_default = 0;
       }
+      // Overtime configuration for manual matches – mapped to standard CS2 cvars.
+      // This lets admins control whether overtime is played, and how long each
+      // overtime lasts, without touching tournament-wide settings.
+      cvars.mp_overtime_enable = overtimeEnabled ? 1 : 0;
+      if (overtimeEnabled && typeof overtimeMaxRounds === 'number' && overtimeMaxRounds > 0) {
+        cvars.mp_overtime_maxrounds = overtimeMaxRounds;
+      }
 
       let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'> | undefined;
       if (!useVeto) {
@@ -394,6 +407,14 @@ export function useCreateManualMatchModal({
     setKnifeMode(template.knifeMode);
     setPlayersPerTeam(template.playersPerTeam);
     setMaxRounds(template.maxRounds || 24);
+    setOvertimeEnabled(
+      typeof template.overtimeEnabled === 'boolean' ? template.overtimeEnabled : true
+    );
+    setOvertimeMaxRounds(
+      typeof template.overtimeMaxRounds === 'number' && template.overtimeMaxRounds > 0
+        ? template.overtimeMaxRounds
+        : null
+    );
     setSelectedMapPool(template.mapPoolId || 'custom');
     setMaps(template.maps || []);
     const nextRequiredMaps = getRequiredMapsForFormat(template.bestOf);
@@ -424,6 +445,8 @@ export function useCreateManualMatchModal({
       knifeMode,
       playersPerTeam,
       maxRounds,
+      overtimeEnabled,
+      overtimeMaxRounds: overtimeMaxRounds && overtimeMaxRounds > 0 ? overtimeMaxRounds : null,
       mapPoolId: selectedMapPool || null,
       maps: [...maps],
     };
@@ -447,10 +470,6 @@ export function useCreateManualMatchModal({
 
   useEffect(() => {
     if (!open || serverId || servers.length === 0) {
-      return;
-    }
-
-    if (serverAllocation.size === 0) {
       return;
     }
 
@@ -507,8 +526,8 @@ export function useCreateManualMatchModal({
       useVeto,
     });
 
-    if (!trimmedSlug || !serverId || !team1Id || !team2Id || selectedMatchMaps.length === 0) {
-      const message = 'Slug, server, both teams, and at least one map are required.';
+    if (!trimmedSlug || !serverId || selectedMatchMaps.length === 0) {
+      const message = 'Slug, server, and at least one map are required.';
       setError(message);
       showError(message);
       console.warn('[CreateManualMatchModal] Missing required fields, aborting submit', {
@@ -521,14 +540,14 @@ export function useCreateManualMatchModal({
       return;
     }
 
-    if (team1Id === team2Id) {
+    if (team1Id && team2Id && team1Id === team2Id) {
       const message = 'Team 1 and Team 2 must be different teams.';
       setError(message);
       showError(message);
       return;
     }
 
-    if (!team1 || !team2) {
+    if ((team1Id && !team1) || (team2Id && !team2)) {
       const message = 'Selected teams could not be found. Please refresh and try again.';
       setError(message);
       showError(message);
@@ -577,6 +596,11 @@ export function useCreateManualMatchModal({
     } else if (knifeMode === 'disabled') {
       cvars.matchzy_knife_enabled_default = 0;
     }
+    // Per‑match overtime configuration for manual matches.
+    cvars.mp_overtime_enable = overtimeEnabled ? 1 : 0;
+    if (overtimeEnabled && typeof overtimeMaxRounds === 'number' && overtimeMaxRounds > 0) {
+      cvars.mp_overtime_maxrounds = overtimeMaxRounds;
+    }
 
     let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'> | undefined;
     if (!useVeto) {
@@ -588,6 +612,35 @@ export function useCreateManualMatchModal({
       }
     }
 
+    // Build team configs. When no explicit team is selected, fall back to
+    // placeholder offline teams ("Team 1"/"Team 2") with empty player lists so
+    // admins are not forced to pre-create teams or players.
+    const team1Config =
+      team1 && team1Id
+        ? {
+            id: team1.id,
+            name: team1.name,
+            tag: team1.tag || undefined,
+            players: toMatchConfigPlayers(team1),
+          }
+        : {
+            name: 'Team 1',
+            players: [],
+          };
+
+    const team2Config =
+      team2 && team2Id
+        ? {
+            id: team2.id,
+            name: team2.name,
+            tag: team2.tag || undefined,
+            players: toMatchConfigPlayers(team2),
+          }
+        : {
+            name: 'Team 2',
+            players: [],
+          };
+
     const config: MatchConfig = {
       vetoDisabled: !useVeto,
       maplist: matchMaps,
@@ -596,18 +649,8 @@ export function useCreateManualMatchModal({
       expected_players_total: safePlayersPerTeam * 2,
       expected_players_team1: safePlayersPerTeam,
       expected_players_team2: safePlayersPerTeam,
-      team1: {
-        id: team1.id,
-        name: team1.name,
-        tag: team1.tag || undefined,
-        players: toMatchConfigPlayers(team1),
-      },
-      team2: {
-        id: team2.id,
-        name: team2.name,
-        tag: team2.tag || undefined,
-        players: toMatchConfigPlayers(team2),
-      },
+      team1: team1Config,
+      team2: team2Config,
       ...(map_sides ? { map_sides } : {}),
       ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
     };
@@ -651,9 +694,6 @@ export function useCreateManualMatchModal({
   const handleNextStep = () => {
     setSubmitAttempted(true);
     if (activeStep === 0) {
-      if (!team1Id || !team2Id) {
-        return;
-      }
       setActiveStep(1);
     } else if (activeStep === 1) {
       // From maps step to sides/veto step – map selection must be valid.
@@ -695,6 +735,8 @@ export function useCreateManualMatchModal({
       startingSide,
       useVeto,
       maxRounds,
+      overtimeEnabled,
+      overtimeMaxRounds,
       mapSideSelections,
       error,
       submitAttempted,
@@ -724,6 +766,8 @@ export function useCreateManualMatchModal({
       setStartingSide,
       setUseVeto,
       setMaxRounds,
+      setOvertimeEnabled,
+      setOvertimeMaxRounds,
       setMapSideSelections,
       setSaveMapPoolModalOpen,
       setNewTemplateName,

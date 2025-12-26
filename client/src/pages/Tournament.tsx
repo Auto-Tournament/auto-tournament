@@ -13,6 +13,7 @@ import { ShuffleMapsCard } from '../components/tournament/ShuffleMapsCard';
 import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
+import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatchesModal';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
@@ -145,6 +146,7 @@ const Tournament: React.FC = () => {
       newValue: string | string[];
     }>
   >([]);
+  const [bulkShuffleModalOpen, setBulkShuffleModalOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -856,6 +858,11 @@ const Tournament: React.FC = () => {
               onStart={handleStart}
               onRegenerate={() => setShowRegenerateConfirm(true)}
               onDelete={() => setShowDeleteConfirm(true)}
+              onBulkCreateShuffleMatches={
+                tournament.type === 'shuffle'
+                  ? () => setBulkShuffleModalOpen(true)
+                  : undefined
+              }
             />
           </Box>
         </>
@@ -926,6 +933,20 @@ const Tournament: React.FC = () => {
           settings: tournament?.settings,
         }}
       />
+
+      {tournament && tournament.type === 'shuffle' && (
+        <BulkShuffleMatchesModal
+          open={bulkShuffleModalOpen}
+          onClose={() => setBulkShuffleModalOpen(false)}
+          tournamentId={tournament.id}
+          teamSize={tournament.teamSize || 5}
+          maps={tournament.maps || []}
+          defaultMaxRounds={tournament.maxRounds || 24}
+          onCreated={() => {
+            void refreshData();
+          }}
+        />
+      )}
     </Box>
   );
 };

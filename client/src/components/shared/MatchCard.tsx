@@ -1,6 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
 import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
+import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
 
 interface MatchCardProps {
@@ -57,17 +58,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     if (team) return 'text.primary';
     return 'text.disabled';
   };
-
-  const isShuffleMatch = () => {
-    // Check if team IDs match shuffle tournament pattern
-    return (
-      (match.team1?.id?.startsWith('shuffle-') || match.team2?.id?.startsWith('shuffle-')) ||
-      (match.config?.team1?.id?.startsWith('shuffle-') || match.config?.team2?.id?.startsWith('shuffle-'))
-    );
-  };
-
-  const vetoDisabled =
-    isShuffleMatch() || match.config?.vetoDisabled === true;
+  const shuffle = isShuffleMatch(match);
+  const manual = isManualMatch(match);
+  const vetoDisabled = isVetoDisabledForMatch(match);
 
   const getTeamName = (teamId: string | undefined) => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
@@ -161,6 +154,22 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             )}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
+            {shuffle && (
+              <Chip
+                label={manual ? 'Shuffle manual' : 'Shuffle'}
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
+            {!shuffle && manual && (
+              <Chip
+                label="Manual"
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
             <Chip
               label={getStatusLabel(
                 match.status,

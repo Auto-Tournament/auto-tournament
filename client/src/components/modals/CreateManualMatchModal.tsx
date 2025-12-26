@@ -68,6 +68,8 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       startingSide,
       useVeto,
       maxRounds,
+      overtimeEnabled,
+      overtimeMaxRounds,
       mapSideSelections,
       error,
       submitAttempted,
@@ -97,6 +99,8 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       setStartingSide,
       setUseVeto,
       setMaxRounds,
+      setOvertimeEnabled,
+      setOvertimeMaxRounds,
       setMapSideSelections,
       setSaveMapPoolModalOpen,
       setNewTemplateName,
@@ -169,6 +173,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 templates={templates}
                 selectedTemplateId={selectedTemplateId}
                 onTemplateChange={handleTemplateChange}
+                onOpenSaveTemplate={handleOpenSaveTemplate}
                 servers={servers}
                 serverId={serverId}
                 onServerChange={setServerId}
@@ -209,6 +214,10 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 onMaxRoundsChange={setMaxRounds}
                 playersPerTeam={playersPerTeam}
                 onPlayersPerTeamChange={setPlayersPerTeam}
+                overtimeEnabled={overtimeEnabled}
+                onOvertimeEnabledChange={setOvertimeEnabled}
+                overtimeMaxRounds={overtimeMaxRounds}
+                onOvertimeMaxRoundsChange={setOvertimeMaxRounds}
               />
             )}
 

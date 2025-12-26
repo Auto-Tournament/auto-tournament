@@ -41,6 +41,7 @@ interface TournamentReviewProps {
   onRegenerate: () => void;
   onDelete: () => void;
   hasBracket?: boolean;
+  onBulkCreateShuffleMatches?: () => void;
 }
 
 export const TournamentReview: React.FC<TournamentReviewProps> = ({
@@ -53,6 +54,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   onRegenerate,
   onDelete,
   hasBracket,
+  onBulkCreateShuffleMatches,
 }) => {
   const { showWarning } = useSnackbar();
   const isShuffle = tournament.type === 'shuffle';
@@ -186,6 +188,17 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               ? 'Start Simulation'
               : 'Start Tournament'}
           </Button>
+
+          {isShuffle && onBulkCreateShuffleMatches && (
+            <Button
+              variant="outlined"
+              size="large"
+              onClick={onBulkCreateShuffleMatches}
+              disabled={starting || saving}
+            >
+              Bulk create matches
+            </Button>
+          )}
 
           {onEdit && (
             <Button
