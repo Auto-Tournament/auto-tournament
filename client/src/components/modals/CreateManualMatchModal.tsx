@@ -167,7 +167,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     } finally {
       setLoadingServers(false);
     }
-  }, []);
+  }, [serverId]);
 
   const loadTeams = useCallback(async () => {
     setLoadingTeams(true);
@@ -343,7 +343,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     // Temporary debug logging to trace manual match creation clicks/behaviour.
     // This will help us see in the browser console whether the handler is
     // firing and what payload we're about to send.
-    // eslint-disable-next-line no-console
       console.log('[CreateManualMatchModal] handleSubmit invoked', {
       trimmedSlug,
       serverId,
@@ -358,7 +357,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       const message = 'Slug, server, both teams, and at least one map are required.';
       setError(message);
       showError(message);
-      // eslint-disable-next-line no-console
       console.warn('[CreateManualMatchModal] Missing required fields, aborting submit', {
         trimmedSlugPresent: !!trimmedSlug,
         hasServerId: !!serverId,
@@ -383,7 +381,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       const message = 'Selected teams could not be found. Please refresh and try again.';
       setError(message);
       showError(message);
-      // eslint-disable-next-line no-console
       console.warn('[CreateManualMatchModal] Team lookup failed', {
         team1Id,
         team2Id,
@@ -449,7 +446,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 
     setSaving(true);
     try {
-      // eslint-disable-next-line no-console
       console.log('[CreateManualMatchModal] Sending /api/matches request', {
         slug: trimmedSlug,
         serverId,
@@ -462,12 +458,10 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       });
 
       if (!response.success || !response.match) {
-        // eslint-disable-next-line no-console
         console.error('[CreateManualMatchModal] API responded without success/match', response);
         throw new Error(response.error || 'Failed to create match');
       }
 
-      // eslint-disable-next-line no-console
       console.log('[CreateManualMatchModal] Match created successfully', {
         slug: response.match.slug,
         id: response.match.id,

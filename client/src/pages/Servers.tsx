@@ -28,6 +28,24 @@ export default function Servers() {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedMatch, setSelectedMatch] = useState<Match | null>(null);
   const [loadingMatchServerId, setLoadingMatchServerId] = useState<string | null>(null);
+  const [allocationLoading, setAllocationLoading] = useState(false);
+  const [allocationStatus, setAllocationStatus] = useState<{
+    availableServerCount: number;
+    requiredServerCount: number;
+    gracePeriodSeconds: number;
+    nextAllocationInSeconds: number | null;
+    servers: Array<{
+      id: string;
+      name: string;
+      online: boolean;
+      status: string | null;
+      matchSlug: string | null;
+      updatedAt: number | null;
+      inGraceWindow: boolean;
+      secondsUntilReady: number | null;
+      allocatable: boolean;
+    }>;
+  } | null>(null);
 
   // Set dynamic page title
   useEffect(() => {
@@ -159,6 +177,49 @@ export default function Servers() {
     }
   }, [showError]);
 
+  const loadAllocationStatus = useCallback(async () => {
+    setAllocationLoading(true);
+    try {
+      const availability = await api.get<{
+        success: boolean;
+        availableServerCount: number;
+        requiredServerCount: number;
+        gracePeriodSeconds?: number;
+        nextAllocationInSeconds?: number | null;
+        servers?: Array<{
+          id: string;
+          name: string;
+          online: boolean;
+          status: string | null;
+          matchSlug: string | null;
+          updatedAt: number | null;
+          inGraceWindow: boolean;
+          secondsUntilReady: number | null;
+          allocatable: boolean;
+        }>;
+      }>('/api/tournament/server-availability');
+
+      if (availability.success) {
+        setAllocationStatus({
+          availableServerCount: availability.availableServerCount,
+          requiredServerCount: availability.requiredServerCount,
+          gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+          nextAllocationInSeconds:
+            typeof availability.nextAllocationInSeconds === 'number'
+              ? availability.nextAllocationInSeconds
+              : null,
+          servers: availability.servers ?? [],
+        });
+      } else {
+        setAllocationStatus(null);
+      }
+    } catch (err) {
+      console.error('Failed to load server allocation status:', err);
+    } finally {
+      setAllocationLoading(false);
+    }
+  }, []);
+
   // Set header actions
   useEffect(() => {
     if (servers.length > 0) {
@@ -167,7 +228,10 @@ export default function Servers() {
           <Button
             variant="outlined"
             startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-            onClick={loadServers}
+            onClick={() => {
+              void loadServers();
+              void loadAllocationStatus();
+            }}
             disabled={refreshing}
           >
             {refreshing ? 'Checking...' : 'Refresh Status'}
@@ -196,11 +260,12 @@ export default function Servers() {
     return () => {
       setHeaderActions(null);
     };
-  }, [servers.length, refreshing, setHeaderActions, loadServers]);
+  }, [servers.length, refreshing, setHeaderActions, loadServers, loadAllocationStatus]);
 
   useEffect(() => {
-    loadServers();
-  }, [loadServers]);
+    void loadServers();
+    void loadAllocationStatus();
+  }, [loadServers, loadAllocationStatus]);
 
   const handleOpenModal = (server?: Server) => {
     setEditingServer(server || null);
@@ -264,9 +329,43 @@ export default function Servers() {
             </Box>
           </Box>
         ) : (
-          <Grid container spacing={2}>
-            {servers.map((server) => (
-              <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
+          <>
+            <Box mb={2}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+                    Server allocation
+                  </Typography>
+                  {!allocationStatus ? (
+                    <Typography variant="body2" color="text.secondary">
+                      {allocationLoading
+                        ? 'Loading allocation status...'
+                        : 'No allocation data available.'}
+                    </Typography>
+                  ) : (
+                    <>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Available servers:</strong>{' '}
+                        {allocationStatus.availableServerCount} / {allocationStatus.servers.length}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        <strong>Matches waiting for servers:</strong>{' '}
+                        {allocationStatus.requiredServerCount}
+                      </Typography>
+                      {allocationStatus.nextAllocationInSeconds !== null && (
+                        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                          Next allocator pass in ~{allocationStatus.nextAllocationInSeconds}s
+                        </Typography>
+                      )}
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+            </Box>
+
+            <Grid container spacing={2}>
+              {servers.map((server) => (
+                <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
                   sx={{
@@ -456,8 +555,9 @@ export default function Servers() {
                   </CardContent>
                 </Card>
               </Grid>
-            ))}
-          </Grid>
+              ))}
+            </Grid>
+          </>
         )}
 
       <ServerModal

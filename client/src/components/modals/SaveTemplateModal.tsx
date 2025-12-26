@@ -7,7 +7,6 @@ import {
   TextField,
   Button,
   CircularProgress,
-  Box,
   IconButton,
   Typography,
 } from '@mui/material';

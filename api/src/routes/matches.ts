@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { loadMatchOnServer } from '../services/matchLoadingService';
-import { CreateMatchInput, MatchConfig, MatchListItem } from '../types/match.types';
+import { CreateMatchInput, MatchConfig, MatchListItem, MatchPlayer } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
@@ -319,6 +319,40 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
         storedConfig = {} as MatchConfig;
       }
 
+      const normalizePlayers = (value: unknown): MatchPlayer => {
+        if (!value) return {};
+
+        // Case 1: already a map of steamId -> name
+        if (typeof value === 'object' && !Array.isArray(value)) {
+          const result: MatchPlayer = {};
+          for (const [steamId, name] of Object.entries(value as Record<string, unknown>)) {
+            if (typeof name === 'string') {
+              result[steamId] = name;
+            }
+          }
+          return result;
+        }
+
+        // Case 2: array of { steamid/name } objects from the manual match modal
+        if (Array.isArray(value)) {
+          const result: MatchPlayer = {};
+          for (const entry of value as Array<unknown>) {
+            if (!entry || typeof entry !== 'object') continue;
+            const steamid =
+              (entry as { steamid?: string; steamId?: string }).steamid ||
+              (entry as { steamid?: string; steamId?: string }).steamId;
+            const name = (entry as { name?: string }).name;
+            if (steamid && name) {
+              result[steamid] = name;
+            }
+          }
+          return result;
+        }
+
+        // Fallback: unknown shape
+        return {};
+      };
+
       // Ensure required fields for MatchZy are present.
       const safeConfig: MatchConfig = {
         ...storedConfig,
@@ -334,12 +368,16 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
             ? storedConfig.maplist.length
             : 1,
         skip_veto: true,
-        spectators: storedConfig.spectators ?? { players: {} },
+        spectators: {
+          players: normalizePlayers(storedConfig.spectators?.players),
+        },
         team1:
           storedConfig.team1 && storedConfig.team1.name
             ? {
                 ...storedConfig.team1,
-                players: storedConfig.team1.players ?? {},
+                players: normalizePlayers(
+                  (storedConfig.team1 as unknown as { players?: unknown }).players
+                ),
               }
             : {
                 name: 'Team 1',
@@ -349,7 +387,9 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
           storedConfig.team2 && storedConfig.team2.name
             ? {
                 ...storedConfig.team2,
-                players: storedConfig.team2.players ?? {},
+                players: normalizePlayers(
+                  (storedConfig.team2 as unknown as { players?: unknown }).players
+                ),
               }
             : {
                 name: 'Team 2',

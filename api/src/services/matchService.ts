@@ -84,7 +84,10 @@ class MatchService {
 
     await db.insertAsync('matches', {
       slug: input.slug,
-      tournament_id: 1, // Keep association with primary tournament for now
+      // Manual matches are **independent** of the primary tournament bracket.
+      // We keep them in the same table for shared tooling, but do not associate
+      // them with any tournament row.
+      tournament_id: null,
       round: 0, // 0 = manual / non-bracket match
       match_number: 0,
       server_id: input.serverId,

@@ -5,6 +5,7 @@ import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
 import { getStatusColor } from '../../utils/matchUtils';
+import { isShuffleMatch as isShuffleMatchGlobal, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchRosterAccordion } from './MatchRosterAccordion';
@@ -104,15 +105,7 @@ export function MatchInfoCard({
   const isServerOnline = !!serverStatus && serverStatus !== 'error';
   const effectiveServer = isServerOnline ? match.server : null;
 
-  const isShuffleMatch =
-    match.team1?.id?.startsWith('shuffle-') ||
-    match.team2?.id?.startsWith('shuffle-') ||
-    (match.config?.team1 && typeof match.config.team1 === 'object'
-      ? (match.config.team1 as { id?: string }).id?.startsWith('shuffle-')
-      : false) ||
-    (match.config?.team2 && typeof match.config.team2 === 'object'
-      ? (match.config.team2 as { id?: string }).id?.startsWith('shuffle-')
-      : false);
+  const isShuffleMatch = isShuffleMatchGlobal(match as unknown as Parameters<typeof isShuffleMatchGlobal>[0]);
 
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
@@ -181,8 +174,7 @@ export function MatchInfoCard({
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
   const isCompletedMatch = match.status === 'completed';
   const isManualMatch = match.round === 0;
-  const vetoFlowDisabled =
-    isManualMatch || isShuffleMatch || match.config?.vetoDisabled === true;
+  const vetoFlowDisabled = isVetoDisabledForMatch(match as unknown as any);
 
   // Tournament Not Started - waiting for tournament to start.
   // Manual matches (round === 0) are independent of the global tournament and

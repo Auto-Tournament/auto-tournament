@@ -235,20 +235,22 @@ export default function Matches() {
     fetchMatches();
   }, []);
 
-  const handleDeleteMatch = async (match: Match) => {
-    try {
-      await api.delete(`/api/matches/${match.slug}`);
-      showSuccess(`Match deleted: ${match.slug}`);
-      void fetchMatches();
-    } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to delete match. Please try again.';
-      showError(message);
-      // Also log to console for debugging
-      // eslint-disable-next-line no-console
-      console.error('Failed to delete match', err);
-    }
-  };
+  // Legacy delete handler kept for reference; match deletion is currently wired
+  // through the MatchDetailsModal, which calls its own delete endpoint and then
+  // emits socket updates. We keep this here in case we reintroduce list-level
+  // delete actions in the future.
+  // const handleDeleteMatch = async (match: Match) => {
+  //   try {
+  //     await api.delete(`/api/matches/${match.slug}`);
+  //     showSuccess(`Match deleted: ${match.slug}`);
+  //     void fetchMatches();
+  //   } catch (err) {
+  //     const message =
+  //       err instanceof Error ? err.message : 'Failed to delete match. Please try again.';
+  //     showError(message);
+  //     console.error('Failed to delete match', err);
+  //   }
+  // };
 
   // Calculate global match number based on all matches
   const getGlobalMatchNumber = (match: Match, allMatches: Match[]): number => {
@@ -474,9 +476,20 @@ export default function Matches() {
       <CreateManualMatchModal
         open={createMatchOpen}
         onClose={() => setCreateMatchOpen(false)}
-        onCreated={(slug) => {
+        onCreated={async (slug) => {
           setCreateMatchOpen(false);
           showSuccess(`Manual match created: ${slug}`);
+
+          // Immediately load the manual match on its assigned server so it's
+          // ready for players without a separate "Load match" click.
+          try {
+            await api.post(`/api/matches/${slug}/load`, undefined);
+          } catch (err) {
+            const message =
+              err instanceof Error ? err.message : 'Failed to load manual match on server.';
+            showError(message);
+          }
+
           void fetchMatches();
         }}
       />

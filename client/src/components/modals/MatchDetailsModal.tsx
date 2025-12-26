@@ -55,6 +55,7 @@ import { MapDemoDownloads } from '../match/MapDemoDownloads';
 import { FadeInImage } from '../common/FadeInImage';
 import { api } from '../../utils/api';
 import ConfirmDialog from './ConfirmDialog';
+import { isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -288,21 +289,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const seriesWinsTeam2 = derivedSeriesWins.team2;
   const livePlayerStats = liveStats?.playerStats ?? null;
 
-  // Detect shuffle matches (temporary shuffle team IDs or config IDs)
-  const isShuffleMatch =
-    match.team1?.id?.startsWith('shuffle-') ||
-    match.team2?.id?.startsWith('shuffle-') ||
-    (typeof match.config === 'object' &&
-      match.config !== null &&
-      'team1' in match.config &&
-      (match.config.team1 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-')) ||
-    (typeof match.config === 'object' &&
-      match.config !== null &&
-      'team2' in match.config &&
-      (match.config.team2 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-'));
-
-  const isManualMatch = match.round === 0;
-  const vetoDisabled = isManualMatch || isShuffleMatch || match.config?.vetoDisabled === true;
+  // Shuffle / veto-disabled detection shared across match views
+  const vetoDisabled = isVetoDisabledForMatch(match);
   // Shuffle tournaments and veto-disabled matches don't use veto - treat as
   // completed to avoid "VETO PENDING" labels in chips and status badges.
   const effectiveVetoCompleted = vetoDisabled ? true : match.vetoCompleted;
