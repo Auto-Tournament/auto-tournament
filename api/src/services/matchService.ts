@@ -25,7 +25,7 @@ class MatchService {
     // Normalize config and apply global simulation + round-limit settings so
     // manual matches behave like tournament-generated matches.
     const config: MatchConfig = {
-      ...(input.config as MatchConfig),
+      ...input.config,
     };
 
     try {

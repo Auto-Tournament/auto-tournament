@@ -311,12 +311,12 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     // generating a fresh tournament-backed config. This allows admins to create
     // ad hoc matches that are independent from the tournament bracket.
     if (match.round === 0) {
-      let storedConfig: MatchConfig;
+      let storedConfig: Partial<MatchConfig> = {};
       try {
-        storedConfig = match.config ? (JSON.parse(match.config) as MatchConfig) : ({} as MatchConfig);
+        storedConfig = match.config ? (JSON.parse(match.config) as Partial<MatchConfig>) : {};
       } catch (e) {
         console.error('Failed to parse stored match config for manual match', e);
-        storedConfig = {} as MatchConfig;
+        storedConfig = {};
       }
 
       const normalizePlayers = (value: unknown): MatchPlayer => {
@@ -367,6 +367,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
             : Array.isArray(storedConfig.maplist) && storedConfig.maplist.length > 0
             ? storedConfig.maplist.length
             : 1,
+        maplist: storedConfig.maplist ?? null,
         skip_veto: true,
         spectators: {
           players: normalizePlayers(storedConfig.spectators?.players),
@@ -498,7 +499,7 @@ router.delete('/:slug', requireAuth, async (req: Request, res: Response) => {
     }
 
     await matchService.deleteMatch(slug);
-    emitMatchUpdate(slug, { slug, deleted: true });
+    emitMatchUpdate({ slug, deleted: true });
     log.success(`Match deleted via API: ${slug}`);
 
     return res.json({ success: true });

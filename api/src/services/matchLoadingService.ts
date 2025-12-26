@@ -279,8 +279,12 @@ export async function loadMatchOnServer(
       // manual matches tweak settings like knife round behavior without changing
       // global or per-server defaults permanently.
       try {
-        const parsedConfig = JSON.parse(match.config || '{}') as MatchConfig | { cvars?: Record<string, string | number> };
-        const cvars = (parsedConfig as MatchConfig).cvars;
+        const parsedConfig = (match.config
+          ? (JSON.parse(match.config) as Partial<MatchConfig> & {
+              cvars?: Record<string, string | number>;
+            })
+          : {}) as { cvars?: Record<string, string | number> };
+        const cvars = parsedConfig.cvars;
         if (cvars && Object.keys(cvars).length > 0) {
           log.debug(
             `[MATCH LOADING] Applying per-match cvars for ${matchSlug} on ${serverId}`,
