@@ -302,10 +302,10 @@ export function MatchInfoCard({
             leftSeriesWins={deriveSeriesWins.team1}
             rightSeriesWins={deriveSeriesWins.team2}
             liveStatusDisplay={liveStatusDisplay}
-            // For BO1 or completed matches, showing both "Series Maps Won" and
-            // "Map Rounds" can look like duplicated stats. Hide the series row
-            // and keep the per‑map round result instead.
-            hideSeriesWins={isShuffleMatch || isCompletedMatch || matchFormat === 'bo1'}
+            // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
+            // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
+            // per‑map round result instead.
+            hideSeriesWins={isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch}
           />
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (

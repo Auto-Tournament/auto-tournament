@@ -481,9 +481,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
                 {/* Scores */}
                 <Box textAlign="center" minWidth={120}>
-                  {/* Hide series wins row for completed matches to avoid duplicated stats;
-                      while live, show current series score (e.g. 1–0 when entering Map 2). */}
-                  {match.status !== 'completed' && (
+                  {/* Hide series wins row for completed and manual matches to avoid duplicated or
+                      misleading stats. While tournament series are live, we still show the current
+                      series score (e.g. 1–0 when entering Map 2). */}
+                  {match.status !== 'completed' && !isManualMatch && (
                     <>
                       <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
                         <Typography
