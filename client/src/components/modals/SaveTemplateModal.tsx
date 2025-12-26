@@ -7,7 +7,11 @@ import {
   TextField,
   Button,
   CircularProgress,
+  Box,
+  IconButton,
+  Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { TournamentSettings } from '../../types/tournament.types';
@@ -94,7 +98,24 @@ export default function SaveTemplateModal({
       fullWidth
       disableEscapeKeyDown
     >
-      <DialogTitle>Save as Template</DialogTitle>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Save as Template
+        </Typography>
+        <IconButton
+          onClick={handleClose}
+          size="small"
+          aria-label="close"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
         <TextField
           fullWidth

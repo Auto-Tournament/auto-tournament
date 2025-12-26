@@ -25,7 +25,7 @@ export default function Matches() {
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
   const [createMatchOpen, setCreateMatchOpen] = useState(false);
-  const { showSuccess } = useSnackbar();
+  const { showSuccess, showError } = useSnackbar();
   const [allocationCountdown, setAllocationCountdown] = useState<{
     nextAllocationInSeconds: number | null;
     gracePeriodSeconds: number;
@@ -235,6 +235,21 @@ export default function Matches() {
     fetchMatches();
   }, []);
 
+  const handleDeleteMatch = async (match: Match) => {
+    try {
+      await api.delete(`/api/matches/${match.slug}`);
+      showSuccess(`Match deleted: ${match.slug}`);
+      void fetchMatches();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : 'Failed to delete match. Please try again.';
+      showError(message);
+      // Also log to console for debugging
+      // eslint-disable-next-line no-console
+      console.error('Failed to delete match', err);
+    }
+  };
+
   // Calculate global match number based on all matches
   const getGlobalMatchNumber = (match: Match, allMatches: Match[]): number => {
     // Sort all matches by round, then by matchNumber
@@ -388,6 +403,7 @@ export default function Matches() {
               <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
+                  const isManualMatch = match.round === 0;
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
@@ -395,7 +411,12 @@ export default function Matches() {
                         matchNumber={matchNumber}
                         variant="default"
                         vetoCompleted={match.vetoCompleted}
-                        tournamentStarted={tournamentStatus === 'in_progress'}
+                        // Manual matches are always considered "independent" of
+                        // the global tournament status so they never show
+                        // "Waiting for tournament to start".
+                        tournamentStarted={
+                          isManualMatch ? true : tournamentStatus === 'in_progress'
+                        }
                         onClick={() => setSelectedMatch(match)}
                       />
                     </Grid>
@@ -440,6 +461,12 @@ export default function Matches() {
           matchNumber={getGlobalMatchNumber(selectedMatch, allMatches)}
           roundLabel={getRoundLabel(selectedMatch.round)}
           onClose={() => setSelectedMatch(null)}
+          onDeleted={(slug) => {
+            setSelectedMatch(null);
+            setUpcomingMatches((prev) => prev.filter((m) => m.slug !== slug));
+            setLiveMatches((prev) => prev.filter((m) => m.slug !== slug));
+            setMatchHistory((prev) => prev.filter((m) => m.slug !== slug));
+          }}
         />
       )}
 

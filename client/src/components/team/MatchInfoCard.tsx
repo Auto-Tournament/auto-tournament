@@ -180,9 +180,15 @@ export function MatchInfoCard({
 
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
   const isCompletedMatch = match.status === 'completed';
+  const isManualMatch = match.round === 0;
+  const vetoFlowDisabled =
+    isShuffleMatch || match.config?.vetoDisabled === true;
 
-  // Tournament Not Started - waiting for tournament to start
+  // Tournament Not Started - waiting for tournament to start.
+  // Manual matches (round === 0) are independent of the global tournament and
+  // should never be blocked by this state.
   if (
+    !isManualMatch &&
     tournamentStatus !== 'in_progress' &&
     match.status === 'pending' &&
     ['bo1', 'bo3', 'bo5'].includes(matchFormat)
@@ -212,6 +218,7 @@ export function MatchInfoCard({
   // Waiting for opponent: tournament live, this team is locked in, but the next-round
   // opponent has not been decided yet. In this state we should NOT start veto.
   if (
+    !isManualMatch &&
     tournamentStatus === 'in_progress' &&
     match.status === 'pending' &&
     !hasBothTeamsAssigned &&
@@ -236,9 +243,9 @@ export function MatchInfoCard({
 
   // Veto Phase - tournament started, show veto interface
   // Show veto interface if veto is not completed (check both state and match.veto.status)
-  const isVetoNotCompleted = !vetoCompleted && match.veto?.status !== 'completed';
+  const isVetoNotCompleted = !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
   if (
-    tournamentStatus === 'in_progress' &&
+    (isManualMatch || tournamentStatus === 'in_progress') &&
     match.status === 'pending' &&
     isVetoNotCompleted &&
     hasBothTeamsAssigned &&

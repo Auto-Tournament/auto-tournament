@@ -54,12 +54,14 @@ import { MapChipList } from '../match/MapChipList';
 import { MapDemoDownloads } from '../match/MapDemoDownloads';
 import { FadeInImage } from '../common/FadeInImage';
 import { api } from '../../utils/api';
+import ConfirmDialog from './ConfirmDialog';
 
 interface MatchDetailsModalProps {
   match: Match | null;
   matchNumber: number;
   roundLabel: string;
   onClose: () => void;
+  onDeleted?: (slug: string) => void;
 }
 
 const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
@@ -67,6 +69,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   matchNumber,
   roundLabel,
   onClose,
+  onDeleted,
 }) => {
   const [matchTimer, setMatchTimer] = useState<number>(0);
   const [error, setError] = useState('');
@@ -74,6 +77,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const [configModalOpen, setConfigModalOpen] = useState(false);
   const [configJson, setConfigJson] = useState<string | null>(null);
   const [configLoading, setConfigLoading] = useState(false);
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
 
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
@@ -83,7 +87,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   const { status: tournamentStatus } = useTournamentStatus();
-  const tournamentStarted = tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
+  const isManualMatch = match?.round === 0;
+  const tournamentStarted =
+    isManualMatch || tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
 
   // Calculate derived series wins before early return (React hooks rule).
   // For completed matches, use the persisted series score. While a series is
@@ -150,6 +156,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     // Last resort: no series score and no map results yet.
     return { team1: 0, team2: 0 };
   }, [match, liveStats]);
+
+  const handleDelete = async () => {
+    if (!match) return;
+    setConfirmDeleteOpen(false);
+    try {
+      await api.delete(`/api/matches/${match.slug}`);
+      setSuccess('Match deleted successfully');
+      if (onDeleted) {
+        onDeleted(match.slug);
+      }
+      onClose();
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || 'Failed to delete match');
+    }
+  };
 
   // Timer effect for live matches
   useEffect(() => {
@@ -279,9 +301,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       'team2' in match.config &&
       (match.config.team2 as { id?: string } | undefined)?.id?.startsWith?.('shuffle-'));
 
-  // Shuffle tournaments don't use veto - treat as completed to avoid "VETO PENDING" labels
-  const effectiveVetoCompleted = isShuffleMatch ? true : match.vetoCompleted;
-  const vetoDisabled = isShuffleMatch;
+  const vetoDisabled = isShuffleMatch || match.config?.vetoDisabled === true;
+  // Shuffle tournaments and veto-disabled matches don't use veto - treat as
+  // completed to avoid "VETO PENDING" labels in chips and status badges.
+  const effectiveVetoCompleted = vetoDisabled ? true : match.vetoCompleted;
   const normalizedTeam1Players = livePlayerStats?.team1?.length
     ? livePlayerStats.team1.map((player) => ({
         name: player.name,
@@ -941,19 +964,56 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
             <Typography variant="caption" color="text.secondary">
               Match slug: <strong>{match.slug}</strong>
             </Typography>
-            <Button
-              variant="outlined"
-              size="small"
-              startIcon={<CodeIcon />}
-              onClick={handleOpenConfigModal}
-            >
-              View Match Config JSON
-            </Button>
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<CodeIcon />}
+                onClick={handleOpenConfigModal}
+              >
+                View Match Config JSON
+              </Button>
+              {isManualMatch && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="error"
+                  onClick={() => setConfirmDeleteOpen(true)}
+                >
+                  Delete Match
+                </Button>
+              )}
+            </Box>
           </Box>
         </DialogActions>
       </Dialog>
 
       <ToastNotification />
+
+      {/* Confirm delete manual match */}
+      {match && (
+        <ConfirmDialog
+          open={confirmDeleteOpen}
+          title="Delete Manual Match"
+          message={
+            <Box>
+              <Typography variant="body2" fontWeight={600} gutterBottom>
+                Are you sure you want to delete this manual match?
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                This action cannot be undone. It will remove the match{' '}
+                <strong>{match.slug}</strong> and its configuration, but will not affect any
+                tournament brackets.
+              </Typography>
+            </Box>
+          }
+          confirmLabel="Delete Match"
+          cancelLabel="Cancel"
+          onConfirm={handleDelete}
+          onCancel={() => setConfirmDeleteOpen(false)}
+          confirmColor="error"
+        />
+      )}
 
       <Snackbar
         open={!!error}

@@ -66,6 +66,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     );
   };
 
+  const vetoDisabled =
+    isShuffleMatch() || match.config?.vetoDisabled === true;
+
   const getTeamName = (teamId: string | undefined) => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
     if (team) {
@@ -162,8 +165,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               label={getStatusLabel(
                 match.status,
                 false,
-                // Shuffle tournaments have no veto – treat as completed to avoid "VETO PENDING"
-                isShuffleMatch() ? true : vetoCompleted,
+                // Shuffle tournaments and veto-disabled matches don't use veto – treat
+                // as completed to avoid "VETO PENDING" labels on the list view.
+                vetoDisabled ? true : vetoCompleted,
                 tournamentStarted,
                 Boolean(match.serverId)
               )}

@@ -194,10 +194,32 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     const trimmedSlug = slug.trim();
     const maps = selectedMaps.filter((m) => m.length > 0);
 
+    // Temporary debug logging to trace manual match creation clicks/behaviour.
+    // This will help us see in the browser console whether the handler is
+    // firing and what payload we're about to send.
+    // eslint-disable-next-line no-console
+    console.log('[CreateManualMatchModal] handleSubmit invoked', {
+      trimmedSlug,
+      serverId,
+      team1Id,
+      team2Id,
+      mapsCount: maps.length,
+      bestOf,
+      useVeto,
+    });
+
     if (!trimmedSlug || !serverId || !team1Id || !team2Id || maps.length === 0) {
       const message = 'Slug, server, both teams, and at least one map are required.';
       setError(message);
       showError(message);
+      // eslint-disable-next-line no-console
+      console.warn('[CreateManualMatchModal] Missing required fields, aborting submit', {
+        trimmedSlugPresent: !!trimmedSlug,
+        hasServerId: !!serverId,
+        hasTeam1Id: !!team1Id,
+        hasTeam2Id: !!team2Id,
+        mapsCount: maps.length,
+      });
       return;
     }
 
@@ -215,25 +237,17 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       const message = 'Selected teams could not be found. Please refresh and try again.';
       setError(message);
       showError(message);
+      // eslint-disable-next-line no-console
+      console.warn('[CreateManualMatchModal] Team lookup failed', {
+        team1Id,
+        team2Id,
+        teamsLoaded: teams.length,
+      });
       return;
     }
 
     const requiredMaps = bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5;
-    if (useVeto && maps.length !== 7) {
-      const message = 'When veto is enabled, you must select exactly 7 maps for the map pool.';
-      setError(message);
-      showError(message);
-      return;
-    }
-
-    if (maps.length < requiredMaps) {
-      const message = `Series format ${bestOf.toUpperCase()} requires at least ${requiredMaps} map(s).`;
-      setError(message);
-      showError(message);
-      return;
-    }
-
-    const selectedMaps = maps.slice(0, requiredMaps);
+    const matchMaps = maps.slice(0, requiredMaps);
 
     const safePlayersPerTeam =
       typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
@@ -252,7 +266,11 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     }
 
     const config: MatchConfig = {
-      maplist: selectedMaps,
+      // Manual matches can optionally use the full veto flow. When veto is
+      // disabled, we mark that here so the Team page knows not to show the
+      // veto UI and instead treat this as a fixed-map series.
+      vetoDisabled: !useVeto,
+      maplist: matchMaps,
       num_maps: requiredMaps,
       players_per_team: safePlayersPerTeam,
       expected_players_total: safePlayersPerTeam * 2,
@@ -275,6 +293,12 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 
     setSaving(true);
     try {
+      // eslint-disable-next-line no-console
+      console.log('[CreateManualMatchModal] Sending /api/matches request', {
+        slug: trimmedSlug,
+        serverId,
+        config,
+      });
       const response = await api.post<MatchResponse>('/api/matches', {
         slug: trimmedSlug,
         serverId,
@@ -282,9 +306,16 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       });
 
       if (!response.success || !response.match) {
+        // eslint-disable-next-line no-console
+        console.error('[CreateManualMatchModal] API responded without success/match', response);
         throw new Error(response.error || 'Failed to create match');
       }
 
+      // eslint-disable-next-line no-console
+      console.log('[CreateManualMatchModal] Match created successfully', {
+        slug: response.match.slug,
+        id: response.match.id,
+      });
       onCreated(response.match.slug);
       resetForm();
       onClose();
@@ -532,18 +563,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         <Button
           variant="contained"
           onClick={handleSubmit}
-          disabled={
-            saving ||
-            servers.length === 0 ||
-            !slug.trim() ||
-            !serverId ||
-            !team1Id ||
-            !team2Id ||
-            selectedMaps.filter((m) => m.length > 0).length === 0 ||
-            (useVeto && selectedMaps.filter((m) => m.length > 0).length !== 7) ||
-            selectedMaps.filter((m) => m.length > 0).length <
-              (bestOf === 'bo1' ? 1 : bestOf === 'bo3' ? 3 : 5)
-          }
+          disabled={saving || servers.length === 0}
         >
           {saving ? 'Creating…' : 'Create Match'}
         </Button>

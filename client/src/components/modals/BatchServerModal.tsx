@@ -24,6 +24,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ErrorIcon from '@mui/icons-material/Error';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import type { Server } from '../../types';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -399,7 +400,24 @@ export default function BatchServerModal({
       fullWidth
       disableEscapeKeyDown
     >
-      <DialogTitle>Batch Create Servers</DialogTitle>
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Batch Create Servers
+        </Typography>
+        <IconButton
+          onClick={handleClose}
+          size="small"
+          aria-label="close"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>
           <Alert severity="info">

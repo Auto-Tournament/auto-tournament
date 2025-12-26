@@ -422,6 +422,56 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
 });
 
 /**
+ * DELETE /api/matches/:slug
+ * Delete a match by slug (admin only).
+ *
+ * IMPORTANT: For safety, this endpoint only allows deleting **manual**
+ * matches (round = 0). Bracket/tournament matches are tightly coupled to
+ * the tournament structure (next_match_id, standings, history, etc.) and
+ * must be reset via the dedicated tournament reset/regeneration flows
+ * instead of being deleted piecemeal.
+ */
+router.delete('/:slug', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      slug,
+    ]);
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match not found',
+      });
+    }
+
+    // Guardrail: only allow deleting manual (non‑bracket) matches.
+    // Bracket matches always have round >= 1 and are managed by the
+    // tournament/bracket flows; deleting them directly could corrupt
+    // progression or historical stats.
+    if (match.round !== 0) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'Deleting bracket/tournament matches is not supported. Use the tournament reset/regeneration tools instead.',
+      });
+    }
+
+    await matchService.deleteMatch(slug);
+    emitMatchUpdate(slug, { slug, deleted: true });
+    log.success(`Match deleted via API: ${slug}`);
+
+    return res.json({ success: true });
+  } catch (error) {
+    console.error('Error deleting match:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to delete match',
+    });
+  }
+});
+
+/**
  * GET /api/matches
  * List all matches (public - used by team pages)
  * Returns tournament matches with team information

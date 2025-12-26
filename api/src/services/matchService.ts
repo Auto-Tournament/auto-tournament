@@ -81,8 +81,6 @@ class MatchService {
     // flow and use the same team lookup logic as bracket matches.
     const team1Id = config.team1?.id ?? null;
     const team2Id = config.team2?.id ?? null;
-    const team1Name = config.team1?.name ?? null;
-    const team2Name = config.team2?.name ?? null;
 
     await db.insertAsync('matches', {
       slug: input.slug,
@@ -92,8 +90,6 @@ class MatchService {
       server_id: input.serverId,
       team1_id: team1Id,
       team2_id: team2Id,
-      team1_name: team1Name,
-      team2_name: team2Name,
       config: JSON.stringify(config),
       status: 'pending',
     });

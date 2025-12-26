@@ -38,6 +38,15 @@ export interface MatchConfig {
     [key: string]: string | number;
   };
   /**
+   * Frontend-only hint used by the Team view to decide whether to present
+   * a manual veto flow. When true, the team veto UI is disabled and the
+   * match should be treated as a fixed-map series with no veto phase.
+   *
+   * This flag is ignored by the MatchZy plugin itself and is purely
+   * metadata carried alongside the config JSON.
+   */
+  vetoDisabled?: boolean;
+  /**
    * MatchZy simulation mode flag.
    *
    * When true, the plugin runs the match in simulation mode (bots instead of human players).

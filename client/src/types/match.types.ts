@@ -59,6 +59,11 @@ export interface MatchConfig {
   cvars?: {
     [key: string]: string | number;
   };
+  /**
+   * When true, the Team view should not present a veto UI for this match and
+   * should treat it as a fixed-map series (no veto phase).
+   */
+  vetoDisabled?: boolean;
 }
 
 export interface PlayerStats {
