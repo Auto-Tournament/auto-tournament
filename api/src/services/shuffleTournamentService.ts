@@ -9,6 +9,7 @@ import { balanceTeams, type BalancedTeam } from './teamBalancingService';
 import { playerService, type PlayerRecord } from './playerService';
 import { teamService } from './teamService';
 import { generateMatchConfig } from './matchConfigBuilder';
+import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse, TournamentType } from '../types/tournament.types';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type { Player } from '../types/team.types';
@@ -383,194 +384,12 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
   // Track which players are assigned to matches (for future use if needed)
   // const assignedPlayerIds = new Set<string>();
 
-  // Pool of friendly team names used for temporary shuffle teams.
-  // We keep these readable but will assign them randomly and ensure that a
-  // given name is only used once per tournament (no duplicates).
-  const FRIENDLY_TEAM_NAMES = [
-    'Phoenix',
-    'Falcon',
-    'Wolf',
-    'Lion',
-    'Eagle',
-    'Raven',
-    'Dragon',
-    'Titan',
-    'Viper',
-    'Cobra',
-    'Jaguar',
-    'Panther',
-    'Bear',
-    'Shark',
-    'Hawk',
-    'Alpha',
-    'Bravo',
-    'Charlie',
-    'Delta',
-    'Echo',
-    'Foxtrot',
-    'Gamma',
-    'Omega',
-    'Nova',
-    'Aurora',
-    'Comet',
-    'Nebula',
-    'Orion',
-    'Blaze',
-    'Ember',
-    'Inferno',
-    'Glacier',
-    'Avalanche',
-    'Thunder',
-    'Storm',
-    'Cyclone',
-    'Tempest',
-    'Mirage',
-    'Oasis',
-    'Harbor',
-    'Citadel',
-    'Sentinel',
-    'Vanguard',
-    'Guardian',
-    'Shadow',
-    'Spectre',
-    'Phantom',
-    'Rogue',
-    'Nomad',
-    'Ranger',
-    'Pioneer',
-    'Vertex',
-    'Zenith',
-    'Apex',
-    'Summit',
-    'Peak',
-    'Crimson',
-    'Azure',
-    'Emerald',
-    'Gold',
-    'Silver',
-    'Titanium',
-    'Platinum',
-    'Diamond',
-    'Obsidian',
-    'Onyx',
-    'Quartz',
-    'Ruby',
-    'Sapphire',
-    'Topaz',
-    'Amber',
-    'Jet',
-    'Ivory',
-    'Steel',
-    'Iron',
-    'Bronze',
-    'Copper',
-    'Carbon',
-    'Neon',
-    'Argon',
-    'Helix',
-    'Vector',
-    'Matrix',
-    'Cipher',
-    'NovaCore',
-    'Pulse',
-    'Volt',
-    'Static',
-    'Surge',
-    'Flux',
-    'Quasar',
-    'Halo',
-    'Nimbus',
-    'Stratus',
-    'Cirrus',
-    'Tempest',
-    'Monsoon',
-    'Blizzard',
-    'Frost',
-    'Emberfall',
-    'Wildfire',
-    'Sandstorm',
-    'MirageWave',
-    'EchoPeak',
-    'Nightfall',
-    'Daybreak',
-    'Midnight',
-    'Dusk',
-    'Dawn',
-    'Eclipse',
-    'Solaris',
-    'Lunar',
-    'Starlight',
-    'Galaxy',
-    'Cosmos',
-    'Meteor',
-    'Asteroid',
-    'Orbit',
-    'Pulsar',
-    'CometTrail',
-    'Vortex',
-    'Rift',
-    'Embercore',
-    'Starfall',
-    'Ironclad',
-    'Longbow',
-    'Crosswind',
-    'Highrise',
-    'Lowlight',
-    'Redwood',
-    'Stonewall',
-    'Waypoint',
-    'Outpost',
-    'Harbinger',
-    'Warden',
-    'Arbiter',
-    'Revenant',
-    'Paladin',
-    'Crusader',
-    'SentinelPrime',
-    'VanguardElite',
-  ];
-
   // Build a set of team names that have already been used by previous shuffle
   // rounds so we never reuse a name within the same tournament.
   const existingShuffleTeams = await db.queryAsync<DbTeamRow>(
     "SELECT id, name, tag FROM teams WHERE id LIKE 'shuffle-r%'"
   );
   const usedTeamNames = new Set<string>(existingShuffleTeams.map((t) => t.name));
-
-  // Each balanced team becomes its own temporary team row, so we need at least
-  // `teams.length` distinct names for this round.
-  const requiredNames = teams.length;
-
-  // Start from the friendly pool, excluding names already used.
-  const basePool = FRIENDLY_TEAM_NAMES.filter((name) => !usedTeamNames.has(name));
-
-  const availableNames: string[] = [...basePool];
-
-  // If the friendly pool is too small for all shuffle teams across rounds,
-  // generate additional unique fallback names of the form "Team 1", "Team 2",
-  // etc. to guarantee uniqueness without collisions.
-  if (availableNames.length < requiredNames) {
-    let counter = 1;
-    while (availableNames.length < requiredNames) {
-      const candidate = `Team ${existingShuffleTeams.length + availableNames.length + counter}`;
-      if (!usedTeamNames.has(candidate)) {
-        availableNames.push(candidate);
-        usedTeamNames.add(candidate);
-      }
-      counter += 1;
-    }
-  }
-
-  // Shuffle the available names so that assignment within this round is
-  // completely random.
-  for (let i = availableNames.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    const tmp = availableNames[i];
-    availableNames[i] = availableNames[j];
-    availableNames[j] = tmp;
-  }
-
-  let nextNameIndex = 0;
 
   // Create matches for each team pair
   for (let matchNum = 0; matchNum < teams.length / 2; matchNum++) {
@@ -715,12 +534,8 @@ export async function generateRoundMatches(roundNumber: number): Promise<{
     const team2Id = `shuffle-r${roundNumber}-m${matchNum + 1}-team2`;
 
     // Pick two distinct, random, globally-unique team names for this match.
-    const team1FriendlyName =
-      availableNames[nextNameIndex] ?? `Team R${roundNumber}M${matchNum + 1}T1`;
-    nextNameIndex += 1;
-    const team2FriendlyName =
-      availableNames[nextNameIndex] ?? `Team R${roundNumber}M${matchNum + 1}T2`;
-    nextNameIndex += 1;
+    const team1FriendlyName = generateUniqueTeamName(usedTeamNames);
+    const team2FriendlyName = generateUniqueTeamName(usedTeamNames);
 
     // Convert players to team format
     const team1Players: Player[] = team1.players.map((p) => ({

@@ -15,6 +15,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@faker-js/faker": "^10.1.0",
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.6",
     "@mui/x-charts": "^8.21.0",
@@ -28,6 +29,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.0",
     "react-zoom-pan-pinch": "^3.7.0",
-    "socket.io-client": "^4.8.1"
+    "socket.io-client": "^4.8.1",
+    "unique-names-generator": "^4.7.1"
   }
 }

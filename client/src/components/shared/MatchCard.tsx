@@ -38,34 +38,30 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'grey.300';
   };
 
-  const isWinner = (teamId: string | undefined) => {
-    return match.winner?.id === teamId;
-  };
-
-  const getTeamBgColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.main';
-    return 'background.paper';
-  };
-
-  const getTeamBorderColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.dark';
-    return 'divider';
-  };
-
-  const getTeamTextColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.contrastText';
-    const team = teamId === match.team1?.id ? match.team1 : match.team2;
-    if (team) return 'text.primary';
-    return 'text.disabled';
+  const isWinnerById = (teamId: string | undefined) => {
+    // Only treat a team as winner when both an explicit winner.id and a
+    // concrete teamId are present. This avoids "both winners" for manual
+    // matches where team IDs are null/undefined.
+    if (!teamId || !match.winner?.id) return false;
+    return match.winner.id === teamId;
   };
   const shuffle = isShuffleMatch(match);
   const manual = isManualMatch(match);
   const vetoDisabled = isVetoDisabledForMatch(match);
 
-  const getTeamName = (teamId: string | undefined) => {
+  const getTeamName = (teamId: string | undefined, which: 'team1' | 'team2') => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
     if (team) {
       return team.name;
+    }
+    // Fallback for manual/ad‑hoc matches where inline config contains team
+    // names but the DB team IDs are null.
+    const configTeam =
+      which === 'team1'
+        ? (match.config?.team1 as { name?: string } | undefined)
+        : (match.config?.team2 as { name?: string } | undefined);
+    if (configTeam?.name) {
+      return configTeam.name;
     }
     if (match.status === 'completed') return '—';
     return 'TBD';
@@ -105,8 +101,51 @@ export const MatchCard: React.FC<MatchCardProps> = ({
 
   const { seriesMapsTeam1, seriesMapsTeam2 } = deriveSeriesMaps();
 
-  const team1IsWinner = isWinner(match.team1?.id);
-  const team2IsWinner = isWinner(match.team2?.id);
+  // Derive a winner side for display purposes:
+  // - Prefer explicit winner.id when present (bracket matches with real teams)
+  // - Fall back to series map score when match is completed (manual/ad‑hoc matches)
+  let winnerSide: 'team1' | 'team2' | null = null;
+  if (match.status === 'completed') {
+    if (match.winner?.id && match.team1?.id && match.winner.id === match.team1.id) {
+      winnerSide = 'team1';
+    } else if (match.winner?.id && match.team2?.id && match.winner.id === match.team2.id) {
+      winnerSide = 'team2';
+    } else if (
+      typeof seriesMapsTeam1 === 'number' &&
+      typeof seriesMapsTeam2 === 'number' &&
+      seriesMapsTeam1 !== seriesMapsTeam2
+    ) {
+      winnerSide = seriesMapsTeam1 > seriesMapsTeam2 ? 'team1' : 'team2';
+    }
+  }
+
+  const team1IsWinner = winnerSide === 'team1';
+  const team2IsWinner = winnerSide === 'team2';
+
+  const isWinnerVisual = (which: 'team1' | 'team2') => {
+    // Prefer series-derived winnerSide for visual state when available,
+    // otherwise fall back to explicit winner.id.
+    if (winnerSide) return winnerSide === which;
+    const id = which === 'team1' ? match.team1?.id : match.team2?.id;
+    return isWinnerById(id);
+  };
+
+  const getTeamBgColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.main';
+    return 'background.paper';
+  };
+
+  const getTeamBorderColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.dark';
+    return 'divider';
+  };
+
+  const getTeamTextColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.contrastText';
+    const team = which === 'team1' ? match.team1 : match.team2;
+    if (team) return 'text.primary';
+    return 'text.disabled';
+  };
 
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
     // For completed matches, prioritize series map wins (e.g. 1‑0, 2‑1).
@@ -197,18 +236,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             sx={{
               p: 1.5,
               borderRadius: 1,
-              bgcolor: getTeamBgColor(match.team1?.id),
+              bgcolor: getTeamBgColor('team1'),
               border: 1,
-              borderColor: getTeamBorderColor(match.team1?.id),
+              borderColor: getTeamBorderColor('team1'),
             }}
           >
             <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
                 fontWeight={team1IsWinner ? 600 : 500}
-                sx={{ color: getTeamTextColor(match.team1?.id) }}
+                sx={{ color: getTeamTextColor('team1') }}
               >
-                {getTeamName(match.team1?.id)}
+                {getTeamName(match.team1?.id, 'team1')}
               </Typography>
               {team1IsWinner && (
                 <Chip
@@ -249,18 +288,18 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             sx={{
               p: 1.5,
               borderRadius: 1,
-              bgcolor: getTeamBgColor(match.team2?.id),
+              bgcolor: getTeamBgColor('team2'),
               border: 1,
-              borderColor: getTeamBorderColor(match.team2?.id),
+              borderColor: getTeamBorderColor('team2'),
             }}
           >
             <Box display="flex" alignItems="center" gap={1} flex={1}>
               <Typography
                 variant="body1"
                 fontWeight={team2IsWinner ? 600 : 500}
-                sx={{ color: getTeamTextColor(match.team2?.id) }}
+                sx={{ color: getTeamTextColor('team2') }}
               >
-                {getTeamName(match.team2?.id)}
+                {getTeamName(match.team2?.id, 'team2')}
               </Typography>
               {team2IsWinner && (
                 <Chip

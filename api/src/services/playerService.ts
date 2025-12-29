@@ -49,10 +49,15 @@ class PlayerService {
    * Convert database row to response format
    */
   private toResponse(player: PlayerRecord): PlayerResponse {
+    const customAvatar = player.avatar_url || undefined;
+    const dynamicAvatar = `/api/players/${player.id}/avatar.svg`;
+
     return {
       id: player.id,
       name: player.name,
-      avatar: player.avatar_url || undefined,
+      // Prefer a stored/custom avatar (e.g. from Steam or admin override),
+      // otherwise fall back to a deterministic DiceBear SVG endpoint.
+      avatar: customAvatar ?? dynamicAvatar,
       currentElo: player.current_elo,
       startingElo: player.starting_elo,
       matchCount: player.match_count,
@@ -62,11 +67,54 @@ class PlayerService {
   }
 
   /**
+   * Get visible match count for a player based on distinct matches in the
+   * stats table, so duplicated rating rows or book‑keeping cannot inflate the
+   * user-facing "matches played" number.
+   */
+  private async getVisibleMatchCount(playerId: string): Promise<number> {
+    const row = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(DISTINCT match_slug) as count FROM player_match_stats WHERE player_id = ?',
+      [playerId]
+    );
+    return Number(row?.count ?? 0);
+  }
+
+  /**
+   * Convert database row to response format
+   */
+  private async toVisibleResponse(player: PlayerRecord): Promise<PlayerResponse> {
+    const base = this.toResponse(player);
+    const visibleMatchCount = await this.getVisibleMatchCount(player.id);
+    return {
+      ...base,
+      matchCount: visibleMatchCount,
+    };
+  }
+
+  /**
    * Get all players
    */
   async getAllPlayers(): Promise<PlayerResponse[]> {
     const players = await db.getAllAsync<PlayerRecord>('players', undefined, undefined);
-    return players.map((p) => this.toResponse(p));
+
+    // Pre-compute distinct match counts for all players to avoid one query per
+    // row when rendering the admin Players table.
+    const matchRows = await db.queryAsync<{ player_id: string; count: number | string }>(
+      'SELECT player_id, COUNT(DISTINCT match_slug) as count FROM player_match_stats GROUP BY player_id',
+      []
+    );
+    const matchCountMap = new Map<string, number>(
+      matchRows.map((row) => [row.player_id, Number(row.count ?? 0)])
+    );
+
+    return players.map((p) => {
+      const base = this.toResponse(p);
+      const visible = matchCountMap.get(p.id);
+      return {
+        ...base,
+        matchCount: visible ?? base.matchCount,
+      };
+    });
   }
 
   /**
@@ -77,7 +125,7 @@ class PlayerService {
     if (!player) {
       return null;
     }
-    return this.toResponse(player);
+    return this.toVisibleResponse(player);
   }
 
   /**

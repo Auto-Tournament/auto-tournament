@@ -254,12 +254,14 @@ Import players directly via the Players page. Both JSON and CSV formats are supp
   {
     "steamId": "76561198012345678",
     "name": "Player One",
-    "initialELO": 3200
+    "initialELO": 3200,
+    "avatarUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/fe/fef49e7fa7e1997310d705b2a6158ff8dc1cdfeb_full.jpg"
   },
   {
     "steamId": "76561198012345679",
     "name": "Player Two",
-    "initialELO": 3100
+    "initialELO": 3100,
+    "avatarUrl": "https://steamcdn-a.akamaihd.net/steamcommunity/public/images/avatars/ab/abcdef1234567890abcdef1234567890abcdef12_full.jpg"
   },
   {
     "steamId": "76561198012345680",
@@ -282,10 +284,10 @@ steamId,name,initialELO,avatarUrl
 
 - `steamId` or `steamid` or `steam_id` (required)
 - `name` (required)
-- `initialELO` or `initialelo` or `initial_elo` or `elo` (optional, defaults to 3000)
+- `initialELO` or `initialelo` or `initial_elo` or `elo` (optional, defaults to 1500)
 - `avatarUrl` or `avatarurl` or `avatar_url` or `avatar` (optional)
 
-**Note:** The `initialELO` field is optional. If omitted, players default to 3000 ELO. Empty CSV cells are treated as optional fields.
+**Note:** The `initialELO` field is optional. If omitted, players default to a Skill Rating of 1500. Empty CSV cells are treated as optional fields.
 
 **Download CSV Template:** [player-import-example.csv](../PLAYER_IMPORT_EXAMPLE.csv)
 

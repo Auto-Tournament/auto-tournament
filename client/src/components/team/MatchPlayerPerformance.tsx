@@ -20,6 +20,9 @@ interface MatchPlayerPerformanceProps {
   playerStats: MatchLiveStats['playerStats'] | null | undefined;
   teamName?: string | null;
   opponentName?: string | null;
+  // When true, team1 stats represent "your" team; when false, team2 does.
+  // Defaults to true so existing callers (team page) keep current behaviour.
+  yourTeamIsTeam1?: boolean;
 }
 
 function getAdrValue(player: PlayerLine): number {
@@ -108,10 +111,14 @@ export function MatchPlayerPerformance({
   playerStats,
   teamName,
   opponentName,
+  yourTeamIsTeam1 = true,
 }: MatchPlayerPerformanceProps) {
   if (!playerStats || (!playerStats.team1.length && !playerStats.team2.length)) {
     return null;
   }
+
+  const yourTeamStats = yourTeamIsTeam1 ? playerStats.team1 : playerStats.team2;
+  const opponentStats = yourTeamIsTeam1 ? playerStats.team2 : playerStats.team1;
 
   return (
     <Box>
@@ -123,7 +130,7 @@ export function MatchPlayerPerformance({
           <Typography variant="subtitle2" color="text.secondary" mb={0.5}>
             {teamName || 'Your Team'}
           </Typography>
-          {renderTable(playerStats.team1, 'primary')}
+          {renderTable(yourTeamStats, 'primary')}
         </Box>
         <Box flex={1}>
           <Typography
@@ -134,7 +141,7 @@ export function MatchPlayerPerformance({
           >
             {opponentName || 'Opponent'}
           </Typography>
-          {renderTable(playerStats.team2, 'error')}
+          {renderTable(opponentStats, 'error')}
         </Box>
       </Stack>
     </Box>

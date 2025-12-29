@@ -79,6 +79,12 @@ export const getDetailedStatusLabel = (
     case 'pending':
       // Match is pending - check if tournament has started
       if (tournamentStarted === false) {
+        // If a server is already assigned, this is most likely a manual or
+        // non‑bracket context. Avoid tournament‑specific copy and show a
+        // neutral initialization label instead.
+        if (hasServer) {
+          return 'Initializing match...';
+        }
         return 'Waiting for tournament to start...';
       }
       // If veto is completed but no server, show waiting for server
@@ -90,6 +96,9 @@ export const getDetailedStatusLabel = (
     case 'ready':
       // Match is ready - could be in veto or waiting for server
       if (tournamentStarted === false) {
+        if (hasServer) {
+          return 'Initializing match...';
+        }
         return 'Waiting for tournament to start...';
       }
       if (vetoCompleted === false) {

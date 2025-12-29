@@ -17,6 +17,7 @@ import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatches
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
+import { io } from 'socket.io-client';
 import type { TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
@@ -117,9 +118,9 @@ const Tournament: React.FC = () => {
     }
   };
 
-  // Load player count when tournament changes
+  // Load player count when tournament changes (any shuffle status)
   useEffect(() => {
-    if (tournament?.type === 'shuffle' && tournament.status === 'setup') {
+    if (tournament?.type === 'shuffle') {
       loadRegisteredPlayerCount();
     } else {
       setRegisteredPlayerCount(undefined);
@@ -200,6 +201,13 @@ const Tournament: React.FC = () => {
           setMaps(template.maps || []);
           setSelectedTeams([]); // Templates don't include teams
           setIsEditing(true);
+          // When loading a template via URL, jump the multi-step form to the
+          // final "Review" step so the user can confirm and create immediately.
+          try {
+            sessionStorage.setItem(STEP_STORAGE_KEY, '5'); // 'Review' step index in TournamentFormSteps
+          } catch (error) {
+            console.error('Error saving step to sessionStorage when loading template:', error);
+          }
           // Clear draft when loading template
           clearDraft();
           // Clear template param from URL
@@ -254,6 +262,13 @@ const Tournament: React.FC = () => {
     setShowWelcome(false);
     setShowForm(true);
     setIsEditing(true);
+    // When loading a template from the welcome screen, also jump straight to
+    // the final "Review" step of the tournament form wizard.
+    try {
+      sessionStorage.setItem(STEP_STORAGE_KEY, '5'); // 'Review' step index in TournamentFormSteps
+    } catch (error) {
+      console.error('Error saving step to sessionStorage when loading template from welcome:', error);
+    }
     // Clear draft when loading template
     clearDraft();
     window.history.replaceState({}, '', '/tournament');
@@ -706,22 +721,22 @@ const Tournament: React.FC = () => {
     setShowStartConfirm(false);
     setStartWarningInfo(null);
 
-    // UX safeguard: don't let the "Starting..." spinner hang forever if the
-    // backend takes a long time to run server checks/allocations. After a
-    // short grace period, we optimistically clear the loading state and let
-    // the heavy work continue in the background.
-    const spinnerTimeout = setTimeout(() => {
-      setStarting(false);
-    }, 5000);
-
     try {
       const baseUrl = window.location.origin;
       const response = await startTournament(baseUrl);
 
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
-        showSuccess(`Tournament started! ${allocated} matches allocated to servers`);
-        // Refresh tournament data so the UI transitions into the live management view
+        if (allocated > 0) {
+          showSuccess(`Tournament started! ${allocated} match${allocated === 1 ? '' : 'es'} allocated to servers.`);
+        } else {
+          showSuccess(
+            (response as { message?: string }).message ||
+              'Tournament start requested. Servers will be allocated shortly.'
+          );
+        }
+        // Refresh tournament data so the UI can transition into the live
+        // management view once the backend flips status to "in_progress".
         await refreshData();
       } else {
         const message = (response as { message?: string }).message || 'Failed to start tournament';
@@ -731,10 +746,33 @@ const Tournament: React.FC = () => {
       const error = err as Error;
       showError(error.message || 'Failed to start tournament');
     } finally {
-      clearTimeout(spinnerTimeout);
       setStarting(false);
     }
   };
+
+  // Keep the tournament setup view in sync with real-time status changes so
+  // the Start button disappears as soon as the tournament actually moves into
+  // the in_progress/completed phase (including when started from other tabs).
+  useEffect(() => {
+    const socket = io();
+
+    const handleTournamentUpdate = (data?: { action?: string; status?: string }) => {
+      if (!data) return;
+
+      // For any status-bearing update, refresh tournament data so the wizard
+      // can move into the correct step (setup vs live).
+      if (data.status) {
+        void refreshData();
+      }
+    };
+
+    socket.on('tournament:update', handleTournamentUpdate);
+
+    return () => {
+      socket.off('tournament:update', handleTournamentUpdate);
+      socket.close();
+    };
+  }, [refreshData]);
 
   if (loading) {
     return (
@@ -881,6 +919,13 @@ const Tournament: React.FC = () => {
             format: tournament.format,
             status: tournament.status,
             teams: tournament.teams || [],
+            maps: tournament.maps || [],
+            mapSequence: tournament.mapSequence,
+            teamSize: tournament.teamSize,
+            maxRounds: tournament.maxRounds,
+            overtimeMode: tournament.overtimeMode,
+            overtimeSegments: tournament.overtimeSegments,
+            eloTemplateId: tournament.eloTemplateId,
           }}
           tournamentId={tournament.id}
           onRename={handleRenameTournament}
@@ -888,6 +933,7 @@ const Tournament: React.FC = () => {
           onViewBracket={() => navigate('/bracket')}
           onReset={() => setShowResetConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
+          playerCount={tournament.type === 'shuffle' ? registeredPlayerCount : undefined}
         />
       )}
 

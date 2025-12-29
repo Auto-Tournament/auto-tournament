@@ -258,7 +258,6 @@ export default function Settings() {
       showSnackbar,
       initialSimulateMatches,
       initialSimulationTimescale,
-      initialRatingsEnabled,
     ]
   );
 

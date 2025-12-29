@@ -16,10 +16,11 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import SaveMapPoolModal from './SaveMapPoolModal';
 import { useCreateManualMatchModal } from './useCreateManualMatchModal';
+import { ManualMatchChooseModeStep } from './ManualMatchChooseModeStep';
 import { ManualMatchBasicsStep } from './ManualMatchBasicsStep';
 import { ManualMatchMapsRulesStep } from './ManualMatchMapsRulesStep';
+import { ManualMatchMapsStep } from './ManualMatchMapsStep';
 import { ManualMatchReviewStep } from './ManualMatchReviewStep';
-import { ManualMatchSidesStep } from './ManualMatchSidesStep';
 
 interface CreateManualMatchModalProps {
   open: boolean;
@@ -64,7 +65,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       saveMapPoolModalOpen,
       playersPerTeam,
       bestOf,
-      knifeMode,
       startingSide,
       useVeto,
       maxRounds,
@@ -78,24 +78,31 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       selectedTemplateId,
       saveTemplateDialogOpen,
       newTemplateName,
-      team1,
-      team2,
+      // team1,
+      // team2,
       requiredMaps,
       selectedMapsCount,
       hasVetoMapCountError,
       hasSeriesMapCountError,
       previewConfig,
+      team1Mode,
+      team2Mode,
+      players,
+      team1NewPlayerIds,
+      team2NewPlayerIds,
+      team1NewName,
+      team2NewName,
     },
     actions: {
-      setSlug,
+      // setSlug,
       setServerId,
       setTeam1Id,
       setTeam2Id,
       setMaps,
-      setSelectedMapPool,
+      // setSelectedMapPool,
       setPlayersPerTeam,
       setBestOf,
-      setKnifeMode,
+      // setKnifeMode,
       setStartingSide,
       setUseVeto,
       setMaxRounds,
@@ -113,20 +120,18 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       handleSaveTemplate,
       handleSubmit,
       handleNextStep,
+      setTeam1Mode,
+      setTeam2Mode,
+      setTeam1NewPlayerIds,
+      setTeam2NewPlayerIds,
+      // setTeam1NewName,
+      // setTeam2NewName,
     },
   } = useCreateManualMatchModal({ open, onCreated, onClose });
 
-  const sidesDisabled = !team1 || !team2;
-
   return (
     <>
-      <Dialog
-        open={open}
-        onClose={handleDialogClose}
-        fullWidth
-        maxWidth="sm"
-        disableEscapeKeyDown
-      >
+      <Dialog open={open} onClose={handleDialogClose} fullWidth maxWidth="sm" disableEscapeKeyDown>
         <DialogTitle
           sx={{
             display: 'flex',
@@ -135,27 +140,26 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             pr: 2,
           }}
         >
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" component="span" fontWeight={600}>
             Create Manual Match
           </Typography>
-          <IconButton
-            aria-label="close"
-            onClick={onClose}
-            size="small"
-          >
+          <IconButton aria-label="close" onClick={onClose} size="small">
             <CloseIcon fontSize="small" />
           </IconButton>
         </DialogTitle>
         <DialogContent dividers>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
             <Step>
-              <StepLabel>Basics</StepLabel>
+              <StepLabel>Match Setup</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Maps & Rules</StepLabel>
+              <StepLabel>Rules</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Sides & Veto</StepLabel>
+              <StepLabel>Maps</StepLabel>
+            </Step>
+            <Step>
+              <StepLabel>Teams & Server</StepLabel>
             </Step>
             <Step>
               <StepLabel>Review</StepLabel>
@@ -169,32 +173,48 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             </Typography>
 
             {activeStep === 0 && (
-              <ManualMatchBasicsStep
+              <ManualMatchChooseModeStep
                 templates={templates}
                 selectedTemplateId={selectedTemplateId}
                 onTemplateChange={handleTemplateChange}
-                onOpenSaveTemplate={handleOpenSaveTemplate}
-                servers={servers}
-                serverId={serverId}
-                onServerChange={setServerId}
-                loadingServers={loadingServers}
-                submitAttempted={submitAttempted}
-                serverAllocation={serverAllocation}
-                serverStatuses={serverStatuses}
-                teams={teams}
-                team1Id={team1Id}
-                team2Id={team2Id}
-                onTeam1Change={setTeam1Id}
-                onTeam2Change={setTeam2Id}
-                loadingTeams={loadingTeams}
               />
             )}
 
             {activeStep === 1 && (
               <ManualMatchMapsRulesStep
                 activeStep={activeStep}
+                useVeto={useVeto}
+                onUseVetoChange={setUseVeto}
                 bestOf={bestOf}
                 onBestOfChange={(format) => setBestOf(format)}
+                requiredMaps={requiredMaps}
+                selectedMapsCount={selectedMapsCount}
+                hasVetoMapCountError={hasVetoMapCountError}
+                hasSeriesMapCountError={hasSeriesMapCountError}
+                startingSide={startingSide}
+                onStartingSideChange={setStartingSide}
+                mapSideSelections={mapSideSelections}
+                onMapSideSelectionsChange={(index, side) =>
+                  setMapSideSelections((prev) => {
+                    const next = [...prev];
+                    next[index] = side;
+                    return next as Array<'knife' | 'team1_ct' | 'team2_ct'>;
+                  })
+                }
+                maxRounds={maxRounds}
+                onMaxRoundsChange={setMaxRounds}
+                playersPerTeam={playersPerTeam}
+                onPlayersPerTeamChange={setPlayersPerTeam}
+                overtimeEnabled={overtimeEnabled}
+                onOvertimeEnabledChange={setOvertimeEnabled}
+                overtimeMaxRounds={overtimeMaxRounds}
+                onOvertimeMaxRoundsChange={setOvertimeMaxRounds}
+              />
+            )}
+
+            {activeStep === 2 && (
+              <ManualMatchMapsStep
+                activeStep={activeStep}
                 maps={maps}
                 mapPools={mapPools}
                 availableMaps={availableMaps}
@@ -210,44 +230,46 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 selectedMapsCount={selectedMapsCount}
                 hasVetoMapCountError={hasVetoMapCountError}
                 hasSeriesMapCountError={hasSeriesMapCountError}
-                maxRounds={maxRounds}
-                onMaxRoundsChange={setMaxRounds}
-                playersPerTeam={playersPerTeam}
-                onPlayersPerTeamChange={setPlayersPerTeam}
-                overtimeEnabled={overtimeEnabled}
-                onOvertimeEnabledChange={setOvertimeEnabled}
-                overtimeMaxRounds={overtimeMaxRounds}
-                onOvertimeMaxRoundsChange={setOvertimeMaxRounds}
-              />
-            )}
-
-            {activeStep === 2 && (
-              <ManualMatchSidesStep
-                bestOf={bestOf}
-                useVeto={useVeto}
-                onUseVetoChange={setUseVeto}
-                team1Name={team1?.name}
-                team2Name={team2?.name}
-                requiredMaps={requiredMaps}
-                mapSideSelections={mapSideSelections}
-                onMapSideSelectionsChange={(index, side) =>
-                  setMapSideSelections((prev) => {
-                    const next = [...prev];
-                    next[index] = side;
-                    return next as Array<'knife' | 'team1_ct' | 'team2_ct'>;
-                  })
-                }
-                startingSide={startingSide}
-                onStartingSideChange={setStartingSide}
               />
             )}
 
             {activeStep === 3 && (
+              <ManualMatchBasicsStep
+                servers={servers}
+                serverId={serverId}
+                onServerChange={setServerId}
+                loadingServers={loadingServers}
+                submitAttempted={submitAttempted}
+                serverAllocation={serverAllocation}
+                serverStatuses={serverStatuses}
+                teams={teams}
+                team1Id={team1Id}
+                team2Id={team2Id}
+                onTeam1Change={setTeam1Id}
+                onTeam2Change={setTeam2Id}
+                loadingTeams={loadingTeams}
+                team1Mode={team1Mode}
+                team2Mode={team2Mode}
+                onTeam1ModeChange={setTeam1Mode}
+                onTeam2ModeChange={setTeam2Mode}
+                playersPerTeam={playersPerTeam}
+                players={players}
+                team1NewPlayerIds={team1NewPlayerIds}
+                onTeam1NewPlayerIdsChange={setTeam1NewPlayerIds}
+                team2NewPlayerIds={team2NewPlayerIds}
+                onTeam2NewPlayerIdsChange={setTeam2NewPlayerIds}
+                team1NewName={team1NewName}
+                team2NewName={team2NewName}
+              />
+            )}
+
+            {activeStep === 4 && (
               <ManualMatchReviewStep
                 slug={slug}
                 serverId={serverId}
                 servers={servers}
                 config={previewConfig}
+                onOpenSaveTemplate={handleOpenSaveTemplate}
               />
             )}
 
@@ -295,13 +317,27 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 onClick={handleNextStep}
                 disabled={saving || servers.length === 0 || !previewConfig}
               >
-                Review
+                Next
               </Button>
             </>
           )}
           {activeStep === 3 && (
             <>
               <Button onClick={() => setActiveStep(2)} disabled={saving}>
+                Back
+              </Button>
+              <Button
+                variant="contained"
+                onClick={handleNextStep}
+                disabled={saving || servers.length === 0 || !previewConfig}
+              >
+                Next
+              </Button>
+            </>
+          )}
+          {activeStep === 4 && (
+            <>
+              <Button onClick={() => setActiveStep(3)} disabled={saving}>
                 Back
               </Button>
               <Button
@@ -365,5 +401,3 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     </>
   );
 };
-
-

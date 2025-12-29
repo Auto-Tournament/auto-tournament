@@ -30,6 +30,8 @@ import * as fs from 'fs';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { getAuthHeader } from '../tests/helpers/auth';
+import { generateTeamName } from '../api/src/generation/teamName';
+import { generatePlayerProfile } from '../api/src/generation/playerProfile';
 
 const SCREENSHOT_WIDTH = 2560;
 const SCREENSHOT_HEIGHT = 1440;
@@ -587,23 +589,6 @@ async function generateTestDataViaUI(page: Page): Promise<void> {
 async function createPlayers(request: APIRequestContext, count: number): Promise<unknown[]> {
   try {
     const players: Array<{ id: string; name: string; elo?: number }> = [];
-    const playerNames = [
-      'TestPlayer',
-      'DemoUser',
-      'DevGamer',
-      'TestAccount',
-      'DevPlayer',
-      'TestUser',
-      'DemoAccount',
-      'DevAccount',
-      'RandomPlayer',
-      'TestGamer',
-      'DevUser',
-      'DemoGamer',
-      'TestPro',
-      'DevPro',
-      'DemoPro',
-    ];
 
     const baseTimestamp = Date.now();
     for (let i = 0; i < count; i++) {
@@ -611,9 +596,8 @@ async function createPlayers(request: APIRequestContext, count: number): Promise
         .padStart(10, '0')
         .slice(-10);
       const steamId = `7656119${uniquePart}`;
-      const nameIndex = Math.floor(i / playerNames.length);
-      const baseName = playerNames[i % playerNames.length];
-      const name = nameIndex > 0 ? `${baseName} ${nameIndex + 1}` : baseName;
+      const profile = generatePlayerProfile();
+      const name = profile.fullName;
       const elo = 2500 + (i % 10) * 100;
 
       players.push({ id: steamId, name, elo });
@@ -646,24 +630,6 @@ async function createTeams(request: APIRequestContext, count: number): Promise<a
       tag: string;
       players: Array<{ steamId: string; name: string }>;
     }> = [];
-    const teamNames = [
-      'Astralis',
-      'Natus Vincere',
-      'FaZe Clan',
-      'Team Liquid',
-      'G2 Esports',
-      'Ninjas in Pyjamas',
-      'Fnatic',
-      'Vitality',
-      'MOUZ',
-      'Heroic',
-      'FURIA',
-      'Cloud9',
-      'Team Spirit',
-      'BIG',
-      'Complexity',
-      'ENCE',
-    ];
 
     const realSteamIds = [
       '76561197960287930',
@@ -685,23 +651,20 @@ async function createTeams(request: APIRequestContext, count: number): Promise<a
         .replace(/(^-|-$)/g, '');
 
     for (let i = 0; i < count; i++) {
-      const teamName = teamNames[i % teamNames.length];
-      const suffixIndex = Math.floor(i / teamNames.length);
-      const suffix = suffixIndex > 0 ? ` ${suffixIndex + 1}` : '';
-      const fullName = `${teamName}${suffix}`;
+      const fullName = generateTeamName();
       const slug = slugify(fullName);
 
       teams.push({
         id: `test-team-${slug}`,
         name: fullName,
         tag:
-          teamName
+          fullName
             .replace(/[^A-Za-z0-9]/g, '')
             .substring(0, 3)
             .toUpperCase() || 'TST',
         players: Array.from({ length: 5 }, (_, playerIndex) => ({
           steamId: realSteamIds[(i * 5 + playerIndex) % realSteamIds.length],
-          name: `Player ${playerIndex + 1}`,
+          name: generatePlayerProfile().fullName,
         })),
       });
     }

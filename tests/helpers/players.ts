@@ -1,5 +1,6 @@
 import { APIRequestContext } from '@playwright/test';
 import { getAuthHeader } from './auth';
+import { generatePlayerProfile } from '../../api/src/generation/playerProfile';
 
 /**
  * Player helper functions for shuffle tournament tests
@@ -195,9 +196,10 @@ export async function createTestPlayers(
     const steamId = realSteamIds[i % realSteamIds.length];
     // Add variation to Skill Rating for testing team balancing
     const eloVariation = Math.floor((i % 10) * 50); // 0-450 rating variation
+    const profile = generatePlayerProfile();
     playerInputs.push({
       id: `${prefix}-player-${i}-${timestamp}`,
-      name: `${prefix} Player ${i + 1} ${timestamp}`,
+      name: profile.fullName,
       initialELO: baseElo + eloVariation,
     });
   }

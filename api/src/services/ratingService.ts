@@ -30,12 +30,22 @@ const MAX_DISPLAY_ELO = 5000;
  * @returns OpenSkill Rating object
  */
 export function eloToOpenSkill(elo: number, matchCount: number = 0): Rating {
-  // Direct mapping: 1500 Skill Rating ≈ 25 mu (OpenSkill default via ordinal mapping)
-  const mu = (elo - ELO_OFFSET) / ELO_SCALE;
+  // Map display ELO -> OpenSkill by inverting the ordinal mapping:
+  //   ordinal(rating) = mu - 3 * sigma
+  //   displayElo      = ordinal * ELO_SCALE + ELO_OFFSET
+  //
+  // So for a desired display ELO, we first find the target ordinal, then set:
+  //   mu = targetOrdinal + 3 * sigma
+  //
+  // This keeps 1500 Skill Rating aligned with the OpenSkill default
+  // (mu ≈ 25, sigma ≈ 8.333 ⇒ ordinal ≈ 0 ⇒ 1500).
 
   // Sigma decreases with experience
   // New: 8.33, After 10 matches: 6.0, After 30: 4.0, Min: 2.0
   const sigma = Math.max(2.0, DEFAULT_SIGMA - Math.min(matchCount * 0.2, 6.33));
+
+  const targetOrdinal = (elo - ELO_OFFSET) / ELO_SCALE;
+  const mu = targetOrdinal + 3 * sigma;
 
   return rating({ mu, sigma });
 }

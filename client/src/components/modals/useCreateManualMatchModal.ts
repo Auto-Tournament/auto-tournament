@@ -9,7 +9,14 @@ import type {
   TeamsResponse,
   Team,
 } from '../../types';
-import type { MapsResponse, Map as MapType, MapPool, MapPoolsResponse } from '../../types/api.types';
+import type {
+  MapsResponse,
+  Map as MapType,
+  MapPool,
+  MapPoolsResponse,
+  PlayerDetail,
+  PlayersResponse,
+} from '../../types/api.types';
 
 export interface MatchTemplate {
   id: string;
@@ -26,12 +33,131 @@ export interface MatchTemplate {
   maps: string[];
 }
 
-const MATCH_TEMPLATES_STORAGE_KEY = 'manual_match_templates';
-
 const getRequiredMapsForFormat = (format: 'bo1' | 'bo3' | 'bo5'): number => {
   if (format === 'bo1') return 1;
   if (format === 'bo3') return 3;
   return 5;
+};
+
+// Friendly team names for ad-hoc manual match teams, kept in sync with the
+// shuffle tournament service so names feel consistent across the app.
+const AD_HOC_TEAM_NAMES: string[] = [
+  'Phoenix',
+  'Falcon',
+  'Wolf',
+  'Lion',
+  'Eagle',
+  'Raven',
+  'Dragon',
+  'Titan',
+  'Viper',
+  'Cobra',
+  'Jaguar',
+  'Panther',
+  'Bear',
+  'Shark',
+  'Hawk',
+  'Alpha',
+  'Bravo',
+  'Charlie',
+  'Delta',
+  'Echo',
+  'Foxtrot',
+  'Gamma',
+  'Omega',
+  'Nova',
+  'Aurora',
+  'Comet',
+  'Nebula',
+  'Orion',
+  'Blaze',
+  'Ember',
+  'Inferno',
+  'Glacier',
+  'Avalanche',
+  'Thunder',
+  'Storm',
+  'Cyclone',
+  'Tempest',
+  'Mirage',
+  'Oasis',
+  'Harbor',
+  'Citadel',
+  'Sentinel',
+  'Vanguard',
+  'Guardian',
+  'Shadow',
+  'Spectre',
+  'Phantom',
+  'Rogue',
+  'Nomad',
+  'Ranger',
+  'Pioneer',
+  'Vertex',
+  'Zenith',
+  'Apex',
+  'Summit',
+  'Peak',
+  'Crimson',
+  'Azure',
+  'Emerald',
+  'Gold',
+  'Silver',
+  'Titanium',
+  'Platinum',
+  'Diamond',
+  'Obsidian',
+  'Onyx',
+  'Quartz',
+  'Ruby',
+  'Sapphire',
+  'Topaz',
+  'Amber',
+  'Jet',
+  'Ivory',
+  'Steel',
+  'Iron',
+  'Bronze',
+  'Copper',
+  'Carbon',
+  'Neon',
+  'Argon',
+  'Helix',
+  'Vector',
+  'Matrix',
+  'Cipher',
+  'NovaCore',
+  'Pulse',
+  'Volt',
+  'Static',
+  'Surge',
+  'Flux',
+  'Quasar',
+  'Halo',
+  'Nimbus',
+  'Stratus',
+  'Cirrus',
+  'Monsoon',
+  'Blizzard',
+  'Frost',
+  'Emberfall',
+  'Wildfire',
+  'Sandstorm',
+  'MirageWave',
+  'HarborLine',
+  'CitadelGuard',
+  'Skyline',
+  'VanguardElite',
+];
+
+const pickRandomTeamName = (exclude: string[] = []): string => {
+  const used = new Set(exclude);
+  const pool = AD_HOC_TEAM_NAMES.filter((name) => !used.has(name));
+  if (pool.length === 0) {
+    return `Team ${Math.floor(Math.random() * 10000)}`;
+  }
+  const index = Math.floor(Math.random() * pool.length);
+  return pool[index];
 };
 
 const generateRandomMatchSlug = (length = 10): string => {
@@ -83,6 +209,7 @@ export function useCreateManualMatchModal({
 
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
+  const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [saving, setSaving] = useState(false);
 
   const [slug, setSlug] = useState('');
@@ -115,11 +242,26 @@ export function useCreateManualMatchModal({
   const [saveTemplateDialogOpen, setSaveTemplateDialogOpen] = useState(false);
   const [newTemplateName, setNewTemplateName] = useState('');
 
+  // Ad-hoc team support for manual matches – lets admins pick "New team" and
+  // specify only the players, while we assign a friendly random team name.
+  const [team1Mode, setTeam1Mode] = useState<'existing' | 'new'>('existing');
+  const [team2Mode, setTeam2Mode] = useState<'existing' | 'new'>('existing');
+  const [team1NewPlayerIds, setTeam1NewPlayerIds] = useState<string[]>([]);
+  const [team2NewPlayerIds, setTeam2NewPlayerIds] = useState<string[]>([]);
+  const [team1NewName, setTeam1NewName] = useState<string>('');
+  const [team2NewName, setTeam2NewName] = useState<string>('');
+
   const resetForm = () => {
     setSlug('');
     setServerId('');
     setTeam1Id('');
     setTeam2Id('');
+    setTeam1Mode('existing');
+    setTeam2Mode('existing');
+    setTeam1NewPlayerIds([]);
+    setTeam2NewPlayerIds([]);
+    setTeam1NewName('');
+    setTeam2NewName('');
     setMaps([]);
     setSelectedMapPool('');
     setPlayersPerTeam(5);
@@ -181,6 +323,25 @@ export function useCreateManualMatchModal({
     }
   }, []);
 
+  const loadPlayers = useCallback(async () => {
+    try {
+      const data = await api.get<PlayersResponse>('/api/players');
+      const raw = data.players || [];
+      // Deduplicate by Steam ID to avoid duplicate options in selectors.
+      const seen = new Set<string>();
+      const unique = raw.filter((p) => {
+        if (!p.id) return false;
+        if (seen.has(p.id)) return false;
+        seen.add(p.id);
+        return true;
+      });
+      setPlayers(unique);
+    } catch (err) {
+      console.error('Failed to load players for manual match creation', err);
+      setPlayers([]);
+    }
+  }, []);
+
   const loadServerAllocation = useCallback(async () => {
     try {
       const availability = await api.get<{
@@ -235,6 +396,14 @@ export function useCreateManualMatchModal({
       const response = await api.get<TeamsResponse>('/api/teams');
       const list = response.teams || [];
       setTeams(list);
+      // If there are no existing teams, default both sides to ad-hoc mode so
+      // admins can still create matches without pre-creating teams.
+      if (list.length === 0) {
+        setTeam1Mode('new');
+        setTeam2Mode('new');
+        setTeam1Id('');
+        setTeam2Id('');
+      }
     } catch (err) {
       console.error('Failed to load teams for manual match creation', err);
       setTeams([]);
@@ -254,13 +423,8 @@ export function useCreateManualMatchModal({
       const mapsData = mapsResponse.maps || [];
       setAvailableMaps(mapsData);
 
-      if (loadedPools.length > 0) {
-        const defaultPool = loadedPools.find((p) => p.isDefault) ?? loadedPools[0];
-        if (defaultPool) {
-          setSelectedMapPool((prev) => prev || defaultPool.id.toString());
-          setMaps((prev) => (prev.length === 0 ? defaultPool.mapIds : prev));
-        }
-      }
+      // Default to a completely custom selection instead of auto-applying a pool.
+      setSelectedMapPool((prev) => prev || 'custom');
     } catch (err) {
       console.error('Failed to load map pools/maps for manual match creation', err);
       setMapPools([]);
@@ -270,8 +434,8 @@ export function useCreateManualMatchModal({
     }
   }, []);
 
-  const team1 = teams.find((t) => t.id === team1Id) || null;
-  const team2 = teams.find((t) => t.id === team2Id) || null;
+  const existingTeam1 = teams.find((t) => t.id === team1Id) || null;
+  const existingTeam2 = teams.find((t) => t.id === team2Id) || null;
   const requiredMaps = getRequiredMapsForFormat(bestOf);
   const selectedMapsCount = maps.filter((m) => m.length > 0).length;
 
@@ -280,9 +444,46 @@ export function useCreateManualMatchModal({
   const hasSeriesMapCountError =
     submitAttempted && !useVeto && selectedMapsCount !== requiredMaps && maps.length > 0;
 
+  // Ensure ad-hoc teams get a friendly random name when needed.
+  useEffect(() => {
+    if (team1Mode === 'new' && !team1NewName) {
+      const exclude = team2NewName ? [team2NewName] : [];
+      setTeam1NewName(pickRandomTeamName(exclude));
+    }
+  }, [team1Mode, team1NewName, team2NewName]);
+
+  useEffect(() => {
+    if (team2Mode === 'new' && !team2NewName) {
+      const exclude = team1NewName ? [team1NewName] : [];
+      setTeam2NewName(pickRandomTeamName(exclude));
+    }
+  }, [team2Mode, team1NewName, team2NewName]);
+
+  const buildAdHocPlayersFromIds = (ids: string[]): Array<{ steamid: string; name: string }> => {
+    return ids
+      .map((id) => id.trim())
+      .filter((id) => id.length > 0)
+      .map((steamid) => {
+        const player = players.find((p) => p.id === steamid) || null;
+        return {
+          steamid,
+          // Prefer the known player name; fall back to the SteamID if we don't have it.
+          name: player?.name || steamid,
+        };
+      });
+  };
+
+  const team1DisplayName =
+    team1Mode === 'existing' ? existingTeam1?.name ?? '' : team1NewName || 'New Team 1';
+  const team2DisplayName =
+    team2Mode === 'existing' ? existingTeam2?.name ?? '' : team2NewName || 'New Team 2';
+
   // Preview the config that would be sent to MatchZy, for review step.
+  // Teams are **optional** for manual matches: when no teams are selected,
+  // we fall back to generic "Team 1"/"Team 2" labels and empty player lists.
   let previewConfig: MatchConfig | null = null;
-  if (team1 && team2 && slug.trim() && serverId) {
+
+  if (slug.trim() && serverId) {
     const selectedMatchMaps = maps.filter((m) => m.length > 0);
     if (
       (!useVeto && selectedMatchMaps.length === requiredMaps) ||
@@ -294,11 +495,15 @@ export function useCreateManualMatchModal({
       const safeMaxRounds =
         typeof maxRounds === 'number' && maxRounds > 0 && maxRounds <= 30 ? maxRounds : 24;
 
-      const toMatchConfigPlayers = (team: Team) =>
-        (team.players || []).map((p) => ({
-          steamid: p.steamId,
-          name: p.name,
-        }));
+      const toMatchConfigPlayers = (team: Team | null, adHocIds: string[]) => {
+        if (team) {
+          return (team.players || []).map((p) => ({
+            steamid: p.steamId,
+            name: p.name,
+          }));
+        }
+        return buildAdHocPlayersFromIds(adHocIds);
+      };
 
       const cvars: Record<string, string | number> = {};
       cvars.mp_maxrounds = safeMaxRounds;
@@ -334,16 +539,26 @@ export function useCreateManualMatchModal({
         expected_players_team1: safePlayersPerTeam,
         expected_players_team2: safePlayersPerTeam,
         team1: {
-          id: team1.id,
-          name: team1.name,
-          tag: team1.tag || undefined,
-          players: toMatchConfigPlayers(team1),
+          ...(team1Mode === 'existing' && existingTeam1 ? { id: existingTeam1.id } : {}),
+          name: team1DisplayName,
+          ...(team1Mode === 'existing' && existingTeam1 && existingTeam1.tag
+            ? { tag: existingTeam1.tag }
+            : {}),
+          players:
+            team1Mode === 'existing'
+              ? toMatchConfigPlayers(existingTeam1, [])
+              : toMatchConfigPlayers(null, team1NewPlayerIds),
         },
         team2: {
-          id: team2.id,
-          name: team2.name,
-          tag: team2.tag || undefined,
-          players: toMatchConfigPlayers(team2),
+          ...(team2Mode === 'existing' && existingTeam2 ? { id: existingTeam2.id } : {}),
+          name: team2DisplayName,
+          ...(team2Mode === 'existing' && existingTeam2 && existingTeam2.tag
+            ? { tag: existingTeam2.tag }
+            : {}),
+          players:
+            team2Mode === 'existing'
+              ? toMatchConfigPlayers(existingTeam2, [])
+              : toMatchConfigPlayers(null, team2NewPlayerIds),
         },
         ...(map_sides ? { map_sides } : {}),
         ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
@@ -371,28 +586,51 @@ export function useCreateManualMatchModal({
     setMaps(nextMaps);
   };
 
+  // Load manual match templates from the API (DB-backed) instead of localStorage.
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem(MATCH_TEMPLATES_STORAGE_KEY);
-      if (raw) {
-        const parsed = JSON.parse(raw) as MatchTemplate[];
-        if (Array.isArray(parsed)) {
-          setTemplates(parsed);
+    const loadTemplates = async () => {
+      try {
+        const res = await api.get<{ success: boolean; templates: Array<{
+          id: number;
+          name: string;
+          description?: string | null;
+          bestOf: 'bo1' | 'bo3' | 'bo5';
+          useVeto: boolean;
+          startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+          knifeMode: 'default' | 'enabled' | 'disabled';
+          playersPerTeam: number;
+          maxRounds: number;
+          overtimeEnabled: boolean;
+          overtimeMaxRounds?: number | null;
+          mapPoolId?: number | null;
+          maps: string[];
+        }> }>('/api/manual-match-templates');
+        if (res.success && Array.isArray(res.templates)) {
+          const mapped: MatchTemplate[] = res.templates.map((t) => ({
+            id: String(t.id),
+            name: t.name,
+            bestOf: t.bestOf,
+            useVeto: t.useVeto,
+            startingSide: t.startingSide,
+            knifeMode: t.knifeMode,
+            playersPerTeam: t.playersPerTeam,
+            maxRounds: t.maxRounds,
+            overtimeEnabled: t.overtimeEnabled,
+            overtimeMaxRounds: t.overtimeMaxRounds ?? null,
+            mapPoolId: t.mapPoolId !== undefined && t.mapPoolId !== null
+              ? String(t.mapPoolId)
+              : null,
+            maps: t.maps || [],
+          }));
+          setTemplates(mapped);
         }
+      } catch (err) {
+        console.error('Failed to load manual match templates from API', err);
       }
-    } catch (err) {
-      console.error('Failed to load manual match templates from localStorage', err);
-    }
-  }, []);
+    };
 
-  const persistTemplates = (next: MatchTemplate[]) => {
-    setTemplates(next);
-    try {
-      localStorage.setItem(MATCH_TEMPLATES_STORAGE_KEY, JSON.stringify(next));
-    } catch (err) {
-      console.error('Failed to save manual match templates to localStorage', err);
-    }
-  };
+    void loadTemplates();
+  }, []);
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId);
@@ -401,6 +639,7 @@ export function useCreateManualMatchModal({
     const template = templates.find((t) => t.id === templateId);
     if (!template) return;
 
+    // Load all configuration from the template: maps, format, sides, rules, etc.
     setBestOf(template.bestOf);
     setUseVeto(template.useVeto);
     setStartingSide(template.startingSide);
@@ -423,6 +662,10 @@ export function useCreateManualMatchModal({
         'knife' | 'team1_ct' | 'team2_ct'
       >
     );
+
+    // After loading a template, jump straight to the team/server step so the
+    // user can immediately pick teams. Maps & rules are already configured.
+    setActiveStep(3);
   };
 
   const handleOpenSaveTemplate = () => {
@@ -436,25 +679,75 @@ export function useCreateManualMatchModal({
       return;
     }
 
-    const template: MatchTemplate = {
-      id: Date.now().toString(),
-      name,
-      bestOf,
-      useVeto,
-      startingSide,
-      knifeMode,
-      playersPerTeam,
-      maxRounds,
-      overtimeEnabled,
-      overtimeMaxRounds: overtimeMaxRounds && overtimeMaxRounds > 0 ? overtimeMaxRounds : null,
-      mapPoolId: selectedMapPool || null,
-      maps: [...maps],
-    };
+    void (async () => {
+      try {
+        const payload = {
+          name,
+          description: undefined as string | undefined,
+          bestOf,
+          useVeto,
+          startingSide,
+          knifeMode,
+          playersPerTeam,
+          maxRounds,
+          overtimeEnabled,
+          overtimeMaxRounds:
+            overtimeMaxRounds && overtimeMaxRounds > 0 ? overtimeMaxRounds : null,
+          mapPoolId:
+            selectedMapPool && selectedMapPool !== 'custom'
+              ? Number.isNaN(Number(selectedMapPool))
+                ? null
+                : Number(selectedMapPool)
+              : null,
+          maps: [...maps],
+        };
 
-    const next = [...templates, template];
-    persistTemplates(next);
-    setSelectedTemplateId(template.id);
-    setSaveTemplateDialogOpen(false);
+        const res = await api.post<{
+          success: boolean;
+          template?: {
+            id: number;
+            name: string;
+            bestOf: 'bo1' | 'bo3' | 'bo5';
+            useVeto: boolean;
+            startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+            knifeMode: 'default' | 'enabled' | 'disabled';
+            playersPerTeam: number;
+            maxRounds: number;
+            overtimeEnabled: boolean;
+            overtimeMaxRounds?: number | null;
+            mapPoolId?: number | null;
+            maps: string[];
+          };
+        }>('/api/manual-match-templates', payload);
+
+        if (res.success && res.template) {
+          const t = res.template;
+          const asLocal: MatchTemplate = {
+            id: String(t.id),
+            name: t.name,
+            bestOf: t.bestOf,
+            useVeto: t.useVeto,
+            startingSide: t.startingSide,
+            knifeMode: t.knifeMode,
+            playersPerTeam: t.playersPerTeam,
+            maxRounds: t.maxRounds,
+            overtimeEnabled: t.overtimeEnabled,
+            overtimeMaxRounds: t.overtimeMaxRounds ?? null,
+            mapPoolId: t.mapPoolId !== undefined && t.mapPoolId !== null
+              ? String(t.mapPoolId)
+              : null,
+            maps: t.maps || [],
+          };
+          const next = [...templates, asLocal];
+          setTemplates(next);
+          setSelectedTemplateId(asLocal.id);
+        }
+      } catch (err) {
+        console.error('Failed to save manual match template', err);
+      } finally {
+        setSaveTemplateDialogOpen(false);
+      }
+    })();
   };
 
   useEffect(() => {
@@ -462,11 +755,12 @@ export function useCreateManualMatchModal({
       void loadServers();
       void loadTeams();
       void loadMaps();
+      void loadPlayers();
       void loadServerAllocation();
     } else {
       resetForm();
     }
-  }, [open, loadServers, loadTeams, loadMaps, loadServerAllocation]);
+  }, [open, loadServers, loadTeams, loadMaps, loadPlayers, loadServerAllocation]);
 
   useEffect(() => {
     if (!open || serverId || servers.length === 0) {
@@ -547,113 +841,31 @@ export function useCreateManualMatchModal({
       return;
     }
 
-    if ((team1Id && !team1) || (team2Id && !team2)) {
-      const message = 'Selected teams could not be found. Please refresh and try again.';
-      setError(message);
-      showError(message);
-      console.warn('[CreateManualMatchModal] Team lookup failed', {
-        team1Id,
-        team2Id,
-        teamsLoaded: teams.length,
-      });
-      return;
-    }
-
     if (useVeto) {
       if (selectedMatchMaps.length !== 7) {
-        const message = `Map veto requires exactly 7 maps. You have selected ${selectedMatchMaps.length}.`;
+        const message =
+          'Invalid map selection for veto. Please select exactly 7 maps or disable veto.';
         setError(message);
         showError(message);
         return;
       }
     } else if (selectedMatchMaps.length !== requiredMaps) {
       const message =
-        requiredMaps === 1
-          ? 'Best of 1 requires exactly 1 map.'
-          : `Best of ${requiredMaps} requires exactly ${requiredMaps} maps. You have selected ${selectedMatchMaps.length}.`;
+        'Invalid map selection for this series format. Please select the correct number of maps.';
       setError(message);
       showError(message);
       return;
     }
 
-    const matchMaps = selectedMatchMaps.slice(0, requiredMaps);
-
-    const safePlayersPerTeam =
-      typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
-    const safeMaxRounds =
-      typeof maxRounds === 'number' && maxRounds > 0 && maxRounds <= 30 ? maxRounds : 24;
-
-    const toMatchConfigPlayers = (team: Team) =>
-      (team.players || []).map((p) => ({
-        steamid: p.steamId,
-        name: p.name,
-      }));
-
-    const cvars: Record<string, string | number> = {};
-    cvars.mp_maxrounds = safeMaxRounds;
-    if (knifeMode === 'enabled') {
-      cvars.matchzy_knife_enabled_default = 1;
-    } else if (knifeMode === 'disabled') {
-      cvars.matchzy_knife_enabled_default = 0;
+    // At this point validation has passed; reuse the same config that powers the
+    // Review step so POSTed config always matches what the user saw.
+    if (!previewConfig) {
+      const message = 'Match configuration is incomplete. Please review the settings.';
+      setError(message);
+      showError(message);
+      return;
     }
-    // Per‑match overtime configuration for manual matches.
-    cvars.mp_overtime_enable = overtimeEnabled ? 1 : 0;
-    if (overtimeEnabled && typeof overtimeMaxRounds === 'number' && overtimeMaxRounds > 0) {
-      cvars.mp_overtime_maxrounds = overtimeMaxRounds;
-    }
-
-    let map_sides: Array<'team1_ct' | 'team2_ct' | 'knife'> | undefined;
-    if (!useVeto) {
-      if (bestOf === 'bo1') {
-        const sideToken: 'team1_ct' | 'team2_ct' | 'knife' = startingSide;
-        map_sides = [sideToken];
-      } else {
-        map_sides = mapSideSelections.slice(0, requiredMaps);
-      }
-    }
-
-    // Build team configs. When no explicit team is selected, fall back to
-    // placeholder offline teams ("Team 1"/"Team 2") with empty player lists so
-    // admins are not forced to pre-create teams or players.
-    const team1Config =
-      team1 && team1Id
-        ? {
-            id: team1.id,
-            name: team1.name,
-            tag: team1.tag || undefined,
-            players: toMatchConfigPlayers(team1),
-          }
-        : {
-            name: 'Team 1',
-            players: [],
-          };
-
-    const team2Config =
-      team2 && team2Id
-        ? {
-            id: team2.id,
-            name: team2.name,
-            tag: team2.tag || undefined,
-            players: toMatchConfigPlayers(team2),
-          }
-        : {
-            name: 'Team 2',
-            players: [],
-          };
-
-    const config: MatchConfig = {
-      vetoDisabled: !useVeto,
-      maplist: matchMaps,
-      num_maps: requiredMaps,
-      players_per_team: safePlayersPerTeam,
-      expected_players_total: safePlayersPerTeam * 2,
-      expected_players_team1: safePlayersPerTeam,
-      expected_players_team2: safePlayersPerTeam,
-      team1: team1Config,
-      team2: team2Config,
-      ...(map_sides ? { map_sides } : {}),
-      ...(Object.keys(cvars).length > 0 ? { cvars } : {}),
-    };
+    const config: MatchConfig = previewConfig;
 
     setSaving(true);
     try {
@@ -694,19 +906,22 @@ export function useCreateManualMatchModal({
   const handleNextStep = () => {
     setSubmitAttempted(true);
     if (activeStep === 0) {
+      // From "Match Setup" (template vs new match) to Rules – no extra validation here.
       setActiveStep(1);
     } else if (activeStep === 1) {
-      // From maps step to sides/veto step – map selection must be valid.
-      if (!previewConfig) {
-        return;
-      }
+      // From Rules to Maps – rules don't depend on map count, so we can always continue.
       setActiveStep(2);
     } else if (activeStep === 2) {
-      // From sides/veto step to final review – require valid preview config.
-      if (!previewConfig) {
+      // From Maps to Teams & Server – require a valid map selection.
+      if (hasVetoMapCountError || hasSeriesMapCountError) {
         return;
       }
       setActiveStep(3);
+    } else if (activeStep === 3) {
+      // From Teams & Server to Review – preview config may still be null if
+      // required fields are missing, but the Review step already handles that
+      // by showing a helper message instead of JSON.
+      setActiveStep(4);
     }
   };
 
@@ -718,6 +933,7 @@ export function useCreateManualMatchModal({
       serverAllocation,
       teams,
       loadingTeams,
+      players,
       saving,
       slug,
       serverId,
@@ -745,13 +961,19 @@ export function useCreateManualMatchModal({
       selectedTemplateId,
       saveTemplateDialogOpen,
       newTemplateName,
-      team1,
-      team2,
+      team1: existingTeam1,
+      team2: existingTeam2,
       requiredMaps,
       selectedMapsCount,
       hasVetoMapCountError,
       hasSeriesMapCountError,
       previewConfig,
+      team1Mode,
+      team2Mode,
+      team1NewPlayerIds,
+      team2NewPlayerIds,
+      team1NewName,
+      team2NewName,
     },
     actions: {
       setSlug,
@@ -780,6 +1002,12 @@ export function useCreateManualMatchModal({
       handleSaveTemplate,
       handleSubmit,
       handleNextStep,
+      setTeam1Mode,
+      setTeam2Mode,
+      setTeam1NewPlayerIds,
+      setTeam2NewPlayerIds,
+      setTeam1NewName,
+      setTeam2NewName,
     },
   };
 }

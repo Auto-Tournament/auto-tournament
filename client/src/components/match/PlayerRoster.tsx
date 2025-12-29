@@ -176,9 +176,6 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
 
   return (
     <Box>
-      <Typography variant="h6" fontWeight={600} mb={2}>
-        Player Roster
-      </Typography>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 6 }}>
           {renderPlayerList(team1Name, team1Players, 'primary', isTeam1 === true)}

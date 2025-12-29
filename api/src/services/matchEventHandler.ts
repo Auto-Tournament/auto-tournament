@@ -688,8 +688,45 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   const team1Score = Number(eventData.team1_series_score) || 0;
   const team2Score = Number(eventData.team2_series_score) || 0;
   const winnerId = team1Score > team2Score ? match.team1_id : match.team2_id;
+  const completedAt = Math.floor(Date.now() / 1000);
 
   if (!winnerId) {
+    // For manual matches (round = 0) or other ad‑hoc configs where team1_id /
+    // team2_id are null, we still want to mark the match as completed so that
+    // UIs and stats behave correctly, but we intentionally leave winner_id
+    // null and skip any bracket progression logic.
+    if (match.round === 0) {
+      log.warn(
+        `Could not determine winner team_id for manual match ${matchSlug}; marking completed without winner_id`
+      );
+
+      await db.updateAsync(
+        'matches',
+        {
+          status: 'completed',
+          completed_at: completedAt,
+        },
+        'id = ?',
+        [match.id]
+      );
+
+      emitMatchUpdate({
+        id: match.id,
+        slug: match.slug,
+        status: 'completed',
+        team1Score,
+        team2Score,
+      });
+
+      // Even though manual matches don't have bracket progression or a
+      // persistent tournament association, we still want them to appear in
+      // player match history. Track per‑player stats using the ad‑hoc team
+      // rosters from the stored match config.
+      await trackPlayerStatsForManualMatch(match, matchSlug, team1Score, team2Score);
+
+      return;
+    }
+
     log.error(`Could not determine winner for match ${matchSlug}`);
     return;
   }
@@ -700,7 +737,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     {
       status: 'completed',
       winner_id: winnerId,
-      completed_at: Math.floor(Date.now() / 1000),
+      completed_at: completedAt,
     },
     'id = ?',
     [match.id]
@@ -820,7 +857,147 @@ async function updateRatingsForMatch(
 }
 
 /**
+ * Core helper to persist player_match_stats rows for a given set of players.
+ * Used by both bracket/tournament matches (team service) and manual matches
+ * (players taken from stored match config).
+ */
+async function persistPlayerMatchStats(options: {
+  matchSlug: string;
+  team1Players: Array<{ steamId: string }>;
+  team2Players: Array<{ steamId: string }>;
+  team1Won: boolean;
+}): Promise<void> {
+  const { matchSlug, team1Players, team2Players, team1Won } = options;
+
+  // Get player stats from match events (if available)
+  const playerStatsEvent = await db.queryOneAsync<{
+    event_data: string;
+  }>(
+    `SELECT event_data FROM match_events 
+       WHERE match_slug = ? AND event_type = 'player_stats' 
+       ORDER BY received_at DESC LIMIT 1`,
+    [matchSlug]
+  );
+
+  let team1PlayerStats: Record<string, Record<string, unknown>> = {};
+  let team2PlayerStats: Record<string, Record<string, unknown>> = {};
+
+  if (playerStatsEvent) {
+    try {
+      const eventData = JSON.parse(playerStatsEvent.event_data) as {
+        team1_players?: Record<string, Record<string, unknown>>;
+        team2_players?: Record<string, Record<string, unknown>>;
+      };
+      // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+      if (eventData.team1_players) {
+        team1PlayerStats = eventData.team1_players;
+      }
+      if (eventData.team2_players) {
+        team2PlayerStats = eventData.team2_players;
+      }
+    } catch (error) {
+      log.warn('Failed to parse player stats from event', { error, matchSlug });
+    }
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+
+  // Store stats for team1 players
+  for (const player of team1Players) {
+    const stats = (team1PlayerStats[player.steamId] || {}) as {
+      rounds_played?: number;
+      roundsPlayed?: number;
+      damage?: number;
+      kills?: number;
+      deaths?: number;
+      assists?: number;
+      headshot_kills?: number;
+      headshotKills?: number;
+      flash_assists?: number;
+      flashAssists?: number;
+      utility_damage?: number;
+      utilityDamage?: number;
+      kast?: number;
+      mvp?: number;
+      mvps?: number;
+      score?: number;
+    };
+    const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
+    const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
+
+    await db.insertAsync('player_match_stats', {
+      player_id: player.steamId,
+      match_slug: matchSlug,
+      team: 'team1',
+      won_match: team1Won,
+      adr: Math.round(adr * 100) / 100, // Round to 2 decimal places
+      total_damage: stats.damage || 0,
+      kills: stats.kills || 0,
+      deaths: stats.deaths || 0,
+      assists: stats.assists || 0,
+      headshots: stats.headshot_kills || stats.headshotKills || 0,
+      flash_assists: stats.flash_assists || stats.flashAssists || 0,
+      utility_damage: stats.utility_damage || stats.utilityDamage || 0,
+      kast: stats.kast || 0,
+      mvps: stats.mvp || stats.mvps || 0,
+      score: stats.score || 0,
+      rounds_played: roundsPlayed,
+      created_at: now,
+    });
+  }
+
+  // Store stats for team2 players
+  for (const player of team2Players) {
+    const stats = (team2PlayerStats[player.steamId] || {}) as {
+      rounds_played?: number;
+      roundsPlayed?: number;
+      damage?: number;
+      kills?: number;
+      deaths?: number;
+      assists?: number;
+      headshot_kills?: number;
+      headshotKills?: number;
+      flash_assists?: number;
+      flashAssists?: number;
+      utility_damage?: number;
+      utilityDamage?: number;
+      kast?: number;
+      mvp?: number;
+      mvps?: number;
+      score?: number;
+    };
+    const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
+    const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
+
+    await db.insertAsync('player_match_stats', {
+      player_id: player.steamId,
+      match_slug: matchSlug,
+      team: 'team2',
+      won_match: !team1Won,
+      adr: Math.round(adr * 100) / 100,
+      total_damage: stats.damage || 0,
+      kills: stats.kills || 0,
+      deaths: stats.deaths || 0,
+      assists: stats.assists || 0,
+      headshots: stats.headshot_kills || stats.headshotKills || 0,
+      flash_assists: stats.flash_assists || stats.flashAssists || 0,
+      utility_damage: stats.utility_damage || stats.utilityDamage || 0,
+      kast: stats.kast || 0,
+      mvps: stats.mvp || stats.mvps || 0,
+      score: stats.score || 0,
+      rounds_played: roundsPlayed,
+      created_at: now,
+    });
+  }
+
+  log.debug(`Tracked player stats for ${team1Players.length + team2Players.length} players`, {
+    matchSlug,
+  });
+}
+
+/**
  * Track individual player stats for matches (all tournament types with players)
+ * using persistent team records.
  */
 async function trackPlayerStatsForMatch(
   match: DbMatchRow,
@@ -845,133 +1022,71 @@ async function trackPlayerStatsForMatch(
     // Determine which team won
     const team1Won = match.team1_id === winnerId;
 
-    // Get player stats from match events (if available)
-    const playerStatsEvent = await db.queryOneAsync<{
-      event_data: string;
-    }>(
-      `SELECT event_data FROM match_events 
-       WHERE match_slug = ? AND event_type = 'player_stats' 
-       ORDER BY received_at DESC LIMIT 1`,
-      [matchSlug]
-    );
-
-    let team1PlayerStats: Record<string, Record<string, unknown>> = {};
-    let team2PlayerStats: Record<string, Record<string, unknown>> = {};
-
-    if (playerStatsEvent) {
-      try {
-        const eventData = JSON.parse(playerStatsEvent.event_data) as {
-          team1_players?: Record<string, Record<string, unknown>>;
-          team2_players?: Record<string, Record<string, unknown>>;
-        };
-        // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
-        if (eventData.team1_players) {
-          team1PlayerStats = eventData.team1_players;
-        }
-        if (eventData.team2_players) {
-          team2PlayerStats = eventData.team2_players;
-        }
-      } catch (error) {
-        log.warn('Failed to parse player stats from event', { error, matchSlug });
-      }
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-
-    // Store stats for team1 players
-    for (const player of team1.players) {
-      const stats = (team1PlayerStats[player.steamId] || {}) as {
-        rounds_played?: number;
-        roundsPlayed?: number;
-        damage?: number;
-        kills?: number;
-        deaths?: number;
-        assists?: number;
-        headshot_kills?: number;
-        headshotKills?: number;
-        flash_assists?: number;
-        flashAssists?: number;
-        utility_damage?: number;
-        utilityDamage?: number;
-        kast?: number;
-        mvp?: number;
-        mvps?: number;
-        score?: number;
-      };
-      const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
-      const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
-
-      await db.insertAsync('player_match_stats', {
-        player_id: player.steamId,
-        match_slug: matchSlug,
-        team: 'team1',
-        won_match: team1Won,
-        adr: Math.round(adr * 100) / 100, // Round to 2 decimal places
-        total_damage: stats.damage || 0,
-        kills: stats.kills || 0,
-        deaths: stats.deaths || 0,
-        assists: stats.assists || 0,
-        headshots: stats.headshot_kills || stats.headshotKills || 0,
-        flash_assists: stats.flash_assists || stats.flashAssists || 0,
-        utility_damage: stats.utility_damage || stats.utilityDamage || 0,
-        kast: stats.kast || 0,
-        mvps: stats.mvp || stats.mvps || 0,
-        score: stats.score || 0,
-        rounds_played: roundsPlayed,
-        created_at: now,
-      });
-    }
-
-    // Store stats for team2 players
-    for (const player of team2.players) {
-      const stats = (team2PlayerStats[player.steamId] || {}) as {
-        rounds_played?: number;
-        roundsPlayed?: number;
-        damage?: number;
-        kills?: number;
-        deaths?: number;
-        assists?: number;
-        headshot_kills?: number;
-        headshotKills?: number;
-        flash_assists?: number;
-        flashAssists?: number;
-        utility_damage?: number;
-        utilityDamage?: number;
-        kast?: number;
-        mvp?: number;
-        mvps?: number;
-        score?: number;
-      };
-      const roundsPlayed = stats.rounds_played ?? stats.roundsPlayed ?? 0;
-      const adr = roundsPlayed > 0 ? ((stats.damage ?? 0) as number) / roundsPlayed : 0;
-
-      await db.insertAsync('player_match_stats', {
-        player_id: player.steamId,
-        match_slug: matchSlug,
-        team: 'team2',
-        won_match: !team1Won,
-        adr: Math.round(adr * 100) / 100,
-        total_damage: stats.damage || 0,
-        kills: stats.kills || 0,
-        deaths: stats.deaths || 0,
-        assists: stats.assists || 0,
-        headshots: stats.headshot_kills || stats.headshotKills || 0,
-        flash_assists: stats.flash_assists || stats.flashAssists || 0,
-        utility_damage: stats.utility_damage || stats.utilityDamage || 0,
-        kast: stats.kast || 0,
-        mvps: stats.mvp || stats.mvps || 0,
-        score: stats.score || 0,
-        rounds_played: roundsPlayed,
-        created_at: now,
-      });
-    }
-
-    log.debug(`Tracked player stats for ${team1.players.length + team2.players.length} players`, {
+    await persistPlayerMatchStats({
       matchSlug,
+      team1Players: team1.players as Array<{ steamId: string }>,
+      team2Players: team2.players as Array<{ steamId: string }>,
+      team1Won,
     });
   } catch (error) {
-    log.error('Error tracking player stats for shuffle tournament', { error, matchSlug });
+    log.error('Error tracking player stats for match', { error, matchSlug });
     // Don't throw - stats tracking failure shouldn't break match completion
+  }
+}
+
+/**
+ * Track stats for manual matches (round = 0) whose teams may only exist inside
+ * the stored MatchZy config (ad‑hoc teams).
+ */
+async function trackPlayerStatsForManualMatch(
+  match: DbMatchRow,
+  matchSlug: string,
+  team1SeriesScore: number,
+  team2SeriesScore: number
+): Promise<void> {
+  try {
+    if (!match.config) {
+      log.warn('Cannot track manual match stats: missing config', { matchSlug });
+      return;
+    }
+
+    let parsed: unknown;
+    try {
+      parsed = typeof match.config === 'string' ? JSON.parse(match.config) : match.config;
+    } catch (error) {
+      log.warn('Failed to parse manual match config for stats', { error, matchSlug });
+      return;
+    }
+
+    const cfg = parsed as {
+      team1?: { players?: Array<{ steamid?: string }> };
+      team2?: { players?: Array<{ steamid?: string }> };
+    };
+
+    const team1Players =
+      cfg.team1?.players
+        ?.map((p) => (p.steamid ? { steamId: p.steamid } : null))
+        .filter((p): p is { steamId: string } => !!p?.steamId) ?? [];
+    const team2Players =
+      cfg.team2?.players
+        ?.map((p) => (p.steamid ? { steamId: p.steamid } : null))
+        .filter((p): p is { steamId: string } => !!p?.steamId) ?? [];
+
+    if (team1Players.length === 0 && team2Players.length === 0) {
+      log.warn('Cannot track manual match stats: no players found in config', { matchSlug });
+      return;
+    }
+
+    const team1Won = team1SeriesScore > team2SeriesScore;
+
+    await persistPlayerMatchStats({
+      matchSlug,
+      team1Players,
+      team2Players,
+      team1Won,
+    });
+  } catch (error) {
+    log.error('Error tracking player stats for manual match', { error, matchSlug });
   }
 }
 

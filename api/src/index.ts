@@ -40,6 +40,7 @@ import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
 import templatesRoutes from './routes/templates';
+import manualMatchTemplatesRoutes from './routes/manualMatchTemplates';
 import playersRoutes from './routes/players';
 import eloTemplatesRoutes from './routes/eloTemplates';
 import testRoutes from './routes/test';
@@ -277,6 +278,7 @@ app.use('/api/settings', settingsRoutes);
 app.use('/api/maps', mapsRoutes);
 app.use('/api/map-pools', mapPoolsRoutes);
 app.use('/api/templates', templatesRoutes); // Tournament templates
+app.use('/api/manual-match-templates', manualMatchTemplatesRoutes); // Manual match templates
 app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates

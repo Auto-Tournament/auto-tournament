@@ -127,11 +127,16 @@ export const useTournament = () => {
     if (options && typeof options.enableSimulation === 'boolean') {
       payload.enableSimulation = options.enableSimulation;
     }
-    const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
-      '/api/tournament/start',
-      payload
-    );
-    // Reload tournament data after starting
+    const response = await api.post<{
+      success: boolean;
+      message?: string;
+      allocated?: number;
+      failed?: number;
+      results?: Array<{ matchSlug: string; serverId?: string; success: boolean; error?: string }>;
+    }>('/api/tournament/start', payload);
+    // Reload tournament data after starting; the backend may update status to
+    // 'in_progress' asynchronously, so this ensures the wizard view reflects
+    // the latest state.
     await loadData();
     return response;
   };

@@ -11,6 +11,7 @@ import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
 import { getRoundLabel } from '../utils/matchUtils';
+import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 
@@ -204,14 +205,17 @@ export default function Matches() {
         const matches = data.matches || [];
         setTournamentStatus(data.tournamentStatus || 'setup');
 
+        const hasTeams = (m: Match) =>
+          Boolean((m.team1 || m.config?.team1) && (m.team2 || m.config?.team2));
+
         // Upcoming matches: pending and ready (including veto phase)
         const upcoming = matches.filter(
-          (m) => (m.status === 'pending' || m.status === 'ready') && m.team1 && m.team2
+          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
         );
 
-        // Live matches: only show matches with both teams assigned (loaded = warmup, live = in progress)
+        // Live matches: only show matches with both teams effectively assigned
         const live = matches.filter(
-          (m) => (m.status === 'live' || m.status === 'loaded') && m.team1 && m.team2
+          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
         );
 
         // History: show all completed matches including walkovers
@@ -405,20 +409,20 @@ export default function Matches() {
               <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
-                  const isManualMatch = match.round === 0;
+                  const isManualMatch = isManualMatchFlag(match);
+                  const manualRoundLabel = isManualMatch ? 'Manual match' : undefined;
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
                         match={match}
                         matchNumber={matchNumber}
+                        roundLabel={manualRoundLabel}
                         variant="default"
                         vetoCompleted={match.vetoCompleted}
                         // Manual matches are always considered "independent" of
                         // the global tournament status so they never show
                         // "Waiting for tournament to start".
-                        tournamentStarted={
-                          isManualMatch ? true : tournamentStatus === 'in_progress'
-                        }
+                        tournamentStarted={!isManualMatch && tournamentStatus === 'in_progress'}
                         onClick={() => setSelectedMatch(match)}
                       />
                     </Grid>

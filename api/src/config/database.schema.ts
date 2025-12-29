@@ -176,6 +176,28 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_name ON tournament_templates(name);
     CREATE INDEX IF NOT EXISTS idx_tournament_templates_type ON tournament_templates(type);
 
+    -- Manual match templates table (for standalone/manual matches)
+    CREATE TABLE IF NOT EXISTS manual_match_templates (
+      id SERIAL PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT,
+      best_of TEXT NOT NULL, -- 'bo1' | 'bo3' | 'bo5'
+      use_veto INTEGER NOT NULL DEFAULT 0,
+      starting_side TEXT NOT NULL, -- 'knife' | 'team1_ct' | 'team2_ct'
+      knife_mode TEXT NOT NULL, -- 'default' | 'enabled' | 'disabled'
+      players_per_team INTEGER NOT NULL DEFAULT 5,
+      max_rounds INTEGER NOT NULL DEFAULT 24,
+      overtime_enabled INTEGER NOT NULL DEFAULT 1,
+      overtime_max_rounds INTEGER,
+      map_pool_id INTEGER,
+      maps TEXT, -- JSON array of map IDs
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      FOREIGN KEY (map_pool_id) REFERENCES map_pools(id) ON DELETE SET NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_manual_match_templates_name ON manual_match_templates(name);
+
     -- Players table
     CREATE TABLE IF NOT EXISTS players (
       id TEXT PRIMARY KEY, -- Steam ID

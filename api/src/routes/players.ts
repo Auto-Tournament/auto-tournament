@@ -21,6 +21,7 @@ import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
+import { generateAvatarSvg } from '../generation/avatar';
 
 const router = Router();
 
@@ -244,10 +245,14 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       LEFT JOIN teams t2 ON m.team2_id = t2.id
       LEFT JOIN servers s ON m.server_id = s.id
       WHERE m.status IN ('loaded', 'live')
-        AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\'))
+        AND (
+          (t1.players LIKE ? ESCAPE '\\')
+          OR (t2.players LIKE ? ESCAPE '\\')
+          OR (m.config LIKE ? ESCAPE '\\')
+        )
       ORDER BY m.loaded_at DESC
       LIMIT 1`,
-      [likeParam, likeParam]
+      [likeParam, likeParam, likeParam]
     );
 
     // If no active match, look for the next pending/ready match
@@ -275,10 +280,14 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         LEFT JOIN teams t2 ON m.team2_id = t2.id
         LEFT JOIN servers s ON m.server_id = s.id
         WHERE m.status IN ('pending', 'ready')
-          AND ((t1.players LIKE ? ESCAPE '\\') OR (t2.players LIKE ? ESCAPE '\\'))
+          AND (
+            (t1.players LIKE ? ESCAPE '\\')
+            OR (t2.players LIKE ? ESCAPE '\\')
+            OR (m.config LIKE ? ESCAPE '\\')
+          )
         ORDER BY m.round ASC, m.match_number ASC
         LIMIT 1`,
-        [likeParam, likeParam]
+        [likeParam, likeParam, likeParam]
       );
     }
 
@@ -602,6 +611,204 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       success: false,
       error: message,
     });
+  }
+});
+
+/**
+ * GET /api/players/:playerId/summary
+ * Aggregate player view used by the public player page.
+ * Returns:
+ *   - player details (with matchesPlayed normalized from stats)
+ *   - rating history
+ *   - match history (deduplicated by slug)
+ *   - basic derived stats (win rate, average ADR, recent form)
+ */
+router.get('/:playerId/summary', async (req: Request, res: Response) => {
+  try {
+    const { playerId } = req.params;
+    const { tournamentId } = req.query;
+
+    const player = await playerService.getPlayerById(playerId);
+    if (!player) {
+      return res.status(404).json({
+        success: false,
+        error: `Player '${playerId}' not found`,
+      });
+    }
+
+    // Derive "matches played" from stats table so duplicates in rating history
+    // or other bookkeeping do not inflate the visible count.
+    const matchCountRow = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(DISTINCT match_slug) as count FROM player_match_stats WHERE player_id = ?',
+      [playerId]
+    );
+    const matchesPlayed = Number(matchCountRow?.count ?? 0);
+
+    // Rating history (same as /:playerId/rating-history)
+    const ratingHistory = await getRatingHistory(
+      playerId,
+      tournamentId ? parseInt(tournamentId as string, 10) : undefined
+    );
+
+    // Match history (same as /:playerId/matches) but deduplicated by slug
+    let query = `
+      SELECT 
+        m.slug,
+        m.round,
+        m.match_number,
+        m.status,
+        m.completed_at,
+        m.tournament_id as tournamentId,
+        m.team1_id,
+        m.team2_id,
+        m.winner_id,
+        t1.name as team1_name,
+        t1.tag as team1_tag,
+        t2.name as team2_name,
+        t2.tag as team2_tag,
+        pms.team,
+        pms.won_match,
+        pms.adr,
+        pms.total_damage,
+        pms.kills,
+        pms.deaths,
+        pms.assists
+      FROM player_match_stats pms
+      JOIN matches m ON pms.match_slug = m.slug
+      LEFT JOIN teams t1 ON m.team1_id = t1.id
+      LEFT JOIN teams t2 ON m.team2_id = t2.id
+      WHERE pms.player_id = ?
+    `;
+    const params: unknown[] = [playerId];
+
+    if (tournamentId) {
+      query += ' AND m.tournament_id = ?';
+      params.push(parseInt(tournamentId as string, 10));
+    }
+
+    query += ' ORDER BY m.completed_at DESC, m.round DESC';
+
+    type RawMatchRow = {
+      slug: string;
+      round: number;
+      match_number: number;
+      status: string;
+      completed_at: number;
+      tournamentid?: number;
+      tournamentId?: number;
+      team1_id?: string | null;
+      team2_id?: string | null;
+      winner_id?: string | null;
+      team1_name?: string | null;
+      team1_tag?: string | null;
+      team2_name?: string | null;
+      team2_tag?: string | null;
+      team: 'team1' | 'team2';
+      won_match: boolean;
+      adr?: number | null;
+      total_damage?: number | null;
+      kills?: number | null;
+      deaths?: number | null;
+      assists?: number | null;
+    };
+
+    const rawMatches = await db.queryAsync<RawMatchRow>(query, params);
+
+    // Deduplicate by match slug so a single match only appears once in history
+    const bySlug = new Map<string, RawMatchRow>();
+    for (const row of rawMatches) {
+      if (!bySlug.has(row.slug)) {
+        bySlug.set(row.slug, row);
+      }
+    }
+    const matches = Array.from(bySlug.values());
+
+    // Derived stats
+    const wins = matches.filter((m) => m.won_match).length;
+    const totalMatches = matches.length;
+    const losses = totalMatches - wins;
+    const winRate = totalMatches > 0 ? wins / totalMatches : 0;
+    const averageAdr =
+      totalMatches > 0
+        ? matches.reduce((sum, m) => sum + (typeof m.adr === 'number' ? m.adr : 0), 0) /
+          totalMatches
+        : 0;
+
+    const sortedByCompleted = [...matches].sort(
+      (a, b) => (a.completed_at || 0) - (b.completed_at || 0)
+    );
+    const recentForm = sortedByCompleted
+      .slice(-5)
+      .map((m) => (m.won_match ? 'W' : 'L'))
+      .reverse()
+      .join('');
+
+    let bestAdrMatch: RawMatchRow | null = null;
+    let worstAdrMatch: RawMatchRow | null = null;
+    for (const m of matches) {
+      if (typeof m.adr !== 'number') continue;
+      if (!bestAdrMatch || (bestAdrMatch.adr ?? 0) < m.adr) {
+        bestAdrMatch = m;
+      }
+      if (!worstAdrMatch || (worstAdrMatch.adr ?? Infinity) > m.adr) {
+        worstAdrMatch = m;
+      }
+    }
+
+    return res.json({
+      success: true,
+      player: {
+        ...player,
+        // Override matchCount with the normalized distinct match count so UI
+        // doesn't show inflated numbers when history/stat rows are duplicated.
+        matchCount: matchesPlayed,
+      },
+      stats: {
+        matchesPlayed,
+        wins,
+        losses,
+        winRate,
+        averageAdr,
+        recentForm,
+        bestAdrMatch,
+        worstAdrMatch,
+      },
+      ratingHistory,
+      matches,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error fetching player summary', { error, playerId: req.params.playerId });
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * GET /api/players/:playerId/avatar.svg
+ * Deterministic DiceBear avatar for a player, seeded from player ID.
+ * Public endpoint so the frontend can embed SVGs directly.
+ */
+router.get('/:playerId/avatar.svg', async (req: Request, res: Response) => {
+  try {
+    const { playerId } = req.params;
+    const player = await playerService.getPlayerById(playerId);
+
+    if (!player) {
+      return res.status(404).send('Player not found');
+    }
+
+    const svg = generateAvatarSvg(player.id);
+    res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=86400, immutable');
+
+    return res.send(svg);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error generating player avatar', { error, playerId: req.params.playerId });
+    return res.status(500).send(message);
   }
 });
 

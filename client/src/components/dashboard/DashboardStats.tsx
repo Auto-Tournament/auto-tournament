@@ -96,11 +96,12 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           const serversRes = await api.get<{ success: boolean; servers: Server[] }>('/api/servers');
           if (serversRes.success && serversRes.servers) {
             setServers(serversRes.servers);
-            // Check server statuses
+            // Check server statuses using the cached endpoint so that dashboard
+            // reloads and periodic refreshes don't spam live status checks.
             const statusPromises = serversRes.servers.map(async (server) => {
               try {
                 const statusRes = await api.get<{ success: boolean; status: string }>(
-                  `/api/servers/${server.id}/status`
+                  `/api/servers/${server.id}/status?cached=true`
                 );
                 return { id: server.id, status: statusRes.status as 'online' | 'offline' };
               } catch {

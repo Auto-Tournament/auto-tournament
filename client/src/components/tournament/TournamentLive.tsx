@@ -21,6 +21,9 @@ import CheckIcon from '@mui/icons-material/Check';
 import CloseIcon from '@mui/icons-material/Close';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { RestartTournamentButton } from '../dashboard/RestartTournamentButton';
+import { api } from '../../utils/api';
+import type { Map } from '../../types/api.types';
+import { getMapDisplayName } from '../../constants/maps';
 
 interface TournamentLiveProps {
   tournament: {
@@ -29,6 +32,13 @@ interface TournamentLiveProps {
     format: string;
     status: string;
     teams: Array<{ id: string; name: string }>;
+    maps: string[];
+    mapSequence?: string[];
+    teamSize?: number;
+    maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number;
+    eloTemplateId?: string;
   };
   tournamentId: number;
   onRename: (newName: string) => Promise<void> | void;
@@ -36,6 +46,7 @@ interface TournamentLiveProps {
   onViewBracket: () => void;
   onReset: () => void;
   onDelete: () => void;
+  playerCount?: number;
 }
 
 export const TournamentLive: React.FC<TournamentLiveProps> = ({
@@ -46,13 +57,45 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
   onViewBracket,
   onReset,
   onDelete,
+  playerCount,
 }) => {
   const [isRenaming, setIsRenaming] = React.useState(false);
   const [nameInput, setNameInput] = React.useState(tournament.name);
+  const [availableMaps, setAvailableMaps] = React.useState<Map[]>([]);
 
   React.useEffect(() => {
     setNameInput(tournament.name);
   }, [tournament.name]);
+
+  React.useEffect(() => {
+    const loadMaps = async () => {
+      try {
+        const response = await api.get<{ maps: Map[] }>('/api/maps');
+        if (response.maps) {
+          setAvailableMaps(response.maps);
+        }
+      } catch (err) {
+        console.error('Error loading maps for live tournament view:', err);
+      }
+    };
+    loadMaps();
+  }, []);
+
+  const isShuffle = tournament.type === 'shuffle';
+  const teamSize = tournament.teamSize || 5;
+  const maxRounds = tournament.maxRounds || 24;
+  const overtimeMode = tournament.overtimeMode ?? 'enabled';
+  const overtimeSegments = tournament.overtimeSegments;
+
+  const resolveDisplayName = (mapId: string): string => {
+    const map = availableMaps.find((m) => m.id === mapId);
+    return map ? map.displayName : getMapDisplayName(mapId);
+  };
+
+  const shuffleMaps: string[] =
+    (tournament.mapSequence && tournament.mapSequence.length > 0
+      ? tournament.mapSequence
+      : tournament.maps) || [];
 
   const handleStartRename = () => {
     setNameInput(tournament.name);
@@ -171,12 +214,107 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
             </Typography>
           </Grid>
-          <Grid size={{ xs: 12, sm: 6 }}>
-            <Typography variant="subtitle2" color="text.secondary">
-              Teams
-            </Typography>
-            <Typography variant="body2">{tournament.teams.length} teams competing</Typography>
-          </Grid>
+          {!isShuffle && (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Teams
+              </Typography>
+              <Typography variant="body2">{tournament.teams.length} teams competing</Typography>
+            </Grid>
+          )}
+          {isShuffle && (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Players
+              </Typography>
+              <Typography variant="body2">
+                {typeof playerCount === 'number'
+                  ? `${playerCount} player${playerCount === 1 ? '' : 's'} competing`
+                  : 'Players competing'}
+              </Typography>
+            </Grid>
+          )}
+          {!isShuffle && (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Maps
+              </Typography>
+              <Box display="flex" flexWrap="wrap" gap={1} mt={0.5}>
+                {tournament.maps.map((mapId: string) => (
+                  <Chip
+                    key={mapId}
+                    label={resolveDisplayName(mapId)}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
+              </Box>
+            </Grid>
+          )}
+          {!isShuffle && (
+            <Grid size={{ xs: 12, sm: 6 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Match Rules
+              </Typography>
+              <Typography variant="body2">
+                Max {maxRounds} rounds per map; winner is first to {Math.floor(maxRounds / 2) + 1}{' '}
+                rounds.
+              </Typography>
+            </Grid>
+          )}
+          {isShuffle && (
+            <>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Shuffle Settings
+                </Typography>
+                <Typography variant="body2">
+                  Team Size: {teamSize}v{teamSize}
+                </Typography>
+                <Typography variant="body2">Max Rounds per Map: {maxRounds}</Typography>
+                <Typography variant="body2">
+                  Overtime:{' '}
+                  {overtimeMode === 'enabled' ? 'Enabled' : 'Disabled (No Overtime)'}
+                </Typography>
+                {overtimeMode === 'enabled' && typeof overtimeSegments === 'number' && (
+                  <Typography variant="body2">
+                    Overtime Segments:{' '}
+                    {overtimeSegments > 0
+                      ? `${overtimeSegments} ${
+                          overtimeSegments === 1 ? 'segment' : 'segments'
+                        }`
+                      : 'MatchZy default'}
+                  </Typography>
+                )}
+                {tournament.eloTemplateId && (
+                  <Typography variant="body2">
+                    ELO Template: {tournament.eloTemplateId}
+                  </Typography>
+                )}
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Typography variant="subtitle2" color="text.secondary">
+                  Map Sequence (Rounds)
+                </Typography>
+                <Box display="flex" flexWrap="wrap" gap={1} mt={0.5}>
+                  {shuffleMaps.length > 0 ? (
+                    shuffleMaps.map((mapId: string, index: number) => (
+                      <Chip
+                        key={`${mapId}-${index}`}
+                        label={`${index + 1}. ${resolveDisplayName(mapId)}`}
+                        size="small"
+                        variant="outlined"
+                      />
+                    ))
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No maps configured yet.
+                    </Typography>
+                  )}
+                </Box>
+              </Grid>
+            </>
+          )}
         </Grid>
 
         <Box display="flex" gap={2} flexWrap="wrap">

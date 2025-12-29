@@ -616,30 +616,44 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // Get base URL for webhook configuration
     const baseUrl = await getWebhookBaseUrl(req);
 
-    const result = await matchAllocationService.startTournament(baseUrl);
+    // Kick off tournament start + server allocation in the background so the
+    // HTTP request can return immediately and the UI doesn't sit in a pending
+    // state while RCON/webhook calls are in flight.
+    void (async () => {
+      try {
+        const result = await matchAllocationService.startTournament(baseUrl);
 
-    if (result.success) {
-      log.success(result.message, {
-        allocated: result.allocated,
-        failed: result.failed,
-      });
+        if (result.success) {
+          log.success(result.message, {
+            allocated: result.allocated,
+            failed: result.failed,
+          });
 
-      return res.json({
-        success: true,
-        message: result.message,
-        allocated: result.allocated,
-        failed: result.failed,
-        results: result.results,
-      });
-    } else {
-      return res.status(400).json({
-        success: false,
-        error: result.message,
-        allocated: result.allocated,
-        failed: result.failed,
-        results: result.results,
-      });
-    }
+          // Let clients know the tournament has moved into the allocation /
+          // in-progress phase. Bracket + match updates are already emitted
+          // by the allocation service where appropriate.
+          emitTournamentUpdate({
+            action: 'tournament_started',
+            status: 'in_progress',
+          });
+        } else {
+          log.warn('Tournament start/allocation failed', {
+            message: result.message,
+            allocated: result.allocated,
+            failed: result.failed,
+          });
+        }
+      } catch (err) {
+        log.error('Error in background tournament start/allocation task', err as Error);
+      }
+    })();
+
+    // Respond immediately so the frontend can update UI state without waiting
+    // for all allocations / RCON calls to complete.
+    return res.json({
+      success: true,
+      message: 'Tournament start requested. Servers will be allocated shortly.',
+    });
   } catch (error) {
     log.error('Error starting tournament', error as Error);
     const err = error as Error;

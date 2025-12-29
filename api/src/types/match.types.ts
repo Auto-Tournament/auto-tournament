@@ -169,3 +169,57 @@ export type EnrichableMatch = Record<string, unknown> & {
   team1Score?: number;
   team2Score?: number;
 };
+
+/**
+ * Manual match template types (for standalone/manual matches, stored in DB)
+ */
+export interface ManualMatchTemplate {
+  id: number;
+  name: string;
+  description?: string | null;
+  bestOf: 'bo1' | 'bo3' | 'bo5';
+  useVeto: boolean;
+  startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+  knifeMode: 'default' | 'enabled' | 'disabled';
+  playersPerTeam: number;
+  maxRounds: number;
+  overtimeEnabled: boolean;
+  overtimeMaxRounds?: number | null;
+  mapPoolId?: number | null;
+  maps: string[];
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface ManualMatchTemplateRow {
+  id: number;
+  name: string;
+  description?: string | null;
+  best_of: string;
+  use_veto: number;
+  starting_side: string;
+  knife_mode: string;
+  players_per_team: number;
+  max_rounds: number;
+  overtime_enabled: number;
+  overtime_max_rounds?: number | null;
+  map_pool_id?: number | null;
+  maps?: string | null;
+  created_at: number;
+  updated_at: number;
+}
+
+export interface CreateManualMatchTemplateInput {
+  name: string;
+  description?: string;
+  bestOf: 'bo1' | 'bo3' | 'bo5';
+  useVeto: boolean;
+  startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+  knifeMode: 'default' | 'enabled' | 'disabled';
+  playersPerTeam: number;
+  maxRounds: number;
+  overtimeEnabled: boolean;
+  overtimeMaxRounds?: number | null;
+  mapPoolId?: number | null;
+  maps: string[];
+}

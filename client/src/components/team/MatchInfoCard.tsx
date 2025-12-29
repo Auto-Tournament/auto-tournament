@@ -4,7 +4,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
-import { getStatusColor } from '../../utils/matchUtils';
+// Note: status color is handled by higher-level components; keep imports minimal here.
 import { isShuffleMatch as isShuffleMatchGlobal, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
@@ -100,11 +100,12 @@ export function MatchInfoCard({
 
   const serverStatus = match.server?.status ?? null;
   // Only treat explicit "online" (or transitional "checking") as truly online.
-  // Offline/disabled/error states mean players should not try to connect and
-  // we should surface a clearer warning instead of implying the server is
-  // ready just because we have stale match state.
-  const isServerOnline =
+  // However, if we are actively receiving live stats from the MatchZy plugin,
+  // we treat the server as effectively online even if the cached status is
+  // slightly out of date.
+  const isServerOnlineBase =
     serverStatus === 'online' || serverStatus === 'checking' || serverStatus === 'loading';
+  const isServerOnline = isServerOnlineBase || !!liveStats;
   const effectiveServer = isServerOnline ? match.server : null;
 
   const isShuffleMatch = isShuffleMatchGlobal({
@@ -325,14 +326,7 @@ export function MatchInfoCard({
             rightMapRounds={mapRoundsTeam2}
             leftSeriesWins={deriveSeriesWins.team1}
             rightSeriesWins={deriveSeriesWins.team2}
-            liveStatusDisplay={
-              isServerOnline || !liveStats
-                ? liveStatusDisplay
-                : {
-                    label: 'Server offline – waiting for recovery',
-                    chipColor: 'default',
-                  }
-            }
+            liveStatusDisplay={liveStatusDisplay}
             // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
             // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
             // per‑map round result instead.
@@ -368,11 +362,12 @@ export function MatchInfoCard({
             />
 
             {hasPlayerStats && playerStats && (
-              <MatchPlayerPerformance
-                playerStats={playerStats}
-                teamName={team?.name}
-                opponentName={match.opponent?.name}
-              />
+            <MatchPlayerPerformance
+              playerStats={playerStats}
+              teamName={team?.name}
+              opponentName={match.opponent?.name}
+              yourTeamIsTeam1={match.isTeam1}
+            />
             )}
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />

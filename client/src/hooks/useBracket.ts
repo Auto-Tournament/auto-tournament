@@ -64,7 +64,22 @@ export const useBracket = () => {
       } = await api.post('/api/tournament/start', { baseUrl });
 
       if (response.success) {
-        showSuccess(`Tournament started! ${response.allocated || 0} matches allocated to servers.`);
+        // Backend now starts allocation in the background and returns immediately.
+        // Show whatever message the API provides; allocation progress will be
+        // reflected via bracket + match websocket updates.
+        if (typeof response.allocated === 'number') {
+          showSuccess(
+            response.message ||
+              `Tournament started! ${response.allocated} match${
+                response.allocated === 1 ? '' : 'es'
+              } allocated to servers.`
+          );
+        } else {
+          showSuccess(
+            response.message ||
+              'Tournament start requested. Servers will be allocated shortly.'
+          );
+        }
         await loadBracket();
       } else {
         showError(response.message || 'Failed to start tournament');

@@ -30,203 +30,8 @@ import {
 } from '@mui/icons-material';
 import { api } from '../utils/api';
 import { useSnackbar } from '../contexts/SnackbarContext';
-
-// Shared name pools for generating realistic-looking dev/test players
-const DEV_FIRST_NAMES = [
-  'Liam',
-  'Noah',
-  'Oliver',
-  'Elijah',
-  'James',
-  'William',
-  'Benjamin',
-  'Lucas',
-  'Henry',
-  'Alexander',
-  'Mason',
-  'Michael',
-  'Ethan',
-  'Daniel',
-  'Jacob',
-  'Logan',
-  'Jackson',
-  'Levi',
-  'Sebastian',
-  'Mateo',
-  'Jack',
-  'Owen',
-  'Theodore',
-  'Aiden',
-  'Samuel',
-  'Joseph',
-  'John',
-  'David',
-  'Wyatt',
-  'Matthew',
-  'Luke',
-  'Asher',
-  'Carter',
-  'Julian',
-  'Grayson',
-  'Leo',
-  'Jayden',
-  'Gabriel',
-  'Isaac',
-  'Lincoln',
-  'Anthony',
-  'Hudson',
-  'Dylan',
-  'Ezra',
-  'Thomas',
-  'Charles',
-  'Christopher',
-  'Jaxon',
-  'Mila',
-  'Olivia',
-  'Emma',
-  'Ava',
-  'Sophia',
-  'Isabella',
-  'Charlotte',
-  'Amelia',
-  'Mia',
-  'Harper',
-  'Evelyn',
-  'Abigail',
-  'Emily',
-  'Ella',
-  'Elizabeth',
-  'Camila',
-  'Luna',
-  'Sofia',
-  'Avery',
-  'Scarlett',
-  'Eleanor',
-  'Madison',
-  'Layla',
-  'Penelope',
-  'Aria',
-  'Chloe',
-  'Grace',
-  'Nora',
-  'Riley',
-  'Zoey',
-  'Hannah',
-  'Lily',
-  'Addison',
-  'Violet',
-  'Stella',
-  'Aurora',
-  'Natalie',
-  'Zoe',
-];
-
-const DEV_LAST_NAMES = [
-  'Smith',
-  'Johnson',
-  'Williams',
-  'Brown',
-  'Jones',
-  'Garcia',
-  'Miller',
-  'Davis',
-  'Rodriguez',
-  'Martinez',
-  'Hernandez',
-  'Lopez',
-  'Gonzalez',
-  'Wilson',
-  'Anderson',
-  'Thomas',
-  'Taylor',
-  'Moore',
-  'Jackson',
-  'Martin',
-  'Lee',
-  'Perez',
-  'Thompson',
-  'White',
-  'Harris',
-  'Sanchez',
-  'Clark',
-  'Ramirez',
-  'Lewis',
-  'Robinson',
-  'Walker',
-  'Young',
-  'Allen',
-  'King',
-  'Wright',
-  'Scott',
-  'Torres',
-  'Nguyen',
-  'Hill',
-  'Flores',
-  'Green',
-  'Adams',
-  'Nelson',
-  'Baker',
-  'Hall',
-  'Rivera',
-  'Campbell',
-  'Mitchell',
-  'Carter',
-  'Roberts',
-  'Gomez',
-  'Phillips',
-  'Evans',
-  'Turner',
-  'Diaz',
-  'Parker',
-  'Cruz',
-  'Edwards',
-  'Collins',
-  'Reyes',
-  'Stewart',
-  'Morris',
-  'Morales',
-  'Murphy',
-  'Cook',
-  'Rogers',
-  'Gutierrez',
-  'Ortiz',
-  'Morgan',
-  'Cooper',
-  'Peterson',
-  'Bailey',
-  'Reed',
-  'Kelly',
-  'Howard',
-  'Ramos',
-  'Kim',
-  'Cox',
-  'Ward',
-  'Richardson',
-  'Watson',
-  'Brooks',
-  'Chavez',
-  'Wood',
-  'James',
-  'Bennett',
-  'Gray',
-  'Mendoza',
-  'Ruiz',
-  'Hughes',
-  'Price',
-  'Alvarez',
-  'Castillo',
-  'Sanders',
-  'Patel',
-  'Myers',
-  'Long',
-  'Ross',
-  'Foster',
-  'Jimenez',
-  'Powell',
-  'Jenkins',
-  'Perry',
-  'Russell',
-];
+import { generateTeamName } from '../generation/teamName';
+import { generatePlayerProfile } from '../generation/playerProfile';
 
 // Set dynamic page title
 document.title = 'Development';
@@ -248,40 +53,8 @@ const Development: React.FC = () => {
         id: string;
         name: string;
         tag: string;
-        players: Array<{ steamId: string; name: string }>;
+        players: Array<{ steamId: string; name: string; avatar?: string }>;
       }> = [];
-      const teamNames = [
-        'Astralis',
-        'Natus Vincere',
-        'FaZe Clan',
-        'Team Liquid',
-        'G2 Esports',
-        'Ninjas in Pyjamas',
-        'Fnatic',
-        'Vitality',
-        'MOUZ',
-        'Heroic',
-        'FURIA',
-        'Cloud9',
-        'Team Spirit',
-        'BIG',
-        'Complexity',
-        'ENCE',
-        'Virtus.pro',
-        'GamerLegion',
-        'Eternal Fire',
-        'The MongolZ',
-        'Monte',
-        'paiN Gaming',
-        'Movistar Riders',
-        'Imperial Esports',
-        'Aurora Gaming',
-        'MIBR',
-        'OG',
-        '9INE',
-        'Bad News Eagles',
-        'SAW',
-      ];
 
       const slugify = (value: string) =>
         value
@@ -293,17 +66,14 @@ const Development: React.FC = () => {
       const baseTimestamp = Date.now();
 
       for (let i = 0; i < count; i++) {
-        const teamName = teamNames[i % teamNames.length];
-        const suffixIndex = Math.floor(i / teamNames.length);
-        const suffix = suffixIndex > 0 ? ` ${suffixIndex + 1}` : '';
-        const fullName = `${teamName}${suffix}`;
+        const fullName = generateTeamName();
         const slug = slugify(fullName);
 
         teams.push({
           id: `test-team-${slug}`,
           name: fullName,
           tag:
-            teamName
+            fullName
               .replace(/[^A-Za-z0-9]/g, '')
               .substring(0, 3)
               .toUpperCase() || 'TST',
@@ -314,17 +84,11 @@ const Development: React.FC = () => {
               .slice(-10);
             const steamId = `7656119${uniquePart}`;
 
-            // Re-use the shared dev name pools so test team players
-            // look like real names instead of "Player 1/2/3".
-            const firstIndex = globalIndex % DEV_FIRST_NAMES.length;
-            // Use a separate cycle for last names so we don't end up with all "Smith"
-            const lastIndex = globalIndex % DEV_LAST_NAMES.length;
-            const firstName = DEV_FIRST_NAMES[firstIndex];
-            const lastName = DEV_LAST_NAMES[lastIndex];
+            const profile = generatePlayerProfile();
 
             return {
               steamId,
-              name: `${firstName} ${lastName}`,
+              name: profile.fullName,
             };
           }),
         });
@@ -446,13 +210,8 @@ const Development: React.FC = () => {
           .slice(-10);
         const steamId = `7656119${uniquePart}`;
 
-        // Generate a reasonably unique full name from the shared dev name pools
-        const firstIndex = i % DEV_FIRST_NAMES.length;
-        // Cycle last names independently so we don't get stuck on "Smith"
-        const lastIndex = i % DEV_LAST_NAMES.length;
-        const firstName = DEV_FIRST_NAMES[firstIndex];
-        const lastName = DEV_LAST_NAMES[lastIndex];
-        const name = `${firstName} ${lastName}`;
+        const profile = generatePlayerProfile();
+        const name = profile.fullName;
 
         // Let the backend apply its default Skill Rating (baseline ~1500)
         // by omitting any explicit ELO on creation.

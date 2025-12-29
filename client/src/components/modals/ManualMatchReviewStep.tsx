@@ -1,21 +1,17 @@
 import React from 'react';
-import { Box, Typography } from '@mui/material';
+import { Box, Button, Stack, Typography } from '@mui/material';
 import type { MatchConfig, Server } from '../../types';
 
 interface ManualMatchReviewStepProps {
-  slug: string;
-  serverId: string;
   servers: Server[];
   config: MatchConfig | null;
+  onOpenSaveTemplate: () => void;
 }
 
 export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
-  slug,
-  serverId,
-  servers,
   config,
+  onOpenSaveTemplate,
 }) => {
-  const server = servers.find((s) => s.id === serverId) || null;
 
   if (!config) {
     return (
@@ -26,10 +22,15 @@ export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
   }
 
   return (
-    <Box>
-      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-        MatchZy Config (JSON)
-      </Typography>
+    <Stack spacing={2}>
+      <Box display="flex" justifyContent="space-between" alignItems="center">
+        <Typography variant="subtitle1" fontWeight={600}>
+          MatchZy Config (JSON)
+        </Typography>
+        <Button variant="outlined" size="small" onClick={onOpenSaveTemplate}>
+          Save as template
+        </Button>
+      </Box>
       <Box
         component="pre"
         sx={{
@@ -43,7 +44,7 @@ export const ManualMatchReviewStep: React.FC<ManualMatchReviewStepProps> = ({
       >
         {JSON.stringify(config, null, 2)}
       </Box>
-    </Box>
+    </Stack>
   );
 };
 

@@ -1,17 +1,9 @@
 import React from 'react';
-import {
-  Box,
-  FormControlLabel,
-  MenuItem,
-  Switch,
-  TextField,
-  Typography,
-} from '@mui/material';
+import { Box, MenuItem, TextField, Typography } from '@mui/material';
 
 interface ManualMatchSidesStepProps {
   bestOf: 'bo1' | 'bo3' | 'bo5';
   useVeto: boolean;
-  onUseVetoChange: (value: boolean) => void;
   team1Name?: string | null;
   team2Name?: string | null;
   requiredMaps: number;
@@ -24,7 +16,6 @@ interface ManualMatchSidesStepProps {
 export const ManualMatchSidesStep: React.FC<ManualMatchSidesStepProps> = ({
   bestOf,
   useVeto,
-  onUseVetoChange,
   team1Name,
   team2Name,
   requiredMaps,
@@ -42,19 +33,9 @@ export const ManualMatchSidesStep: React.FC<ManualMatchSidesStepProps> = ({
         Veto & Starting Sides
       </Typography>
       <Typography variant="body2" color="text.secondary" gutterBottom>
-        Configure whether this match uses a full veto flow and who starts CT on each map when veto
-        is disabled.
+        Configure who starts CT on each map when veto is disabled. Veto mode itself is selected on
+        the Maps & Rules step.
       </Typography>
-
-      <FormControlLabel
-        control={
-          <Switch
-            checked={useVeto}
-            onChange={(e) => onUseVetoChange(e.target.checked)}
-          />
-        }
-        label="Enable veto flow (requires 7-map pool)"
-      />
 
       {!useVeto &&
         (bestOf === 'bo1' ? (

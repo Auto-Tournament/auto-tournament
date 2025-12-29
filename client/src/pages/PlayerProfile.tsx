@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
@@ -24,6 +24,7 @@ import Grid from '@mui/material/Grid';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { api } from '../utils/api';
+import { io, Socket } from 'socket.io-client';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
@@ -67,6 +68,120 @@ interface MatchHistoryEntry {
   assists?: number;
 }
 
+function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): TeamMatchInfo {
+  const playerId = steamId.toLowerCase();
+
+  // Try to detect which side this player is on from live stats first (most reliable in‑match).
+  let playerSide: 'team1' | 'team2' | null = null;
+  const stats = rawMatch.liveStats?.playerStats;
+  if (stats) {
+    const inTeam1 = stats.team1.some((p) => p.steamId === steamId);
+    const inTeam2 = stats.team2.some((p) => p.steamId === steamId);
+    if (inTeam1 && !inTeam2) {
+      playerSide = 'team1';
+    } else if (!inTeam1 && inTeam2) {
+      playerSide = 'team2';
+    }
+  }
+
+  // Fallback to config players if live stats don't contain this player yet.
+  if (!playerSide && rawMatch.config) {
+    const team1Players = rawMatch.config.team1?.players ?? [];
+    const team2Players = rawMatch.config.team2?.players ?? [];
+    const inTeam1 = team1Players.some((p) => p.steamid.toLowerCase() === playerId);
+    const inTeam2 = team2Players.some((p) => p.steamid.toLowerCase() === playerId);
+    if (inTeam1 && !inTeam2) {
+      playerSide = 'team1';
+    } else if (!inTeam1 && inTeam2) {
+      playerSide = 'team2';
+    }
+  }
+
+  // Final fallback: trust the server‑provided isTeam1 flag.
+  if (!playerSide) {
+    playerSide = rawMatch.isTeam1 ? 'team1' : 'team2';
+  }
+
+  // If the player's team is already on the "team1" side, just ensure isTeam1 is true.
+  if (playerSide === 'team1') {
+    return {
+      ...rawMatch,
+      isTeam1: true,
+    };
+  }
+
+  // Otherwise, swap sides so the player's team becomes team1 everywhere.
+  const swappedConnectionStatus = rawMatch.connectionStatus
+    ? {
+        ...rawMatch.connectionStatus,
+        team1Connected: rawMatch.connectionStatus.team2Connected,
+        team2Connected: rawMatch.connectionStatus.team1Connected,
+        connectedPlayers: rawMatch.connectionStatus.connectedPlayers.map((connected) => ({
+          ...connected,
+          team: connected.team === 'team1' ? 'team2' : 'team1',
+        })),
+      }
+    : rawMatch.connectionStatus;
+
+  const swappedLiveStats = rawMatch.liveStats
+    ? {
+        ...rawMatch.liveStats,
+        team1Score: rawMatch.liveStats.team2Score,
+        team2Score: rawMatch.liveStats.team1Score,
+        team1SeriesScore: rawMatch.liveStats.team2SeriesScore,
+        team2SeriesScore: rawMatch.liveStats.team1SeriesScore,
+        playerStats: rawMatch.liveStats.playerStats
+          ? {
+              team1: [...rawMatch.liveStats.playerStats.team2],
+              team2: [...rawMatch.liveStats.playerStats.team1],
+            }
+          : rawMatch.liveStats.playerStats,
+      }
+    : rawMatch.liveStats;
+
+  const swappedMapResults = rawMatch.mapResults.map((result) => ({
+    ...result,
+    team1Score: result.team2Score,
+    team2Score: result.team1Score,
+    winner:
+      result.winner === 'team1'
+        ? 'team2'
+        : result.winner === 'team2'
+        ? 'team1'
+        : result.winner ?? null,
+    winnerTeam:
+      result.winnerTeam === 'team1'
+        ? 'team2'
+        : result.winnerTeam === 'team2'
+        ? 'team1'
+        : result.winnerTeam ?? null,
+  }));
+
+  const swappedConfig = rawMatch.config
+    ? {
+        ...rawMatch.config,
+        team1: rawMatch.config.team2,
+        team2: rawMatch.config.team1,
+        expected_players_team1:
+          rawMatch.config.expected_players_team2 ?? rawMatch.config.expected_players_team1,
+        expected_players_team2:
+          rawMatch.config.expected_players_team1 ?? rawMatch.config.expected_players_team2,
+      }
+    : rawMatch.config;
+
+  return {
+    ...rawMatch,
+    isTeam1: true,
+    team1: rawMatch.team2,
+    team2: rawMatch.team1,
+    opponent: rawMatch.team1 ?? null,
+    connectionStatus: swappedConnectionStatus,
+    liveStats: swappedLiveStats,
+    mapResults: swappedMapResults,
+    config: swappedConfig,
+  };
+}
+
 export default function PlayerProfile() {
   const { steamId } = useParams<{ steamId: string }>();
   const [player, setPlayer] = useState<PlayerDetail | null>(null);
@@ -85,6 +200,7 @@ export default function PlayerProfile() {
     nextAllocationInSeconds: null,
     gracePeriodSeconds: 300,
   });
+  const socketRef = useRef<Socket | null>(null);
 
   // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
   const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
@@ -97,118 +213,114 @@ export default function PlayerProfile() {
     return Array.from(bySlug.values());
   }, [matchHistory]);
 
-  const loadPlayerData = async () => {
+  const loadPlayerData = async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!steamId) return;
 
-    setLoading(true);
+    if (!silent) {
+      setLoading(true);
+    }
     setError('');
 
     try {
-      // Load player details
-      const playerResponse = await api.get<{ success: boolean; player: PlayerDetail }>(
-        `/api/players/${steamId}`
-      );
-      if (playerResponse.success && playerResponse.player) {
-        setPlayer(playerResponse.player);
-        document.title = `${playerResponse.player.name} - Player Profile`;
-      } else {
+      // Load aggregated player summary (details + history + matches + basic stats)
+      const summaryResponse = await api.get<{
+        success: boolean;
+        player: PlayerDetail;
+        stats?: {
+          matchesPlayed: number;
+          wins: number;
+          losses: number;
+          winRate: number;
+          averageAdr: number;
+          recentForm: string;
+        };
+        ratingHistory: Array<{
+          match_slug: string;
+          elo_before: number;
+          elo_after: number;
+          elo_change: number;
+          base_elo_after?: number | null;
+          stat_adjustment?: number | null;
+          template_id?: string | null;
+          match_result: 'win' | 'loss';
+          created_at: number;
+        }>;
+        matches: Array<{
+          slug: string;
+          round: number;
+          match_number: number;
+          status: string;
+          completed_at: number;
+          tournamentId?: number;
+          team1_id?: string;
+          team2_id?: string;
+          winner_id?: string | null;
+          team1_name?: string | null;
+          team1_tag?: string | null;
+          team2_name?: string | null;
+          team2_tag?: string | null;
+          team: 'team1' | 'team2';
+          won_match: boolean;
+          adr?: number;
+          total_damage?: number;
+          kills?: number;
+          deaths?: number;
+          assists?: number;
+        }>;
+      }>(`/api/players/${steamId}/summary`);
+
+      if (!summaryResponse.success || !summaryResponse.player) {
         setError('Player not found');
+        setPlayer(null);
+        setRatingHistory([]);
+        setMatchHistory([]);
+        return;
       }
 
-      // Load rating history
-      try {
-        const historyResponse = await api.get<{
-          success: boolean;
-          history: Array<{
-            match_slug: string;
-            elo_before: number;
-            elo_after: number;
-            elo_change: number;
-            base_elo_after?: number | null;
-            stat_adjustment?: number | null;
-            template_id?: string | null;
-            match_result: 'win' | 'loss';
-            created_at: number;
-          }>;
-        }>(
-          `/api/players/${steamId}/rating-history`
-        );
-        if (historyResponse.success && historyResponse.history) {
-          setRatingHistory(
-            historyResponse.history.map((entry, index) => ({
-              id: index,
-              matchSlug: entry.match_slug,
-              eloBefore: entry.elo_before,
-              eloAfter: entry.elo_after,
-              eloChange: entry.elo_change,
-              baseEloAfter: entry.base_elo_after ?? null,
-              statAdjustment: entry.stat_adjustment ?? null,
-              templateId: entry.template_id ?? null,
-              matchResult: entry.match_result,
-              createdAt: entry.created_at,
-            }))
-          );
-        }
-      } catch {
-        // Rating history is optional
-      }
+      setPlayer(summaryResponse.player);
+      document.title = `${summaryResponse.player.name} - Player Profile`;
 
-      // Load match history
-      try {
-        const matchesResponse = await api.get<{
-          success: boolean;
-          matches: Array<{
-            slug: string;
-            round: number;
-            match_number: number;
-            status: string;
-            completed_at: number;
-            tournamentId?: number;
-            team1_id?: string;
-            team2_id?: string;
-            winner_id?: string | null;
-            team1_name?: string | null;
-            team1_tag?: string | null;
-            team2_name?: string | null;
-            team2_tag?: string | null;
-            team: 'team1' | 'team2';
-            won_match: boolean;
-            adr?: number;
-            total_damage?: number;
-            kills?: number;
-            deaths?: number;
-            assists?: number;
-          }>;
-        }>(`/api/players/${steamId}/matches`);
-        if (matchesResponse.success && matchesResponse.matches) {
-          setMatchHistory(
-            matchesResponse.matches.map((m) => ({
-              slug: m.slug,
-              round: m.round,
-              matchNumber: m.match_number,
-              status: m.status,
-              completedAt: m.completed_at,
-              tournamentId: m.tournamentId,
-              team1Id: m.team1_id,
-              team2Id: m.team2_id,
-              winnerId: m.winner_id,
-              team1Name: m.team1_name,
-              team1Tag: m.team1_tag,
-              team2Name: m.team2_name,
-              team2Tag: m.team2_tag,
-              team: m.team,
-              wonMatch: m.won_match,
-              adr: m.adr,
-              totalDamage: m.total_damage,
-              kills: m.kills,
-              deaths: m.deaths,
-              assists: m.assists,
-            }))
-          );
-        }
-      } catch {
-        // Match history is optional
-      }
+      // Rating history
+      setRatingHistory(
+        (summaryResponse.ratingHistory || []).map((entry, index) => ({
+          id: index,
+          matchSlug: entry.match_slug,
+          eloBefore: entry.elo_before,
+          eloAfter: entry.elo_after,
+          eloChange: entry.elo_change,
+          baseEloAfter: entry.base_elo_after ?? null,
+          statAdjustment: entry.stat_adjustment ?? null,
+          templateId: entry.template_id ?? null,
+          matchResult: entry.match_result,
+          createdAt: entry.created_at,
+        }))
+      );
+
+      // Match history
+      setMatchHistory(
+        (summaryResponse.matches || []).map((m) => ({
+          slug: m.slug,
+          round: m.round,
+          matchNumber: m.match_number,
+          status: m.status,
+          completedAt: m.completed_at,
+          tournamentId: m.tournamentId,
+          team1Id: m.team1_id,
+          team2Id: m.team2_id,
+          winnerId: m.winner_id,
+          team1Name: m.team1_name,
+          team1Tag: m.team1_tag,
+          team2Name: m.team2_name,
+          team2Tag: m.team2_tag,
+          team: m.team,
+          wonMatch: m.won_match,
+          adr: m.adr,
+          totalDamage: m.total_damage,
+          kills: m.kills,
+          deaths: m.deaths,
+          assists: m.assists,
+        }))
+      );
 
       // Load current or upcoming match (for connect info)
       try {
@@ -220,15 +332,25 @@ export default function PlayerProfile() {
           match?: TeamMatchInfo;
         }>(`/api/players/${steamId}/current-match`);
 
-        if (currentMatchResponse.success && currentMatchResponse.hasMatch && currentMatchResponse.match) {
-          const match = currentMatchResponse.match;
-          setCurrentMatch(match);
+        if (
+          currentMatchResponse.success &&
+          currentMatchResponse.hasMatch &&
+          currentMatchResponse.match
+        ) {
+          const rawMatch = currentMatchResponse.match;
+
+          // Normalize match data so that, from the player's perspective on this page,
+          // their own team is always treated as "team1" / left side in scoreboards and
+          // performance tables. We derive the correct side by checking where this
+          // steamId appears in live stats or config, and then swap both metadata and
+          // live stats/map results if needed.
+          const normalizedMatch: TeamMatchInfo = normalizeMatchForPlayerView(rawMatch, steamId);
+
+          setCurrentMatch(normalizedMatch);
           setCurrentTournamentStatus(currentMatchResponse.tournamentStatus || 'setup');
 
-          const yourTeam = match.isTeam1 ? match.team1 || null : match.team2 || null;
-          const configPlayers =
-            match.config &&
-            (match.isTeam1 ? match.config.team1?.players || [] : match.config.team2?.players || []);
+          const yourTeam = normalizedMatch.team1 || null;
+          const configPlayers = normalizedMatch.config?.team1?.players || [];
 
           setCurrentTeam(
             yourTeam
@@ -253,7 +375,9 @@ export default function PlayerProfile() {
       setError('Failed to load player data');
       console.error(err);
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   };
 
@@ -263,6 +387,81 @@ export default function PlayerProfile() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId]);
+
+  // Lazily create a shared Socket.IO connection for this page once per mount.
+  useEffect(() => {
+    if (!socketRef.current) {
+      socketRef.current = io();
+    }
+
+    const socket = socketRef.current;
+
+    // React to high‑level tournament / bracket events (e.g. server_assigned,
+    // match_loaded) by refreshing the player data. This keeps the page in sync
+    // even if the match (or its server) is created after the player page is opened.
+    const handleBracketOrTournamentUpdate = (event?: { action?: string | null }) => {
+      if (!event || !event.action) {
+        return;
+      }
+
+      const refreshActions = new Set([
+        'tournament_reset',
+        'tournament_restarted',
+        'bracket_regenerated',
+        'match_loaded',
+        'match_restarted',
+        'server_assigned',
+        'match_allocated',
+      ]);
+
+      if (refreshActions.has(event.action)) {
+        void loadPlayerData({ silent: true });
+      }
+    };
+
+    socket.on('bracket:update', handleBracketOrTournamentUpdate);
+    socket.on('tournament:update', handleBracketOrTournamentUpdate);
+
+    return () => {
+      if (!socket) return;
+      socket.off('bracket:update', handleBracketOrTournamentUpdate);
+      socket.off('tournament:update', handleBracketOrTournamentUpdate);
+      socket.close();
+      socketRef.current = null;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Subscribe to websocket match updates for the current match slug so that
+  // server status, veto progress, and live stats stay in sync with the Team
+  // Match page behaviour.
+  useEffect(() => {
+    const slug = currentMatch?.slug;
+    if (!slug || !socketRef.current) {
+      return;
+    }
+
+    const socket = socketRef.current;
+
+    const handleUpdate = (data: { slug?: string }) => {
+      if (!data.slug || data.slug !== slug) return;
+      // Re‑fetch player data so currentMatch (and its nested server/veto/live
+      // info) stay in lockstep with the team view.
+      void loadPlayerData({ silent: true });
+    };
+
+    socket.on('match:update', handleUpdate);
+    socket.on(`match:update:${slug}`, handleUpdate);
+
+    return () => {
+      if (!socket) return;
+      socket.off('match:update', handleUpdate);
+      socket.off(`match:update:${slug}`, handleUpdate);
+      // Keep the socket open for reuse across slug changes; it will be fully
+      // disconnected when there is no active match above.
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentMatch?.slug]);
 
   // Poll allocation status periodically so players can see when the next servers
   // will be assigned for upcoming rounds/matches.
@@ -480,7 +679,7 @@ export default function PlayerProfile() {
               matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
               onVetoComplete={async () => {
                 setTimeout(() => {
-                  void loadPlayerData();
+                  void loadPlayerData({ silent: true });
                 }, 1000);
               }}
               getRoundLabel={getRoundLabel}
@@ -532,7 +731,7 @@ export default function PlayerProfile() {
                     Matches Played
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
-                    {player.matchCount}
+                    {uniqueMatchHistory.length}
                   </Typography>
                 </CardContent>
               </Card>

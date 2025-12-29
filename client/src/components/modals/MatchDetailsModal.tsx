@@ -89,8 +89,13 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   const { status: tournamentStatus } = useTournamentStatus();
   const isManualMatch = match?.round === 0;
+  // Manual matches are independent of the global tournament lifecycle, so we
+  // intentionally treat "tournamentStarted" as false for them. This ensures
+  // status text uses neutral copy like "Initializing match..." instead of
+  // "Waiting for tournament to start".
   const tournamentStarted =
-    isManualMatch || tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
+    !isManualMatch &&
+    (tournamentStatus === 'in_progress' || tournamentStatus === 'completed');
 
   // Calculate derived series wins before early return (React hooks rule).
   // For completed matches, use the persisted series score. While a series is
@@ -287,6 +292,24 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
 
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
+
+  // Derive a winner side for display in the modal:
+  // - Prefer explicit winner.id when present (bracket matches)
+  // - Fall back to series score when the match is completed (manual/ad‑hoc)
+  let winnerSide: 'team1' | 'team2' | null = null;
+  if (match.status === 'completed') {
+    if (match.winner?.id && match.team1?.id && match.winner.id === match.team1.id) {
+      winnerSide = 'team1';
+    } else if (match.winner?.id && match.team2?.id && match.winner.id === match.team2.id) {
+      winnerSide = 'team2';
+    } else if (
+      typeof seriesWinsTeam1 === 'number' &&
+      typeof seriesWinsTeam2 === 'number' &&
+      seriesWinsTeam1 !== seriesWinsTeam2
+    ) {
+      winnerSide = seriesWinsTeam1 > seriesWinsTeam2 ? 'team1' : 'team2';
+    }
+  }
   const livePlayerStats = liveStats?.playerStats ?? null;
 
   // Shuffle / veto-disabled detection shared across match views
@@ -447,7 +470,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 <Box flex={1} textAlign="left">
                   <Box display="flex" alignItems="center" gap={1}>
                     <Typography variant="h5" fontWeight={700}>
-                      {match.team1?.name || (match.status === 'completed' ? '—' : 'TBD')}
+                      {match.team1?.name ||
+                        (match.config?.team1 as { name?: string } | undefined)?.name ||
+                        (match.status === 'completed' ? '—' : 'TBD')}
                     </Typography>
                     {match.team1?.id && (
                       <Box display="flex" alignItems="center" gap={1}>
@@ -472,7 +497,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   <Typography variant="caption" color="text.secondary">
                     {match.team1?.tag}
                   </Typography>
-                  {match.winner?.id === match.team1?.id && (
+                  {winnerSide === 'team1' && (
                     <Box mt={1}>
                       <EmojiEventsIcon sx={{ color: 'success.main', fontSize: 28 }} />
                     </Box>
@@ -491,10 +516,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           variant="h2"
                           fontWeight={700}
                           sx={{
-                            color:
-                              match.winner?.id === match.team1?.id
-                                ? 'success.main'
-                                : 'text.primary',
+                            color: winnerSide === 'team1' ? 'success.main' : 'text.primary',
                           }}
                         >
                           {seriesWinsTeam1}
@@ -506,10 +528,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                           variant="h2"
                           fontWeight={700}
                           sx={{
-                            color:
-                              match.winner?.id === match.team2?.id
-                                ? 'success.main'
-                                : 'text.primary',
+                            color: winnerSide === 'team2' ? 'success.main' : 'text.primary',
                           }}
                         >
                           {seriesWinsTeam2}
@@ -525,8 +544,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       variant="h4"
                       fontWeight={700}
                       sx={{
-                        color:
-                          match.winner?.id === match.team1?.id ? 'success.main' : 'text.primary',
+                        color: winnerSide === 'team1' ? 'success.main' : 'text.primary',
                       }}
                     >
                       {mapRoundsTeam1}
@@ -538,8 +556,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       variant="h4"
                       fontWeight={700}
                       sx={{
-                        color:
-                          match.winner?.id === match.team2?.id ? 'success.main' : 'text.primary',
+                        color: winnerSide === 'team2' ? 'success.main' : 'text.primary',
                       }}
                     >
                       {mapRoundsTeam2}
@@ -586,13 +603,15 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       </Box>
                     )}
                     <Typography variant="h5" fontWeight={700}>
-                      {match.team2?.name || (match.status === 'completed' ? '—' : 'TBD')}
+                      {match.team2?.name ||
+                        (match.config?.team2 as { name?: string } | undefined)?.name ||
+                        (match.status === 'completed' ? '—' : 'TBD')}
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.secondary">
                     {match.team2?.tag}
                   </Typography>
-                  {match.winner?.id === match.team2?.id && (
+                  {winnerSide === 'team2' && (
                     <Box mt={1}>
                       <EmojiEventsIcon sx={{ color: 'success.main', fontSize: 28 }} />
                     </Box>
@@ -601,22 +620,38 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
               </Box>
             </Box>
 
-            {/* Player Roster
-                For shuffle tournaments, we already know the teams before server allocation,
-                so show the roster even while matches are still pending. */}
+            {/* Player Roster – show in an accordion like Maps / Match Information */}
             {match.config &&
               (isShuffleMatch || match.status === 'loaded' || match.status === 'live') && (
                 <>
                   <Divider />
-                  <Box>
-                    <PlayerRoster
-                      team1Name={match.team1?.name || 'Team 1'}
-                      team2Name={match.team2?.name || 'Team 2'}
-                      team1Players={match.config?.team1?.players || []}
-                      team2Players={match.config?.team2?.players || []}
-                      connectedPlayers={connectionStatus?.connectedPlayers || []}
-                    />
-                  </Box>
+                  <Accordion sx={{ mt: 2 }} defaultExpanded>
+                    <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <GroupsIcon color="primary" />
+                        <Typography variant="subtitle1" fontWeight={600}>
+                          Player Roster
+                        </Typography>
+                      </Box>
+                    </AccordionSummary>
+                    <AccordionDetails>
+                      <PlayerRoster
+                        team1Name={
+                          match.team1?.name ||
+                          (match.config?.team1 as { name?: string } | undefined)?.name ||
+                          'Team 1'
+                        }
+                        team2Name={
+                          match.team2?.name ||
+                          (match.config?.team2 as { name?: string } | undefined)?.name ||
+                          'Team 2'
+                        }
+                        team1Players={match.config?.team1?.players || []}
+                        team2Players={match.config?.team2?.players || []}
+                        connectedPlayers={connectionStatus?.connectedPlayers || []}
+                      />
+                    </AccordionDetails>
+                  </Accordion>
                 </>
               )}
 
@@ -637,7 +672,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       <Card variant="outlined">
                         <CardContent>
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
-                            {match.team1?.name || 'Team 1'}
+                            {match.team1?.name ||
+                              (match.config?.team1 as { name?: string } | undefined)?.name ||
+                              'Team 1'}
                           </Typography>
                           {normalizedTeam1Players.length > 0 ? (
                             <Stack spacing={1}>
@@ -712,7 +749,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                       <Card variant="outlined">
                         <CardContent>
                           <Typography variant="subtitle2" fontWeight={600} mb={2} color="primary">
-                            {match.team2?.name || 'Team 2'}
+                            {match.team2?.name ||
+                              (match.config?.team2 as { name?: string } | undefined)?.name ||
+                              'Team 2'}
                           </Typography>
                           {normalizedTeam2Players.length > 0 ? (
                             <Stack spacing={1}>

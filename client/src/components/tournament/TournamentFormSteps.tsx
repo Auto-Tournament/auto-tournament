@@ -136,6 +136,9 @@ export function TournamentFormSteps({
     onMapsChange,
   });
 
+  // Track previous tournament type so we can detect transitions into shuffle.
+  const prevTypeRef = React.useRef<string | null>(null);
+
   // Load servers for the modals
   React.useEffect(() => {
     const loadServers = async () => {
@@ -152,6 +155,13 @@ export function TournamentFormSteps({
   // Initialize selectedMapPool based on mapPoolId prop or default map pool when mapPools load
   React.useEffect(() => {
     if (mapPools.length > 0 && !selectedMapPool) {
+      // For shuffle tournaments, default to "Custom" so organizers are nudged
+      // to pick an explicit sequence of maps instead of a static pool.
+      if (type === 'shuffle') {
+        setSelectedMapPool('custom');
+        return;
+      }
+
       // If mapPoolId is provided (e.g., from template), use it
       if (mapPoolId !== null && mapPoolId !== undefined) {
         const pool = mapPools.find((p) => p.id === mapPoolId);
@@ -170,7 +180,21 @@ export function TournamentFormSteps({
         }
       }
     }
-  }, [mapPools, selectedMapPool, maps.length, mapPoolId]);
+  }, [mapPools, selectedMapPool, maps.length, mapPoolId, type]);
+
+  // When switching from a non-shuffle type to shuffle in the wizard, default
+  // to a clean "Custom" pool with zero maps instead of inheriting the previous
+  // static pool (e.g., Active Duty).
+  React.useEffect(() => {
+    const prevType = prevTypeRef.current;
+    if (type === 'shuffle' && prevType && prevType !== 'shuffle') {
+      setSelectedMapPool('custom');
+      if (maps.length > 0) {
+        onMapsChange([]);
+      }
+    }
+    prevTypeRef.current = type;
+  }, [type, maps.length, onMapsChange]);
 
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);

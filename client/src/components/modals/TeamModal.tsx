@@ -394,83 +394,6 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               </Button>
             </Box>
 
-            <Divider sx={{ mb: 2 }} />
-
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Add players by pasting Steam URL or selecting from existing players
-            </Typography>
-
-            <Box display="flex" flexDirection="column" gap={1}>
-              <Box display="flex" gap={1}>
-                <TextField
-                  label="Steam ID / Vanity URL"
-                  value={newPlayerSteamId}
-                  onChange={(e) => setNewPlayerSteamId(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && newPlayerSteamId.trim() && !resolving) {
-                      handleResolveSteam();
-                    }
-                  }}
-                  placeholder="gaben or steamcommunity.com/id/gaben"
-                  size="small"
-                  disabled={resolving}
-                  sx={{ flex: 2 }}
-                  slotProps={{
-                    htmlInput: { 'data-testid': 'team-steam-id-input' },
-                  }}
-                />
-                <Button
-                  variant="outlined"
-                  onClick={handleResolveSteam}
-                  disabled={resolving || !newPlayerSteamId.trim()}
-                  size="small"
-                >
-                  {resolving ? 'Resolving...' : <SearchIcon />}
-                </Button>
-              </Box>
-              <Box display="flex" gap={1}>
-                <TextField
-                  label="Player Name"
-                  value={newPlayerName}
-                  onChange={(e) => setNewPlayerName(e.target.value)}
-                  placeholder="s1mple"
-                  size="small"
-                  disabled={resolving}
-                  sx={{ flex: 1 }}
-                  slotProps={{
-                    htmlInput: { 'data-testid': 'team-player-name-input' },
-                  }}
-                />
-                <TextField
-                  label="ELO (optional)"
-                  type="number"
-                  value={newPlayerElo}
-                  onChange={(e) => {
-                    const value = e.target.value;
-                    setNewPlayerElo(value === '' ? '' : Number(value));
-                  }}
-                  placeholder="1500"
-                  size="small"
-                  disabled={resolving}
-                  helperText="Default: 1500"
-                  sx={{ flex: 1, maxWidth: 150 }}
-                  slotProps={{
-                    htmlInput: { min: 0, max: 10000, 'data-testid': 'team-player-elo-input' },
-                  }}
-                />
-                <Button
-                  data-testid="team-add-player-button"
-                  variant="contained"
-                  onClick={handleAddPlayer}
-                  disabled={resolving}
-                  size="small"
-                  sx={{ minWidth: '56px' }}
-                >
-                  <AddIcon />
-                </Button>
-              </Box>
-            </Box>
-
             {players.length > 0 ? (
               <List sx={{ bgcolor: 'background.paper' }}>
                 {players.map((player) => (
@@ -513,6 +436,82 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             ) : (
               <Alert data-testid="team-no-players-alert" severity="info">No players added yet. Add at least one player.</Alert>
             )}
+
+            <Divider sx={{ my: 2 }} />
+
+            <Typography variant="body2" color="text.secondary" gutterBottom>
+              Add players by pasting Steam URL or selecting from existing players
+            </Typography>
+
+            <Box display="flex" flexDirection="column" gap={1}>
+              <Box display="flex" gap={1}>
+                <TextField
+                  label="Steam ID / Vanity URL"
+                  value={newPlayerSteamId}
+                  onChange={(e) => setNewPlayerSteamId(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newPlayerSteamId.trim() && !resolving) {
+                      handleResolveSteam();
+                    }
+                  }}
+                  placeholder="gaben or steamcommunity.com/id/gaben"
+                  size="small"
+                  disabled={resolving}
+                  sx={{ flex: 2 }}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'team-steam-id-input' },
+                  }}
+                />
+                <Button
+                  variant="outlined"
+                  onClick={handleResolveSteam}
+                  disabled={resolving || !newPlayerSteamId.trim()}
+                  size="small"
+                >
+                  {resolving ? 'Resolving...' : <SearchIcon fontSize="small" />}
+                </Button>
+              </Box>
+              <Box display="flex" gap={1} alignItems="center">
+                <TextField
+                  label="Player Name"
+                  value={newPlayerName}
+                  onChange={(e) => setNewPlayerName(e.target.value)}
+                  placeholder="s1mple"
+                  size="small"
+                  disabled={resolving}
+                  sx={{ flex: 1 }}
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'team-player-name-input' },
+                  }}
+                />
+                <TextField
+                  label="ELO (optional)"
+                  type="number"
+                  value={newPlayerElo}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    setNewPlayerElo(value === '' ? '' : Number(value));
+                  }}
+                  placeholder="1500"
+                  size="small"
+                  disabled={resolving}
+                  helperText="Default: 1500"
+                  sx={{ flex: 1, maxWidth: 150 }}
+                  slotProps={{
+                    htmlInput: { min: 0, max: 10000, 'data-testid': 'team-player-elo-input' },
+                  }}
+                />
+                <IconButton
+                  data-testid="team-add-player-button"
+                  color="primary"
+                  onClick={handleAddPlayer}
+                  disabled={resolving}
+                  size="small"
+                >
+                  <AddIcon fontSize="small" />
+                </IconButton>
+              </Box>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>

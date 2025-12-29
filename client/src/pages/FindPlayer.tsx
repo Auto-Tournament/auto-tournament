@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
+  Avatar,
   Box,
   Card,
   CardContent,
@@ -174,6 +175,27 @@ export default function FindPlayer() {
                     sx: players.length === 0 ? { pointerEvents: 'none' } : undefined,
                   },
                 }}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  >
+                    <Avatar
+                      src={option.avatar}
+                      alt={option.name}
+                      sx={{ width: 24, height: 24, fontSize: '0.75rem' }}
+                    >
+                      {option.name?.charAt(0).toUpperCase() ?? option.id.charAt(0).toUpperCase()}
+                    </Avatar>
+                    <Box>
+                      <Typography variant="body2">{option.name}</Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {option.id}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
                 renderInput={(params) => (
                   <TextField
                     {...params}
