@@ -734,30 +734,31 @@ export default function PlayerProfile() {
             </CardContent>
           </Card>
 
+          {currentMatch && (
+            <TournamentRulesAccordion
+              format={rulesFormatForPlayer}
+              maxRounds={rulesMaxRoundsForPlayer}
+              overtimeMode={rulesOvertimeModeForPlayer}
+              overtimeSegments={rulesOvertimeSegmentsForPlayer}
+            />
+          )}
+
           {/* Current / Upcoming Match (connect info) */}
           {currentMatch ? (
-            <>
-              <MatchInfoCard
-                match={currentMatch}
-                team={currentTeam}
-                tournamentStatus={currentTournamentStatus}
-                vetoCompleted={currentMatch.veto?.status === 'completed'}
-                matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
-                onVetoComplete={async () => {
-                  setTimeout(() => {
-                    void loadPlayerData({ silent: true });
-                  }, 1000);
-                }}
-                getRoundLabel={getRoundLabel}
-              />
-
-              <TournamentRulesAccordion
-                format={rulesFormatForPlayer}
-                maxRounds={rulesMaxRoundsForPlayer}
-                overtimeMode={rulesOvertimeModeForPlayer}
-                overtimeSegments={rulesOvertimeSegmentsForPlayer}
-              />
-            </>
+            <MatchInfoCard
+              match={currentMatch}
+              team={currentTeam}
+              tournamentStatus={currentTournamentStatus}
+              vetoCompleted={currentMatch.veto?.status === 'completed'}
+              matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
+              onVetoComplete={async () => {
+                setTimeout(() => {
+                  void loadPlayerData({ silent: true });
+                }, 1000);
+              }}
+              getRoundLabel={getRoundLabel}
+              highlightPlayerId={player.id}
+            />
           ) : (
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 4 }}>

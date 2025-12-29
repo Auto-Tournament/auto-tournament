@@ -23,6 +23,8 @@ interface MatchPlayerPerformanceProps {
   // When true, team1 stats represent "your" team; when false, team2 does.
   // Defaults to true so existing callers (team page) keep current behaviour.
   yourTeamIsTeam1?: boolean;
+  // Optional: when set, this Steam ID will be highlighted and not linked.
+  highlightPlayerId?: string;
 }
 
 function getAdrValue(player: PlayerLine): number {
@@ -36,7 +38,11 @@ function formatAdr(player: PlayerLine): string {
   return Math.round(adr).toString();
 }
 
-function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
+function renderTable(
+  rows: PlayerLine[],
+  accent: 'primary' | 'error',
+  highlightPlayerId?: string
+) {
   const sortedRows = [...rows].sort((a, b) => getAdrValue(b) - getAdrValue(a));
 
   return (
@@ -62,44 +68,52 @@ function renderTable(rows: PlayerLine[], accent: 'primary' | 'error') {
               </TableCell>
             </TableRow>
           ) : (
-            sortedRows.map((player) => (
-              <TableRow key={player.steamId}>
-                <TableCell
-                  sx={{
-                    fontWeight: 600,
-                    maxWidth: 180,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color={`${accent}.main`}
-                    fontWeight={600}
-                    component="a"
-                    href={getPlayerPageUrl(player.steamId)}
-                    target="_blank"
-                    rel="noopener noreferrer"
+            sortedRows.map((player) => {
+              const isHighlighted = highlightPlayerId === player.steamId;
+
+              return (
+                <TableRow key={player.steamId}>
+                  <TableCell
                     sx={{
-                      textDecoration: 'none',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        textDecoration: 'underline',
-                      },
+                      fontWeight: 600,
+                      maxWidth: 180,
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
                     }}
-                    noWrap
                   >
-                    {player.name}
-                  </Typography>
-                </TableCell>
-                <TableCell align="right">{player.kills}</TableCell>
-                <TableCell align="right">{player.deaths}</TableCell>
-                <TableCell align="right">{player.assists}</TableCell>
-                <TableCell align="right">{formatAdr(player)}</TableCell>
-                <TableCell align="right">{player.mvps ?? 0}</TableCell>
-              </TableRow>
-            ))
+                    <Typography
+                      variant="body2"
+                      color={isHighlighted ? 'common.white' : `${accent}.main`}
+                      fontWeight={600}
+                      component={isHighlighted ? 'span' : 'a'}
+                      {...(!isHighlighted && {
+                        href: getPlayerPageUrl(player.steamId),
+                        target: '_blank',
+                        rel: 'noopener noreferrer',
+                      })}
+                      sx={{
+                        textDecoration: 'none',
+                        cursor: isHighlighted ? 'default' : 'pointer',
+                        '&:hover': !isHighlighted
+                          ? {
+                              textDecoration: 'underline',
+                            }
+                          : undefined,
+                      }}
+                      noWrap
+                    >
+                      {player.name}
+                    </Typography>
+                  </TableCell>
+                  <TableCell align="right">{player.kills}</TableCell>
+                  <TableCell align="right">{player.deaths}</TableCell>
+                  <TableCell align="right">{player.assists}</TableCell>
+                  <TableCell align="right">{formatAdr(player)}</TableCell>
+                  <TableCell align="right">{player.mvps ?? 0}</TableCell>
+                </TableRow>
+              );
+            })
           )}
         </TableBody>
       </Table>
@@ -112,6 +126,7 @@ export function MatchPlayerPerformance({
   teamName,
   opponentName,
   yourTeamIsTeam1 = true,
+  highlightPlayerId,
 }: MatchPlayerPerformanceProps) {
   if (!playerStats || (!playerStats.team1.length && !playerStats.team2.length)) {
     return null;
@@ -130,7 +145,7 @@ export function MatchPlayerPerformance({
           <Typography variant="subtitle2" color="text.secondary" mb={0.5}>
             {teamName || 'Your Team'}
           </Typography>
-          {renderTable(yourTeamStats, 'primary')}
+          {renderTable(yourTeamStats, 'primary', highlightPlayerId)}
         </Box>
         <Box flex={1}>
           <Typography
@@ -141,7 +156,7 @@ export function MatchPlayerPerformance({
           >
             {opponentName || 'Opponent'}
           </Typography>
-          {renderTable(opponentStats, 'error')}
+          {renderTable(opponentStats, 'error', highlightPlayerId)}
         </Box>
       </Stack>
     </Box>

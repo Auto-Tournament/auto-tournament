@@ -269,6 +269,14 @@ export default function TeamMatch() {
               {tournamentName}
             </Typography>
           )}
+
+          <TournamentRulesAccordion
+            format={rulesFormat}
+            maxRounds={rulesMaxRounds}
+            overtimeMode={rulesOvertimeMode}
+            overtimeSegments={rulesOvertimeSegments}
+          />
+
           <MatchNotificationAudio
             vetoReady={vetoReady}
             serverReady={serverReady}
@@ -285,13 +293,6 @@ export default function TeamMatch() {
             handleVolumeChange={handleVolumeChange}
             handlePreviewSound={handlePreviewSound}
             handleSoundChange={handleSoundChange}
-          />
-
-          <TournamentRulesAccordion
-            format={rulesFormat}
-            maxRounds={rulesMaxRounds}
-            overtimeMode={rulesOvertimeMode}
-            overtimeSegments={rulesOvertimeSegments}
           />
 
           {match && (

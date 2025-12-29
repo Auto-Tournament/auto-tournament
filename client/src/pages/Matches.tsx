@@ -70,7 +70,23 @@ export default function Matches() {
           (!!match.slug && !!m.slug && m.slug === match.slug);
 
         const applyLiveScoreOverlay = (base: Match, updates: typeof match): Match => {
-          const next: Match = { ...base, ...updates };
+          const statusFromUpdate = updates.status as Match['status'] | undefined;
+          const isCompletedUpdate = statusFromUpdate === 'completed';
+
+          // Start from the existing match state
+          const next: Match = { ...base };
+
+          // When a match transitions into the completed state via websocket,
+          // explicitly reset both scores back to 0-0 before applying the
+          // final series result from the payload. This avoids transient
+          // hybrids like "9-1" where only the winner's side was updated.
+          if (isCompletedUpdate) {
+            next.team1Score = 0;
+            next.team2Score = 0;
+          }
+
+          Object.assign(next, updates);
+
           const liveStats = updates.liveStats;
           if (liveStats && next.status !== 'completed') {
             // For in‑progress matches, use current map rounds from liveStats so

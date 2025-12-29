@@ -130,6 +130,15 @@ export const useBracket = () => {
           changed = true;
         }
 
+        // When a match transitions into the completed state via websocket,
+        // explicitly reset both scores back to 0-0 before applying the
+        // final series result from the payload. This avoids transient
+        // hybrids like "9-1" where only the winner's side was updated.
+        if (newStatus === 'completed') {
+          next.team1Score = 0;
+          next.team2Score = 0;
+        }
+
         const serverId =
           (payload.serverId as string | undefined) ||
           ((payload as { server_id?: string }).server_id ?? undefined);

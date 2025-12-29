@@ -21,6 +21,8 @@ interface MatchInfoCardProps {
   matchFormat: 'bo1' | 'bo3' | 'bo5';
   onVetoComplete: (veto: VetoState) => void;
   getRoundLabel: (round: number) => string;
+  // Optional: when provided, this player's row will be highlighted and not linked
+  highlightPlayerId?: string;
 }
 
 const LIVE_STATUS_DISPLAY: Record<
@@ -47,6 +49,7 @@ export function MatchInfoCard({
   matchFormat,
   onVetoComplete,
   getRoundLabel,
+  highlightPlayerId,
 }: MatchInfoCardProps) {
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
@@ -369,12 +372,13 @@ export function MatchInfoCard({
             />
 
             {hasPlayerStats && playerStats && (
-            <MatchPlayerPerformance
-              playerStats={playerStats}
-              teamName={team?.name}
-              opponentName={match.opponent?.name}
-              yourTeamIsTeam1={match.isTeam1}
-            />
+              <MatchPlayerPerformance
+                playerStats={playerStats}
+                teamName={team?.name}
+                opponentName={match.opponent?.name}
+                yourTeamIsTeam1={match.isTeam1}
+                highlightPlayerId={highlightPlayerId}
+              />
             )}
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
