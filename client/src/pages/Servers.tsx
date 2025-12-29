@@ -514,6 +514,8 @@ export default function Servers() {
                                     ? 'success'
                                     : server.pluginStatus === 'live'
                                     ? 'error'
+                                    : server.pluginStatus === 'queued'
+                                    ? 'info'
                                     : server.pluginStatus === 'warmup' ||
                                       server.pluginStatus === 'loading'
                                     ? 'info'

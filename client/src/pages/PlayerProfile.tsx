@@ -619,6 +619,36 @@ export default function PlayerProfile() {
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
       <Container maxWidth="md">
         <Stack spacing={3}>
+          {/* Local navigation */}
+          <Box display="flex" justifyContent="space-between" alignItems="center">
+            <Typography variant="subtitle2" color="text.secondary">
+              Public Player View
+            </Typography>
+            <Box display="flex" gap={1}>
+              <Button
+                variant="outlined"
+                size="small"
+                component={RouterLink}
+                to="/player"
+              >
+                Players
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<EmojiEventsIcon />}
+                onClick={() => {
+                  const url = latestTournamentId
+                    ? `/tournament/${latestTournamentId}/leaderboard`
+                    : '/tournament/1/leaderboard';
+                  window.open(url, '_blank');
+                }}
+              >
+                Leaderboard
+              </Button>
+            </Box>
+          </Box>
+
           {/* Player Header */}
           <Card>
             <CardContent>

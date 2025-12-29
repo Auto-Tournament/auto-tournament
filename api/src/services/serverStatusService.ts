@@ -15,6 +15,7 @@ export enum ServerStatus {
   PAUSED = 'paused', // Match is paused
   HALFTIME = 'halftime', // Halftime break
   POSTGAME = 'postgame', // Match completed, server needs cleanup
+  QUEUED = 'queued', // Next match is queued to load after reset/postgame
   ERROR = 'error', // Something went wrong
 }
 
@@ -190,6 +191,12 @@ export class ServerStatusService {
           label: 'Match Ended',
           description: 'Match completed, server cleaning up',
           color: 'default',
+        };
+      case ServerStatus.QUEUED:
+        return {
+          label: 'Next Match Queued',
+          description: 'Current series is ending – next match will auto-load on this server',
+          color: 'info',
         };
       case ServerStatus.ERROR:
         return {
