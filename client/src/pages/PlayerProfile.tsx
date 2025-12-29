@@ -616,14 +616,12 @@ export default function PlayerProfile() {
     Boolean(currentMatch.server) &&
     (currentMatch.status === 'loaded' || currentMatch.status === 'live');
 
-  // Recent form: last 5 matches as W/L string (no hooks needed here; small arrays)
+  // Recent form timeline: last N matches as W/L
   const recentMatches = [...uniqueMatchHistory].sort(
     (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
   );
-  const recentForm = recentMatches
-    .slice(0, 5)
-    .map((m) => (m.wonMatch ? 'W' : 'L'))
-    .join('');
+  const maxRecentTimelineMatches = 20;
+  const recentTimelineMatches = recentMatches.slice(0, maxRecentTimelineMatches);
 
   // Best and toughest matches by ADR
   let bestAdrMatch: MatchHistoryEntry | null = null;
@@ -838,68 +836,14 @@ export default function PlayerProfile() {
           {hasAnyMatches && (
             <Card>
               <CardContent>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
+                <Typography variant="h6" fontWeight={600} gutterBottom textAlign="center">
                   Recent Form & Highlights
                 </Typography>
-                <Box display="flex" flexWrap="wrap" gap={2}>
-                  <Box minWidth={200}>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Recent Form (last 5)
-                    </Typography>
-                    {recentForm ? (
-                      <Box position="relative" mt={1} px={1}>
-                        {/* Centered horizontal timeline */}
-                        <Box
-                          sx={{
-                            position: 'absolute',
-                            top: '50%',
-                            left: 0,
-                            right: 0,
-                            height: 2,
-                            bgcolor: 'divider',
-                            transform: 'translateY(-50%)',
-                          }}
-                        />
-                        <Box display="flex" justifyContent="space-between" position="relative">
-                          {recentForm.split('').map((result, index) => {
-                            const isWin = result === 'W';
-                            const isLoss = result === 'L';
-                            const color = isWin
-                              ? 'success.main'
-                              : isLoss
-                              ? 'error.main'
-                              : 'text.disabled';
-                            return (
-                              <Box
-                                key={`${result}-${index}`}
-                                sx={{
-                                  width: 28,
-                                  height: 28,
-                                  borderRadius: '50%',
-                                  bgcolor: color,
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  justifyContent: 'center',
-                                  color: 'common.white',
-                                  fontSize: 14,
-                                  fontWeight: 700,
-                                  boxShadow: 1,
-                                }}
-                              >
-                                {result}
-                              </Box>
-                            );
-                          })}
-                        </Box>
-                      </Box>
-                    ) : (
-                      <Typography variant="body2" color="text.secondary">
-                        No matches yet
-                      </Typography>
-                    )}
-                  </Box>
+
+                {/* ADR highlights centered above timeline */}
+                <Box display="flex" justifyContent="center" gap={4} mb={3} flexWrap="wrap">
                   {bestAdrMatch && (
-                    <Box>
+                    <Box textAlign="center">
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Best Match (ADR)
                       </Typography>
@@ -910,7 +854,7 @@ export default function PlayerProfile() {
                     </Box>
                   )}
                   {worstAdrMatch && (
-                    <Box>
+                    <Box textAlign="center">
                       <Typography variant="body2" color="text.secondary" gutterBottom>
                         Toughest Match (ADR)
                       </Typography>
@@ -919,6 +863,72 @@ export default function PlayerProfile() {
                         ({getRoundLabel(worstAdrMatch.round)})
                       </Typography>
                     </Box>
+                  )}
+                </Box>
+
+                {/* Full-width recent form timeline */}
+                <Box>
+                  <Typography variant="body2" color="text.secondary" gutterBottom>
+                    Recent Form (last {maxRecentTimelineMatches} matches)
+                  </Typography>
+                  {recentTimelineMatches.length > 0 ? (
+                    <Box position="relative" mt={2} px={1}>
+                      {/* Centered horizontal timeline */}
+                      <Box
+                        sx={{
+                          position: 'absolute',
+                          top: '50%',
+                          left: 0,
+                          right: 0,
+                          height: 2,
+                          bgcolor: 'divider',
+                          transform: 'translateY(-50%)',
+                        }}
+                      />
+                      <Box
+                        display="flex"
+                        justifyContent="space-between"
+                        position="relative"
+                        width="100%"
+                      >
+                        {Array.from({ length: maxRecentTimelineMatches }).map((_, index) => {
+                          const match = recentTimelineMatches[index];
+                          const isPlayed = !!match;
+                          const isWin = match?.wonMatch ?? false;
+                          const color = isPlayed
+                            ? isWin
+                              ? 'success.main'
+                              : 'error.main'
+                            : 'action.disabledBackground';
+                          const label = isPlayed ? (isWin ? 'W' : 'L') : '';
+                          return (
+                            <Box
+                              key={match ? match.slug : `empty-${index}`}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: '50%',
+                                bgcolor: color,
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                // Always use dark text for readability on bright win/loss colors
+                                color: 'common.black',
+                                fontSize: 14,
+                                fontWeight: 700,
+                                boxShadow: isPlayed ? 1 : 0,
+                              }}
+                            >
+                              {label}
+                            </Box>
+                          );
+                        })}
+                      </Box>
+                    </Box>
+                  ) : (
+                    <Typography variant="body2" color="text.secondary">
+                      No matches yet
+                    </Typography>
                   )}
                 </Box>
               </CardContent>
