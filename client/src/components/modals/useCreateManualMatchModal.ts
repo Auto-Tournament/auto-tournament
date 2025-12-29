@@ -572,7 +572,11 @@ export function useCreateManualMatchModal({
 
   const handleTemplateChange = (templateId: string) => {
     setSelectedTemplateId(templateId);
-    if (!templateId) return;
+    if (!templateId) {
+      // If the admin explicitly chooses "None", fall back to existing/default
+      // team modes. Do not override whatever they have already picked.
+      return;
+    }
 
     const template = templates.find((t) => t.id === templateId);
     if (!template) return;
@@ -600,6 +604,14 @@ export function useCreateManualMatchModal({
         'knife' | 'team1_ct' | 'team2_ct'
       >
     );
+
+    // When a template is selected, default both sides to "new team" so the
+    // player selectors are immediately visible and we don't force creating
+    // dedicated team records for ad-hoc matches.
+    setTeam1Mode('new');
+    setTeam2Mode('new');
+    setTeam1Id('');
+    setTeam2Id('');
 
     // After loading a template, jump straight to the team/server step so the
     // user can immediately pick teams. Maps & rules are already configured.

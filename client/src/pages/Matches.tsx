@@ -411,6 +411,9 @@ export default function Matches() {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   const isManualMatch = isManualMatchFlag(match);
                   const manualRoundLabel = isManualMatch ? 'Manual match' : undefined;
+                  const tournamentStartedForCard = isManualMatch
+                    ? undefined
+                    : tournamentStatus === 'in_progress';
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
@@ -419,10 +422,7 @@ export default function Matches() {
                         roundLabel={manualRoundLabel}
                         variant="default"
                         vetoCompleted={match.vetoCompleted}
-                        // Manual matches are always considered "independent" of
-                        // the global tournament status so they never show
-                        // "Waiting for tournament to start".
-                        tournamentStarted={!isManualMatch && tournamentStatus === 'in_progress'}
+                        tournamentStarted={tournamentStartedForCard}
                         onClick={() => setSelectedMatch(match)}
                       />
                     </Grid>

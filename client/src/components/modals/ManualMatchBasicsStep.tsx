@@ -173,6 +173,16 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
     );
   };
 
+  const availableServers = servers.filter((server) => {
+    const statusInfo = serverStatuses.get(server.id);
+    const allocInfo = serverAllocation.get(server.id);
+
+    // Only show servers that are online and allocatable, to avoid double booking.
+    if (!statusInfo || statusInfo.status !== 'online') return false;
+    if (allocInfo && allocInfo.allocatable === false) return false;
+    return true;
+  });
+
   return (
     <>
       {/* Server */}
@@ -182,17 +192,19 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         value={serverId}
         onChange={(e) => onServerChange(e.target.value)}
         fullWidth
-        disabled={loadingServers || servers.length === 0}
+        disabled={loadingServers || availableServers.length === 0}
         error={submitAttempted && !serverId}
         helperText={
           servers.length === 0
             ? 'No enabled servers available. Add a server first from the Servers page.'
+            : availableServers.length === 0
+            ? 'No available servers right now. All enabled servers are busy or cooling down.'
             : submitAttempted && !serverId
             ? 'Server is required.'
             : 'Select a server to host this match.'
         }
       >
-        {servers.map((server) => (
+        {availableServers.map((server) => (
           <MenuItem key={server.id} value={server.id}>
             <Box
               display="flex"
@@ -279,9 +291,9 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         disabled={loadingTeams}
         helperText={
           teams.length === 0
-            ? 'No existing teams – using an ad-hoc team for this match.'
+            ? 'No existing teams – using a one-off team for this match.'
             : team1Mode === 'new'
-            ? 'Ad-hoc team for this match only. Players are defined below.'
+            ? 'Team for this match only. Players are defined below.'
             : 'Optional – select Team 1 from existing teams, or choose "New team" to define players only.'
         }
         error={false}
@@ -289,7 +301,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         <MenuItem value="">
           <em>None</em>
         </MenuItem>
-        <MenuItem value="__new__">New team (ad-hoc)</MenuItem>
+        <MenuItem value="__new__">New team (this match only)</MenuItem>
         {teams
           .filter((team) => team.id !== team2Id)
           .map((team) => (
@@ -327,9 +339,9 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         disabled={loadingTeams}
         helperText={
           teams.length === 0
-            ? 'No existing teams – using an ad-hoc team for this match.'
+            ? 'No existing teams – using a one-off team for this match.'
             : team2Mode === 'new'
-            ? 'Ad-hoc team for this match only. Players are defined below.'
+            ? 'Team for this match only. Players are defined below.'
             : 'Optional – select Team 2 from existing teams, or choose "New team" to define players only.'
         }
         error={false}
@@ -337,7 +349,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         <MenuItem value="">
           <em>None</em>
         </MenuItem>
-        <MenuItem value="__new__">New team (ad-hoc)</MenuItem>
+        <MenuItem value="__new__">New team (this match only)</MenuItem>
         {teams
           .filter((team) => team.id !== team1Id)
           .map((team) => (

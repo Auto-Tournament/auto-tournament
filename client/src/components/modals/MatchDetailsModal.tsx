@@ -94,8 +94,7 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   // status text uses neutral copy like "Initializing match..." instead of
   // "Waiting for tournament to start".
   const tournamentStarted =
-    !isManualMatch &&
-    (tournamentStatus === 'in_progress' || tournamentStatus === 'completed');
+    !isManualMatch && (tournamentStatus === 'in_progress' || tournamentStatus === 'completed');
 
   // Calculate derived series wins before early return (React hooks rule).
   // For completed matches, use the persisted series score. While a series is
@@ -290,6 +289,18 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     (configuredTotalMaps && configuredTotalMaps > 0 ? configuredTotalMaps : undefined) ??
     (liveStats?.totalMaps && liveStats.totalMaps > 0 ? liveStats.totalMaps : undefined);
 
+  // Normalize the map index used for display so we never show nonsense like
+  // "Map 2 of 1" when a 1-based counter sneaks in from live stats.
+  let displayMapIndex: number | null = null;
+  if (typeof activeMapNumber === 'number') {
+    if (typeof totalMapCount === 'number' && totalMapCount > 0) {
+      const clamped = Math.min(Math.max(activeMapNumber, 0), totalMapCount - 1);
+      displayMapIndex = clamped;
+    } else {
+      displayMapIndex = Math.max(activeMapNumber, 0);
+    }
+  }
+
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
 
@@ -397,13 +408,9 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   }
 
   const team1Name =
-    match.team1?.name ||
-    (match.config?.team1 as { name?: string } | undefined)?.name ||
-    'Team 1';
+    match.team1?.name || (match.config?.team1 as { name?: string } | undefined)?.name || 'Team 1';
   const team2Name =
-    match.team2?.name ||
-    (match.config?.team2 as { name?: string } | undefined)?.name ||
-    'Team 2';
+    match.team2?.name || (match.config?.team2 as { name?: string } | undefined)?.name || 'Team 2';
 
   return (
     <>
@@ -632,12 +639,12 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                   </Typography>
                   {currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {`Map ${activeMapNumber !== null ? activeMapNumber + 1 : ''}${
+                      {`Map ${displayMapIndex !== null ? displayMapIndex + 1 : ''}${
                         totalMapCount ? ` of ${totalMapCount}` : ''
                       }: ${currentMapLabel}`}
                     </Typography>
                   )}
-                  {roundNumber !== null && (
+                  {roundNumber !== null && roundNumber > 0 && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {`Round ${roundNumber}`}
                     </Typography>
@@ -1109,9 +1116,8 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 Are you sure you want to delete this manual match?
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                This action cannot be undone. It will remove the match{' '}
-                <strong>{match.slug}</strong> and its configuration, but will not affect any
-                tournament brackets.
+                This action cannot be undone. It will remove the match <strong>{match.slug}</strong>{' '}
+                and its configuration, but will not affect any tournament brackets.
               </Typography>
             </Box>
           }
