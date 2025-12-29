@@ -204,6 +204,9 @@ export default function PlayerProfile() {
   });
   const socketRef = useRef<Socket | null>(null);
 
+  // Shared sound settings (persisted via localStorage)
+  const { isMuted, volume, soundFile } = useSoundSettings();
+
   // Deduplicate matches by slug to avoid double-counting wins/losses if stats rows are duplicated.
   const uniqueMatchHistory: MatchHistoryEntry[] = React.useMemo(() => {
     const bySlug = new Map<string, MatchHistoryEntry>();
@@ -595,9 +598,6 @@ export default function PlayerProfile() {
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
   const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
-  // Shared sound settings (persisted via localStorage)
-  const { isMuted, volume, soundFile } = useSoundSettings();
-
   // Compute sound triggers for the player's current match
   const playerMatchFormat =
     (currentMatch?.matchFormat as 'bo1' | 'bo3' | 'bo5' | undefined) || 'bo1';
@@ -842,18 +842,61 @@ export default function PlayerProfile() {
                   Recent Form & Highlights
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={2}>
-                  <Box>
+                  <Box minWidth={200}>
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       Recent Form (last 5)
                     </Typography>
-                    <Chip
-                      label={
-                        recentForm
-                          ? recentForm.split('').join(' ')
-                          : 'No matches yet'
-                      }
-                      color={wins >= losses ? 'success' : 'default'}
-                    />
+                    {recentForm ? (
+                      <Box position="relative" mt={1} px={1}>
+                        {/* Centered horizontal timeline */}
+                        <Box
+                          sx={{
+                            position: 'absolute',
+                            top: '50%',
+                            left: 0,
+                            right: 0,
+                            height: 2,
+                            bgcolor: 'divider',
+                            transform: 'translateY(-50%)',
+                          }}
+                        />
+                        <Box display="flex" justifyContent="space-between" position="relative">
+                          {recentForm.split('').map((result, index) => {
+                            const isWin = result === 'W';
+                            const isLoss = result === 'L';
+                            const color = isWin
+                              ? 'success.main'
+                              : isLoss
+                              ? 'error.main'
+                              : 'text.disabled';
+                            return (
+                              <Box
+                                key={`${result}-${index}`}
+                                sx={{
+                                  width: 28,
+                                  height: 28,
+                                  borderRadius: '50%',
+                                  bgcolor: color,
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  color: 'common.white',
+                                  fontSize: 14,
+                                  fontWeight: 700,
+                                  boxShadow: 1,
+                                }}
+                              >
+                                {result}
+                              </Box>
+                            );
+                          })}
+                        </Box>
+                      </Box>
+                    ) : (
+                      <Typography variant="body2" color="text.secondary">
+                        No matches yet
+                      </Typography>
+                    )}
                   </Box>
                   {bestAdrMatch && (
                     <Box>

@@ -39,8 +39,14 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
     );
   }
 
-  // Filter matches with valid data
-  const validMatches = matchHistory.filter((m) => m.adr !== undefined || m.kills !== undefined);
+  // Filter matches with any recorded stats
+  const validMatches = matchHistory.filter(
+    (m) =>
+      m.adr !== undefined ||
+      m.kills !== undefined ||
+      m.deaths !== undefined ||
+      m.assists !== undefined
+  );
   if (validMatches.length === 0) {
     return (
       <Box textAlign="center" py={4}>
@@ -59,12 +65,14 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
 
   // Calculate averages for reference lines
   const avgAdr = validMatches.reduce((sum, m) => sum + (m.adr || 0), 0) / validMatches.length;
-  const avgKd = validMatches.reduce((sum, m) => {
-    if (m.kills !== undefined && m.deaths !== undefined && m.deaths > 0) {
-      return sum + (m.kills / m.deaths);
-    }
-    return sum;
-  }, 0) / validMatches.filter((m) => m.kills !== undefined && m.deaths !== undefined && m.deaths > 0).length;
+
+  const kdSamples = validMatches.filter(
+    (m) => m.kills !== undefined && m.deaths !== undefined && m.deaths > 0
+  );
+  const avgKd =
+    kdSamples.length > 0
+      ? kdSamples.reduce((sum, m) => sum + (m.kills! / m.deaths!), 0) / kdSamples.length
+      : 0;
 
   // Find min and max values for scaling
   const adrValues = validMatches.map((m) => m.adr || 0).filter((v) => v > 0);
@@ -84,6 +92,26 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
   const minKd = kdValues.length > 0 ? Math.min(...kdValues, avgKd) : 0;
   const maxKd = kdValues.length > 0 ? Math.max(...kdValues, avgKd) : 1;
   const kdRange = maxKd - minKd || 1;
+
+  // If all ADR and K/D values are effectively zero, there's nothing meaningful
+  // to plot yet – show a friendly "no data" message instead of an empty grid
+  // with axis labels like 0 / 1.00 / 0.00.
+  const hasNonZeroAdr = adrValues.length > 0 && adrValues.some((v) => v > 0);
+  const hasKdPoint = kdValues.length > 0 && kdValues.some((v) => v > 0);
+  if (!hasNonZeroAdr && !hasKdPoint) {
+    return (
+      <Paper variant="outlined" sx={{ p: 2 }}>
+        <Typography variant="h6" fontWeight={600} gutterBottom>
+          Performance Trends
+        </Typography>
+        <Box textAlign="center" py={2}>
+          <Typography variant="body2" color="text.secondary">
+            No meaningful performance data yet – play a few rounds to see ADR and K/D trends.
+          </Typography>
+        </Box>
+      </Paper>
+    );
+  }
 
   // Helper to get Y position for ADR (top half of chart)
   const getAdrY = (adr: number) => {

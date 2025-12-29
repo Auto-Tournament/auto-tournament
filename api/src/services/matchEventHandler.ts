@@ -710,6 +710,15 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
         [match.id]
       );
 
+      // Even though manual matches don't have bracket progression or a
+      // persistent tournament association, we still want them to appear in
+      // player match history. Track per‑player stats using the ad‑hoc team
+      // rosters from the stored match config.
+      await trackPlayerStatsForManualMatch(match, matchSlug, team1Score, team2Score);
+
+      // Now that stats have been recorded, emit a match update so that any
+      // listening UIs (including the public player page) can immediately
+      // reload and see a fully populated match history row.
       emitMatchUpdate({
         id: match.id,
         slug: match.slug,
@@ -717,12 +726,6 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
         team1Score,
         team2Score,
       });
-
-      // Even though manual matches don't have bracket progression or a
-      // persistent tournament association, we still want them to appear in
-      // player match history. Track per‑player stats using the ad‑hoc team
-      // rosters from the stored match config.
-      await trackPlayerStatsForManualMatch(match, matchSlug, team1Score, team2Score);
 
       return;
     }
@@ -752,27 +755,6 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     serverAllocationTracker.markPreparing(match.server_id, matchSlug);
   }
 
-  // Emit match + bracket updates so all UIs (including bracket view) can react
-  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-    match.id,
-  ]);
-  if (updatedMatch) {
-    // Emit a rich payload with series score so bracket/matches views can update immediately
-    emitMatchUpdate({
-      id: updatedMatch.id,
-      slug: updatedMatch.slug,
-      status: updatedMatch.status,
-      team1Score,
-      team2Score,
-      winnerId,
-    });
-    emitBracketUpdate({
-      action: 'match_status',
-      matchSlug: updatedMatch.slug,
-      status: updatedMatch.status,
-    });
-  }
-
   // If this match has a next_match_id, advance the winner
   if (match.next_match_id) {
     advanceWinnerToNextMatch(match, winnerId);
@@ -793,6 +775,30 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   // Always track player stats and ratings where possible
   await trackPlayerStatsForMatch(match, winnerId, matchSlug);
   await updateRatingsForMatch(match, winnerId, matchSlug);
+
+  // Emit match + bracket updates so all UIs (including bracket view and
+  // player profile pages) can react *after* stats and ratings are fully
+  // persisted. This ensures that any API calls triggered by these socket
+  // events will see the final, updated data.
+  const updatedMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+    match.id,
+  ]);
+  if (updatedMatch) {
+    // Emit a rich payload with series score so bracket/matches views can update immediately
+    emitMatchUpdate({
+      id: updatedMatch.id,
+      slug: updatedMatch.slug,
+      status: updatedMatch.status,
+      team1Score,
+      team2Score,
+      winnerId,
+    });
+    emitBracketUpdate({
+      action: 'match_status',
+      matchSlug: updatedMatch.slug,
+      status: updatedMatch.status,
+    });
+  }
 
   // Check for round completion (Swiss)
   if (tournament?.type === 'swiss') {
@@ -817,6 +823,21 @@ async function updateRatingsForMatch(
   matchSlug: string
 ): Promise<void> {
   try {
+    // Idempotency guard: if ratings have already been recorded for this match,
+    // skip re-applying them. Some MatchZy setups can emit duplicate
+    // series_end/finalization events for the same match, and we only ever want
+    // to apply rating changes once per matchSlug.
+    const existingHistory = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(*) as count FROM player_rating_history WHERE match_slug = ?',
+      [matchSlug]
+    );
+    if (existingHistory && Number(existingHistory.count) > 0) {
+      log.warn('Skipping duplicate rating update for match; history already exists', {
+        matchSlug,
+      });
+      return;
+    }
+
     if (!match.team1_id || !match.team2_id) {
       log.warn('Cannot update ratings: missing team IDs', { matchSlug });
       return;
@@ -869,34 +890,65 @@ async function persistPlayerMatchStats(options: {
 }): Promise<void> {
   const { matchSlug, team1Players, team2Players, team1Won } = options;
 
-  // Get player stats from match events (if available)
-  const playerStatsEvent = await db.queryOneAsync<{
-    event_data: string;
-  }>(
-    `SELECT event_data FROM match_events 
-       WHERE match_slug = ? AND event_type = 'player_stats' 
-       ORDER BY received_at DESC LIMIT 1`,
-    [matchSlug]
-  );
-
   let team1PlayerStats: Record<string, Record<string, unknown>> = {};
   let team2PlayerStats: Record<string, Record<string, unknown>> = {};
 
-  if (playerStatsEvent) {
-    try {
-      const eventData = JSON.parse(playerStatsEvent.event_data) as {
-        team1_players?: Record<string, Record<string, unknown>>;
-        team2_players?: Record<string, Record<string, unknown>>;
-      };
-      // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
-      if (eventData.team1_players) {
-        team1PlayerStats = eventData.team1_players;
+  // Preferred source: final live stats snapshot built from round_end events.
+  // These include cumulative per-player damage and rounds_played, which we use
+  // to derive ADR. This avoids needing a separate "player_stats" event from
+  // the plugin.
+  const liveStats = matchLiveStatsService.getStats(matchSlug);
+  if (liveStats?.playerStats) {
+    const toMap = (lines: PlayerStatLine[]): Record<string, Record<string, unknown>> => {
+      const map: Record<string, Record<string, unknown>> = {};
+      for (const line of lines) {
+        map[line.steamId] = {
+          rounds_played: line.roundsPlayed,
+          damage: line.damage,
+          kills: line.kills,
+          deaths: line.deaths,
+          assists: line.assists,
+          headshot_kills: line.headshotKills,
+          flash_assists: line.flashAssists,
+          utility_damage: line.utilityDamage,
+          kast: line.kast,
+          mvps: line.mvps,
+          score: line.score,
+        };
       }
-      if (eventData.team2_players) {
-        team2PlayerStats = eventData.team2_players;
+      return map;
+    };
+
+    team1PlayerStats = toMap(liveStats.playerStats.team1);
+    team2PlayerStats = toMap(liveStats.playerStats.team2);
+  } else {
+    // Fallback for older/alternate setups: look for a dedicated "player_stats"
+    // match event if present and parse its per-player dictionaries.
+    const playerStatsEvent = await db.queryOneAsync<{
+      event_data: string;
+    }>(
+      `SELECT event_data FROM match_events 
+         WHERE match_slug = ? AND event_type = 'player_stats' 
+         ORDER BY received_at DESC LIMIT 1`,
+      [matchSlug]
+    );
+
+    if (playerStatsEvent) {
+      try {
+        const eventData = JSON.parse(playerStatsEvent.event_data) as {
+          team1_players?: Record<string, Record<string, unknown>>;
+          team2_players?: Record<string, Record<string, unknown>>;
+        };
+        // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+        if (eventData.team1_players) {
+          team1PlayerStats = eventData.team1_players;
+        }
+        if (eventData.team2_players) {
+          team2PlayerStats = eventData.team2_players;
+        }
+      } catch (error) {
+        log.warn('Failed to parse player stats from event', { error, matchSlug });
       }
-    } catch (error) {
-      log.warn('Failed to parse player stats from event', { error, matchSlug });
     }
   }
 

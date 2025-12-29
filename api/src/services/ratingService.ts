@@ -354,34 +354,53 @@ export async function getRatingHistory(
     created_at: number;
   }>
 > {
+  // Deduplicate by match_slug so that transient or historical duplicate history
+  // rows (e.g. from earlier bugs or retries) do not show up as multiple rating
+  // changes for the same match in the UI. We keep the most recent entry per
+  // (player_id, match_slug), optionally scoped to a single tournament.
   let query = `
-    SELECT 
-      match_slug,
-      elo_before,
-      elo_after,
-      elo_change,
-      mu_before,
-      mu_after,
-      sigma_before,
-      sigma_after,
-      base_elo_after,
-      stat_adjustment,
-      template_id,
-      match_result,
-      created_at
-    FROM player_rating_history
-    WHERE player_id = ?
+    SELECT
+      prh.match_slug,
+      prh.elo_before,
+      prh.elo_after,
+      prh.elo_change,
+      prh.mu_before,
+      prh.mu_after,
+      prh.sigma_before,
+      prh.sigma_after,
+      prh.base_elo_after,
+      prh.stat_adjustment,
+      prh.template_id,
+      prh.match_result,
+      prh.created_at
+    FROM player_rating_history prh
+    JOIN (
+      SELECT match_slug, MAX(created_at) AS max_created_at
+      FROM player_rating_history
+      WHERE player_id = ?
   `;
+
   const params: unknown[] = [playerId];
 
   if (tournamentId) {
-    query += ` AND match_slug IN (
-      SELECT slug FROM matches WHERE tournament_id = ?
-    )`;
+    query += `
+        AND match_slug IN (
+          SELECT slug FROM matches WHERE tournament_id = ?
+        )
+    `;
     params.push(tournamentId);
   }
 
-  query += ' ORDER BY created_at DESC';
+  query += `
+      GROUP BY match_slug
+    ) latest
+      ON prh.match_slug = latest.match_slug
+     AND prh.created_at = latest.max_created_at
+    WHERE prh.player_id = ?
+    ORDER BY prh.created_at DESC
+  `;
+
+  params.push(playerId);
 
   return await db.queryAsync(query, params);
 }

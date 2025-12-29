@@ -44,10 +44,14 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
     );
   }
 
+  // Ensure history is in chronological order (oldest -> newest) so the
+  // progression line matches the order of matches the player actually played.
+  const sortedHistory = [...history].sort((a, b) => a.createdAt - b.createdAt);
+
   // Prepare data points: include starting ELO and all history points
   const dataPoints = [
     { elo: startingElo, label: 'Starting', isStart: true },
-    ...history.map((entry) => ({
+    ...sortedHistory.map((entry) => ({
       elo: entry.eloAfter,
       label: entry.matchResult === 'win' ? 'Win' : 'Loss',
       change: entry.eloChange,
@@ -56,7 +60,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
   ];
 
   // Find min and max ELO for scaling
-  const allElos = [startingElo, currentElo, ...history.map((h) => h.eloAfter)];
+  const allElos = [startingElo, currentElo, ...sortedHistory.map((h) => h.eloAfter)];
   const minElo = Math.min(...allElos);
   const maxElo = Math.max(...allElos);
   const eloRange = maxElo - minElo || 1; // Avoid division by zero
