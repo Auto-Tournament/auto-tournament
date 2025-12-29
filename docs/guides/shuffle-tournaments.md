@@ -371,7 +371,72 @@ The tournament winner is determined by:
   - **Disable Overtime**: No overtime is played. We send `overtimeMode: "disabled"` and MatchZy sets `mp_overtime_enable 0`.
 - **Overtime Segments (optional)**:
   - Configured as `overtimeSegments` on the tournament and passed through in the match JSON.
-  - Interpreted by the plugin as a policy hint (e.g. whether draws are allowed vs. using a damage-based tiebreak) rather than a hard cap on the number of overtime segments. When unset or 0, MatchZy’s default “unlimited OT until someone wins” behavior is used.
+  - Used by MatchZy as a **policy hint** for how ties should be handled (e.g. whether to allow a draw vs. use a performance tiebreak), not as a hard cap on the number of OT segments. When unset or 0, MatchZy’s default “unlimited OT until someone wins” behavior is used.
+
+### Winner decision & ties (when using performance tiebreaks)
+
+When the MatchZy plugin is configured to use a **performance-based tiebreak** (total team damage),
+the winner is decided using the following rule. This applies equally to shuffle tournaments and
+manual matches that use the same plugin behavior.
+
+#### Inputs
+
+- `t1Score`, `t2Score`: final **map score** (team1 vs team2).
+- `maxRounds`, `overtimeMode`, `overtimeSegments` from the match config JSON:
+  - `overtimeMode`: `"enabled"` or `"disabled"` (or missing).
+  - `overtimeSegments`: integer or `null`.
+- `team1Damage`, `team2Damage`: **total damage dealt** by each team over the map (sum of all players’ damage).
+
+#### Step 1 – Normal score‑based winner
+
+If scores are not tied, the higher score wins:
+
+```text
+if t1Score > t2Score:       winner = team1
+else if t2Score > t1Score:  winner = team2
+else:                       // scores are equal → go to tiebreak logic
+```
+
+#### Step 2 – Decide if we allow a draw or force a tiebreak
+
+When `t1Score == t2Score`:
+
+```text
+overtimeDisabled = (overtimeMode == "disabled")
+hasSegments      = (overtimeSegments is not null)
+
+Case A – "No OT, no draws" (regulation only, force winner)
+  if overtimeDisabled && hasSegments && overtimeSegments == 0:
+    use performance tiebreak (see Step 3)
+
+Case B – "OT configured with a cap" (semantic: no draws after OT)
+  if !overtimeDisabled && hasSegments && overtimeSegments > 0:
+    use performance tiebreak (see Step 3)
+
+Case C – Everything else
+  // missing overtimeSegments, or negative, or overtimeMode not set
+  result = draw
+```
+
+#### Step 3 – Performance‑based tiebreak (damage)
+
+When a performance tiebreak is requested (cases A or B):
+
+```text
+if team1Damage > team2Damage:       winner = team1
+else if team2Damage > team1Damage:  winner = team2
+else:
+  // damage also tied → still a true draw
+  result = draw
+```
+
+In words:
+
+- **Primary winner**: higher final map score.
+- **If scores are tied**:
+  - If `overtimeMode: "disabled"` and `overtimeSegments: 0`: no OT; force a winner by higher total team damage (or draw if damage is also equal).
+  - If OT is enabled and `overtimeSegments > 0`: if a tie persists, force a winner by higher total team damage (or draw if damage is also equal).
+  - Otherwise: treat as a **draw**.
 
 ## API Endpoints
 

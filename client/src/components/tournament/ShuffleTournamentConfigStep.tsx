@@ -233,7 +233,11 @@ export function ShuffleTournamentConfigStep({
         {/* Overtime Settings */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title="Control overtime behavior for shuffle matches. When enabled, standard CS2 overtime is played when scores are tied. You can optionally limit the number of overtime segments or leave it unlimited."
+            title={
+              'Control overtime behavior for shuffle matches and how ties are decided at max rounds. ' +
+              'When overtime is disabled, tied matches can either remain draws or be broken by total team damage, ' +
+              'depending on how overtime segments are configured.'
+            }
             arrow
             placement="top"
             enterDelay={500}
@@ -249,10 +253,12 @@ export function ShuffleTournamentConfigStep({
                   disabled={!canEdit || saving}
                 >
                   <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
-                  <MenuItem value="disabled">Disabled (no overtime, ties allowed)</MenuItem>
+                  <MenuItem value="disabled">Disabled (no overtime)</MenuItem>
                 </Select>
                 <FormHelperText>
-                  Enable or disable overtime when a match is tied at max rounds.
+                  Enable or disable overtime when a match is tied at max rounds. When overtime is
+                  disabled, ties can still be broken by performance (total team damage) if your
+                  MatchZy config uses that rule.
                 </FormHelperText>
               </FormControl>
 
@@ -273,7 +279,7 @@ export function ShuffleTournamentConfigStep({
                       ? `Limit overtime to ${settings.overtimeSegments} segment${
                           settings.overtimeSegments === 1 ? '' : 's'
                         }.`
-                      : 'Leave empty for MatchZy default (usually unlimited overtime).'
+                      : 'Leave empty for MatchZy default (usually unlimited overtime). When segments are set and your MatchZy config enables performance tiebreaks, tied matches after OT can be decided by total team damage instead of ending as a draw.'
                   }
                   fullWidth
                 />

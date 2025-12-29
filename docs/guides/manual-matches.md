@@ -99,6 +99,65 @@ These fields are primarily for MatchZy and tooling that read the config JSON:
 The plugin can safely rely on `maxRounds` + the `mp_overtime_*` cvars to fully reproduce the
 intended manual‑match behavior.
 
+### Winner decision & ties (when using performance tiebreaks)
+
+When your MatchZy config enables a **performance‑based tiebreak** (total team damage), manual
+matches use the same winner decision rule as shuffle tournaments.
+
+#### Inputs
+
+- `t1Score`, `t2Score`: final **map score** (team1 vs team2).
+- `maxRounds`, `overtimeMode`, `overtimeSegments` from the match config JSON:
+  - `overtimeMode`: `"enabled"` or `"disabled"` (or missing).
+  - `overtimeSegments`: integer or `null`.
+- `team1Damage`, `team2Damage`: **total damage dealt** by each team over the map (sum of all players’ damage).
+
+#### Step 1 – Normal score‑based winner
+
+```text
+if t1Score > t2Score:       winner = team1
+else if t2Score > t1Score:  winner = team2
+else:                       // scores are equal → go to tiebreak logic
+```
+
+#### Step 2 – Decide if we allow a draw or force a tiebreak
+
+When `t1Score == t2Score`:
+
+```text
+overtimeDisabled = (overtimeMode == "disabled")
+hasSegments      = (overtimeSegments is not null)
+
+Case A – "No OT, no draws" (regulation only, force winner)
+  if overtimeDisabled && hasSegments && overtimeSegments == 0:
+    use performance tiebreak (see Step 3)
+
+Case B – "OT configured with a cap" (semantic: no draws after OT)
+  if !overtimeDisabled && hasSegments && overtimeSegments > 0:
+    use performance tiebreak (see Step 3)
+
+Case C – Everything else
+  // missing overtimeSegments, or negative, or overtimeMode not set
+  result = draw
+```
+
+#### Step 3 – Performance‑based tiebreak (damage)
+
+```text
+if team1Damage > team2Damage:       winner = team1
+else if team2Damage > team1Damage:  winner = team2
+else:
+  // damage also tied → still a true draw
+  result = draw
+```
+
+So:
+
+- Normally the higher score wins.
+- When scores are tied, the OT mode + `overtimeSegments` determine whether to:
+  - Allow a **true draw**, or
+  - Force a winner based on **total team damage**.
+
 ## API overview
 
 Manual matches are exposed via the standard matches API:
