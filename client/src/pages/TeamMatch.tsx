@@ -30,13 +30,13 @@ type TeamSoundControlsProps = {
 
 function TeamSoundControls({
   team,
-  isMuted,
-  volume,
-  soundFile,
-  toggleMute,
-  handleVolumeChange,
-  handlePreviewSound,
-  handleSoundChange,
+    isMuted,
+    volume,
+    soundFile,
+    toggleMute,
+    handleVolumeChange,
+    handlePreviewSound,
+    handleSoundChange,
 }: TeamSoundControlsProps) {
   const [showSettings, setShowSettings] = useState(false);
 
@@ -107,17 +107,17 @@ export default function TeamMatch() {
     }
   }, [team]);
 
-  const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
+    const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
 
-  const vetoReady =
+    const vetoReady =
     !!match &&
-    tournamentStatus === 'in_progress' &&
-    match.status === 'pending' &&
-    !vetoCompleted &&
-    isEligibleFormat &&
-    match.veto?.status !== 'completed';
+      tournamentStatus === 'in_progress' &&
+      match.status === 'pending' &&
+      !vetoCompleted &&
+      isEligibleFormat &&
+      match.veto?.status !== 'completed';
 
-  const serverReady =
+    const serverReady =
     !!match && Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
 
 

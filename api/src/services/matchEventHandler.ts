@@ -941,30 +941,30 @@ async function persistPlayerMatchStats(options: {
   } else {
     // Fallback for older/alternate setups: look for a dedicated "player_stats"
     // match event if present and parse its per-player dictionaries.
-    const playerStatsEvent = await db.queryOneAsync<{
-      event_data: string;
-    }>(
-      `SELECT event_data FROM match_events 
-         WHERE match_slug = ? AND event_type = 'player_stats' 
-         ORDER BY received_at DESC LIMIT 1`,
-      [matchSlug]
-    );
+  const playerStatsEvent = await db.queryOneAsync<{
+    event_data: string;
+  }>(
+    `SELECT event_data FROM match_events 
+       WHERE match_slug = ? AND event_type = 'player_stats' 
+       ORDER BY received_at DESC LIMIT 1`,
+    [matchSlug]
+  );
 
-    if (playerStatsEvent) {
-      try {
-        const eventData = JSON.parse(playerStatsEvent.event_data) as {
-          team1_players?: Record<string, Record<string, unknown>>;
-          team2_players?: Record<string, Record<string, unknown>>;
-        };
-        // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
-        if (eventData.team1_players) {
-          team1PlayerStats = eventData.team1_players;
-        }
-        if (eventData.team2_players) {
-          team2PlayerStats = eventData.team2_players;
-        }
-      } catch (error) {
-        log.warn('Failed to parse player stats from event', { error, matchSlug });
+  if (playerStatsEvent) {
+    try {
+      const eventData = JSON.parse(playerStatsEvent.event_data) as {
+        team1_players?: Record<string, Record<string, unknown>>;
+        team2_players?: Record<string, Record<string, unknown>>;
+      };
+      // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+      if (eventData.team1_players) {
+        team1PlayerStats = eventData.team1_players;
+      }
+      if (eventData.team2_players) {
+        team2PlayerStats = eventData.team2_players;
+      }
+    } catch (error) {
+      log.warn('Failed to parse player stats from event', { error, matchSlug });
       }
     }
   }

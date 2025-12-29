@@ -619,47 +619,47 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
         {/* Row 4: ELO distribution, match status over time + recent matches */}
         {eloBuckets && eloBuckets.length > 0 && (
           <Grid size={{ xs: 12, md: 12 }}>
-            <Card sx={{ height: '100%' }}>
-              <CardContent>
+              <Card sx={{ height: '100%' }}>
+                <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={1}>
                   Player ELO Distribution
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={2}>
                   Number of players per Skill Rating band (bucket size {eloBucketSize}).
-                </Typography>
+                    </Typography>
                 <Box sx={{ width: '100%', height: 280, overflowX: 'auto' }}>
-                  <LineChart
-                    xAxis={[
-                      {
+                    <LineChart
+                      xAxis={[
+                        {
                         data: eloBuckets.map((_, index) => index),
                         valueFormatter: (value) =>
                           eloBuckets?.[Number(value)]?.label ?? String(value),
                         label: 'Skill Rating band',
-                      },
-                    ]}
-                    yAxis={[
-                      {
+                        },
+                      ]}
+                      yAxis={[
+                        {
                         label: 'Players',
                         width: 40,
-                      },
-                    ]}
-                    series={[
-                      {
+                        },
+                      ]}
+                      series={[
+                        {
                         id: 'players',
                         label: 'Players',
                         data: eloBuckets.map((b) => b.count),
-                        area: true,
-                      },
-                    ]}
+                          area: true,
+                        },
+                      ]}
                     width={Math.max(600, eloBuckets.length * 80)}
                     height={260}
                     margin={{ top: 30, right: 20, bottom: 50, left: 50 }}
                     grid={{ horizontal: true }}
-                  />
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
+                    />
+                  </Box>
+                </CardContent>
+              </Card>
+            </Grid>
         )}
 
         {/* Recent Completed Matches */}

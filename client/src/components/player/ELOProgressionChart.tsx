@@ -61,8 +61,8 @@ export function ELOProgressionChart({
 
   // Build match progression: after each match -> current rating
   const matchPoints: DataPoint[] = sortedHistory.map((entry) => ({
-    elo: entry.eloAfter,
-    change: entry.eloChange,
+      elo: entry.eloAfter,
+      change: entry.eloChange,
   }));
 
   const dataPoints: DataPoint[] = [...matchPoints];
@@ -226,7 +226,7 @@ export function ELOProgressionChart({
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                bgcolor: theme.palette.success.main,
+                  bgcolor: theme.palette.success.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -239,7 +239,7 @@ export function ELOProgressionChart({
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                bgcolor: theme.palette.error.main,
+                  bgcolor: theme.palette.error.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">

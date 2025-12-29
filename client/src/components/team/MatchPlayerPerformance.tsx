@@ -72,46 +72,46 @@ function renderTable(
               const isHighlighted = highlightPlayerId === player.steamId;
 
               return (
-                <TableRow key={player.steamId}>
-                  <TableCell
-                    sx={{
-                      fontWeight: 600,
-                      maxWidth: 180,
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
+              <TableRow key={player.steamId}>
+                <TableCell
+                  sx={{
+                    fontWeight: 600,
+                    maxWidth: 180,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  <Typography
+                    variant="body2"
                       color={isHighlighted ? 'common.white' : `${accent}.main`}
-                      fontWeight={600}
+                    fontWeight={600}
                       component={isHighlighted ? 'span' : 'a'}
                       {...(!isHighlighted && {
                         href: getPlayerPageUrl(player.steamId),
                         target: '_blank',
                         rel: 'noopener noreferrer',
                       })}
-                      sx={{
-                        textDecoration: 'none',
+                    sx={{
+                      textDecoration: 'none',
                         cursor: isHighlighted ? 'default' : 'pointer',
                         '&:hover': !isHighlighted
                           ? {
-                              textDecoration: 'underline',
+                        textDecoration: 'underline',
                             }
                           : undefined,
-                      }}
-                      noWrap
-                    >
-                      {player.name}
-                    </Typography>
-                  </TableCell>
-                  <TableCell align="right">{player.kills}</TableCell>
-                  <TableCell align="right">{player.deaths}</TableCell>
-                  <TableCell align="right">{player.assists}</TableCell>
-                  <TableCell align="right">{formatAdr(player)}</TableCell>
-                  <TableCell align="right">{player.mvps ?? 0}</TableCell>
-                </TableRow>
+                    }}
+                    noWrap
+                  >
+                    {player.name}
+                  </Typography>
+                </TableCell>
+                <TableCell align="right">{player.kills}</TableCell>
+                <TableCell align="right">{player.deaths}</TableCell>
+                <TableCell align="right">{player.assists}</TableCell>
+                <TableCell align="right">{formatAdr(player)}</TableCell>
+                <TableCell align="right">{player.mvps ?? 0}</TableCell>
+              </TableRow>
               );
             })
           )}

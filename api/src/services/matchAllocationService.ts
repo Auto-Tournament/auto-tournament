@@ -268,9 +268,7 @@ export class MatchAllocationService {
 
     // Start from all enabled servers but never consider those that are already
     // associated with an active match in the database.
-    const candidateServers = enabledServers.filter(
-      (server) => !dbBusyServers.has(server.id)
-    );
+    const candidateServers = enabledServers.filter((server) => !dbBusyServers.has(server.id));
 
     // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(
@@ -586,6 +584,17 @@ export class MatchAllocationService {
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           lastError = errorMessage;
+          // Roll back server_id on any hard failure so this match can be retried
+          // by future allocation passes instead of getting stuck with a server
+          // but no loadedAt.
+          try {
+            await db.updateAsync('matches', { server_id: null }, 'slug = ?', [match.slug]);
+          } catch (rollbackError) {
+            log.error(
+              `Failed to roll back server_id for match ${match.slug} after allocation error`,
+              rollbackError
+            );
+          }
           log.error(`Failed to allocate match ${match.slug} to server ${server.id}`, error);
         } finally {
           // Clear the "allocating" flag for this server for future attempts
@@ -766,6 +775,17 @@ export class MatchAllocationService {
         } catch (error) {
           const errorMessage = error instanceof Error ? error.message : 'Unknown error';
           lastError = errorMessage;
+          // As with the bulk allocator, make sure we reset server_id on any
+          // hard failure so this match can be retried rather than remaining
+          // "assigned but never loaded".
+          try {
+            await db.updateAsync('matches', { server_id: null }, 'slug = ?', [match.slug]);
+          } catch (rollbackError) {
+            log.error(
+              `(specific) Failed to roll back server_id for match ${match.slug} after allocation error`,
+              rollbackError
+            );
+          }
           log.error(
             `(specific) Failed to allocate match ${match.slug} to server ${server.id}`,
             error
@@ -881,6 +901,16 @@ export class MatchAllocationService {
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      // If anything goes wrong after we've assigned a server_id, clear it so
+      // polling/allocation can safely retry on another server.
+      try {
+        await db.updateAsync('matches', { server_id: null }, 'slug = ?', [matchSlug]);
+      } catch (rollbackError) {
+        log.error(
+          `Failed to roll back server_id for match ${matchSlug} after allocation error`,
+          rollbackError
+        );
+      }
       log.error(`Failed to allocate match ${matchSlug}`, error);
       return {
         success: false,

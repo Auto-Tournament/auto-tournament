@@ -160,11 +160,11 @@ These commands:
 3. Configure **match structure**:
    - **Team size** (default 5 for 5v5; configurable).
    - **Number of rounds**: you select a sequence of maps; the number of maps = number of rounds.
-  - **Round limit** (Max Rounds):
-    - A single configurable **max rounds per map** value (default: 24).
+   - **Round limit** (Max Rounds):
+     - A single configurable **max rounds per map** value (default: 24).
     - All shuffle matches use this value via `mp_maxrounds` and expose it as `maxRounds` in the MatchZy match JSON.
     - When the max is reached, standard CS2 rules apply (either overtime or end-of-match, depending on overtime mode).
-  - **Overtime**:
+   - **Overtime**:
     - **Enable Overtime** (standard CS2 MR3, first to 4, 10k start). Stored as `overtimeMode: "enabled"` and passed through to MatchZy.
     - **Disable Overtime** (no overtime; match can end in a draw unless the plugin applies a damage-based tiebreak). Stored as `overtimeMode: "disabled"`.
     - Optional `overtimeSegments` can be configured for future policy control (e.g. “no draws after OT”); it is passed to MatchZy but does not currently hard-cap the number of OT segments.

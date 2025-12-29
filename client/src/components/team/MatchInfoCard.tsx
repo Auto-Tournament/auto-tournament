@@ -1,9 +1,9 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
-import type { Team, TeamMatchInfo, VetoState, MatchLiveStats } from '../../types';
+import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
 import { isShuffleMatch as isShuffleMatchGlobal, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { MatchScoreboard } from './MatchScoreboard';
@@ -12,6 +12,7 @@ import { MatchRosterAccordion } from './MatchRosterAccordion';
 import { MatchMapChips } from './MatchMapChips';
 import { MatchVetoHistory } from './MatchVetoHistory';
 import { MatchServerPanel } from './MatchServerPanel';
+import { api } from '../../utils/api';
 
 interface MatchInfoCardProps {
   match: TeamMatchInfo;
@@ -53,6 +54,7 @@ export function MatchInfoCard({
 }: MatchInfoCardProps) {
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
@@ -131,6 +133,40 @@ export function MatchInfoCard({
       : null,
   });
 
+  // For shuffle matches, lazily load player ratings so we can surface
+  // approximate team ELOs in the match info card for admins.
+  useEffect(() => {
+    if (!isShuffleMatch) return;
+    if (playerEloIndex) return;
+
+    let cancelled = false;
+
+    const loadPlayers = async () => {
+      try {
+        const resp = await api.get<PlayersResponse>('/api/players');
+        if (!resp || !resp.success) return;
+        if (cancelled) return;
+
+        const index: Record<string, number> = {};
+        for (const p of resp.players) {
+          if (typeof p.currentElo === 'number' && Number.isFinite(p.currentElo)) {
+            index[p.id] = p.currentElo;
+          }
+        }
+        setPlayerEloIndex(index);
+      } catch (err) {
+        // Best-effort only; if this fails we simply omit the ELO summary.
+        console.error('Failed to load players for team ELO display in MatchInfoCard', err);
+      }
+    };
+
+    void loadPlayers();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isShuffleMatch, playerEloIndex]);
+
   const deriveSeriesWins = useMemo(() => {
     if (match.mapResults && match.mapResults.length > 0) {
       return match.mapResults.reduce(
@@ -150,6 +186,26 @@ export function MatchInfoCard({
       team2: liveStats?.team2SeriesScore ?? 0,
     };
   }, [match.mapResults, liveStats]);
+
+  const team1AverageElo = useMemo(() => {
+    if (!isShuffleMatch || !playerEloIndex) return null;
+    const configTeam1Players = (match.config?.team1?.players || []) as Array<{ steamid: string }>;
+    const values = configTeam1Players
+      .map((p) => playerEloIndex[p.steamid])
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    if (!values.length) return null;
+    return values.reduce((sum, v) => sum + v, 0) / values.length;
+  }, [isShuffleMatch, match.config?.team1?.players, playerEloIndex]);
+
+  const team2AverageElo = useMemo(() => {
+    if (!isShuffleMatch || !playerEloIndex) return null;
+    const configTeam2Players = (match.config?.team2?.players || []) as Array<{ steamid: string }>;
+    const values = configTeam2Players
+      .map((p) => playerEloIndex[p.steamid])
+      .filter((v): v is number => typeof v === 'number' && Number.isFinite(v));
+    if (!values.length) return null;
+    return values.reduce((sum, v) => sum + v, 0) / values.length;
+  }, [isShuffleMatch, match.config?.team2?.players, playerEloIndex]);
 
   const handleConnect = () => {
     if (!match.server) return;
@@ -336,6 +392,16 @@ export function MatchInfoCard({
             rightMapRounds={mapRoundsTeam2}
             leftSeriesWins={deriveSeriesWins.team1}
             rightSeriesWins={deriveSeriesWins.team2}
+            leftTeamElo={
+              isShuffleMatch && team1AverageElo !== null
+                ? Math.round(team1AverageElo)
+                : undefined
+            }
+            rightTeamElo={
+              isShuffleMatch && team2AverageElo !== null
+                ? Math.round(team2AverageElo)
+                : undefined
+            }
             liveStatusDisplay={liveStatusDisplay}
             // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
             // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the

@@ -66,9 +66,9 @@ export default function ELOTemplates() {
   useEffect(() => {
     setHeaderActions(
       <Box display="flex" gap={1}>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditor()}>
-          Create Template
-        </Button>
+      <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditor()}>
+        Create Template
+      </Button>
         <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
           Import from JSON
         </Button>

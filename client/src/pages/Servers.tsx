@@ -544,26 +544,26 @@ export default function Servers() {
                       <Box display="flex" flexDirection="column" gap={0.5} mt={1}>
                         {server.currentMatch && (
                           <Box display="flex" justifyContent="space-between" alignItems="center">
-                            <Chip
-                              label={server.currentMatch}
-                              size="small"
-                              color="primary"
-                              variant="outlined"
+                        <Chip
+                          label={server.currentMatch}
+                          size="small"
+                          color="primary"
+                          variant="outlined"
                               sx={{
                                 fontWeight: 600,
                                 maxWidth: '60%',
                                 textOverflow: 'ellipsis',
                                 overflow: 'hidden',
                               }}
-                            />
-                            <Button
-                              size="small"
-                              variant="outlined"
-                              onClick={(event) => handleViewCurrentMatch(server, event)}
-                              disabled={loadingMatchServerId === server.id}
-                            >
-                              {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
-                            </Button>
+                        />
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={(event) => handleViewCurrentMatch(server, event)}
+                          disabled={loadingMatchServerId === server.id}
+                        >
+                          {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
+                        </Button>
                           </Box>
                         )}
                         {(server as Server & { queuedMatch?: string | null }).queuedMatch && (

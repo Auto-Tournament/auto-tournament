@@ -359,7 +359,7 @@ export async function getRatingHistory(
   // changes for the same match in the UI. We keep the most recent entry per
   // (player_id, match_slug), optionally scoped to a single tournament.
   let query = `
-    SELECT
+    SELECT 
       prh.match_slug,
       prh.elo_before,
       prh.elo_after,
@@ -376,8 +376,8 @@ export async function getRatingHistory(
     FROM player_rating_history prh
     JOIN (
       SELECT match_slug, MAX(created_at) AS max_created_at
-      FROM player_rating_history
-      WHERE player_id = ?
+    FROM player_rating_history
+    WHERE player_id = ?
   `;
 
   const params: unknown[] = [playerId];
@@ -385,7 +385,7 @@ export async function getRatingHistory(
   if (tournamentId) {
     query += `
         AND match_slug IN (
-          SELECT slug FROM matches WHERE tournament_id = ?
+      SELECT slug FROM matches WHERE tournament_id = ?
         )
     `;
     params.push(tournamentId);

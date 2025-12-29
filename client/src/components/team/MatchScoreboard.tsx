@@ -8,6 +8,8 @@ interface MatchScoreboardProps {
   rightMapRounds: number;
   leftSeriesWins: number;
   rightSeriesWins: number;
+  leftTeamElo?: number | null;
+  rightTeamElo?: number | null;
   liveStatusDisplay?: {
     label: string;
     chipColor: 'success' | 'info' | 'warning' | 'default';
@@ -22,6 +24,8 @@ export function MatchScoreboard({
   rightMapRounds,
   leftSeriesWins,
   rightSeriesWins,
+  leftTeamElo,
+  rightTeamElo,
   liveStatusDisplay,
   hideSeriesWins,
 }: MatchScoreboardProps) {
@@ -35,9 +39,14 @@ export function MatchScoreboard({
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="primary.main">
+          <Typography variant="h4" fontWeight={700} color="primary.main" align="center">
             {leftName}
           </Typography>
+          {typeof leftTeamElo === 'number' && Number.isFinite(leftTeamElo) && (
+            <Typography variant="body2" color="text.secondary">
+              ELO (avg): {leftTeamElo}
+            </Typography>
+          )}
           {!hideSeriesWins && (
             <>
               <Typography variant="h1" fontWeight={900} color="primary.main">
@@ -69,9 +78,14 @@ export function MatchScoreboard({
           )}
         </Stack>
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="error.main">
+          <Typography variant="h4" fontWeight={700} color="error.main" align="center">
             {rightName || 'TBD'}
           </Typography>
+          {typeof rightTeamElo === 'number' && Number.isFinite(rightTeamElo) && (
+            <Typography variant="body2" color="text.secondary">
+              ELO (avg): {rightTeamElo}
+            </Typography>
+          )}
           {!hideSeriesWins && (
             <>
               <Typography variant="h1" fontWeight={900} color="error.main">
