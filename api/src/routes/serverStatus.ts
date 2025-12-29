@@ -107,6 +107,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     // reporting "idle" even though a match is already loaded or live.
     let effectiveStatus = statusInfo.status;
     let effectiveMatchSlug = statusInfo.matchSlug;
+    const queuedMatchSlug = statusInfo.nextMatchSlug ?? null;
 
     if (!effectiveStatus || effectiveStatus === ServerStatus.IDLE || effectiveStatus === ServerStatus.POSTGAME) {
       try {
@@ -201,6 +202,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       serverId: id,
       isAvailable,
       currentMatch: effectiveMatchSlug,
+      queuedMatch: queuedMatchSlug,
       reachableFromApi,
       serverCanReachApi,
       pluginStatus: effectiveStatus,

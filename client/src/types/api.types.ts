@@ -68,6 +68,7 @@ export interface ServerStatusResponse extends ApiResponse {
   status: string;
   isAvailable: boolean;
   currentMatch: string | null;
+  queuedMatch?: string | null;
   playerCount?: number;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;

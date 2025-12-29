@@ -29,6 +29,7 @@ export class ServerStatusService {
   // Custom ConVar names (must be unique to avoid conflicts)
   private readonly STATUS_VAR = 'matchzy_tournament_status';
   private readonly MATCH_SLUG_VAR = 'matchzy_tournament_match';
+  private readonly NEXT_MATCH_VAR = 'matchzy_tournament_next_match';
   private readonly UPDATE_TIME_VAR = 'matchzy_tournament_updated';
 
   /**
@@ -42,6 +43,7 @@ export class ServerStatusService {
     {
       status: ServerStatus | null;
       matchSlug: string | null;
+      nextMatchSlug: string | null;
       updatedAt: number | null;
       online: boolean;
       cachedAt: number;
@@ -58,6 +60,7 @@ export class ServerStatusService {
   ): Promise<{
     status: ServerStatus | null;
     matchSlug: string | null;
+    nextMatchSlug: string | null;
     updatedAt: number | null;
     online: boolean;
   }> {
@@ -81,6 +84,7 @@ export class ServerStatusService {
         const result = {
           status: ServerStatus.IDLE,
           matchSlug: null,
+          nextMatchSlug: null,
           updatedAt: Math.floor(Date.now() / 1000),
           online: true,
         };
@@ -95,6 +99,7 @@ export class ServerStatusService {
         return {
           status: null,
           matchSlug: null,
+          nextMatchSlug: null,
           updatedAt: null,
           online: false,
         };
@@ -104,10 +109,15 @@ export class ServerStatusService {
       const statusMatch = statusResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
       const status = statusMatch ? (statusMatch[2] as ServerStatus) : ServerStatus.IDLE;
 
-      // Get match slug
+      // Get current match slug
       const slugResult = await rconService.sendCommand(serverId, this.MATCH_SLUG_VAR);
       const slugMatch = slugResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
       const matchSlug = slugMatch && slugMatch[2] ? slugMatch[2] : null;
+
+      // Get queued next match slug (if any)
+      const nextResult = await rconService.sendCommand(serverId, this.NEXT_MATCH_VAR);
+      const nextMatch = nextResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
+      const nextMatchSlug = nextMatch && nextMatch[2] ? nextMatch[2] : null;
 
       // Get update timestamp
       const timeResult = await rconService.sendCommand(serverId, this.UPDATE_TIME_VAR);
@@ -117,6 +127,7 @@ export class ServerStatusService {
       const result = {
         status,
         matchSlug,
+        nextMatchSlug,
         updatedAt,
         online: true,
       };
@@ -127,6 +138,7 @@ export class ServerStatusService {
       const result = {
         status: null,
         matchSlug: null,
+        nextMatchSlug: null,
         updatedAt: null,
         online: false,
       };

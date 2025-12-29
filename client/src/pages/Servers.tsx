@@ -57,6 +57,7 @@ export default function Servers() {
   ): Promise<{
     status: 'online' | 'offline';
     currentMatch: string | null;
+    queuedMatch?: string | null;
     reachableFromApi?: boolean;
     serverCanReachApi?: boolean;
     pluginStatus?: string | null;
@@ -112,6 +113,7 @@ export default function Servers() {
         const {
           status,
           currentMatch,
+          queuedMatch,
           reachableFromApi,
           serverCanReachApi,
           pluginStatus,
@@ -139,6 +141,11 @@ export default function Servers() {
             return { ...server, status: 'disabled' as const };
           }
           const statusInfo = statuses.find((s) => s.id === server.id);
+          const nextQueuedMatch =
+            statusInfo?.queuedMatch !== undefined
+              ? statusInfo.queuedMatch
+              : (server as Server & { queuedMatch?: string | null }).queuedMatch ?? null;
+
           return {
             ...server,
             status: statusInfo?.status || 'offline',
@@ -146,6 +153,7 @@ export default function Servers() {
               statusInfo?.currentMatch !== undefined
                 ? statusInfo.currentMatch
                 : server.currentMatch ?? null,
+            queuedMatch: nextQueuedMatch,
             reachableFromApi:
               statusInfo?.reachableFromApi !== undefined
                 ? statusInfo.reachableFromApi
@@ -531,23 +539,48 @@ export default function Servers() {
                         )}
                       </Box>
                     )}
-                    {server.currentMatch && server.status === 'online' && (
-                      <Box display="flex" justifyContent="space-between" alignItems="center" mt={1}>
-                        <Chip
-                          label={server.currentMatch}
-                          size="small"
-                          color="primary"
-                          variant="outlined"
-                          sx={{ fontWeight: 600, maxWidth: '60%', textOverflow: 'ellipsis', overflow: 'hidden' }}
-                        />
-                        <Button
-                          size="small"
-                          variant="outlined"
-                          onClick={(event) => handleViewCurrentMatch(server, event)}
-                          disabled={loadingMatchServerId === server.id}
-                        >
-                          {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
-                        </Button>
+                    {server.status === 'online' && (server.currentMatch || (server as Server & { queuedMatch?: string | null }).queuedMatch) && (
+                      <Box display="flex" flexDirection="column" gap={0.5} mt={1}>
+                        {server.currentMatch && (
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Chip
+                              label={server.currentMatch}
+                              size="small"
+                              color="primary"
+                              variant="outlined"
+                              sx={{
+                                fontWeight: 600,
+                                maxWidth: '60%',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                              }}
+                            />
+                            <Button
+                              size="small"
+                              variant="outlined"
+                              onClick={(event) => handleViewCurrentMatch(server, event)}
+                              disabled={loadingMatchServerId === server.id}
+                            >
+                              {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
+                            </Button>
+                          </Box>
+                        )}
+                        {(server as Server & { queuedMatch?: string | null }).queuedMatch && (
+                          <Box display="flex" justifyContent="space-between" alignItems="center">
+                            <Chip
+                              label={`Queued: ${(server as Server & { queuedMatch?: string | null }).queuedMatch}`}
+                              size="small"
+                              color="info"
+                              variant="outlined"
+                              sx={{
+                                fontWeight: 600,
+                                maxWidth: '100%',
+                                textOverflow: 'ellipsis',
+                                overflow: 'hidden',
+                              }}
+                            />
+                          </Box>
+                        )}
                       </Box>
                     )}
 
