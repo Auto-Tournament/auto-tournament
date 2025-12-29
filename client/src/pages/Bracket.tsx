@@ -26,6 +26,7 @@ import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchCard } from '../components/shared/MatchCard';
+import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
@@ -715,9 +716,9 @@ export default function Bracket() {
                         />
                       )}
                   </Typography>
-                  <Stack spacing={2}>
+                  <Stack spacing={1.5}>
                     {roundMatches.map((match) => (
-                      <MatchCard
+                      <MatchListCard
                         key={match.id}
                         match={match}
                         matchNumber={getGlobalMatchNumber(match)}

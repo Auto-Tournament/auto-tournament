@@ -137,11 +137,9 @@ export function RoundStatusCard({
             )}
           </Box>
 
-          {roundStatus.isComplete && (
-            <Typography variant="caption" color="success.main" sx={{ fontStyle: 'italic' }}>
-              Round complete. Next round will begin automatically.
-            </Typography>
-          )}
+          {/* Previously displayed a generic "next round will begin automatically" message here.
+              This has been removed to avoid confusion when tournaments are finished or when
+              advancement is controlled manually. */}
         </Stack>
       </CardContent>
     </Card>
