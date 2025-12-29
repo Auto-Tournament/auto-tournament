@@ -31,6 +31,7 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
+import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import type { PlayerDetail } from '../types/api.types';
 import type { Team, TeamMatchInfo } from '../types';
 
@@ -616,6 +617,12 @@ export default function PlayerProfile() {
     Boolean(currentMatch.server) &&
     (currentMatch.status === 'loaded' || currentMatch.status === 'live');
 
+  // Tournament rules configuration for the "About this tournament" accordion on the player page.
+  const rulesFormatForPlayer = playerMatchFormat;
+  const rulesMaxRoundsForPlayer = currentMatch?.config?.maxRounds;
+  const rulesOvertimeModeForPlayer = currentMatch?.config?.overtimeMode;
+  const rulesOvertimeSegmentsForPlayer = currentMatch?.config?.overtimeSegments;
+
   // Recent form timeline: last N matches as W/L
   const recentMatches = [...uniqueMatchHistory].sort(
     (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
@@ -729,19 +736,28 @@ export default function PlayerProfile() {
 
           {/* Current / Upcoming Match (connect info) */}
           {currentMatch ? (
-            <MatchInfoCard
-              match={currentMatch}
-              team={currentTeam}
-              tournamentStatus={currentTournamentStatus}
-              vetoCompleted={currentMatch.veto?.status === 'completed'}
-              matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
-              onVetoComplete={async () => {
-                setTimeout(() => {
-                  void loadPlayerData({ silent: true });
-                }, 1000);
-              }}
-              getRoundLabel={getRoundLabel}
-            />
+            <>
+              <MatchInfoCard
+                match={currentMatch}
+                team={currentTeam}
+                tournamentStatus={currentTournamentStatus}
+                vetoCompleted={currentMatch.veto?.status === 'completed'}
+                matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
+                onVetoComplete={async () => {
+                  setTimeout(() => {
+                    void loadPlayerData({ silent: true });
+                  }, 1000);
+                }}
+                getRoundLabel={getRoundLabel}
+              />
+
+              <TournamentRulesAccordion
+                format={rulesFormatForPlayer}
+                maxRounds={rulesMaxRoundsForPlayer}
+                overtimeMode={rulesOvertimeModeForPlayer}
+                overtimeSegments={rulesOvertimeSegmentsForPlayer}
+              />
+            </>
           ) : (
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 4 }}>

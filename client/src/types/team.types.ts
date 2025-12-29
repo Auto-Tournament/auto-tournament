@@ -73,12 +73,18 @@ export interface TeamMatchInfo {
   matchFormat: string;
   loadedAt?: number;
   config?: {
+    // Core player / team counts
     players_per_team?: number;
     expected_players_total?: number;
     expected_players_team1?: number;
     expected_players_team2?: number;
+    // Series / map configuration
     num_maps?: number;
     maplist?: string[];
+    // Overtime / regulation configuration (mirrors MatchZy match JSON)
+    maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number;
     team1?: {
       id?: string;
       name: string;

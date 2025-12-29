@@ -1,15 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  CircularProgress,
-  Container,
-  Stack,
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, Alert, CircularProgress, Container, Stack } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { TeamHeader } from '../components/team/TeamHeader';
 import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
@@ -20,6 +11,7 @@ import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
+import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import type { SelectChangeEvent } from '@mui/material';
 import type { Team } from '../types';
 import type { NotificationSoundValue } from '../utils/soundNotification';
@@ -178,6 +170,12 @@ export default function TeamMatch() {
   const tournamentIsCompleted = tournamentStatus === 'completed';
   const teamHasPlayed = !!(stats && stats.totalMatches > 0);
 
+  // Tournament rules configuration for the "About this tournament" accordion.
+  const rulesFormat = matchFormat;
+  const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;
+  const rulesOvertimeMode = match?.config?.overtimeMode ?? tournament?.overtimeMode;
+  const rulesOvertimeSegments = match?.config?.overtimeSegments ?? tournament?.overtimeSegments;
+
   // No match state
   if (!hasMatch) {
     return (
@@ -242,6 +240,13 @@ export default function TeamMatch() {
 
             <TeamStatsCard stats={stats} standing={standing} />
             <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
+
+            <TournamentRulesAccordion
+              format={rulesFormat}
+              maxRounds={rulesMaxRounds}
+              overtimeMode={rulesOvertimeMode}
+              overtimeSegments={rulesOvertimeSegments}
+            />
           </Stack>
         </Container>
       </Box>
@@ -280,6 +285,13 @@ export default function TeamMatch() {
             handleVolumeChange={handleVolumeChange}
             handlePreviewSound={handlePreviewSound}
             handleSoundChange={handleSoundChange}
+          />
+
+          <TournamentRulesAccordion
+            format={rulesFormat}
+            maxRounds={rulesMaxRounds}
+            overtimeMode={rulesOvertimeMode}
+            overtimeSegments={rulesOvertimeSegments}
           />
 
           {match && (

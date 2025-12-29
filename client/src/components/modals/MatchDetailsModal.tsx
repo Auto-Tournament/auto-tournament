@@ -340,6 +340,71 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
       }))
     : match.team2Players || [];
 
+  // --- Winner explanation for tied scores (performance-based tiebreak) ---
+  const mapRoundsAreTied =
+    match.status === 'completed' && mapRoundsTeam1 === mapRoundsTeam2 && mapRoundsTeam1 !== 0;
+
+  const team1TotalDamage = normalizedTeam1Players.reduce(
+    (sum, player) => sum + (player.damage ?? 0),
+    0
+  );
+  const team2TotalDamage = normalizedTeam2Players.reduce(
+    (sum, player) => sum + (player.damage ?? 0),
+    0
+  );
+
+  const damageTiebreakWinner =
+    team1TotalDamage > team2TotalDamage
+      ? 'team1'
+      : team2TotalDamage > team1TotalDamage
+      ? 'team2'
+      : null;
+
+  const usesDamageTiebreak =
+    match.status === 'completed' &&
+    mapRoundsAreTied &&
+    !!winnerSide &&
+    !!damageTiebreakWinner &&
+    winnerSide === damageTiebreakWinner &&
+    normalizedTeam1Players.length > 0 &&
+    normalizedTeam2Players.length > 0;
+
+  const rawConfig: any = match.config || {};
+  const overtimeMode: string | undefined = rawConfig.overtimeMode;
+  const overtimeSegments: number | undefined =
+    typeof rawConfig.overtimeSegments === 'number' ? rawConfig.overtimeSegments : undefined;
+
+  const cvars = (match.config?.cvars || {}) as Record<string, string | number>;
+  const rawOvertimeEnable = cvars['mp_overtime_enable'];
+  const cvarOvertimeEnabled =
+    rawOvertimeEnable !== undefined ? Number(rawOvertimeEnable) === 1 : undefined;
+
+  let tiebreakReason: string | null = null;
+  if (usesDamageTiebreak) {
+    if (overtimeMode === 'disabled' && overtimeSegments === 0) {
+      tiebreakReason =
+        'Overtime is disabled for this match (regulation only), so tied scores are resolved by total team damage.';
+    } else if (overtimeMode && typeof overtimeSegments === 'number' && overtimeSegments > 0) {
+      tiebreakReason =
+        'Overtime is configured with a maximum number of segments. If the score is still tied, the winner is decided by total team damage.';
+    } else if (cvarOvertimeEnabled === false) {
+      tiebreakReason =
+        'Overtime is disabled for this match, so tied scores are resolved by total team damage.';
+    } else {
+      tiebreakReason =
+        'The final score was tied, so according to the match settings the winner was chosen by total team damage.';
+    }
+  }
+
+  const team1Name =
+    match.team1?.name ||
+    (match.config?.team1 as { name?: string } | undefined)?.name ||
+    'Team 1';
+  const team2Name =
+    match.team2?.name ||
+    (match.config?.team2 as { name?: string } | undefined)?.name ||
+    'Team 2';
+
   return (
     <>
       <Dialog open={!!match} onClose={onClose} maxWidth="md" fullWidth>
@@ -619,6 +684,20 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                 </Box>
               </Box>
             </Box>
+
+            {usesDamageTiebreak && tiebreakReason && (
+              <Alert severity="info">
+                <Typography variant="body2" gutterBottom>
+                  {tiebreakReason}
+                </Typography>
+                <Typography variant="body2">
+                  {team1Name} dealt <strong>{team1TotalDamage}</strong> total damage; {team2Name}{' '}
+                  dealt <strong>{team2TotalDamage}</strong>.{' '}
+                  <strong>{winnerSide === 'team1' ? team1Name : team2Name}</strong> wins the
+                  performance tiebreak.
+                </Typography>
+              </Alert>
+            )}
 
             {/* Player Roster – show in an accordion like Maps / Match Information */}
             {match.config &&
