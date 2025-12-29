@@ -29,6 +29,8 @@ import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
 import { PerformanceMetricsChart } from '../components/player/PerformanceMetricsChart';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
+import { useSoundSettings } from '../hooks/useSoundSettings';
+import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import type { PlayerDetail } from '../types/api.types';
 import type { Team, TeamMatchInfo } from '../types';
 
@@ -593,6 +595,27 @@ export default function PlayerProfile() {
   const tournamentIsActive = currentTournamentStatus === 'in_progress';
   const tournamentIsCompleted = currentTournamentStatus === 'completed';
 
+  // Shared sound settings (persisted via localStorage)
+  const { isMuted, volume, soundFile } = useSoundSettings();
+
+  // Compute sound triggers for the player's current match
+  const playerMatchFormat =
+    (currentMatch?.matchFormat as 'bo1' | 'bo3' | 'bo5' | undefined) || 'bo1';
+  const playerVetoCompleted =
+    currentMatch?.round === 0 ? true : currentMatch?.veto?.status === 'completed';
+  const isEligibleFormatForSound = ['bo1', 'bo3', 'bo5'].includes(playerMatchFormat);
+  const vetoReadyForPlayer =
+    !!currentMatch &&
+    currentTournamentStatus === 'in_progress' &&
+    currentMatch.status === 'pending' &&
+    !playerVetoCompleted &&
+    isEligibleFormatForSound &&
+    currentMatch.veto?.status !== 'completed';
+  const serverReadyForPlayer =
+    !!currentMatch &&
+    Boolean(currentMatch.server) &&
+    (currentMatch.status === 'loaded' || currentMatch.status === 'live');
+
   // Recent form: last 5 matches as W/L string (no hooks needed here; small arrays)
   const recentMatches = [...uniqueMatchHistory].sort(
     (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
@@ -619,6 +642,13 @@ export default function PlayerProfile() {
     <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
       <Container maxWidth="md">
         <Stack spacing={3}>
+          <MatchNotificationAudio
+            vetoReady={vetoReadyForPlayer}
+            serverReady={serverReadyForPlayer}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+          />
           {/* Local navigation */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="subtitle2" color="text.secondary">

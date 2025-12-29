@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import {
   Box,
@@ -11,7 +11,6 @@ import {
   Stack,
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { soundNotification } from '../utils/soundNotification';
 import { TeamHeader } from '../components/team/TeamHeader';
 import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { SoundSettingsModal } from '../components/modals/SoundSettingsModal';
@@ -21,19 +20,33 @@ import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
+import type { SelectChangeEvent } from '@mui/material';
 import type { Team } from '../types';
+import type { NotificationSoundValue } from '../utils/soundNotification';
+import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 
-function TeamSoundControls({ team }: { team: Team | null }) {
+type TeamSoundControlsProps = {
+  team: Team | null;
+  isMuted: boolean;
+  volume: number;
+  soundFile: NotificationSoundValue;
+  toggleMute: () => void;
+  handleVolumeChange: (newValue: number) => void;
+  handlePreviewSound: () => void;
+  handleSoundChange: (event: SelectChangeEvent<string>) => void;
+};
+
+function TeamSoundControls({
+  team,
+  isMuted,
+  volume,
+  soundFile,
+  toggleMute,
+  handleVolumeChange,
+  handlePreviewSound,
+  handleSoundChange,
+}: TeamSoundControlsProps) {
   const [showSettings, setShowSettings] = useState(false);
-  const {
-    isMuted,
-    volume,
-    soundFile,
-    toggleMute,
-    handleVolumeChange,
-    handlePreviewSound,
-    handleSoundChange,
-  } = useSoundSettings();
 
   return (
     <>
@@ -59,10 +72,6 @@ function TeamSoundControls({ team }: { team: Team | null }) {
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
 
-  const previousMatchStatus = useRef<string | null>(null);
-  const previousVetoReady = useRef<boolean>(false);
-  const previousServerReady = useRef<boolean>(false);
-
   // Custom hooks for data and sound
   const {
     team,
@@ -78,6 +87,15 @@ export default function TeamMatch() {
   } = useTeamMatchData(teamId);
   const { tournament } = useTournamentStatus();
   const tournamentName = tournament?.name ?? null;
+  const {
+    isMuted,
+    volume,
+    soundFile,
+    toggleMute,
+    handleVolumeChange,
+    handlePreviewSound,
+    handleSoundChange,
+  } = useSoundSettings();
 
   // Get match format from match data (fallback to 'bo1' if not available)
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
@@ -97,36 +115,18 @@ export default function TeamMatch() {
     }
   }, [team]);
 
-  // Sound notification when match becomes ready or veto starts
-  useEffect(() => {
-    if (!match) return;
+  const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
 
-    const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
+  const vetoReady =
+    !!match &&
+    tournamentStatus === 'in_progress' &&
+    match.status === 'pending' &&
+    !vetoCompleted &&
+    isEligibleFormat &&
+    match.veto?.status !== 'completed';
 
-    const vetoReady =
-      tournamentStatus === 'in_progress' &&
-      match.status === 'pending' &&
-      !vetoCompleted &&
-      isEligibleFormat &&
-      match.veto?.status !== 'completed';
-
-    const serverReady =
-      Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
-
-    if (vetoReady && !previousVetoReady.current) {
-      soundNotification.playNotification();
-      console.log('Notification: Veto is now available!');
-    }
-
-    if (serverReady && !previousServerReady.current) {
-      soundNotification.playNotification();
-      console.log('Notification: Server is ready, players can connect!');
-    }
-
-    previousMatchStatus.current = match.status;
-    previousVetoReady.current = vetoReady;
-    previousServerReady.current = serverReady;
-  }, [match, tournamentStatus, vetoCompleted, matchFormat]);
+  const serverReady =
+    !!match && Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
 
 
   const handleVetoComplete = async () => {
@@ -184,7 +184,23 @@ export default function TeamMatch() {
       <Box minHeight="100vh" bgcolor="background.default" py={6}>
         <Container maxWidth="md">
           <Stack spacing={3}>
-            <TeamSoundControls team={team} />
+            <MatchNotificationAudio
+              vetoReady={vetoReady}
+              serverReady={serverReady}
+              isMuted={isMuted}
+              volume={volume}
+              soundFile={soundFile}
+            />
+            <TeamSoundControls
+              team={team}
+              isMuted={isMuted}
+              volume={volume}
+              soundFile={soundFile}
+              toggleMute={toggleMute}
+              handleVolumeChange={handleVolumeChange}
+              handlePreviewSound={handlePreviewSound}
+              handleSoundChange={handleSoundChange}
+            />
 
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
@@ -248,7 +264,23 @@ export default function TeamMatch() {
               {tournamentName}
             </Typography>
           )}
-          <TeamSoundControls team={team} />
+          <MatchNotificationAudio
+            vetoReady={vetoReady}
+            serverReady={serverReady}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+          />
+          <TeamSoundControls
+            team={team}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            handlePreviewSound={handlePreviewSound}
+            handleSoundChange={handleSoundChange}
+          />
 
           {match && (
             <MatchInfoCard

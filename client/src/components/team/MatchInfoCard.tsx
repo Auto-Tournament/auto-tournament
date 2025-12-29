@@ -56,13 +56,20 @@ export function MatchInfoCard({
   const mapRoundsTeam1 = liveStats?.team1Score ?? 0;
   const mapRoundsTeam2 = liveStats?.team2Score ?? 0;
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
-  const currentMapSlug =
-    liveStats?.mapName ||
-    match.currentMap ||
-    (typeof mapNumber === 'number' && match.maps[mapNumber]
+
+  const mapFromMatchMaps =
+    typeof mapNumber === 'number' && match.maps[mapNumber]
       ? match.maps[mapNumber]
-      : match.maps[0]) ||
-    null;
+      : match.maps[0];
+
+  const configMapList = match.config?.maplist;
+  const mapFromConfig =
+    configMapList && typeof mapNumber === 'number' && configMapList[mapNumber]
+      ? configMapList[mapNumber]
+      : configMapList?.[0];
+
+  const currentMapSlug =
+    liveStats?.mapName || match.currentMap || mapFromMatchMaps || mapFromConfig || null;
   const currentMapData = useMemo(() => {
     if (!currentMapSlug) return null;
     const mapData = getMapData(currentMapSlug);

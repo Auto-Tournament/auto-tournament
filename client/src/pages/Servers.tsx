@@ -124,6 +124,7 @@ export default function Servers() {
           id: server.id,
           status,
           currentMatch,
+          queuedMatch,
           reachableFromApi,
           serverCanReachApi,
           pluginStatus,
