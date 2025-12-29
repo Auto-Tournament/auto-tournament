@@ -25,6 +25,7 @@ import { api } from '../utils/api';
 import { EmptyState } from '../components/shared/EmptyState';
 import EloTemplateEditorModal from '../components/modals/EloTemplateEditorModal';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { EloTemplateImportModal } from '../components/modals/EloTemplateImportModal';
 import type { EloCalculationTemplate } from '../types/elo.types';
 
 export default function ELOTemplates() {
@@ -36,6 +37,7 @@ export default function ELOTemplates() {
   const [editingTemplate, setEditingTemplate] = useState<EloCalculationTemplate | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EloCalculationTemplate | null>(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
 
   const loadTemplates = useCallback(async () => {
     setLoading(true);
@@ -63,9 +65,14 @@ export default function ELOTemplates() {
 
   useEffect(() => {
     setHeaderActions(
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditor()}>
-        Create Template
-      </Button>
+      <Box display="flex" gap={1}>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditor()}>
+          Create Template
+        </Button>
+        <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+          Import from JSON
+        </Button>
+      </Box>
     );
 
     return () => {
@@ -111,6 +118,35 @@ export default function ELOTemplates() {
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
     }
+  };
+
+  const handleImportTemplates = async (
+    importedTemplates: Array<{
+      id?: string;
+      name: string;
+      description?: string;
+      enabled?: boolean;
+      weights?: EloCalculationTemplate['weights'];
+      maxAdjustment?: number;
+      minAdjustment?: number;
+    }>
+  ) => {
+    // Import each template via the existing POST /api/elo-templates endpoint
+    const promises = importedTemplates.map((tpl) =>
+      api.post('/api/elo-templates', {
+        id: tpl.id,
+        name: tpl.name,
+        description: tpl.description,
+        enabled: tpl.enabled,
+        weights: tpl.weights,
+        maxAdjustment: tpl.maxAdjustment,
+        minAdjustment: tpl.minAdjustment,
+      })
+    );
+
+    await Promise.all(promises);
+    showSuccess(`Successfully imported ${importedTemplates.length} ELO template(s)`);
+    await loadTemplates();
   };
 
   const getWeightSummary = (weights: EloCalculationTemplate['weights']): string => {
@@ -167,6 +203,22 @@ export default function ELOTemplates() {
                           {template.description}
                         </Typography>
                       )}
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {template.id === 'pure-win-loss'
+                          ? 'Per‑match stat adjustment: none (0; result‑only ELO)'
+                          : template.minAdjustment === undefined &&
+                            template.maxAdjustment === undefined
+                          ? 'Per‑match stat adjustment: uncapped (use with care)'
+                          : `Per‑match stat adjustment range: ${
+                              template.minAdjustment !== undefined
+                                ? template.minAdjustment
+                                : 'no min'
+                            } to ${
+                              template.maxAdjustment !== undefined
+                                ? template.maxAdjustment
+                                : 'no max'
+                            } ELO`}
+                      </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       {template.id !== 'pure-win-loss' && (
@@ -258,6 +310,12 @@ export default function ELOTemplates() {
           setTemplateToDelete(null);
         }}
         severity="error"
+      />
+
+      <EloTemplateImportModal
+        open={importModalOpen}
+        onClose={() => setImportModalOpen(false)}
+        onImport={handleImportTemplates}
       />
     </Box>
   );

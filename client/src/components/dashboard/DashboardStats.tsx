@@ -1,15 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Grid from '@mui/material/Grid';
-import {
-  Card,
-  CardContent,
-  Typography,
-  Chip,
-  CircularProgress,
-  Alert,
-  Box,
-  Stack,
-} from '@mui/material';
+import { Card, CardContent, Typography, Chip, CircularProgress, Alert, Box, Stack } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   EmojiEvents as TournamentIcon,
@@ -210,6 +201,44 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
     .filter((p) => typeof p.currentElo === 'number')
     .sort((a, b) => b.currentElo - a.currentElo)
     .slice(0, 5);
+
+  // ELO distribution (histogram-style buckets, e.g. 0-200, 200-400, ...)
+  const eloBucketSize = 200;
+  const eloValues = players
+    .map((p) => p.currentElo)
+    .filter((elo) => typeof elo === 'number' && Number.isFinite(elo)) as number[];
+
+  let eloBuckets:
+    | {
+        label: string;
+        count: number;
+      }[]
+    | null = null;
+
+  if (eloValues.length > 0) {
+    let maxElo = Math.max(...eloValues);
+    // Ensure at least one visible bucket even if all players are very low rated.
+    if (maxElo < eloBucketSize) {
+      maxElo = eloBucketSize;
+    }
+    const bucketCount = Math.floor(maxElo / eloBucketSize) + 1;
+    const bucketCounts = new Array<number>(bucketCount).fill(0);
+
+    eloValues.forEach((elo) => {
+      const clamped = Math.max(0, elo);
+      const index = Math.min(bucketCount - 1, Math.floor(clamped / eloBucketSize));
+      bucketCounts[index] += 1;
+    });
+
+    eloBuckets = bucketCounts.map((count, index) => {
+      const from = index * eloBucketSize;
+      const to = from + eloBucketSize;
+      return {
+        label: `${from}-${to}`,
+        count,
+      };
+    });
+  }
 
   // Prepare chart data
   const matchStatusData = [
@@ -587,58 +616,56 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           </Grid>
         )}
 
-        {/* Row 3: Match Status Over Time + Recent Completed Matches */}
+        {/* Row 4: ELO distribution, match status over time + recent matches */}
+        {eloBuckets && eloBuckets.length > 0 && (
+          <Grid size={{ xs: 12, md: 12 }}>
+            <Card sx={{ height: '100%' }}>
+              <CardContent>
+                <Typography variant="h6" fontWeight={600} mb={1}>
+                  Player ELO Distribution
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  Number of players per Skill Rating band (bucket size {eloBucketSize}).
+                </Typography>
+                <Box sx={{ width: '100%', height: 280, overflowX: 'auto' }}>
+                  <LineChart
+                    xAxis={[
+                      {
+                        data: eloBuckets.map((_, index) => index),
+                        valueFormatter: (value) =>
+                          eloBuckets?.[Number(value)]?.label ?? String(value),
+                        label: 'Skill Rating band',
+                      },
+                    ]}
+                    yAxis={[
+                      {
+                        label: 'Players',
+                        width: 40,
+                      },
+                    ]}
+                    series={[
+                      {
+                        id: 'players',
+                        label: 'Players',
+                        data: eloBuckets.map((b) => b.count),
+                        area: true,
+                      },
+                    ]}
+                    width={Math.max(600, eloBuckets.length * 80)}
+                    height={260}
+                    margin={{ top: 30, right: 20, bottom: 50, left: 50 }}
+                    grid={{ horizontal: true }}
+                  />
+                </Box>
+              </CardContent>
+            </Card>
+          </Grid>
+        )}
+
+        {/* Recent Completed Matches */}
         {recentMatches.length > 0 && (
           <>
-            <Grid size={{ xs: 12, md: 8 }}>
-              <Card sx={{ height: '100%' }}>
-                <CardContent>
-                  <Box display="flex" alignItems="center" gap={1} mb={2}>
-                    <TrendingUpIcon color="primary" />
-                    <Typography variant="h6" fontWeight={600}>
-                      Recent Match Status
-                    </Typography>
-                  </Box>
-                  <Box sx={{ width: '100%', height: 280, overflow: 'auto' }}>
-                    <LineChart
-                    colors={recentMatchLineColors}
-                      xAxis={[
-                        {
-                          data: recentMatches.map((_, i) => i),
-                          label: 'Match',
-                        },
-                      ]}
-                      yAxis={[
-                        {
-                          label: 'Status',
-                          width: 90,
-                          valueFormatter: (value) => formatMatchStatus(Number(value)),
-                        },
-                      ]}
-                      series={[
-                        {
-                          data: recentMatches.map((match) => {
-                            if (match.status === 'completed') return 5;
-                            if (match.status === 'live') return 4;
-                            if (match.status === 'loaded') return 3;
-                            if (match.status === 'ready') return 2;
-                            return 1;
-                          }),
-                          label: 'Status',
-                          area: true,
-                          valueFormatter: (value) => formatMatchStatus(Number(value)),
-                        },
-                      ]}
-                      width={Math.max(600, recentMatches.length * 80)}
-                      height={280}
-                      margin={{ top: 30, right: 30, bottom: 40, left: 90 }}
-                    />
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid size={{ xs: 12, md: 4 }}>
+            <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
                   <Typography variant="h6" fontWeight={600} mb={1}>

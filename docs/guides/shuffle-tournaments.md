@@ -144,6 +144,7 @@ Before each round:
 - Advanced ELO templates are **optional**:
   - You can configure them in the **ELO Templates** admin page.
   - When a non-default template is enabled and selected for a tournament, it adds **stat-based adjustments on top of the OpenSkill win/loss change**.
+  - The system ships with a **Balanced Stats v1** preset, which adds a modest adjustment based on ADR, KAST, K/D, utility damage and MVPs while still letting the match result dominate.
 
 ### Odd Number of Players
 

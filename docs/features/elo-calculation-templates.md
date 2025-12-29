@@ -242,6 +242,16 @@ Update `updatePlayerRatings()` to:
 - `PUT /api/elo-templates/:id` - Update template
 - `DELETE /api/elo-templates/:id` - Delete template
 
+#### Built-in templates
+
+- **pure-win-loss** (ID: `pure-win-loss`)
+  - Always present and enabled.
+  - All stat weights are `0`, so only **win/loss** affects ELO; stats are tracked but do not change ratings.
+- **Balanced Stats v1** (ID: `balanced-stats-v1`)
+  - Automatically created on first use of the ELO templates API.
+  - Adds a modest stat-based adjustment on top of the OpenSkill win/loss change, using ADR, KAST, K/D, utility damage and MVPs.
+  - Tuned so that the match result still dominates the rating change.
+
 ### Tournament Integration
 
 - `PUT /api/tournament/:id/elo-template` - Set template for tournament
@@ -256,6 +266,10 @@ Update `updatePlayerRatings()` to:
 - Edit/delete actions
 - Preview template (show weights)
 - Set as default option
+- **Import from JSON** button:
+  - Opens an "Import ELO Templates from JSON" modal.
+  - Accepts an array of templates in JSON format (matching the `POST /api/elo-templates` body shape).
+  - Validates structure and shows a preview before importing.
 
 ### Template Editor Modal
 

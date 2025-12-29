@@ -87,8 +87,9 @@ class EloTemplateService {
    * Ensures default template exists and has correct weights
    */
   async getAllTemplates(): Promise<EloCalculationTemplate[]> {
-    // Ensure default template exists
+    // Ensure built-in templates exist
     await this.getDefaultTemplate();
+    await this.ensureBalancedStatsTemplate();
     const records = await db.getAllAsync<EloTemplateRecord>('elo_calculation_templates');
     return records.map((r) => this.toResponse(r));
   }
@@ -147,6 +148,46 @@ class EloTemplateService {
     }
     
     return template;
+  }
+
+  /**
+   * Ensure the "Balanced Stats v1" template exists.
+   * This is a built-in stat-based template that adds a modest adjustment
+   * on top of the OpenSkill win/loss update.
+   *
+   * Unlike the pure-win-loss template, we do NOT force-enable or lock
+   * this one; admins are free to edit or disable it after creation.
+   */
+  private async ensureBalancedStatsTemplate(): Promise<void> {
+    const id = 'balanced-stats-v1';
+    const existing = await this.getTemplate(id);
+    if (existing) {
+      return;
+    }
+
+    await this.createTemplate({
+      id,
+      name: 'Balanced Stats v1',
+      description:
+        'Adds a modest stat-based adjustment on top of OpenSkill win/loss, using ADR, KAST, K/D, utility, and MVPs. Tuned so that match result still dominates.',
+      enabled: true,
+      weights: {
+        kills: 0.4,
+        deaths: -0.4,
+        assists: 0.2,
+        flashAssists: 0.15,
+        headshotKills: 0.2,
+        damage: 0,
+        utilityDamage: 0.02,
+        kast: 0.05,
+        mvps: 1.5,
+        score: 0,
+        adr: 0.05,
+      },
+      maxAdjustment: 40,
+      minAdjustment: -40,
+    });
+    log.info('Created built-in "Balanced Stats v1" ELO template');
   }
 
   /**
