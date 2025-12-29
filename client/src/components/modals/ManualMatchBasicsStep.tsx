@@ -39,6 +39,8 @@ interface ManualMatchBasicsStepProps {
   onTeam2ModeChange: (mode: 'existing' | 'new') => void;
   playersPerTeam: number;
   players: PlayerDetail[];
+  // Steam IDs of players currently in non-completed matches (pending/ready/loaded/live).
+  busyPlayerIds?: Set<string>;
   team1NewPlayerIds: string[];
   onTeam1NewPlayerIdsChange: (ids: string[]) => void;
   team2NewPlayerIds: string[];
@@ -67,6 +69,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
   onTeam2ModeChange,
   playersPerTeam,
   players,
+  busyPlayerIds,
   team1NewPlayerIds,
   onTeam1NewPlayerIdsChange,
   team2NewPlayerIds,
@@ -101,7 +104,11 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
           if (currentId) {
             blockedIds.delete(currentId);
           }
-          const availableOptions = players.filter((p) => !blockedIds.has(p.id));
+          const availableOptions = players.filter((p) => {
+            if (blockedIds.has(p.id)) return false;
+            if (busyPlayerIds && busyPlayerIds.has(p.id)) return false;
+            return true;
+          });
             return (
               <Autocomplete
                 key={index}

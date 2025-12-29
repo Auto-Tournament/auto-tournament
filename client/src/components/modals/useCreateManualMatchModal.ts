@@ -16,6 +16,7 @@ import type {
   MapPoolsResponse,
   PlayerDetail,
   PlayersResponse,
+  MatchesResponse,
 } from '../../types/api.types';
 
 export interface MatchTemplate {
@@ -39,127 +40,6 @@ const getRequiredMapsForFormat = (format: 'bo1' | 'bo3' | 'bo5'): number => {
   return 5;
 };
 
-// Friendly team names for ad-hoc manual match teams, kept in sync with the
-// shuffle tournament service so names feel consistent across the app.
-const AD_HOC_TEAM_NAMES: string[] = [
-  'Phoenix',
-  'Falcon',
-  'Wolf',
-  'Lion',
-  'Eagle',
-  'Raven',
-  'Dragon',
-  'Titan',
-  'Viper',
-  'Cobra',
-  'Jaguar',
-  'Panther',
-  'Bear',
-  'Shark',
-  'Hawk',
-  'Alpha',
-  'Bravo',
-  'Charlie',
-  'Delta',
-  'Echo',
-  'Foxtrot',
-  'Gamma',
-  'Omega',
-  'Nova',
-  'Aurora',
-  'Comet',
-  'Nebula',
-  'Orion',
-  'Blaze',
-  'Ember',
-  'Inferno',
-  'Glacier',
-  'Avalanche',
-  'Thunder',
-  'Storm',
-  'Cyclone',
-  'Tempest',
-  'Mirage',
-  'Oasis',
-  'Harbor',
-  'Citadel',
-  'Sentinel',
-  'Vanguard',
-  'Guardian',
-  'Shadow',
-  'Spectre',
-  'Phantom',
-  'Rogue',
-  'Nomad',
-  'Ranger',
-  'Pioneer',
-  'Vertex',
-  'Zenith',
-  'Apex',
-  'Summit',
-  'Peak',
-  'Crimson',
-  'Azure',
-  'Emerald',
-  'Gold',
-  'Silver',
-  'Titanium',
-  'Platinum',
-  'Diamond',
-  'Obsidian',
-  'Onyx',
-  'Quartz',
-  'Ruby',
-  'Sapphire',
-  'Topaz',
-  'Amber',
-  'Jet',
-  'Ivory',
-  'Steel',
-  'Iron',
-  'Bronze',
-  'Copper',
-  'Carbon',
-  'Neon',
-  'Argon',
-  'Helix',
-  'Vector',
-  'Matrix',
-  'Cipher',
-  'NovaCore',
-  'Pulse',
-  'Volt',
-  'Static',
-  'Surge',
-  'Flux',
-  'Quasar',
-  'Halo',
-  'Nimbus',
-  'Stratus',
-  'Cirrus',
-  'Monsoon',
-  'Blizzard',
-  'Frost',
-  'Emberfall',
-  'Wildfire',
-  'Sandstorm',
-  'MirageWave',
-  'HarborLine',
-  'CitadelGuard',
-  'Skyline',
-  'VanguardElite',
-];
-
-const pickRandomTeamName = (exclude: string[] = []): string => {
-  const used = new Set(exclude);
-  const pool = AD_HOC_TEAM_NAMES.filter((name) => !used.has(name));
-  if (pool.length === 0) {
-    return `Team ${Math.floor(Math.random() * 10000)}`;
-  }
-  const index = Math.floor(Math.random() * pool.length);
-  return pool[index];
-};
-
 const generateRandomMatchSlug = (length = 10): string => {
   const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
   let result = '';
@@ -168,6 +48,27 @@ const generateRandomMatchSlug = (length = 10): string => {
     result += chars.charAt(index);
   }
   return result;
+};
+
+const fetchRandomTeamName = async (exclude: string[] = []): Promise<string> => {
+  try {
+    const res = await api.get<{ success: boolean; name?: string }>('/api/generation/team-name');
+    const rawName = res.name || 'New Team';
+    if (!exclude.includes(rawName)) {
+      return rawName;
+    }
+    // If the generated name collides locally, just append a suffix.
+    let suffix = 2;
+    let candidate = `${rawName} ${suffix}`;
+    while (exclude.includes(candidate) && suffix < 10) {
+      suffix += 1;
+      candidate = `${rawName} ${suffix}`;
+    }
+    return candidate;
+  } catch (err) {
+    console.error('Failed to fetch random team name from API, falling back to generic name', err);
+    return `Team ${Math.floor(Math.random() * 10000)}`;
+  }
 };
 
 export interface UseCreateManualMatchModalParams {
@@ -210,6 +111,7 @@ export function useCreateManualMatchModal({
   const [teams, setTeams] = useState<Team[]>([]);
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
+  const [busyPlayerIds, setBusyPlayerIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   const [slug, setSlug] = useState('');
@@ -342,6 +244,36 @@ export function useCreateManualMatchModal({
     }
   }, []);
 
+  const loadBusyPlayers = useCallback(async () => {
+    try {
+      const data = await api.get<MatchesResponse>('/api/matches');
+      const activeMatches = (data.matches || []).filter(
+        (m) =>
+          m.status === 'pending' ||
+          m.status === 'ready' ||
+          m.status === 'loaded' ||
+          m.status === 'live'
+      );
+
+      const busy = new Set<string>();
+      for (const match of activeMatches) {
+        const cfg = match.config;
+        const team1Players = (cfg?.team1?.players || []).map((p) => p.steamid);
+        const team2Players = (cfg?.team2?.players || []).map((p) => p.steamid);
+        for (const id of [...team1Players, ...team2Players]) {
+          if (id) {
+            busy.add(id);
+          }
+        }
+      }
+
+      setBusyPlayerIds(busy);
+    } catch (err) {
+      console.error('Failed to load busy players for manual match creation', err);
+      setBusyPlayerIds(new Set());
+    }
+  }, []);
+
   const loadServerAllocation = useCallback(async () => {
     try {
       const availability = await api.get<{
@@ -448,14 +380,20 @@ export function useCreateManualMatchModal({
   useEffect(() => {
     if (team1Mode === 'new' && !team1NewName) {
       const exclude = team2NewName ? [team2NewName] : [];
-      setTeam1NewName(pickRandomTeamName(exclude));
+      (async () => {
+        const name = await fetchRandomTeamName(exclude);
+        setTeam1NewName((current) => current || name);
+      })();
     }
   }, [team1Mode, team1NewName, team2NewName]);
 
   useEffect(() => {
     if (team2Mode === 'new' && !team2NewName) {
       const exclude = team1NewName ? [team1NewName] : [];
-      setTeam2NewName(pickRandomTeamName(exclude));
+      (async () => {
+        const name = await fetchRandomTeamName(exclude);
+        setTeam2NewName((current) => current || name);
+      })();
     }
   }, [team2Mode, team1NewName, team2NewName]);
 
@@ -756,11 +694,12 @@ export function useCreateManualMatchModal({
       void loadTeams();
       void loadMaps();
       void loadPlayers();
+      void loadBusyPlayers();
       void loadServerAllocation();
     } else {
       resetForm();
     }
-  }, [open, loadServers, loadTeams, loadMaps, loadPlayers, loadServerAllocation]);
+  }, [open, loadServers, loadTeams, loadMaps, loadPlayers, loadBusyPlayers, loadServerAllocation]);
 
   useEffect(() => {
     if (!open || serverId || servers.length === 0) {
@@ -974,6 +913,7 @@ export function useCreateManualMatchModal({
       team2NewPlayerIds,
       team1NewName,
       team2NewName,
+      busyPlayerIds,
     },
     actions: {
       setSlug,

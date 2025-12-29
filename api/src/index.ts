@@ -39,6 +39,7 @@ import settingsRoutes from './routes/settings';
 import mapsRoutes from './routes/maps';
 import mapPoolsRoutes from './routes/mapPools';
 import recoveryRoutes from './routes/recovery';
+import generationRoutes from './routes/generation';
 import templatesRoutes from './routes/templates';
 import manualMatchTemplatesRoutes from './routes/manualMatchTemplates';
 import playersRoutes from './routes/players';
@@ -282,6 +283,7 @@ app.use('/api/manual-match-templates', manualMatchTemplatesRoutes); // Manual ma
 app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
 app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
+app.use('/api/generation', generationRoutes); // Shared name/code generators (e.g. team names)
 app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
 app.use('/api/auth', authSteamRoutes); // Steam-based player login (players only)
 

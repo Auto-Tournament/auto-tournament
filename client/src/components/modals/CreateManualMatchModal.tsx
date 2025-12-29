@@ -88,6 +88,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
       team1Mode,
       team2Mode,
       players,
+      busyPlayerIds,
       team1NewPlayerIds,
       team2NewPlayerIds,
       team1NewName,
@@ -254,6 +255,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
                 onTeam2ModeChange={setTeam2Mode}
                 playersPerTeam={playersPerTeam}
                 players={players}
+                busyPlayerIds={busyPlayerIds}
                 team1NewPlayerIds={team1NewPlayerIds}
                 onTeam1NewPlayerIdsChange={setTeam1NewPlayerIds}
                 team2NewPlayerIds={team2NewPlayerIds}
