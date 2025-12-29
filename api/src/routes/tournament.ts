@@ -1218,6 +1218,10 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
         expected_players_total: playersPerTeam * 2,
         expected_players_team1: playersPerTeam,
         expected_players_team2: playersPerTeam,
+        // Manual matches already set mp_maxrounds / mp_overtime_* via cvars.
+        // We optionally mirror the effective regulation length here so the
+        // plugin can read a consistent JSON field if desired.
+        maxRounds: effectiveMaxRounds,
         cvars,
         team1: {
           id: team1Id,

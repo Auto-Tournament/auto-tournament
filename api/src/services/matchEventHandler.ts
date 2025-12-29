@@ -687,7 +687,24 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
 
   const team1Score = Number(eventData.team1_series_score) || 0;
   const team2Score = Number(eventData.team2_series_score) || 0;
-  const winnerId = team1Score > team2Score ? match.team1_id : match.team2_id;
+  // Prefer the explicit winner field from the plugin, even when scores are
+  // tied (e.g. performance-based tiebreaks). Fall back to score comparison
+  // only if winner is missing or "none".
+  const winnerTeamFromEvent = (eventData.winner as { team?: string } | undefined)
+    ?.team as 'team1' | 'team2' | 'none' | undefined;
+
+  let winnerId: string | null = null;
+  if (winnerTeamFromEvent === 'team1') {
+    winnerId = match.team1_id ?? null;
+  } else if (winnerTeamFromEvent === 'team2') {
+    winnerId = match.team2_id ?? null;
+  } else if (team1Score !== team2Score) {
+    // Legacy fallback: derive winner from series score when event doesn't
+    // provide a decisive winner.
+    winnerId = team1Score > team2Score ? match.team1_id : match.team2_id;
+  } else {
+    winnerId = null;
+  }
   const completedAt = Math.floor(Date.now() / 1000);
 
   if (!winnerId) {

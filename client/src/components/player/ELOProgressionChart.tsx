@@ -14,11 +14,16 @@ interface ELOProgressionChartProps {
   startingElo: number;
 }
 
-export function ELOProgressionChart({ history, currentElo, startingElo }: ELOProgressionChartProps) {
+export function ELOProgressionChart({
+  history,
+  currentElo,
+  startingElo,
+}: ELOProgressionChartProps) {
   // Chart dimensions - hooks must be called before any early returns
   const chartHeight = 200;
   const padding = 40;
-  const pointRadius = 4;
+  // Larger points for clearer visual emphasis (approx. 24px diameter)
+  const pointRadius = 6;
   const [chartWidth, setChartWidth] = useState(600);
   const containerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -48,19 +53,36 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
   // progression line matches the order of matches the player actually played.
   const sortedHistory = [...history].sort((a, b) => a.createdAt - b.createdAt);
 
-  // Prepare data points: include starting ELO and all history points
-  const dataPoints = [
-    { elo: startingElo, label: 'Starting', isStart: true },
-    ...sortedHistory.map((entry) => ({
-      elo: entry.eloAfter,
-      label: entry.matchResult === 'win' ? 'Win' : 'Loss',
-      change: entry.eloChange,
-      isStart: false,
-    })),
-  ];
+  type DataPoint = {
+    elo: number;
+    change?: number;
+    isCurrent?: boolean;
+  };
+
+  // Build match progression: after each match -> current rating
+  const matchPoints: DataPoint[] = sortedHistory.map((entry) => ({
+    elo: entry.eloAfter,
+    change: entry.eloChange,
+  }));
+
+  const dataPoints: DataPoint[] = [...matchPoints];
+
+  // Append an explicit "current rating" point as the final grey dot. This makes
+  // it visually clear where the player stands *now*, even if no recent match
+  // has changed their rating.
+  dataPoints.push({
+    elo: currentElo,
+    isCurrent: true,
+  });
 
   // Find min and max ELO for scaling
-  const allElos = [startingElo, currentElo, ...sortedHistory.map((h) => h.eloAfter)];
+  // Use eloBefore of the first match (when available) as the starting reference
+  // for Y-axis scaling and text summary, even though we don't plot a separate
+  // neutral starting dot anymore.
+  const startingRatingBeforeFirst =
+    sortedHistory.length > 0 ? sortedHistory[0].eloBefore : startingElo;
+
+  const allElos = [startingRatingBeforeFirst, currentElo, ...sortedHistory.map((h) => h.eloAfter)];
   const minElo = Math.min(...allElos);
   const maxElo = Math.max(...allElos);
   const eloRange = maxElo - minElo || 1; // Avoid division by zero
@@ -79,7 +101,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
     return padding + (availableWidth * index) / (total - 1);
   };
 
-  // Generate path for line
+  // Generate a straight line path connecting each data point (no curves).
   const linePath = dataPoints
     .map((point, index) => {
       const x = getX(index, dataPoints.length);
@@ -89,7 +111,13 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
     .join(' ');
 
   // Generate area path
-  const areaPath = `${linePath} L ${padding + availableWidth} ${chartHeight + padding - padding} L ${padding} ${chartHeight + padding - padding} Z`;
+  const areaPath = `${linePath} L ${padding + availableWidth} ${
+    chartHeight + padding - padding
+  } L ${padding} ${chartHeight + padding - padding} Z`;
+
+  // Use the history-derived starting rating for display as well, falling back
+  // to the prop when necessary.
+  const displayStartingElo = startingRatingBeforeFirst ?? startingElo;
 
   return (
     <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
@@ -105,11 +133,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
           mt: 2,
         }}
       >
-        <svg
-          width="100%"
-          height={chartHeight + padding}
-          style={{ overflow: 'visible' }}
-        >
+        <svg width="100%" height={chartHeight + padding} style={{ overflow: 'visible' }}>
           {/* Grid lines */}
           {[0, 0.25, 0.5, 0.75, 1].map((ratio) => {
             const elo = minElo + eloRange * ratio;
@@ -139,10 +163,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
           })}
 
           {/* Area under curve */}
-          <path
-            d={areaPath}
-            fill={alpha(theme.palette.primary.main, 0.15)}
-          />
+          <path d={areaPath} fill={alpha(theme.palette.primary.main, 0.15)} />
 
           {/* Line */}
           <path
@@ -168,8 +189,8 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                   cy={y}
                   r={pointRadius}
                   fill={
-                    point.isStart
-                      ? theme.palette.text.secondary
+                    point.isCurrent
+                      ? theme.palette.primary.main
                       : isWin
                       ? theme.palette.success.main
                       : isLoss
@@ -192,11 +213,11 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                  bgcolor: theme.palette.text.secondary,
+                bgcolor: theme.palette.primary.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
-              Start
+              Current
             </Typography>
           </Box>
           <Box display="flex" alignItems="center" gap={0.5}>
@@ -205,7 +226,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                  bgcolor: theme.palette.success.main,
+                bgcolor: theme.palette.success.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -218,7 +239,7 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
                 width: 12,
                 height: 12,
                 borderRadius: '50%',
-                  bgcolor: theme.palette.error.main,
+                bgcolor: theme.palette.error.main,
               }}
             />
             <Typography variant="caption" color="text.secondary">
@@ -228,13 +249,20 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
         </Box>
 
         {/* Stats summary */}
-        <Box display="flex" justifyContent="space-between" mt={2} pt={2} borderTop="1px solid" borderColor="divider">
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          mt={2}
+          pt={2}
+          borderTop="1px solid"
+          borderColor="divider"
+        >
           <Box>
             <Typography variant="caption" color="text.secondary">
               Starting ELO
             </Typography>
             <Typography variant="body2" fontWeight={600}>
-              {startingElo}
+              {displayStartingElo}
             </Typography>
           </Box>
           <Box textAlign="center">
@@ -263,4 +291,3 @@ export function ELOProgressionChart({ history, currentElo, startingElo }: ELOPro
     </Paper>
   );
 }
-

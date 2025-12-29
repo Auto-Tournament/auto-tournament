@@ -34,6 +34,15 @@ export interface MatchConfig {
   expected_players_team1?: number;
   expected_players_team2?: number;
   wingman?: boolean;
+  /**
+   * Optional explicit round-limit settings passed through to MatchZy.
+   * These mirror the shuffle/standard tournament settings and allow the
+   * plugin to configure regulation + OT behavior from JSON in addition to
+   * raw cvars.
+   */
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
   cvars?: {
     [key: string]: string | number;
   };

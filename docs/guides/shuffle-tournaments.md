@@ -365,8 +365,13 @@ The tournament winner is determined by:
 - **Format**: Always BO1 (Best of 1)
 - **Veto**: Disabled (no map voting)
 - **Sides**: Randomly assigned (no knife round)
-- **Round Limits**: Single configurable **Max Rounds** value (default: 24) applied to every map via `mp_maxrounds`
-- **Overtime**: Configurable (Enable or Disable). A metric-based overtime mode is a future idea and is **not** available in the current release.
+- **Round Limits**: Single configurable **Max Rounds** value (default: 24) applied to every map via `mp_maxrounds` and passed to MatchZy as `maxRounds` in the match JSON.
+- **Overtime Mode**:
+  - **Enable Overtime**: Standard CS2 overtime is played when the score is tied at max rounds. We send `overtimeMode: "enabled"` in the match JSON and MatchZy sets `mp_overtime_enable 1`.
+  - **Disable Overtime**: No overtime is played. We send `overtimeMode: "disabled"` and MatchZy sets `mp_overtime_enable 0`.
+- **Overtime Segments (optional)**:
+  - Configured as `overtimeSegments` on the tournament and passed through in the match JSON.
+  - Interpreted by the plugin as a policy hint (e.g. whether draws are allowed vs. using a damage-based tiebreak) rather than a hard cap on the number of overtime segments. When unset or 0, MatchZy’s default “unlimited OT until someone wins” behavior is used.
 
 ## API Endpoints
 
@@ -379,6 +384,7 @@ For programmatic access, the following endpoints are available. All endpoints re
 - `POST /api/tournament/shuffle`
 - Creates a new shuffle tournament
 - Required fields: `name`, `mapSequence`, `maxRounds`, `overtimeMode`
+- Optional field: `overtimeSegments` (integer, >= 0)
 
 **Get Tournament**
 

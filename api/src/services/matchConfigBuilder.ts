@@ -261,6 +261,11 @@ export const generateMatchConfig = async (
     // Round limit configuration
     cvars,
 
+    // Explicit round-limit metadata for MatchZy JSON consumers
+    maxRounds,
+    overtimeMode: tournament.overtimeMode,
+    overtimeSegments: tournament.overtimeSegments,
+
     // Custom fields used by your frontend
     expected_players_total: team1Count + team2Count,
     expected_players_team1: team1Count,
@@ -428,6 +433,11 @@ async function generateShuffleMatchConfig(
 
     // Round limit and overtime configuration
     cvars,
+
+    // Explicit round-limit metadata for MatchZy JSON consumers
+    maxRounds,
+    overtimeMode: tournament.overtimeMode,
+    overtimeSegments: tournament.overtimeSegments,
 
     spectators: { players: {} },
 
