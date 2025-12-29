@@ -87,7 +87,24 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
 
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
     if (match.status === 'completed') {
-      const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
+      // Normal path: use derived series maps (best-of-N).
+      let seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
+
+      // If we have a declared winner but the series scores are tied (e.g. 1-1),
+      // this is typically a single-map series where the map ended tied on
+      // rounds but the plugin broke the tie by performance (damage).
+      // In that case, force a clear 1–0 / 0–1 display instead of 1–1.
+      if (
+        match.status === 'completed' &&
+        winnerSide &&
+        typeof seriesMapsTeam1 === 'number' &&
+        typeof seriesMapsTeam2 === 'number' &&
+        seriesMapsTeam1 === seriesMapsTeam2 &&
+        (!match.mapResults || match.mapResults.length === 0)
+      ) {
+        seriesScore = team === winnerSide ? 1 : 0;
+      }
+
       return typeof seriesScore === 'number' ? seriesScore : undefined;
     }
     const roundsScore = team === 'team1' ? match.team1Score : match.team2Score;
