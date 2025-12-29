@@ -749,9 +749,19 @@ export async function getPlayerLeaderboard(): Promise<PlayerLeaderboardEntry[]> 
         [player.id]
       );
 
-      const wins = matches.filter((m) => m.won_match).length;
-      const losses = matches.filter((m) => !m.won_match).length;
-      const winRate = matches.length > 0 ? wins / matches.length : 0;
+      // Deduplicate by match_slug so we only count each match once per player,
+      // even if multiple player_match_stats rows exist for the same match
+      // (e.g. if stats were re-tracked after late events).
+      const matchBySlug = new Map<string, { team: string; won_match: boolean }>();
+      for (const row of matches) {
+        matchBySlug.set(row.match_slug, { team: row.team, won_match: row.won_match });
+      }
+      const uniqueMatches = Array.from(matchBySlug.values());
+
+      const wins = uniqueMatches.filter((m) => m.won_match).length;
+      const losses = uniqueMatches.filter((m) => !m.won_match).length;
+      const totalMatches = uniqueMatches.length;
+      const winRate = totalMatches > 0 ? wins / totalMatches : 0;
 
       // Aggregate ELO change for this tournament only (shuffle tournament id = 1)
       const eloChangeRow = await db.queryOneAsync<{ total_elo_change: number }>(
