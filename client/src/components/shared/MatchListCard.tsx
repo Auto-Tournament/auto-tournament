@@ -163,12 +163,11 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                 {getTeamName(match.team1?.id, 'team1')}
               </Typography>
 
-              {getTeamScoreDisplay('team1') !== undefined &&
-                getTeamScoreDisplay('team2') !== undefined && (
-                  <Typography variant="h6" fontWeight={700}>
-                    {getTeamScoreDisplay('team1')} - {getTeamScoreDisplay('team2')}
-                  </Typography>
-                )}
+              <Typography variant="h6" fontWeight={700}>
+                {getTeamScoreDisplay('team1') !== undefined &&
+                  getTeamScoreDisplay('team2') !== undefined &&
+                  `${getTeamScoreDisplay('team1')} - ${getTeamScoreDisplay('team2')}`}
+              </Typography>
 
               <Typography
                 variant="body2"
