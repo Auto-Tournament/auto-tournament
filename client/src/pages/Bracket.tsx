@@ -716,7 +716,11 @@ export default function Bracket() {
             .reverse()
             .map((round) => {
               const roundMatches = matchesByRound[round] || [];
-              if (roundMatches.length === 0) return null;
+              // Only show matches where both teams are assigned (no TBD placeholders)
+              const visibleMatches = roundMatches.filter(
+                (match) => match.team1 && match.team2
+              );
+              if (visibleMatches.length === 0) return null;
 
               return (
                 <Box key={round} mb={4}>
@@ -733,7 +737,7 @@ export default function Bracket() {
                     )}
                   </Typography>
                   <Stack spacing={1.5}>
-                    {roundMatches.map((match) => (
+                    {visibleMatches.map((match) => (
                       <MatchListCard
                         key={match.id}
                         match={match}
