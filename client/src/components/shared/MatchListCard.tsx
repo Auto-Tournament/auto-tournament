@@ -133,8 +133,9 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
       sx={{
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.15s, box-shadow 0.15s',
-        borderLeft: 4,
-        borderColor: getBorderColor(),
+        borderLeftWidth: 4,
+        borderLeftStyle: 'solid',
+        borderLeftColor: getBorderColor(),
         '&:hover': onClick
           ? {
               transform: 'translateY(-2px)',

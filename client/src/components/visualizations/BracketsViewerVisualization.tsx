@@ -435,6 +435,37 @@ export default function BracketsViewerVisualization({
     };
   }, [matches, tournamentType]);
 
+  const updateMatchStatusStyles = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const matchElements = container.querySelectorAll<HTMLElement>('.match[data-match-id]');
+    matchElements.forEach((element) => {
+      const matchId = element.getAttribute('data-match-id');
+      if (!matchId) return;
+
+      const originalMatch = findOriginalMatch(matchId as Id);
+      if (!originalMatch) return;
+
+      const opponents = element.querySelector<HTMLElement>('.opponents');
+      if (!opponents) return;
+
+      opponents.classList.remove(
+        'match--status-live',
+        'match--status-loaded',
+        'match--status-allocated'
+      );
+
+      if (originalMatch.status === 'live') {
+        opponents.classList.add('match--status-live');
+      } else if (originalMatch.status === 'loaded') {
+        opponents.classList.add('match--status-loaded');
+      } else if (originalMatch.serverId && originalMatch.status !== 'completed') {
+        opponents.classList.add('match--status-allocated');
+      }
+    });
+  }, [findOriginalMatch]);
+
   useEffect(() => {
     const container = containerRef.current;
     if (!container || !viewerData) return;
@@ -497,6 +528,18 @@ export default function BracketsViewerVisualization({
           container.style.setProperty('--win-color', theme.palette.success.main);
           container.style.setProperty('--loss-color', theme.palette.error.main);
           container.style.setProperty('--live-border-color', theme.palette.primary.main);
+          container.style.setProperty(
+            '--status-live-border-color',
+            theme.palette.error.main
+          );
+          container.style.setProperty(
+            '--status-loaded-border-color',
+            theme.palette.info.main
+          );
+          container.style.setProperty(
+            '--status-allocated-border-color',
+            theme.palette.warning.main
+          );
         }
 
         const transformInstance = transformRef.current;
@@ -509,6 +552,7 @@ export default function BracketsViewerVisualization({
 
         updateMatchClickTargets();
         updateLiveRoundStyles();
+        updateMatchStatusStyles();
       } catch (error) {
         console.error('Error rendering bracket:', error);
       }
@@ -531,6 +575,7 @@ export default function BracketsViewerVisualization({
     findOriginalMatch,
     updateMatchClickTargets,
     updateLiveRoundStyles,
+    updateMatchStatusStyles,
   ]);
 
   return (

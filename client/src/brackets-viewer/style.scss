@@ -234,6 +234,21 @@
     border-radius: var(--match-border-radius);
     background: var(--match-background);
 
+    &.match--status-live {
+      border-color: var(--status-live-border-color); // theme error.main
+      border-width: 2px;
+    }
+
+    &.match--status-loaded {
+      border-color: var(--status-loaded-border-color); // theme info.main
+      border-width: 2px;
+    }
+
+    &.match--status-allocated {
+      border-color: var(--status-allocated-border-color); // theme warning.main
+      border-width: 2px;
+    }
+
     &:hover {
       border: 1px solid var(--border-hover-color);
     }
