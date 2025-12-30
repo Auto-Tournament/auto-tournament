@@ -46,15 +46,10 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 
   const {
     state: {
-      servers,
-      loadingServers,
-      serverStatuses,
-      serverAllocation,
       teams,
       loadingTeams,
       saving,
       slug,
-      serverId,
       team1Id,
       team2Id,
       maps,
@@ -96,7 +91,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
     },
     actions: {
       // setSlug,
-      setServerId,
       setTeam1Id,
       setTeam2Id,
       setMaps,
@@ -160,7 +154,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               <StepLabel>Maps</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Teams & Server</StepLabel>
+              <StepLabel>Teams</StepLabel>
             </Step>
             <Step>
               <StepLabel>Review</StepLabel>
@@ -169,8 +163,8 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 
           <Stack spacing={2} mt={1}>
             <Typography variant="body2" color="text.secondary">
-              Create a standalone match that is independent from the tournament bracket. You can
-              pick any enabled server and basic match settings.
+              Create a standalone match that is independent from the tournament bracket. The API
+              will automatically allocate an available server for you.
             </Typography>
 
             {activeStep === 0 && (
@@ -236,13 +230,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
 
             {activeStep === 3 && (
               <ManualMatchBasicsStep
-                servers={servers}
-                serverId={serverId}
-                onServerChange={setServerId}
-                loadingServers={loadingServers}
                 submitAttempted={submitAttempted}
-                serverAllocation={serverAllocation}
-                serverStatuses={serverStatuses}
                 teams={teams}
                 team1Id={team1Id}
                 team2Id={team2Id}
@@ -268,8 +256,6 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             {activeStep === 4 && (
               <ManualMatchReviewStep
                 slug={slug}
-                serverId={serverId}
-                servers={servers}
                 config={previewConfig}
                 onOpenSaveTemplate={handleOpenSaveTemplate}
               />
@@ -290,7 +276,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
             <Button
               variant="contained"
               onClick={handleNextStep}
-              disabled={saving || servers.length === 0}
+              disabled={saving}
             >
               Next
             </Button>
@@ -303,7 +289,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               <Button
                 variant="contained"
                 onClick={handleNextStep}
-                disabled={saving || servers.length === 0}
+                disabled={saving}
               >
                 Next
               </Button>
@@ -317,7 +303,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               <Button
                 variant="contained"
                 onClick={handleNextStep}
-                disabled={saving || servers.length === 0 || !previewConfig}
+                disabled={saving || !previewConfig}
               >
                 Next
               </Button>
@@ -331,7 +317,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               <Button
                 variant="contained"
                 onClick={handleNextStep}
-                disabled={saving || servers.length === 0 || !previewConfig}
+                disabled={saving || !previewConfig}
               >
                 Next
               </Button>
@@ -345,7 +331,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               <Button
                 variant="contained"
                 onClick={handleSubmit}
-                disabled={saving || servers.length === 0 || !previewConfig}
+                disabled={saving || !previewConfig}
               >
                 {saving ? 'Creating…' : 'Create Match'}
               </Button>

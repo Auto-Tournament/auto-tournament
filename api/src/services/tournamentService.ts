@@ -396,7 +396,11 @@ class TournamentService {
         [1]
       );
 
-      log.success(`Shuffle tournament reset to setup mode. Deleted ${matchCount?.count || 0} match(es) and cleared shuffle teams (registrations preserved).`);
+      log.success(
+        `Shuffle tournament reset to setup mode. Deleted ${
+          matchCount?.count || 0
+        } match(es) and cleared shuffle teams (registrations preserved).`
+      );
 
       const result = await this.getTournament();
       if (!result) throw new Error('Failed to retrieve tournament after reset');
@@ -462,6 +466,7 @@ class TournamentService {
     );
 
     const matches: BracketMatch[] = [];
+
     for (const row of rows) {
       const match: BracketMatch = {
         id: row.id,

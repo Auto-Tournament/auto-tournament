@@ -12,6 +12,7 @@ import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { enrichMatch } from '../utils/matchEnrichment';
+import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
@@ -712,8 +713,48 @@ router.get('/', async (req: Request, res: Response) => {
           }
         }
 
-        // Enrich match with player stats and scores from events
+        // Enrich match with player stats and scores from persisted events
         await enrichMatch(match, row.slug);
+
+        // For COMPLETED matches, if we still don't have any non‑zero score, fall
+        // back to the final map result so the admin never sees "0‑0" after a
+        // full game has been played (especially for BO1/manual matches).
+        if (
+          row.status === 'completed' &&
+          (!Number.isFinite(match.team1Score as number) || !Number.isFinite(match.team2Score as number) ||
+            ((match.team1Score as number) === 0 && (match.team2Score as number) === 0)) &&
+          mapResults.length > 0
+        ) {
+          const lastResult = mapResults[mapResults.length - 1];
+          match.team1Score = lastResult.team1Score;
+          match.team2Score = lastResult.team2Score;
+        }
+
+        // For matches that are still in progress, optionally overlay in‑memory
+        // live stats so the admin "Matches" page reflects the most recent
+        // score. As with the bracket view, prefer a positive series score when
+        // available (e.g. 1‑0 in a BO3); otherwise fall back to current map
+        // rounds (e.g. 8‑5) so we don't show 0‑0 while rounds are being played.
+        if (row.status !== 'completed') {
+          const liveStats = matchLiveStatsService.getStats(row.slug);
+          if (liveStats) {
+            const liveTeam1 =
+              typeof liveStats.team1SeriesScore === 'number' && liveStats.team1SeriesScore > 0
+                ? liveStats.team1SeriesScore
+                : liveStats.team1Score;
+            const liveTeam2 =
+              typeof liveStats.team2SeriesScore === 'number' && liveStats.team2SeriesScore > 0
+                ? liveStats.team2SeriesScore
+                : liveStats.team2Score;
+
+            if (typeof liveTeam1 === 'number' && Number.isFinite(liveTeam1)) {
+              match.team1Score = liveTeam1;
+            }
+            if (typeof liveTeam2 === 'number' && Number.isFinite(liveTeam2)) {
+              match.team2Score = liveTeam2;
+            }
+          }
+        }
 
         // For shuffle tournaments, enrich players with ELO
         if (
@@ -821,10 +862,10 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const input: CreateMatchInput = req.body;
 
-    if (!input.slug || !input.serverId || !input.config) {
+    if (!input.slug || !input.config) {
       return res.status(400).json({
         success: false,
-        error: 'Missing required fields: slug, serverId, config',
+        error: 'Missing required fields: slug, config',
       });
     }
 
@@ -836,7 +877,29 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
       });
     }
 
-    const match = await matchService.createMatch(input, getBaseUrl(req));
+    const baseUrl = getBaseUrl(req);
+    const match = await matchService.createMatch(input, baseUrl);
+
+    // When no serverId is provided, attempt to auto-allocate a server for
+    // this match using the same allocator used for tournament matches. This
+    // is primarily used for manual matches so the admin does not need to pick
+    // a specific server; they just say "play this match" and the API finds a
+    // suitable host.
+    if (!input.serverId) {
+      try {
+        const allocation = await matchAllocationService.allocateSingleMatch(match.slug, baseUrl);
+        if (!allocation.success) {
+          log.warn(
+            `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`
+          );
+        }
+      } catch (allocError) {
+        log.warn(
+          `Auto-allocation threw for manual match ${match.slug}`,
+          allocError as Error
+        );
+      }
+    }
 
     return res.status(201).json({
       success: true,
@@ -879,8 +942,50 @@ router.post('/:slug/load', requireAuth, async (req: Request, res: Response) => {
 
     const baseUrl = await getWebhookBaseUrl(req);
 
+    // For manual matches (round = 0), double‑check that the selected server is
+    // still truly available at load time. The admin UI already filters
+    // "busy"/non‑allocatable servers out of the dropdown, but there is still a
+    // race window where a server can become allocated between the time the
+    // modal is opened and the match is created. If that happens, we try to
+    // transparently re‑allocate the match to a different idle server instead
+    // of letting it hang forever.
+    let serverIdToUse = match.serverId;
+    if (typeof match.round === 'number' && match.round === 0 && match.serverId) {
+      const busy = await db.queryOneAsync<{ count: number }>(
+        `SELECT COUNT(*) as count
+           FROM matches
+          WHERE server_id = ?
+            AND slug != ?
+            AND status IN ('ready', 'loaded', 'live')`,
+        [match.serverId, slug]
+      );
+
+      if (busy && busy.count > 0) {
+        log.warn(
+          `Manual match ${slug} requested busy server ${match.serverId}; attempting re‑allocation`
+        );
+
+        const availableServers = await matchAllocationService.getAvailableServers();
+        const fallback = availableServers.find((s) => s.id !== match.serverId);
+
+        if (fallback) {
+          await db.updateAsync('matches', { server_id: fallback.id }, 'id = ?', [match.id]);
+          serverIdToUse = fallback.id;
+          log.success(
+            `Re‑allocated manual match ${slug} from busy server ${match.serverId} to ${fallback.id}`
+          );
+        } else {
+          return res.status(409).json({
+            success: false,
+            error:
+              'Selected server is now busy with another match and no alternative idle servers are available. Please try again in a moment or free up a server.',
+          });
+        }
+      }
+    }
+
     // Use centralized match loading service
-    const result = await loadMatchOnServer(slug, match.serverId, {
+    const result = await loadMatchOnServer(slug, serverIdToUse, {
       skipWebhook,
       baseUrl,
     });

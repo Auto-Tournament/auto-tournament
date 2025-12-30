@@ -702,12 +702,15 @@ export function useCreateManualMatchModal({
 
   useEffect(() => {
     if (open) {
+      // Always refresh server + allocation status when the modal opens so the
+      // admin is looking at a live view of which servers are actually
+      // available before selecting one.
       void loadServers();
+      void loadServerAllocation();
       void loadTeams();
       void loadMaps();
       void loadPlayers();
       void loadBusyPlayers();
-      void loadServerAllocation();
     } else {
       resetForm();
     }
@@ -771,13 +774,12 @@ export function useCreateManualMatchModal({
       useVeto,
     });
 
-    if (!trimmedSlug || !serverId || selectedMatchMaps.length === 0) {
-      const message = 'Slug, server, and at least one map are required.';
+    if (!trimmedSlug || selectedMatchMaps.length === 0) {
+      const message = 'Slug and at least one map are required.';
       setError(message);
       showError(message);
       console.warn('[CreateManualMatchModal] Missing required fields, aborting submit', {
         trimmedSlugPresent: !!trimmedSlug,
-        hasServerId: !!serverId,
         hasTeam1Id: !!team1Id,
         hasTeam2Id: !!team2Id,
         mapsCount: selectedMatchMaps.length,
@@ -827,7 +829,9 @@ export function useCreateManualMatchModal({
       });
       const response = await api.post<MatchResponse>('/api/matches', {
         slug: trimmedSlug,
-        serverId,
+        // When serverId is empty, the backend will auto-allocate an appropriate
+        // server using the same allocator that powers tournament matches.
+        ...(serverId ? { serverId } : {}),
         config,
       });
 

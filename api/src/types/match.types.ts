@@ -75,7 +75,12 @@ export interface MatchConfig {
 
 export interface CreateMatchInput {
   slug: string; // Unique identifier for the match (e.g., "astralis_vs_navi_27")
-  serverId: string; // Server this match is assigned to
+  /**
+   * Optional manual server selection. When omitted, the backend will attempt
+   * to auto-allocate an appropriate server (for manual matches) using the
+   * same allocator used for tournament matches.
+   */
+  serverId?: string;
   config: MatchConfig;
 }
 

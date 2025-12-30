@@ -221,16 +221,28 @@ export default function BracketsViewerVisualization({
     let fallbackMatchId = 1;
     const matchLookup = new Map<Id, Match>();
     const parentMatchPositions = new Map<Id, number[]>();
+    const parentsByChildId = new Map<Id, Match[]>();
 
     matches.forEach((match) => {
       if (match.nextMatchId !== undefined && match.nextMatchId !== null) {
-        const positions = parentMatchPositions.get(match.nextMatchId as Id) ?? [];
+        const key = match.nextMatchId as Id;
+        const positions = parentMatchPositions.get(key) ?? [];
         positions.push(match.matchNumber);
-        parentMatchPositions.set(match.nextMatchId as Id, positions);
+        parentMatchPositions.set(key, positions);
+
+        const parents = parentsByChildId.get(key) ?? [];
+        parents.push(match);
+        parentsByChildId.set(key, parents);
       }
     });
 
     parentMatchPositions.forEach((positions) => positions.sort((a, b) => a - b));
+    parentsByChildId.forEach((parents, key) => {
+      parentsByChildId.set(
+        key,
+        [...parents].sort((a, b) => a.matchNumber - b.matchNumber)
+      );
+    });
 
     const registerMatch = (matchId: Id, match: Match) => {
       matchLookup.set(matchId, match);
@@ -263,10 +275,28 @@ export default function BracketsViewerVisualization({
 
     const buildOpponent = (
       match: Match,
-      team: Match['team1'],
+      explicitTeam: Match['team1'],
       position: number | undefined,
-      score: number | undefined
+      score: number | undefined,
+      whichSide: 'team1' | 'team2'
     ): ParticipantResult | null => {
+      let team = explicitTeam;
+
+      // If this match doesn't yet have a concrete team on this side, but its
+      // parent matches have winners, surface those winners as provisional
+      // participants so the bracket visually shows who advanced.
+      if (!team?.id && match.id != null) {
+        const parents = parentsByChildId.get(match.id as Id);
+        if (parents && parents.length) {
+          const firstParent = parents[0];
+          const secondParent = parents[1];
+          const sourceParent = whichSide === 'team1' ? firstParent : secondParent;
+          if (sourceParent?.winner) {
+            team = sourceParent.winner as Match['team1'];
+          }
+        }
+      }
+
       if (team?.id) {
         const participantId = teamIdMap.get(team.id);
         const result =
@@ -320,8 +350,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -359,8 +389,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -396,8 +426,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: gfMatch.status === 'completed' ? 2 : gfMatch.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, team1Score),
-          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, team2Score),
+          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, gfMatch);
       }

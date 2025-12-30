@@ -17,10 +17,15 @@ export type MatchLike = {
 
 /**
  * Returns true for manual (non‑bracket) matches created via the manual match modal.
- * These are stored with round = 0 in the DB.
+ * These are normally stored with round = 0 in the DB. For resilience with
+ * older data, we also treat matches with a missing/nullable round as manual,
+ * since bracket-generated matches always have a positive round number.
  */
 export const isManualMatch = (match: MatchLike | null | undefined): boolean => {
-  return !!match && match.round === 0;
+  if (!match) return false;
+  if (match.round === 0) return true;
+  if (match.round === null || typeof match.round !== 'number') return true;
+  return false;
 };
 
 /**

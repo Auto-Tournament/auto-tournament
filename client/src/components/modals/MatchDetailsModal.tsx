@@ -92,12 +92,12 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
 
   const { status: tournamentStatus } = useTournamentStatus();
   const isManualMatch = match?.round === 0;
-  // Manual matches are independent of the global tournament lifecycle, so we
-  // intentionally treat "tournamentStarted" as false for them. This ensures
-  // status text uses neutral copy like "Initializing match..." instead of
-  // "Waiting for tournament to start".
-  const tournamentStarted =
-    !isManualMatch && (tournamentStatus === 'in_progress' || tournamentStatus === 'completed');
+  // Manual matches are independent of the global tournament lifecycle. For them
+  // we pass `undefined` as tournamentStarted so status copy stays neutral and
+  // never shows "WAITING FOR TOURNAMENT TO START".
+  const tournamentHasStarted =
+    tournamentStatus === 'in_progress' || tournamentStatus === 'completed';
+  const tournamentStarted = isManualMatch ? undefined : tournamentHasStarted;
 
   // When inspecting shuffle matches, lazily load player ratings so we can
   // surface approximate team ELOs for admins to sanity-check balance.

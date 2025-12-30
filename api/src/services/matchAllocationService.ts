@@ -136,10 +136,12 @@ export class MatchAllocationService {
     let onlineServers = statusChecks.filter((s) => s.online);
     onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
-    // Treat any server that currently has a loaded/live match in our DB as busy,
-    // even if the MatchZy tournament ConVars still report "idle". This ensures
-    // that manual matches (round = 0) and other non‑tournament flows still show
-    // the server as in use in allocation UIs.
+    // For the status view we primarily trust the MatchZy tournament status
+    // (convars) as the source of truth about whether a server is actually idle.
+    // We still surface any DB‑backed "busy" matches as metadata so the UI can
+    // highlight potential mismatches, but we no longer block allocatability
+    // purely on the DB view. This avoids servers getting "stuck" as busy in
+    // the UI after manual restarts when the plugin reports them as idle.
     const dbBusyRows = await db.queryAsync<{ server_id: string; slug: string }>(
       `SELECT server_id, slug
          FROM matches
@@ -183,9 +185,11 @@ export class MatchAllocationService {
 
       // Follow MatchZy guidance strictly: only treat explicit "idle" as
       // allocatable. All other states (including "postgame") remain busy.
-      // Additionally, if our DB view says the server is running a loaded/live
-      // match, we treat it as busy regardless of the plugin ConVars.
-      const isIdle = status === ServerStatus.IDLE && !hasDbMatch;
+      // If the plugin says the server is idle but our DB still has a
+      // loaded/live match attached, we now trust the plugin and allow
+      // allocation, while still showing the DB match slug in the metadata
+      // so admins can see the mismatch.
+      const isIdle = status === ServerStatus.IDLE;
       let inGraceWindow = false;
       let secondsUntilReady: number | null = null;
       let allocatable = false;
@@ -253,22 +257,11 @@ export class MatchAllocationService {
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
-    // Determine which servers are already running a match according to our DB
-    // view (even if the MatchZy plugin has not yet updated its custom ConVars).
-    // This prevents us from loading multiple matches onto the same physical
-    // server when the plugin is still reporting "idle".
-    const busyRows = await db.queryAsync<Pick<DbMatchRow, 'server_id'>>(
-      `SELECT DISTINCT server_id 
-         FROM matches 
-        WHERE server_id IS NOT NULL 
-          AND server_id != '' 
-          AND status IN ('ready', 'loaded', 'live')`
-    );
-    const dbBusyServers = new Set(busyRows.map((row) => row.server_id));
-
-    // Start from all enabled servers but never consider those that are already
-    // associated with an active match in the database.
-    const candidateServers = enabledServers.filter((server) => !dbBusyServers.has(server.id));
+    // We intentionally do NOT pre‑filter enabled servers by DB "busy" state
+    // here. Instead we trust the MatchZy tournament status convars as the
+    // authoritative view: if the plugin reports the server as idle, we allow
+    // allocation even if our DB still has legacy loaded/live matches attached.
+    const candidateServers = enabledServers;
 
     // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(

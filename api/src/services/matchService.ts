@@ -16,10 +16,14 @@ class MatchService {
       throw new Error(`Match with slug '${input.slug}' already exists`);
     }
 
-    // Validate server exists
-    const server = await db.getOneAsync('servers', 'id = ?', [input.serverId]);
-    if (!server) {
-      throw new Error(`Server '${input.serverId}' not found`);
+    // Validate server exists when explicitly provided. When omitted, the
+    // caller is expected to rely on the allocator to pick an appropriate
+    // server (e.g. for manual matches).
+    if (input.serverId) {
+      const server = await db.getOneAsync('servers', 'id = ?', [input.serverId]);
+      if (!server) {
+        throw new Error(`Server '${input.serverId}' not found`);
+      }
     }
 
     // Normalize config and apply global simulation + round-limit settings so
@@ -112,7 +116,7 @@ class MatchService {
       tournament_id: null,
       round: 0, // 0 = manual / non-bracket match
       match_number: 0,
-      server_id: input.serverId,
+      server_id: input.serverId ?? null,
       team1_id: team1Id,
       team2_id: team2Id,
       config: JSON.stringify(config),
@@ -141,7 +145,7 @@ class MatchService {
       log.warn('Failed to emit match update after manual match creation', socketError as Error);
     }
 
-    log.matchCreated(input.slug, input.serverId);
+    log.matchCreated(input.slug, input.serverId ?? '<auto>');
     return response;
   }
 

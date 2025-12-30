@@ -1,9 +1,8 @@
 import React from 'react';
 import { Box, Button, Stack, Typography } from '@mui/material';
-import type { MatchConfig, Server } from '../../types';
+import type { MatchConfig } from '../../types';
 
 interface ManualMatchReviewStepProps {
-  servers: Server[];
   config: MatchConfig | null;
   onOpenSaveTemplate: () => void;
 }

@@ -95,6 +95,17 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const liveMatch = await resolveMatch(event.matchid);
       if (liveMatch) {
+        // Ignore late "going_live" events for matches that are already
+        // finalized. Some MatchZy setups can emit stray lifecycle events after
+        // series_end / restore, and we never want to resurrect a completed
+        // match back into the LIVE state.
+        if (liveMatch.status === 'completed') {
+          log.warn(
+            `Ignoring going_live for already completed match`,
+            { matchId: event.matchid, slug: liveMatch.slug }
+          );
+          break;
+        }
         await updateMatchStatus(liveMatch, 'live');
         playerConnectionService.markAllReady(liveMatch.slug);
         updateLiveStats(liveMatch, parseScorePayload(eventData, 'live'));
@@ -229,6 +240,13 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
+        if (match.status === 'completed') {
+          log.warn(
+            `Ignoring round_started for already completed match`,
+            { matchId: event.matchid, slug: match.slug }
+          );
+          break;
+        }
         // Some MatchZy setups are flaky about emitting the "going_live" event,
         // but they will always emit round_started once the pistol actually begins.
         // To avoid matches getting visually "stuck in warmup" on the UI
@@ -581,9 +599,35 @@ async function handleMapCompletion(
 
   const seriesFinished = team1SeriesScore >= requiredWins || team2SeriesScore >= requiredWins;
 
+  // For BO1 / last‑map scenarios where overtime is disabled, MatchZy may allow
+  // regulation to end in a true draw (equal mapScore, no winner) and simply
+  // restore the server after a delay without ever emitting a series_end event.
+  // That leaves our match stuck in "live" and risks wiping live stats when the
+  // server resets. Treat that case as a completed drawn series on our side.
+  const isFinalMap = completedMapNumber >= Math.max(0, totalMaps - 1);
+  const isDrawOnMap = team1ScoreFinal === team2ScoreFinal;
+  const overtimeMode = config?.overtimeMode;
+  const overtimeSegments = config?.overtimeSegments;
+  const overtimeDisabled = overtimeMode === 'disabled';
+  const hasExplicitSegments = typeof overtimeSegments === 'number';
+  const segmentsAllowDraws = !hasExplicitSegments || overtimeSegments === 0;
+  const shouldForceDrawSeries =
+    !seriesFinished && isFinalMap && isDrawOnMap && overtimeDisabled && segmentsAllowDraws;
+
+  // For BO1 manual matches (round = 0), treat the first and only map_result as
+  // the definitive series end even when the plugin doesn't emit a separate
+  // series_end event or provide non-zero series scores. This prevents manual
+  // matches from getting stuck in the LIVE state until the server is reset.
+  const isManualMatch = match.round === 0;
+  const isBo1 = totalMaps === 1;
+  const shouldForceBo1SeriesEnd = !seriesFinished && isBo1 && isFinalMap && isManualMatch;
+
   const maxMapIndex = Math.max(0, totalMaps - 1);
   const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
-  const targetMapNumber = seriesFinished ? completedMapNumber : upcomingIndex;
+  const targetMapNumber =
+    seriesFinished || shouldForceDrawSeries || shouldForceBo1SeriesEnd
+      ? completedMapNumber
+      : upcomingIndex;
   await db.updateAsync(
     'matches',
     {
@@ -594,17 +638,20 @@ async function handleMapCompletion(
     [match.id]
   );
 
-  if (seriesFinished) {
+  if (seriesFinished || shouldForceDrawSeries || shouldForceBo1SeriesEnd) {
+    const winnerTeamFromMap =
+      (eventData.winner as { team?: 'team1' | 'team2' | 'none' } | undefined)?.team || 'none';
     const syntheticSeriesEvent: MatchZyEvent = {
       ...originalEvent,
       event: 'series_end',
       team1_series_score: team1SeriesScore,
       team2_series_score: team2SeriesScore,
-      winner:
-        ((eventData.winner as { team?: string })?.team as 'team1' | 'team2' | undefined) || 'none',
+      winner: {
+        team: winnerTeamFromMap,
+      },
       time_until_restore: 0,
     };
-    handleSeriesEnd(syntheticSeriesEvent);
+    await handleSeriesEnd(syntheticSeriesEvent);
     return;
   }
 
@@ -629,14 +676,21 @@ async function handleMapCompletion(
   });
 }
 
-function parseMatchConfig(config: unknown): { num_maps?: number } | null {
+type ParsedMatchConfig = {
+  num_maps?: number;
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number | null;
+};
+
+function parseMatchConfig(config: unknown): ParsedMatchConfig | null {
   if (!config) return null;
   if (typeof config === 'object') {
-    return config as { num_maps?: number };
+    return config as ParsedMatchConfig;
   }
   if (typeof config === 'string') {
     try {
-      return JSON.parse(config) as { num_maps?: number };
+      return JSON.parse(config) as ParsedMatchConfig;
     } catch {
       return null;
     }
