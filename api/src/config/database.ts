@@ -146,6 +146,7 @@ class DatabaseManager {
         { table: 'player_match_stats', column: 'mvps', type: 'INTEGER' },
         { table: 'player_match_stats', column: 'score', type: 'INTEGER' },
         { table: 'player_match_stats', column: 'rounds_played', type: 'INTEGER' },
+        { table: 'players', column: 'is_admin', type: 'INTEGER NOT NULL DEFAULT 0' },
       ];
 
       // Check if tournament_templates table exists, create if not

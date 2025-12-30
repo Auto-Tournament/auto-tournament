@@ -111,6 +111,11 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
     return typeof roundsScore === 'number' ? roundsScore : undefined;
   };
 
+  // In the bracket list view we want to emphasise the map number rather than
+  // the round label, so always show "Map N" (defaulting to Map 1 when unknown).
+  const metaLabel =
+    typeof match.mapNumber === 'number' ? `Map ${match.mapNumber + 1}` : 'Map 1';
+
   const getBorderColor = () => {
     // Bracket list view server status accents:
     // - allocated (serverId set, not yet loaded/live/completed) => yellow
@@ -156,7 +161,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
             }}
           >
             <Typography variant="caption" fontWeight={600} display="block">
-              #{matchNumber} · {roundLabel || getRoundLabel(match.round)}
+              #{matchNumber} · {metaLabel}
             </Typography>
             {match.serverName && (
               <Typography variant="caption" color="text.secondary" noWrap>

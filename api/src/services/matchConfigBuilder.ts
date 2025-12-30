@@ -292,6 +292,17 @@ export const generateMatchConfig = async (
     simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
   };
 
+  // Attach global admin Steam IDs to the config so they always have in‑game
+  // admin rights on every standard (non‑shuffle) match.
+  try {
+    const adminRows = await db.queryAsync<{ id: string }>(
+      'SELECT id FROM players WHERE is_admin = 1'
+    );
+    (config as any).admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+  } catch (e) {
+    console.error('Failed to attach admins to standard match config', e);
+  }
+
   log.info('Match config generated (standard)', {
     matchSlug: slug,
     matchId: config.matchid,
@@ -467,6 +478,17 @@ async function generateShuffleMatchConfig(
     simulation,
     simulation_timescale: simulation ? simulationTimescale ?? 1 : undefined,
   };
+
+  // Attach global admin Steam IDs to the config so they always have in‑game
+  // admin rights on every shuffle match.
+  try {
+    const adminRows = await db.queryAsync<{ id: string }>(
+      'SELECT id FROM players WHERE is_admin = 1'
+    );
+    (config as any).admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+  } catch (e) {
+    console.error('Failed to attach admins to shuffle match config', e);
+  }
 
   log.info('Shuffle match config generated', {
     matchSlug: slug,

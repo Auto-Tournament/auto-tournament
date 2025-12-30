@@ -10,6 +10,8 @@ import {
   CircularProgress,
   IconButton,
   Typography,
+  FormControlLabel,
+  Switch,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -33,6 +35,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [name, setName] = useState('');
   const [avatar, setAvatar] = useState('');
   const [elo, setElo] = useState<number | ''>('');
+  const [isAdmin, setIsAdmin] = useState(false);
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -51,6 +54,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       setAvatar(player.avatar || '');
       setElo(player.currentElo);
       setPendingElo('');
+      setIsAdmin(Boolean(player.isAdmin));
     } else {
       resetForm();
     }
@@ -61,6 +65,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     setName('');
     setAvatar('');
     setElo('');
+    setIsAdmin(false);
     setError('');
   };
 
@@ -144,6 +149,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
         name: name.trim(),
         avatar: avatar.trim() || undefined,
         elo: elo !== '' ? Number(elo) : undefined,
+        isAdmin,
       };
 
       if (isEditing) {
@@ -282,6 +288,17 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                   ? "Changing ELO will reset the player's rating and stats. This action cannot be undone."
                   : 'Leave empty to use default (1500 Skill Rating).'
               }
+            />
+
+            <FormControlLabel
+              control={
+                <Switch
+                  checked={isAdmin}
+                  onChange={(e) => setIsAdmin(e.target.checked)}
+                  color="primary"
+                />
+              }
+              label="Is admin (has in-game admin rights for all matches)"
             />
 
             {isEditing && (

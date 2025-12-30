@@ -131,6 +131,7 @@ export interface PlayerDetail {
   matchCount: number;
   createdAt: number;
   updatedAt: number;
+  isAdmin?: boolean;
 }
 
 export interface PlayersResponse extends ApiResponse {

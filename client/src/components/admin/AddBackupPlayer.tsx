@@ -49,7 +49,8 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
   const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
-  const [targetTeam, setTargetTeam] = useState<'team1' | 'team2'>('team1');
+  const [targetTeam, setTargetTeam] = useState<'team1' | 'team2' | 'spec'>('team1');
+  const [customName, setCustomName] = useState<string>('');
   const lastLoadedSlugRef = React.useRef<string | null>(null);
   const onErrorRef = React.useRef(onError);
 
@@ -150,17 +151,18 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
         {
           steamId: selectedPlayer.steamId,
           team: targetTeam,
-          nickname: selectedPlayer.name,
+          nickname: customName.trim() || selectedPlayer.name,
         }
       );
 
       if (response.success) {
         if (onSuccess) {
-          onSuccess(
-            `Added ${selectedPlayer.name} to ${targetTeam === 'team1' ? team1Name : team2Name}`
-          );
+          const targetLabel =
+            targetTeam === 'team1' ? team1Name : targetTeam === 'team2' ? team2Name : 'Spectator';
+          onSuccess(`${customName.trim() || selectedPlayer.name} added to ${targetLabel}`);
         }
         setSelectedPlayer(null);
+        setCustomName('');
         // Reload players to update the list
         loadAllPlayers(true);
       } else {
@@ -177,7 +179,7 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
   return (
     <Box>
       <Typography variant="subtitle1" fontWeight={600} mb={2}>
-        Add Backup Player
+        Add Player
       </Typography>
 
       {loading ? (
@@ -214,17 +216,27 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
             disabled={adding}
           />
 
+          {/* Optional override name */}
+          <TextField
+            label="Display name (optional)"
+            value={customName}
+            onChange={(e) => setCustomName(e.target.value)}
+            placeholder="Defaults to the player's current name"
+            disabled={adding}
+          />
+
           {/* Target Team Selection */}
           <FormControl fullWidth>
-            <InputLabel>Add to Team</InputLabel>
+            <InputLabel>Side</InputLabel>
             <Select
               value={targetTeam}
-              label="Add to Team"
-              onChange={(e) => setTargetTeam(e.target.value as 'team1' | 'team2')}
+              label="Side"
+              onChange={(e) => setTargetTeam(e.target.value as 'team1' | 'team2' | 'spec')}
               disabled={adding}
             >
-              <MenuItem value="team1">{team1Name} (Team 1)</MenuItem>
-              <MenuItem value="team2">{team2Name} (Team 2)</MenuItem>
+              <MenuItem value="team1">{team1Name} (team1)</MenuItem>
+              <MenuItem value="team2">{team2Name} (team2)</MenuItem>
+              <MenuItem value="spec">Spectator (spec)</MenuItem>
             </Select>
           </FormControl>
 
@@ -256,6 +268,9 @@ export const AddBackupPlayer: React.FC<AddBackupPlayerProps> = ({
           </Button>
 
           <Alert severity="warning" sx={{ fontSize: '0.85rem' }}>
+            <Typography variant="caption" display="block" gutterBottom>
+              ⚙️ <strong>Underlying command:</strong> <code>matchzy_addplayer &lt;steam64&gt; &lt;team1|team2|spec&gt; [name]</code>
+            </Typography>
             <Typography variant="caption">
               ⚠️ <strong>Important:</strong> The player must reconnect to the server after being
               added. They may need to restart CS2 if they're already connected.

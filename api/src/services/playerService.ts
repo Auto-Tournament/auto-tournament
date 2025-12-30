@@ -25,12 +25,14 @@ export interface CreatePlayerInput {
   name: string;
   avatar?: string;
   elo?: number; // Optional - defaults to 1500 Skill Rating (OpenSkill baseline)
+  isAdmin?: boolean;
 }
 
 export interface UpdatePlayerInput {
   name?: string;
   avatar?: string;
   elo?: number;
+  isAdmin?: boolean;
 }
 
 export interface PlayerResponse {
@@ -42,6 +44,7 @@ export interface PlayerResponse {
   matchCount: number;
   createdAt: number;
   updatedAt: number;
+  isAdmin?: boolean;
 }
 
 class PlayerService {
@@ -63,6 +66,7 @@ class PlayerService {
       matchCount: player.match_count,
       createdAt: player.created_at,
       updatedAt: player.updated_at,
+      isAdmin: (player as unknown as { is_admin?: number | boolean }).is_admin === 1,
     };
   }
 
@@ -139,7 +143,7 @@ class PlayerService {
     // Convert Skill Rating to OpenSkill rating
     const openskillRating = eloToOpenSkill(elo, 0); // New player, 0 matches
 
-    const playerData: Omit<PlayerRecord, 'id'> = {
+    const playerData: Omit<PlayerRecord, 'id'> & { is_admin?: number } = {
       name: input.name,
       avatar_url: input.avatar || undefined,
       current_elo: elo,
@@ -150,6 +154,10 @@ class PlayerService {
       created_at: now,
       updated_at: now,
     };
+
+    if (typeof input.isAdmin === 'boolean') {
+      playerData.is_admin = input.isAdmin ? 1 : 0;
+    }
 
     await db.insertAsync('players', {
       id: input.id,
@@ -174,7 +182,7 @@ class PlayerService {
       return null;
     }
 
-    const updates: Partial<PlayerRecord> = {
+    const updates: Partial<PlayerRecord> & { is_admin?: number } = {
       updated_at: Math.floor(Date.now() / 1000),
     };
 
@@ -192,6 +200,10 @@ class PlayerService {
       updates.current_elo = input.elo;
       updates.openskill_mu = openskillRating.mu;
       updates.openskill_sigma = openskillRating.sigma;
+    }
+
+    if (input.isAdmin !== undefined) {
+      updates.is_admin = input.isAdmin ? 1 : 0;
     }
 
     await db.updateAsync('players', updates, 'id = ?', [playerId]);
