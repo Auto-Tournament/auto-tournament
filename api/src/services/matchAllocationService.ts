@@ -262,7 +262,7 @@ export class MatchAllocationService {
          FROM matches 
         WHERE server_id IS NOT NULL 
           AND server_id != '' 
-          AND status IN ('loaded', 'live')`
+          AND status IN ('ready', 'loaded', 'live')`
     );
     const dbBusyServers = new Set(busyRows.map((row) => row.server_id));
 
@@ -808,6 +808,7 @@ export class MatchAllocationService {
     serverId?: string;
     error?: string;
   }> {
+    let allocatedServerId: string | null = null;
     try {
       // Check if match already has a server and is structurally valid
       const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
@@ -840,17 +841,32 @@ export class MatchAllocationService {
         };
       }
 
-      // Get first available server
+      // Get first available server, respecting the in‑memory "allocating" guard
+      // so concurrent allocateSingleMatch calls never pick the same server.
       const availableServers = await this.getAvailableServers();
       if (availableServers.length === 0) {
         return { success: false, error: 'No available servers' };
       }
 
-      const server = availableServers[0];
+      let server: ServerResponse | null = null;
+      for (const candidate of availableServers) {
+        if (this.allocatingServers.has(candidate.id)) {
+          continue;
+        }
+        // Reserve this server for this allocation attempt
+        this.allocatingServers.add(candidate.id);
+        allocatedServerId = candidate.id;
+        server = candidate;
+        break;
+      }
 
-      // Mark server as "in allocation" to prevent other concurrent allocations
-      // from trying to use the same server at the same time.
-      this.allocatingServers.add(server.id);
+      if (!server) {
+        // All currently available servers are already being allocated by other calls.
+        return { success: false, error: 'No available servers' };
+      }
+
+      // Track server allocation for higher‑level views
+      serverAllocationTracker.markAllocated(server.id, matchSlug);
 
       // Update match with server_id
       await db.updateAsync('matches', { server_id: server.id }, 'slug = ?', [matchSlug]);
@@ -901,9 +917,11 @@ export class MatchAllocationService {
         error: errorMessage,
       };
     } finally {
-      // Always clear the "allocating" flag so this server can be considered again
-      // for future matches after the current allocation attempt finishes.
-      this.allocatingServers.clear();
+      // Always clear the "allocating" flag for this specific server so it can
+      // be considered again for future matches after this attempt finishes.
+      if (allocatedServerId) {
+        this.allocatingServers.delete(allocatedServerId);
+      }
     }
   }
 

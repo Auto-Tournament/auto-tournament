@@ -111,11 +111,25 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
     return typeof roundsScore === 'number' ? roundsScore : undefined;
   };
 
+  const getBorderColor = () => {
+    // Bracket list view server status accents:
+    // - allocated (serverId set, not yet loaded/live/completed) => yellow
+    // - loaded (warmup) => blue
+    // - live  => red
+    // - completed or upcoming (no server) => no colored border
+    if (match.status === 'live') return 'error.main';
+    if (match.status === 'loaded') return 'info.main';
+    if (match.serverId && match.status !== 'completed') return 'warning.main';
+    return 'transparent';
+  };
+
   return (
     <Card
       sx={{
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.15s, box-shadow 0.15s',
+        borderLeft: 4,
+        borderColor: getBorderColor(),
         '&:hover': onClick
           ? {
               transform: 'translateY(-2px)',

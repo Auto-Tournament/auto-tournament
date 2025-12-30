@@ -3,11 +3,11 @@ import { useParams } from 'react-router-dom';
 import { Box, Card, CardContent, Typography, Alert, CircularProgress, Container, Stack } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { TeamHeader } from '../components/team/TeamHeader';
-import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { SoundSettingsModal } from '../components/modals/SoundSettingsModal';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { TeamStatsCard } from '../components/team/TeamStatsCard';
 import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
+import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
@@ -200,6 +200,13 @@ export default function TeamMatch() {
               handleSoundChange={handleSoundChange}
             />
 
+            <TournamentRulesAccordion
+              format={rulesFormat}
+              maxRounds={rulesMaxRounds}
+              overtimeMode={rulesOvertimeMode}
+              overtimeSegments={rulesOvertimeSegments}
+            />
+
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
@@ -240,13 +247,6 @@ export default function TeamMatch() {
 
             <TeamStatsCard stats={stats} standing={standing} />
             <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
-
-            <TournamentRulesAccordion
-              format={rulesFormat}
-              maxRounds={rulesMaxRounds}
-              overtimeMode={rulesOvertimeMode}
-              overtimeSegments={rulesOvertimeSegments}
-            />
           </Stack>
         </Container>
       </Box>
@@ -269,6 +269,17 @@ export default function TeamMatch() {
               {tournamentName}
             </Typography>
           )}
+          
+          <TeamSoundControls
+            team={team}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            handlePreviewSound={handlePreviewSound}
+            handleSoundChange={handleSoundChange}
+          />
 
           <TournamentRulesAccordion
             format={rulesFormat}
@@ -283,16 +294,6 @@ export default function TeamMatch() {
             isMuted={isMuted}
             volume={volume}
             soundFile={soundFile}
-          />
-          <TeamSoundControls
-            team={team}
-            isMuted={isMuted}
-            volume={volume}
-            soundFile={soundFile}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            handlePreviewSound={handlePreviewSound}
-            handleSoundChange={handleSoundChange}
           />
 
           {match && (

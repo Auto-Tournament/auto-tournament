@@ -24,18 +24,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   onClick,
 }) => {
   const getBorderColor = () => {
-    if (variant === 'live') {
-      return match.status === 'live' ? 'error.main' : 'info.main';
-    }
-    if (variant === 'completed') {
-      return 'success.main';
-    }
-    if (match.status === 'completed') return 'success.main';
-    // Use the same pastel red accent for LIVE across all match cards
+    // Bracket view / generic match card server status accents:
+    // - allocated (serverId set, not yet loaded/live/completed) => yellow
+    // - loaded (warmup) => blue
+    // - live  => red
+    // - completed or upcoming (no server) => no colored border
     if (match.status === 'live') return 'error.main';
-    // Loaded = warmup (soft blue), ready/pending stay neutral
     if (match.status === 'loaded') return 'info.main';
-    return 'grey.300';
+    if (match.serverId && match.status !== 'completed') return 'warning.main';
+    // For completed and all other non-live states without a server, no colored border.
+    return 'transparent';
   };
 
   const isWinnerById = (teamId: string | undefined) => {

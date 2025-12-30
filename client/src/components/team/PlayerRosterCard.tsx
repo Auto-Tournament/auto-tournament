@@ -16,6 +16,20 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
     return null;
   }
 
+  // Normalise and sort players by rating (ELO) descending so the strongest
+  // players appear at the top of the roster.
+  const sortedPlayers = team.players
+    .map((player, index) => {
+      const base =
+        typeof player === 'object' ? player : { steamId: String(index), name: 'Unknown' };
+      const displayElo =
+        typeof (base as { elo?: number }).elo === 'number'
+          ? (base as { elo?: number }).elo!
+          : 1500;
+      return { ...base, displayElo, index };
+    })
+    .sort((a, b) => b.displayElo - a.displayElo);
+
   return (
     <Card>
       <CardContent>
@@ -26,17 +40,14 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
           </Typography>
         </Box>
         <Stack spacing={1.5}>
-          {team.players.map((player, index) => {
-            // Handle both object format and potential data issues
-            console.log('player', player);
-            const playerData =
-              typeof player === 'object' ? player : { steamId: String(index), name: 'Unknown' };
-            const playerName = String(playerData.name || 'Unknown');
-            const playerSteamId = String(playerData.steamId || '');
+          {sortedPlayers.map((player) => {
+            const playerName = String((player as { name?: string }).name || 'Unknown');
+            const playerSteamId = String((player as { steamId?: string }).steamId || '');
+            const displayElo = player.displayElo;
 
             return (
               <Paper
-                key={playerSteamId || index}
+                key={playerSteamId || player.index}
                 variant="outlined"
                 sx={{
                   p: 2,
@@ -52,14 +63,19 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
               >
                 <Box display="flex" alignItems="center" gap={2}>
                   <PlayerAvatar
-                    id={playerSteamId || String(index)}
+                    id={playerSteamId || String(player.index)}
                     name={playerName}
-                    avatarUrl={playerData.avatar}
+                    avatarUrl={(player as { avatar?: string }).avatar}
                     size={40}
                   />
-                  <Typography variant="body1" fontWeight={500}>
-                    {playerName}
-                  </Typography>
+                  <Box>
+                    <Typography variant="body1" fontWeight={500}>
+                      {playerName}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Rating: {displayElo}
+                    </Typography>
+                  </Box>
                 </Box>
                 <Box display="flex" alignItems="center" gap={0.5}>
                   {playerSteamId && (

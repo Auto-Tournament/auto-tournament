@@ -8,7 +8,6 @@ import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } 
 import { isShuffleMatch as isShuffleMatchGlobal, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
-import { MatchRosterAccordion } from './MatchRosterAccordion';
 import { MatchMapChips } from './MatchMapChips';
 import { MatchVetoHistory } from './MatchVetoHistory';
 import { MatchServerPanel } from './MatchServerPanel';
@@ -377,11 +376,13 @@ export function MatchInfoCard({
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Box>
                 <Typography variant="h5" fontWeight={600}>
-                  Match #{match.matchNumber}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
                   {getRoundLabel(match.round)}
                 </Typography>
+                {typeof mapNumber === 'number' && (
+                  <Typography variant="body2" color="text.secondary">
+                    Map {mapNumber + 1}
+                  </Typography>
+                )}
               </Box>
             </Box>
 
@@ -431,6 +432,7 @@ export function MatchInfoCard({
             <MatchServerPanel
               server={effectiveServer}
               currentMapData={currentMapData}
+              currentMapNumber={mapNumber}
               connected={connected}
               copied={copied}
               onConnect={handleConnect}
@@ -448,8 +450,6 @@ export function MatchInfoCard({
             )}
 
             <MatchMapChips match={match} currentMapNumber={mapNumber} />
-
-            <MatchRosterAccordion team={team} match={match} />
 
             {showVetoHistory && (
               <MatchVetoHistory

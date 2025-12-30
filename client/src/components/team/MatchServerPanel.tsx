@@ -9,6 +9,7 @@ import { FadeInImage } from '../common/FadeInImage';
 interface MatchServerPanelProps {
   server: TeamMatchInfo['server'];
   currentMapData: CS2MapData | null;
+  currentMapNumber?: number | null;
   connected: boolean;
   copied: boolean;
   onConnect: () => void;
@@ -18,6 +19,7 @@ interface MatchServerPanelProps {
 export function MatchServerPanel({
   server,
   currentMapData,
+  currentMapNumber,
   connected,
   copied,
   onConnect,
@@ -52,6 +54,7 @@ export function MatchServerPanel({
               position: 'absolute',
               inset: 0,
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
               justifyContent: 'center',
               background: 'linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.5))',
@@ -67,37 +70,19 @@ export function MatchServerPanel({
             >
               {currentMapData.displayName}
             </Typography>
-          </Box>
-          <Box
-            sx={{
-              position: 'absolute',
-              bottom: 8,
-              right: 12,
-              textAlign: 'right',
-            }}
-          >
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '0.7rem',
-                display: 'block',
-                textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-              }}
-            >
-              {server.name}
-            </Typography>
-            <Typography
-              variant="caption"
-              sx={{
-                color: 'rgba(255, 255, 255, 0.6)',
-                fontSize: '0.7rem',
-                fontFamily: 'monospace',
-                textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
-              }}
-            >
-              {server.host}:{server.port}
-            </Typography>
+            {typeof currentMapNumber === 'number' && (
+              <Typography
+                variant="caption"
+                sx={{
+                  mt: 0.5,
+                  color: 'rgba(255, 255, 255, 0.8)',
+                  fontSize: '0.7rem',
+                  textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
+                }}
+              >
+                Map {currentMapNumber + 1}
+              </Typography>
+            )}
           </Box>
         </FadeInImage>
       )}
