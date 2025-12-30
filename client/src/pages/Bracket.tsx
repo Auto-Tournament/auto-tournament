@@ -423,6 +423,24 @@ export default function Bracket() {
     return getRoundLabel(round, effectiveTotalRounds);
   };
 
+  const getRoundMapLabel = (round: number): string | null => {
+    if (tournament.type !== 'shuffle') {
+      return null;
+    }
+
+    const sequence =
+      (Array.isArray(tournament.mapSequence) && tournament.mapSequence.length > 0
+        ? tournament.mapSequence
+        : tournament.maps) || [];
+
+    if (!sequence.length) {
+      return null;
+    }
+
+    const mapName = sequence[round - 1];
+    return mapName || null;
+  };
+
   // For shuffle tournaments, keep using the backend-provided round metadata
   // (current round number + map), but recompute completed/pending counts from
   // the live matches array so "Match Progress" and chip breakdown update
@@ -704,17 +722,15 @@ export default function Bracket() {
                 <Box key={round} mb={4}>
                   <Typography variant="h6" fontWeight={600} mb={2}>
                     {getBracketRoundLabel(round)}
-                    {tournament.type === 'shuffle' &&
-                      roundStatus &&
-                      roundStatus.roundNumber === round && (
-                        <Chip
-                          label={roundStatus.map}
-                          size="small"
-                          sx={{ ml: 1 }}
-                          color="primary"
-                          variant="outlined"
-                        />
-                      )}
+                    {tournament.type === 'shuffle' && getRoundMapLabel(round) && (
+                      <Chip
+                        label={getRoundMapLabel(round)!}
+                        size="small"
+                        sx={{ ml: 1 }}
+                        color="primary"
+                        variant="outlined"
+                      />
+                    )}
                   </Typography>
                   <Stack spacing={1.5}>
                     {roundMatches.map((match) => (
