@@ -363,19 +363,21 @@ fi
 
 # Set up Docker Buildx builder
 if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    # Check if builder endpoint is valid
+    # Check if builder endpoint is valid and not tied to OrbStack
     BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
-    if [ -n "$BUILDER_ENDPOINT" ] && [ "$BUILDER_ENDPOINT" != "desktop-linux" ]; then
-        docker buildx use "${BUILDER_NAME}"
-        echo -e "${GREEN}✅ Using existing builder${NC}"
-        # Bootstrap the builder if it's inactive
-        echo -e "${BLUE}Booting builder...${NC}"
-        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
-    else
-        echo -e "${YELLOW}⚠️  Existing builder uses invalid endpoint, removing and recreating...${NC}"
+
+    # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
+    if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid/OrbStack endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
         docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
         docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
         echo -e "${GREEN}✅ Builder recreated${NC}"
+    else
+        docker buildx use "${BUILDER_NAME}"
+        echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
+        # Bootstrap the builder if it's inactive
+        echo -e "${BLUE}Booting builder...${NC}"
+        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
     fi
 else
     docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
