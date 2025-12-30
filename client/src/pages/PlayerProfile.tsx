@@ -33,7 +33,13 @@ import { MatchNotificationAudio } from '../components/match/MatchNotificationAud
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import type { PlayerDetail } from '../types/api.types';
-import type { Team, TeamMatchInfo } from '../types';
+import type {
+  Team,
+  TeamMatchInfo,
+  MatchConnectionStatus,
+  MatchMapResult,
+  Player as TeamPlayer,
+} from '../types';
 
 interface RatingHistoryEntry {
   id: number;
@@ -114,17 +120,18 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
   }
 
   // Otherwise, swap sides so the player's team becomes team1 everywhere.
-  const swappedConnectionStatus = rawMatch.connectionStatus
-    ? {
-        ...rawMatch.connectionStatus,
-        team1Connected: rawMatch.connectionStatus.team2Connected,
-        team2Connected: rawMatch.connectionStatus.team1Connected,
-        connectedPlayers: rawMatch.connectionStatus.connectedPlayers.map((connected) => ({
-          ...connected,
-          team: connected.team === 'team1' ? 'team2' : 'team1',
-        })),
-      }
-    : rawMatch.connectionStatus;
+  const swappedConnectionStatus: MatchConnectionStatus | null | undefined =
+    rawMatch.connectionStatus
+      ? {
+          ...rawMatch.connectionStatus,
+          team1Connected: rawMatch.connectionStatus.team2Connected,
+          team2Connected: rawMatch.connectionStatus.team1Connected,
+          connectedPlayers: rawMatch.connectionStatus.connectedPlayers.map((connected) => ({
+            ...connected,
+            team: connected.team === 'team1' ? ('team2' as const) : ('team1' as const),
+          })),
+        }
+      : rawMatch.connectionStatus;
 
   const swappedLiveStats = rawMatch.liveStats
     ? {
@@ -142,23 +149,29 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
       }
     : rawMatch.liveStats;
 
-  const swappedMapResults = rawMatch.mapResults.map((result) => ({
-    ...result,
-    team1Score: result.team2Score,
-    team2Score: result.team1Score,
-    winner:
+  const swappedMapResults: MatchMapResult[] = rawMatch.mapResults.map((result): MatchMapResult => {
+    const swappedWinner: MatchMapResult['winner'] =
       result.winner === 'team1'
         ? 'team2'
         : result.winner === 'team2'
         ? 'team1'
-        : result.winner ?? null,
-    winnerTeam:
+        : result.winner ?? null;
+
+    const swappedWinnerTeam: MatchMapResult['winnerTeam'] =
       result.winnerTeam === 'team1'
         ? 'team2'
         : result.winnerTeam === 'team2'
         ? 'team1'
-        : result.winnerTeam ?? null,
-  }));
+        : result.winnerTeam ?? null;
+
+    return {
+      ...result,
+      team1Score: result.team2Score,
+      team2Score: result.team1Score,
+      winner: swappedWinner,
+      winnerTeam: swappedWinnerTeam,
+    };
+  });
 
   const swappedConfig = rawMatch.config
     ? {
@@ -218,6 +231,22 @@ export default function PlayerProfile() {
     }
     return Array.from(bySlug.values());
   }, [matchHistory]);
+
+  // Lightweight lookup so we can map rating history rows (by matchSlug) to
+  // human-friendly round/match labels instead of raw slugs.
+  const matchMetaBySlug = React.useMemo(() => {
+    const map = new Map<
+      string,
+      {
+        round: number;
+        matchNumber: number;
+      }
+    >();
+    for (const m of uniqueMatchHistory) {
+      map.set(m.slug, { round: m.round, matchNumber: m.matchNumber });
+    }
+    return map;
+  }, [uniqueMatchHistory]);
 
   const loadPlayerData = async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!steamId) return;
@@ -356,7 +385,10 @@ export default function PlayerProfile() {
           setCurrentTournamentStatus(currentMatchResponse.tournamentStatus || 'setup');
 
           const yourTeam = normalizedMatch.team1 || null;
-          const configPlayers = normalizedMatch.config?.team1?.players || [];
+          const configPlayers =
+            normalizedMatch.config?.team1?.players?.map(
+              (p): TeamPlayer => ({ steamId: p.steamid, name: p.name })
+            ) || [];
 
           setCurrentTeam(
             yourTeam
@@ -572,22 +604,14 @@ export default function PlayerProfile() {
         <Container maxWidth="sm">
           <Card>
             <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <Alert
-                severity="warning"
-                sx={{ mb: 2 }}
-                data-testid="player-not-found-error"
-              >
+              <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
                 {error || 'No player is registered for this Steam ID yet.'}
               </Alert>
               <Typography variant="body2" color="text.secondary" mb={2}>
                 If you just logged in with Steam, ask a tournament admin to register you or create a
                 player with this Steam ID.
               </Typography>
-              <Button
-                variant="outlined"
-                component={RouterLink}
-                to="/player"
-              >
+              <Button variant="outlined" component={RouterLink} to="/player">
                 Back to Find Player
               </Button>
             </CardContent>
@@ -600,7 +624,9 @@ export default function PlayerProfile() {
   // Use first recorded rating as a more intuitive "starting" point rather than
   // the raw DB seed (which might be a calibration value like 3000).
   const effectiveStartingElo =
-    ratingHistory.length > 0 ? ratingHistory[ratingHistory.length - 1].eloAfter : player.startingElo;
+    ratingHistory.length > 0
+      ? ratingHistory[ratingHistory.length - 1].eloAfter
+      : player.startingElo;
   const winRate =
     uniqueMatchHistory.length > 0
       ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
@@ -642,12 +668,28 @@ export default function PlayerProfile() {
   const rulesOvertimeModeForPlayer = currentMatch?.config?.overtimeMode;
   const rulesOvertimeSegmentsForPlayer = currentMatch?.config?.overtimeSegments;
 
-  // Recent form timeline: last N matches as W/L
-  const recentMatches = [...uniqueMatchHistory].sort(
-    (a, b) => (b.completedAt || 0) - (a.completedAt || 0)
-  );
+  // Recent form timeline: last N matches as W/L, ordered oldest -> newest so it
+  // visually progresses like Round 1, Round 2, Round 3, ...
   const maxRecentTimelineMatches = 20;
-  const recentTimelineMatches = recentMatches.slice(0, maxRecentTimelineMatches);
+  const recentMatches = [...uniqueMatchHistory].sort(
+    (a, b) => (a.completedAt || 0) - (b.completedAt || 0)
+  );
+  const recentTimelineMatches = recentMatches.slice(-maxRecentTimelineMatches);
+  const formatRatingMatchLabel = (slug: string): string => {
+    const meta = matchMetaBySlug.get(slug);
+    if (meta) {
+      return getRoundLabel(meta.round);
+    }
+
+    // Fallback: best-effort parse for shuffle-style slugs like "shuffle-r5-m1"
+    const m = slug.match(/r(\d+)-m(\d+)/i);
+    if (m) {
+      const round = Number(m[1]) || 0;
+      return getRoundLabel(round);
+    }
+
+    return slug;
+  };
 
   // Best and toughest matches by ADR
   let bestAdrMatch: MatchHistoryEntry | null = null;
@@ -679,12 +721,7 @@ export default function PlayerProfile() {
               Public Player View
             </Typography>
             <Box display="flex" gap={1}>
-              <Button
-                variant="outlined"
-                size="small"
-                component={RouterLink}
-                to="/player"
-              >
+              <Button variant="outlined" size="small" component={RouterLink} to="/player">
                 Players
               </Button>
               <Button
@@ -707,18 +744,26 @@ export default function PlayerProfile() {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={3}>
-                <PlayerAvatar id={player.id} name={player.name} avatarUrl={player.avatar} size={80} />
+                <PlayerAvatar
+                  id={player.id}
+                  name={player.name}
+                  avatarUrl={player.avatar}
+                  size={80}
+                />
                 <Box flex={1}>
-                  <Typography variant="h4" fontWeight={700} gutterBottom data-testid="public-player-name">
+                  <Typography
+                    variant="h4"
+                    fontWeight={700}
+                    gutterBottom
+                    data-testid="public-player-name"
+                  >
                     {player.name}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
                     Steam ID: {player.id}
                   </Typography>
                   <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                    <Tooltip
-                      title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better."
-                    >
+                    <Tooltip title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.">
                       <Chip
                         data-testid="public-player-elo"
                         label={`Skill Rating: ${player.currentElo}`}
@@ -742,7 +787,9 @@ export default function PlayerProfile() {
                       allocationCountdown.nextAllocationInSeconds > 0 && (
                         <Typography variant="body2" color="text.secondary">
                           Next servers allocated in{' '}
-                          <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+                          <strong>
+                            {Math.max(0, allocationCountdown.nextAllocationInSeconds)}s
+                          </strong>
                         </Typography>
                       )}
                   </Box>
@@ -882,8 +929,7 @@ export default function PlayerProfile() {
                         Best Match (ADR)
                       </Typography>
                       <Typography variant="body2">
-                        {bestAdrMatch.adr?.toFixed(1)} ADR in match #{bestAdrMatch.matchNumber}{' '}
-                        ({getRoundLabel(bestAdrMatch.round)})
+                        {bestAdrMatch.adr?.toFixed(1)} ADR in {getRoundLabel(bestAdrMatch.round)}
                       </Typography>
                     </Box>
                   )}
@@ -893,8 +939,7 @@ export default function PlayerProfile() {
                         Toughest Match (ADR)
                       </Typography>
                       <Typography variant="body2">
-                        {worstAdrMatch.adr?.toFixed(1)} ADR in match #{worstAdrMatch.matchNumber}{' '}
-                        ({getRoundLabel(worstAdrMatch.round)})
+                        {worstAdrMatch.adr?.toFixed(1)} ADR in {getRoundLabel(worstAdrMatch.round)}
                       </Typography>
                     </Box>
                   )}
@@ -935,9 +980,27 @@ export default function PlayerProfile() {
                               : 'error.main'
                             : 'action.disabledBackground';
                           const label = isPlayed ? (isWin ? 'W' : 'L') : '';
-                          return (
+
+                          const handleClick = () => {
+                            if (match) {
+                              setSelectedMatch(match);
+                            }
+                          };
+
+                          let tooltipTitle: string | undefined;
+                          if (match) {
+                            const isTeam1 = match.team === 'team1';
+                            const opponentName = isTeam1
+                              ? match.team2Name || 'Opponent'
+                              : match.team1Name || 'Opponent';
+                            const vsLabel = `vs ${opponentName}`;
+                            tooltipTitle = `${vsLabel} — ${getRoundLabel(match.round)}`;
+                          }
+
+                          const bubble = (
                             <Box
                               key={match ? match.slug : `empty-${index}`}
+                              onClick={isPlayed ? handleClick : undefined}
                               sx={{
                                 width: 28,
                                 height: 28,
@@ -951,10 +1014,19 @@ export default function PlayerProfile() {
                                 fontSize: 14,
                                 fontWeight: 700,
                                 boxShadow: isPlayed ? 1 : 0,
+                                cursor: isPlayed ? 'pointer' : 'default',
                               }}
                             >
                               {label}
                             </Box>
+                          );
+
+                          return tooltipTitle ? (
+                            <Tooltip key={match.slug} title={tooltipTitle}>
+                              {bubble}
+                            </Tooltip>
+                          ) : (
+                            bubble
                           );
                         })}
                       </Box>
@@ -971,15 +1043,15 @@ export default function PlayerProfile() {
 
           {/* Skill Rating Progression Chart */}
           {ratingHistory.length > 0 && player && (
-              <ELOProgressionChart
-                history={ratingHistory.map((entry) => ({
-                  eloBefore: entry.eloBefore,
-                  baseEloAfter: entry.baseEloAfter,
-                  createdAt: entry.createdAt,
-                }))}
-                currentElo={player.currentElo}
-                startingElo={effectiveStartingElo}
-              />
+            <ELOProgressionChart
+              history={ratingHistory.map((entry) => ({
+                eloBefore: entry.eloBefore,
+                baseEloAfter: entry.baseEloAfter ?? null,
+                createdAt: entry.createdAt,
+              }))}
+              currentElo={player.currentElo}
+              startingElo={effectiveStartingElo}
+            />
           )}
 
           {/* Performance Metrics Chart */}
@@ -1020,22 +1092,18 @@ export default function PlayerProfile() {
                       {ratingHistory.slice(0, 10).map((entry) => (
                         <TableRow key={entry.id}>
                           <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 200 }}>
-                              {entry.matchSlug}
+                            <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
+                              {formatRatingMatchLabel(entry.matchSlug)}
                             </Typography>
                           </TableCell>
-                          <TableCell align="right">
-                            {entry.eloBefore}
-                          </TableCell>
-                          <TableCell align="right">
-                            {entry.baseEloAfter ?? '—'}
-                          </TableCell>
+                          <TableCell align="right">{entry.eloBefore}</TableCell>
+                          <TableCell align="right">{entry.baseEloAfter ?? '—'}</TableCell>
                           <TableCell align="right">
                             {entry.statAdjustment !== undefined && entry.statAdjustment !== null ? (
                               <Chip
-                                label={`${
-                                  entry.statAdjustment > 0 ? '+' : ''
-                                }${entry.statAdjustment}`}
+                                label={`${entry.statAdjustment > 0 ? '+' : ''}${
+                                  entry.statAdjustment
+                                }`}
                                 size="small"
                                 color={
                                   entry.statAdjustment > 0
@@ -1114,9 +1182,6 @@ export default function PlayerProfile() {
                         const opponentName = isTeam1
                           ? match.team2Name || 'Opponent'
                           : match.team1Name || 'Opponent';
-                        const opponentTag = isTeam1
-                          ? match.team2Tag || ''
-                          : match.team1Tag || '';
 
                         return (
                           <TableRow
@@ -1128,7 +1193,6 @@ export default function PlayerProfile() {
                             <TableCell>
                               <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
                                 vs {opponentName}
-                                {opponentTag ? ` (${opponentTag})` : ''}
                               </Typography>
                             </TableCell>
                             <TableCell align="right">R{match.round}</TableCell>
