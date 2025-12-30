@@ -34,6 +34,7 @@ import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { PlayerName } from '../components/player/PlayerName';
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -423,7 +424,12 @@ export default function TournamentLeaderboard() {
                                   '&:hover': { textDecoration: 'underline' },
                                 }}
                               >
-                                {index + 1}. {player.name}
+                                {index + 1}.{' '}
+                                <PlayerName
+                                  name={player.name}
+                                  // Leaderboard entries currently don't expose isAdmin; this can be extended later.
+                                  variant="body2"
+                                />
                               </Typography>
                               <Chip
                                 label={`${player.matchWins}W / ${player.matchLosses}L`}
@@ -466,7 +472,11 @@ export default function TournamentLeaderboard() {
                                   '&:hover': { textDecoration: 'underline' },
                                 }}
                               >
-                                {index + 1}. {player.name}
+                                {index + 1}.{' '}
+                                <PlayerName
+                                  name={player.name}
+                                  variant="body2"
+                                />
                               </Typography>
                               <Chip
                                 label={`${player.averageAdr?.toFixed(1) ?? 'N/A'} ADR`}

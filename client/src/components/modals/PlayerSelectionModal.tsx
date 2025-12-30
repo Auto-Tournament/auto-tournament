@@ -24,6 +24,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { PlayerDetail } from '../../types/api.types';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { PlayerName } from '../player/PlayerName';
 
 interface PlayerSelectionModalProps {
   open: boolean;
@@ -286,11 +287,16 @@ export default function PlayerSelectionModal({
                             name={player.name}
                             avatarUrl={player.avatar}
                             size={48}
+                            isAdmin={player.isAdmin}
                           />
                           <Box flex={1} minWidth={0}>
-                            <Typography variant="body1" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
-                              {player.name}
-                            </Typography>
+                            <PlayerName
+                              name={player.name}
+                              isAdmin={player.isAdmin}
+                              variant="body1"
+                              noWrap
+                              sx={{ mb: 0.5, fontWeight: 600 }}
+                            />
                             <Typography variant="caption" color="text.secondary" noWrap>
                               {player.id}
                             </Typography>

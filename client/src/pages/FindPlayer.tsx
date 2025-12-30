@@ -20,6 +20,7 @@ import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsMo
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { SteamIcon } from '../components/icons/SteamIcon';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { PlayerName } from '../components/player/PlayerName';
 
 interface PlayerOption {
   id: string;
@@ -186,9 +187,10 @@ export default function FindPlayer() {
                       name={option.name}
                       avatarUrl={option.avatar}
                       size={24}
+                      isAdmin={option.isAdmin}
                     />
                     <Box>
-                      <Typography variant="body2">{option.name}</Typography>
+                      <PlayerName name={option.name} variant="body2" />
                       <Typography variant="caption" color="text.secondary">
                         {option.id}
                       </Typography>

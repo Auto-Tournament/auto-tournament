@@ -32,6 +32,7 @@ import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { PlayerName } from '../components/player/PlayerName';
 import type { PlayerDetail } from '../types/api.types';
 import type {
   Team,
@@ -731,57 +732,71 @@ export default function PlayerProfile() {
           {/* Player Header */}
           <Card>
             <CardContent>
-              <Box display="flex" alignItems="center" gap={3}>
-                <PlayerAvatar
-                  id={player.id}
-                  name={player.name}
-                  avatarUrl={player.avatar}
-                  size={80}
-                />
-                <Box flex={1}>
-                  <Typography
-                    variant="h4"
-                    fontWeight={700}
-                    gutterBottom
-                    data-testid="public-player-name"
-                  >
-                    {player.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Steam ID: {player.id}
-                  </Typography>
-                  <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                    <Tooltip title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.">
-                      <Chip
-                        data-testid="public-player-elo"
-                        label={`Skill Rating: ${player.currentElo}`}
-                        color="primary"
-                        sx={{ fontWeight: 600, fontSize: '1rem' }}
-                      />
-                    </Tooltip>
-                    {latestTournamentId && (
-                      <Button
-                        variant="outlined"
-                        size="small"
-                        startIcon={<EmojiEventsIcon />}
-                        onClick={() =>
-                          window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')
-                        }
-                      >
-                        View Tournament Leaderboard
-                      </Button>
-                    )}
-                    {allocationCountdown.nextAllocationInSeconds !== null &&
-                      allocationCountdown.nextAllocationInSeconds > 0 && (
-                        <Typography variant="body2" color="text.secondary">
-                          Next servers allocated in{' '}
-                          <strong>
-                            {Math.max(0, allocationCountdown.nextAllocationInSeconds)}s
-                          </strong>
-                        </Typography>
+              <Box display="flex" justifyContent="space-between" alignItems="flex-start" gap={3}>
+                <Box display="flex" alignItems="center" gap={3}>
+                  <PlayerAvatar
+                    id={player.id}
+                    name={player.name}
+                    avatarUrl={player.avatar}
+                    size={80}
+                    isAdmin={player.isAdmin}
+                  />
+                  <Box flex={1}>
+                    <PlayerName
+                      name={player.name}
+                      isAdmin={player.isAdmin}
+                      variant="h4"
+                      sx={{ fontWeight: 700, mb: 0.5 }}
+                      data-testid="public-player-name"
+                    />
+                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                      Steam ID: {player.id}
+                    </Typography>
+                    <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
+                      <Tooltip title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.">
+                        <Chip
+                          data-testid="public-player-elo"
+                          label={`Skill Rating: ${player.currentElo}`}
+                          color="primary"
+                          sx={{ fontWeight: 600, fontSize: '1rem' }}
+                        />
+                      </Tooltip>
+                      {latestTournamentId && (
+                        <Button
+                          variant="outlined"
+                          size="small"
+                          startIcon={<EmojiEventsIcon />}
+                          onClick={() =>
+                            window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')
+                          }
+                        >
+                          View Tournament Leaderboard
+                        </Button>
                       )}
+                      {allocationCountdown.nextAllocationInSeconds !== null &&
+                        allocationCountdown.nextAllocationInSeconds > 0 && (
+                          <Typography variant="body2" color="text.secondary">
+                            Next servers allocated in{' '}
+                            <strong>
+                              {Math.max(0, allocationCountdown.nextAllocationInSeconds)}s
+                            </strong>
+                          </Typography>
+                        )}
+                    </Box>
                   </Box>
                 </Box>
+                {player.isAdmin && (
+                  <Chip
+                    label="ADMIN"
+                    color="error"
+                    size="small"
+                    sx={{
+                      fontWeight: 700,
+                      borderRadius: 1,
+                      alignSelf: 'flex-start',
+                    }}
+                  />
+                )}
               </Box>
             </CardContent>
           </Card>

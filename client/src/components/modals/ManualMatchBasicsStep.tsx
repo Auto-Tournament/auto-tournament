@@ -144,6 +144,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
                       name={option.name || option.id}
                       avatarUrl={option.avatar}
                       size={24}
+                      isAdmin={option.isAdmin}
                     />
                     <Box>
                       <Typography variant="body2">{option.name || option.id}</Typography>

@@ -8,6 +8,7 @@ import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { PlayerName } from '../player/PlayerName';
 
 interface PlayerRosterProps {
   team1Name: string;
@@ -102,7 +103,10 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 />
 
                 {/* Player Name */}
-                <Typography
+                <PlayerName
+                  name={player.name}
+                  // Live roster data does not currently include isAdmin info; this will
+                  // render as normal text unless extended in the future.
                   variant="body2"
                   sx={{
                     flex: 1,
@@ -113,9 +117,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                       : 'text.disabled',
                     fontWeight: status.isConnected ? 600 : 400,
                   }}
-                >
-                  {player.name}
-                </Typography>
+                />
 
                 {/* Explicit player page action */}
                 <Tooltip title="Open player page">

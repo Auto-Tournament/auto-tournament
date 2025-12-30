@@ -11,6 +11,7 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { PlayerName } from '../player/PlayerName';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import type { MatchLiveStats } from '../../types';
 
@@ -82,29 +83,29 @@ function renderTable(
                     textOverflow: 'ellipsis',
                   }}
                 >
-                  <Typography
+                  <PlayerName
+                    name={player.name}
+                    // Live stats don’t yet surface isAdmin; this keeps base styling only.
                     variant="body2"
-                      color={isHighlighted ? 'common.white' : `${accent}.main`}
-                    fontWeight={600}
-                      component={isHighlighted ? 'span' : 'a'}
-                      {...(!isHighlighted && {
-                        href: getPlayerPageUrl(player.steamId),
-                        target: '_blank',
-                        rel: 'noopener noreferrer',
-                      })}
-                    sx={{
-                      textDecoration: 'none',
-                        cursor: isHighlighted ? 'default' : 'pointer',
-                        '&:hover': !isHighlighted
-                          ? {
-                        textDecoration: 'underline',
-                            }
-                          : undefined,
-                    }}
                     noWrap
-                  >
-                    {player.name}
-                  </Typography>
+                    sx={{
+                      color: isHighlighted ? 'common.white' : `${accent}.main`,
+                      fontWeight: 600,
+                      textDecoration: 'none',
+                      cursor: isHighlighted ? 'default' : 'pointer',
+                      '&:hover': !isHighlighted
+                        ? {
+                            textDecoration: 'underline',
+                          }
+                        : undefined,
+                    }}
+                    component={isHighlighted ? 'span' : 'a'}
+                    {...(!isHighlighted && {
+                      href: getPlayerPageUrl(player.steamId),
+                      target: '_blank',
+                      rel: 'noopener noreferrer',
+                    })}
+                  />
                 </TableCell>
                 <TableCell align="right">{player.kills}</TableCell>
                 <TableCell align="right">{player.deaths}</TableCell>

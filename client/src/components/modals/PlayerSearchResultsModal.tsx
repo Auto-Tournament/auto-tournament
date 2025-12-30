@@ -18,10 +18,11 @@ import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from 'react-router-dom';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { PlayerName } from '../player/PlayerName';
 
 interface PlayerSearchResultsModalProps {
   open: boolean;
-  players: Array<{ id: string; name: string; avatar?: string; currentElo?: number }>;
+  players: Array<{ id: string; name: string; avatar?: string; currentElo?: number; isAdmin?: boolean }>;
   onClose: () => void;
 }
 
@@ -64,10 +65,17 @@ export default function PlayerSearchResultsModal({
                     name={player.name}
                     avatarUrl={player.avatar}
                     size={40}
+                    isAdmin={player.isAdmin}
                   />
                 </ListItemAvatar>
                 <ListItemText
-                  primary={player.name}
+                  primary={
+                    <PlayerName
+                      name={player.name}
+                      isAdmin={player.isAdmin}
+                      variant="body1"
+                    />
+                  }
                   secondary={
                     <Box>
                       <Typography variant="caption" component="span" display="block">

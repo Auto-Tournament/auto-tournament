@@ -27,6 +27,7 @@ import { EmptyState } from '../components/shared/EmptyState';
 import type { PlayerDetail, PlayersResponse } from '../types/api.types';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { PlayerName } from '../components/player/PlayerName';
 
 export default function Players() {
   const { setHeaderActions } = usePageHeader();
@@ -237,12 +238,16 @@ export default function Players() {
                         name={player.name}
                         avatarUrl={player.avatar}
                         size={48}
+                        isAdmin={player.isAdmin}
                       />
                       <Box>
                         <Box display="flex" alignItems="center" gap={1}>
-                          <Typography variant="h6" fontWeight={600} gutterBottom>
-                            {player.name}
-                          </Typography>
+                          <PlayerName
+                            name={player.name}
+                            isAdmin={player.isAdmin}
+                            variant="h6"
+                            sx={{ fontWeight: 600 }}
+                          />
                           <Tooltip title="Open player page">
                             <IconButton
                               size="small"

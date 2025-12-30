@@ -15,6 +15,7 @@ import {
   IconButton,
   Collapse,
 } from '@mui/material';
+import { PlayerName } from '../player/PlayerName';
 import {
   Close as CloseIcon,
   CheckCircle as CheckCircleIcon,
@@ -279,7 +280,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                               gap={1}
                             >
                               <Box>
-                                <Typography variant="body2">{player.name}</Typography>
+                                <PlayerName name={player.name} variant="body2" />
                                 {player.elo !== undefined && (
                                   <Typography variant="caption" color="text.secondary">
                                     ELO: {player.elo}
