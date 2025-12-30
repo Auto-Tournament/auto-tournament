@@ -384,9 +384,24 @@ else
     echo -e "${GREEN}✅ Builder created${NC}"
 fi
 
+# Determine a safe test platform based on the host Docker architecture
+HOST_ARCH=$(docker info --format '{{.Architecture}}' 2>/dev/null || uname -m || echo "amd64")
+case "$HOST_ARCH" in
+    arm64|aarch64)
+        TEST_PLATFORM="linux/arm64"
+        ;;
+    amd64|x86_64)
+        TEST_PLATFORM="linux/amd64"
+        ;;
+    *)
+        echo -e "${YELLOW}⚠️  Unknown host architecture (${HOST_ARCH}), defaulting test build to linux/amd64${NC}"
+        TEST_PLATFORM="linux/amd64"
+        ;;
+esac
+
 # Test build (single platform for speed, load into local Docker)
 docker buildx build \
-    --platform linux/amd64 \
+    --platform "${TEST_PLATFORM}" \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:test-build" \
     --load \
@@ -774,7 +789,10 @@ echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 # Step 9: Build and push Docker images
 echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
-echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
+
+# Allow overriding platforms via DOCKER_PLATFORMS, default to linux/amd64,linux/arm64
+PLATFORMS="${DOCKER_PLATFORMS:-linux/amd64,linux/arm64}"
+echo -e "${BLUE}Platforms: ${PLATFORMS}${NC}"
 echo ""
 
 # Re-check disk space before multi-platform build (requires more space)
@@ -787,7 +805,7 @@ fi
 check_disk_space "$MULTI_PLATFORM_MIN_GB"
 
 docker buildx build \
-    --platform linux/amd64,linux/arm64 \
+    --platform "${PLATFORMS}" \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
     --tag "${DOCKER_IMAGE}:latest" \
