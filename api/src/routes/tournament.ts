@@ -616,6 +616,36 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // Get base URL for webhook configuration
     const baseUrl = await getWebhookBaseUrl(req);
 
+    // For shuffle tournaments we want the "started" status to be visible to
+    // other API calls (like player registration) immediately after this
+    // endpoint is called, rather than only after the background allocation
+    // task has finished. This ensures tests and UIs consistently see the
+    // tournament as non‑setup as soon as start is requested.
+    try {
+      const tournament = await tournamentService.getTournament();
+      if (
+        tournament &&
+        tournament.type === 'shuffle' &&
+        (tournament.status === 'setup' || tournament.status === 'ready')
+      ) {
+        await db.updateAsync(
+          'tournament',
+          {
+            status: 'in_progress',
+            started_at: Math.floor(Date.now() / 1000),
+            updated_at: Math.floor(Date.now() / 1000),
+          },
+          'id = ?',
+          [1]
+        );
+      }
+    } catch (err) {
+      log.warn(
+        'Failed to eagerly mark shuffle tournament as started before allocation',
+        err as Error
+      );
+    }
+
     // Kick off tournament start + server allocation in the background so the
     // HTTP request can return immediately and the UI doesn't sit in a pending
     // state while RCON/webhook calls are in flight.

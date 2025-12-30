@@ -1,12 +1,9 @@
 import React from 'react';
 import { Typography } from '@mui/material';
 
-interface PlayerNameProps {
+interface PlayerNameProps extends React.ComponentProps<typeof Typography> {
   name: string;
   isAdmin?: boolean;
-  variant?: React.ComponentProps<typeof Typography>['variant'];
-  noWrap?: boolean;
-  sx?: React.ComponentProps<typeof Typography>['sx'];
 }
 
 /**
@@ -15,7 +12,14 @@ interface PlayerNameProps {
  * - Normal players use default text styling.
  * - Admins are highlighted clearly (red, bold) so they stand out in all UIs.
  */
-export function PlayerName({ name, isAdmin, variant = 'body1', noWrap, sx }: PlayerNameProps) {
+export function PlayerName({
+  name,
+  isAdmin,
+  variant = 'body1',
+  noWrap,
+  sx,
+  ...typographyProps
+}: PlayerNameProps) {
   const baseSx = sx || {};
 
   const adminSx = isAdmin
@@ -26,7 +30,12 @@ export function PlayerName({ name, isAdmin, variant = 'body1', noWrap, sx }: Pla
     : {};
 
   return (
-    <Typography variant={variant} noWrap={noWrap} sx={{ ...baseSx, ...adminSx }}>
+    <Typography
+      variant={variant}
+      noWrap={noWrap}
+      sx={{ ...baseSx, ...adminSx }}
+      {...typographyProps}
+    >
       {name}
     </Typography>
   );
