@@ -883,11 +883,12 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
 
   log.success(`Match ${matchSlug} marked as completed with winner ${winnerId}`);
 
-  // Mark the server as "preparing" in the allocation tracker so the allocator
-  // can treat it as being in a short postgame window. The underlying MatchZy
-  // plugin will still provide the authoritative status via its convars.
   if (match.server_id) {
-    serverAllocationTracker.markPreparing(match.server_id, matchSlug);
+    // MatchZy has reported the series as ended for this match, so from the
+    // allocator's point of view this server is now free for new work. We mark
+    // it as idle in our internal tracker so that future allocation passes and
+    // polling attempts will once again consider it for new matches.
+    serverAllocationTracker.markIdle(match.server_id);
   }
 
   // If this match has a next_match_id, advance the winner

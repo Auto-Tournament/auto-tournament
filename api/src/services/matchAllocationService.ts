@@ -316,6 +316,11 @@ export class MatchAllocationService {
     // from different code paths targeting the same physical server.
     onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
 
+    // Finally, respect our internal allocation tracker so that once we decide a
+    // server is "busy" for a match, *no other* match will be allocated to it
+    // until the match lifecycle handler explicitly marks it as idle again.
+    onlineServers = onlineServers.filter((s) => !serverAllocationTracker.isBusy(s.server.id));
+
     const isSimulation = await settingsService.isSimulationModeEnabled();
     const GRACE_PERIOD_SECONDS = isSimulation
       ? MatchAllocationService.SIMULATION_GRACE_PERIOD_SECONDS
@@ -483,6 +488,32 @@ export class MatchAllocationService {
           success: false,
           serverId: server.id,
           error: `Server ${server.id} is not idle (status=${statusInfo.status})`,
+        };
+      }
+
+      // Defensive DB‑level guard: never allow *another* non‑completed match to
+      // share the same server. This complements the live status check above
+      // and ensures that even if plugin state is momentarily misleading, we
+      // will not double‑book the server in our own database.
+      const existingActive = await db.queryOneAsync<{ count: number }>(
+        `
+          SELECT COUNT(*) as count
+            FROM matches
+           WHERE server_id = ?
+             AND slug != ?
+             AND status IN ('pending', 'ready', 'loaded', 'live')
+        `,
+        [server.id, match.slug]
+      );
+      if ((existingActive?.count ?? 0) > 0) {
+        log.debug(
+          `[ALLOCATION] Refusing to allocate match ${match.slug} to server ${server.id} (${server.name}) because another active match is already using this server`
+        );
+        return {
+          matchSlug: match.slug,
+          success: false,
+          serverId: server.id,
+          error: `Server ${server.id} already has an active match`,
         };
       }
 
@@ -843,9 +874,27 @@ export class MatchAllocationService {
 
       let server: ServerResponse | null = null;
       for (const candidate of availableServers) {
+        // Skip servers that are already in the process of being allocated by
+        // this service instance.
         if (this.allocatingServers.has(candidate.id)) {
           continue;
         }
+
+        // Defensive DB‑level guard: avoid assigning a server that already has
+        // another active (non‑completed) match attached in our own records.
+        const existingActive = await db.queryOneAsync<{ count: number }>(
+          `
+            SELECT COUNT(*) as count
+              FROM matches
+             WHERE server_id = ?
+               AND status IN ('pending', 'ready', 'loaded', 'live')
+          `,
+          [candidate.id]
+        );
+        if ((existingActive?.count ?? 0) > 0) {
+          continue;
+        }
+
         // Reserve this server for this allocation attempt
         this.allocatingServers.add(candidate.id);
         allocatedServerId = candidate.id;
@@ -854,7 +903,8 @@ export class MatchAllocationService {
       }
 
       if (!server) {
-        // All currently available servers are already being allocated by other calls.
+        // All currently available servers are either being allocated right now
+        // or already have an active match attached in the DB.
         return { success: false, error: 'No available servers' };
       }
 

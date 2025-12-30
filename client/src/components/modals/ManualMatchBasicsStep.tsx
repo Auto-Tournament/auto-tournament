@@ -20,6 +20,8 @@ interface ManualMatchBasicsStepProps {
   players: PlayerDetail[];
   // Steam IDs of players currently in non-completed matches (pending/ready/loaded/live).
   busyPlayerIds?: Set<string>;
+  // Team IDs that currently have an active (non-completed) match.
+  busyTeamIds?: Set<string>;
   team1NewPlayerIds: string[];
   onTeam1NewPlayerIdsChange: (ids: string[]) => void;
   team2NewPlayerIds: string[];
@@ -43,6 +45,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
   playersPerTeam,
   players,
   busyPlayerIds,
+  busyTeamIds,
   team1NewPlayerIds,
   onTeam1NewPlayerIdsChange,
   team2NewPlayerIds,
@@ -180,6 +183,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         <MenuItem value="__new__">New team (this match only)</MenuItem>
         {teams
           .filter((team) => team.id !== team2Id)
+          .filter((team) => !busyTeamIds?.has(team.id))
           .map((team) => (
             <MenuItem key={team.id} value={team.id}>
               {team.name} ({team.id})
@@ -228,6 +232,7 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
         <MenuItem value="__new__">New team (this match only)</MenuItem>
         {teams
           .filter((team) => team.id !== team1Id)
+          .filter((team) => !busyTeamIds?.has(team.id))
           .map((team) => (
             <MenuItem key={team.id} value={team.id}>
               {team.name} ({team.id})

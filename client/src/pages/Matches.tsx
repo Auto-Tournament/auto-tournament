@@ -102,12 +102,25 @@ export default function Matches() {
           return next;
         };
 
+        const hasTeams = (m: Match | typeof match) =>
+          Boolean(
+            // Bracket / enriched matches with DB-backed team rows
+            ((m as Match).team1 || (m as Match).config?.team1) &&
+              ((m as Match).team2 || (m as Match).config?.team2)
+          );
+
         const upsertMatch = (list: Match[], updatedMatch: typeof match) => {
           const index = list.findIndex(matchIdOrSlugEquals);
           if (index !== -1) {
             const updated = [...list];
             updated[index] = applyLiveScoreOverlay(updated[index], updatedMatch);
             return updated;
+          }
+          // If this is a brand new match and we don't yet have both teams
+          // attached, skip inserting a "ghost" placeholder. The next GET
+          // /api/matches poll or a richer websocket payload will hydrate it.
+          if (!hasTeams(updatedMatch)) {
+            return list;
           }
           return [...list, applyLiveScoreOverlay(updatedMatch as Match, updatedMatch)];
         };
@@ -499,16 +512,6 @@ export default function Matches() {
         onCreated={async (slug) => {
           setCreateMatchOpen(false);
           showSuccess(`Manual match created: ${slug}`);
-
-          // Immediately load the manual match on its assigned server so it's
-          // ready for players without a separate "Load match" click.
-          try {
-            await api.post(`/api/matches/${slug}/load`, undefined);
-          } catch (err) {
-            const message =
-              err instanceof Error ? err.message : 'Failed to load manual match on server.';
-            showError(message);
-          }
 
           void fetchMatches();
         }}

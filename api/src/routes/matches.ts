@@ -878,6 +878,7 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
     }
 
     const baseUrl = getBaseUrl(req);
+    const webhookBaseUrl = await getWebhookBaseUrl(req);
     const match = await matchService.createMatch(input, baseUrl);
 
     // When no serverId is provided, attempt to auto-allocate a server for
@@ -886,19 +887,26 @@ router.post('/', requireAuth, async (req: Request, res: Response) => {
     // a specific server; they just say "play this match" and the API finds a
     // suitable host.
     if (!input.serverId) {
-      try {
-        const allocation = await matchAllocationService.allocateSingleMatch(match.slug, baseUrl);
-        if (!allocation.success) {
+      // Fire-and-forget auto-allocation so match creation returns quickly and
+      // the UI doesn't block on potentially slow RCON / connectivity checks.
+      setImmediate(async () => {
+        try {
+          const allocation = await matchAllocationService.allocateSingleMatch(
+            match.slug,
+            webhookBaseUrl
+          );
+          if (!allocation.success) {
+            log.warn(
+              `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`
+            );
+          }
+        } catch (allocError) {
           log.warn(
-            `Auto-allocation failed for manual match ${match.slug}: ${allocation.error}`
+            `Auto-allocation threw for manual match ${match.slug}`,
+            allocError as Error
           );
         }
-      } catch (allocError) {
-        log.warn(
-          `Auto-allocation threw for manual match ${match.slug}`,
-          allocError as Error
-        );
-      }
+      });
     }
 
     return res.status(201).json({

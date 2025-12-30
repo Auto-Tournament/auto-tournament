@@ -112,6 +112,7 @@ export function useCreateManualMatchModal({
   const [loadingTeams, setLoadingTeams] = useState(false);
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [busyPlayerIds, setBusyPlayerIds] = useState<Set<string>>(new Set());
+  const [busyTeamIds, setBusyTeamIds] = useState<Set<string>>(new Set());
   const [saving, setSaving] = useState(false);
 
   const [slug, setSlug] = useState('');
@@ -255,22 +256,31 @@ export function useCreateManualMatchModal({
           m.status === 'live'
       );
 
-      const busy = new Set<string>();
+      const busyPlayers = new Set<string>();
+      const busyTeams = new Set<string>();
       for (const match of activeMatches) {
         const cfg = match.config;
         const team1Players = (cfg?.team1?.players || []).map((p) => p.steamid);
         const team2Players = (cfg?.team2?.players || []).map((p) => p.steamid);
         for (const id of [...team1Players, ...team2Players]) {
           if (id) {
-            busy.add(id);
+            busyPlayers.add(id);
           }
+        }
+        if (match.team1?.id) {
+          busyTeams.add(match.team1.id);
+        }
+        if (match.team2?.id) {
+          busyTeams.add(match.team2.id);
         }
       }
 
-      setBusyPlayerIds(busy);
+      setBusyPlayerIds(busyPlayers);
+      setBusyTeamIds(busyTeams);
     } catch (err) {
       console.error('Failed to load busy players for manual match creation', err);
       setBusyPlayerIds(new Set());
+      setBusyTeamIds(new Set());
     }
   }, []);
 
@@ -421,7 +431,7 @@ export function useCreateManualMatchModal({
   // we fall back to generic "Team 1"/"Team 2" labels and empty player lists.
   let previewConfig: MatchConfig | null = null;
 
-  if (slug.trim() && serverId) {
+  if (slug.trim()) {
     const selectedMatchMaps = maps.filter((m) => m.length > 0);
     if (
       (!useVeto && selectedMatchMaps.length === requiredMaps) ||
@@ -528,21 +538,24 @@ export function useCreateManualMatchModal({
   useEffect(() => {
     const loadTemplates = async () => {
       try {
-        const res = await api.get<{ success: boolean; templates: Array<{
-          id: number;
-          name: string;
-          description?: string | null;
-          bestOf: 'bo1' | 'bo3' | 'bo5';
-          useVeto: boolean;
-          startingSide: 'knife' | 'team1_ct' | 'team2_ct';
-          knifeMode: 'default' | 'enabled' | 'disabled';
-          playersPerTeam: number;
-          maxRounds: number;
-          overtimeEnabled: boolean;
-          overtimeMaxRounds?: number | null;
-          mapPoolId?: number | null;
-          maps: string[];
-        }> }>('/api/manual-match-templates');
+        const res = await api.get<{
+          success: boolean;
+          templates: Array<{
+            id: number;
+            name: string;
+            description?: string | null;
+            bestOf: 'bo1' | 'bo3' | 'bo5';
+            useVeto: boolean;
+            startingSide: 'knife' | 'team1_ct' | 'team2_ct';
+            knifeMode: 'default' | 'enabled' | 'disabled';
+            playersPerTeam: number;
+            maxRounds: number;
+            overtimeEnabled: boolean;
+            overtimeMaxRounds?: number | null;
+            mapPoolId?: number | null;
+            maps: string[];
+          }>;
+        }>('/api/manual-match-templates');
         if (res.success && Array.isArray(res.templates)) {
           const mapped: MatchTemplate[] = res.templates.map((t) => ({
             id: String(t.id),
@@ -555,9 +568,8 @@ export function useCreateManualMatchModal({
             maxRounds: t.maxRounds,
             overtimeEnabled: t.overtimeEnabled,
             overtimeMaxRounds: t.overtimeMaxRounds ?? null,
-            mapPoolId: t.mapPoolId !== undefined && t.mapPoolId !== null
-              ? String(t.mapPoolId)
-              : null,
+            mapPoolId:
+              t.mapPoolId !== undefined && t.mapPoolId !== null ? String(t.mapPoolId) : null,
             maps: t.maps || [],
           }));
           setTemplates(mapped);
@@ -641,8 +653,7 @@ export function useCreateManualMatchModal({
           playersPerTeam,
           maxRounds,
           overtimeEnabled,
-          overtimeMaxRounds:
-            overtimeMaxRounds && overtimeMaxRounds > 0 ? overtimeMaxRounds : null,
+          overtimeMaxRounds: overtimeMaxRounds && overtimeMaxRounds > 0 ? overtimeMaxRounds : null,
           mapPoolId:
             selectedMapPool && selectedMapPool !== 'custom'
               ? Number.isNaN(Number(selectedMapPool))
@@ -683,9 +694,8 @@ export function useCreateManualMatchModal({
             maxRounds: t.maxRounds,
             overtimeEnabled: t.overtimeEnabled,
             overtimeMaxRounds: t.overtimeMaxRounds ?? null,
-            mapPoolId: t.mapPoolId !== undefined && t.mapPoolId !== null
-              ? String(t.mapPoolId)
-              : null,
+            mapPoolId:
+              t.mapPoolId !== undefined && t.mapPoolId !== null ? String(t.mapPoolId) : null,
             maps: t.maps || [],
           };
           const next = [...templates, asLocal];
@@ -764,15 +774,14 @@ export function useCreateManualMatchModal({
     const trimmedSlug = slug.trim();
     const selectedMatchMaps = maps.filter((m) => m.length > 0);
 
-    console.log('[CreateManualMatchModal] handleSubmit invoked', {
-      trimmedSlug,
-      serverId,
-      team1Id,
-      team2Id,
-      mapsCount: selectedMatchMaps.length,
-      bestOf,
-      useVeto,
-    });
+      console.log('[CreateManualMatchModal] handleSubmit invoked', {
+        trimmedSlug,
+        team1Id,
+        team2Id,
+        mapsCount: selectedMatchMaps.length,
+        bestOf,
+        useVeto,
+      });
 
     if (!trimmedSlug || selectedMatchMaps.length === 0) {
       const message = 'Slug and at least one map are required.';
@@ -824,14 +833,12 @@ export function useCreateManualMatchModal({
     try {
       console.log('[CreateManualMatchModal] Sending /api/matches request', {
         slug: trimmedSlug,
-        serverId,
         config,
       });
       const response = await api.post<MatchResponse>('/api/matches', {
         slug: trimmedSlug,
-        // When serverId is empty, the backend will auto-allocate an appropriate
-        // server using the same allocator that powers tournament matches.
-        ...(serverId ? { serverId } : {}),
+        // Server selection is fully automatic; the backend allocator will pick
+        // a free server and attach server_id when ready.
         config,
       });
 
@@ -930,6 +937,7 @@ export function useCreateManualMatchModal({
       team1NewName,
       team2NewName,
       busyPlayerIds,
+      busyTeamIds,
     },
     actions: {
       setSlug,
@@ -967,5 +975,3 @@ export function useCreateManualMatchModal({
     },
   };
 }
-
-

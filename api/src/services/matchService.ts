@@ -16,15 +16,10 @@ class MatchService {
       throw new Error(`Match with slug '${input.slug}' already exists`);
     }
 
-    // Validate server exists when explicitly provided. When omitted, the
-    // caller is expected to rely on the allocator to pick an appropriate
-    // server (e.g. for manual matches).
-    if (input.serverId) {
-      const server = await db.getOneAsync('servers', 'id = ?', [input.serverId]);
-      if (!server) {
-        throw new Error(`Server '${input.serverId}' not found`);
-      }
-    }
+    // Manual matches no longer support explicit server selection – the backend
+    // is responsible for auto‑allocating an appropriate server. We intentionally
+    // ignore any serverId passed in the payload to avoid double‑booking or
+    // pinning matches to a single server.
 
     // Normalize config and apply global simulation + round-limit settings so
     // manual matches behave like tournament-generated matches.
@@ -116,11 +111,15 @@ class MatchService {
       tournament_id: null,
       round: 0, // 0 = manual / non-bracket match
       match_number: 0,
-      server_id: input.serverId ?? null,
+      // Always start manual matches without a server; the allocator will attach
+      // a concrete server_id once it has picked a free server.
+      server_id: null,
       team1_id: team1Id,
       team2_id: team2Id,
       config: JSON.stringify(config),
-      status: 'pending',
+      // Manual matches are immediately eligible for allocation/loading as soon
+      // as they are created, so we mark them as "ready" instead of "pending".
+      status: 'ready',
     });
 
     const match = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);
