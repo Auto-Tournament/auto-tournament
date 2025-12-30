@@ -851,18 +851,25 @@ export class MatchAllocationService {
       }
 
       // Hard safety checks: do not ever allocate / load matches that are not
-      // structurally valid in the bracket.
-      if (!match.team1_id || !match.team2_id) {
-        return {
-          success: false,
-          error: 'Match does not have both teams assigned yet',
-        };
-      }
-      if (match.team1_id === match.team2_id) {
-        return {
-          success: false,
-          error: 'Invalid match: team1 and team2 are the same team',
-        };
+      // structurally valid in the *bracket*. For manual matches (round = 0,
+      // no tournament_id) we allow ad‑hoc teams that only exist in the config,
+      // so we skip the DB team_id checks entirely.
+      const isBracketMatch =
+        typeof match.round === 'number' && match.round >= 1 && match.tournament_id !== null;
+
+      if (isBracketMatch) {
+        if (!match.team1_id || !match.team2_id) {
+          return {
+            success: false,
+            error: 'Match does not have both teams assigned yet',
+          };
+        }
+        if (match.team1_id === match.team2_id) {
+          return {
+            success: false,
+            error: 'Invalid match: team1 and team2 are the same team',
+          };
+        }
       }
 
       // Get first available server, respecting the in‑memory "allocating" guard
