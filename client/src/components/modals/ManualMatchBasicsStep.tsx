@@ -1,5 +1,5 @@
 import React from 'react';
-import { Autocomplete, Box, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, TextField, Typography, MenuItem } from '@mui/material';
 import type { Team } from '../../types';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
