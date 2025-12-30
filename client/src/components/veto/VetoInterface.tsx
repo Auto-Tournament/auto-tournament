@@ -19,6 +19,7 @@ import { getVetoOrder } from '../../constants/vetoOrders';
 import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
 import type { MapsResponse } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface VetoInterfaceProps {
   matchSlug: string;
@@ -41,6 +42,16 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const [allMaps, setAllMaps] = useState<
     Map<string, { id: string; displayName: string; imageUrl: string | null }>
   >(new Map());
+
+  const MAP_IMAGE_BASE =
+    'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+
+  const getThumbnailUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}_thumb.webp`;
+
+  const getFullImageUrl = (mapId: string): string => `${MAP_IMAGE_BASE}/${mapId}.webp`;
+
+  const isRepoImageUrl = (url: string | null | undefined): boolean =>
+    !!url && url.includes('cs2-server-manager') && url.includes('map_thumbnails');
 
   const loadMaps = useCallback(async () => {
     try {
@@ -125,16 +136,25 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return originalMapOrder.map((mapId) => {
       const mapData = allMaps.get(mapId);
       const fallbackData = getMapData(mapId); // Fallback to hardcoded maps if not in DB
+
+      // Thumbnail strategy:
+      // - For maps with a custom imageUrl (non-repo), show that directly.
+      // - For repo-based maps or missing imageUrl, use the standardized thumbnail URL.
+      let thumbnail: string;
+      if (mapData?.imageUrl && !isRepoImageUrl(mapData.imageUrl)) {
+        thumbnail = mapData.imageUrl;
+      } else {
+        thumbnail = fallbackData?.thumbnail || getThumbnailUrl(mapId);
+      }
+
       return {
         name: mapId,
         displayName:
           mapData?.displayName ||
           fallbackData?.displayName ||
           mapId.replace('de_', '').replace('cs_', ''),
-        image:
-          mapData?.imageUrl ||
-          fallbackData?.image ||
-          `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.png`,
+        // Use thumbnail for map grid cards
+        image: thumbnail,
       };
     });
     // Only depend on allMaps order and the map data cache - not on available/banned/picked arrays
@@ -249,10 +269,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           {vetoState.pickedMaps.map((pick) => {
             const mapData = allMaps.get(pick.mapName);
             const fallbackData = getMapData(pick.mapName);
-            const imageUrl =
-              mapData?.imageUrl ||
-              fallbackData?.image ||
-              `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${pick.mapName}.png`;
+            const imageUrl = isRepoImageUrl(mapData?.imageUrl)
+              ? fallbackData?.image || getFullImageUrl(pick.mapName)
+              : mapData?.imageUrl || fallbackData?.image || getFullImageUrl(pick.mapName);
             // Show the side for the team viewing (team1 sees sideTeam1, team2 sees sideTeam2)
             const displaySide = isViewingTeam1
               ? pick.sideTeam1
@@ -295,7 +314,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       : currentTeamSlug === vetoState.team2Id);
 
   return (
-    <Box>
+    <Box data-testid="veto-interface">
       {/* Match Header */}
       <Paper elevation={2} sx={{ mb: 3, p: 3, bgcolor: 'background.paper' }}>
         <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
@@ -379,61 +398,67 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           const mapData = allMaps.get(lastPickedMap?.mapName || '');
           const fallbackData = getMapData(lastPickedMap?.mapName || '');
 
-          // Construct image URL with fallback chain
-          const mapImageUrl =
-            mapData?.imageUrl ||
-            fallbackData?.image ||
-            (lastPickedMap?.mapName
-              ? `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${lastPickedMap.mapName}.png`
-              : '');
-
           return (
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 {/* Map Display */}
-                <Box
-                  sx={{
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: 2,
-                    mb: 3,
-                    backgroundImage: `url(${mapImageUrl})`,
-                    backgroundSize: 'cover',
-                    backgroundPosition: 'center',
-                    height: 250,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    '&::before': {
-                      content: '""',
-                      position: 'absolute',
-                      top: 0,
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      background:
-                        'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
-                    },
-                  }}
-                >
-                  <Box sx={{ position: 'relative', textAlign: 'center' }}>
-                    <Typography
-                      variant="h2"
-                      fontWeight={700}
-                      color="white"
-                      sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                {lastPickedMap?.mapName && (
+                  <FadeInImage
+                    src={
+                      isRepoImageUrl(mapData?.imageUrl)
+                        ? fallbackData?.image || getFullImageUrl(lastPickedMap.mapName)
+                        : mapData?.imageUrl ||
+                          fallbackData?.image ||
+                          getFullImageUrl(lastPickedMap.mapName)
+                    }
+                    alt={mapData?.displayName || fallbackData?.displayName || lastPickedMap.mapName}
+                    height={250}
+                    sx={{
+                      borderRadius: 2,
+                      mb: 3,
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        inset: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        '&::before': {
+                          content: '""',
+                          position: 'absolute',
+                          top: 0,
+                          left: 0,
+                          right: 0,
+                          bottom: 0,
+                          background:
+                            'linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.7) 100%)',
+                        },
+                      }}
                     >
-                      {mapData?.displayName || fallbackData?.displayName || lastPickedMap?.mapName}
-                    </Typography>
-                    <Typography
-                      variant="h6"
-                      color="rgba(255,255,255,0.9)"
-                      sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
-                    >
-                      Choose Your Starting Side
-                    </Typography>
-                  </Box>
-                </Box>
+                      <Box sx={{ position: 'relative', textAlign: 'center' }}>
+                        <Typography
+                          variant="h2"
+                          fontWeight={700}
+                          color="white"
+                          sx={{ textShadow: '2px 2px 4px rgba(0,0,0,0.8)' }}
+                        >
+                          {mapData?.displayName ||
+                            fallbackData?.displayName ||
+                            lastPickedMap.mapName}
+                        </Typography>
+                        <Typography
+                          variant="h6"
+                          color="rgba(255,255,255,0.9)"
+                          sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
+                        >
+                          Choose Your Starting Side
+                        </Typography>
+                      </Box>
+                    </Box>
+                  </FadeInImage>
+                )}
 
                 {!isMyTurn && (
                   <Alert severity="info" sx={{ mb: 2 }}>
@@ -444,6 +469,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                 <Grid container spacing={2}>
                   <Grid size={{ xs: 6 }}>
                     <Button
+                      data-testid="veto-side-ct-button"
                       fullWidth
                       variant="contained"
                       color="info"
@@ -457,6 +483,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   </Grid>
                   <Grid size={{ xs: 6 }}>
                     <Button
+                      data-testid="veto-side-t-button"
                       fullWidth
                       variant="contained"
                       color="warning"

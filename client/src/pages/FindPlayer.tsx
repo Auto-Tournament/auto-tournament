@@ -1,0 +1,268 @@
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  TextField,
+  Button,
+  Container,
+  CircularProgress,
+  InputAdornment,
+  Autocomplete,
+} from '@mui/material';
+import Stack from '@mui/material/Stack';
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
+import { api } from '../utils/api';
+import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
+import { useSnackbar } from '../contexts/SnackbarContext';
+import { SteamIcon } from '../components/icons/SteamIcon';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { PlayerName } from '../components/player/PlayerName';
+
+interface PlayerOption {
+  id: string;
+  name: string;
+  avatar?: string;
+  currentElo?: number;
+}
+
+export default function FindPlayer() {
+  const navigate = useNavigate();
+  const [query, setQuery] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [searchResults, setSearchResults] = useState<
+    Array<{ id: string; name: string; avatar?: string; currentElo?: number }>
+  >([]);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [players, setPlayers] = useState<PlayerOption[]>([]);
+  const [playersLoading, setPlayersLoading] = useState(false);
+  const [inputValue, setInputValue] = useState('');
+  const [inputError, setInputError] = useState<string | null>(null);
+  const { showError } = useSnackbar();
+
+  useEffect(() => {
+    document.title = 'Find Player';
+  }, []);
+
+  useEffect(() => {
+    const loadPlayers = async () => {
+      try {
+        setPlayersLoading(true);
+        const response = await api.get<{
+          success: boolean;
+          players: PlayerOption[];
+        }>('/api/players/public-selection');
+
+        if (response.success && Array.isArray(response.players)) {
+          setPlayers(response.players);
+        }
+      } catch (err) {
+        console.error('Failed to load player list for autocomplete', err);
+      } finally {
+        setPlayersLoading(false);
+      }
+    };
+
+    loadPlayers();
+  }, []);
+
+  const handleSearch = async (rawQuery?: string) => {
+    const effectiveQuery = (rawQuery ?? query).trim();
+
+    if (!effectiveQuery) {
+      setInputError('Please enter a Steam ID, Steam name, or profile URL');
+      return;
+    }
+
+    setLoading(true);
+    setInputError(null);
+
+    try {
+      const response = await api.get<{
+        success: boolean;
+        player?: { id: string; name: string };
+        players?: Array<{ id: string; name: string }>;
+        error?: string;
+        steamApiConfigured?: boolean;
+      }>(`/api/players/find?query=${encodeURIComponent(effectiveQuery)}`);
+
+      if (response.success) {
+        if (response.player) {
+          // Single player found - redirect to their page
+          navigate(`/player/${response.player.id}`);
+        } else if (response.players && response.players.length > 0) {
+          // Check if single player or multiple players
+          if (response.players.length === 1) {
+            // Single player found - redirect to their page
+            navigate(`/player/${response.players[0].id}`);
+          } else {
+            // Multiple players found - show selection modal
+            setSearchResults(response.players);
+            setShowResultsModal(true);
+          }
+        } else {
+          setInputError('Player not found. Check the Steam ID or URL and try again.');
+        }
+      } else {
+        // Show a clear, inline error near the input instead of failing silently
+        setInputError(
+          response.error ||
+            (response.steamApiConfigured === false
+              ? 'Steam API is not configured. Vanity URLs cannot be resolved – enter a Steam ID64 instead or ask an admin to set the Steam Web API key in Settings.'
+              : 'Player not found. Check the Steam ID or URL and try again.')
+        );
+      }
+    } catch (err) {
+      showError('Failed to search for player');
+      setInputError('Failed to search for player. Please try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !loading) {
+      const value = (e.target as HTMLInputElement).value;
+      handleSearch(value);
+    }
+  };
+
+  const handleSteamLogin = () => {
+    window.location.href = '/api/auth/steam';
+  };
+
+  return (
+    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="find-player-page">
+      <Container maxWidth="sm">
+        <Card data-testid="find-player-form">
+          <CardContent>
+            <Box textAlign="center" mb={4}>
+              <PersonIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
+              <Typography variant="h4" fontWeight={700} gutterBottom>
+                Find Player
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                Enter a Steam ID or Steam profile URL to view player statistics, or log in with
+                Steam to jump straight to your profile.
+              </Typography>
+            </Box>
+
+            <Box mb={3}>
+              <Autocomplete
+                options={players}
+                loading={playersLoading}
+                getOptionLabel={(option) => option.name}
+                onChange={(_, newValue) => {
+                  if (newValue && typeof newValue !== 'string') {
+                    navigate(`/player/${newValue.id}`);
+                  }
+                }}
+                inputValue={inputValue}
+                onInputChange={(_, newInputValue) => {
+                  setInputValue(newInputValue);
+                  setQuery(newInputValue);
+                  if (inputError) {
+                    setInputError(null);
+                  }
+                }}
+                slotProps={{
+                  // When there are no options to select, don't let the "No players found" popper
+                  // intercept clicks on the Find Player button below.
+                  paper: {
+                    sx: players.length === 0 ? { pointerEvents: 'none' } : undefined,
+                  },
+                }}
+                renderOption={(props, option) => (
+                  <Box
+                    component="li"
+                    {...props}
+                    sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
+                  >
+                    <PlayerAvatar
+                      id={option.id}
+                      name={option.name}
+                      avatarUrl={option.avatar}
+                      size={24}
+                      isAdmin={option.isAdmin}
+                    />
+                    <Box>
+                      <PlayerName name={option.name} variant="body2" />
+                      <Typography variant="caption" color="text.secondary">
+                        {option.id}
+                      </Typography>
+                    </Box>
+                  </Box>
+                )}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    fullWidth
+                    label="Search by name, Steam ID or profile URL"
+                    placeholder="Start typing a name or paste a Steam URL…"
+                    onKeyPress={handleKeyPress}
+                    disabled={loading}
+                    error={!!inputError}
+                    helperText={inputError || undefined}
+                    slotProps={{
+                      htmlInput: {
+                        ...params.inputProps,
+                        'data-testid': 'find-player-input',
+                      },
+                    }}
+                    InputProps={{
+                      ...params.InputProps,
+                      startAdornment: (
+                        <InputAdornment position="start">
+                          {playersLoading ? <CircularProgress size={20} /> : <SearchIcon />}
+                        </InputAdornment>
+                      ),
+                    }}
+                  />
+                )}
+                noOptionsText={
+                  playersLoading
+                    ? 'Loading players…'
+                    : 'No players found. Try typing a Steam ID or URL.'
+                }
+              />
+            </Box>
+
+            <Stack spacing={2}>
+              <Button
+                data-testid="find-player-button"
+                fullWidth
+                variant="contained"
+                size="large"
+                onClick={() => handleSearch(inputValue)}
+                disabled={loading || !inputValue.trim()}
+                startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
+              >
+                {loading ? 'Searching...' : 'Find Player'}
+              </Button>
+
+              <Button
+                fullWidth
+                variant="outlined"
+                size="large"
+                onClick={handleSteamLogin}
+                startIcon={<SteamIcon />}
+              >
+                Login with Steam
+              </Button>
+            </Stack>
+          </CardContent>
+        </Card>
+      </Container>
+
+      <PlayerSearchResultsModal
+        open={showResultsModal}
+        players={searchResults}
+        onClose={() => setShowResultsModal(false)}
+      />
+    </Box>
+  );
+}

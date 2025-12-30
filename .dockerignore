@@ -8,9 +8,13 @@ docs/
 mkdocs.yml
 requirements.txt
 *.md
+LICENSE
 
 # Node modules (will be installed in container)
 node_modules
+.npm
+.yarn
+.pnpm-store
 
 # Environment files (should be provided at runtime)
 .env
@@ -19,7 +23,11 @@ node_modules
 # Development files
 *.log
 npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 .DS_Store
+Thumbs.db
 
 # Data directories (should be mounted as volumes)
 data/
@@ -27,18 +35,98 @@ demos/
 
 # Build artifacts from local dev (will be built in container)
 dist/
+dist-ssr/
+*.local
 
 # IDE
 .vscode
 .idea
 *.swp
 *.swo
+*~
 
-# Testing
+# Testing - exclude all test files and test infrastructure
+tests/
+test-results/
+.playwright-test-results/
+playwright-report/
+playwright/.cache/
 coverage/
+.nyc_output/
 *.test.ts
+*.test.tsx
+*.test.js
+*.test.jsx
 *.spec.ts
+*.spec.tsx
+*.spec.js
+*.spec.jsx
+playwright.config.ts
+test-output-shard-*.log
+test-run.log
+blob-report-shard-*.zip
+all-blob-reports/
+blob-report-merged.zip
+ram-stats-shard-*.log
+.ram-stats/
 
-# Misc
+# Test scripts (not needed in production image)
+scripts/test-*.sh
+scripts/test-*.ts
+scripts/test-*.yml
+scripts/generate-screenshots*.sh
+scripts/generate-screenshots*.ts
+scripts/test-speed-comparison.md
+
+# Development tools and configs
+eslint.config.mjs
+.eslintrc*
+.prettierrc*
+.prettierignore
+# Note: tsconfig.json and vite.config.ts are needed for build, so keep them
+
+# Docker files (not needed inside the image)
+docker/docker-compose*.yml
+docker/Dockerfile
+.dockerignore
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+.circleci/
+
+# Dashboard (appears to be dev-only)
+dashboard/
+
+# Temporary files
+tmp/
+temp/
 *.bak
 *.tmp
+.cache/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Test shard compose files
+.test-shards/
+
+# MkDocs build output
+site/
+
+# Package manager lock files (we use yarn.lock, exclude others)
+package-lock.json
+pnpm-lock.yaml
+
+# Playwright/test artifacts and configs (deduped)
+.playwright
+.playwright-test-results
+playwright.config.*.ts
+
+# Extra exclusions for common cases (deduped)
+.tmp
+coverage
+dist
+Dockerfile*
+docker-compose*

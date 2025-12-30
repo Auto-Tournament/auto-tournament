@@ -8,10 +8,13 @@ interface MatchScoreboardProps {
   rightMapRounds: number;
   leftSeriesWins: number;
   rightSeriesWins: number;
+  leftTeamElo?: number | null;
+  rightTeamElo?: number | null;
   liveStatusDisplay?: {
     label: string;
     chipColor: 'success' | 'info' | 'warning' | 'default';
   } | null;
+  hideSeriesWins?: boolean;
 }
 
 export function MatchScoreboard({
@@ -21,7 +24,10 @@ export function MatchScoreboard({
   rightMapRounds,
   leftSeriesWins,
   rightSeriesWins,
+  leftTeamElo,
+  rightTeamElo,
   liveStatusDisplay,
+  hideSeriesWins,
 }: MatchScoreboardProps) {
   return (
     <Paper
@@ -33,15 +39,24 @@ export function MatchScoreboard({
     >
       <Box display="flex" justifyContent="space-between" alignItems="center">
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="primary.main">
+          <Typography variant="h4" fontWeight={700} color="primary.main" align="center">
             {leftName}
           </Typography>
-          <Typography variant="h1" fontWeight={900} color="primary.main">
-            {leftSeriesWins}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Series Maps Won
-          </Typography>
+          {typeof leftTeamElo === 'number' && Number.isFinite(leftTeamElo) && (
+            <Typography variant="body2" color="text.secondary">
+              ELO (avg): {leftTeamElo}
+            </Typography>
+          )}
+          {!hideSeriesWins && (
+            <>
+              <Typography variant="h1" fontWeight={900} color="primary.main">
+                {leftSeriesWins}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Series Maps Won
+              </Typography>
+            </>
+          )}
           <Typography variant="h4" fontWeight={700} color="primary.main">
             {leftMapRounds}
           </Typography>
@@ -63,15 +78,24 @@ export function MatchScoreboard({
           )}
         </Stack>
         <Stack spacing={1} alignItems="center" flex={1}>
-          <Typography variant="h4" fontWeight={700} color="error.main">
+          <Typography variant="h4" fontWeight={700} color="error.main" align="center">
             {rightName || 'TBD'}
           </Typography>
-          <Typography variant="h1" fontWeight={900} color="error.main">
-            {rightSeriesWins}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            Series Maps Won
-          </Typography>
+          {typeof rightTeamElo === 'number' && Number.isFinite(rightTeamElo) && (
+            <Typography variant="body2" color="text.secondary">
+              ELO (avg): {rightTeamElo}
+            </Typography>
+          )}
+          {!hideSeriesWins && (
+            <>
+              <Typography variant="h1" fontWeight={900} color="error.main">
+                {rightSeriesWins}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Series Maps Won
+              </Typography>
+            </>
+          )}
           <Typography variant="h4" fontWeight={700} color="error.main">
             {rightMapRounds}
           </Typography>

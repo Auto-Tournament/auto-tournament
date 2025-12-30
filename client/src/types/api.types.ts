@@ -4,7 +4,7 @@
  * Defines the shape of all API responses from the backend
  */
 
-import type { Team, Match, Tournament, Player, TeamStats, TeamStanding } from './index';
+import type { Team, Match, Tournament, TeamStats, TeamStanding } from './index';
 
 // Base response types
 export interface ApiResponse {
@@ -27,6 +27,32 @@ export interface Server {
   status?: 'online' | 'offline' | 'checking' | 'disabled' | string;
   isAvailable?: boolean;
   currentMatch?: string | null;
+  reachableFromApi?: boolean;
+  serverCanReachApi?: boolean;
+  // Optional real-time status values reported by the MatchZy plugin and
+  // allocator. These are populated by /api/servers/:id/status and are used
+  // purely for UI display on the Servers page.
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
+  matchzyConfig?: {
+    chatPrefix?: string | null;
+    adminChatPrefix?: string | null;
+    knifeEnabledDefault?: boolean | null;
+    minimumReadyRequired?: number | null;
+    pauseAfterRestore?: boolean | null;
+    stopCommandAvailable?: boolean | null;
+    stopCommandNoDamage?: boolean | null;
+    whitelistEnabledDefault?: boolean | null;
+    kickWhenNoMatchLoaded?: boolean | null;
+    playoutEnabledDefault?: boolean | null;
+    resetCvarsOnSeriesEnd?: boolean | null;
+    usePauseCommandForTacticalPause?: boolean | null;
+    autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+    demoPath?: string | null;
+    demoNameFormat?: string | null;
+    demoUploadUrl?: string | null;
+  } | null;
 }
 
 export interface ServersResponse extends ApiResponse {
@@ -42,7 +68,13 @@ export interface ServerStatusResponse extends ApiResponse {
   status: string;
   isAvailable: boolean;
   currentMatch: string | null;
+  queuedMatch?: string | null;
   playerCount?: number;
+  reachableFromApi?: boolean;
+  serverCanReachApi?: boolean;
+  pluginStatus?: string | null;
+  allocationState?: string | null;
+  allocationMatchSlug?: string | null;
 }
 
 // Team types
@@ -59,8 +91,8 @@ export interface TeamStatsResponse extends ApiResponse {
   stats: TeamStats;
 }
 
-export interface TeamStandingsResponse extends ApiResponse {
-  standings: TeamStanding[];
+export interface TeamLeaderboardResponse extends ApiResponse {
+  leaderboard: TeamStanding[];
 }
 
 // Match types
@@ -90,12 +122,25 @@ export interface TournamentBracketResponse extends ApiResponse {
 }
 
 // Player types
+export interface PlayerDetail {
+  id: string; // Steam ID
+  name: string;
+  avatar?: string;
+  currentElo: number;
+  startingElo: number;
+  matchCount: number;
+  createdAt: number;
+  updatedAt: number;
+  isAdmin?: boolean;
+}
+
 export interface PlayersResponse extends ApiResponse {
-  players: Player[];
+  players: PlayerDetail[];
+  count?: number;
 }
 
 export interface PlayerResponse extends ApiResponse {
-  player: Player;
+  player: PlayerDetail;
 }
 
 // Veto types
@@ -205,6 +250,13 @@ export interface SettingsResponse extends ApiResponse {
     steamApiKey: string | null;
     steamApiKeySet: boolean;
     webhookConfigured: boolean;
+    defaultPlayerElo: number;
+    simulateMatches: boolean;
+    simulationTimescale?: number;
+    matchzyChatPrefix?: string | null;
+    matchzyAdminChatPrefix?: string | null;
+    matchzyKnifeEnabledDefault?: boolean;
+    ratingsEnabled?: boolean;
   };
 }
 

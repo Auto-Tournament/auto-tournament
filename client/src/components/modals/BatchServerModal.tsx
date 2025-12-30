@@ -22,14 +22,18 @@ import {
 import Grid from '@mui/material/Grid';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ErrorIcon from '@mui/icons-material/Error';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
+import type { Server } from '../../types';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface BatchServerModalProps {
   open: boolean;
   onClose: () => void;
   onSave: () => void;
+  existingServers?: Server[];
 }
 
 interface ServerConfig {
@@ -49,26 +53,80 @@ interface ServerVerification {
   error?: string;
 }
 
-export default function BatchServerModal({ open, onClose, onSave }: BatchServerModalProps) {
+const formatVerificationError = (error?: string): string | undefined => {
+  if (!error) return undefined;
+
+  // If backend returned a JSON blob (e.g. full RCON response), try to extract the useful bit
+  try {
+    const parsed: unknown = JSON.parse(error);
+    if (parsed && typeof parsed === 'object') {
+      // Prefer a concise message if available
+      if (
+        typeof parsed === 'object' &&
+        parsed !== null &&
+        'error' in parsed &&
+        typeof (parsed as { error?: string }).error === 'string'
+      ) {
+        return (parsed as { error?: string }).error;
+      }
+      // Fall back to pretty-printed JSON
+      return JSON.stringify(parsed, null, 2);
+    }
+  } catch {
+    // Not JSON, fall through to raw string
+  }
+
+  return error;
+};
+
+const getDefaultPorts = (baseId: string, existingServers: Server[] | undefined, count: number): string[] => {
+  const trimmedBaseId = baseId.trim();
+
+  // Count how many servers already exist with this base ID (id like "base_1", "base_2", ...).
+  // We then offset the starting port by that count so new servers continue the same 10-port pattern.
+  let existingCountForBaseId = 0;
+  if (trimmedBaseId && existingServers && existingServers.length > 0) {
+    const idPrefix = `${trimmedBaseId}_`;
+    existingCountForBaseId = existingServers.filter((s) => s.id.startsWith(idPrefix)).length;
+  }
+
+  const basePort = 27015 + existingCountForBaseId * 10;
+  const validCount = Math.min(Math.max(count, 1), 50);
+
+  return Array.from({ length: validCount }, (_, idx) => String(basePort + idx * 10));
+};
+
+export default function BatchServerModal({
+  open,
+  onClose,
+  onSave,
+  existingServers,
+}: BatchServerModalProps) {
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const [baseName, setBaseName] = useState('');
   const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
   const [count, setCount] = useState('3');
-  const [ports, setPorts] = useState<string[]>(['27015', '27025', '27035']);
+  const [ports, setPorts] = useState<string[]>(() =>
+    getDefaultPorts('', existingServers, parseInt('3', 10))
+  );
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [verifying, setVerifying] = useState(false);
-  const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(new Map());
+  const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(
+    new Map()
+  );
 
   const resetForm = () => {
     setBaseName('');
     setBaseId('');
     setHost('');
     setCount('3');
-    setPorts(['27015', '27025', '27035']);
+    setPorts(getDefaultPorts('', existingServers, 3));
     setPassword('');
     setEnabled(true);
     setError('');
@@ -79,23 +137,7 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const handleCountChange = (newCount: string) => {
     setCount(newCount);
     const countNum = parseInt(newCount) || 3;
-    const validCount = Math.min(Math.max(countNum, 1), 50);
-
-    // Adjust ports array
-    setPorts((prevPorts) => {
-      const newPorts = [...prevPorts];
-      // Get the base port (first port or default to 27015)
-      const basePort = parseInt(newPorts[0]) || 27015;
-
-      // Generate ports incrementing by 10
-      while (newPorts.length < validCount) {
-        const portIndex = newPorts.length;
-        const portValue = basePort + portIndex * 10;
-        newPorts.push(String(portValue));
-      }
-      // Remove excess ports
-      return newPorts.slice(0, validCount);
-    });
+    setPorts(getDefaultPorts(baseId, existingServers, countNum));
   };
 
   const handlePortChange = (index: number, value: string) => {
@@ -104,6 +146,12 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       newPorts[index] = value;
       return newPorts;
     });
+  };
+
+  const handleBaseIdChange = (value: string) => {
+    setBaseId(value);
+    const countNum = parseInt(count) || 3;
+    setPorts(getDefaultPorts(value, existingServers, countNum));
   };
 
   const handleClose = () => {
@@ -164,12 +212,15 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       const serverName = `${baseName.trim()} #${i + 1}`;
 
       try {
-        const result = await api.post('/api/rcon/test-connection', {
-          host: host.trim(),
-          port: portNum,
-          password: password.trim(),
-          name: serverName,
-        });
+        const result = await api.post<{ success: boolean; error?: string }>(
+          '/api/rcon/test-connection',
+          {
+            host: host.trim(),
+            port: portNum,
+            password: password.trim(),
+            name: serverName,
+          }
+        );
 
         newStatuses.set(i, {
           index: i,
@@ -207,28 +258,28 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const handleSave = async () => {
     // Validation
     if (!baseName.trim()) {
-      setError('Base name is required');
+      showWarning('Base name is required');
       return;
     }
 
     if (!baseId.trim()) {
-      setError('Base ID is required');
+      showWarning('Base ID is required');
       return;
     }
 
     if (!host.trim()) {
-      setError('Host is required');
+      showWarning('Host is required');
       return;
     }
 
     const serverCount = parseInt(count);
     if (isNaN(serverCount) || serverCount < 1 || serverCount > 50) {
-      setError('Number of servers must be between 1 and 50');
+      showWarning('Number of servers must be between 1 and 50');
       return;
     }
 
     if (!password.trim()) {
-      setError('RCON password is required');
+      showWarning('RCON password is required');
       return;
     }
 
@@ -236,23 +287,50 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
     for (let i = 0; i < serverCount; i++) {
       const portNum = parseInt(ports[i]);
       if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-        setError(`Server #${i + 1} port must be between 1 and 65535`);
+        showWarning(`Server #${i + 1} port must be between 1 and 65535`);
         return;
       }
     }
 
+    // Connectivity verification is recommended but not mandatory.
+    // If some servers failed verification, warn the admin but allow pre-saving
+    // so servers can be configured ahead of time (e.g. before LAN setup is online).
+    if (!allServersVerified()) {
+      showWarning(
+        'Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured.'
+      );
+    }
+
     setSaving(true);
-    setError('');
 
     try {
       const servers: ServerConfig[] = [];
 
+      // Determine starting index based on existing servers with the same base ID
+      const trimmedBaseId = baseId.trim();
+      const trimmedBaseName = baseName.trim();
+      const idPrefix = `${trimmedBaseId}_`;
+
+      let existingMaxIndex = 0;
+      if (existingServers && existingServers.length > 0 && trimmedBaseId) {
+        for (const existing of existingServers) {
+          if (existing.id.startsWith(idPrefix)) {
+            const suffix = existing.id.slice(idPrefix.length);
+            const index = parseInt(suffix, 10);
+            if (!Number.isNaN(index) && index > existingMaxIndex) {
+              existingMaxIndex = index;
+            }
+          }
+        }
+      }
+
       // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
+        const index = existingMaxIndex + i;
         const portNum = parseInt(ports[i - 1]);
         const server: ServerConfig = {
-          id: `${baseId.trim()}_${i}`,
-          name: `${baseName.trim()} #${i}`,
+          id: `${trimmedBaseId}_${index}`,
+          name: `${trimmedBaseName} #${index}`,
           host: host.trim(),
           port: portNum,
           password: password.trim(),
@@ -276,14 +354,21 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
       }
 
       if (successCount === serverCount) {
+        showSuccess(`Successfully created ${successCount} server(s)`);
         onSave();
         handleClose();
       } else {
-        setError(`Created ${successCount}/${serverCount} servers. Errors:\n${errors.join('\n')}`);
+        const errorMessage = `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join(
+          '\n'
+        )}`;
+        setError(errorMessage);
+        showError(errorMessage);
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to create servers');
+      const errorMessage = error.message || 'Failed to create servers';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
@@ -305,155 +390,228 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
   const serverCount = parseInt(count) || 3;
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-      <DialogTitle>Batch Create Servers</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        handleClose();
+      }}
+      maxWidth="md"
+      fullWidth
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Batch Create Servers
+        </Typography>
+        <IconButton
+          onClick={handleClose}
+          size="small"
+          aria-label="close"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2, whiteSpace: 'pre-line' }}>
-            {error}
-          </Alert>
-        )}
-
-        <Stack spacing={2}>
+        <Stack spacing={3}>
           <Alert severity="info">
-            Create multiple servers with ports incrementing by 10 (e.g., 27015, 27025, 27035...).
-            Perfect for LAN setups with servers on the same machine.
+            Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect
+            for LAN setups with servers on the same machine.
           </Alert>
 
-          <TextField
-            label="Base ID"
-            value={baseId}
-            onChange={(e) => setBaseId(e.target.value)}
-            placeholder="ntlan"
-            helperText="Server IDs will be: base_1, base_2, base_3..."
-            required
-            fullWidth
-          />
+          {/* Server Identification Group */}
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Server Identification
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="Base ID"
+                value={baseId}
+                onChange={(e) => handleBaseIdChange(e.target.value)}
+                placeholder="ntlan"
+                helperText="Server IDs will be: base_1, base_2, base_3..."
+                required
+                fullWidth
+              />
 
-          <TextField
-            label="Base Name"
-            value={baseName}
-            onChange={(e) => setBaseName(e.target.value)}
-            placeholder="NTLAN"
-            helperText="Server names will be: Base #1, Base #2, Base #3..."
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Host / IP Address"
-            value={host}
-            onChange={(e) => {
-              setHost(e.target.value);
-              // Reset verification when host changes
-              setVerificationStatuses(new Map());
-            }}
-            placeholder="192.168.1.100"
-            required
-            fullWidth
-          />
-
-          <TextField
-            label="Number of Servers"
-            value={count}
-            onChange={(e) => handleCountChange(e.target.value)}
-            placeholder="3"
-            type="number"
-            inputProps={{ min: 1, max: 50 }}
-            required
-            fullWidth
-            helperText="Max: 50"
-          />
+              <TextField
+                label="Base Name"
+                value={baseName}
+                onChange={(e) => setBaseName(e.target.value)}
+                placeholder="NTLAN"
+                helperText="Server names will be: Base #1, Base #2, Base #3..."
+                required
+                fullWidth
+              />
+            </Stack>
+          </Box>
 
           <Divider />
 
+          {/* Connection Settings Group */}
           <Box>
-            <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-              Assign Ports
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Connection Settings
             </Typography>
-            <Grid container spacing={2}>
-              {Array.from({ length: serverCount }, (_, i) => {
-                const verification = verificationStatuses.get(i);
-                const status = verification?.status || 'pending';
-                return (
-                  <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
-                    <TextField
-                      label={`Server #${i + 1}`}
-                      value={ports[i] || ''}
-                      onChange={(e) => {
-                        handlePortChange(i, e.target.value);
-                        // Reset verification when port changes
-                        const newStatuses = new Map(verificationStatuses);
-                        newStatuses.delete(i);
-                        setVerificationStatuses(newStatuses);
-                      }}
-                      placeholder="27015"
-                      type="number"
-                      inputProps={{ min: 1, max: 65535 }}
-                      required
-                      fullWidth
-                      size="small"
-                      InputProps={{
-                        endAdornment: status === 'checking' ? (
-                          <CircularProgress size={16} />
-                        ) : status === 'success' ? (
-                          <CheckCircleIcon color="success" fontSize="small" />
-                        ) : status === 'error' ? (
-                          <ErrorIcon color="error" fontSize="small" />
-                        ) : null,
-                      }}
-                      helperText={
-                        verification?.status === 'error' ? verification.error : undefined
-                      }
-                      error={verification?.status === 'error'}
-                    />
-                  </Grid>
-                );
-              })}
-            </Grid>
+            <Stack spacing={2}>
+              <TextField
+                label="Host / IP Address"
+                value={host}
+                onChange={(e) => {
+                  setHost(e.target.value);
+                  // Reset verification when host changes
+                  setVerificationStatuses(new Map());
+                }}
+                placeholder="192.168.1.100"
+                required
+                fullWidth
+              />
+
+              <TextField
+                label="RCON Password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  // Reset verification when password changes
+                  setVerificationStatuses(new Map());
+                }}
+                placeholder="shared-rcon-password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                fullWidth
+                helperText="Same password for all servers"
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Stack>
           </Box>
 
-          <TextField
-            label="RCON Password"
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              // Reset verification when password changes
-              setVerificationStatuses(new Map());
-            }}
-            placeholder="shared-rcon-password"
-            type={showPassword ? 'text' : 'password'}
-            required
-            fullWidth
-            helperText="Same password for all servers"
-            InputProps={{
-              endAdornment: (
-                <InputAdornment position="end">
-                  <IconButton
-                    aria-label="toggle password visibility"
-                    onClick={() => setShowPassword(!showPassword)}
-                    edge="end"
-                  >
-                    {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-          />
+          <Divider />
 
-          <FormControlLabel
-            control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
-            label={
+          {/* Server Configuration Group */}
+          <Box>
+            <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
+              Server Configuration
+            </Typography>
+            <Stack spacing={2}>
+              <TextField
+                label="Number of Servers"
+                value={count}
+                onChange={(e) => handleCountChange(e.target.value)}
+                placeholder="3"
+                type="number"
+                required
+                fullWidth
+                helperText="Max: 50"
+                slotProps={{
+                  htmlInput: { min: 1, max: 50 },
+                }}
+              />
+
               <Box>
-                <Typography variant="body2" fontWeight={500}>
-                  Servers Enabled
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  All servers will be created as enabled/disabled
-                </Typography>
+                <Box display="flex" justifyContent="space-between" alignItems="center">
+                  <Typography variant="body2" fontWeight={500} gutterBottom>
+                    Assign Ports
+                  </Typography>
+                  <Box display="flex" alignItems="center" gap={0.5}>
+                    <ArrowUpwardIcon fontSize="small" color="primary" />
+                    <Typography variant="caption" color="text.secondary">
+                      API → Server (RCON test)
+                    </Typography>
+                  </Box>
+                </Box>
+                <Grid container spacing={2} sx={{ mt: 1 }}>
+                  {Array.from({ length: serverCount }, (_, i) => {
+                    const verification = verificationStatuses.get(i);
+                    const status = verification?.status || 'pending';
+                    return (
+                      <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
+                        <TextField
+                          label={`Server #${i + 1}`}
+                          value={ports[i] || ''}
+                          onChange={(e) => {
+                            handlePortChange(i, e.target.value);
+                            // Reset verification when port changes
+                            const newStatuses = new Map(verificationStatuses);
+                            newStatuses.delete(i);
+                            setVerificationStatuses(newStatuses);
+                          }}
+                          placeholder="27015"
+                          type="number"
+                          required
+                          fullWidth
+                          size="small"
+                          FormHelperTextProps={{
+                            sx: {
+                              whiteSpace: 'pre-wrap',
+                              wordBreak: 'break-word',
+                              mt: 0.25,
+                            },
+                          }}
+                          slotProps={{
+                            htmlInput: { min: 1, max: 65535 },
+                          }}
+                          InputProps={{
+                            endAdornment:
+                              status === 'checking' ? (
+                                <CircularProgress size={16} />
+                              ) : status === 'success' ? (
+                                <ArrowUpwardIcon color="success" fontSize="small" />
+                              ) : status === 'error' ? (
+                                <ErrorIcon color="error" fontSize="small" />
+                              ) : null,
+                          }}
+                          helperText={
+                            verification?.status === 'error'
+                              ? formatVerificationError(verification.error)
+                              : undefined
+                          }
+                          error={verification?.status === 'error'}
+                        />
+                      </Grid>
+                    );
+                  })}
+                </Grid>
               </Box>
-            }
-          />
+            </Stack>
+          </Box>
+
+          <Divider />
+
+          {/* Options Group */}
+          <Box>
+            <FormControlLabel
+              control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
+              label={
+                <Box>
+                  <Typography variant="body2" fontWeight={500}>
+                    Servers Enabled
+                  </Typography>
+                  <Typography variant="caption" color="text.secondary">
+                    All servers will be created as enabled/disabled
+                  </Typography>
+                </Box>
+              }
+            />
+          </Box>
 
           {preview.length > 0 && (
             <>
@@ -496,14 +654,12 @@ export default function BatchServerModal({ open, onClose, onSave }: BatchServerM
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={saving || !allServersVerified()}
-          sx={{ ml: 'auto' }}
+          disabled={saving}
+          sx={{
+            ml: 'auto',
+          }}
         >
-          {saving
-            ? 'Creating...'
-            : allServersVerified()
-            ? `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`
-            : 'Verify Servers First'}
+          {saving ? 'Creating...' : `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`}
         </Button>
       </DialogActions>
     </Dialog>

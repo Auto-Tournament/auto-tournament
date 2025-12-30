@@ -18,7 +18,7 @@ Thank you for your interest in contributing! This project welcomes contributions
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 
-# Install dependencies
+# Install all dependencies for API and client (Yarn workspaces)
 yarn install
 
 # Start PostgreSQL for local development
@@ -33,7 +33,19 @@ export DB_USER=postgres
 export DB_PASSWORD=postgres
 export DB_NAME=matchzy_tournament
 
-# Start development server
+# Start full-stack dev (API + client)
+yarn dev
+```
+
+You can also work on each package individually:
+
+```bash
+# Backend only
+cd api
+yarn dev
+
+# Frontend only
+cd client
 yarn dev
 ```
 

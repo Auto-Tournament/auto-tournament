@@ -110,6 +110,29 @@ export default function BracketsViewerVisualization({
     });
   }, [findOriginalMatch]);
 
+  const updateLiveRoundStyles = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // Clear previous state
+    container
+      .querySelectorAll<HTMLElement>('.round--live')
+      .forEach((roundEl) => roundEl.classList.remove('round--live'));
+    container
+      .querySelectorAll<HTMLElement>('.match--live')
+      .forEach((matchEl) => matchEl.classList.remove('match--live'));
+
+    // Mark live matches and their rounds
+    const liveMatches = container.querySelectorAll<HTMLElement>('.match[data-match-status="1"]');
+    liveMatches.forEach((matchEl) => {
+      matchEl.classList.add('match--live');
+      const roundEl = matchEl.closest<HTMLElement>('.round');
+      if (roundEl) {
+        roundEl.classList.add('round--live');
+      }
+    });
+  }, []);
+
   const viewerData = useMemo(() => {
     if (matches.length === 0) {
       matchLookupRef.current.clear();
@@ -198,16 +221,28 @@ export default function BracketsViewerVisualization({
     let fallbackMatchId = 1;
     const matchLookup = new Map<Id, Match>();
     const parentMatchPositions = new Map<Id, number[]>();
+    const parentsByChildId = new Map<Id, Match[]>();
 
     matches.forEach((match) => {
       if (match.nextMatchId !== undefined && match.nextMatchId !== null) {
-        const positions = parentMatchPositions.get(match.nextMatchId as Id) ?? [];
+        const key = match.nextMatchId as Id;
+        const positions = parentMatchPositions.get(key) ?? [];
         positions.push(match.matchNumber);
-        parentMatchPositions.set(match.nextMatchId as Id, positions);
+        parentMatchPositions.set(key, positions);
+
+        const parents = parentsByChildId.get(key) ?? [];
+        parents.push(match);
+        parentsByChildId.set(key, parents);
       }
     });
 
     parentMatchPositions.forEach((positions) => positions.sort((a, b) => a - b));
+    parentsByChildId.forEach((parents, key) => {
+      parentsByChildId.set(
+        key,
+        [...parents].sort((a, b) => a.matchNumber - b.matchNumber)
+      );
+    });
 
     const registerMatch = (matchId: Id, match: Match) => {
       matchLookup.set(matchId, match);
@@ -221,12 +256,47 @@ export default function BracketsViewerVisualization({
       }
     };
 
+    const getBracketScores = (match: Match): { team1Score?: number; team2Score?: number } => {
+      const s1 = match.team1Score;
+      const s2 = match.team2Score;
+
+      // If either side has a numeric score, default the other side to 0 so the
+      // bracket shows "0–1" instead of "–1" or "1–-".
+      if (typeof s1 === 'number' || typeof s2 === 'number') {
+        return {
+          team1Score: typeof s1 === 'number' ? s1 : 0,
+          team2Score: typeof s2 === 'number' ? s2 : 0,
+        };
+      }
+
+      // No scores yet (match not started) – let the viewer show dashes.
+      return { team1Score: undefined, team2Score: undefined };
+    };
+
     const buildOpponent = (
       match: Match,
-      team: Match['team1'],
+      explicitTeam: Match['team1'],
       position: number | undefined,
-      score: number | undefined
+      score: number | undefined,
+      whichSide: 'team1' | 'team2'
     ): ParticipantResult | null => {
+      let team = explicitTeam;
+
+      // If this match doesn't yet have a concrete team on this side, but its
+      // parent matches have winners, surface those winners as provisional
+      // participants so the bracket visually shows who advanced.
+      if (!team?.id && match.id != null) {
+        const parents = parentsByChildId.get(match.id as Id);
+        if (parents && parents.length) {
+          const firstParent = parents[0];
+          const secondParent = parents[1];
+          const sourceParent = whichSide === 'team1' ? firstParent : secondParent;
+          if (sourceParent?.winner) {
+            team = sourceParent.winner as Match['team1'];
+          }
+        }
+      }
+
       if (team?.id) {
         const participantId = teamIdMap.get(team.id);
         const result =
@@ -265,6 +335,7 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
@@ -279,8 +350,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -303,6 +374,7 @@ export default function BracketsViewerVisualization({
       });
 
       roundMatches.forEach((m) => {
+        const { team1Score, team2Score } = getBracketScores(m);
         const viewerMatchId = m.id ?? fallbackMatchId++;
         const parentPositions = parentMatchPositions.get((m.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
@@ -317,8 +389,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: m.status === 'completed' ? 2 : m.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(m, m.team1, opponent1Position, m.team1Score),
-          opponent2: buildOpponent(m, m.team2, opponent2Position, m.team2Score),
+          opponent1: buildOpponent(m, m.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(m, m.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, m);
       });
@@ -338,6 +410,7 @@ export default function BracketsViewerVisualization({
         });
 
         const viewerMatchId = gfMatch.id ?? fallbackMatchId++;
+        const { team1Score, team2Score } = getBracketScores(gfMatch);
         const parentPositions = parentMatchPositions.get((gfMatch.id ?? viewerMatchId) as Id) ?? [];
         const seedingPositions =
           gfMatch.round === 1
@@ -353,8 +426,8 @@ export default function BracketsViewerVisualization({
           round_id: roundCounter,
           child_count: 0,
           status: gfMatch.status === 'completed' ? 2 : gfMatch.status === 'live' ? 1 : 0,
-          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, gfMatch.team1Score),
-          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, gfMatch.team2Score),
+          opponent1: buildOpponent(gfMatch, gfMatch.team1, opponent1Position, team1Score, 'team1'),
+          opponent2: buildOpponent(gfMatch, gfMatch.team2, opponent2Position, team2Score, 'team2'),
         });
         registerMatch(viewerMatchId as Id, gfMatch);
       }
@@ -391,6 +464,37 @@ export default function BracketsViewerVisualization({
       matchLookup,
     };
   }, [matches, tournamentType]);
+
+  const updateMatchStatusStyles = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const matchElements = container.querySelectorAll<HTMLElement>('.match[data-match-id]');
+    matchElements.forEach((element) => {
+      const matchId = element.getAttribute('data-match-id');
+      if (!matchId) return;
+
+      const originalMatch = findOriginalMatch(matchId as Id);
+      if (!originalMatch) return;
+
+      const opponents = element.querySelector<HTMLElement>('.opponents');
+      if (!opponents) return;
+
+      opponents.classList.remove(
+        'match--status-live',
+        'match--status-loaded',
+        'match--status-allocated'
+      );
+
+      if (originalMatch.status === 'live') {
+        opponents.classList.add('match--status-live');
+      } else if (originalMatch.status === 'loaded') {
+        opponents.classList.add('match--status-loaded');
+      } else if (originalMatch.serverId && originalMatch.status !== 'completed') {
+        opponents.classList.add('match--status-allocated');
+      }
+    });
+  }, [findOriginalMatch]);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -453,6 +557,19 @@ export default function BracketsViewerVisualization({
           container.style.setProperty('--border-selected-color', theme.palette.primary.main);
           container.style.setProperty('--win-color', theme.palette.success.main);
           container.style.setProperty('--loss-color', theme.palette.error.main);
+          container.style.setProperty('--live-border-color', theme.palette.primary.main);
+          container.style.setProperty(
+            '--status-live-border-color',
+            theme.palette.error.main
+          );
+          container.style.setProperty(
+            '--status-loaded-border-color',
+            theme.palette.info.main
+          );
+          container.style.setProperty(
+            '--status-allocated-border-color',
+            theme.palette.warning.main
+          );
         }
 
         const transformInstance = transformRef.current;
@@ -464,6 +581,8 @@ export default function BracketsViewerVisualization({
         }
 
         updateMatchClickTargets();
+        updateLiveRoundStyles();
+        updateMatchStatusStyles();
       } catch (error) {
         console.error('Error rendering bracket:', error);
       }
@@ -478,7 +597,16 @@ export default function BracketsViewerVisualization({
         container.innerHTML = '';
       }
     };
-  }, [viewerData, theme, onMatchClick, centerMatch, findOriginalMatch, updateMatchClickTargets]);
+  }, [
+    viewerData,
+    theme,
+    onMatchClick,
+    centerMatch,
+    findOriginalMatch,
+    updateMatchClickTargets,
+    updateLiveRoundStyles,
+    updateMatchStatusStyles,
+  ]);
 
   return (
     <Box

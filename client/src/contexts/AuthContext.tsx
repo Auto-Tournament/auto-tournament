@@ -31,15 +31,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (response.ok) {
+          // Token is valid – keep the admin signed in.
           setToken(savedToken);
-        } else {
-          // Invalid token, clear it
+        } else if (response.status === 401 || response.status === 403) {
+          // Unauthorized / forbidden: token is invalid, clear it so the admin
+          // is prompted to log in again.
           localStorage.removeItem('api_token');
+          setToken(null);
+        } else {
+          // Any other error (5xx, bad gateway, etc.): assume the API is
+          // temporarily unavailable. Keep the token so the admin is not logged
+          // out just because the backend is down.
+          console.error('Token verification failed with non-auth error:', response.status);
+          setToken(savedToken);
         }
       } catch (error) {
-        // Network error or API down, clear invalid token
-        console.error('Token verification failed:', error);
-        localStorage.removeItem('api_token');
+        // Network error or API down: keep the existing token so the admin
+        // stays signed in. Individual pages will surface API errors via their
+        // own snackbars when requests fail.
+        console.error('Token verification failed (network/API unavailable):', error);
+        setToken(savedToken);
       } finally {
         setIsLoading(false);
       }

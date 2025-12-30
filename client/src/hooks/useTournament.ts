@@ -19,6 +19,7 @@ export const useTournament = () => {
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [hasBracket, setHasBracket] = useState(false);
 
   const loadData = async () => {
     setLoading(true);
@@ -45,24 +46,34 @@ export const useTournament = () => {
               const bracketResponse = await api.get<
                 TournamentBracketResponse & { matches: Match[] }
               >('/api/tournament/bracket');
-              if (!bracketResponse.matches || bracketResponse.matches.length === 0) {
+
+              if (bracketResponse.matches && bracketResponse.matches.length > 0) {
+                setHasBracket(true);
+              } else {
+                setHasBracket(false);
                 setError(
                   'Warning: Tournament exists but has no bracket. This may be from a failed bracket generation. ' +
-                    'Consider deleting and recreating the tournament.'
+                    'Use "Save & Generate Brackets" on the setup form before trying to regenerate.'
                 );
               }
             } catch {
-              // Bracket endpoint failed
+              // Bracket endpoint failed – treat as no bracket yet
+              setHasBracket(false);
             }
+          } else {
+            // Non-setup tournaments have already generated matches/bracket
+            setHasBracket(true);
           }
         }
       } catch {
         // No tournament exists yet
         setTournament(null);
+        setHasBracket(false);
       }
     } catch (err) {
       const error = err as Error;
       setError(error.message || 'Failed to load data');
+      setHasBracket(false);
     } finally {
       setLoading(false);
     }
@@ -79,6 +90,7 @@ export const useTournament = () => {
     maps: string[];
     teamIds: string[];
     settings: { seedingMethod: string };
+    maxRounds?: number;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
       TournamentResponse & { tournament: TournamentDetailed }
@@ -110,12 +122,21 @@ export const useTournament = () => {
     return response;
   };
 
-  const startTournament = async (baseUrl: string) => {
-    const response = await api.post<TournamentResponse & { tournament: TournamentDetailed }>(
-      '/api/tournament/start',
-      { baseUrl }
-    );
-    // Reload tournament data after starting
+  const startTournament = async (baseUrl: string, options?: { enableSimulation?: boolean }) => {
+    const payload: Record<string, unknown> = { baseUrl };
+    if (options && typeof options.enableSimulation === 'boolean') {
+      payload.enableSimulation = options.enableSimulation;
+    }
+    const response = await api.post<{
+      success: boolean;
+      message?: string;
+      allocated?: number;
+      failed?: number;
+      results?: Array<{ matchSlug: string; serverId?: string; success: boolean; error?: string }>;
+    }>('/api/tournament/start', payload);
+    // Reload tournament data after starting; the backend may update status to
+    // 'in_progress' asynchronously, so this ensures the wizard view reflects
+    // the latest state.
     await loadData();
     return response;
   };
@@ -147,5 +168,6 @@ export const useTournament = () => {
     startTournament,
     restartTournament,
     refreshData: loadData,
+    hasBracket,
   };
 };

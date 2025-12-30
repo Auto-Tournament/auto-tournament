@@ -1,11 +1,15 @@
-# Local build compose file - builds from source instead of pulling from Docker Hub
-# Usage: docker compose -f docker/docker-compose.local.yml up -d --build
-# Use this when you've cloned the repository and want to build from source
+# Local build compose file - builds from source instead of pulling from Docker Hub.
 #
-# To bind to a different host port, set HOST_PORT environment variable:
-#   HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
-# Or with yarn: HOST_PORT=27016 yarn docker:local:up
-# Default port is 3069 if HOST_PORT is not set
+# First run (or after Dockerfile changes):
+#   docker compose -f docker/docker-compose.local.yml up -d --build
+#   # or: HOST_PORT=27016 docker compose -f docker/docker-compose.local.yml up -d --build
+#
+# Subsequent runs (container restarts without forcing a rebuild):
+#   docker compose -f docker/docker-compose.local.yml up -d
+#
+# Use this when you've cloned the repository and want to build from source.
+#
+# Default port is 3069 if HOST_PORT is not set.
 
 services:
   # PostgreSQL service (required for all setups)
@@ -17,8 +21,9 @@ services:
       - POSTGRES_USER=${DB_USER:-postgres}
       - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
       - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
+    # No persistent volume - database data is ephemeral and will be lost on container removal
+    # volumes:
+    #   - postgres-data:/var/lib/postgresql/data
     # No port binding needed - DB is only accessible within Docker network
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
@@ -32,8 +37,10 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        VITE_ENABLE_DEV_PAGE: 'true' # Enable dev page in local Docker builds
       # PostgreSQL required for all setups
-    container_name: matchzy-tournament-api-dev
+    container_name: matchzy-tournament-dev
     restart: unless-stopped
     depends_on:
       postgres:
@@ -41,7 +48,9 @@ services:
     ports:
       - '${HOST_PORT:-3069}:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
     environment:
-      - NODE_ENV=production
+      # Treat local Docker stack as a development environment so that
+      # dev-only features like simulation mode can be enabled from Settings.
+      - NODE_ENV=development
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-admin123}
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
@@ -52,6 +61,7 @@ services:
       - DB_USER=${DB_USER:-postgres}
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=${DB_NAME:-matchzy_tournament}
+      - VITE_ENABLE_DEV_PAGE=true # Enable dev page in local Docker builds
     volumes:
       # Persist demos and other data
       - ./data:/app/data
@@ -71,5 +81,4 @@ networks:
 volumes:
   matchzy-data:
     driver: local
-  postgres-data:
-    driver: local
+  # postgres-data removed - database is now ephemeral

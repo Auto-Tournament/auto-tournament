@@ -1,14 +1,7 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import DownloadIcon from '@mui/icons-material/Download';
-import { LinearProgress, IconButton, Tooltip } from '@mui/material';
-import {
-  getStatusColor,
-  getStatusLabel,
-  getDetailedStatusLabel,
-  getRoundLabel,
-} from '../../utils/matchUtils';
+import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
+import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
 
 interface MatchCardProps {
@@ -16,12 +9,8 @@ interface MatchCardProps {
   matchNumber: number; // Global match number
   roundLabel?: string; // Optional custom round label
   variant?: 'live' | 'completed' | 'default'; // Visual variant
-  playerCount?: number; // Current player count
-  liveScores?: { team1Score?: number; team2Score?: number }; // Live scores
-  showPlayerProgress?: boolean; // Show player connection progress bar
   vetoCompleted?: boolean; // Whether veto is complete
   tournamentStarted?: boolean; // Whether tournament has started
-  onDownloadDemo?: (event: React.MouseEvent) => void;
   onClick?: () => void;
 }
 
@@ -30,68 +19,144 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   matchNumber,
   roundLabel,
   variant = 'default',
-  playerCount,
-  liveScores,
-  showPlayerProgress = false,
   vetoCompleted,
   tournamentStarted,
-  onDownloadDemo,
   onClick,
 }) => {
   const getBorderColor = () => {
-    if (variant === 'live') {
-      return match.status === 'live' ? 'error.main' : 'info.main';
-    }
-    if (variant === 'completed') {
-      return 'success.main';
-    }
-    if (match.status === 'completed') return 'success.main';
-    if (match.status === 'live') return 'warning.main';
+    // Bracket view / generic match card server status accents:
+    // - allocated (serverId set, not yet loaded/live/completed) => yellow
+    // - loaded (warmup) => blue
+    // - live  => red
+    // - completed or upcoming (no server) => no colored border
+    if (match.status === 'live') return 'error.main';
     if (match.status === 'loaded') return 'info.main';
-    return 'grey.300';
+    if (match.serverId && match.status !== 'completed') return 'warning.main';
+    // For completed and all other non-live states without a server, no colored border.
+    return 'transparent';
   };
 
-  const isWinner = (teamId: string | undefined) => {
-    return match.winner?.id === teamId;
+  const isWinnerById = (teamId: string | undefined) => {
+    // Only treat a team as winner when both an explicit winner.id and a
+    // concrete teamId are present. This avoids "both winners" for manual
+    // matches where team IDs are null/undefined.
+    if (!teamId || !match.winner?.id) return false;
+    return match.winner.id === teamId;
   };
+  const shuffle = isShuffleMatch(match);
+  const manual = isManualMatch(match);
+  const vetoDisabled = isVetoDisabledForMatch(match);
 
-  const getTeamBgColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.main';
-    return 'background.paper';
-  };
-
-  const getTeamBorderColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.dark';
-    return 'divider';
-  };
-
-  const getTeamTextColor = (teamId: string | undefined) => {
-    if (isWinner(teamId)) return 'success.contrastText';
+  const getTeamName = (teamId: string | undefined, which: 'team1' | 'team2') => {
     const team = teamId === match.team1?.id ? match.team1 : match.team2;
-    if (team) return 'text.primary';
-    return 'text.disabled';
-  };
-
-  const getTeamName = (teamId: string | undefined) => {
-    const team = teamId === match.team1?.id ? match.team1 : match.team2;
-    if (team) return team.name;
+    if (team) {
+      return team.name;
+    }
+    // Fallback for manual/ad‑hoc matches where inline config contains team
+    // names but the DB team IDs are null.
+    const configTeam =
+      which === 'team1'
+        ? (match.config?.team1 as { name?: string } | undefined)
+        : (match.config?.team2 as { name?: string } | undefined);
+    if (configTeam?.name) {
+      return configTeam.name;
+    }
     if (match.status === 'completed') return '—';
     return 'TBD';
   };
 
-  const expectedPlayers = match.config?.expected_players_total || 10;
-  const playerProgress = playerCount !== undefined ? (playerCount / expectedPlayers) * 100 : 0;
-  const totalMaps =
-    match.config?.num_maps ??
-    (match.config?.maplist && match.config.maplist.length > 0
-      ? match.config.maplist.length
-      : undefined);
-  const mapDisplayNumber =
-    typeof match.mapNumber === 'number'
-      ? totalMaps
-        ? Math.min(match.mapNumber + 1, totalMaps)
-        : match.mapNumber + 1
-      : null;
+  // Score display logic:
+  // - While a match is LIVE/LOADED, cards should show current **map rounds** (e.g. 8‑5)
+  //   so they match the live modal.
+  // - Once a match is COMPLETED, cards should show the final **series result** in maps
+  //   (e.g. 1‑0, 2‑1) for BO formats.
+  const deriveSeriesMaps = () => {
+    let seriesMapsTeam1: number | undefined =
+      typeof match.team1Score === 'number' ? match.team1Score : undefined;
+    let seriesMapsTeam2: number | undefined =
+      typeof match.team2Score === 'number' ? match.team2Score : undefined;
+
+    // Fallback: if series scores are missing, derive from mapResults
+    if (
+      (seriesMapsTeam1 === undefined || seriesMapsTeam2 === undefined) &&
+      match.mapResults &&
+      match.mapResults.length > 0
+    ) {
+      const derived = match.mapResults.reduce(
+        (acc, result) => {
+          if (result.team1Score > result.team2Score) acc.team1 += 1;
+          else if (result.team2Score > result.team1Score) acc.team2 += 1;
+          return acc;
+        },
+        { team1: 0, team2: 0 }
+      );
+      seriesMapsTeam1 = derived.team1;
+      seriesMapsTeam2 = derived.team2;
+    }
+
+    return { seriesMapsTeam1, seriesMapsTeam2 };
+  };
+
+  const { seriesMapsTeam1, seriesMapsTeam2 } = deriveSeriesMaps();
+
+  // Derive a winner side for display purposes:
+  // - Prefer explicit winner.id when present (bracket matches with real teams)
+  // - Fall back to series map score when match is completed (manual/ad‑hoc matches)
+  let winnerSide: 'team1' | 'team2' | null = null;
+  if (match.status === 'completed') {
+    if (match.winner?.id && match.team1?.id && match.winner.id === match.team1.id) {
+      winnerSide = 'team1';
+    } else if (match.winner?.id && match.team2?.id && match.winner.id === match.team2.id) {
+      winnerSide = 'team2';
+    } else if (
+      typeof seriesMapsTeam1 === 'number' &&
+      typeof seriesMapsTeam2 === 'number' &&
+      seriesMapsTeam1 !== seriesMapsTeam2
+    ) {
+      winnerSide = seriesMapsTeam1 > seriesMapsTeam2 ? 'team1' : 'team2';
+    }
+  }
+
+  const team1IsWinner = winnerSide === 'team1';
+  const team2IsWinner = winnerSide === 'team2';
+
+  const isWinnerVisual = (which: 'team1' | 'team2') => {
+    // Prefer series-derived winnerSide for visual state when available,
+    // otherwise fall back to explicit winner.id.
+    if (winnerSide) return winnerSide === which;
+    const id = which === 'team1' ? match.team1?.id : match.team2?.id;
+    return isWinnerById(id);
+  };
+
+  const getTeamBgColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.main';
+    return 'background.paper';
+  };
+
+  const getTeamBorderColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.dark';
+    return 'divider';
+  };
+
+  const getTeamTextColor = (which: 'team1' | 'team2') => {
+    if (isWinnerVisual(which)) return 'success.contrastText';
+    const team = which === 'team1' ? match.team1 : match.team2;
+    if (team) return 'text.primary';
+    return 'text.disabled';
+  };
+
+  const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
+    // For completed matches, prioritize series map wins (e.g. 1‑0, 2‑1).
+    if (match.status === 'completed') {
+      const seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
+      return typeof seriesScore === 'number' ? seriesScore : undefined;
+    }
+
+    // For live/loaded/ready/pending matches, show current map rounds (e.g. 8‑5)
+    // using the DB-backed scores which the backend keeps in sync with liveStats.
+    const roundsScore = team === 'team1' ? match.team1Score : match.team2Score;
+    return typeof roundsScore === 'number' ? roundsScore : undefined;
+  };
 
   return (
     <Card
@@ -111,43 +176,57 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     >
       <CardContent>
         {/* Header */}
-        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
           <Box>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.5 }}>
+            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
               Match #{matchNumber}
             </Typography>
             <Typography variant="caption" color="text.secondary">
               {roundLabel || getRoundLabel(match.round)}
             </Typography>
+            {match.serverName && (
+              <Typography variant="caption" color="text.secondary" display="block">
+                Server: {match.serverName}
+              </Typography>
+            )}
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
-            <Chip
-              label={getStatusLabel(match.status, false, vetoCompleted, tournamentStarted, Boolean(match.serverId))}
-              size="small"
-              color={getStatusColor(match.status)}
-              sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
-            />
-            {mapDisplayNumber && totalMaps && (
+            {shuffle && (
               <Chip
-                label={`Map ${mapDisplayNumber}/${totalMaps}`}
+                label={manual ? 'Shuffle manual' : 'Shuffle'}
                 size="small"
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
               />
             )}
-            {match.demoFilePath && onDownloadDemo && (
-              <Tooltip title="Download demo">
-                <IconButton size="small" onClick={onDownloadDemo} sx={{ color: 'primary.main' }}>
-                  <DownloadIcon fontSize="small" />
-                </IconButton>
-              </Tooltip>
+            {!shuffle && manual && (
+              <Chip
+                label="Manual"
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
             )}
+            <Chip
+              label={getStatusLabel(
+                match.status,
+                false,
+                // Shuffle tournaments and veto-disabled matches don't use veto – treat
+                // as completed to avoid "VETO PENDING" labels on the list view.
+                vetoDisabled ? true : vetoCompleted,
+                tournamentStarted,
+                Boolean(match.serverId)
+              )}
+              size="small"
+              color={getStatusColor(match.status)}
+              sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}
+            />
           </Box>
         </Box>
 
-        {/* Teams */}
+        {/* Teams with right-aligned score */}
         <Stack spacing={1.5}>
-          {/* Team 1 */}
+          {/* Team 1 row */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -155,49 +234,51 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             sx={{
               p: 1.5,
               borderRadius: 1,
-              bgcolor: getTeamBgColor(match.team1?.id),
+              bgcolor: getTeamBgColor('team1'),
               border: 1,
-              borderColor: getTeamBorderColor(match.team1?.id),
+              borderColor: getTeamBorderColor('team1'),
             }}
           >
-            <Typography
-              variant="body1"
-              fontWeight={isWinner(match.team1?.id) ? 600 : 500}
-              sx={{
-                color: getTeamTextColor(match.team1?.id),
-              }}
-            >
-              {getTeamName(match.team1?.id)}
-            </Typography>
-            {isWinner(match.team1?.id) && (
-              <Chip
-                label="WINNER"
-                size="small"
-                variant="outlined"
+            <Box display="flex" alignItems="center" gap={1} flex={1}>
+              <Typography
+                variant="body1"
+                fontWeight={team1IsWinner ? 600 : 500}
+                sx={{ color: getTeamTextColor('team1') }}
+              >
+                {getTeamName(match.team1?.id, 'team1')}
+              </Typography>
+              {team1IsWinner && (
+                <Chip
+                  label="WINNER"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'success.contrastText',
+                    borderColor: 'success.contrastText',
+                  }}
+                />
+              )}
+            </Box>
+            {getTeamScoreDisplay('team1') !== undefined && (
+              <Typography
+                variant="h6"
+                fontWeight={700}
                 sx={{
-                  fontWeight: 600,
-                  color: 'success.contrastText',
-                  borderColor: 'success.contrastText',
+                  minWidth: 24,
+                  textAlign: 'right',
+                  ml: 1,
+                  // On the green winner background we want a dark score color
+                  // for better contrast; on non-winner rows keep the default.
+                  color: team1IsWinner ? 'grey.900' : 'text.primary',
                 }}
-              />
-            )}
-            {liveScores?.team1Score !== undefined && (
-              <Chip
-                label={liveScores.team1Score}
-                size="small"
-                sx={{ fontWeight: 600, minWidth: 40 }}
-              />
+              >
+                {getTeamScoreDisplay('team1')}
+              </Typography>
             )}
           </Box>
 
-          {/* VS Divider */}
-          <Box display="flex" justifyContent="center">
-            <Typography variant="body2" color="text.secondary" fontWeight={600}>
-              VS
-            </Typography>
-          </Box>
-
-          {/* Team 2 */}
+          {/* Team 2 row */}
           <Box
             display="flex"
             justifyContent="space-between"
@@ -205,88 +286,48 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             sx={{
               p: 1.5,
               borderRadius: 1,
-              bgcolor: getTeamBgColor(match.team2?.id),
+              bgcolor: getTeamBgColor('team2'),
               border: 1,
-              borderColor: getTeamBorderColor(match.team2?.id),
+              borderColor: getTeamBorderColor('team2'),
             }}
           >
-            <Typography
-              variant="body1"
-              fontWeight={isWinner(match.team2?.id) ? 600 : 500}
-              sx={{
-                color: getTeamTextColor(match.team2?.id),
-              }}
-            >
-              {getTeamName(match.team2?.id)}
-            </Typography>
-            {isWinner(match.team2?.id) && (
-              <Chip
-                label="WINNER"
-                size="small"
-                variant="outlined"
+            <Box display="flex" alignItems="center" gap={1} flex={1}>
+              <Typography
+                variant="body1"
+                fontWeight={team2IsWinner ? 600 : 500}
+                sx={{ color: getTeamTextColor('team2') }}
+              >
+                {getTeamName(match.team2?.id, 'team2')}
+              </Typography>
+              {team2IsWinner && (
+                <Chip
+                  label="WINNER"
+                  size="small"
+                  variant="outlined"
+                  sx={{
+                    fontWeight: 600,
+                    color: 'success.contrastText',
+                    borderColor: 'success.contrastText',
+                  }}
+                />
+              )}
+            </Box>
+            {getTeamScoreDisplay('team2') !== undefined && (
+              <Typography
+                variant="h6"
+                fontWeight={700}
                 sx={{
-                  fontWeight: 600,
-                  color: 'success.contrastText',
-                  borderColor: 'success.contrastText',
+                  minWidth: 24,
+                  textAlign: 'right',
+                  ml: 1,
+                  color: team2IsWinner ? 'grey.900' : 'text.primary',
                 }}
-              />
-            )}
-            {liveScores?.team2Score !== undefined && (
-              <Chip
-                label={liveScores.team2Score}
-                size="small"
-                sx={{ fontWeight: 600, minWidth: 40 }}
-              />
+              >
+                {getTeamScoreDisplay('team2')}
+              </Typography>
             )}
           </Box>
         </Stack>
-
-        {/* Player Count Info (for live matches) */}
-        {showPlayerProgress && playerCount !== undefined && (
-          <Box
-            mt={2}
-            p={1.5}
-            bgcolor={
-              match.status === 'loaded'
-                ? playerCount >= expectedPlayers
-                  ? 'success.dark'
-                  : 'warning.dark'
-                : 'info.dark'
-            }
-            borderRadius={1}
-          >
-            <Box display="flex" alignItems="center" gap={1} mb={0.5}>
-              <PersonIcon sx={{ fontSize: 18, color: 'white' }} />
-              <Typography variant="body2" fontWeight={600} color="white">
-                {getDetailedStatusLabel(
-                  match.status,
-                  playerCount,
-                  expectedPlayers,
-                  false,
-                  vetoCompleted,
-                  tournamentStarted
-                )}
-              </Typography>
-            </Box>
-            {match.status === 'loaded' && (
-              <Box sx={{ mt: 1 }}>
-                <LinearProgress
-                  variant="determinate"
-                  value={playerProgress}
-                  sx={{
-                    height: 6,
-                    borderRadius: 3,
-                    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                    '& .MuiLinearProgress-bar': {
-                      backgroundColor: 'white',
-                      borderRadius: 3,
-                    },
-                  }}
-                />
-              </Box>
-            )}
-          </Box>
-        )}
       </CardContent>
     </Card>
   );

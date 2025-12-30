@@ -1,18 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Box, Container, Alert, CircularProgress } from '@mui/material';
+import { Box, CircularProgress } from '@mui/material';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
 import { TournamentFormSteps } from '../components/tournament/TournamentFormSteps';
 import { TournamentWelcomeScreen } from '../components/tournament/TournamentWelcomeScreen';
 import { TournamentReview } from '../components/tournament/TournamentReview';
 import { TournamentLive } from '../components/tournament/TournamentLive';
+import { ShufflePlayerRegistration } from '../components/tournament/ShufflePlayerRegistration';
+import { ShuffleTournamentStats } from '../components/tournament/ShuffleTournamentStats';
+import { ShuffleMapsCard } from '../components/tournament/ShuffleMapsCard';
 import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
+import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatchesModal';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
+import { io } from 'socket.io-client';
 import type { TournamentTemplate } from '../types/tournament.types';
+import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
+import type { EloCalculationTemplate } from '../types/elo.types';
 
 interface TournamentChange {
   field: string;
@@ -29,8 +37,7 @@ const Tournament: React.FC = () => {
     tournament,
     teams,
     loading,
-    error,
-    setError,
+    hasBracket,
     saveTournament,
     deleteTournament,
     regenerateBracket,
@@ -45,6 +52,21 @@ const Tournament: React.FC = () => {
   const [format, setFormat] = useState('bo3');
   const [selectedTeams, setSelectedTeams] = useState<string[]>([]);
   const [maps, setMaps] = useState<string[]>([]);
+  const [shuffleSettings, setShuffleSettings] = useState<ShuffleTournamentSettings>({
+    teamSize: 5,
+    maxRounds: 24,
+    eloTemplateId: 'pure-win-loss',
+  });
+  const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
+  // Global max rounds per map for non-shuffle tournaments (applies to all maps in the series).
+  const [maxRounds, setMaxRounds] = useState<number>(24);
+
+  // Auto-set format to bo1 when shuffle is selected
+  useEffect(() => {
+    if (type === 'shuffle' && format !== 'bo1') {
+      setFormat('bo1');
+    }
+  }, [type, format]);
 
   // Edit mode state
   const [isEditing, setIsEditing] = useState(false);
@@ -52,6 +74,7 @@ const Tournament: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
 
   // Action state
+  const { showSuccess, showError } = useSnackbar();
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
   const [saveTemplateModalOpen, setSaveTemplateModalOpen] = useState(false);
@@ -60,13 +83,61 @@ const Tournament: React.FC = () => {
   useEffect(() => {
     document.title = 'Tournament Setup';
   }, []);
-  const [success, setSuccess] = useState('');
+
+  // Load ELO templates
+  useEffect(() => {
+    const loadEloTemplates = async () => {
+      try {
+        const response = await api.get<{
+          success: boolean;
+          templates: EloCalculationTemplate[];
+        }>('/api/elo-templates');
+        if (response.success) {
+          setEloTemplates(response.templates);
+        }
+      } catch (err) {
+        console.error('Failed to load ELO templates:', err);
+      }
+    };
+    loadEloTemplates();
+  }, []);
+
+  // Load registered player count for shuffle tournaments
+  const loadRegisteredPlayerCount = async () => {
+    if (tournament?.type === 'shuffle') {
+      try {
+        const response = await api.get<{ success: boolean; count: number; players: unknown[] }>(
+          `/api/tournament/${tournament.id}/players`
+        );
+        if (response.success) {
+          setRegisteredPlayerCount(response.count);
+        }
+      } catch (err) {
+        console.error('Failed to load registered player count:', err);
+      }
+    }
+  };
+
+  // Load player count when tournament changes (any shuffle status)
+  useEffect(() => {
+    if (tournament?.type === 'shuffle') {
+      loadRegisteredPlayerCount();
+    } else {
+      setRegisteredPlayerCount(undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournament?.id, tournament?.type, tournament?.status]);
+  const [registeredPlayerCount, setRegisteredPlayerCount] = useState<number | undefined>(undefined);
 
   // Dialog state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [showRegenerateConfirm, setShowRegenerateConfirm] = useState(false);
   const [showResetConfirm, setShowResetConfirm] = useState(false);
   const [showStartConfirm, setShowStartConfirm] = useState(false);
+  const [startWarningInfo, setStartWarningInfo] = useState<{
+    requiredServers: number;
+    availableServers: number;
+  } | null>(null);
   const [showChangePreview, setShowChangePreview] = useState(false);
   const [changes, setChanges] = useState<
     Array<{
@@ -76,6 +147,7 @@ const Tournament: React.FC = () => {
       newValue: string | string[];
     }>
   >([]);
+  const [bulkShuffleModalOpen, setBulkShuffleModalOpen] = useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -129,6 +201,13 @@ const Tournament: React.FC = () => {
           setMaps(template.maps || []);
           setSelectedTeams([]); // Templates don't include teams
           setIsEditing(true);
+          // When loading a template via URL, jump the multi-step form to the
+          // final "Review" step so the user can confirm and create immediately.
+          try {
+            sessionStorage.setItem(STEP_STORAGE_KEY, '5'); // 'Review' step index in TournamentFormSteps
+          } catch (error) {
+            console.error('Error saving step to sessionStorage when loading template:', error);
+          }
           // Clear draft when loading template
           clearDraft();
           // Clear template param from URL
@@ -136,10 +215,10 @@ const Tournament: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading template:', error);
-        setError('Failed to load template');
+        showError('Failed to load template');
       }
     },
-    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, setError, clearDraft]
+    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, clearDraft, showError]
   );
 
   useEffect(() => {
@@ -183,6 +262,13 @@ const Tournament: React.FC = () => {
     setShowWelcome(false);
     setShowForm(true);
     setIsEditing(true);
+    // When loading a template from the welcome screen, also jump straight to
+    // the final "Review" step of the tournament form wizard.
+    try {
+      sessionStorage.setItem(STEP_STORAGE_KEY, '5'); // 'Review' step index in TournamentFormSteps
+    } catch (error) {
+      console.error('Error saving step to sessionStorage when loading template from welcome:', error);
+    }
     // Clear draft when loading template
     clearDraft();
     window.history.replaceState({}, '', '/tournament');
@@ -195,6 +281,44 @@ const Tournament: React.FC = () => {
     setSaveTemplateModalOpen(true);
   };
 
+  const handleRenameTournament = async (newName: string) => {
+    const trimmedName = newName.trim();
+
+    if (!trimmedName) {
+      showError('Tournament name is required');
+      return;
+    }
+
+    setSaving(true);
+
+    try {
+      const response = await api.put<{
+        success: boolean;
+        tournament: unknown;
+        error?: string;
+      }>('/api/tournament', { name: trimmedName });
+
+      if ('success' in response && response.success) {
+        showSuccess('Tournament name updated');
+        await refreshData();
+      } else {
+        const errorMessage =
+          typeof response === 'object' &&
+          response !== null &&
+          'error' in response &&
+          typeof (response as { error?: string }).error === 'string'
+            ? (response as { error?: string }).error
+            : 'Failed to update tournament name';
+        showError(errorMessage);
+      }
+    } catch (err) {
+      const error = err as Error;
+      showError(error.message || 'Failed to update tournament name');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   // Sync tournament data to form when loaded
   React.useEffect(() => {
     if (tournament) {
@@ -203,6 +327,17 @@ const Tournament: React.FC = () => {
       setFormat(tournament.format);
       setSelectedTeams(tournament.teamIds || []);
       setMaps(tournament.maps || []);
+      // Load shuffle settings if tournament is shuffle type
+      if (tournament.type === 'shuffle' && tournament.teamSize) {
+        setShuffleSettings({
+          teamSize: tournament.teamSize,
+          maxRounds: tournament.maxRounds || 24,
+          eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
+        });
+      } else {
+        // Non-shuffle tournaments use a global maxRounds for all maps
+        setMaxRounds(tournament.maxRounds || 24);
+      }
       setIsEditing(false);
       setShowWelcome(false);
       setShowForm(false);
@@ -255,7 +390,7 @@ const Tournament: React.FC = () => {
   // Check if form has changes compared to tournament
   const hasChanges = (): boolean => {
     if (!tournament) return true; // Creating new tournament
-
+    // Basic tournament fields
     if (name !== tournament.name) return true;
     if (type !== tournament.type) return true;
     if (format !== tournament.format) return true;
@@ -263,29 +398,70 @@ const Tournament: React.FC = () => {
       return true;
     if (JSON.stringify(maps.sort()) !== JSON.stringify(tournament.maps.sort())) return true;
 
+    // Shuffle tournament specific fields
+    if (tournament.type === 'shuffle') {
+      const currentTeamSize = tournament.teamSize || 5;
+      if (shuffleSettings.teamSize !== currentTeamSize) return true;
+
+      const currentMaxRounds = tournament.maxRounds || 24;
+      if (shuffleSettings.maxRounds !== currentMaxRounds) return true;
+
+      const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
+      const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
+      if (selectedEloTemplate !== currentEloTemplate) return true;
+    } else {
+      // Non-shuffle: compare global maxRounds
+      const currentMaxRounds = tournament.maxRounds || 24;
+      if (maxRounds !== currentMaxRounds) return true;
+    }
+
     return false;
   };
 
   const handleSave = async () => {
-    // Validate before saving
-    const validation = validateTeamCountForType(type, selectedTeams.length);
-    if (!validation.isValid) {
-      setError(validation.error || 'Invalid team count');
-      return;
-    }
-
     if (!name.trim()) {
-      setError('Tournament name is required');
-      return;
-    }
-
-    if (selectedTeams.length === 0) {
-      setError('Please select at least 2 teams');
+      showError('Tournament name is required');
       return;
     }
 
     if (maps.length === 0) {
-      setError('Please select at least 1 map');
+      showError('Please select at least 1 map');
+      return;
+    }
+
+    // Validate global max rounds for non-shuffle tournaments
+    if (type !== 'shuffle') {
+      if (maxRounds < 1 || maxRounds > 30) {
+        showError('Max rounds must be between 1 and 30');
+        return;
+      }
+    }
+
+    // Shuffle tournaments don't use teams
+    if (type === 'shuffle') {
+      // Validate shuffle settings
+      if (shuffleSettings.teamSize < 2 || shuffleSettings.teamSize > 10) {
+        showError('Team size must be between 2 and 10 players');
+        return;
+      }
+      if (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30) {
+        showError('Max rounds must be between 1 and 30');
+        return;
+      }
+      // For shuffle tournaments, use the shuffle-specific endpoint
+      await saveShuffleTournament();
+      return;
+    }
+
+    // Validate team count for non-shuffle tournaments
+    const validation = validateTeamCountForType(type, selectedTeams.length);
+    if (!validation.isValid) {
+      showError(validation.error || 'Invalid team count');
+      return;
+    }
+
+    if (selectedTeams.length === 0) {
+      showError('Please select at least 2 teams');
       return;
     }
 
@@ -359,10 +535,57 @@ const Tournament: React.FC = () => {
     await saveChanges();
   };
 
+  const saveShuffleTournament = async () => {
+    setSaving(true);
+
+    try {
+      // Shuffle tournament configuration
+      const payload = {
+        name,
+        mapSequence: maps, // Maps in order = rounds
+        teamSize: shuffleSettings.teamSize || 5,
+        maxRounds: shuffleSettings.maxRounds,
+        overtimeMode: shuffleSettings.overtimeMode ?? 'enabled',
+        overtimeSegments:
+          typeof shuffleSettings.overtimeSegments === 'number' &&
+          shuffleSettings.overtimeSegments > 0
+            ? shuffleSettings.overtimeSegments
+            : undefined,
+        eloTemplateId: shuffleSettings.eloTemplateId,
+      };
+
+      const response = await api.post<{
+        success: boolean;
+        tournament: unknown;
+        error?: string;
+      }>('/api/tournament/shuffle', payload);
+
+      if (response.success) {
+        const minPlayers = (shuffleSettings.teamSize || 5) * 2;
+        showSuccess(
+          `Shuffle tournament "${name}" created successfully! ` +
+            `Next step: Register at least ${minPlayers} players to start the tournament (${
+              shuffleSettings.teamSize || 5
+            }v${shuffleSettings.teamSize || 5} matches).`
+        );
+        clearDraft();
+        await refreshData();
+      } else {
+        showError(response.error || 'Failed to create shuffle tournament');
+      }
+    } catch (err) {
+      const error = err as Error;
+      showError(
+        error.message ||
+          'Failed to create shuffle tournament. ' + 'Please check your settings and try again.'
+      );
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveChanges = async () => {
     setSaving(true);
-    setError('');
-    setSuccess('');
     setShowChangePreview(false);
 
     try {
@@ -373,12 +596,13 @@ const Tournament: React.FC = () => {
         maps,
         teamIds: selectedTeams,
         settings: tournament?.settings || { seedingMethod: 'random' },
+        maxRounds,
       };
 
       const response = await saveTournament(payload);
 
       if (response.success) {
-        setSuccess(
+        showSuccess(
           tournament ? 'Tournament updated & brackets regenerated!' : 'Tournament created!'
         );
         // Clear draft when tournament is successfully created
@@ -386,13 +610,12 @@ const Tournament: React.FC = () => {
           clearDraft();
         }
         await refreshData();
-        setTimeout(() => setSuccess(''), 3000);
       } else {
-        setError(response.error || 'Failed to save tournament');
+        showError(response.error || 'Failed to save tournament');
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to save tournament');
+      showError(error.message || 'Failed to save tournament');
     } finally {
       setSaving(false);
     }
@@ -400,17 +623,15 @@ const Tournament: React.FC = () => {
 
   const handleDelete = async () => {
     setSaving(true);
-    setError('');
     setShowDeleteConfirm(false);
 
     try {
       await deleteTournament();
-      setSuccess('Tournament deleted successfully');
-      setTimeout(() => setSuccess(''), 3000);
+      showSuccess('Tournament deleted successfully');
       await refreshData();
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to delete tournament');
+      showError(error.message || 'Failed to delete tournament');
     } finally {
       setSaving(false);
     }
@@ -418,16 +639,14 @@ const Tournament: React.FC = () => {
 
   const handleRegenerate = async () => {
     setSaving(true);
-    setError('');
     setShowRegenerateConfirm(false);
 
     try {
       await regenerateBracket(true);
-      setSuccess('Brackets regenerated successfully');
-      setTimeout(() => setSuccess(''), 3000);
+      showSuccess('Brackets regenerated successfully');
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to regenerate brackets');
+      showError(error.message || 'Failed to regenerate brackets');
     } finally {
       setSaving(false);
     }
@@ -435,22 +654,41 @@ const Tournament: React.FC = () => {
 
   const handleReset = async () => {
     setSaving(true);
-    setError('');
     setShowResetConfirm(false);
 
     try {
       await resetTournament();
-      setSuccess('Tournament reset to setup mode');
-      setTimeout(() => setSuccess(''), 3000);
+      showSuccess('Tournament reset to setup mode');
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to reset tournament');
+      showError(error.message || 'Failed to reset tournament');
     } finally {
       setSaving(false);
     }
   };
 
+  const getRequiredServersForTournament = () => {
+    if (!tournament) return 0;
+    if (tournament.type === 'shuffle') {
+      // Shuffle tournaments reuse servers round-by-round; only one match per server at a time
+      return 1;
+    }
+    const teamCount = tournament.teams?.length || 0;
+    if (teamCount < 2) return 0;
+    return Math.ceil(teamCount / 2);
+  };
+
   const handleStart = async () => {
+    // Always refresh the latest tournament state first. If the tournament
+    // is already live/completed (e.g. started from another tab), just
+    // return after the refresh instead of attempting to start again.
+    await refreshData();
+    if (tournament && (tournament.status === 'in_progress' || tournament.status === 'completed')) {
+      return;
+    }
+
+    const requiredServers = getRequiredServersForTournament();
+
     // Check server availability first
     try {
       const availabilityResponse = await api.get<{
@@ -458,24 +696,30 @@ const Tournament: React.FC = () => {
         availableServerCount: number;
       }>('/api/tournament/server-availability');
 
-      if (availabilityResponse.success && availabilityResponse.availableServerCount === 0) {
-        // No servers available - show warning modal
-        setShowStartConfirm(true);
-        return;
+      if (availabilityResponse.success) {
+        const available = availabilityResponse.availableServerCount;
+
+        // If we don't have enough available servers to cover the first round's concurrent matches,
+        // show a confirmation dialog so the admin explicitly accepts queued/paused matches.
+        if (requiredServers > 0 && available < requiredServers) {
+          setStartWarningInfo({ requiredServers, availableServers: available });
+          setShowStartConfirm(true);
+          return;
+        }
       }
     } catch (err) {
       console.error('Error checking server availability:', err);
       // Continue anyway if check fails
     }
 
-    // Servers available or check failed - start immediately
+    // Servers are sufficient (or check failed) - start immediately
     await performTournamentStart();
   };
 
   const performTournamentStart = async () => {
     setStarting(true);
-    setError('');
     setShowStartConfirm(false);
+    setStartWarningInfo(null);
 
     try {
       const baseUrl = window.location.origin;
@@ -483,22 +727,52 @@ const Tournament: React.FC = () => {
 
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
-        setSuccess(`Tournament started! ${allocated} matches allocated to servers`);
-        setTimeout(() => {
-          setSuccess('');
-          navigate('/bracket');
-        }, 2000);
+        if (allocated > 0) {
+          showSuccess(`Tournament started! ${allocated} match${allocated === 1 ? '' : 'es'} allocated to servers.`);
+        } else {
+          showSuccess(
+            (response as { message?: string }).message ||
+              'Tournament start requested. Servers will be allocated shortly.'
+          );
+        }
+        // Refresh tournament data so the UI can transition into the live
+        // management view once the backend flips status to "in_progress".
+        await refreshData();
       } else {
         const message = (response as { message?: string }).message || 'Failed to start tournament';
-        setError(message);
+        showError(message);
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to start tournament');
+      showError(error.message || 'Failed to start tournament');
     } finally {
       setStarting(false);
     }
   };
+
+  // Keep the tournament setup view in sync with real-time status changes so
+  // the Start button disappears as soon as the tournament actually moves into
+  // the in_progress/completed phase (including when started from other tabs).
+  useEffect(() => {
+    const socket = io();
+
+    const handleTournamentUpdate = (data?: { action?: string; status?: string }) => {
+      if (!data) return;
+
+      // For any status-bearing update, refresh tournament data so the wizard
+      // can move into the correct step (setup vs live).
+      if (data.status) {
+        void refreshData();
+      }
+    };
+
+    socket.on('tournament:update', handleTournamentUpdate);
+
+    return () => {
+      socket.off('tournament:update', handleTournamentUpdate);
+      socket.close();
+    };
+  }, [refreshData]);
 
   if (loading) {
     return (
@@ -509,21 +783,9 @@ const Tournament: React.FC = () => {
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
+    <Box data-testid="tournament-page" sx={{ width: '100%', height: '100%' }}>
       {/* Stepper */}
       <TournamentStepper currentStep={getCurrentStep()} />
-
-      {/* Feedback Messages */}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess('')}>
-          {success}
-        </Alert>
-      )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
-          {error}
-        </Alert>
-      )}
 
       {/* Welcome Screen - Show when no tournament exists */}
       {!tournament && showWelcome && (
@@ -548,11 +810,16 @@ const Tournament: React.FC = () => {
           tournamentExists={!!tournament}
           hasChanges={hasChanges()}
           mapPoolId={currentMapPoolId}
+          shuffleSettings={shuffleSettings}
+          eloTemplates={eloTemplates}
+          maxRounds={maxRounds}
+          onMaxRoundsChange={setMaxRounds}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
+          onShuffleSettingsChange={setShuffleSettings}
           onSave={handleSave}
           onRefreshTeams={refreshData}
           onBackToWelcome={() => {
@@ -594,22 +861,53 @@ const Tournament: React.FC = () => {
 
       {/* Step 2: Review & Start (tournament is in 'setup' mode after creation) */}
       {tournament && tournament.status === 'setup' && !isEditing && (
-        <TournamentReview
-          tournament={{
-            name: tournament.name,
-            type: tournament.type,
-            format: tournament.format,
-            teams: tournament.teams || [],
-            maps: tournament.maps,
-          }}
-          starting={starting}
-          saving={saving}
-          onEdit={() => setIsEditing(true)}
-          onStart={handleStart}
-          onViewBracket={() => navigate('/bracket')}
-          onRegenerate={() => setShowRegenerateConfirm(true)}
-          onDelete={() => setShowDeleteConfirm(true)}
-        />
+        <>
+          {tournament.type === 'shuffle' && (
+            <Box display="flex" gap={3} alignItems="stretch">
+              <ShufflePlayerRegistration
+                tournamentId={tournament.id}
+                teamSize={tournament.teamSize || 5}
+                onPlayersUpdated={() => {
+                  refreshData();
+                  // Load player count after registration
+                  loadRegisteredPlayerCount();
+                }}
+              />
+              <ShuffleTournamentStats
+                playerCount={registeredPlayerCount || 0}
+                teamSize={tournament.teamSize || 5}
+              />
+              <ShuffleMapsCard maps={tournament.maps || []} />
+            </Box>
+          )}
+          <Box sx={{ mt: tournament.type === 'shuffle' ? 3 : 0 }}>
+            <TournamentReview
+              tournament={{
+                name: tournament.name,
+                type: tournament.type,
+                format: tournament.format,
+                teams: tournament.teams || [],
+                maps: tournament.maps,
+                teamSize: tournament.teamSize,
+              }}
+              starting={starting}
+              saving={saving}
+              registeredPlayerCount={
+                tournament.type === 'shuffle' ? registeredPlayerCount : undefined
+              }
+              hasBracket={hasBracket}
+              onEdit={() => setIsEditing(true)}
+              onStart={handleStart}
+              onRegenerate={() => setShowRegenerateConfirm(true)}
+              onDelete={() => setShowDeleteConfirm(true)}
+              onBulkCreateShuffleMatches={
+                tournament.type === 'shuffle'
+                  ? () => setBulkShuffleModalOpen(true)
+                  : undefined
+              }
+            />
+          </Box>
+        </>
       )}
 
       {/* Step 3: Live Tournament */}
@@ -621,11 +919,21 @@ const Tournament: React.FC = () => {
             format: tournament.format,
             status: tournament.status,
             teams: tournament.teams || [],
+            maps: tournament.maps || [],
+            mapSequence: tournament.mapSequence,
+            teamSize: tournament.teamSize,
+            maxRounds: tournament.maxRounds,
+            overtimeMode: tournament.overtimeMode,
+            overtimeSegments: tournament.overtimeSegments,
+            eloTemplateId: tournament.eloTemplateId,
           }}
+          tournamentId={tournament.id}
+          onRename={handleRenameTournament}
           saving={saving}
           onViewBracket={() => navigate('/bracket')}
           onReset={() => setShowResetConfirm(true)}
           onDelete={() => setShowDeleteConfirm(true)}
+          playerCount={tournament.type === 'shuffle' ? registeredPlayerCount : undefined}
         />
       )}
 
@@ -637,6 +945,7 @@ const Tournament: React.FC = () => {
         startOpen={showStartConfirm}
         tournamentName={tournament?.name}
         tournamentStatus={tournament?.status}
+        startWarning={startWarningInfo ?? undefined}
         onDeleteConfirm={handleDelete}
         onDeleteCancel={() => setShowDeleteConfirm(false)}
         onRegenerateConfirm={handleRegenerate}
@@ -644,7 +953,10 @@ const Tournament: React.FC = () => {
         onResetConfirm={handleReset}
         onResetCancel={() => setShowResetConfirm(false)}
         onStartConfirm={performTournamentStart}
-        onStartCancel={() => setShowStartConfirm(false)}
+        onStartCancel={() => {
+          setShowStartConfirm(false);
+          setStartWarningInfo(null);
+        }}
       />
 
       <TournamentChangePreviewModal
@@ -659,8 +971,7 @@ const Tournament: React.FC = () => {
         open={saveTemplateModalOpen}
         onClose={() => setSaveTemplateModalOpen(false)}
         onSave={() => {
-          setSuccess('Template saved successfully!');
-          setTimeout(() => setSuccess(''), 3000);
+          showSuccess('Template saved successfully!');
         }}
         tournamentData={{
           name,
@@ -672,7 +983,21 @@ const Tournament: React.FC = () => {
           settings: tournament?.settings,
         }}
       />
-    </Container>
+
+      {tournament && tournament.type === 'shuffle' && (
+        <BulkShuffleMatchesModal
+          open={bulkShuffleModalOpen}
+          onClose={() => setBulkShuffleModalOpen(false)}
+          tournamentId={tournament.id}
+          teamSize={tournament.teamSize || 5}
+          maps={tournament.maps || []}
+          defaultMaxRounds={tournament.maxRounds || 24}
+          onCreated={() => {
+            void refreshData();
+          }}
+        />
+      )}
+    </Box>
   );
 };
 

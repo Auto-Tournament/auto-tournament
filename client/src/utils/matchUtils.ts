@@ -46,7 +46,8 @@ export const getStatusLabel = (
       if (vetoCompleted === false) return 'MAP VETO';
       // If veto is completed but no server, show waiting for server
       if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
-      return 'READY';
+      // Veto complete and server assigned – match is queued to be loaded on the server.
+      return 'SERVER ALLOCATED';
     case 'loaded':
       return 'WARMUP';
     case 'live':
@@ -78,6 +79,12 @@ export const getDetailedStatusLabel = (
     case 'pending':
       // Match is pending - check if tournament has started
       if (tournamentStarted === false) {
+        // If a server is already assigned, this is most likely a manual or
+        // non‑bracket context. Avoid tournament‑specific copy and show a
+        // neutral initialization label instead.
+        if (hasServer) {
+          return 'Initializing match...';
+        }
         return 'Waiting for tournament to start...';
       }
       // If veto is completed but no server, show waiting for server
@@ -89,6 +96,9 @@ export const getDetailedStatusLabel = (
     case 'ready':
       // Match is ready - could be in veto or waiting for server
       if (tournamentStarted === false) {
+        if (hasServer) {
+          return 'Initializing match...';
+        }
         return 'Waiting for tournament to start...';
       }
       if (vetoCompleted === false) {
@@ -97,7 +107,9 @@ export const getDetailedStatusLabel = (
       if (vetoCompleted === true && hasServer === false) {
         return 'Veto complete - Waiting for server assignment...';
       }
-      return 'Veto complete - Waiting for server...';
+      // Veto is complete and a server has been assigned; the match will be
+      // loaded shortly and move into warmup on that server.
+      return 'Veto complete - Server allocated, waiting to load match...';
     case 'loaded':
       if (playerCount !== undefined) {
         if (playerCount === 0) {
@@ -152,10 +164,9 @@ export const getStatusExplanation = (
       }
       return 'Match is loaded on the server and in warmup mode. Players should connect and ready up to start.';
     case 'live':
-      if (playerCount !== undefined && playerCount > 0) {
-        return `Match is currently in progress with ${playerCount}/${expected} players connected. Rounds are being played.`;
-      }
-      return 'Match is currently in progress. Players are competing and rounds are being played.';
+      // Cards already show LIVE state; extra copy adds noise. Return empty string
+      // so UIs can choose to hide this line for live matches.
+      return '';
     case 'completed':
       return 'Match has finished. Winner has been determined and bracket has been updated.';
     default:

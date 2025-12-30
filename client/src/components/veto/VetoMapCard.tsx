@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, CardMedia, Typography, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
 import type { MapSide } from '../../types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface VetoMapCardProps {
   mapName: string;
@@ -25,11 +26,12 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   onClick,
   disabled,
 }) => {
-  const [imageError, setImageError] = React.useState(false);
+  const [imageError] = React.useState(false);
   const isClickable = !disabled && state === 'available' && onClick;
 
   return (
     <Card
+      data-testid={`veto-map-card-${_mapName}`}
       sx={{
         position: 'relative',
         cursor: isClickable ? 'pointer' : 'default',
@@ -82,6 +84,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           }}
         >
           <Chip
+            data-testid="team-side-badge"
             label={side}
             color="primary"
             size="small"
@@ -129,18 +132,12 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
       )}
 
       {!imageError ? (
-        <CardMedia
-          component="img"
-          height="140"
-          image={imageUrl}
+        <FadeInImage
+          src={imageUrl}
           alt={displayName}
+          height={140}
           sx={{
-            objectFit: 'cover',
             filter: state === 'banned' ? 'grayscale(100%)' : 'none',
-          }}
-          onError={() => {
-            // Hide image and use colored background instead
-            setImageError(true);
           }}
         />
       ) : (
@@ -150,7 +147,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            bgcolor: state === 'banned' ? '#333' : '#1976d2',
+            bgcolor: state === 'banned' ? 'background.paper' : 'primary.dark',
             filter: state === 'banned' ? 'grayscale(100%)' : 'none',
           }}
         >
@@ -181,4 +178,3 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
     </Card>
   );
 };
-

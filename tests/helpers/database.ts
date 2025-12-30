@@ -32,14 +32,14 @@ export async function wipeDatabaseViaUI(page: Page): Promise<boolean> {
     await page.waitForLoadState('networkidle');
     
     // Look for wipe/danger zone button
-    const wipeButton = page.getByRole('button', { name: /wipe|clear|reset.*database/i });
+    const wipeButton = page.getByTestId('wipe-database-button');
     const buttonVisible = await wipeButton.isVisible().catch(() => false);
     
     if (buttonVisible) {
       await wipeButton.click();
       
       // Handle confirmation dialog if present
-      const confirmButton = page.getByRole('button', { name: /confirm|yes|delete/i });
+      const confirmButton = page.getByTestId('confirm-dialog-confirm-button');
       const confirmVisible = await confirmButton.isVisible({ timeout: 2000 }).catch(() => false);
       if (confirmVisible) {
         await confirmButton.click();

@@ -25,25 +25,12 @@ test.describe.serial('Dashboard Page', () => {
       await page.goto('/');
       await expect(page).toHaveTitle(/Dashboard/i);
 
-      // Check for dashboard heading
-      await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
-    }
-  );
-
-  test(
-    'should display onboarding checklist',
-    {
-      tag: ['@ui', '@dashboard'],
-    },
-    async ({ page }) => {
-      await page.goto('/');
+      // Wait for page to load and verify we're on the dashboard
       await page.waitForLoadState('networkidle');
-
-      // Verify dashboard loads with onboarding checklist (visible depending on setup state)
-      await expect(page.getByRole('heading', { name: /dashboard/i })).toBeVisible();
-      
-      // Just verify the page loaded - checklist visibility depends on setup state
       expect(page.url()).toContain('/');
+
+      // Verify dashboard page loaded
+      await expect(page.getByTestId('dashboard-page')).toBeVisible({ timeout: 5000 });
     }
   );
 });

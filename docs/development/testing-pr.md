@@ -46,7 +46,7 @@ git checkout feature/10-feature-customizable-map-pool
 ### Step 2: Install Dependencies
 
 ```bash
-# Install all dependencies (uses Yarn)
+# Install all dependencies for API and client (Yarn workspaces)
 yarn install
 ```
 
@@ -115,6 +115,25 @@ This will start:
 - **Frontend:** `http://localhost:5173`
 
 **Access the application at:** `http://localhost:5173`
+
+### Steam login in local development
+
+When you use **Login with Steam** in local dev, Steam is redirected back to the API on port `3000`,
+and the API then redirects the browser to the frontend.
+
+For Yarn dev (API on `3000`, Vite on `5173`), set a frontend base URL **before** starting `yarn dev`:
+
+```bash
+export FRONTEND_BASE_URL=http://localhost:5173
+yarn dev
+```
+
+The Steam callback will then redirect to:
+
+- `http://localhost:5173/player/<steamId>`
+
+> **Note:** Docker stacks already run behind Caddy on a single port (typically `3069`), so they
+> do **not** need `FRONTEND_BASE_URL` – the default redirect host works there.
 
 ---
 

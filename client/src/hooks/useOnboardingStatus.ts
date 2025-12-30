@@ -5,10 +5,12 @@ interface OnboardingStatus {
   hasServers: boolean;
   hasWebhookUrl: boolean;
   hasTeams: boolean;
+  hasPlayers: boolean;
   hasTournament: boolean;
   tournamentStatus: 'none' | 'setup' | 'ready' | 'in_progress' | 'completed';
   serversCount: number;
   teamsCount: number;
+  playersCount: number;
   loading: boolean;
 }
 
@@ -24,10 +26,12 @@ export const useOnboardingStatus = () => {
     hasServers: false,
     hasWebhookUrl: false,
     hasTeams: false,
+    hasPlayers: false,
     hasTournament: false,
     tournamentStatus: 'none',
     serversCount: 0,
     teamsCount: 0,
+    playersCount: 0,
     loading: true,
   });
 
@@ -42,6 +46,16 @@ export const useOnboardingStatus = () => {
       // Load teams
       const teamsResponse: { teams: unknown[] } = await api.get('/api/teams');
       const teams = teamsResponse.teams || [];
+
+      // Load players (for onboarding we only care about count)
+      let playersCount = 0;
+      try {
+        const playersResponse: { success?: boolean; players?: unknown[] } = await api.get('/api/players');
+        const players = playersResponse.players || [];
+        playersCount = players.length;
+      } catch (playersError) {
+        console.error('Failed to load players status:', playersError);
+      }
 
       // Load settings
       let hasWebhookUrl = false;
@@ -70,10 +84,12 @@ export const useOnboardingStatus = () => {
         hasServers: servers.length > 0,
         hasWebhookUrl,
         hasTeams: teams.length >= 2,
+        hasPlayers: playersCount > 0,
         hasTournament: tournamentStatus !== 'none',
         tournamentStatus,
         serversCount: servers.length,
         teamsCount: teams.length,
+        playersCount,
         loading: false,
       });
     } catch (error) {

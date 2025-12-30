@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import type {} from '@mui/lab/themeAugmentation';
 
 // Material Design 3 Purple theme with maximum roundness
 export const theme = createTheme({
@@ -17,15 +18,17 @@ export const theme = createTheme({
       contrastText: '#332D41',
     },
     error: {
-      main: '#F2B8B5',
+      // Softer, more purple-leaning danger to better match the primary palette
+      main: '#FFB4AB',
       light: '#FFDAD6',
-      dark: '#C8827F',
-      contrastText: '#601410',
+      dark: '#C7756A',
+      contrastText: '#31111D',
     },
     warning: {
-      main: '#E8C18D',
-      light: '#FFDDB3',
-      dark: '#B18E5F',
+      // Warm but muted amber that plays nicer with the purple background
+      main: '#F7CF9A',
+      light: '#FFE2B8',
+      dark: '#BC8F5A',
       contrastText: '#2B1700',
     },
     info: {
@@ -35,10 +38,11 @@ export const theme = createTheme({
       contrastText: '#003258',
     },
     success: {
-      main: '#79DD72',
-      light: '#B7F397',
-      dark: '#5CA857',
-      contrastText: '#003A03',
+      // Mint-teal accent tuned to feel softer next to the purple primary
+      main: '#A6E3D0',
+      light: '#C9F0E1',
+      dark: '#5AAEA1',
+      contrastText: '#00382F',
     },
     background: {
       default: '#1C1B1F', // M3 Dark background
@@ -85,6 +89,34 @@ export const theme = createTheme({
     h6: { lineHeight: 1.1 },
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          scrollbarColor: '#6b6b6b #2b2b2b',
+          '&::-webkit-scrollbar, & *::-webkit-scrollbar': {
+            backgroundColor: '#2b2b2b',
+          },
+          '&::-webkit-scrollbar-thumb, & *::-webkit-scrollbar-thumb': {
+            borderRadius: 8,
+            backgroundColor: '#6b6b6b',
+            minHeight: 24,
+            border: '3px solid #2b2b2b',
+          },
+          '&::-webkit-scrollbar-thumb:focus, & *::-webkit-scrollbar-thumb:focus': {
+            backgroundColor: '#959595',
+          },
+          '&::-webkit-scrollbar-thumb:active, & *::-webkit-scrollbar-thumb:active': {
+            backgroundColor: '#959595',
+          },
+          '&::-webkit-scrollbar-thumb:hover, & *::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: '#959595',
+          },
+          '&::-webkit-scrollbar-corner, & *::-webkit-scrollbar-corner': {
+            backgroundColor: '#2b2b2b',
+          },
+        },
+      },
+    },
     MuiButton: {
       defaultProps: {
         disableRipple: false,

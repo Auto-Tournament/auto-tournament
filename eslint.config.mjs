@@ -7,16 +7,31 @@ import reactCompiler from 'eslint-plugin-react-compiler';
 
 export default [
   js.configs.recommended,
-  
-  // Backend TypeScript files (src/**/*.ts)
+
+  // Node build config (esbuild)
   {
-    files: ['src/**/*.ts'],
+    files: ['api/esbuild.config.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'script',
+      globals: {
+        require: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        __dirname: 'readonly',
+      },
+    },
+  },
+ 
+  // Backend TypeScript files (api/src/**/*.ts)
+  {
+    files: ['api/src/**/*.ts'],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
         ecmaVersion: 'latest',
         sourceType: 'module',
-        project: './tsconfig.json',
+        project: './api/tsconfig.json',
       },
       globals: {
         console: 'readonly',
@@ -47,6 +62,118 @@ export default [
       ...typescript.configs.recommended.rules,
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      'no-console': 'off',
+    },
+  },
+
+  // Scripts TypeScript files (scripts/**/*.ts)
+  {
+    files: ['scripts/**/*.ts'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // No project requirement - scripts don't need strict type checking
+      },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+        globalThis: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearImmediate: 'readonly',
+        Promise: 'readonly',
+        NodeJS: 'readonly',
+        // Some scripts evaluate browser-side code snippets (e.g. Playwright helpers)
+        window: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescript,
+    },
+    rules: {
+      ...typescript.configs.recommended.rules,
+      // Scripts are allowed to have helpers and any-typed data structures
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/explicit-function-return-type': 'off',
+      'no-console': 'off',
+    },
+  },
+
+  // Tests TypeScript files (tests/**/*.ts)
+  {
+    files: ['tests/**/*.ts'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+        // No project requirement - tests don't need strict type checking
+      },
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        Buffer: 'readonly',
+        URL: 'readonly',
+        __dirname: 'readonly',
+        __filename: 'readonly',
+        module: 'readonly',
+        require: 'readonly',
+        exports: 'readonly',
+        global: 'readonly',
+        globalThis: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        setImmediate: 'readonly',
+        clearImmediate: 'readonly',
+        Promise: 'readonly',
+        NodeJS: 'readonly',
+        // Playwright / test globals
+        test: 'readonly',
+        expect: 'readonly',
+        describe: 'readonly',
+        it: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        page: 'readonly',
+        browser: 'readonly',
+        context: 'readonly',
+        // Browser-like globals used in tests & helpers
+        window: 'readonly',
+        document: 'readonly',
+        navigator: 'readonly',
+        localStorage: 'readonly',
+        sessionStorage: 'readonly',
+        URLSearchParams: 'readonly',
+        CustomEvent: 'readonly',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescript,
+    },
+    rules: {
+      ...typescript.configs.recommended.rules,
+      // Tests are allowed to have helpers and any-typed fixtures
+      '@typescript-eslint/no-unused-vars': 'off',
+      '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/explicit-function-return-type': 'off',
       'no-console': 'off',
     },
@@ -121,9 +248,13 @@ export default [
       'react/no-unescaped-entities': 'off', // Allow quotes in text content
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
-      '@typescript-eslint/no-unused-expressions': ['error', { allowShortCircuit: true, allowTernary: true }],
+      '@typescript-eslint/no-unused-expressions': [
+        'error',
+        { allowShortCircuit: true, allowTernary: true },
+      ],
       'no-console': 'off',
-      'react-compiler/react-compiler': 'warn', // Catch React performance anti-patterns
+      // Disable React Compiler warnings – we still keep core React/TS rules
+      'react-compiler/react-compiler': 'off',
     },
     settings: {
       react: {
@@ -138,11 +269,19 @@ export default [
       'node_modules/**',
       'dist/**',
       'public/**',
+      'api/dist/**',
+      'api/public/**',
+      'client/dist/**',
+      'playwright-report/**',
+      'logs/**',
       'site/**', // Generated documentation site
       'data/**',
+      '.venv/**', // (legacy) Python virtual environment at repo root
+      'docs/.venv/**', // Python virtual environment for docs
       '*.js',
       '*.mjs',
       'vite.config.ts',
+      'client/vite.config.ts',
       'eslint.config.mjs',
       'client/src/brackets-viewer/**', // Vendored code - ignore linting errors
       '.pnp.cjs', // Yarn PnP file

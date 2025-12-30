@@ -34,9 +34,19 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   return (
     <Dialog
       open={open}
-      onClose={onCancel}
+      onClose={(_event, reason) => {
+        // For destructive / high‑impact dialogs we only treat explicit button
+        // clicks as a "cancel" action. Backdrop clicks and ESC simply keep
+        // the dialog open so we don't accidentally trigger side effects that
+        // callers might attach to onCancel (e.g. navigation).
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
+          return;
+        }
+        onCancel();
+      }}
       maxWidth="sm"
       fullWidth
+      data-testid="confirm-dialog"
       PaperProps={{
         sx: {
           borderRadius: 3,
@@ -62,7 +72,7 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             fontSize: 28,
           }}
         />
-        <Typography variant="h6" fontWeight={600}>
+        <Typography component="span" variant="h6" fontWeight={600}>
           {title}
         </Typography>
       </DialogTitle>
@@ -73,7 +83,13 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
         <Button onClick={onCancel} variant="outlined" color="inherit">
           {cancelLabel}
         </Button>
-        <Button onClick={onConfirm} variant="contained" color={confirmColor} autoFocus>
+        <Button
+          data-testid="confirm-dialog-confirm-button"
+          onClick={onConfirm}
+          variant="contained"
+          color={confirmColor}
+          autoFocus
+        >
           {confirmLabel}
         </Button>
       </DialogActions>

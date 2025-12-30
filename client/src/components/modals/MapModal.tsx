@@ -10,11 +10,15 @@ import {
   Typography,
   Alert,
   CircularProgress,
+  IconButton,
 } from '@mui/material';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import DeleteIcon from '@mui/icons-material/Delete';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map, MapResponse } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapModalProps {
   open: boolean;
@@ -24,6 +28,7 @@ interface MapModalProps {
 }
 
 export default function MapModal({ open, map, onClose, onSave }: MapModalProps) {
+  const { showSuccess, showError } = useSnackbar();
   const [id, setId] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -36,12 +41,21 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
   const isEditing = !!map;
 
+  const getDefaultWebpUrlForId = (mapId: string): string =>
+    `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
+
   useEffect(() => {
     if (map) {
       setId(map.id);
       setDisplayName(map.displayName);
-      setImageUrl(map.imageUrl || '');
-      setPreviewUrl(map.imageUrl || '');
+      // For repo-backed maps, always prefer the WebP URL derived from the map ID.
+      // For custom uploads (non-repo URLs), keep the stored imageUrl.
+      const normalizedImageUrl =
+        map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+          ? map.imageUrl
+          : getDefaultWebpUrlForId(map.id);
+      setImageUrl(normalizedImageUrl || '');
+      setPreviewUrl(normalizedImageUrl || '');
     } else {
       resetForm();
     }
@@ -137,8 +151,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setError('');
 
     try {
-      // Download from GitHub repo
-      const imageUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${id}.png`;
+      // Download full-size webp image from GitHub repo
+      const imageUrl = `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${id}.webp`;
 
       // Test if image exists
       const response = await fetch(imageUrl, { method: 'HEAD' });
@@ -215,23 +229,50 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
       if (isEditing) {
         await api.put<MapResponse>(`/api/maps/${map.id}`, payload);
+        showSuccess('Map updated successfully');
       } else {
         await api.post<MapResponse>('/api/maps', payload);
+        showSuccess('Map created successfully');
       }
 
       onSave();
       onClose();
     } catch (err: unknown) {
       const error = err as { error?: string; message?: string };
-      setError(error.error || error.message || 'Failed to save map');
+      const errorMessage = error.error || error.message || 'Failed to save map';
+      setError(errorMessage);
+      showError(errorMessage);
     } finally {
       setSaving(false);
     }
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>{isEditing ? 'Edit Map' : 'Add Map'}</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      data-testid="map-modal"
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          {isEditing ? 'Edit Map' : 'Add Map'}
+        </Typography>
+        <IconButton onClick={onClose} size="small" aria-label="close">
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
@@ -241,10 +282,13 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
               const value = e.target.value.toLowerCase().trim();
               setId(value);
             }}
-            placeholder="e.g., de_dust2"
+            placeholder="de_dust2"
             disabled={isEditing}
             required
-            helperText="Lowercase letters, numbers, and underscores only (e.g., de_dust2)"
+            slotProps={{
+              htmlInput: { 'data-testid': 'map-id-input' },
+            }}
+            helperText="Lowercase letters, numbers, and underscores only (de_dust2)"
             fullWidth
           />
 
@@ -252,9 +296,12 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             label="Display Name"
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="e.g., Dust II"
+            placeholder="Dust II"
             required
             fullWidth
+            slotProps={{
+              htmlInput: { 'data-testid': 'map-display-name-input' },
+            }}
           />
 
           <Box>
@@ -321,22 +368,11 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   Remove Image
                 </Button>
               </Box>
-              <Box
-                component="img"
+              <FadeInImage
                 src={previewUrl}
                 alt={displayName || id}
-                sx={{
-                  width: '100%',
-                  maxHeight: 200,
-                  objectFit: 'contain',
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 1,
-                }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
+                height={256}
+                sx={{ width: '100%', border: '1px solid', borderColor: 'divider', borderRadius: 1 }}
               />
             </Box>
           )}
@@ -355,6 +391,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           </Button>
         )}
         <Button
+          data-testid={isEditing ? 'map-update-button' : 'map-create-button'}
           onClick={handleSave}
           variant="contained"
           disabled={saving}

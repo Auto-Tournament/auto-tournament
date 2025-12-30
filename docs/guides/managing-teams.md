@@ -13,6 +13,7 @@
 4. Add players:
    - Steam ID or vanity URL
    - Player name
+   - **Skill Rating (optional)** – Defaults to the system’s starting Skill Rating (1500) if not specified
    - Minimum 5 players required
 5. Click **"Create Team"**
 
@@ -21,22 +22,26 @@
     For multiple teams, use JSON import:
 
     ```json
-    {
-      "teams": [
-        {
-          "name": "Team Pinger",
-          "tag": "PING",
-          "players": [
-            { "steamId": "76561199486434142", "name": "Simpert" },
-            { "steamId": "76561198765432109", "name": "Player2" },
-            { "steamId": "76561198765432108", "name": "Player3" },
-            { "steamId": "76561198765432107", "name": "Player4" },
-            { "steamId": "76561198765432106", "name": "Player5" }
-          ]
-        }
-      ]
-    }
+    [
+      {
+        "name": "Team Pinger",
+        "tag": "PING",
+        "players": [
+          { "steamId": "76561199486434142", "name": "Simpert", "elo": 3200 },
+          { "steamId": "76561198765432109", "name": "Player2", "elo": 3100 },
+          { "steamId": "76561198765432108", "name": "Player3" },
+          { "steamId": "76561198765432107", "name": "Player4", "elo": 1500 },
+          { "steamId": "76561198765432106", "name": "Player5" }
+        ]
+      }
+    ]
     ```
+
+    **Note:** The `elo` field is optional. If not specified, players will be created with the default Skill Rating (1500). This is useful for shuffle tournaments where ratings are used for team balancing.
+
+    **Download JSON Template:** [team-import-example.json](../TEAM_IMPORT_EXAMPLE.json)
+
+    **Note:** Teams must be imported in JSON format. CSV import is not supported due to the nested player structure.
 
 ## Team Pages
 
@@ -60,7 +65,11 @@ Share this with teams - no authentication needed. They can:
 
 - Edit team → Add Player
 - Enter Steam ID (Steam64, Steam32, or vanity URL)
+- Enter player name
+- **Set ELO rating (optional)** – Defaults to your configured **Default Player ELO** in Settings if not specified
 - Configure a Steam API key in the dashboard **Settings** to enable vanity URL resolution
+
+**Note:** When adding players directly to teams, you can set their initial Skill Rating. This is especially useful for shuffle tournaments where rating is used for team balancing. If no rating is specified, it defaults to the system’s starting Skill Rating (1500).
 
 ### Backup Players (Mid-Match)
 

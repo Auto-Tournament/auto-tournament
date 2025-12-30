@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
-  Container,
   Typography,
   Box,
   Card,
@@ -28,6 +28,7 @@ import { ADMIN_COMMAND_CATEGORIES, type AdminCommand } from '../constants/adminC
 import { useAdminCommands } from '../hooks/useAdminCommands';
 import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 // Set dynamic page title
 document.title = 'Admin Tools';
@@ -41,18 +42,31 @@ interface Server {
 }
 
 const AdminTools: React.FC = () => {
+  const { setHeaderActions } = usePageHeader();
   const [servers, setServers] = useState<Server[]>([]);
   const [selectedServerId, setSelectedServerId] = useState<string>('all');
   const [loadingServers, setLoadingServers] = useState(true);
   const [commandInputs, setCommandInputs] = useState<Record<string, string>>({});
 
-  const { executing, results, error, success, executeCommand, clearMessages } = useAdminCommands();
+  const { executing, results, error, success, executeCommand } = useAdminCommands();
+  const { showSuccess, showError } = useSnackbar();
 
-  useEffect(() => {
-    loadServers();
-  }, []);
+  // Curate which commands are shown as "quick actions" vs tucked away in advanced tools.
+  // This keeps the page comprehensive but avoids overwhelming admins with every niche option up front.
+  const ESSENTIAL_COMMAND_IDS = new Set<string>([
+    'match-end', // css_restart
+    'force-pause',
+    'force-unpause',
+    'broadcast',
+    'start-practice',
+    'exit-practice',
+  ]);
 
-  const loadServers = async () => {
+  // Commands that are effectively duplicates or legacy variants we don't need to show twice
+  // (e.g. another css_restart UI entry).
+  const HIDDEN_COMMAND_IDS = new Set<string>(['clean-servers']);
+
+  const loadServers = React.useCallback(async () => {
     setLoadingServers(true);
     try {
       const response: { servers: Server[] } = await api.get('/api/servers');
@@ -63,11 +77,30 @@ const AdminTools: React.FC = () => {
     } finally {
       setLoadingServers(false);
     }
-  };
+  }, []);
+
+  React.useEffect(() => {
+    loadServers();
+  }, [loadServers]);
+
+  React.useEffect(() => {
+    setHeaderActions(
+      <Button
+        variant="outlined"
+        startIcon={<RefreshIcon />}
+        onClick={loadServers}
+        disabled={loadingServers}
+      >
+        Refresh Servers
+      </Button>
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, loadingServers, loadServers]);
 
   const handleExecuteCommand = async (command: AdminCommand) => {
-    clearMessages();
-
     // Get the command value (input from user if required)
     const value = command.requiresInput ? commandInputs[command.id] : undefined;
 
@@ -95,34 +128,104 @@ const AdminTools: React.FC = () => {
     setCommandInputs((prev) => ({ ...prev, [commandId]: value }));
   };
 
+  React.useEffect(() => {
+    if (success) {
+      showSuccess(success);
+    }
+  }, [success, showSuccess]);
+
+  React.useEffect(() => {
+    if (error) {
+      showError(error);
+    }
+  }, [error, showError]);
+
+  // Flatten all commands so we can build "Quick Actions" and "Advanced" sections
+  const allCommands: AdminCommand[] = ADMIN_COMMAND_CATEGORIES.flatMap((category) => category.commands);
+
+  const quickCommands: AdminCommand[] = allCommands.filter(
+    (command) => ESSENTIAL_COMMAND_IDS.has(command.id) && !HIDDEN_COMMAND_IDS.has(command.id)
+  );
+
+  const advancedCategories = ADMIN_COMMAND_CATEGORIES
+    .map((category) => ({
+      ...category,
+      commands: category.commands.filter(
+        (command) =>
+          !ESSENTIAL_COMMAND_IDS.has(command.id) && !HIDDEN_COMMAND_IDS.has(command.id)
+      ),
+    }))
+    .filter((category) => category.commands.length > 0);
+
+  const renderCommandCard = (command: AdminCommand) => (
+    <Card variant="outlined">
+      <CardContent>
+        <Typography variant="subtitle2" fontWeight={600} gutterBottom>
+          {command.label}
+        </Typography>
+        {command.description && (
+          <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+            {command.description}
+          </Typography>
+        )}
+
+        {command.requiresInput && (
+          <TextField
+            fullWidth
+            size="small"
+            label={command.inputLabel}
+            type={command.inputType || 'text'}
+            value={commandInputs[command.id] || ''}
+            onChange={(e) => handleInputChange(command.id, e.target.value)}
+            sx={{ mb: 1 }}
+          />
+        )}
+
+        <Button
+          fullWidth
+          variant="contained"
+          color={command.color || 'primary'}
+          size="small"
+          startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
+          onClick={() => handleExecuteCommand(command)}
+          disabled={
+            executing ||
+            servers.length === 0 ||
+            (command.requiresInput && !commandInputs[command.id])
+          }
+        >
+          Execute
+        </Button>
+
+        {command.id === 'custom-rcon' && (
+          <Alert severity="warning" sx={{ mt: 1 }}>
+            <Typography variant="caption">
+              <strong>Warning:</strong> Use with caution!
+            </Typography>
+          </Alert>
+        )}
+      </CardContent>
+    </Card>
+  );
+
   if (loadingServers) {
     return (
-      <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={600}>
-          Admin Tools
-        </Typography>
-        <Button
-          variant="outlined"
-          startIcon={<RefreshIcon />}
-          onClick={loadServers}
-          disabled={loadingServers}
-        >
-          Refresh Servers
-        </Button>
-      </Box>
-
-      <Typography variant="h5" fontWeight={600} mb={3}>
-        RCON Commands
+    <Box sx={{ width: '100%', height: '100%' }}>
+      <Typography variant="h5" fontWeight={600} mb={1.5}>
+        Admin Tools
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={3}>
+        Run common match and server actions across your CS2 servers. Quick actions are shown first,
+        with more advanced tools available below.
       </Typography>
 
       {/* Server Selection */}
@@ -172,18 +275,6 @@ const AdminTools: React.FC = () => {
           </Grid>
         </CardContent>
       </Card>
-
-      {/* Feedback Messages */}
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={clearMessages}>
-          {success}
-        </Alert>
-      )}
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={clearMessages}>
-          {error}
-        </Alert>
-      )}
 
       {/* Execution Results */}
       {results.length > 0 && (
@@ -248,76 +339,91 @@ const AdminTools: React.FC = () => {
         </Card>
       )}
 
-      {/* Command Categories */}
-      {ADMIN_COMMAND_CATEGORIES.map((category) => (
-        <Accordion key={category.id} defaultExpanded={category.id === 'match-control'}>
-          <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-            <Typography variant="h6">{category.title}</Typography>
-          </AccordionSummary>
-          <AccordionDetails>
-            <Grid container spacing={2}>
-              {category.commands.map((command) => (
-                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={command.id}>
-                  <Card variant="outlined">
-                    <CardContent>
-                      <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        {command.label}
-                      </Typography>
-                      {command.description && (
-                        <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-                          {command.description}
-                        </Typography>
-                      )}
+      {/* Quick Actions */}
+      {quickCommands.length > 0 && (
+        <>
+          <Typography variant="h6" fontWeight={600} mb={2}>
+            Quick Actions
+          </Typography>
+          <Grid container spacing={2} mb={3}>
+            {quickCommands.map((command) => (
+              <Grid size={{ xs: 12, sm: 6, md: 4 }} key={command.id}>
+                {renderCommandCard(command)}
+              </Grid>
+            ))}
+          </Grid>
+        </>
+      )}
 
-                      {command.requiresInput && (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          label={command.inputLabel}
-                          type={command.inputType || 'text'}
-                          value={commandInputs[command.id] || ''}
-                          onChange={(e) => handleInputChange(command.id, e.target.value)}
-                          sx={{ mb: 1 }}
-                        />
-                      )}
-
-                      <Button
-                        fullWidth
-                        variant="contained"
-                        color={command.color || 'primary'}
-                        size="small"
-                        startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
-                        onClick={() => handleExecuteCommand(command)}
-                        disabled={
-                          executing ||
-                          servers.length === 0 ||
-                          (command.requiresInput && !commandInputs[command.id])
-                        }
-                      >
-                        Execute
-                      </Button>
-
-                      {command.id === 'custom-rcon' && (
-                        <Alert severity="warning" sx={{ mt: 1 }}>
-                          <Typography variant="caption">
-                            <strong>Warning:</strong> Use with caution!
-                          </Typography>
-                        </Alert>
-                      )}
-                    </CardContent>
-                  </Card>
+      {/* Advanced Command Categories */}
+      {advancedCategories.length > 0 && (
+        <>
+          <Typography variant="h6" fontWeight={600} mt={1} mb={2}>
+            Advanced Tools
+          </Typography>
+          {advancedCategories.map((category) => (
+            <Accordion key={category.id}>
+              <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                <Typography variant="subtitle1" fontWeight={600}>
+                  {category.title}
+                </Typography>
+              </AccordionSummary>
+              <AccordionDetails>
+                <Grid container spacing={2}>
+                  {category.commands.map((command) => (
+                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={command.id}>
+                      {renderCommandCard(command)}
+                    </Grid>
+                  ))}
                 </Grid>
-              ))}
-            </Grid>
-          </AccordionDetails>
-        </Accordion>
-      ))}
+              </AccordionDetails>
+            </Accordion>
+          ))}
+        </>
+      )}
 
       {servers.length === 0 && (
         <Alert severity="info">
           No enabled servers found. Please add and enable servers in the Servers page.
         </Alert>
       )}
+
+      <Divider sx={{ my: 4 }} />
+
+      {/* Match Recovery Utilities */}
+      <Typography variant="h5" fontWeight={600} mb={2}>
+        Match Recovery
+      </Typography>
+      <Typography variant="body2" color="text.secondary" mb={2}>
+        If the API or servers were restarted during a tournament and match state looks out of sync
+        (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery
+        pass. This will ask all servers for their current match report, resync scores/phases, and
+        reconfigure webhooks and demo uploads where possible.
+      </Typography>
+      <Button
+        variant="contained"
+        color="warning"
+        onClick={async () => {
+          try {
+            const response = await api.post<{
+              success: boolean;
+              message?: string;
+            }>('/api/recovery/recover');
+
+            if (response.success) {
+              showSuccess(response.message || 'Match recovery completed.');
+            } else {
+              showError(response.message || 'Match recovery failed.');
+            }
+          } catch (err) {
+            const message =
+              err instanceof Error ? err.message : 'Failed to trigger match recovery. Please try again.';
+            showError(message);
+          }
+        }}
+      >
+        Run Match Recovery Now
+      </Button>
 
       <Divider sx={{ my: 4 }} />
 
@@ -345,7 +451,8 @@ const AdminTools: React.FC = () => {
           <LogViewer />
         </AccordionDetails>
       </Accordion>
-    </Container>
+
+    </Box>
   );
 };
 

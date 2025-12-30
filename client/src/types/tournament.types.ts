@@ -5,10 +5,13 @@
 export interface Tournament {
   id: number;
   name: string;
-  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle';
   format: 'bo1' | 'bo3' | 'bo5';
   status: 'setup' | 'ready' | 'in_progress' | 'completed';
   maps: string[];
+  // For shuffle tournaments, mapSequence defines the map per round.
+  // For non-shuffle, it will usually be undefined and we fall back to maps.
+  mapSequence?: string[];
   teamIds: string[];
   teams?: Array<{
     id: string;
@@ -20,6 +23,12 @@ export interface Tournament {
   updated_at?: number;
   started_at?: number | null;
   completed_at?: number | null;
+  // Shuffle tournament specific fields
+  teamSize?: number;
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
+  eloTemplateId?: string;
 }
 
 export interface TournamentSettings {
@@ -40,7 +49,7 @@ export interface TournamentTemplate {
   id: number;
   name: string;
   description?: string;
-  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss';
+  type: 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle';
   format: 'bo1' | 'bo3' | 'bo5';
   mapPoolId?: number | null;
   maps: string[];

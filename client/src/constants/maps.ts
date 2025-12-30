@@ -5,43 +5,59 @@
 import type { CS2MapData } from '../types/veto.types';
 
 // Map images - using sivert-io/cs2-server-manager
-const MAP_IMAGE_BASE = 'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+// Full-size webp images are used for large hero/background displays.
+// Thumbnails (with `_thumb` suffix) are used for smaller cards/lists.
+const MAP_IMAGE_BASE =
+  'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
+
+const getFullImageUrl = (mapName: string): string =>
+  `${MAP_IMAGE_BASE}/${mapName}.webp`;
+
+const getThumbnailUrl = (mapName: string): string =>
+  `${MAP_IMAGE_BASE}/${mapName}_thumb.webp`;
 
 export const CS2_MAPS: CS2MapData[] = [
   {
     name: 'de_ancient',
     displayName: 'Ancient',
-    image: `${MAP_IMAGE_BASE}/de_ancient.png`,
+    image: getFullImageUrl('de_ancient'),
+    thumbnail: getThumbnailUrl('de_ancient'),
   },
   {
     name: 'de_anubis',
     displayName: 'Anubis',
-    image: `${MAP_IMAGE_BASE}/de_anubis.png`,
+    image: getFullImageUrl('de_anubis'),
+    thumbnail: getThumbnailUrl('de_anubis'),
   },
   {
     name: 'de_dust2',
     displayName: 'Dust II',
-    image: `${MAP_IMAGE_BASE}/de_dust2.png`,
+    image: getFullImageUrl('de_dust2'),
+    thumbnail: getThumbnailUrl('de_dust2'),
   },
   {
     name: 'de_inferno',
     displayName: 'Inferno',
-    image: `${MAP_IMAGE_BASE}/de_inferno.png`,
+    image: getFullImageUrl('de_inferno'),
+    thumbnail: getThumbnailUrl('de_inferno'),
   },
   {
     name: 'de_mirage',
     displayName: 'Mirage',
-    image: `${MAP_IMAGE_BASE}/de_mirage.png`,
+    image: getFullImageUrl('de_mirage'),
+    thumbnail: getThumbnailUrl('de_mirage'),
   },
   {
     name: 'de_nuke',
     displayName: 'Nuke',
-    image: `${MAP_IMAGE_BASE}/de_nuke.png`,
+    image: getFullImageUrl('de_nuke'),
+    thumbnail: getThumbnailUrl('de_nuke'),
   },
   {
     name: 'de_vertigo',
     displayName: 'Vertigo',
-    image: `${MAP_IMAGE_BASE}/de_vertigo.png`,
+    image: getFullImageUrl('de_vertigo'),
+    thumbnail: getThumbnailUrl('de_vertigo'),
   },
 ];
 

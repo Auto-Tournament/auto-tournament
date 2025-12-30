@@ -1,6 +1,6 @@
 # Your First Tournament
 
-Step-by-step guide to running a complete tournament.
+Step-by-step guide to running a complete tournament with MatchZy Auto Tournament .
 
 ## Before You Start
 
@@ -8,7 +8,7 @@ Make sure you have:
 
 - [x] System installed and running
 - [x] At least 2 teams created with 5+ players each
-- [x] At least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy/releases) installed
+- [x] At least one CS2 server with the [enhanced MatchZy plugin](https://github.com/sivert-io/MatchZy-Enhanced) installed
 
 > **Haven't set up your CS2 server yet?** See the [CS2 Server Setup Guide](server-setup.md) for detailed installation instructions.
 
@@ -16,7 +16,7 @@ Make sure you have:
 
 Add your configured CS2 server to the system:
 
-1. Go to **Admin Tools** → **Servers**
+1. Click **Servers** in the sidebar
 2. Click **"Add Server"**
 3. Fill in:
    ```
@@ -48,6 +48,7 @@ Description: 8-team single elimination
 
 - **Single Elimination** - Fast, one loss and you're out
 - **Double Elimination** - Second chance via lower bracket
+- **Shuffle Tournament** - Individual player competition with dynamic team balancing (see [Shuffle Tournaments Guide](../guides/shuffle-tournaments.md))
 - **Round Robin** - Everyone plays everyone
 - **Swiss System** - Pairs teams by W/L record
 
@@ -287,6 +288,16 @@ See [Running Matches](../guides/running-matches.md) for detailed scenarios.
 - Bracket shows full tournament progression
 - Download demos from match details
 - Export bracket screenshot
+
+### Players, Skill Rating & Stats
+
+- All players added to teams are also created in the global **Players** list with a display Skill Rating.
+- New players without an explicit rating start at the default Skill Rating (1500) unless you override it when creating/importing the player.
+- After each match, player ratings are updated automatically using the OpenSkill engine, and detailed stats (ADR, K/D, MVPs, damage, etc.) are stored.
+- You can open any player's public page (`/player/:steamId`) to see:
+  - Skill Rating history for all tournament types (not just shuffle)
+  - Match history with per-map stats
+  - Performance metrics and trends
 
 ### Cleanup
 

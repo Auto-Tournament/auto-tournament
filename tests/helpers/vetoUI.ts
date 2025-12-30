@@ -47,12 +47,21 @@ export async function performVetoActionUI(
   } catch (error) {
     // If networkidle times out, just wait a bit and continue
     console.warn('Network idle timeout, continuing anyway...');
-    await page.waitForTimeout(1000);
+    // Check if page is still valid before waiting
+    if (!page.isClosed()) {
+      await page.waitForTimeout(1000);
+    }
   }
 
-  // Wait for veto interface to be visible (check for "Your turn" or map cards)
+  // Wait for veto interface to be visible using getByTestId (Playwright standard)
   try {
-    await page.waitForSelector('text=/your turn|pick.*ban|map/i', { timeout: 10000 });
+    const vetoInterface = page.getByTestId('veto-interface');
+    await expect(vetoInterface).toBeVisible({ timeout: 10000 });
+    
+    // Wait a bit more for the interface to fully render (maps, buttons, etc.)
+    if (!page.isClosed()) {
+      await page.waitForTimeout(500);
+    }
   } catch (error) {
     // If veto interface not found, might already be completed
     console.warn('Veto interface not found, might be completed');
@@ -61,9 +70,8 @@ export async function performVetoActionUI(
 
   if (action.action === 'side_pick') {
     // For side pick, find and click the CT or T button
-    // The buttons have text "Counter-Terrorist" or "Terrorist"
-    const buttonText = action.side === 'CT' ? 'Counter-Terrorist' : 'Terrorist';
-    const sideButton = page.getByRole('button', { name: new RegExp(buttonText, 'i') }).first();
+    const sideTestId = action.side === 'CT' ? 'veto-side-ct-button' : 'veto-side-t-button';
+    const sideButton = page.getByTestId(sideTestId);
     
     await expect(sideButton).toBeVisible({ timeout: 10000 });
     await expect(sideButton).toBeEnabled({ timeout: 5000 });
@@ -80,57 +88,51 @@ export async function performVetoActionUI(
         // If no response, just continue after short delay
       });
       // Small delay for state propagation
-      await page.waitForTimeout(500);
+      if (!page.isClosed()) {
+        await page.waitForTimeout(500);
+      }
     } catch (error) {
       // If waiting fails, use minimal timeout
-      await page.waitForTimeout(500);
+      if (!page.isClosed()) {
+        await page.waitForTimeout(500);
+      }
     }
     return true;
   } else {
-    // For ban/pick, find the map card and click it
-    const mapDisplayName = action.mapName ? getMapDisplayName(action.mapName) : '';
-    
-    // Find the map card by its display name text
-    // The map name appears in a Typography component inside a Card
-    // We'll find the text and then get the closest clickable card element
-    const mapNameText = page.getByText(new RegExp(`^${mapDisplayName}$`, 'i'));
-    
-    // Get the parent card element (the clickable card)
-    const mapCard = mapNameText.locator('..').locator('..').first(); // Go up to Card level
-    
-    // Alternative: find by role or by clicking directly on the text's parent
-    // If the above doesn't work, try finding all cards and filtering
-    const allCards = page.locator('[class*="MuiCard-root"]');
-    const cardCount = await allCards.count();
-    
-    let finalMapCard = mapCard;
-    
-    // If we can't find by text hierarchy, try finding by content
-    if ((await mapCard.count()) === 0 && cardCount > 0) {
-      // Find the card that contains the map name
-      for (let i = 0; i < cardCount; i++) {
-        const card = allCards.nth(i);
-        const cardText = await card.textContent();
-        if (cardText && cardText.includes(mapDisplayName)) {
-          finalMapCard = card;
-          break;
-        }
-      }
+    // For ban/pick, find the map card and click it using data-test-id
+    if (!action.mapName) {
+      console.error('Map name is required for ban/pick action');
+      return false;
     }
     
-    // Wait for map card to be visible
-    await expect(finalMapCard).toBeVisible({ timeout: 10000 });
+    // Find the map card by data-test-id
+    // First wait a bit for maps to render in the veto interface
+    if (!page.isClosed()) {
+      await page.waitForTimeout(1000);
+    }
+    
+    const mapCard = page.getByTestId(`veto-map-card-${action.mapName}`);
+    
+    // Wait for map card to be visible with longer timeout
+    // Maps might take time to load and render
+    await expect(mapCard).toBeVisible({ timeout: 15000 });
     
     // Click the map card
-    await finalMapCard.click();
+    await mapCard.click();
     
     // Wait for action to complete
-    await page.waitForTimeout(1500);
+    if (!page.isClosed()) {
+      await page.waitForTimeout(1500);
+    }
     try {
-      await page.waitForLoadState('networkidle', { timeout: 5000 });
+      if (!page.isClosed()) {
+        await page.waitForLoadState('networkidle', { timeout: 5000 });
+      }
     } catch (error) {
       // If networkidle times out, just wait a bit and continue
-      await page.waitForTimeout(1000);
+      if (!page.isClosed()) {
+        await page.waitForTimeout(1000);
+      }
     }
     return true;
   }
@@ -156,11 +158,18 @@ export async function performVetoActionsUI(
       }
     } catch (error) {
       console.error(`[Veto UI] Error on action ${i + 1}:`, error);
+      // Check if page was closed (common when navigation happens)
+      if (page.isClosed()) {
+        console.warn(`[Veto UI] Page was closed during action ${i + 1}, stopping veto actions`);
+        return;
+      }
       throw error;
     }
     
     // Small delay between actions
-    await page.waitForTimeout(500);
+    if (!page.isClosed()) {
+      await page.waitForTimeout(500);
+    }
   }
 }
 

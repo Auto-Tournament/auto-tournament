@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, TextField } from '@mui/material';
+import { Box, TextField } from '@mui/material';
 
 interface TournamentNameStepProps {
   name: string;
@@ -16,12 +16,6 @@ export function TournamentNameStep({
 }: TournamentNameStepProps) {
   return (
     <Box>
-      <Typography variant="overline" color="primary" fontWeight={600}>
-        Step 1
-      </Typography>
-      <Typography variant="subtitle2" fontWeight={600} mb={1}>
-        Tournament Name
-      </Typography>
       <TextField
         label="Tournament Name"
         value={name}
@@ -29,7 +23,10 @@ export function TournamentNameStep({
         disabled={!canEdit || saving}
         fullWidth
         required
-        placeholder="e.g., NTLAN 2025 Spring Tournament"
+        placeholder="NTLAN 2025 Spring Tournament"
+        slotProps={{
+          htmlInput: { 'data-testid': 'tournament-name-input' },
+        }}
       />
     </Box>
   );

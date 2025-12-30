@@ -10,11 +10,11 @@ import {
   TableRow,
   Typography,
   Box,
-  Avatar,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PeopleIcon from '@mui/icons-material/People';
 import type { Team, TeamMatchInfo } from '../../types';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 interface MatchRosterAccordionProps {
   team: Team | null;
@@ -56,13 +56,12 @@ export function MatchRosterAccordion({ team, match }: MatchRosterAccordionProps)
                     <TableCell sx={{ borderBottom: 'none', py: 1 }}>
                       <Box display="flex" alignItems="center" gap={1}>
                         {teamPlayer && (
-                          <Avatar
-                            src={teamPlayer.avatar}
-                            alt={teamPlayer.name}
-                            sx={{ width: 24, height: 24 }}
-                          >
-                            {teamPlayer.name.charAt(0).toUpperCase()}
-                          </Avatar>
+                          <PlayerAvatar
+                            id={teamPlayer.steamId}
+                            name={teamPlayer.name}
+                            avatarUrl={teamPlayer.avatar}
+                            size={24}
+                          />
                         )}
                         <Typography variant="body2" color="primary.main" fontWeight={500}>
                           {teamPlayer ? teamPlayer.name : '—'}
@@ -75,13 +74,12 @@ export function MatchRosterAccordion({ team, match }: MatchRosterAccordionProps)
                           {opponentPlayer ? opponentPlayer.name : '—'}
                         </Typography>
                         {opponentPlayer && (
-                          <Avatar
-                            src={opponentPlayer.avatar}
-                            alt={opponentPlayer.name}
-                            sx={{ width: 24, height: 24 }}
-                          >
-                            {opponentPlayer.name.charAt(0).toUpperCase()}
-                          </Avatar>
+                          <PlayerAvatar
+                            id={opponentPlayer.steamid}
+                            name={opponentPlayer.name}
+                            avatarUrl={opponentPlayer.avatar}
+                            size={24}
+                          />
                         )}
                       </Box>
                     </TableCell>

@@ -31,6 +31,9 @@ export const ServerEventsMonitor: React.FC = () => {
   const [error, setError] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [noEventsHint, setNoEventsHint] = useState(false);
+  const [eventsHealthError, setEventsHealthError] = useState('');
 
   const socketRef = useRef<Socket | null>(null);
   const eventsEndRef = useRef<HTMLDivElement>(null);
@@ -41,12 +44,25 @@ export const ServerEventsMonitor: React.FC = () => {
   };
 
   useEffect(() => {
-    scrollToBottom();
-  }, [events]);
+    if (autoScroll) {
+      scrollToBottom();
+    }
+  }, [events, autoScroll]);
 
-  // Load servers with events
+  // Lightweight health check for events API so we can surface backend issues in the UI
   useEffect(() => {
-    loadServers();
+    const checkEventsHealth = async () => {
+      try {
+        await api.get('/api/events/test');
+        setEventsHealthError('');
+      } catch (err) {
+        console.error('Failed to reach /api/events/test', err);
+        setEventsHealthError(
+          'Events API health check failed. Verify that the API is running and /api/events/test is reachable.'
+        );
+      }
+    };
+    void checkEventsHealth();
   }, []);
 
   // Setup WebSocket connection
@@ -72,7 +88,7 @@ export const ServerEventsMonitor: React.FC = () => {
     };
   }, []);
 
-  // Listen to ALL server events (no filtering)
+  // Listen to ALL server events (filter by selected server if set)
   useEffect(() => {
     const socket = socketRef.current;
     if (!socket) return;
@@ -81,7 +97,11 @@ export const ServerEventsMonitor: React.FC = () => {
       if (!isPaused) {
         // Show events from all servers if no specific server selected
         if (!selectedServerId || event.serverId === selectedServerId) {
-          setEvents((prev) => [event, ...prev].slice(0, 100)); // Keep last 100
+          // Append newest events at the bottom; keep only the last 100
+          setEvents((prev) => {
+            const next = [...prev, event];
+            return next.length > 100 ? next.slice(next.length - 100) : next;
+          });
         }
       }
     };
@@ -102,7 +122,7 @@ export const ServerEventsMonitor: React.FC = () => {
     };
   }, [selectedServerId, isPaused]);
 
-  const loadServers = async () => {
+  const loadServers = useCallback(async () => {
     try {
       const response = await api.get<{
         success: boolean;
@@ -110,17 +130,26 @@ export const ServerEventsMonitor: React.FC = () => {
       }>('/api/servers?enabled=true');
 
       if (response.success && Array.isArray(response.servers)) {
-        setServers(
-          response.servers.map((server) => ({
-            id: server.id,
-            name: server.name,
-          }))
-        );
+        const mapped = response.servers.map((server) => ({
+          id: server.id,
+          name: server.name,
+        }));
+        setServers(mapped);
+
+        // Auto-select first server if none selected
+        if (!selectedServerId && mapped.length > 0) {
+          setSelectedServerId(mapped[0].id);
+        }
       }
     } catch (err) {
       console.error('Failed to load servers:', err);
     }
-  };
+  }, [selectedServerId]);
+
+  // Load servers with events
+  useEffect(() => {
+    void loadServers();
+  }, [loadServers]);
 
   const loadEvents = useCallback(async () => {
     if (!selectedServerId) return;
@@ -133,7 +162,8 @@ export const ServerEventsMonitor: React.FC = () => {
         `/api/events/server/${selectedServerId}`
       );
       if (response.success) {
-        setEvents(response.events || []);
+        const ordered = (response.events || []).slice().sort((a, b) => a.timestamp - b.timestamp);
+        setEvents(ordered);
       }
     } catch (err) {
       setError('Failed to load events');
@@ -146,6 +176,7 @@ export const ServerEventsMonitor: React.FC = () => {
   const handleServerChange = (serverId: string) => {
     setSelectedServerId(serverId);
     setEvents([]);
+    setNoEventsHint(false);
   };
 
   const handleClear = () => {
@@ -156,11 +187,36 @@ export const ServerEventsMonitor: React.FC = () => {
     setIsPaused(!isPaused);
   };
 
+  const handleScroll = (event: React.UIEvent<HTMLDivElement>) => {
+    const target = event.currentTarget;
+    const { scrollTop, scrollHeight, clientHeight } = target;
+    const distanceFromBottom = scrollHeight - (scrollTop + clientHeight);
+
+    // If the user is within 40px of the bottom, treat as "pinned"
+    setAutoScroll(distanceFromBottom < 40);
+  };
+
   useEffect(() => {
     if (selectedServerId) {
       loadEvents();
     }
   }, [selectedServerId, loadEvents]);
+
+  // After N seconds with no events for a selected server, show a stronger hint to check webhook config
+  useEffect(() => {
+    if (!selectedServerId || events.length > 0) {
+      setNoEventsHint(false);
+      return;
+    }
+
+    const timeout = setTimeout(() => {
+      if (events.length === 0 && selectedServerId) {
+        setNoEventsHint(true);
+      }
+    }, 15000); // 15 seconds
+
+    return () => clearTimeout(timeout);
+  }, [selectedServerId, events.length]);
 
   const formatTimestamp = (timestamp: number) => {
     return new Date(timestamp).toLocaleTimeString('en-US', {
@@ -176,20 +232,52 @@ export const ServerEventsMonitor: React.FC = () => {
     switch (eventType) {
       case 'series_start':
       case 'going_live':
-        return '#4caf50'; // green
+        return '#A6E3D0'; // success (mint)
       case 'series_end':
-        return '#2196f3'; // blue
+        return '#A8C7FA'; // info (soft blue)
       case 'map_result':
-        return '#9c27b0'; // purple
+        return '#D0BCFF'; // primary purple
+      case 'map_picked':
+      case 'side_picked':
+      case 'map_vetoed':
+        return '#C4B5FD'; // veto / map flow (violet)
+      case 'round_started':
+      case 'warmup_ended':
+      case 'knife_round_started':
+      case 'knife_round_ended':
+      case 'halftime_started':
+      case 'overtime_started':
+      case 'side_swap':
+      case 'backup_loaded':
+        return '#6EE7B7'; // round / phase transitions (teal)
       case 'round_end':
-        return '#ff9800'; // orange
+        return '#F59E0B'; // round result (amber)
+      case 'round_mvp':
+        return '#FBBF24'; // MVP highlight (gold)
       case 'player_death':
-        return '#f44336'; // red
+        return '#F87171'; // kills/deaths (red)
       case 'player_connect':
       case 'player_disconnect':
-        return '#607d8b'; // blue-grey
+        return '#93C5FD'; // connection events (blue)
+      case 'player_ready':
+      case 'player_unready':
+      case 'team_ready':
+      case 'all_players_ready':
+      case 'unpause_requested':
+      case 'match_paused':
+      case 'match_unpaused':
+        return '#FACC15'; // ready / pause system (yellow)
+      case 'bomb_planted':
+      case 'bomb_defused':
+      case 'bomb_exploded':
+        return '#FB923C'; // bomb events (orange)
+      case 'player_stats_update':
+        return '#38BDF8'; // stats updates (sky blue)
+      case 'test_event':
+      case 'MatchZyTestEvent':
+        return '#A855F7'; // connectivity test events (purple)
       default:
-        return '#757575'; // grey
+        return '#E5E7EB'; // neutral light grey
     }
   };
 
@@ -233,20 +321,20 @@ export const ServerEventsMonitor: React.FC = () => {
 
         {/* Server Selection */}
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Select Server</InputLabel>
+          <InputLabel>Filter by Server (optional)</InputLabel>
           <Select
             value={selectedServerId}
-            label="Select Server"
+            label="Filter by Server (optional)"
             onChange={(e) => handleServerChange(e.target.value)}
           >
             {servers.length === 0 ? (
               <MenuItem value="" disabled>
-                No servers with events yet
+                No servers available
               </MenuItem>
             ) : (
               servers.map((server) => (
                 <MenuItem key={server.id} value={server.id}>
-                  {server.id} ({server.events} events)
+                  {server.name || server.id} ({server.id})
                 </MenuItem>
               ))
             )}
@@ -263,6 +351,12 @@ export const ServerEventsMonitor: React.FC = () => {
           </Alert>
         )}
 
+        {eventsHealthError && (
+          <Alert severity="warning" sx={{ mb: 2 }}>
+            {eventsHealthError}
+          </Alert>
+        )}
+
         {/* Events Console */}
         <Paper
           variant="outlined"
@@ -273,15 +367,19 @@ export const ServerEventsMonitor: React.FC = () => {
             p: 2,
             fontFamily: 'monospace',
           }}
+          onScroll={handleScroll}
         >
-          {!selectedServerId ? (
-            <Typography color="text.secondary" textAlign="center" sx={{ mt: 20 }}>
-              Select a server to view events
-            </Typography>
-          ) : events.length === 0 ? (
-            <Typography color="text.secondary" textAlign="center" sx={{ mt: 20 }}>
-              No events yet. Waiting for events from server...
-            </Typography>
+          {events.length === 0 && selectedServerId ? (
+            <Box sx={{ mt: 20 }}>
+              <Typography color="text.secondary" textAlign="center" mb={1}>
+                No events received yet for this server.
+              </Typography>
+              <Typography color="text.secondary" variant="body2" textAlign="center">
+                {noEventsHint
+                  ? 'Still no events after 15 seconds – check that your CS2 server is configured to send MatchZy webhooks to /api/events/:matchSlugOrServerId with the correct X-MatchZy-Token.'
+                  : 'Waiting for events from server...'}
+              </Typography>
+            </Box>
           ) : (
             <Box>
               {events.map((event, index) => (
@@ -299,10 +397,11 @@ export const ServerEventsMonitor: React.FC = () => {
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="caption" color="text.secondary">
-            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100) - All servers
+            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100)
+            {selectedServerId ? ` for server ${selectedServerId}` : ''}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Events update in real-time via WebSocket (unfiltered)
+            Events update in real-time via WebSocket
           </Typography>
         </Box>
       </CardContent>
@@ -316,8 +415,46 @@ const EventItem: React.FC<{
   formatTimestamp: (ts: number) => string;
   getEventColor: (type: string) => string;
 }> = ({ event, formatTimestamp, getEventColor }) => {
+  const [expanded, setExpanded] = React.useState(false);
+  const containerRef = React.useRef<HTMLDivElement | null>(null);
+
+  const toggleExpanded = () => {
+    setExpanded((prev) => !prev);
+  };
+
+  const payload = event.event as Record<string, unknown>;
+
+  // Many MatchZy events include map_number; surface it when present
+  const rawMapNumber = payload['map_number'];
+  const mapNumber = typeof rawMapNumber === 'number' ? (rawMapNumber as number) : undefined;
+
+  // Some events (round_*) also include round_number
+  const rawRoundNumber = payload['round_number'];
+  const roundNumber =
+    typeof rawRoundNumber === 'number' ? (rawRoundNumber as number) : undefined;
+
+  // Many score-bearing events include team1_score / team2_score and sometimes
+  // team1_series_score / team2_series_score – surface them when present
+  const rawTeam1Score = payload['team1_score'];
+  const rawTeam2Score = payload['team2_score'];
+  const rawTeam1Series = payload['team1_series_score'];
+  const rawTeam2Series = payload['team2_series_score'];
+
+  const hasMapScore =
+    typeof rawTeam1Score === 'number' && typeof rawTeam2Score === 'number';
+  const hasSeriesScore =
+    typeof rawTeam1Series === 'number' && typeof rawTeam2Series === 'number';
+
+  // When expanding an event, make sure it scrolls into view within the console
+  React.useEffect(() => {
+    if (expanded && containerRef.current) {
+      containerRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [expanded]);
+
   return (
     <Box
+      ref={containerRef}
       sx={{
         mb: 2,
         p: 1.5,
@@ -328,7 +465,15 @@ const EventItem: React.FC<{
       }}
     >
       {/* Event Header */}
-      <Box display="flex" gap={2} mb={1} flexWrap="wrap" alignItems="center">
+      <Box
+        display="flex"
+        gap={2}
+        mb={1}
+        flexWrap="wrap"
+        alignItems="center"
+        sx={{ cursor: 'pointer' }}
+        onClick={toggleExpanded}
+      >
         <Typography
           component="span"
           sx={{
@@ -339,17 +484,16 @@ const EventItem: React.FC<{
         >
           [{formatTimestamp(event.timestamp)}]
         </Typography>
-        <Chip
-          label={event.event.event}
-          size="small"
+        <Typography
+          component="span"
           sx={{
-            bgcolor: getEventColor(event.event.event),
-            color: '#fff',
+            color: getEventColor(event.event.event),
+            fontSize: '0.8rem',
             fontFamily: 'monospace',
-            fontSize: '0.7rem',
-            height: 20,
           }}
-        />
+        >
+          {event.event.event}
+        </Typography>
         <Typography
           component="span"
           sx={{
@@ -359,24 +503,55 @@ const EventItem: React.FC<{
           }}
         >
           Match: {event.matchSlug}
+          {mapNumber !== undefined ? `, map: ${mapNumber}` : ''}
+          {roundNumber !== undefined ? `, round: ${roundNumber}` : ''}
         </Typography>
+        {hasMapScore && (
+          <Typography
+            component="span"
+            sx={{
+              color: '#F9FAFB',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+            }}
+          >
+            {' '}
+            | Score: {rawTeam1Score}-{rawTeam2Score}
+          </Typography>
+        )}
+        {hasSeriesScore && (
+          <Typography
+            component="span"
+            sx={{
+              color: '#E5E7EB',
+              fontSize: '0.75rem',
+              fontFamily: 'monospace',
+            }}
+          >
+            {' '}
+            (Series: {rawTeam1Series}-{rawTeam2Series})
+          </Typography>
+        )}
       </Box>
 
       {/* Event Data (Pretty JSON) */}
-      <Box
-        component="pre"
-        sx={{
-          m: 0,
-          p: 1,
-          bgcolor: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: 1,
-          overflow: 'auto',
-          fontSize: '0.75rem',
-          maxHeight: 400,
-        }}
-      >
-        <code>{JSON.stringify(event.event, null, 2)}</code>
-      </Box>
+      {expanded && (
+        <Box
+          component="pre"
+          sx={{
+            m: 0,
+            mt: 1,
+            p: 1,
+            bgcolor: 'rgba(0, 0, 0, 0.3)',
+            borderRadius: 1,
+            overflow: 'auto',
+            fontSize: '0.75rem',
+            maxHeight: 400,
+          }}
+        >
+          <code>{JSON.stringify(event.event, null, 2)}</code>
+        </Box>
+      )}
     </Box>
   );
 };

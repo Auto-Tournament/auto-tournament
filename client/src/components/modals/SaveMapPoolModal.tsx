@@ -9,7 +9,10 @@ import {
   Box,
   Alert,
   CircularProgress,
+  IconButton,
+  Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import type { MapPoolResponse } from '../../types/api.types';
 
@@ -63,15 +66,41 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Save Map Pool</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        onClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Save Map Pool
+        </Typography>
+        <IconButton
+          onClick={onClose}
+          size="small"
+          aria-label="close"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
             label="Map Pool Name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="e.g., My Custom Pool"
+            placeholder="My Custom Pool"
             required
             fullWidth
             autoFocus

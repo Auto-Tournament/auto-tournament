@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { usePageHeader } from '../contexts/PageHeaderContext';
 import {
   Box,
-  Container,
   Typography,
   Card,
   CardContent,
@@ -36,6 +36,7 @@ import type { TournamentTemplate } from '../types/tournament.types';
 import type { TournamentResponse } from '../types';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -51,11 +52,11 @@ const FORMAT_LABELS: Record<string, string> = {
 };
 
 export default function Templates() {
+  const { setHeaderActions } = usePageHeader();
   const navigate = useNavigate();
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
+  const { showSuccess, showError } = useSnackbar();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<TournamentTemplate | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
@@ -72,14 +73,18 @@ export default function Templates() {
   const [loadingMaps, setLoadingMaps] = useState(false);
 
   useEffect(() => {
-    document.title = 'Tournament Templates';
-    loadTemplates();
-    loadTournamentStatus();
-    loadMaps();
-    loadMapPools();
-  }, []);
+    setHeaderActions(
+      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
+        Create Template from Tournament
+      </Button>
+    );
 
-  const loadTournamentStatus = async () => {
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, navigate]);
+
+  const loadTournamentStatus = useCallback(async () => {
     try {
       const response = await api.get<TournamentResponse>('/api/tournament');
       if (response.success && response.tournament) {
@@ -91,9 +96,9 @@ export default function Templates() {
       // No tournament exists
       setTournamentStatus(null);
     }
-  };
+  }, []);
 
-  const loadMaps = async () => {
+  const loadMaps = useCallback(async () => {
     try {
       setLoadingMaps(true);
       const response = await api.get<{ maps: Map[] }>('/api/maps');
@@ -105,9 +110,9 @@ export default function Templates() {
     } finally {
       setLoadingMaps(false);
     }
-  };
+  }, []);
 
-  const loadMapPools = async () => {
+  const loadMapPools = useCallback(async () => {
     try {
       const response = await api.get<{ mapPools: MapPool[] }>('/api/map-pools');
       if (response.mapPools) {
@@ -116,7 +121,7 @@ export default function Templates() {
     } catch (err) {
       console.error('Error loading map pools:', err);
     }
-  };
+  }, []);
 
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
@@ -154,10 +159,9 @@ export default function Templates() {
   const allMapIds = sortedMaps.map((m) => m.id);
   const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
 
-  const loadTemplates = async () => {
+  const loadTemplates = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await api.get<{ success: boolean; templates: TournamentTemplate[] }>(
         '/api/templates'
       );
@@ -165,24 +169,32 @@ export default function Templates() {
         setTemplates(response.templates);
       }
     } catch (err) {
-      setError('Failed to load templates');
+      showError('Failed to load templates');
       console.error('Error loading templates:', err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [showError]);
+
+  useEffect(() => {
+    document.title = 'Templates';
+    loadTemplates();
+    loadTournamentStatus();
+    loadMaps();
+    loadMapPools();
+  }, [loadTemplates, loadTournamentStatus, loadMaps, loadMapPools]);
 
   const handleDelete = async () => {
     if (!templateToDelete) return;
 
     try {
       await api.delete(`/api/templates/${templateToDelete.id}`);
-      setSuccess(`Template "${templateToDelete.name}" deleted successfully`);
+      showSuccess(`Template "${templateToDelete.name}" deleted successfully`);
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
       loadTemplates();
     } catch (err) {
-      setError('Failed to delete template');
+      showError('Failed to delete template');
       console.error('Error deleting template:', err);
     }
   };
@@ -200,14 +212,12 @@ export default function Templates() {
       return pool.mapIds.every((id) => template.maps.includes(id));
     });
     setSelectedMapPool(matchingPool ? matchingPool.id.toString() : 'custom');
-    setError(null);
     setEditDialogOpen(true);
   };
 
   const handleCloseEdit = () => {
     setEditDialogOpen(false);
     setEditingTemplate(null);
-    setError(null);
   };
 
   const handleSaveEdit = async () => {
@@ -216,11 +226,9 @@ export default function Templates() {
     // Validate maps for veto formats
     const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(editFormat);
     if (isVetoFormat && editMaps.length !== 7) {
-      setError('Veto formats (BO1/BO3/BO5) require exactly 7 maps');
       return;
     }
     if (!isVetoFormat && editMaps.length === 0) {
-      setError('At least one map is required');
       return;
     }
 
@@ -235,11 +243,11 @@ export default function Templates() {
         maps: editMaps,
         mapPoolId,
       });
-      setSuccess(`Template "${editName}" updated successfully`);
+      showSuccess(`Template "${editName}" updated successfully`);
       handleCloseEdit();
       loadTemplates();
     } catch (err) {
-      setError('Failed to update template');
+      showError('Failed to update template');
       console.error('Error updating template:', err);
     }
   };
@@ -247,7 +255,8 @@ export default function Templates() {
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);
     if (poolId === 'custom') {
-      // Keep current maps when switching to custom
+      // Clear maps when switching to custom so user can start from an empty selection
+      setEditMaps([]);
       return;
     }
     const pool = mapPools.find((p) => p.id.toString() === poolId);
@@ -263,12 +272,12 @@ export default function Templates() {
       if (response.success && response.tournament) {
         const status = response.tournament.status;
         if (status === 'in_progress' || status === 'completed') {
-          setError(
+          showError(
             'Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.'
           );
           return;
         } else if (status === 'setup' || status === 'ready') {
-          setError(
+          showError(
             'A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.'
           );
           return;
@@ -285,43 +294,30 @@ export default function Templates() {
     navigate(`/tournament?${params.toString()}`);
   };
 
+  useEffect(() => {
+    setHeaderActions(
+      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
+        Create Template from Tournament
+      </Button>
+    );
+
+    return () => {
+      setHeaderActions(null);
+    };
+  }, [setHeaderActions, navigate]);
+
   if (loading) {
     return (
-      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+      <Box sx={{ width: '100%', height: '100%' }}>
         <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
           <CircularProgress />
         </Box>
-      </Container>
+      </Box>
     );
   }
 
   return (
-    <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
-      <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h4" fontWeight={600}>
-          Tournament Templates
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<AddIcon />}
-          onClick={() => navigate('/tournament')}
-        >
-          Create Template from Tournament
-        </Button>
-      </Box>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-          {error}
-        </Alert>
-      )}
-
-      {success && (
-        <Alert severity="success" sx={{ mb: 2 }} onClose={() => setSuccess(null)}>
-          {success}
-        </Alert>
-      )}
-
+    <Box sx={{ width: '100%', height: '100%' }}>
       {templates.length === 0 ? (
         <Card>
           <CardContent>
@@ -331,9 +327,9 @@ export default function Templates() {
           </CardContent>
         </Card>
       ) : (
-        <Grid container spacing={3}>
+        <Grid container spacing={2}>
           {templates.map((template) => (
-            <Grid item xs={12} md={6} key={template.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={template.id}>
               <Card>
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
@@ -607,6 +603,8 @@ export default function Templates() {
           </Button>
         </DialogActions>
       </Dialog>
-    </Container>
+
+      {/* Error/success feedback for this page is handled via the global SnackbarContext */}
+    </Box>
   );
 }

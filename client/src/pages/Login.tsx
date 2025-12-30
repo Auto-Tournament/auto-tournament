@@ -118,15 +118,25 @@ export default function Login() {
                 placeholder="Enter your API token"
                 autoFocus
                 disabled={loading}
+                slotProps={{
+                  htmlInput: { 'data-testid': 'login-api-token-input' },
+                }}
               />
 
               {error && (
-                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                <Alert severity="error" sx={{ borderRadius: 2 }} data-testid="login-error-message">
                   {error}
                 </Alert>
               )}
 
-              <Button type="submit" variant="contained" fullWidth size="large" disabled={loading}>
+              <Button
+                data-testid="login-sign-in-button"
+                type="submit"
+                variant="contained"
+                fullWidth
+                size="large"
+                disabled={loading}
+              >
                 {loading ? 'Signing in…' : 'Sign In'}
               </Button>
             </Stack>

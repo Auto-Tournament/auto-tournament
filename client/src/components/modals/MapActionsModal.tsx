@@ -14,6 +14,7 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../../types/api.types';
+import { FadeInImage } from '../common/FadeInImage';
 
 interface MapActionsModalProps {
   open: boolean;
@@ -32,8 +33,11 @@ export default function MapActionsModal({
 }: MapActionsModalProps) {
   if (!map) return null;
 
+  const getDefaultWebpUrlForId = (mapId: string): string =>
+    `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth data-testid="map-actions-modal">
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Typography variant="h6">{map.displayName}</Typography>
@@ -55,22 +59,20 @@ export default function MapActionsModal({
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Preview
               </Typography>
-              <Box
-                component="img"
-                src={map.imageUrl}
+              <FadeInImage
+                src={
+                  map.imageUrl && !map.imageUrl.includes('cs2-server-manager')
+                    ? map.imageUrl
+                    : getDefaultWebpUrlForId(map.id)
+                }
                 alt={map.displayName}
                 sx={{
                   width: '100%',
-                  maxHeight: 200,
-                  objectFit: 'contain',
                   border: '1px solid',
                   borderColor: 'divider',
                   borderRadius: 1,
                 }}
-                onError={(e) => {
-                  const target = e.target as HTMLImageElement;
-                  target.style.display = 'none';
-                }}
+                height={256}
               />
             </Box>
           )}
@@ -78,7 +80,12 @@ export default function MapActionsModal({
       </DialogContent>
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
-        <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
+        <Button
+          data-testid="map-edit-button"
+          onClick={onEdit}
+          variant="contained"
+          startIcon={<EditIcon />}
+        >
           Edit
         </Button>
         <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
@@ -88,4 +95,3 @@ export default function MapActionsModal({
     </Dialog>
   );
 }
-

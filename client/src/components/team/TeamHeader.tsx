@@ -24,9 +24,8 @@ export function TeamHeader({ team, isMuted, onToggleMute, onToggleSettings }: Te
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box flex={1} display="flex" alignItems="center" gap={1}>
             <Typography variant="h2" fontWeight={600} color="primary">
-              {team?.name}
+              {team?.tag ? `[${team.tag}] ${team.name}` : team?.name}
             </Typography>
-            {team?.tag && <Chip label={team.tag} size="medium" sx={{ fontSize: '1rem' }} />}
           </Box>
           <Box display="flex" gap={1}>
             <Tooltip title="Sound settings">

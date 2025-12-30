@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Grid, LinearProgress, Alert, Stack } from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
 import { useNavigate } from 'react-router-dom';
+import { useSnackbar } from '../contexts/SnackbarContext';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
+import { CreateManualMatchModal } from '../components/modals/CreateManualMatchModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
-import { formatDate, getRoundLabel } from '../utils/matchUtils';
+import { getRoundLabel } from '../utils/matchUtils';
+import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 
@@ -21,34 +24,21 @@ export default function Matches() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [liveEvents, setLiveEvents] = useState<Map<string, MatchEvent['event']>>(new Map());
-  const [connectionCounts, setConnectionCounts] = useState<Map<string, number>>(new Map());
   const [tournamentStatus, setTournamentStatus] = useState<string>('setup');
+  const [createMatchOpen, setCreateMatchOpen] = useState(false);
+  const { showSuccess, showError } = useSnackbar();
+  const [allocationCountdown, setAllocationCountdown] = useState<{
+    nextAllocationInSeconds: number | null;
+    gracePeriodSeconds: number;
+  }>({
+    nextAllocationInSeconds: null,
+    gracePeriodSeconds: 300,
+  });
 
   // Set dynamic page title
   useEffect(() => {
     document.title = 'Matches';
   }, []);
-
-  // Download demo file
-  const handleDownloadDemo = async (match: Match, event?: React.MouseEvent) => {
-    if (event) {
-      event.stopPropagation(); // Prevent card click
-    }
-
-    if (!match.demoFilePath) return;
-
-    try {
-      // Create a temporary link to trigger download
-      const link = document.createElement('a');
-      link.href = `/api/demos/${match.slug}/download`;
-      link.download = match.demoFilePath;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) {
-      console.error('Error downloading demo:', err);
-    }
-  };
 
   // Initialize Socket.io connection
   useEffect(() => {
@@ -62,32 +52,77 @@ export default function Matches() {
     newSocket.on(
       'match:update',
       (data: Match | { slug?: string; connectionStatus?: { totalConnected: number } }) => {
-        const matchSlug = 'slug' in data ? data.slug : undefined;
-
         // Handle connection status updates
         if ('slug' in data && data.slug && 'connectionStatus' in data && data.connectionStatus) {
-          setConnectionCounts((prev) => {
-            const updated = new Map(prev);
-            updated.set(matchSlug!, data.connectionStatus!.totalConnected);
-            return updated;
-          });
+          // We still accept connection status payloads here for backward
+          // compatibility, but the Matches list no longer uses the aggregate
+          // counts directly. The detailed Team view pulls live connection
+          // status from its own hook.
           return;
         }
 
-        const match = data as Match;
+        const match = data as Match & {
+          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
+        };
 
         const matchIdOrSlugEquals = (m: Match) =>
           (match.id !== undefined && m.id === match.id) ||
           (!!match.slug && !!m.slug && m.slug === match.slug);
 
-        const upsertMatch = (list: Match[], updatedMatch: Match) => {
+        const applyLiveScoreOverlay = (base: Match, updates: typeof match): Match => {
+          const statusFromUpdate = updates.status as Match['status'] | undefined;
+          const isCompletedUpdate = statusFromUpdate === 'completed';
+
+          // Start from the existing match state
+          const next: Match = { ...base };
+
+          // When a match transitions into the completed state via websocket,
+          // explicitly reset both scores back to 0-0 before applying the
+          // final series result from the payload. This avoids transient
+          // hybrids like "9-1" where only the winner's side was updated.
+          if (isCompletedUpdate) {
+            next.team1Score = 0;
+            next.team2Score = 0;
+          }
+
+          Object.assign(next, updates);
+
+          const liveStats = updates.liveStats;
+          if (liveStats && next.status !== 'completed') {
+            // For in‑progress matches, use current map rounds from liveStats so
+            // match cards show 8‑5 / 13‑7 etc. instead of staying at 0‑0 until
+            // the map completes. Completed matches keep their persisted series score.
+            if (typeof liveStats.team1Score === 'number') {
+              next.team1Score = liveStats.team1Score;
+            }
+            if (typeof liveStats.team2Score === 'number') {
+              next.team2Score = liveStats.team2Score;
+            }
+          }
+          return next;
+        };
+
+        const hasTeams = (m: Match | typeof match) =>
+          Boolean(
+            // Bracket / enriched matches with DB-backed team rows
+            ((m as Match).team1 || (m as Match).config?.team1) &&
+              ((m as Match).team2 || (m as Match).config?.team2)
+          );
+
+        const upsertMatch = (list: Match[], updatedMatch: typeof match) => {
           const index = list.findIndex(matchIdOrSlugEquals);
           if (index !== -1) {
             const updated = [...list];
-            updated[index] = { ...updated[index], ...updatedMatch };
+            updated[index] = applyLiveScoreOverlay(updated[index], updatedMatch);
             return updated;
           }
-          return [...list, updatedMatch];
+          // If this is a brand new match and we don't yet have both teams
+          // attached, skip inserting a "ghost" placeholder. The next GET
+          // /api/matches poll or a richer websocket payload will hydrate it.
+          if (!hasTeams(updatedMatch)) {
+            return list;
+          }
+          return [...list, applyLiveScoreOverlay(updatedMatch as Match, updatedMatch)];
         };
 
         const removeMatch = (list: Match[]) =>
@@ -105,9 +140,11 @@ export default function Matches() {
           setMatchHistory((prev) => {
             const exists = prev.some(matchIdOrSlugEquals);
             if (exists) {
-              return prev.map((m) => (matchIdOrSlugEquals(m) ? { ...m, ...match } : m));
+              return prev.map((m) =>
+                matchIdOrSlugEquals(m) ? applyLiveScoreOverlay(m, match) : m
+              );
             }
-            return [match, ...prev];
+            return [applyLiveScoreOverlay(match as Match, match), ...prev];
           });
         }
       }
@@ -131,6 +168,63 @@ export default function Matches() {
     };
   }, []);
 
+  // Poll allocation status periodically so we can show a lightweight
+  // "next servers in Xs" indicator on the Matches page.
+  useEffect(() => {
+    const loadAllocationStatus = async () => {
+      try {
+        const availability = await api.get<{
+          success: boolean;
+          availableServerCount: number;
+          gracePeriodSeconds?: number;
+          nextAllocationInSeconds?: number | null;
+        }>('/api/tournament/server-availability');
+
+        if (availability.success) {
+          setAllocationCountdown({
+            gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+            nextAllocationInSeconds:
+              typeof availability.nextAllocationInSeconds === 'number'
+                ? availability.nextAllocationInSeconds
+                : null,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load allocation status for Matches page:', err);
+      }
+    };
+
+    void loadAllocationStatus();
+    const interval = setInterval(() => {
+      void loadAllocationStatus();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Local per‑second tick for countdown on this page
+  useEffect(() => {
+    if (
+      allocationCountdown.nextAllocationInSeconds === null ||
+      allocationCountdown.nextAllocationInSeconds <= 0
+    ) {
+      return;
+    }
+
+    const timer = setInterval(
+      () =>
+        setAllocationCountdown((prev) => ({
+          ...prev,
+          nextAllocationInSeconds:
+            prev.nextAllocationInSeconds !== null && prev.nextAllocationInSeconds > 0
+              ? prev.nextAllocationInSeconds - 1
+              : 0,
+        })),
+      1000
+    );
+
+    return () => clearInterval(timer);
+  }, [allocationCountdown.nextAllocationInSeconds]);
+
   // Fetch matches
   const fetchMatches = async () => {
     try {
@@ -140,14 +234,17 @@ export default function Matches() {
         const matches = data.matches || [];
         setTournamentStatus(data.tournamentStatus || 'setup');
 
+        const hasTeams = (m: Match) =>
+          Boolean((m.team1 || m.config?.team1) && (m.team2 || m.config?.team2));
+
         // Upcoming matches: pending and ready (including veto phase)
         const upcoming = matches.filter(
-          (m) => (m.status === 'pending' || m.status === 'ready') && m.team1 && m.team2
+          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
         );
 
-        // Live matches: only show matches with both teams assigned (loaded = warmup, live = in progress)
+        // Live matches: only show matches with both teams effectively assigned
         const live = matches.filter(
-          (m) => (m.status === 'live' || m.status === 'loaded') && m.team1 && m.team2
+          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
         );
 
         // History: show all completed matches including walkovers
@@ -171,6 +268,23 @@ export default function Matches() {
     fetchMatches();
   }, []);
 
+  // Legacy delete handler kept for reference; match deletion is currently wired
+  // through the MatchDetailsModal, which calls its own delete endpoint and then
+  // emits socket updates. We keep this here in case we reintroduce list-level
+  // delete actions in the future.
+  // const handleDeleteMatch = async (match: Match) => {
+  //   try {
+  //     await api.delete(`/api/matches/${match.slug}`);
+  //     showSuccess(`Match deleted: ${match.slug}`);
+  //     void fetchMatches();
+  //   } catch (err) {
+  //     const message =
+  //       err instanceof Error ? err.message : 'Failed to delete match. Please try again.';
+  //     showError(message);
+  //     console.error('Failed to delete match', err);
+  //   }
+  // };
+
   // Calculate global match number based on all matches
   const getGlobalMatchNumber = (match: Match, allMatches: Match[]): number => {
     // Sort all matches by round, then by matchNumber
@@ -188,12 +302,6 @@ export default function Matches() {
   if (loading) {
     return (
       <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Matches
-          </Typography>
-        </Box>
         <LinearProgress />
       </Box>
     );
@@ -202,13 +310,22 @@ export default function Matches() {
   if (error) {
     return (
       <Box>
-        <Box display="flex" alignItems="center" gap={2} mb={4}>
-          <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-          <Typography variant="h4" fontWeight={600}>
-            Matches
-          </Typography>
-        </Box>
-        <Alert severity="error">{error}</Alert>
+        <Typography variant="h6" color="error" gutterBottom>
+          Error loading matches
+        </Typography>
+        <Typography variant="body2" color="text.secondary">
+          {error}
+        </Typography>
+        <Snackbar
+          open={!!error}
+          autoHideDuration={6000}
+          onClose={() => setError(null)}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+        >
+          <Alert severity="error" onClose={() => setError(null)} variant="filled">
+            {error}
+          </Alert>
+        </Snackbar>
       </Box>
     );
   }
@@ -217,13 +334,23 @@ export default function Matches() {
     upcomingMatches.length > 0 || liveMatches.length > 0 || matchHistory.length > 0;
 
   return (
-    <Box>
-      <Box display="flex" alignItems="center" gap={2} mb={4}>
-        <SportsEsportsIcon sx={{ fontSize: 40, color: 'primary.main' }} />
-        <Typography variant="h4" fontWeight={600}>
-          Matches
-        </Typography>
-      </Box>
+    <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
+
+      {/* Manual match creation + allocation countdown */}
+      {hasMatches && (
+        <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
+          {allocationCountdown.nextAllocationInSeconds !== null &&
+            allocationCountdown.nextAllocationInSeconds > 0 && (
+              <Typography variant="body2" color="text.secondary">
+                Next servers allocated in{' '}
+                <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+              </Typography>
+            )}
+          <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
+            Create Match
+          </Button>
+        </Box>
+      )}
 
       {/* Status Legend */}
       {hasMatches && (
@@ -233,18 +360,26 @@ export default function Matches() {
       )}
 
       {!hasMatches && (
-        <EmptyState
-          icon={SportsEsportsIcon}
-          title="No matches to display"
-          description="Create a tournament and generate brackets to see matches here"
-          actionLabel="Create Tournament"
-          actionIcon={AddIcon}
-          onAction={() => navigate('/tournament')}
-        />
+        <Box>
+          <EmptyState
+            data-testid="matches-empty-state"
+            icon={SportsEsportsIcon}
+            title="No matches to display"
+            description="Create a tournament and generate brackets to see matches here"
+            actionLabel="Create Tournament"
+            actionIcon={AddIcon}
+            onAction={() => navigate('/tournament')}
+          />
+          <Box display="flex" justifyContent="center" mt={2}>
+            <Button variant="outlined" onClick={() => setCreateMatchOpen(true)}>
+              Or Create Manual Match
+            </Button>
+          </Box>
+        </Box>
       )}
 
       {hasMatches && (
-        <Stack spacing={4}>
+        <Stack spacing={4} data-testid="matches-list">
           {/* Live Matches Section */}
           {liveMatches.length > 0 && (
             <Box>
@@ -266,23 +401,17 @@ export default function Matches() {
                   Live Matches ({liveMatches.length})
                 </Typography>
               </Box>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {liveMatches.map((match) => {
                   const event = liveEvents.get(match.slug);
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <Box>
                         <MatchCard
                           match={match}
                           matchNumber={matchNumber}
                           variant="live"
-                          playerCount={connectionCounts.get(match.slug)}
-                          liveScores={{
-                            team1Score: event?.params?.team1_score,
-                            team2Score: event?.params?.team2_score,
-                          }}
-                          showPlayerProgress={true}
                           onClick={() => setSelectedMatch(match)}
                         />
                         {event && event.event && (
@@ -306,17 +435,23 @@ export default function Matches() {
               <Typography variant="h6" fontWeight={600} mb={2}>
                 Upcoming Matches ({upcomingMatches.length})
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
+                  const isManualMatch = isManualMatchFlag(match);
+                  const manualRoundLabel = isManualMatch ? 'Manual match' : undefined;
+                  const tournamentStartedForCard = isManualMatch
+                    ? undefined
+                    : tournamentStatus === 'in_progress';
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
                         match={match}
                         matchNumber={matchNumber}
+                        roundLabel={manualRoundLabel}
                         variant="default"
                         vetoCompleted={match.vetoCompleted}
-                        tournamentStarted={tournamentStatus === 'in_progress'}
+                        tournamentStarted={tournamentStartedForCard}
                         onClick={() => setSelectedMatch(match)}
                       />
                     </Grid>
@@ -332,26 +467,18 @@ export default function Matches() {
               <Typography variant="h6" fontWeight={600} mb={2}>
                 Match History ({matchHistory.length})
               </Typography>
-              <Grid container spacing={3}>
+              <Grid container spacing={2}>
                 {matchHistory.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   return (
-                    <Grid size={{ xs: 12, sm: 6, md: 4 }} key={match.id}>
+                    <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <Box>
                         <MatchCard
                           match={match}
                           matchNumber={matchNumber}
                           variant="completed"
-                          onDownloadDemo={(e) => handleDownloadDemo(match, e)}
                           onClick={() => setSelectedMatch(match)}
                         />
-                        {match.completedAt && (
-                          <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
-                            <Typography variant="caption" color="text.secondary">
-                              Completed: {formatDate(match.completedAt)}
-                            </Typography>
-                          </Box>
-                        )}
                       </Box>
                     </Grid>
                   );
@@ -369,8 +496,26 @@ export default function Matches() {
           matchNumber={getGlobalMatchNumber(selectedMatch, allMatches)}
           roundLabel={getRoundLabel(selectedMatch.round)}
           onClose={() => setSelectedMatch(null)}
+          onDeleted={(slug) => {
+            setSelectedMatch(null);
+            setUpcomingMatches((prev) => prev.filter((m) => m.slug !== slug));
+            setLiveMatches((prev) => prev.filter((m) => m.slug !== slug));
+            setMatchHistory((prev) => prev.filter((m) => m.slug !== slug));
+          }}
         />
       )}
+
+      {/* Create manual match modal */}
+      <CreateManualMatchModal
+        open={createMatchOpen}
+        onClose={() => setCreateMatchOpen(false)}
+        onCreated={async (slug) => {
+          setCreateMatchOpen(false);
+          showSuccess(`Manual match created: ${slug}`);
+
+          void fetchMatches();
+        }}
+      />
     </Box>
   );
 }

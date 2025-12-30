@@ -1,19 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
 import type { Match, Tournament } from '../types';
+import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const useBracket = () => {
+  const { showSuccess, showError, showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [matches, setMatches] = useState<Match[]>([]);
   const [totalRounds, setTotalRounds] = useState(0);
   const [starting, setStarting] = useState(false);
-  const [startSuccess, setStartSuccess] = useState('');
-  const [startError, setStartError] = useState('');
+  const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
 
-  const loadBracket = async () => {
+  const loadBracket = useCallback(async () => {
     setLoading(true);
     setError('');
 
@@ -49,12 +50,10 @@ export const useBracket = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   const startTournament = async () => {
     setStarting(true);
-    setStartError('');
-    setStartSuccess('');
 
     try {
       const baseUrl = window.location.origin;
@@ -65,19 +64,29 @@ export const useBracket = () => {
       } = await api.post('/api/tournament/start', { baseUrl });
 
       if (response.success) {
-        setStartSuccess(
-          `Tournament started! ${response.allocated || 0} matches allocated to servers.`
-        );
-        setTimeout(() => {
-          setStartSuccess('');
-        }, 5000);
+        // Backend now starts allocation in the background and returns immediately.
+        // Show whatever message the API provides; allocation progress will be
+        // reflected via bracket + match websocket updates.
+        if (typeof response.allocated === 'number') {
+          showSuccess(
+            response.message ||
+              `Tournament started! ${response.allocated} match${
+                response.allocated === 1 ? '' : 'es'
+              } allocated to servers.`
+          );
+        } else {
+          showSuccess(
+            response.message ||
+              'Tournament start requested. Servers will be allocated shortly.'
+          );
+        }
         await loadBracket();
       } else {
-        setStartError(response.message || 'Failed to start tournament');
+        showError(response.message || 'Failed to start tournament');
       }
     } catch (err) {
       const error = err as Error;
-      setStartError(error.message || 'Failed to start tournament');
+      showError(error.message || 'Failed to start tournament');
     } finally {
       setStarting(false);
     }
@@ -94,7 +103,7 @@ export const useBracket = () => {
         (payload.slug as string | undefined) ||
         (payload.matchSlug as string | undefined) ||
         (payload.match && typeof payload.match === 'object'
-          ? ((payload.match as { slug?: string }).slug ?? undefined)
+          ? (payload.match as { slug?: string }).slug ?? undefined
           : undefined);
 
       if (!slug) {
@@ -110,11 +119,24 @@ export const useBracket = () => {
         const next: Match = { ...current };
         let changed = false;
 
-        const status = (payload.status as Match['status'] | undefined) ??
+        let newStatus: Match['status'] | undefined;
+
+        const status =
+          (payload.status as Match['status'] | undefined) ??
           ((payload as { match_status?: string }).match_status as Match['status'] | undefined);
         if (status && status !== current.status) {
           next.status = status;
+          newStatus = status;
           changed = true;
+        }
+
+        // When a match transitions into the completed state via websocket,
+        // explicitly reset both scores back to 0-0 before applying the
+        // final series result from the payload. This avoids transient
+        // hybrids like "9-1" where only the winner's side was updated.
+        if (newStatus === 'completed') {
+          next.team1Score = 0;
+          next.team2Score = 0;
         }
 
         const serverId =
@@ -141,8 +163,66 @@ export const useBracket = () => {
           changed = true;
         }
 
+        // If we received liveStats with a current map score, overlay those
+        // for in-progress matches so the bracket cards can display live
+        // map rounds (e.g. 8‑5) instead of staying at 0‑0 until the map
+        // finishes. For completed matches we always trust the persisted
+        // series result and never override it with live stats.
+        const liveStats = (payload as {
+          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
+        }).liveStats;
+        const effectiveStatus = newStatus ?? current.status;
+        if (liveStats && effectiveStatus !== 'completed') {
+          if (
+            typeof liveStats.team1Score === 'number' &&
+            liveStats.team1Score !== next.team1Score
+          ) {
+            next.team1Score = liveStats.team1Score;
+            changed = true;
+          }
+          if (
+            typeof liveStats.team2Score === 'number' &&
+            liveStats.team2Score !== next.team2Score
+          ) {
+            next.team2Score = liveStats.team2Score;
+            changed = true;
+          }
+        }
+
+        const winnerId =
+          (payload.winnerId as string | undefined) ||
+          ((payload as { winner_id?: string }).winner_id ?? undefined);
+        if (winnerId && (!current.winner || current.winner.id !== winnerId)) {
+          const winnerTeam =
+            current.team1?.id === winnerId
+              ? current.team1
+              : current.team2?.id === winnerId
+              ? current.team2
+              : undefined;
+          if (winnerTeam) {
+            next.winner = winnerTeam;
+            changed = true;
+          }
+        }
+
         if (!changed) {
           return prev;
+        }
+
+        // Emit snackbars for key match lifecycle transitions
+        if (newStatus === 'completed') {
+          const winnerName = next.winner?.name;
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          showSuccess(
+            winnerName
+              ? `Match completed: ${label} – ${winnerName} won`
+              : `Match completed: ${label}`
+          );
+        } else if (newStatus === 'live') {
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          showSnackbar(`Match is now live: ${label}`, 'info');
         }
 
         const clone = [...prev];
@@ -160,6 +240,19 @@ export const useBracket = () => {
 
       if (status) {
         setTournament((prev) => (prev ? { ...prev, status } : prev));
+
+        const prevStatus = lastTournamentStatusRef.current;
+        // Only announce tournament completion once per transition into "completed"
+        if (status === 'completed' && prevStatus !== 'completed') {
+          showSuccess('Tournament completed! All matches are finished.');
+        } else if (status === 'in_progress' && action === 'tournament_started') {
+          // Guard against duplicate "tournament started" toasts as well
+          if (prevStatus !== 'in_progress') {
+            showSuccess('Tournament started – Round 1 is now live.');
+          }
+        }
+
+        lastTournamentStatusRef.current = status;
       }
 
       const requiresFullReload = !action
@@ -171,9 +264,19 @@ export const useBracket = () => {
             'tournament_updated',
             'tournament_completed',
             'tournament_started',
+            // Structural changes that add/remove matches (e.g., next round generated)
+            'round_advanced',
           ].includes(action);
 
       if (requiresFullReload) {
+        if (
+          action === 'round_advanced' &&
+          typeof (event as { roundNumber?: number }).roundNumber === 'number'
+        ) {
+          const roundNumber = (event as { roundNumber: number }).roundNumber;
+          showSnackbar(`Round ${roundNumber} generated – matches are ready to allocate.`, 'info');
+        }
+
         loadBracket();
         return;
       }
@@ -217,7 +320,8 @@ export const useBracket = () => {
         } else if (action === 'server_assigned' || action === 'match_allocated') {
           const serverId =
             (event.serverId as string | undefined) ??
-            ((event as { server_id?: string }).server_id ?? undefined);
+            (event as { server_id?: string }).server_id ??
+            undefined;
           if (serverId !== undefined && serverId !== current.serverId) {
             next.serverId = serverId || undefined;
             changed = true;
@@ -225,6 +329,19 @@ export const useBracket = () => {
         }
 
         if (!changed) return prev;
+
+        if (action === 'server_assigned' || action === 'match_allocated') {
+          const label =
+            next.team1 && next.team2 ? `${next.team1.name} vs ${next.team2.name}` : next.slug;
+          const id =
+            (event.serverId as string | undefined) ??
+            (event as { server_id?: string }).server_id ??
+            undefined;
+          showSnackbar(
+            id ? `Allocated server ${id} to match ${label}` : `Allocated server to match ${label}`,
+            'info'
+          );
+        }
         const clone = [...prev];
         clone[index] = next;
         return clone;
@@ -239,7 +356,7 @@ export const useBracket = () => {
       newSocket.off('bracket:update', handleBracketUpdate);
       newSocket.close();
     };
-  }, []);
+  }, [loadBracket, showSuccess, showSnackbar]);
 
   return {
     loading,
@@ -248,8 +365,6 @@ export const useBracket = () => {
     matches,
     totalRounds,
     starting,
-    startSuccess,
-    startError,
     loadBracket,
     startTournament,
   };

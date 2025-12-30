@@ -7,9 +7,12 @@ import {
   TextField,
   Button,
   CircularProgress,
-  Alert,
+  IconButton,
+  Typography,
 } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { TournamentSettings } from '../../types/tournament.types';
 
 interface SaveTemplateModalProps {
@@ -33,10 +36,10 @@ export default function SaveTemplateModal({
   onSave,
   tournamentData,
 }: SaveTemplateModalProps) {
+  const { showWarning, showError } = useSnackbar();
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
   const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   // Initialize template name from tournament name when modal opens
   useEffect(() => {
@@ -47,13 +50,12 @@ export default function SaveTemplateModal({
 
   const handleSave = async () => {
     if (!templateName.trim()) {
-      setError('Template name is required');
+      showWarning('Template name is required');
       return;
     }
 
     try {
       setSaving(true);
-      setError(null);
       await api.post('/api/templates', {
         name: templateName,
         description: templateDescription || undefined,
@@ -70,7 +72,7 @@ export default function SaveTemplateModal({
       setTemplateDescription('');
     } catch (err) {
       console.error('Error saving template:', err);
-      setError('Failed to save template');
+      showError('Failed to save template');
     } finally {
       setSaving(false);
     }
@@ -80,20 +82,40 @@ export default function SaveTemplateModal({
     if (!saving) {
       setTemplateName('');
       setTemplateDescription('');
-      setError(null);
       onClose();
     }
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Save as Template</DialogTitle>
+    <Dialog
+      open={open}
+      onClose={(_event, reason) => {
+        if (reason === 'backdropClick' || reason === 'escapeKeyDown') return;
+        handleClose();
+      }}
+      maxWidth="sm"
+      fullWidth
+      disableEscapeKeyDown
+    >
+      <DialogTitle
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}
+      >
+        <Typography variant="h6" fontWeight={600}>
+          Save as Template
+        </Typography>
+        <IconButton
+          onClick={handleClose}
+          size="small"
+          aria-label="close"
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      </DialogTitle>
       <DialogContent>
-        {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
-            {error}
-          </Alert>
-        )}
         <TextField
           fullWidth
           label="Template Name"
@@ -101,7 +123,7 @@ export default function SaveTemplateModal({
           onChange={(e) => setTemplateName(e.target.value)}
           margin="normal"
           required
-          placeholder="e.g., 8-team Single Elim BO3"
+          placeholder="8-team Single Elim BO3"
           disabled={saving}
         />
         <TextField
@@ -112,7 +134,7 @@ export default function SaveTemplateModal({
           margin="normal"
           multiline
           rows={3}
-          placeholder="e.g., Weekly 8-team single elimination tournament"
+          placeholder="Weekly 8-team single elimination tournament"
           disabled={saving}
         />
       </DialogContent>
@@ -123,7 +145,16 @@ export default function SaveTemplateModal({
         <Button
           onClick={handleSave}
           variant="contained"
-          disabled={!templateName.trim() || saving}
+          disabled={saving}
+          sx={{
+            ...(!templateName.trim() && {
+              bgcolor: 'action.disabledBackground',
+              color: 'action.disabled',
+              '&:hover': {
+                bgcolor: 'action.disabledBackground',
+              },
+            }),
+          }}
         >
           {saving ? <CircularProgress size={24} /> : 'Save Template'}
         </Button>

@@ -19,11 +19,13 @@ body {
   --secondary-background: #1e1e1e;
   --match-background: #1e1e1e;
   --connector-color: rgba(255, 255, 255, 0.12);
-  --win-color: #4caf50;
+  /* Match win color aligned with theme.success.main */
+  --win-color: #a6e3d0;
   --loss-color: rgba(255, 255, 255, 0.3);
   --text-color: rgba(255, 255, 255, 0.87);
   --border-color: rgba(255, 255, 255, 0.12);
   --border-hover-color: #90caf9;
+  --live-border-color: var(--primary-color);
 }
 
 .brackets-viewer .participant {
@@ -37,7 +39,11 @@ body {
 }
 
 .brackets-viewer .participant.win {
-  background-color: rgba(76, 175, 80, 0.1);
+  /* Make winners clearly stand out in the bracket */
+  background-color: rgba(102, 187, 106, 0.18);
+  border-color: #66bb6a;
+  color: #c8e6c9;
+  font-weight: 700;
 }
 
 .brackets-viewer .participant.loss {
@@ -48,6 +54,16 @@ body {
   background: var(--secondary-background);
 }
 
+.brackets-viewer .match.match--live .opponents {
+  border-color: var(--live-border-color);
+  box-shadow: 0 0 0 1px var(--live-border-color), 0 0 16px var(--live-border-color);
+  animation: match-live-pulse 1.6s ease-in-out infinite;
+}
+
+.brackets-viewer .match.match--live .participant {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
 .brackets-viewer .connector {
   border-color: var(--connector-color);
 }
@@ -55,5 +71,24 @@ body {
 .brackets-viewer .round-name {
   color: var(--text-color);
   font-weight: 600;
+}
+
+.brackets-viewer .round--live > h3 {
+  background-color: rgba(255, 255, 255, 0.04);
+  border-radius: 999px;
+  border: 1px solid var(--live-border-color);
+  box-shadow: 0 0 16px var(--live-border-color);
+}
+
+@keyframes match-live-pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--live-border-color), 0 0 16px var(--live-border-color);
+  }
+  50% {
+    box-shadow: 0 0 0 3px transparent, 0 0 24px var(--live-border-color);
+  }
+  100% {
+    box-shadow: 0 0 0 0 var(--live-border-color), 0 0 16px var(--live-border-color);
+  }
 }
 

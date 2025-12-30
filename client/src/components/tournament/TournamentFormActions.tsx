@@ -1,11 +1,14 @@
 import React from 'react';
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
 import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
+import { validateMapCount } from '../../utils/tournamentVerification';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface TournamentFormActionsProps {
   tournamentExists: boolean;
   saving: boolean;
   hasChanges: boolean;
+  type: string;
   format: string;
   mapsCount: number;
   canEdit: boolean;
@@ -19,6 +22,7 @@ export function TournamentFormActions({
   tournamentExists,
   saving,
   hasChanges,
+  type,
   format,
   mapsCount,
   canEdit,
@@ -27,22 +31,57 @@ export function TournamentFormActions({
   onDelete,
   onSaveTemplate,
 }: TournamentFormActionsProps) {
+  const { showWarning } = useSnackbar();
+
   if (!canEdit) {
     return null;
   }
 
-  const isVetoFormat = ['bo1', 'bo3', 'bo5'].includes(format);
-  const isValidMaps = isVetoFormat ? mapsCount === 7 : mapsCount > 0;
+  // Use verification rules system - create dummy array for validation
+  const dummyMaps = Array(mapsCount).fill('dummy');
+  const mapValidation = validateMapCount(dummyMaps, type, format);
+  const isValidMaps = mapValidation.valid;
+
+  const handleSave = () => {
+    if (!hasChanges) {
+      showWarning('No changes to save');
+      return;
+    }
+    if (!isValidMaps) {
+      showWarning(mapValidation.message || 'Invalid map selection');
+      return;
+    }
+    onSave();
+  };
+
+  const handleSaveTemplate = () => {
+    if (!isValidMaps) {
+      showWarning(mapValidation.message || 'Invalid map selection');
+      return;
+    }
+    onSaveTemplate?.();
+  };
 
   return (
     <>
       <Box display="flex" gap={2} flexWrap="wrap">
         <Button
+          data-testid="tournament-save-button"
           variant="contained"
-          onClick={onSave}
-          disabled={saving || !hasChanges || !isValidMaps}
+          onClick={handleSave}
+          disabled={saving}
           size="large"
-          sx={{ flex: 1, minWidth: 200 }}
+          sx={{
+            flex: 1,
+            minWidth: 200,
+            ...((!hasChanges || !isValidMaps) && {
+              bgcolor: 'action.disabledBackground',
+              color: 'action.disabled',
+              '&:hover': {
+                bgcolor: 'action.disabledBackground',
+              },
+            }),
+          }}
         >
           {saving ? (
             <CircularProgress size={24} />
@@ -58,7 +97,7 @@ export function TournamentFormActions({
           </Button>
         )}
         {tournamentExists && (
-          <Tooltip title="Permanently delete this tournament and all its data">
+          <Tooltip title="Permanently delete this tournament and all its data" enterDelay={500}>
             <Button
               variant="outlined"
               color="error"
@@ -71,12 +110,23 @@ export function TournamentFormActions({
           </Tooltip>
         )}
         {onSaveTemplate && (
-          <Tooltip title="Save current tournament configuration as a template">
+          <Tooltip title="Save current tournament configuration as a template" enterDelay={500}>
             <Button
               variant="outlined"
               startIcon={<SaveIcon />}
-              onClick={onSaveTemplate}
-              disabled={saving || !isValidMaps}
+              onClick={handleSaveTemplate}
+              disabled={saving}
+              sx={{
+                ...(!isValidMaps && {
+                  bgcolor: 'action.disabledBackground',
+                  color: 'action.disabled',
+                  borderColor: 'action.disabled',
+                  '&:hover': {
+                    bgcolor: 'action.disabledBackground',
+                    borderColor: 'action.disabled',
+                  },
+                }),
+              }}
             >
               Save as Template
             </Button>

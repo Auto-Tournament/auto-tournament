@@ -1,31 +1,35 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Alert,
-  CircularProgress,
-  Container,
-  Stack,
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, Alert, CircularProgress, Container, Stack } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
-import { soundNotification } from '../utils/soundNotification';
 import { TeamHeader } from '../components/team/TeamHeader';
-import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { SoundSettingsModal } from '../components/modals/SoundSettingsModal';
 import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { TeamStatsCard } from '../components/team/TeamStatsCard';
 import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
+import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
 import { useSoundSettings } from '../hooks/useSoundSettings';
+import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
+import type { SelectChangeEvent } from '@mui/material';
 import type { Team } from '../types';
+import type { NotificationSoundValue } from '../utils/soundNotification';
+import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 
-function TeamSoundControls({ team }: { team: Team | null }) {
-  const [showSettings, setShowSettings] = useState(false);
-  const {
+type TeamSoundControlsProps = {
+  team: Team | null;
+  isMuted: boolean;
+  volume: number;
+  soundFile: NotificationSoundValue;
+  toggleMute: () => void;
+  handleVolumeChange: (newValue: number) => void;
+  handlePreviewSound: () => void;
+  handleSoundChange: (event: SelectChangeEvent<string>) => void;
+};
+
+function TeamSoundControls({
+  team,
     isMuted,
     volume,
     soundFile,
@@ -33,7 +37,8 @@ function TeamSoundControls({ team }: { team: Team | null }) {
     handleVolumeChange,
     handlePreviewSound,
     handleSoundChange,
-  } = useSoundSettings();
+}: TeamSoundControlsProps) {
+  const [showSettings, setShowSettings] = useState(false);
 
   return (
     <>
@@ -59,10 +64,6 @@ function TeamSoundControls({ team }: { team: Team | null }) {
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
 
-  const previousMatchStatus = useRef<string | null>(null);
-  const previousVetoReady = useRef<boolean>(false);
-  const previousServerReady = useRef<boolean>(false);
-
   // Custom hooks for data and sound
   const {
     team,
@@ -78,12 +79,24 @@ export default function TeamMatch() {
   } = useTeamMatchData(teamId);
   const { tournament } = useTournamentStatus();
   const tournamentName = tournament?.name ?? null;
+  const {
+    isMuted,
+    volume,
+    soundFile,
+    toggleMute,
+    handleVolumeChange,
+    handlePreviewSound,
+    handleSoundChange,
+  } = useSoundSettings();
 
   // Get match format from match data (fallback to 'bo1' if not available)
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
 
-  // Derive veto completion status from match data
-  const vetoCompleted = match?.veto?.status === 'completed';
+  // Derive veto completion status from match data.
+  // Manual matches (round === 0) never use the team veto UI and should behave
+  // as if veto is already completed from the team page's perspective.
+  const vetoCompleted =
+    match?.round === 0 ? true : match?.veto?.status === 'completed';
 
   // Set dynamic page title
   useEffect(() => {
@@ -94,13 +107,10 @@ export default function TeamMatch() {
     }
   }, [team]);
 
-  // Sound notification when match becomes ready or veto starts
-  useEffect(() => {
-    if (!match) return;
-
     const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
 
     const vetoReady =
+    !!match &&
       tournamentStatus === 'in_progress' &&
       match.status === 'pending' &&
       !vetoCompleted &&
@@ -108,45 +118,8 @@ export default function TeamMatch() {
       match.veto?.status !== 'completed';
 
     const serverReady =
-      Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
+    !!match && Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
 
-    if (vetoReady && !previousVetoReady.current) {
-      soundNotification.playNotification();
-      console.log('Notification: Veto is now available!');
-    }
-
-    if (serverReady && !previousServerReady.current) {
-      soundNotification.playNotification();
-      console.log('Notification: Server is ready, players can connect!');
-    }
-
-    previousMatchStatus.current = match.status;
-    previousVetoReady.current = vetoReady;
-    previousServerReady.current = serverReady;
-  }, [match, tournamentStatus, vetoCompleted, matchFormat]);
-
-  // Check if match format is in veto debug info
-  useEffect(() => {
-    if (match) {
-      console.log('Veto Debug Info:', {
-        tournamentStatus,
-        matchStatus: match.status,
-        matchFormat,
-        vetoCompleted,
-        vetoStatus: match.veto?.status,
-        shouldShowVeto:
-          tournamentStatus === 'in_progress' &&
-          match.status === 'pending' &&
-          !vetoCompleted &&
-          match.veto?.status !== 'completed' &&
-          ['bo1', 'bo3', 'bo5'].includes(matchFormat),
-        shouldShowMatch:
-          ['loaded', 'live'].includes(match.status) ||
-          (match.status === 'ready' && (vetoCompleted || match.veto?.status === 'completed')) ||
-          (match.status === 'pending' && match.veto?.status === 'completed'),
-      });
-    }
-  }, [match, tournamentStatus, matchFormat, vetoCompleted]);
 
   const handleVetoComplete = async () => {
     // Reload match data to get updated status and server assignment
@@ -193,30 +166,87 @@ export default function TeamMatch() {
     );
   }
 
+  const tournamentIsActive = tournamentStatus === 'in_progress';
+  const tournamentIsCompleted = tournamentStatus === 'completed';
+  const teamHasPlayed = !!(stats && stats.totalMatches > 0);
+
+  // Tournament rules configuration for the "About this tournament" accordion.
+  const rulesFormat = matchFormat;
+  const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;
+  const rulesOvertimeMode = match?.config?.overtimeMode ?? tournament?.overtimeMode;
+  const rulesOvertimeSegments = match?.config?.overtimeSegments ?? tournament?.overtimeSegments;
+
   // No match state
   if (!hasMatch) {
     return (
       <Box minHeight="100vh" bgcolor="background.default" py={6}>
         <Container maxWidth="md">
           <Stack spacing={3}>
-            <TeamSoundControls team={team} />
+            <MatchNotificationAudio
+              vetoReady={vetoReady}
+              serverReady={serverReady}
+              isMuted={isMuted}
+              volume={volume}
+              soundFile={soundFile}
+            />
+            <TeamSoundControls
+              team={team}
+              isMuted={isMuted}
+              volume={volume}
+              soundFile={soundFile}
+              toggleMute={toggleMute}
+              handleVolumeChange={handleVolumeChange}
+              handlePreviewSound={handlePreviewSound}
+              handleSoundChange={handleSoundChange}
+            />
 
-            <PlayerRosterCard team={team} />
+            <TournamentRulesAccordion
+              format={rulesFormat}
+              maxRounds={rulesMaxRounds}
+              overtimeMode={rulesOvertimeMode}
+              overtimeSegments={rulesOvertimeSegments}
+            />
 
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
                 <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
-                <Typography variant="body1" color="text.secondary" mt={2}>
-                  No matches available right now
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mt={1}>
-                  Keep this page open to receive notifications when your match is ready
-                </Typography>
+                {tournamentIsCompleted && teamHasPlayed && standing ? (
+                  <>
+                    <Typography variant="h6" color="text.primary" mt={1} gutterBottom>
+                      Tournament finished
+                    </Typography>
+                    <Typography variant="body1" color="text.secondary" mt={1}>
+                      Final placement: #{standing.position} of {standing.totalTeams}
+                    </Typography>
+                  </>
+                ) : tournamentIsActive ? (
+                  <>
+                    <Typography variant="body1" color="text.secondary" mt={2}>
+                      No match scheduled right now
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      Your team is still in the tournament. Keep this page open to be notified when
+                      the next match is ready.
+                    </Typography>
+                  </>
+                ) : (
+                  <>
+                    <Typography variant="body1" color="text.secondary" mt={2}>
+                      No matches available right now
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mt={1}>
+                      The tournament hasn&apos;t started yet. Once it begins, your matches will
+                      appear here.
+                    </Typography>
+                  </>
+                )}
               </CardContent>
             </Card>
 
+            <PlayerRosterCard team={team} />
+
             <TeamStatsCard stats={stats} standing={standing} />
-            <TeamMatchHistoryCard matchHistory={matchHistory} />
+            <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
         </Container>
       </Box>
@@ -239,7 +269,32 @@ export default function TeamMatch() {
               {tournamentName}
             </Typography>
           )}
-          <TeamSoundControls team={team} />
+          
+          <TeamSoundControls
+            team={team}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+            toggleMute={toggleMute}
+            handleVolumeChange={handleVolumeChange}
+            handlePreviewSound={handlePreviewSound}
+            handleSoundChange={handleSoundChange}
+          />
+
+          <TournamentRulesAccordion
+            format={rulesFormat}
+            maxRounds={rulesMaxRounds}
+            overtimeMode={rulesOvertimeMode}
+            overtimeSegments={rulesOvertimeSegments}
+          />
+
+          <MatchNotificationAudio
+            vetoReady={vetoReady}
+            serverReady={serverReady}
+            isMuted={isMuted}
+            volume={volume}
+            soundFile={soundFile}
+          />
 
           {match && (
             <MatchInfoCard

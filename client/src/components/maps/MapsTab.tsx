@@ -32,13 +32,12 @@ export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
   }
 
   return (
-    <Grid container spacing={2}>
+    <Grid container spacing={2} data-testid="maps-list">
       {sortedMaps.map((map) => (
-        <Grid item key={map.id}>
+        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={map.id}>
           <MapCard map={map} onClick={onMapClick} />
         </Grid>
       ))}
     </Grid>
   );
 }
-
