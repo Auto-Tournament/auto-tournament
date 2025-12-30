@@ -33,7 +33,7 @@ import type { Player } from '../types/team.types';
  * Main event handler - routes events to specific handlers
  */
 export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
-  const eventData: Record<string, unknown> = event;
+  const eventData = event as unknown as Record<string, unknown>;
 
   switch (event.event) {
     // Match Lifecycle Events
@@ -670,7 +670,7 @@ function extractNestedNumber(
  * Handle series end event - update match status, ratings, and advance tournament
  */
 async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
-  const eventData: Record<string, unknown> = event;
+  const eventData = event as unknown as Record<string, unknown>;
   const match = await resolveMatch(event.matchid);
   if (!match) {
     log.error(`Match not found for series_end event: ${event.matchid}`);
@@ -690,8 +690,14 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   // Prefer the explicit winner field from the plugin, even when scores are
   // tied (e.g. performance-based tiebreaks). Fall back to score comparison
   // only if winner is missing or "none".
-  const winnerTeamFromEvent = (eventData.winner as { team?: string } | undefined)
-    ?.team as 'team1' | 'team2' | 'none' | undefined;
+  const winnerTeamFromEvent = (eventData.winner as { team?: string } | undefined)?.team as
+    | 'team1'
+    | 'team2'
+    | 'none'
+    | undefined;
+
+  const isDrawFromScores =
+    (winnerTeamFromEvent === 'none' || !winnerTeamFromEvent) && team1Score === team2Score;
 
   let winnerId: string | null = null;
   if (winnerTeamFromEvent === 'team1') {
@@ -701,7 +707,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   } else if (team1Score !== team2Score) {
     // Legacy fallback: derive winner from series score when event doesn't
     // provide a decisive winner.
-    winnerId = team1Score > team2Score ? match.team1_id : match.team2_id;
+    winnerId = team1Score > team2Score ? match.team1_id ?? null : match.team2_id ?? null;
   } else {
     winnerId = null;
   }
@@ -743,6 +749,64 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
         team1Score,
         team2Score,
       });
+
+      return;
+    }
+
+    // For non-manual matches, treat a true series draw (no winner and equal
+    // series scores) as a completed match with no winner_id. This ensures that
+    // tie games no longer appear as "live" forever and that player stats are
+    // still recorded for history, while ratings remain unchanged.
+    if (isDrawFromScores) {
+      await db.updateAsync(
+        'matches',
+        {
+          status: 'completed',
+          winner_id: null,
+          completed_at: completedAt,
+        },
+        'id = ?',
+        [match.id]
+      );
+
+      log.warn(`Match ${matchSlug} ended in a draw; marking completed without winner_id`);
+
+      // Track per-player stats treating the result as a draw (no winners).
+      await trackPlayerStatsForMatch(match, null, matchSlug);
+
+      const updatedMatch = await db.queryOneAsync<DbMatchRow>(
+        'SELECT * FROM matches WHERE id = ?',
+        [match.id]
+      );
+      if (updatedMatch) {
+        emitMatchUpdate({
+          id: updatedMatch.id,
+          slug: updatedMatch.slug,
+          status: updatedMatch.status,
+          team1Score,
+          team2Score,
+          winnerId: null,
+        });
+        emitBracketUpdate({
+          action: 'match_status',
+          matchSlug: updatedMatch.slug,
+          status: updatedMatch.status,
+        });
+      }
+
+      // Drawn matches should still count as finished when considering round
+      // advancement and tournament completion.
+      const tournament = await db.queryOneAsync<{ type: string }>(
+        'SELECT type FROM tournament WHERE id = ?',
+        [match.tournament_id ?? 1]
+      );
+      if (tournament?.type === 'swiss') {
+        await checkAndAdvanceRound(match.round);
+      }
+      if (tournament?.type === 'shuffle') {
+        await checkAndAdvanceShuffleRound(match.round);
+      }
+      await checkTournamentCompletion();
 
       return;
     }
@@ -789,9 +853,12 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     }
   }
 
-  // Always track player stats and ratings where possible
+  // Always track player stats and ratings where possible. Ratings are only
+  // updated for decisive results; true draws do not change ratings.
   await trackPlayerStatsForMatch(match, winnerId, matchSlug);
-  await updateRatingsForMatch(match, winnerId, matchSlug);
+  if (winnerId) {
+    await updateRatingsForMatch(match, winnerId, matchSlug);
+  }
 
   // Emit match + bracket updates so all UIs (including bracket view and
   // player profile pages) can react *after* stats and ratings are fully
@@ -903,9 +970,15 @@ async function persistPlayerMatchStats(options: {
   matchSlug: string;
   team1Players: Array<{ steamId: string }>;
   team2Players: Array<{ steamId: string }>;
-  team1Won: boolean;
+  /**
+   * Match result from the perspective of the series:
+   *  - 'team1' -> team1 win
+   *  - 'team2' -> team2 win
+   *  - 'draw'  -> true tie (no winner)
+   */
+  result: 'team1' | 'team2' | 'draw';
 }): Promise<void> {
-  const { matchSlug, team1Players, team2Players, team1Won } = options;
+  const { matchSlug, team1Players, team2Players, result } = options;
 
   let team1PlayerStats: Record<string, Record<string, unknown>> = {};
   let team2PlayerStats: Record<string, Record<string, unknown>> = {};
@@ -941,30 +1014,81 @@ async function persistPlayerMatchStats(options: {
   } else {
     // Fallback for older/alternate setups: look for a dedicated "player_stats"
     // match event if present and parse its per-player dictionaries.
-  const playerStatsEvent = await db.queryOneAsync<{
-    event_data: string;
-  }>(
-    `SELECT event_data FROM match_events 
+    const playerStatsEvent = await db.queryOneAsync<{
+      event_data: string;
+    }>(
+      `SELECT event_data FROM match_events 
        WHERE match_slug = ? AND event_type = 'player_stats' 
        ORDER BY received_at DESC LIMIT 1`,
-    [matchSlug]
-  );
+      [matchSlug]
+    );
 
-  if (playerStatsEvent) {
-    try {
-      const eventData = JSON.parse(playerStatsEvent.event_data) as {
-        team1_players?: Record<string, Record<string, unknown>>;
-        team2_players?: Record<string, Record<string, unknown>>;
-      };
-      // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
-      if (eventData.team1_players) {
-        team1PlayerStats = eventData.team1_players;
+    if (playerStatsEvent) {
+      try {
+        const eventData = JSON.parse(playerStatsEvent.event_data) as {
+          team1_players?: Record<string, Record<string, unknown>>;
+          team2_players?: Record<string, Record<string, unknown>>;
+        };
+        // MatchZy format: {steamId: {kills, deaths, assists, damage, ...}}
+        if (eventData.team1_players) {
+          team1PlayerStats = eventData.team1_players;
+        }
+        if (eventData.team2_players) {
+          team2PlayerStats = eventData.team2_players;
+        }
+      } catch (error) {
+        log.warn('Failed to parse player stats from event', { error, matchSlug });
       }
-      if (eventData.team2_players) {
-        team2PlayerStats = eventData.team2_players;
-      }
-    } catch (error) {
-      log.warn('Failed to parse player stats from event', { error, matchSlug });
+    }
+
+    // Last-resort fallback: derive the final per-player snapshot directly from
+    // the last round_end event we recorded for this match. This is the same
+    // payload shape used to build liveStats during the match, so parsing it
+    // here guarantees stats even if the in-memory cache was lost or never
+    // populated for some reason.
+    if (!Object.keys(team1PlayerStats).length && !Object.keys(team2PlayerStats).length) {
+      const lastRoundEndEvent = await db.queryOneAsync<{
+        event_data: string;
+      }>(
+        `SELECT event_data FROM match_events 
+         WHERE match_slug = ? AND event_type = 'round_end' 
+         ORDER BY received_at DESC LIMIT 1`,
+        [matchSlug]
+      );
+
+      if (lastRoundEndEvent) {
+        try {
+          const roundEndData = JSON.parse(lastRoundEndEvent.event_data) as Record<string, unknown>;
+          const snapshot = extractPlayerStatsFromEvent(roundEndData);
+          if (snapshot) {
+            const toMapFromSnapshot = (
+              lines: PlayerStatLine[]
+            ): Record<string, Record<string, unknown>> => {
+              const map: Record<string, Record<string, unknown>> = {};
+              for (const line of lines) {
+                map[line.steamId] = {
+                  rounds_played: line.roundsPlayed,
+                  damage: line.damage,
+                  kills: line.kills,
+                  deaths: line.deaths,
+                  assists: line.assists,
+                  headshot_kills: line.headshotKills,
+                  flash_assists: line.flashAssists,
+                  utility_damage: line.utilityDamage,
+                  kast: line.kast,
+                  mvps: line.mvps,
+                  score: line.score,
+                };
+              }
+              return map;
+            };
+
+            team1PlayerStats = toMapFromSnapshot(snapshot.team1);
+            team2PlayerStats = toMapFromSnapshot(snapshot.team2);
+          }
+        } catch (error) {
+          log.warn('Failed to parse player stats from round_end event', { error, matchSlug });
+        }
       }
     }
   }
@@ -998,7 +1122,7 @@ async function persistPlayerMatchStats(options: {
       player_id: player.steamId,
       match_slug: matchSlug,
       team: 'team1',
-      won_match: team1Won,
+      won_match: result === 'team1',
       adr: Math.round(adr * 100) / 100, // Round to 2 decimal places
       total_damage: stats.damage || 0,
       kills: stats.kills || 0,
@@ -1042,7 +1166,7 @@ async function persistPlayerMatchStats(options: {
       player_id: player.steamId,
       match_slug: matchSlug,
       team: 'team2',
-      won_match: !team1Won,
+      won_match: result === 'team2',
       adr: Math.round(adr * 100) / 100,
       total_damage: stats.damage || 0,
       kills: stats.kills || 0,
@@ -1070,7 +1194,7 @@ async function persistPlayerMatchStats(options: {
  */
 async function trackPlayerStatsForMatch(
   match: DbMatchRow,
-  winnerId: string,
+  winnerId: string | null,
   matchSlug: string
 ): Promise<void> {
   try {
@@ -1088,14 +1212,22 @@ async function trackPlayerStatsForMatch(
       return;
     }
 
-    // Determine which team won
-    const team1Won = match.team1_id === winnerId;
+    // Determine match result for stats purposes. When winnerId is null (true
+    // draw), both teams will have won_match = false in player_match_stats.
+    let result: 'team1' | 'team2' | 'draw';
+    if (!winnerId) {
+      result = 'draw';
+    } else if (match.team1_id === winnerId) {
+      result = 'team1';
+    } else {
+      result = 'team2';
+    }
 
     await persistPlayerMatchStats({
       matchSlug,
       team1Players: team1.players as Array<{ steamId: string }>,
       team2Players: team2.players as Array<{ steamId: string }>,
-      team1Won,
+      result,
     });
   } catch (error) {
     log.error('Error tracking player stats for match', { error, matchSlug });
@@ -1146,13 +1278,20 @@ async function trackPlayerStatsForManualMatch(
       return;
     }
 
-    const team1Won = team1SeriesScore > team2SeriesScore;
+    let result: 'team1' | 'team2' | 'draw';
+    if (team1SeriesScore > team2SeriesScore) {
+      result = 'team1';
+    } else if (team2SeriesScore > team1SeriesScore) {
+      result = 'team2';
+    } else {
+      result = 'draw';
+    }
 
     await persistPlayerMatchStats({
       matchSlug,
       team1Players,
       team2Players,
-      team1Won,
+      result,
     });
   } catch (error) {
     log.error('Error tracking player stats for manual match', { error, matchSlug });
