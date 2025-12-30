@@ -14,7 +14,6 @@ import {
   Typography,
   Alert,
   Divider,
-  Avatar,
   ListItemAvatar,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -26,6 +25,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
 import PlayerSelectionModal from './PlayerSelectionModal';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { Team, Player } from '../../types';
 
 interface TeamModalProps {
@@ -410,9 +410,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                     }
                   >
                     <ListItemAvatar>
-                      <Avatar src={player.avatar} alt={player.name}>
-                        {player.name.charAt(0).toUpperCase()}
-                      </Avatar>
+                      <PlayerAvatar
+                        id={player.steamId}
+                        name={player.name}
+                        avatarUrl={player.avatar}
+                        size={40}
+                      />
                     </ListItemAvatar>
                     <ListItemText
                       primary={player.name}

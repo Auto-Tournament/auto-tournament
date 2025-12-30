@@ -686,7 +686,11 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       params.push(parseInt(tournamentId as string, 10));
     }
 
-    query += ' ORDER BY m.completed_at DESC, m.round DESC';
+    // Order by match completion time and then by stats row creation time so that,
+    // when multiple player_match_stats rows exist for the same (player, match),
+    // the most recent stats entry (with the best data) is the one we keep when
+    // deduplicating by slug below.
+    query += ' ORDER BY m.completed_at DESC, m.round DESC, pms.created_at DESC';
 
     type RawMatchRow = {
       slug: string;

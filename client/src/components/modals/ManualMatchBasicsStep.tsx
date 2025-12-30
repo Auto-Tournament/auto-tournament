@@ -1,6 +1,7 @@
 import React from 'react';
-import { Autocomplete, Avatar, Box, Chip, MenuItem, TextField, Typography } from '@mui/material';
+import { Autocomplete, Box, Chip, MenuItem, TextField, Typography } from '@mui/material';
 import type { Server, Team } from '../../types';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
 
 interface ManualMatchBasicsStepProps {
@@ -138,13 +139,12 @@ export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
                     {...props}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
-                    <Avatar
-                      src={option.avatar}
-                      alt={option.name}
-                      sx={{ width: 24, height: 24, fontSize: '0.75rem' }}
-                    >
-                      {option.name?.charAt(0).toUpperCase() ?? option.id.charAt(0).toUpperCase()}
-                    </Avatar>
+                    <PlayerAvatar
+                      id={option.id}
+                      name={option.name || option.id}
+                      avatarUrl={option.avatar}
+                      size={24}
+                    />
                     <Box>
                       <Typography variant="body2">{option.name || option.id}</Typography>
                       <Typography variant="caption" color="text.secondary">

@@ -10,7 +10,6 @@ import {
   Container,
   Stack,
   Chip,
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -32,6 +31,7 @@ import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetails
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import type { PlayerDetail } from '../types/api.types';
 import type { Team, TeamMatchInfo } from '../types';
 
@@ -688,9 +688,7 @@ export default function PlayerProfile() {
           <Card>
             <CardContent>
               <Box display="flex" alignItems="center" gap={3}>
-                <Avatar src={player.avatar} alt={player.name} sx={{ width: 80, height: 80 }}>
-                  {player.name.charAt(0).toUpperCase()}
-                </Avatar>
+                <PlayerAvatar id={player.id} name={player.name} avatarUrl={player.avatar} size={80} />
                 <Box flex={1}>
                   <Typography variant="h4" fontWeight={700} gutterBottom data-testid="public-player-name">
                     {player.name}
@@ -957,9 +955,7 @@ export default function PlayerProfile() {
               <ELOProgressionChart
                 history={ratingHistory.map((entry) => ({
                   eloBefore: entry.eloBefore,
-                  eloAfter: entry.eloAfter,
-                  eloChange: entry.eloChange,
-                  matchResult: entry.matchResult,
+                  baseEloAfter: entry.baseEloAfter,
                   createdAt: entry.createdAt,
                 }))}
                 currentElo={player.currentElo}

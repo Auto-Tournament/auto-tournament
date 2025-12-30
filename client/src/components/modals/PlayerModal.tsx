@@ -9,7 +9,6 @@ import {
   Box,
   CircularProgress,
   IconButton,
-  Avatar,
   Typography,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
@@ -17,6 +16,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
 
 interface PlayerModalProps {
@@ -247,7 +247,12 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
             {avatar && (
               <Box display="flex" alignItems="center" gap={2}>
-                <Avatar src={avatar} alt={name} sx={{ width: 48, height: 48 }} />
+                <PlayerAvatar
+                  id={steamId || player?.id || 'unknown'}
+                  name={name || player?.name || 'Player'}
+                  avatarUrl={avatar}
+                  size={48}
+                />
               </Box>
             )}
 

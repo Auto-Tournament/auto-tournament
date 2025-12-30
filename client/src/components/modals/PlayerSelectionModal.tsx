@@ -10,7 +10,6 @@ import {
   Card,
   CardContent,
   Checkbox,
-  Avatar,
   Typography,
   TextField,
   InputAdornment,
@@ -24,6 +23,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { PlayerDetail } from '../../types/api.types';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 interface PlayerSelectionModalProps {
   open: boolean;
@@ -281,13 +281,12 @@ export default function PlayerSelectionModal({
                             onClick={(e) => e.stopPropagation()}
                             sx={{ p: 0 }}
                           />
-                          <Avatar
-                            src={player.avatar}
-                            alt={player.name}
-                            sx={{ width: 48, height: 48 }}
-                          >
-                            {player.name.charAt(0).toUpperCase()}
-                          </Avatar>
+                          <PlayerAvatar
+                            id={player.id}
+                            name={player.name}
+                            avatarUrl={player.avatar}
+                            size={48}
+                          />
                           <Box flex={1} minWidth={0}>
                             <Typography variant="body1" fontWeight={600} noWrap sx={{ mb: 0.5 }}>
                               {player.name}

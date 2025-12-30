@@ -11,7 +11,6 @@ import {
   Container,
   Stack,
   Chip,
-  Avatar,
   Table,
   TableBody,
   TableCell,
@@ -34,6 +33,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -728,13 +728,12 @@ export default function TournamentLeaderboard() {
                             </TableCell>
                             <TableCell>
                               <Box display="flex" alignItems="center" gap={2}>
-                                <Avatar
-                                  src={player.avatar}
-                                  alt={player.name}
-                                  sx={{ width: 40, height: 40 }}
-                                >
-                                  {player.name.charAt(0).toUpperCase()}
-                                </Avatar>
+                                <PlayerAvatar
+                                  id={player.playerId}
+                                  name={player.name}
+                                  avatarUrl={player.avatar}
+                                  size={40}
+                                />
                                 <Typography variant="body1" fontWeight={600}>
                                   {player.name}
                                 </Typography>

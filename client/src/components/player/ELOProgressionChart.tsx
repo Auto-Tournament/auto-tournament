@@ -5,9 +5,7 @@ import { useTheme, alpha } from '@mui/material/styles';
 interface ELOProgressionChartProps {
   history: Array<{
     eloBefore: number;
-    eloAfter: number;
-    eloChange: number;
-    matchResult: 'win' | 'loss';
+    baseEloAfter: number | null;
     createdAt: number;
   }>;
   currentElo: number;
@@ -53,26 +51,37 @@ export function ELOProgressionChart({
   // progression line matches the order of matches the player actually played.
   const sortedHistory = [...history].sort((a, b) => a.createdAt - b.createdAt);
 
+  type DataPointRole = 'before' | 'base_after' | 'current';
+
   type DataPoint = {
     elo: number;
-    change?: number;
-    isCurrent?: boolean;
+    role: DataPointRole;
   };
 
-  // Build match progression: after each match -> current rating
-  const matchPoints: DataPoint[] = sortedHistory.map((entry) => ({
-      elo: entry.eloAfter,
-      change: entry.eloChange,
-  }));
+  const dataPoints: DataPoint[] = [];
 
-  const dataPoints: DataPoint[] = [...matchPoints];
+  // For each match, add two points:
+  // - Rating before the match
+  // - Base rating after the match (template / win‑loss effect only, before stat adj.)
+  sortedHistory.forEach((entry) => {
+    dataPoints.push({
+      elo: entry.eloBefore,
+      role: 'before',
+    });
 
-  // Append an explicit "current rating" point as the final grey dot. This makes
-  // it visually clear where the player stands *now*, even if no recent match
-  // has changed their rating.
+    if (entry.baseEloAfter !== null && entry.baseEloAfter !== undefined) {
+      dataPoints.push({
+        elo: entry.baseEloAfter,
+        role: 'base_after',
+      });
+    }
+  });
+
+  // Append an explicit "current rating" point as the final dot so it is clear
+  // where the player stands now, regardless of how many matches are shown.
   dataPoints.push({
     elo: currentElo,
-    isCurrent: true,
+    role: 'current',
   });
 
   // Find min and max ELO for scaling
@@ -82,7 +91,15 @@ export function ELOProgressionChart({
   const startingRatingBeforeFirst =
     sortedHistory.length > 0 ? sortedHistory[0].eloBefore : startingElo;
 
-  const allElos = [startingRatingBeforeFirst, currentElo, ...sortedHistory.map((h) => h.eloAfter)];
+  const allElos = [
+    startingRatingBeforeFirst,
+    currentElo,
+    ...sortedHistory.flatMap((h) =>
+      h.baseEloAfter !== null && h.baseEloAfter !== undefined
+        ? [h.eloBefore, h.baseEloAfter]
+        : [h.eloBefore]
+    ),
+  ];
   const minElo = Math.min(...allElos);
   const maxElo = Math.max(...allElos);
   const eloRange = maxElo - minElo || 1; // Avoid division by zero
@@ -179,8 +196,6 @@ export function ELOProgressionChart({
           {dataPoints.map((point, index) => {
             const x = getX(index, dataPoints.length);
             const y = getY(point.elo);
-            const isWin = point.change !== undefined && point.change > 0;
-            const isLoss = point.change !== undefined && point.change < 0;
 
             return (
               <g key={index}>
@@ -188,15 +203,7 @@ export function ELOProgressionChart({
                   cx={x}
                   cy={y}
                   r={pointRadius}
-                  fill={
-                    point.isCurrent
-                      ? theme.palette.primary.main
-                      : isWin
-                      ? theme.palette.success.main
-                      : isLoss
-                      ? theme.palette.error.main
-                      : theme.palette.primary.main
-                  }
+                  fill={theme.palette.primary.main}
                   stroke={theme.palette.background.paper}
                   strokeWidth={2}
                 />
@@ -204,49 +211,6 @@ export function ELOProgressionChart({
             );
           })}
         </svg>
-
-        {/* Legend */}
-        <Box display="flex" gap={2} mt={1} justifyContent="center">
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                bgcolor: theme.palette.primary.main,
-              }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              Current
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                  bgcolor: theme.palette.success.main,
-              }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              Win
-            </Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <Box
-              sx={{
-                width: 12,
-                height: 12,
-                borderRadius: '50%',
-                  bgcolor: theme.palette.error.main,
-              }}
-            />
-            <Typography variant="caption" color="text.secondary">
-              Loss
-            </Typography>
-          </Box>
-        </Box>
 
         {/* Stats summary */}
         <Box

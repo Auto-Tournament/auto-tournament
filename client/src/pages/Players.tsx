@@ -12,7 +12,6 @@ import {
   CircularProgress,
   TextField,
   InputAdornment,
-  Avatar,
   Alert,
   IconButton,
   Tooltip,
@@ -27,6 +26,7 @@ import { PlayerImportModal } from '../components/modals/PlayerImportModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import type { PlayerDetail, PlayersResponse } from '../types/api.types';
 import { getPlayerPageUrl } from '../utils/playerLinks';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
 
 export default function Players() {
   const { setHeaderActions } = usePageHeader();
@@ -232,13 +232,12 @@ export default function Players() {
                 >
                   <CardContent>
                     <Box display="flex" alignItems="center" gap={2} mb={2}>
-                      <Avatar
-                        src={player.avatar}
-                        alt={player.name}
-                        sx={{ width: 48, height: 48 }}
-                      >
-                        {player.name.charAt(0).toUpperCase()}
-                      </Avatar>
+                      <PlayerAvatar
+                        id={player.id}
+                        name={player.name}
+                        avatarUrl={player.avatar}
+                        size={48}
+                      />
                       <Box>
                         <Box display="flex" alignItems="center" gap={1}>
                           <Typography variant="h6" fontWeight={600} gutterBottom>

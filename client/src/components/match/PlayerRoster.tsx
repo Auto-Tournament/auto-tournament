@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Typography, Grid, Paper, Chip, Stack, Avatar, IconButton, Tooltip } from '@mui/material';
+import { Box, Typography, Grid, Paper, Chip, Stack, IconButton, Tooltip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CircleIcon from '@mui/icons-material/Circle';
 import PersonOffIcon from '@mui/icons-material/PersonOff';
@@ -7,6 +7,7 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 interface PlayerRosterProps {
   team1Name: string;
@@ -93,13 +94,12 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 )}
 
                 {/* Avatar */}
-                <Avatar
-                  src={player.avatar}
-                  alt={player.name}
-                  sx={{ width: 32, height: 32 }}
-                >
-                  {player.name.charAt(0).toUpperCase()}
-                </Avatar>
+                <PlayerAvatar
+                  id={player.steamid}
+                  name={player.name}
+                  avatarUrl={player.avatar}
+                  size={32}
+                />
 
                 {/* Player Name */}
                 <Typography

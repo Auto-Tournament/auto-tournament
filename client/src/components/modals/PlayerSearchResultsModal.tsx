@@ -11,13 +11,13 @@ import {
   ListItemButton,
   ListItemAvatar,
   ListItemText,
-  Avatar,
   Typography,
   IconButton,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import PersonIcon from '@mui/icons-material/Person';
 import { useNavigate } from 'react-router-dom';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 interface PlayerSearchResultsModalProps {
   open: boolean;
@@ -57,11 +57,14 @@ export default function PlayerSearchResultsModal({
         <List>
           {players.map((player) => (
             <ListItem key={player.id} disablePadding>
-              <ListItemButton onClick={() => handleSelectPlayer(player.id)}>
+                <ListItemButton onClick={() => handleSelectPlayer(player.id)}>
                 <ListItemAvatar>
-                  <Avatar src={player.avatar} alt={player.name}>
-                    {player.name.charAt(0).toUpperCase()}
-                  </Avatar>
+                  <PlayerAvatar
+                    id={player.id}
+                    name={player.name}
+                    avatarUrl={player.avatar}
+                    size={40}
+                  />
                 </ListItemAvatar>
                 <ListItemText
                   primary={player.name}

@@ -1,18 +1,9 @@
 import React from 'react';
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Paper,
-  IconButton,
-  Tooltip,
-  Avatar,
-} from '@mui/material';
+import { Box, Card, CardContent, Typography, Stack, Paper, IconButton, Tooltip } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SteamIcon } from '../icons/SteamIcon';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { Team } from '../../types';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 
@@ -60,13 +51,12 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
                 }}
               >
                 <Box display="flex" alignItems="center" gap={2}>
-                  <Avatar
-                    src={playerData.avatar}
-                    alt={playerName}
-                    sx={{ width: 40, height: 40 }}
-                  >
-                    {playerName.charAt(0).toUpperCase()}
-                  </Avatar>
+                  <PlayerAvatar
+                    id={playerSteamId || String(index)}
+                    name={playerName}
+                    avatarUrl={playerData.avatar}
+                    size={40}
+                  />
                   <Typography variant="body1" fontWeight={500}>
                     {playerName}
                   </Typography>

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Avatar,
   Box,
   Card,
   CardContent,
@@ -20,6 +19,7 @@ import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { SteamIcon } from '../components/icons/SteamIcon';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
 
 interface PlayerOption {
   id: string;
@@ -181,13 +181,12 @@ export default function FindPlayer() {
                     {...props}
                     sx={{ display: 'flex', alignItems: 'center', gap: 1 }}
                   >
-                    <Avatar
-                      src={option.avatar}
-                      alt={option.name}
-                      sx={{ width: 24, height: 24, fontSize: '0.75rem' }}
-                    >
-                      {option.name?.charAt(0).toUpperCase() ?? option.id.charAt(0).toUpperCase()}
-                    </Avatar>
+                    <PlayerAvatar
+                      id={option.id}
+                      name={option.name}
+                      avatarUrl={option.avatar}
+                      size={24}
+                    />
                     <Box>
                       <Typography variant="body2">{option.name}</Typography>
                       <Typography variant="caption" color="text.secondary">

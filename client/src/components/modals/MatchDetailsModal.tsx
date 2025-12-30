@@ -56,6 +56,8 @@ import { FadeInImage } from '../common/FadeInImage';
 import { api } from '../../utils/api';
 import ConfirmDialog from './ConfirmDialog';
 import { isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
+import { normalizeConfigPlayers } from '../../utils/playerUtils';
+import { PlayerAvatar } from '../player/PlayerAvatar';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -389,6 +391,30 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
   // Shuffle tournaments and veto-disabled matches don't use veto - treat as
   // completed to avoid "VETO PENDING" labels in chips and status badges.
   const effectiveVetoCompleted = vetoDisabled ? true : match.vetoCompleted;
+
+  // Build a quick lookup of player avatars from the enriched match config so we
+  // can decorate live stats / leaderboards with the same avatars used on team
+  // and player pages. Use normalizeConfigPlayers so we handle both array and
+  // object formats safely across all match types.
+  const avatarIndex = useMemo(() => {
+    const index: Record<string, string | undefined> = {};
+
+    const team1Normalized = match.config?.team1?.players
+      ? normalizeConfigPlayers(match.config.team1.players)
+      : [];
+    const team2Normalized = match.config?.team2?.players
+      ? normalizeConfigPlayers(match.config.team2.players)
+      : [];
+
+    for (const p of [...team1Normalized, ...team2Normalized]) {
+      if (p.steamid) {
+        index[p.steamid.toLowerCase()] = p.avatar;
+      }
+    }
+
+    return index;
+  }, [match.config?.team1?.players, match.config?.team2?.players]);
+
   const normalizedTeam1Players = livePlayerStats?.team1?.length
     ? livePlayerStats.team1.map((player) => ({
         name: player.name,
@@ -399,7 +425,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         damage: player.damage,
         headshots: player.headshotKills,
       }))
-    : match.team1Players || [];
+    : (match.team1Players || []).map((player) => ({
+        ...player,
+        avatar: avatarIndex[player.steamId.toLowerCase()],
+      }));
   const normalizedTeam2Players = livePlayerStats?.team2?.length
     ? livePlayerStats.team2.map((player) => ({
         name: player.name,
@@ -410,7 +439,10 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         damage: player.damage,
         headshots: player.headshotKills,
       }))
-    : match.team2Players || [];
+    : (match.team2Players || []).map((player) => ({
+        ...player,
+        avatar: avatarIndex[player.steamId.toLowerCase()],
+      }));
 
   // --- Winner explanation for tied scores (performance-based tiebreak) ---
   const mapRoundsAreTied =
@@ -853,24 +885,32 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                                       justifyContent="space-between"
                                       alignItems="center"
                                     >
-                                      <Typography
-                                        variant="body2"
-                                        fontWeight={600}
-                                        component="a"
-                                        href={getPlayerPageUrl(player.steamId)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{
-                                          color: 'primary.main',
-                                          textDecoration: 'none',
-                                          cursor: 'pointer',
-                                          '&:hover': {
-                                            textDecoration: 'underline',
-                                          },
-                                        }}
-                                      >
-                                        {player.name}
-                                      </Typography>
+                                      <Box display="flex" alignItems="center" gap={1.25}>
+                                        <PlayerAvatar
+                                          id={player.steamId}
+                                          name={player.name}
+                                          avatarUrl={player.avatar}
+                                          size={28}
+                                        />
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight={600}
+                                          component="a"
+                                          href={getPlayerPageUrl(player.steamId)}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          sx={{
+                                            color: 'primary.main',
+                                            textDecoration: 'none',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                              textDecoration: 'underline',
+                                            },
+                                          }}
+                                        >
+                                          {player.name}
+                                        </Typography>
+                                      </Box>
                                       <Typography
                                         variant="body2"
                                         fontWeight={600}
@@ -930,24 +970,32 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
                                       justifyContent="space-between"
                                       alignItems="center"
                                     >
-                                      <Typography
-                                        variant="body2"
-                                        fontWeight={600}
-                                        component="a"
-                                        href={getPlayerPageUrl(player.steamId)}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        sx={{
-                                          color: 'primary.main',
-                                          textDecoration: 'none',
-                                          cursor: 'pointer',
-                                          '&:hover': {
-                                            textDecoration: 'underline',
-                                          },
-                                        }}
-                                      >
-                                        {player.name}
-                                      </Typography>
+                                      <Box display="flex" alignItems="center" gap={1.25}>
+                                          <PlayerAvatar
+                                            id={player.steamId}
+                                            name={player.name}
+                                            avatarUrl={player.avatar}
+                                            size={28}
+                                          />
+                                        <Typography
+                                          variant="body2"
+                                          fontWeight={600}
+                                          component="a"
+                                          href={getPlayerPageUrl(player.steamId)}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          sx={{
+                                            color: 'primary.main',
+                                            textDecoration: 'none',
+                                            cursor: 'pointer',
+                                            '&:hover': {
+                                              textDecoration: 'underline',
+                                            },
+                                          }}
+                                        >
+                                          {player.name}
+                                        </Typography>
+                                      </Box>
                                       <Typography
                                         variant="body2"
                                         fontWeight={600}
