@@ -75,6 +75,7 @@ interface MatchHistoryEntry {
   kills?: number;
   deaths?: number;
   assists?: number;
+  headshots?: number;
 }
 
 function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): TeamMatchInfo {
@@ -232,21 +233,15 @@ export default function PlayerProfile() {
     return Array.from(bySlug.values());
   }, [matchHistory]);
 
-  // Lightweight lookup so we can map rating history rows (by matchSlug) to
-  // human-friendly round/match labels instead of raw slugs.
-  const matchMetaBySlug = React.useMemo(() => {
-    const map = new Map<
-      string,
-      {
-        round: number;
-        matchNumber: number;
-      }
-    >();
-    for (const m of uniqueMatchHistory) {
-      map.set(m.slug, { round: m.round, matchNumber: m.matchNumber });
+  // Lightweight lookup so we can map rating history rows (by matchSlug) to the
+  // final rating for that match when rendering the Match History table.
+  const ratingBySlug = React.useMemo(() => {
+    const map = new Map<string, number>();
+    for (const entry of ratingHistory) {
+      map.set(entry.matchSlug, entry.eloAfter);
     }
     return map;
-  }, [uniqueMatchHistory]);
+  }, [ratingHistory]);
 
   const loadPlayerData = async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!steamId) return;
@@ -301,6 +296,7 @@ export default function PlayerProfile() {
           kills?: number;
           deaths?: number;
           assists?: number;
+          headshots?: number;
         }>;
       }>(`/api/players/${steamId}/summary`);
 
@@ -354,6 +350,7 @@ export default function PlayerProfile() {
           kills: m.kills,
           deaths: m.deaths,
           assists: m.assists,
+          headshots: m.headshots,
         }))
       );
 
@@ -627,6 +624,12 @@ export default function PlayerProfile() {
     ratingHistory.length > 0
       ? ratingHistory[ratingHistory.length - 1].eloAfter
       : player.startingElo;
+
+  // Baseline for the history table: true initial rating before the first match.
+  const baselineRating =
+    ratingHistory.length > 0
+      ? ratingHistory[ratingHistory.length - 1].eloBefore
+      : player.startingElo;
   const winRate =
     uniqueMatchHistory.length > 0
       ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100
@@ -675,21 +678,6 @@ export default function PlayerProfile() {
     (a, b) => (a.completedAt || 0) - (b.completedAt || 0)
   );
   const recentTimelineMatches = recentMatches.slice(-maxRecentTimelineMatches);
-  const formatRatingMatchLabel = (slug: string): string => {
-    const meta = matchMetaBySlug.get(slug);
-    if (meta) {
-      return getRoundLabel(meta.round);
-    }
-
-    // Fallback: best-effort parse for shuffle-style slugs like "shuffle-r5-m1"
-    const m = slug.match(/r(\d+)-m(\d+)/i);
-    if (m) {
-      const round = Number(m[1]) || 0;
-      return getRoundLabel(round);
-    }
-
-    return slug;
-  };
 
   // Best and toughest matches by ADR
   let bestAdrMatch: MatchHistoryEntry | null = null;
@@ -1068,95 +1056,6 @@ export default function PlayerProfile() {
           )}
 
           {/* Rating History */}
-          {ratingHistory.length > 0 && (
-            <Card>
-              <CardContent>
-                <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Skill Rating History
-                </Typography>
-                <TableContainer>
-                  <Table size="small">
-                    <TableHead>
-                      <TableRow>
-                        <TableCell>Match</TableCell>
-                        <TableCell align="right">Rating Before</TableCell>
-                        <TableCell align="right">Base Rating After</TableCell>
-                        <TableCell align="right">Stat Adj.</TableCell>
-                        <TableCell align="right">Final Rating</TableCell>
-                        <TableCell align="right">Total Change</TableCell>
-                        <TableCell>Template</TableCell>
-                        <TableCell>Result</TableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {ratingHistory.slice(0, 10).map((entry) => (
-                        <TableRow key={entry.id}>
-                          <TableCell>
-                            <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
-                              {formatRatingMatchLabel(entry.matchSlug)}
-                            </Typography>
-                          </TableCell>
-                          <TableCell align="right">{entry.eloBefore}</TableCell>
-                          <TableCell align="right">{entry.baseEloAfter ?? '—'}</TableCell>
-                          <TableCell align="right">
-                            {entry.statAdjustment !== undefined && entry.statAdjustment !== null ? (
-                              <Chip
-                                label={`${entry.statAdjustment > 0 ? '+' : ''}${
-                                  entry.statAdjustment
-                                }`}
-                                size="small"
-                                color={
-                                  entry.statAdjustment > 0
-                                    ? 'success'
-                                    : entry.statAdjustment < 0
-                                    ? 'error'
-                                    : 'default'
-                                }
-                              />
-                            ) : (
-                              '—'
-                            )}
-                          </TableCell>
-                          <TableCell align="right">
-                            <strong>{entry.eloAfter}</strong>
-                          </TableCell>
-                          <TableCell align="right">
-                            <Chip
-                              label={`${entry.eloChange > 0 ? '+' : ''}${entry.eloChange}`}
-                              size="small"
-                              color={entry.eloChange > 0 ? 'success' : 'error'}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Typography variant="body2" color="text.secondary" noWrap>
-                              {entry.templateId || 'Pure Win/Loss'}
-                            </Typography>
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              label={entry.matchResult === 'win' ? 'Win' : 'Loss'}
-                              size="small"
-                              color={entry.matchResult === 'win' ? 'success' : 'error'}
-                            />
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
-                {ratingHistory.length > 10 && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ mt: 1, display: 'block' }}
-                  >
-                    Showing last 10 matches. Total: {ratingHistory.length}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
           {/* Match History */}
           {uniqueMatchHistory.length > 0 && (
             <Card>
@@ -1168,11 +1067,14 @@ export default function PlayerProfile() {
                   <Table size="small">
                     <TableHead>
                       <TableRow>
+                        <TableCell align="left">Round</TableCell>
                         <TableCell>Opponent</TableCell>
-                        <TableCell align="right">Round</TableCell>
-                        <TableCell align="right">K/D</TableCell>
-                        <TableCell align="right">ADR</TableCell>
-                        <TableCell align="right">Damage</TableCell>
+                        <TableCell align="right">Kills</TableCell>
+                        <TableCell align="right">Deaths</TableCell>
+                        <TableCell align="right">Assists</TableCell>
+                        <TableCell align="right">HS%</TableCell>
+                        <TableCell align="right">DMG</TableCell>
+                        <TableCell align="right">Rating</TableCell>
                         <TableCell>Result</TableCell>
                       </TableRow>
                     </TableHead>
@@ -1190,23 +1092,36 @@ export default function PlayerProfile() {
                             sx={{ cursor: 'pointer' }}
                             onClick={() => setSelectedMatch(match)}
                           >
+                            <TableCell align="left">#{match.round}</TableCell>
                             <TableCell>
                               <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
                                 vs {opponentName}
                               </Typography>
                             </TableCell>
-                            <TableCell align="right">R{match.round}</TableCell>
                             <TableCell align="right">
-                              {match.kills !== undefined && match.deaths !== undefined
-                                ? `${match.kills}/${match.deaths}`
-                                : 'N/A'}
+                              {typeof match.kills === 'number' ? match.kills : 'N/A'}
                             </TableCell>
                             <TableCell align="right">
-                              {typeof match.adr === 'number' ? match.adr.toFixed(1) : 'N/A'}
+                              {typeof match.deaths === 'number' ? match.deaths : 'N/A'}
+                            </TableCell>
+                            <TableCell align="right">
+                              {typeof match.assists === 'number' ? match.assists : 'N/A'}
+                            </TableCell>
+                            <TableCell align="right">
+                              {typeof match.kills === 'number' &&
+                              typeof match.headshots === 'number' &&
+                              match.kills > 0
+                                ? `${Math.round((match.headshots / match.kills) * 100)}%`
+                                : 'N/A'}
                             </TableCell>
                             <TableCell align="right">
                               {typeof match.totalDamage === 'number'
                                 ? match.totalDamage.toLocaleString()
+                                : 'N/A'}
+                            </TableCell>
+                            <TableCell align="right">
+                              {ratingBySlug.has(match.slug)
+                                ? ratingBySlug.get(match.slug)
                                 : 'N/A'}
                             </TableCell>
                             <TableCell>
@@ -1219,6 +1134,28 @@ export default function PlayerProfile() {
                           </TableRow>
                         );
                       })}
+                      {/* Baseline row (non-clickable) */}
+                      <TableRow hover={false} sx={{ cursor: 'default' }}>
+                        <TableCell align="left">
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            Baseline
+                          </Typography>
+                        </TableCell>
+                        <TableCell>—</TableCell>
+                        <TableCell align="right">—</TableCell>
+                        <TableCell align="right">—</TableCell>
+                        <TableCell align="right">—</TableCell>
+                        <TableCell align="right">—</TableCell>
+                        <TableCell align="right">—</TableCell>
+                        <TableCell align="right">
+                          <strong>{baselineRating}</strong>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="body2" color="text.secondary" noWrap>
+                            —
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
                     </TableBody>
                   </Table>
                 </TableContainer>

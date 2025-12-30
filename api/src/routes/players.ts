@@ -672,7 +672,8 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
         pms.total_damage,
         pms.kills,
         pms.deaths,
-        pms.assists
+        pms.assists,
+        pms.headshots
       FROM player_match_stats pms
       JOIN matches m ON pms.match_slug = m.slug
       LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -714,6 +715,7 @@ router.get('/:playerId/summary', async (req: Request, res: Response) => {
       kills?: number | null;
       deaths?: number | null;
       assists?: number | null;
+      headshots?: number | null;
     };
 
     const rawMatches = await db.queryAsync<RawMatchRow>(query, params);
