@@ -57,7 +57,7 @@ fi
 
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker is not running.${NC}"
-    echo -e "${YELLOW}Please start OrbStack or Docker Desktop.${NC}"
+    echo -e "${YELLOW}Please start Rancher Desktop, Docker Desktop, or your configured Docker engine.${NC}"
     exit 1
 fi
 
@@ -346,14 +346,19 @@ fi
 echo ""
 echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
 
-# Ensure we're using OrbStack context (or default if OrbStack not available)
-if docker context ls | grep -q "orbstack \*"; then
-    echo -e "${GREEN}✅ Using OrbStack context${NC}"
-elif docker context show | grep -q "orbstack"; then
-    docker context use orbstack
-    echo -e "${GREEN}✅ Switched to OrbStack context${NC}"
-else
-    echo -e "${YELLOW}⚠️  OrbStack context not found, using default${NC}"
+# Prefer Rancher Desktop Docker context when available, otherwise use current/default context
+if command -v docker >/dev/null 2>&1 && docker context ls >/dev/null 2>&1; then
+    if docker context ls 2>/dev/null | grep -q "rancher-desktop"; then
+        CURRENT_CONTEXT="$(docker context show 2>/dev/null || echo "")"
+        if [ "$CURRENT_CONTEXT" != "rancher-desktop" ]; then
+            echo -e "${BLUE}Switching Docker context to Rancher Desktop...${NC}"
+            docker context use rancher-desktop || echo -e "${YELLOW}⚠️  Failed to switch to Rancher Desktop context, continuing with current context.${NC}"
+        else
+            echo -e "${GREEN}✅ Using Rancher Desktop Docker context${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠️  Rancher Desktop context not found, using current Docker context.${NC}"
+    fi
 fi
 
 # Set up Docker Buildx builder
