@@ -15,6 +15,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.7.5] - 2025-12-30
+
+### Added
+- Release v1.7.5
+
+---
+
 ## [1.2.0] - 2025-01-XX
 
 ### Added
@@ -42,6 +49,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v1.7.5...HEAD
+[1.7.5]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.7.5
 [1.2.0]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.2.0
 [1.0.0]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.0.0
