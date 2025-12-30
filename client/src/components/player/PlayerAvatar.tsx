@@ -2,7 +2,7 @@ import React from 'react';
 import { Avatar } from '@mui/material';
 
 interface PlayerAvatarProps {
-  id: string;
+  id?: string | null;
   name: string;
   avatarUrl?: string | null;
   size?: number;
@@ -17,8 +17,14 @@ interface PlayerAvatarProps {
  *   /api/players/:id/avatar.svg so all views stay visually consistent.
  */
 export function PlayerAvatar({ id, name, avatarUrl, size = 40 }: PlayerAvatarProps) {
-  const fallback = `/api/players/${id}/avatar.svg`;
-  const src = avatarUrl && avatarUrl.trim().length > 0 ? avatarUrl : fallback;
+  const hasExplicit = typeof avatarUrl === 'string' && avatarUrl.trim().length > 0;
+  const hasId = typeof id === 'string' && id.trim().length > 0;
+
+  // Only build the backend fallback URL when we have a valid player ID; this
+  // avoids 404s like /api/players/undefined/avatar.svg for temporary/placeholder
+  // rows (e.g., team editors or partial forms).
+  const fallback = hasId ? `/api/players/${id}/avatar.svg` : undefined;
+  const src = hasExplicit ? avatarUrl : fallback;
 
   return (
     <Avatar src={src} alt={name} sx={{ width: size, height: size }}>

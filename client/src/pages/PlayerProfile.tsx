@@ -418,6 +418,11 @@ export default function PlayerProfile() {
         'match_restarted',
         'server_assigned',
         'match_allocated',
+        // Also refresh when rounds advance or match statuses change so the
+        // player's ELO, match history, and "current match" card stay in sync
+        // without requiring a manual page reload.
+        'round_advanced',
+        'match_status',
       ]);
 
       if (refreshActions.has(event.action)) {
@@ -428,10 +433,24 @@ export default function PlayerProfile() {
     socket.on('bracket:update', handleBracketOrTournamentUpdate);
     socket.on('tournament:update', handleBracketOrTournamentUpdate);
 
+    // Additionally, refresh the player summary whenever any match completes.
+    // This ensures ELO, rating history, and match history update immediately
+    // after the player's match finishes, even if there is no longer a
+    // "currentMatch" slug to subscribe to.
+    const handleAnyMatchUpdate = (data?: { status?: string | null }) => {
+      if (!data || data.status !== 'completed') {
+        return;
+      }
+      void loadPlayerData({ silent: true });
+    };
+
+    socket.on('match:update', handleAnyMatchUpdate);
+
     return () => {
       if (!socket) return;
       socket.off('bracket:update', handleBracketOrTournamentUpdate);
       socket.off('tournament:update', handleBracketOrTournamentUpdate);
+      socket.off('match:update', handleAnyMatchUpdate);
       socket.close();
       socketRef.current = null;
     };

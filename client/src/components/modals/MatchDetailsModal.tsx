@@ -67,7 +67,7 @@ interface MatchDetailsModalProps {
   onDeleted?: (slug: string) => void;
 }
 
-const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
+const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
   match,
   matchNumber,
   roundLabel,
@@ -258,8 +258,6 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
     }
     return null;
   };
-
-  if (!match) return null;
 
   // Start from DB-backed scores
   let mapRoundsTeam1 = match.team1Score ?? 0;
@@ -1318,6 +1316,22 @@ const MatchDetailsModal: React.FC<MatchDetailsModalProps> = ({
         </Alert>
       </Snackbar>
     </>
+  );
+};
+
+const MatchDetailsModal: React.FC<MatchDetailsModalProps> = (props) => {
+  if (!props.match) {
+    return null;
+  }
+  const { match, matchNumber, roundLabel, onClose, onDeleted } = props;
+  return (
+    <InnerMatchDetailsModal
+      match={match}
+      matchNumber={matchNumber}
+      roundLabel={roundLabel}
+      onClose={onClose}
+      onDeleted={onDeleted}
+    />
   );
 };
 
