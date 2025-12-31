@@ -42,6 +42,7 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Player management (Steam IDs)
 - ✅ Team import/export (JSON)
 - ✅ Team statistics (win/loss, match history)
+- ✅ Player attributes (e.g. mark specific players as MatchZy in-game admins)
 
 ## Player Pages (Public)
 
