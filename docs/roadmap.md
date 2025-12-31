@@ -14,7 +14,7 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Third place match option
 - ✅ Real-time bracket updates
 - ✅ Shuffle tournaments (individual player mode with automatic team balancing and leaderboards)
-- 🎯 Tournament templates (save/reuse configurations)
+- ✅ Tournament templates (save/reuse configurations)
 
 ## Server Management
 
