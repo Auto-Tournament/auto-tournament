@@ -15,102 +15,67 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ## [1.7.5] – 2025-12-30
 
-### Highlights
+### Tournament & Match Management
 
-- **[Feature]** Massive improvements to **manual match workflows**:
-  - Multi-step manual match modal with review step, map pool and template support, deletion, and richer configuration (round limits, overtime, simulation, matchmaking options).
-  - Manual match templates, ratings management, and bulk match creation for tournaments.
-  - Better normalization of player data, event handling, and status updates for manual matches.
-- **[Feature]** Enhanced **server availability and simulation tooling**:
-  - Server availability metrics, queue status, warnings before tournament start, and improved caching and connectivity checks.
-  - Simulation mode for matches and tournaments, with configurable simulation timescale and spinner timeouts on start.
-  - Automated veto simulation for tournament matches and richer server events monitoring.
-- **[Feature]** Richer **player and tournament insights**:
-  - Improved player statistics (headshots, ADR, highlighting, leaderboard accuracy), match list cards, and recent performance views.
-  - Enhanced tournament leaderboard, live stats extraction, and parallel/optimistic match allocation strategies.
-  - Queue-aware server status responses and navigation.
-- **[Feature]** Expanded **public and auth flows**:
-  - Steam OpenID login for players, enhanced Steam API integration, and public pages for easier navigation (player finder, public pages shell, 404 handling).
-  - Per-server MatchZy configuration (chat prefixes, knife round toggles, overtime segments, and related plugin settings).
-- **[Feature]** Visual and UX improvements:
-  - Improved brackets viewer styling and live match highlighting, map thumbnails via `FadeInImage`, and WebP images for maps.
-  - Audio notifications for matches, friendlier team names, better theming (scrollbars, colors), and richer settings UI (tabs, reset).
-- **[Fix]** Numerous fixes to:
-  - Veto UI behavior, match score display, server online status detection, shuffle tournament errors, and E2E test stability.
+- **[Feature]** Deep overhaul of **manual match workflows** with a multi-step modal, review step, map pool and template support, match deletion, and richer configuration (round limits, overtime modes, simulation flags, and matchmaking options).
+- **[Feature]** Added manual match templates, ratings management, and bulk match creation for tournaments, plus better validation and error handling for bracket matches.
+- **[Feature]** Refined shuffle tournament handling with friendlier team names, draw handling, improved match allocation logic (including optimistic parallel allocation), and better bracket visuals.
 
-### Detailed (from commits since 1.2.0)
+### Servers, Allocation & Simulation
 
-- **[Feature]** Tournament and match configuration:
-  - Added `maxRounds`, `overtimeMode`, and overtime segment configuration to tournament settings.
-  - Introduced simulation mode flags and timescale keys in the settings service.
-  - Implemented match volume estimation for various tournament formats.
-- **[Feature]** Manual matches:
-  - Implemented manual match creation, including map and team selection, round limits, overtime, and simulation toggles.
-  - Added manual match templates, match deletion, and bulk creation workflows for tournaments.
-  - Added ELO template import and built-in templates to standardize rating configs.
-- **[Feature]** Server availability and allocation:
-  - Enhanced server status endpoint with queued match status and more accurate availability metrics.
-  - Implemented bi-directional connectivity checks, allocation tracking, and structural validation for configurations.
-  - Added server events monitoring endpoint and UI, plus improved logging around allocation and failures.
-- **[Feature]** Player experience:
-  - Introduced `PlayerAvatar` and `PlayerName` components and player highlighting in performance views.
-  - Improved PlayerProfile with deduplicated match history, better recent-match stats, and error handling.
-  - Added public player selection and current-match endpoints for easier access to connect information.
-- **[Feature]** Shuffle tournaments and brackets:
-  - Enhanced shuffle tournament logic with friendlier team naming, configuration options, and screenshot automation.
-  - Added round map labels for shuffle tournaments, improved winner identification, and refined bracket visuals.
-- **[Feature]** UI & monitoring:
-  - Extended `AdminTools` and `AdminMatchControls` with more resilient match control commands and recovery flow.
-  - Added server events monitor, log viewer, live stats clearing, and richer postgame messaging.
-  - Introduced NotFound and PublicPages routing, improved Settings tabs, and better Snackbar usage for errors.
-- **[Fix]** Reliability and correctness:
-  - Fixed numerous edge cases in bracket display, map image URLs, match restart behavior, and shuffle team assignment.
-  - Improved log formatting, timestamp handling, and error messages throughout the stack.
-- **[Docs]** Documentation and release tooling:
-  - Updated guides, quick start, and feature docs for new tournament formats, shuffle tournaments, and server setup.
-  - Improved release scripts (Docker, multi-platform, version automation) and added standalone release steps.
+- **[Feature]** Expanded **server availability tooling** with accurate status metrics, queue awareness, warnings before tournament start, bi-directional connectivity checks, and improved caching.
+- **[Feature]** Introduced **simulation mode** for matches and tournaments, including timescale configuration, simulation settings in the UI, and simulation-aware veto/match logic.
+- **[Feature]** Added automated veto simulation for tournament matches and richer server events monitoring (dedicated endpoint, UI monitor, and enhanced logging).
+
+### Players, Stats & Insights
+
+- **[Feature]** Enhanced player insights with headshot tracking, improved ADR and performance metrics, highlighting for key players, and more accurate leaderboards via deduplicated stats.
+- **[Feature]** Upgraded PlayerProfile with recent-match performance summaries, better match history handling, and robust error states.
+- **[Feature]** Introduced public player selection and current-match endpoints so players can easily find connect info from public pages.
+
+### Auth, Public Pages & MatchZy Settings
+
+- **[Feature]** Added **Steam OpenID login** for players, plus improved Steam API integration and error handling.
+- **[Feature]** Implemented per-server **MatchZy configuration management** (chat prefixes, knife round toggles, overtime segments, and related plugin settings).
+- **[Feature]** Added `PublicPages` shell and 404 routing to ensure a smoother public navigation experience.
+
+### Admin Tools, Monitoring & UX
+
+- **[Feature]** Extended `AdminTools` and `AdminMatchControls` with more resilient match control commands, match recovery tools, and clearer confirmation flows.
+- **[Feature]** Added a **Server Events Monitor**, application **LogViewer**, live stats clearing, and clearer postgame status messaging.
+- **[Feature]** Delivered a large round of UX polish: improved brackets viewer styling and live match highlighting, `FadeInImage` for map thumbnails with WebP assets, audio notifications, better theming (scrollbars, colors), and tabbed Settings with reset controls.
+
+### Reliability, Tooling & Docs
+
+- **[Fix]** Addressed many edge cases in veto UI behavior, match score display, server online detection, shuffle tournament flows, and E2E test reliability.
+- **[Docs]** Updated guides, quick start, and feature docs to cover new tournament formats, shuffle tournaments, and server setup.
+- **[Chore]** Hardened release scripts for Docker and multi-platform builds, and added standalone steps for repeatable releases.
 
 ---
 
 ## [1.2.0] – 2025-11-28
 
-### Highlights
+### Maps, Pools & Veto
 
-- **[Feature]** Introduced **maps and map pool management**:
-  - Full CRUD for maps and map pools, including enable/disable, CS2 map imports, default pools, and synchronization from GitHub/wiki sources.
-  - Map pool-aware veto and tournament configuration, with dynamic loading and fallback display handling.
-- **[Feature]** Expanded **CS Major veto support**:
-  - CS Major-compliant veto orders for BO1/BO3/BO5 with custom orders support and enhanced tests and manual testing guides.
-  - Improved VetoInterface UX, including correct starting sides, dynamic map lists, and simulation-aware logic.
-- **[Feature]** Improved **demo, match recovery, and server integration**:
-  - Match report upload endpoints, enhanced demo upload logging, and better match recovery routines.
-  - Integration with CS2 Server Manager and documentation to streamline server and plugin setup.
-- **[Feature]** Better **observability and admin tools**:
-  - Dedicated event log file, match log viewer, and Admin Tools improvements for server control.
-  - Version display and automated release workflow, with Discord webhook announcements for releases.
-- **[Feature]** Test and infra upgrades:
-  - Full Playwright E2E suite with tags, HTML reporting, and improved selectors.
-  - Migration to PostgreSQL with a database abstraction layer and updated Docker-based dev workflow.
+- **[Feature]** Added full **maps and map pool management** (CRUD, enable/disable, CS2 imports, default pools, and synchronization from GitHub/wiki sources).
+- **[Feature]** Tightened integration between map pools, tournaments, and veto (pool-aware configuration, dynamic loading, and robust fallback display handling).
+- **[Feature]** Expanded **CS Major veto support** with compliant BO1/BO3/BO5 orders, custom orders, and a more polished VetoInterface UX.
 
-### Detailed (from commits between 1.1.1 and 1.7.5)
+### Demo Management, Recovery & Server Integration
 
-- **[Feature]** Maps & veto:
-  - Added Map and MapPool components with modals, map synchronization, and defaults for CS2 maps.
-  - Documented map and map pool workflows, added comprehensive tests, and refined map selection UIs.
-- **[Feature]** CS Major veto enhancements:
-  - Updated veto orders to CS Major rules, improved tests for those formats and custom orders.
-  - Refined veto logic, polling, and UI error handling.
-- **[Feature]** Demo & recovery:
-  - Introduced match report upload via plugin endpoint and richer demo configuration.
-  - Added explicit match recovery flows for desynced states, including reconnect and webhook reconfiguration.
-- **[Feature]** Observability & docs:
-  - Added event logging to a dedicated file, improved match connection event logs, and better status messages.
-  - Expanded documentation for CS2 server setup, tournament quick start, and plugin requirements.
-- **[Feature]** Infra & testing:
-  - Added PostgreSQL support with updated Docker configuration and `.env` loading.
-  - Implemented comprehensive Playwright E2E coverage, including selectors and CI configuration.
-- **[Docs]**:
-  - Restructured index and guides, added screenshots, and clarified installation prerequisites.
+- **[Feature]** Introduced match report upload endpoints, enhanced demo upload logging, and more reliable recovery routines for desynced match state.
+- **[Feature]** Integrated with **CS2 Server Manager**, with docs to streamline plugin and server setup across environments.
+
+### Observability, Admin Tools & Release Flow
+
+- **[Feature]** Added dedicated event log files, a match log viewer, and more capable Admin Tools for server-level operations.
+- **[Feature]** Introduced version display and automated release workflows, including Discord webhook announcements.
+
+### Infrastructure, Testing & Docs
+
+- **[Feature]** Migrated to **PostgreSQL** with an abstraction layer and updated Docker-based development environment.
+- **[Feature]** Added a comprehensive **Playwright E2E** suite (tags, HTML reporting, and selector improvements).
+- **[Docs]** Restructured and expanded docs (index, quick start, CS2 server setup, screenshots, and prerequisites) for clearer onboarding.
 
 ---
 
