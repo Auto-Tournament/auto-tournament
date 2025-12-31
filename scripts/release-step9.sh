@@ -1,17 +1,17 @@
 #!/bin/bash
 set -e
 
-# MatchZy Auto Tournament - Release Step 9 Helper
-# Standalone script to (re)run Step 9 from release.sh:
-# Build and push Docker images for the current version.
+# MatchZy Auto Tournament - Release Step 9–11 Helper
+# Standalone script to re-run steps 9–11 from release.sh:
+#  - Build and push Docker images
+#  - Create GitHub release
+#  - Send Discord notification
 #
 # Usage:
 #   ./scripts/release-step9.sh
-#   DOCKER_PLATFORMS=linux/arm64 ./scripts/release-step9.sh
 #
 # Notes:
 # - Uses the version from the root package.json as NEW_VERSION.
-# - Respects DOCKER_PLATFORMS env var (defaults to linux/amd64,linux/arm64).
 
 # Colors for output (same as main release script)
 RED='\033[0;31m'
@@ -31,6 +31,12 @@ if [ -f "${PROJECT_ROOT}/.env" ]; then
     set +a
 fi
 
+# If DOCKER_HOST still points to Rancher Desktop, unset it so Docker Desktop is used instead
+if [ -n "${DOCKER_HOST:-}" ] && echo "${DOCKER_HOST}" | grep -qi "rancher-desktop"; then
+    echo -e "${YELLOW}Detected stale DOCKER_HOST pointing to Rancher Desktop (${DOCKER_HOST}). Unsetting to use Docker Desktop instead...${NC}"
+    unset DOCKER_HOST
+fi
+
 cd "${PROJECT_ROOT}"
 
 # Configuration (keep in sync with release.sh)
@@ -39,15 +45,17 @@ IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
 REPO_OWNER="sivert-io"
 REPO_NAME="matchzy-auto-tournament"
+# Allow overriding the Buildx builder name via environment variable (e.g. BUILDER_NAME=multiarch)
+BUILDER_NAME="${BUILDER_NAME:-matchzy-release}"
 
-echo -e "${GREEN}MatchZy Auto Tournament - Release (Step 9 to 11)${NC}"
-echo "=================================================="
+echo -e "${GREEN}MatchZy Auto Tournament - Release (Steps 9–11)${NC}"
+echo "==============================================="
 echo ""
 
 # Check Docker availability
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker is not running.${NC}"
-    echo -e "${YELLOW}Please start Rancher Desktop, Docker Desktop, or your configured Docker engine.${NC}"
+    echo -e "${YELLOW}Please start Docker Desktop or your configured Docker engine.${NC}"
     exit 1
 fi
 
@@ -61,14 +69,12 @@ if ! docker info | grep -q "Username"; then
     fi
 fi
 
-# Get current version from package.json
+# Get current version from package.json (used as NEW_VERSION)
 if [ -f "package.json" ]; then
-    # Prefer Node if available for robust JSON parsing
     if command -v node >/dev/null 2>&1; then
         NEW_VERSION=$(node -p "require('./package.json').version" 2>/dev/null || true)
     fi
 
-    # Fallback to grep if Node is not available or parsing failed
     if [ -z "$NEW_VERSION" ]; then
         NEW_VERSION=$(grep '"version"' package.json | head -1 | awk -F '"' '{print $4}')
     fi
@@ -129,24 +135,50 @@ check_disk_space() {
     echo -e "${GREEN}✅ Sufficient disk space available${NC}"
 }
 
-echo ""
-echo -e "${YELLOW}Step 9: Building and pushing Docker images (standalone)...${NC}"
+###############################################################################
+# Step 9–11: Copied from scripts/release.sh
+###############################################################################
 
-# Allow overriding platforms via DOCKER_PLATFORMS, default to linux/amd64,linux/arm64
-PLATFORMS="${DOCKER_PLATFORMS:-linux/amd64,linux/arm64}"
-echo -e "${BLUE}Platforms: ${PLATFORMS}${NC}"
+# Step 9: Build and push Docker images
+echo ""
+echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
+echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
 
 # Re-check disk space before multi-platform build (requires more space)
 echo -e "${YELLOW}Re-checking disk space before multi-platform build...${NC}"
+# Multi-platform builds need more space, so require 12GB instead of 10GB
 MULTI_PLATFORM_MIN_GB="${MIN_DISK_SPACE_GB:-12}"
 if [ "$MULTI_PLATFORM_MIN_GB" -lt 12 ]; then
     MULTI_PLATFORM_MIN_GB=12
 fi
 check_disk_space "$MULTI_PLATFORM_MIN_GB"
 
+# Ensure we have a suitable Buildx builder (docker-container driver) before running multi-arch build
+if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    # Check if builder endpoint is valid and not tied to a stale/alternate runtime
+    BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
+
+    # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
+    if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
+        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder recreated${NC}"
+    else
+        docker buildx use "${BUILDER_NAME}"
+        echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
+        # Bootstrap the builder if it's inactive
+        echo -e "${BLUE}Booting builder...${NC}"
+        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+    fi
+else
+    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+    echo -e "${GREEN}✅ Builder created${NC}"
+fi
+
 docker buildx build \
-    --platform "${PLATFORMS}" \
+    --platform linux/amd64,linux/arm64 \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
     --tag "${DOCKER_IMAGE}:latest" \
@@ -161,47 +193,17 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
-echo -e "${GREEN}✅ Docker images built and pushed for version ${NEW_VERSION}${NC}"
-
-# Verify images for requested platforms
+# Verify images
 echo ""
 echo -e "${YELLOW}Verifying pushed images...${NC}"
-docker buildx imagetools inspect "${DOCKER_IMAGE}:${NEW_VERSION}" > /tmp/image_inspect.txt 2>&1 || {
-    echo -e "${RED}❌ Failed to inspect pushed images${NC}"
+docker buildx imagetools inspect "${DOCKER_IMAGE}:${NEW_VERSION}" > /tmp/image_inspect.txt 2>&1
+if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
+    echo -e "${RED}❌ Failed to verify pushed images${NC}"
     rm -f /tmp/image_inspect.txt
     exit 1
-}
-
-VERIFY_OK=true
-IFS=',' read -ra PLATFORM_LIST <<< "${PLATFORMS}"
-for platform in "${PLATFORM_LIST[@]}"; do
-    platform_trimmed="$(echo "$platform" | xargs)"
-    case "$platform_trimmed" in
-        linux/amd64)
-            ARCH_STR="linux/amd64"
-            ;;
-        linux/arm64)
-            ARCH_STR="linux/arm64"
-            ;;
-        *)
-            ARCH_STR="$platform_trimmed"
-            ;;
-    esac
-
-    if ! grep -q "$ARCH_STR" /tmp/image_inspect.txt; then
-        echo -e "${RED}❌ Missing platform in image manifest: ${ARCH_STR}${NC}"
-        VERIFY_OK=false
-    fi
-done
-
-rm -f /tmp/image_inspect.txt
-
-if [ "$VERIFY_OK" != true ]; then
-    echo -e "${RED}❌ Failed to verify pushed images for all requested platforms${NC}"
-    exit 1
 fi
-
-echo -e "${GREEN}✅ Verified images for requested platforms: ${PLATFORMS}${NC}"
+echo -e "${GREEN}✅ Verified images for both platforms${NC}"
+rm -f /tmp/image_inspect.txt
 
 # Step 10: Create GitHub release
 echo ""
@@ -280,24 +282,6 @@ if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
     CHANGELOG="- Release v${NEW_VERSION}"
 fi
 
-# Build platform list for release notes
-PLATFORM_LINES=""
-IFS=',' read -ra PLATFORM_LIST <<< "${PLATFORMS}"
-for platform in "${PLATFORM_LIST[@]}"; do
-    platform_trimmed="$(echo "$platform" | xargs)"
-    case "$platform_trimmed" in
-        linux/amd64)
-            PLATFORM_LINES="${PLATFORM_LINES}\n- \`linux/amd64\` (Intel/AMD 64-bit)"
-            ;;
-        linux/arm64)
-            PLATFORM_LINES="${PLATFORM_LINES}\n- \`linux/arm64\` (ARM 64-bit, e.g., Apple Silicon, AWS Graviton)"
-            ;;
-        *)
-            PLATFORM_LINES="${PLATFORM_LINES}\n- \`${platform_trimmed}\`"
-            ;;
-    esac
-done
-
 # Check if GitHub release already exists
 if gh release view "v${NEW_VERSION}" --repo "${REPO_OWNER}/${REPO_NAME}" >/dev/null 2>&1; then
     echo -e "${YELLOW}GitHub release v${NEW_VERSION} already exists. Deleting for re-release...${NC}"
@@ -327,7 +311,9 @@ docker pull ${DOCKER_IMAGE}:${NEW_VERSION}
 https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}
 
 ### Platforms
-${PLATFORM_LINES}
+
+- \`linux/amd64\` (Intel/AMD 64-bit)
+- \`linux/arm64\` (ARM 64-bit, e.g., Apple Silicon, AWS Graviton)
 
 ### Quick Start
 
@@ -357,12 +343,12 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 "${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
 
 if [ $? -ne 0 ]; then
-    echo -e "${YELLOW}⚠️  Discord webhook failed, but Docker images and GitHub release were completed${NC}"
+    echo -e "${YELLOW}⚠️  Discord webhook failed, but release completed successfully${NC}"
 fi
 
 # Summary
 echo ""
-echo -e "${GREEN}✅ Completed steps 9–11 for v${NEW_VERSION}${NC}"
+echo -e "${GREEN}✅ Successfully ran steps 9–11 for v${NEW_VERSION}${NC}"
 echo ""
 echo -e "${BLUE}━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
 echo -e "${GREEN}Release Summary${NC}"
@@ -378,4 +364,5 @@ echo "GitHub Release: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag
 echo "Docker Hub: https://hub.docker.com/r/${DOCKER_USERNAME}/${IMAGE_NAME}"
 echo ""
 echo -e "${GREEN}✨ Step 9–11 helper complete!${NC}"
+
 

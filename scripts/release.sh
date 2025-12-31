@@ -22,12 +22,17 @@ if [ -f "${PROJECT_ROOT}/.env" ]; then
     set +a
 fi
 
+# If DOCKER_HOST still points to Rancher Desktop, unset it so Docker Desktop is used instead
+if [ -n "${DOCKER_HOST:-}" ] && echo "${DOCKER_HOST}" | grep -qi "rancher-desktop"; then
+    echo -e "${YELLOW}Detected stale DOCKER_HOST pointing to Rancher Desktop (${DOCKER_HOST}). Unsetting to use Docker Desktop instead...${NC}"
+    unset DOCKER_HOST
+fi
+
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
-# Allow overriding the Buildx builder name via environment variable (e.g. BUILDER_NAME=multiarch)
-BUILDER_NAME="${BUILDER_NAME:-matchzy-release}"
+BUILDER_NAME="matchzy-release"
 REPO_OWNER="sivert-io"
 REPO_NAME="matchzy-auto-tournament"
 
@@ -58,14 +63,14 @@ fi
 
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker is not running.${NC}"
-    echo -e "${YELLOW}Please start Docker Desktop or your configured Docker engine.${NC}"
+    echo -e "${YELLOW}Please start OrbStack or Docker Desktop.${NC}"
     exit 1
 fi
 
 # Verify Docker is actually accessible
 if ! docker ps > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker daemon is not accessible.${NC}"
-    echo -e "${YELLOW}Please ensure Docker Desktop (or your Docker engine) is running and try again.${NC}"
+    echo -e "${YELLOW}Please ensure OrbStack or Docker Desktop is running and try again.${NC}"
     exit 1
 fi
 
@@ -347,53 +352,40 @@ fi
 echo ""
 echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
 
-# Just use the current Docker context (typically Docker Desktop on macOS)
-if command -v docker >/dev/null 2>&1 && docker context show >/dev/null 2>&1; then
-    CURRENT_CONTEXT="$(docker context show 2>/dev/null || echo "default")"
-    echo -e "${BLUE}Using Docker context: ${CURRENT_CONTEXT}${NC}"
+# Ensure we're using OrbStack context (or default if OrbStack not available)
+if docker context ls | grep -q "orbstack \*"; then
+    echo -e "${GREEN}✅ Using OrbStack context${NC}"
+elif docker context show | grep -q "orbstack"; then
+    docker context use orbstack
+    echo -e "${GREEN}✅ Switched to OrbStack context${NC}"
+else
+    echo -e "${YELLOW}⚠️  OrbStack context not found, using default${NC}"
 fi
 
 # Set up Docker Buildx builder
 if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    # Check if builder endpoint is valid and not tied to a stale/alternate runtime
+    # Check if builder endpoint is valid
     BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
-
-    # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
-    if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
-        echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
-        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
-        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-        echo -e "${GREEN}✅ Builder recreated${NC}"
-    else
+    if [ -n "$BUILDER_ENDPOINT" ] && [ "$BUILDER_ENDPOINT" != "desktop-linux" ]; then
         docker buildx use "${BUILDER_NAME}"
-        echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
+        echo -e "${GREEN}✅ Using existing builder${NC}"
         # Bootstrap the builder if it's inactive
         echo -e "${BLUE}Booting builder...${NC}"
         docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+    else
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid endpoint, removing and recreating...${NC}"
+        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder recreated${NC}"
     fi
 else
     docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
     echo -e "${GREEN}✅ Builder created${NC}"
 fi
 
-# Determine a safe test platform based on the host Docker architecture
-HOST_ARCH=$(docker info --format '{{.Architecture}}' 2>/dev/null || uname -m || echo "amd64")
-case "$HOST_ARCH" in
-    arm64|aarch64)
-        TEST_PLATFORM="linux/arm64"
-        ;;
-    amd64|x86_64)
-        TEST_PLATFORM="linux/amd64"
-        ;;
-    *)
-        echo -e "${YELLOW}⚠️  Unknown host architecture (${HOST_ARCH}), defaulting test build to linux/amd64${NC}"
-        TEST_PLATFORM="linux/amd64"
-        ;;
-esac
-
 # Test build (single platform for speed, load into local Docker)
 docker buildx build \
-    --platform "${TEST_PLATFORM}" \
+    --platform linux/amd64 \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:test-build" \
     --load \
@@ -781,10 +773,7 @@ echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 # Step 9: Build and push Docker images
 echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
-
-# Allow overriding platforms via DOCKER_PLATFORMS, default to linux/amd64,linux/arm64
-PLATFORMS="${DOCKER_PLATFORMS:-linux/amd64,linux/arm64}"
-echo -e "${BLUE}Platforms: ${PLATFORMS}${NC}"
+echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
 
 # Re-check disk space before multi-platform build (requires more space)
@@ -796,8 +785,31 @@ if [ "$MULTI_PLATFORM_MIN_GB" -lt 12 ]; then
 fi
 check_disk_space "$MULTI_PLATFORM_MIN_GB"
 
+# Ensure we have a suitable Buildx builder (docker-container driver) before running multi-arch build
+if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+    # Check if builder endpoint is valid and not tied to a stale/alternate runtime
+    BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
+
+    # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
+    if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
+        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder recreated${NC}"
+    else
+        docker buildx use "${BUILDER_NAME}"
+        echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
+        # Bootstrap the builder if it's inactive
+        echo -e "${BLUE}Booting builder...${NC}"
+        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+    fi
+else
+    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+    echo -e "${GREEN}✅ Builder created${NC}"
+fi
+
 docker buildx build \
-    --platform "${PLATFORMS}" \
+    --platform linux/amd64,linux/arm64 \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
     --tag "${DOCKER_IMAGE}:latest" \
