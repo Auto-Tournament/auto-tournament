@@ -24,6 +24,7 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Server pool management (enable/disable, batch operations)
 - ✅ Webhook auto-configuration
 - ✅ Server health checks
+- ✅ Server availability metrics, queue status, and warnings before tournament start
 - 🎯 Server regions (geographic grouping)
 - 🎯 Performance monitoring (tick rate, FPS, latency)
 
@@ -47,6 +48,7 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Public player pages (`/player/:steamId`) with ELO history, match history, and detailed stats
 - ✅ Find Player flow (`/player`) for searching by Steam URL or Steam ID
 - ✅ Current/next match panel with server connect info so players can always find their match (especially in shuffle tournaments with reshuffled teams)
+- ✅ Optional Steam login (OpenID) for players
 
 ## Map Veto System
 
@@ -66,6 +68,9 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Match status tracking
 - ✅ Player connection tracking (10-player roster)
 - ✅ Match recovery
+- ✅ Manual match creation and configuration (teams, maps, round limits, overtime, simulation)
+- ✅ Manual match templates and bulk match creation for tournaments
+- ✅ Match simulation mode with adjustable timescale (for testing, demos, and validation)
 
 ## Team Pages (Public)
 
@@ -86,6 +91,7 @@ This document outlines the current features available in MatchZy Auto Tournament
 - ✅ Server events monitor
 - ✅ Application logs
 - ✅ Match details modal
+- ✅ Per-server MatchZy configuration (chat prefixes, knife round toggle, overtime segments, and other plugin settings)
 
 ## Real-Time Features
 
