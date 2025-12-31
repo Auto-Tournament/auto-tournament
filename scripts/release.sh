@@ -26,7 +26,8 @@ fi
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
 DOCKER_IMAGE="${DOCKER_USERNAME}/${IMAGE_NAME}"
-BUILDER_NAME="matchzy-release"
+# Allow overriding the Buildx builder name via environment variable (e.g. BUILDER_NAME=multiarch)
+BUILDER_NAME="${BUILDER_NAME:-matchzy-release}"
 REPO_OWNER="sivert-io"
 REPO_NAME="matchzy-auto-tournament"
 
@@ -57,14 +58,14 @@ fi
 
 if ! docker info > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker is not running.${NC}"
-    echo -e "${YELLOW}Please start Rancher Desktop, Docker Desktop, or your configured Docker engine.${NC}"
+    echo -e "${YELLOW}Please start Docker Desktop or your configured Docker engine.${NC}"
     exit 1
 fi
 
 # Verify Docker is actually accessible
 if ! docker ps > /dev/null 2>&1; then
     echo -e "${RED}Error: Docker daemon is not accessible.${NC}"
-    echo -e "${YELLOW}Please ensure OrbStack or Docker Desktop is running and try again.${NC}"
+    echo -e "${YELLOW}Please ensure Docker Desktop (or your Docker engine) is running and try again.${NC}"
     exit 1
 fi
 
@@ -346,29 +347,20 @@ fi
 echo ""
 echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
 
-# Prefer Rancher Desktop Docker context when available, otherwise use current/default context
-if command -v docker >/dev/null 2>&1 && docker context ls >/dev/null 2>&1; then
-    if docker context ls 2>/dev/null | grep -q "rancher-desktop"; then
-        CURRENT_CONTEXT="$(docker context show 2>/dev/null || echo "")"
-        if [ "$CURRENT_CONTEXT" != "rancher-desktop" ]; then
-            echo -e "${BLUE}Switching Docker context to Rancher Desktop...${NC}"
-            docker context use rancher-desktop || echo -e "${YELLOW}⚠️  Failed to switch to Rancher Desktop context, continuing with current context.${NC}"
-        else
-            echo -e "${GREEN}✅ Using Rancher Desktop Docker context${NC}"
-        fi
-    else
-        echo -e "${YELLOW}⚠️  Rancher Desktop context not found, using current Docker context.${NC}"
-    fi
+# Just use the current Docker context (typically Docker Desktop on macOS)
+if command -v docker >/dev/null 2>&1 && docker context show >/dev/null 2>&1; then
+    CURRENT_CONTEXT="$(docker context show 2>/dev/null || echo "default")"
+    echo -e "${BLUE}Using Docker context: ${CURRENT_CONTEXT}${NC}"
 fi
 
 # Set up Docker Buildx builder
 if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    # Check if builder endpoint is valid and not tied to OrbStack
+    # Check if builder endpoint is valid and not tied to a stale/alternate runtime
     BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
 
     # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
     if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
-        echo -e "${YELLOW}⚠️  Existing builder uses invalid/OrbStack endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
+        echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
         docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
         docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
         echo -e "${GREEN}✅ Builder recreated${NC}"
