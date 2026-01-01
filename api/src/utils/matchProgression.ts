@@ -142,7 +142,7 @@ export async function advanceWinnerToNextMatch(
  */
 export async function advanceLoserToLosersBracket(
   currentMatch: DbMatchRow,
-  winnerId: string
+  _winnerId: string
 ): Promise<void> {
   try {
     // Only for winners bracket matches
@@ -507,7 +507,6 @@ export async function reconcileDoubleElimination8Bracket(): Promise<void> {
 
     let teamIds: unknown;
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       teamIds = JSON.parse(tournament.team_ids);
     } catch {
       return;

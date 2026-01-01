@@ -234,8 +234,26 @@ export default function Matches() {
         const matches = data.matches || [];
         setTournamentStatus(data.tournamentStatus || 'setup');
 
-        const hasTeams = (m: Match) =>
-          Boolean((m.team1 || m.config?.team1) && (m.team2 || m.config?.team2));
+        const hasTeams = (m: Match) => {
+          // Manual matches (round = 0) don't have bracket-seeded teams; rely on
+          // config team names, but skip pure "TBD" placeholders.
+          if (m.round === 0) {
+            const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
+            const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
+            return Boolean(
+              cfgTeam1Name &&
+                cfgTeam1Name !== 'TBD' &&
+                cfgTeam2Name &&
+                cfgTeam2Name !== 'TBD'
+            );
+          }
+
+          // Bracket / tournament matches: only consider teams truly assigned in
+          // the bracket (DB-backed team rows). This prevents future-round
+          // matches with "TBD" placeholders in config from appearing in
+          // Upcoming/Live sections.
+          return Boolean(m.team1 && m.team2);
+        };
 
         // Upcoming matches: pending and ready (including veto phase)
         const upcoming = matches.filter(

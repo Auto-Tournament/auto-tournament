@@ -9,7 +9,7 @@ import {
 import { render } from '../../brackets-viewer';
 import type { Match } from '../../types';
 import type { Id, Stage, ParticipantResult } from 'brackets-model';
-import type { Group, Round, Match as ViewerMatch, Participant } from '../../types/brackets-viewer';
+import type { Group, Round, Match as ViewerMatch, Participant } from 'brackets-viewer';
 import '../../brackets-viewer/style.scss';
 
 interface BracketsViewerVisualizationProps {
@@ -558,17 +558,21 @@ export default function BracketsViewerVisualization({
             alpha(theme.palette.text.primary, 0.4)
           );
           container.style.setProperty('--border-selected-color', theme.palette.primary.main);
+          // Bracket participants: show winners in green and losers in a neutral grey,
+          // with corresponding subtle backgrounds so the winner row stands out.
           container.style.setProperty('--win-color', theme.palette.success.main);
-          container.style.setProperty('--loss-color', theme.palette.error.main);
+          container.style.setProperty('--loss-color', theme.palette.text.secondary);
+          container.style.setProperty(
+            '--winner-background',
+            alpha(theme.palette.text.secondary, 0.16)
+          );
+          container.style.setProperty(
+            '--loser-background',
+            alpha(theme.palette.text.secondary, theme.palette.mode === 'dark' ? 0.08 : 0.04)
+          );
           container.style.setProperty('--live-border-color', theme.palette.primary.main);
-          container.style.setProperty(
-            '--status-live-border-color',
-            theme.palette.error.main
-          );
-          container.style.setProperty(
-            '--status-loaded-border-color',
-            theme.palette.info.main
-          );
+          container.style.setProperty('--status-live-border-color', theme.palette.error.main);
+          container.style.setProperty('--status-loaded-border-color', theme.palette.info.main);
           container.style.setProperty(
             '--status-allocated-border-color',
             theme.palette.warning.main
