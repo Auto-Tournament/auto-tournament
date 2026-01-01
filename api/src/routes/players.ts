@@ -1088,6 +1088,50 @@ router.post('/bulk-import', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/players/bulk-delete
+ * Bulk delete players by ID array
+ */
+router.post('/bulk-delete', async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body as { ids?: string[] };
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must include a non-empty ids array',
+      });
+    }
+
+    let deletedCount = 0;
+    let missingCount = 0;
+
+    for (const id of ids) {
+      // Reuse existing single-delete semantics so cascades/logging stay consistent
+      const deleted = await playerService.deletePlayer(id);
+      if (deleted) {
+        deletedCount += 1;
+      } else {
+        missingCount += 1;
+      }
+    }
+
+    return res.json({
+      success: missingCount === 0,
+      deleted: deletedCount,
+      missing: missingCount,
+      message: `Deleted ${deletedCount} player(s), ${missingCount} not found`,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error bulk deleting players', { error });
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
  * PUT /api/players/:playerId
  * Update a player (admin only)
  */

@@ -514,6 +514,69 @@ router.delete('/:slug', requireAuth, async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/matches/bulk-delete
+ * Bulk delete **manual** matches by slug array (admin only).
+ *
+ * This reuses the same guardrails as the single-delete endpoint:
+ * - Only matches with round = 0 are eligible.
+ */
+router.post('/bulk-delete', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slugs } = req.body as { slugs?: string[] };
+
+    if (!Array.isArray(slugs) || slugs.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must include a non-empty slugs array',
+      });
+    }
+
+    let deleted = 0;
+    const skipped: { slug: string; reason: string }[] = [];
+    const failed: { slug: string; error: string }[] = [];
+
+    for (const slug of slugs) {
+      try {
+        const match = await db.queryOneAsync<DbMatchRow>(
+          'SELECT * FROM matches WHERE slug = ?',
+          [slug]
+        );
+        if (!match) {
+          skipped.push({ slug, reason: 'not_found' });
+          continue;
+        }
+        if (match.round !== 0) {
+          skipped.push({ slug, reason: 'not_manual_round_0' });
+          continue;
+        }
+
+        await matchService.deleteMatch(slug);
+        emitMatchUpdate({ slug, deleted: true });
+        deleted += 1;
+      } catch (error) {
+        const message = error instanceof Error ? error.message : 'Failed to delete match';
+        failed.push({ slug, error: message });
+        log.error('Error bulk deleting match', { error, slug });
+      }
+    }
+
+    const statusCode = failed.length > 0 ? 207 : 200;
+    return res.status(statusCode).json({
+      success: failed.length === 0,
+      deleted,
+      skipped,
+      failed,
+    });
+  } catch (error) {
+    console.error('Error bulk deleting matches:', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to bulk delete matches',
+    });
+  }
+});
+
+/**
  * GET /api/matches
  * List all matches (public - used by team pages)
  * Returns tournament matches with team information

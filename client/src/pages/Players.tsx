@@ -24,6 +24,7 @@ import { api } from '../utils/api';
 import PlayerModal from '../components/modals/PlayerModal';
 import { PlayerImportModal } from '../components/modals/PlayerImportModal';
 import { EmptyState } from '../components/shared/EmptyState';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 import type { PlayerDetail, PlayersResponse } from '../types/api.types';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -39,6 +40,9 @@ export default function Players() {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingPlayer, setEditingPlayer] = useState<PlayerDetail | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedPlayerIds, setSelectedPlayerIds] = useState<Set<string>>(() => new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -53,19 +57,80 @@ export default function Players() {
   // Set header actions
   useEffect(() => {
     if (players.length > 0) {
+      const allVisibleSelected =
+        filteredPlayers.length > 0 &&
+        filteredPlayers.every((player) => selectedPlayerIds.has(player.id));
+
       setHeaderActions(
         <Box display="flex" gap={2}>
-          <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-            Import JSON/CSV
-          </Button>
           <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenModal()}
-            data-testid="add-player-button"
+            variant={selectionMode ? 'contained' : 'outlined'}
+            color={selectionMode ? 'secondary' : 'inherit'}
+            size="small"
+            onClick={() => {
+              setSelectionMode((prev) => !prev);
+              if (selectionMode) {
+                setSelectedPlayerIds(() => new Set());
+              }
+            }}
           >
-            Add Player
+            {selectionMode ? 'Done Selecting' : 'Select'}
           </Button>
+          {selectionMode && (
+            <>
+              <Button
+                variant="outlined"
+                color="inherit"
+                size="small"
+                disabled={filteredPlayers.length === 0}
+                onClick={() => {
+                  setSelectedPlayerIds((prev) => {
+                    const next = new Set(prev);
+                    if (allVisibleSelected) {
+                      filteredPlayers.forEach((player) => {
+                        next.delete(player.id);
+                      });
+                    } else {
+                      filteredPlayers.forEach((player) => {
+                        next.add(player.id);
+                      });
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {allVisibleSelected ? 'Unselect All' : 'Select All'}
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                disabled={selectedPlayerIds.size === 0}
+                onClick={() => {
+                  if (selectedPlayerIds.size === 0) return;
+                  setBulkDeleteConfirmOpen(true);
+                }}
+              >
+                Delete Selected
+              </Button>
+            </>
+          )}
+          {!selectionMode && (
+            <>
+              <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+                Import JSON/CSV
+              </Button>
+              <Button
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenModal()}
+                data-testid="add-player-button"
+              >
+                Add Player
+              </Button>
+            </>
+          )}
         </Box>
       );
     } else {
@@ -75,7 +140,7 @@ export default function Players() {
     return () => {
       setHeaderActions(null);
     };
-  }, [players.length, setHeaderActions]);
+  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds]);
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -123,10 +188,6 @@ export default function Players() {
   };
 
   const handleDelete = async (playerId: string) => {
-    if (!window.confirm(`Are you sure you want to delete player ${playerId}?`)) {
-      return;
-    }
-
     try {
       await api.delete(`/api/players/${playerId}`);
       showSuccess('Player deleted successfully');
@@ -135,6 +196,18 @@ export default function Players() {
       console.error('Failed to delete player:', err);
       showError('Failed to delete player');
     }
+  };
+
+  const togglePlayerSelected = (playerId: string) => {
+    setSelectedPlayerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(playerId)) {
+        next.delete(playerId);
+      } else {
+        next.add(playerId);
+      }
+      return next;
+    });
   };
 
   const handleImportPlayers = async (
@@ -223,13 +296,25 @@ export default function Players() {
                   data-testid={`player-card-${player.id}`}
                   sx={{
                     cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                    border: selectedPlayerIds.has(player.id) ? 2 : 0,
+                    borderRadius: 2,
+                    borderStyle: 'solid',
+                    borderColor: selectedPlayerIds.has(player.id)
+                      ? 'primary.main'
+                      : 'transparent',
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: 6,
                     },
                   }}
-                  onClick={() => handleOpenModal(player)}
+                  onClick={() => {
+                    if (selectionMode) {
+                      togglePlayerSelected(player.id);
+                    } else {
+                      handleOpenModal(player);
+                    }
+                  }}
                 >
                   <CardContent>
                     <Box display="flex" alignItems="center" gap={2} mb={2}>
@@ -303,6 +388,37 @@ export default function Players() {
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImportPlayers}
+      />
+
+      <ConfirmDialog
+        open={selectionMode && bulkDeleteConfirmOpen}
+        title="Delete Players"
+        message={`Are you sure you want to delete ${selectedPlayerIds.size} player${
+          selectedPlayerIds.size === 1 ? '' : 's'
+        }? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmColor="error"
+        onConfirm={async () => {
+          if (selectedPlayerIds.size === 0) {
+            setBulkDeleteConfirmOpen(false);
+            return;
+          }
+          try {
+            const ids = Array.from(selectedPlayerIds);
+            const count = ids.length;
+            await api.post('/api/players/bulk-delete', { ids });
+            showSuccess(`Deleted ${count} player${count === 1 ? '' : 's'}`);
+            setSelectedPlayerIds(() => new Set());
+            setSelectionMode(false);
+            await loadPlayers();
+          } catch (err) {
+            console.error('Failed to delete players:', err);
+            showError('Failed to delete one or more players');
+          } finally {
+            setBulkDeleteConfirmOpen(false);
+          }
+        }}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
 
     </Box>

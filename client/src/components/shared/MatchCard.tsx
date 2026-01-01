@@ -12,6 +12,9 @@ interface MatchCardProps {
   vetoCompleted?: boolean; // Whether veto is complete
   tournamentStarted?: boolean; // Whether tournament has started
   onClick?: () => void;
+  selectable?: boolean;
+  selected?: boolean;
+  onToggleSelected?: () => void;
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
@@ -22,6 +25,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   vetoCompleted,
   tournamentStarted,
   onClick,
+  selectable,
+  selected,
+  onToggleSelected,
 }) => {
   const getBorderColor = () => {
     // Bracket view / generic match card server status accents:
@@ -165,6 +171,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         transition: 'transform 0.2s, box-shadow 0.2s',
         borderLeft: 4,
         borderColor: getBorderColor(),
+        border: selected ? 2 : 0,
+        borderRadius: 2,
+        borderStyle: 'solid',
+        borderColor: selected ? 'primary.main' : getBorderColor(),
         '&:hover': onClick
           ? {
               transform: 'translateY(-4px)',
@@ -177,18 +187,20 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       <CardContent>
         {/* Header */}
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-          <Box>
-            <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
-              Match #{matchNumber}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {roundLabel || getRoundLabel(match.round)}
-            </Typography>
-            {match.serverName && (
-              <Typography variant="caption" color="text.secondary" display="block">
-                Server: {match.serverName}
+          <Box display="flex" alignItems="center" gap={1}>
+            <Box>
+              <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
+                Match #{matchNumber}
               </Typography>
-            )}
+              <Typography variant="caption" color="text.secondary">
+                {roundLabel || getRoundLabel(match.round)}
+              </Typography>
+              {match.serverName && (
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Server: {match.serverName}
+                </Typography>
+              )}
+            </Box>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
             {shuffle && (

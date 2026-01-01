@@ -191,4 +191,51 @@ router.delete('/:id', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * POST /api/teams/bulk-delete
+ * Bulk delete teams by ID array
+ */
+router.post('/bulk-delete', async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body as { ids?: string[] };
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must include a non-empty ids array',
+      });
+    }
+
+    let deletedCount = 0;
+    let errorCount = 0;
+    const errors: { id: string; error: string }[] = [];
+
+    for (const id of ids) {
+      try {
+        await teamService.deleteTeam(id);
+        deletedCount += 1;
+      } catch (error) {
+        errorCount += 1;
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        errors.push({ id, error: message });
+      }
+    }
+
+    const statusCode = errorCount > 0 ? 207 : 200; // 207 Multi-Status if some failed
+
+    return res.status(statusCode).json({
+      success: errorCount === 0,
+      deleted: deletedCount,
+      failed: errorCount,
+      errors,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
 export default router;

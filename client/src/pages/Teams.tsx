@@ -9,6 +9,7 @@ import TeamModal from '../components/modals/TeamModal';
 import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 import type { Team, TeamsResponse } from '../types';
 
 export default function Teams() {
@@ -19,6 +20,9 @@ export default function Teams() {
   const [modalOpen, setModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTeam, setEditingTeam] = useState<Team | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedTeamIds, setSelectedTeamIds] = useState<Set<string>>(() => new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -28,19 +32,81 @@ export default function Teams() {
   // Set header actions
   useEffect(() => {
     if (teams.length > 0) {
+      const visibleTeamsForHeader = teams.filter((team) => !team.id.startsWith('shuffle-'));
+      const allVisibleSelected =
+        visibleTeamsForHeader.length > 0 &&
+        visibleTeamsForHeader.every((team) => selectedTeamIds.has(team.id));
+
       setHeaderActions(
         <Box display="flex" gap={2}>
-          <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-            Import JSON
-          </Button>
           <Button
-            data-testid="add-team-button"
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenModal()}
+            variant={selectionMode ? 'contained' : 'outlined'}
+            color={selectionMode ? 'secondary' : 'inherit'}
+            size="small"
+            onClick={() => {
+              setSelectionMode((prev) => !prev);
+              if (selectionMode) {
+                setSelectedTeamIds(() => new Set());
+              }
+            }}
           >
-            Add Team
+            {selectionMode ? 'Done Selecting' : 'Select'}
           </Button>
+          {selectionMode && (
+            <>
+              <Button
+                variant="outlined"
+                color="inherit"
+                size="small"
+                disabled={visibleTeamsForHeader.length === 0}
+                onClick={() => {
+                  setSelectedTeamIds((prev) => {
+                    const next = new Set(prev);
+                    if (allVisibleSelected) {
+                      visibleTeamsForHeader.forEach((team) => {
+                        next.delete(team.id);
+                      });
+                    } else {
+                      visibleTeamsForHeader.forEach((team) => {
+                        next.add(team.id);
+                      });
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {allVisibleSelected ? 'Unselect All' : 'Select All'}
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                disabled={selectedTeamIds.size === 0}
+                onClick={() => {
+                  if (selectedTeamIds.size === 0) return;
+                  setBulkDeleteConfirmOpen(true);
+                }}
+              >
+                Delete Selected
+              </Button>
+            </>
+          )}
+          {!selectionMode && (
+            <>
+              <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+                Import JSON
+              </Button>
+              <Button
+                data-testid="add-team-button"
+                variant="contained"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => handleOpenModal()}
+              >
+                Add Team
+              </Button>
+            </>
+          )}
         </Box>
       );
     } else {
@@ -50,7 +116,7 @@ export default function Teams() {
     return () => {
       setHeaderActions(null);
     };
-  }, [teams.length, setHeaderActions]);
+  }, [teams.length, setHeaderActions, selectionMode, selectedTeamIds]);
 
   const loadTeams = useCallback(async () => {
     try {
@@ -113,6 +179,18 @@ export default function Teams() {
     await loadTeams();
   };
 
+  const toggleTeamSelected = (teamId: string) => {
+    setSelectedTeamIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(teamId)) {
+        next.delete(teamId);
+      } else {
+        next.add(teamId);
+      }
+      return next;
+    });
+  };
+
   if (loading) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
@@ -162,13 +240,23 @@ export default function Teams() {
                 data-testid={`team-card-${teamNameSlug}`}
                 sx={{
                   cursor: 'pointer',
-                  transition: 'transform 0.2s, box-shadow 0.2s',
+                  transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                  border: selectedTeamIds.has(team.id) ? 2 : 0,
+                  borderRadius: 2,
+                  borderStyle: 'solid',
+                  borderColor: selectedTeamIds.has(team.id) ? 'primary.main' : 'transparent',
                   '&:hover': {
                     transform: 'translateY(-4px)',
                     boxShadow: 6,
                   },
                 }}
-                onClick={() => handleOpenModal(team)}
+                onClick={() => {
+                  if (selectionMode) {
+                    toggleTeamSelected(team.id);
+                  } else {
+                    handleOpenModal(team);
+                  }
+                }}
               >
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
@@ -207,6 +295,37 @@ export default function Teams() {
         open={importModalOpen}
         onClose={() => setImportModalOpen(false)}
         onImport={handleImportTeams}
+      />
+
+      <ConfirmDialog
+        open={selectionMode && bulkDeleteConfirmOpen}
+        title="Delete Teams"
+        message={`Are you sure you want to delete ${selectedTeamIds.size} team${
+          selectedTeamIds.size === 1 ? '' : 's'
+        }? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmColor="error"
+        onConfirm={async () => {
+          if (selectedTeamIds.size === 0) {
+            setBulkDeleteConfirmOpen(false);
+            return;
+          }
+          try {
+            const ids = Array.from(selectedTeamIds);
+            const count = ids.length;
+            await api.post('/api/teams/bulk-delete', { ids });
+            showSuccess(`Deleted ${count} team${count === 1 ? '' : 's'}`);
+            setSelectedTeamIds(() => new Set());
+            setSelectionMode(false);
+            await loadTeams();
+          } catch (err) {
+            console.error('Failed to delete teams', err);
+            showError('Failed to delete one or more teams');
+          } finally {
+            setBulkDeleteConfirmOpen(false);
+          }
+        }}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
     </Box>
   );

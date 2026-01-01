@@ -269,6 +269,53 @@ router.delete('/:id', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/servers/bulk-delete
+ * Bulk delete servers by ID array
+ */
+router.post('/bulk-delete', async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body as { ids?: string[] };
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Request body must include a non-empty ids array',
+      });
+    }
+
+    let deletedCount = 0;
+    let errorCount = 0;
+    const errors: { id: string; error: string }[] = [];
+
+    for (const id of ids) {
+      try {
+        await serverService.deleteServer(id);
+        deletedCount += 1;
+      } catch (error) {
+        errorCount += 1;
+        const message = error instanceof Error ? error.message : 'Failed to delete server';
+        errors.push({ id, error: message });
+      }
+    }
+
+    const statusCode = errorCount > 0 ? 207 : 200;
+    return res.status(statusCode).json({
+      success: errorCount === 0,
+      deleted: deletedCount,
+      failed: errorCount,
+      errors,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to bulk delete servers';
+    console.error('Error bulk deleting servers:', error);
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
  * POST /api/servers/:id/enable
  * Enable a server
  */
