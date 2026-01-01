@@ -37,6 +37,7 @@ export interface TournamentSettings {
   autoAdvance: boolean;
   checkInRequired: boolean;
   seedingMethod: 'seeded' | 'random';
+  grandFinalMode?: 'none' | 'simple' | 'double';
 }
 
 export interface BracketData {

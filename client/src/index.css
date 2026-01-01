@@ -40,14 +40,15 @@ body {
 
 .brackets-viewer .participant.win {
   /* Make winners clearly stand out in the bracket */
-  background-color: rgba(102, 187, 106, 0.18);
-  border-color: #66bb6a;
-  color: #c8e6c9;
+  background-color: var(--winner-background);
+  border: 1px solid var(--win-color);
+  color: var(--win-color);
   font-weight: 700;
 }
 
 .brackets-viewer .participant.loss {
   color: var(--loss-color);
+  background-color: var(--loser-background);
 }
 
 .brackets-viewer .match {

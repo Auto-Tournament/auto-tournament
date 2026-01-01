@@ -14,8 +14,19 @@ export const useBracket = () => {
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
 
-  const loadBracket = useCallback(async () => {
-    setLoading(true);
+  /**
+   * Load or reload the current bracket.
+   *
+   * When called with { silent: true }, this performs a background reload
+   * without flipping the top-level `loading` flag. This avoids unmounting
+   * the bracket page (and any open modals) on every websocket-driven
+   * structural update while still keeping the data fresh.
+   */
+  const loadBracket = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      setLoading(true);
+    }
     setError('');
 
     try {
@@ -48,7 +59,9 @@ export const useBracket = () => {
         setError(error.message || 'Failed to load bracket');
       }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -93,7 +106,7 @@ export const useBracket = () => {
   };
 
   useEffect(() => {
-    loadBracket();
+    void loadBracket();
 
     const newSocket = io();
 
@@ -236,9 +249,25 @@ export const useBracket = () => {
 
       const action = event.action as string | undefined;
       const slug = event.matchSlug as string | undefined;
-      const status = event.status as Tournament['status'] | undefined;
+      const rawStatus = event.status as string | undefined;
 
-      if (status) {
+      // Treat status as a **tournament** status only for explicit tournament‑level
+      // actions. For match-level events (e.g. 'match_status') we must NOT
+      // overwrite tournament.status, otherwise a single completed match would
+      // look like the whole tournament finished.
+      const isTournamentAction =
+        action &&
+        [
+          'tournament_started',
+          'tournament_reset',
+          'tournament_restarted',
+          'tournament_updated',
+          'tournament_completed',
+        ].includes(action);
+
+      if (isTournamentAction && rawStatus) {
+        const status = rawStatus as Tournament['status'];
+
         setTournament((prev) => (prev ? { ...prev, status } : prev));
 
         const prevStatus = lastTournamentStatusRef.current;
@@ -255,6 +284,8 @@ export const useBracket = () => {
         lastTournamentStatusRef.current = status;
       }
 
+      const matchStatus = rawStatus as Match['status'] | undefined;
+
       const requiresFullReload = !action
         ? true
         : [
@@ -264,9 +295,14 @@ export const useBracket = () => {
             'tournament_updated',
             'tournament_completed',
             'tournament_started',
-            // Structural changes that add/remove matches (e.g., next round generated)
+            // Structural changes that add/remove matches or change bracket occupants
             'round_advanced',
-          ].includes(action);
+            'match_ready',
+          ].includes(action) ||
+          // When a match moves into the completed state, reload the full bracket
+          // so scores, winners, and downstream matches (e.g. next round) are
+          // fully up to date, even if some earlier websocket patches were partial.
+          (action === 'match_status' && matchStatus === 'completed');
 
       if (requiresFullReload) {
         if (
@@ -277,7 +313,10 @@ export const useBracket = () => {
           showSnackbar(`Round ${roundNumber} generated – matches are ready to allocate.`, 'info');
         }
 
-        loadBracket();
+        // Perform a background reload without toggling the global "loading"
+        // flag so we don't unmount the bracket view (and any open modals)
+        // every time a structural websocket event arrives.
+        void loadBracket({ silent: true });
         return;
       }
 
@@ -300,6 +339,30 @@ export const useBracket = () => {
             (event.matchStatus as Match['status'] | undefined);
           if (newStatus && newStatus !== current.status) {
             next.status = newStatus;
+            changed = true;
+          }
+
+          const updatedTeam1Score =
+            (event.team1Score as number | undefined) ??
+            (event as { team1_score?: number }).team1_score ??
+            undefined;
+          if (
+            typeof updatedTeam1Score === 'number' &&
+            updatedTeam1Score !== current.team1Score
+          ) {
+            next.team1Score = updatedTeam1Score;
+            changed = true;
+          }
+
+          const updatedTeam2Score =
+            (event.team2Score as number | undefined) ??
+            (event as { team2_score?: number }).team2_score ??
+            undefined;
+          if (
+            typeof updatedTeam2Score === 'number' &&
+            updatedTeam2Score !== current.team2Score
+          ) {
+            next.team2Score = updatedTeam2Score;
             changed = true;
           }
         } else if (action === 'match_ready') {

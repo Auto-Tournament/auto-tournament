@@ -44,6 +44,7 @@ const Development: React.FC = () => {
   const [customTeamCount, setCustomTeamCount] = useState(8);
   const [customPlayerCount, setCustomPlayerCount] = useState(60);
   const [customServerCount, setCustomServerCount] = useState(3);
+  const [resettingSimulation, setResettingSimulation] = useState(false);
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
@@ -359,6 +360,28 @@ const Development: React.FC = () => {
       showError(`Failed to wipe ${table} table`);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleResetSimulationState = async () => {
+    setResettingSimulation(true);
+    try {
+      const response: { success: boolean; message?: string; error?: string } = await api.post(
+        '/api/tournament/dev/reset-simulation-state'
+      );
+      if (response.success) {
+        showSuccess(
+          response.message ||
+            'Simulation state reset. Matches and stats cleared; servers, teams, and tournament setup preserved.'
+        );
+      } else {
+        showError(response.error || 'Failed to reset simulation state');
+      }
+    } catch (error) {
+      console.error('Error resetting simulation state:', error);
+      showError('Failed to reset simulation state');
+    } finally {
+      setResettingSimulation(false);
     }
   };
 
@@ -850,6 +873,30 @@ const Development: React.FC = () => {
                       </Button>
                     </Grid>
                   </Grid>
+
+                  {/* Simulation State */}
+                  <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
+                    Simulation State
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Clear all matches and historical stats so you can click &quot;Start
+                    Tournament&quot; in simulation mode on a clean bracket, while keeping servers,
+                    teams, maps, and the current tournament setup.
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    color="warning"
+                    onClick={handleResetSimulationState}
+                    disabled={loading || wiping || resettingSimulation}
+                    fullWidth
+                    size="small"
+                  >
+                    {resettingSimulation ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      'Reset Simulation State (preserve config)'
+                    )}
+                  </Button>
 
                   {/* Settings */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>

@@ -156,3 +156,40 @@ When updating to a newer upstream release:
 5. Validate the bracket view for single elimination, double elimination, losers bracket transfers, and Swiss layouts.
 
 Keeping the fork checked in ensures deterministic builds and avoids shipping multiple runtime bundles.
+
+## API Logging Controls
+
+The API uses a structured Pino logger with a small set of **feature flags** to keep local and production
+logs focused on *actions* instead of low‑level noise (e.g. every DB query or server ping).
+
+### Environment Variables
+
+- **`LOG_LEVEL`** (default: `info` in production, `debug` in local Docker)
+  - Standard Pino log level (`debug`, `info`, `warn`, `error`).
+- **`LOG_HTTP_REQUESTS`** (default: `true`)
+  - When `false`, disables per‑request `[HTTP]` logs for 2xx/3xx traffic.
+  - 4xx/5xx responses are still logged via `warn` / `error`.
+- **`LOG_DB_VERBOSE`** (default: `false`)
+  - When `true`, enables verbose `[DATABASE] [DB] ...` logs for every SQL query and schema statement.
+  - When `false`, only high‑level DB success logs and all errors/warnings are written.
+- **`LOG_RCON_VERBOSE`** (default: `false`)
+  - When `true`, logs every successful `[RCON] SUCCESS: ...` command.
+  - When `false`, only failed RCON operations (and higher‑level allocation logs) are written; errors are never suppressed.
+
+### Typical Setups
+
+- **Local debugging (see `docker/docker-compose.local.yml`):**
+  - Start verbose and trim as needed:
+    - `LOG_LEVEL=debug`
+    - `LOG_HTTP_REQUESTS=true`
+    - `LOG_DB_VERBOSE=false` (enable temporarily when debugging DB)
+    - `LOG_RCON_VERBOSE=false` (enable temporarily when debugging server connectivity)
+- **Production (`docker/docker-compose.yml`):**
+  - Recommended defaults:
+    - `LOG_LEVEL=info`
+    - `LOG_HTTP_REQUESTS=true` or `false` depending on how much request audit you need
+    - `LOG_DB_VERBOSE=false`
+    - `LOG_RCON_VERBOSE=false`
+
+> All **warnings** and **errors** are always logged regardless of these flags; the switches only affect
+> high‑volume `info`/`debug` categories.

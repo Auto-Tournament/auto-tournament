@@ -20,6 +20,13 @@ export interface TournamentSettings {
   autoAdvance: boolean;
   checkInRequired: boolean;
   seedingMethod: 'random' | 'manual';
+  /**
+   * Grand final behaviour for double elimination tournaments.
+   * - 'none'   -> Winners bracket final decides champion (no cross‑bracket GF)
+   * - 'simple' -> Single grand final between WB winner and LB winner
+   * - 'double' -> Intended bracket‑reset style GF (currently treated as 'simple' at generation time)
+   */
+  grandFinalMode?: 'none' | 'simple' | 'double';
   customVetoOrder?: {
     bo1?: VetoStep[];
     bo3?: VetoStep[];
@@ -78,10 +85,19 @@ export interface CreateTournamentInput {
   maps: string[];
   teamIds: string[];
   settings?: Partial<TournamentSettings>;
-   // Optional global round-limit settings (applies to all tournament types).
-   // For shuffle, maxRounds is required via the dedicated shuffle endpoint.
-   maxRounds?: number;
-   overtimeMode?: 'enabled' | 'disabled';
+  // Optional global round-limit settings (applies to all tournament types).
+  // For shuffle, maxRounds/overtime settings are provided via the dedicated shuffle endpoint.
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  /**
+   * Optional global overtime policy hint (applies to all tournament types).
+   *
+   * Semantics are shared with shuffle tournaments and manual matches:
+   * - undefined / omitted → MatchZy default behaviour (usually unlimited OT, draws allowed)
+   * - 0 with overtimeMode === 'disabled' → "no OT, no draws" (force winner by damage tiebreak)
+   * - >0 with overtimeMode === 'enabled' → standard OT, then damage tiebreak after N segments
+   */
+  overtimeSegments?: number;
 }
 
 export interface UpdateTournamentInput {
@@ -91,8 +107,9 @@ export interface UpdateTournamentInput {
   maps?: string[];
   teamIds?: string[];
   settings?: Partial<TournamentSettings>;
-   maxRounds?: number;
-   overtimeMode?: 'enabled' | 'disabled';
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
 }
 
 export interface BracketMatch {

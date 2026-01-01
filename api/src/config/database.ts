@@ -1,10 +1,16 @@
 /**
  * Database manager with PostgreSQL support
- * Provides unified async interface
+ * Provides unified async interface.
+ *
+ * Verbose per-query logging can be enabled with:
+ *   LOG_DB_VERBOSE=true
+ *
+ * When disabled (default), only high-level success logs and errors are written,
+ * which keeps dev/prod log files focused on actions instead of every SQL call.
  */
 
 import { Pool } from 'pg';
-import { log } from '../utils/logger';
+import { log, LOG_DB_VERBOSE } from '../utils/logger';
 import { getSchemaSQL, getDefaultMapsSQL, getDefaultMapPoolsSQL } from './database.schema';
 
 /**
@@ -347,6 +353,9 @@ class DatabaseManager {
     const meta = `changes=${changes}${
       lastInsertRowid !== undefined ? ` lastInsertRowid=${lastInsertRowid}` : ''
     }`;
+    if (!LOG_DB_VERBOSE) {
+      return;
+    }
     if (changes > 0) {
       log.success(`[DB] ${op} ${table} OK (${meta})`);
     } else {
@@ -395,9 +404,11 @@ class DatabaseManager {
     }
 
     try {
-      log.database(
-        `[DB] INSERT ${table} columns=[${columns.join(', ')}] values=${this.safeJson(values)}`
-      );
+      if (LOG_DB_VERBOSE) {
+        log.database(
+          `[DB] INSERT ${table} columns=[${columns.join(', ')}] values=${this.safeJson(values)}`
+        );
+      }
       const result = await this.postgresPool.query(query, values);
       if (result.rows.length > 0 && result.rows[0]?.id !== undefined) {
         lastInsertRowid = result.rows[0].id;
@@ -429,7 +440,9 @@ class DatabaseManager {
     const query = `UPDATE ${table} SET ${setClauses} WHERE ${whereClause}`;
 
     try {
-      log.database(`[DB] UPDATE ${table} set=${this.safeJson(data)} where="${where}"`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] UPDATE ${table} set=${this.safeJson(data)} where="${where}"`);
+      }
       const result = await this.postgresPool.query(query, values);
       this.logRunResult('UPDATE', table, result.rowCount || 0);
       return { changes: result.rowCount || 0 };
@@ -444,7 +457,9 @@ class DatabaseManager {
     const converted = convertPlaceholders(where, params);
     const query = `DELETE FROM ${table} WHERE ${converted.sql}`;
     try {
-      log.database(`[DB] DELETE ${table} where="${where}"`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] DELETE ${table} where="${where}"`);
+      }
       const result = await this.postgresPool.query(query, converted.params);
       this.logRunResult('DELETE', table, result.rowCount || 0);
       return { changes: result.rowCount || 0 };
@@ -460,7 +475,9 @@ class DatabaseManager {
   ): Promise<{ changes: number; lastInsertRowid?: number | string }> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
-      log.database(`[DB] RUN sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] RUN sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      }
       const converted = convertPlaceholders(sql, params);
       const result = await this.postgresPool.query(converted.sql, converted.params);
       const lastInsertRowid = result.rows[0]?.id;
@@ -475,9 +492,11 @@ class DatabaseManager {
   async execAsync(sql: string): Promise<void> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
-      log.database(`[DB] EXEC sql=${JSON.stringify(sql)}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] EXEC sql=${JSON.stringify(sql)}`);
+      }
       await this.postgresPool.query(sql);
-      log.success('[DB] EXEC OK');
+      this.logRunResult('EXEC', 'custom', 0);
     } catch (err) {
       log.error(`[DB] EXEC failed: ${(err as Error).message}`);
       throw err;
@@ -487,10 +506,14 @@ class DatabaseManager {
   async queryAsync<T>(sql: string, params?: unknown[]): Promise<T[]> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
-      log.database(`[DB] QUERY sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] QUERY sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };
       const result = await this.postgresPool.query(converted.sql, converted.params);
-      log.database(`[DB] QUERY OK rows=${result.rows.length}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] QUERY OK rows=${result.rows.length}`);
+      }
       return result.rows as T[];
     } catch (err) {
       log.error(`[DB] QUERY failed: ${(err as Error).message}`);
@@ -501,10 +524,16 @@ class DatabaseManager {
   async queryOneAsync<T>(sql: string, params?: unknown[]): Promise<T | undefined> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
-      log.database(`[DB] QUERY ONE sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(
+          `[DB] QUERY ONE sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`
+        );
+      }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };
       const result = await this.postgresPool.query(converted.sql, converted.params);
-      log.database(`[DB] QUERY ONE OK ${result.rows[0] ? 'found' : 'not found'}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] QUERY ONE OK ${result.rows[0] ? 'found' : 'not found'}`);
+      }
       return (result.rows[0] as T) || undefined;
     } catch (err) {
       log.error(`[DB] QUERY ONE failed: ${(err as Error).message}`);
@@ -520,7 +549,9 @@ class DatabaseManager {
         [key]
       );
       const row = result.rows[0];
-      log.database(`[DB] SETTINGS get key=${key} ${row ? 'found' : 'missing'}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] SETTINGS get key=${key} ${row ? 'found' : 'missing'}`);
+      }
       return row?.value ?? null;
     } catch (err) {
       log.error(`[DB] SETTINGS get failed for key=${key}: ${(err as Error).message}`);
@@ -568,7 +599,9 @@ class DatabaseManager {
       const result = await this.postgresPool.query(
         'SELECT key, value, updated_at FROM app_settings'
       );
-      log.database(`[DB] SETTINGS getAll count=${result.rows.length}`);
+      if (LOG_DB_VERBOSE) {
+        log.database(`[DB] SETTINGS getAll count=${result.rows.length}`);
+      }
       return result.rows as Array<{ key: string; value: string | null; updated_at: number }>;
     } catch (err) {
       log.error(`[DB] SETTINGS getAll failed: ${(err as Error).message}`);

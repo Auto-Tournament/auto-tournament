@@ -60,6 +60,11 @@ const Tournament: React.FC = () => {
   const [eloTemplates, setEloTemplates] = useState<EloCalculationTemplate[]>([]);
   // Global max rounds per map for non-shuffle tournaments (applies to all maps in the series).
   const [maxRounds, setMaxRounds] = useState<number>(24);
+  // Global overtime policy for non-shuffle tournaments.
+  const [overtimeMode, setOvertimeMode] = useState<'enabled' | 'disabled'>('enabled');
+  const [overtimeSegments, setOvertimeSegments] = useState<number | null>(null);
+  // Grand final behaviour for double elimination tournaments.
+  const [grandFinalMode, setGrandFinalMode] = useState<'none' | 'simple' | 'double'>('simple');
 
   // Auto-set format to bo1 when shuffle is selected
   useEffect(() => {
@@ -333,10 +338,32 @@ const Tournament: React.FC = () => {
           teamSize: tournament.teamSize,
           maxRounds: tournament.maxRounds || 24,
           eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
+          overtimeMode: tournament.overtimeMode ?? 'enabled',
+          overtimeSegments:
+            typeof tournament.overtimeSegments === 'number'
+              ? tournament.overtimeSegments
+              : null,
         });
       } else {
         // Non-shuffle tournaments use a global maxRounds for all maps
         setMaxRounds(tournament.maxRounds || 24);
+        setOvertimeMode(tournament.overtimeMode ?? 'enabled');
+        setOvertimeSegments(
+          typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null
+        );
+      }
+      // Grand final configuration (double elimination only)
+      if (tournament.type === 'double_elimination') {
+        const mode =
+          (tournament.settings && (tournament.settings as { grandFinalMode?: string }).grandFinalMode) ||
+          'simple';
+        if (mode === 'none' || mode === 'simple' || mode === 'double') {
+          setGrandFinalMode(mode);
+        } else {
+          setGrandFinalMode('simple');
+        }
+      } else {
+        setGrandFinalMode('none');
       }
       setIsEditing(false);
       setShowWelcome(false);
@@ -413,6 +440,19 @@ const Tournament: React.FC = () => {
       // Non-shuffle: compare global maxRounds
       const currentMaxRounds = tournament.maxRounds || 24;
       if (maxRounds !== currentMaxRounds) return true;
+      const currentOvertimeMode = tournament.overtimeMode ?? 'enabled';
+      if ((overtimeMode ?? 'enabled') !== currentOvertimeMode) return true;
+      const currentOvertimeSegments =
+        typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null;
+      const localSegments = typeof overtimeSegments === 'number' ? overtimeSegments : null;
+      if (localSegments !== currentOvertimeSegments) return true;
+      if (tournament.type === 'double_elimination') {
+        const currentMode =
+          (tournament.settings &&
+            (tournament.settings as { grandFinalMode?: 'none' | 'simple' | 'double' })
+              .grandFinalMode) || 'simple';
+        if (grandFinalMode !== currentMode) return true;
+      }
     }
 
     return false;
@@ -547,8 +587,7 @@ const Tournament: React.FC = () => {
         maxRounds: shuffleSettings.maxRounds,
         overtimeMode: shuffleSettings.overtimeMode ?? 'enabled',
         overtimeSegments:
-          typeof shuffleSettings.overtimeSegments === 'number' &&
-          shuffleSettings.overtimeSegments > 0
+          typeof shuffleSettings.overtimeSegments === 'number'
             ? shuffleSettings.overtimeSegments
             : undefined,
         eloTemplateId: shuffleSettings.eloTemplateId,
@@ -589,14 +628,31 @@ const Tournament: React.FC = () => {
     setShowChangePreview(false);
 
     try {
+      const baseSettings =
+        tournament?.settings || {
+          matchFormat: format,
+          thirdPlaceMatch: false,
+          autoAdvance: true,
+          checkInRequired: false,
+          seedingMethod: 'random',
+        };
+
+      const settings = {
+        ...baseSettings,
+        grandFinalMode: type === 'double_elimination' ? grandFinalMode : 'none',
+      };
+
       const payload = {
         name,
         type,
         format,
         maps,
         teamIds: selectedTeams,
-        settings: tournament?.settings || { seedingMethod: 'random' },
+        settings,
         maxRounds,
+        overtimeMode,
+        overtimeSegments:
+          typeof overtimeSegments === 'number' ? overtimeSegments : undefined,
       };
 
       const response = await saveTournament(payload);
@@ -814,6 +870,12 @@ const Tournament: React.FC = () => {
           eloTemplates={eloTemplates}
           maxRounds={maxRounds}
           onMaxRoundsChange={setMaxRounds}
+          overtimeMode={overtimeMode}
+          overtimeSegments={overtimeSegments}
+          grandFinalMode={grandFinalMode}
+          onOvertimeModeChange={setOvertimeMode}
+          onOvertimeSegmentsChange={setOvertimeSegments}
+          onGrandFinalModeChange={setGrandFinalMode}
           onNameChange={setName}
           onTypeChange={setType}
           onFormatChange={setFormat}

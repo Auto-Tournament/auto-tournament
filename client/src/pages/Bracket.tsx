@@ -86,12 +86,18 @@ export default function Bracket() {
     servers: [],
   });
 
-  // Derive the current match from matches array (automatically updates when matches change),
-  // but allow overriding with a richer version loaded from /api/matches/:slug when needed.
+  // Derive the current match from matches array (keeps status/score in sync with
+  // live websocket updates), and optionally merge in richer fields (e.g.
+  // mapResults) from a one-time /api/matches/:slug fetch without freezing the
+  // match in time. We always let the live bracket state "win" for core fields
+  // like status and scores to avoid stale data in the modal.
   const baseSelectedMatch = selectedMatchId
     ? matches.find((m) => m.id === selectedMatchId) || null
     : null;
-  const selectedMatch = selectedMatchOverride || baseSelectedMatch;
+  const selectedMatch: Match | null =
+    baseSelectedMatch && selectedMatchOverride
+      ? { ...selectedMatchOverride, ...baseSelectedMatch }
+      : baseSelectedMatch ?? null;
 
   // Load round status for shuffle tournaments
   useEffect(() => {

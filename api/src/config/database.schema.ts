@@ -70,12 +70,22 @@ export function getSchemaSQL(): string {
       tournament_id INTEGER DEFAULT 1,
       round INTEGER NOT NULL,
       match_number INTEGER NOT NULL,
+      -- Optional logical bracket grouping for visualization / wiring:
+      -- 'WB' (winners), 'LB' (losers), 'GF' (grand final), 'GF_RESET' (optional reset)
+      bracket TEXT,
       team1_id TEXT,
       team2_id TEXT,
       winner_id TEXT,
       server_id TEXT,
       config TEXT NOT NULL,
       status TEXT NOT NULL DEFAULT 'pending',
+      -- Optional explicit slot wiring: where the inputs for this match come from.
+      -- When populated, runtime progression can be driven entirely by these
+      -- fields instead of inferring from slug/round patterns.
+      team1_from_match_id INTEGER,
+      team1_from_outcome TEXT, -- 'winner' | 'loser'
+      team2_from_match_id INTEGER,
+      team2_from_outcome TEXT, -- 'winner' | 'loser'
       next_match_id INTEGER,
       demo_file_path TEXT,
       veto_state TEXT,
@@ -89,6 +99,8 @@ export function getSchemaSQL(): string {
       FOREIGN KEY (team1_id) REFERENCES teams(id) ON DELETE SET NULL,
       FOREIGN KEY (team2_id) REFERENCES teams(id) ON DELETE SET NULL,
       FOREIGN KEY (winner_id) REFERENCES teams(id) ON DELETE SET NULL,
+      FOREIGN KEY (team1_from_match_id) REFERENCES matches(id) ON DELETE SET NULL,
+      FOREIGN KEY (team2_from_match_id) REFERENCES matches(id) ON DELETE SET NULL,
       FOREIGN KEY (next_match_id) REFERENCES matches(id) ON DELETE SET NULL
     );
 
@@ -97,6 +109,8 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_matches_tournament ON matches(tournament_id);
     CREATE INDEX IF NOT EXISTS idx_matches_round ON matches(round);
     CREATE INDEX IF NOT EXISTS idx_matches_status ON matches(status);
+    CREATE INDEX IF NOT EXISTS idx_matches_team_from_match1 ON matches(team1_from_match_id);
+    CREATE INDEX IF NOT EXISTS idx_matches_team_from_match2 ON matches(team2_from_match_id);
 
     -- Match events table
     CREATE TABLE IF NOT EXISTS match_events (

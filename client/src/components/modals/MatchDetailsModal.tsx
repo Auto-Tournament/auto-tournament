@@ -728,6 +728,11 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                   <Typography variant="caption" color="text.secondary">
                     Map Rounds
                   </Typography>
+                  {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
+                    <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                      Total Damage: {team1TotalDamage} - {team2TotalDamage}
+                    </Typography>
+                  )}
                   {currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {`Map ${displayMapIndex !== null ? displayMapIndex + 1 : ''}${

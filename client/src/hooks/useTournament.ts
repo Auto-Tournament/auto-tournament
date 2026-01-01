@@ -89,8 +89,10 @@ export const useTournament = () => {
     format: string;
     maps: string[];
     teamIds: string[];
-    settings: { seedingMethod: string };
+    settings: { seedingMethod: string; grandFinalMode?: 'none' | 'simple' | 'double' };
     maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
       TournamentResponse & { tournament: TournamentDetailed }

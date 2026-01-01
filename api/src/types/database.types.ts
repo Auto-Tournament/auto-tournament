@@ -8,6 +8,7 @@ export interface DbMatchRow {
   tournament_id: number;
   round: number;
   match_number: number;
+  bracket?: 'WB' | 'LB' | 'GF' | 'GF_RESET' | string | null;
   team1_id?: string;
   team2_id?: string;
   winner_id?: string;
@@ -15,6 +16,10 @@ export interface DbMatchRow {
   status: 'pending' | 'ready' | 'live' | 'completed';
   config?: string;
   next_match_id?: number;
+  team1_from_match_id?: number | null;
+  team1_from_outcome?: 'winner' | 'loser' | null | string;
+  team2_from_match_id?: number | null;
+  team2_from_outcome?: 'winner' | 'loser' | null | string;
   demo_file_path?: string;
   veto_state?: string;
   created_at?: number;

@@ -19,6 +19,8 @@ import {
   advanceWinnerToNextMatch,
   advanceLoserToLosersBracket,
   checkTournamentCompletion,
+  reconcileDoubleElimination8Bracket,
+  propagateMatchBySlotSources,
 } from '../utils/matchProgression';
 import { recordMapResult, getMapResults } from './matchMapResultService';
 import { updatePlayerRatings } from './ratingService';
@@ -100,10 +102,10 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         // series_end / restore, and we never want to resurrect a completed
         // match back into the LIVE state.
         if (liveMatch.status === 'completed') {
-          log.warn(
-            `Ignoring going_live for already completed match`,
-            { matchId: event.matchid, slug: liveMatch.slug }
-          );
+          log.warn(`Ignoring going_live for already completed match`, {
+            matchId: event.matchid,
+            slug: liveMatch.slug,
+          });
           break;
         }
         await updateMatchStatus(liveMatch, 'live');
@@ -241,10 +243,10 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
         if (match.status === 'completed') {
-          log.warn(
-            `Ignoring round_started for already completed match`,
-            { matchId: event.matchid, slug: match.slug }
-          );
+          log.warn(`Ignoring round_started for already completed match`, {
+            matchId: event.matchid,
+            slug: match.slug,
+          });
           break;
         }
         // Some MatchZy setups are flaky about emitting the "going_live" event,
@@ -638,7 +640,16 @@ async function handleMapCompletion(
     [match.id]
   );
 
-  if (seriesFinished || shouldForceDrawSeries || shouldForceBo1SeriesEnd) {
+  // Only synthesize a series_end event when we **must**:
+  //  - true draws where the plugin will never emit a decisive series_end, or
+  //  - BO1 manual matches (round = 0) that rely solely on map_result.
+  //
+  // For normal tournament matches where MatchZy emits its own series_end
+  // event, we let that be the single source of truth for winners/losers and
+  // bracket progression. This avoids double-processing series_end with
+  // conflicting winners (e.g. map_result vs series_end), which can corrupt the
+  // bracket (losers advancing into winners bracket, etc.).
+  if (shouldForceDrawSeries || shouldForceBo1SeriesEnd) {
     const winnerTeamFromMap =
       (eventData.winner as { team?: 'team1' | 'team2' | 'none' } | undefined)?.team || 'none';
     const syntheticSeriesEvent: MatchZyEvent = {
@@ -646,12 +657,17 @@ async function handleMapCompletion(
       event: 'series_end',
       team1_series_score: team1SeriesScore,
       team2_series_score: team2SeriesScore,
-      winner: {
-        team: winnerTeamFromMap,
-      },
+      winner: winnerTeamFromMap,
       time_until_restore: 0,
     };
     await handleSeriesEnd(syntheticSeriesEvent);
+    return;
+  }
+
+  // If the series is finished normally (MatchZy will emit a real series_end),
+  // stop here and let handleSeriesEnd(event) process that event instead of
+  // synthesizing our own.
+  if (seriesFinished) {
     return;
   }
 
@@ -891,20 +907,61 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     serverAllocationTracker.markIdle(match.server_id);
   }
 
-  // If this match has a next_match_id, advance the winner
-  if (match.next_match_id) {
-    advanceWinnerToNextMatch(match, winnerId);
-  }
-
-  // For double elimination, advance loser to losers bracket
-  const tournament = await db.queryOneAsync<{ type: string }>(
-    'SELECT type FROM tournament WHERE id = ?',
+  // Progression / bracket wiring
+  const tournament = await db.queryOneAsync<{ type: string; team_ids: string | null }>(
+    'SELECT type, team_ids FROM tournament WHERE id = ?',
     [match.tournament_id ?? 1]
   );
-  if (tournament?.type === 'double_elimination') {
-    const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
-    if (loserId) {
-      advanceLoserToLosersBracket(match, winnerId);
+
+  let teamCount: number | undefined;
+  if (tournament?.team_ids) {
+    try {
+      const parsed = JSON.parse(tournament.team_ids) as unknown;
+      if (Array.isArray(parsed)) {
+        teamCount = parsed.length;
+      }
+    } catch {
+      // Ignore JSON parse errors; fall back to generic behaviour
+    }
+  }
+
+  // Detect whether this tournament uses explicit slot wiring. When present,
+  // we prefer generic slot-based propagation and avoid any slug/round
+  // inference entirely.
+  let usesSlotWiring = false;
+  if (tournament) {
+    const wiringRow = await db.queryOneAsync<{ count: number | string }>(
+      `SELECT COUNT(*) as count 
+       FROM matches 
+       WHERE tournament_id = ? 
+         AND (team1_from_match_id IS NOT NULL OR team2_from_match_id IS NOT NULL)`,
+      [match.tournament_id ?? 1]
+    );
+    usesSlotWiring = wiringRow ? Number(wiringRow.count) > 0 : false;
+  }
+
+  const isDoubleElim8 =
+    tournament?.type === 'double_elimination' && typeof teamCount === 'number' && teamCount === 8;
+
+  if (usesSlotWiring) {
+    await propagateMatchBySlotSources(match.id);
+  } else if (isDoubleElim8) {
+    // For the canonical 8‑team double‑elimination bracket generated by
+    // brackets‑manager, keep the fixed progression map based on slug
+    // conventions for backward compatibility.
+    await reconcileDoubleElimination8Bracket();
+  } else {
+    // Generic behaviour for other tournament types / sizes:
+    // advance winners via next_match_id and losers via slug mapping.
+    if (match.next_match_id) {
+      await advanceWinnerToNextMatch(match, winnerId);
+    }
+
+    if (tournament?.type === 'double_elimination') {
+      const loserId = match.team1_id === winnerId ? match.team2_id : match.team1_id;
+      if (loserId) {
+        await advanceLoserToLosersBracket(match, winnerId);
+      }
     }
   }
 
@@ -936,6 +993,8 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
       action: 'match_status',
       matchSlug: updatedMatch.slug,
       status: updatedMatch.status,
+      team1Score,
+      team2Score,
     });
   }
 

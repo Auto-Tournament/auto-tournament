@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
   autoAdvance: true,
   checkInRequired: false,
   seedingMethod: 'random',
+  grandFinalMode: 'simple',
 };
 
 class TournamentService {
@@ -76,7 +77,17 @@ class TournamentService {
    * Create or replace the tournament
    */
   async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
-    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
+    const {
+      name,
+      type,
+      format,
+      maps,
+      teamIds,
+      settings,
+      maxRounds,
+      overtimeMode,
+      overtimeSegments,
+    } = input;
 
     // Shuffle tournaments don't use teams, skip validation
     if (type !== 'shuffle') {
@@ -107,6 +118,14 @@ class TournamentService {
       settings: JSON.stringify(tournamentSettings),
       max_rounds: maxRounds ?? 24,
       overtime_mode: overtimeMode ?? 'enabled',
+      // Keep semantics aligned with shuffle and manual matches:
+      // - NULL → MatchZy default (unlimited OT / draws)
+      // - 0 with overtimeMode === 'disabled' → "no OT, no draws" (damage tiebreak)
+      // - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
+      overtime_segments:
+        typeof overtimeSegments === 'number' && Number.isFinite(overtimeSegments)
+          ? overtimeSegments
+          : null,
       created_at: now,
       updated_at: now,
     });
@@ -152,7 +171,8 @@ class TournamentService {
       throw new Error('No tournament exists to update');
     }
 
-    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
+    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode, overtimeSegments } =
+      input;
 
     // Validate team count if changing teams or type
     if (type || teamIds) {
@@ -177,6 +197,9 @@ class TournamentService {
     }
     if (overtimeMode) {
       updates.overtime_mode = overtimeMode;
+    }
+    if (typeof overtimeSegments === 'number') {
+      updates.overtime_segments = overtimeSegments;
     }
 
     await db.updateAsync('tournament', updates, 'id = ?', [1]);
@@ -269,6 +292,7 @@ class TournamentService {
             tournament_id: 1,
             round: matchData.round,
             match_number: matchData.matchNum,
+            bracket: matchData.bracket ?? null,
             team1_id: matchData.team1Id,
             team2_id: matchData.team2Id,
             winner_id: matchData.winnerId,
@@ -286,6 +310,8 @@ class TournamentService {
             slug: matchData.slug,
             round: matchData.round,
             matchNumber: matchData.matchNum,
+            // Bracket grouping is currently inferred from slug in the client,
+            // so we don't need to expose it explicitly here yet.
             team1: matchData.team1Id
               ? {
                   id: matchData.team1Id,
@@ -311,6 +337,34 @@ class TournamentService {
 
         // Link matches (set next_match_id based on bracket structure)
         await this.linkMatches(matches, slugToDbId, tournament.type);
+
+        // Apply declarative slot wiring (team*_from_match_id / outcome)
+        // using the slugs produced by the generator. This makes runtime
+        // progression size-agnostic and independent of any slug heuristics.
+        for (const matchData of result.matches) {
+          const dbId = slugToDbId.get(matchData.slug);
+          if (!dbId) continue;
+
+          const updates: Partial<DbMatchRow> = {};
+
+          if (matchData.team1FromMatchSlug) {
+            const fromId = slugToDbId.get(matchData.team1FromMatchSlug) ?? null;
+            updates.team1_from_match_id = fromId;
+            updates.team1_from_outcome = matchData.team1FromOutcome ?? null;
+          }
+
+          if (matchData.team2FromMatchSlug) {
+            const fromId = slugToDbId.get(matchData.team2FromMatchSlug) ?? null;
+            updates.team2_from_match_id = fromId;
+            updates.team2_from_outcome = matchData.team2FromOutcome ?? null;
+          }
+
+          if (Object.keys(updates).length > 0) {
+            await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [
+              dbId,
+            ]);
+          }
+        }
       }
 
       // Keep tournament in 'setup' status - it will change to 'ready' when user starts it
@@ -561,33 +615,137 @@ class TournamentService {
     slugToDbId: Map<string, number>,
     tournamentType: string
   ): Promise<void> {
-    for (const match of matches) {
-      let nextMatchSlug: string | null = null;
+    // Link winners‑bracket matches (both single and double elimination)
+    if (tournamentType === 'single_elimination' || tournamentType === 'double_elimination') {
+      const winnersMatches = matches.filter((m) => !m.slug.startsWith('lb-') && m.slug !== 'gf');
+      if (winnersMatches.length > 0) {
+        const maxRound = Math.max(...winnersMatches.map((m) => m.round));
 
-      if (tournamentType === 'single_elimination') {
-        // In single elimination, winners advance to the next round
-        // Match N in round R advances to match ceil(N/2) in round R+1
-        if (match.round < Math.max(...matches.map((m) => m.round))) {
-          const nextMatchNum = Math.ceil(match.matchNumber / 2);
-          nextMatchSlug = `r${match.round + 1}m${nextMatchNum}`;
+        for (const match of winnersMatches) {
+          let nextMatchSlug: string | null = null;
+
+          // Winners‑bracket progression:
+          //
+          //   Match N in round R → match ceil(N/2) in round R+1
+          //
+          // For double elimination we stop at the winners‑bracket final; linking
+          // that (and the losers‑bracket final) into the grand final is handled
+          // in a separate pass below.
+          if (match.round < maxRound) {
+            const nextMatchNum = Math.ceil(match.matchNumber / 2);
+            nextMatchSlug = `r${match.round + 1}m${nextMatchNum}`;
+          }
+
+          if (nextMatchSlug) {
+            const nextMatchId = slugToDbId.get(nextMatchSlug);
+            if (nextMatchId) {
+              await db.updateAsync('matches', { next_match_id: nextMatchId }, 'id = ?', [match.id]);
+              match.nextMatchId = nextMatchId;
+            }
+          }
         }
-      } else if (tournamentType === 'double_elimination') {
-        // Double elimination has complex linking (handled by brackets-manager)
-        continue;
-      } else if (tournamentType === 'round_robin') {
-        // Round robin doesn't have progression (all matches are independent)
-        continue;
       }
 
-      if (nextMatchSlug) {
-        const nextMatchId = slugToDbId.get(nextMatchSlug);
-        if (nextMatchId) {
-          // Update the database
-          await db.updateAsync('matches', { next_match_id: nextMatchId }, 'id = ?', [match.id]);
-          // Update the in-memory object
-          match.nextMatchId = nextMatchId;
+      if (tournamentType === 'double_elimination') {
+        // Link losers‑bracket *winners* within the losers bracket itself based
+        // purely on the generated bracket shape. We do *not* hard‑code team
+        // counts; instead we look at how many lb‑rounds and matches per round
+        // brackets‑manager produced:
+        //
+        //   - When successive losers rounds have the same match count
+        //       (e.g. 2 → 2), winners map 1:1 by matchNumber.
+        //   - When the next round has fewer matches
+        //       (e.g. 2 → 1, 4 → 2), we compress by grouping:
+        //         factor = currentCount / nextCount
+        //         nextMatchNumber = ceil(currentMatchNumber / factor)
+        //
+        // This matches the standard double‑elimination structure where some
+        // losers rounds "fan in" multiple prior matches.
+        const lbMatches = matches.filter((m) => m.slug.startsWith('lb-'));
+        if (lbMatches.length > 0) {
+          const lbRounds = Array.from(new Set(lbMatches.map((m) => m.round))).sort((a, b) => a - b);
+
+          for (let i = 0; i < lbRounds.length - 1; i++) {
+            const currentRound = lbRounds[i];
+            const nextRound = lbRounds[i + 1];
+
+            const currentRoundMatches = lbMatches
+              .filter((m) => m.round === currentRound)
+              .sort((a, b) => a.matchNumber - b.matchNumber);
+            const nextRoundMatches = lbMatches
+              .filter((m) => m.round === nextRound)
+              .sort((a, b) => a.matchNumber - b.matchNumber);
+
+            const currentCount = currentRoundMatches.length;
+            const nextCount = nextRoundMatches.length;
+
+            if (nextCount === 0 || currentCount === 0) {
+              continue;
+            }
+
+            for (const m of currentRoundMatches) {
+              let targetMatchNumber: number | null = null;
+
+              if (currentCount === nextCount) {
+                // 1:1 mapping by match number
+                targetMatchNumber = m.matchNumber;
+              } else if (currentCount > nextCount && currentCount % nextCount === 0) {
+                const factor = currentCount / nextCount;
+                targetMatchNumber = Math.ceil(m.matchNumber / factor);
+              } else {
+                // Unexpected shape – skip linking for this transition but keep others.
+                log.warn('Skipping losers bracket linking due to unexpected round sizes', {
+                  currentRound,
+                  nextRound,
+                  currentCount,
+                  nextCount,
+                });
+                continue;
+              }
+
+              const target = nextRoundMatches.find((nm) => nm.matchNumber === targetMatchNumber);
+              if (!target) continue;
+
+              const nextMatchId = slugToDbId.get(target.slug);
+              if (!nextMatchId) continue;
+
+              await db.updateAsync('matches', { next_match_id: nextMatchId }, 'id = ?', [m.id]);
+              m.nextMatchId = nextMatchId;
+            }
+          }
+
+          // Finally, wire the winners‑bracket final and losers‑bracket final into
+          // the grand final (slug `gf`) when present. We treat both as parents
+          // of the same terminal match.
+          const grandFinalId = slugToDbId.get('gf');
+          if (grandFinalId) {
+            const lastWinnersRound = Math.max(...winnersMatches.map((m) => m.round));
+            const winnersFinal = winnersMatches.find(
+              (m) => m.round === lastWinnersRound && !m.slug.startsWith('lb-')
+            );
+
+            const lastLosersRound = Math.max(...lbMatches.map((m) => m.round));
+            const losersFinal = lbMatches.find((m) => m.round === lastLosersRound);
+
+            const finals = [winnersFinal, losersFinal].filter(
+              (m): m is BracketMatch => Boolean(m)
+            );
+
+            for (const parent of finals) {
+              await db.updateAsync(
+                'matches',
+                { next_match_id: grandFinalId },
+                'id = ?',
+                [parent.id]
+              );
+              parent.nextMatchId = grandFinalId;
+            }
+          }
         }
       }
+    } else if (tournamentType === 'round_robin') {
+      // Round robin doesn't have progression (all matches are independent)
+      return;
     }
   }
 
