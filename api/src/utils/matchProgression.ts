@@ -243,6 +243,110 @@ export async function advanceLoserToLosersBracket(
 }
 
 /**
+ * Generic slot-based progression.
+ *
+ * For any completed match, look for downstream matches that declare this match
+ * as a source in team1_from_match_id / team2_from_match_id and populate the
+ * corresponding team slots based on the expected outcome ('winner' | 'loser').
+ *
+ * This completely avoids any reliance on slug / round heuristics and works
+ * for arbitrary double-elimination sizes as long as the bracket was generated
+ * with explicit wiring.
+ */
+export async function propagateMatchBySlotSources(matchId: number): Promise<void> {
+  try {
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+      matchId,
+    ]);
+    if (!match) {
+      log.warn('Cannot propagate by slot sources: match not found', { matchId });
+      return;
+    }
+
+    const winnerId = match.winner_id ?? null;
+    if (!winnerId) {
+      // Drawn or manual matches are not expected to participate in wired
+      // progression; log and bail out gracefully.
+      log.debug('Skipping slot-based propagation for match without winner_id', {
+        matchId,
+        slug: match.slug,
+      });
+      return;
+    }
+
+    let loserId: string | null = null;
+    if (match.team1_id && match.team2_id) {
+      if (match.team1_id === winnerId) {
+        loserId = match.team2_id ?? null;
+      } else if (match.team2_id === winnerId) {
+        loserId = match.team1_id ?? null;
+      }
+    }
+
+    const children = await db.queryAsync<DbMatchRow>(
+      'SELECT * FROM matches WHERE tournament_id = ? AND (team1_from_match_id = ? OR team2_from_match_id = ?)',
+      [match.tournament_id ?? 1, matchId, matchId]
+    );
+
+    if (!children.length) {
+      return;
+    }
+
+    for (const child of children) {
+      const updates: Partial<DbMatchRow> = {};
+
+      if (child.team1_from_match_id === matchId) {
+        const outcome = (child.team1_from_outcome ?? null) as 'winner' | 'loser' | null;
+        const targetId = outcome === 'winner' ? winnerId : outcome === 'loser' ? loserId : null;
+
+        if (targetId && child.team1_id !== targetId) {
+          if (child.team1_id && child.team1_id !== targetId) {
+            log.warn('Overwriting existing team1_id during slot propagation', {
+              childSlug: child.slug,
+              previous: child.team1_id,
+              next: targetId,
+            });
+          }
+          updates.team1_id = targetId;
+        }
+      }
+
+      if (child.team2_from_match_id === matchId) {
+        const outcome = (child.team2_from_outcome ?? null) as 'winner' | 'loser' | null;
+        const targetId = outcome === 'winner' ? winnerId : outcome === 'loser' ? loserId : null;
+
+        if (targetId && child.team2_id !== targetId) {
+          if (child.team2_id && child.team2_id !== targetId) {
+            log.warn('Overwriting existing team2_id during slot propagation', {
+              childSlug: child.slug,
+              previous: child.team2_id,
+              next: targetId,
+            });
+          }
+          updates.team2_id = targetId;
+        }
+      }
+
+      if (Object.keys(updates).length === 0) {
+        continue;
+      }
+
+      await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [child.id]);
+
+      const refreshed = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+        child.id,
+      ]);
+
+      if (refreshed && refreshed.status === 'pending' && refreshed.team1_id && refreshed.team2_id) {
+        await makeMatchReady(refreshed);
+      }
+    }
+  } catch (error) {
+    log.error('Error propagating match via slot sources', error, { matchId });
+  }
+}
+
+/**
  * Check if tournament is completed
  */
 export async function checkTournamentCompletion(): Promise<void> {
@@ -363,6 +467,217 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
 }
 
 /**
+ * Reconcile progression for a standard 8‑team double‑elimination bracket.
+ *
+ * This function inspects the current state of all matches and ensures that
+ * winners and losers are wired into the correct downstream matches based on
+ * fixed slug conventions:
+ *
+ * Winners bracket:
+ *   r1m1 → r2m1 (team1)
+ *   r1m2 → r2m1 (team2)
+ *   r1m3 → r2m2 (team1)
+ *   r1m4 → r2m2 (team2)
+ *   r2m1 → r3m1 (team1)
+ *   r2m2 → r3m1 (team2)
+ *
+ * Losers bracket:
+ *   L(r1m1) → lb-r4m1 (team1)
+ *   L(r1m2) → lb-r4m1 (team2)
+ *   L(r1m3) → lb-r4m2 (team1)
+   *   L(r1m4) → lb-r4m2 (team2)
+ *   lb-r4m1 winner vs L(r2m1) → lb-r5m1
+ *   lb-r4m2 winner vs L(r2m2) → lb-r5m2
+ *   lb-r5m1 winner vs lb-r5m2 winner → lb-r6m1
+ *   lb-r6m1 winner vs L(r3m1) → lb-r7m1
+ *   r3m1 winner vs lb-r7m1 winner → gf
+ *
+ * Whenever both inputs for a downstream match are known, this helper also
+ * marks that match as ready (generating its config and triggering allocation)
+ * via `makeMatchReady`, mirroring what `advanceWinnerToNextMatch` would do.
+ */
+export async function reconcileDoubleElimination8Bracket(): Promise<void> {
+  try {
+    const tournament = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = 1'
+    );
+    if (!tournament || tournament.type !== 'double_elimination') {
+      return;
+    }
+
+    let teamIds: unknown;
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      teamIds = JSON.parse(tournament.team_ids);
+    } catch {
+      return;
+    }
+
+    if (!Array.isArray(teamIds) || teamIds.length !== 8) {
+      // Only handle the canonical 8‑team case here; fall back to generic logic
+      // for other team counts.
+      return;
+    }
+
+    const rows = await db.queryAsync<DbMatchRow>(
+      'SELECT * FROM matches WHERE tournament_id = 1'
+    );
+
+    const bySlug = new Map<string, DbMatchRow>();
+    for (const row of rows) {
+      if (row.slug) {
+        bySlug.set(row.slug, row);
+      }
+    }
+
+    const get = (slug: string): DbMatchRow | undefined => bySlug.get(slug);
+
+    const r1m1 = get('r1m1');
+    const r1m2 = get('r1m2');
+    const r1m3 = get('r1m3');
+    const r1m4 = get('r1m4');
+    const r2m1 = get('r2m1');
+    const r2m2 = get('r2m2');
+    const r3m1 = get('r3m1');
+
+    const lb_r4m1 = get('lb-r4m1');
+    const lb_r4m2 = get('lb-r4m2');
+    const lb_r5m1 = get('lb-r5m1');
+    const lb_r5m2 = get('lb-r5m2');
+    const lb_r6m1 = get('lb-r6m1');
+    const lb_r7m1 = get('lb-r7m1');
+    const gf = get('gf');
+
+    const loserOf = (m?: DbMatchRow | null): string | null => {
+      if (!m || !m.winner_id || !m.team1_id || !m.team2_id) return null;
+      return m.team1_id === m.winner_id ? m.team2_id ?? null : m.team1_id ?? null;
+    };
+
+    const updateTeamsIfChanged = async (
+      m: DbMatchRow | undefined,
+      team1Id?: string | null,
+      team2Id?: string | null
+    ): Promise<DbMatchRow | undefined> => {
+      if (!m) return undefined;
+      const updates: Partial<DbMatchRow> = {};
+
+      if (team1Id && m.team1_id !== team1Id) {
+        updates.team1_id = team1Id;
+      }
+      if (team2Id && m.team2_id !== team2Id) {
+        updates.team2_id = team2Id;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await db.updateAsync('matches', updates as Record<string, unknown>, 'id = ?', [m.id]);
+        const refreshed = await db.queryOneAsync<DbMatchRow>(
+          'SELECT * FROM matches WHERE id = ?',
+          [m.id]
+        );
+        if (refreshed) {
+          bySlug.set(refreshed.slug, refreshed);
+          return refreshed;
+        }
+      }
+      return m;
+    };
+
+    const maybeMakeReady = async (m?: DbMatchRow | null): Promise<void> => {
+      if (!m) return;
+      if (m.status === 'pending' && m.team1_id && m.team2_id) {
+        await makeMatchReady(m);
+        // Refresh local cache after status/config updates
+        const refreshed = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+          m.id,
+        ]);
+        if (refreshed) {
+          bySlug.set(refreshed.slug, refreshed);
+        }
+      }
+    };
+
+    // --- Winners bracket: R1 -> R2 ---
+    const w_r1m1 = r1m1?.winner_id ?? null;
+    const w_r1m2 = r1m2?.winner_id ?? null;
+    const w_r1m3 = r1m3?.winner_id ?? null;
+    const w_r1m4 = r1m4?.winner_id ?? null;
+
+    if (w_r1m1 && w_r1m2 && r2m1) {
+      const updated = await updateTeamsIfChanged(r2m1, w_r1m1, w_r1m2);
+      await maybeMakeReady(updated);
+    }
+    if (w_r1m3 && w_r1m4 && r2m2) {
+      const updated = await updateTeamsIfChanged(r2m2, w_r1m3, w_r1m4);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Winners bracket: R2 -> R3 (winners final) ---
+    const w_r2m1 = r2m1?.winner_id ?? null;
+    const w_r2m2 = r2m2?.winner_id ?? null;
+    if (w_r2m1 && w_r2m2 && r3m1) {
+      const updated = await updateTeamsIfChanged(r3m1, w_r2m1, w_r2m2);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Losers bracket: seed R4 from R1 losers ---
+    const l_r1m1 = loserOf(r1m1);
+    const l_r1m2 = loserOf(r1m2);
+    const l_r1m3 = loserOf(r1m3);
+    const l_r1m4 = loserOf(r1m4);
+
+    if (l_r1m1 && l_r1m2 && lb_r4m1) {
+      const updated = await updateTeamsIfChanged(lb_r4m1, l_r1m1, l_r1m2);
+      await maybeMakeReady(updated);
+    }
+    if (l_r1m3 && l_r1m4 && lb_r4m2) {
+      const updated = await updateTeamsIfChanged(lb_r4m2, l_r1m3, l_r1m4);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Losers bracket: seed R5 from R2 losers + LB R4 winners ---
+    const l_r2m1 = loserOf(r2m1);
+    const l_r2m2 = loserOf(r2m2);
+    const w_lb_r4m1 = lb_r4m1?.winner_id ?? null;
+    const w_lb_r4m2 = lb_r4m2?.winner_id ?? null;
+
+    if (w_lb_r4m1 && l_r2m1 && lb_r5m1) {
+      const updated = await updateTeamsIfChanged(lb_r5m1, w_lb_r4m1, l_r2m1);
+      await maybeMakeReady(updated);
+    }
+    if (w_lb_r4m2 && l_r2m2 && lb_r5m2) {
+      const updated = await updateTeamsIfChanged(lb_r5m2, w_lb_r4m2, l_r2m2);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Losers bracket: R6 from R5 winners ---
+    const w_lb_r5m1 = lb_r5m1?.winner_id ?? null;
+    const w_lb_r5m2 = lb_r5m2?.winner_id ?? null;
+    if (w_lb_r5m1 && w_lb_r5m2 && lb_r6m1) {
+      const updated = await updateTeamsIfChanged(lb_r6m1, w_lb_r5m1, w_lb_r5m2);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Losers bracket: R7 from R6 winner + R3 loser ---
+    const w_lb_r6m1 = lb_r6m1?.winner_id ?? null;
+    const l_r3m1 = loserOf(r3m1);
+    if (w_lb_r6m1 && l_r3m1 && lb_r7m1) {
+      const updated = await updateTeamsIfChanged(lb_r7m1, w_lb_r6m1, l_r3m1);
+      await maybeMakeReady(updated);
+    }
+
+    // --- Grand final from winners final + losers final winners ---
+    const w_r3m1 = r3m1?.winner_id ?? null;
+    const w_lb_r7m1 = lb_r7m1?.winner_id ?? null;
+    if (w_r3m1 && w_lb_r7m1 && gf) {
+      const updated = await updateTeamsIfChanged(gf, w_r3m1, w_lb_r7m1);
+      await maybeMakeReady(updated);
+    }
+  } catch (error) {
+    log.error('Error reconciling 8-team double elimination bracket', error);
+  }
+}
+
+/**
  * Find the losers bracket match for a winners bracket loser
  */
 async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow | undefined> {
@@ -401,16 +716,57 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   const winnersBase = winnersRoundRow.min_round;
   const losersBase = losersRoundRow.min_round;
   const roundOffset = losersBase - winnersBase;
+  const winnersMaxRoundRow = await db.queryOneAsync<{ max_round: number }>(
+    "SELECT MAX(round) as max_round FROM matches WHERE tournament_id = 1 AND slug NOT LIKE 'lb-%'",
+    []
+  );
+  const lbRounds = await db.queryAsync<{ round: number }>(
+    "SELECT DISTINCT round FROM matches WHERE tournament_id = 1 AND slug LIKE 'lb-%'",
+    []
+  );
 
-  // Map Winners Round R → first Losers Round (losersBase) + (R - winnersBase).
-  // For an 8-team DE this yields:
-  //   R1 → lb-r4*, R2 → lb-r5*, R3 → lb-r6*, etc.
-  const lbRound = wbRound + roundOffset;
+  const winnersMaxRound =
+    winnersMaxRoundRow && typeof winnersMaxRoundRow.max_round === 'number'
+      ? winnersMaxRoundRow.max_round
+      : null;
+  const lbRoundNumbers = lbRounds.map((r) => r.round);
+  const lastLbRound = lbRoundNumbers.length > 0 ? Math.max(...lbRoundNumbers) : null;
 
-  // Within that losers round, pair losers using the same ceil(N/2) pattern we
-  // use for winners progression: losers of r1m1/r1m2 → lb-r4m1,
-  // losers of r1m3/r1m4 → lb-r4m2, etc.
-  const lbMatchNum = Math.ceil(wbMatchNum / 2);
+  // Map Winners Round R to the appropriate losers-bracket round:
+  //
+  // - For all winners rounds *before* the final, we offset relative to the
+  //   first losers round so that:
+  //     R1 → lb-r4*, R2 → lb-r5*, ...
+  //
+  // - For the winners‑bracket final itself, we send the loser to the *last*
+  //   losers round. This matches the standard double‑elimination flow where
+  //   the winners‑final loser faces the losers‑bracket champion in the LB
+  //   final (just before grand finals). For an 8‑team bracket this yields:
+  //     R1 → lb-r4*, R2 → lb-r5*, R3 (final) → lb-r7*.
+  let lbRound: number;
+  if (winnersMaxRound !== null && lastLbRound !== null && wbRound === winnersMaxRound) {
+    lbRound = lastLbRound;
+  } else {
+    lbRound = wbRound + roundOffset;
+  }
+
+  // Within that losers round we need slightly different pairing rules:
+  //
+  // - For the *first* winners round, losers are paired in twos:
+  //     r1m1 + r1m2 → lb‑r4m1
+  //     r1m3 + r1m4 → lb‑r4m2
+  //
+  // - For all *later* winners rounds, each losers‑bracket match receives
+  //   exactly one winners‑bracket loser (the other slot is filled by a
+  //   prior losers‑bracket winner), so we map 1:1 by match number:
+  //     r2m1 → lb‑r5m1
+  //     r2m2 → lb‑r5m2
+  //
+  // This generalises cleanly for larger brackets (16, 32 teams).
+  const lbMatchNum =
+    wbRound === winnersBase
+      ? Math.ceil(wbMatchNum / 2)
+      : wbMatchNum;
   const lbSlug = `lb-r${lbRound}m${lbMatchNum}`;
 
   const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [

@@ -3,6 +3,27 @@
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 /**
+ * Logging feature flags
+ *
+ * These allow you to control *what* gets written to the main API logs
+ * without changing call sites everywhere:
+ *
+ * - LOG_HTTP_REQUESTS=false      → disable per-request [HTTP] logs
+ * - LOG_DB_VERBOSE=true         → enable per-query [DATABASE] logs
+ * - LOG_RCON_VERBOSE=true       → enable high-volume RCON success logs
+ *
+ * Errors and warnings are **never** suppressed by these flags.
+ */
+export const LOG_HTTP_REQUESTS =
+  (process.env.LOG_HTTP_REQUESTS || '').toLowerCase() !== 'false';
+
+export const LOG_DB_VERBOSE =
+  (process.env.LOG_DB_VERBOSE || '').toLowerCase() === 'true';
+
+export const LOG_RCON_VERBOSE =
+  (process.env.LOG_RCON_VERBOSE || '').toLowerCase() === 'true';
+
+/**
  * Create a Pino logger instance with compatibility for older Node.js 18 releases.
  *
  * `pino@10` relies on `diagnostics_channel.tracingChannel`, which was added in Node 18.19.0.
@@ -89,6 +110,42 @@ function addToBuffer(level: string, message: string, meta?: object) {
   }
 }
 
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+/**
+ * Internal helper: route all log calls through a single place so we can
+ * consistently apply feature flags (e.g. HTTP/DB/RCON verbosity) without
+ * touching every call site.
+ */
+function emit(
+  level: LogLevel,
+  message: string,
+  meta?: object
+): void {
+  // Errors and warnings are always logged
+  if (level === 'error') {
+    addToBuffer('error', message, meta);
+    logger.error({ ...meta }, message);
+    return;
+  }
+
+  if (level === 'warn') {
+    addToBuffer('warn', message, meta);
+    logger.warn({ ...meta }, message);
+    return;
+  }
+
+  if (level === 'debug') {
+    addToBuffer('debug', message, meta);
+    logger.debug({ ...meta }, message);
+    return;
+  }
+
+  // Default: info
+  addToBuffer('info', message, meta);
+  logger.info({ ...meta }, message);
+}
+
 // Export function to get recent logs
 export function getRecentLogs(limit = 100): LogEntry[] {
   return logBuffer.slice(-limit).reverse(); // Most recent first
@@ -114,116 +171,103 @@ export const log = {
   // Server events
   server: (message: string, meta?: object) => {
     const msg = `[SERVER] ${message}`;
-    addToBuffer('info', msg, meta);
-    logger.info({ ...meta }, msg);
+    emit('info', msg, meta);
   },
   database: (message: string, meta?: object) => {
     const msg = `[DATABASE] ${message}`;
-    addToBuffer('info', msg, meta);
-    logger.info({ ...meta }, msg);
+    emit('info', msg, meta);
   },
 
   // Match events
   matchCreated: (slug: string, serverId: string) => {
     const msg = `[MATCH] Match created: ${slug} on server ${serverId}`;
     const meta = { slug, serverId };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   matchLoaded: (slug: string, serverId: string, webhookConfigured: boolean) => {
     const msg = `[MATCH] Match loaded: ${slug} (webhook: ${webhookConfigured ? 'yes' : 'no'})`;
     const meta = { slug, serverId, webhookConfigured };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   matchAllocated: (slug: string, serverId: string, serverName: string) => {
     const msg = `[MATCH] Match allocated: ${slug} -> ${serverName} (${serverId})`;
     const meta = { slug, serverId, serverName };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   matchStatusUpdate: (slug: string, status: string) => {
     const msg = `[MATCH] Match status: ${slug} -> ${status}`;
     const meta = { slug, status };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
 
   // RCON events
   rconCommand: (serverId: string, command: string, success: boolean) => {
     const msg = `[RCON] ${success ? 'SUCCESS' : 'FAILED'}: ${serverId} -> ${command}`;
     const meta = { serverId, command, success };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    // High‑volume success logs can be disabled via LOG_RCON_VERBOSE.
+    if (!LOG_RCON_VERBOSE && success) {
+      return;
+    }
+    emit('info', msg, meta);
   },
   rconBroadcast: (count: number, command: string) => {
     const msg = `[RCON] Broadcast to ${count} servers: ${command}`;
     const meta = { count, command };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
 
   // Webhook events
   webhookReceived: (event: string, matchId: string) => {
     const msg = `[WEBHOOK] Event received: ${event} (${matchId})`;
     const meta = { event, matchId };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   webhookConfigured: (serverId: string, url: string) => {
     const msg = `[WEBHOOK] Webhook configured: ${serverId} -> ${url}`;
     const meta = { serverId, url };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
 
   // Server management
   serverCreated: (id: string, name: string) => {
     const msg = `[SERVER] Server created: ${name} (${id})`;
     const meta = { id, name };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   serverUpdated: (id: string, name: string) => {
     const msg = `[SERVER] Server updated: ${name} (${id})`;
     const meta = { id, name };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
   serverDeleted: (id: string, name: string) => {
     const msg = `[SERVER] Server deleted: ${name} (${id})`;
     const meta = { id, name };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
 
   // HTTP requests
   request: (method: string, path: string, statusCode?: number) => {
     const msg = `[HTTP] ${method} ${path}${statusCode ? ` -> ${statusCode}` : ''}`;
     const meta = { method, path, statusCode };
-    addToBuffer('info', msg, meta);
-    logger.info(meta, msg);
+    emit('info', msg, meta);
   },
 
   // Auth
   authSuccess: (endpoint: string) => {
     const msg = `[AUTH] Auth success: ${endpoint}`;
     const meta = { endpoint };
-    addToBuffer('debug', msg, meta);
-    logger.debug(meta, msg);
+    emit('debug', msg, meta);
   },
   authFailed: (endpoint: string, reason: string) => {
     const msg = `[AUTH] Auth failed: ${endpoint} - ${reason}`;
     const meta = { endpoint, reason };
-    addToBuffer('warn', msg, meta);
-    logger.warn(meta, msg);
+    emit('warn', msg, meta);
   },
 
   // Warnings
   warn: (message: string, meta?: object) => {
     const msg = `[WARN] ${message}`;
-    addToBuffer('warn', msg, meta);
-    logger.warn({ ...meta }, msg);
+    emit('warn', msg, meta);
   },
 
   // Errors
@@ -231,27 +275,23 @@ export const log = {
     const errorDetails =
       error instanceof Error ? { error: error.message, stack: error.stack } : { error };
     const msg = `[ERROR] ${message}`;
-    addToBuffer('error', msg, { ...meta, ...errorDetails });
-    logger.error({ ...meta, ...errorDetails }, msg);
+    emit('error', msg, { ...meta, ...errorDetails });
   },
 
   // Debug
   debug: (message: string, meta?: object) => {
     const msg = `[DEBUG] ${message}`;
-    addToBuffer('debug', msg, meta);
-    logger.debug({ ...meta }, msg);
+    emit('debug', msg, meta);
   },
 
   // Info
   info: (message: string, meta?: object) => {
-    addToBuffer('info', message, meta);
-    logger.info({ ...meta }, message);
+    emit('info', message, meta);
   },
 
   // Success
   success: (message: string, meta?: object) => {
     const msg = `[SUCCESS] ${message}`;
-    addToBuffer('info', msg, meta);
-    logger.info({ ...meta }, msg);
+    emit('info', msg, meta);
   },
 };

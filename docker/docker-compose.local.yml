@@ -54,7 +54,14 @@ services:
       - PORT=3000 # Backend internal port (proxied by Caddy)
       - API_TOKEN=${API_TOKEN:-admin123}
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
+      # Logging controls (see docs/development/architecture.md → Logging section)
       - LOG_LEVEL=${LOG_LEVEL:-debug}
+      # Disable noisy per-request HTTP logs (still logs 4xx/5xx)
+      - LOG_HTTP_REQUESTS=${LOG_HTTP_REQUESTS:-true}
+      # Enable verbose per-query DB logs when debugging database issues
+      - LOG_DB_VERBOSE=${LOG_DB_VERBOSE:-false}
+      # Enable verbose RCON success logs (command spam); errors always log regardless
+      - LOG_RCON_VERBOSE=${LOG_RCON_VERBOSE:-false}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
       - DB_HOST=postgres
       - DB_PORT=5432

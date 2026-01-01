@@ -11,7 +11,7 @@ import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
-import { log } from './utils/logger';
+import { log, LOG_HTTP_REQUESTS } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
 import { serverService } from './services/serverService';
@@ -65,6 +65,12 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
 
   res.on('finish', () => {
+    // Allow disabling noisy per-request logs via env:
+    //   LOG_HTTP_REQUESTS=false
+    if (!LOG_HTTP_REQUESTS) {
+      return;
+    }
+
     const duration = Date.now() - start;
     const { method, path } = req;
     const { statusCode } = res;

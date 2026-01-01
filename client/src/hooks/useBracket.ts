@@ -14,8 +14,19 @@ export const useBracket = () => {
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
 
-  const loadBracket = useCallback(async () => {
-    setLoading(true);
+  /**
+   * Load or reload the current bracket.
+   *
+   * When called with { silent: true }, this performs a background reload
+   * without flipping the top-level `loading` flag. This avoids unmounting
+   * the bracket page (and any open modals) on every websocket-driven
+   * structural update while still keeping the data fresh.
+   */
+  const loadBracket = useCallback(async (options?: { silent?: boolean }) => {
+    const silent = options?.silent === true;
+    if (!silent) {
+      setLoading(true);
+    }
     setError('');
 
     try {
@@ -48,7 +59,9 @@ export const useBracket = () => {
         setError(error.message || 'Failed to load bracket');
       }
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -93,7 +106,7 @@ export const useBracket = () => {
   };
 
   useEffect(() => {
-    loadBracket();
+    void loadBracket();
 
     const newSocket = io();
 
@@ -300,7 +313,10 @@ export const useBracket = () => {
           showSnackbar(`Round ${roundNumber} generated – matches are ready to allocate.`, 'info');
         }
 
-        loadBracket();
+        // Perform a background reload without toggling the global "loading"
+        // flag so we don't unmount the bracket view (and any open modals)
+        // every time a structural websocket event arrives.
+        void loadBracket({ silent: true });
         return;
       }
 
