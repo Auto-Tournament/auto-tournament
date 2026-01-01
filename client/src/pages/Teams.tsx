@@ -160,17 +160,21 @@ export default function Teams() {
     }>
   ) => {
     // Sanitize team names and generate IDs
-    const teamsWithIds = importedTeams.map((team) => ({
-      id: team.name
+    const teamsWithIds = importedTeams.map((team, index) => {
+      const baseId = team.name
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        .replace(/[^a-z0-9\s]/g, '') // Keep ASCII letters/numbers for ID
         .replace(/\s+/g, '_') // Replace spaces with underscores
-        .replace(/^_+|_+$/g, ''), // Remove leading/trailing underscores
-      name: team.name.replace(/[^a-zA-Z0-9\s]/g, '').trim(), // Sanitize name
-      tag: team.tag || '',
-      players: team.players,
-    }));
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+      return {
+        id: baseId || `team_${Date.now().toString(36)}_${index}`, // Fallback for pure non-ASCII names
+        name: team.name.trim(), // Preserve Unicode characters in display name
+        tag: team.tag || '',
+        players: team.players,
+      };
+    });
 
     const promises = teamsWithIds.map((team) => api.post('/api/teams', team));
 

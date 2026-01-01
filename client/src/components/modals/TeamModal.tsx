@@ -37,12 +37,21 @@ interface TeamModalProps {
 
 // Utility to generate team ID from name
 const slugifyTeamName = (name: string): string => {
-  return name
+  const baseSlug = name
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+    .replace(/[^a-z0-9\s]/g, '') // Keep ASCII letters/numbers for ID
     .replace(/\s+/g, '_') // Replace spaces with underscores
     .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+  if (baseSlug) {
+    return baseSlug;
+  }
+
+  // Fallback for names that contain no ASCII characters (e.g. purely non-English names)
+  // Ensures we always have a valid, unique-ish ID while preserving the display name.
+  const timestamp = Date.now().toString(36);
+  return `team_${timestamp}`;
 };
 
 // Utility to generate team tag from name (max 4 chars)
@@ -111,13 +120,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   };
 
   const handleNameChange = (newName: string) => {
-    // Only allow letters, numbers, and spaces
-    const sanitized = newName.replace(/[^a-zA-Z0-9\s]/g, '');
-    setName(sanitized);
+    // Allow full Unicode team names (including non-English characters)
+    setName(newName);
 
     // Auto-generate tag if not editing (when editing, keep existing tag)
     if (!isEditing) {
-      setTag(generateTeamTag(sanitized));
+      setTag(generateTeamTag(newName));
     }
   };
 
@@ -362,7 +370,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
               slotProps={{
                 htmlInput: { 'data-testid': 'team-name-input' },
               }}
-              helperText="Only letters, numbers, and spaces allowed"
+              helperText="Team name can include any language or special characters"
             />
 
             <TextField
