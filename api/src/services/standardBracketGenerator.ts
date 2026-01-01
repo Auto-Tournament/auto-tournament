@@ -45,9 +45,23 @@ export class StandardBracketGenerator implements IBracketGenerator {
     // based on seeding array to properly handle non-power-of-2 team counts
     const stageSettings: Partial<StageSettings> = {
       seedOrdering: settings.seedingMethod === 'random' ? ['natural'] : ['natural'],
-      grandFinal: type === 'double_elimination' ? 'simple' : 'none',
       consolationFinal: settings.thirdPlaceMatch,
     };
+
+    // Configure grand final behaviour for double elimination tournaments. We
+    // currently support:
+    //  - 'none'   → no cross‑bracket grand final (winners bracket final decides champion)
+    //  - 'simple' → single grand final between WB winner and LB winner
+    //  - 'double' → reserved for future "bracket reset" support; for now this
+    //               is treated as 'simple' at generation time so the bracket
+    //               shape remains compatible.
+    if (type === 'double_elimination') {
+      const mode = settings.grandFinalMode ?? 'simple';
+      const effective: StageSettings['grandFinal'] = mode === 'none' ? 'none' : 'simple';
+      stageSettings.grandFinal = effective;
+    } else {
+      stageSettings.grandFinal = 'none';
+    }
 
     // For round robin, size and groupCount are required
     if (stageType === 'round_robin') {
@@ -179,31 +193,54 @@ export class StandardBracketGenerator implements IBracketGenerator {
         // Convert to 1-based rounds for our system (Round 0 -> Round 1, Round 1 -> Round 2, etc.)
         const roundNum = bmRoundNum + 1;
 
-        // Map team IDs (brackets-manager uses indices, we use actual team IDs)
-        // For first round matches, brackets-manager should assign opponents immediately
-        // opponent.id is the participant index (0-based), which maps to tournament.teamIds[index]
+        // Map team IDs (brackets-manager uses indices, we use actual team IDs).
+        // For double elimination we intentionally leave **all** losers bracket
+        // matches (lb-...) and all winners‑bracket matches beyond Round 1
+        // without concrete team assignments so that progression is handled
+        // entirely by our own advanceWinnerToNextMatch / advanceLoserToLosersBracket
+        // logic. Only the opening winners round gets seeded directly.
         let team1Id: string | null = null;
         let team2Id: string | null = null;
-        
-        // Check opponent1 - brackets-manager uses participant indices
-        if (bmMatch.opponent1) {
-          // opponent.id is the participant index (0, 1, 2, etc.)
-          if (typeof bmMatch.opponent1.id === 'number' && bmMatch.opponent1.id >= 0 && bmMatch.opponent1.id < tournament.teamIds.length) {
-            team1Id = tournament.teamIds[bmMatch.opponent1.id] || null;
+
+        const isLosersBracketSlug = slug.startsWith('lb-');
+        const isGrandFinalSlug = slug === 'gf';
+        const isFirstWinnersRound =
+          !isLosersBracketSlug && !isGrandFinalSlug && roundNum === 1 && stageType !== 'round_robin';
+
+        const shouldSeedDirectly =
+          stageType === 'single_elimination' ||
+          (stageType === 'double_elimination' && isFirstWinnersRound) ||
+          stageType === 'round_robin';
+
+        if (shouldSeedDirectly) {
+          // Check opponent1 - brackets-manager uses participant indices
+          if (bmMatch.opponent1) {
+            if (
+              typeof bmMatch.opponent1.id === 'number' &&
+              bmMatch.opponent1.id >= 0 &&
+              bmMatch.opponent1.id < tournament.teamIds.length
+            ) {
+              team1Id = tournament.teamIds[bmMatch.opponent1.id] || null;
+            }
           }
-        }
-        
-        // Check opponent2 - brackets-manager uses participant indices
-        if (bmMatch.opponent2) {
-          // opponent.id is the participant index (0, 1, 2, etc.)
-          if (typeof bmMatch.opponent2.id === 'number' && bmMatch.opponent2.id >= 0 && bmMatch.opponent2.id < tournament.teamIds.length) {
-            team2Id = tournament.teamIds[bmMatch.opponent2.id] || null;
+
+          // Check opponent2 - brackets-manager uses participant indices
+          if (bmMatch.opponent2) {
+            if (
+              typeof bmMatch.opponent2.id === 'number' &&
+              bmMatch.opponent2.id >= 0 &&
+              bmMatch.opponent2.id < tournament.teamIds.length
+            ) {
+              team2Id = tournament.teamIds[bmMatch.opponent2.id] || null;
+            }
           }
-        }
-        
-        // Log warning if first round match has no teams (shouldn't happen for single elimination)
-        if (roundNum === 1 && (!team1Id || !team2Id)) {
-          log.warn(`First round match ${slug} missing teams: team1=${team1Id}, team2=${team2Id}, opponent1.id=${bmMatch.opponent1?.id}, opponent2.id=${bmMatch.opponent2?.id}`);
+
+          // Log warning if a seeded first round match has no teams (shouldn't happen)
+          if (roundNum === 1 && (!team1Id || !team2Id)) {
+            log.warn(
+              `First round match ${slug} missing teams: team1=${team1Id}, team2=${team2Id}, opponent1.id=${bmMatch.opponent1?.id}, opponent2.id=${bmMatch.opponent2?.id}`
+            );
+          }
         }
 
         // Determine status

@@ -180,7 +180,6 @@ export class MatchAllocationService {
       const { server, status, matchSlug, updatedAt, online } = check;
 
       const dbBusy = dbBusyByServer.get(server.id) || null;
-      const hasDbMatch = !!dbBusy;
       const effectiveMatchSlug = matchSlug || dbBusy?.slug || null;
 
       // Follow MatchZy guidance strictly: only treat explicit "idle" as
@@ -887,6 +886,13 @@ export class MatchAllocationService {
           continue;
         }
 
+        // Reserve this server *before* we perform any asynchronous checks so
+        // that concurrent allocateSingleMatch calls cannot race and pick the
+        // same physical server. If later DB guards fail, we will release this
+        // reservation and move on to the next candidate.
+        this.allocatingServers.add(candidate.id);
+        allocatedServerId = candidate.id;
+
         // Defensive DB‑level guard: avoid assigning a server that already has
         // another active (non‑completed) match attached in our own records.
         const existingActive = await db.queryOneAsync<{ count: number }>(
@@ -899,12 +905,16 @@ export class MatchAllocationService {
           [candidate.id]
         );
         if ((existingActive?.count ?? 0) > 0) {
+          log.debug(
+            `[ALLOCATION] Skipping server ${candidate.id} for single-match allocation because it already has an active match in the database`,
+            { serverId: candidate.id, activeMatchCount: existingActive?.count, matchSlug }
+          );
+          // Release reservation and try the next candidate.
+          this.allocatingServers.delete(candidate.id);
+          allocatedServerId = null;
           continue;
         }
 
-        // Reserve this server for this allocation attempt
-        this.allocatingServers.add(candidate.id);
-        allocatedServerId = candidate.id;
         server = candidate;
         break;
       }

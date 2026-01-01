@@ -22,6 +22,7 @@ export const DEFAULT_SETTINGS: TournamentSettings = {
   autoAdvance: true,
   checkInRequired: false,
   seedingMethod: 'random',
+  grandFinalMode: 'simple',
 };
 
 class TournamentService {
@@ -76,7 +77,17 @@ class TournamentService {
    * Create or replace the tournament
    */
   async createTournament(input: CreateTournamentInput): Promise<TournamentResponse> {
-    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
+    const {
+      name,
+      type,
+      format,
+      maps,
+      teamIds,
+      settings,
+      maxRounds,
+      overtimeMode,
+      overtimeSegments,
+    } = input;
 
     // Shuffle tournaments don't use teams, skip validation
     if (type !== 'shuffle') {
@@ -107,6 +118,14 @@ class TournamentService {
       settings: JSON.stringify(tournamentSettings),
       max_rounds: maxRounds ?? 24,
       overtime_mode: overtimeMode ?? 'enabled',
+      // Keep semantics aligned with shuffle and manual matches:
+      // - NULL → MatchZy default (unlimited OT / draws)
+      // - 0 with overtimeMode === 'disabled' → "no OT, no draws" (damage tiebreak)
+      // - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
+      overtime_segments:
+        typeof overtimeSegments === 'number' && Number.isFinite(overtimeSegments)
+          ? overtimeSegments
+          : null,
       created_at: now,
       updated_at: now,
     });
@@ -152,7 +171,8 @@ class TournamentService {
       throw new Error('No tournament exists to update');
     }
 
-    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode } = input;
+    const { name, type, format, maps, teamIds, settings, maxRounds, overtimeMode, overtimeSegments } =
+      input;
 
     // Validate team count if changing teams or type
     if (type || teamIds) {
@@ -177,6 +197,9 @@ class TournamentService {
     }
     if (overtimeMode) {
       updates.overtime_mode = overtimeMode;
+    }
+    if (typeof overtimeSegments === 'number') {
+      updates.overtime_segments = overtimeSegments;
     }
 
     await db.updateAsync('tournament', updates, 'id = ?', [1]);
@@ -564,16 +587,25 @@ class TournamentService {
     for (const match of matches) {
       let nextMatchSlug: string | null = null;
 
-      if (tournamentType === 'single_elimination') {
-        // In single elimination, winners advance to the next round
-        // Match N in round R advances to match ceil(N/2) in round R+1
-        if (match.round < Math.max(...matches.map((m) => m.round))) {
-          const nextMatchNum = Math.ceil(match.matchNumber / 2);
-          nextMatchSlug = `r${match.round + 1}m${nextMatchNum}`;
+      if (tournamentType === 'single_elimination' || tournamentType === 'double_elimination') {
+        // In both single and double elimination, winners in the **winners bracket**
+        // advance to the next winners round:
+        //
+        //   Match N in round R → match ceil(N/2) in round R+1
+        //
+        // For double elimination we ONLY apply this to winners‑bracket matches
+        // (`r{R}m{N}` slugs). Losers‑bracket progression is handled separately via
+        // explicit slug mapping in `advanceLoserToLosersBracket`, and the grand
+        // final (`gf`) has no next match.
+        const isLosersBracket = match.slug.startsWith('lb-');
+        const isGrandFinal = match.slug === 'gf';
+        if (!isLosersBracket && !isGrandFinal) {
+          const maxRound = Math.max(...matches.filter((m) => !m.slug.startsWith('lb-')).map((m) => m.round));
+          if (match.round < maxRound) {
+            const nextMatchNum = Math.ceil(match.matchNumber / 2);
+            nextMatchSlug = `r${match.round + 1}m${nextMatchNum}`;
+          }
         }
-      } else if (tournamentType === 'double_elimination') {
-        // Double elimination has complex linking (handled by brackets-manager)
-        continue;
       } else if (tournamentType === 'round_robin') {
         // Round robin doesn't have progression (all matches are independent)
         continue;

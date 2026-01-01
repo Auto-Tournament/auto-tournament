@@ -903,6 +903,142 @@ router.post('/wipe-table/:table', async (req: Request, res: Response) => {
 
 /**
  * @openapi
+ * /api/tournament/dev/reset-simulation-state:
+ *   post:
+ *     tags:
+ *       - Tournament
+ *     summary: Reset simulation state while preserving core configuration (DEV ONLY)
+ *     description: >
+ *       Clears all matches, match events, map results, player match stats, and rating history so
+ *       you can restart simulations from a clean slate, while preserving servers, teams, maps,
+ *       map pools, and the current tournament configuration (name, type, maps, teams, settings).
+ *       Player records are kept, but their current ELO and match counts are reset based on their
+ *       starting values.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Simulation state reset successfully
+ *       500:
+ *         description: Failed to reset simulation state
+ */
+router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) => {
+  try {
+    log.warn(
+      '[DEV] Reset simulation state requested - clearing matches & stats but keeping servers, teams, maps, and tournament config'
+    );
+
+    const now = Math.floor(Date.now() / 1000);
+
+    // 1) End any active matches on servers so plugins reset cleanly.
+    const { db } = await import('../config/database');
+
+    const loadedMatches = await db.queryAsync<DbMatchRow>(
+      `SELECT * FROM matches 
+       WHERE tournament_id = 1 
+         AND status IN ('loaded', 'live')
+         AND server_id IS NOT NULL 
+         AND server_id != ''`
+    );
+
+    if (loadedMatches.length > 0) {
+      log.info(
+        `[DEV] Ending ${loadedMatches.length} active match(es) on servers before simulation reset`
+      );
+
+      const serverIds = new Set<string>();
+      for (const match of loadedMatches) {
+        if (match.server_id) {
+          serverIds.add(match.server_id);
+        }
+      }
+
+      let serversEnded = 0;
+      let serversEndFailed = 0;
+
+      for (const serverId of serverIds) {
+        try {
+          log.info(`[DEV] Ending match on server: ${serverId}`);
+          const result = await rconService.sendCommand(serverId, 'css_restart');
+
+          if (result.success) {
+            log.success(`[DEV] Match ended on server ${serverId}`);
+            serversEnded++;
+          } else {
+            log.error(`Failed to end match on server ${serverId}`, undefined, {
+              error: result.error,
+            });
+            serversEndFailed++;
+          }
+        } catch (error) {
+          log.error(`Error ending match on server ${serverId}`, error);
+          serversEndFailed++;
+        }
+      }
+
+      log.info(
+        `[DEV] Ended matches on ${serversEnded} server(s) before simulation reset${
+          serversEndFailed > 0 ? `; ${serversEndFailed} server(s) failed to end` : ''
+        }`
+      );
+    }
+
+    // 2) Clear all match-related data so no previous matches or allocations interfere.
+
+    // Delete all matches and let foreign keys cascade to match_events, match_map_results,
+    // and player_match_stats / player_rating_history that reference match slugs.
+    await db.execAsync('DELETE FROM matches');
+
+    // 3) Reset tournament status back to setup so the existing config can be reused.
+    // We preserve name, type, maps, team_ids, settings, and shuffle-specific fields.
+    await db.updateAsync(
+      'tournament',
+      {
+        status: 'setup',
+        started_at: null,
+        completed_at: null,
+        updated_at: now,
+      },
+      'id = ?',
+      [1]
+    );
+
+    // 4) Reset player ratings to their starting values and clear match counters.
+    // This keeps players but forgets prior ELO changes from simulations.
+    await db.execAsync(`
+      UPDATE players
+         SET current_elo = starting_elo,
+             match_count = 0,
+             openskill_mu = 25.0,
+             openskill_sigma = 8.333,
+             updated_at = ${now}
+    `);
+
+    // 5) Clear shuffle tournament player registrations so new simulations can
+    // register a fresh pool if desired.
+    await db.execAsync('DELETE FROM shuffle_tournament_players');
+
+    log.success(
+      '[DEV] Simulation state reset: matches, stats, and ratings cleared; core config preserved'
+    );
+
+    return res.json({
+      success: true,
+      message:
+        'Simulation state reset. All matches and stats cleared; servers, teams, maps, and tournament setup preserved.',
+    });
+  } catch (error) {
+    log.error('Error resetting simulation state', error as Error);
+    const err = error as Error;
+    return res.status(500).json({
+      success: false,
+      error: err.message || 'Failed to reset simulation state',
+    });
+  }
+});
+
+/**
+ * @openapi
  * /api/tournament/shuffle:
  *   post:
  *     tags:

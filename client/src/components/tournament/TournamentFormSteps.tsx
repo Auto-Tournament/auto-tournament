@@ -11,6 +11,12 @@ import {
   Alert,
   Typography,
   TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
+  FormHelperText,
+  Tooltip,
 } from '@mui/material';
 import { ArrowBack, ArrowForward } from '@mui/icons-material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
@@ -52,6 +58,12 @@ interface TournamentFormStepsProps {
   eloTemplates?: EloCalculationTemplate[];
   maxRounds?: number;
   onMaxRoundsChange?: (value: number) => void;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number | null;
+  grandFinalMode?: 'none' | 'simple' | 'double';
+  onOvertimeModeChange?: (mode: 'enabled' | 'disabled') => void;
+  onOvertimeSegmentsChange?: (segments: number | null) => void;
+  onGrandFinalModeChange?: (mode: 'none' | 'simple' | 'double') => void;
   onNameChange: (name: string) => void;
   onTypeChange: (type: string) => void;
   onFormatChange: (format: string) => void;
@@ -85,6 +97,12 @@ export function TournamentFormSteps({
   eloTemplates,
   maxRounds,
   onMaxRoundsChange,
+  overtimeMode,
+  overtimeSegments,
+  grandFinalMode,
+  onOvertimeModeChange,
+  onOvertimeSegmentsChange,
+  onGrandFinalModeChange,
   onNameChange,
   onTypeChange,
   onFormatChange,
@@ -474,6 +492,116 @@ export function TournamentFormSteps({
                   error={maxRounds <= 0 || maxRounds > 30}
                   fullWidth
                 />
+
+                <Box mt={3}>
+                  <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                    Overtime Settings
+                  </Typography>
+                  <Tooltip
+                    title={
+                      'Control overtime behaviour and how ties at max rounds are handled. ' +
+                      'These settings are passed through to MatchZy as overtimeMode/overtimeSegments ' +
+                      'and share the same semantics as shuffle tournaments and manual matches.'
+                    }
+                    arrow
+                    placement="top"
+                    enterDelay={500}
+                  >
+                    <Box>
+                      <FormControl fullWidth sx={{ mb: 2 }}>
+                        <InputLabel id="tournament-overtime-mode-label">Overtime</InputLabel>
+                        <Select
+                          labelId="tournament-overtime-mode-label"
+                          value={overtimeMode ?? 'enabled'}
+                          label="Overtime"
+                          onChange={(event) =>
+                            onOvertimeModeChange?.(event.target.value as 'enabled' | 'disabled')
+                          }
+                          disabled={!canEdit || saving}
+                        >
+                          <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
+                          <MenuItem value="disabled">Disabled (no overtime)</MenuItem>
+                        </Select>
+                        <FormHelperText>
+                          When overtime is disabled, ties at max rounds can still be broken by total
+                          team damage if your MatchZy config enables performance tiebreaks.
+                        </FormHelperText>
+                      </FormControl>
+
+                      <TextField
+                        label="Overtime segments (optional)"
+                        type="number"
+                        value={
+                          typeof overtimeSegments === 'number' ? overtimeSegments : ''
+                        }
+                        onChange={(event) => {
+                          const raw = event.target.value.trim();
+                          if (!onOvertimeSegmentsChange) return;
+                          if (raw === '') {
+                            onOvertimeSegmentsChange(null);
+                            return;
+                          }
+                          const parsed = Number(raw);
+                          if (!Number.isFinite(parsed) || parsed < 0) {
+                            onOvertimeSegmentsChange(null);
+                            return;
+                          }
+                          onOvertimeSegmentsChange(parsed);
+                        }}
+                        disabled={!canEdit || saving}
+                        slotProps={{
+                          htmlInput: { min: 0, max: 10 },
+                        }}
+                        helperText={
+                          typeof overtimeSegments === 'number'
+                            ? overtimeMode === 'disabled' && overtimeSegments === 0
+                              ? '0 with overtime disabled: no overtime is played and ties at max rounds are resolved by total team damage (no draws, if damage differs).'
+                              : `When > 0 and overtime is enabled, ties that persist after ${overtimeSegments} overtime segment${
+                                  overtimeSegments === 1 ? '' : 's'
+                                } can be decided by total team damage.`
+                            : 'Leave empty for MatchZy default. Combine with overtime disabled + 0 segments for "no OT, no draws", or with a positive value and overtime enabled to use damage tiebreak after OT.'
+                        }
+                        fullWidth
+                      />
+                    </Box>
+                  </Tooltip>
+                </Box>
+                {type === 'double_elimination' && onGrandFinalModeChange && (
+                  <Box mt={3}>
+                    <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                      Grand Final Mode (Double Elimination)
+                    </Typography>
+                    <FormControl fullWidth sx={{ mb: 1 }}>
+                      <InputLabel id="tournament-grand-final-mode-label">Grand Final</InputLabel>
+                      <Select
+                        labelId="tournament-grand-final-mode-label"
+                        value={grandFinalMode ?? 'simple'}
+                        label="Grand Final"
+                        onChange={(event) =>
+                          onGrandFinalModeChange(
+                            event.target.value as 'none' | 'simple' | 'double'
+                          )
+                        }
+                        disabled={!canEdit || saving}
+                      >
+                        <MenuItem value="simple">
+                          Simple – single Grand Final between winners and losers bracket champions
+                        </MenuItem>
+                        <MenuItem value="none">
+                          None – winners bracket final decides the tournament (no Grand Final)
+                        </MenuItem>
+                        <MenuItem value="double">
+                          Double – bracket‑reset style (currently behaves like Simple; full reset
+                          support is planned)
+                        </MenuItem>
+                      </Select>
+                      <FormHelperText>
+                        Controls how the champions of the winners and losers brackets meet at the end
+                        of the tournament.
+                      </FormHelperText>
+                    </FormControl>
+                  </Box>
+                )}
               </Box>
             )}
             <TeamSelectionStep

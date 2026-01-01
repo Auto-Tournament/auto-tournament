@@ -21,9 +21,80 @@ export async function advanceWinnerToNextMatch(
   winnerId: string
 ): Promise<void> {
   try {
-    const nextMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
-      currentMatch.next_match_id,
-    ]);
+    // Resolve the next match in the bracket. Prefer the explicit next_match_id
+    // when present, but gracefully fall back to inferring the destination from
+    // the winners‑bracket slug pattern for legacy brackets that were generated
+    // before we started populating next_match_id for double elimination.
+    let nextMatch: DbMatchRow | null = null;
+
+    if (currentMatch.next_match_id) {
+      nextMatch =
+        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+          currentMatch.next_match_id,
+        ])) ?? null;
+    } else {
+      const tournament = await db.queryOneAsync<DbTournamentRow>(
+        'SELECT * FROM tournament WHERE id = 1'
+      );
+
+      // Only infer progression for traditional bracket types.
+      if (
+        tournament &&
+        (tournament.type === 'single_elimination' || tournament.type === 'double_elimination')
+      ) {
+        // Winners bracket matches use slugs like "r1m1", "r2m3", etc. Losers
+        // bracket and grand final use "lb-..." / "gf" and are NOT handled here.
+        const wbSlugMatch = currentMatch.slug.match(/^r(\d+)m(\d+)$/);
+
+        if (wbSlugMatch) {
+          const wbRound = parseInt(wbSlugMatch[1], 10);
+          const wbMatchNum = parseInt(wbSlugMatch[2], 10);
+
+          const maxRoundRow = await db.queryOneAsync<{ max_round: number }>(
+            `SELECT MAX(round) as max_round 
+             FROM matches 
+             WHERE tournament_id = 1 
+               AND slug NOT LIKE 'lb-%'`,
+            []
+          );
+
+          if (maxRoundRow && typeof maxRoundRow.max_round === 'number') {
+            const maxRound = maxRoundRow.max_round;
+            if (wbRound < maxRound) {
+              const nextMatchNum = Math.ceil(wbMatchNum / 2);
+              const inferredSlug = `r${wbRound + 1}m${nextMatchNum}`;
+
+              const inferred = await db.queryOneAsync<DbMatchRow>(
+                'SELECT * FROM matches WHERE slug = ?',
+                [inferredSlug]
+              );
+
+              if (inferred) {
+                nextMatch = inferred;
+                // Self-heal the missing link so future calls can use next_match_id directly.
+                await db.updateAsync(
+                  'matches',
+                  { next_match_id: inferred.id },
+                  'id = ?',
+                  [currentMatch.id]
+                );
+                currentMatch.next_match_id = inferred.id;
+                log.debug('Backfilled next_match_id for winners bracket match', {
+                  slug: currentMatch.slug,
+                  inferredSlug,
+                  nextMatchId: inferred.id,
+                });
+              } else {
+                log.warn('Could not infer next winners-bracket match by slug', {
+                  slug: currentMatch.slug,
+                  inferredSlug,
+                });
+              }
+            }
+          }
+        }
+      }
+    }
 
     if (!nextMatch) {
       log.warn('Next match not found', { nextMatchId: currentMatch.next_match_id });
@@ -84,8 +155,43 @@ export async function advanceLoserToLosersBracket(
       return;
     }
 
-    const loserId =
-      currentMatch.team1_id === winnerId ? currentMatch.team2_id : currentMatch.team1_id;
+    // Always derive winner/loser from the latest persisted match row instead
+    // of trusting the winnerId argument directly. This makes losers‑bracket
+    // progression robust against any inconsistencies in upstream events or
+    // synthetic series_end payloads.
+    const freshMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+      currentMatch.id,
+    ]);
+
+    if (!freshMatch) {
+      log.warn('Cannot advance loser: match not found when refreshing from DB', {
+        matchId: currentMatch.id,
+      });
+      return;
+    }
+
+    const winnerTeamId = freshMatch.winner_id;
+    if (!winnerTeamId) {
+      log.warn('Cannot advance loser: winner_id is null on completed match', {
+        matchSlug: freshMatch.slug,
+      });
+      return;
+    }
+
+    let loserId: string | null = null;
+    if (freshMatch.team1_id === winnerTeamId) {
+      loserId = freshMatch.team2_id ?? null;
+    } else if (freshMatch.team2_id === winnerTeamId) {
+      loserId = freshMatch.team1_id ?? null;
+    } else {
+      log.warn('Cannot advance loser: winner_id does not match either team', {
+        matchSlug: freshMatch.slug,
+        winnerTeamId,
+        team1_id: freshMatch.team1_id,
+        team2_id: freshMatch.team2_id,
+      });
+      return;
+    }
 
     if (!loserId) {
       log.warn('Could not determine loser', { matchSlug: currentMatch.slug });
@@ -93,10 +199,23 @@ export async function advanceLoserToLosersBracket(
     }
 
     // Find the losers bracket destination
-    const lbMatch = await findLosersBracketMatch(currentMatch);
+    const lbMatch = await findLosersBracketMatch(freshMatch);
     if (!lbMatch) {
       return;
     }
+
+  // Defensive guard: avoid advancing the same loser twice into the same losers
+  // bracket match. This can happen if we receive both a plugin 'series_end'
+  // event and a synthetic series_end generated from map_end for the same
+  // winners‑bracket match.
+  if (lbMatch.team1_id === loserId || lbMatch.team2_id === loserId) {
+    log.warn('Loser already advanced to losers bracket match, skipping duplicate advance', {
+      lbSlug: lbMatch.slug,
+      winnerSlug: currentMatch.slug,
+      loserId,
+    });
+    return;
+  }
 
     // Assign loser to losers bracket
     if (!lbMatch.team1_id) {
@@ -257,12 +376,46 @@ async function findLosersBracketMatch(wbMatch: DbMatchRow): Promise<DbMatchRow |
   const wbRound = parseInt(wbSlugMatch[1], 10);
   const wbMatchNum = parseInt(wbSlugMatch[2], 10);
 
-  // Calculate losers bracket destination: Winners Round R → Losers Round (2R-1)
-  const lbRound = 2 * wbRound - 1;
-  const lbMatchNum = wbMatchNum;
+  // Derive how brackets-manager has laid out rounds across winners and losers
+  // groups. In our schema, "round" is a single counter shared by both groups,
+  // so losers bracket rounds often start at a higher numeric value (e.g. 4)
+  // even though conceptually it's "Losers Round 1".
+  const winnersRoundRow = await db.queryOneAsync<{ min_round: number }>(
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = 1 AND slug NOT LIKE 'lb-%'",
+    []
+  );
+  const losersRoundRow = await db.queryOneAsync<{ min_round: number }>(
+    "SELECT MIN(round) as min_round FROM matches WHERE tournament_id = 1 AND slug LIKE 'lb-%'",
+    []
+  );
+
+  if (!winnersRoundRow?.min_round || !losersRoundRow?.min_round) {
+    log.warn('Cannot derive losers bracket round mapping (missing winners/losers rounds)', {
+      wbSlug: wbMatch.slug,
+      winnersMinRound: winnersRoundRow?.min_round,
+      losersMinRound: losersRoundRow?.min_round,
+    });
+    return undefined;
+  }
+
+  const winnersBase = winnersRoundRow.min_round;
+  const losersBase = losersRoundRow.min_round;
+  const roundOffset = losersBase - winnersBase;
+
+  // Map Winners Round R → first Losers Round (losersBase) + (R - winnersBase).
+  // For an 8-team DE this yields:
+  //   R1 → lb-r4*, R2 → lb-r5*, R3 → lb-r6*, etc.
+  const lbRound = wbRound + roundOffset;
+
+  // Within that losers round, pair losers using the same ceil(N/2) pattern we
+  // use for winners progression: losers of r1m1/r1m2 → lb-r4m1,
+  // losers of r1m3/r1m4 → lb-r4m2, etc.
+  const lbMatchNum = Math.ceil(wbMatchNum / 2);
   const lbSlug = `lb-r${lbRound}m${lbMatchNum}`;
 
-  const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [lbSlug]);
+  const lbMatch = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+    lbSlug,
+  ]);
 
   if (!lbMatch) {
     log.warn('Losers bracket match not found', { lbSlug, wbSlug: wbMatch.slug });

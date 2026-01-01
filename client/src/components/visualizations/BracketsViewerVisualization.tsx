@@ -287,9 +287,12 @@ export default function BracketsViewerVisualization({
       // participants so the bracket visually shows who advanced.
       if (!team?.id && match.id != null) {
         const parents = parentsByChildId.get(match.id as Id);
-        if (parents && parents.length) {
-          const firstParent = parents[0];
-          const secondParent = parents[1];
+        // Only infer opponents when the viewer knows about *both* parent
+        // matches for this child. This prevents situations where only one
+        // winners‑bracket parent has finished and we accidentally duplicate
+        // the same team on both sides of the next‑round match.
+        if (parents && parents.length >= 2) {
+          const [firstParent, secondParent] = parents;
           const sourceParent = whichSide === 'team1' ? firstParent : secondParent;
           if (sourceParent?.winner) {
             team = sourceParent.winner as Match['team1'];

@@ -936,6 +936,8 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
       action: 'match_status',
       matchSlug: updatedMatch.slug,
       status: updatedMatch.status,
+      team1Score,
+      team2Score,
     });
   }
 

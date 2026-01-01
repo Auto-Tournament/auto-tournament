@@ -19,6 +19,12 @@ export interface ShuffleTournamentSettings {
   maxRounds: number; // Directly controls mp_maxrounds in the MatchZy config
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
   overtimeMode?: 'enabled' | 'disabled';
+  /**
+   * See docs/guides/shuffle-tournaments.md for full semantics.
+   * - undefined/null → MatchZy default (usually unlimited OT, draws allowed)
+   * - 0 with overtimeMode === 'disabled' → "no OT, no draws" (force winner by damage)
+   * - >0 with overtimeMode === 'enabled' → OT with damage tiebreak after N segments
+   */
   overtimeSegments?: number | null;
 }
 
@@ -101,7 +107,7 @@ export function ShuffleTournamentConfigStep({
       return;
     }
     const parsed = Number(raw);
-    if (!Number.isFinite(parsed) || parsed <= 0) {
+    if (!Number.isFinite(parsed) || parsed < 0) {
       onSettingsChange({
         ...settings,
         overtimeSegments: null,
@@ -262,28 +268,30 @@ export function ShuffleTournamentConfigStep({
                 </FormHelperText>
               </FormControl>
 
-              {settings.overtimeMode !== 'disabled' && (
-                <TextField
-                  label="Overtime segments (optional)"
-                  type="number"
-                  value={settings.overtimeSegments && settings.overtimeSegments > 0
+              <TextField
+                label="Overtime segments (optional)"
+                type="number"
+                value={
+                  typeof settings.overtimeSegments === 'number'
                     ? settings.overtimeSegments
-                    : ''}
-                  onChange={handleOvertimeSegmentsChange}
-                  disabled={!canEdit || saving}
-                  slotProps={{
-                    htmlInput: { min: 1, max: 10 },
-                  }}
-                  helperText={
-                    settings.overtimeSegments && settings.overtimeSegments > 0
-                      ? `Limit overtime to ${settings.overtimeSegments} segment${
+                    : ''
+                }
+                onChange={handleOvertimeSegmentsChange}
+                disabled={!canEdit || saving}
+                slotProps={{
+                  htmlInput: { min: 0, max: 10 },
+                }}
+                helperText={
+                  typeof settings.overtimeSegments === 'number'
+                    ? settings.overtimeMode === 'disabled' && settings.overtimeSegments === 0
+                      ? '0 with overtime disabled: no overtime is played and ties at max rounds are resolved by total team damage (no draws, if damage differs).'
+                      : `Limit overtime/policy to ${settings.overtimeSegments} segment${
                           settings.overtimeSegments === 1 ? '' : 's'
-                        }.`
-                      : 'Leave empty for MatchZy default (usually unlimited overtime). When segments are set and your MatchZy config enables performance tiebreaks, tied matches after OT can be decided by total team damage instead of ending as a draw.'
-                  }
-                  fullWidth
-                />
-              )}
+                        }. When > 0 and overtime is enabled, ties after OT can be decided by total team damage.`
+                    : 'Leave empty for MatchZy default. Combine with overtime disabled + 0 segments for "no OT, no draws", or with a positive value and overtime enabled to use damage tiebreak after OT.'
+                }
+                fullWidth
+              />
             </Box>
           </Tooltip>
         </Grid>
