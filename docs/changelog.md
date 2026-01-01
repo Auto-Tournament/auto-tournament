@@ -13,6 +13,13 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ---
 
+## [1.7.6] - 2026-01-01
+
+### Added
+- Release v1.7.6
+
+---
+
 ## [1.7.5] – 2025-12-30
 
 ### Tournament & Match Management
@@ -120,7 +127,8 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ---
 
-[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v1.7.5...HEAD
+[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v1.7.6...HEAD
+[1.7.6]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.7.6
 [1.7.5]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.7.5
 [1.2.0]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.2.0
 [1.1.1]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v1.1.1
