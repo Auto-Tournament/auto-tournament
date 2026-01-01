@@ -14,6 +14,7 @@ import { getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -34,6 +35,9 @@ export default function Matches() {
     nextAllocationInSeconds: null,
     gracePeriodSeconds: 300,
   });
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -273,6 +277,18 @@ export default function Matches() {
         setUpcomingMatches(upcoming);
         setLiveMatches(live);
         setMatchHistory(history);
+        // Clear any selections that no longer exist
+        setSelectedMatchSlugs((prev) => {
+          if (prev.size === 0) return prev;
+          const existingSlugs = new Set(matches.map((m) => m.slug));
+          const next = new Set<string>();
+          prev.forEach((slug) => {
+            if (existingSlugs.has(slug)) {
+              next.add(slug);
+            }
+          });
+          return next;
+        });
       }
     } catch (err) {
       setError('Failed to load matches');
@@ -317,6 +333,40 @@ export default function Matches() {
   // Get all matches for numbering context
   const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];
 
+  const toggleMatchSelected = (match: Match) => {
+    if (!isManualMatchFlag(match)) {
+      // For safety, only allow bulk deletion of manual matches.
+      return;
+    }
+    const slug = match.slug;
+    if (!slug) return;
+    setSelectedMatchSlugs((prev) => {
+      const next = new Set(prev);
+      if (next.has(slug)) {
+        next.delete(slug);
+      } else {
+        next.add(slug);
+      }
+      return next;
+    });
+  };
+
+  const handleBulkDeleteMatches = async () => {
+    if (selectedMatchSlugs.size === 0) return;
+    try {
+      const slugs = Array.from(selectedMatchSlugs);
+      const count = slugs.length;
+      await api.post('/api/matches/bulk-delete', { slugs });
+      showSuccess(`Deleted ${count} match${count === 1 ? '' : 'es'}`);
+      setSelectedMatchSlugs(() => new Set());
+      setSelectionMode(false);
+      await fetchMatches();
+    } catch (err) {
+      console.error('Failed to delete matches', err);
+      showError('Failed to delete one or more matches');
+    }
+  };
+
   if (loading) {
     return (
       <Box>
@@ -357,16 +407,97 @@ export default function Matches() {
       {/* Manual match creation + allocation countdown */}
       {hasMatches && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-          {allocationCountdown.nextAllocationInSeconds !== null &&
-            allocationCountdown.nextAllocationInSeconds > 0 && (
-              <Typography variant="body2" color="text.secondary">
-                Next servers allocated in{' '}
-                <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
-              </Typography>
+          <Box display="flex" alignItems="center" gap={2}>
+            {allocationCountdown.nextAllocationInSeconds !== null &&
+              allocationCountdown.nextAllocationInSeconds > 0 && (
+                <Typography variant="body2" color="text.secondary">
+                  Next servers allocated in{' '}
+                  <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+                </Typography>
+              )}
+          </Box>
+          <Box display="flex" alignItems="center" gap={1}>
+            <Button
+              variant={selectionMode ? 'contained' : 'outlined'}
+              color={selectionMode ? 'secondary' : 'inherit'}
+              size="small"
+              onClick={() => {
+                setSelectionMode((prev) => !prev);
+                if (selectionMode) {
+                  setSelectedMatchSlugs(() => new Set());
+                }
+              }}
+            >
+              {selectionMode ? 'Done Selecting' : 'Select'}
+            </Button>
+            {selectionMode && (
+              <Button
+                variant="outlined"
+                color="inherit"
+                size="small"
+                disabled={
+                  [...upcomingMatches, ...liveMatches, ...matchHistory].filter((m) =>
+                    isManualMatchFlag(m)
+                  ).length === 0
+                }
+                onClick={() => {
+                  const manualMatches = [
+                    ...upcomingMatches,
+                    ...liveMatches,
+                    ...matchHistory,
+                  ].filter((m) => isManualMatchFlag(m) && m.slug);
+                  const allVisibleSelected =
+                    manualMatches.length > 0 &&
+                    manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
+
+                  setSelectedMatchSlugs((prev) => {
+                    const next = new Set(prev);
+                    if (allVisibleSelected) {
+                      manualMatches.forEach((m) => {
+                        if (m.slug) next.delete(m.slug);
+                      });
+                    } else {
+                      manualMatches.forEach((m) => {
+                        if (m.slug) next.add(m.slug);
+                      });
+                    }
+                    return next;
+                  });
+                }}
+              >
+                {(() => {
+                  const manualMatches = [
+                    ...upcomingMatches,
+                    ...liveMatches,
+                    ...matchHistory,
+                  ].filter((m) => isManualMatchFlag(m) && m.slug);
+                  const allVisibleSelected =
+                    manualMatches.length > 0 &&
+                    manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
+                  return allVisibleSelected ? 'Unselect All' : 'Select All';
+                })()}
+              </Button>
             )}
-          <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
-            Create Match
-          </Button>
+            {selectionMode && (
+              <Button
+                variant="outlined"
+                color="error"
+                size="small"
+                disabled={selectedMatchSlugs.size === 0}
+                onClick={() => {
+                  if (selectedMatchSlugs.size === 0) return;
+                  setBulkDeleteConfirmOpen(true);
+                }}
+              >
+                Delete Selected
+              </Button>
+            )}
+            {!selectionMode && (
+              <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
+                Create Match
+              </Button>
+            )}
+          </Box>
         </Box>
       )}
 
@@ -430,7 +561,15 @@ export default function Matches() {
                           match={match}
                           matchNumber={matchNumber}
                           variant="live"
-                          onClick={() => setSelectedMatch(match)}
+                          selectable={selectionMode && isManualMatchFlag(match)}
+                          selected={selectedMatchSlugs.has(match.slug)}
+                          onClick={() => {
+                            if (selectionMode && isManualMatchFlag(match)) {
+                              toggleMatchSelected(match);
+                            } else {
+                              setSelectedMatch(match);
+                            }
+                          }}
                         />
                         {event && event.event && (
                           <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
@@ -470,7 +609,15 @@ export default function Matches() {
                         variant="default"
                         vetoCompleted={match.vetoCompleted}
                         tournamentStarted={tournamentStartedForCard}
-                        onClick={() => setSelectedMatch(match)}
+                        selectable={selectionMode && isManualMatchFlag(match)}
+                        selected={selectedMatchSlugs.has(match.slug)}
+                        onClick={() => {
+                          if (selectionMode && isManualMatchFlag(match)) {
+                            toggleMatchSelected(match);
+                          } else {
+                            setSelectedMatch(match);
+                          }
+                        }}
                       />
                     </Grid>
                   );
@@ -495,7 +642,15 @@ export default function Matches() {
                           match={match}
                           matchNumber={matchNumber}
                           variant="completed"
-                          onClick={() => setSelectedMatch(match)}
+                          selectable={selectionMode && isManualMatchFlag(match)}
+                          selected={selectedMatchSlugs.has(match.slug)}
+                          onClick={() => {
+                            if (selectionMode && isManualMatchFlag(match)) {
+                              toggleMatchSelected(match);
+                            } else {
+                              setSelectedMatch(match);
+                            }
+                          }}
                         />
                       </Box>
                     </Grid>
@@ -533,6 +688,21 @@ export default function Matches() {
 
           void fetchMatches();
         }}
+      />
+
+      <ConfirmDialog
+        open={selectionMode && bulkDeleteConfirmOpen}
+        title="Delete Manual Matches"
+        message={`Are you sure you want to delete ${selectedMatchSlugs.size} manual match${
+          selectedMatchSlugs.size === 1 ? '' : 'es'
+        }? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmColor="error"
+        onConfirm={async () => {
+          await handleBulkDeleteMatches();
+          setBulkDeleteConfirmOpen(false);
+        }}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
       />
     </Box>
   );

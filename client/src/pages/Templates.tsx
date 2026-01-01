@@ -37,6 +37,7 @@ import type { TournamentResponse } from '../types';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
 import { useSnackbar } from '../contexts/SnackbarContext';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -74,7 +75,12 @@ export default function Templates() {
 
   useEffect(() => {
     setHeaderActions(
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
+      <Button
+        variant="contained"
+        size="small"
+        startIcon={<AddIcon />}
+        onClick={() => navigate('/tournament')}
+      >
         Create Template from Tournament
       </Button>
     );
@@ -416,22 +422,20 @@ export default function Templates() {
         </Grid>
       )}
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-        <DialogTitle>Delete Template</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Are you sure you want to delete the template "{templateToDelete?.name}"? This action
-            cannot be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button onClick={handleDelete} color="error" variant="contained">
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ConfirmDialog
+        open={deleteDialogOpen}
+        title="Delete Template"
+        message={`Are you sure you want to delete the template "${templateToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmColor="error"
+        onConfirm={async () => {
+          await handleDelete();
+        }}
+        onCancel={() => {
+          setDeleteDialogOpen(false);
+          setTemplateToDelete(null);
+        }}
+      />
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={handleCloseEdit} maxWidth="md" fullWidth>

@@ -66,10 +66,15 @@ export default function ELOTemplates() {
   useEffect(() => {
     setHeaderActions(
       <Box display="flex" gap={1}>
-      <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenEditor()}>
-        Create Template
-      </Button>
-        <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+        <Button
+          variant="contained"
+          size="small"
+          startIcon={<AddIcon />}
+          onClick={() => handleOpenEditor()}
+        >
+          Create Template
+        </Button>
+        <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
           Import from JSON
         </Button>
       </Box>
@@ -96,6 +101,11 @@ export default function ELOTemplates() {
   };
 
   const handleDeleteClick = (template: EloCalculationTemplate) => {
+    // Protect the built-in default template from deletion
+    if (template.id === 'pure-win-loss') {
+      showError('The default "pure-win-loss" template cannot be deleted.');
+      return;
+    }
     setTemplateToDelete(template);
     setDeleteDialogOpen(true);
   };

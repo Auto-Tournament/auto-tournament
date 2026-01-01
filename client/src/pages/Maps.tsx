@@ -49,6 +49,7 @@ export default function Maps() {
         <Button
           data-testid="add-map-button"
           variant="contained"
+          size="small"
           startIcon={<AddIcon />}
           onClick={() => handleOpenModal()}
         >
@@ -58,6 +59,7 @@ export default function Maps() {
         <Button
           data-testid="create-map-pool-button"
           variant="contained"
+          size="small"
           startIcon={<AddIcon />}
           onClick={() => handleOpenMapPoolModal()}
         >
@@ -127,6 +129,11 @@ export default function Maps() {
   };
 
   const handleDeletePoolClick = (pool: MapPool) => {
+    // Prevent deletion of default map pools
+    if (pool.isDefault) {
+      showError('Default map pool cannot be deleted.');
+      return;
+    }
     setPoolToDelete(pool);
     setDeletePoolConfirmOpen(true);
     setPoolActionsModalOpen(false);

@@ -14,6 +14,7 @@ import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { getRoundLabel } from '../utils/matchUtils';
@@ -46,6 +47,9 @@ export default function Servers() {
       allocatable: boolean;
     }>;
   } | null>(null);
+  const [selectionMode, setSelectionMode] = useState(false);
+  const [selectedServerIds, setSelectedServerIds] = useState<Set<string>>(() => new Set());
+  const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
 
   // Set dynamic page title
   useEffect(() => {
@@ -232,34 +236,100 @@ export default function Servers() {
   // Set header actions
   useEffect(() => {
     if (servers.length > 0) {
+      const allSelected =
+        servers.length > 0 && servers.every((server) => selectedServerIds.has(server.id));
+
       setHeaderActions(
         <Box display="flex" gap={2}>
-          <Button
-            variant="outlined"
-            startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
-            onClick={() => {
-              void loadServers();
-              void loadAllocationStatus();
-            }}
-            disabled={refreshing}
-          >
-            {refreshing ? 'Checking...' : 'Refresh Status'}
-          </Button>
-          <Button
-            variant="outlined"
-            startIcon={<AddIcon />}
-            onClick={() => setBatchModalOpen(true)}
-          >
-            Batch Add
-          </Button>
-          <Button
-            data-testid="add-server-button"
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => handleOpenModal()}
-          >
-            Add Server
-          </Button>
+          {!selectionMode && (
+            <>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
+                onClick={() => {
+                  void loadServers();
+                  void loadAllocationStatus();
+                }}
+                disabled={refreshing}
+              >
+                {refreshing ? 'Checking...' : 'Refresh Status'}
+              </Button>
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<AddIcon />}
+                onClick={() => setBatchModalOpen(true)}
+              >
+                Batch Add
+              </Button>
+            </>
+          )}
+          {servers.length > 0 && (
+            <>
+              <Button
+                variant={selectionMode ? 'contained' : 'outlined'}
+                color={selectionMode ? 'secondary' : 'inherit'}
+                size="small"
+                onClick={() => {
+                  setSelectionMode((prev) => !prev);
+                  if (selectionMode) {
+                    setSelectedServerIds(() => new Set());
+                  }
+                }}
+              >
+                {selectionMode ? 'Done Selecting' : 'Select'}
+              </Button>
+              {selectionMode && (
+                <>
+                  <Button
+                    variant="outlined"
+                    color="inherit"
+                    size="small"
+                    disabled={servers.length === 0}
+                    onClick={() => {
+                      setSelectedServerIds((prev) => {
+                        const next = new Set(prev);
+                        if (allSelected) {
+                          next.clear();
+                        } else {
+                          servers.forEach((server) => {
+                            next.add(server.id);
+                          });
+                        }
+                        return next;
+                      });
+                    }}
+                  >
+                    {allSelected ? 'Unselect All' : 'Select All'}
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="error"
+                    size="small"
+                    disabled={selectedServerIds.size === 0}
+                    onClick={() => {
+                      if (selectedServerIds.size === 0) return;
+                      setBulkDeleteConfirmOpen(true);
+                    }}
+                  >
+                    Delete Selected
+                  </Button>
+                </>
+              )}
+            </>
+          )}
+          {!selectionMode && (
+            <Button
+              data-testid="add-server-button"
+              variant="contained"
+              size="small"
+              startIcon={<AddIcon />}
+              onClick={() => handleOpenModal()}
+            >
+              Add Server
+            </Button>
+          )}
         </Box>
       );
     } else {
@@ -269,7 +339,15 @@ export default function Servers() {
     return () => {
       setHeaderActions(null);
     };
-  }, [servers.length, refreshing, setHeaderActions, loadServers, loadAllocationStatus]);
+  }, [
+    servers.length,
+    refreshing,
+    setHeaderActions,
+    loadServers,
+    loadAllocationStatus,
+    selectionMode,
+    selectedServerIds,
+  ]);
 
   useEffect(() => {
     void loadServers();
@@ -317,6 +395,18 @@ export default function Servers() {
     } finally {
       setLoadingMatchServerId(null);
     }
+  };
+
+  const toggleServerSelected = (serverId: string) => {
+    setSelectedServerIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(serverId)) {
+        next.delete(serverId);
+      } else {
+        next.add(serverId);
+      }
+      return next;
+    });
   };
 
   return (
@@ -379,13 +469,25 @@ export default function Servers() {
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
                   sx={{
                     cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s',
+                    transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
+                    border: selectedServerIds.has(server.id) ? 2 : 0,
+                    borderRadius: 2,
+                    borderStyle: 'solid',
+                    borderColor: selectedServerIds.has(server.id)
+                      ? 'primary.main'
+                      : 'transparent',
                     '&:hover': {
                       transform: 'translateY(-4px)',
                       boxShadow: 6,
                     },
                   }}
-                  onClick={() => handleOpenModal(server)}
+                  onClick={() => {
+                    if (selectionMode) {
+                      toggleServerSelected(server.id);
+                    } else {
+                      handleOpenModal(server);
+                    }
+                  }}
                 >
                   <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
@@ -619,6 +721,37 @@ export default function Servers() {
           onClose={() => setSelectedMatch(null)}
         />
       )}
+
+      <ConfirmDialog
+        open={selectionMode && bulkDeleteConfirmOpen}
+        title="Delete Servers"
+        message={`Are you sure you want to delete ${selectedServerIds.size} server${
+          selectedServerIds.size === 1 ? '' : 's'
+        }? This action cannot be undone.`}
+        confirmLabel="Delete"
+        confirmColor="error"
+        onConfirm={async () => {
+          if (selectedServerIds.size === 0) {
+            setBulkDeleteConfirmOpen(false);
+            return;
+          }
+          try {
+            await api.post('/api/servers/bulk-delete', {
+              ids: Array.from(selectedServerIds),
+            });
+            setSelectedServerIds(() => new Set());
+            setSelectionMode(false);
+            await loadServers();
+            await loadAllocationStatus();
+          } catch (err) {
+            console.error('Failed to delete servers', err);
+            showError('Failed to delete one or more servers');
+          } finally {
+            setBulkDeleteConfirmOpen(false);
+          }
+        }}
+        onCancel={() => setBulkDeleteConfirmOpen(false)}
+      />
     </Box>
   );
 }
