@@ -19,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import { NOTIFICATION_SOUNDS } from '../../utils/soundNotification';
+import { useTranslation } from 'react-i18next';
 
 interface SoundSettingsModalProps {
   open: boolean;
@@ -39,13 +40,17 @@ export function SoundSettingsModal({
   onSoundChange,
   onPreviewSound,
 }: SoundSettingsModalProps) {
+  const { t } = useTranslation();
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={1}>
             <VolumeUpIcon color="primary" />
-            <Typography variant="h6">Sound Settings</Typography>
+            <Typography variant="h6">
+              {t('soundSettingsModal.title')}
+            </Typography>
           </Box>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
@@ -56,11 +61,13 @@ export function SoundSettingsModal({
         <Stack spacing={3} sx={{ pt: 1 }}>
           {/* Sound Selection */}
           <FormControl fullWidth>
-            <InputLabel id="sound-select-label">Notification Sound</InputLabel>
+            <InputLabel id="sound-select-label">
+              {t('soundSettingsModal.soundSelect.label')}
+            </InputLabel>
             <Select
               labelId="sound-select-label"
               value={soundFile}
-              label="Notification Sound"
+              label={t('soundSettingsModal.soundSelect.label')}
               onChange={onSoundChange}
             >
               {NOTIFICATION_SOUNDS.map((option) => (
@@ -74,7 +81,9 @@ export function SoundSettingsModal({
           {/* Volume Control */}
           <Box>
             <Typography variant="body2" gutterBottom>
-              Volume: {Math.round(volume * 100)}%
+              {t('soundSettingsModal.volume.label', {
+                percent: Math.round(volume * 100),
+              })}
             </Typography>
             <Slider
               value={volume}
@@ -99,11 +108,11 @@ export function SoundSettingsModal({
             onClick={onPreviewSound}
             fullWidth
           >
-            Test Sound
+            {t('soundSettingsModal.testButton')}
           </Button>
 
           <Typography variant="caption" color="text.secondary">
-            Sound notifications will play when your match is ready or when important events occur.
+            {t('soundSettingsModal.footer')}
           </Typography>
         </Stack>
       </DialogContent>

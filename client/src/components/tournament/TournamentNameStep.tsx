@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, TextField } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 
 interface TournamentNameStepProps {
   name: string;
@@ -14,16 +15,18 @@ export function TournamentNameStep({
   saving,
   onNameChange,
 }: TournamentNameStepProps) {
+  const { t } = useTranslation();
+
   return (
     <Box>
       <TextField
-        label="Tournament Name"
+        label={t('tournament.nameLabel', 'Tournament Name')}
         value={name}
         onChange={(e) => onNameChange(e.target.value)}
         disabled={!canEdit || saving}
         fullWidth
         required
-        placeholder="NTLAN 2025 Spring Tournament"
+        placeholder={t('tournament.namePlaceholder', 'NTLAN 2025 Spring Tournament')}
         slotProps={{
           htmlInput: { 'data-testid': 'tournament-name-input' },
         }}

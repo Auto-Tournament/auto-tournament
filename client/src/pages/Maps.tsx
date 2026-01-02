@@ -14,10 +14,12 @@ import { MapsTab } from '../components/maps/MapsTab';
 import { MapPoolsTab } from '../components/maps/MapPoolsTab';
 import type { Map, MapsResponse, MapPool, MapPoolsResponse } from '../types/api.types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 export default function Maps() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
+  const { t } = useTranslation();
   const [maps, setMaps] = useState<Map[]>([]);
   const [mapPools, setMapPools] = useState<MapPool[]>([]);
   const [loading, setLoading] = useState(true);
@@ -39,8 +41,8 @@ export default function Maps() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Maps';
-  }, []);
+    document.title = t('mapsPage.title');
+  }, [t]);
 
   // Set header actions
   useEffect(() => {
@@ -53,7 +55,7 @@ export default function Maps() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenModal()}
         >
-          Add Map
+          {t('mapsPage.headerActions.addMap')}
         </Button>
       ) : (
         <Button
@@ -63,7 +65,7 @@ export default function Maps() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenMapPoolModal()}
         >
-          Create Map Pool
+          {t('mapsPage.headerActions.createMapPool')}
         </Button>
       )
     );
@@ -79,7 +81,7 @@ export default function Maps() {
       const data = await api.get<MapsResponse>('/api/maps');
       setMaps(data.maps || []);
     } catch (err) {
-      const errorMessage = 'Failed to load maps';
+      const errorMessage = t('mapsPage.errors.loadMaps');
       showError(errorMessage);
       console.error(err);
     } finally {
@@ -131,7 +133,7 @@ export default function Maps() {
   const handleDeletePoolClick = (pool: MapPool) => {
     // Prevent deletion of default map pools
     if (pool.isDefault) {
-      showError('Default map pool cannot be deleted.');
+      showError(t('mapsPage.errors.defaultPoolCannotDelete'));
       return;
     }
     setPoolToDelete(pool);
@@ -163,7 +165,7 @@ export default function Maps() {
         setSelectedMapPool(updatedPool);
       }
     } catch (err) {
-      const errorMessage = 'Failed to set default map pool';
+      const errorMessage = t('mapsPage.errors.setDefaultPool');
       showError(errorMessage);
       console.error(err);
     }
@@ -183,7 +185,7 @@ export default function Maps() {
         setSelectedMapPool(updatedPool);
       }
     } catch (err) {
-      const errorMessage = 'Failed to toggle map pool status';
+      const errorMessage = t('mapsPage.errors.togglePool');
       showError(errorMessage);
       console.error(err);
     }
@@ -199,7 +201,7 @@ export default function Maps() {
       setDeletePoolConfirmOpen(false);
       setPoolToDelete(null);
     } catch (err) {
-      const errorMessage = 'Failed to delete map pool';
+      const errorMessage = t('mapsPage.errors.deletePool');
       showError(errorMessage);
       console.error(err);
     } finally {
@@ -257,12 +259,12 @@ export default function Maps() {
     setDeleting(true);
     try {
       await api.delete(`/api/maps/${mapToDelete.id}`);
-      showSuccess('Map deleted successfully');
+      showSuccess(t('mapsPage.success.mapDeleted'));
       await loadMaps();
       setDeleteConfirmOpen(false);
       setMapToDelete(null);
     } catch (err) {
-      const errorMessage = 'Failed to delete map';
+      const errorMessage = t('mapsPage.errors.deleteMap');
       showError(errorMessage);
       console.error(err);
     } finally {
@@ -283,13 +285,13 @@ export default function Maps() {
       <Tabs value={activeTab} onChange={(_, newValue) => setActiveTab(newValue)} sx={{ mb: 3 }}>
         <Tab
           data-testid="maps-tab"
-          label="Maps"
+          label={t('mapsPage.tabs.maps')}
           icon={<MapIcon />}
           iconPosition="start"
         />
         <Tab
           data-testid="map-pools-tab"
-          label="Map Pools"
+          label={t('mapsPage.tabs.mapPools')}
           icon={<CollectionsIcon />}
           iconPosition="start"
         />

@@ -38,6 +38,7 @@ import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../constants/tournament';
 import type { Map, MapPool } from '../types/api.types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 const TOURNAMENT_TYPE_LABELS: Record<string, string> = {
   single_elimination: 'Single Elimination',
@@ -72,6 +73,7 @@ export default function Templates() {
   const [mapPools, setMapPools] = useState<MapPool[]>([]);
   const [selectedMapPool, setSelectedMapPool] = useState<string>('');
   const [loadingMaps, setLoadingMaps] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setHeaderActions(
@@ -175,15 +177,15 @@ export default function Templates() {
         setTemplates(response.templates);
       }
     } catch (err) {
-      showError('Failed to load templates');
+      showError(t('templatesPage.errors.load'));
       console.error('Error loading templates:', err);
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
-    document.title = 'Templates';
+    document.title = t('layout.pageTitle.templates');
     loadTemplates();
     loadTournamentStatus();
     loadMaps();
@@ -195,12 +197,12 @@ export default function Templates() {
 
     try {
       await api.delete(`/api/templates/${templateToDelete.id}`);
-      showSuccess(`Template "${templateToDelete.name}" deleted successfully`);
+      showSuccess(t('templatesPage.delete.success', { name: templateToDelete.name }));
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
       loadTemplates();
     } catch (err) {
-      showError('Failed to delete template');
+      showError(t('templatesPage.delete.error'));
       console.error('Error deleting template:', err);
     }
   };
@@ -249,11 +251,11 @@ export default function Templates() {
         maps: editMaps,
         mapPoolId,
       });
-      showSuccess(`Template "${editName}" updated successfully`);
+      showSuccess(t('templatesPage.update.success', { name: editName }));
       handleCloseEdit();
       loadTemplates();
     } catch (err) {
-      showError('Failed to update template');
+      showError(t('templatesPage.update.error'));
       console.error('Error updating template:', err);
     }
   };
@@ -278,14 +280,10 @@ export default function Templates() {
       if (response.success && response.tournament) {
         const status = response.tournament.status;
         if (status === 'in_progress' || status === 'completed') {
-          showError(
-            'Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.'
-          );
+          showError(t('templatesPage.createFromTemplate.errors.inProgressOrCompleted'));
           return;
         } else if (status === 'setup' || status === 'ready') {
-          showError(
-            'A tournament already exists. Please delete or reset the current tournament before creating a new one from a template.'
-          );
+          showError(t('templatesPage.createFromTemplate.errors.alreadyExists'));
           return;
         }
       }
@@ -303,7 +301,7 @@ export default function Templates() {
   useEffect(() => {
     setHeaderActions(
       <Button variant="contained" startIcon={<AddIcon />} onClick={() => navigate('/tournament')}>
-        Create Template from Tournament
+        {t('templatesPage.header.createFromTournament')}
       </Button>
     );
 
@@ -328,7 +326,7 @@ export default function Templates() {
         <Card>
           <CardContent>
             <Typography variant="body1" color="text.secondary" align="center" py={4}>
-              No templates yet. Create your first template from the Tournament page.
+              {t('templatesPage.empty')}
             </Typography>
           </CardContent>
         </Card>
@@ -424,9 +422,8 @@ export default function Templates() {
 
       <ConfirmDialog
         open={deleteDialogOpen}
-        title="Delete Template"
-        message={`Are you sure you want to delete the template "${templateToDelete?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('templatesPage.delete.title')}
+        message={t('templatesPage.delete.message', { name: templateToDelete?.name ?? '' })}
         confirmColor="error"
         onConfirm={async () => {
           await handleDelete();
@@ -439,19 +436,19 @@ export default function Templates() {
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onClose={handleCloseEdit} maxWidth="md" fullWidth>
-        <DialogTitle>Edit Template</DialogTitle>
+        <DialogTitle>{t('templatesPage.edit.title')}</DialogTitle>
         <DialogContent>
           <Stack spacing={3} sx={{ mt: 1 }}>
             <TextField
               fullWidth
-              label="Template Name"
+              label={t('templatesPage.edit.nameLabel')}
               value={editName}
               onChange={(e) => setEditName(e.target.value)}
               required
             />
             <TextField
               fullWidth
-              label="Description (optional)"
+              label={t('templatesPage.edit.descriptionLabel')}
               value={editDescription}
               onChange={(e) => setEditDescription(e.target.value)}
               multiline
@@ -460,10 +457,10 @@ export default function Templates() {
 
             <Box display="flex" gap={2}>
               <FormControl fullWidth>
-                <InputLabel>Tournament Type</InputLabel>
+                <InputLabel>{t('templatesPage.edit.typeLabel')}</InputLabel>
                 <Select
                   value={editType}
-                  label="Tournament Type"
+                  label={t('templatesPage.edit.typeLabel')}
                   onChange={(e) => setEditType(e.target.value)}
                 >
                   {TOURNAMENT_TYPES.map((option) => (
@@ -475,10 +472,10 @@ export default function Templates() {
               </FormControl>
 
               <FormControl fullWidth>
-                <InputLabel>Match Format</InputLabel>
+                <InputLabel>{t('templatesPage.edit.formatLabel')}</InputLabel>
                 <Select
                   value={editFormat}
-                  label="Match Format"
+                  label={t('templatesPage.edit.formatLabel')}
                   onChange={(e) => {
                     setEditFormat(e.target.value);
                     // Reset maps if switching to/from veto format
@@ -503,13 +500,13 @@ export default function Templates() {
 
             <Box>
               <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                Map Pool
+                {t('templatesPage.edit.mapPool.title')}
               </Typography>
               <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel>Choose a map pool</InputLabel>
+                <InputLabel>{t('templatesPage.edit.mapPool.selectLabel')}</InputLabel>
                 <Select
                   value={selectedMapPool || ''}
-                  label="Choose a map pool"
+                  label={t('templatesPage.edit.mapPool.selectLabel')}
                   onChange={(e) => handleMapPoolChange(e.target.value)}
                   displayEmpty
                 >
@@ -520,7 +517,7 @@ export default function Templates() {
                         {pool.name}
                       </MenuItem>
                     ))}
-                  <MenuItem value="custom">Custom</MenuItem>
+                  <MenuItem value="custom">{t('templatesPage.edit.mapPool.customOption')}</MenuItem>
                 </Select>
               </FormControl>
 
@@ -528,7 +525,9 @@ export default function Templates() {
               {selectedMapPool !== 'custom' && editMaps.length > 0 && (
                 <Box sx={{ mb: 2 }}>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-                    Selected Maps ({editMaps.length}):
+                    {t('templatesPage.edit.mapPool.selectedLabel', {
+                      count: editMaps.length,
+                    })}
                   </Typography>
                   <Box display="flex" flexWrap="wrap" gap={1}>
                     {editMaps.map((mapId) => (
@@ -546,8 +545,9 @@ export default function Templates() {
 
               {isVetoFormat && editMaps.length !== 7 && (
                 <Alert severity="warning" sx={{ mb: 2 }}>
-                  Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected:{' '}
-                  {editMaps.length}
+                  {t('templatesPage.edit.mapPool.vetoWarning', {
+                    count: editMaps.length,
+                  })}
                 </Alert>
               )}
 
@@ -603,7 +603,7 @@ export default function Templates() {
               (!isVetoFormat && editMaps.length === 0)
             }
           >
-            Save
+            {t('templatesPage.edit.save')}
           </Button>
         </DialogActions>
       </Dialog>

@@ -18,6 +18,7 @@ import StarBorderIcon from '@mui/icons-material/StarBorder';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import type { MapPool, Map } from '../../types/api.types';
+import { useTranslation } from 'react-i18next';
 
 interface MapPoolActionsModalProps {
   open: boolean;
@@ -42,6 +43,8 @@ export default function MapPoolActionsModal({
 }: MapPoolActionsModalProps) {
   if (!mapPool) return null;
 
+  const { t } = useTranslation();
+
   const getMapDisplayName = (mapId: string): string => {
     const map = maps.find((m) => m.id === mapId);
     return map ? map.displayName : mapId;
@@ -53,7 +56,13 @@ export default function MapPoolActionsModal({
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={1}>
             <Typography variant="h6">{mapPool.name}</Typography>
-            {mapPool.isDefault && <Chip label="Default" size="small" color="primary" />}
+            {mapPool.isDefault && (
+              <Chip
+                label={t('mapPoolActionsModal.defaultChip')}
+                size="small"
+                color="primary"
+              />
+            )}
           </Box>
           <IconButton size="small" onClick={onClose}>
             <CloseIcon />
@@ -64,12 +73,22 @@ export default function MapPoolActionsModal({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Status
+              {t('mapPoolActionsModal.status.label')}
             </Typography>
             <Box display="flex" gap={1} mb={2}>
-              {mapPool.isDefault && <Chip label="Default" size="small" color="primary" />}
+              {mapPool.isDefault && (
+                <Chip
+                  label={t('mapPoolActionsModal.defaultChip')}
+                  size="small"
+                  color="primary"
+                />
+              )}
               <Chip
-                label={mapPool.enabled ? 'Enabled' : 'Disabled'}
+                label={
+                  mapPool.enabled
+                    ? t('mapPoolActionsModal.status.enabled')
+                    : t('mapPoolActionsModal.status.disabled')
+                }
                 size="small"
                 color={mapPool.enabled ? 'success' : 'default'}
                 variant={mapPool.enabled ? 'filled' : 'outlined'}
@@ -78,7 +97,7 @@ export default function MapPoolActionsModal({
           </Box>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Maps ({mapPool.mapIds.length})
+              {t('mapPoolActionsModal.maps.label', { count: mapPool.mapIds.length })}
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={0.5}>
               {mapPool.mapIds.map((mapId) => (
@@ -96,7 +115,7 @@ export default function MapPoolActionsModal({
       <Divider />
       <DialogActions sx={{ px: 3, py: 2 }}>
         <Button onClick={onEdit} variant="contained" startIcon={<EditIcon />}>
-          Edit
+          {t('mapPoolActionsModal.actions.edit')}
         </Button>
         {onToggleEnabled && (
           <Button
@@ -105,17 +124,19 @@ export default function MapPoolActionsModal({
             color={mapPool.enabled ? 'warning' : 'success'}
             startIcon={mapPool.enabled ? <CancelIcon /> : <CheckCircleIcon />}
           >
-            {mapPool.enabled ? 'Disable' : 'Enable'}
+            {mapPool.enabled
+              ? t('mapPoolActionsModal.actions.disable')
+              : t('mapPoolActionsModal.actions.enable')}
           </Button>
         )}
         {!mapPool.isDefault && onSetDefault && (
           <Button onClick={onSetDefault} variant="outlined" startIcon={<StarBorderIcon />}>
-            Set as Default
+            {t('mapPoolActionsModal.actions.setDefault')}
           </Button>
         )}
         {!mapPool.isDefault && (
           <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
-            Delete
+            {t('common.delete')}
           </Button>
         )}
       </DialogActions>

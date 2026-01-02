@@ -33,6 +33,7 @@ import { useBracket } from '../hooks/useBracket';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
+import { useTranslation } from 'react-i18next';
 
 // Interfaces are now imported from useBracket hook
 
@@ -85,6 +86,7 @@ export default function Bracket() {
     requiredServerCount: 0,
     servers: [],
   });
+  const { t } = useTranslation();
 
   // Derive the current match from matches array (keeps status/score in sync with
   // live websocket updates), and optionally merge in richer fields (e.g.
@@ -229,8 +231,8 @@ export default function Bracket() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Bracket';
-  }, []);
+    document.title = t('layout.pageTitle.bracket');
+  }, [t]);
 
   // For shuffle tournaments, we always render the list view (no visual bracket).
   const effectiveViewMode: 'visual' | 'list' = tournament?.type === 'shuffle' ? 'list' : viewMode;
@@ -327,9 +329,9 @@ export default function Bracket() {
       <Box>
         <EmptyState
           icon={AccountTreeOutlinedIcon}
-          title="No bracket to display"
-          description="Create a tournament and generate the bracket to get started"
-          actionLabel="Create Tournament"
+          title={t('bracket.empty.noBracketTitle')}
+          description={t('bracket.empty.noBracketDescription')}
+          actionLabel={t('tournament.common.createTournament')}
           actionIcon={AddIcon}
           onAction={() => navigate('/tournament')}
         />

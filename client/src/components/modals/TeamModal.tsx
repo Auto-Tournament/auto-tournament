@@ -27,6 +27,7 @@ import ConfirmDialog from './ConfirmDialog';
 import PlayerSelectionModal from './PlayerSelectionModal';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { Team, Player } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface TeamModalProps {
   open: boolean;
@@ -78,6 +79,7 @@ const generateTeamTag = (name: string): string => {
 };
 
 export default function TeamModal({ open, team, onClose, onSave }: TeamModalProps) {
+  const { t } = useTranslation();
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [id, setId] = useState('');
   const [name, setName] = useState('');
@@ -131,7 +133,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   const handleResolveSteam = async () => {
     if (!newPlayerSteamId.trim()) {
-      setError('Please enter a Steam ID, vanity URL, or profile URL');
+      setError(t('teamModal.errors.steamLookupEmpty'));
       return;
     }
 
@@ -156,9 +158,9 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       const error = err as Error;
       // If Steam API not available or resolution failed, allow manual entry
       if (error.message?.includes('Steam API is not configured')) {
-        setError('Steam API not configured - enter Steam ID64 manually');
+        setError(t('teamModal.errors.steamApiNotConfigured'));
       } else {
-        setError('Could not resolve Steam ID - please enter Steam ID64 manually');
+        setError(t('teamModal.errors.steamResolveFailed'));
       }
     } finally {
       setResolving(false);
@@ -167,7 +169,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   const handleAddPlayer = () => {
     if (!newPlayerSteamId.trim() || !newPlayerName.trim()) {
-      const errorMsg = 'Both Steam ID and player name are required';
+      const errorMsg = t('teamModal.errors.steamAndNameRequired');
       setError(errorMsg);
       showWarning(errorMsg);
       return;
@@ -177,7 +179,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
     // Check for duplicates (case-insensitive comparison)
     if (players.some((p) => p.steamId.toLowerCase() === trimmedSteamId.toLowerCase())) {
-      const errorMsg = 'This Steam ID is already in the team';
+      const errorMsg = t('teamModal.errors.steamDuplicate');
       setError(errorMsg);
       showWarning(errorMsg);
       return;
@@ -196,7 +198,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setNewPlayerAvatar(undefined);
     setNewPlayerElo('');
     setError('');
-    showSuccess('Player added to team');
+    showSuccess(t('teamModal.success.playerAdded'));
   };
 
   const handleRemovePlayer = (steamId: string) => {
@@ -245,12 +247,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Team name is required');
+      setError(t('teamModal.errors.teamNameRequired'));
       return;
     }
 
     if (players.length === 0) {
-      setError('At least one player is required');
+      setError(t('teamModal.errors.playersRequired'));
       return;
     }
 
@@ -274,7 +276,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
           discordRoleId: undefined, // Discord notifications not yet implemented
           players: payload.players,
         });
-        showSuccess('Team updated successfully');
+        showSuccess(t('teamModal.success.teamUpdated'));
       } else {
         const response = await api.post<{ success: boolean; team: Team }>(
           '/api/teams?upsert=true',
@@ -283,7 +285,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         if (response.success && response.team) {
           newTeamId = response.team.id;
         }
-        showSuccess('Team created successfully');
+        showSuccess(t('teamModal.success.teamCreated'));
       }
 
       onSave(newTeamId);
@@ -291,7 +293,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       resetForm();
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to save team';
+      const errorMessage = error.message || t('teamModal.errors.saveFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -310,12 +312,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
     setSaving(true);
     try {
       await api.delete(`/api/teams/${team.id}`);
-      showSuccess('Team deleted successfully');
+      showSuccess(t('teamModal.success.teamDeleted'));
       onSave();
       resetForm();
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to delete team';
+      const errorMessage = error.message || t('teamModal.errors.deleteFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -352,7 +354,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
           }}
         >
           <Typography variant="h6" fontWeight={600}>
-            {isEditing ? 'Edit Team' : 'Create New Team'}
+            {isEditing ? t('teamModal.titleEdit') : t('teamModal.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small" aria-label="close">
             <CloseIcon fontSize="small" />
@@ -361,24 +363,24 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
-              label="Team Name"
+              label={t('teamModal.teamNameLabel')}
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Astralis"
+              placeholder={t('teamModal.teamNamePlaceholder')}
               required
               fullWidth
               slotProps={{
                 htmlInput: { 'data-testid': 'team-name-input' },
               }}
-              helperText="Team name can include any language or special characters"
+              helperText={t('teamModal.teamNameHelper')}
             />
 
             <TextField
-              label="Team Tag"
+              label={t('teamModal.teamTagLabel')}
               value={tag}
               onChange={(e) => setTag(e.target.value.toUpperCase())}
-              placeholder="AST"
-              helperText="Auto-generated from team name (max 4 characters)"
+              placeholder={t('teamModal.teamTagPlaceholder')}
+              helperText={t('teamModal.teamTagHelper')}
               fullWidth
               slotProps={{
                 htmlInput: { maxLength: 4, 'data-testid': 'team-tag-input' },
@@ -389,7 +391,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
 
             <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
               <Typography data-testid="team-players-count" variant="subtitle1" fontWeight={600}>
-                Players ({players.length})
+                {t('teamModal.playersHeader', { count: players.length })}
               </Typography>
               <Button
                 variant="outlined"
@@ -398,7 +400,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                 onClick={() => setPlayerSelectionModalOpen(true)}
                 data-testid="select-players-button"
               >
-                Select Players
+                {t('teamModal.selectPlayers')}
               </Button>
             </Box>
 
@@ -445,19 +447,21 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                 ))}
               </List>
             ) : (
-              <Alert data-testid="team-no-players-alert" severity="info">No players added yet. Add at least one player.</Alert>
+              <Alert data-testid="team-no-players-alert" severity="info">
+                {t('teamModal.noPlayersInfo')}
+              </Alert>
             )}
 
             <Divider sx={{ my: 2 }} />
 
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Add players by pasting Steam URL or selecting from existing players
+              {t('teamModal.addPlayersHelper')}
             </Typography>
 
             <Box display="flex" flexDirection="column" gap={1}>
               <Box display="flex" gap={1}>
                 <TextField
-                  label="Steam ID / Vanity URL"
+                  label={t('teamModal.steamInputLabel')}
                   value={newPlayerSteamId}
                   onChange={(e) => setNewPlayerSteamId(e.target.value)}
                   onKeyDown={(e) => {
@@ -465,7 +469,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                       handleResolveSteam();
                     }
                   }}
-                  placeholder="gaben or steamcommunity.com/id/gaben"
+                  placeholder={t('teamModal.steamInputPlaceholder')}
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 2 }}
@@ -479,15 +483,15 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   disabled={resolving || !newPlayerSteamId.trim()}
                   size="small"
                 >
-                  {resolving ? 'Resolving...' : <SearchIcon fontSize="small" />}
+                  {resolving ? t('teamModal.resolving') : <SearchIcon fontSize="small" />}
                 </Button>
               </Box>
               <Box display="flex" gap={1} alignItems="center">
                 <TextField
-                  label="Player Name"
+                  label={t('teamModal.playerNameLabel')}
                   value={newPlayerName}
                   onChange={(e) => setNewPlayerName(e.target.value)}
-                  placeholder="s1mple"
+                  placeholder={t('teamModal.playerNamePlaceholder')}
                   size="small"
                   disabled={resolving}
                   sx={{ flex: 1 }}
@@ -496,17 +500,17 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   }}
                 />
                 <TextField
-                  label="ELO (optional)"
+                  label={t('teamModal.eloLabel')}
                   type="number"
                   value={newPlayerElo}
                   onChange={(e) => {
                     const value = e.target.value;
                     setNewPlayerElo(value === '' ? '' : Number(value));
                   }}
-                  placeholder="1500"
+                  placeholder={t('teamModal.eloPlaceholder')}
                   size="small"
                   disabled={resolving}
-                  helperText="Default: 1500"
+                  helperText={t('teamModal.eloHelper')}
                   sx={{ flex: 1, maxWidth: 150 }}
                   slotProps={{
                     htmlInput: { min: 0, max: 10000, 'data-testid': 'team-player-elo-input' },
@@ -549,17 +553,19 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             disabled={saving}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
-            {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Create Team'}
+            {saving
+              ? t('teamModal.buttons.saving')
+              : isEditing
+              ? t('teamModal.buttons.saveChanges')
+              : t('teamModal.buttons.createTeam')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="Delete Team"
-        message={`Are you sure you want to delete "${team?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title={t('teamModal.confirmDelete.title')}
+        message={t('teamModal.confirmDelete.message', { name: team?.name })}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDeleteOpen(false)}
         confirmColor="error"

@@ -26,6 +26,7 @@ import {
 } from '@mui/icons-material';
 import Link from '@mui/material/Link';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useTranslation } from 'react-i18next';
 
 interface Player {
   name: string;
@@ -47,6 +48,7 @@ interface TeamImportModalProps {
 
 export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose, onImport }) => {
   const { showError, showWarning } = useSnackbar();
+  const { t } = useTranslation();
   const [jsonInput, setJsonInput] = useState('');
   const [parsedTeams, setParsedTeams] = useState<ImportTeam[] | null>(null);
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -107,12 +109,12 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       const parsed = JSON.parse(jsonInput);
 
       if (!Array.isArray(parsed)) {
-        setValidationError('JSON must be an array of teams');
+        setValidationError(t('teamImportModal.errors.mustBeArray'));
         return;
       }
 
       if (parsed.length === 0) {
-        setValidationError('Array cannot be empty');
+        setValidationError(t('teamImportModal.errors.emptyArray'));
         return;
       }
 
@@ -129,8 +131,8 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
     } catch (err) {
       setValidationError(
         err instanceof Error
-          ? `JSON Parse Error: ${err.message}`
-          : 'Invalid JSON format. Please check your syntax.'
+          ? t('teamImportModal.errors.parseWithMessage', { message: err.message })
+          : t('teamImportModal.errors.parseGeneric')
       );
     }
   };
@@ -143,7 +145,9 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       await onImport(parsedTeams);
       handleClose();
     } catch (err) {
-      showError(err instanceof Error ? err.message : 'Failed to import teams');
+      showError(
+        err instanceof Error ? err.message : t('teamImportModal.errors.importFailed')
+      );
     } finally {
       setImporting(false);
     }
@@ -164,7 +168,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={600}>
-            Import Teams from JSON
+            {t('teamImportModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
             <CloseIcon />
@@ -177,11 +181,10 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
           {/* Instructions */}
           <Alert severity="info" icon={<InfoIcon />}>
             <Typography variant="body2" gutterBottom>
-              <strong>Paste JSON with team data below.</strong>
+              <strong>{t('teamImportModal.info.title')}</strong>
             </Typography>
             <Typography variant="caption" component="div">
-              Expected format: Array of teams with name, tag (optional), and players (name +
-              steamId).
+              {t('teamImportModal.info.format')}
             </Typography>
             <Typography variant="caption" component="div" sx={{ mt: 1 }}>
               <Link
@@ -196,7 +199,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                   '&:hover': { textDecoration: 'underline' },
                 }}
               >
-                View documentation with examples
+                {t('teamImportModal.info.link')}
                 <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
               </Link>
             </Typography>
@@ -204,7 +207,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
 
           {/* JSON Input */}
           <TextField
-            label="JSON Data"
+            label={t('teamImportModal.jsonLabel')}
             multiline
             rows={12}
             value={jsonInput}
@@ -227,14 +230,15 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             <Box>
               <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  <strong>✓ Valid JSON!</strong> Found {parsedTeams.length} team
-                  {parsedTeams.length !== 1 ? 's' : ''} with{' '}
-                  {parsedTeams.reduce((sum, t) => sum + t.players.length, 0)} total players.
+                  {t('teamImportModal.preview.summary', {
+                    teamCount: parsedTeams.length,
+                    playerCount: parsedTeams.reduce((sum, t) => sum + t.players.length, 0),
+                  })}
                 </Typography>
               </Alert>
 
               <Typography variant="subtitle2" fontWeight={600} mb={1}>
-                Preview:
+                {t('teamImportModal.preview.title')}
               </Typography>
 
               <Stack spacing={1}>
@@ -257,7 +261,9 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
                         </Typography>
                         {team.tag && <Chip label={team.tag} size="small" />}
                         <Chip
-                          label={`${team.players.length} players`}
+                          label={t('teamImportModal.preview.playersChip', {
+                            count: team.players.length,
+                          })}
                           size="small"
                           variant="outlined"
                         />
@@ -312,7 +318,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
           <Button
             onClick={() => {
               if (!jsonInput.trim()) {
-                showWarning('Please enter JSON data');
+                showWarning(t('teamImportModal.errors.noJson'));
                 return;
               }
               handlePreview();
@@ -330,7 +336,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
               }),
             }}
           >
-            Preview
+            {t('teamImportModal.actions.preview')}
           </Button>
         ) : (
           <Button
@@ -339,7 +345,9 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             disabled={importing}
             sx={{ ml: 'auto' }}
           >
-            {importing ? 'Importing...' : `Import ${parsedTeams.length} Teams`}
+            {importing
+              ? t('teamImportModal.actions.importing')
+              : t('teamImportModal.actions.import', { count: parsedTeams.length })}
           </Button>
         )}
       </DialogActions>

@@ -1233,20 +1233,19 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
       {match && (
         <ConfirmDialog
           open={confirmDeleteOpen}
-          title="Delete Manual Match"
+          title={t('matchDetailsModal.delete.dialogTitle')}
           message={
             <Box>
               <Typography variant="body2" fontWeight={600} gutterBottom>
-                Are you sure you want to delete this manual match?
+                {t('matchDetailsModal.delete.confirmTitle')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                This action cannot be undone. It will remove the match <strong>{match.slug}</strong>{' '}
-                and its configuration, but will not affect any tournament brackets.
+                {t('matchDetailsModal.delete.confirmBody', { slug: match.slug })}
               </Typography>
             </Box>
           }
-          confirmLabel="Delete Match"
-          cancelLabel="Cancel"
+          confirmLabel={t('matchDetailsModal.delete.button')}
+          cancelLabel={t('common.cancel')}
           onConfirm={handleDelete}
           onCancel={() => setConfirmDeleteOpen(false)}
           confirmColor="error"

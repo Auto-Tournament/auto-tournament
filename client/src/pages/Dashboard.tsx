@@ -4,12 +4,14 @@ import { alpha } from '@mui/material/styles';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';
 import { useOnboardingStatus } from '../hooks/useOnboardingStatus';
 import { DashboardStats } from '../components/dashboard/DashboardStats';
+import { useTranslation } from 'react-i18next';
 
 export default function Dashboard() {
+  const { t } = useTranslation();
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Dashboard';
-  }, []);
+    document.title = t('dashboard.title');
+  }, [t]);
 
   const {
     tournamentStatus,
@@ -80,7 +82,7 @@ export default function Dashboard() {
               maxWidth: { sm: '100%', md: '1700px' } 
             }}
           >
-            Tournament dashboard will appear here once the tournament is started.
+            {t('dashboard.notReady')}
           </Alert>
         )}
       </Stack>

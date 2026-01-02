@@ -31,6 +31,7 @@ import {
 } from './ShuffleTournamentConfigStep';
 import { TournamentFormActions } from './TournamentFormActions';
 import { useTournamentFormData } from './useTournamentFormData';
+import { useTranslation } from 'react-i18next';
 import SaveMapPoolModal from '../modals/SaveMapPoolModal';
 import TeamModal from '../modals/TeamModal';
 import { TeamImportModal } from '../modals/TeamImportModal';
@@ -78,7 +79,7 @@ interface TournamentFormStepsProps {
   onBackToWelcome?: () => void;
 }
 
-const STEPS = ['Name', 'Type', 'Format', 'Maps', 'Teams', 'Review'];
+const STEPS = ['name', 'type', 'format', 'maps', 'teams', 'review'] as const;
 const STEP_STORAGE_KEY = 'tournament_form_step';
 
 export function TournamentFormSteps({
@@ -116,6 +117,7 @@ export function TournamentFormSteps({
   onRefreshTeams,
   onBackToWelcome,
 }: TournamentFormStepsProps) {
+  const { t } = useTranslation();
   // Load saved step from sessionStorage on mount
   const [activeStep, setActiveStep] = useState(() => {
     try {
@@ -633,19 +635,19 @@ export function TournamentFormSteps({
         return (
           <Stack spacing={2}>
             <Alert severity="info">
-              Review your tournament settings and click "Create Tournament" when ready.
+              {t('tournament.review.summary.info')}
             </Alert>
             <Box>
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Tournament Name
+                {t('tournament.review.summary.nameLabel')}
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={2}>
-                {name || 'Not set'}
+                {name || t('tournament.review.summary.notSet')}
               </Typography>
             </Box>
             <Box>
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Tournament Type
+                {t('tournament.review.summary.typeLabel')}
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={2}>
                 {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
@@ -653,7 +655,7 @@ export function TournamentFormSteps({
             </Box>
             <Box>
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Match Format
+                {t('tournament.review.summary.formatLabel')}
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={2}>
                 {format.toUpperCase()}
@@ -690,13 +692,12 @@ export function TournamentFormSteps({
                   Estimated Volume
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Approximately <strong>{volumeReview.totalMatches}</strong> match
-                  {volumeReview.totalMatches === 1 ? '' : 'es'} over{' '}
-                  <strong>{volumeReview.totalRounds}</strong> round
-                  {volumeReview.totalRounds === 1 ? '' : 's'} (
-                  <strong>best of {volumeReview.mapsPerMatch}</strong>, up to{' '}
-                  <strong>{volumeReview.totalMaps}</strong> map
-                  {volumeReview.totalMaps === 1 ? '' : 's'} total).
+                  {t('tournament.review.summary.estimatedVolume', {
+                    matches: volumeReview.totalMatches,
+                    rounds: volumeReview.totalRounds,
+                    mapsPerMatch: volumeReview.mapsPerMatch,
+                    totalMaps: volumeReview.totalMaps,
+                  })}
                 </Typography>
               </Box>
             )}
@@ -775,8 +776,8 @@ export function TournamentFormSteps({
     <Card>
       <CardContent>
         <Stepper activeStep={activeStep} sx={{ mb: 4 }}>
-          {STEPS.map((label, index) => (
-            <Step key={label} completed={index < activeStep}>
+          {STEPS.map((stepKey, index) => (
+            <Step key={stepKey} completed={index < activeStep}>
               <StepLabel
                 onClick={() => {
                   if (index <= activeStep || canProceed()) {
@@ -788,7 +789,7 @@ export function TournamentFormSteps({
                   cursor: index <= activeStep || canProceed() ? 'pointer' : 'default',
                 }}
               >
-                {label}
+                {t(`tournament.formSteps.steps.${stepKey}`)}
               </StepLabel>
             </Step>
           ))}
@@ -805,7 +806,9 @@ export function TournamentFormSteps({
             startIcon={<ArrowBack />}
             data-testid="tournament-back-button"
           >
-            {activeStep === 0 && onBackToWelcome ? 'Back to Welcome' : 'Back'}
+            {activeStep === 0 && onBackToWelcome
+              ? t('tournament.formSteps.backToWelcome')
+              : t('tournament.formSteps.back')}
           </Button>
 
           {activeStep < STEPS.length - 1 ? (
@@ -825,7 +828,7 @@ export function TournamentFormSteps({
                 }),
               }}
             >
-              Next
+              {t('tournament.formSteps.next')}
             </Button>
           ) : (
             <TournamentFormActions

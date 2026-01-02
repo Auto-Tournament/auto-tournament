@@ -9,6 +9,7 @@ import {
   Box,
 } from '@mui/material';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { useTranslation } from 'react-i18next';
 
 interface ConfirmDialogProps {
   open: boolean;
@@ -19,18 +20,24 @@ interface ConfirmDialogProps {
   onConfirm: () => void;
   onCancel: () => void;
   confirmColor?: 'error' | 'warning' | 'primary' | 'secondary' | 'success';
+  loading?: boolean;
 }
 
 const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   open,
   title,
   message,
-  confirmLabel = 'Delete',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   confirmColor = 'error',
+  loading = false,
 }) => {
+  const { t } = useTranslation();
+  const effectiveConfirmLabel = confirmLabel ?? t('common.delete');
+  const effectiveCancelLabel = cancelLabel ?? t('common.cancel');
+
   return (
     <Dialog
       open={open}
@@ -81,16 +88,17 @@ const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2.5 }}>
         <Button onClick={onCancel} variant="outlined" color="inherit">
-          {cancelLabel}
+          {effectiveCancelLabel}
         </Button>
         <Button
           data-testid="confirm-dialog-confirm-button"
           onClick={onConfirm}
           variant="contained"
           color={confirmColor}
+          disabled={loading}
           autoFocus
         >
-          {confirmLabel}
+          {effectiveConfirmLabel}
         </Button>
       </DialogActions>
     </Dialog>

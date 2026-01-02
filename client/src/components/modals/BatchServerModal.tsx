@@ -28,6 +28,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import type { Server } from '../../types';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useTranslation } from 'react-i18next';
 
 interface BatchServerModalProps {
   open: boolean;
@@ -120,6 +121,7 @@ export default function BatchServerModal({
   const [verificationStatuses, setVerificationStatuses] = useState<Map<number, ServerVerification>>(
     new Map()
   );
+  const { t } = useTranslation();
 
   const resetForm = () => {
     setBaseName('');
@@ -162,28 +164,28 @@ export default function BatchServerModal({
   const handleCheckServers = async () => {
     // Validation
     if (!baseName.trim()) {
-      setError('Base name is required');
+      setError(t('batchServerModal.errors.baseNameRequired'));
       return;
     }
 
     if (!baseId.trim()) {
-      setError('Base ID is required');
+      setError(t('batchServerModal.errors.baseIdRequired'));
       return;
     }
 
     if (!host.trim()) {
-      setError('Host is required');
+      setError(t('batchServerModal.errors.hostRequired'));
       return;
     }
 
     const serverCount = parseInt(count);
     if (isNaN(serverCount) || serverCount < 1 || serverCount > 50) {
-      setError('Number of servers must be between 1 and 50');
+      setError(t('batchServerModal.errors.countRange'));
       return;
     }
 
     if (!password.trim()) {
-      setError('RCON password is required');
+      setError(t('batchServerModal.errors.passwordRequired'));
       return;
     }
 
@@ -191,7 +193,11 @@ export default function BatchServerModal({
     for (let i = 0; i < serverCount; i++) {
       const portNum = parseInt(ports[i]);
       if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-        setError(`Server #${i + 1} port must be between 1 and 65535`);
+        setError(
+          t('batchServerModal.errors.portRange', {
+            index: i + 1,
+          })
+        );
         return;
       }
     }
@@ -232,7 +238,10 @@ export default function BatchServerModal({
         newStatuses.set(i, {
           index: i,
           status: 'error',
-          error: error.response?.data?.error || error.message || 'Connection failed',
+          error:
+            error.response?.data?.error ||
+            error.message ||
+            t('batchServerModal.errors.connectionFailed'),
         });
       }
     });
@@ -258,28 +267,28 @@ export default function BatchServerModal({
   const handleSave = async () => {
     // Validation
     if (!baseName.trim()) {
-      showWarning('Base name is required');
+      showWarning(t('batchServerModal.errors.baseNameRequired'));
       return;
     }
 
     if (!baseId.trim()) {
-      showWarning('Base ID is required');
+      showWarning(t('batchServerModal.errors.baseIdRequired'));
       return;
     }
 
     if (!host.trim()) {
-      showWarning('Host is required');
+      showWarning(t('batchServerModal.errors.hostRequired'));
       return;
     }
 
     const serverCount = parseInt(count);
     if (isNaN(serverCount) || serverCount < 1 || serverCount > 50) {
-      showWarning('Number of servers must be between 1 and 50');
+      showWarning(t('batchServerModal.errors.countRange'));
       return;
     }
 
     if (!password.trim()) {
-      showWarning('RCON password is required');
+      showWarning(t('batchServerModal.errors.passwordRequired'));
       return;
     }
 
@@ -287,7 +296,11 @@ export default function BatchServerModal({
     for (let i = 0; i < serverCount; i++) {
       const portNum = parseInt(ports[i]);
       if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-        showWarning(`Server #${i + 1} port must be between 1 and 65535`);
+        showWarning(
+          t('batchServerModal.errors.portRange', {
+            index: i + 1,
+          })
+        );
         return;
       }
     }
@@ -297,7 +310,7 @@ export default function BatchServerModal({
     // so servers can be configured ahead of time (e.g. before LAN setup is online).
     if (!allServersVerified()) {
       showWarning(
-        'Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured.'
+        t('batchServerModal.warnings.notAllVerified')
       );
     }
 
@@ -354,19 +367,25 @@ export default function BatchServerModal({
       }
 
       if (successCount === serverCount) {
-        showSuccess(`Successfully created ${successCount} server(s)`);
+        showSuccess(
+          t('batchServerModal.success.createdAll', {
+            count: successCount,
+          })
+        );
         onSave();
         handleClose();
       } else {
-        const errorMessage = `Created ${successCount}/${serverCount} servers. Errors:\n${errors.join(
-          '\n'
-        )}`;
+        const errorMessage = t('batchServerModal.errors.partialCreate', {
+          created: successCount,
+          total: serverCount,
+          details: errors.join('\n'),
+        });
         setError(errorMessage);
         showError(errorMessage);
       }
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to create servers';
+      const errorMessage = error.message || t('batchServerModal.errors.createFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -408,7 +427,7 @@ export default function BatchServerModal({
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          Batch Create Servers
+          {t('batchServerModal.title')}
         </Typography>
         <IconButton
           onClick={handleClose}
@@ -421,32 +440,31 @@ export default function BatchServerModal({
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>
           <Alert severity="info">
-            Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect
-            for LAN setups with servers on the same machine.
+            {t('batchServerModal.info')}
           </Alert>
 
           {/* Server Identification Group */}
           <Box>
             <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
-              Server Identification
+              {t('batchServerModal.sections.identification.title')}
             </Typography>
             <Stack spacing={2}>
               <TextField
-                label="Base ID"
+                label={t('batchServerModal.baseId.label')}
                 value={baseId}
                 onChange={(e) => handleBaseIdChange(e.target.value)}
-                placeholder="ntlan"
-                helperText="Server IDs will be: base_1, base_2, base_3..."
+                placeholder={t('batchServerModal.baseId.placeholder')}
+                helperText={t('batchServerModal.baseId.helper')}
                 required
                 fullWidth
               />
 
               <TextField
-                label="Base Name"
+                label={t('batchServerModal.baseName.label')}
                 value={baseName}
                 onChange={(e) => setBaseName(e.target.value)}
-                placeholder="NTLAN"
-                helperText="Server names will be: Base #1, Base #2, Base #3..."
+                placeholder={t('batchServerModal.baseName.placeholder')}
+                helperText={t('batchServerModal.baseName.helper')}
                 required
                 fullWidth
               />
@@ -458,35 +476,35 @@ export default function BatchServerModal({
           {/* Connection Settings Group */}
           <Box>
             <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
-              Connection Settings
+              {t('batchServerModal.sections.connection.title')}
             </Typography>
             <Stack spacing={2}>
               <TextField
-                label="Host / IP Address"
+                label={t('batchServerModal.host.label')}
                 value={host}
                 onChange={(e) => {
                   setHost(e.target.value);
                   // Reset verification when host changes
                   setVerificationStatuses(new Map());
                 }}
-                placeholder="192.168.1.100"
+                placeholder={t('batchServerModal.host.placeholder')}
                 required
                 fullWidth
               />
 
               <TextField
-                label="RCON Password"
+                label={t('batchServerModal.rconPassword.label')}
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   // Reset verification when password changes
                   setVerificationStatuses(new Map());
                 }}
-                placeholder="shared-rcon-password"
+                placeholder={t('batchServerModal.rconPassword.placeholder')}
                 type={showPassword ? 'text' : 'password'}
                 required
                 fullWidth
-                helperText="Same password for all servers"
+                helperText={t('batchServerModal.rconPassword.helper')}
                 InputProps={{
                   endAdornment: (
                     <InputAdornment position="end">
@@ -509,18 +527,18 @@ export default function BatchServerModal({
           {/* Server Configuration Group */}
           <Box>
             <Typography variant="subtitle2" fontWeight={600} gutterBottom sx={{ mb: 2 }}>
-              Server Configuration
+              {t('batchServerModal.sections.configuration.title')}
             </Typography>
             <Stack spacing={2}>
               <TextField
-                label="Number of Servers"
+                label={t('batchServerModal.numServers.label')}
                 value={count}
                 onChange={(e) => handleCountChange(e.target.value)}
-                placeholder="3"
+                placeholder={t('batchServerModal.numServers.placeholder')}
                 type="number"
                 required
                 fullWidth
-                helperText="Max: 50"
+                helperText={t('batchServerModal.numServers.helper')}
                 slotProps={{
                   htmlInput: { min: 1, max: 50 },
                 }}
@@ -529,12 +547,12 @@ export default function BatchServerModal({
               <Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
                   <Typography variant="body2" fontWeight={500} gutterBottom>
-                    Assign Ports
+                    {t('batchServerModal.assignPorts.label')}
                   </Typography>
                   <Box display="flex" alignItems="center" gap={0.5}>
                     <ArrowUpwardIcon fontSize="small" color="primary" />
                     <Typography variant="caption" color="text.secondary">
-                      API → Server (RCON test)
+                      {t('batchServerModal.assignPorts.helper')}
                     </Typography>
                   </Box>
                 </Box>
@@ -545,7 +563,7 @@ export default function BatchServerModal({
                     return (
                       <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
                         <TextField
-                          label={`Server #${i + 1}`}
+                          label={t('batchServerModal.serverPortLabel', { index: i + 1 })}
                           value={ports[i] || ''}
                           onChange={(e) => {
                             handlePortChange(i, e.target.value);
@@ -554,7 +572,7 @@ export default function BatchServerModal({
                             newStatuses.delete(i);
                             setVerificationStatuses(newStatuses);
                           }}
-                          placeholder="27015"
+                          placeholder={t('batchServerModal.portPlaceholder')}
                           type="number"
                           required
                           fullWidth
@@ -603,10 +621,10 @@ export default function BatchServerModal({
               label={
                 <Box>
                   <Typography variant="body2" fontWeight={500}>
-                    Servers Enabled
+                    {t('batchServerModal.enabled.label')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    All servers will be created as enabled/disabled
+                    {t('batchServerModal.enabled.helper')}
                   </Typography>
                 </Box>
               }
@@ -618,7 +636,11 @@ export default function BatchServerModal({
               <Divider />
               <Box>
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  Preview ({preview.length > 10 ? 'showing first 10' : 'all'})
+                  {t('batchServerModal.preview.title', {
+                    visible: preview.length,
+                    total: parseInt(count) > 10 ? parseInt(count) : preview.length,
+                    showingFirst10: parseInt(count) > 10,
+                  })}
                 </Typography>
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
                   <Stack spacing={1}>
@@ -632,7 +654,9 @@ export default function BatchServerModal({
                     ))}
                     {parseInt(count) > 10 && (
                       <Typography variant="caption" color="text.secondary">
-                        ...and {parseInt(count) - 10} more
+                        {t('batchServerModal.preview.more', {
+                          count: parseInt(count) - 10,
+                        })}
                       </Typography>
                     )}
                   </Stack>
@@ -649,7 +673,9 @@ export default function BatchServerModal({
           disabled={verifying || saving}
           startIcon={verifying ? <CircularProgress size={16} /> : null}
         >
-          {verifying ? 'Checking...' : 'Check Servers'}
+          {verifying
+            ? t('batchServerModal.checkServersButton.checking')
+            : t('batchServerModal.checkServersButton.default')}
         </Button>
         <Button
           onClick={handleSave}
@@ -659,7 +685,11 @@ export default function BatchServerModal({
             ml: 'auto',
           }}
         >
-          {saving ? 'Creating...' : `Create ${count} Server${parseInt(count) !== 1 ? 's' : ''}`}
+          {saving
+            ? t('batchServerModal.createServersButton.creating')
+            : t('batchServerModal.createServersButton.default', {
+                count: parseInt(count) || 0,
+              })}
         </Button>
       </DialogActions>
     </Dialog>

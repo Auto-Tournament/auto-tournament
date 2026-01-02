@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EloTemplateWeights } from '../../types/elo.types';
+import { useTranslation } from 'react-i18next';
 
 interface ImportTemplate {
   id?: string;
@@ -52,6 +53,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const { t } = useTranslation();
 
   const handleClose = () => {
     setJsonInput('');
@@ -181,7 +183,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={600}>
-            Import ELO Templates from JSON
+            {t('eloTemplatesPage.importModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
             <CloseIcon />
@@ -193,18 +195,15 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
         <Stack spacing={3}>
           <Alert severity="info" icon={<InfoIcon />}>
             <Typography variant="body2" gutterBottom>
-              <strong>Paste JSON with ELO template definitions below.</strong>
+              <strong>{t('eloTemplatesPage.importModal.introTitle')}</strong>
             </Typography>
             <Typography variant="caption" component="div">
-              Expected format: array of templates with <code>name</code>, optional{' '}
-              <code>description</code>, <code>enabled</code>, <code>weights</code>,{' '}
-              <code>maxAdjustment</code>, and <code>minAdjustment</code>. If you omit{' '}
-              <code>id</code>, it will be generated from the name.
+              {t('eloTemplatesPage.importModal.introBody')}
             </Typography>
           </Alert>
 
           <TextField
-            label="JSON Data"
+            label={t('eloTemplatesPage.importModal.jsonLabel')}
             multiline
             rows={12}
             value={jsonInput}
@@ -226,13 +225,15 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
             <Box>
               <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  <strong>✓ Valid JSON!</strong> Found {parsedTemplates.length} template
-                  {parsedTemplates.length !== 1 ? 's' : ''}.
+                  <strong>{t('eloTemplatesPage.importModal.validJsonTitle')}</strong>{' '}
+                  {t('eloTemplatesPage.importModal.validJsonBody', {
+                    count: parsedTemplates.length,
+                  })}
                 </Typography>
               </Alert>
 
               <Typography variant="subtitle2" fontWeight={600} mb={1}>
-                Preview:
+                {t('eloTemplatesPage.importModal.previewTitle')}
               </Typography>
 
               <Stack spacing={1}>
@@ -255,7 +256,11 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                         </Typography>
                         {tpl.id && <Chip label={tpl.id} size="small" />}
                         <Chip
-                          label={tpl.enabled === false ? 'Disabled' : 'Enabled'}
+                          label={
+                            tpl.enabled === false
+                              ? t('eloTemplatesPage.card.disabled')
+                              : t('eloTemplatesPage.card.enabled')
+                          }
                           size="small"
                           color={tpl.enabled === false ? 'default' : 'success'}
                         />
@@ -277,7 +282,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                           display="block"
                           mb={0.5}
                         >
-                          Stat Weights:
+                          {t('eloTemplatesPage.card.weightsTitle')}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -293,7 +298,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                               display="block"
                               mb={0.5}
                             >
-                              Adjustment Limits:
+                              {t('eloTemplatesPage.card.limitsTitle')}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -319,17 +324,17 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
 
       <DialogActions>
         <Button onClick={handleClose} disabled={importing}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button onClick={handlePreview} disabled={importing}>
-          Preview
+          {t('eloTemplatesPage.importModal.previewButton')}
         </Button>
         <Button
           variant="contained"
           onClick={handleImport}
           disabled={importing || !parsedTemplates || parsedTemplates.length === 0}
         >
-          Import Templates
+          {t('eloTemplatesPage.importModal.importButton')}
         </Button>
       </DialogActions>
     </Dialog>

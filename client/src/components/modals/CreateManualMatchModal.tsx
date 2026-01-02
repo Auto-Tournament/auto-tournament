@@ -21,6 +21,7 @@ import { ManualMatchBasicsStep } from './ManualMatchBasicsStep';
 import { ManualMatchMapsRulesStep } from './ManualMatchMapsRulesStep';
 import { ManualMatchMapsStep } from './ManualMatchMapsStep';
 import { ManualMatchReviewStep } from './ManualMatchReviewStep';
+import { useTranslation } from 'react-i18next';
 
 interface CreateManualMatchModalProps {
   open: boolean;
@@ -33,6 +34,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
   onClose,
   onCreated,
 }) => {
+  const { t } = useTranslation();
   const handleDialogClose = (
     _event: React.SyntheticEvent | Event,
     reason: 'backdropClick' | 'escapeKeyDown'
@@ -137,7 +139,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
           }}
         >
           <Typography variant="h6" component="span" fontWeight={600}>
-            Create Manual Match
+            {t('manualMatchModal.title')}
           </Typography>
           <IconButton aria-label="close" onClick={onClose} size="small">
             <CloseIcon fontSize="small" />
@@ -146,26 +148,25 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         <DialogContent dividers>
           <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 2 }}>
             <Step>
-              <StepLabel>Match Setup</StepLabel>
+              <StepLabel>{t('manualMatchModal.steps.matchSetup')}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Rules</StepLabel>
+              <StepLabel>{t('manualMatchModal.steps.rules')}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Maps</StepLabel>
+              <StepLabel>{t('manualMatchModal.steps.maps')}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Teams</StepLabel>
+              <StepLabel>{t('manualMatchModal.steps.teams')}</StepLabel>
             </Step>
             <Step>
-              <StepLabel>Review</StepLabel>
+              <StepLabel>{t('manualMatchModal.steps.review')}</StepLabel>
             </Step>
           </Stepper>
 
           <Stack spacing={2} mt={1}>
             <Typography variant="body2" color="text.secondary">
-              Create a standalone match that is independent from the tournament bracket. The API
-              will automatically allocate an available server for you.
+              {t('manualMatchModal.description')}
             </Typography>
 
             {activeStep === 0 && (
@@ -272,7 +273,7 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         </DialogContent>
         <DialogActions>
           <Button onClick={onClose} disabled={saving}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           {activeStep === 0 && (
             <Button
@@ -280,62 +281,64 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
               onClick={handleNextStep}
               disabled={saving}
             >
-              Next
+              {t('manualMatchModal.buttons.next')}
             </Button>
           )}
           {activeStep === 1 && (
             <>
               <Button onClick={() => setActiveStep(0)} disabled={saving}>
-                Back
+                {t('manualMatchModal.buttons.back')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleNextStep}
                 disabled={saving}
               >
-                Next
+                {t('manualMatchModal.buttons.next')}
               </Button>
             </>
           )}
           {activeStep === 2 && (
             <>
               <Button onClick={() => setActiveStep(1)} disabled={saving}>
-                Back
+                {t('manualMatchModal.buttons.back')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleNextStep}
                 disabled={saving || !previewConfig}
               >
-                Next
+                {t('manualMatchModal.buttons.next')}
               </Button>
             </>
           )}
           {activeStep === 3 && (
             <>
               <Button onClick={() => setActiveStep(2)} disabled={saving}>
-                Back
+                {t('manualMatchModal.buttons.back')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleNextStep}
                 disabled={saving || !previewConfig}
               >
-                Next
+                {t('manualMatchModal.buttons.next')}
               </Button>
             </>
           )}
           {activeStep === 4 && (
             <>
               <Button onClick={() => setActiveStep(3)} disabled={saving}>
-                Back
+                {t('manualMatchModal.buttons.back')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={saving || !previewConfig}
               >
-                {saving ? 'Creating…' : 'Create Match'}
+                {saving
+                  ? t('manualMatchModal.buttons.creating')
+                  : t('manualMatchModal.buttons.create')}
               </Button>
             </>
           )}
@@ -360,31 +363,32 @@ export const CreateManualMatchModal: React.FC<CreateManualMatchModalProps> = ({
         maxWidth="xs"
         fullWidth
       >
-        <DialogTitle>Save Match Template</DialogTitle>
+        <DialogTitle>{t('manualMatchModal.saveTemplate.title')}</DialogTitle>
         <DialogContent>
           <Stack spacing={2} mt={1}>
             <TextField
-              label="Template name"
+              label={t('manualMatchModal.saveTemplate.nameLabel')}
               value={newTemplateName}
               onChange={(e) => setNewTemplateName(e.target.value)}
               fullWidth
               autoFocus
-              helperText="For example: BO1 Inferno knife, BO3 map pool, etc."
+              helperText={t('manualMatchModal.saveTemplate.nameHelper')}
             />
             <Typography variant="body2" color="text.secondary">
-              Current maps, series format, CT side rule, veto toggle, knife mode, and players per
-              team will be saved in this template.
+              {t('manualMatchModal.saveTemplate.description')}
             </Typography>
           </Stack>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setSaveTemplateDialogOpen(false)}>Cancel</Button>
+          <Button onClick={() => setSaveTemplateDialogOpen(false)}>
+            {t('common.cancel')}
+          </Button>
           <Button
             variant="contained"
             onClick={handleSaveTemplate}
             disabled={!newTemplateName.trim() || maps.length === 0}
           >
-            Save
+            {t('manualMatchModal.saveTemplate.save')}
           </Button>
         </DialogActions>
       </Dialog>

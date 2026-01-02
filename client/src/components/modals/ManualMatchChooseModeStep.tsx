@@ -1,6 +1,17 @@
 import React from 'react';
-import { Box, Card, CardActionArea, CardContent, FormControl, InputLabel, MenuItem, Select, Typography } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardActionArea,
+  CardContent,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  Typography,
+} from '@mui/material';
 import type { MatchTemplate } from './useCreateManualMatchModal';
+import { useTranslation } from 'react-i18next';
 
 interface ManualMatchChooseModeStepProps {
   templates: MatchTemplate[];
@@ -13,10 +24,12 @@ export const ManualMatchChooseModeStep: React.FC<ManualMatchChooseModeStepProps>
   selectedTemplateId,
   onTemplateChange,
 }) => {
+  const { t } = useTranslation();
+
   return (
     <Box display="flex" flexDirection="column" gap={2}>
       <Typography variant="subtitle1" fontWeight={600}>
-        How would you like to create this match?
+        {t('manualMatchModal.chooseMode.heading')}
       </Typography>
 
       <Box display="flex" flexDirection={{ xs: 'column', sm: 'row' }} gap={2}>
@@ -28,20 +41,20 @@ export const ManualMatchChooseModeStep: React.FC<ManualMatchChooseModeStepProps>
         >
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Choose template
+              {t('manualMatchModal.chooseMode.template.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-              Load a preset for maps, format, and rules, then choose the teams.
+              {t('manualMatchModal.chooseMode.template.description')}
             </Typography>
             <FormControl fullWidth disabled={templates.length === 0}>
-              <InputLabel>Match template</InputLabel>
+              <InputLabel>{t('manualMatchModal.chooseMode.template.label')}</InputLabel>
               <Select
-                label="Match template"
+                label={t('manualMatchModal.chooseMode.template.label')}
                 value={selectedTemplateId}
                 onChange={(e) => onTemplateChange(e.target.value as string)}
               >
                 <MenuItem value="">
-                  <em>None</em>
+                  <em>{t('manualMatchModal.chooseMode.template.none')}</em>
                 </MenuItem>
                 {templates.map((template) => (
                   <MenuItem key={template.id} value={template.id}>
@@ -52,7 +65,7 @@ export const ManualMatchChooseModeStep: React.FC<ManualMatchChooseModeStepProps>
             </FormControl>
             {templates.length === 0 && (
               <Typography variant="caption" color="text.secondary">
-                No templates saved yet. Configure a match and save it as a template.
+                {t('manualMatchModal.chooseMode.template.empty')}
               </Typography>
             )}
           </CardContent>
@@ -74,10 +87,10 @@ export const ManualMatchChooseModeStep: React.FC<ManualMatchChooseModeStepProps>
           >
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                Create new match
+                {t('manualMatchModal.chooseMode.custom.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Configure maps, rules, sides, and teams from scratch.
+                {t('manualMatchModal.chooseMode.custom.description')}
               </Typography>
             </CardContent>
           </CardActionArea>

@@ -29,9 +29,7 @@ import { useAdminCommands } from '../hooks/useAdminCommands';
 import { ServerEventsMonitor } from '../components/admin/ServerEventsMonitor';
 import { LogViewer } from '../components/admin/LogViewer';
 import { useSnackbar } from '../contexts/SnackbarContext';
-
-// Set dynamic page title
-document.title = 'Admin Tools';
+import { useTranslation } from 'react-i18next';
 
 interface Server {
   id: string;
@@ -50,6 +48,7 @@ const AdminTools: React.FC = () => {
 
   const { executing, results, error, success, executeCommand } = useAdminCommands();
   const { showSuccess, showError } = useSnackbar();
+  const { t } = useTranslation();
 
   // Curate which commands are shown as "quick actions" vs tucked away in advanced tools.
   // This keeps the page comprehensive but avoids overwhelming admins with every niche option up front.
@@ -83,6 +82,11 @@ const AdminTools: React.FC = () => {
     loadServers();
   }, [loadServers]);
 
+  // Set dynamic page title
+  React.useEffect(() => {
+    document.title = t('layout.pageTitle.adminTools');
+  }, [t]);
+
   React.useEffect(() => {
     setHeaderActions(
       <Button
@@ -91,7 +95,7 @@ const AdminTools: React.FC = () => {
         onClick={loadServers}
         disabled={loadingServers}
       >
-        Refresh Servers
+        {t('adminToolsPage.header.refresh')}
       </Button>
     );
 
@@ -194,13 +198,13 @@ const AdminTools: React.FC = () => {
             (command.requiresInput && !commandInputs[command.id])
           }
         >
-          Execute
+          {t('adminToolsPage.command.execute')}
         </Button>
 
         {command.id === 'custom-rcon' && (
           <Alert severity="warning" sx={{ mt: 1 }}>
             <Typography variant="caption">
-              <strong>Warning:</strong> Use with caution!
+              {t('adminToolsPage.customRconWarning')}
             </Typography>
           </Alert>
         )}
@@ -221,11 +225,10 @@ const AdminTools: React.FC = () => {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="h5" fontWeight={600} mb={1.5}>
-        Admin Tools
+        {t('adminToolsPage.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" mb={3}>
-        Run common match and server actions across your CS2 servers. Quick actions are shown first,
-        with more advanced tools available below.
+        {t('adminToolsPage.description')}
       </Typography>
 
       {/* Server Selection */}
@@ -234,16 +237,24 @@ const AdminTools: React.FC = () => {
           <Grid container spacing={2} alignItems="center">
             <Grid size={{ xs: 12, md: 8 }}>
               <FormControl fullWidth>
-                <InputLabel>Target Server(s)</InputLabel>
+                <InputLabel>{t('adminToolsPage.serverSelect.label')}</InputLabel>
                 <Select
                   value={selectedServerId}
-                  label="Target Server(s)"
+                  label={t('adminToolsPage.serverSelect.label')}
                   onChange={(e) => setSelectedServerId(e.target.value)}
                 >
                   <MenuItem value="all">
                     <Box display="flex" alignItems="center" gap={1}>
-                      <Chip label="All Servers" size="small" color="primary" />
-                      <Typography>Execute on all {servers.length} server(s)</Typography>
+                      <Chip
+                        label={t('adminToolsPage.serverSelect.allServersChip')}
+                        size="small"
+                        color="primary"
+                      />
+                      <Typography>
+                        {t('adminToolsPage.serverSelect.allServersDescription', {
+                          count: servers.length,
+                        })}
+                      </Typography>
                     </Box>
                   </MenuItem>
                   <Divider />
@@ -269,7 +280,7 @@ const AdminTools: React.FC = () => {
                 disabled={executing || servers.length === 0}
                 startIcon={executing ? <CircularProgress size={16} /> : <PlayArrowIcon />}
               >
-                Send Status
+                {t('adminToolsPage.serverSelect.sendStatus')}
               </Button>
             </Grid>
           </Grid>
@@ -281,7 +292,7 @@ const AdminTools: React.FC = () => {
         <Card sx={{ mb: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              Execution Results
+              {t('adminToolsPage.results.title')}
             </Typography>
             <Grid container spacing={2}>
               {results.map((result) => (
@@ -300,7 +311,11 @@ const AdminTools: React.FC = () => {
                         {result.serverName}
                       </Typography>
                       <Chip
-                        label={result.success ? '✓ Success' : '✗ Failed'}
+                        label={
+                          result.success
+                            ? t('adminToolsPage.results.successChip')
+                            : t('adminToolsPage.results.failedChip')
+                        }
                         size="small"
                         color={result.success ? 'success' : 'error'}
                         sx={{ fontWeight: 600 }}
@@ -328,7 +343,7 @@ const AdminTools: React.FC = () => {
                     )}
                     {result.error && (
                       <Typography variant="caption" color="error.main" display="block" mt={1}>
-                        Error: {result.error}
+                        {t('adminToolsPage.results.errorPrefix')} {result.error}
                       </Typography>
                     )}
                   </Box>
@@ -343,7 +358,7 @@ const AdminTools: React.FC = () => {
       {quickCommands.length > 0 && (
         <>
           <Typography variant="h6" fontWeight={600} mb={2}>
-            Quick Actions
+            {t('adminToolsPage.quickActions.title')}
           </Typography>
           <Grid container spacing={2} mb={3}>
             {quickCommands.map((command) => (
@@ -359,7 +374,7 @@ const AdminTools: React.FC = () => {
       {advancedCategories.length > 0 && (
         <>
           <Typography variant="h6" fontWeight={600} mt={1} mb={2}>
-            Advanced Tools
+            {t('adminToolsPage.advanced.title')}
           </Typography>
           {advancedCategories.map((category) => (
             <Accordion key={category.id}>
@@ -384,7 +399,7 @@ const AdminTools: React.FC = () => {
 
       {servers.length === 0 && (
         <Alert severity="info">
-          No enabled servers found. Please add and enable servers in the Servers page.
+          {t('adminToolsPage.noServers')}
         </Alert>
       )}
 
@@ -392,13 +407,10 @@ const AdminTools: React.FC = () => {
 
       {/* Match Recovery Utilities */}
       <Typography variant="h5" fontWeight={600} mb={2}>
-        Match Recovery
+        {t('adminToolsPage.recovery.title')}
       </Typography>
       <Typography variant="body2" color="text.secondary" mb={2}>
-        If the API or servers were restarted during a tournament and match state looks out of sync
-        (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery
-        pass. This will ask all servers for their current match report, resync scores/phases, and
-        reconfigure webhooks and demo uploads where possible.
+        {t('adminToolsPage.recovery.description')}
       </Typography>
       <Button
         variant="contained"
@@ -411,31 +423,39 @@ const AdminTools: React.FC = () => {
             }>('/api/recovery/recover');
 
             if (response.success) {
-              showSuccess(response.message || 'Match recovery completed.');
+              showSuccess(
+                response.message || t('adminToolsPage.recovery.success')
+              );
             } else {
-              showError(response.message || 'Match recovery failed.');
+              showError(
+                response.message || t('adminToolsPage.recovery.error')
+              );
             }
           } catch (err) {
             const message =
-              err instanceof Error ? err.message : 'Failed to trigger match recovery. Please try again.';
+              err instanceof Error
+                ? err.message
+                : t('adminToolsPage.recovery.failedTrigger');
             showError(message);
           }
         }}
       >
-        Run Match Recovery Now
+        {t('adminToolsPage.recovery.button')}
       </Button>
 
       <Divider sx={{ my: 4 }} />
 
       {/* Monitoring & Logs Section - Collapsed by default */}
       <Typography variant="h5" fontWeight={600} mb={3}>
-        Monitoring & Logs
+        {t('adminToolsPage.monitoring.title')}
       </Typography>
 
       {/* Server Events Monitor */}
       <Accordion>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Server Events Monitor</Typography>
+          <Typography variant="h6">
+            {t('adminToolsPage.monitoring.serverEvents')}
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <ServerEventsMonitor />
@@ -445,7 +465,9 @@ const AdminTools: React.FC = () => {
       {/* Application Logs */}
       <Accordion sx={{ mt: 2 }}>
         <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-          <Typography variant="h6">Application Logs</Typography>
+          <Typography variant="h6">
+            {t('adminToolsPage.monitoring.appLogs')}
+          </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <LogViewer />

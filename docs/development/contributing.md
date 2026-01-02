@@ -235,15 +235,16 @@ matchzy-auto-tournament/
 │   │   └── matchConfigBuilder.ts # Match configuration builder
 │   ├── types/                    # TypeScript type definitions
 │   └── utils/                    # Helper functions
-├── client/                       # Frontend (React + Material UI)
+├── client/                       # Frontend (React + Material UI + i18next)
 │   └── src/
 │       ├── components/           # Reusable React components
 │       ├── pages/                # Page components
 │       ├── hooks/                # Custom React hooks
+│       ├── locales/              # Translation JSON files (per language)
 │       ├── types/                # TypeScript types
 │       └── brackets-viewer/      # Forked brackets-viewer.js bundle with MatchZy tweaks
 ├── docs/                         # Documentation (MkDocs)
-│   ├── mkdocs.yml               # Docs configuration
+│   ├── mkdocs.yml                # Docs configuration
 │   └── requirements.txt          # Python dependencies for docs
 ├── docker/                       # Docker configuration
 │   ├── Dockerfile               # Multi-stage build
