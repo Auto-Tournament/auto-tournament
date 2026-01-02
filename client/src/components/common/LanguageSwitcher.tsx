@@ -21,8 +21,9 @@ export const LanguageSwitcher: React.FC = () => {
         label={t('language.label')}
         onChange={handleChange}
       >
-        <MenuItem value="en">{t('language.en')}</MenuItem>
-        <MenuItem value="zh-CN">{t('language.zhCN')}</MenuItem>
+        {/* Language names are shown in their own language (not translated) */}
+        <MenuItem value="en">English</MenuItem>
+        <MenuItem value="zh-CN">简体中文</MenuItem>
       </Select>
     </FormControl>
   );
