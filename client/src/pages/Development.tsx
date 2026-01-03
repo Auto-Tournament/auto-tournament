@@ -62,7 +62,8 @@ const Development: React.FC = () => {
       const slugify = (value: string) =>
         value
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
+          // Keep all letters and numbers from any language while normalizing separators.
+          .replace(/[^\p{L}\p{N}]+/gu, '-')
           .replace(/(^-|-$)/g, '');
 
       // Generate unique Steam IDs per player so each team gets unique players
@@ -77,7 +78,8 @@ const Development: React.FC = () => {
           name: fullName,
           tag:
             fullName
-              .replace(/[^A-Za-z0-9]/g, '')
+              // Use all Unicode letters/digits and fall back if empty.
+              .replace(/[^\p{L}\p{N}]/gu, '')
               .substring(0, 3)
               .toUpperCase() || 'TST',
           players: Array.from({ length: 5 }, (_, playerIndex) => {

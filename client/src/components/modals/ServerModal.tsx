@@ -33,13 +33,16 @@ interface ServerModalProps {
 }
 
 const slugifyServerName = (name: string): string => {
-  return name
+  const base = name
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, '')
+    // Keep all letters and numbers from any language, plus spaces/underscores/hyphens.
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '');
+
+  return base || `server_${Date.now().toString(36)}`;
 };
 
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {

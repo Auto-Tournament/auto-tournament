@@ -361,13 +361,17 @@ class EloTemplateService {
    * Generate ID from name (slugify)
    */
   private generateId(name: string): string {
-    return name
+    const base = name
       .toLowerCase()
       .trim()
-      .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+      // Keep all letters and numbers from any language plus spaces/hyphens.
+      .replace(/[^\p{L}\p{N}\s-]/gu, '')
       .replace(/\s+/g, '-') // Replace spaces with hyphens
       .replace(/-+/g, '-') // Replace multiple hyphens with single
       .replace(/^-|-$/g, ''); // Remove leading/trailing hyphens
+
+    // Fallback for names that don't yield a usable slug (e.g. only punctuation)
+    return base || `template_${Date.now().toString(36)}`;
   }
 }
 

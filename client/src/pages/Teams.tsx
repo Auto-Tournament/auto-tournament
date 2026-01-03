@@ -168,7 +168,9 @@ export default function Teams() {
       const baseId = team.name
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9\s]/g, '') // Keep ASCII letters/numbers for ID
+        // Keep all letters and numbers from any language, plus spaces/underscores/hyphens.
+        // This avoids stripping non-Latin characters while still normalizing the ID.
+        .replace(/[^\p{L}\p{N}\s_-]/gu, '')
         .replace(/\s+/g, '_') // Replace spaces with underscores
         .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
 

@@ -48,9 +48,11 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
     return;
   }
 
-  // Sanitize message: keep letters, numbers, basic punctuation and whitespace.
+  // Sanitize message for logs:
+  // - keep full Unicode content (including non-Latin characters)
+  // - strip only control characters
   const trimmed = message.trim().slice(0, 300); // limit length
-  const sanitized = trimmed.replace(/[^\w\s\-.,:/#@()[\]]/g, '');
+  const sanitized = trimmed.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
   const scopeValue = typeof scope === 'string' ? scope.slice(0, 100) : undefined;
 
