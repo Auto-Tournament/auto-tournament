@@ -88,6 +88,8 @@ export default function Settings() {
   const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
+  const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
+  const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
@@ -292,6 +294,23 @@ export default function Settings() {
       void handleSave(true); // Show success message
     }
   };
+
+  const handleResetApi = useCallback(async () => {
+    setResettingApi(true);
+
+    try {
+      await api.post('/api/test/reset-database');
+      showSuccess(t('settingsPage.developer.resetApiSuccess'));
+      await fetchSettings();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t('settingsPage.developer.resetApiError');
+      showError(message);
+    } finally {
+      setResettingApi(false);
+      setResetApiDialogOpen(false);
+    }
+  }, [fetchSettings, showError, showSuccess, t]);
 
   // Auto-save when values change
   useEffect(() => {
@@ -733,6 +752,26 @@ export default function Settings() {
                       </Box>
                     </Box>
                   </Box>
+                  <Divider />
+                  <Box>
+                    <Typography variant="h6" fontWeight={600} gutterBottom color="error">
+                      {t('settingsPage.developer.resetApiTitle')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                      {t('settingsPage.developer.resetApiDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setResetApiDialogOpen(true)}
+                      disabled={resettingApi}
+                      data-testid="settings-reset-api-button"
+                    >
+                      {resettingApi
+                        ? t('settingsPage.developer.resetApiButtonLoading')
+                        : t('settingsPage.developer.resetApiButton')}
+                    </Button>
+                  </Box>
                 </Stack>
               </TabPanel>
             )}
@@ -850,6 +889,41 @@ export default function Settings() {
                 autoFocus
               >
                 {t('settingsPage.resetDialog.confirm')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={resetApiDialogOpen}
+            onClose={() => {
+              if (!resettingApi) {
+                setResetApiDialogOpen(false);
+              }
+            }}
+            aria-labelledby="reset-api-dialog-title"
+          >
+            <DialogTitle id="reset-api-dialog-title">
+              {t('settingsPage.developer.resetApiDialog.title')}
+            </DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary">
+                {t('settingsPage.developer.resetApiDialog.description')}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setResetApiDialogOpen(false)} disabled={resettingApi}>
+                {t('settingsPage.developer.resetApiDialog.cancel')}
+              </Button>
+              <Button
+                color="error"
+                variant="contained"
+                onClick={handleResetApi}
+                disabled={resettingApi}
+                autoFocus
+              >
+                {resettingApi
+                  ? t('settingsPage.developer.resetApiDialog.confirmLoading')
+                  : t('settingsPage.developer.resetApiDialog.confirm')}
               </Button>
             </DialogActions>
           </Dialog>

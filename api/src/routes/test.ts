@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { db } from '../config/database';
 
 const router = Router();
 
@@ -65,6 +66,55 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
     success: true,
     message: 'Test marker logged',
   });
+});
+
+/**
+ * @openapi
+ * /api/test/reset-database:
+ *   post:
+ *     tags:
+ *       - Testing
+ *     summary: Reset database (development only)
+ *     description: >
+ *       Drops and recreates the entire database schema and re-initializes default data.
+ *       This endpoint is **development only** and is disabled when NODE_ENV=production.
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Database was reset and reinitialized successfully
+ *       403:
+ *         description: Disabled in production environments
+ *       500:
+ *         description: Failed to reset database
+ */
+router.post('/reset-database', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({
+      success: false,
+      error: 'Database reset endpoint is disabled in production',
+    });
+    return;
+  }
+
+  try {
+    log.warn('[DEV-TOOLS] Full database reset requested via /api/test/reset-database');
+    await db.resetDatabase();
+    log.warn('[DEV-TOOLS] Database reset completed successfully');
+
+    res.json({
+      success: true,
+      message: 'Database reset and reinitialized successfully',
+    });
+  } catch (err) {
+    const error = err as Error;
+    log.error('[DEV-TOOLS] Failed to reset database', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to reset database',
+      details: error.message,
+    });
+  }
 });
 
 export default router;

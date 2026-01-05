@@ -40,7 +40,7 @@ export default function MapPoolModal({ open, mapPool, onClose, onSave }: MapPool
       loadMaps();
       if (mapPool) {
         setName(mapPool.name);
-        setSelectedMapIds(mapPool.mapIds);
+        setSelectedMapIds(mapPool.mapIds ?? []);
       } else {
         resetForm();
       }

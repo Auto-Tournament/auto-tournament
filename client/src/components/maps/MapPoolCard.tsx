@@ -14,6 +14,8 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
     return map ? map.displayName : mapId;
   };
 
+  const mapIds = pool.mapIds ?? [];
+
   return (
     <Card
       onClick={() => onClick(pool)}
@@ -53,14 +55,14 @@ export function MapPoolCard({ pool, maps, onClick }: MapPoolCardProps) {
           </Box>
         </Box>
         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {pool.mapIds.length} map{pool.mapIds.length !== 1 ? 's' : ''}
+          {mapIds.length} map{mapIds.length !== 1 ? 's' : ''}
         </Typography>
         <Box display="flex" flexWrap="wrap" gap={0.5}>
-          {pool.mapIds.slice(0, 5).map((mapId) => (
+          {mapIds.slice(0, 5).map((mapId) => (
             <Chip key={mapId} label={getMapDisplayName(mapId)} size="small" variant="outlined" />
           ))}
-          {pool.mapIds.length > 5 && (
-            <Chip label={`+${pool.mapIds.length - 5} more`} size="small" variant="outlined" />
+          {mapIds.length > 5 && (
+            <Chip label={`+${mapIds.length - 5} more`} size="small" variant="outlined" />
           )}
         </Box>
       </CardContent>

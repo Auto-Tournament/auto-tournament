@@ -617,7 +617,20 @@
       "simulateNote": "When enabled, generated MatchZy configs include \"simulation\": true for automated demo matches.",
       "timescaleTitle": "Simulation Timescale",
       "timescaleDescription": "Controls how fast simulated matches run. Higher values speed up bots and round flow. This only applies when simulation is enabled.",
-      "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing."
+      "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing.",
+      "resetApiTitle": "Reset API & Database",
+      "resetApiDescription": "Danger zone: drops and recreates the entire database schema, then reinitializes default data (maps, map pools, etc.). Use only for local development. This is irreversible.",
+      "resetApiButton": "Reset API (wipe all data)",
+      "resetApiButtonLoading": "Resetting API…",
+      "resetApiSuccess": "API and database reset successfully. All data has been wiped and defaults reinitialized.",
+      "resetApiError": "Failed to reset API and database. Check API logs for details.",
+      "resetApiDialog": {
+        "title": "Reset API & wipe all data?",
+        "description": "This will drop and recreate the entire database schema. All tournaments, matches, players, teams, ratings, events, logs, and settings will be permanently deleted. This action cannot be undone. Continue?",
+        "cancel": "Cancel",
+        "confirm": "Yes, reset API & wipe data",
+        "confirmLoading": "Resetting…"
+      }
     },
     "footer": {
       "version": "Version",

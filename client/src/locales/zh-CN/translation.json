@@ -622,7 +622,20 @@
       "simulateNote": "启用后，生成的 MatchZy 配置会包含 \"simulation\": true 字段，用于自动化 Demo 比赛。",
       "timescaleTitle": "模拟时间倍率",
       "timescaleDescription": "控制模拟比赛的运行速度。数值越高，机器人和回合流程越快。仅在启用模拟时生效。",
-      "timescaleWarning": "大于 2.0 的速度可能略显不稳定，并可能导致奇怪的机器人行为，但适合快速本地测试。"
+      "timescaleWarning": "大于 2.0 的速度可能略显不稳定，并可能导致奇怪的机器人行为，但适合快速本地测试。",
+      "resetApiTitle": "重置 API 与数据库",
+      "resetApiDescription": "危险操作：删除并重建整个数据库结构，然后重新初始化默认数据（地图、地图池等）。仅用于本地开发。此操作不可恢复。",
+      "resetApiButton": "重置 API（清空所有数据）",
+      "resetApiButtonLoading": "正在重置 API…",
+      "resetApiSuccess": "API 与数据库已成功重置，所有数据已被清空并重新初始化默认值。",
+      "resetApiError": "重置 API 与数据库失败。请检查 API 日志获取详细信息。",
+      "resetApiDialog": {
+        "title": "重置 API 并清空所有数据？",
+        "description": "此操作将删除并重建整个数据库结构。所有锦标赛、比赛、选手、战队、评分、事件、日志和设置都将被永久删除，且无法恢复。是否继续？",
+        "cancel": "取消",
+        "confirm": "是的，重置 API 并清空数据",
+        "confirmLoading": "正在重置…"
+      }
     },
     "footer": {
       "version": "版本",

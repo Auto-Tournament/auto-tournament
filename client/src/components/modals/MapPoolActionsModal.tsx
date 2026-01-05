@@ -45,6 +45,8 @@ export default function MapPoolActionsModal({
 
   const { t } = useTranslation();
 
+  const mapIds = mapPool.mapIds ?? [];
+
   const getMapDisplayName = (mapId: string): string => {
     const map = maps.find((m) => m.id === mapId);
     return map ? map.displayName : mapId;
@@ -97,10 +99,10 @@ export default function MapPoolActionsModal({
           </Box>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              {t('mapPoolActionsModal.maps.label', { count: mapPool.mapIds.length })}
+              {t('mapPoolActionsModal.maps.label', { count: mapIds.length })}
             </Typography>
             <Box display="flex" flexWrap="wrap" gap={0.5}>
-              {mapPool.mapIds.map((mapId) => (
+              {mapIds.map((mapId) => (
                 <Chip
                   key={mapId}
                   label={getMapDisplayName(mapId)}
