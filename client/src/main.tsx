@@ -9,6 +9,10 @@ import i18n from './i18n';
 import { theme as baseTheme } from './theme';
 import { createTheme } from '@mui/material/styles';
 
+// Log application version on startup (injected by Vite from package.json)
+
+console.info('[MatchZy] App version:', __APP_VERSION__);
+
 const getMuiLocale = (lang: string) => {
   if (lang.startsWith('zh')) return zhCN;
   return enUS;

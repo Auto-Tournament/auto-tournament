@@ -213,14 +213,34 @@ fi
 
 echo -e "${GREEN}✅ Docker cleanup complete${NC}"
 
-# Get current version from package.json
+# Get current (root) version from package.json
 if [ -f "package.json" ]; then
     CURRENT_VERSION=$(grep '"version"' package.json | head -1 | awk -F '"' '{print $4}')
-    echo -e "Current version: ${GREEN}${CURRENT_VERSION}${NC}"
+    echo -e "Current root version: ${GREEN}${CURRENT_VERSION}${NC}"
 else
     echo -e "${RED}Error: package.json not found${NC}"
     exit 1
 fi
+
+# Ensure workspace package.json versions are aligned with root
+echo ""
+echo -e "${YELLOW}Checking workspace versions (api/client) against root...${NC}"
+
+WORKSPACES=("api" "client")
+for WS in "${WORKSPACES[@]}"; do
+    WS_PKG="${WS}/package.json"
+    if [ ! -f "$WS_PKG" ]; then
+        echo -e "${RED}Error: ${WS_PKG} not found${NC}"
+        exit 1
+    fi
+
+    WS_VERSION=$(grep '"version"' "$WS_PKG" | head -1 | awk -F '"' '{print $4}')
+    echo -e "  ${BLUE}${WS}${NC} version: ${GREEN}${WS_VERSION}${NC}"
+
+    if [ "$WS_VERSION" != "$CURRENT_VERSION" ]; then
+        echo -e "${YELLOW}  -> ${WS} version differs from root. It will be synced to ${GREEN}${CURRENT_VERSION}${NC} when bumping versions.${NC}"
+    fi
+done
 
 # Prompt for new version
 echo ""
@@ -455,7 +475,7 @@ git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --
 
 # Step 5: Bump version
 echo ""
-echo -e "${YELLOW}Step 5: Bumping version to ${NEW_VERSION}...${NC}"
+echo -e "${YELLOW}Step 5: Bumping version to ${NEW_VERSION} (root, api, client)...${NC}"
 
 VERSION_BUMPED=false
 
@@ -464,15 +484,31 @@ if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
     echo -e "${YELLOW}⚠️  Version is already ${NEW_VERSION}. Skipping version bump.${NC}"
 else
     # We're on the release branch
-    
-    # Update version in package.json (works on both macOS and Linux)
-    if [[ "$OSTYPE" == "darwin"* ]]; then
-        # macOS
-        sed -i '' "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
-    else
-        # Linux
-        sed -i "s/\"version\": \"${CURRENT_VERSION}\"/\"version\": \"${NEW_VERSION}\"/" package.json
-    fi
+
+    bump_version_file() {
+        local file="$1"
+        local from="$2"
+        local to="$3"
+
+        if [[ "$OSTYPE" == "darwin"* ]]; then
+            # macOS BSD sed requires backup suffix ('' means no backup file)
+            sed -i '' "s/\"version\": \"${from}\"/\"version\": \"${to}\"/" "$file"
+        else
+            # Linux GNU sed
+            sed -i "s/\"version\": \"${from}\"/\"version\": \"${to}\"/" "$file"
+        fi
+    }
+
+    # Update version in root package.json
+    bump_version_file "package.json" "${CURRENT_VERSION}" "${NEW_VERSION}"
+
+    # Keep workspace versions in sync with root
+    for WS in "${WORKSPACES[@]}"; do
+        WS_PKG="${WS}/package.json"
+        if [ -f "$WS_PKG" ]; then
+            bump_version_file "$WS_PKG" "${CURRENT_VERSION}" "${NEW_VERSION}"
+        fi
+    done
     
     # Update changelog.md
     echo ""
