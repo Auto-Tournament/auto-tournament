@@ -616,13 +616,13 @@ async function handleMapCompletion(
   const shouldForceDrawSeries =
     !seriesFinished && isFinalMap && isDrawOnMap && overtimeDisabled && segmentsAllowDraws;
 
-  // For BO1 manual matches (round = 0), treat the first and only map_result as
-  // the definitive series end even when the plugin doesn't emit a separate
-  // series_end event or provide non-zero series scores. This prevents manual
-  // matches from getting stuck in the LIVE state until the server is reset.
-  const isManualMatch = match.round === 0;
+  // For BO1 matches, treat the first and only map_result as a definitive
+  // series end when the plugin doesn't emit a separate series_end event or
+  // provide non-zero series scores. This prevents bracket/tournament matches
+  // (not just manual ones) from getting stuck in LIVE/POSTGAME with no
+  // progression when series_end is missing.
   const isBo1 = totalMaps === 1;
-  const shouldForceBo1SeriesEnd = !seriesFinished && isBo1 && isFinalMap && isManualMatch;
+  const shouldForceBo1SeriesEnd = !seriesFinished && isBo1 && isFinalMap;
 
   const maxMapIndex = Math.max(0, totalMaps - 1);
   const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
@@ -744,6 +744,16 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   const match = await resolveMatch(event.matchid);
   if (!match) {
     log.error(`Match not found for series_end event: ${event.matchid}`);
+    return;
+  }
+
+  // Idempotency guard: if this match has already been finalized with a winner
+  // and marked as completed, skip re-processing duplicate series_end events.
+  if (match.status === 'completed' && match.winner_id) {
+    log.warn('Ignoring duplicate series_end for already completed match', {
+      matchId: event.matchid,
+      slug: match.slug,
+    });
     return;
   }
   const matchSlug = match.slug;
