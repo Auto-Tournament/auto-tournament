@@ -112,15 +112,20 @@ export async function enrichMatchWithScores(
   }
 
   // BO1 safety net for completed matches:
-  // If we still don't have a non-zero series score but we DO know the winner
-  // and the config explicitly says this is a single-map series (num_maps = 1),
-  // treat the series score as 1–0 in favour of the winner. This prevents
-  // bracket/list views from showing "0–0" with a highlighted winner when
-  // map_results or series_end events are missing (common in simulated games).
+  // If we still don't have a meaningful series score (missing or 0‑0) but we
+  // DO know the winner and the config explicitly says this is a single‑map
+  // series (num_maps = 1), treat the series score as 1–0 in favour of the
+  // winner. This prevents bracket/list views from showing "0–0" with a
+  // highlighted winner when map_results or series_end events are missing or
+  // incomplete (common in simulated games or abrupt server stops).
   const anyMatch = match as EnrichableMatch & BracketMatch & { status?: string };
   if (
     anyMatch.status === 'completed' &&
-    (match.team1Score === undefined || match.team2Score === undefined) &&
+    (
+      match.team1Score === undefined ||
+      match.team2Score === undefined ||
+      ((match.team1Score ?? 0) === 0 && (match.team2Score ?? 0) === 0)
+    ) &&
     anyMatch.winner?.id &&
     anyMatch.team1?.id &&
     anyMatch.team2?.id &&
