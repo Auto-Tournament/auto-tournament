@@ -58,6 +58,7 @@ import ConfirmDialog from './ConfirmDialog';
 import { isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { useTranslation } from 'react-i18next';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -74,6 +75,7 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
   onClose,
   onDeleted,
 }) => {
+  const { t } = useTranslation();
   const [matchTimer, setMatchTimer] = useState<number>(0);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');

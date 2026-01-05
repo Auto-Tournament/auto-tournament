@@ -28,6 +28,10 @@ interface SaveTemplateModalProps {
     mapPoolId?: number | null;
     teamIds?: string[];
     settings?: TournamentSettings;
+    maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number | null;
+    grandFinalMode?: 'none' | 'simple' | 'double';
   };
 }
 
@@ -58,6 +62,32 @@ export default function SaveTemplateModal({
 
     try {
       setSaving(true);
+
+      const baseSettings: Partial<TournamentSettings> = tournamentData.settings || {
+        matchFormat: tournamentData.format,
+        thirdPlaceMatch: false,
+        autoAdvance: true,
+        checkInRequired: false,
+        seedingMethod: 'random',
+      };
+
+      const settings: Partial<TournamentSettings> = {
+        ...baseSettings,
+      };
+
+      if (typeof tournamentData.maxRounds === 'number') {
+        settings.maxRounds = tournamentData.maxRounds;
+      }
+      if (tournamentData.overtimeMode) {
+        settings.overtimeMode = tournamentData.overtimeMode;
+      }
+      if (typeof tournamentData.overtimeSegments === 'number') {
+        settings.overtimeSegments = tournamentData.overtimeSegments ?? undefined;
+      }
+      if (tournamentData.grandFinalMode) {
+        settings.grandFinalMode = tournamentData.grandFinalMode;
+      }
+
       await api.post('/api/templates', {
         name: templateName,
         description: templateDescription || undefined,
@@ -66,7 +96,7 @@ export default function SaveTemplateModal({
         mapPoolId: tournamentData.mapPoolId,
         maps: tournamentData.maps,
         teamIds: tournamentData.teamIds,
-        settings: tournamentData.settings,
+        settings,
       });
       onSave();
       onClose();
@@ -109,11 +139,7 @@ export default function SaveTemplateModal({
         <Typography variant="h6" fontWeight={600}>
           {t('saveTemplateModal.title')}
         </Typography>
-        <IconButton
-          onClick={handleClose}
-          size="small"
-          aria-label="close"
-        >
+        <IconButton onClick={handleClose} size="small" aria-label="close">
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
@@ -158,14 +184,9 @@ export default function SaveTemplateModal({
             }),
           }}
         >
-          {saving ? (
-            <CircularProgress size={24} />
-          ) : (
-            t('saveTemplateModal.saveButton')
-          )}
+          {saving ? <CircularProgress size={24} /> : t('saveTemplateModal.saveButton')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-
