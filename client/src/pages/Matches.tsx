@@ -34,7 +34,7 @@ export default function Matches() {
     gracePeriodSeconds: number;
   }>({
     nextAllocationInSeconds: null,
-    gracePeriodSeconds: 300,
+    gracePeriodSeconds: 120,
   });
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
@@ -230,6 +230,27 @@ export default function Matches() {
 
     return () => clearInterval(timer);
   }, [allocationCountdown.nextAllocationInSeconds]);
+
+  const renderAllocationBanner = () => {
+    if (allocationCountdown.nextAllocationInSeconds === null) {
+      return null;
+    }
+
+    const nextIn = allocationCountdown.nextAllocationInSeconds;
+    if (nextIn <= 0) {
+      return null;
+    }
+
+    return (
+      <Box mb={2}>
+        <Alert severity="info">
+          <Typography variant="body2">
+            {t('servers.allocation.nextPass', { seconds: nextIn })}
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  };
 
   // Fetch matches
   const fetchMatches = async () => {

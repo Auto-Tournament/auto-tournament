@@ -22,10 +22,10 @@ export class MatchAllocationService {
   // Grace period in seconds after server becomes idle before allowing allocation.
   // This ensures demo uploads complete and match reset finishes.
   //
-  // For "real" tournaments we want to be conservative (5 minutes), but for
-  // simulation mode we still keep a much shorter delay so local testing isn't
-  // painfully slow.
-  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 300; // 5 minutes for real matches
+  // For "real" tournaments we want to be conservative, but still responsive for
+  // typical events. Two minutes is usually enough time for demo uploads and a
+  // full reset without making brackets feel "stuck".
+  private static readonly ALLOCATION_GRACE_PERIOD_SECONDS = 120; // 2 minutes for real matches
   private static readonly SIMULATION_GRACE_PERIOD_SECONDS = 30; // Fast path for simulated matches
 
   /**
@@ -176,8 +176,16 @@ export class MatchAllocationService {
       allocatable: boolean;
     }> = [];
 
-    for (const check of onlineServers) {
+    let offlineCount = 0;
+    let busyCount = 0;
+    let graceWindowCount = 0;
+
+    for (const check of statusChecks) {
       const { server, status, matchSlug, updatedAt, online } = check;
+
+      if (!online) {
+        offlineCount += 1;
+      }
 
       const dbBusy = dbBusyByServer.get(server.id) || null;
       const effectiveMatchSlug = matchSlug || dbBusy?.slug || null;
@@ -199,6 +207,7 @@ export class MatchAllocationService {
           if (age < GRACE_PERIOD_SECONDS) {
             inGraceWindow = true;
             secondsUntilReady = GRACE_PERIOD_SECONDS - age;
+            graceWindowCount += 1;
 
             // Track the *minimum* remaining time so the UI can show a single
             // countdown until the next allocation attempt is allowed.
@@ -212,6 +221,10 @@ export class MatchAllocationService {
           // No timestamp – treat as long‑idle and allocatable.
           allocatable = true;
         }
+      }
+
+      if (!isIdle && online) {
+        busyCount += 1;
       }
 
       if (allocatable) {
@@ -229,6 +242,22 @@ export class MatchAllocationService {
         secondsUntilReady,
         allocatable,
       });
+    }
+
+    // This method is called both by UI endpoints and allocator helpers; only
+    // emit a summary when there is contention so logs stay readable.
+    if (requiredServerCount > 0 && availableServerCount === 0) {
+      log.warn(
+        `[ALLOCATION] Status: ${requiredServerCount} match(es) waiting for servers, ` +
+          `${availableServerCount} allocatable, ${offlineCount} offline, ` +
+          `${busyCount} busy, ${graceWindowCount} in grace window`
+      );
+
+      if (nextAllocationInSeconds !== null) {
+        log.warn(
+          `[ALLOCATION] Next server exits grace window in ~${nextAllocationInSeconds}s (grace=${GRACE_PERIOD_SECONDS}s)`
+        );
+      }
     }
 
     // How many matches are currently waiting for servers (ready + no server_id)

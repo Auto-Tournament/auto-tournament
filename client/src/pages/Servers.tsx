@@ -218,7 +218,7 @@ export default function Servers() {
         setAllocationStatus({
           availableServerCount: availability.availableServerCount,
           requiredServerCount: availability.requiredServerCount,
-          gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+          gracePeriodSeconds: availability.gracePeriodSeconds ?? 120,
           nextAllocationInSeconds:
             typeof availability.nextAllocationInSeconds === 'number'
               ? availability.nextAllocationInSeconds
@@ -473,7 +473,12 @@ export default function Servers() {
             </Box>
 
             <Grid container spacing={2}>
-              {servers.map((server) => (
+              {servers.map((server) => {
+                const allocSnapshot = allocationStatus?.servers.find((s) => s.id === server.id);
+                const inGraceWindow = !!allocSnapshot?.inGraceWindow;
+                const secondsUntilReady = allocSnapshot?.secondsUntilReady ?? null;
+
+                return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
@@ -650,6 +655,16 @@ export default function Servers() {
                             </Typography>
                           </Box>
                         )}
+                        {inGraceWindow && typeof secondsUntilReady === 'number' && secondsUntilReady > 0 && (
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <Typography variant="caption" color="text.secondary">
+                              <strong>{t('serversPage.allocation.cooldownLabel')}:</strong>{' '}
+                              {t('serversPage.allocation.cooldownEta', {
+                                seconds: secondsUntilReady,
+                              })}
+                            </Typography>
+                          </Box>
+                        )}
                       </Box>
                     )}
                     {server.status === 'online' && (server.currentMatch || (server as Server & { queuedMatch?: string | null }).queuedMatch) && (
@@ -707,7 +722,7 @@ export default function Servers() {
                   </CardContent>
                 </Card>
               </Grid>
-              ))}
+              )})}
             </Grid>
           </>
         )}

@@ -408,7 +408,10 @@
       "empty": "No allocation data available.",
       "available": "Available servers:",
       "waiting": "Matches waiting for servers:",
-      "nextPass": "Next allocator pass in ~{{seconds}}s"
+      "nextPass": "Next allocator pass in ~{{seconds}}s",
+      "cooldownLabel": "Cooldown",
+      "cooldownDescription": "Recently finished a match – in cooldown so demos can upload and the server can fully reset (about 2 minutes).",
+      "cooldownEta": "Ready in ~{{seconds}}s"
     },
     "statusChip": {
       "checking": "Checking...",

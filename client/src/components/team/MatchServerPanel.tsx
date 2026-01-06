@@ -32,7 +32,9 @@ export function MatchServerPanel({
           ⏳ Waiting for Server Assignment
         </Typography>
         <Typography variant="body2">
-          A server will be automatically assigned shortly. This page will update automatically when the server is ready.
+          A server will be automatically assigned as soon as one becomes available. After each
+          match, servers go into a short cooldown (about 2 minutes) so demos can upload and the
+          server can fully reset. This page will update automatically when your server is ready.
         </Typography>
       </Alert>
     );
