@@ -184,6 +184,7 @@ export default function Matches() {
           availableServerCount: number;
           gracePeriodSeconds?: number;
           nextAllocationInSeconds?: number | null;
+          simulationEnabled?: boolean;
         }>('/api/tournament/server-availability');
 
         if (availability.success) {

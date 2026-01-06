@@ -221,12 +221,16 @@ class SettingsService {
    * Returns true when simulation mode should be enabled for generated MatchZy configs.
    *
    * This is intended as a **development-only** helper; in production environments
-   * it always returns false regardless of the stored setting.
+   * it always returns false unless explicitly overridden via environment.
    */
   async isSimulationModeEnabled(): Promise<boolean> {
-    // Hard-disable simulation in production for safety.
+    // By default, hard-disable simulation in production for safety. It can be
+    // explicitly enabled by setting MATCHZY_ENABLE_SIMULATION_IN_PROD=true in
+    // the API environment (e.g. for test events or lab environments).
     if (process.env.NODE_ENV === 'production') {
-      return false;
+      if (process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
+        return false;
+      }
     }
 
     const value = await this.getSetting('simulate_matches');

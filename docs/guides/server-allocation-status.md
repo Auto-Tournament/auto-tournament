@@ -244,7 +244,7 @@ The `matchzy_tournament_updated` convar contains a Unix timestamp of when the st
    - Don't poll too frequently (wastes resources)
    - Don't poll too rarely (delays allocation)
 
-2. **Grace Period**: Wait 5 minutes after status becomes `idle` before allocating
+2. **Grace Period**: Wait ~2 minutes after status becomes `idle` before allocating
 
    - Ensures demo uploads are complete
    - Ensures match reset is finished
@@ -262,8 +262,73 @@ The `matchzy_tournament_updated` convar contains a Unix timestamp of when the st
 
 5. **Match ID Checking**: When status is `idle` but match ID exists:
    - Check timestamp age
-   - If > 5 minutes old, safe to allocate
-   - If < 5 minutes old, wait
+   - If > 2 minutes old, safe to allocate
+   - If < 2 minutes old, wait
+
+## Simulation Mode (Auto‑Veto & Fast Testing)
+
+For development, test environments, or demo events you can enable **simulation mode** so the
+allocation pipeline automatically completes map vetoes and drives matches forward without manual
+intervention.
+
+### What simulation mode does
+
+- Automatically completes map veto and side picks for any bracket match that:
+  - Belongs to the current tournament
+  - Has both teams assigned
+  - Is in `pending` or `ready` state
+  - Has no existing veto state
+- Uses the allocator’s **simulation grace period** (30 seconds) instead of the normal production
+  grace period when deciding when to reuse servers.
+
+This is ideal for:
+
+- Local development
+- Automated tests
+- Dry‑runs of a bracket
+
+It should not be used for real tournaments unless you fully understand the implications.
+
+### Enabling simulation mode
+
+Simulation mode is controlled entirely by the **API**, not by the frontend build.
+
+1. **Allow simulation in the current environment**
+
+   - In **development** (`NODE_ENV=development`), simulation is allowed by default.
+   - In **production**, simulation is disabled by default for safety. To explicitly allow it
+     (for a lab or test deployment), set this environment variable for the API container:
+
+   ```bash
+   MATCHZY_ENABLE_SIMULATION_IN_PROD=true
+   ```
+
+2. **Turn on the `simulate_matches` setting**
+
+   There are two supported ways to do this:
+
+   - **From the Settings UI (dev builds):**
+     - Go to **Settings → Developer Options**.
+     - Turn on **“Simulate matches”.**
+
+   - **Via the tournament start API (non‑production):**
+
+     ```http
+     POST /api/tournament/start
+     Content-Type: application/json
+
+     {
+       "enableSimulation": true
+     }
+     ```
+
+     On non‑production builds this sets the `simulate_matches` setting to `1` and logs:
+     `[VETO-SIM] Simulation mode enabled via /api/tournament/start payload`.
+
+When both conditions are met, `settingsService.isSimulationModeEnabled()` returns `true`, and:
+
+- The allocator uses the simulation grace period where applicable.
+- The tournament start flow auto‑vetoes eligible matches and queues them for allocation.
 
 ## API Integration Example
 

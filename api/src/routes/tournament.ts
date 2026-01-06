@@ -623,6 +623,8 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
 router.get('/server-availability', requireAuth, async (_req: Request, res: Response) => {
   try {
     const status = await matchAllocationService.getAllocationStatus();
+    const simulationEnabled = await settingsService.isSimulationModeEnabled();
+
     return res.json({
       success: true,
       availableServerCount: status.availableServerCount,
@@ -630,6 +632,7 @@ router.get('/server-availability', requireAuth, async (_req: Request, res: Respo
       nextAllocationInSeconds: status.nextAllocationInSeconds,
       requiredServerCount: status.requiredServerCount,
       servers: status.servers,
+      simulationEnabled,
     });
   } catch (error) {
     log.error('Error checking server availability', error);

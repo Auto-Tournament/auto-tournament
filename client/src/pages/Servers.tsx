@@ -212,6 +212,7 @@ export default function Servers() {
           secondsUntilReady: number | null;
           allocatable: boolean;
         }>;
+        simulationEnabled?: boolean;
       }>('/api/tournament/server-availability');
 
       if (availability.success) {
