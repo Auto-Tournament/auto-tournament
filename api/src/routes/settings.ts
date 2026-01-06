@@ -26,6 +26,7 @@ const mapSettingsResponse = async () => {
   const matchzyAdminChatPrefix = await settingsService.getMatchzyAdminChatPrefix();
   const matchzyKnifeEnabledDefault = await settingsService.isKnifeRoundEnabledByDefault();
   const ratingsEnabled = await settingsService.areRatingsEnabled();
+  const matchzyDebugChatEnabled = await settingsService.isMatchzyDebugChatEnabled();
 
   return {
     webhookUrl,
@@ -39,6 +40,7 @@ const mapSettingsResponse = async () => {
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
     ratingsEnabled,
+    matchzyDebugChatEnabled,
   };
 };
 
@@ -59,6 +61,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
     ratingsEnabled,
+    matchzyDebugChatEnabled,
   } = req.body as {
     webhookUrl?: unknown;
     steamApiKey?: unknown;
@@ -68,6 +71,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyAdminChatPrefix?: unknown;
     matchzyKnifeEnabledDefault?: unknown;
     ratingsEnabled?: unknown;
+    matchzyDebugChatEnabled?: unknown;
   };
 
   try {
@@ -190,6 +194,24 @@ router.put('/', async (req: Request, res: Response) => {
         ratingsEnabled === null ? null : ratingsEnabled === true ? '1' : '0';
 
       await settingsService.setSetting('ratings_enabled', value);
+    }
+
+    if (matchzyDebugChatEnabled !== undefined) {
+      if (typeof matchzyDebugChatEnabled !== 'boolean' && matchzyDebugChatEnabled !== null) {
+        return res.status(400).json({
+          success: false,
+          error: 'matchzyDebugChatEnabled must be a boolean or null',
+        });
+      }
+
+      const value =
+        matchzyDebugChatEnabled === null
+          ? null
+          : matchzyDebugChatEnabled === true
+          ? '1'
+          : '0';
+
+      await settingsService.setSetting('matchzy_debug_chat', value);
     }
 
     return res.json({

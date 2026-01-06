@@ -77,11 +77,13 @@ export function getMatchZyDemoUploadCommand(baseUrl: string, matchSlug: string):
  * Get RCON commands for core MatchZy settings that we want to control from the app:
  * - Chat prefixes
  * - Knife round enabled-by-default toggle
+ * - Debug chat toggle
  */
 export function getMatchZyCoreSettingsCommands(options: {
   chatPrefix: string | null;
   adminChatPrefix: string | null;
   knifeEnabledDefault: boolean | null;
+  debugChatEnabled: boolean | null;
 }): string[] {
   const commands: string[] = [];
 
@@ -95,6 +97,10 @@ export function getMatchZyCoreSettingsCommands(options: {
 
   if (options.knifeEnabledDefault !== null) {
     commands.push(`matchzy_knife_enabled_default ${options.knifeEnabledDefault ? '1' : '0'}`);
+  }
+
+  if (options.debugChatEnabled !== null) {
+    commands.push(`matchzy_debug_chat ${options.debugChatEnabled ? '1' : '0'}`);
   }
 
   return commands;
@@ -121,6 +127,7 @@ export function getMatchZyServerConfigCommands(config: {
   demoPath?: string | null;
   demoNameFormat?: string | null;
   demoUploadUrl?: string | null;
+  debugChatEnabled?: boolean | null;
 }): string[] {
   const commands: string[] = [];
 
@@ -142,48 +149,27 @@ export function getMatchZyServerConfigCommands(config: {
     commands.push(`matchzy_minimum_ready_required ${config.minimumReadyRequired}`);
   }
   if (config.pauseAfterRestore !== undefined && config.pauseAfterRestore !== null) {
-    commands.push(
-      `matchzy_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`
-    );
+    commands.push(`matchzy_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`);
   }
   if (config.stopCommandAvailable !== undefined && config.stopCommandAvailable !== null) {
-    commands.push(
-      `matchzy_stop_command_available ${config.stopCommandAvailable ? '1' : '0'}`
-    );
+    commands.push(`matchzy_stop_command_available ${config.stopCommandAvailable ? '1' : '0'}`);
   }
   if (config.stopCommandNoDamage !== undefined && config.stopCommandNoDamage !== null) {
-    commands.push(
-      `matchzy_stop_command_no_damage ${config.stopCommandNoDamage ? '1' : '0'}`
-    );
+    commands.push(`matchzy_stop_command_no_damage ${config.stopCommandNoDamage ? '1' : '0'}`);
   }
-  if (
-    config.whitelistEnabledDefault !== undefined &&
-    config.whitelistEnabledDefault !== null
-  ) {
+  if (config.whitelistEnabledDefault !== undefined && config.whitelistEnabledDefault !== null) {
     commands.push(
       `matchzy_whitelist_enabled_default ${config.whitelistEnabledDefault ? '1' : '0'}`
     );
   }
-  if (
-    config.kickWhenNoMatchLoaded !== undefined &&
-    config.kickWhenNoMatchLoaded !== null
-  ) {
-    commands.push(
-      `matchzy_kick_when_no_match_loaded ${config.kickWhenNoMatchLoaded ? '1' : '0'}`
-    );
+  if (config.kickWhenNoMatchLoaded !== undefined && config.kickWhenNoMatchLoaded !== null) {
+    commands.push(`matchzy_kick_when_no_match_loaded ${config.kickWhenNoMatchLoaded ? '1' : '0'}`);
   }
   if (config.playoutEnabledDefault !== undefined && config.playoutEnabledDefault !== null) {
-    commands.push(
-      `matchzy_playout_enabled_default ${config.playoutEnabledDefault ? '1' : '0'}`
-    );
+    commands.push(`matchzy_playout_enabled_default ${config.playoutEnabledDefault ? '1' : '0'}`);
   }
-  if (
-    config.resetCvarsOnSeriesEnd !== undefined &&
-    config.resetCvarsOnSeriesEnd !== null
-  ) {
-    commands.push(
-      `matchzy_reset_cvars_on_series_end ${config.resetCvarsOnSeriesEnd ? '1' : '0'}`
-    );
+  if (config.resetCvarsOnSeriesEnd !== undefined && config.resetCvarsOnSeriesEnd !== null) {
+    commands.push(`matchzy_reset_cvars_on_series_end ${config.resetCvarsOnSeriesEnd ? '1' : '0'}`);
   }
   if (
     config.usePauseCommandForTacticalPause !== undefined &&
@@ -208,6 +194,10 @@ export function getMatchZyServerConfigCommands(config: {
   }
   if (config.demoUploadUrl !== undefined && config.demoUploadUrl !== null) {
     commands.push(`matchzy_demo_upload_url "${config.demoUploadUrl}"`);
+  }
+
+  if (config.debugChatEnabled !== undefined && config.debugChatEnabled !== null) {
+    commands.push(`matchzy_debug_chat ${config.debugChatEnabled ? '1' : '0'}`);
   }
 
   return commands;

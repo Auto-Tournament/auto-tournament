@@ -633,6 +633,10 @@
         "cancel": "Cancel",
         "confirm": "Yes, reset API & wipe data",
         "confirmLoading": "Resetting…"
+      },
+      "debugChat": {
+        "label": "Enable MatchZy debug chat messages",
+        "description": "When enabled, MatchZy will print additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
       }
     },
     "footer": {

@@ -635,6 +635,10 @@
         "cancel": "取消",
         "confirm": "是的，重置 API 并清空数据",
         "confirmLoading": "正在重置…"
+      },
+      "debugChat": {
+        "label": "启用 MatchZy 调试聊天消息",
+        "description": "启用后，MatchZy 会在游戏内聊天中打印额外的调试消息（例如玩家连接/断开、事件追踪等）。仅建议在开发和测试环境中使用，请不要在正式赛事中启用。"
       }
     },
     "footer": {

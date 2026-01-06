@@ -88,6 +88,8 @@ export default function Settings() {
   const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
+  const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
+  const [initialMatchzyDebugChatEnabled, setInitialDebugChatEnabled] = useState(false);
   const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
   const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -118,6 +120,10 @@ export default function Settings() {
           : true;
       const ratingsEnabledValue =
         response.settings.ratingsEnabled !== undefined ? response.settings.ratingsEnabled : true;
+      const debugChatEnabled =
+        response.settings.matchzyDebugChatEnabled !== undefined
+          ? response.settings.matchzyDebugChatEnabled
+          : false;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
@@ -132,6 +138,8 @@ export default function Settings() {
       setInitialMatchzyAdminChatPrefix(adminChatPrefix);
       setMatchzyKnifeEnabledDefault(knifeEnabled);
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
+      setMatchzyDebugChatEnabled(debugChatEnabled);
+      setInitialDebugChatEnabled(debugChatEnabled);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
     } catch (err) {
@@ -173,8 +181,9 @@ export default function Settings() {
           matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
-          matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
+          matchzyKnifeEnabledDefault,
           ratingsEnabled,
+          matchzyDebugChatEnabled,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -195,6 +204,10 @@ export default function Settings() {
           response.settings.ratingsEnabled !== undefined
             ? response.settings.ratingsEnabled
             : true;
+        const newDebugChatEnabled =
+          response.settings.matchzyDebugChatEnabled !== undefined
+            ? response.settings.matchzyDebugChatEnabled
+            : false;
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
         const timescaleChanged =
@@ -216,6 +229,8 @@ export default function Settings() {
         setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
         setRatingsEnabled(newRatingsEnabled);
         setInitialRatingsEnabled(newRatingsEnabled);
+        setMatchzyDebugChatEnabled(newDebugChatEnabled);
+        setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
 
         if (showSuccessMessage) {
           showSuccess(t('settingsPage.success.saveSettings'));
@@ -279,6 +294,7 @@ export default function Settings() {
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
       ratingsEnabled !== initialRatingsEnabled ||
+      matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
       (isDev &&
         (simulateMatches !== initialSimulateMatches ||
           simulationTimescale !== initialSimulationTimescale))
@@ -700,6 +716,23 @@ export default function Settings() {
                     <FormControlLabel
                       control={
                         <Switch
+                          checked={matchzyDebugChatEnabled}
+                          onChange={(e) => {
+                            setMatchzyDebugChatEnabled(e.target.checked);
+                            void handleSave(true);
+                          }}
+                          color="primary"
+                          size="small"
+                        />
+                      }
+                      label={t('settingsPage.developer.debugChat.label')}
+                    />
+                    <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+                      {t('settingsPage.developer.debugChat.description')}
+                    </Typography>
+                    <FormControlLabel
+                      control={
+                        <Switch
                           checked={simulateMatches}
                           onChange={(event) => setSimulateMatches(event.target.checked)}
                           inputProps={
@@ -835,6 +868,7 @@ export default function Settings() {
                       matchzyChatPrefix: null;
                       matchzyAdminChatPrefix: null;
                       matchzyKnifeEnabledDefault: null;
+                      matchzyDebugChatEnabled?: boolean;
                       simulateMatches?: boolean;
                     } = {
                       webhookUrl: null,
@@ -842,6 +876,7 @@ export default function Settings() {
                       matchzyChatPrefix: null,
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
+                      matchzyDebugChatEnabled: false,
                       ...(isDev && { simulateMatches: false }),
                     };
 
@@ -859,6 +894,10 @@ export default function Settings() {
                       response.settings.matchzyKnifeEnabledDefault !== undefined
                         ? response.settings.matchzyKnifeEnabledDefault
                         : true;
+                    const newDebugChatEnabled =
+                      response.settings.matchzyDebugChatEnabled !== undefined
+                        ? response.settings.matchzyDebugChatEnabled
+                        : false;
 
                     setWebhookUrl(newWebhook);
                     setSteamApiKey(newSteamKey);
@@ -872,6 +911,8 @@ export default function Settings() {
                     setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
                     setMatchzyKnifeEnabledDefault(newKnifeEnabled);
                     setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
+                    setMatchzyDebugChatEnabled(newDebugChatEnabled);
+                    setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
 
                     window.dispatchEvent(
                       new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {

@@ -223,17 +223,20 @@ export async function loadMatchOnServer(
     await delay(300);
 
     try {
-      const [chatPrefix, adminChatPrefix, knifeEnabledDefault] = await Promise.all([
-        settingsService.getMatchzyChatPrefix(),
-        settingsService.getMatchzyAdminChatPrefix(),
-        settingsService.isKnifeRoundEnabledByDefault(),
-      ]);
+      const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled] =
+        await Promise.all([
+          settingsService.getMatchzyChatPrefix(),
+          settingsService.getMatchzyAdminChatPrefix(),
+          settingsService.isKnifeRoundEnabledByDefault(),
+          settingsService.isMatchzyDebugChatEnabled(),
+        ]);
 
       // Global defaults applied first
       const coreSettingsCommands = getMatchZyCoreSettingsCommands({
         chatPrefix,
         adminChatPrefix,
         knifeEnabledDefault,
+        debugChatEnabled,
       });
 
       // Per-server overrides (if any) applied afterwards

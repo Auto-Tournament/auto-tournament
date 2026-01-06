@@ -9,6 +9,7 @@ export type AppSettingKey =
   | 'matchzy_chat_prefix'
   | 'matchzy_admin_chat_prefix'
   | 'matchzy_knife_enabled_default'
+  | 'matchzy_debug_chat'
   | 'ratings_enabled';
 
 export interface AppSetting {
@@ -25,6 +26,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_chat_prefix',
   'matchzy_admin_chat_prefix',
   'matchzy_knife_enabled_default',
+  'matchzy_debug_chat',
   'ratings_enabled',
 ];
 
@@ -173,6 +175,16 @@ class SettingsService {
     const trimmed = value ? value.trim() : '';
     // Default to a sensible admin prefix if none is configured explicitly
     return trimmed !== '' ? trimmed : '[ADMIN]';
+  }
+
+  async isMatchzyDebugChatEnabled(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_debug_chat');
+    if (!value) {
+      // Explicit default: debug chat off unless enabled.
+      return false;
+    }
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
   async isKnifeRoundEnabledByDefault(): Promise<boolean> {

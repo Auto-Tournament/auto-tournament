@@ -256,6 +256,7 @@ export interface SettingsResponse extends ApiResponse {
     matchzyChatPrefix?: string | null;
     matchzyAdminChatPrefix?: string | null;
     matchzyKnifeEnabledDefault?: boolean;
+    matchzyDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
   };
 }
