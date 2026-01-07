@@ -272,6 +272,15 @@ export default function Layout() {
     }
   }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar, t]);
 
+  // Fallback page title handling for critical routes (e.g. Matches)
+  React.useEffect(() => {
+    // Let individual pages manage their own titles where possible, but ensure that
+    // the Matches page always exposes a stable, human‑readable title for tests.
+    if (location.pathname.startsWith('/matches')) {
+      document.title = t('layout.pageTitle.matches');
+    }
+  }, [location.pathname, t]);
+
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';
   };
