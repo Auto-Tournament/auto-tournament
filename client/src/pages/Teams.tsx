@@ -120,7 +120,7 @@ export default function Teams() {
     return () => {
       setHeaderActions(null);
     };
-  }, [teams.length, setHeaderActions, selectionMode, selectedTeamIds]);
+  }, [teams, setHeaderActions, selectionMode, selectedTeamIds, t]);
 
   const loadTeams = useCallback(async () => {
     try {
@@ -135,7 +135,7 @@ export default function Teams() {
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     loadTeams();

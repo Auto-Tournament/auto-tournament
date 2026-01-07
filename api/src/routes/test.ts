@@ -53,6 +53,8 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
   // - keep full Unicode content (including non-Latin characters)
   // - strip only control characters
   const trimmed = message.trim().slice(0, 300); // limit length
+  // Strip ASCII control characters while preserving non‑Latin content.
+  // eslint-disable-next-line no-control-regex
   const sanitized = trimmed.replace(/[\u0000-\u001F\u007F-\u009F]/g, '');
 
   const scopeValue = typeof scope === 'string' ? scope.slice(0, 100) : undefined;

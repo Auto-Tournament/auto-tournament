@@ -7,7 +7,6 @@ import {
   SportsEsports as MatchIcon,
   Storage as ServerIcon,
   People as PeopleIcon,
-  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { LineChart, PieChart } from '@mui/x-charts';
 import { api } from '../../utils/api';
@@ -275,16 +274,6 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   const serverStatusPieColors = [theme.palette.success.main, theme.palette.error.main];
 
   const playerDistributionPieColors = [theme.palette.success.main, theme.palette.secondary.main];
-
-  const recentMatchLineColors = [theme.palette.primary.main];
-
-  const formatMatchStatus = (value: number): string => {
-    if (value === 5) return 'Completed';
-    if (value === 4) return 'Live';
-    if (value === 3) return 'Loaded';
-    if (value === 2) return 'Ready';
-    return 'Pending';
-  };
 
   const hasData = tournament || matches.length > 0 || servers.length > 0 || players.length > 0;
 

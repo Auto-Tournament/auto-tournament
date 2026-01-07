@@ -31,7 +31,7 @@ interface ManualMatchBasicsStepProps {
 }
 
 export const ManualMatchBasicsStep: React.FC<ManualMatchBasicsStepProps> = ({
-  submitAttempted,
+  submitAttempted: _submitAttempted,
   teams,
   team1Id,
   team2Id,

@@ -133,9 +133,6 @@ export class MatchAllocationService {
       })
     );
 
-    let onlineServers = statusChecks.filter((s) => s.online);
-    onlineServers = onlineServers.filter((s) => !this.allocatingServers.has(s.server.id));
-
     // For the status view we primarily trust the MatchZy tournament status
     // (convars) as the source of truth about whether a server is actually idle.
     // We still surface any DB‑backed "busy" matches as metadata so the UI can

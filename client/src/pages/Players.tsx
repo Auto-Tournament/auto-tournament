@@ -144,7 +144,7 @@ export default function Players() {
     return () => {
       setHeaderActions(null);
     };
-  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds]);
+  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds, filteredPlayers, t]);
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -159,7 +159,7 @@ export default function Players() {
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     loadPlayers();

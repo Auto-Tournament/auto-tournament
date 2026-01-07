@@ -73,7 +73,7 @@ export default function Maps() {
     return () => {
       setHeaderActions(null);
     };
-  }, [activeTab, setHeaderActions]);
+  }, [activeTab, setHeaderActions, t, handleOpenModal, handleOpenMapPoolModal]);
 
   const loadMaps = useCallback(async () => {
     try {
@@ -87,7 +87,7 @@ export default function Maps() {
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   const loadMapPools = useCallback(async () => {
     try {
@@ -108,11 +108,14 @@ export default function Maps() {
     setPoolActionsModalOpen(true);
   };
 
-  const handleOpenMapPoolModal = (pool?: MapPool) => {
-    setEditingMapPool(pool || null);
-    setMapPoolModalOpen(true);
-    setPoolActionsModalOpen(false);
-  };
+  const handleOpenMapPoolModal = useCallback(
+    (pool?: MapPool) => {
+      setEditingMapPool(pool || null);
+      setMapPoolModalOpen(true);
+      setPoolActionsModalOpen(false);
+    },
+    []
+  );
 
   const handleCloseMapPoolModal = () => {
     setMapPoolModalOpen(false);
@@ -214,11 +217,14 @@ export default function Maps() {
     setActionsModalOpen(true);
   };
 
-  const handleOpenModal = (map?: Map) => {
-    setEditingMap(map || null);
-    setModalOpen(true);
-    setActionsModalOpen(false);
-  };
+  const handleOpenModal = useCallback(
+    (map?: Map) => {
+      setEditingMap(map || null);
+      setModalOpen(true);
+      setActionsModalOpen(false);
+    },
+    []
+  );
 
   const handleCloseModal = () => {
     setModalOpen(false);

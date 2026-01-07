@@ -32,9 +32,9 @@ export default function MapActionsModal({
   onEdit,
   onDelete,
 }: MapActionsModalProps) {
-  if (!map) return null;
-
   const { t } = useTranslation();
+
+  if (!map) return null;
 
   const getDefaultWebpUrlForId = (mapId: string): string =>
     `https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails/${mapId}.webp`;

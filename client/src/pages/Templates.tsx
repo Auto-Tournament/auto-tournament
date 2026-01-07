@@ -190,7 +190,7 @@ export default function Templates() {
     loadTournamentStatus();
     loadMaps();
     loadMapPools();
-  }, [loadTemplates, loadTournamentStatus, loadMaps, loadMapPools]);
+  }, [t, loadTemplates, loadTournamentStatus, loadMaps, loadMapPools]);
 
   const handleDelete = async () => {
     if (!templateToDelete) return;
@@ -308,7 +308,7 @@ export default function Templates() {
     return () => {
       setHeaderActions(null);
     };
-  }, [setHeaderActions, navigate]);
+  }, [setHeaderActions, navigate, t]);
 
   if (loading) {
     return (

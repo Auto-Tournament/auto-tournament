@@ -25,7 +25,6 @@ import BracketsViewerVisualization from '../components/visualizations/BracketsVi
 import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { MatchCard } from '../components/shared/MatchCard';
 import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { getRoundLabel } from '../utils/matchUtils';
@@ -612,24 +611,7 @@ export default function Bracket() {
       )}
 
       {/* Allocation / cooldown status helper */}
-      {!isFullscreen && allocationCountdown.requiredServerCount > 0 && (
-        <Box px={2} mb={2}>
-          <Typography variant="body2" color="text.secondary">
-            Waiting for idle servers before batch allocation:{' '}
-            <strong>
-              {allocationCountdown.availableServerCount}/{allocationCountdown.requiredServerCount} ready
-            </strong>
-            {allocationCountdown.nextAllocationInSeconds !== null &&
-              allocationCountdown.nextAllocationInSeconds > 0 && (
-                <>
-                  {' '}
-                  – next reuse in{' '}
-                  <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
-                </>
-              )}
-          </Typography>
-        </Box>
-      )}
+      {!isFullscreen && renderAllocationBanner()}
 
       {/* Fullscreen exit button - only visible in fullscreen */}
       {isFullscreen && (

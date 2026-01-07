@@ -102,7 +102,7 @@ const AdminTools: React.FC = () => {
     return () => {
       setHeaderActions(null);
     };
-  }, [setHeaderActions, loadingServers, loadServers]);
+  }, [setHeaderActions, loadingServers, loadServers, t]);
 
   const handleExecuteCommand = async (command: AdminCommand) => {
     // Get the command value (input from user if required)

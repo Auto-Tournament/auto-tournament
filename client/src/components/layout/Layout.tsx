@@ -270,7 +270,7 @@ export default function Layout() {
     if (webhookConfigured === true) {
       hasShownWebhookWarningRef.current = false;
     }
-  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar]);
+  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar, t]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';

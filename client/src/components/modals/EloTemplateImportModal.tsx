@@ -63,41 +63,44 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
     onClose();
   };
 
-  const validateTemplate = (template: any, index: number): string | null => {
-    if (!template || typeof template !== 'object') {
+  const validateTemplate = (template: unknown, index: number): string | null => {
+    if (!template || typeof template !== 'object' || template === null) {
       return `Template ${index + 1}: Must be an object`;
     }
 
-    if (!template.name || typeof template.name !== 'string' || template.name.trim() === '') {
+    const typed = template as { [key: string]: unknown };
+
+    if (!typed.name || typeof typed.name !== 'string' || typed.name.trim() === '') {
       return `Template ${index + 1}: Missing or invalid "name"`;
     }
 
-    if (template.id !== undefined && typeof template.id !== 'string') {
-      return `Template "${template.name}": "id" must be a string if provided`;
+    if (typed.id !== undefined && typeof typed.id !== 'string') {
+      return `Template "${typed.name}": "id" must be a string if provided`;
     }
 
-    if (template.description !== undefined && typeof template.description !== 'string') {
-      return `Template "${template.name}": "description" must be a string if provided`;
+    if (typed.description !== undefined && typeof typed.description !== 'string') {
+      return `Template "${typed.name}": "description" must be a string if provided`;
     }
 
-    if (template.enabled !== undefined && typeof template.enabled !== 'boolean') {
-      return `Template "${template.name}": "enabled" must be a boolean if provided`;
+    if (typed.enabled !== undefined && typeof typed.enabled !== 'boolean') {
+      return `Template "${typed.name}": "enabled" must be a boolean if provided`;
     }
 
-    if (template.weights !== undefined) {
-      if (typeof template.weights !== 'object' || Array.isArray(template.weights)) {
-        return `Template "${template.name}": "weights" must be an object if provided`;
+    if (typed.weights !== undefined) {
+      if (typeof typed.weights !== 'object' || typed.weights === null || Array.isArray(typed.weights)) {
+        return `Template "${typed.name}": "weights" must be an object if provided`;
       }
-      for (const [key, value] of Object.entries(template.weights)) {
+      for (const [key, value] of Object.entries(typed.weights as Record<string, unknown>)) {
         if (value !== undefined && typeof value !== 'number') {
-          return `Template "${template.name}": Weight "${key}" must be a number`;
+          return `Template "${typed.name}": Weight "${key}" must be a number`;
         }
       }
     }
 
     const checkNumber = (field: string, label: string) => {
-      if (template[field] !== undefined && typeof template[field] !== 'number') {
-        return `Template "${template.name}": "${label}" must be a number if provided`;
+      const value = typed[field];
+      if (value !== undefined && typeof value !== 'number') {
+        return `Template "${typed.name}": "${label}" must be a number if provided`;
       }
       return null;
     };

@@ -349,13 +349,14 @@ export default function Servers() {
       setHeaderActions(null);
     };
   }, [
-    servers.length,
+    servers,
     refreshing,
     setHeaderActions,
     loadServers,
     loadAllocationStatus,
     selectionMode,
     selectedServerIds,
+    t,
   ]);
 
   useEffect(() => {

@@ -86,7 +86,7 @@ class MatchService {
       const adminRows = await db.queryAsync<{ id: string }>(
         'SELECT id FROM players WHERE is_admin = 1'
       );
-      (config as any).admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+      config.admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
     } catch (e) {
       log.warn('Failed to attach admins to manual match config', e as Error);
     }

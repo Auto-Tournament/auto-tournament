@@ -41,9 +41,9 @@ export default function MapPoolActionsModal({
   onSetDefault,
   onToggleEnabled,
 }: MapPoolActionsModalProps) {
-  if (!mapPool) return null;
-
   const { t } = useTranslation();
+
+  if (!mapPool) return null;
 
   const mapIds = mapPool.mapIds ?? [];
 

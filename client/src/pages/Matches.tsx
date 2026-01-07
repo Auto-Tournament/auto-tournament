@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
@@ -46,7 +46,7 @@ export default function Matches() {
     document.title = t('layout.pageTitle.matches');
   }, [t]);
 
-  // Initialize Socket.io connection
+  // Initialize Socket.io connection (mount-only)
   useEffect(() => {
     // Connect to same origin - works in both dev (proxied) and production (Caddy)
     const newSocket = io();
@@ -172,10 +172,10 @@ export default function Matches() {
     return () => {
       newSocket.disconnect();
     };
-  }, []);
+  }, [fetchMatches]);
 
   // Poll allocation status periodically so we can show a lightweight
-  // "next servers in Xs" indicator on the Matches page.
+  // "next servers in Xs" indicator on the Matches page (mount-only).
   useEffect(() => {
     const loadAllocationStatus = async () => {
       try {
@@ -254,7 +254,7 @@ export default function Matches() {
   };
 
   // Fetch matches
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     try {
       const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
 
@@ -320,11 +320,11 @@ export default function Matches() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchMatches();
-  }, []);
+  }, [fetchMatches]);
 
   // Legacy delete handler kept for reference; match deletion is currently wired
   // through the MatchDetailsModal, which calls its own delete endpoint and then
@@ -427,7 +427,7 @@ export default function Matches() {
 
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
-
+      {renderAllocationBanner()}
       {/* Manual match creation + allocation countdown */}
       {hasMatches && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>

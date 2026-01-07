@@ -89,7 +89,7 @@ export default function Settings() {
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
   const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
-  const [initialMatchzyDebugChatEnabled, setInitialDebugChatEnabled] = useState(false);
+  const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
   const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
   const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -139,7 +139,7 @@ export default function Settings() {
       setMatchzyKnifeEnabledDefault(knifeEnabled);
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
       setMatchzyDebugChatEnabled(debugChatEnabled);
-      setInitialDebugChatEnabled(debugChatEnabled);
+      setInitialMatchzyDebugChatEnabled(debugChatEnabled);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
     } catch (err) {
@@ -274,6 +274,7 @@ export default function Settings() {
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
       ratingsEnabled,
+      matchzyDebugChatEnabled,
       simulateMatches,
       simulationTimescale,
       isDev,
@@ -282,6 +283,7 @@ export default function Settings() {
       showSnackbar,
       initialSimulateMatches,
       initialSimulationTimescale,
+      t,
     ]
   );
 

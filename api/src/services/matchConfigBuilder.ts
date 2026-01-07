@@ -298,7 +298,7 @@ export const generateMatchConfig = async (
     const adminRows = await db.queryAsync<{ id: string }>(
       'SELECT id FROM players WHERE is_admin = 1'
     );
-    (config as any).admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+    config.admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
   } catch (e) {
     console.error('Failed to attach admins to standard match config', e);
   }
@@ -485,7 +485,7 @@ async function generateShuffleMatchConfig(
     const adminRows = await db.queryAsync<{ id: string }>(
       'SELECT id FROM players WHERE is_admin = 1'
     );
-    (config as any).admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
+    config.admins = Array.isArray(adminRows) ? adminRows.map((row) => row.id) : [];
   } catch (e) {
     console.error('Failed to attach admins to shuffle match config', e);
   }
