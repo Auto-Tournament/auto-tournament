@@ -16,7 +16,12 @@ import {
   Shuffle,
   Casino,
 } from '@mui/icons-material';
-import { TOURNAMENT_TYPES, TOURNAMENT_CATEGORIES, type TournamentType } from '../../constants/tournament';
+import {
+  TOURNAMENT_TYPES,
+  TOURNAMENT_CATEGORIES,
+  type TournamentType,
+} from '../../constants/tournament';
+import { useTranslation } from 'react-i18next';
 
 interface TournamentTypeSelectorProps {
   selectedType: string;
@@ -37,6 +42,7 @@ export function TournamentTypeSelector({
   onTypeChange,
   disabled = false,
 }: TournamentTypeSelectorProps) {
+  const { t } = useTranslation();
   const getIcon = (iconName?: string) => {
     if (!iconName) return null;
     const IconComponent = iconMap[iconName];
@@ -56,7 +62,7 @@ export function TournamentTypeSelector({
         return (
           <Box key={category.id} sx={{ mb: 3 }}>
             <Typography variant="h6" fontWeight={600} mb={2}>
-              {category.label}
+              {t(`tournament.typeSelector.categories.${category.id}.label`)}
             </Typography>
 
             <Grid container spacing={2}>
@@ -109,12 +115,12 @@ export function TournamentTypeSelector({
                               )}
                               <Box flex={1}>
                                 <Typography variant="h6" fontWeight={600}>
-                                  {type.label}
+                                  {t(`tournament.typeSelector.types.${type.value}.label`)}
                                 </Typography>
                               </Box>
                               {isSelected && (
                                 <Chip
-                                  label="Selected"
+                                  label={t('tournament.typeSelector.selectedChip')}
                                   size="small"
                                   color="primary"
                                   sx={{ height: 24 }}
@@ -123,7 +129,7 @@ export function TournamentTypeSelector({
                             </Box>
 
                             <Typography variant="body2" color="text.secondary">
-                              {type.description}
+                              {t(`tournament.typeSelector.types.${type.value}.description`)}
                             </Typography>
                           </Stack>
                         </CardContent>

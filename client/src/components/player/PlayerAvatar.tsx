@@ -17,7 +17,7 @@ interface PlayerAvatarProps {
  * - Otherwise fall back to the deterministic backend-generated SVG at
  *   /api/players/:id/avatar.svg so all views stay visually consistent.
  */
-export function PlayerAvatar({ id, name, avatarUrl, size = 40, isAdmin }: PlayerAvatarProps) {
+export function PlayerAvatar({ id, name, avatarUrl, size = 40, isAdmin: _isAdmin }: PlayerAvatarProps) {
   const hasExplicit = typeof avatarUrl === 'string' && avatarUrl.trim().length > 0;
   const hasId = typeof id === 'string' && id.trim().length > 0;
 

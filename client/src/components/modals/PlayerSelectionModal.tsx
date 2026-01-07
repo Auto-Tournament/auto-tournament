@@ -25,6 +25,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { PlayerDetail } from '../../types/api.types';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { PlayerName } from '../player/PlayerName';
+import { useTranslation } from 'react-i18next';
 
 interface PlayerSelectionModalProps {
   open: boolean;
@@ -52,6 +53,7 @@ export default function PlayerSelectionModal({
   const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const { showWarning, showError } = useSnackbar();
+  const { t } = useTranslation();
 
   // Define functions before useEffect hooks that use them
   const loadPlayers = async () => {
@@ -66,10 +68,10 @@ export default function PlayerSelectionModal({
         setPlayers(response.players);
         setFilteredPlayers(response.players);
       } else {
-        showError('Failed to load players');
+        showError(t('playerSelectionModal.errors.loadFailed'));
       }
     } catch (err) {
-      showError('Failed to load players');
+      showError(t('playerSelectionModal.errors.loadFailed'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -157,14 +159,28 @@ export default function PlayerSelectionModal({
   const isPlayerSelected = (playerId: string) => selectedIds.has(playerId);
 
   return (
-    <Dialog open={open} onClose={handleCancel} maxWidth="md" fullWidth data-testid="player-selection-modal">
+    <Dialog
+      open={open}
+      onClose={handleCancel}
+      maxWidth="md"
+      fullWidth
+      data-testid="player-selection-modal"
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box display="flex" alignItems="center" gap={1}>
             <PersonIcon color="primary" />
-            <Typography variant="h6">{title || 'Select Players'}</Typography>
+            <Typography variant="h6">
+              {title || t('playerSelectionModal.title')}
+            </Typography>
             {selectedIds.size > 0 && (
-              <Chip label={`${selectedIds.size} selected`} size="small" color="primary" />
+              <Chip
+                label={t('playerSelectionModal.selectedCount', {
+                  count: selectedIds.size,
+                })}
+                size="small"
+                color="primary"
+              />
             )}
           </Box>
           <IconButton size="small" onClick={handleCancel}>
@@ -176,7 +192,7 @@ export default function PlayerSelectionModal({
         <Box mb={2} display="flex" gap={1}>
           <TextField
             fullWidth
-            placeholder="Search players by name or Steam ID..."
+            placeholder={t('playerSelectionModal.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             InputProps={{
@@ -192,7 +208,7 @@ export default function PlayerSelectionModal({
             onClick={() => {
               const selectablePlayers = filteredPlayers.filter((p) => !isPlayerInTeam(p.id));
               if (selectablePlayers.length === 0) {
-                showWarning('No selectable players available');
+                showWarning(t('playerSelectionModal.errors.noSelectable'));
                 return;
               }
               const allSelectableIds = selectablePlayers.map((p) => p.id);
@@ -224,7 +240,9 @@ export default function PlayerSelectionModal({
               const allSelectableIds = selectablePlayers.map((p) => p.id);
               const allSelected =
                 allSelectableIds.length > 0 && allSelectableIds.every((id) => selectedIds.has(id));
-              return allSelected ? 'Deselect All' : 'Select All';
+              return allSelected
+                ? t('playerSelectionModal.selectAll.deselect')
+                : t('playerSelectionModal.selectAll.select');
             })()}
           </Button>
         </Box>
@@ -237,7 +255,9 @@ export default function PlayerSelectionModal({
           <Box textAlign="center" py={4}>
             <PersonIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
             <Typography variant="body1" color="text.secondary">
-              {searchQuery ? 'No players found matching your search' : 'No players available'}
+              {searchQuery
+                ? t('playerSelectionModal.empty.noSearchResults')
+                : t('playerSelectionModal.empty.noPlayers')}
             </Typography>
           </Box>
         ) : (
@@ -315,7 +335,7 @@ export default function PlayerSelectionModal({
                             color="text.secondary"
                             sx={{ mt: 1, display: 'block', fontStyle: 'italic' }}
                           >
-                            Already in team
+                            {t('playerSelectionModal.playerCard.alreadyInTeam')}
                           </Typography>
                         )}
                       </CardContent>
@@ -328,15 +348,15 @@ export default function PlayerSelectionModal({
         )}
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 2 }}>
-        <Button onClick={handleCancel}>Cancel</Button>
+        <Button onClick={handleCancel}>{t('common.cancel')}</Button>
         <Button
           variant="contained"
           onClick={handleConfirm}
         >
           {confirmButtonText ||
-            `Add ${selectedIds.size > 0 ? `${selectedIds.size} ` : ''}Player${
-              selectedIds.size !== 1 ? 's' : ''
-            }`}
+            t('playerSelectionModal.addPlayersButton', {
+              count: selectedIds.size,
+            })}
         </Button>
       </DialogActions>
     </Dialog>

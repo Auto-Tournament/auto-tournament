@@ -25,9 +25,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   vetoCompleted,
   tournamentStarted,
   onClick,
-  selectable,
+  selectable: _selectable,
   selected,
-  onToggleSelected,
+  onToggleSelected: _onToggleSelected,
 }) => {
   const getBorderColor = () => {
     // Bracket view / generic match card server status accents:
@@ -170,7 +170,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
         cursor: onClick ? 'pointer' : 'default',
         transition: 'transform 0.2s, box-shadow 0.2s',
         borderLeft: 4,
-        borderColor: getBorderColor(),
+        borderLeftColor: getBorderColor(),
         border: selected ? 2 : 0,
         borderRadius: 2,
         borderStyle: 'solid',

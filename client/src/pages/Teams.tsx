@@ -11,8 +11,10 @@ import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import type { Team, TeamsResponse } from '../types';
+import { useTranslation } from 'react-i18next';
 
 export default function Teams() {
+  const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const [teams, setTeams] = useState<Team[]>([]);
@@ -26,8 +28,8 @@ export default function Teams() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Teams';
-  }, []);
+    document.title = t('layout.pageTitle.teams');
+  }, [t]);
 
   // Set header actions
   useEffect(() => {
@@ -50,7 +52,7 @@ export default function Teams() {
               }
             }}
           >
-            {selectionMode ? 'Done Selecting' : 'Select'}
+            {selectionMode ? t('teamsPage.headerSelect.done') : t('teamsPage.headerSelect.select')}
           </Button>
           {selectionMode && (
             <>
@@ -75,7 +77,9 @@ export default function Teams() {
                   });
                 }}
               >
-                {allVisibleSelected ? 'Unselect All' : 'Select All'}
+                {allVisibleSelected
+                  ? t('teamsPage.headerSelect.unselectAll')
+                  : t('teamsPage.headerSelect.selectAll')}
               </Button>
               <Button
                 variant="outlined"
@@ -87,14 +91,14 @@ export default function Teams() {
                   setBulkDeleteConfirmOpen(true);
                 }}
               >
-                Delete Selected
+                {t('teamsPage.headerSelect.deleteSelected')}
               </Button>
             </>
           )}
           {!selectionMode && (
             <>
               <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-                Import JSON
+                {t('teamsPage.headerActions.importJson')}
               </Button>
               <Button
                 data-testid="add-team-button"
@@ -103,7 +107,7 @@ export default function Teams() {
                 startIcon={<AddIcon />}
                 onClick={() => handleOpenModal()}
               >
-                Add Team
+                {t('teamsPage.headerActions.addTeam')}
               </Button>
             </>
           )}
@@ -116,7 +120,7 @@ export default function Teams() {
     return () => {
       setHeaderActions(null);
     };
-  }, [teams.length, setHeaderActions, selectionMode, selectedTeamIds]);
+  }, [teams, setHeaderActions, selectionMode, selectedTeamIds, t]);
 
   const loadTeams = useCallback(async () => {
     try {
@@ -125,13 +129,13 @@ export default function Teams() {
       // Store all teams (including shuffle-generated) in state; we'll hide shuffle teams in the UI
       setTeams(data.teams || []);
     } catch (err) {
-      const errorMessage = 'Failed to load teams';
+      const errorMessage = t('teamsPage.loadError');
       showError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     loadTeams();
@@ -160,22 +164,28 @@ export default function Teams() {
     }>
   ) => {
     // Sanitize team names and generate IDs
-    const teamsWithIds = importedTeams.map((team) => ({
-      id: team.name
+    const teamsWithIds = importedTeams.map((team, index) => {
+      const baseId = team.name
         .toLowerCase()
         .trim()
-        .replace(/[^a-z0-9\s]/g, '') // Remove special characters
+        // Keep all letters and numbers from any language, plus spaces/underscores/hyphens.
+        // This avoids stripping non-Latin characters while still normalizing the ID.
+        .replace(/[^\p{L}\p{N}\s_-]/gu, '')
         .replace(/\s+/g, '_') // Replace spaces with underscores
-        .replace(/^_+|_+$/g, ''), // Remove leading/trailing underscores
-      name: team.name.replace(/[^a-zA-Z0-9\s]/g, '').trim(), // Sanitize name
-      tag: team.tag || '',
-      players: team.players,
-    }));
+        .replace(/^_+|_+$/g, ''); // Remove leading/trailing underscores
+
+      return {
+        id: baseId || `team_${Date.now().toString(36)}_${index}`, // Fallback for pure non-ASCII names
+        name: team.name.trim(), // Preserve Unicode characters in display name
+        tag: team.tag || '',
+        players: team.players,
+      };
+    });
 
     const promises = teamsWithIds.map((team) => api.post('/api/teams', team));
 
     await Promise.all(promises);
-    showSuccess(`Successfully imported ${importedTeams.length} team(s)`);
+    showSuccess(t('teamsPage.importSuccess', { count: importedTeams.length }));
     await loadTeams();
   };
 
@@ -208,8 +218,7 @@ export default function Teams() {
       {hasHiddenShuffleTeams && (
         <Box mb={2}>
           <Typography variant="body2" color="text.secondary">
-            Shuffle tournaments create temporary round teams behind the scenes. Those are hidden
-            here so this list only shows your real teams.
+            {t('teamsPage.shuffleInfo')}
           </Typography>
         </Box>
       )}
@@ -217,15 +226,15 @@ export default function Teams() {
         <Box>
           <EmptyState
             icon={GroupsIcon}
-            title="No teams yet"
-            description="Create your first team to get started with the tournament"
-            actionLabel="Create Team"
+            title={t('teamsPage.empty.title')}
+            description={t('teamsPage.empty.description')}
+            actionLabel={t('teamsPage.empty.createTeam')}
             actionIcon={AddIcon}
             onAction={() => handleOpenModal()}
           />
           <Box display="flex" justifyContent="center" mt={2}>
             <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-              Or Import Teams from JSON
+              {t('teamsPage.empty.importJson')}
             </Button>
           </Box>
         </Box>
@@ -274,7 +283,14 @@ export default function Teams() {
                   <Box display="flex" alignItems="center" gap={1} mb={1}>
                     <GroupsIcon fontSize="small" color="action" />
                     <Typography variant="body2" color="text.secondary">
-                      {team.players?.length} {team.players?.length === 1 ? 'player' : 'players'}
+                      {(() => {
+                        const count = team.players?.length ?? 0;
+                        const key =
+                          count === 1
+                            ? 'teamsPage.playersCount.one'
+                            : 'teamsPage.playersCount.other';
+                        return t(key, { count });
+                      })()}
                     </Typography>
                   </Box>
                 </CardContent>
@@ -299,11 +315,12 @@ export default function Teams() {
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}
-        title="Delete Teams"
-        message={`Are you sure you want to delete ${selectedTeamIds.size} team${
-          selectedTeamIds.size === 1 ? '' : 's'
-        }? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('teamsPage.bulkDelete.title')}
+        message={t('teamsPage.bulkDelete.message', {
+          count: selectedTeamIds.size,
+          suffix: selectedTeamIds.size === 1 ? '' : 's',
+        })}
+        confirmLabel={t('teamsPage.bulkDelete.confirm')}
         confirmColor="error"
         onConfirm={async () => {
           if (selectedTeamIds.size === 0) {
@@ -314,13 +331,18 @@ export default function Teams() {
             const ids = Array.from(selectedTeamIds);
             const count = ids.length;
             await api.post('/api/teams/bulk-delete', { ids });
-            showSuccess(`Deleted ${count} team${count === 1 ? '' : 's'}`);
+            showSuccess(
+              t('teamsPage.bulkDelete.success', {
+                count,
+                suffix: count === 1 ? '' : 's',
+              })
+            );
             setSelectedTeamIds(() => new Set());
             setSelectionMode(false);
             await loadTeams();
           } catch (err) {
             console.error('Failed to delete teams', err);
-            showError('Failed to delete one or more teams');
+            showError(t('teamsPage.bulkDelete.error'));
           } finally {
             setBulkDeleteConfirmOpen(false);
           }

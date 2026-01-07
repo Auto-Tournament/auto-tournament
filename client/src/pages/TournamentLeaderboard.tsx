@@ -309,7 +309,16 @@ export default function TournamentLeaderboard() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute('download', `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.csv`);
+    // Preserve non-Latin characters in filenames; only strip reserved filename symbols
+    // and ASCII control characters (0x00-0x1F) without using a control-char regex.
+    const withoutReserved = tournament.name.replace(/[<>:"/\\|?*]/g, '');
+    const safeName = Array.from(withoutReserved)
+      .filter((ch) => {
+        const code = ch.charCodeAt(0);
+        return code < 0x00 || code > 0x1f;
+      })
+      .join('');
+    link.setAttribute('download', `${safeName || 'tournament'}_leaderboard.csv`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
@@ -344,10 +353,16 @@ export default function TournamentLeaderboard() {
     const link = document.createElement('a');
     const url = URL.createObjectURL(blob);
     link.setAttribute('href', url);
-    link.setAttribute(
-      'download',
-      `${tournament.name.replace(/[^a-z0-9]/gi, '_')}_leaderboard.json`
-    );
+    // Preserve non-Latin characters in filenames; only strip reserved filename symbols
+    // and ASCII control characters (0x00-0x1F) without using a control-char regex.
+    const withoutReserved = tournament.name.replace(/[<>:"/\\|?*]/g, '');
+    const safeName = Array.from(withoutReserved)
+      .filter((ch) => {
+        const code = ch.charCodeAt(0);
+        return code < 0x00 || code > 0x1f;
+      })
+      .join('');
+    link.setAttribute('download', `${safeName || 'tournament'}_leaderboard.json`);
     link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();

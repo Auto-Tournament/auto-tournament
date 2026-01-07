@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
-import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
+import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import {
   isManualMatch,
   isShuffleMatch,
@@ -19,7 +19,7 @@ interface MatchListCardProps {
 export const MatchListCard: React.FC<MatchListCardProps> = ({
   match,
   matchNumber,
-  roundLabel,
+  roundLabel: _roundLabel,
   onClick,
 }) => {
   const matchLike = match as unknown as MatchLike;

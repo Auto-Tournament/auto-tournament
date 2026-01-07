@@ -4,6 +4,7 @@ import { RestartAlt } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import { useTournament } from '../../hooks/useTournament';
 import ConfirmDialog from '../modals/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 interface RestartTournamentButtonProps {
   variant?: ButtonProps['variant'];
@@ -24,6 +25,7 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
   const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const { t } = useTranslation();
 
   const handleRestart = async () => {
     setRestarting(true);
@@ -67,7 +69,9 @@ export const RestartTournamentButton: React.FC<RestartTournamentButtonProps> = (
         onClick={() => setShowConfirm(true)}
         disabled={restarting}
       >
-        {restarting ? 'Restarting...' : 'Restart Tournament'}
+        {restarting
+          ? t('dashboard.restartTournament.restarting')
+          : t('dashboard.restartTournament.button')}
       </Button>
 
       <ConfirmDialog

@@ -3,17 +3,19 @@ import { Box, Card, CardContent, Container, Stack, Typography, Button } from '@m
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import LinkIcon from '@mui/icons-material/Link';
 import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 export default function PublicPages() {
   const origin =
     typeof window !== 'undefined' && window.location && window.location.origin
       ? window.location.origin
       : '';
+  const { t } = useTranslation();
 
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="body2" color="text.secondary" mb={4}>
-        Quick links to the public pages you can share with players and viewers.
+        {t('publicLinks.intro')}
       </Typography>
 
       <Container maxWidth="md" disableGutters>
@@ -21,10 +23,10 @@ export default function PublicPages() {
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Public Player Search
+                {t('publicLinks.playerSearch.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Search for registered players by name, Steam ID or profile URL.
+                {t('publicLinks.playerSearch.description')}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
@@ -33,12 +35,12 @@ export default function PublicPages() {
                   component={RouterLink}
                   to="/player"
                 >
-                  Open /player
+                  {t('publicLinks.playerSearch.openButton')}
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      Public URL
+                      {t('publicLinks.common.publicUrl')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {origin}/player
@@ -52,10 +54,10 @@ export default function PublicPages() {
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Player Profile (public)
+                {t('publicLinks.playerProfile.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Direct link to a player profile by Steam ID64.
+                {t('publicLinks.playerProfile.description')}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
@@ -63,12 +65,12 @@ export default function PublicPages() {
                   startIcon={<LinkIcon />}
                   disabled
                 >
-                  Requires Steam ID64
+                  {t('publicLinks.playerProfile.requiresSteamId')}
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      URL pattern
+                      {t('publicLinks.common.urlPattern')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {origin}/player/&lt;steamId64&gt;
@@ -82,10 +84,10 @@ export default function PublicPages() {
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Team Match Page (public)
+                {t('publicLinks.teamMatch.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Read-only view of a team&apos;s current or most recent match.
+                {t('publicLinks.teamMatch.description')}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
@@ -94,12 +96,12 @@ export default function PublicPages() {
                   component={RouterLink}
                   to="/team/test-team-astralis"
                 >
-                  Open example team
+                  {t('publicLinks.teamMatch.openExample')}
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      URL pattern
+                      {t('publicLinks.common.urlPattern')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {origin}/team/&lt;teamId&gt;
@@ -113,10 +115,10 @@ export default function PublicPages() {
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                Tournament Leaderboard (public)
+                {t('publicLinks.tournamentLeaderboard.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Public standings page for the current tournament (defaults to tournament 1).
+                {t('publicLinks.tournamentLeaderboard.description')}
               </Typography>
               <Stack direction="row" spacing={2} alignItems="center">
                 <Button
@@ -125,12 +127,12 @@ export default function PublicPages() {
                   component={RouterLink}
                   to="/tournament/1/leaderboard"
                 >
-                  Open leaderboard
+                  {t('publicLinks.tournamentLeaderboard.open')}
                 </Button>
                 {origin && (
                   <Stack spacing={0.5}>
                     <Typography variant="caption" color="text.secondary">
-                      Public URL
+                      {t('publicLinks.common.publicUrl')}
                     </Typography>
                     <Typography variant="body2" sx={{ fontFamily: 'monospace' }}>
                       {origin}/tournament/1/leaderboard

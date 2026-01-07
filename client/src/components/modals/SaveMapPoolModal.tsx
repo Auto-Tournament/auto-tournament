@@ -15,6 +15,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import type { MapPoolResponse } from '../../types/api.types';
+import { useTranslation } from 'react-i18next';
 
 interface SaveMapPoolModalProps {
   open: boolean;
@@ -27,6 +28,7 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   React.useEffect(() => {
     if (open) {
@@ -37,12 +39,12 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Map pool name is required');
+      setError(t('saveMapPoolModal.errors.nameRequired'));
       return;
     }
 
     if (mapIds.length === 0) {
-      setError('Please select at least one map');
+      setError(t('saveMapPoolModal.errors.noMaps'));
       return;
     }
 
@@ -59,7 +61,9 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
       onClose();
     } catch (err: unknown) {
       const error = err as { error?: string; message?: string };
-      setError(error.error || error.message || 'Failed to save map pool');
+      setError(
+        error.error || error.message || t('saveMapPoolModal.errors.saveFailed')
+      );
     } finally {
       setSaving(false);
     }
@@ -84,7 +88,7 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          Save Map Pool
+          {t('saveMapPoolModal.title')}
         </Typography>
         <IconButton
           onClick={onClose}
@@ -97,17 +101,19 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            label="Map Pool Name"
+            label={t('saveMapPoolModal.nameLabel')}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            placeholder="My Custom Pool"
+            placeholder={t('saveMapPoolModal.namePlaceholder')}
             required
             fullWidth
             autoFocus
           />
 
           <Alert severity="info">
-            This will save a map pool with {mapIds.length} map{mapIds.length !== 1 ? 's' : ''}.
+            {t('saveMapPoolModal.info', {
+              count: mapIds.length,
+            })}
           </Alert>
 
           {error && (
@@ -119,7 +125,7 @@ export default function SaveMapPoolModal({ open, mapIds, onClose, onSave }: Save
       </DialogContent>
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         <Button onClick={handleSave} variant="contained" disabled={saving} sx={{ ml: 'auto' }}>
-          {saving ? <CircularProgress size={24} /> : 'Save'}
+          {saving ? <CircularProgress size={24} /> : t('saveMapPoolModal.saveButton')}
         </Button>
       </DialogActions>
     </Dialog>

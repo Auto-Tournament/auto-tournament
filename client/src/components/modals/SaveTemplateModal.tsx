@@ -14,6 +14,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { TournamentSettings } from '../../types/tournament.types';
+import { useTranslation } from 'react-i18next';
 
 interface SaveTemplateModalProps {
   open: boolean;
@@ -27,6 +28,10 @@ interface SaveTemplateModalProps {
     mapPoolId?: number | null;
     teamIds?: string[];
     settings?: TournamentSettings;
+    maxRounds?: number;
+    overtimeMode?: 'enabled' | 'disabled';
+    overtimeSegments?: number | null;
+    grandFinalMode?: 'none' | 'simple' | 'double';
   };
 }
 
@@ -37,6 +42,7 @@ export default function SaveTemplateModal({
   tournamentData,
 }: SaveTemplateModalProps) {
   const { showWarning, showError } = useSnackbar();
+  const { t } = useTranslation();
   const [templateName, setTemplateName] = useState('');
   const [templateDescription, setTemplateDescription] = useState('');
   const [saving, setSaving] = useState(false);
@@ -50,12 +56,38 @@ export default function SaveTemplateModal({
 
   const handleSave = async () => {
     if (!templateName.trim()) {
-      showWarning('Template name is required');
+      showWarning(t('saveTemplateModal.errors.nameRequired'));
       return;
     }
 
     try {
       setSaving(true);
+
+      const baseSettings: Partial<TournamentSettings> = tournamentData.settings || {
+        matchFormat: tournamentData.format,
+        thirdPlaceMatch: false,
+        autoAdvance: true,
+        checkInRequired: false,
+        seedingMethod: 'random',
+      };
+
+      const settings: Partial<TournamentSettings> = {
+        ...baseSettings,
+      };
+
+      if (typeof tournamentData.maxRounds === 'number') {
+        settings.maxRounds = tournamentData.maxRounds;
+      }
+      if (tournamentData.overtimeMode) {
+        settings.overtimeMode = tournamentData.overtimeMode;
+      }
+      if (typeof tournamentData.overtimeSegments === 'number') {
+        settings.overtimeSegments = tournamentData.overtimeSegments ?? undefined;
+      }
+      if (tournamentData.grandFinalMode) {
+        settings.grandFinalMode = tournamentData.grandFinalMode;
+      }
+
       await api.post('/api/templates', {
         name: templateName,
         description: templateDescription || undefined,
@@ -64,7 +96,7 @@ export default function SaveTemplateModal({
         mapPoolId: tournamentData.mapPoolId,
         maps: tournamentData.maps,
         teamIds: tournamentData.teamIds,
-        settings: tournamentData.settings,
+        settings,
       });
       onSave();
       onClose();
@@ -72,7 +104,7 @@ export default function SaveTemplateModal({
       setTemplateDescription('');
     } catch (err) {
       console.error('Error saving template:', err);
-      showError('Failed to save template');
+      showError(t('saveTemplateModal.errors.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -105,42 +137,38 @@ export default function SaveTemplateModal({
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          Save as Template
+          {t('saveTemplateModal.title')}
         </Typography>
-        <IconButton
-          onClick={handleClose}
-          size="small"
-          aria-label="close"
-        >
+        <IconButton onClick={handleClose} size="small" aria-label="close">
           <CloseIcon fontSize="small" />
         </IconButton>
       </DialogTitle>
       <DialogContent>
         <TextField
           fullWidth
-          label="Template Name"
+          label={t('saveTemplateModal.nameLabel')}
           value={templateName}
           onChange={(e) => setTemplateName(e.target.value)}
           margin="normal"
           required
-          placeholder="8-team Single Elim BO3"
+          placeholder={t('saveTemplateModal.namePlaceholder')}
           disabled={saving}
         />
         <TextField
           fullWidth
-          label="Description (optional)"
+          label={t('saveTemplateModal.descriptionLabel')}
           value={templateDescription}
           onChange={(e) => setTemplateDescription(e.target.value)}
           margin="normal"
           multiline
           rows={3}
-          placeholder="Weekly 8-team single elimination tournament"
+          placeholder={t('saveTemplateModal.descriptionPlaceholder')}
           disabled={saving}
         />
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={saving}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={handleSave}
@@ -156,10 +184,9 @@ export default function SaveTemplateModal({
             }),
           }}
         >
-          {saving ? <CircularProgress size={24} /> : 'Save Template'}
+          {saving ? <CircularProgress size={24} /> : t('saveTemplateModal.saveButton')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
-

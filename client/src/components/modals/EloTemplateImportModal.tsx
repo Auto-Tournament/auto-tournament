@@ -24,6 +24,7 @@ import {
 } from '@mui/icons-material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { EloTemplateWeights } from '../../types/elo.types';
+import { useTranslation } from 'react-i18next';
 
 interface ImportTemplate {
   id?: string;
@@ -52,6 +53,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
   const [validationError, setValidationError] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [expandedItems, setExpandedItems] = useState<Set<number>>(new Set());
+  const { t } = useTranslation();
 
   const handleClose = () => {
     setJsonInput('');
@@ -61,41 +63,44 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
     onClose();
   };
 
-  const validateTemplate = (template: any, index: number): string | null => {
-    if (!template || typeof template !== 'object') {
+  const validateTemplate = (template: unknown, index: number): string | null => {
+    if (!template || typeof template !== 'object' || template === null) {
       return `Template ${index + 1}: Must be an object`;
     }
 
-    if (!template.name || typeof template.name !== 'string' || template.name.trim() === '') {
+    const typed = template as { [key: string]: unknown };
+
+    if (!typed.name || typeof typed.name !== 'string' || typed.name.trim() === '') {
       return `Template ${index + 1}: Missing or invalid "name"`;
     }
 
-    if (template.id !== undefined && typeof template.id !== 'string') {
-      return `Template "${template.name}": "id" must be a string if provided`;
+    if (typed.id !== undefined && typeof typed.id !== 'string') {
+      return `Template "${typed.name}": "id" must be a string if provided`;
     }
 
-    if (template.description !== undefined && typeof template.description !== 'string') {
-      return `Template "${template.name}": "description" must be a string if provided`;
+    if (typed.description !== undefined && typeof typed.description !== 'string') {
+      return `Template "${typed.name}": "description" must be a string if provided`;
     }
 
-    if (template.enabled !== undefined && typeof template.enabled !== 'boolean') {
-      return `Template "${template.name}": "enabled" must be a boolean if provided`;
+    if (typed.enabled !== undefined && typeof typed.enabled !== 'boolean') {
+      return `Template "${typed.name}": "enabled" must be a boolean if provided`;
     }
 
-    if (template.weights !== undefined) {
-      if (typeof template.weights !== 'object' || Array.isArray(template.weights)) {
-        return `Template "${template.name}": "weights" must be an object if provided`;
+    if (typed.weights !== undefined) {
+      if (typeof typed.weights !== 'object' || typed.weights === null || Array.isArray(typed.weights)) {
+        return `Template "${typed.name}": "weights" must be an object if provided`;
       }
-      for (const [key, value] of Object.entries(template.weights)) {
+      for (const [key, value] of Object.entries(typed.weights as Record<string, unknown>)) {
         if (value !== undefined && typeof value !== 'number') {
-          return `Template "${template.name}": Weight "${key}" must be a number`;
+          return `Template "${typed.name}": Weight "${key}" must be a number`;
         }
       }
     }
 
     const checkNumber = (field: string, label: string) => {
-      if (template[field] !== undefined && typeof template[field] !== 'number') {
-        return `Template "${template.name}": "${label}" must be a number if provided`;
+      const value = typed[field];
+      if (value !== undefined && typeof value !== 'number') {
+        return `Template "${typed.name}": "${label}" must be a number if provided`;
       }
       return null;
     };
@@ -181,7 +186,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={600}>
-            Import ELO Templates from JSON
+            {t('eloTemplatesPage.importModal.title')}
           </Typography>
           <IconButton onClick={handleClose} size="small">
             <CloseIcon />
@@ -193,18 +198,15 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
         <Stack spacing={3}>
           <Alert severity="info" icon={<InfoIcon />}>
             <Typography variant="body2" gutterBottom>
-              <strong>Paste JSON with ELO template definitions below.</strong>
+              <strong>{t('eloTemplatesPage.importModal.introTitle')}</strong>
             </Typography>
             <Typography variant="caption" component="div">
-              Expected format: array of templates with <code>name</code>, optional{' '}
-              <code>description</code>, <code>enabled</code>, <code>weights</code>,{' '}
-              <code>maxAdjustment</code>, and <code>minAdjustment</code>. If you omit{' '}
-              <code>id</code>, it will be generated from the name.
+              {t('eloTemplatesPage.importModal.introBody')}
             </Typography>
           </Alert>
 
           <TextField
-            label="JSON Data"
+            label={t('eloTemplatesPage.importModal.jsonLabel')}
             multiline
             rows={12}
             value={jsonInput}
@@ -226,13 +228,15 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
             <Box>
               <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2 }}>
                 <Typography variant="body2">
-                  <strong>✓ Valid JSON!</strong> Found {parsedTemplates.length} template
-                  {parsedTemplates.length !== 1 ? 's' : ''}.
+                  <strong>{t('eloTemplatesPage.importModal.validJsonTitle')}</strong>{' '}
+                  {t('eloTemplatesPage.importModal.validJsonBody', {
+                    count: parsedTemplates.length,
+                  })}
                 </Typography>
               </Alert>
 
               <Typography variant="subtitle2" fontWeight={600} mb={1}>
-                Preview:
+                {t('eloTemplatesPage.importModal.previewTitle')}
               </Typography>
 
               <Stack spacing={1}>
@@ -255,7 +259,11 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                         </Typography>
                         {tpl.id && <Chip label={tpl.id} size="small" />}
                         <Chip
-                          label={tpl.enabled === false ? 'Disabled' : 'Enabled'}
+                          label={
+                            tpl.enabled === false
+                              ? t('eloTemplatesPage.card.disabled')
+                              : t('eloTemplatesPage.card.enabled')
+                          }
                           size="small"
                           color={tpl.enabled === false ? 'default' : 'success'}
                         />
@@ -277,7 +285,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                           display="block"
                           mb={0.5}
                         >
-                          Stat Weights:
+                          {t('eloTemplatesPage.card.weightsTitle')}
                         </Typography>
                         <Typography
                           variant="body2"
@@ -293,7 +301,7 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
                               display="block"
                               mb={0.5}
                             >
-                              Adjustment Limits:
+                              {t('eloTemplatesPage.card.limitsTitle')}
                             </Typography>
                             <Typography
                               variant="body2"
@@ -319,17 +327,17 @@ export const EloTemplateImportModal: React.FC<EloTemplateImportModalProps> = ({
 
       <DialogActions>
         <Button onClick={handleClose} disabled={importing}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button onClick={handlePreview} disabled={importing}>
-          Preview
+          {t('eloTemplatesPage.importModal.previewButton')}
         </Button>
         <Button
           variant="contained"
           onClick={handleImport}
           disabled={importing || !parsedTemplates || parsedTemplates.length === 0}
         >
-          Import Templates
+          {t('eloTemplatesPage.importModal.importButton')}
         </Button>
       </DialogActions>
     </Dialog>

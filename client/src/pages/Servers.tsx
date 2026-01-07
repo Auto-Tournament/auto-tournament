@@ -18,6 +18,7 @@ import ConfirmDialog from '../components/modals/ConfirmDialog';
 import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesResponse } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { getRoundLabel } from '../utils/matchUtils';
+import { useTranslation } from 'react-i18next';
 
 export default function Servers() {
   const { setHeaderActions } = usePageHeader();
@@ -50,11 +51,12 @@ export default function Servers() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedServerIds, setSelectedServerIds] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const { t } = useTranslation();
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Servers';
-  }, []);
+    document.title = t('serversPage.title');
+  }, [t]);
 
   const checkServerStatus = async (
     serverId: string
@@ -183,12 +185,12 @@ export default function Servers() {
         })
       );
     } catch (err) {
-      showError('Failed to load servers');
+      showError(t('serversPage.errors.loadServers'));
       console.error(err);
     } finally {
       setRefreshing(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   const loadAllocationStatus = useCallback(async () => {
     setAllocationLoading(true);
@@ -210,13 +212,14 @@ export default function Servers() {
           secondsUntilReady: number | null;
           allocatable: boolean;
         }>;
+        simulationEnabled?: boolean;
       }>('/api/tournament/server-availability');
 
       if (availability.success) {
         setAllocationStatus({
           availableServerCount: availability.availableServerCount,
           requiredServerCount: availability.requiredServerCount,
-          gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
+          gracePeriodSeconds: availability.gracePeriodSeconds ?? 120,
           nextAllocationInSeconds:
             typeof availability.nextAllocationInSeconds === 'number'
               ? availability.nextAllocationInSeconds
@@ -253,7 +256,9 @@ export default function Servers() {
                 }}
                 disabled={refreshing}
               >
-                {refreshing ? 'Checking...' : 'Refresh Status'}
+                {refreshing
+                  ? t('serversPage.headerActions.refreshChecking')
+                  : t('serversPage.headerActions.refresh')}
               </Button>
               <Button
                 variant="outlined"
@@ -261,7 +266,7 @@ export default function Servers() {
                 startIcon={<AddIcon />}
                 onClick={() => setBatchModalOpen(true)}
               >
-                Batch Add
+                {t('serversPage.headerActions.batchAdd')}
               </Button>
             </>
           )}
@@ -278,7 +283,9 @@ export default function Servers() {
                   }
                 }}
               >
-                {selectionMode ? 'Done Selecting' : 'Select'}
+                {selectionMode
+                  ? t('serversPage.headerActions.done')
+                  : t('serversPage.headerActions.select')}
               </Button>
               {selectionMode && (
                 <>
@@ -301,7 +308,9 @@ export default function Servers() {
                       });
                     }}
                   >
-                    {allSelected ? 'Unselect All' : 'Select All'}
+                    {allSelected
+                      ? t('serversPage.headerActions.unselectAll')
+                      : t('serversPage.headerActions.selectAll')}
                   </Button>
                   <Button
                     variant="outlined"
@@ -313,7 +322,7 @@ export default function Servers() {
                       setBulkDeleteConfirmOpen(true);
                     }}
                   >
-                    Delete Selected
+                    {t('serversPage.headerActions.deleteSelected')}
                   </Button>
                 </>
               )}
@@ -327,7 +336,7 @@ export default function Servers() {
               startIcon={<AddIcon />}
               onClick={() => handleOpenModal()}
             >
-              Add Server
+              {t('serversPage.headerActions.addServer')}
             </Button>
           )}
         </Box>
@@ -340,13 +349,14 @@ export default function Servers() {
       setHeaderActions(null);
     };
   }, [
-    servers.length,
+    servers,
     refreshing,
     setHeaderActions,
     loadServers,
     loadAllocationStatus,
     selectionMode,
     selectedServerIds,
+    t,
   ]);
 
   useEffect(() => {
@@ -415,15 +425,15 @@ export default function Servers() {
           <Box>
             <EmptyState
               icon={StorageIcon}
-              title="No servers registered"
-              description="Add your first CS2 server to get started with the tournament"
-              actionLabel="Add Server"
+              title={t('serversPage.empty.title')}
+              description={t('serversPage.empty.description')}
+              actionLabel={t('serversPage.empty.addServer')}
               actionIcon={AddIcon}
               onAction={() => handleOpenModal()}
             />
             <Box display="flex" justifyContent="center" mt={2}>
               <Button variant="outlined" onClick={() => setBatchModalOpen(true)}>
-                Or Batch Add Multiple Servers
+                {t('serversPage.empty.batchAdd')}
               </Button>
             </Box>
           </Box>
@@ -433,27 +443,29 @@ export default function Servers() {
               <Card variant="outlined">
                 <CardContent>
                   <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                    Server allocation
+                    {t('serversPage.allocation.title')}
                   </Typography>
                   {!allocationStatus ? (
                     <Typography variant="body2" color="text.secondary">
                       {allocationLoading
-                        ? 'Loading allocation status...'
-                        : 'No allocation data available.'}
+                        ? t('serversPage.allocation.loading')
+                        : t('serversPage.allocation.empty')}
                     </Typography>
                   ) : (
                     <>
                       <Typography variant="body2" color="text.secondary">
-                        <strong>Available servers:</strong>{' '}
+                        <strong>{t('serversPage.allocation.available')}</strong>{' '}
                         {allocationStatus.availableServerCount} / {allocationStatus.servers.length}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        <strong>Matches waiting for servers:</strong>{' '}
+                        <strong>{t('serversPage.allocation.waiting')}</strong>{' '}
                         {allocationStatus.requiredServerCount}
                       </Typography>
                       {allocationStatus.nextAllocationInSeconds !== null && (
                         <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                          Next allocator pass in ~{allocationStatus.nextAllocationInSeconds}s
+                          {t('serversPage.allocation.nextPass', {
+                            seconds: allocationStatus.nextAllocationInSeconds,
+                          })}
                         </Typography>
                       )}
                     </>
@@ -463,7 +475,12 @@ export default function Servers() {
             </Box>
 
             <Grid container spacing={2}>
-              {servers.map((server) => (
+              {servers.map((server) => {
+                const allocSnapshot = allocationStatus?.servers.find((s) => s.id === server.id);
+                const inGraceWindow = !!allocSnapshot?.inGraceWindow;
+                const secondsUntilReady = allocSnapshot?.secondsUntilReady ?? null;
+
+                return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
@@ -504,25 +521,25 @@ export default function Servers() {
                             'default';
 
                           if (server.status === 'checking') {
-                            label = 'Checking...';
+                            label = t('serversPage.statusChip.checking');
                             color = 'default';
                           } else if (!server.enabled || server.status === 'disabled') {
-                            label = 'Disabled';
+                            label = t('serversPage.statusChip.disabled');
                             color = 'default';
                           } else if (server.status !== 'online') {
-                            label = 'Offline';
+                            label = t('serversPage.statusChip.offline');
                             color = 'error';
                           } else if (reachableFromApi && serverCanReachApi) {
-                            label = 'Online (API ↔ Server OK)';
+                            label = t('serversPage.statusChip.onlineOk');
                             color = 'success';
                           } else if (reachableFromApi && serverCanReachApi === false) {
-                            label = 'Online (RCON only)';
+                            label = t('serversPage.statusChip.onlineRconOnly');
                             color = 'warning';
                           } else if (reachableFromApi === false) {
-                            label = 'RCON failed';
+                            label = t('serversPage.statusChip.rconFailed');
                             color = 'error';
                           } else {
-                            label = 'Online (testing)';
+                            label = t('serversPage.statusChip.onlineTesting');
                             color = 'info';
                           }
 
@@ -559,10 +576,10 @@ export default function Servers() {
                         color="text.secondary"
                         data-testid="server-host"
                       >
-                        <strong>Host:</strong> {server.host}
+                        <strong>{t('serversPage.labels.host')}</strong> {server.host}
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
-                        <strong>Port:</strong> {server.port}
+                        <strong>{t('serversPage.labels.port')}</strong> {server.port}
                       </Typography>
                     </Box>
                     {server.status === 'online' && (
@@ -580,13 +597,13 @@ export default function Servers() {
                             }}
                           />
                           <Typography variant="caption" color="text.secondary">
-                            API → Server (RCON){' '}
+                            {t('serversPage.connectivity.apiToServer')}{' '}
                             <strong>
                               {server.reachableFromApi === false
-                                ? 'Unreachable'
+                                ? t('serversPage.connectivity.unreachable')
                                 : server.reachableFromApi
-                                ? 'Reachable'
-                                : 'Unknown'}
+                                ? t('serversPage.connectivity.reachable')
+                                : t('serversPage.connectivity.unknown')}
                             </strong>
                           </Typography>
                         </Box>
@@ -603,20 +620,20 @@ export default function Servers() {
                             }}
                           />
                           <Typography variant="caption" color="text.secondary">
-                            Server → API (/api/events){' '}
+                            {t('serversPage.connectivity.serverToApi')}{' '}
                             <strong>
                               {server.serverCanReachApi === false
-                                ? 'Unreachable'
+                                ? t('serversPage.connectivity.unreachable')
                                 : server.serverCanReachApi
-                                ? 'Reachable'
-                                : 'Unknown'}
+                                ? t('serversPage.connectivity.reachable')
+                                : t('serversPage.connectivity.unknown')}
                             </strong>
                           </Typography>
                         </Box>
                         {server.pluginStatus && (
                           <Box display="flex" alignItems="center" gap={0.5}>
                             <Typography variant="caption" color="text.secondary">
-                              <strong>MatchZy:</strong>{' '}
+                              <strong>{t('serversPage.connectivity.pluginLabel')}</strong>{' '}
                               <Chip
                                 label={server.pluginStatus.toUpperCase()}
                                 size="small"
@@ -637,6 +654,16 @@ export default function Servers() {
                                 variant="outlined"
                                 sx={{ fontWeight: 600, ml: 0.5 }}
                               />
+                            </Typography>
+                          </Box>
+                        )}
+                        {inGraceWindow && typeof secondsUntilReady === 'number' && secondsUntilReady > 0 && (
+                          <Box display="flex" alignItems="center" gap={0.5}>
+                            <Typography variant="caption" color="text.secondary">
+                              <strong>{t('serversPage.allocation.cooldownLabel')}:</strong>{' '}
+                              {t('serversPage.allocation.cooldownEta', {
+                                seconds: secondsUntilReady,
+                              })}
                             </Typography>
                           </Box>
                         )}
@@ -664,14 +691,18 @@ export default function Servers() {
                           onClick={(event) => handleViewCurrentMatch(server, event)}
                           disabled={loadingMatchServerId === server.id}
                         >
-                          {loadingMatchServerId === server.id ? 'Loading...' : 'View Match'}
+                          {loadingMatchServerId === server.id
+                            ? t('serversPage.currentMatch.loading')
+                            : t('serversPage.currentMatch.view')}
                         </Button>
                           </Box>
                         )}
                         {(server as Server & { queuedMatch?: string | null }).queuedMatch && (
                           <Box display="flex" justifyContent="space-between" alignItems="center">
                             <Chip
-                              label={`Queued: ${(server as Server & { queuedMatch?: string | null }).queuedMatch}`}
+                              label={`${t('serversPage.currentMatch.queuedPrefix')}${
+                                (server as Server & { queuedMatch?: string | null }).queuedMatch
+                              }`}
                               size="small"
                               color="info"
                               variant="outlined"
@@ -688,12 +719,12 @@ export default function Servers() {
                     )}
 
                     <Typography variant="caption" color="text.secondary" display="block" mt={2}>
-                      ID: {server.id}
+                      {t('serversPage.labels.id')} {server.id}
                     </Typography>
                   </CardContent>
                 </Card>
               </Grid>
-              ))}
+              )})}
             </Grid>
           </>
         )}
@@ -724,11 +755,11 @@ export default function Servers() {
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}
-        title="Delete Servers"
-        message={`Are you sure you want to delete ${selectedServerIds.size} server${
-          selectedServerIds.size === 1 ? '' : 's'
-        }? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('serversPage.bulkDelete.title')}
+        message={t('serversPage.bulkDelete.message', {
+          count: selectedServerIds.size,
+          suffix: selectedServerIds.size === 1 ? '' : 's',
+        })}
         confirmColor="error"
         onConfirm={async () => {
           if (selectedServerIds.size === 0) {
@@ -745,7 +776,7 @@ export default function Servers() {
             await loadAllocationStatus();
           } catch (err) {
             console.error('Failed to delete servers', err);
-            showError('Failed to delete one or more servers');
+            showError(t('serversPage.errors.bulkDelete'));
           } finally {
             setBulkDeleteConfirmOpen(false);
           }

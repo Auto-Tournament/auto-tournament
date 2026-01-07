@@ -48,6 +48,8 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
+import { useTranslation } from 'react-i18next';
+import { LanguageSwitcher } from '../common/LanguageSwitcher';
 
 const drawerWidth = 240;
 
@@ -133,6 +135,7 @@ const Drawer = styled(MuiDrawer, { shouldForwardProp: (prop) => prop !== 'open' 
 
 export default function Layout() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
   const { logout } = useAuth();
@@ -159,20 +162,24 @@ export default function Layout() {
   // Page header configuration - maps routes to their titles and icons
   const pageHeaders: Record<string, { title: string; icon: React.ComponentType; color?: string }> =
     {
-      '/': { title: 'Dashboard', icon: DashboardIcon },
-      '/tournament': { title: 'Tournament', icon: EmojiEventsIcon },
-      '/bracket': { title: 'Bracket', icon: AccountTreeIcon },
-      '/matches': { title: 'Matches', icon: SportsEsportsIcon },
-      '/teams': { title: 'Teams', icon: GroupsIcon },
-      '/players': { title: 'Players', icon: PersonIcon },
-      '/servers': { title: 'Servers', icon: StorageIcon },
-      '/maps': { title: 'Maps & Map Pools', icon: MapIcon },
-      '/templates': { title: 'Templates', icon: DescriptionIcon },
-      '/elo-templates': { title: 'ELO Calculation', icon: TrendingUpIcon },
-      '/admin': { title: 'Admin Tools', icon: CampaignIcon },
-      '/settings': { title: 'Settings', icon: SettingsIcon },
-      '/dev': { title: 'Development Tools', icon: BugReportIcon, color: 'warning.main' },
-      '/public': { title: 'Public Links', icon: PublicIcon },
+      '/': { title: t('layout.pageTitle.dashboard'), icon: DashboardIcon },
+      '/tournament': { title: t('layout.pageTitle.tournament'), icon: EmojiEventsIcon },
+      '/bracket': { title: t('layout.pageTitle.bracket'), icon: AccountTreeIcon },
+      '/matches': { title: t('layout.pageTitle.matches'), icon: SportsEsportsIcon },
+      '/teams': { title: t('layout.pageTitle.teams'), icon: GroupsIcon },
+      '/players': { title: t('layout.pageTitle.players'), icon: PersonIcon },
+      '/servers': { title: t('layout.pageTitle.servers'), icon: StorageIcon },
+      '/maps': { title: t('layout.pageTitle.maps'), icon: MapIcon },
+      '/templates': { title: t('layout.pageTitle.templates'), icon: DescriptionIcon },
+      '/elo-templates': { title: t('layout.pageTitle.eloTemplates'), icon: TrendingUpIcon },
+      '/admin': { title: t('layout.pageTitle.adminTools'), icon: CampaignIcon },
+      '/settings': { title: t('layout.pageTitle.settings'), icon: SettingsIcon },
+      '/dev': {
+        title: t('layout.pageTitle.devTools'),
+        icon: BugReportIcon,
+        color: 'warning.main',
+      },
+      '/public': { title: t('layout.pageTitle.publicLinks'), icon: PublicIcon },
     };
 
   // Get current page header config
@@ -180,28 +187,28 @@ export default function Layout() {
 
   // Group navigation items logically
   const mainNavItems = [
-    { label: 'Tournament', path: '/tournament', icon: EmojiEventsIcon },
-    { label: 'Bracket', path: '/bracket', icon: AccountTreeIcon },
-    { label: 'Matches', path: '/matches', icon: SportsEsportsIcon },
+    { label: t('nav.tournament'), path: '/tournament', icon: EmojiEventsIcon },
+    { label: t('nav.bracket'), path: '/bracket', icon: AccountTreeIcon },
+    { label: t('nav.matches'), path: '/matches', icon: SportsEsportsIcon },
   ];
 
   const resourcesNavItems = [
-    { label: 'Teams', path: '/teams', icon: GroupsIcon },
-    { label: 'Players', path: '/players', icon: PersonIcon },
-    { label: 'Servers', path: '/servers', icon: StorageIcon },
-    { label: 'Maps', path: '/maps', icon: MapIcon },
+    { label: t('nav.teams'), path: '/teams', icon: GroupsIcon },
+    { label: t('nav.players'), path: '/players', icon: PersonIcon },
+    { label: t('nav.servers'), path: '/servers', icon: StorageIcon },
+    { label: t('nav.maps'), path: '/maps', icon: MapIcon },
   ];
 
   const configurationNavItems = [
-    { label: 'Templates', path: '/templates', icon: DescriptionIcon },
-    { label: 'ELO Calculation', path: '/elo-templates', icon: TrendingUpIcon },
-    { label: 'Settings', path: '/settings', icon: SettingsIcon },
+    { label: t('nav.templates'), path: '/templates', icon: DescriptionIcon },
+    { label: t('nav.eloTemplates'), path: '/elo-templates', icon: TrendingUpIcon },
+    { label: t('nav.settings'), path: '/settings', icon: SettingsIcon },
   ];
 
   const systemNavItems = [
-    { label: 'Admin Tools', path: '/admin', icon: CampaignIcon },
-    { label: 'Public Links', path: '/public', icon: PublicIcon },
-    ...(isDevelopment ? [{ label: 'Dev Tools', path: '/dev', icon: BuildIcon }] : []),
+    { label: t('nav.adminTools'), path: '/admin', icon: CampaignIcon },
+    { label: t('nav.publicLinks'), path: '/public', icon: PublicIcon },
+    ...(isDevelopment ? [{ label: t('nav.devTools'), path: '/dev', icon: BuildIcon }] : []),
   ];
 
   React.useEffect(() => {
@@ -246,8 +253,7 @@ export default function Layout() {
       showError(
         <Box display="flex" alignItems="center" gap={1}>
           <Box component="span" sx={{ mr: 1 }}>
-            Webhook URL is not configured. Matches and servers cannot receive events until it is
-            set.
+            {t('layout.webhookNotConfigured')}
           </Box>
           <Button
             color="inherit"
@@ -255,7 +261,7 @@ export default function Layout() {
             onClick={handleOpenSettingsFromSnackbar}
             sx={{ textDecoration: 'underline' }}
           >
-            Open settings
+            {t('layout.openSettings')}
           </Button>
         </Box>
       );
@@ -264,7 +270,7 @@ export default function Layout() {
     if (webhookConfigured === true) {
       hasShownWebhookWarningRef.current = false;
     }
-  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar]);
+  }, [webhookConfigured, showError, handleOpenSettingsFromSnackbar, t]);
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';
@@ -429,7 +435,7 @@ export default function Layout() {
         </DrawerHeader>
         <Divider />
         <List>
-          <Tooltip title={!open ? 'Dashboard' : ''} placement="right">
+          <Tooltip title={!open ? t('nav.dashboard') : ''} placement="right">
             <ListItem disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 selected={location.pathname === '/'}
@@ -466,7 +472,7 @@ export default function Layout() {
                 >
                   <HomeIcon />
                 </ListItemIcon>
-                <ListItemText primary="Dashboard" />
+                <ListItemText primary={t('nav.dashboard')} />
               </ListItemButton>
             </ListItem>
           </Tooltip>
@@ -483,7 +489,7 @@ export default function Layout() {
               lineHeight: '36px',
             }}
           >
-            Tournament
+            {t('nav.tournamentSection')}
           </ListSubheader>
           {renderNavItems(mainNavItems)}
         </List>
@@ -499,7 +505,7 @@ export default function Layout() {
               lineHeight: '36px',
             }}
           >
-            Resources
+            {t('nav.resourcesSection')}
           </ListSubheader>
           {renderNavItems(resourcesNavItems)}
         </List>
@@ -515,7 +521,7 @@ export default function Layout() {
               lineHeight: '36px',
             }}
           >
-            Configuration
+            {t('nav.configurationSection')}
           </ListSubheader>
           {renderNavItems(configurationNavItems)}
         </List>
@@ -531,7 +537,7 @@ export default function Layout() {
               lineHeight: '36px',
             }}
           >
-            System
+            {t('nav.systemSection')}
           </ListSubheader>
           {renderNavItems(systemNavItems)}
         </List>
@@ -546,7 +552,7 @@ export default function Layout() {
         </DrawerHeader>
         <Divider />
         <List>
-          <Tooltip title={!open ? 'Dashboard' : ''} placement="right">
+          <Tooltip title={!open ? t('nav.dashboard') : ''} placement="right">
             <ListItem disablePadding sx={{ display: 'block' }}>
               <ListItemButton
                 selected={location.pathname === '/'}
@@ -603,7 +609,7 @@ export default function Layout() {
                   <HomeIcon />
                 </ListItemIcon>
                 <ListItemText
-                  primary="Dashboard"
+                  primary={t('nav.dashboard')}
                   sx={[
                     open
                       ? {
@@ -631,7 +637,7 @@ export default function Layout() {
                 lineHeight: '36px',
               }}
             >
-              Tournament
+              {t('nav.tournamentSection')}
             </ListSubheader>
           )}
           {renderNavItems(mainNavItems)}
@@ -649,7 +655,7 @@ export default function Layout() {
                 lineHeight: '36px',
               }}
             >
-              Resources
+              {t('nav.resourcesSection')}
             </ListSubheader>
           )}
           {renderNavItems(resourcesNavItems)}
@@ -667,7 +673,7 @@ export default function Layout() {
                 lineHeight: '36px',
               }}
             >
-              Configuration
+              {t('nav.configurationSection')}
             </ListSubheader>
           )}
           {renderNavItems(configurationNavItems)}
@@ -685,7 +691,7 @@ export default function Layout() {
                 lineHeight: '36px',
               }}
             >
-              System
+              {t('nav.systemSection')}
             </ListSubheader>
           )}
           {renderNavItems(systemNavItems)}
@@ -727,11 +733,12 @@ export default function Layout() {
                 component="div"
                 sx={{ fontWeight: 600, color: 'text.primary' }}
               >
-                Matchzy Auto Tournament
+                {t('app.name')}
               </Typography>
             </Link>
             <Box sx={{ flexGrow: 1 }} />
             <Stack direction="row" alignItems="center" spacing={1}>
+              <LanguageSwitcher />
               <Button
                 color="inherit"
                 href="https://mat.sivert.io/"
@@ -739,7 +746,7 @@ export default function Layout() {
                 rel="noopener noreferrer"
                 startIcon={<LibraryBooks />}
               >
-                Documentation
+                {t('nav.documentation')}
               </Button>
               <Button
                 color="error"
@@ -747,7 +754,7 @@ export default function Layout() {
                 startIcon={<Logout />}
                 data-testid="sign-out-button"
               >
-                Sign out
+                {t('nav.signOut')}
               </Button>
             </Stack>
           </Toolbar>

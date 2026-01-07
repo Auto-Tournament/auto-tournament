@@ -25,7 +25,6 @@ import BracketsViewerVisualization from '../components/visualizations/BracketsVi
 import SwissView from '../components/visualizations/SwissView';
 import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
-import { MatchCard } from '../components/shared/MatchCard';
 import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { getRoundLabel } from '../utils/matchUtils';
@@ -33,6 +32,7 @@ import { useBracket } from '../hooks/useBracket';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
 import type { Match } from '../types';
+import { useTranslation } from 'react-i18next';
 
 // Interfaces are now imported from useBracket hook
 
@@ -80,11 +80,12 @@ export default function Bracket() {
     }>;
   }>({
     nextAllocationInSeconds: null,
-    gracePeriodSeconds: 300,
+    gracePeriodSeconds: 120,
     availableServerCount: 0,
     requiredServerCount: 0,
     servers: [],
   });
+  const { t } = useTranslation();
 
   // Derive the current match from matches array (keeps status/score in sync with
   // live websocket updates), and optionally merge in richer fields (e.g.
@@ -169,6 +170,7 @@ export default function Bracket() {
             secondsUntilReady: number | null;
             allocatable: boolean;
           }>;
+          simulationEnabled?: boolean;
         }>('/api/tournament/server-availability');
 
         if (availability.success) {
@@ -229,8 +231,8 @@ export default function Bracket() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Bracket';
-  }, []);
+    document.title = t('layout.pageTitle.bracket');
+  }, [t]);
 
   // For shuffle tournaments, we always render the list view (no visual bracket).
   const effectiveViewMode: 'visual' | 'list' = tournament?.type === 'shuffle' ? 'list' : viewMode;
@@ -327,9 +329,9 @@ export default function Bracket() {
       <Box>
         <EmptyState
           icon={AccountTreeOutlinedIcon}
-          title="No bracket to display"
-          description="Create a tournament and generate the bracket to get started"
-          actionLabel="Create Tournament"
+          title={t('bracket.empty.noBracketTitle')}
+          description={t('bracket.empty.noBracketDescription')}
+          actionLabel={t('tournament.common.createTournament')}
           actionIcon={AddIcon}
           onAction={() => navigate('/tournament')}
         />
@@ -384,6 +386,37 @@ export default function Bracket() {
       </Box>
     );
   }
+
+  const showWaitingForServersBanner =
+    allocationCountdown.requiredServerCount > 0 &&
+    allocationCountdown.availableServerCount === 0;
+
+  const renderAllocationBanner = () => {
+    if (!showWaitingForServersBanner) {
+      return null;
+    }
+
+    const nextIn = allocationCountdown.nextAllocationInSeconds;
+
+    return (
+      <Box mb={2}>
+        <Alert severity="info">
+          <Typography variant="body2" fontWeight={600} gutterBottom>
+            {t('servers.allocation.title')}
+          </Typography>
+          <Typography variant="body2">
+            {t('servers.allocation.waiting')}{' '}
+            <strong>{allocationCountdown.requiredServerCount}</strong>
+          </Typography>
+          {typeof nextIn === 'number' && nextIn > 0 && (
+            <Typography variant="body2" color="text.secondary" mt={0.5}>
+              {t('servers.allocation.nextPass', { seconds: nextIn })}
+            </Typography>
+          )}
+        </Alert>
+      </Box>
+    );
+  };
 
   if (!matches.length) {
     return (
@@ -578,24 +611,7 @@ export default function Bracket() {
       )}
 
       {/* Allocation / cooldown status helper */}
-      {!isFullscreen && allocationCountdown.requiredServerCount > 0 && (
-        <Box px={2} mb={2}>
-          <Typography variant="body2" color="text.secondary">
-            Waiting for idle servers before batch allocation:{' '}
-            <strong>
-              {allocationCountdown.availableServerCount}/{allocationCountdown.requiredServerCount} ready
-            </strong>
-            {allocationCountdown.nextAllocationInSeconds !== null &&
-              allocationCountdown.nextAllocationInSeconds > 0 && (
-                <>
-                  {' '}
-                  – next reuse in{' '}
-                  <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
-                </>
-              )}
-          </Typography>
-        </Box>
-      )}
+      {!isFullscreen && renderAllocationBanner()}
 
       {/* Fullscreen exit button - only visible in fullscreen */}
       {isFullscreen && (

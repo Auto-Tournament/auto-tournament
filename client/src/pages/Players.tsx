@@ -29,8 +29,10 @@ import type { PlayerDetail, PlayersResponse } from '../types/api.types';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { useTranslation } from 'react-i18next';
 
 export default function Players() {
+  const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
@@ -46,8 +48,8 @@ export default function Players() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Players';
-  }, []);
+    document.title = t('layout.pageTitle.players');
+  }, [t]);
 
   const handleOpenModal = (player?: PlayerDetail) => {
     setEditingPlayer(player || null);
@@ -74,7 +76,7 @@ export default function Players() {
               }
             }}
           >
-            {selectionMode ? 'Done Selecting' : 'Select'}
+            {selectionMode ? t('playersPage.headerSelect.done') : t('playersPage.headerSelect.select')}
           </Button>
           {selectionMode && (
             <>
@@ -99,7 +101,9 @@ export default function Players() {
                   });
                 }}
               >
-                {allVisibleSelected ? 'Unselect All' : 'Select All'}
+                {allVisibleSelected
+                  ? t('playersPage.headerSelect.unselectAll')
+                  : t('playersPage.headerSelect.selectAll')}
               </Button>
               <Button
                 variant="outlined"
@@ -111,14 +115,14 @@ export default function Players() {
                   setBulkDeleteConfirmOpen(true);
                 }}
               >
-                Delete Selected
+                {t('playersPage.headerSelect.deleteSelected')}
               </Button>
             </>
           )}
           {!selectionMode && (
             <>
               <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-                Import JSON/CSV
+                {t('playersPage.headerActions.import')}
               </Button>
               <Button
                 variant="contained"
@@ -127,7 +131,7 @@ export default function Players() {
                 onClick={() => handleOpenModal()}
                 data-testid="add-player-button"
               >
-                Add Player
+                {t('playersPage.headerActions.addPlayer')}
               </Button>
             </>
           )}
@@ -140,7 +144,7 @@ export default function Players() {
     return () => {
       setHeaderActions(null);
     };
-  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds]);
+  }, [players.length, setHeaderActions, selectionMode, selectedPlayerIds, filteredPlayers, t]);
 
   const loadPlayers = useCallback(async () => {
     try {
@@ -149,13 +153,13 @@ export default function Players() {
       setPlayers(data.players || []);
       setFilteredPlayers(data.players || []);
     } catch (err) {
-      const errorMessage = 'Failed to load players';
+      const errorMessage = t('playersPage.loadError');
       showError(errorMessage);
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
     loadPlayers();
@@ -190,11 +194,11 @@ export default function Players() {
   const handleDelete = async (playerId: string) => {
     try {
       await api.delete(`/api/players/${playerId}`);
-      showSuccess('Player deleted successfully');
+      showSuccess(t('playersPage.deleteSuccess'));
       await loadPlayers();
     } catch (err) {
       console.error('Failed to delete player:', err);
-      showError('Failed to delete player');
+      showError(t('playersPage.deleteError'));
     }
   };
 
@@ -227,11 +231,11 @@ export default function Players() {
       }));
 
       await api.post('/api/players/bulk-import', playersToImport);
-      showSuccess(`Successfully imported ${importedPlayers.length} player(s)`);
+      showSuccess(t('playersPage.importSuccess', { count: importedPlayers.length }));
       await loadPlayers();
     } catch (err) {
       console.error('Failed to import players:', err);
-      showError('Failed to import players');
+      showError(t('playersPage.importError'));
       throw err;
     }
   };
@@ -250,7 +254,7 @@ export default function Players() {
         <Box mb={3}>
           <TextField
             fullWidth
-            placeholder="Search players by name or Steam ID..."
+            placeholder={t('playersPage.searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             slotProps={{
@@ -272,21 +276,21 @@ export default function Players() {
             <EmptyState
               data-testid="players-empty-state"
               icon={PersonIcon}
-              title="No players yet"
-              description="Create your first player or import players from CSV/JSON"
-              actionLabel="Create Player"
+              title={t('playersPage.empty.title')}
+              description={t('playersPage.empty.description')}
+              actionLabel={t('playersPage.empty.createPlayer')}
               actionIcon={AddIcon}
               onAction={() => handleOpenModal()}
             />
             <Box display="flex" justifyContent="center" mt={2}>
               <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
-                Or Import Players from JSON/CSV
+                {t('playersPage.empty.import')}
               </Button>
             </Box>
           </Box>
         ) : filteredPlayers.length === 0 ? (
           <Alert severity="info">
-            No players found matching &quot;{searchQuery}&quot;
+            {t('playersPage.searchNoResults', { query: searchQuery })}
           </Alert>
         ) : (
           <Grid container spacing={2} data-testid="players-list">
@@ -333,7 +337,7 @@ export default function Players() {
                             variant="h6"
                             sx={{ fontWeight: 600 }}
                           />
-                          <Tooltip title="Open player page">
+                          <Tooltip title={t('playersPage.openPlayerPageTooltip')}>
                             <IconButton
                               size="small"
                               component="a"
@@ -354,9 +358,11 @@ export default function Players() {
                     </Box>
 
                     <Box display="flex" alignItems="center" gap={1} mb={1}>
-                      <Tooltip title="Skill Rating is based on OpenSkill; higher is better.">
+                      <Tooltip title={t('playersPage.skillRatingTooltip')}>
                         <Chip
-                          label={`Skill Rating: ${player.currentElo}`}
+                          label={t('playersPage.skillRatingLabel', {
+                            elo: player.currentElo,
+                          })}
                           size="small"
                           color="primary"
                           sx={{ fontWeight: 600 }}
@@ -364,7 +370,9 @@ export default function Players() {
                       </Tooltip>
                       {player.matchCount > 0 && (
                         <Chip
-                          label={`${player.matchCount} match${player.matchCount === 1 ? '' : 'es'}`}
+                          label={t('playersPage.matchesCount', {
+                            count: player.matchCount,
+                          })}
                           size="small"
                           variant="outlined"
                         />
@@ -392,11 +400,12 @@ export default function Players() {
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}
-        title="Delete Players"
-        message={`Are you sure you want to delete ${selectedPlayerIds.size} player${
-          selectedPlayerIds.size === 1 ? '' : 's'
-        }? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('playersPage.bulkDelete.title')}
+        message={t('playersPage.bulkDelete.message', {
+          count: selectedPlayerIds.size,
+          suffix: selectedPlayerIds.size === 1 ? '' : 's',
+        })}
+        confirmLabel={t('playersPage.bulkDelete.confirm')}
         confirmColor="error"
         onConfirm={async () => {
           if (selectedPlayerIds.size === 0) {

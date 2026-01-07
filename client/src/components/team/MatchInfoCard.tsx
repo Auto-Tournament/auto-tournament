@@ -5,7 +5,10 @@ import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
-import { isShuffleMatch as isShuffleMatchGlobal, isVetoDisabledForMatch } from '../../utils/matchFlags';
+import {
+  isShuffleMatch as isShuffleMatchGlobal,
+  isVetoDisabledForMatch,
+} from '../../utils/matchFlags';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
@@ -53,6 +56,7 @@ export function MatchInfoCard({
 }: MatchInfoCardProps) {
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
+  const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
 
   const liveStats = match.liveStats || null;
@@ -62,9 +66,7 @@ export function MatchInfoCard({
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
 
   const mapFromMatchMaps =
-    typeof mapNumber === 'number' && match.maps[mapNumber]
-      ? match.maps[mapNumber]
-      : match.maps[0];
+    typeof mapNumber === 'number' && match.maps[mapNumber] ? match.maps[mapNumber] : match.maps[0];
 
   const configMapList = match.config?.maplist;
   const mapFromConfig =
@@ -245,9 +247,28 @@ export function MatchInfoCard({
     const connectCommand = `connect ${match.server.host}:${match.server.port}${
       match.server.password ? `; password ${match.server.password}` : ''
     }`;
-    navigator.clipboard.writeText(connectCommand);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+
+    // Reset any previous fallback state
+    setCopyFallbackCommand(null);
+
+    // Prefer modern clipboard API when available and allowed
+    if (navigator.clipboard && (window as typeof globalThis).isSecureContext) {
+      navigator.clipboard
+        .writeText(connectCommand)
+        .then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        })
+        .catch((err) => {
+          console.warn('Clipboard write failed, falling back to manual copy:', err);
+          setCopyFallbackCommand(connectCommand);
+        });
+      return;
+    }
+
+    // Fallback for non-secure contexts (e.g. plain HTTP) or missing API:
+    // show the command so the user can copy it manually.
+    setCopyFallbackCommand(connectCommand);
   };
 
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
@@ -386,31 +407,27 @@ export function MatchInfoCard({
               </Box>
             </Box>
 
-          <MatchScoreboard
-            leftName={team?.name}
-            rightName={match.opponent?.name}
-            leftMapRounds={mapRoundsTeam1}
-            rightMapRounds={mapRoundsTeam2}
-            leftSeriesWins={deriveSeriesWins.team1}
-            rightSeriesWins={deriveSeriesWins.team2}
-            leftTeamElo={
-              isShuffleMatch && team1AverageElo !== null
-                ? Math.round(team1AverageElo)
-                : undefined
-            }
-            rightTeamElo={
-              isShuffleMatch && team2AverageElo !== null
-                ? Math.round(team2AverageElo)
-                : undefined
-            }
-            liveStatusDisplay={liveStatusDisplay}
-            // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
-            // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
-            // per‑map round result instead.
-            hideSeriesWins={
-              isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
-            }
-          />
+            <MatchScoreboard
+              leftName={team?.name}
+              rightName={match.opponent?.name}
+              leftMapRounds={mapRoundsTeam1}
+              rightMapRounds={mapRoundsTeam2}
+              leftSeriesWins={deriveSeriesWins.team1}
+              rightSeriesWins={deriveSeriesWins.team2}
+              leftTeamElo={
+                isShuffleMatch && team1AverageElo !== null ? Math.round(team1AverageElo) : undefined
+              }
+              rightTeamElo={
+                isShuffleMatch && team2AverageElo !== null ? Math.round(team2AverageElo) : undefined
+              }
+              liveStatusDisplay={liveStatusDisplay}
+              // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
+              // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
+              // per‑map round result instead.
+              hideSeriesWins={
+                isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
+              }
+            />
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
               <Typography variant="body2" color="text.secondary" mt={1}>
@@ -438,6 +455,16 @@ export function MatchInfoCard({
               onConnect={handleConnect}
               onCopy={handleCopyIP}
             />
+
+            {copyFallbackCommand && (
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ mt: 1, fontFamily: 'monospace' }}
+              >
+                Unable to copy automatically in this browser. Run in console: {copyFallbackCommand}
+              </Typography>
+            )}
 
             {hasPlayerStats && playerStats && (
               <MatchPlayerPerformance

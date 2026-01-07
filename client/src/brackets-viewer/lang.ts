@@ -1,34 +1,11 @@
-import i18next, { StringMap, TOptions, TFunction } from 'i18next';
-import LanguageDetector from 'i18next-browser-languagedetector';
+import { TOptions, TFunction } from 'i18next';
 
 import { Stage, Status, FinalType, GroupType, StageType } from 'brackets-model';
 import { isMajorRound } from './helpers';
 import { OriginHint, RoundNameInfo } from './types';
+import i18n from '../i18n';
 
-import en from './i18n/en/translation.json';
-import fr from './i18n/fr/translation.json';
-
-export type { TFunction } from 'i18next';
-
-export const locales = {
-    en,
-    fr,
-};
-
-export type Locale = typeof locales['en'];
-
-void i18next.use(LanguageDetector).init({
-    fallbackLng: 'en',
-    debug: false,
-    resources: {
-        en: {
-            translation: locales.en,
-        },
-        fr: {
-            translation: locales.fr,
-        },
-    },
-});
+export type Locale = Record<string, unknown>;
 
 /**
  * Adds a locale to the available i18n bundles.
@@ -37,8 +14,8 @@ void i18next.use(LanguageDetector).init({
  * @param locale Contents of the locale.
  */
 export async function addLocale(name: string, locale: Locale): Promise<void> {
-    i18next.addResourceBundle(name, 'translation', locale, true, true);
-    await i18next.changeLanguage();
+    i18n.addResourceBundle(name, 'bracketsViewer', locale, true, true);
+    await i18n.changeLanguage(name);
 }
 
 /**
@@ -47,10 +24,8 @@ export async function addLocale(name: string, locale: Locale): Promise<void> {
  * @param key A locale key.
  * @param options Data to pass to the i18n process.
  */
-export function t<Scope extends keyof Locale, SubKey extends string & keyof Locale[Scope], T extends TOptions>(
-    key: `${Scope}.${SubKey}`, options?: T,
-): T['returnObjects'] extends true ? StringMap : string {
-    return i18next.t(key, options);
+export function t(key: string, options?: TOptions): string {
+    return i18n.t(key, { ns: 'bracketsViewer', ...(options ?? {}) });
 }
 
 export type ToI18nKey<S extends string> = S extends `${infer A}_${infer B}`

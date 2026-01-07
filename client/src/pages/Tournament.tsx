@@ -205,6 +205,21 @@ const Tournament: React.FC = () => {
           setFormat(template.format);
           setMaps(template.maps || []);
           setSelectedTeams([]); // Templates don't include teams
+
+          // Apply saved global round / overtime / grand final settings when present
+          if (typeof template.settings?.maxRounds === 'number') {
+            setMaxRounds(template.settings.maxRounds);
+          }
+          if (template.settings?.overtimeMode) {
+            setOvertimeMode(template.settings.overtimeMode);
+          }
+          if (typeof template.settings?.overtimeSegments === 'number') {
+            setOvertimeSegments(template.settings.overtimeSegments);
+          }
+          if (template.settings?.grandFinalMode) {
+            setGrandFinalMode(template.settings.grandFinalMode);
+          }
+
           setIsEditing(true);
           // When loading a template via URL, jump the multi-step form to the
           // final "Review" step so the user can confirm and create immediately.
@@ -264,6 +279,21 @@ const Tournament: React.FC = () => {
     setMaps(template.maps || []);
     setSelectedTeams(template.teamIds || []); // Load teams from template
     setCurrentMapPoolId(template.mapPoolId || null); // Set map pool ID
+
+    // Apply saved global round / overtime / grand final settings when present
+    if (typeof template.settings?.maxRounds === 'number') {
+      setMaxRounds(template.settings.maxRounds);
+    }
+    if (template.settings?.overtimeMode) {
+      setOvertimeMode(template.settings.overtimeMode);
+    }
+    if (typeof template.settings?.overtimeSegments === 'number') {
+      setOvertimeSegments(template.settings.overtimeSegments);
+    }
+    if (template.settings?.grandFinalMode) {
+      setGrandFinalMode(template.settings.grandFinalMode);
+    }
+
     setShowWelcome(false);
     setShowForm(true);
     setIsEditing(true);
@@ -272,7 +302,10 @@ const Tournament: React.FC = () => {
     try {
       sessionStorage.setItem(STEP_STORAGE_KEY, '5'); // 'Review' step index in TournamentFormSteps
     } catch (error) {
-      console.error('Error saving step to sessionStorage when loading template from welcome:', error);
+      console.error(
+        'Error saving step to sessionStorage when loading template from welcome:',
+        error
+      );
     }
     // Clear draft when loading template
     clearDraft();
@@ -340,9 +373,7 @@ const Tournament: React.FC = () => {
           eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
           overtimeMode: tournament.overtimeMode ?? 'enabled',
           overtimeSegments:
-            typeof tournament.overtimeSegments === 'number'
-              ? tournament.overtimeSegments
-              : null,
+            typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null,
         });
       } else {
         // Non-shuffle tournaments use a global maxRounds for all maps
@@ -355,7 +386,8 @@ const Tournament: React.FC = () => {
       // Grand final configuration (double elimination only)
       if (tournament.type === 'double_elimination') {
         const mode =
-          (tournament.settings && (tournament.settings as { grandFinalMode?: string }).grandFinalMode) ||
+          (tournament.settings &&
+            (tournament.settings as { grandFinalMode?: string }).grandFinalMode) ||
           'simple';
         if (mode === 'none' || mode === 'simple' || mode === 'double') {
           setGrandFinalMode(mode);
@@ -450,7 +482,8 @@ const Tournament: React.FC = () => {
         const currentMode =
           (tournament.settings &&
             (tournament.settings as { grandFinalMode?: 'none' | 'simple' | 'double' })
-              .grandFinalMode) || 'simple';
+              .grandFinalMode) ||
+          'simple';
         if (grandFinalMode !== currentMode) return true;
       }
     }
@@ -628,14 +661,13 @@ const Tournament: React.FC = () => {
     setShowChangePreview(false);
 
     try {
-      const baseSettings =
-        tournament?.settings || {
-          matchFormat: format,
-          thirdPlaceMatch: false,
-          autoAdvance: true,
-          checkInRequired: false,
-          seedingMethod: 'random',
-        };
+      const baseSettings = tournament?.settings || {
+        matchFormat: format,
+        thirdPlaceMatch: false,
+        autoAdvance: true,
+        checkInRequired: false,
+        seedingMethod: 'random',
+      };
 
       const settings = {
         ...baseSettings,
@@ -651,8 +683,7 @@ const Tournament: React.FC = () => {
         settings,
         maxRounds,
         overtimeMode,
-        overtimeSegments:
-          typeof overtimeSegments === 'number' ? overtimeSegments : undefined,
+        overtimeSegments: typeof overtimeSegments === 'number' ? overtimeSegments : undefined,
       };
 
       const response = await saveTournament(payload);
@@ -784,7 +815,11 @@ const Tournament: React.FC = () => {
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
         if (allocated > 0) {
-          showSuccess(`Tournament started! ${allocated} match${allocated === 1 ? '' : 'es'} allocated to servers.`);
+          showSuccess(
+            `Tournament started! ${allocated} match${
+              allocated === 1 ? '' : 'es'
+            } allocated to servers.`
+          );
         } else {
           showSuccess(
             (response as { message?: string }).message ||
@@ -963,9 +998,7 @@ const Tournament: React.FC = () => {
               onRegenerate={() => setShowRegenerateConfirm(true)}
               onDelete={() => setShowDeleteConfirm(true)}
               onBulkCreateShuffleMatches={
-                tournament.type === 'shuffle'
-                  ? () => setBulkShuffleModalOpen(true)
-                  : undefined
+                tournament.type === 'shuffle' ? () => setBulkShuffleModalOpen(true) : undefined
               }
             />
           </Box>
@@ -1043,6 +1076,10 @@ const Tournament: React.FC = () => {
           mapPoolId: currentMapPoolId,
           teamIds: selectedTeams,
           settings: tournament?.settings,
+          maxRounds,
+          overtimeMode,
+          overtimeSegments,
+          grandFinalMode,
         }}
       />
 

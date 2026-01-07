@@ -1,0 +1,126 @@
+{
+  "origin-hint": {
+    "seed": "种子 {{position}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket) {{round}} 轮第 {{position}} 场的败者",
+    "winner-bracket-semi-final": "$t(abbreviations.winner-bracket) 半决赛第 {{position}} 场的败者",
+    "winner-bracket-final": "$t(abbreviations.winner-bracket) 决赛的败者",
+    "consolation-final": "半决赛第 {{position}} 场的败者",
+    "grand-final": "$t(abbreviations.loser-bracket) 决赛的胜者",
+    "double-elimination-consolation-final-opponent-1": "$t(abbreviations.loser-bracket) 半决赛 1 的败者",
+    "double-elimination-consolation-final-opponent-2": "$t(abbreviations.loser-bracket) 决赛的败者"
+  },
+  "match-label": {
+    "default": "第 {{matchNumber}} 场",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "半决赛第 {{matchNumber}} 场",
+    "standard-bracket-final": "总决赛",
+    "double-elimination": "{{matchPrefix}} 第 {{roundNumber}} 轮第 {{matchNumber}} 场",
+    "double-elimination-semi-final": "{{matchPrefix}} 半决赛第 {{matchNumber}} 场",
+    "double-elimination-final": "{{matchPrefix}} 决赛",
+    "consolation-final": "季军赛",
+    "grand-final-single": "总决赛",
+    "grand-final": "$t(abbreviations.grand-final) 第 {{roundNumber}} 轮",
+    "match-game": "第 {{gameNumber}} 局"
+  },
+  "match-status": {
+    "locked": "已锁定",
+    "waiting": "等待中",
+    "ready": "就绪",
+    "running": "进行中",
+    "completed": "已完成",
+    "archived": "已归档"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": {
+      "text": "#",
+      "tooltip": "排名"
+    },
+    "id": {
+      "text": "名称",
+      "tooltip": "名称"
+    },
+    "played": {
+      "text": "场次",
+      "tooltip": "已赛场次"
+    },
+    "wins": {
+      "text": "$t(abbreviations.win)",
+      "tooltip": "胜场"
+    },
+    "draws": {
+      "text": "平",
+      "tooltip": "平局"
+    },
+    "losses": {
+      "text": "$t(abbreviations.loss)",
+      "tooltip": "负场"
+    },
+    "forfeits": {
+      "text": "$t(abbreviations.forfeit)",
+      "tooltip": "弃权"
+    },
+    "scoreFor": {
+      "text": "得分",
+      "tooltip": "获得的回合数"
+    },
+    "scoreAgainst": {
+      "text": "失分",
+      "tooltip": "丢失的回合数"
+    },
+    "scoreDifference": {
+      "text": "分差",
+      "tooltip": "得失分差"
+    },
+    "points": {
+      "text": "积分",
+      "tooltip": "总积分"
+    }
+  },
+  "common": {
+    "bye": "轮空",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "安慰赛",
+    "group-name": "第 {{groupNumber}} 组",
+    "group-name-winner-bracket": "胜者组",
+    "group-name-loser-bracket": "败者组",
+    "round-name": "第 {{roundNumber}} 轮",
+    "round-name-final": "决赛轮",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) 第 {{roundNumber}} 轮",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) 决赛轮",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) 第 {{roundNumber}} 轮",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) 决赛轮"
+  },
+  "form-creator": {
+    "stage-name-label": "阶段名称",
+    "stage-name-placeholder": "为这个阶段起一个名字",
+    "stage-selector-label": "选择阶段类型",
+    "team-label": "队伍名称",
+    "team-label-placeholder": "使用逗号分隔的队名列表（数量必须为 2 的幂）",
+    "team-count": "或者直接填写队伍数量",
+    "team-count-placeholder": "你希望有多少支队伍？",
+    "group-label": "分成多少个小组？",
+    "group-placeholder": "你希望有多少个小组？",
+    "seed-order-label": "你希望如何排序种子？",
+    "double-elimination-seed-order-placeholder": "双败淘汰的种子顺序，使用逗号分隔",
+    "round-robin-mode-label": "你更喜欢哪种循环赛模式？",
+    "consolation-final-label": "是否包含安慰赛（季军赛）",
+    "skip-first-round-label": "跳过第一轮",
+    "grand-final-type-label": "总决赛类型",
+    "submit": "创建"
+  }
+}
+
+

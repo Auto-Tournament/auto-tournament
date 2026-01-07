@@ -15,8 +15,10 @@ import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { api } from '../utils/api';
+import { useTranslation } from 'react-i18next';
 
 export default function Login() {
+  const { t } = useTranslation();
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -26,8 +28,8 @@ export default function Login() {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Login';
-  }, []);
+    document.title = t('login.title');
+  }, [t]);
 
   interface LocationState {
     from?: { pathname: string };
@@ -40,7 +42,7 @@ export default function Login() {
     setLoading(true);
 
     if (!password.trim()) {
-      setError('Password is required');
+      setError(t('login.passwordRequired'));
       setLoading(false);
       return;
     }
@@ -51,10 +53,10 @@ export default function Login() {
         login(password);
         navigate(from, { replace: true });
       } else {
-        setError('Invalid password. Please check your API token.');
+        setError(t('login.invalidPassword'));
       }
     } catch {
-      setError('Failed to connect to the API. Please try again.');
+      setError(t('login.connectionFailed'));
     } finally {
       setLoading(false);
     }
@@ -99,10 +101,10 @@ export default function Login() {
 
               <Stack spacing={0.5} alignItems="center" sx={{ textAlign: 'center', px: 2 }}>
                 <Typography variant="h5" fontWeight={600}>
-                  Welcome back
+                  {t('login.welcome')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" maxWidth={320}>
-                  Enter the administrator API token to manage tournaments, servers, and teams.
+                  {t('login.subtitle')}
                 </Typography>
               </Stack>
             </Stack>
@@ -111,11 +113,11 @@ export default function Login() {
               <TextField
                 fullWidth
                 id="password"
-                label="API Token"
+                label={t('login.apiTokenLabel')}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your API token"
+                placeholder={t('login.apiTokenPlaceholder')}
                 autoFocus
                 disabled={loading}
                 slotProps={{
@@ -137,7 +139,7 @@ export default function Login() {
                 size="large"
                 disabled={loading}
               >
-                {loading ? 'Signing in…' : 'Sign In'}
+                {loading ? t('login.signingIn') : t('login.signIn')}
               </Button>
             </Stack>
 
@@ -145,7 +147,7 @@ export default function Login() {
 
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
               <Typography variant="body2" color="text.secondary">
-                Need the token or access instructions?
+                {t('login.needToken')}
               </Typography>
 
               <Stack direction="row" spacing={2}>
@@ -159,7 +161,7 @@ export default function Login() {
                     gap: 0.5,
                   }}
                 >
-                  GitHub
+                  {t('login.github')}
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
                 <Link
@@ -172,13 +174,14 @@ export default function Login() {
                     gap: 0.5,
                   }}
                 >
-                  Documentation
+                  {t('login.documentation')}
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
               </Stack>
 
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                Version {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+                {t('login.version')}{' '}
+                {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
               </Typography>
             </Stack>
           </Stack>

@@ -32,9 +32,7 @@ import { api } from '../utils/api';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { generateTeamName } from '../generation/teamName';
 import { generatePlayerProfile } from '../generation/playerProfile';
-
-// Set dynamic page title
-document.title = 'Development';
+import { useTranslation } from 'react-i18next';
 
 const Development: React.FC = () => {
   const [loading, setLoading] = useState(false);
@@ -45,6 +43,10 @@ const Development: React.FC = () => {
   const [customPlayerCount, setCustomPlayerCount] = useState(60);
   const [customServerCount, setCustomServerCount] = useState(3);
   const [resettingSimulation, setResettingSimulation] = useState(false);
+  const { t } = useTranslation();
+
+  // Set dynamic page title
+  document.title = t('layout.pageTitle.devTools');
 
   const handleCreateTestTeams = async (count: number) => {
     setLoading(true);
@@ -60,7 +62,8 @@ const Development: React.FC = () => {
       const slugify = (value: string) =>
         value
           .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
+          // Keep all letters and numbers from any language while normalizing separators.
+          .replace(/[^\p{L}\p{N}]+/gu, '-')
           .replace(/(^-|-$)/g, '');
 
       // Generate unique Steam IDs per player so each team gets unique players
@@ -75,7 +78,8 @@ const Development: React.FC = () => {
           name: fullName,
           tag:
             fullName
-              .replace(/[^A-Za-z0-9]/g, '')
+              // Use all Unicode letters/digits and fall back if empty.
+              .replace(/[^\p{L}\p{N}]/gu, '')
               .substring(0, 3)
               .toUpperCase() || 'TST',
           players: Array.from({ length: 5 }, (_, playerIndex) => {
@@ -106,24 +110,27 @@ const Development: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create test teams');
+        throw new Error(errorData.error || t('devToolsPage.testTeams.errors.create'));
       }
 
       const result = await response.json();
       if (result.failed && result.failed.length > 0) {
         showError(
-          `Created ${result.successful?.length || 0} team(s), but ${
-            result.failed.length
-          } failed. Check console for details.`
+          t('devToolsPage.testTeams.errors.partial', {
+            created: result.successful?.length || 0,
+            failed: result.failed.length,
+          })
         );
       } else {
         showSuccess(
-          `Successfully created ${result.successful?.length || count} test team(s)!`
+          t('devToolsPage.testTeams.success', {
+            count: result.successful?.length || count,
+          })
         );
       }
     } catch (error) {
       console.error('Error creating test teams:', error);
-      showError('Failed to create test teams');
+      showError(t('devToolsPage.testTeams.errors.create'));
     } finally {
       setLoading(false);
     }
@@ -165,24 +172,30 @@ const Development: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || 'Failed to create test servers');
+        throw new Error(errorData.error || t('devToolsPage.testServers.errors.create'));
       }
 
       const result = await response.json();
       if (result.failed && result.failed.length > 0) {
         showError(
-          `Created ${result.successful?.length || 0} server(s), but ${
-            result.failed.length
-          } failed. Check console for details.`
+          t('devToolsPage.testServers.errors.partial', {
+            created: result.successful?.length || 0,
+            failed: result.failed.length,
+          })
         );
       } else {
         showSuccess(
-          `Successfully created ${result.successful?.length || count} test server(s)!`
+          t('devToolsPage.testServers.success', {
+            count: result.successful?.length || count,
+          })
         );
       }
     } catch (error) {
       console.error('Error creating test servers:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create test servers';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t('devToolsPage.testServers.errors.create');
       showError(errorMessage);
     } finally {
       setLoading(false);
@@ -231,21 +244,29 @@ const Development: React.FC = () => {
 
         if (errors.length > 0) {
           showError(
-            `Created ${created} player(s), updated ${updated}, but ${errors.length} failed. Check console for details.`
+            t('devToolsPage.testPlayers.errors.partial', {
+              created,
+              updated,
+              failed: errors.length,
+            })
           );
         } else {
           showSuccess(
-            `Successfully created ${created} player(s)${
-              updated > 0 ? ` and updated ${updated}` : ''
-            }!`
+            t('devToolsPage.testPlayers.success', {
+              created,
+              updated,
+            })
           );
         }
       } else {
-        throw new Error(response.error || 'Failed to create test players');
+        throw new Error(response.error || t('devToolsPage.testPlayers.errors.create'));
       }
     } catch (error) {
       console.error('Error creating test players:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to create test players';
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : t('devToolsPage.testPlayers.errors.create');
       showError(errorMessage);
     } finally {
       setLoading(false);
@@ -255,7 +276,7 @@ const Development: React.FC = () => {
   const handleDeleteAllTestData = async () => {
     if (
       !(globalThis as { confirm?: (message: string) => boolean }).confirm?.(
-        'Are you sure you want to delete ALL test data?'
+        t('devToolsPage.deleteTestData.confirmPrompt')
       )
     ) {
       return;
@@ -308,10 +329,10 @@ const Development: React.FC = () => {
         }
       }
 
-      showSuccess('Successfully deleted all test data!');
+      showSuccess(t('devToolsPage.deleteTestData.success'));
     } catch (error) {
       console.error('Error deleting test data:', error);
-      showError('Failed to delete test data');
+      showError(t('devToolsPage.deleteTestData.error'));
     } finally {
       setLoading(false);
     }
@@ -325,7 +346,9 @@ const Development: React.FC = () => {
       const response: { success: boolean; message: string } = await api.post(
         '/api/tournament/wipe-database'
       );
-      showSuccess(response.message || 'Database wiped successfully! Redirecting...');
+      showSuccess(
+        response.message || t('devToolsPage.wipeDatabase.successRedirect')
+      );
 
       // Refresh page after 2 seconds
       setTimeout(() => {
@@ -333,7 +356,7 @@ const Development: React.FC = () => {
       }, 2000);
     } catch (error) {
       console.error('Error wiping database:', error);
-      showError('Failed to wipe database');
+      showError(t('devToolsPage.wipeDatabase.error'));
     } finally {
       setWiping(false);
     }
@@ -342,7 +365,7 @@ const Development: React.FC = () => {
   const handleWipeTable = async (table: string) => {
     if (
       !(globalThis as { confirm?: (message: string) => boolean }).confirm?.(
-        `Are you sure you want to wipe the ${table} table? This will delete all data in that table.`
+        t('devToolsPage.wipeTable.confirmPrompt', { table })
       )
     ) {
       return;
@@ -354,10 +377,13 @@ const Development: React.FC = () => {
       const response: { success: boolean; message: string } = await api.post(
         `/api/tournament/wipe-table/${table}`
       );
-      showSuccess(response.message || `Table ${table} wiped successfully!`);
+      showSuccess(
+        response.message ||
+          t('devToolsPage.wipeTable.success', { table })
+      );
     } catch (error) {
       console.error(`Error wiping ${table}:`, error);
-      showError(`Failed to wipe ${table} table`);
+      showError(t('devToolsPage.wipeTable.error', { table }));
     } finally {
       setLoading(false);
     }
@@ -371,15 +397,16 @@ const Development: React.FC = () => {
       );
       if (response.success) {
         showSuccess(
-          response.message ||
-            'Simulation state reset. Matches and stats cleared; servers, teams, and tournament setup preserved.'
+          response.message || t('devToolsPage.simulation.reset.success')
         );
       } else {
-        showError(response.error || 'Failed to reset simulation state');
+        showError(
+          response.error || t('devToolsPage.simulation.reset.error')
+        );
       }
     } catch (error) {
       console.error('Error resetting simulation state:', error);
-      showError('Failed to reset simulation state');
+      showError(t('devToolsPage.simulation.reset.error'));
     } finally {
       setResettingSimulation(false);
     }
@@ -388,15 +415,14 @@ const Development: React.FC = () => {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Alert severity="warning" sx={{ mb: 3 }}>
-        These tools are only available in development mode. Use them to quickly generate test data
-        for testing the application.
+        {t('devToolsPage.alert')}
       </Alert>
 
       <Grid container spacing={3}>
         {/* Test Data Creation */}
         <Grid size={{ xs: 12 }}>
           <Typography variant="h5" fontWeight={600} mb={2}>
-            Create Test Data
+            {t('devToolsPage.sections.testData.title')}
           </Typography>
         </Grid>
 
@@ -407,11 +433,11 @@ const Development: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <GroupIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Test Teams
+                  {t('devToolsPage.testTeams.title')}
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" mb={3}>
-                Create teams with random player data for testing tournament brackets and matches.
+                {t('devToolsPage.testTeams.description')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Button
@@ -420,7 +446,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 2 Teams'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testTeams.buttons.createFixed', { count: 2 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -428,7 +458,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 4 Teams'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testTeams.buttons.createFixed', { count: 4 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -436,7 +470,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 8 Teams'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testTeams.buttons.createFixed', { count: 8 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -444,12 +482,16 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 16 Teams'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testTeams.buttons.createFixed', { count: 16 })
+                  )}
                 </Button>
                 <Box display="flex" gap={1}>
                   <TextField
                     type="number"
-                    label="Custom team count"
+                    label={t('devToolsPage.testTeams.customLabel')}
                     size="small"
                     value={customTeamCount}
                     onChange={(e) =>
@@ -466,7 +508,11 @@ const Development: React.FC = () => {
                     onClick={() => customTeamCount > 0 && handleCreateTestTeams(customTeamCount)}
                     disabled={loading || customTeamCount <= 0}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Create Teams'}
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      t('devToolsPage.testTeams.buttons.createCustom')
+                    )}
                   </Button>
                 </Box>
               </Box>
@@ -481,12 +527,11 @@ const Development: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <PersonIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Test Players
+                  {t('devToolsPage.testPlayers.title')}
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" mb={3}>
-                Create players with ELO ratings for testing shuffle tournaments and player
-                management.
+                {t('devToolsPage.testPlayers.description')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Button
@@ -495,7 +540,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 10 Players'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testPlayers.buttons.createFixed', { count: 10 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -503,7 +552,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 20 Players'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testPlayers.buttons.createFixed', { count: 20 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -511,7 +564,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 50 Players'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testPlayers.buttons.createFixed', { count: 50 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -519,12 +576,16 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 100 Players'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testPlayers.buttons.createFixed', { count: 100 })
+                  )}
                 </Button>
                 <Box display="flex" gap={1}>
                   <TextField
                     type="number"
-                    label="Custom player count"
+                    label={t('devToolsPage.testPlayers.customLabel')}
                     size="small"
                     value={customPlayerCount}
                     onChange={(e) =>
@@ -543,7 +604,11 @@ const Development: React.FC = () => {
                     }
                     disabled={loading || customPlayerCount <= 0}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Create Players'}
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      t('devToolsPage.testPlayers.buttons.createCustom')
+                    )}
                   </Button>
                 </Box>
               </Box>
@@ -558,11 +623,11 @@ const Development: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <StorageIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Test Servers
+                  {t('devToolsPage.testServers.title')}
                 </Typography>
               </Box>
               <Typography variant="body2" color="text.secondary" mb={3}>
-                Create server configurations for testing match management and RCON commands.
+                {t('devToolsPage.testServers.description')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={2}>
                 <Button
@@ -571,7 +636,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 1 Server'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testServers.buttons.createFixed', { count: 1 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -579,7 +648,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 3 Servers'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testServers.buttons.createFixed', { count: 3 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -587,7 +660,11 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 5 Servers'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testServers.buttons.createFixed', { count: 5 })
+                  )}
                 </Button>
                 <Button
                   variant="contained"
@@ -595,12 +672,16 @@ const Development: React.FC = () => {
                   disabled={loading}
                   fullWidth
                 >
-                  {loading ? <CircularProgress size={24} /> : 'Create 10 Servers'}
+                  {loading ? (
+                    <CircularProgress size={24} />
+                  ) : (
+                    t('devToolsPage.testServers.buttons.createFixed', { count: 10 })
+                  )}
                 </Button>
                 <Box display="flex" gap={1}>
                   <TextField
                     type="number"
-                    label="Custom server count"
+                    label={t('devToolsPage.testServers.customLabel')}
                     size="small"
                     value={customServerCount}
                     onChange={(e) =>
@@ -619,7 +700,11 @@ const Development: React.FC = () => {
                     }
                     disabled={loading || customServerCount <= 0}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Create Servers'}
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      t('devToolsPage.testServers.buttons.createCustom')
+                    )}
                   </Button>
                 </Box>
               </Box>
@@ -634,7 +719,7 @@ const Development: React.FC = () => {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <WarningIcon color="error" />
                 <Typography variant="h6" fontWeight={600} color="error">
-                  Danger Zone
+                  {t('devToolsPage.dangerZone.title')}
                 </Typography>
               </Box>
               <Divider sx={{ mb: 2 }} />
@@ -644,13 +729,14 @@ const Development: React.FC = () => {
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <DeleteIcon />
-                    <Typography fontWeight={600}>Delete Test Data</Typography>
+                    <Typography fontWeight={600}>
+                      {t('devToolsPage.deleteTestData.title')}
+                    </Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Delete all test data (teams and servers with &apos;test-&apos; prefix). This
-                    action cannot be undone.
+                    {t('devToolsPage.deleteTestData.description')}
                   </Typography>
                   <Button
                     variant="outlined"
@@ -659,7 +745,11 @@ const Development: React.FC = () => {
                     disabled={loading || wiping}
                     startIcon={<DeleteIcon />}
                   >
-                    {loading ? <CircularProgress size={24} /> : 'Delete All Test Data'}
+                    {loading ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      t('devToolsPage.deleteTestData.button')
+                    )}
                   </Button>
                 </AccordionDetails>
               </Accordion>
@@ -669,18 +759,19 @@ const Development: React.FC = () => {
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <StorageIcon />
-                    <Typography fontWeight={600}>Wipe Specific Tables</Typography>
+                    <Typography fontWeight={600}>
+                      {t('devToolsPage.wipeTable.title')}
+                    </Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Delete all data from a specific table. Useful for cleaning up without resetting
-                    everything. Tables are organized by category.
+                    {t('devToolsPage.wipeTable.description')}
                   </Typography>
 
                   {/* Core Tables */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Core Tables
+                    {t('devToolsPage.wipeTable.core.title')}
                   </Typography>
                   <Grid container spacing={1} mb={2}>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -692,7 +783,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Teams
+                        {t('devToolsPage.wipeTable.core.teams')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -704,7 +795,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Servers
+                        {t('devToolsPage.wipeTable.core.servers')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -716,7 +807,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Tournament
+                        {t('devToolsPage.wipeTable.core.tournament')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -728,14 +819,14 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Matches
+                        {t('devToolsPage.wipeTable.core.matches')}
                       </Button>
                     </Grid>
                   </Grid>
 
                   {/* Players & Shuffle */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Players & Shuffle Tournaments
+                    {t('devToolsPage.wipeTable.players.title')}
                   </Typography>
                   <Grid container spacing={1} mb={2}>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -747,7 +838,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Players
+                        {t('devToolsPage.wipeTable.players.players')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -759,7 +850,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Rating History
+                        {t('devToolsPage.wipeTable.players.ratingHistory')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -771,7 +862,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Match Stats
+                        {t('devToolsPage.wipeTable.players.matchStats')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -783,14 +874,14 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Shuffle Players
+                        {t('devToolsPage.wipeTable.players.shufflePlayers')}
                       </Button>
                     </Grid>
                   </Grid>
 
                   {/* Maps & Templates */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Maps & Templates
+                    {t('devToolsPage.wipeTable.maps.title')}
                   </Typography>
                   <Grid container spacing={1} mb={2}>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -802,7 +893,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Maps
+                        {t('devToolsPage.wipeTable.maps.maps')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -814,7 +905,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Map Pools
+                        {t('devToolsPage.wipeTable.maps.mapPools')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -826,7 +917,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Tourn. Templates
+                        {t('devToolsPage.wipeTable.maps.tournamentTemplates')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -838,14 +929,14 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe ELO Templates
+                        {t('devToolsPage.wipeTable.maps.eloTemplates')}
                       </Button>
                     </Grid>
                   </Grid>
 
                   {/* Match Events */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Match Events & Results
+                    {t('devToolsPage.wipeTable.matchEvents.title')}
                   </Typography>
                   <Grid container spacing={1} mb={2}>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -857,7 +948,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Match Events
+                        {t('devToolsPage.wipeTable.matchEvents.events')}
                       </Button>
                     </Grid>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -869,19 +960,17 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe Map Results
+                        {t('devToolsPage.wipeTable.matchEvents.mapResults')}
                       </Button>
                     </Grid>
                   </Grid>
 
                   {/* Simulation State */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Simulation State
+                    {t('devToolsPage.simulation.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Clear all matches and historical stats so you can click &quot;Start
-                    Tournament&quot; in simulation mode on a clean bracket, while keeping servers,
-                    teams, maps, and the current tournament setup.
+                    {t('devToolsPage.simulation.description')}
                   </Typography>
                   <Button
                     variant="outlined"
@@ -894,13 +983,13 @@ const Development: React.FC = () => {
                     {resettingSimulation ? (
                       <CircularProgress size={24} />
                     ) : (
-                      'Reset Simulation State (preserve config)'
+                      t('devToolsPage.simulation.button')
                     )}
                   </Button>
 
                   {/* Settings */}
                   <Typography variant="subtitle2" fontWeight={600} mt={2} mb={1}>
-                    Settings
+                    {t('devToolsPage.wipeTable.settings.title')}
                   </Typography>
                   <Grid container spacing={1}>
                     <Grid size={{ xs: 6, sm: 4 }}>
@@ -912,7 +1001,7 @@ const Development: React.FC = () => {
                         fullWidth
                         size="small"
                       >
-                        Wipe App Settings
+                        {t('devToolsPage.wipeTable.settings.appSettings')}
                       </Button>
                     </Grid>
                   </Grid>
@@ -924,35 +1013,38 @@ const Development: React.FC = () => {
                 <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                   <Box display="flex" alignItems="center" gap={1}>
                     <DeleteForeverIcon />
-                    <Typography fontWeight={600}>Wipe Entire Database</Typography>
+                    <Typography fontWeight={600}>
+                      {t('devToolsPage.wipeDatabase.title')}
+                    </Typography>
                   </Box>
                 </AccordionSummary>
                 <AccordionDetails>
                   <Alert severity="error" sx={{ mb: 2 }}>
-                    <strong>EXTREMELY DESTRUCTIVE!</strong> This will delete ALL data.
+                    <strong>{t('devToolsPage.wipeDatabase.warningTitle')}</strong>{' '}
+                    {t('devToolsPage.wipeDatabase.warningBody')}
                   </Alert>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Permanently deletes:
+                    {t('devToolsPage.wipeDatabase.permanentlyDeletes')}
                   </Typography>
                   <Box component="ul" sx={{ pl: 3, mb: 2 }}>
                     <li>
                       <Typography variant="body2" color="text.secondary">
-                        All tournaments & brackets
+                        {t('devToolsPage.wipeDatabase.items.tournaments')}
                       </Typography>
                     </li>
                     <li>
                       <Typography variant="body2" color="text.secondary">
-                        All matches & events
+                        {t('devToolsPage.wipeDatabase.items.matches')}
                       </Typography>
                     </li>
                     <li>
                       <Typography variant="body2" color="text.secondary">
-                        All teams & players
+                        {t('devToolsPage.wipeDatabase.items.teams')}
                       </Typography>
                     </li>
                     <li>
                       <Typography variant="body2" color="text.secondary">
-                        All server configurations
+                        {t('devToolsPage.wipeDatabase.items.servers')}
                       </Typography>
                     </li>
                   </Box>
@@ -964,7 +1056,11 @@ const Development: React.FC = () => {
                     startIcon={<DeleteForeverIcon />}
                     fullWidth
                   >
-                    {wiping ? <CircularProgress size={24} /> : 'Wipe Entire Database'}
+                    {wiping ? (
+                      <CircularProgress size={24} />
+                    ) : (
+                      t('devToolsPage.wipeDatabase.button')
+                    )}
                   </Button>
                 </AccordionDetails>
               </Accordion>
@@ -982,28 +1078,29 @@ const Development: React.FC = () => {
       >
         <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
           <WarningIcon color="error" />
-          Confirm Database Wipe
+          {t('devToolsPage.wipeDatabase.dialog.title')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            <strong>Are you absolutely sure?</strong>
+            <strong>{t('devToolsPage.wipeDatabase.dialog.areYouSure')}</strong>
           </DialogContentText>
           <DialogContentText sx={{ mt: 2 }}>
-            This action will <strong>permanently delete</strong>:
+            {t('devToolsPage.wipeDatabase.dialog.actionWill')}{' '}
+            <strong>{t('devToolsPage.wipeDatabase.dialog.permanentlyDelete')}</strong>:
           </DialogContentText>
           <Box component="ul" sx={{ mt: 1, color: 'text.secondary' }}>
-            <li>All tournament data and brackets</li>
-            <li>All match history and events</li>
-            <li>All teams and player configurations</li>
-            <li>All server configurations</li>
+            <li>{t('devToolsPage.wipeDatabase.dialog.items.tournaments')}</li>
+            <li>{t('devToolsPage.wipeDatabase.dialog.items.matches')}</li>
+            <li>{t('devToolsPage.wipeDatabase.dialog.items.teams')}</li>
+            <li>{t('devToolsPage.wipeDatabase.dialog.items.servers')}</li>
           </Box>
           <Alert severity="error" sx={{ mt: 2 }}>
-            <strong>This action cannot be undone!</strong>
+            <strong>{t('devToolsPage.wipeDatabase.dialog.cannotUndo')}</strong>
           </Alert>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button onClick={() => setConfirmWipeOpen(false)} disabled={wiping} variant="outlined">
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             onClick={handleWipeDatabase}
@@ -1013,7 +1110,9 @@ const Development: React.FC = () => {
             startIcon={<DeleteForeverIcon />}
             autoFocus
           >
-            {wiping ? 'Wiping Database...' : 'Yes, Wipe Everything'}
+            {wiping
+              ? t('devToolsPage.wipeDatabase.dialog.wiping')
+              : t('devToolsPage.wipeDatabase.dialog.yesWipe')}
           </Button>
         </DialogActions>
       </Dialog>

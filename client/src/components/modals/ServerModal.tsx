@@ -22,6 +22,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Server as ApiServer, ServerStatusResponse } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 interface ServerModalProps {
   open: boolean;
@@ -32,13 +33,16 @@ interface ServerModalProps {
 }
 
 const slugifyServerName = (name: string): string => {
-  return name
+  const base = name
     .toLowerCase()
     .trim()
-    .replace(/[^a-z0-9\s]/g, '')
+    // Keep all letters and numbers from any language, plus spaces/underscores/hyphens.
+    .replace(/[^\p{L}\p{N}\s_-]/gu, '')
     .replace(/\s+/g, '_')
     .replace(/_+/g, '_')
     .replace(/^_+|_+$/g, '');
+
+  return base || `server_${Date.now().toString(36)}`;
 };
 
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
@@ -61,6 +65,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [showPassword, setShowPassword] = useState(false);
 
   const isEditing = !!server;
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (server) {
@@ -99,7 +104,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
   const handleTestConnection = async () => {
     if (!server?.id) {
-      setError('Save the server first before testing connection');
+      setError(t('serverModal.errors.testConnectionSaveFirst'));
       return;
     }
 
@@ -117,16 +122,14 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setServerToApiOk(serverBack);
 
       if (canReach && serverBack) {
-        showSuccess('Bi-directional connectivity verified: server is online and can reach the API.');
+        showSuccess(t('serverModal.success.connectivityOk'));
       } else if (canReach && !serverBack) {
-        showError(
-          'We can reach the server via RCON, but the server could not reach the API endpoint (test event missing).'
-        );
+        showError(t('serverModal.errors.rconReachableApiUnreachable'));
       } else {
-        showError('Server appears offline or unreachable via RCON.');
+        showError(t('serverModal.errors.serverOffline'));
       }
     } catch {
-      setError('Failed to test connection');
+      setError(t('serverModal.errors.testConnectionFailed'));
       setApiToServerOk(false);
       setServerToApiOk(false);
     } finally {
@@ -136,34 +139,34 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
   const handleSave = async () => {
     if (!name.trim()) {
-      setError('Server name is required');
+      setError(t('serverModal.errors.nameRequired'));
       return;
     }
 
     if (!host.trim()) {
-      setError('Host is required');
+      setError(t('serverModal.errors.hostRequired'));
       return;
     }
 
     const portNum = parseInt(port);
     if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
-      setError('Port must be a valid number between 1 and 65535');
+      setError(t('serverModal.errors.portInvalid'));
       return;
     }
 
     if (!password.trim()) {
-      setError('RCON password is required');
+      setError(t('serverModal.errors.rconRequired'));
       return;
     }
 
     const generatedId = isEditing ? server.id : slugifyServerName(name);
     if (!generatedId) {
-      setError('Unable to generate server ID. Please adjust the server name.');
+      setError(t('serverModal.errors.idGenerationFailed'));
       return;
     }
 
     if (!isEditing && servers.some((existing) => existing.id === generatedId)) {
-      setError(`Server name creates duplicate ID '${generatedId}'. Choose a different name.`);
+      setError(t('serverModal.errors.duplicateId', { id: generatedId }));
       return;
     }
 
@@ -174,9 +177,12 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
     if (duplicate) {
       setError(
-        `A server with host:port '${host.trim()}:${portNum}' already exists (ID: ${
-          duplicate.id
-        }, Name: ${duplicate.name})`
+        t('serverModal.errors.duplicateHostPort', {
+          host: host.trim(),
+          port: portNum,
+          id: duplicate.id,
+          name: duplicate.name,
+        })
       );
       return;
     }
@@ -208,10 +214,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           enabled: payload.enabled,
           matchzyConfig: payload.matchzyConfig,
         });
-        showSuccess('Server updated successfully');
+        showSuccess(t('serverModal.success.serverUpdated'));
       } else {
         await api.post('/api/servers?upsert=true', payload);
-        showSuccess('Server created successfully');
+        showSuccess(t('serverModal.success.serverCreated'));
       }
 
       onSave();
@@ -219,7 +225,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       onClose();
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to save server';
+      const errorMessage = error.message || t('serverModal.errors.saveFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -238,13 +244,13 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setSaving(true);
     try {
       await api.delete(`/api/servers/${server.id}`);
-      showSuccess('Server deleted successfully');
+      showSuccess(t('serverModal.success.serverDeleted'));
       onSave();
       resetForm();
       onClose();
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to delete server';
+      const errorMessage = error.message || t('serverModal.errors.deleteFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -281,7 +287,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           }}
         >
           <Typography variant="h6" fontWeight={600}>
-            {isEditing ? 'Edit Server' : 'Add Server'}
+            {isEditing ? t('serverModal.titleEdit') : t('serverModal.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small" aria-label="close">
             <CloseIcon fontSize="small" />
@@ -291,10 +297,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
-              label="Server Name"
+              label={t('serverModal.serverNameLabel')}
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              placeholder="Match Server #1"
+              placeholder={t('serverModal.serverNamePlaceholder')}
               required
               fullWidth
               slotProps={{
@@ -303,10 +309,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             />
 
             <TextField
-              label="Host / IP Address"
+              label={t('serverModal.hostLabel')}
               value={host}
               onChange={(e) => setHost(e.target.value)}
-              placeholder="192.168.1.100"
+              placeholder={t('serverModal.hostPlaceholder')}
               required
               fullWidth
               slotProps={{
@@ -315,10 +321,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             />
 
             <TextField
-              label="Port"
+              label={t('serverModal.portLabel')}
               value={port}
               onChange={(e) => setPort(e.target.value)}
-              placeholder="27015"
+              placeholder={t('serverModal.portPlaceholder')}
               type="number"
               required
               fullWidth
@@ -328,14 +334,14 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             />
 
             <TextField
-              label="RCON Password"
+              label={t('serverModal.rconPasswordLabel')}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="your-rcon-password"
+              placeholder={t('serverModal.rconPasswordPlaceholder')}
               type={showPassword ? 'text' : 'password'}
               required
               fullWidth
-              helperText="Password for RCON access to the server"
+              helperText={t('serverModal.rconPasswordHelper')}
               slotProps={{
                 htmlInput: { 'data-testid': 'server-password-input' },
               }}
@@ -359,10 +365,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               label={
                 <Box>
                   <Typography variant="body2" fontWeight={500}>
-                    Server Enabled
+                    {t('serverModal.enabledLabel')}
                   </Typography>
                   <Typography variant="caption" color="text.secondary">
-                    Disabled servers won&apos;t be used for matches
+                    {t('serverModal.enabledHelper')}
                   </Typography>
                 </Box>
               }
@@ -370,28 +376,27 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
             <Box mt={1}>
               <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                MatchZy Overrides (optional)
+                {t('serverModal.overridesTitle')}
               </Typography>
               <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                These settings override the global MatchZy defaults for this server only. Leave blank
-                to use global values from Settings.
+                {t('serverModal.overridesDescription')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={1.5}>
                 <TextField
-                  label="Chat Prefix Override"
+                  label={t('serverModal.chatPrefixLabel')}
                   value={chatPrefix}
                   onChange={(e) => setChatPrefix(e.target.value)}
-                  placeholder="[MatchZy]"
+                  placeholder={t('serverModal.chatPrefixPlaceholder')}
                   fullWidth
-                  helperText="Overrides matchzy_chat_prefix on this server (optional)"
+                  helperText={t('serverModal.chatPrefixHelper')}
                 />
                 <TextField
-                  label="Admin Chat Prefix Override"
+                  label={t('serverModal.adminChatPrefixLabel')}
                   value={adminChatPrefix}
                   onChange={(e) => setAdminChatPrefix(e.target.value)}
-                  placeholder="[ADMIN]"
+                  placeholder={t('serverModal.adminChatPrefixPlaceholder')}
                   fullWidth
-                  helperText="Overrides matchzy_admin_chat_prefix on this server (optional)"
+                  helperText={t('serverModal.adminChatPrefixHelper')}
                 />
                 <FormControlLabel
                   control={
@@ -408,11 +413,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                   label={
                     <Box>
                       <Typography variant="body2" fontWeight={500}>
-                        Knife Round Enabled by Default (override)
+                        {t('serverModal.knifeOverrideLabel')}
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        When set, overrides matchzy_knife_enabled_default for this server. Leave in
-                        indeterminate state to use global default.
+                        {t('serverModal.knifeOverrideHelper')}
                       </Typography>
                     </Box>
                   }
@@ -435,7 +439,9 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                       : 'primary'
                   }
                 >
-                  {testing ? 'Testing connectivity…' : 'Test connectivity'}
+                  {testing
+                    ? t('serverModal.testingConnectivity')
+                    : t('serverModal.testConnectivity')}
                 </Button>
                 {apiToServerOk !== null && serverToApiOk !== null && !testing && (
                   <Box mt={1}>
@@ -447,9 +453,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                         }}
                       />
                       <Typography variant="caption" color="text.secondary">
-                        API → Server (RCON):{' '}
+                        {t('serverModal.connectivity.apiToServer')}{' '}
                         <strong style={{ color: apiToServerOk ? '#2e7d32' : '#d32f2f' }}>
-                          {apiToServerOk ? 'Reachable' : 'Unreachable'}
+                          {apiToServerOk
+                            ? t('serverModal.connectivity.reachable')
+                            : t('serverModal.connectivity.unreachable')}
                         </strong>
                       </Typography>
                     </Box>
@@ -461,9 +469,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                         }}
                       />
                       <Typography variant="caption" color="text.secondary">
-                        Server → API (/api/events):{' '}
+                        {t('serverModal.connectivity.serverToApi')}{' '}
                         <strong style={{ color: serverToApiOk ? '#2e7d32' : '#d32f2f' }}>
-                          {serverToApiOk ? 'Reachable' : 'Unreachable'}
+                          {serverToApiOk
+                            ? t('serverModal.connectivity.reachable')
+                            : t('serverModal.connectivity.unreachable')}
                         </strong>
                       </Typography>
                     </Box>
@@ -482,12 +492,12 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               disabled={saving}
               sx={{ mr: 'auto' }}
             >
-              Delete Server
+              {t('serverModal.buttons.deleteServer')}
             </Button>
           )}
           {isEditing && (
             <Button onClick={onClose} disabled={saving}>
-              Cancel
+              {t('serverModal.buttons.cancel')}
             </Button>
           )}
           <Button
@@ -497,17 +507,19 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             disabled={saving}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
-            {saving ? 'Saving...' : isEditing ? 'Save Changes' : 'Add Server'}
+            {saving
+              ? t('serverModal.buttons.saving')
+              : isEditing
+              ? t('serverModal.buttons.saveChanges')
+              : t('serverModal.buttons.addServer')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="Delete Server"
-        message={`Are you sure you want to delete "${server?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title={t('serverModal.confirmDelete.title')}
+        message={t('serverModal.confirmDelete.message', { name: server?.name })}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDeleteOpen(false)}
         confirmColor="error"

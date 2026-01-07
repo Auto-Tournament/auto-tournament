@@ -7,11 +7,11 @@ import {
   SportsEsports as MatchIcon,
   Storage as ServerIcon,
   People as PeopleIcon,
-  TrendingUp as TrendingUpIcon,
 } from '@mui/icons-material';
 import { LineChart, PieChart } from '@mui/x-charts';
 import { api } from '../../utils/api';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
+import { useTranslation } from 'react-i18next';
 import type {
   Tournament,
   Server,
@@ -53,6 +53,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [serverStatuses, setServerStatuses] = useState<Record<string, 'online' | 'offline'>>({});
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     const loadData = async () => {
@@ -120,7 +121,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           console.error('Failed to load players:', e);
         }
       } catch (e) {
-        setError('Failed to load dashboard data');
+        setError(t('dashboard.stats.errors.load'));
         console.error('Error loading dashboard:', e);
       } finally {
         setLoading(false);
@@ -130,7 +131,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
     loadData();
     const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, [t]);
 
   if (loading) {
     return (
@@ -274,22 +275,12 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
 
   const playerDistributionPieColors = [theme.palette.success.main, theme.palette.secondary.main];
 
-  const recentMatchLineColors = [theme.palette.primary.main];
-
-  const formatMatchStatus = (value: number): string => {
-    if (value === 5) return 'Completed';
-    if (value === 4) return 'Live';
-    if (value === 3) return 'Loaded';
-    if (value === 2) return 'Ready';
-    return 'Pending';
-  };
-
   const hasData = tournament || matches.length > 0 || servers.length > 0 || players.length > 0;
 
   if (!hasData && !showOnboarding) {
     return (
       <Alert severity="info" sx={{ mb: 3 }}>
-        No data available. Create a tournament to see statistics.
+        {t('dashboard.stats.noData')}
       </Alert>
     );
   }
@@ -297,7 +288,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   return (
     <Box sx={{ width: '100%' }}>
       <Typography variant="h4" fontWeight={700} mb={3}>
-        Tournament Statistics
+        {t('dashboard.stats.heading')}
       </Typography>
       <Grid container spacing={3}>
         {/* Row 1: Tournament + Summary stats */}
@@ -311,7 +302,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <TournamentIcon color="primary" sx={{ fontSize: 32 }} />
                 <Typography variant="h6" fontWeight={600}>
-                  Tournament Status
+                  {t('dashboard.stats.tournamentStatus.title')}
                 </Typography>
               </Box>
               {tournament ? (
@@ -333,7 +324,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                   <Box display="flex" gap={2} flexWrap="wrap" mt={2}>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Type
+                        {t('dashboard.stats.tournamentStatus.typeLabel')}
                       </Typography>
                       <Typography variant="body1" fontWeight={600}>
                         {tournament.type?.replace('_', ' ').toUpperCase()}
@@ -341,7 +332,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Format
+                        {t('dashboard.stats.tournamentStatus.formatLabel')}
                       </Typography>
                       <Typography variant="body1" fontWeight={600}>
                         {tournament.format?.toUpperCase()}
@@ -349,7 +340,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                     </Box>
                     <Box>
                       <Typography variant="body2" color="text.secondary">
-                        Matches
+                        {t('dashboard.stats.tournamentStatus.matchesLabel')}
                       </Typography>
                       <Typography variant="body1" fontWeight={600}>
                         {matches.length}
@@ -359,7 +350,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 </>
               ) : (
                 <Typography variant="body2" color="text.secondary">
-                  No tournament active
+                  {t('dashboard.stats.tournamentStatus.none')}
                 </Typography>
               )}
             </CardContent>
@@ -373,34 +364,44 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <MatchIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Match Status
+                  {t('dashboard.stats.matchStatus.title')}
                 </Typography>
               </Box>
               <Typography variant="h3" fontWeight={700} mb={2}>
                 {matches.length}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Total Matches
+                {t('dashboard.stats.matchStatus.total')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={1.5}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Pending:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.matchStatus.pending')}
+                  </Typography>
                   <Chip label={matchStatusCount.pending} size="small" color="default" />
                 </Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Ready:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.matchStatus.ready')}
+                  </Typography>
                   <Chip label={matchStatusCount.ready} size="small" color="info" />
                 </Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Loaded:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.matchStatus.loaded')}
+                  </Typography>
                   <Chip label={matchStatusCount.loaded} size="small" color="warning" />
                 </Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Live:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.matchStatus.live')}
+                  </Typography>
                   <Chip label={matchStatusCount.live} size="small" color="success" />
                 </Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Completed:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.matchStatus.completed')}
+                  </Typography>
                   <Chip label={matchStatusCount.completed} size="small" />
                 </Box>
               </Box>
@@ -415,24 +416,28 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <ServerIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Server Status
+                  {t('dashboard.stats.serverStatus.title')}
                 </Typography>
               </Box>
               <Typography variant="h3" fontWeight={700} mb={1}>
                 {serverStatusCount.online}/{serverStatusCount.total}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Servers Online
+                {t('dashboard.stats.serverStatus.onlineSummary')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={1}>
                 <Chip
-                  label={`${serverStatusCount.online} Online`}
+                  label={t('dashboard.stats.serverStatus.online', {
+                    count: serverStatusCount.online,
+                  })}
                   color="success"
                   size="medium"
                   sx={{ fontWeight: 600 }}
                 />
                 <Chip
-                  label={`${serverStatusCount.offline} Offline`}
+                  label={t('dashboard.stats.serverStatus.offline', {
+                    count: serverStatusCount.offline,
+                  })}
                   color="error"
                   size="medium"
                   sx={{ fontWeight: 600 }}
@@ -449,18 +454,20 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
               <Box display="flex" alignItems="center" gap={1} mb={2}>
                 <PeopleIcon color="primary" />
                 <Typography variant="h6" fontWeight={600}>
-                  Players
+                  {t('dashboard.stats.players.title')}
                 </Typography>
               </Box>
               <Typography variant="h3" fontWeight={700} mb={1}>
                 {playerStats.total}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Total Players
+                {t('dashboard.stats.players.total')}
               </Typography>
               <Box display="flex" flexDirection="column" gap={1.5}>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">In Matches:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.players.inMatches')}
+                  </Typography>
                   <Chip
                     label={playerStats.inMatches}
                     color="success"
@@ -469,7 +476,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                   />
                 </Box>
                 <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="body2">Waiting:</Typography>
+                  <Typography variant="body2">
+                    {t('dashboard.stats.players.waiting')}
+                  </Typography>
                   <Chip label={playerStats.waiting} size="small" sx={{ fontWeight: 600 }} />
                 </Box>
               </Box>
@@ -513,7 +522,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
-                  Server Status
+                  {t('dashboard.stats.serverStatus.distributionTitle')}
                 </Typography>
                 <Box sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}>
                   <PieChart
@@ -543,7 +552,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={2}>
-                  Player Distribution
+                  {t('dashboard.stats.playerDistribution.title')}
                 </Typography>
                 <Box
                   sx={{ width: '100%', height: 300, display: 'flex', justifyContent: 'center' }}
@@ -574,10 +583,10 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
             <Card sx={{ height: '100%' }}>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={1}>
-                  Top Players by ELO
+                  {t('dashboard.stats.topPlayers.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={1}>
-                  Global rating across all tournament types
+                  {t('dashboard.stats.topPlayers.subtitle')}
                 </Typography>
                 <Stack spacing={0.75}>
                   {topPlayers.map((p, index) => (
@@ -603,7 +612,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                         {index + 1}. {p.name}
                       </Typography>
                       <Chip
-                        label={`ELO ${p.currentElo}`}
+                        label={t('dashboard.stats.topPlayers.chip', { value: p.currentElo })}
                         size="small"
                         color={index === 0 ? 'primary' : 'default'}
                         sx={{ fontWeight: 600 }}
@@ -622,10 +631,10 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
               <Card sx={{ height: '100%' }}>
                 <CardContent>
                 <Typography variant="h6" fontWeight={600} mb={1}>
-                  Player ELO Distribution
+                  {t('dashboard.stats.eloDistribution.title')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={2}>
-                  Number of players per Skill Rating band (bucket size {eloBucketSize}).
+                  {t('dashboard.stats.eloDistribution.subtitle', { bucket: eloBucketSize })}
                     </Typography>
                 <Box sx={{ width: '100%', height: 280, overflowX: 'auto' }}>
                     <LineChart
@@ -634,19 +643,19 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                         data: eloBuckets.map((_, index) => index),
                         valueFormatter: (value) =>
                           eloBuckets?.[Number(value)]?.label ?? String(value),
-                        label: 'Skill Rating band',
+                        label: t('dashboard.stats.eloDistribution.xAxis'),
                         },
                       ]}
                       yAxis={[
                         {
-                        label: 'Players',
+                        label: t('dashboard.stats.eloDistribution.yAxis'),
                         width: 40,
                         },
                       ]}
                       series={[
                         {
                         id: 'players',
-                        label: 'Players',
+                        label: t('dashboard.stats.eloDistribution.seriesLabel'),
                         data: eloBuckets.map((b) => b.count),
                           area: true,
                         },
@@ -668,11 +677,13 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
             <Grid size={{ xs: 12, md: 6 }}>
               <Card sx={{ height: '100%' }}>
                 <CardContent>
-                  <Typography variant="h6" fontWeight={600} mb={1}>
-                    Recent Completed Matches
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={1}>
-                    Last {Math.min(5, recentMatches.length)} finished matches
+                <Typography variant="h6" fontWeight={600} mb={1}>
+                  {t('dashboard.stats.recentMatches.title')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                    {t('dashboard.stats.recentMatches.subtitle', {
+                      count: Math.min(5, recentMatches.length),
+                    })}
                   </Typography>
                   <Stack spacing={0.75}>
                     {matches
@@ -691,7 +702,7 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                       ))}
                     {matches.filter((m) => m.status === 'completed').length === 0 && (
                       <Typography variant="body2" color="text.secondary">
-                        No completed matches yet.
+                        {t('dashboard.stats.recentMatches.none')}
                       </Typography>
                     )}
                   </Stack>

@@ -30,6 +30,7 @@ import SyncIcon from '@mui/icons-material/Sync';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
+import { useTranslation } from 'react-i18next';
 
 const STEAM_API_DOC_URL = 'https://steamcommunity.com/dev/apikey';
 
@@ -87,11 +88,16 @@ export default function Settings() {
   const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
+  const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
+  const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
+  const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
+  const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const isDev = useIsDevelopment();
   const [tabIndex, setTabIndex] = useState(0);
+  const { t } = useTranslation();
 
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
@@ -114,6 +120,10 @@ export default function Settings() {
           : true;
       const ratingsEnabledValue =
         response.settings.ratingsEnabled !== undefined ? response.settings.ratingsEnabled : true;
+      const debugChatEnabled =
+        response.settings.matchzyDebugChatEnabled !== undefined
+          ? response.settings.matchzyDebugChatEnabled
+          : false;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
@@ -128,20 +138,22 @@ export default function Settings() {
       setInitialMatchzyAdminChatPrefix(adminChatPrefix);
       setMatchzyKnifeEnabledDefault(knifeEnabled);
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
+      setMatchzyDebugChatEnabled(debugChatEnabled);
+      setInitialMatchzyDebugChatEnabled(debugChatEnabled);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to load settings';
+      const message = err instanceof Error ? err.message : t('settingsPage.errors.loadSettings');
       showError(message);
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
-    document.title = 'Settings';
+    document.title = t('settingsPage.title');
     void fetchSettings();
-  }, [fetchSettings]);
+  }, [fetchSettings, t]);
 
   useEffect(() => {
     // No header actions needed for settings page
@@ -169,8 +181,9 @@ export default function Settings() {
           matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
-          matchzyKnifeEnabledDefault: matchzyKnifeEnabledDefault,
+          matchzyKnifeEnabledDefault,
           ratingsEnabled,
+          matchzyDebugChatEnabled,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -191,6 +204,10 @@ export default function Settings() {
           response.settings.ratingsEnabled !== undefined
             ? response.settings.ratingsEnabled
             : true;
+        const newDebugChatEnabled =
+          response.settings.matchzyDebugChatEnabled !== undefined
+            ? response.settings.matchzyDebugChatEnabled
+            : false;
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
         const timescaleChanged =
@@ -212,20 +229,26 @@ export default function Settings() {
         setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
         setRatingsEnabled(newRatingsEnabled);
         setInitialRatingsEnabled(newRatingsEnabled);
+        setMatchzyDebugChatEnabled(newDebugChatEnabled);
+        setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
 
         if (showSuccessMessage) {
-          showSuccess('Settings saved');
+          showSuccess(t('settingsPage.success.saveSettings'));
 
           if (simulationToggled) {
             showSnackbar(
               newSimulate
-                ? `Simulation mode enabled${isDev ? ` at ${newTimescale.toFixed(1)}x speed` : ''}`
-                : 'Simulation mode disabled',
+                ? t('settingsPage.success.simulationEnabled', {
+                    suffix: isDev ? ` at ${newTimescale.toFixed(1)}x speed` : '',
+                  })
+                : t('settingsPage.success.simulationDisabled'),
               'info'
             );
           } else if (timescaleChanged && newSimulate) {
             showSnackbar(
-              `Simulation timescale updated to ${newTimescale.toFixed(1)}x`,
+              t('settingsPage.success.timescaleUpdated', {
+                value: newTimescale.toFixed(1),
+              }),
               'info'
             );
           }
@@ -237,7 +260,8 @@ export default function Settings() {
           })
         );
       } catch (err) {
-        const message = err instanceof Error ? err.message : 'Failed to save settings';
+        const message =
+          err instanceof Error ? err.message : t('settingsPage.errors.saveSettings');
         showError(message);
       } finally {
         setSaving(false);
@@ -250,6 +274,7 @@ export default function Settings() {
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
       ratingsEnabled,
+      matchzyDebugChatEnabled,
       simulateMatches,
       simulationTimescale,
       isDev,
@@ -258,6 +283,7 @@ export default function Settings() {
       showSnackbar,
       initialSimulateMatches,
       initialSimulationTimescale,
+      t,
     ]
   );
 
@@ -270,6 +296,7 @@ export default function Settings() {
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
       ratingsEnabled !== initialRatingsEnabled ||
+      matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
       (isDev &&
         (simulateMatches !== initialSimulateMatches ||
           simulationTimescale !== initialSimulationTimescale))
@@ -285,6 +312,23 @@ export default function Settings() {
       void handleSave(true); // Show success message
     }
   };
+
+  const handleResetApi = useCallback(async () => {
+    setResettingApi(true);
+
+    try {
+      await api.post('/api/test/reset-database');
+      showSuccess(t('settingsPage.developer.resetApiSuccess'));
+      await fetchSettings();
+    } catch (err) {
+      const message =
+        err instanceof Error ? err.message : t('settingsPage.developer.resetApiError');
+      showError(message);
+    } finally {
+      setResettingApi(false);
+      setResetApiDialogOpen(false);
+    }
+  }, [fetchSettings, showError, showSuccess, t]);
 
   // Auto-save when values change
   useEffect(() => {
@@ -418,7 +462,7 @@ export default function Settings() {
   return (
     <Box sx={{ width: '100%', height: '100%' }}>
       <Typography variant="body2" color="text.secondary" mb={4}>
-        Configure core integrations, in-game defaults, and developer options.
+        {t('settingsPage.intro')}
       </Typography>
 
       {loading && (
@@ -436,13 +480,13 @@ export default function Settings() {
                 onChange={handleTabChange}
                 textColor="secondary"
                 indicatorColor="secondary"
-                aria-label="Settings tabs"
+                aria-label={t('settingsPage.title')}
                 variant="scrollable"
                 scrollButtons="auto"
               >
-                <Tab label="Integrations" {...a11yProps(0)} />
-                <Tab label="Match & Rating" {...a11yProps(1)} />
-                {isDev && <Tab label="Developer" {...a11yProps(2)} />}
+                <Tab label={t('settingsPage.tabs.integrations')} {...a11yProps(0)} />
+                <Tab label={t('settingsPage.tabs.matchRating')} {...a11yProps(1)} />
+                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(2)} />}
               </Tabs>
             </Box>
 
@@ -450,18 +494,18 @@ export default function Settings() {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    MatchZy Webhook
+                    {t('settingsPage.integrations.webhook.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    MatchZy webhook URL that your CS2 servers can reach.
+                    {t('settingsPage.integrations.webhook.description')}
                   </Typography>
                   <TextField
-                    label="Webhook URL"
+                    label={t('settingsPage.integrations.webhook.label')}
                     value={webhookUrl}
                     onChange={(event) => setWebhookUrl(event.target.value)}
                     onBlur={handleFieldBlur}
                     onKeyDown={handleFieldKeyDown}
-                    helperText="Example: https://your-domain.com"
+                    helperText={t('settingsPage.integrations.webhook.helper')}
                     fullWidth
                     required
                     error={!loading && webhookUrl.trim() === ''}
@@ -473,7 +517,7 @@ export default function Settings() {
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Steam Integration
+                    {t('settingsPage.integrations.steam.title')}
                   </Typography>
                   <Stack
                     direction={{ xs: 'column', sm: 'row' }}
@@ -481,14 +525,14 @@ export default function Settings() {
                     spacing={1}
                   >
                     <TextField
-                      label="Steam Web API Key"
+                      label={t('settingsPage.integrations.steam.apiKeyLabel')}
                       value={steamApiKey}
                       onChange={(event) => setSteamApiKey(event.target.value)}
                       onBlur={handleFieldBlur}
                       onKeyDown={handleFieldKeyDown}
                       type={showSteamKey ? 'text' : 'password'}
                       fullWidth
-                      helperText="Resolves Steam vanity URLs and player info. Leave blank to disable lookups."
+                      helperText={t('settingsPage.integrations.steam.apiKeyHelper')}
                       slotProps={{
                         htmlInput: { 'data-testid': 'settings-steam-api-key-input' },
                       }}
@@ -531,30 +575,35 @@ export default function Settings() {
                           }>('/api/steam/status');
 
                           if (response.success && response.configured) {
-                            showSuccess(response.message || 'Steam API key is set and reachable.');
+                            showSuccess(
+                              response.message ||
+                                t('settingsPage.integrations.steam.statusOk')
+                            );
                           } else if (!response.success && response.configured === false) {
                             showError(
                               response.error ||
-                                'Steam API key is not set. Vanity URLs cannot be resolved until you add a key.'
+                                t('settingsPage.integrations.steam.statusNotConfigured')
                             );
                           } else {
                             showError(
                               response.error ||
-                                'Steam API key appears set but Steam could not be reached. Check your network or key.'
+                                t('settingsPage.integrations.steam.statusUnreachable')
                             );
                           }
                         } catch (err) {
                           const message =
                             err instanceof Error
                               ? err.message
-                              : 'Failed to check Steam API status. Please try again.';
+                              : t('settingsPage.integrations.steam.statusError');
                           showError(message);
                         } finally {
                           setSteamStatusChecking(false);
                         }
                       }}
                     >
-                      {steamStatusChecking ? 'Checking Steam…' : 'Check Steam connectivity'}
+                      {steamStatusChecking
+                        ? t('settingsPage.integrations.steam.checkButtonChecking')
+                        : t('settingsPage.integrations.steam.checkButtonIdle')}
                     </Button>
                   </Box>
                 </Box>
@@ -563,10 +612,10 @@ export default function Settings() {
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Map Synchronization
+                    {t('settingsPage.integrations.mapSync.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Sync CS2 maps from the GitHub repository.
+                    {t('settingsPage.integrations.mapSync.description')}
                   </Typography>
                   <Button
                     variant="outlined"
@@ -574,7 +623,9 @@ export default function Settings() {
                     onClick={handleSyncMaps}
                     disabled={syncingMaps || loading}
                   >
-                    {syncingMaps ? 'Syncing Maps...' : 'Sync CS2 Maps'}
+                    {syncingMaps
+                      ? t('settingsPage.integrations.mapSync.buttonSyncing')
+                      : t('settingsPage.integrations.mapSync.buttonIdle')}
                   </Button>
                 </Box>
               </Stack>
@@ -584,28 +635,32 @@ export default function Settings() {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    MatchZy Chat & Knife Defaults
+                    {t('settingsPage.matchRating.chatDefaults.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Configure in-game chat prefixes and default knife round behavior.
+                    {t('settingsPage.matchRating.chatDefaults.description')}
                   </Typography>
                   <Stack spacing={2}>
                     <TextField
-                      label="Chat Prefix"
+                      label={t('settingsPage.matchRating.chatDefaults.chatPrefixLabel')}
                       value={matchzyChatPrefix}
                       onChange={(event) => setMatchzyChatPrefix(event.target.value)}
                       onBlur={handleFieldBlur}
                       onKeyDown={handleFieldKeyDown}
-                      helperText='Default: "[MAT]". Leave blank to reset to the default prefix.'
+                      helperText={t(
+                        'settingsPage.matchRating.chatDefaults.chatPrefixHelper'
+                      )}
                       fullWidth
                     />
                     <TextField
-                      label="Admin Chat Prefix"
+                      label={t('settingsPage.matchRating.chatDefaults.adminChatPrefixLabel')}
                       value={matchzyAdminChatPrefix}
                       onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
                       onBlur={handleFieldBlur}
                       onKeyDown={handleFieldKeyDown}
-                      helperText='Default: "[ADMIN]". Leave blank to reset to the default admin prefix.'
+                      helperText={t(
+                        'settingsPage.matchRating.chatDefaults.adminChatPrefixHelper'
+                      )}
                       fullWidth
                     />
                     <FormControlLabel
@@ -615,11 +670,12 @@ export default function Settings() {
                           onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
                         />
                       }
-                      label="Enable knife rounds by default for new matches (when sides are not pre-selected)"
+                      label={t(
+                        'settingsPage.matchRating.chatDefaults.knifeToggleLabel'
+                      )}
                     />
                     <Typography variant="caption" color="text.secondary" display="block">
-                      Applies only when MatchZy would normally run a knife round; explicit side
-                      picks or shuffle-assigned sides are not changed.
+                      {t('settingsPage.matchRating.chatDefaults.knifeNote')}
                     </Typography>
                   </Stack>
                 </Box>
@@ -628,12 +684,10 @@ export default function Settings() {
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Rating Updates
+                    {t('settingsPage.matchRating.ratings.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Control whether completed matches update player Skill Ratings. Disable this for
-                    events where an external system (for example your Excel sheet) is the source of
-                    truth for ratings.
+                    {t('settingsPage.matchRating.ratings.description')}
                   </Typography>
                   <FormControlLabel
                     control={
@@ -642,11 +696,10 @@ export default function Settings() {
                         onChange={(event) => setRatingsEnabled(event.target.checked)}
                       />
                     }
-                    label="Update player ratings from completed matches"
+                    label={t('settingsPage.matchRating.ratings.toggleLabel')}
                   />
                   <Typography variant="caption" color="text.secondary" display="block">
-                    When disabled, all matches will still track stats (ADR, K/D, etc.), but player
-                    Skill Ratings will remain unchanged.
+                    {t('settingsPage.matchRating.ratings.note')}
                   </Typography>
                 </Box>
               </Stack>
@@ -657,10 +710,27 @@ export default function Settings() {
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
-                      Developer Options
+                      {t('settingsPage.developer.title')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mb={2}>
-                      Local development helpers only; don&apos;t enable in production.
+                      {t('settingsPage.developer.description')}
+                    </Typography>
+                    <FormControlLabel
+                      control={
+                        <Switch
+                          checked={matchzyDebugChatEnabled}
+                          onChange={(e) => {
+                            setMatchzyDebugChatEnabled(e.target.checked);
+                            void handleSave(true);
+                          }}
+                          color="primary"
+                          size="small"
+                        />
+                      }
+                      label={t('settingsPage.developer.debugChat.label')}
+                    />
+                    <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+                      {t('settingsPage.developer.debugChat.description')}
                     </Typography>
                     <FormControlLabel
                       control={
@@ -674,18 +744,17 @@ export default function Settings() {
                           }
                         />
                       }
-                      label="Simulate matches (use bot-driven demo matches instead of real players)"
+                      label={t('settingsPage.developer.simulateToggleLabel')}
                     />
                     <Typography variant="caption" color="text.secondary" display="block" mt={1}>
-                      When enabled, generated MatchZy configs include <code>\"simulation\": true</code> for automated demo matches.
+                      {t('settingsPage.developer.simulateNote')}
                     </Typography>
                     <Box mt={3}>
                       <Typography variant="subtitle1" fontWeight={500} gutterBottom>
-                        Simulation Timescale
+                        {t('settingsPage.developer.timescaleTitle')}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" mb={1}>
-                        Controls how fast simulated matches run. Higher values speed up bots and
-                        round flow. This only applies when simulation is enabled.
+                        {t('settingsPage.developer.timescaleDescription')}
                       </Typography>
                       <Box px={1}>
                         <Slider
@@ -707,13 +776,36 @@ export default function Settings() {
                           data-testid="settings-simulation-timescale-slider"
                         />
                         {simulationTimescale > 2 && (
-                          <Typography variant="caption" color="warning.main" sx={{ mt: 1, display: 'block' }}>
-                            Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but
-                            are fine to use for quick local testing.
+                          <Typography
+                            variant="caption"
+                            color="warning.main"
+                            sx={{ mt: 1, display: 'block' }}
+                          >
+                            {t('settingsPage.developer.timescaleWarning')}
                           </Typography>
                         )}
                       </Box>
                     </Box>
+                  </Box>
+                  <Divider />
+                  <Box>
+                    <Typography variant="h6" fontWeight={600} gutterBottom color="error">
+                      {t('settingsPage.developer.resetApiTitle')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" mb={2}>
+                      {t('settingsPage.developer.resetApiDescription')}
+                    </Typography>
+                    <Button
+                      variant="outlined"
+                      color="error"
+                      onClick={() => setResetApiDialogOpen(true)}
+                      disabled={resettingApi}
+                      data-testid="settings-reset-api-button"
+                    >
+                      {resettingApi
+                        ? t('settingsPage.developer.resetApiButtonLoading')
+                        : t('settingsPage.developer.resetApiButton')}
+                    </Button>
                   </Box>
                 </Stack>
               </TabPanel>
@@ -729,7 +821,10 @@ export default function Settings() {
             gap={1}
           >
             <Typography variant="body2" color="text.secondary" sx={{ textAlign: 'right' }}>
-              Version {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+              {t('settingsPage.footer.version')}{' '}
+              {typeof __APP_VERSION__ !== 'undefined'
+                ? __APP_VERSION__
+                : t('settingsPage.footer.unknownVersion')}
             </Typography>
 
             <Button
@@ -737,24 +832,27 @@ export default function Settings() {
               onClick={() => setResetDialogOpen(true)}
               disabled={loading || saving}
             >
-              Reset Settings
+              {t('settingsPage.footer.resetButton')}
             </Button>
           </Box>
 
-                    <Dialog
+          <Dialog
             open={resetDialogOpen}
             onClose={() => setResetDialogOpen(false)}
             aria-labelledby="reset-settings-dialog-title"
           >
-            <DialogTitle id="reset-settings-dialog-title">Reset settings?</DialogTitle>
+            <DialogTitle id="reset-settings-dialog-title">
+              {t('settingsPage.resetDialog.title')}
+            </DialogTitle>
             <DialogContent>
               <Typography variant="body2" color="text.secondary">
-                Reset all settings on this page back to defaults. Existing tournaments and servers
-                are not changed, but new matches and lookups will use the default values. Continue?
+                {t('settingsPage.resetDialog.description')}
               </Typography>
             </DialogContent>
             <DialogActions>
-              <Button onClick={() => setResetDialogOpen(false)}>Cancel</Button>
+              <Button onClick={() => setResetDialogOpen(false)}>
+                {t('settingsPage.resetDialog.cancel')}
+              </Button>
               <Button
                 color="error"
                 variant="contained"
@@ -772,6 +870,7 @@ export default function Settings() {
                       matchzyChatPrefix: null;
                       matchzyAdminChatPrefix: null;
                       matchzyKnifeEnabledDefault: null;
+                      matchzyDebugChatEnabled?: boolean;
                       simulateMatches?: boolean;
                     } = {
                       webhookUrl: null,
@@ -779,6 +878,7 @@ export default function Settings() {
                       matchzyChatPrefix: null,
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
+                      matchzyDebugChatEnabled: false,
                       ...(isDev && { simulateMatches: false }),
                     };
 
@@ -796,6 +896,10 @@ export default function Settings() {
                       response.settings.matchzyKnifeEnabledDefault !== undefined
                         ? response.settings.matchzyKnifeEnabledDefault
                         : true;
+                    const newDebugChatEnabled =
+                      response.settings.matchzyDebugChatEnabled !== undefined
+                        ? response.settings.matchzyDebugChatEnabled
+                        : false;
 
                     setWebhookUrl(newWebhook);
                     setSteamApiKey(newSteamKey);
@@ -809,6 +913,8 @@ export default function Settings() {
                     setInitialMatchzyAdminChatPrefix(newAdminChatPrefix);
                     setMatchzyKnifeEnabledDefault(newKnifeEnabled);
                     setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
+                    setMatchzyDebugChatEnabled(newDebugChatEnabled);
+                    setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
 
                     window.dispatchEvent(
                       new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {
@@ -825,7 +931,42 @@ export default function Settings() {
                 }}
                 autoFocus
               >
-                Reset
+                {t('settingsPage.resetDialog.confirm')}
+              </Button>
+            </DialogActions>
+          </Dialog>
+
+          <Dialog
+            open={resetApiDialogOpen}
+            onClose={() => {
+              if (!resettingApi) {
+                setResetApiDialogOpen(false);
+              }
+            }}
+            aria-labelledby="reset-api-dialog-title"
+          >
+            <DialogTitle id="reset-api-dialog-title">
+              {t('settingsPage.developer.resetApiDialog.title')}
+            </DialogTitle>
+            <DialogContent>
+              <Typography variant="body2" color="text.secondary">
+                {t('settingsPage.developer.resetApiDialog.description')}
+              </Typography>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setResetApiDialogOpen(false)} disabled={resettingApi}>
+                {t('settingsPage.developer.resetApiDialog.cancel')}
+              </Button>
+              <Button
+                color="error"
+                variant="contained"
+                onClick={handleResetApi}
+                disabled={resettingApi}
+                autoFocus
+              >
+                {resettingApi
+                  ? t('settingsPage.developer.resetApiDialog.confirmLoading')
+                  : t('settingsPage.developer.resetApiDialog.confirm')}
               </Button>
             </DialogActions>
           </Dialog>

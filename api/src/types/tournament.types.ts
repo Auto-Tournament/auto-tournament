@@ -2,7 +2,12 @@
  * Tournament Types
  */
 
-export type TournamentType = 'single_elimination' | 'double_elimination' | 'round_robin' | 'swiss' | 'shuffle';
+export type TournamentType =
+  | 'single_elimination'
+  | 'double_elimination'
+  | 'round_robin'
+  | 'swiss'
+  | 'shuffle';
 
 export type TournamentStatus = 'setup' | 'ready' | 'in_progress' | 'completed' | 'cancelled';
 
@@ -32,6 +37,14 @@ export interface TournamentSettings {
     bo3?: VetoStep[];
     bo5?: VetoStep[];
   };
+  /**
+   * Optional global round/OT hints that can be embedded into templates.
+   * For persisted tournaments, the canonical values live on the top-level
+   * Tournament fields (maxRounds, overtimeMode, overtimeSegments).
+   */
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
 }
 
 export interface Tournament {

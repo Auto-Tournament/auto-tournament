@@ -23,6 +23,7 @@ import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
 import SettingsIcon from '@mui/icons-material/Settings';
 import { useOnboardingStatus } from '../../hooks/useOnboardingStatus';
+import { useTranslation } from 'react-i18next';
 
 export const OnboardingChecklist: React.FC = () => {
   const navigate = useNavigate();
@@ -38,6 +39,7 @@ export const OnboardingChecklist: React.FC = () => {
     playersCount,
     loading,
   } = useOnboardingStatus();
+  const { t } = useTranslation();
 
   if (loading) {
     return (
@@ -51,10 +53,10 @@ export const OnboardingChecklist: React.FC = () => {
 
   // Calculate completion
   const steps = [
-    { completed: hasWebhookUrl, label: 'Set webhook URL' },
-    { completed: hasServers, label: 'Add at least one server' },
-    { completed: hasTeams || hasPlayers, label: 'Create teams or add players' },
-    { completed: hasTournament, label: 'Create a tournament' },
+    { completed: hasWebhookUrl, label: t('dashboard.onboarding.steps.webhook.title') },
+    { completed: hasServers, label: t('dashboard.onboarding.steps.servers.title') },
+    { completed: hasTeams || hasPlayers, label: t('dashboard.onboarding.steps.teamsPlayers.title') },
+    { completed: hasTournament, label: t('dashboard.onboarding.steps.tournament.title') },
   ];
 
   const completedSteps = steps.filter((s) => s.completed).length;
@@ -80,11 +82,16 @@ export const OnboardingChecklist: React.FC = () => {
           <Box display="flex" alignItems="center" gap={2}>
             <PlayCircleOutlineIcon sx={{ fontSize: 32, color: 'primary.main' }} />
             <Typography variant="h5" fontWeight={600}>
-              {isFullyOnboarded ? '🎉 Ready to Go!' : 'Getting Started'}
+              {isFullyOnboarded
+                ? t('dashboard.onboarding.ready')
+                : t('dashboard.onboarding.gettingStarted')}
             </Typography>
           </Box>
           <Chip
-            label={`${completedSteps}/${steps.length} Complete`}
+            label={t('dashboard.onboarding.stepsComplete', {
+              completed: completedSteps,
+              total: steps.length,
+            })}
             color={isFullyOnboarded ? 'success' : 'primary'}
             sx={{ fontWeight: 600 }}
           />
@@ -93,7 +100,7 @@ export const OnboardingChecklist: React.FC = () => {
         {!isFullyOnboarded && (
           <>
             <Typography variant="body2" color="text.secondary" mb={2}>
-              Follow these steps to set up your first tournament
+              {t('dashboard.onboarding.subtitle')}
             </Typography>
             <LinearProgress variant="determinate" value={progress} sx={{ mb: 3, height: 6, borderRadius: 3 }} />
           </>
@@ -120,19 +127,19 @@ export const OnboardingChecklist: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1}>
                   <SettingsIcon fontSize="small" color={hasWebhookUrl ? 'success' : 'action'} />
                   <Typography fontWeight={hasWebhookUrl ? 400 : 600}>
-                    Configure webhook URL
+                    {t('dashboard.onboarding.steps.webhook.title')}
                   </Typography>
                 </Box>
               }
               secondary={
                 hasWebhookUrl
-                  ? 'Webhook endpoint configured'
-                  : 'Set the base URL for webhooks and demo uploads'
+                  ? t('dashboard.onboarding.steps.webhook.secondaryConfigured')
+                  : t('dashboard.onboarding.steps.webhook.secondaryMissing')
               }
             />
             {!hasWebhookUrl && (
               <Button variant="outlined" size="small" onClick={() => navigate('/settings')}>
-                Open Settings
+                {t('dashboard.onboarding.steps.webhook.openSettings')}
               </Button>
             )}
           </ListItem>
@@ -153,18 +160,22 @@ export const OnboardingChecklist: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1}>
                   <StorageIcon fontSize="small" color={hasServers ? 'success' : 'action'} />
                   <Typography fontWeight={hasServers ? 400 : 600}>
-                    Add at least one CS2 server
+                    {t('dashboard.onboarding.steps.servers.title')}
                   </Typography>
                   {hasServers && (
                     <Chip label={`${serversCount} server${serversCount !== 1 ? 's' : ''}`} size="small" />
                   )}
                 </Box>
               }
-              secondary={hasServers ? 'Servers configured and ready' : 'Start by adding your CS2 game servers'}
+              secondary={
+                hasServers
+                  ? t('dashboard.onboarding.steps.servers.secondaryConfigured')
+                  : t('dashboard.onboarding.steps.servers.secondaryMissing')
+              }
             />
             {!hasServers && (
               <Button variant="outlined" size="small" onClick={() => navigate('/servers')}>
-                Add Server
+                {t('dashboard.onboarding.steps.servers.addServer')}
               </Button>
             )}
           </ListItem>
@@ -185,19 +196,36 @@ export const OnboardingChecklist: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1}>
                   <GroupsIcon fontSize="small" color={hasTeams || hasPlayers ? 'success' : 'action'} />
                   <Typography fontWeight={hasTeams || hasPlayers ? 400 : 600}>
-                    Create teams or add players
+                    {t('dashboard.onboarding.steps.teamsPlayers.title')}
                   </Typography>
                   {(hasTeams || hasPlayers) && (
                     <Box display="flex" gap={1}>
                       {hasTeams && (
                         <Chip
-                          label={`${teamsCount} team${teamsCount !== 1 ? 's' : ''}`}
+                          label={
+                            teamsCount === 1
+                              ? t('dashboard.onboarding.steps.teamsPlayers.teamsChip', {
+                                  count: teamsCount,
+                                })
+                              : t('dashboard.onboarding.steps.teamsPlayers.teamsChipPlural', {
+                                  count: teamsCount,
+                                })
+                          }
                           size="small"
                         />
                       )}
                       {hasPlayers && (
                         <Chip
-                          label={`${playersCount} player${playersCount !== 1 ? 's' : ''}`}
+                          label={
+                            playersCount === 1
+                              ? t('dashboard.onboarding.steps.teamsPlayers.playersChip', {
+                                  count: playersCount,
+                                })
+                              : t(
+                                  'dashboard.onboarding.steps.teamsPlayers.playersChipPlural',
+                                  { count: playersCount }
+                                )
+                          }
                           size="small"
                         />
                       )}
@@ -208,12 +236,30 @@ export const OnboardingChecklist: React.FC = () => {
               secondary={
                 hasTeams || hasPlayers
                   ? [
-                      hasTeams ? 'Teams created' : null,
-                      hasPlayers ? 'Players added' : null,
+                      hasTeams
+                        ? t('dashboard.onboarding.steps.teamsPlayers.secondaryConfigured', {
+                            details: t(
+                              teamsCount === 1
+                                ? 'dashboard.onboarding.steps.teamsPlayers.teamsChip'
+                                : 'dashboard.onboarding.steps.teamsPlayers.teamsChipPlural',
+                              { count: teamsCount }
+                            ),
+                          })
+                        : null,
+                      hasPlayers
+                        ? t('dashboard.onboarding.steps.teamsPlayers.secondaryConfigured', {
+                            details: t(
+                              playersCount === 1
+                                ? 'dashboard.onboarding.steps.teamsPlayers.playersChip'
+                                : 'dashboard.onboarding.steps.teamsPlayers.playersChipPlural',
+                              { count: playersCount }
+                            ),
+                          })
+                        : null,
                     ]
                       .filter(Boolean)
                       .join(' • ')
-                  : 'Create teams and/or add players with their Steam IDs'
+                  : t('dashboard.onboarding.steps.teamsPlayers.secondaryMissing')
               }
             />
             {!hasTeams && !hasPlayers && (
@@ -224,14 +270,14 @@ export const OnboardingChecklist: React.FC = () => {
                   onClick={() => navigate('/teams')}
                   disabled={!hasServers}
                 >
-                  Create Teams
+                  {t('dashboard.onboarding.steps.teamsPlayers.createTeams')}
                 </Button>
                 <Button
                   variant="outlined"
                   size="small"
                   onClick={() => navigate('/players')}
                 >
-                  Add Players
+                  {t('dashboard.onboarding.steps.teamsPlayers.addPlayers')}
                 </Button>
               </Box>
             )}
@@ -253,7 +299,7 @@ export const OnboardingChecklist: React.FC = () => {
                 <Box display="flex" alignItems="center" gap={1}>
                   <EmojiEventsIcon fontSize="small" color={hasTournament ? 'success' : 'action'} />
                   <Typography fontWeight={hasTournament ? 400 : 600}>
-                    Configure your tournament
+                    {t('dashboard.onboarding.steps.tournament.title')}
                   </Typography>
                   {hasTournament && tournamentStatus !== 'none' && (
                     <Chip label={tournamentStatus.replace('_', ' ').toUpperCase()} size="small" color="primary" />
@@ -262,8 +308,8 @@ export const OnboardingChecklist: React.FC = () => {
               }
               secondary={
                 hasTournament
-                  ? 'Tournament configured with teams and format'
-                  : 'Set up tournament type, format, teams, and maps'
+                  ? t('dashboard.onboarding.steps.tournament.secondaryConfigured')
+                  : t('dashboard.onboarding.steps.tournament.secondaryMissing')
               }
             />
             {!hasTournament && (
@@ -273,7 +319,7 @@ export const OnboardingChecklist: React.FC = () => {
                 onClick={() => navigate('/tournament')}
                 disabled={!hasTeams && !hasPlayers}
               >
-                Create Tournament
+                {t('dashboard.onboarding.steps.tournament.createTournament')}
               </Button>
             )}
           </ListItem>
@@ -285,8 +331,7 @@ export const OnboardingChecklist: React.FC = () => {
             <Divider sx={{ my: 2 }} />
             <Box>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Everything is ready! Review your configuration and start the tournament from the
-                Tournament page.
+                {t('dashboard.onboarding.startCta.helper')}
               </Typography>
               <Button
                 fullWidth
@@ -294,7 +339,7 @@ export const OnboardingChecklist: React.FC = () => {
                 color="primary"
                 onClick={() => navigate('/tournament')}
               >
-                Go to Tournament
+                {t('dashboard.onboarding.startCta.button')}
               </Button>
             </Box>
           </>

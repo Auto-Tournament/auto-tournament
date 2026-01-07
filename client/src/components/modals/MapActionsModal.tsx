@@ -15,6 +15,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import CloseIcon from '@mui/icons-material/Close';
 import type { Map } from '../../types/api.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { useTranslation } from 'react-i18next';
 
 interface MapActionsModalProps {
   open: boolean;
@@ -31,6 +32,8 @@ export default function MapActionsModal({
   onEdit,
   onDelete,
 }: MapActionsModalProps) {
+  const { t } = useTranslation();
+
   if (!map) return null;
 
   const getDefaultWebpUrlForId = (mapId: string): string =>
@@ -50,14 +53,14 @@ export default function MapActionsModal({
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Map ID
+              {t('mapActionsModal.mapId')}
             </Typography>
             <Typography variant="body1">{map.id}</Typography>
           </Box>
           {map.imageUrl && (
             <Box>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Preview
+                {t('mapActionsModal.preview')}
               </Typography>
               <FadeInImage
                 src={
@@ -86,10 +89,10 @@ export default function MapActionsModal({
           variant="contained"
           startIcon={<EditIcon />}
         >
-          Edit
+          {t('mapActionsModal.edit')}
         </Button>
         <Button onClick={onDelete} variant="outlined" color="error" startIcon={<DeleteIcon />}>
-          Delete
+          {t('common.delete')}
         </Button>
       </DialogActions>
     </Dialog>

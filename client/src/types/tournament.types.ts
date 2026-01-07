@@ -38,6 +38,10 @@ export interface TournamentSettings {
   checkInRequired: boolean;
   seedingMethod: 'seeded' | 'random';
   grandFinalMode?: 'none' | 'simple' | 'double';
+  // Optional global round/OT hints stored with templates
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
 }
 
 export interface BracketData {
@@ -59,4 +63,3 @@ export interface TournamentTemplate {
   createdAt: number;
   updatedAt: number;
 }
-

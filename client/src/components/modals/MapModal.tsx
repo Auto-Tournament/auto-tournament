@@ -19,6 +19,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map, MapResponse } from '../../types/api.types';
 import { FadeInImage } from '../common/FadeInImage';
+import { useTranslation } from 'react-i18next';
 
 interface MapModalProps {
   open: boolean;
@@ -29,6 +30,7 @@ interface MapModalProps {
 
 export default function MapModal({ open, map, onClose, onSave }: MapModalProps) {
   const { showSuccess, showError } = useSnackbar();
+  const { t } = useTranslation();
   const [id, setId] = useState('');
   const [displayName, setDisplayName] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -83,14 +85,14 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     // Validate file type
     const validTypes = ['image/png', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp'];
     if (!validTypes.includes(file.type)) {
-      setError('Invalid file type. Please select a PNG, JPG, GIF, or WebP image.');
+      setError(t('mapModal.errors.invalidFileType'));
       setSelectedFile(null);
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      setError('File size too large. Please select an image smaller than 5MB.');
+      setError(t('mapModal.errors.fileTooLarge'));
       setSelectedFile(null);
       return;
     }
@@ -134,7 +136,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       };
 
       reader.onerror = () => {
-        reject(new Error('Failed to read image file'));
+        reject(new Error(t('mapModal.errors.readFileFailed')));
       };
 
       reader.readAsDataURL(file);
@@ -143,7 +145,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
   const handleDownloadImage = async () => {
     if (!id) {
-      setError('Please enter a map ID first');
+      setError(t('mapModal.errors.fetchImageIdRequired'));
       return;
     }
 
@@ -160,10 +162,10 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
         setImageUrl(imageUrl);
         setPreviewUrl(imageUrl);
       } else {
-        setError(`Image not found for ${id}. You can upload an image instead.`);
+        setError(t('mapModal.errors.imageNotFound', { id }));
       }
     } catch (err) {
-      setError('Failed to fetch image. You can upload an image instead.');
+      setError(t('mapModal.errors.fetchImageFailed'));
       console.error(err);
     } finally {
       setUploading(false);
@@ -181,18 +183,18 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
   const handleSave = async () => {
     if (!id.trim()) {
-      setError('Map ID is required');
+      setError(t('mapModal.errors.mapIdRequired'));
       return;
     }
 
     if (!displayName.trim()) {
-      setError('Display name is required');
+      setError(t('mapModal.errors.displayNameRequired'));
       return;
     }
 
     // Validate ID format
     if (!/^[a-z0-9_]+$/.test(id.trim())) {
-      setError('Map ID must contain only lowercase letters, numbers, and underscores');
+      setError(t('mapModal.errors.mapIdInvalid'));
       return;
     }
 
@@ -215,7 +217,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           }
         } catch (err) {
           const error = err as Error;
-          setError(error.message || 'Failed to upload image');
+          setError(error.message || t('mapModal.errors.uploadFailed'));
           setSaving(false);
           return;
         }
@@ -229,17 +231,17 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
       if (isEditing) {
         await api.put<MapResponse>(`/api/maps/${map.id}`, payload);
-        showSuccess('Map updated successfully');
+        showSuccess(t('mapModal.success.mapUpdated'));
       } else {
         await api.post<MapResponse>('/api/maps', payload);
-        showSuccess('Map created successfully');
+        showSuccess(t('mapModal.success.mapCreated'));
       }
 
       onSave();
       onClose();
     } catch (err: unknown) {
       const error = err as { error?: string; message?: string };
-      const errorMessage = error.error || error.message || 'Failed to save map';
+      const errorMessage = error.error || error.message || t('mapModal.errors.saveFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -267,7 +269,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
         }}
       >
         <Typography variant="h6" fontWeight={600}>
-          {isEditing ? 'Edit Map' : 'Add Map'}
+          {isEditing ? t('mapModal.titleEdit') : t('mapModal.titleCreate')}
         </Typography>
         <IconButton onClick={onClose} size="small" aria-label="close">
           <CloseIcon fontSize="small" />
@@ -276,27 +278,27 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
           <TextField
-            label="Map ID"
+            label={t('mapModal.mapIdLabel')}
             value={id}
             onChange={(e) => {
               const value = e.target.value.toLowerCase().trim();
               setId(value);
             }}
-            placeholder="de_dust2"
+            placeholder={t('mapModal.mapIdPlaceholder')}
             disabled={isEditing}
             required
             slotProps={{
               htmlInput: { 'data-testid': 'map-id-input' },
             }}
-            helperText="Lowercase letters, numbers, and underscores only (de_dust2)"
+            helperText={t('mapModal.mapIdHelper')}
             fullWidth
           />
 
           <TextField
-            label="Display Name"
+            label={t('mapModal.displayNameLabel')}
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            placeholder="Dust II"
+            placeholder={t('mapModal.displayNamePlaceholder')}
             required
             fullWidth
             slotProps={{
@@ -306,7 +308,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Map Image
+              {t('mapModal.mapImageLabel')}
             </Typography>
             <Box display="flex" flexDirection="column" gap={1}>
               <input
@@ -325,7 +327,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   fullWidth
                   disabled={saving || !id}
                 >
-                  Upload Image
+                  {t('mapModal.uploadButton')}
                 </Button>
               </label>
               {!isEditing && id && (
@@ -338,16 +340,16 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   {uploading ? (
                     <>
                       <CircularProgress size={16} sx={{ mr: 1 }} />
-                      Fetching...
+                      {t('mapModal.fetchFromGitHub')}
                     </>
                   ) : (
-                    'Fetch from GitHub'
+                    t('mapModal.fetchFromGitHub')
                   )}
                 </Button>
               )}
             </Box>
             <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Upload a PNG, JPG, GIF, or WebP image (max 5MB)
+              {t('mapModal.uploadHelper')}
             </Typography>
           </Box>
 
@@ -355,7 +357,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
             <Box>
               <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                 <Typography variant="caption" color="text.secondary">
-                  Preview:
+                  {t('mapModal.previewLabel')}
                 </Typography>
                 <Button
                   variant="outlined"
@@ -365,7 +367,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
                   onClick={handleRemoveImage}
                   disabled={saving}
                 >
-                  Remove Image
+                  {t('mapModal.removeImage')}
                 </Button>
               </Box>
               <FadeInImage
@@ -387,7 +389,7 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
         {isEditing && (
           <Button onClick={onClose} disabled={saving}>
-            Cancel
+            {t('mapModal.buttons.cancel')}
           </Button>
         )}
         <Button
@@ -397,7 +399,13 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           disabled={saving}
           sx={{ ml: isEditing ? 0 : 'auto' }}
         >
-          {saving ? <CircularProgress size={24} /> : isEditing ? 'Update' : 'Create'}
+          {saving ? (
+            <CircularProgress size={24} />
+          ) : isEditing ? (
+            t('mapModal.buttons.update')
+          ) : (
+            t('mapModal.buttons.create')
+          )}
         </Button>
       </DialogActions>
     </Dialog>

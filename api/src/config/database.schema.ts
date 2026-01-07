@@ -324,14 +324,35 @@ export function getSchemaSQL(): string {
 /**
  * Default maps to insert on schema initialization
  * Fetches from GitHub repository: https://github.com/sivert-io/cs2-server-manager/tree/master/map_thumbnails
- * Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting)
+ * Falls back to hardcoded maps if GitHub fetch fails (e.g., rate limiting, network errors, etc.)
  */
 export async function getDefaultMapsSQL(): Promise<string> {
-  // Fetch from GitHub repository - this is the source of truth
-  const { fetchCS2MapsFromWiki } = await import('../utils/fetchCS2Maps');
-  let maps = await fetchCS2MapsFromWiki();
+  let maps: Array<{ id: string; displayName: string; imageUrl: string }> = [];
 
-  // Fallback to hardcoded maps if fetch failed (e.g., rate limiting)
+  try {
+    // Fetch from GitHub repository - this is the source of truth
+    const { fetchCS2MapsFromWiki } = await import('../utils/fetchCS2Maps');
+    try {
+      maps = await fetchCS2MapsFromWiki();
+    } catch (err) {
+      const { log } = await import('../utils/logger');
+      const error = err as Error;
+      log.warn(
+        `[PostgreSQL] Failed to fetch maps from GitHub repository (wiki). Falling back to hardcoded maps. Reason: ${error.message}`
+      );
+      maps = [];
+    }
+  } catch (err) {
+    // Dynamic import of fetchCS2MapsFromWiki failed – also fall back
+    const { log } = await import('../utils/logger');
+    const error = err as Error;
+    log.warn(
+      `[PostgreSQL] Failed to load fetchCS2MapsFromWiki helper. Falling back to hardcoded maps. Reason: ${error.message}`
+    );
+    maps = [];
+  }
+
+  // Fallback to hardcoded maps if fetch failed or returned empty (e.g., rate limiting)
   if (maps.length === 0) {
     const { log } = await import('../utils/logger');
     log.warn(

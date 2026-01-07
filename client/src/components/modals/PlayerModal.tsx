@@ -20,6 +20,7 @@ import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import type { PlayerDetail } from '../../types/api.types';
+import { useTranslation } from 'react-i18next';
 
 interface PlayerModalProps {
   open: boolean;
@@ -30,6 +31,7 @@ interface PlayerModalProps {
 }
 
 export default function PlayerModal({ open, player, onClose, onSave, onDelete }: PlayerModalProps) {
+  const { t } = useTranslation();
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [steamId, setSteamId] = useState('');
   const [name, setName] = useState('');
@@ -71,7 +73,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
   const handleResolveSteam = async () => {
     if (!steamId.trim()) {
-      setError('Please enter a Steam ID, vanity URL, or profile URL');
+      setError(t('playerModal.errors.steamLookupEmpty'));
       return;
     }
 
@@ -98,9 +100,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       const error = err as Error;
       // If Steam API not available or resolution failed, allow manual entry
       if (error.message?.includes('Steam API is not configured')) {
-        setError('Steam API not configured - enter Steam ID64 manually');
+        setError(t('playerModal.errors.steamApiNotConfigured'));
       } else {
-        setError('Could not resolve Steam ID - please enter Steam ID64 manually');
+        setError(t('playerModal.errors.steamResolveFailed'));
       }
     } finally {
       setResolving(false);
@@ -109,12 +111,12 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
   const handleSave = async () => {
     if (!steamId.trim()) {
-      showWarning('Steam ID is required');
+      showWarning(t('playerModal.errors.steamRequired'));
       return;
     }
 
     if (!name.trim()) {
-      showWarning('Player name is required');
+      showWarning(t('playerModal.errors.nameRequired'));
       return;
     }
 
@@ -154,10 +156,10 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
       if (isEditing) {
         await api.put(`/api/players/${player.id}`, payload);
-        showSuccess('Player updated successfully');
+        showSuccess(t('playerModal.success.playerUpdated'));
       } else {
         await api.post('/api/players', payload);
-        showSuccess('Player created successfully');
+        showSuccess(t('playerModal.success.playerCreated'));
       }
 
       onSave();
@@ -167,7 +169,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       setPendingElo('');
     } catch (err) {
       const error = err as Error;
-      const errorMessage = error.message || 'Failed to save player';
+      const errorMessage = error.message || t('playerModal.errors.saveFailed');
       setError(errorMessage);
       showError(errorMessage);
     } finally {
@@ -213,7 +215,9 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       >
         <DialogTitle>
           <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="h6">{isEditing ? 'Edit Player' : 'Create Player'}</Typography>
+            <Typography variant="h6">
+              {isEditing ? t('playerModal.titleEdit') : t('playerModal.titleCreate')}
+            </Typography>
             <IconButton size="small" onClick={onClose}>
               <CloseIcon />
             </IconButton>
@@ -222,7 +226,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
         <DialogContent>
           <Box display="flex" flexDirection="column" gap={2} mt={1}>
             <TextField
-              label="Steam ID or Profile URL"
+              label={t('playerModal.steamLabel')}
               value={steamId}
               onChange={(e) => setSteamId(e.target.value)}
               disabled={isEditing || resolving}
@@ -235,8 +239,8 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               helperText={
                 error ||
                 (isEditing
-                  ? 'Steam ID cannot be changed'
-                  : 'Enter Steam ID64, vanity URL, or profile URL. Click "Resolve" to auto-fill name and avatar.')
+                  ? t('playerModal.steamHelperEditing')
+                  : t('playerModal.steamHelperNew'))
               }
             />
 
@@ -247,7 +251,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                 disabled={resolving || !steamId.trim()}
                 startIcon={resolving ? <CircularProgress size={16} /> : undefined}
               >
-                {resolving ? 'Resolving...' : 'Resolve Steam ID'}
+                {resolving ? t('playerModal.resolving') : t('playerModal.resolveSteam')}
               </Button>
             )}
 
@@ -255,7 +259,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               <Box display="flex" alignItems="center" gap={2}>
                 <PlayerAvatar
                   id={steamId || player?.id || 'unknown'}
-                  name={name || player?.name || 'Player'}
+                  name={name || player?.name || t('playerModal.playerNamePlaceholder')}
                   avatarUrl={avatar}
                   size={48}
                 />
@@ -263,7 +267,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             )}
 
             <TextField
-              label="Player Name"
+              label={t('playerModal.playerNameLabel')}
               value={name}
               onChange={(e) => setName(e.target.value)}
               fullWidth
@@ -275,7 +279,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             />
 
             <TextField
-              label={isEditing ? 'ELO' : 'Initial ELO'}
+              label={isEditing ? t('playerModal.eloLabelEdit') : t('playerModal.eloLabelNew')}
               type="number"
               value={elo}
               onChange={(e) => setElo(e.target.value === '' ? '' : Number(e.target.value))}
@@ -285,8 +289,8 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               }}
               helperText={
                 isEditing
-                  ? "Changing ELO will reset the player's rating and stats. This action cannot be undone."
-                  : 'Leave empty to use default (1500 Skill Rating).'
+                  ? t('playerModal.eloHelperEdit')
+                  : t('playerModal.eloHelperNew')
               }
             />
 
@@ -298,19 +302,19 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                   color="primary"
                 />
               }
-              label="Is admin (has in-game admin rights for all matches)"
+              label={t('playerModal.isAdminLabel')}
             />
 
             {isEditing && (
               <Box>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Current ELO: {player.currentElo}
+                  {t('playerModal.currentElo', { value: player.currentElo })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Starting ELO: {player.startingElo}
+                  {t('playerModal.startingElo', { value: player.startingElo })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Matches Played: {player.matchCount}
+                  {t('playerModal.matchesPlayed', { count: player.matchCount })}
                 </Typography>
               </Box>
             )}
@@ -324,12 +328,12 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               onClick={handleDeleteClick}
               disabled={saving}
             >
-              Delete
+              {t('playerModal.buttons.delete')}
             </Button>
           )}
           <Box sx={{ flexGrow: 1 }} />
           <Button onClick={onClose} disabled={saving}>
-            Cancel
+            {t('playerModal.buttons.cancel')}
           </Button>
           <Button
             data-testid="player-save-button"
@@ -348,23 +352,30 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
                 }),
             }}
           >
-            {saving ? 'Saving...' : isEditing ? 'Save' : 'Create'}
+            {saving
+              ? t('playerModal.buttons.saving')
+              : isEditing
+              ? t('playerModal.buttons.save')
+              : t('playerModal.buttons.create')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <ConfirmDialog
         open={confirmDeleteOpen}
-        title="Delete Player"
-        message={`Are you sure you want to delete player "${player?.name}"? This action cannot be undone.`}
+        title={t('playerModal.confirmDelete.title')}
+        message={t('playerModal.confirmDelete.message', { name: player?.name })}
         onConfirm={handleDeleteConfirm}
         onCancel={() => setConfirmDeleteOpen(false)}
       />
 
       <ConfirmDialog
         open={confirmEloUpdateOpen}
-        title="Update Player ELO"
-        message={`Are you sure you want to update this player's ELO from ${originalElo} to ${pendingElo}? This will reset their stats and rating history. This action cannot be undone.`}
+        title={t('playerModal.confirmEloUpdate.title')}
+        message={t('playerModal.confirmEloUpdate.message', {
+          from: originalElo,
+          to: pendingElo,
+        })}
         onConfirm={handleEloUpdateConfirm}
         onCancel={handleEloUpdateCancel}
       />

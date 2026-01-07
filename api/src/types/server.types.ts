@@ -59,6 +59,7 @@ export interface MatchzyServerConfig {
   chatPrefix?: string | null;
   adminChatPrefix?: string | null;
   knifeEnabledDefault?: boolean | null;
+  debugChatEnabled?: boolean | null;
 
   // Common operational toggles (all optional; null/undefined = do not touch)
   minimumReadyRequired?: number | null;

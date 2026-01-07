@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
@@ -15,6 +15,7 @@ import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { useTranslation } from 'react-i18next';
 
 export default function Matches() {
   const navigate = useNavigate();
@@ -33,18 +34,19 @@ export default function Matches() {
     gracePeriodSeconds: number;
   }>({
     nextAllocationInSeconds: null,
-    gracePeriodSeconds: 300,
+    gracePeriodSeconds: 120,
   });
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const { t } = useTranslation();
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Matches';
-  }, []);
+    document.title = t('layout.pageTitle.matches');
+  }, [t]);
 
-  // Initialize Socket.io connection
+  // Initialize Socket.io connection (mount-only)
   useEffect(() => {
     // Connect to same origin - works in both dev (proxied) and production (Caddy)
     const newSocket = io();
@@ -170,10 +172,10 @@ export default function Matches() {
     return () => {
       newSocket.disconnect();
     };
-  }, []);
+  }, [fetchMatches]);
 
   // Poll allocation status periodically so we can show a lightweight
-  // "next servers in Xs" indicator on the Matches page.
+  // "next servers in Xs" indicator on the Matches page (mount-only).
   useEffect(() => {
     const loadAllocationStatus = async () => {
       try {
@@ -182,6 +184,7 @@ export default function Matches() {
           availableServerCount: number;
           gracePeriodSeconds?: number;
           nextAllocationInSeconds?: number | null;
+          simulationEnabled?: boolean;
         }>('/api/tournament/server-availability');
 
         if (availability.success) {
@@ -229,8 +232,29 @@ export default function Matches() {
     return () => clearInterval(timer);
   }, [allocationCountdown.nextAllocationInSeconds]);
 
+  const renderAllocationBanner = () => {
+    if (allocationCountdown.nextAllocationInSeconds === null) {
+      return null;
+    }
+
+    const nextIn = allocationCountdown.nextAllocationInSeconds;
+    if (nextIn <= 0) {
+      return null;
+    }
+
+    return (
+      <Box mb={2}>
+        <Alert severity="info">
+          <Typography variant="body2">
+            {t('servers.allocation.nextPass', { seconds: nextIn })}
+          </Typography>
+        </Alert>
+      </Box>
+    );
+  };
+
   // Fetch matches
-  const fetchMatches = async () => {
+  const fetchMatches = useCallback(async () => {
     try {
       const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
 
@@ -291,16 +315,16 @@ export default function Matches() {
         });
       }
     } catch (err) {
-      setError('Failed to load matches');
+      setError(t('matchesPage.errors.loadMatches'));
       console.error(err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     fetchMatches();
-  }, []);
+  }, [fetchMatches]);
 
   // Legacy delete handler kept for reference; match deletion is currently wired
   // through the MatchDetailsModal, which calls its own delete endpoint and then
@@ -379,7 +403,7 @@ export default function Matches() {
     return (
       <Box>
         <Typography variant="h6" color="error" gutterBottom>
-          Error loading matches
+          {t('matchesPage.errors.loadTitle')}
         </Typography>
         <Typography variant="body2" color="text.secondary">
           {error}
@@ -403,7 +427,7 @@ export default function Matches() {
 
   return (
     <Box data-testid="matches-page" sx={{ width: '100%', height: '100%' }}>
-
+      {renderAllocationBanner()}
       {/* Manual match creation + allocation countdown */}
       {hasMatches && (
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
@@ -411,8 +435,9 @@ export default function Matches() {
             {allocationCountdown.nextAllocationInSeconds !== null &&
               allocationCountdown.nextAllocationInSeconds > 0 && (
                 <Typography variant="body2" color="text.secondary">
-                  Next servers allocated in{' '}
-                  <strong>{Math.max(0, allocationCountdown.nextAllocationInSeconds)}s</strong>
+                  {t('matchesPage.allocation.nextServers', {
+                    seconds: Math.max(0, allocationCountdown.nextAllocationInSeconds),
+                  })}
                 </Typography>
               )}
           </Box>
@@ -428,7 +453,9 @@ export default function Matches() {
                 }
               }}
             >
-              {selectionMode ? 'Done Selecting' : 'Select'}
+              {selectionMode
+                ? t('matchesPage.bulkSelect.done')
+                : t('matchesPage.bulkSelect.select')}
             </Button>
             {selectionMode && (
               <Button
@@ -474,7 +501,9 @@ export default function Matches() {
                   const allVisibleSelected =
                     manualMatches.length > 0 &&
                     manualMatches.every((m) => m.slug && selectedMatchSlugs.has(m.slug));
-                  return allVisibleSelected ? 'Unselect All' : 'Select All';
+                  return allVisibleSelected
+                    ? t('matchesPage.bulkSelect.unselectAll')
+                    : t('matchesPage.bulkSelect.selectAll');
                 })()}
               </Button>
             )}
@@ -489,12 +518,12 @@ export default function Matches() {
                   setBulkDeleteConfirmOpen(true);
                 }}
               >
-                Delete Selected
+                {t('matchesPage.bulkSelect.deleteSelected')}
               </Button>
             )}
             {!selectionMode && (
               <Button variant="contained" size="small" onClick={() => setCreateMatchOpen(true)}>
-                Create Match
+                {t('matchesPage.header.createMatch')}
               </Button>
             )}
           </Box>
@@ -513,15 +542,15 @@ export default function Matches() {
           <EmptyState
             data-testid="matches-empty-state"
             icon={SportsEsportsIcon}
-            title="No matches to display"
-            description="Create a tournament and generate brackets to see matches here"
-            actionLabel="Create Tournament"
+            title={t('matchesPage.empty.title')}
+            description={t('matchesPage.empty.description')}
+            actionLabel={t('tournament.common.createTournament')}
             actionIcon={AddIcon}
             onAction={() => navigate('/tournament')}
           />
           <Box display="flex" justifyContent="center" mt={2}>
             <Button variant="outlined" onClick={() => setCreateMatchOpen(true)}>
-              Or Create Manual Match
+              {t('matchesPage.empty.createManual')}
             </Button>
           </Box>
         </Box>
@@ -547,7 +576,7 @@ export default function Matches() {
                   }}
                 />
                 <Typography variant="h6" fontWeight={600}>
-                  Live Matches ({liveMatches.length})
+                  {t('matchesPage.sections.live', { count: liveMatches.length })}
                 </Typography>
               </Box>
               <Grid container spacing={2}>
@@ -590,13 +619,15 @@ export default function Matches() {
           {upcomingMatches.length > 0 && (
             <Box>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                Upcoming Matches ({upcomingMatches.length})
+                {t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
               </Typography>
               <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   const isManualMatch = isManualMatchFlag(match);
-                  const manualRoundLabel = isManualMatch ? 'Manual match' : undefined;
+                  const manualRoundLabel = isManualMatch
+                    ? t('matchesPage.manualMatchLabel')
+                    : undefined;
                   const tournamentStartedForCard = isManualMatch
                     ? undefined
                     : tournamentStatus === 'in_progress';
@@ -630,7 +661,7 @@ export default function Matches() {
           {matchHistory.length > 0 && (
             <Box>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                Match History ({matchHistory.length})
+                {t('matchesPage.sections.history', { count: matchHistory.length })}
               </Typography>
               <Grid container spacing={2}>
                 {matchHistory.map((match) => {
@@ -684,7 +715,7 @@ export default function Matches() {
         onClose={() => setCreateMatchOpen(false)}
         onCreated={async (slug) => {
           setCreateMatchOpen(false);
-          showSuccess(`Manual match created: ${slug}`);
+          showSuccess(t('matchesPage.create.success', { slug }));
 
           void fetchMatches();
         }}
@@ -692,11 +723,11 @@ export default function Matches() {
 
       <ConfirmDialog
         open={selectionMode && bulkDeleteConfirmOpen}
-        title="Delete Manual Matches"
-        message={`Are you sure you want to delete ${selectedMatchSlugs.size} manual match${
-          selectedMatchSlugs.size === 1 ? '' : 'es'
-        }? This action cannot be undone.`}
-        confirmLabel="Delete"
+        title={t('matchesPage.bulkDelete.title')}
+        message={t('matchesPage.bulkDelete.message', {
+          count: selectedMatchSlugs.size,
+          suffix: selectedMatchSlugs.size === 1 ? '' : 'es',
+        })}
         confirmColor="error"
         onConfirm={async () => {
           await handleBulkDeleteMatches();

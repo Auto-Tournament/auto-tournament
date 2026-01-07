@@ -9,6 +9,7 @@ export type AppSettingKey =
   | 'matchzy_chat_prefix'
   | 'matchzy_admin_chat_prefix'
   | 'matchzy_knife_enabled_default'
+  | 'matchzy_debug_chat'
   | 'ratings_enabled';
 
 export interface AppSetting {
@@ -25,6 +26,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_chat_prefix',
   'matchzy_admin_chat_prefix',
   'matchzy_knife_enabled_default',
+  'matchzy_debug_chat',
   'ratings_enabled',
 ];
 
@@ -175,6 +177,16 @@ class SettingsService {
     return trimmed !== '' ? trimmed : '[ADMIN]';
   }
 
+  async isMatchzyDebugChatEnabled(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_debug_chat');
+    if (!value) {
+      // Explicit default: debug chat off unless enabled.
+      return false;
+    }
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
   async isKnifeRoundEnabledByDefault(): Promise<boolean> {
     const value = await this.getSetting('matchzy_knife_enabled_default');
     if (!value) {
@@ -221,12 +233,16 @@ class SettingsService {
    * Returns true when simulation mode should be enabled for generated MatchZy configs.
    *
    * This is intended as a **development-only** helper; in production environments
-   * it always returns false regardless of the stored setting.
+   * it always returns false unless explicitly overridden via environment.
    */
   async isSimulationModeEnabled(): Promise<boolean> {
-    // Hard-disable simulation in production for safety.
+    // By default, hard-disable simulation in production for safety. It can be
+    // explicitly enabled by setting MATCHZY_ENABLE_SIMULATION_IN_PROD=true in
+    // the API environment (e.g. for test events or lab environments).
     if (process.env.NODE_ENV === 'production') {
-      return false;
+      if (process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() !== 'true') {
+        return false;
+      }
     }
 
     const value = await this.getSetting('simulate_matches');

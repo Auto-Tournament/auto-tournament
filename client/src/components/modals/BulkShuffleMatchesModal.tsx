@@ -25,6 +25,7 @@ import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Map as MapType } from '../../types/api.types';
 import { getMapDisplayName } from '../../constants/maps';
+import { useTranslation } from 'react-i18next';
 
 interface BulkShuffleMatchesModalProps {
   open: boolean;
@@ -64,6 +65,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
   onCreated,
 }) => {
   const { showError, showSuccess } = useSnackbar();
+  const { t } = useTranslation();
   const [registeredPlayers, setRegisteredPlayers] = useState<RegisteredPlayer[]>([]);
   const [loadingPlayers, setLoadingPlayers] = useState(false);
   const [availableMaps, setAvailableMaps] = useState<MapType[]>([]);
@@ -100,11 +102,11 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       if (response.success && Array.isArray(response.players)) {
         setRegisteredPlayers(response.players);
       } else {
-        showError('Failed to load registered players');
+        showError(t('bulkShuffleMatchesModal.errors.loadPlayers'));
       }
     } catch (err) {
       console.error('Failed to load registered players for bulk shuffle matches:', err);
-      showError('Failed to load registered players');
+      showError(t('bulkShuffleMatchesModal.errors.loadPlayers'));
     } finally {
       setLoadingPlayers(false);
     }
@@ -169,6 +171,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
 
     if (rows.length === 0) {
       setLocalError('Add at least one match to create.');
+      setLocalError(t('bulkShuffleMatchesModal.errors.noMatches'));
       return false;
     }
 
@@ -178,16 +181,21 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       const team2Count = row.team2PlayerIds.length;
 
       if (team1Count === 0 || team2Count === 0) {
-        setLocalError(`Match ${i + 1}: both teams must have at least one player.`);
+        setLocalError(
+          t('bulkShuffleMatchesModal.errors.bothTeamsRequired', {
+            index: i + 1,
+          })
+        );
         return false;
       }
 
       const overlap = row.team1PlayerIds.filter((id) => row.team2PlayerIds.includes(id));
       if (overlap.length > 0) {
         setLocalError(
-          `Match ${i + 1}: the same player cannot be on both teams. Conflicting ID(s): ${overlap.join(
-            ', '
-          )}`
+          t('bulkShuffleMatchesModal.errors.conflictingPlayers', {
+            index: i + 1,
+            ids: overlap.join(', '),
+          })
         );
         return false;
       }
@@ -196,7 +204,9 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       const effectiveMap = (row.map && row.map.trim()) || selectedMap || maps[0] || '';
       if (!effectiveMap) {
         setLocalError(
-          `Match ${i + 1}: map is required (set a default map above or choose a map for this match).`
+          t('bulkShuffleMatchesModal.errors.mapRequired', {
+            index: i + 1,
+          })
         );
         return false;
       }
@@ -205,12 +215,14 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       if (row.maxRounds !== undefined) {
         if (row.maxRounds < 1 || row.maxRounds > 30) {
           setLocalError(
-            `Match ${i + 1}: max rounds must be between 1 and 30 when overridden per match.`
+            t('bulkShuffleMatchesModal.errors.rowMaxRoundsRange', {
+              index: i + 1,
+            })
           );
           return false;
         }
       } else if (maxRounds < 1 || maxRounds > 30) {
-        setLocalError('Max rounds must be between 1 and 30.');
+        setLocalError(t('bulkShuffleMatchesModal.errors.globalMaxRoundsRange'));
         return false;
       }
     }
@@ -244,13 +256,18 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       }>(`/api/tournament/${tournamentId}/manual-matches`, payload);
 
       if (!response.success) {
-        showError(response.error || 'Failed to create manual shuffle matches');
+        showError(
+          response.error || t('bulkShuffleMatchesModal.errors.createFailed')
+        );
         return;
       }
 
       showSuccess(
         response.message ||
-          'Manual shuffle matches created. They will be allocated when the tournament starts.'
+          t('bulkShuffleMatchesModal.success.created', {
+            defaultMessage:
+              'Manual shuffle matches created. They will be allocated when the tournament starts.',
+          })
       );
 
       if (onCreated) {
@@ -275,7 +292,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
           <Box display="flex" alignItems="center" gap={1}>
             <PeopleIcon color="primary" />
             <Typography variant="h6" fontWeight={600}>
-              Bulk Create Shuffle Matches
+              {t('bulkShuffleMatchesModal.title')}
             </Typography>
           </Box>
           <IconButton aria-label="close" size="small" onClick={onClose}>
@@ -287,24 +304,21 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
       <DialogContent dividers>
         <Stack spacing={3}>
           <Typography variant="body2" color="text.secondary">
-            Configure a single‑map shuffle match (map + round limit), then define as many head‑to‑head
-            matches as you like by choosing exact player lineups for each side. Matches are created as
-            part of the current shuffle tournament and will be allocated to servers when you start the
-            tournament.
+            {t('bulkShuffleMatchesModal.description')}
           </Typography>
 
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
                 select
-                label="Map"
+                label={t('bulkShuffleMatchesModal.mapSelect.label')}
                 fullWidth
                 value={selectedMap}
                 onChange={(e) => setSelectedMap(e.target.value)}
                 helperText={
                   maps.length === 0
-                    ? 'No maps configured for this tournament'
-                    : 'All matches in this batch will use this map.'
+                    ? t('bulkShuffleMatchesModal.mapSelect.noMaps')
+                    : t('bulkShuffleMatchesModal.mapSelect.helper')
                 }
               >
                 {maps.map((mapId) => (
@@ -317,7 +331,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
 
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Max rounds per map"
+                label={t('bulkShuffleMatchesModal.maxRounds.label')}
                 type="number"
                 fullWidth
                 value={maxRounds}
@@ -328,10 +342,11 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                 inputProps={{ min: 1, max: 30 }}
                 helperText={
                   maxRounds > 0
-                    ? `Match plays up to ${maxRounds} rounds; winner is first to ${
-                        Math.floor(maxRounds / 2) + 1
-                      } rounds.`
-                    : 'Maximum number of rounds per map (default: 24, max: 30).'
+                    ? t('bulkShuffleMatchesModal.maxRounds.helperWithValue', {
+                        maxRounds,
+                        winRounds: Math.floor(maxRounds / 2) + 1,
+                      })
+                    : t('bulkShuffleMatchesModal.maxRounds.helperDefault')
                 }
               />
             </Grid>
@@ -340,7 +355,9 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
           <Box>
             <Box display="flex" alignItems="center" justifyContent="space-between" mb={1}>
               <Typography variant="subtitle1" fontWeight={600}>
-                Matches ({rows.length})
+                  {t('bulkShuffleMatchesModal.matchesSection.title', {
+                    count: rows.length,
+                  })}
               </Typography>
               <Button
                 startIcon={<AddIcon />}
@@ -348,7 +365,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                 size="small"
                 variant="outlined"
               >
-                Add Match
+                  {t('bulkShuffleMatchesModal.matchesSection.addMatch')}
               </Button>
             </Box>
 
@@ -359,8 +376,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
             ) : registeredPlayers.length === 0 ? (
               <Box>
                 <Typography variant="body2" color="text.secondary">
-                  No players are registered for this shuffle tournament yet. Register players first,
-                  then you can create manual matches.
+                  {t('bulkShuffleMatchesModal.players.empty')}
                 </Typography>
               </Box>
             ) : (
@@ -393,12 +409,18 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                         mb={1.5}
                       >
                         <Typography variant="subtitle2" fontWeight={600}>
-                          Match {index + 1}
+                          {t('bulkShuffleMatchesModal.matchRow.title', {
+                            index: index + 1,
+                          })}
                         </Typography>
                         <Stack direction="row" spacing={1} alignItems="center">
                           <Chip
                             size="small"
-                            label={`${team1Count}/${teamSize} • ${team2Count}/${teamSize}`}
+                            label={t('bulkShuffleMatchesModal.matchRow.teamCounts', {
+                              team1: team1Count,
+                              team2: team2Count,
+                              teamSize,
+                            })}
                             color={
                               team1Count === teamSize && team2Count === teamSize
                                 ? 'success'
@@ -435,8 +457,13 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={`Team 1 players (${team1Count}/${teamSize})`}
-                                placeholder="Search & select players"
+                                label={t(
+                                  'bulkShuffleMatchesModal.matchRow.team1Label',
+                                  { team1Count, teamSize }
+                                )}
+                                placeholder={t(
+                                  'bulkShuffleMatchesModal.matchRow.searchPlaceholder'
+                                )}
                               />
                             )}
                           />
@@ -457,8 +484,13 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                             renderInput={(params) => (
                               <TextField
                                 {...params}
-                                label={`Team 2 players (${team2Count}/${teamSize})`}
-                                placeholder="Search & select players"
+                                label={t(
+                                  'bulkShuffleMatchesModal.matchRow.team2Label',
+                                  { team2Count, teamSize }
+                                )}
+                                placeholder={t(
+                                  'bulkShuffleMatchesModal.matchRow.searchPlaceholder'
+                                )}
                               />
                             )}
                           />
@@ -466,7 +498,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                         <Grid item xs={12} sm={6}>
                           <TextField
                             select
-                            label="Map (optional override)"
+                            label={t('bulkShuffleMatchesModal.matchRow.mapOverrideLabel')}
                             fullWidth
                             value={row.map || ''}
                             onChange={(e) =>
@@ -477,8 +509,10 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                             }
                             helperText={
                               row.map
-                                ? 'This match uses its own map.'
-                                : 'Leave empty to use the default map above.'
+                                ? t('bulkShuffleMatchesModal.matchRow.mapOverrideHelperOwn')
+                                : t(
+                                    'bulkShuffleMatchesModal.matchRow.mapOverrideHelperDefault'
+                                  )
                             }
                           >
                             {maps.map((mapId) => (
@@ -490,7 +524,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                         </Grid>
                         <Grid item xs={12} sm={6}>
                           <TextField
-                            label="Max rounds (optional override)"
+                            label={t('bulkShuffleMatchesModal.matchRow.maxRoundsOverrideLabel')}
                             type="number"
                             fullWidth
                             value={row.maxRounds ?? ''}
@@ -504,8 +538,13 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
                             inputProps={{ min: 1, max: 30 }}
                             helperText={
                               row.maxRounds
-                                ? `Overrides default max rounds for this match (currently ${row.maxRounds}).`
-                                : 'Leave empty to use the default max rounds above.'
+                                ? t(
+                                    'bulkShuffleMatchesModal.matchRow.maxRoundsOverrideHelperOwn',
+                                    { value: row.maxRounds }
+                                  )
+                                : t(
+                                    'bulkShuffleMatchesModal.matchRow.maxRoundsOverrideHelperDefault'
+                                  )
                             }
                           />
                         </Grid>
@@ -527,7 +566,7 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
 
       <DialogActions>
         <Button onClick={onClose} disabled={submitting}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
@@ -535,7 +574,9 @@ export const BulkShuffleMatchesModal: React.FC<BulkShuffleMatchesModalProps> = (
           disabled={submitting || loadingPlayers || registeredPlayers.length === 0}
           startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <MapIcon />}
         >
-          {submitting ? 'Creating…' : 'Create Matches'}
+          {submitting
+            ? t('bulkShuffleMatchesModal.createMatchesButton.creating')
+            : t('bulkShuffleMatchesModal.createMatchesButton.default')}
         </Button>
       </DialogActions>
     </Dialog>

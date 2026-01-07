@@ -26,6 +26,7 @@ import {
 import Link from '@mui/material/Link';
 import { CircularProgress } from '@mui/material';
 import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useTranslation } from 'react-i18next';
 
 interface ImportPlayer {
   steamId: string;
@@ -46,6 +47,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
   onImport,
 }) => {
   const { showWarning } = useSnackbar();
+  const { t } = useTranslation();
   const [jsonInput, setJsonInput] = useState('');
   const [parsedPlayers, setParsedPlayers] = useState<ImportPlayer[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
     setParsedPlayers(null);
 
     if (!jsonInput.trim()) {
-      showWarning('Please enter JSON or CSV data');
+      showWarning(t('playerImportModal.errors.noData'));
       return;
     }
 
@@ -130,7 +132,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       }
 
       if (!Array.isArray(players) || players.length === 0) {
-        setError('No players found in the data');
+        setError(t('playerImportModal.errors.noPlayers'));
         return;
       }
 
@@ -144,13 +146,19 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       });
 
       if (validationErrors.length > 0) {
-        setError(`Validation errors:\n${validationErrors.join('\n')}`);
+        setError(
+          `${t('playerImportModal.errors.validationPrefix')}\n${validationErrors.join('\n')}`
+        );
         return;
       }
 
       setParsedPlayers(players);
     } catch (err) {
-      setError(`Failed to parse data: ${err instanceof Error ? err.message : 'Unknown error'}`);
+      setError(
+        t('playerImportModal.errors.parseFailed', {
+          message: err instanceof Error ? err.message : 'Unknown error',
+        })
+      );
     }
   };
 
@@ -164,7 +172,9 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       await onImport(parsedPlayers);
       handleClose();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to import players');
+      setError(
+        err instanceof Error ? err.message : t('playerImportModal.errors.importFailed')
+      );
     } finally {
       setImporting(false);
     }
@@ -181,16 +191,16 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
   };
 
   return (
-      <Dialog
-        open={open}
-        onClose={handleDialogClose}
-        maxWidth="md"
-        fullWidth
-        disableEscapeKeyDown
-      >
+    <Dialog
+      open={open}
+      onClose={handleDialogClose}
+      maxWidth="md"
+      fullWidth
+      disableEscapeKeyDown
+    >
       <DialogTitle>
         <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h6">Import Players</Typography>
+          <Typography variant="h6">{t('playerImportModal.title')}</Typography>
           <IconButton size="small" onClick={handleClose}>
             <CloseIcon />
           </IconButton>
@@ -199,9 +209,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       <DialogContent>
         <Alert severity="info" sx={{ mb: 2 }}>
           <Typography variant="body2" gutterBottom>
-            Import players from JSON or CSV format. Required fields: <strong>steamId</strong>,{' '}
-            <strong>name</strong>. Optional: <strong>initialELO</strong> (defaults to 1500),{' '}
-            <strong>avatarUrl</strong>.
+            {t('playerImportModal.info.description')}
           </Typography>
           <Typography variant="caption" component="div">
             <Link
@@ -216,7 +224,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                 '&:hover': { textDecoration: 'underline' },
               }}
             >
-              View documentation with examples
+              {t('playerImportModal.info.link')}
               <OpenInNewIcon sx={{ fontSize: '0.875rem' }} />
             </Link>
           </Typography>
@@ -228,7 +236,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
           rows={10}
           value={jsonInput}
           onChange={(e) => setJsonInput(e.target.value)}
-          placeholder={`JSON format:\n[\n  {\n    "steamId": "76561198012345678",\n    "name": "Player One",\n    "initialELO": 1500,\n    "avatarUrl": "https://..."\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://...`}
+          placeholder={t('playerImportModal.placeholders.jsonCsv')}
           sx={{ mb: 2, fontFamily: 'monospace' }}
         />
 
@@ -248,12 +256,14 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
               }),
             }}
           >
-            Parse & Validate
+            {t('playerImportModal.actions.parseValidate')}
           </Button>
           {parsedPlayers && (
             <Chip
               icon={<CheckCircleIcon />}
-              label={`${parsedPlayers.length} player(s) ready to import`}
+              label={t('playerImportModal.preview.readyChip', {
+                count: parsedPlayers.length,
+              })}
               color="success"
             />
           )}
@@ -262,7 +272,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
         {parsedPlayers && parsedPlayers.length > 0 && (
           <Paper sx={{ p: 2, maxHeight: 400, overflow: 'auto' }}>
             <Typography variant="subtitle2" gutterBottom>
-              Players to Import ({parsedPlayers.length}):
+              {t('playerImportModal.preview.title', { count: parsedPlayers.length })}
             </Typography>
             <Stack spacing={1}>
               {parsedPlayers.map((player, index) => (
@@ -288,19 +298,23 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
                   <Collapse in={expandedPlayers.has(index)}>
                     <Box sx={{ pl: 4, pt: 1 }}>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        Steam ID: {player.steamId}
+                        {t('playerImportModal.preview.steamId', { steamId: player.steamId })}
                       </Typography>
                       <Typography variant="caption" color="text.secondary" display="block">
-                        Name: {player.name}
+                        {t('playerImportModal.preview.name', { name: player.name })}
                       </Typography>
                       {player.initialELO !== undefined && (
                         <Typography variant="caption" color="text.secondary" display="block">
-                          Initial ELO: {player.initialELO}
+                          {t('playerImportModal.preview.initialElo', {
+                            elo: player.initialELO,
+                          })}
                         </Typography>
                       )}
                       {player.avatarUrl && (
                         <Typography variant="caption" color="text.secondary" display="block">
-                          Avatar: {player.avatarUrl.substring(0, 50)}...
+                          {t('playerImportModal.preview.avatar', {
+                            url: `${player.avatarUrl.substring(0, 50)}...`,
+                          })}
                         </Typography>
                       )}
                     </Box>
@@ -313,13 +327,13 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose} disabled={importing}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           variant="contained"
           onClick={() => {
             if (!parsedPlayers) {
-              showWarning('Please parse and validate the data first');
+              showWarning(t('playerImportModal.errors.parseFirst'));
               return;
             }
             handleImport();
@@ -336,7 +350,11 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
             }),
           }}
         >
-          {importing ? 'Importing...' : `Import ${parsedPlayers?.length || 0} Player(s)`}
+          {importing
+            ? t('playerImportModal.actions.importing')
+            : t('playerImportModal.actions.import', {
+                count: parsedPlayers?.length || 0,
+              })}
         </Button>
       </DialogActions>
 

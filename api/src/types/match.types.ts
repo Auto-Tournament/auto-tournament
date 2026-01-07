@@ -71,6 +71,12 @@ export interface MatchConfig {
    * We pass this through as `simulation_timescale` in generated configs.
    */
   simulation_timescale?: number;
+  /**
+   * Optional list of Steam64 IDs that should always have in‑game admin rights
+   * for this match. This is attached automatically for tournament and manual
+   * matches so tournament admins can control matches on the server.
+   */
+  admins?: string[];
 }
 
 export interface CreateMatchInput {

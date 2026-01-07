@@ -27,6 +27,7 @@ import EloTemplateEditorModal from '../components/modals/EloTemplateEditorModal'
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { EloTemplateImportModal } from '../components/modals/EloTemplateImportModal';
 import type { EloCalculationTemplate } from '../types/elo.types';
+import { useTranslation } from 'react-i18next';
 
 export default function ELOTemplates() {
   const { setHeaderActions } = usePageHeader();
@@ -38,6 +39,7 @@ export default function ELOTemplates() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<EloCalculationTemplate | null>(null);
   const [importModalOpen, setImportModalOpen] = useState(false);
+  const { t } = useTranslation();
 
   const loadTemplates = useCallback(async () => {
     setLoading(true);
@@ -48,20 +50,20 @@ export default function ELOTemplates() {
       if (response.success) {
         setTemplates(response.templates);
       } else {
-        showError('Failed to load ELO templates');
+        showError(t('eloTemplatesPage.errors.load'));
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to load ELO templates');
+      showError(error.message || t('eloTemplatesPage.errors.load'));
     } finally {
       setLoading(false);
     }
-  }, [showError]);
+  }, [showError, t]);
 
   useEffect(() => {
-    document.title = 'ELO Calculation';
-    loadTemplates();
-  }, [loadTemplates]);
+  document.title = t('layout.pageTitle.eloTemplates');
+  loadTemplates();
+}, [loadTemplates, t]);
 
   useEffect(() => {
     setHeaderActions(
@@ -72,10 +74,10 @@ export default function ELOTemplates() {
           startIcon={<AddIcon />}
           onClick={() => handleOpenEditor()}
         >
-          Create Template
+        {t('eloTemplatesPage.header.createTemplate')}
         </Button>
         <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
-          Import from JSON
+        {t('eloTemplatesPage.header.importJson')}
         </Button>
       </Box>
     );
@@ -83,7 +85,7 @@ export default function ELOTemplates() {
     return () => {
       setHeaderActions(null);
     };
-  }, [setHeaderActions]);
+}, [setHeaderActions, t]);
 
   const handleOpenEditor = (template?: EloCalculationTemplate) => {
     setEditingTemplate(template || null);
@@ -103,7 +105,7 @@ export default function ELOTemplates() {
   const handleDeleteClick = (template: EloCalculationTemplate) => {
     // Protect the built-in default template from deletion
     if (template.id === 'pure-win-loss') {
-      showError('The default "pure-win-loss" template cannot be deleted.');
+      showError(t('eloTemplatesPage.delete.defaultProtected'));
       return;
     }
     setTemplateToDelete(template);
@@ -116,14 +118,16 @@ export default function ELOTemplates() {
     try {
       const response = await api.delete(`/api/elo-templates/${templateToDelete.id}`);
       if (response.success) {
-        showSuccess(`Template "${templateToDelete.name}" deleted successfully`);
+        showSuccess(
+          t('eloTemplatesPage.delete.success', { name: templateToDelete.name })
+        );
         await loadTemplates();
       } else {
-        showError(response.error || 'Failed to delete template');
+        showError(response.error || t('eloTemplatesPage.delete.error'));
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to delete template');
+      showError(error.message || t('eloTemplatesPage.delete.error'));
     } finally {
       setDeleteDialogOpen(false);
       setTemplateToDelete(null);
@@ -155,7 +159,9 @@ export default function ELOTemplates() {
     );
 
     await Promise.all(promises);
-    showSuccess(`Successfully imported ${importedTemplates.length} ELO template(s)`);
+    showSuccess(
+      t('eloTemplatesPage.import.success', { count: importedTemplates.length })
+    );
     await loadTemplates();
   };
 
@@ -164,7 +170,7 @@ export default function ELOTemplates() {
       .filter(([_, value]) => value !== undefined && value !== 0)
       .map(([key, value]) => `${key}: ${value > 0 ? '+' : ''}${value}`)
       .join(', ');
-    return activeWeights || 'No stat adjustments (Pure Win/Loss)';
+    return activeWeights || t('eloTemplatesPage.weights.noAdjustmentsPure');
   };
 
   if (loading) {
@@ -180,9 +186,9 @@ export default function ELOTemplates() {
       {templates.length === 0 ? (
         <EmptyState
           icon={InfoIcon}
-          title="No ELO Calculation Templates"
-          description="Create your first template to customize how player statistics influence ELO adjustments"
-          actionLabel="Create Template"
+          title={t('eloTemplatesPage.empty.title')}
+          description={t('eloTemplatesPage.empty.description')}
+          actionLabel={t('eloTemplatesPage.empty.action')}
           actionIcon={AddIcon}
           onAction={() => handleOpenEditor()}
         />
@@ -203,7 +209,7 @@ export default function ELOTemplates() {
                 }}
               >
                 <CardContent sx={{ flexGrow: 1 }}>
-                  <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
+                    <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
                     <Box>
                       <Typography variant="h6" fontWeight={600} gutterBottom>
                         {template.name}
@@ -215,24 +221,25 @@ export default function ELOTemplates() {
                       )}
                       <Typography variant="caption" color="text.secondary" display="block">
                         {template.id === 'pure-win-loss'
-                          ? 'Per‑match stat adjustment: none (0; result‑only ELO)'
+                          ? t('eloTemplatesPage.card.adjustment.none')
                           : template.minAdjustment === undefined &&
                             template.maxAdjustment === undefined
-                          ? 'Per‑match stat adjustment: uncapped (use with care)'
-                          : `Per‑match stat adjustment range: ${
-                              template.minAdjustment !== undefined
-                                ? template.minAdjustment
-                                : 'no min'
-                            } to ${
-                              template.maxAdjustment !== undefined
-                                ? template.maxAdjustment
-                                : 'no max'
-                            } ELO`}
+                          ? t('eloTemplatesPage.card.adjustment.uncapped')
+                          : t('eloTemplatesPage.card.adjustment.range', {
+                              min:
+                                template.minAdjustment !== undefined
+                                  ? template.minAdjustment
+                                  : t('eloTemplatesPage.card.adjustment.noMin'),
+                              max:
+                                template.maxAdjustment !== undefined
+                                  ? template.maxAdjustment
+                                  : t('eloTemplatesPage.card.adjustment.noMax'),
+                            })}
                       </Typography>
                     </Box>
                     <Box display="flex" gap={1}>
                       {template.id !== 'pure-win-loss' && (
-                        <Tooltip title="Edit Template">
+                        <Tooltip title={t('eloTemplatesPage.card.tooltips.edit')}>
                           <IconButton
                             size="small"
                             onClick={() => handleOpenEditor(template)}
@@ -243,7 +250,7 @@ export default function ELOTemplates() {
                         </Tooltip>
                       )}
                       {template.id !== 'pure-win-loss' && (
-                        <Tooltip title="Delete Template">
+                        <Tooltip title={t('eloTemplatesPage.card.tooltips.delete')}>
                           <IconButton
                             size="small"
                             onClick={() => handleDeleteClick(template)}
@@ -259,37 +266,64 @@ export default function ELOTemplates() {
                   <Stack spacing={1}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <Chip
-                        label={template.enabled ? 'Enabled' : 'Disabled'}
+                        label={
+                          template.enabled
+                            ? t('eloTemplatesPage.card.enabled')
+                            : t('eloTemplatesPage.card.disabled')
+                        }
                         color={template.enabled ? 'success' : 'default'}
                         size="small"
                       />
                       {template.id === 'pure-win-loss' && (
-                        <Chip label="Default" color="primary" size="small" />
+                        <Chip
+                          label={t('eloTemplatesPage.card.default')}
+                          color="primary"
+                          size="small"
+                        />
                       )}
                     </Box>
 
                     <Divider />
 
                     <Box>
-                      <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
-                        Stat Weights:
+                      <Typography
+                        variant="caption"
+                        color="text.secondary"
+                        display="block"
+                        mb={0.5}
+                      >
+                        {t('eloTemplatesPage.card.weightsTitle')}
                       </Typography>
-                      <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
+                      <Typography
+                        variant="body2"
+                        sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}
+                      >
                         {getWeightSummary(template.weights)}
                       </Typography>
                     </Box>
 
-                    {(template.maxAdjustment !== undefined || template.minAdjustment !== undefined) && (
+                    {(template.maxAdjustment !== undefined ||
+                      template.minAdjustment !== undefined) && (
                       <Box>
-                        <Typography variant="caption" color="text.secondary" display="block" mb={0.5}>
-                          Adjustment Limits:
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          display="block"
+                          mb={0.5}
+                        >
+                          {t('eloTemplatesPage.card.limitsTitle')}
                         </Typography>
-                        <Typography variant="body2" sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}>
-                          {template.minAdjustment !== undefined && `Min: ${template.minAdjustment}`}
+                        <Typography
+                          variant="body2"
+                          sx={{ fontFamily: 'monospace', fontSize: '0.75rem' }}
+                        >
+                          {template.minAdjustment !== undefined &&
+                            `Min: ${template.minAdjustment}`}
                           {template.minAdjustment !== undefined &&
                             template.maxAdjustment !== undefined &&
                             ', '}
-                          {template.maxAdjustment !== undefined && `Max: ${template.maxAdjustment}`}
+                          {template.maxAdjustment !== undefined &&
+                            `Max: ${template.maxAdjustment}`}
                         </Typography>
                       </Box>
                     )}
@@ -310,10 +344,12 @@ export default function ELOTemplates() {
 
       <ConfirmDialog
         open={deleteDialogOpen}
-        title="Delete ELO Template"
-        message={`Are you sure you want to delete "${templateToDelete?.name}"? This action cannot be undone.`}
-        confirmLabel="Delete"
-        cancelLabel="Cancel"
+        title={t('eloTemplatesPage.delete.title')}
+        message={t('eloTemplatesPage.delete.message', {
+          name: templateToDelete?.name ?? '',
+        })}
+        confirmLabel={t('common.delete')}
+        cancelLabel={t('common.cancel')}
         onConfirm={handleDeleteConfirm}
         onCancel={() => {
           setDeleteDialogOpen(false);

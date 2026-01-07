@@ -20,7 +20,13 @@ import {
 import { Close as CloseIcon, Info as InfoIcon } from '@mui/icons-material';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import type { EloCalculationTemplate, EloTemplateWeights, CreateEloTemplateInput, UpdateEloTemplateInput } from '../../types/elo.types';
+import type {
+  EloCalculationTemplate,
+  EloTemplateWeights,
+  CreateEloTemplateInput,
+  UpdateEloTemplateInput,
+} from '../../types/elo.types';
+import { useTranslation } from 'react-i18next';
 
 interface EloTemplateEditorModalProps {
   open: boolean;
@@ -71,6 +77,7 @@ export default function EloTemplateEditorModal({
   const [maxAdjustment, setMaxAdjustment] = useState<number | undefined>(undefined);
   const [minAdjustment, setMinAdjustment] = useState<number | undefined>(undefined);
   const [saving, setSaving] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (template) {
@@ -105,7 +112,7 @@ export default function EloTemplateEditorModal({
 
   const handleSave = async () => {
     if (!name.trim()) {
-      showError('Template name is required');
+      showError(t('eloTemplatesPage.editor.errors.nameRequired'));
       return;
     }
 
@@ -126,10 +133,10 @@ export default function EloTemplateEditorModal({
           input
         );
         if (response.success) {
-          showSuccess(`Template "${name}" updated successfully`);
+          showSuccess(t('eloTemplatesPage.editor.update.success', { name }));
           onSave();
         } else {
-          showError(response.error || 'Failed to update template');
+          showError(response.error || t('eloTemplatesPage.editor.update.error'));
         }
       } else {
         // Create new template
@@ -146,15 +153,20 @@ export default function EloTemplateEditorModal({
           input
         );
         if (response.success) {
-          showSuccess(`Template "${name}" created successfully`);
+          showSuccess(t('eloTemplatesPage.editor.create.success', { name }));
           onSave();
         } else {
-          showError(response.error || 'Failed to create template');
+          showError(response.error || t('eloTemplatesPage.editor.create.error'));
         }
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || `Failed to ${template ? 'update' : 'create'} template`);
+      showError(
+        error.message ||
+          (template
+            ? t('eloTemplatesPage.editor.update.error')
+            : t('eloTemplatesPage.editor.create.error'))
+      );
     } finally {
       setSaving(false);
     }
@@ -179,7 +191,9 @@ export default function EloTemplateEditorModal({
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={600}>
-            {template ? 'Edit ELO Template' : 'Create ELO Template'}
+            {template
+              ? t('eloTemplatesPage.editor.titleEdit')
+              : t('eloTemplatesPage.editor.titleCreate')}
           </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
@@ -191,45 +205,47 @@ export default function EloTemplateEditorModal({
         <Stack spacing={3}>
           <Alert severity="info" icon={<InfoIcon />}>
             <Typography variant="body2">
-              Configure how individual player statistics influence ELO adjustments. Weights are
-              applied after OpenSkill calculates the base ELO change (win/loss). Positive weights
-              increase ELO, negative weights decrease it.
+              {t('eloTemplatesPage.editor.info')}
             </Typography>
           </Alert>
 
           <TextField
-            label="Template Name"
+            label={t('eloTemplatesPage.editor.nameLabel')}
             value={name}
             onChange={(e) => setName(e.target.value)}
             fullWidth
             required
             disabled={template?.id === 'pure-win-loss'}
-            helperText={template?.id === 'pure-win-loss' ? 'Default template name cannot be changed' : ''}
+            helperText={
+              template?.id === 'pure-win-loss'
+                ? t('eloTemplatesPage.editor.nameDefaultLocked')
+                : ''
+            }
           />
 
           <TextField
-            label="Description"
+            label={t('eloTemplatesPage.editor.descriptionLabel')}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
             multiline
             rows={2}
-            placeholder="Optional description of this template's purpose"
+            placeholder={t('eloTemplatesPage.editor.descriptionPlaceholder')}
           />
 
           <FormControlLabel
             control={<Switch checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />}
-            label="Enabled"
+            label={t('eloTemplatesPage.editor.enabledLabel')}
           />
 
           <Divider />
 
           <Box>
             <Typography variant="h6" gutterBottom>
-              Stat Weights
+              {t('eloTemplatesPage.editor.weights.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Adjust the slider for each statistic. Value of 0 means no adjustment for that stat.
+              {t('eloTemplatesPage.editor.weights.subtitle')}
             </Typography>
 
             <Grid container spacing={3} sx={{ mt: 1 }}>
@@ -283,16 +299,16 @@ export default function EloTemplateEditorModal({
 
           <Box>
             <Typography variant="h6" gutterBottom>
-              Adjustment Limits (Optional)
+              {t('eloTemplatesPage.editor.limits.title')}
             </Typography>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Set maximum and minimum ELO adjustments per match to prevent extreme changes.
+              {t('eloTemplatesPage.editor.limits.subtitle')}
             </Typography>
 
             <Grid container spacing={2} sx={{ mt: 1 }}>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Max Adjustment"
+                  label={t('eloTemplatesPage.editor.limits.maxLabel')}
                   type="number"
                   value={maxAdjustment ?? ''}
                   onChange={(e) =>
@@ -302,13 +318,13 @@ export default function EloTemplateEditorModal({
                   slotProps={{
                     htmlInput: { min: 0 },
                   }}
-                  helperText="Maximum positive ELO adjustment per match"
+                  helperText={t('eloTemplatesPage.editor.limits.maxHelper')}
                   disabled={template?.id === 'pure-win-loss'}
                 />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
                 <TextField
-                  label="Min Adjustment"
+                  label={t('eloTemplatesPage.editor.limits.minLabel')}
                   type="number"
                   value={minAdjustment ?? ''}
                   onChange={(e) =>
@@ -318,7 +334,7 @@ export default function EloTemplateEditorModal({
                   slotProps={{
                     htmlInput: { max: 0 },
                   }}
-                  helperText="Maximum negative ELO adjustment per match"
+                  helperText={t('eloTemplatesPage.editor.limits.minHelper')}
                 />
               </Grid>
             </Grid>
@@ -328,12 +344,12 @@ export default function EloTemplateEditorModal({
 
       <DialogActions sx={{ px: 3, pb: 3 }}>
         <Button onClick={onClose} disabled={saving}>
-          Cancel
+          {t('common.cancel')}
         </Button>
         <Button
           onClick={() => {
             if (!name.trim()) {
-              showWarning('Template name is required');
+              showWarning(t('eloTemplatesPage.editor.errors.nameRequired'));
               return;
             }
             handleSave();
@@ -350,7 +366,11 @@ export default function EloTemplateEditorModal({
             }),
           }}
         >
-          {saving ? 'Saving...' : template ? 'Update' : 'Create'}
+          {saving
+            ? t('eloTemplatesPage.editor.buttons.saving')
+            : template
+            ? t('eloTemplatesPage.editor.buttons.update')
+            : t('eloTemplatesPage.editor.buttons.create')}
         </Button>
       </DialogActions>
     </Dialog>

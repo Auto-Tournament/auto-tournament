@@ -19,6 +19,7 @@ import {
 } from '@mui/icons-material';
 import { api } from '../../utils/api';
 import type { TournamentTemplate } from '../../types/tournament.types';
+import { useTranslation } from 'react-i18next';
 
 interface TournamentWelcomeScreenProps {
   onCreateNew: () => void;
@@ -32,6 +33,7 @@ export function TournamentWelcomeScreen({
   const [templates, setTemplates] = useState<TournamentTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTemplateId, setSelectedTemplateId] = useState<number | ''>('');
+  const { t } = useTranslation();
 
   useEffect(() => {
     loadTemplates();
@@ -68,10 +70,10 @@ export function TournamentWelcomeScreen({
         <Box textAlign="center" mb={4}>
           <EmojiEventsIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
           <Typography variant="h4" fontWeight={600} gutterBottom>
-            Create Tournament
+            {t('tournament.welcome.heading')}
           </Typography>
           <Typography variant="body1" color="text.secondary">
-            Choose how you'd like to create your tournament
+            {t('tournament.welcome.chooseMethod')}
           </Typography>
         </Box>
 
@@ -94,10 +96,10 @@ export function TournamentWelcomeScreen({
               <CardContent sx={{ textAlign: 'center', py: 4 }}>
                 <AddIcon sx={{ fontSize: 48, color: 'primary.main', mb: 2 }} />
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Create New Tournament
+                  {t('tournament.welcome.createNewTitle')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  Start from scratch and configure all tournament settings manually
+                  {t('tournament.welcome.createNewDescription')}
                 </Typography>
               </CardContent>
             </Card>
