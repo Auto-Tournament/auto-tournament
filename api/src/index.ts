@@ -49,16 +49,21 @@ import authSteamRoutes from './routes/authSteam';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
+import { configurePassportAuth, passport } from './config/passport';
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// Configure Passport strategies
+configurePassportAuth();
 
 // Middleware
 app.use(cors());
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+app.use(passport.initialize());
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {

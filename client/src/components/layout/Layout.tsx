@@ -138,7 +138,7 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout } = useAuth();
+  const { logout, needsSteamLink, loginWithSteam, playerSteamId } = useAuth();
   const { headerActions } = usePageHeader();
   const { showError } = useSnackbar();
   const hasShownWebhookWarningRef = React.useRef(false);
@@ -286,7 +286,8 @@ export default function Layout() {
   };
 
   const handleLogout = () => {
-    logout();
+    // Best-effort async logout; navigation does not wait on the network call.
+    void logout();
     navigate('/login');
   };
 
@@ -748,6 +749,26 @@ export default function Layout() {
             <Box sx={{ flexGrow: 1 }} />
             <Stack direction="row" alignItems="center" spacing={1}>
               <LanguageSwitcher />
+              {playerSteamId && (
+                <Button
+                  color="inherit"
+                  size="small"
+                  component={Link}
+                  to={`/player/${playerSteamId}`}
+                >
+                  {t('nav.myProfile')}
+                </Button>
+              )}
+              {needsSteamLink && (
+                <Button
+                  color="warning"
+                  variant="outlined"
+                  onClick={loginWithSteam}
+                  size="small"
+                >
+                  {t('nav.linkSteam')}
+                </Button>
+              )}
               <Button
                 color="inherit"
                 href="https://mat.sivert.io/"

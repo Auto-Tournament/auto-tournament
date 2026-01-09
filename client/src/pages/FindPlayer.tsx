@@ -19,6 +19,7 @@ import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { SteamIcon } from '../components/icons/SteamIcon';
+import { useAuth } from '../contexts/AuthContext';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 
@@ -42,6 +43,7 @@ export default function FindPlayer() {
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
   const { showError } = useSnackbar();
+  const { loginWithSteam, playerSteamId } = useAuth();
 
   useEffect(() => {
     document.title = 'Find Player';
@@ -129,10 +131,6 @@ export default function FindPlayer() {
       const value = (e.target as HTMLInputElement).value;
       handleSearch(value);
     }
-  };
-
-  const handleSteamLogin = () => {
-    window.location.href = '/api/auth/steam';
   };
 
   return (
@@ -248,11 +246,22 @@ export default function FindPlayer() {
                 fullWidth
                 variant="outlined"
                 size="large"
-                onClick={handleSteamLogin}
+                onClick={loginWithSteam}
                 startIcon={<SteamIcon />}
               >
                 Login with Steam
               </Button>
+
+              {playerSteamId && (
+                <Button
+                  fullWidth
+                  variant="text"
+                  size="small"
+                  onClick={() => navigate(`/player/${playerSteamId}`)}
+                >
+                  Go to my profile
+                </Button>
+              )}
             </Stack>
           </CardContent>
         </Card>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Box,
   Card,
@@ -14,15 +14,17 @@ import {
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../utils/api';
 import { useTranslation } from 'react-i18next';
+import { SteamIcon } from '../components/icons/SteamIcon';
 
 export default function Login() {
   const { t } = useTranslation();
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
+  const { loginWithSteam } = useAuth();
+  const [providers, setProviders] = useState<
+    Array<{ id: string; label: string; loginUrl: string; enabled: boolean }>
+  >([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [providersError, setProvidersError] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,30 +38,52 @@ export default function Login() {
   }
   const from = (location.state as LocationState)?.from?.pathname || '/';
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+  useEffect(() => {
+    const loadProviders = async () => {
+      try {
+        setLoadingProviders(true);
+        setProvidersError(null);
 
-    if (!password.trim()) {
-      setError(t('login.passwordRequired'));
-      setLoading(false);
+        const response = await fetch('/api/auth/providers');
+        if (!response.ok) {
+          throw new Error(`Failed to load auth providers: ${response.status}`);
+        }
+
+        const data: {
+          success: boolean;
+          providers?: Array<{ id: string; label: string; loginUrl: string; enabled: boolean }>;
+        } = await response.json();
+
+        if (!data.success || !Array.isArray(data.providers)) {
+          throw new Error('Invalid auth providers response');
+        }
+
+        const enabledProviders = data.providers.filter((p) => p.enabled);
+        setProviders(enabledProviders);
+
+        // If only Steam is configured, keep backwards-compatible behaviour.
+        if (enabledProviders.length === 1 && enabledProviders[0].id === 'steam') {
+          // no-op here; the primary button below will handle it.
+        }
+      } catch (error) {
+        console.error(error);
+        setProvidersError('Failed to load sign-in options. Please try again or check server logs.');
+      } finally {
+        setLoadingProviders(false);
+      }
+    };
+
+    void loadProviders();
+  }, []);
+
+  const handleProviderClick = (providerId: string, loginUrl: string) => {
+    if (providerId === 'steam') {
+      // Use the existing helper so that future changes to the Steam flow are centralized.
+      loginWithSteam();
       return;
     }
 
-    try {
-      const isValid = await api.verifyToken(password);
-      if (isValid) {
-        login(password);
-        navigate(from, { replace: true });
-      } else {
-        setError(t('login.invalidPassword'));
-      }
-    } catch {
-      setError(t('login.connectionFailed'));
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = loginUrl;
   };
 
   return (
@@ -82,7 +106,7 @@ export default function Login() {
             boxShadow: (theme) => theme.shadows[location.pathname === '/login' ? 8 : 2],
           }}
         >
-          <Stack spacing={4} alignItems="center">
+            <Stack spacing={4} alignItems="center">
             <Stack spacing={2} alignItems="center" sx={{ width: '100%' }}>
               <Box
                 sx={{
@@ -109,41 +133,43 @@ export default function Login() {
               </Stack>
             </Stack>
 
-            <Stack component="form" onSubmit={handleSubmit} spacing={2.5} sx={{ width: '100%' }}>
-              <TextField
-                fullWidth
-                id="password"
-                label={t('login.apiTokenLabel')}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('login.apiTokenPlaceholder')}
-                autoFocus
-                disabled={loading}
-                slotProps={{
-                  htmlInput: { 'data-testid': 'login-api-token-input' },
-                }}
-              />
-
-              {error && (
-                <Alert severity="error" sx={{ borderRadius: 2 }} data-testid="login-error-message">
-                  {error}
+            {/* Provider-based sign in (Steam, Keycloak, Discord, etc.) */}
+            <Stack spacing={2.5} sx={{ width: '100%' }}>
+              {providersError && (
+                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                  {providersError}
                 </Alert>
               )}
 
-              <Button
-                data-testid="login-sign-in-button"
-                type="submit"
-                variant="contained"
-                fullWidth
-                size="large"
-                disabled={loading}
-              >
-                {loading ? t('login.signingIn') : t('login.signIn')}
-              </Button>
-            </Stack>
+              <Stack spacing={1.5}>
+                {providers.map((provider) => {
+                  const isSteam = provider.id === 'steam';
+                  return (
+                    <Button
+                      key={provider.id}
+                      fullWidth
+                      size="large"
+                      variant={isSteam ? 'contained' : 'outlined'}
+                      color={isSteam ? 'primary' : 'inherit'}
+                      onClick={() => handleProviderClick(provider.id, provider.loginUrl)}
+                      startIcon={isSteam ? <SteamIcon /> : undefined}
+                      disabled={loadingProviders}
+                      data-testid={
+                        isSteam ? 'login-steam-sign-in-button' : `login-${provider.id}-sign-in-button`
+                      }
+                    >
+                      {`Sign in with ${provider.label}`}
+                    </Button>
+                  );
+                })}
 
-            <Divider flexItem />
+                {loadingProviders && providers.length === 0 && (
+                  <Button fullWidth size="large" variant="contained" disabled>
+                    {t('login.signingIn')}
+                  </Button>
+                )}
+              </Stack>
+            </Stack>
 
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
               <Typography variant="body2" color="text.secondary">

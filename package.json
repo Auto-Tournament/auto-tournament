@@ -49,7 +49,7 @@
         "test:veto": "playwright test -c tests/playwright.config.ts --grep @veto",
         "test:cs-major": "playwright test -c tests/playwright.config.ts --grep @cs-major",
         "test:report": "playwright show-report -c tests/playwright.config.ts",
-        "test:install": "playwright install -c tests/playwright.config.ts",
+        "test:install": "playwright install --with-deps",
         "screenshot:generate": "tsx scripts/generate-screenshots.ts",
         "screenshot": "bash scripts/generate-screenshots-with-docker.sh",
         "screenshot:keep": "bash scripts/generate-screenshots-with-docker.sh --keep-running",

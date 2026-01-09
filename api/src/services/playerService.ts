@@ -320,6 +320,27 @@ class PlayerService {
   }
 
   /**
+   * Ensure that there is at least one admin player. If no admins exist yet,
+   * promote the given Steam ID to admin.
+   *
+   * This is primarily used to implement "first user to log in becomes admin"
+   * semantics for Steam-based authentication.
+   */
+  async ensureFirstAdmin(steamId: string): Promise<void> {
+    const existingAdmin = await db.queryOneAsync<{ id: string }>(
+      'SELECT id FROM players WHERE is_admin = 1 LIMIT 1',
+      []
+    );
+
+    if (existingAdmin) {
+      return;
+    }
+
+    await this.updatePlayer(steamId, { isAdmin: true });
+    log.success(`Promoted first Steam user to admin: ${steamId}`);
+  }
+
+  /**
    * Search players by name
    */
   async searchPlayers(query: string, limit: number = 50): Promise<PlayerResponse[]> {

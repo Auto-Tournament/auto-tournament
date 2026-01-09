@@ -22,7 +22,9 @@
     "configurationSection": "Configuration",
     "systemSection": "System",
     "documentation": "Documentation",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "linkSteam": "Link Steam",
+    "myProfile": "My profile"
   },
   "layout": {
     "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
@@ -60,15 +62,15 @@
   "login": {
     "title": "Login",
     "welcome": "Welcome back",
-    "subtitle": "Enter the administrator API token to manage tournaments, servers, and teams.",
-    "apiTokenLabel": "API Token",
-    "apiTokenPlaceholder": "Enter your API token",
-    "passwordRequired": "Password is required",
-    "invalidPassword": "Invalid password. Please check your API token.",
-    "connectionFailed": "Failed to connect to the API. Please try again.",
+    "subtitle": "Sign in with your preferred provider to manage tournaments, servers, and teams.",
+    "apiTokenLabel": "Sign-in method",
+    "apiTokenPlaceholder": "Choose a provider to continue",
+    "passwordRequired": "A sign-in method is required",
+    "invalidPassword": "Sign-in failed. Please try again.",
+    "connectionFailed": "Failed to connect to the authentication service. Please try again.",
     "signIn": "Sign In",
     "signingIn": "Signing in…",
-    "needToken": "Need the token or access instructions?",
+    "needToken": "Need access or sign-in instructions?",
     "github": "GitHub",
     "documentation": "Documentation",
     "version": "Version"

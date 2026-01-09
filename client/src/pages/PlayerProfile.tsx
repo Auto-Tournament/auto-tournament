@@ -34,6 +34,7 @@ import { TournamentRulesAccordion } from '../components/tournament/TournamentRul
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import type { PlayerDetail } from '../types/api.types';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   Team,
   TeamMatchInfo,
@@ -219,6 +220,7 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
+  const { playerSteamId } = useAuth();
 
   // Shared sound settings (persisted via localStorage)
   const { isMuted, volume, soundFile } = useSoundSettings();
@@ -709,7 +711,10 @@ export default function PlayerProfile() {
             <Typography variant="subtitle2" color="text.secondary">
               Public Player View
             </Typography>
-            <Box display="flex" gap={1}>
+            <Box display="flex" gap={1} alignItems="center">
+              {playerSteamId === steamId && (
+                <Chip color="primary" size="small" label="This is you" />
+              )}
               <Button variant="outlined" size="small" component={RouterLink} to="/player">
                 Players
               </Button>
