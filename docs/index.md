@@ -36,7 +36,7 @@ cd matchzy-tournament
 docker compose up -d
 ```
 
-Open `http://localhost:3069` in your browser and log in with the password you set as `API_TOKEN`.  
+Open `http://localhost:3069` in your browser and click **Sign in with Steam** (or another configured SSO provider). The first Steam user to sign in becomes an admin automatically.  
 Read the **[Getting Started](getting-started/quick-start.md)** guide for the complete configuration.
 
 ---

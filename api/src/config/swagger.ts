@@ -18,14 +18,7 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
-      securitySchemes: {
-        bearerAuth: {
-          type: 'http',
-          scheme: 'bearer',
-          bearerFormat: 'token',
-          description: 'Enter your API token (set in .env as API_TOKEN)',
-        },
-      },
+      securitySchemes: {},
       schemas: {
         Server: {
           type: 'object',

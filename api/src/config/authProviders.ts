@@ -1,6 +1,7 @@
 import type {
   AuthProviderConfig,
   DiscordAuthProviderConfig,
+  GitHubAuthProviderConfig,
   KeycloakAuthProviderConfig,
   SteamAuthProviderConfig,
 } from '../types/auth.types';
@@ -15,13 +16,18 @@ import type {
 export function getAuthProvidersConfig(): AuthProviderConfig[] {
   const providers: AuthProviderConfig[] = [];
 
-  // Steam – existing OpenID flow used for player convenience login.
+  // Steam – Passport/OpenID flow used for player convenience login and admin identity.
   const steamEnabledEnv = process.env.AUTH_STEAM_ENABLED;
-  const steamEnabled =
+  const steamApiKey = process.env.STEAM_API_KEY;
+  const steamEnvEnabled =
     !steamEnabledEnv ||
     steamEnabledEnv.toLowerCase() === '1' ||
     steamEnabledEnv.toLowerCase() === 'true' ||
     steamEnabledEnv.toLowerCase() === 'yes';
+  const steamEnabled =
+    steamEnvEnabled &&
+    !!steamApiKey &&
+    steamApiKey.trim().length > 0;
 
   const steamProvider: SteamAuthProviderConfig = {
     id: 'steam',
@@ -56,7 +62,7 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
     providers.push(keycloakProvider);
   }
 
-  // Discord – planned OAuth2 provider primarily for community/admin workflows.
+  // Discord – OAuth2 provider primarily for community/admin workflows.
   const discordEnabledEnv = process.env.AUTH_DISCORD_ENABLED;
   const discordEnabled =
     discordEnabledEnv &&
@@ -76,6 +82,28 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
     };
 
     providers.push(discordProvider);
+  }
+
+  // GitHub – OAuth2 provider primarily for contributor/admin workflows.
+  const githubEnabledEnv = process.env.AUTH_GITHUB_ENABLED;
+  const githubEnabled =
+    githubEnabledEnv &&
+    (githubEnabledEnv.toLowerCase() === '1' ||
+      githubEnabledEnv.toLowerCase() === 'true' ||
+      githubEnabledEnv.toLowerCase() === 'yes');
+
+  const githubClientId = process.env.GITHUB_CLIENT_ID;
+
+  if (githubEnabled && githubClientId && githubClientId.trim().length > 0) {
+    const githubProvider: GitHubAuthProviderConfig = {
+      id: 'github',
+      kind: 'oauth2',
+      label: 'GitHub',
+      loginUrl: '/api/auth/github',
+      enabled: true,
+    };
+
+    providers.push(githubProvider);
   }
 
   return providers;

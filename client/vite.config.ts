@@ -24,7 +24,8 @@ export default defineConfig({
   },
   server: {
     port: 5173,
-    allowedHosts: ['cs.sivert.io'],
+    // Allow local development hosts; production runs behind Caddy/NGINX.
+    allowedHosts: ['localhost', '127.0.0.1'],
     // Development proxy: forwards /api/*, /socket.io/*, and /map-images/* to Express server on port 3000
     // Production: Caddy proxies both to Express on same port (no proxy needed)
     proxy: {

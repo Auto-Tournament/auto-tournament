@@ -52,14 +52,23 @@ export default function Login() {
         const data: {
           success: boolean;
           providers?: Array<{ id: string; label: string; loginUrl: string; enabled: boolean }>;
+          error?: string;
         } = await response.json();
 
-        if (!data.success || !Array.isArray(data.providers)) {
+        if (!data || typeof data !== 'object') {
           throw new Error('Invalid auth providers response');
         }
 
-        const enabledProviders = data.providers.filter((p) => p.enabled);
+        const providersList = Array.isArray(data.providers) ? data.providers : [];
+        const enabledProviders = providersList.filter((p) => p.enabled);
         setProviders(enabledProviders);
+
+        if (!data.success || enabledProviders.length === 0) {
+          throw new Error(
+            data.error ||
+              'No sign-in providers are configured. Please configure Steam or another SSO provider on the server.'
+          );
+        }
 
         // If only Steam is configured, keep backwards-compatible behaviour.
         if (enabledProviders.length === 1 && enabledProviders[0].id === 'steam') {
@@ -67,7 +76,11 @@ export default function Login() {
         }
       } catch (error) {
         console.error(error);
-        setProvidersError('Failed to load sign-in options. Please try again or check server logs.');
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to load sign-in options. Please try again or check server logs.';
+        setProvidersError(message);
       } finally {
         setLoadingProviders(false);
       }
@@ -137,7 +150,17 @@ export default function Login() {
             <Stack spacing={2.5} sx={{ width: '100%' }}>
               {providersError && (
                 <Alert severity="error" sx={{ borderRadius: 2 }}>
-                  {providersError}
+                  <Stack spacing={0.5}>
+                    <Typography variant="body2">{providersError}</Typography>
+                    <Link
+                      href="https://mat.sivert.io/development/auth-providers-examples/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ fontSize: '0.8rem' }}
+                    >
+                      {t('login.documentation')}
+                    </Link>
+                  </Stack>
                 </Alert>
               )}
 
@@ -172,10 +195,6 @@ export default function Login() {
             </Stack>
 
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('login.needToken')}
-              </Typography>
-
               <Stack direction="row" spacing={2}>
                 <Link
                   href="https://github.com/sivert-io/matchzy-auto-tournament"

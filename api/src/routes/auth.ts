@@ -46,29 +46,14 @@ function getFrontendBaseUrl(req: Request): string {
 function sendAdminLoginBridgePage(req: Request, res: Response): void {
   const frontendBaseUrl = getFrontendBaseUrl(req);
   const redirectUrl = `${frontendBaseUrl}/`;
+  // With Passport sessions enabled, we don't need to drop tokens into localStorage.
+  // Simply redirect back to the frontend; the session cookie will carry auth state.
+  res.redirect(302, redirectUrl);
+}
 
-  const apiToken = process.env.API_TOKEN || 'admin123';
-
-  const html = `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <title>Signing you in…</title>
-  </head>
-  <body>
-    <script>
-      try {
-        window.localStorage.setItem('api_token', ${JSON.stringify(apiToken)});
-      } catch (e) {
-        console.error('Failed to persist admin token to localStorage', e);
-      }
-      window.location.replace(${JSON.stringify(redirectUrl)});
-    </script>
-  </body>
-</html>`;
-
-  res.setHeader('Content-Type', 'text/html; charset=utf-8');
-  res.send(html);
+function isSteamAuthConfigured(): boolean {
+  const apiKey = process.env.STEAM_API_KEY;
+  return !!apiKey && apiKey.trim().length > 0;
 }
 
 /**
@@ -76,12 +61,20 @@ function sendAdminLoginBridgePage(req: Request, res: Response): void {
  *
  * GET /api/auth/steam
  */
-router.get(
-  '/steam',
-  passport.authenticate('steam', {
+router.get('/steam', (req: Request, res: Response, next) => {
+  if (!isSteamAuthConfigured()) {
+    log.warn('Steam auth requested but STEAM_API_KEY is not configured');
+    return res.status(503).json({
+      success: false,
+      error:
+        'Steam authentication is not configured on the server. Please set STEAM_API_KEY and restart the API.',
+    });
+  }
+
+  return passport.authenticate('steam', {
     session: false,
-  })
-);
+  })(req, res, next);
+});
 
 /**
  * Steam callback (Passport)
@@ -91,13 +84,20 @@ router.get(
  * Verifies the Steam OpenID assertion and redirects the user to /player/:steamId.
  * Also ensures a player record exists for the Steam ID.
  */
-router.get(
-  '/steam/callback',
-  passport.authenticate('steam', {
+router.get('/steam/callback', (req: Request, res: Response, next) => {
+  if (!isSteamAuthConfigured()) {
+    log.warn('Steam callback hit but STEAM_API_KEY is not configured');
+    return res.status(503).json({
+      success: false,
+      error:
+        'Steam authentication is not configured on the server. Please set STEAM_API_KEY and restart the API.',
+    });
+  }
+
+  return passport.authenticate('steam', {
     failureRedirect: '/app/login',
     session: false,
-  }),
-  async (req: Request, res: Response) => {
+  })(req, res, async () => {
     try {
       const user = req.user as
         | {
@@ -165,8 +165,8 @@ router.get(
         error: 'Steam login failed',
       });
     }
-  }
-);
+  });
+});
 
 /**
  * Lightweight logout endpoint for player Steam sessions.
@@ -265,6 +265,40 @@ router.get(
 );
 
 /**
+ * GitHub OAuth2 admin login
+ *
+ * GET /api/auth/github
+ * Redirects to the GitHub OAuth2 authorization endpoint.
+ */
+router.get(
+  '/github',
+  passport.authenticate('github', {
+    session: false,
+  })
+);
+
+/**
+ * GitHub OAuth2 callback
+ *
+ * GET /api/auth/github/callback
+ * Exchanges the authorization code for tokens and then drops the admin API
+ * token into localStorage via a small HTML bridge page.
+ */
+router.get(
+  '/github/callback',
+  passport.authenticate('github', {
+    failureRedirect: '/app/login',
+    session: false,
+  }),
+  (req: Request, res: Response) => {
+    // At this point the user is authenticated with GitHub. We rely on
+    // GitHub app configuration (org membership, allowed users) to control access.
+    log.success('GitHub Passport login completed successfully');
+    return sendAdminLoginBridgePage(req, res);
+  }
+);
+
+/**
  * Public discovery endpoint: returns the list of configured auth providers.
  *
  * This is safe to expose to the frontend and is intended to drive dynamic
@@ -272,9 +306,13 @@ router.get(
  */
 router.get('/providers', (_req: Request, res: Response) => {
   const providers = getAuthProvidersConfig();
+  const hasProviders = providers.length > 0;
   return res.json({
-    success: true,
+    success: hasProviders,
     providers,
+    error: hasProviders
+      ? undefined
+      : 'No authentication providers are configured. Enable at least Steam or another SSO provider in the server environment.',
   });
 });
 
@@ -305,4 +343,69 @@ router.get('/me', (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Admin "who am I" endpoint.
+ * Returns basic info about the authenticated admin session (if any).
+ */
+router.get('/admin/me', (req: Request, res: Response) => {
+  const anyReq = req as Request & {
+    user?: {
+      provider?: string;
+      steamId?: string;
+    };
+    isAuthenticated?: () => boolean;
+  };
+
+  if (!anyReq.isAuthenticated || !anyReq.isAuthenticated() || !anyReq.user) {
+    return res.json({
+      authenticated: false,
+    });
+  }
+
+  const { provider, steamId } = anyReq.user;
+
+  return res.json({
+    authenticated: true,
+    provider,
+    steamId: steamId || null,
+  });
+});
+
+/**
+ * Admin logout – destroys the Passport session.
+ */
+router.post('/admin/logout', (req: Request, res: Response) => {
+  const anyReq = req as Request & {
+    logout?: (cb: (err: unknown) => void) => void;
+    session?: { destroy?: (cb: (err: unknown) => void) => void };
+  };
+
+  if (!anyReq.logout) {
+    return res.status(204).end();
+  }
+
+  anyReq.logout((err) => {
+    if (err) {
+      log.error('Error during admin logout', err as Error);
+      return res.status(500).json({
+        success: false,
+        error: 'Failed to log out admin session',
+      });
+    }
+
+    if (anyReq.session && anyReq.session.destroy) {
+      anyReq.session.destroy((destroyErr) => {
+        if (destroyErr) {
+          log.warn('Failed to destroy session during admin logout', destroyErr as Error);
+        }
+        return res.status(204).end();
+      });
+    } else {
+      return res.status(204).end();
+    }
+  });
+});
+
 export default router;
+
+

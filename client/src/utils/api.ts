@@ -8,19 +8,6 @@
  * All API calls should use '/api' prefix (e.g., '/api/servers', '/api/teams')
  */
 
-const getAuthHeaders = (token?: string): Record<string, string> => {
-  const authToken = token || localStorage.getItem('api_token');
-
-  if (!authToken) {
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${authToken}`,
-    'Content-Type': 'application/json',
-  };
-};
-
 export const api = {
   /**
    * Make an authenticated API request
@@ -29,8 +16,8 @@ export const api = {
     const response = await fetch(endpoint, {
       ...options,
       headers: {
-        ...getAuthHeaders(),
-        ...options.headers,
+        'Content-Type': 'application/json',
+        ...(options.headers || {}),
       },
     });
 
@@ -86,17 +73,4 @@ export const api = {
     return this.fetch(endpoint, { method: 'DELETE' });
   },
 
-  /**
-   * Verify authentication token
-   */
-  async verifyToken(token: string): Promise<boolean> {
-    try {
-      const response = await fetch('/api/auth/verify', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  },
 };

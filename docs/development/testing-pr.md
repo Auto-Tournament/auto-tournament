@@ -77,16 +77,13 @@ docker run -d --name matchzy-postgres \
 ### Step 4: Set Environment Variables
 
 ```bash
-# Generate tokens (or use simple passwords for testing)
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+# Generate server token (or use simple values for testing)
 SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
 
 # Display tokens (save these!)
-echo "Your API_TOKEN (admin password): $API_TOKEN"
 echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
 
 # Export environment variables
-export API_TOKEN
 export SERVER_TOKEN
 export DB_HOST=localhost
 export DB_PORT=5432
@@ -95,10 +92,9 @@ export DB_PASSWORD=postgres
 export DB_NAME=matchzy_tournament
 ```
 
-**Note:** For quick testing, you can use simple passwords:
+**Note:** For quick testing, you can use simple values:
 
 ```bash
-export API_TOKEN=admin123
 export SERVER_TOKEN=server123
 ```
 
@@ -114,7 +110,7 @@ This will start:
 - **Backend API:** `http://localhost:3000`
 - **Frontend:** `http://localhost:5173`
 
-**Access the application at:** `http://localhost:5173`
+**Access the application at:** `http://localhost:5173` and sign in with Steam/SSO from the login page.
 
 ### Steam login in local development
 
@@ -155,15 +151,12 @@ git checkout pr-11-customizable-map-pool
 
 ```bash
 # Generate tokens
-API_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
-SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/')
+SERVER_TOKEN=$(openssl rand -base64 12 | tr -d '=+/' )
 
 # Display tokens
-echo "Your API_TOKEN (admin password): $API_TOKEN"
 echo "Your SERVER_TOKEN (for CS2 servers): $SERVER_TOKEN"
 
 # Export them
-export API_TOKEN
 export SERVER_TOKEN
 
 # Optional: Override database defaults
@@ -175,7 +168,6 @@ export DB_NAME=matchzy_tournament
 **Quick testing option:**
 
 ```bash
-export API_TOKEN=admin123
 export SERVER_TOKEN=server123
 ```
 
@@ -213,7 +205,7 @@ docker compose -f docker/docker-compose.local.yml logs -f matchzy-tournament
 
 1. Navigate to `http://localhost:5173` (local dev) or `http://localhost:3069` (Docker)
 2. Click **"Login"** (top right)
-3. Enter your `API_TOKEN` (the password you set above)
+3. Click **Sign in with Steam** (or another configured SSO provider). The first Steam login will become an admin automatically.
 
 ### 2. Navigate to Maps Page
 

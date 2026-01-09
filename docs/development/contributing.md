@@ -24,8 +24,7 @@ yarn install
 # Start PostgreSQL for local development
 yarn db
 
-# Set environment variables
-export API_TOKEN=admin123  # Or any password you want
+# Set environment variables (for CS2 servers)
 export SERVER_TOKEN=server123
 export DB_HOST=localhost
 export DB_PORT=5432
@@ -84,8 +83,7 @@ yarn dev
     export DB_PASSWORD=postgres
     export DB_NAME=matchzy_tournament
 
-    # Also set your API_TOKEN (admin password)
-    export API_TOKEN=admin123  # Or any password you want
+    # Also set your SERVER_TOKEN
     export SERVER_TOKEN=server123
     ```
 
@@ -362,14 +360,12 @@ git checkout pr-11-customizable-map-pool
 # Local Development
 yarn install
 yarn db
-export API_TOKEN=admin123
 yarn dev
-# Access at http://localhost:5173
+# Access at http://localhost:5173 (sign in with Steam/SSO)
 
 # OR Docker Compose (using yarn scripts)
-export API_TOKEN=admin123
 yarn docker:local:up
-# Access at http://localhost:3069
+# Access at http://localhost:3069 (sign in with Steam/SSO)
 
 # Or with custom port
 HOST_PORT=27016 yarn docker:local:up

@@ -45,11 +45,12 @@ import manualMatchTemplatesRoutes from './routes/manualMatchTemplates';
 import playersRoutes from './routes/players';
 import eloTemplatesRoutes from './routes/eloTemplates';
 import testRoutes from './routes/test';
-import authSteamRoutes from './routes/authSteam';
+import authRoutes from './routes/auth';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
+import session from 'express-session';
 
 const app = express();
 const httpServer = createServer(app);
@@ -63,7 +64,22 @@ app.use(cors());
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Session + Passport
+const sessionSecret = process.env.SESSION_SECRET || 'matchzy-dev-session-secret';
+app.use(
+  session({
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    },
+  })
+);
 app.use(passport.initialize());
+app.use(passport.session());
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -238,40 +254,6 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-/**
- * @openapi
- * /api/auth/verify:
- *   get:
- *     tags:
- *       - Authentication
- *     summary: Verify authentication token
- *     description: Check if the provided token is valid
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Token is valid
- *       401:
- *         description: Token is invalid
- */
-app.get('/api/auth/verify', (req: Request, res: Response): void => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  const validToken = process.env.API_TOKEN;
-
-  if (!token || token !== validToken) {
-    res.status(401).json({
-      success: false,
-      error: 'Invalid token',
-    });
-    return;
-  }
-
-  res.json({
-    success: true,
-    message: 'Token is valid',
-  });
-});
-
 // API Routes
 app.use('/api/servers', serverRoutes);
 app.use('/api/servers', serverStatusRoutes); // Mount status routes under /api/servers
@@ -296,7 +278,7 @@ app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 app.use('/api/generation', generationRoutes); // Shared name/code generators (e.g. team names)
 app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
-app.use('/api/auth', authSteamRoutes); // Steam-based player login (players only)
+app.use('/api/auth', authRoutes); // Authentication (Steam, Keycloak, Discord)
 
 // Serve frontend at /app (built client lives under api/public)
 const publicPath = path.join(__dirname, '..', 'public');

@@ -38,10 +38,6 @@ test.describe.serial('Global Test Setup', () => {
     const webhookConfigured = await configureWebhook(request, context.baseUrl);
     expect(webhookConfigured).toBe(true);
     
-    // Verify we're signed in
-    const token = await page.evaluate(() => localStorage.getItem('api_token'));
-    expect(token).toBeTruthy();
-    
     // Verify we can access protected routes
     await page.goto('/');
     await expect(page).not.toHaveURL(/\/login/);

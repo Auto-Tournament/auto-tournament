@@ -2,6 +2,8 @@ import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
+import { playerService } from '../services/playerService';
+
 
 const router = Router();
 
@@ -114,6 +116,73 @@ router.post('/reset-database', requireAuth, async (req: Request, res: Response):
     res.status(500).json({
       success: false,
       error: 'Failed to reset database',
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Test-only helper: create an admin session for Playwright tests.
+ *
+ * POST /api/test/login-admin
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/login-admin', async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({
+      success: false,
+      error: 'login-admin test helper is disabled in production',
+    });
+    return;
+  }
+
+  const anyReq = req as Request & {
+    login?: (user: unknown, cb: (err: unknown) => void) => void;
+  };
+
+  if (!anyReq.login) {
+    res.status(500).json({
+      success: false,
+      error: 'Passport login function is not available on request object',
+    });
+    return;
+  }
+
+  try {
+    const { steamId } = req.body as { steamId?: string };
+    const testSteamId = steamId && steamId.trim().length > 0 ? steamId.trim() : '76561198000000001';
+
+    // Ensure a player exists and is marked as admin for this Steam ID.
+    await playerService.getOrCreatePlayer(testSteamId, `Test Admin ${testSteamId}`);
+    await playerService.updatePlayer(testSteamId, { isAdmin: true });
+
+    const user = {
+      provider: 'steam' as const,
+      steamId: testSteamId,
+    };
+
+    anyReq.login(user, (err) => {
+      if (err) {
+        log.error('Failed to create admin session via /api/test/login-admin', err as Error);
+        res.status(500).json({
+          success: false,
+          error: 'Failed to create admin session',
+        });
+        return;
+      }
+
+      res.json({
+        success: true,
+        steamId: testSteamId,
+      });
+    });
+  } catch (err) {
+    const error = err as Error;
+    log.error('Error in /api/test/login-admin', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create admin session',
       details: error.message,
     });
   }

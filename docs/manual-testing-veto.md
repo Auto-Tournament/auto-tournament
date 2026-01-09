@@ -18,7 +18,7 @@ This guide helps you manually test the CS Major veto format to verify it matches
 
 3. **Open the application:**
    - Go to http://localhost:3069
-   - Login with API token: `admin123` (default)
+   - Click **Login** and sign in with Steam (or another configured SSO provider). The first Steam login will become an admin automatically.
 
 ## Test BO1 Format
 

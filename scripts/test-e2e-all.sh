@@ -41,7 +41,6 @@ if [ ! -d "$HOME/.cache/ms-playwright" ] && [ ! -d "node_modules/.cache/ms-playw
 fi
 
 # Set test environment variables
-export API_TOKEN="${API_TOKEN:-admin123}"
 export SERVER_TOKEN="${SERVER_TOKEN:-server123}"
 export DB_USER="${DB_USER:-postgres}"
 export DB_PASSWORD="${DB_PASSWORD:-postgres}"
@@ -49,7 +48,6 @@ export DB_NAME="${DB_NAME:-matchzy_tournament}"
 export PLAYWRIGHT_BASE_URL="http://localhost:3069"
 
 echo -e "${BLUE}Configuration:${NC}"
-echo "  API_TOKEN: ${API_TOKEN}"
 echo "  SERVER_TOKEN: ${SERVER_TOKEN}"
 echo "  Database: ${DB_USER}@localhost:5432/${DB_NAME}"
 echo "  Base URL: ${PLAYWRIGHT_BASE_URL}"

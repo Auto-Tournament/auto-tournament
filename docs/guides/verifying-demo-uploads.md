@@ -23,7 +23,7 @@ Before a match starts, verify that demo upload is configured:
 **API Endpoint:** `GET /api/demos/:matchSlug/status`
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" \
+curl -H "Cookie: ADMIN_SESSION_COOKIE_HERE" \
   http://localhost:3000/api/demos/r1m1/status
 ```
 
@@ -108,7 +108,7 @@ After a match completes, verify the demo file was saved:
 **API Endpoint:** `GET /api/demos/:matchSlug/info`
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" \
+curl -H "Cookie: ADMIN_SESSION_COOKIE_HERE" \
   http://localhost:3000/api/demos/r1m1/info
 ```
 
@@ -138,7 +138,7 @@ Test downloading the demo:
 **API Endpoint:** `GET /api/demos/:matchSlug/download`
 
 ```bash
-curl -H "Authorization: Bearer YOUR_API_TOKEN" \
+curl -H "Cookie: ADMIN_SESSION_COOKIE_HERE" \
   -o demo.dem \
   http://localhost:3000/api/demos/r1m1/download
 ```

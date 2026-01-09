@@ -3,9 +3,10 @@
 This document outlines how MatchZy Auto Tournament discovers supported
 authentication providers and shows example environment variable setups for:
 
-- Steam (OpenID flow for players and player/admin identity linking)
+- Steam (OpenID/Passport flow for players and player/admin identity linking)
 - Keycloak (OIDC provider for admin SSO)
 - Discord (OAuth2 provider for admin SSO)
+- GitHub (OAuth2 provider for admin/contributor SSO)
 
 The API exposes a public discovery endpoint:
 
@@ -23,17 +24,23 @@ Steam is wired via a **Passport Steam** strategy (`passport-steam`) under
 `/api/auth/steam` and is treated as the primary entry point for both players
 and admins.
 
-By default Steam is **enabled**. You can explicitly toggle it with:
+Steam requires a Web API key and is considered enabled when **all** of the following
+are true:
 
 ```bash
-# Optional: disable Steam as an auth provider (not recommended)
-AUTH_STEAM_ENABLED=false
+# Optional: explicitly enable/disable Steam as an auth provider
+AUTH_STEAM_ENABLED=true
+
+# Required: Steam Web API key (from https://steamcommunity.com/dev/apikey)
+STEAM_API_KEY=your-steam-web-api-key
+
+# Optional: base URL used to compute the final redirect back to the client
+FRONTEND_BASE_URL=http://localhost:3069
 ```
 
-Related settings:
-
-- `FRONTEND_BASE_URL` – used to compute the final redirect back to the client
-  after a successful Steam login (e.g. `https://cs.sivert.io`).
+If `STEAM_API_KEY` is missing or empty, Steam will **not** be exposed in
+`/api/auth/providers`, and `/api/auth/steam` will return a clear `503` error
+explaining that Steam auth is not configured.
 
 ### Keycloak (OIDC)
 
@@ -79,7 +86,7 @@ DISCORD_CLIENT_ID=123456789012345678
 
 # These are used by the OAuth2 flow
 DISCORD_CLIENT_SECRET=your-discord-client-secret
-DISCORD_REDIRECT_URI=https://cs.sivert.io/api/auth/discord/callback
+DISCORD_REDIRECT_URI=http://localhost:3069/api/auth/discord/callback
 ```
 
 When enabled, `/api/auth/providers` will include a `discord` provider with:
@@ -89,8 +96,31 @@ When enabled, `/api/auth/providers` will include a `discord` provider with:
 - `label: "Discord"`
 - `loginUrl: "/api/auth/discord"`
 
-Both Keycloak and Discord callbacks complete the OAuth/OIDC flow and then
-hand off to the existing admin session mechanism by dropping the admin API
-token into `localStorage` via a small HTML bridge page. This lets the
-dashboard use the same `requireAuth` middleware while completely hiding
-the token from end users.
+### GitHub (OAuth2)
+
+GitHub is primarily for contributor/admin workflows (e.g. granting access to
+admins who are members of a specific GitHub org or team).
+
+The backend reads:
+
+```bash
+# Enable GitHub as a configured provider
+AUTH_GITHUB_ENABLED=true
+
+# GitHub OAuth app credentials
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+GITHUB_CALLBACK_URL=http://localhost:3069/api/auth/github/callback
+```
+
+When enabled, `/api/auth/providers` will include a `github` provider with:
+
+- `id: "github"`
+- `kind: "oauth2"`
+- `label: "GitHub"`
+- `loginUrl: "/api/auth/github"`
+
+All SSO callbacks (Keycloak, Discord, GitHub) complete the OAuth/OIDC flow and then
+establish a Passport session for the admin user. Admin rights are still determined
+by the linked Steam ID (`players.is_admin = 1`), using the one-time **Link Steam**
+flow when needed.

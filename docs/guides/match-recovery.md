@@ -105,7 +105,7 @@ You can manually trigger recovery via API:
 
 ```bash
 curl -X POST \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Cookie: ADMIN_SESSION_COOKIE_HERE" \
   http://localhost:3000/api/recovery/recover
 ```
 
@@ -147,7 +147,7 @@ You can also replay events from the database:
 
 ```bash
 curl -X POST \
-  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Cookie: ADMIN_SESSION_COOKIE_HERE" \
   -H "Content-Type: application/json" \
   -d '{"sinceTimestamp": 1700000000}' \
   http://localhost:3000/api/recovery/replay/r1m1

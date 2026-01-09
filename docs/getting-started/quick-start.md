@@ -51,10 +51,37 @@ services:
     ports:
       - '3069:3069'
     environment:
-      # This is your password to sign in to the admin panel
-      - API_TOKEN=your-admin-password-here
-      # This token is used by CS2 servers to authenticate webhooks (should be different from API_TOKEN)
+      # Token used by CS2 servers to authenticate webhooks
       - SERVER_TOKEN=your-server-token-here
+
+      # Auth providers – at least Steam is recommended
+      # Steam (players + admins)
+      - AUTH_STEAM_ENABLED=true
+      # Get this from https://steamcommunity.com/dev/apikey
+      - STEAM_API_KEY=your-steam-web-api-key
+      # Public base URL of MAT (used for login redirects)
+      - FRONTEND_BASE_URL=http://localhost:3069
+
+      # Optional: Keycloak SSO
+      # - AUTH_KEYCLOAK_ENABLED=true
+      # - KEYCLOAK_ISSUER_URL=https://sso.example.com/realms/matchzy
+      # - KEYCLOAK_CLIENT_ID=matchzy-dashboard
+      # - KEYCLOAK_CLIENT_SECRET=your-keycloak-secret
+      # - KEYCLOAK_CALLBACK_PATH=/api/auth/keycloak/callback
+
+      # Optional: Discord SSO
+      # - AUTH_DISCORD_ENABLED=true
+      # - DISCORD_CLIENT_ID=your-discord-client-id
+      # - DISCORD_CLIENT_SECRET=your-discord-secret
+      # - DISCORD_REDIRECT_URI=http://localhost:3069/api/auth/discord/callback
+
+      # Optional: GitHub SSO
+      # - AUTH_GITHUB_ENABLED=true
+      # - GITHUB_CLIENT_ID=your-github-client-id
+      # - GITHUB_CLIENT_SECRET=your-github-secret
+      # - GITHUB_CALLBACK_URL=http://localhost:3069/api/auth/github/callback
+
+      # Database connection
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/matchzy_tournament
     volumes:
       - ./data:/app/data
@@ -63,14 +90,16 @@ volumes:
   postgres-data:
 ```
 
-**2. Edit the tokens in `docker-compose.yml`:**
+**2. Get a Steam Web API key (for login):**
 
-Open `docker-compose.yml` and replace:
+To enable “Sign in with Steam” as your primary login:
 
-- `your-admin-password-here` with a simple password you'll use to login (e.g., `mypassword123`)
-- `your-server-token-here` with a different token for CS2 servers (e.g., `server-token-456`)
+1. Go to `https://steamcommunity.com/dev/apikey` and request a Web API key.
+2. Copy the key and paste it into the `STEAM_API_KEY` line in your `docker-compose.yml`.
+3. Leave `AUTH_STEAM_ENABLED=true` and `FRONTEND_BASE_URL=http://localhost:3069` for local testing.
 
-These don't need to be super secure—just something you can remember.
+If you also want Keycloak, Discord, or GitHub SSO, fill in the optional auth variables
+in the `environment:` block above.
 
 **3. Start the platform:**
 
@@ -84,7 +113,10 @@ Open `http://localhost:3069` in your browser.
 
 **5. Login:**
 
-You'll see the login form in the center of the screen. Enter the password you set for `API_TOKEN` in the `docker-compose.yml` file.
+You'll see the login form in the center of the screen. Click **Sign in with Steam**  
+(or another configured provider like Keycloak/Discord/GitHub if you enabled them).
+The **first Steam user** to sign in is automatically granted admin rights; additional
+admins can be managed later in the UI/DB.
 
 That's it! The tournament platform is now running. 🎉
 

@@ -5,6 +5,8 @@ const { Strategy: SteamStrategy } = require('passport-steam');
 const { Strategy: DiscordStrategy } = require('passport-discord');
 // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
 const { Strategy: KeycloakStrategy } = require('passport-keycloak-oauth2-oidc');
+// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
+const { Strategy: GitHubStrategy } = require('passport-github2');
 
 interface SteamProfile {
   id: string;
@@ -26,10 +28,18 @@ interface KeycloakProfile {
   username?: string;
 }
 
+interface GitHubProfile {
+  id: string;
+  username?: string;
+  displayName?: string;
+  photos?: Array<{ value: string }>;
+}
+
 export function configurePassportAuth(): void {
   configureSteamStrategy();
   configureDiscordStrategy();
   configureKeycloakStrategy();
+  configureGitHubStrategy();
 }
 
 function getBackendBaseUrl(): string {
@@ -53,6 +63,9 @@ function configureSteamStrategy(): void {
   const steamApiKey = process.env.STEAM_API_KEY;
 
   if (!steamApiKey) {
+    // If Steam is not configured, leave the strategy unregistered.
+    // The auth providers config will also treat Steam as disabled in this case.
+    // This avoids exposing a broken "Sign in with Steam" button.
     return;
   }
 
@@ -169,6 +182,43 @@ function configureKeycloakStrategy(): void {
           provider: 'keycloak',
           keycloakId: profile.id,
           displayName: profile.displayName || profile.username || profile.id,
+          accessToken,
+          refreshToken,
+        });
+      }
+    )
+  );
+}
+
+function configureGitHubStrategy(): void {
+  const clientID = process.env.GITHUB_CLIENT_ID;
+  const clientSecret = process.env.GITHUB_CLIENT_SECRET;
+  const callbackURL = process.env.GITHUB_CALLBACK_URL;
+
+  if (!clientID || !clientSecret || !callbackURL) {
+    return;
+  }
+
+  passport.use(
+    new GitHubStrategy(
+      {
+        clientID,
+        clientSecret,
+        callbackURL,
+        scope: ['read:user', 'user:email'],
+      },
+      (
+        accessToken: string,
+        refreshToken: string,
+        profile: GitHubProfile,
+        done: (err: unknown, user?: unknown) => void
+      ) => {
+        done(null, {
+          provider: 'github',
+          githubId: profile.id,
+          username: profile.username,
+          displayName: profile.displayName || profile.username || profile.id,
+          avatarUrl: profile.photos && profile.photos[0]?.value,
           accessToken,
           refreshToken,
         });

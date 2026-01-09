@@ -60,7 +60,6 @@ cd docker || exit 1
 # Create .env file for testing if it doesn't exist
 if [ ! -f .env ]; then
     cat > .env << EOF
-API_TOKEN=test-token-123
 SERVER_TOKEN=test-server-token-123
 LOG_LEVEL=info
 EOF

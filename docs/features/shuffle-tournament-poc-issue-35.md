@@ -100,7 +100,6 @@ The easiest way to run this branch is to use the Docker dev compose setup that s
 
 ```bash
 # From the repo root, on the PR branch
-export API_TOKEN=admin123
 export SERVER_TOKEN=server123
 yarn docker:local:up
 
@@ -341,7 +340,6 @@ If you want to dry-run this PR with your own players before a full LAN, you can 
 
    - From the repo root:
      ```bash
-     export API_TOKEN=admin123
      export SERVER_TOKEN=server123
      yarn docker:local:up
      # App at http://localhost:3069 (or http://<your-server-ip>:3069 for other PCs on the LAN)
@@ -350,8 +348,8 @@ If you want to dry-run this PR with your own players before a full LAN, you can 
 
 2. **Log in as admin**
 
-   - Open `http://<server-host>:<port>` in your browser.
-   - Click **Login** and enter the `API_TOKEN` you set above (for the example: `admin123`).
+- Open `http://<server-host>:<port>` in your browser.
+- Click **Login** and **Sign in with Steam** (or another configured SSO provider). The first Steam login will become an admin automatically.
 
 3. **Create/import your real players**
 

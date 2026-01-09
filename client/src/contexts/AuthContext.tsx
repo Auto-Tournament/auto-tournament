@@ -9,23 +9,18 @@ interface AuthContextType {
    */
   playerSteamId: string | null;
   /**
-   * Existing admin login using the API token. Kept for backwards compatibility
-   * while we migrate towards Steam/SSO-based flows.
-   */
-  login: (token: string) => void;
-  /**
    * Helper for starting the Steam login flow. This simply redirects the user
-   * to /api/auth/steam and lets the backend/OpenID process take over.
+   * to /api/auth/steam and lets the backend/Passport process take over.
    */
   loginWithSteam: () => void;
   /**
    * Logs out the current session:
-   * - clears the admin API token (if any)
-   * - calls the lightweight Steam logout endpoint to clear player_steam_id
+   * - destroys the admin Passport session
+   * - clears the lightweight Steam cookie (player_steam_id)
    */
   logout: () => Promise<void>;
   /**
-   * Whether an admin API token has been verified and is currently active.
+   * Whether an admin session has been verified and is currently active.
    * This controls access to the main dashboard routes.
    */
   isAuthenticated: boolean;
@@ -50,7 +45,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [token, setToken] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [needsSteamLink, setNeedsSteamLink] = useState(false);
@@ -58,51 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     let isMounted = true;
 
-    // Verify the admin API token and discover any existing player Steam cookie.
+    // Discover any existing admin session + player Steam cookie.
     const initializeAuth = async () => {
-      const verifyStoredToken = async () => {
-        const savedToken = localStorage.getItem('api_token');
-
-        if (!savedToken) {
-          if (isMounted) {
-            setToken(null);
-          }
-          return;
-        }
-
-        try {
-          // Verify the token is valid by making a test API call
-          const response = await fetch('/api/auth/verify', {
-            headers: { Authorization: `Bearer ${savedToken}` },
-          });
-
-          if (!isMounted) return;
-
-          if (response.ok) {
-            // Token is valid – keep the admin signed in.
-            setToken(savedToken);
-          } else if (response.status === 401 || response.status === 403) {
-            // Unauthorized / forbidden: token is invalid, clear it so the admin
-            // is prompted to log in again.
-            localStorage.removeItem('api_token');
-            setToken(null);
-          } else {
-            // Any other error (5xx, bad gateway, etc.): assume the API is
-            // temporarily unavailable. Keep the token so the admin is not logged
-            // out just because the backend is down.
-            console.error('Token verification failed with non-auth error:', response.status);
-            setToken(savedToken);
-          }
-        } catch (error) {
-          if (!isMounted) return;
-          // Network error or API down: keep the existing token so the admin
-          // stays signed in. Individual pages will surface API errors via their
-          // own snackbars when requests fail.
-          console.error('Token verification failed (network/API unavailable):', error);
-          setToken(savedToken);
-        }
-      };
-
       const fetchPlayerIdentity = async () => {
         try {
           const response = await fetch('/api/auth/me', {
@@ -129,15 +81,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       };
 
-      await Promise.allSettled([verifyStoredToken(), fetchPlayerIdentity()]);
+      const fetchAdminIdentity = async () => {
+        try {
+          const response = await fetch('/api/auth/admin/me', {
+            credentials: 'include',
+          });
+
+          if (!isMounted) return;
+
+          if (!response.ok) {
+            setIsAdmin(false);
+            return;
+          }
+
+          const data: { authenticated?: boolean; steamId?: string | null } = await response.json();
+          setIsAdmin(Boolean(data.authenticated));
+          // If admin session also exposes a Steam ID, keep it in sync.
+          if (data.steamId && typeof data.steamId === 'string' && data.steamId.trim() !== '') {
+            setPlayerSteamId(data.steamId);
+          }
+        } catch (error) {
+          if (!isMounted) return;
+          console.warn('Failed to read admin identity from /api/auth/admin/me', error);
+          setIsAdmin(false);
+        }
+      };
+
+      await Promise.allSettled([fetchPlayerIdentity(), fetchAdminIdentity()]);
 
       if (isMounted) {
-        // If we have an admin token but no linked Steam ID, and Steam is
+        // If we have an admin session but no linked Steam ID, and Steam is
         // available as a provider, the UI can prompt for a one-time Steam
         // login to link identities.
-        setNeedsSteamLink(
-          Boolean(localStorage.getItem('api_token')) && !playerSteamId
-        );
+        setNeedsSteamLink(isAdmin && !playerSteamId);
       }
 
       if (isMounted) {
@@ -152,22 +128,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  const login = (newToken: string) => {
-    localStorage.setItem('api_token', newToken);
-    setToken(newToken);
-  };
-
   const loginWithSteam = () => {
     window.location.href = '/api/auth/steam';
   };
 
   const logout = async () => {
-    localStorage.removeItem('api_token');
-    setToken(null);
+    setIsAdmin(false);
     setPlayerSteamId(null);
     setNeedsSteamLink(false);
 
     try {
+      // Destroy admin session
+      await fetch('/api/auth/admin/logout', {
+        method: 'POST',
+        credentials: 'include',
+      });
+    } catch (error) {
+      console.warn('Failed to call /api/auth/admin/logout', error);
+    }
+
+    try {
+      // Clear player Steam cookie
       await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
@@ -182,11 +163,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
     <AuthContext.Provider
       value={{
-        token,
-        login,
         loginWithSteam,
         logout,
-        isAuthenticated: !!token,
+        isAuthenticated: isAdmin,
         playerSteamId,
         isPlayerAuthenticated: !!playerSteamId,
         needsSteamLink,

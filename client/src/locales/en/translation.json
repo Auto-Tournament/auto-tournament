@@ -62,7 +62,7 @@
   "login": {
     "title": "Login",
     "welcome": "Welcome back",
-    "subtitle": "Sign in with your preferred provider to manage tournaments, servers, and teams.",
+    "subtitle": "Sign in below to get started.",
     "apiTokenLabel": "Sign-in method",
     "apiTokenPlaceholder": "Choose a provider to continue",
     "passwordRequired": "A sign-in method is required",
@@ -70,7 +70,6 @@
     "connectionFailed": "Failed to connect to the authentication service. Please try again.",
     "signIn": "Sign In",
     "signingIn": "Signing in…",
-    "needToken": "Need access or sign-in instructions?",
     "github": "GitHub",
     "documentation": "Documentation",
     "version": "Version"
@@ -1414,7 +1413,7 @@
     },
     "playerProfile": {
       "title": "Player Profile (public)",
-      "description": "Direct link to a player profile by Steam ID64.",
+      "description": "Direct link to a player profile by Steam ID64. Players who are signed in with Steam can also use the \"My profile\" link in the top bar instead of copying URLs.",
       "requiresSteamId": "Requires Steam ID64"
     },
     "teamMatch": {
