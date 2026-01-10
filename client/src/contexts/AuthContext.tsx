@@ -40,6 +40,17 @@ interface AuthContextType {
    * admin API token and checking for an existing player_steam_id cookie).
    */
   isLoading: boolean;
+  /**
+   * The auth provider backing the current admin session (e.g. 'steam',
+   * 'discord', 'github', 'keycloak'), if any.
+   */
+  adminProvider: string | null;
+  /**
+   * Lightweight profile preview for the current admin provider – used for
+   * UI hints like the /connect-steam page.
+   */
+  adminProfileName: string | null;
+  adminProfileAvatarUrl: string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,6 +60,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [adminHasSteamLinked, setAdminHasSteamLinked] = useState(false);
+  const [adminProvider, setAdminProvider] = useState<string | null>(null);
+  const [adminProfileName, setAdminProfileName] = useState<string | null>(null);
+  const [adminProfileAvatarUrl, setAdminProfileAvatarUrl] = useState<string | null>(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -100,12 +114,34 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!response.ok) {
             setIsAdmin(false);
+            setAdminProvider(null);
+            setAdminProfileName(null);
+            setAdminProfileAvatarUrl(null);
             return;
           }
 
-          const data: { authenticated?: boolean; steamId?: string | null; provider?: string } =
-            await response.json();
+          const data: {
+            authenticated?: boolean;
+            steamId?: string | null;
+            provider?: string;
+            providerProfile?: { name?: string | null; avatarUrl?: string | null };
+          } = await response.json();
+
           setIsAdmin(Boolean(data.authenticated));
+          setAdminProvider(data.provider ?? null);
+
+          const profile = data.providerProfile || {};
+          const profileName =
+            typeof profile.name === 'string' && profile.name.trim() !== ''
+              ? profile.name
+              : null;
+          const profileAvatarUrl =
+            typeof profile.avatarUrl === 'string' && profile.avatarUrl.trim() !== ''
+              ? profile.avatarUrl
+              : null;
+
+          setAdminProfileName(profileName);
+          setAdminProfileAvatarUrl(profileAvatarUrl);
           // If admin session also exposes a Steam ID, keep it in sync.
           if (data.steamId && typeof data.steamId === 'string' && data.steamId.trim() !== '') {
             adminSteamId = data.steamId;
@@ -119,6 +155,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           console.warn('Failed to read admin identity from /api/auth/admin/me', error);
           setIsAdmin(false);
           setAdminHasSteamLinked(false);
+          setAdminProvider(null);
+          setAdminProfileName(null);
+          setAdminProfileAvatarUrl(null);
         }
       };
 
@@ -148,6 +187,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setIsAdmin(false);
     setPlayerSteamId(null);
+    setAdminProvider(null);
+    setAdminProfileName(null);
+    setAdminProfileAvatarUrl(null);
 
     try {
       // Destroy admin session
@@ -182,6 +224,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isPlayerAuthenticated: !!playerSteamId,
         needsSteamLink: isAdmin && !adminHasSteamLinked,
         isLoading,
+        adminProvider,
+        adminProfileName,
+        adminProfileAvatarUrl,
       }}
     >
       {children}

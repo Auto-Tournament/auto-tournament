@@ -146,11 +146,18 @@ function configureDiscordStrategy(): void {
           profile: safeProfile,
         });
 
+        let avatarUrl: string | undefined;
+        if (profile.avatar) {
+          const ext = profile.avatar.startsWith('a_') ? 'gif' : 'png';
+          avatarUrl = `https://cdn.discordapp.com/avatars/${profile.id}/${profile.avatar}.${ext}`;
+        }
+
         done(null, {
           provider: 'discord',
           discordId: profile.id,
           username: profile.username,
           avatar: profile.avatar,
+          avatarUrl,
           accessToken,
           refreshToken,
         });

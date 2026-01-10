@@ -4,9 +4,20 @@ import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { SteamIcon } from '../components/icons/SteamIcon';
+import { PlayerAvatar } from '../components/player/PlayerAvatar';
+import { generateAvatarDataUrl } from '../generation/avatar';
 
 export default function ConnectSteam() {
-  const { isAuthenticated, isLoading, playerSteamId, loginWithSteam, logout } = useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    playerSteamId,
+    loginWithSteam,
+    logout,
+    adminProvider,
+    adminProfileName,
+    adminProfileAvatarUrl,
+  } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -35,20 +46,44 @@ export default function ConnectSteam() {
     return null;
   }
 
+  const providerLabel = adminProvider ?? 'SSO';
+  const displayName = adminProfileName || 'Admin';
+  const avatarUrl =
+    adminProfileAvatarUrl ||
+    // Lightweight, deterministic client-side avatar so the preview always has a visual.
+    generateAvatarDataUrl(`${providerLabel}:${displayName}`);
+
   return (
     <Box minHeight="100vh" bgcolor="background.default" display="flex" alignItems="center">
       <Container maxWidth="sm">
         <Card>
           <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" fontWeight={700} gutterBottom>
-              {t('connectSteam.title')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              {t('connectSteam.bodyIntro')}
-            </Typography>
-            <Typography variant="body2" color="text.secondary" paragraph>
-              {t('connectSteam.bodyRequirement')}
-            </Typography>
+            <Stack spacing={2}>
+              <Stack direction="row" spacing={2} alignItems="center">
+                <PlayerAvatar id={null} name={displayName} avatarUrl={avatarUrl} size={56} />
+                <Box>
+                  <Typography variant="overline" color="text.secondary" display="block">
+                    Signed in as
+                  </Typography>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    {displayName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    via {providerLabel}
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Typography variant="h5" fontWeight={700}>
+                {t('connectSteam.title')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('connectSteam.bodyIntro')}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {t('connectSteam.bodyRequirement')}
+              </Typography>
+            </Stack>
             <Box mt={3}>
               <Stack spacing={1.5}>
                 <Button

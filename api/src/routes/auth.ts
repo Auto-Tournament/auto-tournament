@@ -838,6 +838,10 @@ router.get('/admin/me', (req: Request, res: Response) => {
     user?: {
       provider?: string;
       steamId?: string;
+      // Provider-specific profile fields (set by Passport strategies)
+      displayName?: string;
+      username?: string;
+      avatarUrl?: string;
     };
     isAuthenticated?: () => boolean;
   };
@@ -865,10 +869,40 @@ router.get('/admin/me', (req: Request, res: Response) => {
     steamId,
   });
 
+  // Build a lightweight, provider-agnostic profile preview for the frontend so
+  // pages like /connect-steam can show which SSO/OAuth account is currently in use.
+  const user = anyReq.user || {};
+  let profileName: string | null = null;
+  let profileAvatarUrl: string | null = null;
+
+  if (provider === 'steam') {
+    profileName = (user as { displayName?: string; username?: string }).displayName ?? null;
+    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+  } else if (provider === 'discord') {
+    profileName = (user as { username?: string }).username ?? null;
+    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+  } else if (provider === 'github') {
+    profileName =
+      (user as { displayName?: string; username?: string }).displayName ||
+      (user as { username?: string }).username ||
+      null;
+    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+  } else if (provider === 'keycloak') {
+    profileName =
+      (user as { displayName?: string; username?: string }).displayName ||
+      (user as { username?: string }).username ||
+      null;
+    profileAvatarUrl = null;
+  }
+
   return res.json({
     authenticated: true,
     provider,
     steamId,
+    providerProfile: {
+      name: profileName,
+      avatarUrl: profileAvatarUrl,
+    },
   });
 });
 
