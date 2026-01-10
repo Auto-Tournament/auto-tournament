@@ -18,10 +18,10 @@ import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { SteamIcon } from '../components/icons/SteamIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { PlayerNavBar } from '../components/layout/PlayerNavBar';
 
 interface PlayerOption {
   id: string;
@@ -43,7 +43,7 @@ export default function FindPlayer() {
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
   const { showError } = useSnackbar();
-  const { loginWithSteam, playerSteamId } = useAuth();
+  const { playerSteamId } = useAuth();
 
   useEffect(() => {
     document.title = 'Find Player';
@@ -134,8 +134,9 @@ export default function FindPlayer() {
   };
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="find-player-page">
-      <Container maxWidth="sm">
+    <Box minHeight="100vh" bgcolor="background.default" data-testid="find-player-page">
+      <PlayerNavBar />
+      <Container maxWidth="sm" sx={{ py: 6 }}>
         <Card data-testid="find-player-form">
           <CardContent>
             <Box textAlign="center" mb={4}>
@@ -240,16 +241,6 @@ export default function FindPlayer() {
                 startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
               >
                 {loading ? 'Searching...' : 'Find Player'}
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                size="large"
-                onClick={loginWithSteam}
-                startIcon={<SteamIcon />}
-              >
-                Login with Steam
               </Button>
 
               {playerSteamId && (

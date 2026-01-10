@@ -30,6 +30,7 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
+import { PlayerNavBar } from '../components/layout/PlayerNavBar';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
@@ -588,9 +589,16 @@ export default function PlayerProfile() {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <PlayerNavBar />
         <Container maxWidth="md">
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="400px"
+            py={6}
+          >
             <CircularProgress />
           </Box>
         </Container>
@@ -600,22 +608,25 @@ export default function PlayerProfile() {
 
   if (error || !player) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <PlayerNavBar />
         <Container maxWidth="sm">
-          <Card>
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
-                {error || 'No player is registered for this Steam ID yet.'}
-              </Alert>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                If you just logged in with Steam, ask a tournament admin to register you or create a
-                player with this Steam ID.
-              </Typography>
-              <Button variant="outlined" component={RouterLink} to="/player">
-                Back to Find Player
-              </Button>
-            </CardContent>
-          </Card>
+          <Box py={6}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
+                  {error || 'No player is registered for this Steam ID yet.'}
+                </Alert>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  If you just logged in with Steam, ask a tournament admin to register you or create
+                  a player with this Steam ID.
+                </Typography>
+                <Button variant="outlined" component={RouterLink} to="/player">
+                  Back to Find Player
+                </Button>
+              </CardContent>
+            </Card>
+          </Box>
         </Container>
       </Box>
     );
@@ -696,8 +707,14 @@ export default function PlayerProfile() {
   }
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
+    <Box
+      minHeight="100vh"
+      bgcolor="background.default"
+      data-testid="public-player-page"
+    >
+      <PlayerNavBar />
       <Container maxWidth="md">
+        <Box py={6}>
         <Stack spacing={3}>
           <MatchNotificationAudio
             vetoReady={vetoReadyForPlayer}
@@ -1214,6 +1231,7 @@ export default function PlayerProfile() {
             />
           )}
         </Stack>
+        </Box>
       </Container>
     </Box>
   );

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 interface AuthContextType {
   /**
@@ -48,9 +48,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [needsSteamLink, setNeedsSteamLink] = useState(false);
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
+    // Avoid double-running initialization in React 18 StrictMode/dev.
+    if (hasInitializedRef.current) {
+      return;
+    }
+    hasInitializedRef.current = true;
+
     let isMounted = true;
 
     // Discover any existing admin session + player Steam cookie.
@@ -110,13 +116,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await Promise.allSettled([fetchPlayerIdentity(), fetchAdminIdentity()]);
 
       if (isMounted) {
-        // If we have an admin session but no linked Steam ID, and Steam is
-        // available as a provider, the UI can prompt for a one-time Steam
-        // login to link identities.
-        setNeedsSteamLink(isAdmin && !playerSteamId);
-      }
-
-      if (isMounted) {
         setIsLoading(false);
       }
     };
@@ -168,7 +167,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: isAdmin,
         playerSteamId,
         isPlayerAuthenticated: !!playerSteamId,
-        needsSteamLink,
+        needsSteamLink: isAdmin && !playerSteamId,
         isLoading,
       }}
     >

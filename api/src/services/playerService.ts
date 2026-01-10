@@ -341,6 +341,17 @@ class PlayerService {
   }
 
   /**
+   * Returns true if there is at least one admin player in the system.
+   */
+  async hasAnyAdmin(): Promise<boolean> {
+    const existingAdmin = await db.queryOneAsync<{ id: string }>(
+      'SELECT id FROM players WHERE is_admin = 1 LIMIT 1',
+      []
+    );
+    return Boolean(existingAdmin);
+  }
+
+  /**
    * Search players by name
    */
   async searchPlayers(query: string, limit: number = 50): Promise<PlayerResponse[]> {

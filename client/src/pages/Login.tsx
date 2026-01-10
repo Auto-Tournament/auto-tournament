@@ -1,18 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Box,
-  Card,
-  TextField,
-  Button,
-  Alert,
-  Container,
-  Link,
-  Stack,
-  Typography,
-  Divider,
-} from '@mui/material';
+import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SteamIcon } from '../components/icons/SteamIcon';
@@ -25,18 +14,18 @@ export default function Login() {
   >([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [providersError, setProvidersError] = useState<string | null>(null);
-  const navigate = useNavigate();
   const location = useLocation();
+  const hasLoadedProvidersRef = React.useRef(false);
 
   // Set dynamic page title
   useEffect(() => {
+    if (hasLoadedProvidersRef.current) {
+      return;
+    }
+    hasLoadedProvidersRef.current = true;
+
     document.title = t('login.title');
   }, [t]);
-
-  interface LocationState {
-    from?: { pathname: string };
-  }
-  const from = (location.state as LocationState)?.from?.pathname || '/';
 
   useEffect(() => {
     const loadProviders = async () => {

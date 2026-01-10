@@ -11,6 +11,41 @@ import { getMapResults } from '../services/matchMapResultService';
 
 const router = Router();
 
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  return Object.fromEntries(
+    cookieHeader
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const [name, ...rest] = part.split('=');
+        return [name, decodeURIComponent(rest.join('='))];
+      })
+  );
+}
+
+function getViewerSteamId(req: Request): string | null {
+  const cookies = parseCookies(req.headers.cookie);
+  const cookieSteamId = cookies.player_steam_id;
+
+  if (cookieSteamId && cookieSteamId.trim().length > 0) {
+    return cookieSteamId.trim();
+  }
+
+  const anyReq = req as Request & {
+    user?: {
+      steamId?: string;
+    };
+  };
+
+  if (anyReq.user?.steamId && anyReq.user.steamId.trim().length > 0) {
+    return anyReq.user.steamId.trim();
+  }
+
+  return null;
+}
+
 /**
  * GET /team/:teamId/match
  * Get current or next match for a team (public, no auth required)
@@ -309,6 +344,15 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       ? normalizeConfigPlayers(config.team2.players)
       : [];
 
+    // Determine whether the current viewer is actually on THIS team.
+    // We intentionally scope this to the team whose page is being viewed
+    // (teamId route param), not just "any team in the match", so opponents
+    // cannot use the other team's link to see server or veto controls.
+    const viewerSteamId = getViewerSteamId(req);
+    const playersForThisTeam = isTeam1 ? normalizedTeam1Players : normalizedTeam2Players;
+    const viewerIsTeamMember =
+      !!viewerSteamId && playersForThisTeam.some((p) => p.steamid === viewerSteamId);
+
     // Enrich players with avatars from team records
     const enrichPlayers = async (
       normalizedPlayers: Array<{ steamid: string; name: string }>,
@@ -348,7 +392,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       },
       hasMatch: true,
       tournamentStatus: tournament?.status || 'setup',
-      match: {
+        match: {
         slug: match.slug,
         round: match.round,
         matchNumber: match.match_number,
@@ -373,17 +417,18 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
               tag: opponent.tag,
             }
           : null,
-        server: match.server_id
-          ? {
-              id: match.server_id,
-              name: match.server_name,
-              host: match.server_host,
-              port: match.server_port,
-              password: serverPassword,
-              status: realServerStatus,
-              statusDescription: serverStatusDescription,
-            }
-          : null,
+        server:
+          match.server_id && viewerIsTeamMember
+            ? {
+                id: match.server_id,
+                name: match.server_name,
+                host: match.server_host,
+                port: match.server_port,
+                password: serverPassword,
+                status: realServerStatus,
+                statusDescription: serverStatusDescription,
+              }
+            : null,
         connectionStatus: connectionStatus
           ? {
               ...connectionStatus,
@@ -399,6 +444,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         liveStats: normalizedLiveStats,
         maps: pickedMaps.length > 0 ? pickedMaps : [], // Only show picked maps from veto
         mapResults: normalizedMapResults,
+        // Veto summary is available to both teams and spectators so they can
+        // see which maps were picked, but only verified team members will see
+        // the interactive veto UI in the frontend.
         veto: vetoSummary,
         matchFormat: (tournament?.format as 'bo1' | 'bo3' | 'bo5') || 'bo3',
         loadedAt: match.loaded_at,
@@ -428,6 +476,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
               }
             : undefined,
         },
+        // Used by the frontend to decide whether to show sensitive controls
+        // like veto actions and server connection details.
+        viewerIsTeamMember,
       },
     });
   } catch (error) {

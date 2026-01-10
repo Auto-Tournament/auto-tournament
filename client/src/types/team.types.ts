@@ -48,6 +48,12 @@ export interface TeamMatchInfo {
   matchNumber: number;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
   isTeam1: boolean;
+  /**
+   * Indicates whether the current viewer is a member of the team whose page
+   * this match is being viewed from. Used to gate sensitive UI like veto
+   * controls and server connection details for spectators.
+   */
+  viewerIsTeamMember?: boolean;
   currentMap?: string | null;
   mapNumber?: number | null;
   team1?: Team; // For veto interface

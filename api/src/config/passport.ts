@@ -1,12 +1,8 @@
 import passport from 'passport';
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const { Strategy: SteamStrategy } = require('passport-steam');
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const { Strategy: DiscordStrategy } = require('passport-discord');
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const { Strategy: KeycloakStrategy } = require('passport-keycloak-oauth2-oidc');
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-unsafe-assignment
-const { Strategy: GitHubStrategy } = require('passport-github2');
+import { Strategy as SteamStrategy } from 'passport-steam';
+import { Strategy as DiscordStrategy } from 'passport-discord';
+import { Strategy as KeycloakStrategy } from 'passport-keycloak-oauth2-oidc';
+import { Strategy as GitHubStrategy } from 'passport-github2';
 
 interface SteamProfile {
   id: string;

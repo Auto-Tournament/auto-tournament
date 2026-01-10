@@ -258,6 +258,7 @@ export interface SettingsResponse extends ApiResponse {
     matchzyKnifeEnabledDefault?: boolean;
     matchzyDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
+    allowSelfRegister?: boolean;
   };
 }
 

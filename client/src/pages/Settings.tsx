@@ -90,6 +90,7 @@ export default function Settings() {
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
   const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
   const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
+  const [allowSelfRegister, setAllowSelfRegister] = useState(false);
   const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
   const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -124,6 +125,10 @@ export default function Settings() {
         response.settings.matchzyDebugChatEnabled !== undefined
           ? response.settings.matchzyDebugChatEnabled
           : false;
+      const allowSelfRegisterValue =
+        response.settings.allowSelfRegister !== undefined
+          ? response.settings.allowSelfRegister
+          : false;
       setWebhookUrl(webhook);
       setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
@@ -140,6 +145,7 @@ export default function Settings() {
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
       setMatchzyDebugChatEnabled(debugChatEnabled);
       setInitialMatchzyDebugChatEnabled(debugChatEnabled);
+      setAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
     } catch (err) {
@@ -184,6 +190,7 @@ export default function Settings() {
           matchzyKnifeEnabledDefault,
           ratingsEnabled,
           matchzyDebugChatEnabled,
+          allowSelfRegister,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -208,6 +215,10 @@ export default function Settings() {
           response.settings.matchzyDebugChatEnabled !== undefined
             ? response.settings.matchzyDebugChatEnabled
             : false;
+        const newAllowSelfRegister =
+          response.settings.allowSelfRegister !== undefined
+            ? response.settings.allowSelfRegister
+            : false;
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
         const timescaleChanged =
@@ -231,6 +242,8 @@ export default function Settings() {
         setInitialRatingsEnabled(newRatingsEnabled);
         setMatchzyDebugChatEnabled(newDebugChatEnabled);
         setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
+        setAllowSelfRegister(newAllowSelfRegister);
+        setInitialAllowSelfRegister(newAllowSelfRegister);
 
         if (showSuccessMessage) {
           showSuccess(t('settingsPage.success.saveSettings'));
@@ -277,6 +290,7 @@ export default function Settings() {
       matchzyDebugChatEnabled,
       simulateMatches,
       simulationTimescale,
+      allowSelfRegister,
       isDev,
       showSuccess,
       showError,
@@ -700,6 +714,32 @@ export default function Settings() {
                   />
                   <Typography variant="caption" color="text.secondary" display="block">
                     {t('settingsPage.matchRating.ratings.note')}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Player registration
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Control whether new Steam logins automatically create player records. When
+                    disabled, only players created or imported by admins will appear in private
+                    tournaments and shuffle pools.
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={allowSelfRegister}
+                        onChange={(event) => setAllowSelfRegister(event.target.checked)}
+                      />
+                    }
+                    label="Allow anyone to register via Steam login"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Recommended: keep this off for invite‑only or private tournaments so random
+                    Steam logins do not pollute the player list.
                   </Typography>
                 </Box>
               </Stack>

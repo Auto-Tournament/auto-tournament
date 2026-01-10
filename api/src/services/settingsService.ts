@@ -10,7 +10,8 @@ export type AppSettingKey =
   | 'matchzy_admin_chat_prefix'
   | 'matchzy_knife_enabled_default'
   | 'matchzy_debug_chat'
-  | 'ratings_enabled';
+  | 'ratings_enabled'
+  | 'allow_self_register';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -28,6 +29,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_knife_enabled_default',
   'matchzy_debug_chat',
   'ratings_enabled',
+  'allow_self_register',
 ];
 
 class SettingsService {
@@ -130,6 +132,19 @@ class SettingsService {
         log.success(`Player rating updates ${isEnabled ? 'enabled' : 'disabled'}`);
         return;
       }
+
+      if (key === 'allow_self_register') {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`Player self‑registration ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
     }
 
     await db.setAppSettingAsync(key, null);
@@ -203,6 +218,23 @@ class SettingsService {
     if (!value) {
       // Default: ratings are enabled unless explicitly disabled.
       return true;
+    }
+
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  /**
+   * Returns true when players are allowed to self‑register by logging in with
+   * Steam. When disabled (default), only admins explicitly creating/importing
+   * players will populate the players list, preventing random Steam logins
+   * from appearing in private tournaments.
+   */
+  async isSelfRegistrationAllowed(): Promise<boolean> {
+    const value = await this.getSetting('allow_self_register');
+    if (!value) {
+      // Default: self‑registration is disabled unless explicitly enabled.
+      return false;
     }
 
     const normalized = value.toLowerCase();

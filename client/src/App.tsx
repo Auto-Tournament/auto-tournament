@@ -21,6 +21,7 @@ import TeamMatch from './pages/TeamMatch';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
+import ConnectSteam from './pages/ConnectSteam';
 import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
@@ -29,7 +30,7 @@ import NotFound from './pages/NotFound';
 import { theme } from './theme';
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -64,15 +65,24 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return isAuthenticated ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" state={{ from: location }} replace />
-  );
+  if (isAuthenticated) {
+    // Admin session active – allow access to protected routes (dashboard, etc.)
+    return <>{children}</>;
+  }
+
+  // If the user has a Steam identity but no admin session, treat them as a
+  // signed-in player and send them to their player page instead of back to
+  // the login form.
+  if (playerSteamId) {
+    return <Navigate to={`/player/${playerSteamId}`} replace />;
+  }
+
+  // No admin session and no player Steam ID – go to login.
+  return <Navigate to="/login" state={{ from: location }} replace />;
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const isDevelopment = useIsDevelopment();
 
   if (isLoading) {
@@ -81,7 +91,28 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+      <Route
+        path="/login"
+        element={
+          isAuthenticated
+            ? // Admins leaving login should land on the dashboard
+              <Navigate to="/" replace />
+            : // Signed-in players should go straight to their player page instead of seeing login again
+              playerSteamId
+            ? <Navigate to={`/player/${playerSteamId}`} replace />
+            : <Login />
+        }
+      />
+
+      {/* Admin Steam linking flow */}
+      <Route
+        path="/connect-steam"
+        element={
+          <ProtectedRoute>
+            <ConnectSteam />
+          </ProtectedRoute>
+        }
+      />
 
       {/* Public pages - no auth required */}
       <Route path="/team/:teamId" element={<TeamMatch />} />

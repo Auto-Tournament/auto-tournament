@@ -111,6 +111,13 @@ export function MatchInfoCard({
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
 
+  // For team‑only controls like veto actions and server connection details,
+  // we rely on the backend to tell us whether the current viewer actually
+  // belongs to this team. When the flag is absent (older responses), we
+  // default to true to preserve existing behaviour.
+  const viewerIsTeamMember =
+    (match as TeamMatchInfo & { viewerIsTeamMember?: boolean }).viewerIsTeamMember !== false;
+
   const serverStatus = match.server?.status ?? null;
   // Only treat explicit "online" (or transitional "checking") as truly online.
   // However, if we are actively receiving live stats from the MatchZy plugin,
@@ -349,6 +356,7 @@ export function MatchInfoCard({
   const isVetoNotCompleted =
     !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
   if (
+    viewerIsTeamMember &&
     (isManualMatch || tournamentStatus === 'in_progress') &&
     match.status === 'pending' &&
     isVetoNotCompleted &&
@@ -447,7 +455,7 @@ export function MatchInfoCard({
             )}
 
             <MatchServerPanel
-              server={effectiveServer}
+              server={viewerIsTeamMember ? effectiveServer : null}
               currentMapData={currentMapData}
               currentMapNumber={mapNumber}
               connected={connected}

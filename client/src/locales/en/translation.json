@@ -62,7 +62,7 @@
   "login": {
     "title": "Login",
     "welcome": "Welcome back",
-    "subtitle": "Sign in below to get started.",
+    "subtitle": "Sign in to get started",
     "apiTokenLabel": "Sign-in method",
     "apiTokenPlaceholder": "Choose a provider to continue",
     "passwordRequired": "A sign-in method is required",

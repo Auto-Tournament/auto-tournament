@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { Box, Card, CardContent, Typography, Alert, CircularProgress, Container, Stack, Button } from '@mui/material';
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  Alert,
+  CircularProgress,
+  Container,
+  Stack,
+  Button,
+} from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { TeamHeader } from '../components/team/TeamHeader';
 import { SoundSettingsModal } from '../components/modals/SoundSettingsModal';
@@ -17,6 +27,7 @@ import type { Team } from '../types';
 import type { NotificationSoundValue } from '../utils/soundNotification';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { useAuth } from '../contexts/AuthContext';
+import { PlayerNavBar } from '../components/layout/PlayerNavBar';
 
 type TeamSoundControlsProps = {
   team: Team | null;
@@ -148,11 +159,18 @@ export default function TeamMatch() {
       <Box
         minHeight="100vh"
         display="flex"
-        alignItems="center"
-        justifyContent="center"
+        flexDirection="column"
         bgcolor="background.default"
       >
-        <CircularProgress />
+        <PlayerNavBar />
+        <Box
+          flex={1}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+        >
+          <CircularProgress />
+        </Box>
       </Box>
     );
   }
@@ -160,9 +178,12 @@ export default function TeamMatch() {
   // Error state
   if (error) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <PlayerNavBar />
         <Container maxWidth="md">
+          <Box py={6}>
           <Alert severity="error">{error}</Alert>
+          </Box>
         </Container>
       </Box>
     );
@@ -181,9 +202,10 @@ export default function TeamMatch() {
   // No match state
   if (!hasMatch) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <PlayerNavBar />
         <Container maxWidth="md">
-          <Stack spacing={3}>
+          <Stack spacing={3} py={6}>
             <MatchNotificationAudio
               vetoReady={vetoReady}
               serverReady={serverReady}
@@ -274,8 +296,10 @@ export default function TeamMatch() {
 
   // Active match state
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6}>
+    <Box minHeight="100vh" bgcolor="background.default">
+      <PlayerNavBar />
       <Container maxWidth="md">
+        <Box py={6}>
         <Stack spacing={3}>
           {tournamentName && (
             <Typography
@@ -332,6 +356,7 @@ export default function TeamMatch() {
           <TeamStatsCard stats={stats} standing={standing} />
           <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
         </Stack>
+        </Box>
       </Container>
     </Box>
   );

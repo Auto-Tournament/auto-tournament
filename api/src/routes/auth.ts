@@ -1,10 +1,10 @@
 import { Router, Request, Response } from 'express';
-import crypto from 'crypto';
 import { log } from '../utils/logger';
 import { getAuthProvidersConfig } from '../config/authProviders';
 import { steamService } from '../services/steamService';
 import { playerService } from '../services/playerService';
 import { passport } from '../config/passport';
+import { settingsService } from '../services/settingsService';
 
 const router = Router();
 
@@ -45,9 +45,10 @@ function getFrontendBaseUrl(req: Request): string {
  */
 function sendAdminLoginBridgePage(req: Request, res: Response): void {
   const frontendBaseUrl = getFrontendBaseUrl(req);
-  const redirectUrl = `${frontendBaseUrl}/`;
-  // With Passport sessions enabled, we don't need to drop tokens into localStorage.
-  // Simply redirect back to the frontend; the session cookie will carry auth state.
+  // For non‑Steam SSO providers (Keycloak/Discord/GitHub), always send the user
+  // to the dedicated Steam linking page so they can attach a Steam ID before
+  // using the dashboard or player views.
+  const redirectUrl = `${frontendBaseUrl}/connect-steam`;
   res.redirect(302, redirectUrl);
 }
 
@@ -71,9 +72,8 @@ router.get('/steam', (req: Request, res: Response, next) => {
     });
   }
 
-  return passport.authenticate('steam', {
-    session: false,
-  })(req, res, next);
+  // Initial redirect – session will be established on the callback.
+  return passport.authenticate('steam')(req, res, next);
 });
 
 /**
@@ -84,7 +84,7 @@ router.get('/steam', (req: Request, res: Response, next) => {
  * Verifies the Steam OpenID assertion and redirects the user to /player/:steamId.
  * Also ensures a player record exists for the Steam ID.
  */
-router.get('/steam/callback', (req: Request, res: Response, next) => {
+router.get('/steam/callback', (req: Request, res: Response, _next) => {
   if (!isSteamAuthConfigured()) {
     log.warn('Steam callback hit but STEAM_API_KEY is not configured');
     return res.status(503).json({
@@ -96,7 +96,7 @@ router.get('/steam/callback', (req: Request, res: Response, next) => {
 
   return passport.authenticate('steam', {
     failureRedirect: '/app/login',
-    session: false,
+    // Use Passport sessions so admin routes can rely on req.isAuthenticated().
   })(req, res, async () => {
     try {
       const user = req.user as
@@ -135,7 +135,19 @@ router.get('/steam/callback', (req: Request, res: Response, next) => {
           }
         }
 
-        await playerService.getOrCreatePlayer(steamId, displayName, avatarUrl);
+        // Respect the "Allow anyone to register" setting for self‑registration:
+        // - When enabled, any Steam login creates a player record.
+        // - When disabled (default), we only auto‑create a player for the very
+        //   first admin; all other players must be created/imported by admins.
+        const existingPlayer = await playerService.getPlayerById(steamId);
+        const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
+        const hasAnyAdmin = await playerService.hasAnyAdmin();
+        const shouldAutoCreate = !existingPlayer && (selfRegistrationAllowed || !hasAnyAdmin);
+
+        if (shouldAutoCreate) {
+          await playerService.getOrCreatePlayer(steamId, displayName, avatarUrl);
+        }
+
         // If this is the very first admin, promote this Steam user to admin.
         await playerService.ensureFirstAdmin(steamId);
       } catch (playerError) {
@@ -154,10 +166,20 @@ router.get('/steam/callback', (req: Request, res: Response, next) => {
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
       });
 
-      // Redirect player to their public profile page
+      // Redirect based on whether this Steam user is an admin:
+      // - Admins go to the main dashboard (/).
+      // - Non-admin players go to their public player page.
       const baseUrl = getFrontendBaseUrl(req);
-      const redirectTo = `${baseUrl}/player/${steamId}`;
-      return res.redirect(302, redirectTo);
+      try {
+        const player = await playerService.getPlayerById(steamId);
+        const isAdmin = player?.isAdmin === true;
+        const redirectTo = isAdmin ? `${baseUrl}/` : `${baseUrl}/player/${steamId}`;
+        return res.redirect(302, redirectTo);
+      } catch (redirectError) {
+        log.warn('Failed to load player when deciding Steam redirect, falling back to player page', redirectError as Error);
+        const fallback = `${baseUrl}/player/${steamId}`;
+        return res.redirect(302, fallback);
+      }
     } catch (error) {
       log.error('Steam Passport callback failed', error as Error);
       return res.status(500).json({
@@ -204,9 +226,8 @@ router.post('/logout', (_req: Request, res: Response) => {
  */
 router.get(
   '/keycloak',
-  passport.authenticate('keycloak', {
-    session: false,
-  })
+  // Initial redirect – session will be established on the callback.
+  passport.authenticate('keycloak')
 );
 
 /**
@@ -220,7 +241,6 @@ router.get(
   '/keycloak/callback',
   passport.authenticate('keycloak', {
     failureRedirect: '/app/login',
-    session: false,
   }),
   (req: Request, res: Response) => {
     // At this point the user is authenticated with Keycloak. We rely on
@@ -238,9 +258,8 @@ router.get(
  */
 router.get(
   '/discord',
-  passport.authenticate('discord', {
-    session: false,
-  })
+  // Initial redirect – session will be established on the callback.
+  passport.authenticate('discord')
 );
 
 /**
@@ -254,7 +273,6 @@ router.get(
   '/discord/callback',
   passport.authenticate('discord', {
     failureRedirect: '/app/login',
-    session: false,
   }),
   (req: Request, res: Response) => {
     // At this point the user is authenticated with Discord. We rely on
@@ -272,9 +290,8 @@ router.get(
  */
 router.get(
   '/github',
-  passport.authenticate('github', {
-    session: false,
-  })
+  // Initial redirect – session will be established on the callback.
+  passport.authenticate('github')
 );
 
 /**
@@ -288,7 +305,6 @@ router.get(
   '/github/callback',
   passport.authenticate('github', {
     failureRedirect: '/app/login',
-    session: false,
   }),
   (req: Request, res: Response) => {
     // At this point the user is authenticated with GitHub. We rely on

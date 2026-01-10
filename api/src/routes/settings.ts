@@ -27,6 +27,7 @@ const mapSettingsResponse = async () => {
   const matchzyKnifeEnabledDefault = await settingsService.isKnifeRoundEnabledByDefault();
   const ratingsEnabled = await settingsService.areRatingsEnabled();
   const matchzyDebugChatEnabled = await settingsService.isMatchzyDebugChatEnabled();
+  const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
 
   return {
     webhookUrl,
@@ -41,6 +42,7 @@ const mapSettingsResponse = async () => {
     matchzyKnifeEnabledDefault,
     ratingsEnabled,
     matchzyDebugChatEnabled,
+    allowSelfRegister,
   };
 };
 
@@ -62,6 +64,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyKnifeEnabledDefault,
     ratingsEnabled,
     matchzyDebugChatEnabled,
+    allowSelfRegister,
   } = req.body as {
     webhookUrl?: unknown;
     steamApiKey?: unknown;
@@ -72,6 +75,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyKnifeEnabledDefault?: unknown;
     ratingsEnabled?: unknown;
     matchzyDebugChatEnabled?: unknown;
+    allowSelfRegister?: unknown;
   };
 
   try {
@@ -212,6 +216,20 @@ router.put('/', async (req: Request, res: Response) => {
           : '0';
 
       await settingsService.setSetting('matchzy_debug_chat', value);
+    }
+
+    if (allowSelfRegister !== undefined) {
+      if (typeof allowSelfRegister !== 'boolean' && allowSelfRegister !== null) {
+        return res.status(400).json({
+          success: false,
+          error: 'allowSelfRegister must be a boolean or null',
+        });
+      }
+
+      const value =
+        allowSelfRegister === null ? null : allowSelfRegister === true ? '1' : '0';
+
+      await settingsService.setSetting('allow_self_register', value);
     }
 
     return res.json({
