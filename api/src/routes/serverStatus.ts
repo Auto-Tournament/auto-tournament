@@ -92,12 +92,20 @@ router.get('/:id/status', async (req: Request, res: Response) => {
 
     if (!statusInfo.online) {
       log.warn(`Server ${id} is offline or unreachable (status check failed)`);
+      // For cached views, we can return immediately with a lightweight payload
+      // and avoid running connectivity tests or webhook configuration.
       return res.json({
         success: true,
         status: 'offline',
         serverId: id,
         isAvailable: false,
         currentMatch: null,
+        queuedMatch: null,
+        reachableFromApi,
+        serverCanReachApi: null,
+        pluginStatus: null,
+        allocationState: null,
+        allocationMatchSlug: null,
       });
     }
 
@@ -140,7 +148,35 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       effectiveMatchSlug,
     });
 
-    // Configure webhook automatically when server is online
+    const isAvailable =
+      !effectiveMatchSlug ||
+      effectiveStatus === ServerStatus.IDLE ||
+      effectiveStatus === ServerStatus.POSTGAME;
+
+    // Combine plugin status with internal allocation tracker state
+    const allocationState = serverAllocationTracker.getState(id);
+    const allocationLabel = allocationState?.state ?? 'unknown';
+
+    // For cached views (e.g. dashboard, servers list), skip the expensive
+    // bi-directional connectivity test and webhook reconfiguration. These
+    // routes can be called frequently and should remain lightweight.
+    if (useCache) {
+      return res.json({
+        success: true,
+        status: 'online',
+        serverId: id,
+        isAvailable,
+        currentMatch: effectiveMatchSlug,
+        queuedMatch: queuedMatchSlug,
+        reachableFromApi,
+        serverCanReachApi: null,
+        pluginStatus: effectiveStatus,
+        allocationState: allocationLabel,
+        allocationMatchSlug: allocationState?.matchSlug ?? null,
+      });
+    }
+
+    // Configure webhook automatically when server is online (non‑cached checks only)
     const serverToken = process.env.SERVER_TOKEN || '';
     if (serverToken) {
       try {
@@ -161,15 +197,6 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         log.warn(`Failed to configure webhook for server ${id}`, { error });
       }
     }
-
-    const isAvailable =
-      !effectiveMatchSlug ||
-      effectiveStatus === ServerStatus.IDLE ||
-      effectiveStatus === ServerStatus.POSTGAME;
-
-    // Combine plugin status with internal allocation tracker state
-    const allocationState = serverAllocationTracker.getState(id);
-    const allocationLabel = allocationState?.state ?? 'unknown';
 
     // Bi-directional connectivity check:
     //  - We already know we can reach the server via RCON (reachableFromApi).
