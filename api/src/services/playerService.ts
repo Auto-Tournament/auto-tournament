@@ -320,11 +320,13 @@ class PlayerService {
   }
 
   /**
-   * Ensure that there is at least one admin player. If no admins exist yet,
-   * promote the given Steam ID to admin.
+   * Ensure that there is at least one admin player.
    *
-   * This is primarily used to implement "first user to log in becomes admin"
-   * semantics for Steam-based authentication.
+   * Safety rules:
+   * - Only the *first ever* player record may be auto‑promoted to admin.
+   * - If any admin already exists, this is a no‑op.
+   * - If more than one player exists in the table, we will NEVER auto‑promote
+   *   anyone, even if no admin is currently set.
    */
   async ensureFirstAdmin(steamId: string): Promise<void> {
     const existingAdmin = await db.queryOneAsync<{ id: string }>(
@@ -333,7 +335,39 @@ class PlayerService {
     );
 
     if (existingAdmin) {
+      // An admin already exists – do not change anything automatically.
       return;
+    }
+
+    // Count total players to enforce "first ever user only" semantics.
+    const countRow = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(1) as count FROM players',
+      []
+    );
+    const totalPlayers = Number(countRow?.count ?? 0);
+
+    // If there are already multiple players, never auto‑promote anyone.
+    if (totalPlayers > 1) {
+      log.info(
+        `Skipping auto‑admin promotion for ${steamId} because there are already ${totalPlayers} players`
+      );
+      return;
+    }
+
+    // If there is exactly one player, only promote when that record matches
+    // the current Steam ID (true "first user" semantics).
+    if (totalPlayers === 1) {
+      const firstPlayer = await db.queryOneAsync<{ id: string }>(
+        'SELECT id FROM players ORDER BY created_at ASC LIMIT 1',
+        []
+      );
+
+      if (!firstPlayer || firstPlayer.id !== steamId) {
+        log.info(
+          `Skipping auto‑admin promotion for ${steamId} because first player record is ${firstPlayer?.id}`
+        );
+        return;
+      }
     }
 
     await this.updatePlayer(steamId, { isAdmin: true });

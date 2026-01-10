@@ -400,12 +400,31 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  let baseUrl: string;
-  try {
-    baseUrl = await settingsService.requireWebhookUrl();
-  } catch {
-    log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
-    return;
+  // Resolve webhook base URL from settings, and auto-seed it from FRONTEND_BASE_URL
+  // on first run if it hasn't been configured yet.
+  let baseUrl = await settingsService.getWebhookUrl();
+  if (!baseUrl) {
+    const fromEnv = process.env.FRONTEND_BASE_URL;
+    if (fromEnv && fromEnv.trim().length > 0) {
+      try {
+        await settingsService.setSetting('webhook_url', fromEnv);
+        baseUrl = await settingsService.getWebhookUrl();
+        log.success(
+          `Webhook URL was not configured; initialized from FRONTEND_BASE_URL (${baseUrl})`
+        );
+      } catch (error) {
+        log.warn(
+          'Failed to initialize webhook URL from FRONTEND_BASE_URL; skipping automatic webhook bootstrap.',
+          { error }
+        );
+        return;
+      }
+    } else {
+      log.warn(
+        'Webhook URL is not configured and FRONTEND_BASE_URL is not set. Skipping automatic webhook bootstrap.'
+      );
+      return;
+    }
   }
 
   const enabledServers = await serverService.getAllServers(true);

@@ -74,6 +74,12 @@
     "documentation": "Documentation",
     "version": "Version"
   },
+  "connectSteam": {
+    "title": "Connect your Steam account",
+    "bodyIntro": "You're almost done. To use the tournament platform with this account (for example after signing in with Discord, Keycloak, or GitHub), you need to link a Steam profile.",
+    "bodyRequirement": "Linking Steam lets the system recognize you as a player and is required to sign in from non‑Steam providers.",
+    "button": "Connect with Steam"
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you're looking for doesn't exist or has been moved.",
@@ -561,9 +567,10 @@
     "title": "Settings",
     "intro": "Configure core integrations, in-game defaults, and developer options.",
     "tabs": {
-      "integrations": "Integrations",
-      "matchRating": "Match & Rating",
-      "developer": "Developer"
+      "integrations": "Integrations & Webhooks",
+      "players": "Players & Access",
+      "matches": "Matches & Ratings",
+      "developer": "Developer / Simulation"
     },
     "integrations": {
       "webhook": {

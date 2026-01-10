@@ -47,12 +47,20 @@ function getViewerSteamId(req: Request): string | null {
   return null;
 }
 
-function resolveViewerTeamForMatch(match: DbMatchRow, viewerSteamId: string | null): 'team1' | 'team2' | null {
+function resolveViewerTeamForMatch(
+  match: DbMatchRow,
+  viewerSteamId: string | null
+): 'team1' | 'team2' | null {
   if (!viewerSteamId) {
     return null;
   }
 
-  const config = match.config ? (JSON.parse(match.config) as Record<string, any>) : {};
+  const config = match.config
+    ? (JSON.parse(match.config) as {
+        team1?: { players?: unknown[] };
+        team2?: { players?: unknown[] };
+      })
+    : {};
 
   const normalizedTeam1Players = config.team1
     ? normalizeConfigPlayers(config.team1.players)

@@ -52,10 +52,42 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
   const [servers, setServers] = useState<Server[]>([]);
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [serverStatuses, setServerStatuses] = useState<Record<string, 'online' | 'offline'>>({});
+  const [serverStatusLoading, setServerStatusLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { t } = useTranslation();
 
   useEffect(() => {
+    const loadServerStatuses = async (serverList: Server[]) => {
+      if (!serverList.length) {
+        setServerStatuses({});
+        return;
+      }
+
+      setServerStatusLoading(true);
+      try {
+        const statusPromises = serverList.map(async (server) => {
+          try {
+            const statusRes = await api.get<{ success: boolean; status: string }>(
+              `/api/servers/${server.id}/status?cached=true`
+            );
+            return { id: server.id, status: statusRes.status as 'online' | 'offline' };
+          } catch {
+            return { id: server.id, status: 'offline' as const };
+          }
+        });
+        const statuses = await Promise.all(statusPromises);
+        const statusMap: Record<string, 'online' | 'offline'> = {};
+        statuses.forEach((s) => {
+          statusMap[s.id] = s.status;
+        });
+        setServerStatuses(statusMap);
+      } catch (e) {
+        console.error('Failed to load server statuses for dashboard:', e);
+      } finally {
+        setServerStatusLoading(false);
+      }
+    };
+
     const loadData = async () => {
       try {
         setLoading(true);
@@ -83,32 +115,20 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
           console.error('Failed to load matches:', e);
         }
 
-        // Load servers
+        // Load servers (list only; statuses are loaded in the background)
         try {
           const serversRes = await api.get<{ success: boolean; servers: Server[] }>('/api/servers');
           if (serversRes.success && serversRes.servers) {
             setServers(serversRes.servers);
-            // Check server statuses using the cached endpoint so that dashboard
-            // reloads and periodic refreshes don't spam live status checks.
-            const statusPromises = serversRes.servers.map(async (server) => {
-              try {
-                const statusRes = await api.get<{ success: boolean; status: string }>(
-                  `/api/servers/${server.id}/status?cached=true`
-                );
-                return { id: server.id, status: statusRes.status as 'online' | 'offline' };
-              } catch {
-                return { id: server.id, status: 'offline' as const };
-              }
-            });
-            const statuses = await Promise.all(statusPromises);
-            const statusMap: Record<string, 'online' | 'offline'> = {};
-            statuses.forEach((s) => {
-              statusMap[s.id] = s.status;
-            });
-            setServerStatuses(statusMap);
+            void loadServerStatuses(serversRes.servers);
+          } else {
+            setServers([]);
+            setServerStatuses({});
           }
         } catch (e) {
           console.error('Failed to load servers:', e);
+          setServers([]);
+          setServerStatuses({});
         }
 
         // Load players (for counts + top players by ELO)
@@ -128,8 +148,10 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
       }
     };
 
-    loadData();
-    const interval = setInterval(loadData, 30000); // Refresh every 30 seconds
+    void loadData();
+    const interval = setInterval(() => {
+      void loadData();
+    }, 30000); // Refresh every 30 seconds
     return () => clearInterval(interval);
   }, [t]);
 
@@ -418,6 +440,11 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 <Typography variant="h6" fontWeight={600}>
                   {t('dashboard.stats.serverStatus.title')}
                 </Typography>
+                {serverStatusLoading && (
+                  <Box ml={1} display="inline-flex" alignItems="center">
+                    <CircularProgress size={16} />
+                  </Box>
+                )}
               </Box>
               <Typography variant="h3" fontWeight={700} mb={1}>
                 {serverStatusCount.online}/{serverStatusCount.total}

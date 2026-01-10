@@ -41,6 +41,75 @@ export default function Matches() {
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const { t } = useTranslation();
 
+  // Fetch matches
+  const fetchMatches = useCallback(async () => {
+    try {
+      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
+
+      if (data.success) {
+        const matches = data.matches || [];
+        setTournamentStatus(data.tournamentStatus || 'setup');
+
+        const hasTeams = (m: Match) => {
+          // Manual matches (round = 0) don't have bracket-seeded teams; rely on
+          // config team names, but skip pure "TBD" placeholders.
+          if (m.round === 0) {
+            const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
+            const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
+            return Boolean(
+              cfgTeam1Name &&
+                cfgTeam1Name !== 'TBD' &&
+                cfgTeam2Name &&
+                cfgTeam2Name !== 'TBD'
+            );
+          }
+
+          // Bracket / tournament matches: only consider teams truly assigned in
+          // the bracket (DB-backed team rows). This prevents future-round
+          // matches with "TBD" placeholders in config from appearing in
+          // Upcoming/Live sections.
+          return Boolean(m.team1 && m.team2);
+        };
+
+        // Upcoming matches: pending and ready (including veto phase)
+        const upcoming = matches.filter(
+          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
+        );
+
+        // Live matches: only show matches with both teams effectively assigned
+        const live = matches.filter(
+          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
+        );
+
+        // History: show all completed matches including walkovers
+        const history = matches
+          .filter((m) => m.status === 'completed')
+          .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+
+        setUpcomingMatches(upcoming);
+        setLiveMatches(live);
+        setMatchHistory(history);
+        // Clear any selections that no longer exist
+        setSelectedMatchSlugs((prev) => {
+          if (prev.size === 0) return prev;
+          const existingSlugs = new Set(matches.map((m) => m.slug));
+          const next = new Set<string>();
+          prev.forEach((slug) => {
+            if (existingSlugs.has(slug)) {
+              next.add(slug);
+            }
+          });
+          return next;
+        });
+      }
+    } catch (err) {
+      setError(t('matchesPage.errors.loadMatches'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
+
   // Set dynamic page title
   useEffect(() => {
     document.title = t('layout.pageTitle.matches');
@@ -252,75 +321,6 @@ export default function Matches() {
       </Box>
     );
   };
-
-  // Fetch matches
-  const fetchMatches = useCallback(async () => {
-    try {
-      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
-
-      if (data.success) {
-        const matches = data.matches || [];
-        setTournamentStatus(data.tournamentStatus || 'setup');
-
-        const hasTeams = (m: Match) => {
-          // Manual matches (round = 0) don't have bracket-seeded teams; rely on
-          // config team names, but skip pure "TBD" placeholders.
-          if (m.round === 0) {
-            const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
-            const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
-            return Boolean(
-              cfgTeam1Name &&
-                cfgTeam1Name !== 'TBD' &&
-                cfgTeam2Name &&
-                cfgTeam2Name !== 'TBD'
-            );
-          }
-
-          // Bracket / tournament matches: only consider teams truly assigned in
-          // the bracket (DB-backed team rows). This prevents future-round
-          // matches with "TBD" placeholders in config from appearing in
-          // Upcoming/Live sections.
-          return Boolean(m.team1 && m.team2);
-        };
-
-        // Upcoming matches: pending and ready (including veto phase)
-        const upcoming = matches.filter(
-          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
-        );
-
-        // Live matches: only show matches with both teams effectively assigned
-        const live = matches.filter(
-          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
-        );
-
-        // History: show all completed matches including walkovers
-        const history = matches
-          .filter((m) => m.status === 'completed')
-          .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
-
-        setUpcomingMatches(upcoming);
-        setLiveMatches(live);
-        setMatchHistory(history);
-        // Clear any selections that no longer exist
-        setSelectedMatchSlugs((prev) => {
-          if (prev.size === 0) return prev;
-          const existingSlugs = new Set(matches.map((m) => m.slug));
-          const next = new Set<string>();
-          prev.forEach((slug) => {
-            if (existingSlugs.has(slug)) {
-              next.add(slug);
-            }
-          });
-          return next;
-        });
-      }
-    } catch (err) {
-      setError(t('matchesPage.errors.loadMatches'));
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
 
   useEffect(() => {
     fetchMatches();

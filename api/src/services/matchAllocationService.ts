@@ -104,19 +104,9 @@ export class MatchAllocationService {
     const statusChecks = await Promise.all(
       enabledServers.map(async (server) => {
         try {
-          const connectionResult = await rconService.testConnection(server.id);
-
-          if (!connectionResult.success) {
-            return {
-              server,
-              status: null as ServerStatus | null,
-              matchSlug: null as string | null,
-              updatedAt: null as number | null,
-              online: false,
-            };
-          }
-
-          const serverStatus = await serverStatusService.getServerStatus(server.id);
+          // Use the short-lived status cache for availability checks so we don't
+          // block the entire API on fresh RCON calls every time the UI polls.
+          const serverStatus = await serverStatusService.getServerStatus(server.id, true);
           return {
             server,
             ...serverStatus,
@@ -241,6 +231,10 @@ export class MatchAllocationService {
       });
     }
 
+    // How many matches are currently waiting for servers (ready + no server_id)
+    const readyMatches = await this.getReadyMatches();
+    const requiredServerCount = readyMatches.length;
+
     // This method is called both by UI endpoints and allocator helpers; only
     // emit a summary when there is contention so logs stay readable.
     if (requiredServerCount > 0 && availableServerCount === 0) {
@@ -256,10 +250,6 @@ export class MatchAllocationService {
         );
       }
     }
-
-    // How many matches are currently waiting for servers (ready + no server_id)
-    const readyMatches = await this.getReadyMatches();
-    const requiredServerCount = readyMatches.length;
 
     return {
       availableServerCount,

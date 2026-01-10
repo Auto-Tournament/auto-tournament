@@ -76,7 +76,26 @@ function configureSteamStrategy(): void {
         returnURL,
         realm,
       },
-      (identifier: string, profile: SteamProfile, done: (err: unknown, user?: unknown) => void) => {
+      (
+        _identifier: string,
+        profile: SteamProfile,
+        done: (err: unknown, user?: unknown) => void
+      ) => {
+        // Minimal structured debug for Steam logins so we can correlate
+        // Passport-level data with downstream auth routes.
+        const safeProfile = {
+          id: profile.id,
+          displayName: profile.displayName,
+          hasAvatar: Boolean(profile._json?.avatarfull),
+        };
+
+        // Lazy import to avoid circular deps at module load.
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { log } = require('../utils/logger') as typeof import('../utils/logger');
+        log.info('SteamStrategy callback: received profile from Steam', {
+          profile: safeProfile,
+        });
+
         const steamId = profile.id;
         const displayName = profile.displayName || steamId;
         const avatarUrl = profile._json?.avatarfull;
@@ -94,18 +113,20 @@ function configureSteamStrategy(): void {
 function configureDiscordStrategy(): void {
   const clientID = process.env.DISCORD_CLIENT_ID;
   const clientSecret = process.env.DISCORD_CLIENT_SECRET;
-  const redirectUri = process.env.DISCORD_REDIRECT_URI;
 
-  if (!clientID || !clientSecret || !redirectUri) {
+  if (!clientID || !clientSecret) {
     return;
   }
+
+  const baseUrl = getBackendBaseUrl();
+  const callbackURL = `${baseUrl}/api/auth/discord/callback`;
 
   passport.use(
     new DiscordStrategy(
       {
         clientID,
         clientSecret,
-        callbackURL: redirectUri,
+        callbackURL,
         scope: ['identify', 'email'],
       },
       (
@@ -114,6 +135,17 @@ function configureDiscordStrategy(): void {
         profile: DiscordProfile,
         done: (err: unknown, user?: unknown) => void
       ) => {
+        const safeProfile = {
+          id: profile.id,
+          username: profile.username,
+          hasAvatar: profile.avatar != null,
+        };
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { log } = require('../utils/logger') as typeof import('../utils/logger');
+        log.info('DiscordStrategy callback: received profile from Discord', {
+          profile: safeProfile,
+        });
+
         done(null, {
           provider: 'discord',
           discordId: profile.id,
@@ -174,6 +206,17 @@ function configureKeycloakStrategy(): void {
         profile: KeycloakProfile,
         done: (err: unknown, user?: unknown) => void
       ) => {
+        const safeProfile = {
+          id: profile.id,
+          displayName: profile.displayName,
+          username: profile.username,
+        };
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { log } = require('../utils/logger') as typeof import('../utils/logger');
+        log.info('KeycloakStrategy callback: received profile from Keycloak', {
+          profile: safeProfile,
+        });
+
         done(null, {
           provider: 'keycloak',
           keycloakId: profile.id,
@@ -189,11 +232,13 @@ function configureKeycloakStrategy(): void {
 function configureGitHubStrategy(): void {
   const clientID = process.env.GITHUB_CLIENT_ID;
   const clientSecret = process.env.GITHUB_CLIENT_SECRET;
-  const callbackURL = process.env.GITHUB_CALLBACK_URL;
 
-  if (!clientID || !clientSecret || !callbackURL) {
+  if (!clientID || !clientSecret) {
     return;
   }
+
+  const baseUrl = getBackendBaseUrl();
+  const callbackURL = `${baseUrl}/api/auth/github/callback`;
 
   passport.use(
     new GitHubStrategy(
@@ -209,6 +254,18 @@ function configureGitHubStrategy(): void {
         profile: GitHubProfile,
         done: (err: unknown, user?: unknown) => void
       ) => {
+        const safeProfile = {
+          id: profile.id,
+          username: profile.username,
+          displayName: profile.displayName,
+          hasAvatar: Boolean(profile.photos && profile.photos[0]?.value),
+        };
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        const { log } = require('../utils/logger') as typeof import('../utils/logger');
+        log.info('GitHubStrategy callback: received profile from GitHub', {
+          profile: safeProfile,
+        });
+
         done(null, {
           provider: 'github',
           githubId: profile.id,
@@ -225,14 +282,12 @@ function configureGitHubStrategy(): void {
 
 // We don't currently use sessions, but Passport still expects serialize/deserialize
 // when session support is enabled. Define no-op versions for future use.
-passport.serializeUser((user, done) => {
-  done(null, user as unknown);
+passport.serializeUser((user: unknown, done: (err: unknown, id?: unknown) => void) => {
+  done(null, user);
 });
 
-passport.deserializeUser((obj, done) => {
-  done(null, obj as unknown);
+passport.deserializeUser((obj: unknown, done: (err: unknown, user?: unknown) => void) => {
+  done(null, obj);
 });
 
 export { passport };
-
-

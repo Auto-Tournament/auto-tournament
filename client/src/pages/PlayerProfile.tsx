@@ -723,32 +723,14 @@ export default function PlayerProfile() {
             volume={volume}
             soundFile={soundFile}
           />
-          {/* Local navigation */}
+          {/* Local navigation (kept minimal; main links live in the navbar) */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="subtitle2" color="text.secondary">
-              Public Player View
+              Player profile
             </Typography>
-            <Box display="flex" gap={1} alignItems="center">
-              {playerSteamId === steamId && (
-                <Chip color="primary" size="small" label="This is you" />
-              )}
-              <Button variant="outlined" size="small" component={RouterLink} to="/player">
-                Players
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<EmojiEventsIcon />}
-                onClick={() => {
-                  const url = latestTournamentId
-                    ? `/tournament/${latestTournamentId}/leaderboard`
-                    : '/tournament/1/leaderboard';
-                  window.open(url, '_blank');
-                }}
-              >
-                Leaderboard
-              </Button>
-            </Box>
+            {playerSteamId === steamId && (
+              <Chip color="primary" size="small" label="This is you" />
+            )}
           </Box>
 
           {/* Player Header */}

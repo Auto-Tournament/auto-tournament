@@ -31,7 +31,10 @@ export const ServerEventsMonitor: React.FC = () => {
   const [error, setError] = useState('');
   const [isPaused, setIsPaused] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
-  const [autoScroll, setAutoScroll] = useState(true);
+  // Start with auto-scroll disabled so the Admin Tools page doesn't jump to the
+  // bottom on first load. Auto-scroll will be re-enabled once the user scrolls
+  // near the bottom of the events console.
+  const [autoScroll, setAutoScroll] = useState(false);
   const [noEventsHint, setNoEventsHint] = useState(false);
   const [eventsHealthError, setEventsHealthError] = useState('');
 

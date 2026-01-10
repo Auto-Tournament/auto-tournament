@@ -67,19 +67,22 @@ services:
       # - KEYCLOAK_ISSUER_URL=https://sso.example.com/realms/matchzy
       # - KEYCLOAK_CLIENT_ID=matchzy-dashboard
       # - KEYCLOAK_CLIENT_SECRET=your-keycloak-secret
-      # - KEYCLOAK_CALLBACK_PATH=/api/auth/keycloak/callback
+      #   # In your Keycloak client, set Redirect URI to:
+      #   #   FRONTEND_BASE_URL + /api/auth/keycloak/callback
 
       # Optional: Discord SSO
       # - AUTH_DISCORD_ENABLED=true
       # - DISCORD_CLIENT_ID=your-discord-client-id
       # - DISCORD_CLIENT_SECRET=your-discord-secret
-      # - DISCORD_REDIRECT_URI=http://localhost:3069/api/auth/discord/callback
+      #   # In your Discord app, set Redirect URL to:
+      #   #   FRONTEND_BASE_URL + /api/auth/discord/callback
 
       # Optional: GitHub SSO
       # - AUTH_GITHUB_ENABLED=true
       # - GITHUB_CLIENT_ID=your-github-client-id
       # - GITHUB_CLIENT_SECRET=your-github-secret
-      # - GITHUB_CALLBACK_URL=http://localhost:3069/api/auth/github/callback
+      #   # In your GitHub OAuth app, set Authorization callback URL to:
+      #   #   FRONTEND_BASE_URL + /api/auth/github/callback
 
       # Database connection
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/matchzy_tournament

@@ -77,6 +77,12 @@
     "documentation": "文档",
     "version": "版本"
   },
+  "connectSteam": {
+    "title": "关联你的 Steam 账号",
+    "bodyIntro": "快完成了。要使用当前账号访问锦标赛平台（例如通过 Discord、Keycloak 或 GitHub 登录后），你需要先关联一个 Steam 个人资料。",
+    "bodyRequirement": "关联 Steam 让系统能够将你识别为选手，并且是从非 Steam 提供商登录时的必备步骤。",
+    "button": "使用 Steam 关联"
+  },
   "notFound": {
     "title": "页面未找到",
     "description": "你访问的页面不存在或已被移动。",
@@ -561,9 +567,10 @@
     "title": "设置",
     "intro": "配置核心集成、游戏内默认值以及开发者选项。",
     "tabs": {
-      "integrations": "集成",
-      "matchRating": "比赛与评分",
-      "developer": "开发者"
+      "integrations": "集成与 Webhook",
+      "players": "选手与访问控制",
+      "matches": "比赛与评分",
+      "developer": "开发者 / 模拟"
     },
     "integrations": {
       "webhook": {

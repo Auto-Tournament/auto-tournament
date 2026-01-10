@@ -18,7 +18,6 @@ import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { useAuth } from '../contexts/AuthContext';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import { PlayerNavBar } from '../components/layout/PlayerNavBar';
@@ -28,6 +27,7 @@ interface PlayerOption {
   name: string;
   avatar?: string;
   currentElo?: number;
+  isAdmin?: boolean;
 }
 
 export default function FindPlayer() {
@@ -43,7 +43,6 @@ export default function FindPlayer() {
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
   const { showError } = useSnackbar();
-  const { playerSteamId } = useAuth();
 
   useEffect(() => {
     document.title = 'Find Player';
@@ -145,8 +144,7 @@ export default function FindPlayer() {
                 Find Player
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Enter a Steam ID or Steam profile URL to view player statistics, or log in with
-                Steam to jump straight to your profile.
+                Search for registered players by name, Steam ID or Steam profile URL.
               </Typography>
             </Box>
 
@@ -242,17 +240,6 @@ export default function FindPlayer() {
               >
                 {loading ? 'Searching...' : 'Find Player'}
               </Button>
-
-              {playerSteamId && (
-                <Button
-                  fullWidth
-                  variant="text"
-                  size="small"
-                  onClick={() => navigate(`/player/${playerSteamId}`)}
-                >
-                  Go to my profile
-                </Button>
-              )}
             </Stack>
           </CardContent>
         </Card>

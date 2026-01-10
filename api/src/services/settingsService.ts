@@ -3,7 +3,6 @@ import { log } from '../utils/logger';
 
 export type AppSettingKey =
   | 'webhook_url'
-  | 'steam_api_key'
   | 'simulate_matches'
   | 'simulation_timescale'
   | 'matchzy_chat_prefix'
@@ -21,7 +20,6 @@ export interface AppSetting {
 
 const ALLOWED_KEYS: AppSettingKey[] = [
   'webhook_url',
-  'steam_api_key',
   'simulate_matches',
   'simulation_timescale',
   'matchzy_chat_prefix',
@@ -70,12 +68,6 @@ class SettingsService {
         const normalized = this.normalizeUrl(trimmed);
         await db.setAppSettingAsync(key, normalized);
         log.success(`Webhook URL updated to ${normalized}`);
-        return;
-      }
-
-      if (key === 'steam_api_key') {
-        await db.setAppSettingAsync(key, trimmed);
-        log.success('Steam API key updated');
         return;
       }
 
@@ -169,13 +161,13 @@ class SettingsService {
   }
 
   async isSteamApiConfigured(): Promise<boolean> {
-    const value = await this.getSetting('steam_api_key');
+    const value = process.env.STEAM_API_KEY;
     return Boolean(value && value.trim().length > 0);
   }
 
   async getSteamApiKey(): Promise<string | null> {
-    const value = await this.getSetting('steam_api_key');
-    return value ? value.trim() : null;
+    const value = process.env.STEAM_API_KEY;
+    return value && value.trim().length > 0 ? value.trim() : null;
   }
 
   async getMatchzyChatPrefix(): Promise<string | null> {

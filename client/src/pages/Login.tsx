@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
+import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +17,8 @@ export default function Login() {
   const [providersError, setProvidersError] = useState<string | null>(null);
   const location = useLocation();
   const hasLoadedProvidersRef = React.useRef(false);
+  // __APP_VERSION__ is injected by Vite; declared globally in vite-env.d.ts
+  const appVersion = (globalThis as unknown as { __APP_VERSION__?: string }).__APP_VERSION__;
 
   // Set dynamic page title
   useEffect(() => {
@@ -108,7 +111,7 @@ export default function Login() {
             boxShadow: (theme) => theme.shadows[location.pathname === '/login' ? 8 : 2],
           }}
         >
-            <Stack spacing={4} alignItems="center">
+          <Stack spacing={4} alignItems="center">
             <Stack spacing={2} alignItems="center" sx={{ width: '100%' }}>
               <Box
                 sx={{
@@ -156,18 +159,91 @@ export default function Login() {
               <Stack spacing={1.5}>
                 {providers.map((provider) => {
                   const isSteam = provider.id === 'steam';
+                  const isDiscord = provider.id === 'discord';
+                  const isGitHub = provider.id === 'github';
+                  const isKeycloak = provider.id === 'keycloak';
+
+                  // Brand-aligned button styles per provider
+                  const { variant, color, sx, icon } = (() => {
+                    if (isSteam) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'primary' as const,
+                        sx: {
+                          bgcolor: '#171a21',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#1b2838',
+                          },
+                        },
+                        icon: <SteamIcon />,
+                      };
+                    }
+                    if (isDiscord) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#5865F2',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#4752c4',
+                          },
+                        },
+                        icon: <SiDiscord />,
+                      };
+                    }
+                    if (isGitHub) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#24292e',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#1b1f23',
+                          },
+                        },
+                        icon: <SiGithub />,
+                      };
+                    }
+                    if (isKeycloak) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#3262a8',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#274c82',
+                          },
+                        },
+                        icon: <SiKeycloak />,
+                      };
+                    }
+                    return {
+                      variant: 'outlined' as const,
+                      color: 'inherit' as const,
+                      sx: undefined,
+                      icon: undefined,
+                    };
+                  })();
+
                   return (
                     <Button
                       key={provider.id}
                       fullWidth
                       size="large"
-                      variant={isSteam ? 'contained' : 'outlined'}
-                      color={isSteam ? 'primary' : 'inherit'}
+                      variant={variant}
+                      color={color}
+                      sx={sx}
                       onClick={() => handleProviderClick(provider.id, provider.loginUrl)}
-                      startIcon={isSteam ? <SteamIcon /> : undefined}
+                      startIcon={icon}
                       disabled={loadingProviders}
                       data-testid={
-                        isSteam ? 'login-steam-sign-in-button' : `login-${provider.id}-sign-in-button`
+                        isSteam
+                          ? 'login-steam-sign-in-button'
+                          : `login-${provider.id}-sign-in-button`
                       }
                     >
                       {`Sign in with ${provider.label}`}
@@ -214,8 +290,7 @@ export default function Login() {
               </Stack>
 
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                {t('login.version')}{' '}
-                {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+                {t('login.version')} {appVersion || 'Unknown'}
               </Typography>
             </Stack>
           </Stack>

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface AuthContextType {
   /**
@@ -25,9 +25,9 @@ interface AuthContextType {
    */
   isAuthenticated: boolean;
   /**
-   * Whether the current admin session was established via a non-Steam SSO
-   * provider (Keycloak, Discord, etc.) and still needs to be linked with a
-   * Steam ID for full player context.
+   * Whether the current admin session still needs to be linked with a Steam ID
+   * (e.g. logged in via Keycloak/Discord/GitHub without a Steam account).
+   * Admins who logged in directly with Steam will never see this as true.
    */
   needsSteamLink: boolean;
   /**
@@ -48,19 +48,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [playerSteamId, setPlayerSteamId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const hasInitializedRef = useRef(false);
+  const [adminHasSteamLinked, setAdminHasSteamLinked] = useState(false);
 
   useEffect(() => {
-    // Avoid double-running initialization in React 18 StrictMode/dev.
-    if (hasInitializedRef.current) {
-      return;
-    }
-    hasInitializedRef.current = true;
-
     let isMounted = true;
 
     // Discover any existing admin session + player Steam cookie.
     const initializeAuth = async () => {
+      // When both an admin session and a player cookie exist, prefer the admin's
+      // Steam ID so we don't "flip" identities on reload if the cookie is stale.
+      let adminSteamId: string | null = null;
+
       const fetchPlayerIdentity = async () => {
         try {
           const response = await fetch('/api/auth/me', {
@@ -75,7 +73,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           const data: { authenticated?: boolean; steamId?: string } = await response.json();
-          if (data.authenticated && typeof data.steamId === 'string' && data.steamId.trim() !== '') {
+          if (
+            data.authenticated &&
+            typeof data.steamId === 'string' &&
+            data.steamId.trim() !== '' &&
+            !adminSteamId // don't override an admin-linked Steam ID
+          ) {
             setPlayerSteamId(data.steamId);
           } else {
             setPlayerSteamId(null);
@@ -100,20 +103,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             return;
           }
 
-          const data: { authenticated?: boolean; steamId?: string | null } = await response.json();
+          const data: { authenticated?: boolean; steamId?: string | null; provider?: string } =
+            await response.json();
           setIsAdmin(Boolean(data.authenticated));
           // If admin session also exposes a Steam ID, keep it in sync.
           if (data.steamId && typeof data.steamId === 'string' && data.steamId.trim() !== '') {
+            adminSteamId = data.steamId;
             setPlayerSteamId(data.steamId);
+            setAdminHasSteamLinked(true);
+          } else {
+            setAdminHasSteamLinked(false);
           }
         } catch (error) {
           if (!isMounted) return;
           console.warn('Failed to read admin identity from /api/auth/admin/me', error);
           setIsAdmin(false);
+          setAdminHasSteamLinked(false);
         }
       };
 
-      await Promise.allSettled([fetchPlayerIdentity(), fetchAdminIdentity()]);
+      // Always resolve the admin identity first so we know whether to trust the
+      // lightweight /api/auth/me cookie. This avoids cases where a stale cookie
+      // "wins the race" and makes it look like you're logged in as a different
+      // Steam user after a reload.
+      await fetchAdminIdentity();
+      await fetchPlayerIdentity();
 
       if (isMounted) {
         setIsLoading(false);
@@ -134,7 +148,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setIsAdmin(false);
     setPlayerSteamId(null);
-    setNeedsSteamLink(false);
 
     try {
       // Destroy admin session
@@ -167,7 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAuthenticated: isAdmin,
         playerSteamId,
         isPlayerAuthenticated: !!playerSteamId,
-        needsSteamLink: isAdmin && !playerSteamId,
+        needsSteamLink: isAdmin && !adminHasSteamLinked,
         isLoading,
       }}
     >

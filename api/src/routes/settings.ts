@@ -31,7 +31,7 @@ const mapSettingsResponse = async () => {
 
   return {
     webhookUrl,
-    steamApiKey,
+    steamApiKey: null,
     steamApiKeySet: Boolean(steamApiKey),
     webhookConfigured: Boolean(webhookUrl),
     defaultPlayerElo,
@@ -56,7 +56,6 @@ router.get('/', async (_req: Request, res: Response) => {
 router.put('/', async (req: Request, res: Response) => {
   const {
     webhookUrl,
-    steamApiKey,
     simulateMatches,
     simulationTimescale,
     matchzyChatPrefix,
@@ -67,7 +66,6 @@ router.put('/', async (req: Request, res: Response) => {
     allowSelfRegister,
   } = req.body as {
     webhookUrl?: unknown;
-    steamApiKey?: unknown;
     simulateMatches?: unknown;
     simulationTimescale?: unknown;
     matchzyChatPrefix?: unknown;
@@ -86,19 +84,9 @@ router.put('/', async (req: Request, res: Response) => {
           error: 'webhookUrl must be a string or null',
         });
       }
-      await settingsService.setSetting('webhook_url', typeof webhookUrl === 'string' ? webhookUrl : null);
-    }
-
-    if (steamApiKey !== undefined) {
-      if (typeof steamApiKey !== 'string' && steamApiKey !== null) {
-        return res.status(400).json({
-          success: false,
-          error: 'steamApiKey must be a string or null',
-        });
-      }
       await settingsService.setSetting(
-        'steam_api_key',
-        typeof steamApiKey === 'string' ? steamApiKey : null
+        'webhook_url',
+        typeof webhookUrl === 'string' ? webhookUrl : null
       );
     }
 

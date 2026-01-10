@@ -59,7 +59,23 @@ KEYCLOAK_ISSUER_URL=https://sso.example.com/realms/matchzy
 # These are used by the OIDC flow
 KEYCLOAK_CLIENT_ID=matchzy-dashboard
 KEYCLOAK_CLIENT_SECRET=your-super-secret-value
-KEYCLOAK_CALLBACK_PATH=/api/auth/keycloak/callback
+```
+
+The callback is hard-coded to:
+
+- Backend callback path: `/api/auth/keycloak/callback`
+- Full redirect URI: `FRONTEND_BASE_URL + /api/auth/keycloak/callback`
+
+For local dev this is typically:
+
+```bash
+FRONTEND_BASE_URL=http://localhost:3069
+```
+
+So the Redirect URI you paste into the Keycloak client is:
+
+```text
+http://localhost:3069/api/auth/keycloak/callback
 ```
 
 Once configured, the flow is:
@@ -67,8 +83,7 @@ Once configured, the flow is:
 - Frontend calls `GET /api/auth/providers` and sees a `keycloak` provider with
   `loginUrl: /api/auth/keycloak`.
 - Clicking \"Sign in with Keycloak\" will redirect the browser to that URL,
-  which will start the OIDC flow and eventually redirect back to
-  `KEYCLOAK_CALLBACK_PATH`.
+  which will start the OIDC flow and eventually redirect back to the callback above.
 
 ### Discord (OAuth2)
 
@@ -86,7 +101,23 @@ DISCORD_CLIENT_ID=123456789012345678
 
 # These are used by the OAuth2 flow
 DISCORD_CLIENT_SECRET=your-discord-client-secret
-DISCORD_REDIRECT_URI=http://localhost:3069/api/auth/discord/callback
+```
+
+The callback is hard-coded to:
+
+- Backend callback path: `/api/auth/discord/callback`
+- Full redirect URI: `FRONTEND_BASE_URL + /api/auth/discord/callback`
+
+For local dev this is typically:
+
+```bash
+FRONTEND_BASE_URL=http://localhost:3069
+```
+
+So the Redirect URL you paste into the Discord app is:
+
+```text
+http://localhost:3069/api/auth/discord/callback
 ```
 
 When enabled, `/api/auth/providers` will include a `discord` provider with:
@@ -110,7 +141,23 @@ AUTH_GITHUB_ENABLED=true
 # GitHub OAuth app credentials
 GITHUB_CLIENT_ID=your-github-client-id
 GITHUB_CLIENT_SECRET=your-github-client-secret
-GITHUB_CALLBACK_URL=http://localhost:3069/api/auth/github/callback
+```
+
+The callback is hard-coded to:
+
+- Backend callback path: `/api/auth/github/callback`
+- Full callback URL: `FRONTEND_BASE_URL + /api/auth/github/callback`
+
+For local dev this is typically:
+
+```bash
+FRONTEND_BASE_URL=http://localhost:3069
+```
+
+So the Authorization callback URL you paste into the GitHub OAuth app is:
+
+```text
+http://localhost:3069/api/auth/github/callback
 ```
 
 When enabled, `/api/auth/providers` will include a `github` provider with:

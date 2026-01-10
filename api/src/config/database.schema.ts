@@ -231,6 +231,22 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
 
+    -- Auth identities table: links external auth providers (Discord, Keycloak, GitHub, etc.)
+    -- to a Steam player ID so that once a user has linked Steam, future logins via
+    -- the same provider automatically resolve their Steam identity.
+    CREATE TABLE IF NOT EXISTS auth_identities (
+      id SERIAL PRIMARY KEY,
+      provider TEXT NOT NULL,
+      provider_user_id TEXT NOT NULL,
+      steam_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (provider, provider_user_id),
+      FOREIGN KEY (steam_id) REFERENCES players(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_auth_identities_provider_user
+      ON auth_identities(provider, provider_user_id);
+
     -- Player rating history table
     CREATE TABLE IF NOT EXISTS player_rating_history (
       id SERIAL PRIMARY KEY,
