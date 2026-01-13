@@ -22,14 +22,12 @@ export function MapPoolsTab({
   if (mapPools.length === 0) {
     return (
       <EmptyState
-        icon={<CollectionsIcon sx={{ fontSize: 64 }} />}
+        icon={CollectionsIcon}
         title="No map pools found"
         description="Get started by creating your first map pool"
-        action={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={onCreatePool}>
-            Create Map Pool
-          </Button>
-        }
+        actionLabel="Create Map Pool"
+        actionIcon={AddIcon}
+        onAction={onCreatePool}
       />
     );
   }

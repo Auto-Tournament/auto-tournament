@@ -19,14 +19,12 @@ export function MapsTab({ maps, onAddMap, onMapClick }: MapsTabProps) {
   if (sortedMaps.length === 0) {
     return (
       <EmptyState
-        icon={<MapIcon sx={{ fontSize: 64 }} />}
+        icon={MapIcon}
         title="No maps found"
         description="Get started by adding your first map"
-        action={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={onAddMap}>
-            Add Map
-          </Button>
-        }
+        actionLabel="Add Map"
+        actionIcon={AddIcon}
+        onAction={onAddMap}
       />
     );
   }

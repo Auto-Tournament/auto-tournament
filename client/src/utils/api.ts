@@ -13,11 +13,16 @@ export const api = {
    * Make an authenticated API request
    */
   async fetch(endpoint: string, options: RequestInit = {}) {
+    const { headers, ...rest } = options;
     const response = await fetch(endpoint, {
-      ...options,
+      // Always send cookies (admin session + player cookie) by default so
+      // admin-only routes like /api/maps work correctly. Callers can still
+      // override this by passing credentials in options if needed.
+      credentials: options.credentials ?? 'include',
+      ...rest,
       headers: {
         'Content-Type': 'application/json',
-        ...(options.headers || {}),
+        ...(headers || {}),
       },
     });
 
