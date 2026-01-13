@@ -51,6 +51,7 @@ import { matchAllocationService } from './services/matchAllocationService';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 
 const app = express();
 const httpServer = createServer(app);
@@ -67,8 +68,16 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Session + Passport
 const sessionSecret = process.env.SESSION_SECRET || 'matchzy-dev-session-secret';
+const PgSession = connectPgSimple(session);
+
 app.use(
   session({
+    // Persist sessions in PostgreSQL so admin logins survive API restarts.
+    store: new PgSession({
+      conString: process.env.DATABASE_URL,
+      tableName: 'session',
+      createTableIfMissing: true,
+    }),
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
