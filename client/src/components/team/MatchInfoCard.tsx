@@ -15,6 +15,7 @@ import { MatchMapChips } from './MatchMapChips';
 import { MatchVetoHistory } from './MatchVetoHistory';
 import { MatchServerPanel } from './MatchServerPanel';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface MatchInfoCardProps {
   match: TeamMatchInfo;
@@ -26,6 +27,17 @@ interface MatchInfoCardProps {
   getRoundLabel: (round: number) => string;
   // Optional: when provided, this player's row will be highlighted and not linked
   highlightPlayerId?: string;
+  /**
+   * Optional override for whether the current viewer is allowed to act as a
+   * member of this team (for example, on the public player page we only want
+   * the *same* player to control veto/connect, even if other teammates can
+   * open the URL).
+   *
+   * - `true`: always treat viewer as team member
+   * - `false`: always treat viewer as NOT a team member
+   * - `undefined`: fall back to match.viewerIsTeamMember (server-provided)
+   */
+  viewerIsTeamMemberOverride?: boolean;
 }
 
 const LIVE_STATUS_DISPLAY: Record<
@@ -53,11 +65,13 @@ export function MatchInfoCard({
   onVetoComplete,
   getRoundLabel,
   highlightPlayerId,
+  viewerIsTeamMemberOverride,
 }: MatchInfoCardProps) {
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
   const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
+  const { showError } = useSnackbar();
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
@@ -114,9 +128,14 @@ export function MatchInfoCard({
   // For team‑only controls like veto actions and server connection details,
   // we rely on the backend to tell us whether the current viewer actually
   // belongs to this team. When the flag is absent (older responses), we
-  // default to true to preserve existing behaviour.
-  const viewerIsTeamMember =
+  // default to true to preserve existing behaviour. Callers (like the public
+  // player page) can explicitly override this via viewerIsTeamMemberOverride.
+  const serverViewerIsTeamMember =
     (match as TeamMatchInfo & { viewerIsTeamMember?: boolean }).viewerIsTeamMember !== false;
+  const viewerIsTeamMember =
+    typeof viewerIsTeamMemberOverride === 'boolean'
+      ? viewerIsTeamMemberOverride
+      : serverViewerIsTeamMember;
 
   const serverStatus = match.server?.status ?? null;
   // Only treat explicit "online" (or transitional "checking") as truly online.
@@ -269,13 +288,20 @@ export function MatchInfoCard({
         .catch((err) => {
           console.warn('Clipboard write failed, falling back to manual copy:', err);
           setCopyFallbackCommand(connectCommand);
+          showError(
+            'Unable to copy connect command automatically. Command is shown below so you can copy it manually.'
+          );
         });
       return;
     }
 
     // Fallback for non-secure contexts (e.g. plain HTTP) or missing API:
-    // show the command so the user can copy it manually.
+    // show the command so the user can copy it manually, and surface a clear
+    // warning so they know why the button did not copy to the clipboard.
     setCopyFallbackCommand(connectCommand);
+    showError(
+      'Your browser blocked automatic copying (non-HTTPS or missing clipboard access). Command is shown below so you can copy it manually.'
+    );
   };
 
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);

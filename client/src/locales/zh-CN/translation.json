@@ -461,6 +461,10 @@
   "dashboard": {
     "title": "控制台",
     "notReady": "当锦标赛开始后，锦标赛控制台将显示在这里。",
+    "restartTournament": {
+      "button": "重启锦标赛比赛",
+      "restarting": "正在重启锦标赛比赛…"
+    },
     "onboarding": {
       "ready": "🎉 一切就绪！",
       "gettingStarted": "快速开始",

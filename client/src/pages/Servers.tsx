@@ -59,7 +59,14 @@ export default function Servers() {
   }, [t]);
 
   const checkServerStatus = async (
-    serverId: string
+    serverId: string,
+    /**
+     * When true (default), hit the lightweight cached status endpoint so we
+     * don't spam live connectivity checks. When false, call the full
+     * `/status` route to force an up-to-date connectivity test – used for
+     * manual refreshes initiated by the admin.
+     */
+    options?: { useCached?: boolean }
   ): Promise<{
     status: 'online' | 'offline';
     currentMatch: string | null;
@@ -71,12 +78,15 @@ export default function Servers() {
     allocationMatchSlug?: string | null;
   }> => {
     try {
-      // Use the lightweight cached status endpoint for the Servers page so we
-      // don't spam live connectivity checks or show flapping statuses. Manual
-      // "Test Connection" in the server modal still calls the uncached route.
-      const response = await api.get<ServerStatusResponse>(
-        `/api/servers/${serverId}/status?cached=true`
-      );
+      const useCached = options?.useCached !== false;
+      // Default behaviour is to use the lightweight cached status endpoint so
+      // we don't spam live connectivity checks on every automatic refresh.
+      // When the admin explicitly clicks the "Refresh" button, we call this
+      // function with `useCached: false` to force a live status check instead.
+      const endpoint = useCached
+        ? `/api/servers/${serverId}/status?cached=true`
+        : `/api/servers/${serverId}/status`;
+      const response = await api.get<ServerStatusResponse>(endpoint);
       const isOnline = response.status === 'online';
       return {
         status: isOnline ? 'online' : ('offline' as const),
@@ -100,7 +110,8 @@ export default function Servers() {
     }
   };
 
-  const loadServers = useCallback(async () => {
+  const loadServers = useCallback(
+    async (options?: { useCached?: boolean }) => {
     setRefreshing(true);
     try {
       const response = await api.get<ServersResponse>('/api/servers');
@@ -125,7 +136,7 @@ export default function Servers() {
           pluginStatus,
           allocationState,
           allocationMatchSlug,
-        } = await checkServerStatus(server.id);
+        } = await checkServerStatus(server.id, { useCached: options?.useCached });
         return {
           id: server.id,
           status,
@@ -190,7 +201,8 @@ export default function Servers() {
     } finally {
       setRefreshing(false);
     }
-  }, [showError, t]);
+  },
+  [showError, t]);
 
   const loadAllocationStatus = useCallback(async () => {
     setAllocationLoading(true);
@@ -251,7 +263,10 @@ export default function Servers() {
                 size="small"
                 startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
                 onClick={() => {
-                  void loadServers();
+                  // Treat an explicit click on the Refresh button as a manual
+                  // connectivity test – bypass the cached status snapshot and
+                  // force live checks for each enabled server.
+                  void loadServers({ useCached: false });
                   void loadAllocationStatus();
                 }}
                 disabled={refreshing}
@@ -360,7 +375,10 @@ export default function Servers() {
   ]);
 
   useEffect(() => {
-    void loadServers();
+    // Initial page load uses cached status to avoid hammering servers when the
+    // admin simply visits this page. The manual Refresh button forces a
+    // non-cached, live connectivity check instead.
+    void loadServers({ useCached: true });
     void loadAllocationStatus();
   }, [loadServers, loadAllocationStatus]);
 

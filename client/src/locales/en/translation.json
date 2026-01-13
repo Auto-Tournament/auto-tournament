@@ -461,6 +461,10 @@
   "dashboard": {
     "title": "Dashboard",
     "notReady": "Tournament dashboard will appear here once the tournament is started.",
+    "restartTournament": {
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
+    },
     "onboarding": {
       "ready": "🎉 Ready to Go!",
       "gettingStarted": "Getting Started",

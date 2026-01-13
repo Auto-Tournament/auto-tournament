@@ -124,13 +124,18 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const mapsToShow = useMemo(() => {
     if (!vetoState) return [];
 
+    // Normalize arrays defensively in case older API responses omit fields
+    const availableMaps = Array.isArray(vetoState.availableMaps) ? vetoState.availableMaps : [];
+    const bannedMaps = Array.isArray(vetoState.bannedMaps) ? vetoState.bannedMaps : [];
+    const pickedMaps = Array.isArray(vetoState.pickedMaps) ? vetoState.pickedMaps : [];
+
     // Use allMaps if available (preserves original order), otherwise reconstruct
-    const originalMapOrder = vetoState.allMaps
+    const originalMapOrder = Array.isArray(vetoState.allMaps) && vetoState.allMaps.length > 0
       ? [...vetoState.allMaps] // Create a copy to ensure immutability
       : [
-          ...vetoState.availableMaps,
-          ...vetoState.bannedMaps,
-          ...vetoState.pickedMaps.map((p) => p.mapName),
+          ...availableMaps,
+          ...bannedMaps,
+          ...pickedMaps.map((p) => p.mapName),
         ].filter((mapId, index, self) => self.indexOf(mapId) === index); // Fallback: remove duplicates
 
     return originalMapOrder.map((mapId) => {
@@ -440,7 +445,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {/* Side Picker (for side_pick actions) */}
       {currentAction === 'side_pick' &&
         (() => {
-          const lastPickedMap = vetoState.pickedMaps[vetoState.pickedMaps.length - 1];
+          const pickedMaps = vetoState.pickedMaps || [];
+          if (pickedMaps.length === 0) {
+            return null;
+          }
+
+          const lastPickedMap = pickedMaps[pickedMaps.length - 1];
           const mapData = allMaps.get(lastPickedMap?.mapName || '');
           const fallbackData = getMapData(lastPickedMap?.mapName || '');
 
@@ -611,14 +621,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       )}
 
       {/* Veto History */}
-      {vetoState.actions.length > 0 && (
+      {Array.isArray(vetoState.actions) && vetoState.actions.length > 0 && (
         <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="h6" fontWeight={600} mb={2}>
               Veto History
             </Typography>
             <Stack spacing={1}>
-              {vetoState.actions.map((action, idx) => (
+              {(vetoState.actions || []).map((action, idx) => (
                 <Box
                   key={idx}
                   sx={{

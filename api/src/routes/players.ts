@@ -317,25 +317,44 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     const isPlayerInTeam1 = normalizedTeam1Players.some((p) => p.steamid === playerId);
     const isPlayerInTeam2 = normalizedTeam2Players.some((p) => p.steamid === playerId);
 
+    // Fallback to team players JSON if config is ambiguous
+    const team1PlayersStr = match.team1_players || '';
+    const team2PlayersStr = match.team2_players || '';
+    const isInTeam1Json = team1PlayersStr.includes(playerId);
+    const isInTeam2Json = team2PlayersStr.includes(playerId);
+
+    const isPlayerOnTeam1 = isPlayerInTeam1 || (isInTeam1Json && !isInTeam2Json);
+    const isPlayerOnTeam2 = isPlayerInTeam2 || (isInTeam2Json && !isInTeam1Json);
+
+    // If the player cannot be found on either side (neither config nor team JSON),
+    // treat this as a false positive from the broad SQL LIKE match (for example,
+    // a shuffle tournament where the player is registered for the event but not
+    // actually playing in this specific match). In that case, do NOT claim the
+    // player has a current match.
+    if (!isPlayerOnTeam1 && !isPlayerOnTeam2) {
+      return res.json({
+        success: true,
+        player: {
+          id: player.id,
+          name: player.name,
+          avatar: (player as { avatar_url?: string }).avatar_url,
+        },
+        hasMatch: false,
+        message: 'No upcoming matches found',
+      });
+    }
+
+    // At this point we know the player is on exactly one of the teams. Resolve
+    // which side we should render from the player's perspective.
     let isTeam1: boolean;
 
-    if (isPlayerInTeam1 && !isPlayerInTeam2) {
+    if (isPlayerOnTeam1 && !isPlayerOnTeam2) {
       isTeam1 = true;
-    } else if (!isPlayerInTeam1 && isPlayerInTeam2) {
+    } else if (!isPlayerOnTeam1 && isPlayerOnTeam2) {
       isTeam1 = false;
     } else {
-      // Fallback to team players JSON if config is ambiguous
-      const team1PlayersStr = match.team1_players || '';
-      const team2PlayersStr = match.team2_players || '';
-
-      if (team1PlayersStr.includes(playerId) && !team2PlayersStr.includes(playerId)) {
-        isTeam1 = true;
-      } else if (!team1PlayersStr.includes(playerId) && team2PlayersStr.includes(playerId)) {
-        isTeam1 = false;
-      } else {
-        // Default to team1 if we can't determine (should be extremely rare)
-        isTeam1 = true;
-      }
+      // Extremely defensive fallback: if our checks disagree, default to team1.
+      isTeam1 = true;
     }
 
     const playerTeam = isTeam1

@@ -829,6 +829,11 @@ export default function PlayerProfile() {
               }}
               getRoundLabel={getRoundLabel}
               highlightPlayerId={player.id}
+              // Only allow veto and server controls on the player page when the
+              // signed‑in Steam ID matches the profile being viewed. Teammates
+              // visiting this URL can still *see* the page, but cannot drive
+              // the veto or connect for someone else.
+              viewerIsTeamMemberOverride={playerSteamId === steamId}
             />
           ) : (
             <Card>
