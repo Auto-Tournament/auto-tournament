@@ -100,18 +100,18 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Non-admin-only protected routes: require a linked Steam identity.
-  if (playerSteamId) {
-    return <>{children}</>;
-  }
-
-  // If there's an admin session without Steam linked, send them to the linking flow.
-  if (isAuthenticated && needsSteamLink) {
-    return <Navigate to="/connect-steam" replace />;
-  }
-
-  // Otherwise, go to login.
-  return <Navigate to="/login" state={{ from: location }} replace />;
+  // Non-admin-only "public" routes:
+  //
+  // These pages (e.g. /player, /team/:teamId, /tournament/:id/leaderboard) are
+  // intentionally viewable by anyone – including:
+  // - anonymous visitors
+  // - signed-in players
+  // - admins (even before linking a Steam account)
+  //
+  // The underlying components still *optionally* use auth context when present
+  // (e.g. to show "this is you" badges or quick links), but access itself
+  // should never be blocked or redirected here.
+  return <>{children}</>;
 }
 
 function AppRoutes() {
