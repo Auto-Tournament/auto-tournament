@@ -195,6 +195,7 @@
     },
     "success": {
       "playerAdded": "Player added to team",
+      "playerReplaced": "Player replaced",
       "teamUpdated": "Team updated successfully",
       "teamCreated": "Team created successfully",
       "teamDeleted": "Team deleted successfully"
@@ -209,7 +210,9 @@
     "confirmDelete": {
       "title": "Delete Team",
       "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
-    }
+    },
+    "replacePlayerAria": "Replace player {{name}}",
+    "replacePlayerTooltip": "Replace this player"
   },
   "playerModal": {
     "titleCreate": "Create Player",

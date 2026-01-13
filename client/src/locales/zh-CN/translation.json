@@ -198,6 +198,7 @@
     },
     "success": {
       "playerAdded": "选手已添加到战队",
+      "playerReplaced": "选手已被替换",
       "teamUpdated": "战队更新成功",
       "teamCreated": "战队创建成功",
       "teamDeleted": "战队删除成功"
@@ -212,7 +213,9 @@
     "confirmDelete": {
       "title": "删除战队",
       "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
-    }
+    },
+    "replacePlayerAria": "替换选手 {{name}}",
+    "replacePlayerTooltip": "替换此选手"
   },
   "playerModal": {
     "titleCreate": "创建选手",

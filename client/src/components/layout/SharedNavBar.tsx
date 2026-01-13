@@ -197,14 +197,19 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             >
               {t('nav.documentation')}
             </Button>
-            <Button
-              color="error"
-              onClick={handleLogout}
-              startIcon={<LogoutIcon />}
-              data-testid="sign-out-button"
-            >
-              {t('nav.signOut')}
-            </Button>
+            {/* Only show a standalone sign-out button when no player avatar is available.
+                For users with a Steam-linked profile, sign-out lives in the avatar menu
+                to keep the navbar cleaner. */}
+            {!playerSteamId && (
+              <Button
+                color="error"
+                onClick={handleLogout}
+                startIcon={<LogoutIcon />}
+                data-testid="sign-out-button"
+              >
+                {t('nav.signOut')}
+              </Button>
+            )}
           </>
         )}
 

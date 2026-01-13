@@ -19,8 +19,10 @@ import { playerConnectionService } from '../services/playerConnectionService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
-import type { DbMatchRow } from '../types/database.types';
+import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
+import { generateMatchConfig } from '../services/matchConfigBuilder';
+import type { TournamentResponse } from '../types/tournament.types';
 import { generateAvatarSvg } from '../generation/avatar';
 
 const router = Router();
@@ -178,6 +180,51 @@ router.get('/public-selection', async (_req: Request, res: Response) => {
   }
 });
 
+/**
+ * GET /api/players/selection
+ * Get players for selection modal (with team membership status)
+ *
+ * NOTE: Declared before any /:playerId routes so that the literal segment
+ * "selection" is not treated as a dynamic :playerId by the parameterized
+ * handlers below. Access is restricted to admins via requireAuth.
+ */
+router.get('/selection', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { teamId } = req.query;
+    const players = await playerService.getAllPlayers();
+
+    // If teamId provided, mark which players are already in that team
+    let teamPlayerIds: string[] = [];
+    if (teamId && typeof teamId === 'string') {
+      const team = await db.queryOneAsync<{ players: string }>(
+        'SELECT players FROM teams WHERE id = ?',
+        [teamId]
+      );
+      if (team) {
+        const teamPlayers = JSON.parse(team.players) as Array<{ steamId: string }>;
+        teamPlayerIds = teamPlayers.map((p) => p.steamId);
+      }
+    }
+
+    const playersWithStatus = players.map((p) => ({
+      ...p,
+      inTeam: teamPlayerIds.includes(p.id),
+    }));
+
+    return res.json({
+      success: true,
+      players: playersWithStatus,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error fetching players for selection', { error });
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
 function normalizeLiveStatsForPlayerView(
   liveStats: MatchLiveStats,
   isTeam1: boolean
@@ -304,8 +351,61 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       });
     }
 
-    // Determine if this player is on team1 or team2 based on config players
-    const config = match.config ? (JSON.parse(match.config) as Record<string, unknown>) : {};
+    // Determine if this player is on team1 or team2 based on config players.
+    // For bracket-managed matches (round >= 1) we rebuild the config on-demand
+    // so team rosters always reflect the latest team membership instead of a
+    // stale snapshot from bracket generation.
+    let config: Record<string, any>;
+    if (typeof match.round === 'number' && match.round >= 1 && match.tournament_id) {
+      const t = await db.queryOneAsync<DbTournamentRow>(
+        'SELECT * FROM tournament WHERE id = ?',
+        [match.tournament_id]
+      );
+
+      if (t) {
+        const tournament: TournamentResponse = {
+          id: t.id,
+          name: t.name,
+          type: t.type as TournamentResponse['type'],
+          format: t.format as TournamentResponse['format'],
+          status: t.status as TournamentResponse['status'],
+          maps: JSON.parse(t.maps),
+          teamIds: JSON.parse(t.team_ids),
+          settings: t.settings ? JSON.parse(t.settings) : {},
+          created_at: t.created_at,
+          updated_at: t.updated_at ?? t.created_at,
+          started_at: t.started_at,
+          completed_at: t.completed_at,
+          teams: [],
+          mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+          teamSize:
+            t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
+          maxRounds:
+            t.max_rounds === null || typeof t.max_rounds === 'undefined'
+              ? undefined
+              : t.max_rounds,
+          overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+          overtimeSegments:
+            t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+              ? undefined
+              : t.overtime_segments,
+          eloTemplateId: t.elo_template_id ?? undefined,
+        };
+
+        const fresh = await generateMatchConfig(
+          tournament,
+          match.team1_id ?? undefined,
+          match.team2_id ?? undefined,
+          match.slug
+        );
+        config = fresh as unknown as Record<string, any>;
+      } else {
+        config = match.config ? (JSON.parse(match.config) as Record<string, any>) : {};
+      }
+    } else {
+      // Manual/non-bracket matches keep their stored config as-is.
+      config = match.config ? (JSON.parse(match.config) as Record<string, any>) : {};
+    }
 
     const normalizedTeam1Players = config.team1
       ? normalizeConfigPlayers(config.team1.players)
@@ -980,47 +1080,6 @@ router.get('/', async (_req: Request, res: Response) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     log.error('Error fetching players', { error });
-    return res.status(500).json({
-      success: false,
-      error: message,
-    });
-  }
-});
-
-/**
- * GET /api/players/selection
- * Get players for selection modal (with team membership status)
- */
-router.get('/selection', async (req: Request, res: Response) => {
-  try {
-    const { teamId } = req.query;
-    const players = await playerService.getAllPlayers();
-
-    // If teamId provided, mark which players are already in that team
-    let teamPlayerIds: string[] = [];
-    if (teamId && typeof teamId === 'string') {
-      const team = await db.queryOneAsync<{ players: string }>(
-        'SELECT players FROM teams WHERE id = ?',
-        [teamId]
-      );
-      if (team) {
-        const teamPlayers = JSON.parse(team.players) as Array<{ steamId: string }>;
-        teamPlayerIds = teamPlayers.map((p) => p.steamId);
-      }
-    }
-
-    const playersWithStatus = players.map((p) => ({
-      ...p,
-      inTeam: teamPlayerIds.includes(p.id),
-    }));
-
-    return res.json({
-      success: true,
-      players: playersWithStatus,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    log.error('Error fetching players for selection', { error });
     return res.status(500).json({
       success: false,
       error: message,

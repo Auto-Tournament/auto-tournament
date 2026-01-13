@@ -1036,6 +1036,38 @@ export class MatchAllocationService {
     log.info(`Current status: ${tournament.status}`);
     log.info(`Teams: ${tournament.teamIds.length}`);
 
+    // Hard safety check: ensure all referenced teams still exist at the moment
+    // the tournament is started. This prevents brackets from silently using
+    // "ghost" teams that were deleted or renamed after initial setup.
+    if (tournament.type !== 'shuffle' && tournament.teamIds.length > 0) {
+      const teamIds = tournament.teamIds;
+      const placeholders = teamIds.map(() => '?').join(',');
+      const existingTeams = await db.queryAsync<{ id: string }>(
+        `SELECT id FROM teams WHERE id IN (${placeholders})`,
+        teamIds
+      );
+      const existingIds = new Set(existingTeams.map((t) => t.id));
+      const missingIds = teamIds.filter((id) => !existingIds.has(id));
+
+      if (missingIds.length > 0) {
+        const message =
+          missingIds.length === 1
+            ? `Cannot start tournament: team '${missingIds[0]}' no longer exists. Update the Teams list on the tournament setup page and regenerate the bracket.`
+            : `Cannot start tournament: ${missingIds.length} teams referenced by this tournament no longer exist (${missingIds.join(
+                ', '
+              )}). Update the Teams list on the tournament setup page and regenerate the bracket.`;
+
+        log.warn('[TOURNAMENT] Start rejected due to missing teams', { missingIds });
+        return {
+          success: false,
+          message,
+          allocated: 0,
+          failed: 0,
+          results: [],
+        };
+      }
+    }
+
     if (tournament.status === 'completed') {
       log.warn('Tournament is already completed');
       return {

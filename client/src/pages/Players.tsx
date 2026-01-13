@@ -150,8 +150,11 @@ export default function Players() {
     try {
       setLoading(true);
       const data = await api.get<PlayersResponse>('/api/players');
-      setPlayers(data.players || []);
-      setFilteredPlayers(data.players || []);
+      const sorted = (data.players || []).slice().sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      );
+      setPlayers(sorted);
+      setFilteredPlayers(sorted);
     } catch (err) {
       const errorMessage = t('playersPage.loadError');
       showError(errorMessage);

@@ -71,7 +71,59 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   );
   const isShuffleTournament = tournamentType?.type === 'shuffle';
 
-  const config = row.config ? JSON.parse(row.config as string) : {};
+  // For bracket-managed matches (round >= 1) rebuild the config on demand so
+  // team rosters and settings always reflect the latest DB state instead of a
+  // stale snapshot from when the match was first generated. Manual matches
+  // (round = 0) keep their stored config as-is.
+  let config: MatchConfig | Record<string, unknown>;
+  if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
+    const t = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = ?',
+      [row.tournament_id]
+    );
+
+    if (t) {
+      const tournament: TournamentResponse = {
+        id: t.id,
+        name: t.name,
+        type: t.type as TournamentResponse['type'],
+        format: t.format as TournamentResponse['format'],
+        status: t.status as TournamentResponse['status'],
+        maps: JSON.parse(t.maps),
+        teamIds: JSON.parse(t.team_ids),
+        settings: t.settings ? JSON.parse(t.settings) : {},
+        created_at: t.created_at,
+        updated_at: t.updated_at ?? t.created_at,
+        started_at: t.started_at,
+        completed_at: t.completed_at,
+        teams: [],
+        mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+        teamSize:
+          t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
+        maxRounds:
+          t.max_rounds === null || typeof t.max_rounds === 'undefined'
+            ? undefined
+            : t.max_rounds,
+        overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+        overtimeSegments:
+          t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+            ? undefined
+            : t.overtime_segments,
+        eloTemplateId: t.elo_template_id ?? undefined,
+      };
+
+      config = await generateMatchConfig(
+        tournament,
+        row.team1_id ?? undefined,
+        row.team2_id ?? undefined,
+        row.slug
+      );
+    } else {
+      config = row.config ? JSON.parse(row.config as string) : {};
+    }
+  } else {
+    config = row.config ? JSON.parse(row.config as string) : {};
+  }
   const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
   // Normalize players from config
@@ -632,7 +684,57 @@ router.get('/', async (req: Request, res: Response) => {
     // Transform players from dictionary to array for frontend
     const matches: MatchListItem[] = await Promise.all(
       rows.map(async (row) => {
-        const config = row.config ? JSON.parse(row.config as string) : {};
+        // For bracket-managed matches (round >= 1) rebuild config on demand so
+        // admin views always see the latest team composition and settings. Manual
+        // matches (round = 0) keep their stored config.
+        let config: MatchConfig | Record<string, unknown>;
+        if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
+          if (tournamentRow) {
+            const t = tournamentRow;
+            const tournament: TournamentResponse = {
+              id: t.id,
+              name: t.name,
+              type: t.type as TournamentResponse['type'],
+              format: t.format as TournamentResponse['format'],
+              status: t.status as TournamentResponse['status'],
+              maps: JSON.parse(t.maps),
+              teamIds: JSON.parse(t.team_ids),
+              settings: t.settings ? JSON.parse(t.settings) : {},
+              created_at: t.created_at,
+              updated_at: t.updated_at ?? t.created_at,
+              started_at: t.started_at,
+              completed_at: t.completed_at,
+              teams: [],
+              mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+              teamSize:
+                t.team_size === null || typeof t.team_size === 'undefined'
+                  ? undefined
+                  : t.team_size,
+              maxRounds:
+                t.max_rounds === null || typeof t.max_rounds === 'undefined'
+                  ? undefined
+                  : t.max_rounds,
+              overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+              overtimeSegments:
+                t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+                  ? undefined
+                  : t.overtime_segments,
+              eloTemplateId: t.elo_template_id ?? undefined,
+            };
+
+            config = await generateMatchConfig(
+              tournament,
+              row.team1_id ?? undefined,
+              row.team2_id ?? undefined,
+              row.slug
+            );
+          } else {
+            config = row.config ? JSON.parse(row.config as string) : {};
+          }
+        } else {
+          config = row.config ? JSON.parse(row.config as string) : {};
+        }
+
         const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
         // Normalize players and enrich with avatars from team data
