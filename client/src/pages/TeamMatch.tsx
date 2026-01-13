@@ -27,7 +27,7 @@ import type { Team } from '../types';
 import type { NotificationSoundValue } from '../utils/soundNotification';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { useAuth } from '../contexts/AuthContext';
-import { PlayerNavBar } from '../components/layout/PlayerNavBar';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 type TeamSoundControlsProps = {
   team: Team | null;
@@ -162,7 +162,7 @@ export default function TeamMatch() {
         flexDirection="column"
         bgcolor="background.default"
       >
-        <PlayerNavBar />
+        <TopNavBar />
         <Box
           flex={1}
           display="flex"
@@ -179,7 +179,7 @@ export default function TeamMatch() {
   if (error) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="md">
           <Box py={6}>
           <Alert severity="error">{error}</Alert>
@@ -203,7 +203,7 @@ export default function TeamMatch() {
   if (!hasMatch) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="md">
           <Stack spacing={3} py={6}>
             <MatchNotificationAudio
@@ -297,7 +297,7 @@ export default function TeamMatch() {
   // Active match state
   return (
     <Box minHeight="100vh" bgcolor="background.default">
-      <PlayerNavBar />
+      <TopNavBar />
       <Container maxWidth="md">
         <Box py={6}>
         <Stack spacing={3}>

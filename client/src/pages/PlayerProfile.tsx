@@ -30,7 +30,7 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
-import { PlayerNavBar } from '../components/layout/PlayerNavBar';
+import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
@@ -590,7 +590,7 @@ export default function PlayerProfile() {
   if (loading) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="md">
           <Box
             display="flex"
@@ -609,7 +609,7 @@ export default function PlayerProfile() {
   if (error || !player) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="sm">
           <Box py={6}>
             <Card>
@@ -712,7 +712,7 @@ export default function PlayerProfile() {
       bgcolor="background.default"
       data-testid="public-player-page"
     >
-      <PlayerNavBar />
+      <TopNavBar />
       <Container maxWidth="md">
         <Box py={6}>
         <Stack spacing={3}>

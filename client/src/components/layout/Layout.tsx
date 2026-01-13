@@ -23,8 +23,6 @@ import ListSubheader from '@mui/material/ListSubheader';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import {
-  LibraryBooks,
-  Logout,
   Home as HomeIcon,
   Dashboard as DashboardIcon,
   BugReport as BugReportIcon,
@@ -42,14 +40,13 @@ import MapIcon from '@mui/icons-material/Map';
 import DescriptionIcon from '@mui/icons-material/Description';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PublicIcon from '@mui/icons-material/Public';
-import { useAuth } from '../../contexts/AuthContext';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
 import type { SettingsResponse } from '../../types/api.types';
 import { useIsDevelopment } from '../../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
-import { LanguageSwitcher } from '../common/LanguageSwitcher';
+import { SharedNavBar } from './SharedNavBar';
 
 const drawerWidth = 240;
 
@@ -138,7 +135,6 @@ export default function Layout() {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, needsSteamLink, loginWithSteam } = useAuth();
   const { headerActions } = usePageHeader();
   const { showError } = useSnackbar();
   const hasShownWebhookWarningRef = React.useRef(false);
@@ -283,12 +279,6 @@ export default function Layout() {
 
   const isActive = (path: string) => {
     return location.pathname === path || location.pathname === path + '/';
-  };
-
-  const handleLogout = () => {
-    // Best-effort async logout; navigation does not wait on the network call.
-    void logout();
-    navigate('/login');
   };
 
   // Persist sidebar state to localStorage
@@ -728,55 +718,14 @@ export default function Layout() {
               edge="start"
               sx={[
                 {
-                  marginRight: 5,
+                  marginRight: 2,
                 },
                 open && { display: { xs: 'block', md: 'none' } },
               ]}
             >
               <MenuIcon />
             </IconButton>
-            <Link to="/" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
-              <Box component="img" src="/icon.svg" alt="Logo" sx={{ maxHeight: 40, mr: 1 }} />
-              <Typography
-                variant="body2"
-                noWrap
-                component="div"
-                sx={{ fontWeight: 600, color: 'text.primary' }}
-              >
-                {t('app.name')}
-              </Typography>
-            </Link>
-            <Box sx={{ flexGrow: 1 }} />
-            <Stack direction="row" alignItems="center" spacing={1}>
-              <LanguageSwitcher />
-              {needsSteamLink && (
-                <Button
-                  color="warning"
-                  variant="outlined"
-                  onClick={loginWithSteam}
-                  size="small"
-                >
-                  {t('nav.linkSteam')}
-                </Button>
-              )}
-              <Button
-                color="inherit"
-                href="https://mat.sivert.io/"
-                target="_blank"
-                rel="noopener noreferrer"
-                startIcon={<LibraryBooks />}
-              >
-                {t('nav.documentation')}
-              </Button>
-              <Button
-                color="error"
-                onClick={handleLogout}
-                startIcon={<Logout />}
-                data-testid="sign-out-button"
-              >
-                {t('nav.signOut')}
-              </Button>
-            </Stack>
+            <SharedNavBar />
           </Toolbar>
         </AppBar>
         <DrawerHeader />

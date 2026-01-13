@@ -35,7 +35,7 @@ import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
-import { PlayerNavBar } from '../components/layout/PlayerNavBar';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -256,7 +256,7 @@ export default function TournamentLeaderboard() {
   if (loading) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
             <CircularProgress />
@@ -269,7 +269,7 @@ export default function TournamentLeaderboard() {
   if (error) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Alert severity="error">{error}</Alert>
         </Container>
@@ -286,7 +286,7 @@ export default function TournamentLeaderboard() {
         bgcolor="background.default"
         data-testid="public-leaderboard-page"
       >
-        <PlayerNavBar />
+        <TopNavBar />
         <Container maxWidth="lg" sx={{ py: 6 }}>
           <Stack spacing={3}>
             <Card>
@@ -425,7 +425,7 @@ export default function TournamentLeaderboard() {
       bgcolor="background.default"
       data-testid="public-leaderboard-page"
     >
-      <PlayerNavBar />
+      <TopNavBar />
       <Container maxWidth="lg" sx={{ py: 6 }}>
         <Stack spacing={3}>
           {/* Tournament Header */}

@@ -544,6 +544,8 @@ export default function Settings() {
                       <Switch
                         checked={allowSelfRegister}
                         onChange={(event) => setAllowSelfRegister(event.target.checked)}
+                        color="primary"
+                        size="small"
                       />
                     }
                     label="Allow anyone to register via Steam login"
@@ -574,6 +576,8 @@ export default function Settings() {
                       <Switch
                         checked={ratingsEnabled}
                         onChange={(event) => setRatingsEnabled(event.target.checked)}
+                        color="primary"
+                        size="small"
                       />
                     }
                     label={t('settingsPage.matchRating.ratings.toggleLabel')}
@@ -620,6 +624,8 @@ export default function Settings() {
                         <Switch
                           checked={matchzyKnifeEnabledDefault}
                           onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
+                          color="primary"
+                          size="small"
                         />
                       }
                       label={t(
@@ -652,8 +658,8 @@ export default function Settings() {
                             setMatchzyDebugChatEnabled(e.target.checked);
                             void handleSave(true);
                           }}
-                          color="primary"
                           size="small"
+                          color="primary"
                         />
                       }
                       label={t('settingsPage.developer.debugChat.label')}
@@ -666,6 +672,8 @@ export default function Settings() {
                         <Switch
                           checked={simulateMatches}
                           onChange={(event) => setSimulateMatches(event.target.checked)}
+                          color="primary"
+                          size="small"
                           inputProps={
                             {
                               'data-testid': 'settings-simulate-matches-toggle',

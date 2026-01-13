@@ -70,11 +70,21 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 const sessionSecret = process.env.SESSION_SECRET || 'matchzy-dev-session-secret';
 const PgSession = connectPgSimple(session);
 
+// Reuse the same connection string logic as the main DatabaseManager so the
+// session store talks to the exact same PostgreSQL instance with known‑good
+// credentials. This avoids subtle mismatches when DATABASE_URL is unset or
+// when individual DB_* env vars are used instead.
+const sessionDbConnectionString =
+  process.env.DATABASE_URL ||
+  `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
+    process.env.DB_HOST || '127.0.0.1'
+  }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
+
 app.use(
   session({
     // Persist sessions in PostgreSQL so admin logins survive API restarts.
     store: new PgSession({
-      conString: process.env.DATABASE_URL,
+      conString: sessionDbConnectionString,
       tableName: 'session',
       createTableIfMissing: true,
     }),

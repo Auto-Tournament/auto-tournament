@@ -20,7 +20,7 @@ import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsMo
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
-import { PlayerNavBar } from '../components/layout/PlayerNavBar';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 interface PlayerOption {
   id: string;
@@ -134,7 +134,7 @@ export default function FindPlayer() {
 
   return (
     <Box minHeight="100vh" bgcolor="background.default" data-testid="find-player-page">
-      <PlayerNavBar />
+      <TopNavBar />
       <Container maxWidth="sm" sx={{ py: 6 }}>
         <Card data-testid="find-player-form">
           <CardContent>
