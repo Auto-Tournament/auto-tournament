@@ -11,7 +11,16 @@ export default function Login() {
   const { t } = useTranslation();
   const { loginWithSteam } = useAuth();
   const [providers, setProviders] = useState<
-    Array<{ id: string; label: string; loginUrl: string; enabled: boolean }>
+    Array<{
+      id: string;
+      label: string;
+      loginUrl: string;
+      enabled: boolean;
+      buttonLabel?: string;
+      buttonBgColor?: string;
+      buttonTextColor?: string;
+      buttonHoverBgColor?: string;
+    }>
   >([]);
   const [loadingProviders, setLoadingProviders] = useState(false);
   const [providersError, setProvidersError] = useState<string | null>(null);
@@ -43,7 +52,16 @@ export default function Login() {
 
         const data: {
           success: boolean;
-          providers?: Array<{ id: string; label: string; loginUrl: string; enabled: boolean }>;
+          providers?: Array<{
+            id: string;
+            label: string;
+            loginUrl: string;
+            enabled: boolean;
+            buttonLabel?: string;
+            buttonBgColor?: string;
+            buttonTextColor?: string;
+            buttonHoverBgColor?: string;
+          }>;
           error?: string;
         } = await response.json();
 
@@ -208,14 +226,17 @@ export default function Login() {
                       };
                     }
                     if (isKeycloak) {
+                      const bg = provider.buttonBgColor || '#3262a8';
+                      const text = provider.buttonTextColor || '#ffffff';
+                      const hoverBg = provider.buttonHoverBgColor || '#274c82';
                       return {
                         variant: 'contained' as const,
                         color: 'inherit' as const,
                         sx: {
-                          bgcolor: '#3262a8',
-                          color: '#ffffff',
+                          bgcolor: bg,
+                          color: text,
                           '&:hover': {
-                            bgcolor: '#274c82',
+                            bgcolor: hoverBg,
                           },
                         },
                         icon: <SiKeycloak />,
@@ -246,7 +267,7 @@ export default function Login() {
                           : `login-${provider.id}-sign-in-button`
                       }
                     >
-                      {`Sign in with ${provider.label}`}
+                      {provider.buttonLabel || `Sign in with ${provider.label}`}
                     </Button>
                   );
                 })}

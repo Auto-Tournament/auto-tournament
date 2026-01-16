@@ -169,12 +169,17 @@ function configureDiscordStrategy(): void {
 function configureKeycloakStrategy(): void {
   const issuerUrl = process.env.KEYCLOAK_ISSUER_URL;
   const clientID = process.env.KEYCLOAK_CLIENT_ID;
-  const clientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
+  const rawClientSecret = process.env.KEYCLOAK_CLIENT_SECRET;
   const callbackPath = process.env.KEYCLOAK_CALLBACK_PATH || '/api/auth/keycloak/callback';
 
-  if (!issuerUrl || !clientID || !clientSecret) {
+  if (!issuerUrl || !clientID) {
     return;
   }
+
+  // Treat absence of KEYCLOAK_CLIENT_SECRET as a "public" client (no secret).
+  // When a secret is provided, assume a confidential client.
+  const clientSecret =
+    rawClientSecret && rawClientSecret.trim().length > 0 ? rawClientSecret.trim() : undefined;
 
   const baseUrl = getBackendBaseUrl();
   const callbackURL = `${baseUrl}${callbackPath}`;
@@ -198,42 +203,79 @@ function configureKeycloakStrategy(): void {
     authServerURL = issuerUrl.replace(/\/+$/, '');
   }
 
-  passport.use(
-    new KeycloakStrategy(
-      {
-        clientID,
-        clientSecret,
-        authServerURL,
-        realm,
-        callbackURL,
-      },
-      (
-        accessToken: string,
-        refreshToken: string,
-        profile: KeycloakProfile,
-        done: (err: unknown, user?: unknown) => void
-      ) => {
-        const safeProfile = {
-          id: profile.id,
-          displayName: profile.displayName,
-          username: profile.username,
-        };
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { log } = require('../utils/logger') as typeof import('../utils/logger');
-        log.info('KeycloakStrategy callback: received profile from Keycloak', {
-          profile: safeProfile,
-        });
+  const strategyOptions: {
+    clientID: string;
+    authServerURL: string;
+    realm: string;
+    callbackURL: string;
+    clientSecret?: string;
+    publicClient?: boolean;
+  } = {
+    clientID,
+    authServerURL,
+    realm,
+    callbackURL,
+  };
 
-        done(null, {
-          provider: 'keycloak',
-          keycloakId: profile.id,
-          displayName: profile.displayName || profile.username || profile.id,
-          accessToken,
-          refreshToken,
-        });
-      }
-    )
+  if (clientSecret) {
+    // Confidential client – use client secret, mark as non-public.
+    strategyOptions.clientSecret = clientSecret;
+    strategyOptions.publicClient = false;
+  } else {
+    // Public client – no secret.
+    strategyOptions.publicClient = true;
+  }
+
+  const keycloakStrategy = new KeycloakStrategy(
+    strategyOptions,
+    (
+      accessToken: string,
+      refreshToken: string,
+      profile: KeycloakProfile,
+      done: (err: unknown, user?: unknown) => void
+    ) => {
+      const safeProfile = {
+        id: profile.id,
+        displayName: profile.displayName,
+        username: profile.username,
+      };
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { log } = require('../utils/logger') as typeof import('../utils/logger');
+      log.info('KeycloakStrategy callback: received profile from Keycloak', {
+        profile: safeProfile,
+      });
+
+      done(null, {
+        provider: 'keycloak',
+        keycloakId: profile.id,
+        displayName: profile.displayName || profile.username || profile.id,
+        accessToken,
+        refreshToken,
+      });
+    }
   );
+
+  // Optionally force Keycloak to immediately redirect to a specific external IdP
+  // (e.g. Vipps) by appending `kc_idp_hint` to the authorization URL.
+  // Set KEYCLOAK_IDP_HINT to the IdP alias configured in Keycloak.
+  const idpHint = process.env.KEYCLOAK_IDP_HINT;
+  if (idpHint && idpHint.trim().length > 0) {
+    try {
+      const hint = encodeURIComponent(idpHint.trim());
+      const anyStrategy = keycloakStrategy as unknown as {
+        _oauth2?: { _authorizeUrl?: string };
+      };
+      if (anyStrategy._oauth2 && typeof anyStrategy._oauth2._authorizeUrl === 'string') {
+        const original = anyStrategy._oauth2._authorizeUrl;
+        const separator = original.includes('?') ? '&' : '?';
+        anyStrategy._oauth2._authorizeUrl = `${original}${separator}kc_idp_hint=${hint}`;
+      }
+    } catch {
+      // If internals change, fail softly and continue without idp hint.
+    }
+  }
+
+  passport.use(keycloakStrategy);
 }
 
 function configureGitHubStrategy(): void {

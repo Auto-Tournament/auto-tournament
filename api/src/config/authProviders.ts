@@ -50,13 +50,47 @@ export function getAuthProvidersConfig(): AuthProviderConfig[] {
   const keycloakIssuerUrl = process.env.KEYCLOAK_ISSUER_URL;
 
   if (keycloakEnabled && keycloakIssuerUrl && keycloakIssuerUrl.trim().length > 0) {
+    const keycloakLabelEnv = process.env.AUTH_KEYCLOAK_LABEL;
+    const keycloakLabel =
+      keycloakLabelEnv && keycloakLabelEnv.trim().length > 0
+        ? keycloakLabelEnv.trim()
+        : 'Keycloak';
+
+    const keycloakButtonLabelEnv = process.env.AUTH_KEYCLOAK_BUTTON_LABEL;
+    const keycloakButtonLabel =
+      keycloakButtonLabelEnv && keycloakButtonLabelEnv.trim().length > 0
+        ? keycloakButtonLabelEnv.trim()
+        : undefined;
+
+    const keycloakButtonBgColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_BG_COLOR;
+    const keycloakButtonBgColor =
+      keycloakButtonBgColorEnv && keycloakButtonBgColorEnv.trim().length > 0
+        ? keycloakButtonBgColorEnv.trim()
+        : undefined;
+
+    const keycloakButtonTextColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_TEXT_COLOR;
+    const keycloakButtonTextColor =
+      keycloakButtonTextColorEnv && keycloakButtonTextColorEnv.trim().length > 0
+        ? keycloakButtonTextColorEnv.trim()
+        : undefined;
+
+    const keycloakButtonHoverBgColorEnv = process.env.AUTH_KEYCLOAK_BUTTON_HOVER_BG_COLOR;
+    const keycloakButtonHoverBgColor =
+      keycloakButtonHoverBgColorEnv && keycloakButtonHoverBgColorEnv.trim().length > 0
+        ? keycloakButtonHoverBgColorEnv.trim()
+        : undefined;
+
     const keycloakProvider: KeycloakAuthProviderConfig = {
       id: 'keycloak',
       kind: 'oidc',
-      label: 'Keycloak',
-      loginUrl: '/api/auth/keycloak', // To be implemented with Passport/OIDC
+      label: keycloakLabel,
+      loginUrl: '/api/auth/keycloak',
       enabled: true,
       issuerUrl: keycloakIssuerUrl.trim(),
+      buttonLabel: keycloakButtonLabel,
+      buttonBgColor: keycloakButtonBgColor,
+      buttonTextColor: keycloakButtonTextColor,
+      buttonHoverBgColor: keycloakButtonHoverBgColor,
     };
 
     providers.push(keycloakProvider);

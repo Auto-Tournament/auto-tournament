@@ -346,7 +346,11 @@ router.post('/logout', (_req: Request, res: Response) => {
 router.get(
   '/keycloak',
   // Initial redirect – session will be established on the callback.
-  passport.authenticate('keycloak')
+  passport.authenticate('keycloak', {
+    // Request standard OIDC scopes so that the UserInfo endpoint
+    // can return a usable profile.
+    scope: ['openid', 'profile', 'email'],
+  })
 );
 
 /**

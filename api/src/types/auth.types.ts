@@ -23,6 +23,14 @@ export interface BaseAuthProviderConfig {
    * Whether this provider is currently enabled based on configuration.
    */
   enabled: boolean;
+  /**
+   * Optional UI customization for the login button associated with this provider.
+   * These are intentionally non-functional (visual only) and safe to expose to the frontend.
+   */
+  buttonLabel?: string;
+  buttonBgColor?: string;
+  buttonTextColor?: string;
+  buttonHoverBgColor?: string;
 }
 
 export interface SteamAuthProviderConfig extends BaseAuthProviderConfig {
