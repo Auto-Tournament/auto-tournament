@@ -125,6 +125,19 @@ class SettingsService {
         return;
       }
 
+      if (key === 'matchzy_debug_chat') {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`MatchZy debug chat ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
+
       if (key === 'allow_self_register') {
         const normalized = trimmed.toLowerCase();
         const isEnabled =

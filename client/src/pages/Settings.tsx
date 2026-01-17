@@ -157,7 +157,7 @@ export default function Settings() {
   }, [setHeaderActions]);
 
   const handleSave = useCallback(
-    async (showSuccessMessage = true) => {
+    async (showSuccessMessage = true, overrides?: { matchzyDebugChatEnabled?: boolean }) => {
       setSaving(true);
 
       // Cancel any pending auto-save
@@ -174,7 +174,7 @@ export default function Settings() {
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
           matchzyKnifeEnabledDefault,
           ratingsEnabled,
-          matchzyDebugChatEnabled,
+          matchzyDebugChatEnabled: overrides?.matchzyDebugChatEnabled ?? matchzyDebugChatEnabled,
           allowSelfRegister,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
@@ -334,6 +334,8 @@ export default function Settings() {
       matchzyChatPrefix === initialMatchzyChatPrefix &&
       matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
       matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
+      matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
+      ratingsEnabled === initialRatingsEnabled &&
       (!isDev ||
         (simulateMatches === initialSimulateMatches &&
           simulationTimescale === initialSimulationTimescale))
@@ -360,10 +362,14 @@ export default function Settings() {
     matchzyChatPrefix,
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
+    matchzyDebugChatEnabled,
+    ratingsEnabled,
     initialWebhookUrl,
     initialMatchzyChatPrefix,
     initialMatchzyAdminChatPrefix,
     initialMatchzyKnifeEnabledDefault,
+    initialMatchzyDebugChatEnabled,
+    initialRatingsEnabled,
     simulateMatches,
     initialSimulateMatches,
     initialSimulationTimescale,
@@ -655,8 +661,10 @@ export default function Settings() {
                         <Switch
                           checked={matchzyDebugChatEnabled}
                           onChange={(e) => {
-                            setMatchzyDebugChatEnabled(e.target.checked);
-                            void handleSave(true);
+                            const newValue = e.target.checked;
+                            setMatchzyDebugChatEnabled(newValue);
+                            // Pass the new value as an override to handleSave since state updates are async
+                            void handleSave(true, { matchzyDebugChatEnabled: newValue });
                           }}
                           size="small"
                           color="primary"
