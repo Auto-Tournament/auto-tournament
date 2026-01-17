@@ -3,6 +3,7 @@ import { Strategy as SteamStrategy } from 'passport-steam';
 import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as KeycloakStrategy } from 'passport-keycloak-oauth2-oidc';
 import { Strategy as GitHubStrategy } from 'passport-github2';
+import { log } from '../utils/logger';
 
 interface SteamProfile {
   id: string;
@@ -89,9 +90,6 @@ function configureSteamStrategy(): void {
           hasAvatar: Boolean(profile._json?.avatarfull),
         };
 
-        // Lazy import to avoid circular deps at module load.
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { log } = require('../utils/logger') as typeof import('../utils/logger');
         log.info('SteamStrategy callback: received profile from Steam', {
           profile: safeProfile,
         });
@@ -140,8 +138,6 @@ function configureDiscordStrategy(): void {
           username: profile.username,
           hasAvatar: profile.avatar != null,
         };
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { log } = require('../utils/logger') as typeof import('../utils/logger');
         log.info('DiscordStrategy callback: received profile from Discord', {
           profile: safeProfile,
         });
@@ -239,8 +235,6 @@ function configureKeycloakStrategy(): void {
         displayName: profile.displayName,
         username: profile.username,
       };
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { log } = require('../utils/logger') as typeof import('../utils/logger');
       log.info('KeycloakStrategy callback: received profile from Keycloak', {
         profile: safeProfile,
       });
@@ -309,8 +303,6 @@ function configureGitHubStrategy(): void {
           displayName: profile.displayName,
           hasAvatar: Boolean(profile.photos && profile.photos[0]?.value),
         };
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        const { log } = require('../utils/logger') as typeof import('../utils/logger');
         log.info('GitHubStrategy callback: received profile from GitHub', {
           profile: safeProfile,
         });

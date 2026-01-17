@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Button } from '@mui/material';
+import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';
 import { EmptyState } from '../shared/EmptyState';

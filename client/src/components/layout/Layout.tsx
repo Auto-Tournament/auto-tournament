@@ -18,7 +18,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
-import Stack from '@mui/material/Stack';
 import ListSubheader from '@mui/material/ListSubheader';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';

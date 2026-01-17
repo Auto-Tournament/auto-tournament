@@ -689,6 +689,10 @@ router.get('/', async (req: Request, res: Response) => {
         // matches (round = 0) keep their stored config.
         let config: MatchConfig | Record<string, unknown>;
         if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
+          const tournamentRow = await db.queryOneAsync<DbTournamentRow>(
+            'SELECT * FROM tournament WHERE id = ?',
+            [row.tournament_id]
+          );
           if (tournamentRow) {
             const t = tournamentRow;
             const tournament: TournamentResponse = {

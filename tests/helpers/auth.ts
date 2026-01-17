@@ -1,4 +1,4 @@
-import { Page, APIRequestContext, expect } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
 /**
  * Authentication helper functions

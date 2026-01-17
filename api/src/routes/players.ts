@@ -23,6 +23,7 @@ import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { TournamentResponse } from '../types/tournament.types';
+import type { MatchConfig } from '../types/match.types';
 import { generateAvatarSvg } from '../generation/avatar';
 
 const router = Router();
@@ -355,7 +356,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     // For bracket-managed matches (round >= 1) we rebuild the config on-demand
     // so team rosters always reflect the latest team membership instead of a
     // stale snapshot from bracket generation.
-    let config: Record<string, any>;
+    let config: MatchConfig | Record<string, unknown>;
     if (typeof match.round === 'number' && match.round >= 1 && match.tournament_id) {
       const t = await db.queryOneAsync<DbTournamentRow>(
         'SELECT * FROM tournament WHERE id = ?',
@@ -398,13 +399,17 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
           match.team2_id ?? undefined,
           match.slug
         );
-        config = fresh as unknown as Record<string, any>;
+        config = fresh;
       } else {
-        config = match.config ? (JSON.parse(match.config) as Record<string, any>) : {};
+        config = match.config
+          ? (JSON.parse(match.config) as MatchConfig | Record<string, unknown>)
+          : {};
       }
     } else {
       // Manual/non-bracket matches keep their stored config as-is.
-      config = match.config ? (JSON.parse(match.config) as Record<string, any>) : {};
+      config = match.config
+        ? (JSON.parse(match.config) as MatchConfig | Record<string, unknown>)
+        : {};
     }
 
     const normalizedTeam1Players = config.team1
