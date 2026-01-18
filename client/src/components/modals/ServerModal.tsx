@@ -297,9 +297,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             <Autocomplete
               freeSolo
               options={Array.from(new Set(servers.map((s) => s.host))).sort()}
-              value={host || null}
+              value={host}
               onInputChange={(_, newValue) => setHost(newValue || '')}
-              onChange={(_, newValue) => setHost(typeof newValue === 'string' ? newValue : newValue || '')}
               renderInput={(params) => (
                 <TextField
                   {...params}

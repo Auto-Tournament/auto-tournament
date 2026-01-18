@@ -24,6 +24,7 @@ import Grid from '@mui/material/Grid';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
@@ -53,6 +54,7 @@ interface ServerVerification {
   index: number;
   status: ServerVerificationStatus;
   error?: string;
+  serverCanReachApi?: boolean; // Whether server can reach API (Server -> API)
 }
 
 const formatVerificationError = (error?: string): string | undefined => {
@@ -242,7 +244,7 @@ export default function BatchServerModal({
       const serverName = `${baseName.trim()} #${i + 1}`;
 
       try {
-        const result = await api.post<{ success: boolean; error?: string }>(
+        const result = await api.post<{ success: boolean; error?: string; serverCanReachApi?: boolean }>(
           '/api/rcon/test-connection',
           {
             host: host.trim(),
@@ -256,6 +258,7 @@ export default function BatchServerModal({
           index: i,
           status: result.success ? 'success' : 'error',
           error: result.error,
+          serverCanReachApi: result.serverCanReachApi,
         });
       } catch (err) {
         const error = err as { response?: { data?: { error?: string } }; message?: string };
@@ -645,7 +648,15 @@ export default function BatchServerModal({
                               status === 'checking' ? (
                                 <CircularProgress size={16} />
                               ) : status === 'success' ? (
-                                <ArrowUpwardIcon color="success" fontSize="small" />
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <ArrowUpwardIcon color="success" fontSize="small" />
+                                  {verification?.serverCanReachApi === true && (
+                                    <ArrowDownwardIcon color="success" fontSize="small" />
+                                  )}
+                                  {verification?.serverCanReachApi === false && (
+                                    <ArrowDownwardIcon color="error" fontSize="small" />
+                                  )}
+                                </Box>
                               ) : status === 'error' ? (
                                 <ErrorIcon color="error" fontSize="small" />
                               ) : null,
@@ -653,6 +664,10 @@ export default function BatchServerModal({
                           helperText={
                             verification?.status === 'error'
                               ? formatVerificationError(verification.error)
+                              : verification?.status === 'success' && verification.serverCanReachApi === false
+                              ? 'API → Server: OK • Server → API: Failed (check firewall/webhook config)'
+                              : verification?.status === 'success' && verification.serverCanReachApi === true
+                              ? 'API → Server: OK • Server → API: OK'
                               : undefined
                           }
                           error={verification?.status === 'error'}

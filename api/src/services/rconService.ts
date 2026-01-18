@@ -1,4 +1,5 @@
 import { Rcon } from 'dathost-rcon-client';
+import GameDig from 'gamedig';
 import { serverService } from './serverService';
 import { ServerResponse } from '../types/server.types';
 import { RconCommandResponse } from '../types/rcon.types';
@@ -110,6 +111,7 @@ export class RconService {
 
   /**
    * Test connection to a server by host, port, and password (without requiring server to be saved)
+   * Attempts to check server status with gamedig first (optional, non-blocking), then tests RCON authentication
    */
   async testConnectionByParams(
     host: string,
@@ -117,6 +119,33 @@ export class RconService {
     password: string,
     serverName?: string
   ): Promise<RconCommandResponse> {
+    // Step 1: Attempt to check if server is online using gamedig (non-blocking)
+    // If gamedig fails, we'll still try RCON - server might be online but query disabled/blocked
+    let serverQueryStatus: 'online' | 'offline' | 'unknown' = 'unknown';
+    try {
+      await Promise.race([
+        GameDig.query({
+          type: 'cs2',
+          host,
+          port, // CS2 uses the same port for queries as the game port
+        }),
+        new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Server query timeout (5s)')), 5000)
+        ),
+      ]);
+      serverQueryStatus = 'online';
+      log.debug(`Server ${host}:${port} query check successful (gamedig)`, { serverName });
+    } catch (queryError) {
+      serverQueryStatus = 'offline';
+      // Log but don't fail - query might be disabled/blocked even if server is online
+      log.debug(`Server ${host}:${port} query check failed (gamedig) - will try RCON anyway`, { 
+        serverName,
+        note: 'Query failure is non-blocking - server might still be online with RCON access',
+        error: queryError 
+      });
+    }
+
+    // Step 2: Server is online - now test RCON authentication
     const client = new Rcon({
       host,
       port,
@@ -138,16 +167,94 @@ export class RconService {
         ),
       ]);
 
+      const successMessage = serverQueryStatus === 'online' 
+        ? 'Connection successful - Server is online (verified) and RCON authentication successful'
+        : 'RCON authentication successful - Server query status unknown (query may be disabled/blocked)';
+      
       return {
         success: true,
         serverId: `${host}:${port}`,
         serverName: serverName || `${host}:${port}`,
         command: 'status',
-        response: 'Connection successful',
+        response: successMessage,
         timestamp: Date.now(),
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      let errorMessage = 'Unknown error';
+      
+      // Handle AggregateError (can occur with Promise.race/timeouts)
+      if (error && typeof error === 'object' && 'constructor' && error.constructor.name === 'AggregateError') {
+        const aggError = error as { message?: string; errors?: unknown[]; code?: string };
+        // Try to get the first meaningful error from the aggregate
+        if (aggError.errors && Array.isArray(aggError.errors) && aggError.errors.length > 0) {
+          const firstError = aggError.errors[0];
+          if (firstError instanceof Error) {
+            errorMessage = firstError.message || firstError.toString();
+          } else if (typeof firstError === 'string') {
+            errorMessage = firstError;
+          } else {
+            errorMessage = String(firstError);
+          }
+        } else if (aggError.message) {
+          errorMessage = aggError.message;
+        } else if (aggError.code) {
+          errorMessage = `Connection failed: ${aggError.code}`;
+        }
+      } else if (error instanceof Error) {
+        errorMessage = error.message || error.toString() || 'Unknown error';
+      } else if (error) {
+        errorMessage = String(error);
+      }
+      
+      // If error message is still generic, try to extract from error object
+      if (errorMessage === 'Unknown error' || errorMessage === 'AggregateError') {
+        if (error && typeof error === 'object') {
+          const err = error as Record<string, unknown>;
+          if (err.message && typeof err.message === 'string') {
+            errorMessage = err.message;
+          } else if (err.code && typeof err.code === 'string') {
+            errorMessage = `Error: ${err.code}`;
+          } else if (err.errno !== undefined) {
+            errorMessage = `Connection error (errno: ${err.errno})`;
+          }
+        }
+      }
+      
+      // RCON failed - provide specific error messages based on query status
+      const lowerMessage = errorMessage.toLowerCase();
+      const queryStatusNote = serverQueryStatus === 'online' 
+        ? 'Server is online (verified) but RCON authentication failed.' 
+        : serverQueryStatus === 'offline'
+        ? 'Server query failed and RCON authentication failed.'
+        : 'RCON authentication failed (server query status unknown).';
+      
+      if (lowerMessage.includes('authentication') || lowerMessage.includes('password') || lowerMessage.includes('auth') || lowerMessage.includes('invalid password')) {
+        errorMessage = `Authentication failed - Incorrect RCON password. ${queryStatusNote}`;
+      } else if (lowerMessage.includes('timeout')) {
+        errorMessage = `RCON timeout - RCON did not respond within 10 seconds. ${queryStatusNote} Check if RCON port ${port} is correct and accessible.`;
+      } else if (lowerMessage.includes('econnrefused') || lowerMessage.includes('connection refused')) {
+        if (serverQueryStatus === 'online') {
+          errorMessage = `RCON connection refused - Server is online but RCON port ${port} is not accessible. Check firewall or RCON port configuration.`;
+        } else {
+          errorMessage = `Connection refused - Server appears offline or unreachable at ${host}:${port}. Check if server is running and accessible.`;
+        }
+      } else if (lowerMessage.includes('econnreset') || lowerMessage.includes('connection reset')) {
+        errorMessage = `RCON connection reset - RCON connection was closed. ${queryStatusNote} Check RCON configuration.`;
+      } else if (lowerMessage.includes('enotfound') || lowerMessage.includes('host not found')) {
+        errorMessage = `Host not found - Cannot resolve hostname "${host}"`;
+      } else if (lowerMessage.includes('eaddrinuse')) {
+        errorMessage = `Address already in use - Port ${port} may be in use`;
+      } else {
+        // Generic RCON error
+        if (serverQueryStatus === 'online') {
+          errorMessage = `RCON connection failed - Server is online but RCON failed: ${errorMessage}`;
+        } else {
+          errorMessage = `Connection failed - ${errorMessage}. Server may be offline or unreachable.`;
+        }
+      }
+      
+      log.error(`RCON test connection failed for ${host}:${port}`, error, { serverName, errorMessage });
+      
       return {
         success: false,
         serverId: `${host}:${port}`,
