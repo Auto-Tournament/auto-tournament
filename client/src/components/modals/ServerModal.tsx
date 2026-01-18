@@ -12,6 +12,7 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
+  Autocomplete,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -148,42 +149,42 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       return;
     }
 
-    const generatedId = isEditing ? server.id : slugifyServerName(name);
-    if (!generatedId) {
-      setError(t('serverModal.errors.idGenerationFailed'));
-      return;
-    }
-
-    if (!isEditing && servers.some((existing) => existing.id === generatedId)) {
-      setError(t('serverModal.errors.duplicateId', { id: generatedId }));
-      return;
-    }
-
-    // Check for duplicate host:port combination
-    const duplicate = servers.find(
-      (s) => s.host === host.trim() && s.port === portNum && s.id !== (isEditing ? server?.id : '') // Exclude current server when editing
-    );
-
-    if (duplicate) {
-      setError(
-        t('serverModal.errors.duplicateHostPort', {
-          host: host.trim(),
-          port: portNum,
-          id: duplicate.id,
-          name: duplicate.name,
-        })
-      );
-      return;
-    }
-
     setSaving(true);
     setError('');
 
     try {
+      const trimmedHost = host.trim();
+      
+      // Check for existing server with same IP:port (excluding current server when editing)
+      const existingServerByHostPort = servers.find(
+        (s) => s.host === trimmedHost && s.port === portNum && s.id !== (isEditing ? server?.id : '')
+      );
+
+      // If found, use its ID to update it; otherwise generate new ID
+      const serverId = isEditing 
+        ? server.id 
+        : existingServerByHostPort?.id || slugifyServerName(name);
+
+      if (!serverId) {
+        setError(t('serverModal.errors.idGenerationFailed'));
+        setSaving(false);
+        return;
+      }
+
+      // When creating, check if the generated ID conflicts with a different server (not by IP:port)
+      if (!isEditing && !existingServerByHostPort) {
+        const idConflict = servers.find((s) => s.id === serverId && (s.host !== trimmedHost || s.port !== portNum));
+        if (idConflict) {
+          setError(t('serverModal.errors.duplicateId', { id: serverId }));
+          setSaving(false);
+          return;
+        }
+      }
+
       const payload = {
-        id: generatedId,
+        id: serverId,
         name: name.trim(),
-        host: host.trim(),
+        host: trimmedHost,
         port: portNum,
         password: password.trim(),
         enabled,
@@ -293,16 +294,24 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               }}
             />
 
-            <TextField
-              label={t('serverModal.hostLabel')}
-              value={host}
-              onChange={(e) => setHost(e.target.value)}
-              placeholder={t('serverModal.hostPlaceholder')}
-              required
-              fullWidth
-              slotProps={{
-                htmlInput: { 'data-testid': 'server-host-input' },
-              }}
+            <Autocomplete
+              freeSolo
+              options={Array.from(new Set(servers.map((s) => s.host))).sort()}
+              value={host || null}
+              onInputChange={(_, newValue) => setHost(newValue || '')}
+              onChange={(_, newValue) => setHost(typeof newValue === 'string' ? newValue : newValue || '')}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  label={t('serverModal.hostLabel')}
+                  placeholder={t('serverModal.hostPlaceholder')}
+                  required
+                  fullWidth
+                  slotProps={{
+                    htmlInput: { 'data-testid': 'server-host-input' },
+                  }}
+                />
+              )}
             />
 
             <TextField
