@@ -313,7 +313,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/', async (req: Request, res: Response) => {
   try {
     const input: UpdateTournamentInput = req.body;
-    const tournament = tournamentService.updateTournament(input);
+    const tournament = await tournamentService.updateTournament(input);
 
     // Emit updates to all clients
     emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
