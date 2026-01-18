@@ -193,7 +193,7 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
           />
         </Box>
 
-        <Alert severity="warning" sx={{ mb: 3 }}>
+        <Alert severity={tournament.status === 'in_progress' ? 'warning' : 'success'} sx={{ mb: 3 }}>
           <Typography variant="body2" fontWeight={600} gutterBottom>
             Tournament is {tournament.status === 'in_progress' ? 'Live' : 'Completed'}
           </Typography>

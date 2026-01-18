@@ -155,10 +155,8 @@
     "openPlayerPageTooltip": "Open player page",
     "skillRatingTooltip": "Skill Rating is based on OpenSkill; higher is better.",
     "skillRatingLabel": "Skill Rating: {{elo}}",
-    "matchesCount": {
-      "one": "{{count}} match",
-      "other": "{{count}} matches"
-    }
+    "matchesCount_one": "{{count}} match",
+    "matchesCount_other": "{{count}} matches"
   },
   "teamModal": {
     "titleCreate": "Create New Team",

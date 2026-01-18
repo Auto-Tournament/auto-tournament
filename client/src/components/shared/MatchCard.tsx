@@ -227,7 +227,21 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 // as completed to avoid "VETO PENDING" labels on the list view.
                 vetoDisabled ? true : vetoCompleted,
                 tournamentStarted,
-                Boolean(match.serverId)
+                Boolean(match.serverId),
+                match.liveStats?.team1Score,
+                match.liveStats?.team2Score,
+                match.config?.maxRounds,
+                typeof match.config?.cvars === 'object' && match.config.cvars
+                  ? typeof (match.config.cvars as Record<string, string | number>)[
+                      'mp_overtime_maxrounds'
+                    ] === 'number'
+                    ? Number(
+                        (match.config.cvars as Record<string, string | number>)[
+                          'mp_overtime_maxrounds'
+                        ]
+                      )
+                    : undefined
+                  : undefined
               )}
               size="small"
               color={getStatusColor(match.status)}

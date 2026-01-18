@@ -348,18 +348,80 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
 
 /**
  * Check if tournament is completed
+ * For bracket tournaments (single/double elimination, round robin, swiss), all matches
+ * are generated upfront. If all matches are completed, the tournament is complete.
+ * For shuffle tournaments, matches are generated dynamically per round, so completion
+ * is handled separately in shuffleTournamentService.
  */
-export async function checkTournamentCompletion(): Promise<void> {
+export async function checkTournamentCompletion(tournamentId: number = 1): Promise<void> {
   try {
-    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
-    if (!tournament || tournament.status === 'completed') return;
+    log.info(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
+    
+    const tournament = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+    
+    if (!tournament) {
+      log.info(`[TOURNAMENT] Tournament ${tournamentId} not found`);
+      return;
+    }
+    
+    if (tournament.status === 'completed') {
+      log.info(`[TOURNAMENT] Tournament ${tournamentId} already completed, skipping check`);
+      return;
+    }
 
-    const pendingMatches = await db.queryOneAsync<{ count: number }>(
-      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1 AND status != ?',
-      ['completed']
+    log.info(`[TOURNAMENT] Tournament ${tournamentId} status: ${tournament.status}, type: ${tournament.type}`);
+
+    // Skip shuffle tournaments - they handle completion in shuffleTournamentService
+    if (tournament.type === 'shuffle') {
+      log.info(`[TOURNAMENT] Skipping shuffle tournament ${tournamentId} (handled separately)`);
+      return;
+    }
+
+    // Count all matches for this tournament (bracket matches have round >= 1)
+    const totalMatches = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND round >= 1',
+      [tournamentId]
     );
 
-    if (pendingMatches && pendingMatches.count === 0) {
+    // Count non-completed matches
+    const pendingMatches = await db.queryOneAsync<{ count: number | string }>(
+      'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND round >= 1 AND status != ?',
+      [tournamentId, 'completed']
+    );
+
+    // Get detailed match status breakdown for debugging
+    const matchStatusBreakdown = await db.queryAsync<{ status: string; count: number | string }>(
+      `SELECT status, COUNT(*) as count 
+       FROM matches 
+       WHERE tournament_id = ? AND round >= 1 
+       GROUP BY status`,
+      [tournamentId]
+    );
+
+    // Convert counts to numbers (PostgreSQL may return strings)
+    const totalMatchesCount = Number(totalMatches?.count ?? 0);
+    const pendingMatchesCount = Number(pendingMatches?.count ?? 0);
+
+    const statusBreakdown = matchStatusBreakdown.reduce((acc, row) => {
+      acc[row.status] = Number(row.count);
+      return acc;
+    }, {} as Record<string, number>);
+
+    log.info(`[TOURNAMENT] Completion check for tournament ${tournamentId}:`, {
+      totalBracketMatches: totalMatchesCount,
+      pendingMatches: pendingMatchesCount,
+      statusBreakdown,
+    });
+
+    // Tournament is complete if:
+    // 1. There is at least one bracket match (tournament bracket was generated)
+    // 2. All bracket matches are completed
+    if (totalMatchesCount > 0 && pendingMatchesCount === 0) {
+      log.info(`[TOURNAMENT] All ${totalMatchesCount} bracket match(es) completed. Marking tournament ${tournamentId} as completed.`);
+      
       await db.updateAsync(
         'tournament',
         {
@@ -367,14 +429,28 @@ export async function checkTournamentCompletion(): Promise<void> {
           completed_at: Math.floor(Date.now() / 1000),
         },
         'id = ?',
-        [1]
+        [tournamentId]
       );
 
-      log.success('[TOURNAMENT] Tournament completed!');
+      // Verify the update
+      const updated = await db.queryOneAsync<{ status: string; completed_at: number | null }>(
+        'SELECT status, completed_at FROM tournament WHERE id = ?',
+        [tournamentId]
+      );
+      
+      log.success(`[TOURNAMENT] Tournament ${tournamentId} marked as completed! Status: ${updated?.status}, completed_at: ${updated?.completed_at}`);
       emitBracketUpdate({ action: 'tournament_completed' });
+    } else {
+      log.info(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {
+        hasMatches: totalMatchesCount > 0,
+        allCompleted: pendingMatchesCount === 0,
+        reason: totalMatchesCount === 0 
+          ? 'No bracket matches found' 
+          : `Still ${pendingMatchesCount} pending match(es)`,
+      });
     }
   } catch (error) {
-    log.error('Error checking tournament completion', error);
+    log.error('Error checking tournament completion', error, { tournamentId });
   }
 }
 

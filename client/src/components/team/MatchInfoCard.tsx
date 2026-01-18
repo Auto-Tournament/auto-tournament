@@ -9,6 +9,7 @@ import {
   isShuffleMatch as isShuffleMatchGlobal,
   isVetoDisabledForMatch,
 } from '../../utils/matchFlags';
+import { calculateOvertimeNumber } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
@@ -105,7 +106,38 @@ export function MatchInfoCard({
       thumbnail: `${baseUrl}/${currentMapSlug}_thumb.webp`,
     };
   }, [currentMapSlug]);
-  const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
+  
+  // Calculate overtime if match is live and in overtime
+  const maxRounds = match.config?.maxRounds;
+  const cvars = (match.config?.cvars || {}) as Record<string, string | number>;
+  const overtimeRoundsPerSegment =
+    typeof cvars['mp_overtime_maxrounds'] === 'number'
+      ? Number(cvars['mp_overtime_maxrounds'])
+      : 6; // Default MR3 = 6 rounds per OT segment
+  
+  const overtimeNumber =
+    liveStats?.status === 'live' &&
+    typeof mapRoundsTeam1 === 'number' &&
+    typeof mapRoundsTeam2 === 'number' &&
+    maxRounds
+      ? calculateOvertimeNumber(
+          mapRoundsTeam1,
+          mapRoundsTeam2,
+          maxRounds,
+          overtimeRoundsPerSegment
+        )
+      : null;
+  
+  const liveStatusDisplay = liveStats
+    ? {
+        ...LIVE_STATUS_DISPLAY[liveStats.status],
+        label:
+          overtimeNumber !== null
+            ? `OVERTIME #${overtimeNumber}`
+            : LIVE_STATUS_DISPLAY[liveStats.status].label,
+      }
+    : null;
+  
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =
     match.config?.expected_players_total ||

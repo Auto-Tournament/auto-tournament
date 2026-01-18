@@ -886,7 +886,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
       if (tournament?.type === 'shuffle') {
         await checkAndAdvanceShuffleRound(match.round);
       }
-      await checkTournamentCompletion();
+      await checkTournamentCompletion(match.tournament_id ?? 1);
 
       return;
     }
@@ -1019,7 +1019,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   }
 
   // Check if tournament is complete
-  await checkTournamentCompletion();
+  await checkTournamentCompletion(match.tournament_id ?? 1);
 }
 
 /**

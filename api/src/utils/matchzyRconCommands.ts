@@ -109,11 +109,10 @@ export function getMatchZyCoreSettingsCommands(options: {
 /**
  * Get RCON commands for per-server MatchZy configuration overrides.
  * All fields are optional; null/undefined means "do not touch this ConVar".
+ * Note: Chat prefixes and knife round defaults are not per-server settings;
+ * they are configured at the global/tournament/match level.
  */
 export function getMatchZyServerConfigCommands(config: {
-  chatPrefix?: string | null;
-  adminChatPrefix?: string | null;
-  knifeEnabledDefault?: boolean | null;
   minimumReadyRequired?: number | null;
   pauseAfterRestore?: boolean | null;
   stopCommandAvailable?: boolean | null;
@@ -130,16 +129,6 @@ export function getMatchZyServerConfigCommands(config: {
   debugChatEnabled?: boolean | null;
 }): string[] {
   const commands: string[] = [];
-
-  if (config.chatPrefix !== undefined && config.chatPrefix !== null) {
-    commands.push(`matchzy_chat_prefix "${config.chatPrefix}"`);
-  }
-  if (config.adminChatPrefix !== undefined && config.adminChatPrefix !== null) {
-    commands.push(`matchzy_admin_chat_prefix "${config.adminChatPrefix}"`);
-  }
-  if (config.knifeEnabledDefault !== undefined && config.knifeEnabledDefault !== null) {
-    commands.push(`matchzy_knife_enabled_default ${config.knifeEnabledDefault ? '1' : '0'}`);
-  }
 
   if (
     config.minimumReadyRequired !== undefined &&

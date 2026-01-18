@@ -52,9 +52,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
-  const [chatPrefix, setChatPrefix] = useState<string>('');
-  const [adminChatPrefix, setAdminChatPrefix] = useState<string>('');
-  const [knifeEnabledDefault, setKnifeEnabledDefault] = useState<boolean | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -74,11 +71,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPort(server.port.toString());
       setPassword(server.password);
       setEnabled(server.enabled);
-      setChatPrefix(server.matchzyConfig?.chatPrefix ?? '');
-      setAdminChatPrefix(server.matchzyConfig?.adminChatPrefix ?? '');
-      setKnifeEnabledDefault(
-        server.matchzyConfig?.knifeEnabledDefault ?? null
-      );
     } else {
       resetForm();
     }
@@ -90,9 +82,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setPort('27015');
     setPassword('');
     setEnabled(true);
-    setChatPrefix('');
-    setAdminChatPrefix('');
-    setKnifeEnabledDefault(null);
     setError('');
     setApiToServerOk(null);
     setServerToApiOk(null);
@@ -198,11 +187,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         port: portNum,
         password: password.trim(),
         enabled,
-        matchzyConfig: {
-          chatPrefix: chatPrefix.trim() || null,
-          adminChatPrefix: adminChatPrefix.trim() || null,
-          knifeEnabledDefault,
-        },
+        matchzyConfig: null,
       };
 
       if (isEditing) {
@@ -373,56 +358,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 </Box>
               }
             />
-
-            <Box mt={1}>
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                {t('serverModal.overridesTitle')}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                {t('serverModal.overridesDescription')}
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1.5}>
-                <TextField
-                  label={t('serverModal.chatPrefixLabel')}
-                  value={chatPrefix}
-                  onChange={(e) => setChatPrefix(e.target.value)}
-                  placeholder={t('serverModal.chatPrefixPlaceholder')}
-                  fullWidth
-                  helperText={t('serverModal.chatPrefixHelper')}
-                />
-                <TextField
-                  label={t('serverModal.adminChatPrefixLabel')}
-                  value={adminChatPrefix}
-                  onChange={(e) => setAdminChatPrefix(e.target.value)}
-                  placeholder={t('serverModal.adminChatPrefixPlaceholder')}
-                  fullWidth
-                  helperText={t('serverModal.adminChatPrefixHelper')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={knifeEnabledDefault === true}
-                      indeterminate={knifeEnabledDefault === null}
-                      onChange={(e) =>
-                        setKnifeEnabledDefault(
-                          e.target.checked ? true : knifeEnabledDefault === null ? false : null
-                        )
-                      }
-                    />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        {t('serverModal.knifeOverrideLabel')}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.knifeOverrideHelper')}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </Box>
-            </Box>
 
             {isEditing && (
               <Box>

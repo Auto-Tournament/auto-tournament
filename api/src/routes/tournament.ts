@@ -24,6 +24,7 @@ import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { serverService } from '../services/serverService';
 import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
+import { checkTournamentCompletion } from '../utils/matchProgression';
 
 const router = Router();
 
@@ -149,6 +150,24 @@ router.get('/', async (_req: Request, res: Response) => {
         success: false,
         error: 'No tournament exists',
       });
+    }
+
+    log.info(`[TOURNAMENT API] GET /api/tournament - Current status: ${tournament.status}`);
+
+    // Automatically check if tournament should be marked as completed
+    // This ensures the status is always up-to-date when fetched
+    if (tournament.status === 'in_progress') {
+      log.info(`[TOURNAMENT API] Tournament is in_progress, checking completion...`);
+      await checkTournamentCompletion(tournament.id);
+      // Re-fetch tournament to get updated status
+      const updatedTournament = await tournamentService.getTournament();
+      if (updatedTournament) {
+        log.info(`[TOURNAMENT API] After completion check - Status: ${updatedTournament.status}`);
+        return res.json({
+          success: true,
+          tournament: updatedTournament,
+        });
+      }
     }
 
     return res.json({
@@ -423,6 +442,13 @@ router.delete('/', async (_req: Request, res: Response) => {
  */
 router.get('/bracket', async (_req: Request, res: Response) => {
   try {
+    // Automatically check if tournament should be marked as completed
+    // This ensures the status is always up-to-date when bracket is fetched
+    const tournament = await tournamentService.getTournament();
+    if (tournament && tournament.status === 'in_progress') {
+      await checkTournamentCompletion(tournament.id);
+    }
+
     const bracket = await tournamentService.getBracket();
 
     if (!bracket) {
@@ -1949,6 +1975,51 @@ router.put('/:id/elo-template', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error updating tournament ELO template', { error, tournamentId: req.params.id });
     return res.status(500).json({ success: false, error: 'Failed to update template' });
+  }
+});
+
+/**
+ * POST /api/tournament/:id/check-completion
+ * Manually trigger tournament completion check (admin only)
+ */
+router.post('/:id/check-completion', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const tournamentId = parseInt(req.params.id, 10);
+    if (isNaN(tournamentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid tournament ID' });
+    }
+
+    // Verify tournament exists
+    const tournament = await db.queryOneAsync<{ id: number; status: string }>(
+      'SELECT id, status FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+
+    if (!tournament) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    }
+
+    // Trigger completion check
+    await checkTournamentCompletion(tournamentId);
+
+    // Fetch updated tournament status
+    const updated = await db.queryOneAsync<{ status: string; completed_at: number | null }>(
+      'SELECT status, completed_at FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+
+    return res.json({
+      success: true,
+      status: updated?.status,
+      completedAt: updated?.completed_at,
+      message:
+        updated?.status === 'completed'
+          ? 'Tournament marked as completed'
+          : 'Tournament completion check completed (tournament may still be in progress)',
+    });
+  } catch (error) {
+    log.error('Error checking tournament completion', { error, tournamentId: req.params.id });
+    return res.status(500).json({ success: false, error: 'Failed to check tournament completion' });
   }
 });
 

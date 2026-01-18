@@ -53,14 +53,10 @@ export interface ServerResponse {
 /**
  * Per-server MatchZy configuration (backend representation)
  * This is intentionally a small, opinionated subset of all possible ConVars.
+ * Note: Chat prefixes and knife round defaults are configured at the global/tournament/match level,
+ * not per-server. Only server-specific operational settings are included here.
  */
 export interface MatchzyServerConfig {
-  // Override core settings if desired (otherwise fall back to global app settings)
-  chatPrefix?: string | null;
-  adminChatPrefix?: string | null;
-  knifeEnabledDefault?: boolean | null;
-  debugChatEnabled?: boolean | null;
-
   // Common operational toggles (all optional; null/undefined = do not touch)
   minimumReadyRequired?: number | null;
   pauseAfterRestore?: boolean | null;

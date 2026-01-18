@@ -158,10 +158,8 @@
     "openPlayerPageTooltip": "打开选手页面",
     "skillRatingTooltip": "Skill Rating 基于 OpenSkill，数值越高越好。",
     "skillRatingLabel": "Skill Rating：{{elo}}",
-    "matchesCount": {
-      "one": "{{count}} 场比赛",
-      "other": "{{count}} 场比赛"
-    }
+    "matchesCount_one": "{{count}} 场比赛",
+    "matchesCount_other": "{{count}} 场比赛"
   },
   "teamModal": {
     "titleCreate": "创建战队",
