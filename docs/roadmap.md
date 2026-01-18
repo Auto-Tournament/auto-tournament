@@ -2,6 +2,9 @@
 
 This document outlines the current features available in MatchZy Auto Tournament - a management platform for running CS2 tournaments.
 
+!!! tip "Live Project Status"
+    Track active development, upcoming features, and open issues on our **[live Kanban board](https://kan.sivert.io/MAT)**. The board automatically syncs with GitHub issues and provides real-time project status.
+
 ---
 
 ## Tournament Management

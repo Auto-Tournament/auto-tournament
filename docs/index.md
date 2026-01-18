@@ -41,8 +41,9 @@ Read the **[Getting Started](getting-started/quick-start.md)** guide for the com
 
 ---
 
-## Support
+## Support & Development
 
+- [Kanban Board](https://kan.sivert.io/MAT) – live project status and roadmap (auto-synced with GitHub).
 - [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues) – report bugs or request features.
 - [Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) – ask questions and share ideas.
 - [Discord Community](https://discord.gg/n7gHYau7aW) – real-time support and chat with other tournament hosts.
