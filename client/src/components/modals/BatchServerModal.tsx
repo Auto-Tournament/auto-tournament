@@ -749,6 +749,7 @@ export default function BatchServerModal({
           onClick={handleSave}
           variant="contained"
           disabled={saving}
+          startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
           sx={{
             ml: 'auto',
           }}

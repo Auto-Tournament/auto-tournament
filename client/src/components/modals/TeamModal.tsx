@@ -16,6 +16,7 @@ import {
   Divider,
   ListItemAvatar,
   Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
@@ -653,6 +654,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             onClick={handleSave}
             variant="contained"
             disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
             {saving

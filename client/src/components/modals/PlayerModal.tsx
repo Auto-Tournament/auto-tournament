@@ -340,6 +340,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             variant="contained"
             onClick={handleSave}
             disabled={saving || resolving}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{
               ...((!steamId.trim() || !name.trim()) &&
                 !saving &&

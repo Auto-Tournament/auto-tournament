@@ -13,15 +13,15 @@ import {
   InputAdornment,
   IconButton,
   Autocomplete,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import type { Server as ApiServer, ServerStatusResponse } from '../../types/api.types';
+import type { Server as ApiServer } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -53,12 +53,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
-  const [apiToServerOk, setApiToServerOk] = useState<boolean | null>(null);
-  const [serverToApiOk, setServerToApiOk] = useState<boolean | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -84,71 +80,42 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setPassword('');
     setEnabled(true);
     setError('');
-    setApiToServerOk(null);
-    setServerToApiOk(null);
   };
 
   const handleNameChange = (value: string) => {
     setName(value);
   };
 
-  const handleTestConnection = async () => {
-    if (!server?.id) {
-      setError(t('serverModal.errors.testConnectionSaveFirst'));
-      return;
-    }
-
-    setTesting(true);
-    setApiToServerOk(null);
-    setServerToApiOk(null);
-    setError('');
-
-    try {
-      const response = await api.get<ServerStatusResponse>(`/api/servers/${server.id}/status`);
-      const canReach = response.status === 'online';
-      const serverBack = response.serverCanReachApi === true;
-
-      setApiToServerOk(canReach);
-      setServerToApiOk(serverBack);
-
-      if (canReach && serverBack) {
-        showSuccess(t('serverModal.success.connectivityOk'));
-      } else if (canReach && !serverBack) {
-        showError(t('serverModal.errors.rconReachableApiUnreachable'));
-      } else {
-        showError(t('serverModal.errors.serverOffline'));
-      }
-    } catch {
-      setError(t('serverModal.errors.testConnectionFailed'));
-      setApiToServerOk(false);
-      setServerToApiOk(false);
-    } finally {
-      setTesting(false);
-    }
-  };
 
   const handleSave = async () => {
+    console.log('handleSave called', { name, host, port, password: '***' });
+    
     if (!name.trim()) {
+      console.log('Validation failed: name required');
       setError(t('serverModal.errors.nameRequired'));
       return;
     }
 
     if (!host.trim()) {
+      console.log('Validation failed: host required');
       setError(t('serverModal.errors.hostRequired'));
       return;
     }
 
     const portNum = parseInt(port);
     if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+      console.log('Validation failed: invalid port', portNum);
       setError(t('serverModal.errors.portInvalid'));
       return;
     }
 
     if (!password.trim()) {
+      console.log('Validation failed: password required');
       setError(t('serverModal.errors.rconRequired'));
       return;
     }
 
+    console.log('Validation passed, saving server...');
     setSaving(true);
     setError('');
 
@@ -166,6 +133,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         : existingServerByHostPort?.id || slugifyServerName(name);
 
       if (!serverId) {
+        console.log('Validation failed: server ID generation failed');
         setError(t('serverModal.errors.idGenerationFailed'));
         setSaving(false);
         return;
@@ -175,12 +143,14 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       if (!isEditing && !existingServerByHostPort) {
         const idConflict = servers.find((s) => s.id === serverId && (s.host !== trimmedHost || s.port !== portNum));
         if (idConflict) {
+          console.log('Validation failed: duplicate server ID', serverId);
           setError(t('serverModal.errors.duplicateId', { id: serverId }));
           setSaving(false);
           return;
         }
       }
 
+      console.log('Creating payload for server:', serverId);
       const payload = {
         id: serverId,
         name: name.trim(),
@@ -192,6 +162,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       };
 
       if (isEditing) {
+        console.log('Updating existing server:', server.id);
         await api.put(`/api/servers/${server.id}`, {
           name: payload.name,
           host: payload.host,
@@ -200,9 +171,12 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           enabled: payload.enabled,
           matchzyConfig: payload.matchzyConfig,
         });
+        console.log('Server updated successfully');
         showSuccess(t('serverModal.success.serverUpdated'));
       } else {
+        console.log('Creating new server with payload:', payload);
         await api.post('/api/servers?upsert=true', payload);
+        console.log('Server created successfully');
         showSuccess(t('serverModal.success.serverCreated'));
       }
 
@@ -280,6 +254,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
@@ -366,64 +345,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 </Box>
               }
             />
-
-            {isEditing && (
-              <Box>
-                <Button
-                  variant="outlined"
-                  onClick={handleTestConnection}
-                  disabled={testing}
-                  fullWidth
-                  color={
-                    apiToServerOk && serverToApiOk
-                      ? 'success'
-                      : apiToServerOk === false || serverToApiOk === false
-                      ? 'error'
-                      : 'primary'
-                  }
-                >
-                  {testing
-                    ? t('serverModal.testingConnectivity')
-                    : t('serverModal.testConnectivity')}
-                </Button>
-                {apiToServerOk !== null && serverToApiOk !== null && !testing && (
-                  <Box mt={1}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ArrowUpwardIcon
-                        fontSize="small"
-                        sx={{
-                          color: apiToServerOk ? 'success.main' : 'error.main',
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.connectivity.apiToServer')}{' '}
-                        <strong style={{ color: apiToServerOk ? '#2e7d32' : '#d32f2f' }}>
-                          {apiToServerOk
-                            ? t('serverModal.connectivity.reachable')
-                            : t('serverModal.connectivity.unreachable')}
-                        </strong>
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                      <ArrowDownwardIcon
-                        fontSize="small"
-                        sx={{
-                          color: serverToApiOk ? 'success.main' : 'error.main',
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.connectivity.serverToApi')}{' '}
-                        <strong style={{ color: serverToApiOk ? '#2e7d32' : '#d32f2f' }}>
-                          {serverToApiOk
-                            ? t('serverModal.connectivity.reachable')
-                            : t('serverModal.connectivity.unreachable')}
-                        </strong>
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
@@ -448,6 +369,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             onClick={handleSave}
             variant="contained"
             disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
             {saving
