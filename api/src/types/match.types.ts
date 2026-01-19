@@ -59,6 +59,7 @@ export interface MatchConfig {
    * - matchzy_gg_threshold: 0.0-1.0
    * - matchzy_ffw_enabled: 0 or 1
    * - matchzy_ffw_time: 1-999 (seconds)
+   * - matchzy_demo_recording_enabled: 0 or 1
    * 
    * These are automatically applied based on tournament type (see matchzyConfigService).
    */

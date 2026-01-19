@@ -181,7 +181,7 @@ const cvars = {
 };
 ```
 
-### Supported CVars (10 total)
+### Supported CVars (11 total)
 
 - `matchzy_autoready_enabled` - Auto-ready system
 - `matchzy_both_teams_unpause_required` - Unpause requirements
@@ -193,6 +193,7 @@ const cvars = {
 - `matchzy_gg_threshold` - Forfeit vote threshold
 - `matchzy_ffw_enabled` - Walkover system (FFW)
 - `matchzy_ffw_time` - Walkover timer duration
+- `matchzy_demo_recording_enabled` - Demo recording control
 
 ### Validation
 

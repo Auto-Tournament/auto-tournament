@@ -150,7 +150,7 @@ If all servers are busy, matches show "WAITING FOR SERVER" status. The system au
 
 ### Automatic Match Configuration
 
-The platform automatically applies **MatchZy Enhanced v1.3.0** configuration variables based on tournament type, providing enhanced match control without manual configuration.
+The platform automatically applies **MatchZy Enhanced v1.3.0** configuration (11 cvars) based on tournament type, providing enhanced match control without manual configuration.
 
 **Configuration Profiles:**
 
@@ -163,13 +163,14 @@ The platform automatically applies **MatchZy Enhanced v1.3.0** configuration var
 | Shuffle Tournament | Shuffle | ✅ Auto | 1 per team (3 min) | ❌ Disabled | ❌ Disabled |
 | Manual Matches | Default | ❌ Manual | ♾️ Unlimited | ❌ Disabled | ❌ Disabled |
 
-**Features Included:**
+**Features:**
 
-- **Auto-Ready System** — Players automatically marked ready on connect (shuffle tournaments)
-- **Enhanced Pause Controls** — Limit pauses per team, set pause duration, require both teams to unpause
-- **Side Selection Timer** — Enforce time limit after knife round (default 60 seconds)
-- **Match Forfeit System (.gg)** — Allow teams to surrender via vote (disabled by default in competitive)
-- **Forfeit/Walkover (FFW)** — Automatic forfeit timer when entire team disconnects (enabled for online tournaments)
+- **Auto-Ready System** — Players automatically marked ready on connect
+- **Enhanced Pause Controls** — Limit pauses per team, duration, unpause requirements
+- **Side Selection Timer** — Enforce time limit after knife round
+- **Match Forfeit (.gg)** — Team surrender via vote (disabled in competitive)
+- **Forfeit/Walkover (FFW)** — Auto-forfeit timer when team disconnects
+- **Demo Recording** — Control demo recording for performance tuning
 
 **Official Profile (Competitive Tournaments):**
 

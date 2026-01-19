@@ -28,6 +28,9 @@ export interface MatchzyEnhancedCvars {
   // Forfeit/Walkover System
   matchzy_ffw_enabled?: 0 | 1;
   matchzy_ffw_time?: number;
+  
+  // Demo Recording
+  matchzy_demo_recording_enabled?: 0 | 1;
 }
 
 /**
@@ -57,6 +60,7 @@ const CONFIG_TEMPLATES: Record<MatchzyConfigProfile, MatchzyEnhancedCvars> = {
     matchzy_gg_enabled: 0,                     // NO forfeits in official matches
     matchzy_ffw_enabled: 1,                    // Handle connection issues fairly
     matchzy_ffw_time: 240,                     // 4 minutes (default)
+    matchzy_demo_recording_enabled: 1,         // Always record demos
   },
 
   /**
@@ -73,6 +77,7 @@ const CONFIG_TEMPLATES: Record<MatchzyConfigProfile, MatchzyEnhancedCvars> = {
     matchzy_gg_enabled: 0,                     // Complete all matches
     matchzy_ffw_enabled: 1,                    // Handle disconnects
     matchzy_ffw_time: 120,                     // 2 minutes (fast walkover)
+    matchzy_demo_recording_enabled: 1,         // Record demos
   },
 
   /**
@@ -88,6 +93,7 @@ const CONFIG_TEMPLATES: Record<MatchzyConfigProfile, MatchzyEnhancedCvars> = {
     matchzy_side_selection_time: 30,           // 30 seconds (quick)
     matchzy_gg_enabled: 0,                     // No forfeits (complete rounds)
     matchzy_ffw_enabled: 0,                    // No FFW (temporary teams)
+    matchzy_demo_recording_enabled: 1,         // Record demos
   },
 
   /**
@@ -103,6 +109,7 @@ const CONFIG_TEMPLATES: Record<MatchzyConfigProfile, MatchzyEnhancedCvars> = {
     matchzy_side_selection_time: 60,           // 60 seconds (standard)
     matchzy_gg_enabled: 0,                     // No forfeits (safe)
     matchzy_ffw_enabled: 0,                    // No automatic forfeit (safe)
+    matchzy_demo_recording_enabled: 1,         // Record demos (safe default)
   },
 };
 
@@ -174,6 +181,7 @@ export function validateMatchzyEnhancedCvars(
     'matchzy_side_selection_enabled',
     'matchzy_gg_enabled',
     'matchzy_ffw_enabled',
+    'matchzy_demo_recording_enabled',
   ];
   
   for (const field of booleanFields) {
