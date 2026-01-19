@@ -146,6 +146,74 @@ If all servers are busy, matches show "WAITING FOR SERVER" status. The system au
 
 ---
 
+## MatchZy Enhanced Configuration
+
+### Automatic Match Configuration
+
+The platform automatically applies **MatchZy Enhanced v1.3.0** configuration variables based on tournament type, providing enhanced match control without manual configuration.
+
+**Configuration Profiles:**
+
+| Tournament Type | Profile | Auto-Ready | Pauses | Forfeit (.gg) | FFW |
+|-----------------|---------|------------|--------|---------------|-----|
+| Single Elimination | Official | ❌ Manual | 2 per team (5 min) | ❌ Disabled | ✅ 4 min |
+| Double Elimination | Official | ❌ Manual | 2 per team (5 min) | ❌ Disabled | ✅ 4 min |
+| Swiss | Official | ❌ Manual | 2 per team (5 min) | ❌ Disabled | ✅ 4 min |
+| Round Robin | Official | ❌ Manual | 2 per team (5 min) | ❌ Disabled | ✅ 4 min |
+| Shuffle Tournament | Shuffle | ✅ Auto | 1 per team (3 min) | ❌ Disabled | ❌ Disabled |
+| Manual Matches | Default | ❌ Manual | ♾️ Unlimited | ❌ Disabled | ❌ Disabled |
+
+**Features Included:**
+
+- **Auto-Ready System** — Players automatically marked ready on connect (shuffle tournaments)
+- **Enhanced Pause Controls** — Limit pauses per team, set pause duration, require both teams to unpause
+- **Side Selection Timer** — Enforce time limit after knife round (default 60 seconds)
+- **Match Forfeit System (.gg)** — Allow teams to surrender via vote (disabled by default in competitive)
+- **Forfeit/Walkover (FFW)** — Automatic forfeit timer when entire team disconnects (enabled for online tournaments)
+
+**Official Profile (Competitive Tournaments):**
+
+```json
+{
+  "matchzy_autoready_enabled": 0,              // Manual ready
+  "matchzy_both_teams_unpause_required": 1,    // Both teams must unpause
+  "matchzy_max_pauses_per_team": 2,            // 2 pauses per team
+  "matchzy_pause_duration": 300,               // 5 minute limit
+  "matchzy_side_selection_time": 60,           // 60 seconds
+  "matchzy_gg_enabled": 0,                     // No forfeits
+  "matchzy_ffw_enabled": 1,                    // Handle disconnects
+  "matchzy_ffw_time": 240                      // 4 minutes
+}
+```
+
+**Shuffle Profile (Fast-Paced):**
+
+```json
+{
+  "matchzy_autoready_enabled": 1,              // Auto-ready
+  "matchzy_max_pauses_per_team": 1,            // 1 pause
+  "matchzy_pause_duration": 180,               // 3 minutes
+  "matchzy_side_selection_time": 30,           // Quick (30s)
+  "matchzy_ffw_enabled": 0                     // No FFW for temp teams
+}
+```
+
+**Default Profile (Manual Matches):**
+
+```json
+{
+  "matchzy_autoready_enabled": 0,              // Manual ready
+  "matchzy_max_pauses_per_team": 0,            // Unlimited
+  "matchzy_pause_duration": 0,                 // No limit
+  "matchzy_gg_enabled": 0,                     // No forfeits
+  "matchzy_ffw_enabled": 0                     // No FFW
+}
+```
+
+Manual matches can override these defaults by providing custom cvars in the match configuration.
+
+---
+
 ## Event Processing
 
 ### 25+ MatchZy Events Processed

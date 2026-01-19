@@ -62,6 +62,28 @@ The **Sync CS2 Maps** button downloads or updates the list of available CS2 maps
 
 Click **“Sync CS2 Maps”** and wait until you see a success message. Existing maps are kept; only new ones are added.
 
+## MatchZy Enhanced Configuration
+
+**What it is:**  
+The platform automatically applies **MatchZy Enhanced v1.3.0** configuration to all matches based on tournament type. This includes:
+
+- Auto-ready system (players automatically marked ready on connect)
+- Enhanced pause controls (limits, durations, unpause requirements)
+- Side selection timers (enforce time limits after knife round)
+- Match forfeit system (.gg command for surrendering)
+- Forfeit/walkover handling (FFW - automatic forfeit when team disconnects)
+
+**Configuration is automatic:**
+
+- **Standard tournaments** (single/double elimination, Swiss, round robin) use the **Official profile** with strict competitive settings
+- **Shuffle tournaments** use the **Shuffle profile** with faster timers and auto-ready
+- **Manual matches** use the **Default profile** with safe, permissive settings
+
+**No configuration required** — the system automatically selects appropriate settings for each tournament type.
+
+> 📖 **[Feature Overview](../features/overview.md#matchzy-enhanced-configuration)** — Complete details on MatchZy Enhanced profiles
+
+
 ## Developer Options (visible in dev builds only)
 
 At the bottom of the Settings page, you may see a section called **Developer Options** with a toggle like **“Simulate matches”**.

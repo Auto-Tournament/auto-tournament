@@ -3,6 +3,7 @@ import { Match, MatchConfig, CreateMatchInput, MatchResponse } from '../types/ma
 import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
 import { emitMatchUpdate } from './socketService';
+import { matchzyConfigService } from './matchzyConfigService';
 import type { DbTournamentRow } from '../types/database.types';
 
 class MatchService {
@@ -72,6 +73,26 @@ class MatchService {
             mp_maxrounds: maxRounds,
           };
         }
+      }
+
+      // Apply MatchZy Enhanced v1.3.0 cvars for manual matches.
+      // Use the 'default' profile (safe, permissive settings) unless the config
+      // already includes specific MatchZy Enhanced cvars (allowing customization).
+      const hasMatchzyEnhancedCvars = config.cvars && (
+        'matchzy_autoready_enabled' in config.cvars ||
+        'matchzy_gg_enabled' in config.cvars ||
+        'matchzy_ffw_enabled' in config.cvars
+      );
+
+      if (!hasMatchzyEnhancedCvars) {
+        const matchzyEnhancedCvars = matchzyConfigService.getDefaultMatchzyEnhancedCvars();
+        config.cvars = {
+          ...(config.cvars || {}),
+          ...matchzyEnhancedCvars,
+        };
+        log.debug('Applied default MatchZy Enhanced cvars to manual match', {
+          matchSlug: input.slug,
+        });
       }
     } catch (simError) {
       log.warn(

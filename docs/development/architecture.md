@@ -15,7 +15,8 @@ src/services/
 │   └── types.ts              # IBracketGenerator interface definition
 ├── swissBracketGenerator.ts  # Custom Swiss system implementation
 ├── standardBracketGenerator.ts # Single/Double elimination & Round Robin (via brackets-manager library)
-└── matchConfigBuilder.ts     # Builds individual match configs (used by all generators)
+├── matchConfigBuilder.ts     # Builds individual match configs (used by all generators)
+└── matchzyConfigService.ts   # MatchZy Enhanced v1.3.0 configuration profiles
 ```
 
 ### How It Works
@@ -131,6 +132,78 @@ All bracket generators use this to create match configs.
 3. **Maintainable**: Each generator is isolated in its own file
 4. **Clear separation**: Generator logic vs match config logic
 5. **Easy to test**: Mock the interface for unit tests
+
+## MatchZy Configuration System
+
+### Overview
+
+The MatchZy configuration system automatically applies appropriate MatchZy Enhanced v1.3.0 cvars to matches based on tournament type. This provides enhanced match control without requiring manual configuration.
+
+### Structure
+
+```typescript
+// matchzyConfigService.ts
+export function generateMatchzyEnhancedCvars(
+  tournamentType: TournamentType,
+  overrides?: Partial<MatchzyEnhancedCvars>
+): MatchzyEnhancedCvars {
+  const profile = getProfileForTournamentType(tournamentType);
+  return { ...CONFIG_TEMPLATES[profile], ...overrides };
+}
+```
+
+### Configuration Profiles
+
+**Official Profile** (Standard Tournaments)
+- Used for: `single_elimination`, `double_elimination`, `round_robin`, `swiss`
+- Manual ready, 2 pauses (5 min), no forfeits, FFW enabled
+
+**Shuffle Profile** (Shuffle Tournaments)
+- Used for: `shuffle`
+- Auto-ready, 1 pause (3 min), no forfeits, no FFW
+
+**Default Profile** (Manual Matches)
+- Manual ready, unlimited pauses, no forfeits, no FFW
+
+### Integration
+
+The service is used by:
+
+1. **`matchConfigBuilder.ts`** - Adds cvars to tournament matches
+2. **`matchService.ts`** - Adds cvars to manual matches
+
+```typescript
+// In matchConfigBuilder.ts
+const matchzyEnhancedCvars = matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
+const cvars = {
+  mp_maxrounds: maxRounds,
+  ...matchzyEnhancedCvars,
+};
+```
+
+### Supported CVars (10 total)
+
+- `matchzy_autoready_enabled` - Auto-ready system
+- `matchzy_both_teams_unpause_required` - Unpause requirements
+- `matchzy_max_pauses_per_team` - Pause limits
+- `matchzy_pause_duration` - Pause time limits
+- `matchzy_side_selection_enabled` - Side selection timer
+- `matchzy_side_selection_time` - Side selection duration
+- `matchzy_gg_enabled` - Forfeit system (.gg)
+- `matchzy_gg_threshold` - Forfeit vote threshold
+- `matchzy_ffw_enabled` - Walkover system (FFW)
+- `matchzy_ffw_time` - Walkover timer duration
+
+### Validation
+
+The service includes comprehensive validation:
+
+```typescript
+const validation = matchzyConfigService.validateMatchzyEnhancedCvars(cvars);
+if (!validation.valid) {
+  console.error('Invalid cvars:', validation.errors);
+}
+```
 
 ## File Naming Convention
 
