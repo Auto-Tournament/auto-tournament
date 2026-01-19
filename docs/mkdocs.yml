@@ -89,12 +89,8 @@ plugins:
       caption_position: bottom
   - exclude:
       glob:
-        # Internal design/research docs - not needed for day-to-day admin usage
+        # Research docs kept for reference but not shown in navigation
         - 'features/shuffle-tournament-*.md'
-        - 'features/elo-package-research.md'
-        - 'features/openskill-integration.md'
-        - 'features/team-balancing-research.md'
-        - 'manual-testing-veto.md'
   # - git-revision-date-localized:
   #     enable_creation_date: true
   #     type: timeago
@@ -154,40 +150,35 @@ nav:
       - Features:
           - Overview: features/overview.md
           - Map Veto: features/map-veto.md
+          - Shuffle Tournaments: features/shuffle-tournament-summary.md
       - Screenshots: screenshots.md
   - Getting Started:
-      - Getting Started: getting-started/quick-start.md
-      - Your First Tournament: getting-started/first-tournament.md
+      - Quick Start & First Tournament: getting-started/index.md
+      - Server Setup: getting-started/server-setup.md
   - Guides:
-      - Admin Journey:
-          - Dashboard & Sidebar: guides/admin-dashboard.md
+      - Tournament Admins:
+          - Dashboard: guides/admin-dashboard.md
           - Settings: guides/admin-settings.md
-      - How to:
-          - How to set up a tournament: guides/how-to-set-up-a-tournament.md
-          - How to manage matches: guides/how-to-manage-matches.md
-          - How to create teams: guides/how-to-create-teams.md
-          - How to find players: guides/how-to-find-players.md
-          - What to do when something breaks: guides/what-to-do-when-something-breaks.md
-      - Managing:
-          - Managing Teams: guides/managing-teams.md
+          - Set up a Tournament: guides/how-to-set-up-a-tournament.md
+          - Shuffle Tournaments: guides/shuffle-tournaments.md
           - Managing Maps: guides/managing-maps.md
           - Running Matches: guides/running-matches.md
-          - Enabling Demo Uploads: guides/enabling-demo-uploads.md
-          - Verifying Demo Uploads: guides/verifying-demo-uploads.md
+          - Manual Matches: guides/manual-matches.md
+      - Team Management:
+          - Teams Guide: guides/teams.md
+          - Team Pages: guides/team-pages.md
       - Troubleshooting:
           - Troubleshooting: guides/troubleshooting.md
           - Match Recovery: guides/match-recovery.md
-      - For Teams:
-          - Team Pages: guides/team-pages.md
   - For Developers:
-      - Server & Local Setup:
-          - Configure your first server: getting-started/server-setup.md
-          - CS2 Server Manager: guides/cs2-server-manager.md
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
       - Testing PRs: development/testing-pr.md
+      - CS2 Server Manager: guides/cs2-server-manager.md
       - Advanced:
-          - Server Allocation Status: guides/server-allocation-status.md
+          - Internationalization: development/i18n-and-translation.md
+          - Test Parallelization: development/test-parallelization.md
+          - Auth Provider Examples: development/auth-providers-examples.md
   - Related:
       - Changelog: changelog.md
       - Roadmap: roadmap.md
