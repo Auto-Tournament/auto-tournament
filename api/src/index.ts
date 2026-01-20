@@ -17,11 +17,7 @@ import { initializeSocket } from './services/socketService';
 import { serverService } from './services/serverService';
 import { rconService } from './services/rconService';
 import { settingsService } from './services/settingsService';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyLoadMatchAuthCommands,
-  getMatchZyReportUploadCommands,
-} from './utils/matchzyRconCommands';
+import { serverInitializationService } from './services/serverInitializationService';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
@@ -48,6 +44,7 @@ import testRoutes from './routes/test';
 import authRoutes from './routes/auth';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
+import { healthMonitoringService } from './services/healthMonitoringService';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
@@ -383,6 +380,10 @@ cleanupOldLogs(30);
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
+        
+        // Start health monitoring for server tracking
+        // Checks every minute to mark inactive servers as offline
+        healthMonitoringService.start();
       });
     });
 
@@ -390,6 +391,7 @@ cleanupOldLogs(30);
     process.on('SIGINT', () => {
       log.warn('Received SIGINT, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
+      healthMonitoringService.stop();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -400,6 +402,7 @@ cleanupOldLogs(30);
     process.on('SIGTERM', () => {
       log.warn('Received SIGTERM, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
+      healthMonitoringService.stop();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -452,8 +455,10 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  log.info(`Bootstrapping webhooks for ${enabledServers.length} server(s)...`);
+  log.info(`Initializing persistent configuration for ${enabledServers.length} server(s)...`);
 
+  // Use serverInitializationService to ensure persistent config is sent
+  // (only once per server, unless reset). The server stores this in its database.
   for (const serverInfo of enabledServers) {
     try {
       const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
@@ -462,22 +467,11 @@ async function bootstrapServerWebhooks(): Promise<void> {
         continue;
       }
 
-      const commands = [
-        // Configure a server-specific webhook for idle/test events. When a match
-        // is loaded, matchLoadingService will override this with a match-specific URL.
-        ...getMatchZyWebhookCommands(baseUrl, serverToken, serverInfo.id),
-        ...getMatchZyLoadMatchAuthCommands(serverToken),
-        ...getMatchZyReportUploadCommands(baseUrl, serverToken, serverInfo.id),
-      ];
-
-      for (const cmd of commands) {
-        await rconService.sendCommand(serverInfo.id, cmd);
-      }
-
-      log.webhookConfigured(serverInfo.id, `${baseUrl}/api/events/${serverInfo.id}`);
-      log.success(`Auto-configured MatchZy webhook/auth for ${serverInfo.name} (${serverInfo.id})`);
+      // Initialize server with persistent configuration (idempotent - only sends if not already initialized)
+      await serverInitializationService.initializeServer(serverInfo.id, false);
+      log.success(`Initialized persistent config for ${serverInfo.name} (${serverInfo.id})`);
     } catch (error) {
-      log.warn(`Failed to auto-configure webhook for server ${serverInfo.id}`, { error });
+      log.warn(`Failed to initialize server ${serverInfo.id}`, { error });
     }
   }
 }

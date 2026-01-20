@@ -1359,6 +1359,14 @@
     "testButton": "测试声音",
     "footer": "当比赛准备就绪或发生重要事件时，将播放声音通知。"
   },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "删除比赛",
+      "confirmTitle": "确认删除此比赛？",
+      "confirmBody": "确定要删除比赛 \"{{slug}}\" 吗？此操作无法撤销。",
+      "button": "删除比赛"
+    }
+  },
   "manualMatchModal": {
     "title": "创建手动比赛",
     "steps": {

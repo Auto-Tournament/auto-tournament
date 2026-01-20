@@ -12,7 +12,6 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
-  Autocomplete,
   CircularProgress,
   Alert,
 } from '@mui/material';
@@ -84,11 +83,13 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
 
   const handleNameChange = (value: string) => {
     setName(value);
+    if (error) setError(''); // Clear error when user starts typing
   };
 
 
   const handleSave = async () => {
     console.log('handleSave called', { name, host, port, password: '***' });
+    console.log('Host value length:', host.length, 'Host trimmed length:', host.trim().length);
     
     if (!name.trim()) {
       console.log('Validation failed: name required');
@@ -96,8 +97,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       return;
     }
 
-    if (!host.trim()) {
-      console.log('Validation failed: host required');
+    if (!host || !host.trim()) {
+      console.log('Validation failed: host required', { host, hostLength: host?.length });
       setError(t('serverModal.errors.hostRequired'));
       return;
     }
@@ -273,29 +274,29 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               }}
             />
 
-            <Autocomplete
-              freeSolo
-              options={Array.from(new Set(servers.map((s) => s.host))).sort()}
+            <TextField
+              label={t('serverModal.hostLabel')}
               value={host}
-              onInputChange={(_, newValue) => setHost(newValue || '')}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  label={t('serverModal.hostLabel')}
-                  placeholder={t('serverModal.hostPlaceholder')}
-                  required
-                  fullWidth
-                  slotProps={{
-                    htmlInput: { 'data-testid': 'server-host-input' },
-                  }}
-                />
-              )}
+              onChange={(e) => {
+                console.log('Host changed:', e.target.value);
+                setHost(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
+              placeholder={t('serverModal.hostPlaceholder')}
+              required
+              fullWidth
+              slotProps={{
+                htmlInput: { 'data-testid': 'server-host-input' },
+              }}
             />
 
             <TextField
               label={t('serverModal.portLabel')}
               value={port}
-              onChange={(e) => setPort(e.target.value)}
+              onChange={(e) => {
+                setPort(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder={t('serverModal.portPlaceholder')}
               type="number"
               required
@@ -308,7 +309,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             <TextField
               label={t('serverModal.rconPasswordLabel')}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder={t('serverModal.rconPasswordPlaceholder')}
               type={showPassword ? 'text' : 'password'}
               required

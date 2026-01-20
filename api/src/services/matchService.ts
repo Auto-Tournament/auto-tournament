@@ -4,6 +4,8 @@ import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
 import { emitMatchUpdate } from './socketService';
 import { matchzyConfigService } from './matchzyConfigService';
+import { matchAllocationService } from './matchAllocationService';
+import { serverAllocationTracker } from './serverAllocationTracker';
 import type { DbTournamentRow } from '../types/database.types';
 
 class MatchService {
@@ -224,8 +226,20 @@ class MatchService {
     if (!match) {
       throw new Error(`Match '${slug}' not found`);
     }
+
+    const serverId = match.server_id;
     await db.deleteAsync('matches', 'slug = ?', [slug]);
     log.success(`Match deleted: ${slug}`);
+
+    // If the deleted match had a server assigned, mark that server as idle
+    // and trigger immediate allocation for any waiting matches.
+    if (serverId) {
+      serverAllocationTracker.markIdle(serverId);
+      log.info(`Server ${serverId} freed by match deletion, triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
   }
 
   /**

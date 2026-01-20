@@ -3,8 +3,6 @@ import { serverService } from '../services/serverService';
 import { rconService } from '../services/rconService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
-import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
@@ -176,27 +174,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
-    // Configure webhook automatically when server is online (non‑cached checks only)
-    const serverToken = process.env.SERVER_TOKEN || '';
-    if (serverToken) {
-      try {
-        const baseUrl = await getWebhookBaseUrl(req);
-        // For server status check and connectivity tests, configure a server-specific
-        // webhook URL so test events include the server ID in the path.
-        // Match-specific webhook (with match slug) will still be configured when a match loads.
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, id);
-
-        for (const cmd of webhookCommands) {
-          await rconService.sendCommand(id, cmd);
-        }
-
-        const webhookUrl = `${baseUrl}/api/events/${id}`;
-        log.webhookConfigured(id, webhookUrl);
-      } catch (error) {
-        // Don't fail status check if webhook setup fails
-        log.warn(`Failed to configure webhook for server ${id}`, { error });
-      }
-    }
+    // Note: Webhook configuration is now handled by serverInitializationService
+    // on first connection. The server stores it persistently in its database,
+    // so we don't need to reconfigure it on every status check.
 
     // Bi-directional connectivity check:
     //  - We already know we can reach the server via RCON (reachableFromApi).

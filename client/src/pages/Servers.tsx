@@ -9,6 +9,8 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import BlockIcon from '@mui/icons-material/Block';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
+import UpdateIcon from '@mui/icons-material/Update';
+import DnsIcon from '@mui/icons-material/Dns';
 import { api } from '../utils/api';
 import ServerModal from '../components/modals/ServerModal';
 import BatchServerModal from '../components/modals/BatchServerModal';
@@ -376,9 +378,8 @@ export default function Servers() {
 
   useEffect(() => {
     // Initial page load uses cached status to avoid hammering servers when the
-    // admin simply visits this page. The manual Refresh button forces a
-    // non-cached, live connectivity check instead.
-    void loadServers({ useCached: true });
+    // Always do full connectivity checks to show real server status (not cached)
+    void loadServers({ useCached: false });
     void loadAllocationStatus();
   }, [loadServers, loadAllocationStatus]);
 
@@ -393,7 +394,8 @@ export default function Servers() {
   };
 
   const handleSave = async () => {
-    await loadServers();
+    // Do a full status check after adding/updating server to show real connectivity
+    await loadServers({ useCached: false });
     handleCloseModal();
   };
 
@@ -437,6 +439,57 @@ export default function Servers() {
     });
   };
 
+  // Calculate server statistics based on heartbeat tracking
+  const serverStats = React.useMemo(() => {
+    const now = Math.floor(Date.now() / 1000);
+    const INACTIVE_THRESHOLD = 5 * 60; // 5 minutes
+    
+    let online = 0;
+    let offline = 0;
+    let neverConnected = 0;
+    
+    servers.forEach((server) => {
+      if (!server.lastSeen) {
+        neverConnected++;
+      } else if (now - server.lastSeen < INACTIVE_THRESHOLD) {
+        online++;
+      } else {
+        offline++;
+      }
+    });
+    
+    return { online, offline, neverConnected, total: servers.length };
+  }, [servers]);
+
+  // Detect plugin version mismatches
+  const versionInfo = React.useMemo(() => {
+    const versionCounts = new Map<string, number>();
+    
+    servers.forEach((server) => {
+      if (server.pluginVersion) {
+        const count = versionCounts.get(server.pluginVersion) || 0;
+        versionCounts.set(server.pluginVersion, count + 1);
+      }
+    });
+    
+    // Find most common version
+    let mostCommonVersion: string | null = null;
+    let maxCount = 0;
+    
+    versionCounts.forEach((count, version) => {
+      if (count > maxCount) {
+        maxCount = count;
+        mostCommonVersion = version;
+      }
+    });
+    
+    return {
+      mostCommonVersion,
+      versionCounts,
+      hasMultipleVersions: versionCounts.size > 1,
+    };
+  }, [servers]);
+
   return (
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
       {servers.length === 0 ? (
@@ -457,6 +510,76 @@ export default function Servers() {
           </Box>
         ) : (
           <>
+            {/* Server Statistics Summary */}
+            <Box mb={2}>
+              <Card variant="outlined">
+                <CardContent>
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                    <Typography variant="subtitle2" fontWeight={600}>
+                      Server Fleet Status
+                    </Typography>
+                    <Typography variant="h6" fontWeight={600}>
+                      {serverStats.total} {serverStats.total === 1 ? 'Server' : 'Servers'}
+                    </Typography>
+                  </Box>
+                  <Box display="flex" gap={2} flexWrap="wrap" mb={versionInfo.hasMultipleVersions ? 2 : 0}>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
+                      <Typography variant="body2">
+                        <strong>{serverStats.online}</strong> Online
+                      </Typography>
+                    </Box>
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <CancelIcon sx={{ color: 'error.main', fontSize: 20 }} />
+                      <Typography variant="body2">
+                        <strong>{serverStats.offline}</strong> Offline
+                      </Typography>
+                    </Box>
+                    {serverStats.neverConnected > 0 && (
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <BlockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
+                        <Typography variant="body2">
+                          <strong>{serverStats.neverConnected}</strong> Never Connected
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                  {versionInfo.hasMultipleVersions && (
+                    <Box 
+                      sx={{ 
+                        bgcolor: 'warning.50', 
+                        border: 1, 
+                        borderColor: 'warning.main',
+                        borderRadius: 1, 
+                        p: 1.5,
+                        mt: 1
+                      }}
+                    >
+                      <Typography variant="caption" fontWeight={600} color="warning.dark" display="block" mb={0.5}>
+                        ⚠️ Version Mismatch Detected
+                      </Typography>
+                      <Box display="flex" gap={1} flexWrap="wrap">
+                        {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
+                          <Chip
+                            key={version}
+                            label={`v${version}: ${count} ${count === 1 ? 'server' : 'servers'}`}
+                            size="small"
+                            color={version === versionInfo.mostCommonVersion ? 'success' : 'warning'}
+                            variant="outlined"
+                            sx={{ fontWeight: 500 }}
+                          />
+                        ))}
+                      </Box>
+                      <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                        Recommended: Update all servers to v{versionInfo.mostCommonVersion} for consistency
+                      </Typography>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Box>
+
+            {/* Match Allocation Status */}
             <Box mb={2}>
               <Card variant="outlined">
                 <CardContent>
@@ -530,60 +653,94 @@ export default function Servers() {
                         <Typography variant="h6" fontWeight={600} gutterBottom>
                           {server.name}
                         </Typography>
-                        {(() => {
-                          const reachableFromApi = server.reachableFromApi;
-                          const serverCanReachApi = server.serverCanReachApi;
+                        <Box display="flex" gap={0.5} flexWrap="wrap">
+                          {(() => {
+                            const reachableFromApi = server.reachableFromApi;
+                            const serverCanReachApi = server.serverCanReachApi;
+                            const now = Math.floor(Date.now() / 1000);
+                            const isHeartbeatActive = server.lastSeen && (now - server.lastSeen < 300); // 5 minutes
 
-                          let label: string;
-                          let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
-                            'default';
+                            let label: string;
+                            let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
+                              'default';
 
-                          if (server.status === 'checking') {
-                            label = t('serversPage.statusChip.checking');
-                            color = 'default';
-                          } else if (!server.enabled || server.status === 'disabled') {
-                            label = t('serversPage.statusChip.disabled');
-                            color = 'default';
-                          } else if (server.status !== 'online') {
-                            label = t('serversPage.statusChip.offline');
-                            color = 'error';
-                          } else if (reachableFromApi && serverCanReachApi) {
-                            label = t('serversPage.statusChip.onlineOk');
-                            color = 'success';
-                          } else if (reachableFromApi && serverCanReachApi === false) {
-                            label = t('serversPage.statusChip.onlineRconOnly');
-                            color = 'warning';
-                          } else if (reachableFromApi === false) {
-                            label = t('serversPage.statusChip.rconFailed');
-                            color = 'error';
-                          } else {
-                            label = t('serversPage.statusChip.onlineTesting');
-                            color = 'info';
-                          }
+                            if (server.status === 'checking') {
+                              label = t('serversPage.statusChip.checking');
+                              color = 'default';
+                            } else if (!server.enabled || server.status === 'disabled') {
+                              label = t('serversPage.statusChip.disabled');
+                              color = 'default';
+                            } else if (server.lastSeen && !isHeartbeatActive) {
+                              // Heartbeat-based offline detection (more reliable)
+                              label = 'Offline (No Events)';
+                              color = 'error';
+                            } else if (server.status !== 'online') {
+                              label = t('serversPage.statusChip.offline');
+                              color = 'error';
+                            } else if (reachableFromApi && serverCanReachApi) {
+                              label = isHeartbeatActive ? 'Online (Active)' : t('serversPage.statusChip.onlineOk');
+                              color = 'success';
+                            } else if (reachableFromApi && serverCanReachApi === false) {
+                              label = t('serversPage.statusChip.onlineRconOnly');
+                              color = 'warning';
+                            } else if (reachableFromApi === false) {
+                              label = t('serversPage.statusChip.rconFailed');
+                              color = 'error';
+                            } else {
+                              label = t('serversPage.statusChip.onlineTesting');
+                              color = 'info';
+                            }
 
-                          const icon =
-                            server.status === 'checking' ? (
-                              <CircularProgress size={16} />
-                            ) : color === 'success' ? (
-                              <CheckCircleIcon />
-                            ) : color === 'warning' ? (
-                              <RefreshIcon />
-                            ) : server.status === 'disabled' || !server.enabled ? (
-                              <BlockIcon />
-                            ) : (
-                              <CancelIcon />
+                            const icon =
+                              server.status === 'checking' ? (
+                                <CircularProgress size={16} />
+                              ) : color === 'success' ? (
+                                <CheckCircleIcon />
+                              ) : color === 'warning' ? (
+                                <RefreshIcon />
+                              ) : server.status === 'disabled' || !server.enabled ? (
+                                <BlockIcon />
+                              ) : (
+                                <CancelIcon />
+                              );
+
+                            return (
+                              <Chip
+                                icon={icon}
+                                label={label}
+                                size="small"
+                                color={color}
+                                sx={{ fontWeight: 600 }}
+                              />
                             );
-
-                          return (
-                            <Chip
-                              icon={icon}
-                              label={label}
-                              size="small"
-                              color={color}
-                              sx={{ fontWeight: 600 }}
-                            />
-                          );
-                        })()}
+                          })()}
+                          {server.pluginVersion && (
+                            <>
+                              <Chip
+                                label={`v${server.pluginVersion}`}
+                                size="small"
+                                variant="outlined"
+                                color={
+                                  versionInfo.mostCommonVersion &&
+                                  server.pluginVersion !== versionInfo.mostCommonVersion
+                                    ? 'warning'
+                                    : 'primary'
+                                }
+                                sx={{ fontWeight: 500 }}
+                              />
+                              {versionInfo.hasMultipleVersions &&
+                                versionInfo.mostCommonVersion &&
+                                server.pluginVersion !== versionInfo.mostCommonVersion && (
+                                  <Chip
+                                    label="Version Mismatch"
+                                    size="small"
+                                    color="warning"
+                                    sx={{ fontWeight: 500 }}
+                                  />
+                                )}
+                            </>
+                          )}
+                        </Box>
                       </Box>
                       {/* Clicking the card already opens the edit modal, so no separate Edit button needed */}
                     </Box>
@@ -599,6 +756,54 @@ export default function Servers() {
                       <Typography variant="body2" color="text.secondary">
                         <strong>{t('serversPage.labels.port')}</strong> {server.port}
                       </Typography>
+                      {server.hostname && (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <DnsIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>CS2 Name:</strong> {server.hostname}
+                          </Typography>
+                        </Box>
+                      )}
+                      {server.pluginVersion && (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>Plugin:</strong> MatchZy Enhanced v{server.pluginVersion}
+                          </Typography>
+                        </Box>
+                      )}
+                      {server.lastSeen && (
+                        <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
+                          {(() => {
+                            const now = Math.floor(Date.now() / 1000);
+                            const secondsAgo = now - server.lastSeen;
+                            const minutesAgo = Math.floor(secondsAgo / 60);
+                            const hoursAgo = Math.floor(minutesAgo / 60);
+                            const daysAgo = Math.floor(hoursAgo / 24);
+                            
+                            let timeStr;
+                            if (secondsAgo < 60) {
+                              timeStr = 'just now';
+                            } else if (minutesAgo < 60) {
+                              timeStr = `${minutesAgo}m ago`;
+                            } else if (hoursAgo < 24) {
+                              timeStr = `${hoursAgo}h ago`;
+                            } else {
+                              timeStr = `${daysAgo}d ago`;
+                            }
+                            
+                            const isActive = secondsAgo < 300; // 5 minutes
+                            return (
+                              <span style={{ 
+                                color: isActive ? '#4caf50' : '#9e9e9e',
+                                fontWeight: isActive ? 600 : 400 
+                              }}>
+                                ⏱️ Active {timeStr}
+                              </span>
+                            );
+                          })()}
+                        </Typography>
+                      )}
                     </Box>
                     {server.status === 'online' && (
                       <Box display="flex" flexDirection="column" gap={0.5} mb={1}>

@@ -16,9 +16,17 @@ export function getSchemaSQL(): string {
       password TEXT NOT NULL,
       enabled INTEGER NOT NULL DEFAULT 1,
       matchzy_config TEXT, -- JSON blob with per-server MatchZy ConVar overrides
+      persistent_config_sent INTEGER, -- Unix timestamp when persistent config was last sent (NULL = never sent)
+      plugin_version TEXT, -- MatchZy Enhanced version (e.g., "1.3.6")
+      hostname TEXT, -- Server hostname from CS2 (from hostname convar)
+      last_seen INTEGER, -- Unix timestamp of last event received (heartbeat)
+      status TEXT DEFAULT 'unknown', -- 'online', 'offline', 'unknown'
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
+    
+    CREATE INDEX IF NOT EXISTS idx_servers_status ON servers(status);
+    CREATE INDEX IF NOT EXISTS idx_servers_last_seen ON servers(last_seen);
 
     -- Application settings table
     CREATE TABLE IF NOT EXISTS app_settings (

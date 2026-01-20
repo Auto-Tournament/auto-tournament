@@ -35,6 +35,7 @@
         "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '✅ Stopped PostgreSQL container' || echo '⚠️  PostgreSQL container not running'",
         "db:restart": "yarn db:stop && sleep 1 && yarn db",
         "db:remove": "docker rm -f matchzy-postgres 2>/dev/null && echo '✅ Removed PostgreSQL container' || echo '⚠️  PostgreSQL container not found'",
+        "db:reset": "yarn db:remove && yarn db",
         "test": "bash scripts/test-e2e-sharded.sh",
         "test:single": "bash scripts/test-e2e-all.sh",
         "test:sharded": "bash scripts/test-e2e-sharded.sh 10",

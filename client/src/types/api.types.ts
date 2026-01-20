@@ -29,6 +29,10 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
+  // Server tracking fields (from MatchZy Enhanced server_configured event)
+  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  hostname?: string | null; // CS2 server hostname (from hostname convar)
+  lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
@@ -75,6 +79,29 @@ export interface ServerStatusResponse extends ApiResponse {
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
+}
+
+export interface ServerAllocationInfo {
+  id: string;
+  name: string;
+  online: boolean;
+  status: string | null;
+  matchSlug: string | null;
+  matchNumber: number | null;
+  matchRound: number | null;
+  updatedAt: number | null;
+  inGraceWindow: boolean;
+  secondsUntilReady: number | null;
+  allocatable: boolean;
+}
+
+export interface ServerAvailabilityResponse extends ApiResponse {
+  availableServerCount: number;
+  gracePeriodSeconds: number;
+  nextAllocationInSeconds: number | null;
+  requiredServerCount: number;
+  servers: ServerAllocationInfo[];
+  simulationEnabled: boolean;
 }
 
 // Team types

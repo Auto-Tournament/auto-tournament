@@ -23,7 +23,7 @@ import {
 import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { serverService } from '../services/serverService';
-import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
+import { serverInitializationService } from '../services/serverInitializationService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 
 const router = Router();
@@ -34,7 +34,7 @@ const router = Router();
  * (which configures webhooks when testing server status) so that admins don't
  * have to visit the Servers view before allocations begin.
  */
-async function bootstrapServerWebhooksForTournamentStart(baseUrl: string): Promise<void> {
+async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
   const serverToken = process.env.SERVER_TOKEN;
   if (!serverToken) {
     log.warn(
@@ -49,22 +49,18 @@ async function bootstrapServerWebhooksForTournamentStart(baseUrl: string): Promi
   }
 
   log.info(
-    `[WEBHOOK] Bootstrapping MatchZy webhooks for ${enabledServers.length} server(s) before allocation...`
+    `[WEBHOOK] Ensuring persistent config for ${enabledServers.length} server(s) before allocation...`
   );
 
+  // Initialize servers with persistent configuration (idempotent - only sends if not already initialized)
   for (const server of enabledServers) {
     try {
-      const commands = getMatchZyWebhookCommands(baseUrl, serverToken, server.id);
-      for (const cmd of commands) {
-        await rconService.sendCommand(server.id, cmd);
-      }
-
-      const webhookUrl = `${baseUrl}/api/events/${server.id}`;
-      log.webhookConfigured(server.id, webhookUrl);
+      await serverInitializationService.initializeServer(server.id, false);
+      log.success(`Initialized persistent config for ${server.id}`);
     } catch (error) {
-      // Don't fail the start flow if a single server webhook setup fails.
+      // Don't fail the start flow if a single server init fails.
       log.warn(
-        `Failed to bootstrap MatchZy webhook for server ${server.id} during tournament start`,
+        `Failed to initialize server ${server.id} during tournament start`,
         { error }
       );
     }
@@ -688,13 +684,11 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Get base URL for webhook configuration
-    const baseUrl = await getWebhookBaseUrl(req);
-
     // Proactively configure MatchZy webhooks for all enabled servers using the
     // latest settings so that allocator connectivity checks (css_te events)
     // succeed without requiring a manual visit to the Servers page.
     try {
-      await bootstrapServerWebhooksForTournamentStart(baseUrl);
+      await bootstrapServerWebhooksForTournamentStart();
     } catch (err) {
       log.warn(
         'Failed to bootstrap server webhooks during tournament start; continuing with allocation.',
@@ -735,6 +729,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // Kick off tournament start + server allocation in the background so the
     // HTTP request can return immediately and the UI doesn't sit in a pending
     // state while RCON/webhook calls are in flight.
+    const baseUrl = await getWebhookBaseUrl(req);
     void (async () => {
       try {
         const result = await matchAllocationService.startTournament(baseUrl);

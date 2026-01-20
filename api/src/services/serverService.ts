@@ -263,6 +263,11 @@ export class ServerService {
       matchzyConfig,
       created_at: server.created_at,
       updated_at: server.updated_at,
+      // Server tracking fields
+      pluginVersion: server.plugin_version || null,
+      hostname: server.hostname || null,
+      lastSeen: server.last_seen || null,
+      status: server.status || null,
     };
   }
 }

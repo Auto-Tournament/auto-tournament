@@ -1407,6 +1407,14 @@
     "testButton": "Test Sound",
     "footer": "Sound notifications will play when your match is ready or when important events occur."
   },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Delete Match",
+      "confirmTitle": "Delete this match?",
+      "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
+      "button": "Delete Match"
+    }
+  },
   "bracket": {
     "empty": {
       "noBracketTitle": "No bracket to display",

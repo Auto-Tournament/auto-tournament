@@ -638,6 +638,15 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
               </Box>
             )}
 
+            {/* Queue Position */}
+            {!match.serverId && match.queuePosition && (
+              <Box>
+                <Typography variant="body2" color="primary.main" fontWeight={600}>
+                  <strong>Queue Position:</strong> #{match.queuePosition}
+                </Typography>
+              </Box>
+            )}
+
             <Divider />
 
             {/* Score Display */}

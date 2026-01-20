@@ -99,6 +99,8 @@ export const getStatusLabel = (
       return 'LIVE';
     case 'completed':
       return 'COMPLETED';
+    case 'cancelled':
+      return 'CANCELLED';
     default:
       return status.toUpperCase();
   }
@@ -257,6 +259,8 @@ export const getStatusColor = (
       return 'warning'; // Yellow/Orange - ready to start
     case 'completed':
       return 'success'; // Green - match finished
+    case 'cancelled':
+      return 'error'; // Red - match was cancelled
     default:
       return 'default'; // Gray - pending or unknown
   }
