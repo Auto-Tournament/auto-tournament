@@ -680,7 +680,7 @@ export default function Settings() {
                         <Switch
                           checked={simulateMatches}
                           onChange={(event) => setSimulateMatches(event.target.checked)}
-                          color="primary"
+                          color="error"
                           size="small"
                           inputProps={
                             {
@@ -689,9 +689,13 @@ export default function Settings() {
                           }
                         />
                       }
-                      label={t('settingsPage.developer.simulateToggleLabel')}
+                      label={
+                        <Typography component="span" color="error.main" fontWeight={600}>
+                          {t('settingsPage.developer.simulateToggleLabel')}
+                        </Typography>
+                      }
                     />
-                    <Typography variant="caption" color="text.secondary" display="block" mt={1}>
+                    <Typography variant="caption" color="error.main" display="block" mt={1} fontWeight={500}>
                       {t('settingsPage.developer.simulateNote')}
                     </Typography>
                     <Box mt={3}>

@@ -93,8 +93,12 @@ export class MatchAllocationService {
   }> {
     const enabledServers = await serverService.getAllServers(true);
 
+    // Filter out unconfigured servers from allocation status
+    // These servers haven't sent any events yet and cannot be used
+    const configuredServers = enabledServers.filter((server) => server.lastSeen !== null);
+
     // For the high‑level allocation *status* view we intentionally include all
-    // enabled servers, even if the in‑memory allocation tracker currently
+    // configured servers, even if the in‑memory allocation tracker currently
     // considers them "busy" or "preparing". The tracker is an optimisation
     // aid for the allocator itself, but the authoritative truth about whether
     // a server is actually idle comes from MatchZy's ConVars plus our DB
@@ -102,7 +106,7 @@ export class MatchAllocationService {
     // we ensure that UIs – including the manual match creator – always see a
     // complete snapshot of online servers together with their allocatable flag.
     const statusChecks = await Promise.all(
-      enabledServers.map(async (server) => {
+      configuredServers.map(async (server) => {
         try {
           // Use the short-lived status cache for availability checks so we don't
           // block the entire API on fresh RCON calls every time the UI polls.
@@ -291,11 +295,24 @@ export class MatchAllocationService {
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
+    // Filter out unconfigured servers (never sent server_configured event)
+    // These servers cannot be used for matches until they've been initialized
+    // and have sent their first event (which sets lastSeen timestamp)
+    const configuredServers = enabledServers.filter((server) => {
+      if (!server.lastSeen) {
+        log.debug(
+          `[ALLOCATION] Skipping unconfigured server ${server.id} (${server.name}) - no events received yet`
+        );
+        return false;
+      }
+      return true;
+    });
+
     // We intentionally do NOT pre‑filter enabled servers by DB "busy" state
     // here. Instead we trust the MatchZy tournament status convars as the
     // authoritative view: if the plugin reports the server as idle, we allow
     // allocation even if our DB still has legacy loaded/live matches attached.
-    const candidateServers = enabledServers;
+    const candidateServers = configuredServers;
 
     // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(
