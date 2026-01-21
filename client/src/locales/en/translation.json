@@ -625,6 +625,48 @@
         "description": "Control whether completed matches update player Skill Ratings. Disable this for events where an external system (for example your Excel sheet) is the source of truth for ratings.",
         "toggleLabel": "Update player ratings from completed matches",
         "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged."
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced v1.3.0 Features",
+        "description": "Configure advanced match features. Leave settings empty to use tournament-type defaults.",
+        "autoready": {
+          "title": "Auto-Ready System",
+          "label": "Auto-mark players as ready when they join",
+          "description": "Players are automatically ready on join. They can still use .unready to opt-out."
+        },
+        "pause": {
+          "title": "Pause Controls",
+          "bothTeamsUnpause": "Require both teams to unpause",
+          "maxPausesLabel": "Max pauses per team",
+          "maxPausesHelper": "0 = unlimited pauses",
+          "pauseDurationLabel": "Pause duration limit (seconds)",
+          "pauseDurationHelper": "0 = no time limit"
+        },
+        "sideSelection": {
+          "title": "Side Selection Timer",
+          "enabled": "Enable side selection timer",
+          "timeLabel": "Time allowed (seconds)",
+          "timeHelper": "Time after knife round to choose sides"
+        },
+        "gg": {
+          "title": "Early Match Termination (.gg)",
+          "enabled": "Enable .gg forfeit command",
+          "thresholdLabel": "Vote threshold (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% of team must vote (e.g., 4/5 players)",
+          "minScoreDiffLabel": "Minimum score difference",
+          "minScoreDiffHelper": "0 = disabled. Example: 6 = only allow .gg when losing by 6+ rounds"
+        },
+        "ffw": {
+          "title": "Forfeit/Walkover System",
+          "enabled": "Enable automatic forfeit when team disconnects",
+          "timeLabel": "Forfeit timer (seconds)",
+          "timeHelper": "Time before forfeit is declared when entire team leaves"
+        },
+        "demo": {
+          "title": "Demo Recording",
+          "enabled": "Enable automatic GOTV demo recording",
+          "description": "When disabled, server restarts ~10s after match end (vs 60-90s with recording)"
+        }
       }
     },
     "developer": {

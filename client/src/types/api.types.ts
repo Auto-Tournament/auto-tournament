@@ -286,6 +286,19 @@ export interface SettingsResponse extends ApiResponse {
     matchzyDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
     allowSelfRegister?: boolean;
+    // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
+    matchzyAutoreadyEnabled?: 0 | 1 | null;
+    matchzyBothTeamsUnpauseRequired?: 0 | 1 | null;
+    matchzyMaxPausesPerTeam?: number | null;
+    matchzyPauseDuration?: number | null;
+    matchzySideSelectionEnabled?: 0 | 1 | null;
+    matchzySideSelectionTime?: number | null;
+    matchzyGgEnabled?: 0 | 1 | null;
+    matchzyGgThreshold?: number | null;
+    matchzyGgMinScoreDiff?: number | null;
+    matchzyFfwEnabled?: 0 | 1 | null;
+    matchzyFfwTime?: number | null;
+    matchzyDemoRecordingEnabled?: 0 | 1 | null;
   };
 }
 

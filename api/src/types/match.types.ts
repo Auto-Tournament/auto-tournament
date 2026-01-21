@@ -57,6 +57,7 @@ export interface MatchConfig {
    * - matchzy_side_selection_time: 1-999 (seconds)
    * - matchzy_gg_enabled: 0 or 1
    * - matchzy_gg_threshold: 0.0-1.0
+   * - matchzy_gg_min_score_diff: 0-16 (minimum score difference for .gg, 0 = disabled)
    * - matchzy_ffw_enabled: 0 or 1
    * - matchzy_ffw_time: 1-999 (seconds)
    * - matchzy_demo_recording_enabled: 0 or 1

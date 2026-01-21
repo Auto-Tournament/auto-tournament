@@ -236,7 +236,7 @@ export const generateMatchConfig = async (
   const maxRounds = resolveMaxRounds(tournament);
   
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type
-  const matchzyEnhancedCvars = matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
+  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
   
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
@@ -421,7 +421,7 @@ async function generateShuffleMatchConfig(
   const maxRounds = resolveMaxRounds(tournament);
   
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type (shuffle)
-  const matchzyEnhancedCvars = matchzyConfigService.generateMatchzyEnhancedCvars('shuffle');
+  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars('shuffle');
   
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,

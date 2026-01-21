@@ -10,7 +10,20 @@ export type AppSettingKey =
   | 'matchzy_knife_enabled_default'
   | 'matchzy_debug_chat'
   | 'ratings_enabled'
-  | 'allow_self_register';
+  | 'allow_self_register'
+  // MatchZy Enhanced v1.3.0 settings
+  | 'matchzy_autoready_enabled'
+  | 'matchzy_both_teams_unpause_required'
+  | 'matchzy_max_pauses_per_team'
+  | 'matchzy_pause_duration'
+  | 'matchzy_side_selection_enabled'
+  | 'matchzy_side_selection_time'
+  | 'matchzy_gg_enabled'
+  | 'matchzy_gg_threshold'
+  | 'matchzy_gg_min_score_diff'
+  | 'matchzy_ffw_enabled'
+  | 'matchzy_ffw_time'
+  | 'matchzy_demo_recording_enabled';
 
 export interface AppSetting {
   key: AppSettingKey;
@@ -28,6 +41,19 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_debug_chat',
   'ratings_enabled',
   'allow_self_register',
+  // MatchZy Enhanced v1.3.0 settings
+  'matchzy_autoready_enabled',
+  'matchzy_both_teams_unpause_required',
+  'matchzy_max_pauses_per_team',
+  'matchzy_pause_duration',
+  'matchzy_side_selection_enabled',
+  'matchzy_side_selection_time',
+  'matchzy_gg_enabled',
+  'matchzy_gg_threshold',
+  'matchzy_gg_min_score_diff',
+  'matchzy_ffw_enabled',
+  'matchzy_ffw_time',
+  'matchzy_demo_recording_enabled',
 ];
 
 class SettingsService {
@@ -148,6 +174,73 @@ class SettingsService {
           normalized === 'enabled';
         await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
         log.success(`Player self‑registration ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
+
+      // MatchZy Enhanced v1.3.0 boolean settings (0/1)
+      if (
+        key === 'matchzy_autoready_enabled' ||
+        key === 'matchzy_both_teams_unpause_required' ||
+        key === 'matchzy_side_selection_enabled' ||
+        key === 'matchzy_gg_enabled' ||
+        key === 'matchzy_ffw_enabled' ||
+        key === 'matchzy_demo_recording_enabled'
+      ) {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`${key} ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
+
+      // MatchZy Enhanced integer settings
+      if (
+        key === 'matchzy_max_pauses_per_team' ||
+        key === 'matchzy_pause_duration' ||
+        key === 'matchzy_side_selection_time' ||
+        key === 'matchzy_ffw_time' ||
+        key === 'matchzy_gg_min_score_diff'
+      ) {
+        const parsed = Number(trimmed);
+        if (!Number.isInteger(parsed)) {
+          throw new Error(`${key} must be an integer`);
+        }
+
+        // Validate ranges
+        if (key === 'matchzy_max_pauses_per_team' && (parsed < 0 || parsed > 999)) {
+          throw new Error('matchzy_max_pauses_per_team must be 0-999');
+        }
+        if (key === 'matchzy_pause_duration' && (parsed < 0 || parsed > 999)) {
+          throw new Error('matchzy_pause_duration must be 0-999 seconds');
+        }
+        if (key === 'matchzy_side_selection_time' && (parsed < 1 || parsed > 999)) {
+          throw new Error('matchzy_side_selection_time must be 1-999 seconds');
+        }
+        if (key === 'matchzy_ffw_time' && (parsed < 1 || parsed > 999)) {
+          throw new Error('matchzy_ffw_time must be 1-999 seconds');
+        }
+        if (key === 'matchzy_gg_min_score_diff' && (parsed < 0 || parsed > 16)) {
+          throw new Error('matchzy_gg_min_score_diff must be 0-16');
+        }
+
+        await db.setAppSettingAsync(key, String(parsed));
+        log.success(`${key} updated to ${parsed}`);
+        return;
+      }
+
+      // MatchZy Enhanced float settings
+      if (key === 'matchzy_gg_threshold') {
+        const parsed = Number(trimmed);
+        if (!Number.isFinite(parsed) || parsed < 0 || parsed > 1) {
+          throw new Error('matchzy_gg_threshold must be 0.0-1.0');
+        }
+        await db.setAppSettingAsync(key, String(parsed));
+        log.success(`matchzy_gg_threshold updated to ${parsed}`);
         return;
       }
     }
@@ -287,6 +380,63 @@ class SettingsService {
 
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  /**
+   * Get MatchZy Enhanced v1.3.0 global configuration overrides.
+   * Returns null for any setting that is not explicitly configured (use tournament defaults).
+   */
+  async getMatchzyEnhancedSettings(): Promise<{
+    matchzy_autoready_enabled: 0 | 1 | null;
+    matchzy_both_teams_unpause_required: 0 | 1 | null;
+    matchzy_max_pauses_per_team: number | null;
+    matchzy_pause_duration: number | null;
+    matchzy_side_selection_enabled: 0 | 1 | null;
+    matchzy_side_selection_time: number | null;
+    matchzy_gg_enabled: 0 | 1 | null;
+    matchzy_gg_threshold: number | null;
+    matchzy_gg_min_score_diff: number | null;
+    matchzy_ffw_enabled: 0 | 1 | null;
+    matchzy_ffw_time: number | null;
+    matchzy_demo_recording_enabled: 0 | 1 | null;
+  }> {
+    const parseBooleanSetting = async (key: AppSettingKey): Promise<0 | 1 | null> => {
+      const value = await this.getSetting(key);
+      if (!value) return null;
+      const normalized = value.toLowerCase();
+      return normalized === '1' || normalized === 'true' || normalized === 'yes' ? 1 : 0;
+    };
+
+    const parseIntSetting = async (key: AppSettingKey): Promise<number | null> => {
+      const value = await this.getSetting(key);
+      if (!value) return null;
+      const parsed = Number(value);
+      return Number.isInteger(parsed) ? parsed : null;
+    };
+
+    const parseFloatSetting = async (key: AppSettingKey): Promise<number | null> => {
+      const value = await this.getSetting(key);
+      if (!value) return null;
+      const parsed = Number(value);
+      return Number.isFinite(parsed) ? parsed : null;
+    };
+
+    return {
+      matchzy_autoready_enabled: await parseBooleanSetting('matchzy_autoready_enabled'),
+      matchzy_both_teams_unpause_required: await parseBooleanSetting(
+        'matchzy_both_teams_unpause_required'
+      ),
+      matchzy_max_pauses_per_team: await parseIntSetting('matchzy_max_pauses_per_team'),
+      matchzy_pause_duration: await parseIntSetting('matchzy_pause_duration'),
+      matchzy_side_selection_enabled: await parseBooleanSetting('matchzy_side_selection_enabled'),
+      matchzy_side_selection_time: await parseIntSetting('matchzy_side_selection_time'),
+      matchzy_gg_enabled: await parseBooleanSetting('matchzy_gg_enabled'),
+      matchzy_gg_threshold: await parseFloatSetting('matchzy_gg_threshold'),
+      matchzy_gg_min_score_diff: await parseIntSetting('matchzy_gg_min_score_diff'),
+      matchzy_ffw_enabled: await parseBooleanSetting('matchzy_ffw_enabled'),
+      matchzy_ffw_time: await parseIntSetting('matchzy_ffw_time'),
+      matchzy_demo_recording_enabled: await parseBooleanSetting('matchzy_demo_recording_enabled'),
+    };
   }
 
   private normalizeUrl(url: string): string {

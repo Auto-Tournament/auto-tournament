@@ -625,6 +625,48 @@
         "description": "控制已完成的比赛是否会更新玩家 Skill Rating。若外部系统（例如 Excel 表）是评分真值来源，可在此禁用。",
         "toggleLabel": "根据完成的比赛更新玩家评分",
         "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced v1.3.0 功能",
+        "description": "配置高级比赛功能。留空设置以使用锦标赛类型默认值。",
+        "autoready": {
+          "title": "自动准备系统",
+          "label": "玩家加入时自动标记为已准备",
+          "description": "玩家加入时自动准备。他们仍可使用 .unready 退出。"
+        },
+        "pause": {
+          "title": "暂停控制",
+          "bothTeamsUnpause": "要求双方队伍都取消暂停",
+          "maxPausesLabel": "每队最大暂停次数",
+          "maxPausesHelper": "0 = 无限制暂停",
+          "pauseDurationLabel": "暂停时长限制（秒）",
+          "pauseDurationHelper": "0 = 无时间限制"
+        },
+        "sideSelection": {
+          "title": "阵营选择计时器",
+          "enabled": "启用阵营选择计时器",
+          "timeLabel": "允许时间（秒）",
+          "timeHelper": "刀局后选择阵营的时间"
+        },
+        "gg": {
+          "title": "提前结束比赛 (.gg)",
+          "enabled": "启用 .gg 投降命令",
+          "thresholdLabel": "投票阈值 (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% 的队员必须投票（例如，5 人中的 4 人）",
+          "minScoreDiffLabel": "最小分差",
+          "minScoreDiffHelper": "0 = 禁用。例如：6 = 仅在落后 6+ 回合时允许 .gg"
+        },
+        "ffw": {
+          "title": "弃权/判负系统",
+          "enabled": "队伍断开连接时启用自动判负",
+          "timeLabel": "判负计时器（秒）",
+          "timeHelper": "整个队伍离开时宣布判负的时间"
+        },
+        "demo": {
+          "title": "Demo 录制",
+          "enabled": "启用自动 GOTV demo 录制",
+          "description": "禁用后，服务器在比赛结束后约 10 秒重启（启用录制时为 60-90 秒）"
+        }
       }
     },
     "developer": {

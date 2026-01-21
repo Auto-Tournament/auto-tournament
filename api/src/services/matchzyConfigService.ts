@@ -1,5 +1,6 @@
 import { TournamentType } from '../types/tournament.types';
 import { log } from '../utils/logger';
+import { settingsService } from './settingsService';
 
 /**
  * MatchZy Enhanced v1.3.0 Configuration Service
@@ -24,6 +25,7 @@ export interface MatchzyEnhancedCvars {
   // Early Match Termination (.gg)
   matchzy_gg_enabled?: 0 | 1;
   matchzy_gg_threshold?: number;
+  matchzy_gg_min_score_diff?: number; // Minimum score difference required for .gg (0 = disabled)
   
   // Forfeit/Walkover System
   matchzy_ffw_enabled?: 0 | 1;
@@ -136,23 +138,68 @@ function getProfileForTournamentType(tournamentType: TournamentType): MatchzyCon
 
 /**
  * Generate MatchZy Enhanced cvars for a tournament
+ * Loads global settings from SettingsService and uses them as overrides to tournament defaults
  */
-export function generateMatchzyEnhancedCvars(
+export async function generateMatchzyEnhancedCvars(
   tournamentType: TournamentType,
   overrides?: Partial<MatchzyEnhancedCvars>
-): MatchzyEnhancedCvars {
+): Promise<MatchzyEnhancedCvars> {
   const profile = getProfileForTournamentType(tournamentType);
   const baseConfig = CONFIG_TEMPLATES[profile];
   
-  // Apply any custom overrides
+  // Load global settings from SettingsService (only non-null values override)
+  const globalSettings = await settingsService.getMatchzyEnhancedSettings();
+  const globalOverrides: Partial<MatchzyEnhancedCvars> = {};
+  
+  // Only include non-null global settings as overrides
+  if (globalSettings.matchzy_autoready_enabled !== null) {
+    globalOverrides.matchzy_autoready_enabled = globalSettings.matchzy_autoready_enabled;
+  }
+  if (globalSettings.matchzy_both_teams_unpause_required !== null) {
+    globalOverrides.matchzy_both_teams_unpause_required = globalSettings.matchzy_both_teams_unpause_required;
+  }
+  if (globalSettings.matchzy_max_pauses_per_team !== null) {
+    globalOverrides.matchzy_max_pauses_per_team = globalSettings.matchzy_max_pauses_per_team;
+  }
+  if (globalSettings.matchzy_pause_duration !== null) {
+    globalOverrides.matchzy_pause_duration = globalSettings.matchzy_pause_duration;
+  }
+  if (globalSettings.matchzy_side_selection_enabled !== null) {
+    globalOverrides.matchzy_side_selection_enabled = globalSettings.matchzy_side_selection_enabled;
+  }
+  if (globalSettings.matchzy_side_selection_time !== null) {
+    globalOverrides.matchzy_side_selection_time = globalSettings.matchzy_side_selection_time;
+  }
+  if (globalSettings.matchzy_gg_enabled !== null) {
+    globalOverrides.matchzy_gg_enabled = globalSettings.matchzy_gg_enabled;
+  }
+  if (globalSettings.matchzy_gg_threshold !== null) {
+    globalOverrides.matchzy_gg_threshold = globalSettings.matchzy_gg_threshold;
+  }
+  if (globalSettings.matchzy_gg_min_score_diff !== null) {
+    globalOverrides.matchzy_gg_min_score_diff = globalSettings.matchzy_gg_min_score_diff;
+  }
+  if (globalSettings.matchzy_ffw_enabled !== null) {
+    globalOverrides.matchzy_ffw_enabled = globalSettings.matchzy_ffw_enabled;
+  }
+  if (globalSettings.matchzy_ffw_time !== null) {
+    globalOverrides.matchzy_ffw_time = globalSettings.matchzy_ffw_time;
+  }
+  if (globalSettings.matchzy_demo_recording_enabled !== null) {
+    globalOverrides.matchzy_demo_recording_enabled = globalSettings.matchzy_demo_recording_enabled;
+  }
+  
+  // Apply overrides: tournament defaults -> global settings -> explicit overrides
   const config = {
     ...baseConfig,
-    ...overrides,
+    ...globalOverrides,
+    ...overrides, // Explicit overrides take precedence
   };
   
   log.debug('Generated MatchZy Enhanced cvars', {
     tournamentType,
     profile,
+    globalOverrides: Object.keys(globalOverrides).length > 0 ? globalOverrides : undefined,
     config,
   });
   
@@ -217,6 +264,13 @@ export function validateMatchzyEnhancedCvars(
     const val = cvars.matchzy_gg_threshold;
     if (typeof val !== 'number' || val < 0 || val > 1) {
       errors.push(`matchzy_gg_threshold must be 0.0-1.0, got ${val}`);
+    }
+  }
+  
+  if (cvars.matchzy_gg_min_score_diff !== undefined) {
+    const val = cvars.matchzy_gg_min_score_diff;
+    if (!Number.isInteger(val) || val < 0 || val > 16) {
+      errors.push(`matchzy_gg_min_score_diff must be 0-16, got ${val}`);
     }
   }
   
