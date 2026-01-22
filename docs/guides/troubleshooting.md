@@ -182,9 +182,30 @@
 
 **Solution:** Manually add or promote a user to admin via direct database access.
 
+> **Note:** You can run SQL from either container - both work identically. The `matchzy-postgres` container method is simpler (no `-h` or password needed), but `matchzy-tournament-api` works fine too if you prefer.
+
 #### Method 1: Add a new admin player
 
 If the player doesn't exist in the database yet:
+
+**From postgres container (recommended):**
+
+```bash
+docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
+INSERT INTO players (
+    id, name, current_elo, starting_elo, openskill_mu, openskill_sigma, 
+    match_count, is_admin, created_at, updated_at
+) VALUES (
+    '76561198000000001',
+    'Admin User',
+    1500, 1500, 25.0, 8.333, 0, 1,
+    EXTRACT(EPOCH FROM NOW())::bigint,
+    EXTRACT(EPOCH FROM NOW())::bigint
+);
+"
+```
+
+**From API container (alternative):**
 
 ```bash
 docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
@@ -205,6 +226,18 @@ INSERT INTO players (
 
 If the player already exists but isn't an admin:
 
+**From postgres container (recommended):**
+
+```bash
+docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
+UPDATE players 
+SET is_admin = 1, updated_at = EXTRACT(EPOCH FROM NOW())::bigint 
+WHERE id = '76561198000000001';
+"
+```
+
+**From API container (alternative):**
+
 ```bash
 docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
 UPDATE players 
@@ -213,26 +246,93 @@ WHERE id = '76561198000000001';
 \""
 ```
 
+#### Troubleshooting: Still redirected to profile after update
+
+If you ran the SQL update successfully but still get redirected to your profile when trying to access admin sections:
+
+**1. Verify the update worked:**
+
+```bash
+# From postgres container (recommended)
+docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
+SELECT id, name, is_admin FROM players WHERE id = '76561198000000001';
+"
+
+# Or from API container
+docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
+SELECT id, name, is_admin FROM players WHERE id = '76561198000000001';
+\""
+```
+
+You should see `is_admin = 1`. If it shows `0` or `NULL`, the update didn't work.
+
+**2. Check Steam ID matches your session:**
+
+The Steam ID in the database must match the Steam ID in your login session. Verify:
+- The Steam ID you used in the SQL command is correct
+- You're logged in with the same Steam account
+- Check your session Steam ID: Look at the URL when redirected (`/player/76561198000000001`) - that's your session Steam ID
+
+**3. Log out and log back in:**
+
+The session may have cached your old admin status. After updating the database:
+1. **Log out** completely (clear cookies or use incognito/private window)
+2. **Log back in** via Steam
+3. The new admin status should be recognized
+
+**4. Verify the value is exactly 1:**
+
+If `is_admin` shows as something other than `1`, fix it:
+
+```bash
+# From postgres container (recommended)
+docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
+UPDATE players 
+SET is_admin = 1 
+WHERE id = '76561198000000001';
+"
+
+# Or from API container
+docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
+UPDATE players 
+SET is_admin = 1 
+WHERE id = '76561198000000001';
+\""
+```
+
+**5. Check API logs:**
+
+If still not working, check the API logs for auth errors:
+
+```bash
+docker compose logs api | grep -i "admin\|auth\|steam"
+```
+
+Look for messages like `"Steam user X is not an admin"` - this will show which Steam ID the system is checking.
+
 > **Note:** 
 > - Replace `76561198000000001` with the actual Steam64 ID
 > - Find your Steam64 ID at [steamid.io](https://steamid.io/) or [steamidfinder.com](https://steamidfinder.com/)
 > - If using custom database credentials, adjust `PGPASSWORD`, `-U`, `-d` accordingly
-> - After running the command, the user can log in via Steam and will have admin access
+> - **Most common fix:** Log out and log back in after running the SQL update
 
-#### Alternative: Direct PostgreSQL access
+#### Alternative: Interactive PostgreSQL session
 
-If you prefer to connect directly to the PostgreSQL container:
+If you prefer an interactive session to run multiple queries:
 
 ```bash
-# Connect to PostgreSQL
+# Connect to PostgreSQL interactively
 docker exec -it matchzy-postgres psql -U postgres -d matchzy_tournament
 
-# Then run SQL:
+# Then run SQL commands:
 UPDATE players SET is_admin = 1, updated_at = EXTRACT(EPOCH FROM NOW())::bigint WHERE id = '76561198000000001';
 
 # Or for a new player:
 INSERT INTO players (id, name, current_elo, starting_elo, openskill_mu, openskill_sigma, match_count, is_admin, created_at, updated_at)
 VALUES ('76561198000000001', 'Admin User', 1500, 1500, 25.0, 8.333, 0, 1, EXTRACT(EPOCH FROM NOW())::bigint, EXTRACT(EPOCH FROM NOW())::bigint);
+
+# Verify:
+SELECT id, name, is_admin FROM players WHERE id = '76561198000000001';
 
 # Exit
 \q
