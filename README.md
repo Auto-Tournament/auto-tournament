@@ -68,7 +68,7 @@ Dashboard → New Tournament → Select format → Add teams → Start!
 👥 **Public Pages** — No-login team pages with server connect info
 
 <div align="center">
-  <img src="docs/assets/preview/08-bracket-view.png" alt="Tournament Bracket View" width="800">
+  <img src="docs/assets/preview/bracket.png" alt="Tournament Bracket View" width="800">
 </div>
 
 ---
