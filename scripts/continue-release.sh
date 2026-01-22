@@ -35,7 +35,17 @@ fi
 # Ensure main is up to date
 echo -e "${BLUE}Pulling latest main...${NC}"
 git fetch origin --prune
-git pull --rebase
+
+# Check if we need to update
+LOCAL_COMMIT=$(git rev-parse HEAD)
+REMOTE_COMMIT=$(git rev-parse origin/main 2>/dev/null || echo "")
+
+if [ -n "$REMOTE_COMMIT" ] && [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
+    echo -e "${YELLOW}Local main differs from remote. Resetting to match origin/main...${NC}"
+    git reset --hard origin/main
+else
+    echo -e "${GREEN}✅ Already up to date with origin/main${NC}"
+fi
 
 # Ensure versions are synced
 echo -e "${BLUE}Ensuring versions are synced...${NC}"
