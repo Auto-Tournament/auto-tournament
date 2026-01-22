@@ -43,6 +43,7 @@ services:
       - PORT=3000
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
       - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
+      - STEAM_API_KEY=${STEAM_API_KEY:-}
       - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
