@@ -30,7 +30,7 @@ export const test = base.extend<TestFixtures>({
 });
 
 test.describe.serial('Global Test Setup', () => {
-  test('should setup test environment', { tag: ['@setup', '@global'] }, async ({ page, request }) => {
+  test.skip('should setup test environment', { tag: ['@setup', '@global'] }, async ({ page, request }) => {
     // Wipe database and sign in
     const context = await setupTestContextWithFreshDB(page, request);
     

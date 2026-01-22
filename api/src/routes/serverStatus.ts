@@ -86,6 +86,18 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       ),
     ]);
 
+    // Check if server has banned our IP by testing RCON connection
+    // This will detect repeated authentication errors
+    let ipBanned = false;
+    if (!useCache) {
+      try {
+        const testResult = await rconService.testConnection(id);
+        ipBanned = testResult.ipBanned === true;
+      } catch {
+        // Ignore errors - we'll check from the statusInfo
+      }
+    }
+
     const reachableFromApi = statusInfo.online;
 
     if (!statusInfo.online) {
@@ -104,6 +116,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         pluginStatus: null,
         allocationState: null,
         allocationMatchSlug: null,
+        ipBanned,
       });
     }
 
@@ -171,6 +184,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         pluginStatus: effectiveStatus,
         allocationState: allocationLabel,
         allocationMatchSlug: allocationState?.matchSlug ?? null,
+        ipBanned,
       });
     }
 
@@ -215,6 +229,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       pluginStatus: effectiveStatus,
       allocationState: allocationLabel,
       allocationMatchSlug: allocationState?.matchSlug ?? null,
+      ipBanned,
     });
   } catch (error) {
     log.error('Error checking server status', error);

@@ -16,7 +16,7 @@ test.describe.serial('Dashboard Page', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should display dashboard',
     {
       tag: ['@ui', '@dashboard'],

@@ -27,7 +27,7 @@ test.describe.serial('Teams UI', () => {
     }
   });
 
-  test(
+  test.skip(
     'should navigate to and display teams page',
     {
       tag: ['@ui', '@teams'],

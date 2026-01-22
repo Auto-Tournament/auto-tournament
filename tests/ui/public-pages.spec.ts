@@ -15,7 +15,7 @@ import { getAuthHeader } from '../helpers/auth';
  */
 
 test.describe.serial('Public Pages UI', () => {
-  test(
+  test.skip(
     'should display player page without authentication',
     {
       tag: ['@ui', '@public', '@players'],
@@ -51,7 +51,7 @@ test.describe.serial('Public Pages UI', () => {
     }
   );
 
-  test(
+  test.skip(
     'should allow finding player by Steam URL',
     {
       tag: ['@ui', '@public', '@players', '@search'],

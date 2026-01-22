@@ -342,6 +342,16 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_tournament ON shuffle_tournament_players(tournament_id);
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_player ON shuffle_tournament_players(player_id);
+
+    -- Session table for connect-pg-simple (express-session PostgreSQL store)
+    -- This table is required for session persistence across API restarts
+    CREATE TABLE IF NOT EXISTS session (
+      sid VARCHAR NOT NULL PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMP WITH TIME ZONE NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_session_expire ON session(expire);
   `;
 }
 

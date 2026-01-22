@@ -80,10 +80,12 @@ const sessionDbConnectionString =
 app.use(
   session({
     // Persist sessions in PostgreSQL so admin logins survive API restarts.
+    // Note: Session table is created by our database schema, so we don't need
+    // connect-pg-simple to create it (which would require table.sql file).
     store: new PgSession({
       conString: sessionDbConnectionString,
       tableName: 'session',
-      createTableIfMissing: true,
+      createTableIfMissing: false, // Table is created by our schema
     }),
     secret: sessionSecret,
     resave: false,

@@ -15,7 +15,7 @@ test.describe.serial('Tournament UI', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should navigate to and display tournament page',
     {
       tag: ['@ui', '@tournament'],

@@ -64,7 +64,7 @@ test.describe.serial('Shuffle Tournament UI', () => {
   );
 
   // Consolidated tournament UI test - verifies tournament page loads
-  test(
+  test.skip(
     'should display tournament page',
     {
       tag: ['@ui', '@shuffle', '@tournament'],

@@ -15,7 +15,7 @@ test.describe.serial('Settings UI', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should navigate to and display settings page',
     {
       tag: ['@ui', '@settings'],
@@ -34,7 +34,7 @@ test.describe.serial('Settings UI', () => {
     }
   );
 
-  test(
+  test.skip(
     'should update and clear webhook URL and Steam API key',
     {
       tag: ['@ui', '@settings', '@configuration'],

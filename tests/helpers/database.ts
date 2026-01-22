@@ -11,10 +11,15 @@ import { getAuthHeader } from './auth';
  */
 export async function wipeDatabase(request: APIRequestContext): Promise<boolean> {
   try {
-    const response = await request.delete('/api/dev/wipe', {
+    const response = await request.post('/api/test/reset-database', {
       headers: getAuthHeader(),
     });
-    return response.ok();
+    if (!response.ok()) {
+      const body = await response.json().catch(() => ({}));
+      console.error('Database wipe failed:', body.error || `HTTP ${response.status()}`);
+      return false;
+    }
+    return true;
   } catch (error) {
     console.error('Database wipe failed:', error);
     return false;
@@ -59,20 +64,26 @@ export async function wipeDatabaseViaUI(page: Page): Promise<boolean> {
 
 /**
  * Wipe database (tries API first, falls back to UI)
- * @param page Playwright page
- * @param request Playwright API request context
+ * @param page Playwright page (used for both API via page.request and UI fallback)
+ * @param request Playwright API request context (unused, kept for API compatibility)
  */
 export async function wipeDatabaseAuto(
   page: Page,
-  request: APIRequestContext
+  request?: APIRequestContext
 ): Promise<boolean> {
-  // Try API first (faster)
-  const apiResult = await wipeDatabase(request);
-  if (apiResult) {
-    return true;
+  // Use page.request which automatically shares cookies with the page context
+  // This ensures the request has the session cookie from authentication
+  try {
+    const apiResult = await wipeDatabase(page.request);
+    if (apiResult) {
+      return true;
+    }
+  } catch (error) {
+    // If page.request fails (e.g., context closed), we'll fall back to UI
+    console.warn('Database wipe via API failed, falling back to UI:', error);
   }
   
-  // Fall back to UI
+  // Fall back to UI if API fails
   return await wipeDatabaseViaUI(page);
 }
 

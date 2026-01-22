@@ -80,6 +80,7 @@ export default function Servers() {
     pluginStatus?: string | null;
     allocationState?: string | null;
     allocationMatchSlug?: string | null;
+    ipBanned?: boolean;
   }> => {
     try {
       const useCached = options?.useCached !== false;
@@ -100,6 +101,7 @@ export default function Servers() {
         pluginStatus: response.pluginStatus ?? null,
         allocationState: response.allocationState ?? null,
         allocationMatchSlug: response.allocationMatchSlug ?? null,
+        ipBanned: response.ipBanned ?? false,
       };
     } catch {
       return {
@@ -110,6 +112,7 @@ export default function Servers() {
         pluginStatus: null,
         allocationState: null,
         allocationMatchSlug: null,
+        ipBanned: false,
       };
     }
   };
@@ -163,6 +166,7 @@ export default function Servers() {
           pluginStatus,
           allocationState,
           allocationMatchSlug,
+          ipBanned,
         } = await checkServerStatus(server.id, { useCached: options?.useCached });
         return {
           id: server.id,
@@ -174,6 +178,7 @@ export default function Servers() {
           pluginStatus,
           allocationState,
           allocationMatchSlug,
+          ipBanned,
         };
       });
 
@@ -213,6 +218,10 @@ export default function Servers() {
               statusInfo?.serverCanReachApi !== undefined
                 ? statusInfo.serverCanReachApi
                 : server.serverCanReachApi,
+            ipBanned:
+              statusInfo?.ipBanned !== undefined
+                ? statusInfo.ipBanned
+                : (server.ipBanned ?? false),
             pluginStatus:
               statusInfo?.pluginStatus !== undefined
                 ? statusInfo.pluginStatus
@@ -752,6 +761,31 @@ export default function Servers() {
                           </Typography>
                           <Typography variant="caption" color="text.primary" display="block" mt={0.25}>
                             RCON reachable, but MatchZy hasn't sent events. Click retry button to configure.
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+                    {server.ipBanned && (
+                      <Box
+                        sx={{
+                          bgcolor: 'error.light',
+                          border: 1,
+                          borderColor: 'error.main',
+                          borderRadius: 1,
+                          p: 1.5,
+                          mb: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                        }}
+                      >
+                        <BlockIcon sx={{ color: 'text.primary', fontSize: 20 }} aria-label="IP Banned" />
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={600} color="text.primary">
+                            {t('serversPage.ipBanned.title')}
+                          </Typography>
+                          <Typography variant="caption" color="text.primary" display="block" mt={0.25}>
+                            {t('serversPage.ipBanned.message')}
                           </Typography>
                         </Box>
                       </Box>

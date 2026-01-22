@@ -137,7 +137,7 @@ start_api_container() {
     --name "${name}" \
     --network "${NETWORK_NAME}" \
     -p "${port}:3069" \
-    -e NODE_ENV=production \
+    -e NODE_ENV=test \
     -e PORT=3000 \
     -e SERVER_TOKEN="${SERVER_TOKEN}" \
     -e LOG_LEVEL=debug \

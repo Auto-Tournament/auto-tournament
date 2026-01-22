@@ -39,6 +39,7 @@ export interface Server {
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
   matchzyConfig?: {
     chatPrefix?: string | null;
     adminChatPrefix?: string | null;
@@ -79,6 +80,7 @@ export interface ServerStatusResponse extends ApiResponse {
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
 }
 
 export interface ServerAllocationInfo {
