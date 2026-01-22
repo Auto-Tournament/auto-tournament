@@ -77,6 +77,12 @@ const sessionDbConnectionString =
     process.env.DB_HOST || '127.0.0.1'
   }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
 
+// Determine if we should use secure cookies (HTTPS only)
+// Check FRONTEND_BASE_URL to see if we're using HTTPS
+const frontendBaseUrl = process.env.FRONTEND_BASE_URL || '';
+const useSecureCookies =
+  process.env.NODE_ENV === 'production' && frontendBaseUrl.startsWith('https://');
+
 app.use(
   session({
     // Persist sessions in PostgreSQL so admin logins survive API restarts.
@@ -92,7 +98,8 @@ app.use(
     saveUninitialized: false,
     cookie: {
       sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: useSecureCookies,
+      httpOnly: true, // Prevent JavaScript access to cookie (security best practice)
     },
   })
 );

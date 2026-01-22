@@ -77,6 +77,9 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=matchzy_tournament
 
+# Session secret (required for session persistence - generate with: openssl rand -base64 32)
+SESSION_SECRET=your-session-secret-here
+
 # CS2 server authentication token (required for servers to connect)
 SERVER_TOKEN=your-secure-token-here
 
@@ -84,6 +87,7 @@ SERVER_TOKEN=your-secure-token-here
 STEAM_API_KEY=your-steam-api-key
 
 # Frontend base URL (for auth redirects)
+# Use http:// for local development, https:// for production
 FRONTEND_BASE_URL=http://localhost:3069
 
 # Logging (optional - defaults to info)
@@ -93,7 +97,10 @@ LOG_LEVEL=info
 AUTH_STEAM_ENABLED=true
 ```
 
-> **Note:** The `env_file: - .env` directive in docker-compose.yml automatically loads all variables from your `.env` file into the container. You only need to set the variables you want to customize - defaults are used for the rest.
+> **Note:** 
+> - The `env_file: - .env` directive in docker-compose.yml automatically loads all variables from your `.env` file into the container
+> - **Important:** Set `SESSION_SECRET` in `.env` for session persistence (sessions won't survive restarts without it)
+> - Set `FRONTEND_BASE_URL` to `https://your-domain.com` in production for secure cookies
 
 **3. Start the stack:**
 
