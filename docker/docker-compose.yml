@@ -1,10 +1,10 @@
-# Production compose file - uses pre-built image from Docker Hub
-# Usage: docker compose -f docker/docker-compose.yml up -d --build
+# Minimal production compose – uses pre-built image from Docker Hub.
 #
-# To bind to a different host port, set HOST_PORT environment variable:
-#   HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d --build
-# Or with yarn: HOST_PORT=27016 yarn docker:up
-# Default port is 3069 if HOST_PORT is not set
+# Usage:
+#   docker compose -f docker/docker-compose.yml up -d
+#
+# Optional: HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d
+# Default port: 3069
 
 services:
   postgres:
@@ -17,10 +17,6 @@ services:
       - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
     volumes:
       - postgres-data:/var/lib/postgresql/data
-    # No port binding needed - DB is only accessible within Docker network
-    # Uncomment the line below if you need external access for backups/management:
-    # ports:
-    #   - '5432:5432'
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
@@ -30,54 +26,21 @@ services:
       - matchzy-network
 
   matchzy-tournament:
-    # Pull from Docker Hub (pre-built image - no cloning needed)
     image: sivertio/matchzy-auto-tournament:latest
-
-    # To build from source instead, use docker/docker-compose.local.yml:
-    # docker compose -f docker/docker-compose.local.yml up -d --build
-
     container_name: matchzy-tournament-api
     restart: unless-stopped
     depends_on:
       postgres:
         condition: service_healthy
     ports:
-      - '${HOST_PORT:-3069}:3069' # Single port - Caddy serves frontend at / and proxies /api to backend
+      - '${HOST_PORT:-3069}:3069'
     environment:
       - NODE_ENV=production
-      - PORT=3000 # Backend internal port (proxied by Caddy)
-      # Token used by CS2 servers to authenticate webhooks
-      # IMPORTANT: Set SERVER_TOKEN in your .env file for production deployments
-      - SERVER_TOKEN=${SERVER_TOKEN:?SERVER_TOKEN must be set - do not use default value in production}
-      # Auth providers (Steam / SSO)
-      # Steam OpenID (players + admin SSO)
+      - PORT=3000
+      - SERVER_TOKEN=${SERVER_TOKEN:-change-me}
       - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
-      # Optional: base URL of the frontend for post-login redirects (e.g. http://localhost:3069)
       - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
-      # Keycloak OIDC (planned) – enable and point to your realm to advertise it to the UI
-      - AUTH_KEYCLOAK_ENABLED=${AUTH_KEYCLOAK_ENABLED:-false}
-      - KEYCLOAK_ISSUER_URL=${KEYCLOAK_ISSUER_URL:-}
-      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-}
-      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
-      - KEYCLOAK_CALLBACK_PATH=${KEYCLOAK_CALLBACK_PATH:-/api/auth/keycloak/callback}
-      # Discord OAuth2
-      - AUTH_DISCORD_ENABLED=${AUTH_DISCORD_ENABLED:-false}
-      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
-      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET:-}
-      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI:-}
-      # GitHub OAuth2
-      - AUTH_GITHUB_ENABLED=${AUTH_GITHUB_ENABLED:-false}
-      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
-      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
-      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL:-}
-      # Logging controls (see docs/development/architecture.md → Logging section)
       - LOG_LEVEL=${LOG_LEVEL:-info}
-      # Disable noisy per-request HTTP logs (still logs 4xx/5xx)
-      - LOG_HTTP_REQUESTS=${LOG_HTTP_REQUESTS:-true}
-      # Enable verbose per-query DB logs when debugging production issues
-      - LOG_DB_VERBOSE=${LOG_DB_VERBOSE:-false}
-      # Enable verbose RCON success logs; errors always log regardless
-      - LOG_RCON_VERBOSE=${LOG_RCON_VERBOSE:-false}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -85,9 +48,7 @@ services:
       - DB_PASSWORD=${DB_PASSWORD:-postgres}
       - DB_NAME=${DB_NAME:-matchzy_tournament}
     volumes:
-      # Persist demos and other data
       - ./data:/app/data
-    # Configure webhook URL and Steam API key from the in-app Settings page after startup.
     healthcheck:
       test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
       interval: 30s
@@ -102,7 +63,5 @@ networks:
     driver: bridge
 
 volumes:
-  matchzy-data:
-    driver: local
   postgres-data:
     driver: local
