@@ -1070,7 +1070,6 @@ docker buildx build \
     --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
     --build-arg BUILDKIT_INLINE_CACHE=1 \
     --progress=plain \
-    --no-cache-filter \
     .
 
 if [ $? -ne 0 ]; then
