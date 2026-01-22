@@ -1,4 +1,5 @@
-# Minimal local build – builds from source instead of pulling from Docker Hub.
+# Local production build – builds from source instead of pulling from Docker Hub.
+# Uses production settings (same as docker-compose.yml) but builds locally.
 #
 # First run (or after Dockerfile changes):
 #   docker compose -f docker/docker-compose.local.yml up -d --build
@@ -7,7 +8,7 @@
 #   docker compose -f docker/docker-compose.local.yml up -d
 #
 # Environment variables are loaded from:
-#   - ../.env file (project root) via env_file directive
+#   - .env file (project root) via env_file directive
 #   - Environment variables set in your shell (for docker-compose variable substitution)
 #
 # Default port: 3069 (use HOST_PORT=27016 to override)
@@ -15,7 +16,7 @@
 services:
   postgres:
     image: postgres:16-alpine
-    container_name: matchzy-postgres-dev
+    container_name: matchzy-postgres
     restart: unless-stopped
     environment:
       - POSTGRES_USER=${DB_USER:-postgres}
@@ -33,9 +34,7 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
-      args:
-        VITE_ENABLE_DEV_PAGE: 'true'
-    container_name: matchzy-tournament-dev
+    container_name: matchzy-tournament-api
     restart: unless-stopped
     depends_on:
       postgres:
@@ -46,9 +45,8 @@ services:
       - '${HOST_PORT:-3069}:3069'
     environment:
       # Container-specific settings (not from .env)
-      - NODE_ENV=development
+      - NODE_ENV=production
       - PORT=3000
-      - VITE_ENABLE_DEV_PAGE=true
       # Docker service name for DB connection (not from .env)
       - DB_HOST=postgres
       # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
