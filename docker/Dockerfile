@@ -25,9 +25,16 @@ COPY client/package.json ./client/package.json
 
 # Install all dependencies (including devDeps for build tools) for all workspaces
 # Add retry logic for network issues, especially in ARM64 emulation
-RUN yarn install --network-timeout 300000 --network-concurrency 1 || \
-    (echo "First yarn install attempt failed, retrying..." && sleep 5 && yarn install --network-timeout 300000 --network-concurrency 1) || \
-    (echo "Second yarn install attempt failed, retrying..." && sleep 10 && yarn install --network-timeout 300000 --network-concurrency 1)
+# Use verbose output to show progress during long installs
+RUN echo "Starting yarn install (this may take several minutes)..." && \
+    yarn install --network-timeout 300000 --network-concurrency 1 --verbose || \
+    (echo "⚠️  First yarn install attempt failed, retrying in 5 seconds..." && sleep 5 && \
+     echo "Retry attempt 1/2..." && \
+     yarn install --network-timeout 300000 --network-concurrency 1 --verbose) || \
+    (echo "⚠️  Second yarn install attempt failed, retrying in 10 seconds..." && sleep 10 && \
+     echo "Retry attempt 2/2 (final attempt)..." && \
+     yarn install --network-timeout 300000 --network-concurrency 1 --verbose) && \
+    echo "✅ yarn install completed successfully"
 
 # -------------------------------------------------------------------
 # build: compile TypeScript backend + React frontend
@@ -48,8 +55,12 @@ ARG VITE_ENABLE_DEV_PAGE
 ENV VITE_ENABLE_DEV_PAGE=${VITE_ENABLE_DEV_PAGE}
 
 # Build backend and frontend (needs devDeps like TypeScript, Vite, esbuild, etc.)
-RUN yarn build:server
-RUN yarn build:client
+RUN echo "Building backend (TypeScript compilation)..." && \
+    yarn build:server && \
+    echo "✅ Backend build complete" && \
+    echo "Building frontend (Vite bundling)..." && \
+    yarn build:client && \
+    echo "✅ Frontend build complete"
 
 # -------------------------------------------------------------------
 # release: lean production image with Node.js and Caddy

@@ -956,13 +956,22 @@ echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 # Step 9: Build and push Docker images
 echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
+echo ""
 
 # Check if user wants to build only amd64 (useful if arm64 build is having network issues)
+# Always prompt unless explicitly set via environment variable
 if [ -z "${BUILD_PLATFORMS:-}" ]; then
+    echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
+    echo -e "${YELLOW}              SELECT BUILD PLATFORMS${NC}"
+    echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
     echo ""
-    echo "Build platforms:"
-    echo "  1) ${GREEN}Both${NC} - linux/amd64 and linux/arm64 (default, slower but supports more platforms)"
-    echo "  2) ${GREEN}AMD64 only${NC} - linux/amd64 (faster, more reliable if network issues)"
+    echo "Which platforms should we build for?"
+    echo ""
+    echo "  1) ${GREEN}Both${NC} - linux/amd64 and linux/arm64"
+    echo "     (Default, slower but supports more platforms including Apple Silicon)"
+    echo ""
+    echo "  2) ${GREEN}AMD64 only${NC} - linux/amd64"
+    echo "     (Faster, more reliable if experiencing network issues with ARM64)"
     echo ""
     read -p "Enter choice (1-2) or press Enter for both: " -r PLATFORM_CHOICE
     PLATFORM_CHOICE="${PLATFORM_CHOICE:-1}"
@@ -978,6 +987,7 @@ if [ -z "${BUILD_PLATFORMS:-}" ]; then
             BUILD_PLATFORMS="linux/amd64,linux/arm64"
             ;;
     esac
+    echo ""
 fi
 
 if [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
@@ -1046,6 +1056,7 @@ docker buildx build \
     --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
     --build-arg BUILDKIT_INLINE_CACHE=1 \
     --progress=plain \
+    --no-cache-filter \
     .
 
 if [ $? -ne 0 ]; then
