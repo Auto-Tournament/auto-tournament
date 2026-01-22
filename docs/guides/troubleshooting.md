@@ -182,13 +182,11 @@
 
 **Solution:** Manually add or promote a user to admin via direct database access.
 
-> **Note:** You can run SQL from either container - both work identically. The `matchzy-postgres` container method is simpler (no `-h` or password needed), but `matchzy-tournament-api` works fine too if you prefer.
+> **Important:** Run SQL commands directly on the `matchzy-postgres` container. The API container may not have `psql` installed or configured correctly.
 
 #### Method 1: Add a new admin player
 
 If the player doesn't exist in the database yet:
-
-**From postgres container (recommended):**
 
 ```bash
 docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
@@ -203,47 +201,18 @@ INSERT INTO players (
     EXTRACT(EPOCH FROM NOW())::bigint
 );
 "
-```
-
-**From API container (alternative):**
-
-```bash
-docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
-INSERT INTO players (
-    id, name, current_elo, starting_elo, openskill_mu, openskill_sigma, 
-    match_count, is_admin, created_at, updated_at
-) VALUES (
-    '76561198000000001',
-    'Admin User',
-    1500, 1500, 25.0, 8.333, 0, 1,
-    EXTRACT(EPOCH FROM NOW())::bigint,
-    EXTRACT(EPOCH FROM NOW())::bigint
-);
-\""
 ```
 
 #### Method 2: Promote existing player to admin
 
 If the player already exists but isn't an admin:
 
-**From postgres container (recommended):**
-
 ```bash
 docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
 UPDATE players 
 SET is_admin = 1, updated_at = EXTRACT(EPOCH FROM NOW())::bigint 
 WHERE id = '76561198000000001';
 "
-```
-
-**From API container (alternative):**
-
-```bash
-docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
-UPDATE players 
-SET is_admin = 1, updated_at = EXTRACT(EPOCH FROM NOW())::bigint 
-WHERE id = '76561198000000001';
-\""
 ```
 
 #### Troubleshooting: Still redirected to profile after update
@@ -253,15 +222,9 @@ If you ran the SQL update successfully but still get redirected to your profile 
 **1. Verify the update worked:**
 
 ```bash
-# From postgres container (recommended)
 docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
 SELECT id, name, is_admin FROM players WHERE id = '76561198000000001';
 "
-
-# Or from API container
-docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
-SELECT id, name, is_admin FROM players WHERE id = '76561198000000001';
-\""
 ```
 
 You should see `is_admin = 1`. If it shows `0` or `NULL`, the update didn't work.
@@ -285,19 +248,11 @@ The session may have cached your old admin status. After updating the database:
 If `is_admin` shows as something other than `1`, fix it:
 
 ```bash
-# From postgres container (recommended)
 docker exec matchzy-postgres psql -U postgres -d matchzy_tournament -c "
 UPDATE players 
 SET is_admin = 1 
 WHERE id = '76561198000000001';
 "
-
-# Or from API container
-docker exec matchzy-tournament-api sh -c "PGPASSWORD=postgres psql -h postgres -U postgres -d matchzy_tournament -c \"
-UPDATE players 
-SET is_admin = 1 
-WHERE id = '76561198000000001';
-\""
 ```
 
 **5. Check API logs:**
