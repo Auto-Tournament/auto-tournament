@@ -818,6 +818,14 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
             git reset --hard origin/main
         fi
         
+        # Ensure versions are synced after pulling merged changes
+        echo -e "${BLUE}Ensuring versions are synced after PR merge...${NC}"
+        if [ -f "scripts/sync-version.sh" ]; then
+            bash scripts/sync-version.sh
+        else
+            echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+        fi
+        
         # Rebase release branch onto main to keep it up to date
         echo ""
         echo -e "${YELLOW}Updating release branch to match main...${NC}"
@@ -843,6 +851,23 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
             echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
             git reset --hard origin/main
         fi
+        
+        # Ensure versions are synced after pulling
+        echo -e "${BLUE}Ensuring versions are synced...${NC}"
+        if [ -f "scripts/sync-version.sh" ]; then
+            bash scripts/sync-version.sh
+            echo -e "${GREEN}✅ Versions synced${NC}"
+        else
+            echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+        fi
+        
+        # Ensure versions are synced after pulling
+        echo -e "${BLUE}Ensuring versions are synced...${NC}"
+        if [ -f "scripts/sync-version.sh" ]; then
+            bash scripts/sync-version.sh
+        else
+            echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+        fi
     else
         echo -e "${RED}Failed to create PR${NC}"
         exit 1
@@ -865,6 +890,23 @@ else
     if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
         echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
         git reset --hard origin/main
+    fi
+    
+    # Ensure versions are synced after pulling
+    echo -e "${BLUE}Ensuring versions are synced...${NC}"
+    if [ -f "scripts/sync-version.sh" ]; then
+        bash scripts/sync-version.sh
+        echo -e "${GREEN}✅ Versions synced${NC}"
+    else
+        echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+    fi
+    
+    # Ensure versions are synced after pulling
+    echo -e "${BLUE}Ensuring versions are synced...${NC}"
+    if [ -f "scripts/sync-version.sh" ]; then
+        bash scripts/sync-version.sh
+    else
+        echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
     fi
 fi
 
@@ -917,12 +959,19 @@ echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
 echo ""
 
-# Ensure versions are synced before Docker build (uses the new version)
+# Ensure versions are synced before Docker build (critical - must use new version)
 echo -e "${BLUE}Ensuring versions are synced before Docker build...${NC}"
 if [ -f "scripts/sync-version.sh" ]; then
     bash scripts/sync-version.sh
+    echo -e "${GREEN}✅ Versions synced: root, api, and client package.json all have version ${NEW_VERSION}${NC}"
 else
-    echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+    echo -e "${RED}⚠️  sync-version.sh not found! Versions may be out of sync.${NC}"
+    echo -e "${YELLOW}Please manually verify api/package.json and client/package.json have version ${NEW_VERSION}${NC}"
+    read -p "Continue anyway? (y/n) " -r CONTINUE_BUILD
+    if [[ ! "$CONTINUE_BUILD" =~ ^[Yy]$ ]]; then
+        echo "Build cancelled. Please fix version sync manually."
+        exit 1
+    fi
 fi
 echo ""
 
