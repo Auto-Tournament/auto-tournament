@@ -291,13 +291,30 @@ export default function TournamentLeaderboard() {
           <Stack spacing={3}>
             <Card>
               <CardContent>
-                <Box display="flex" alignItems="center" gap={2}>
-                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'text.disabled' }} />
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  role="status"
+                  aria-live="polite"
+                  aria-labelledby="tournament-leaderboard-empty-title"
+                  aria-describedby="tournament-leaderboard-empty-description"
+                >
+                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'text.disabled' }} aria-hidden="true" />
                   <Box>
-                    <Typography variant="h5" fontWeight={600}>
+                    <Typography
+                      id="tournament-leaderboard-empty-title"
+                      variant="h5"
+                      component="h2"
+                      fontWeight={600}
+                    >
                       No tournament leaderboard yet
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography
+                      id="tournament-leaderboard-empty-description"
+                      variant="body2"
+                      color="text.secondary"
+                    >
                       Once a tournament is created and matches are played, standings will appear here.
                     </Typography>
                   </Box>

@@ -745,10 +745,10 @@ export default function Servers() {
                           gap: 1,
                         }}
                       >
-                        <BlockIcon sx={{ color: 'text.primary', fontSize: 20 }} />
+                        <BlockIcon sx={{ color: 'text.primary', fontSize: 20 }} aria-label="Warning" />
                         <Box flex={1}>
                           <Typography variant="body2" fontWeight={600} color="text.primary">
-                            ⚠️ Server Not Initialized
+                            Server Not Initialized
                           </Typography>
                           <Typography variant="caption" color="text.primary" display="block" mt={0.25}>
                             RCON reachable, but MatchZy hasn't sent events. Click retry button to configure.

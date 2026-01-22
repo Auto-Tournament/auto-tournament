@@ -47,7 +47,8 @@ services:
       - NODE_ENV=production
       - PORT=3000 # Backend internal port (proxied by Caddy)
       # Token used by CS2 servers to authenticate webhooks
-      - SERVER_TOKEN=${SERVER_TOKEN:-change-this-to-a-secure-server-token}
+      # IMPORTANT: Set SERVER_TOKEN in your .env file for production deployments
+      - SERVER_TOKEN=${SERVER_TOKEN:?SERVER_TOKEN must be set - do not use default value in production}
       # Auth providers (Steam / SSO)
       # Steam OpenID (players + admin SSO)
       - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}

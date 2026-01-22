@@ -15,10 +15,13 @@ export const api = {
   async fetch(endpoint: string, options: RequestInit = {}) {
     const { headers, ...rest } = options;
     const response = await fetch(endpoint, {
-      // Always send cookies (admin session + player cookie) by default so
-      // admin-only routes like /api/maps work correctly. Callers can still
-      // override this by passing credentials in options if needed.
-      credentials: options.credentials ?? 'include',
+      // Send cookies for same-origin requests by default so admin-only routes
+      // like /api/maps work correctly. The app is served from the same origin
+      // (via Caddy/Vite proxy), so 'same-origin' is appropriate and more secure
+      // than 'include' which would send cookies on cross-origin requests.
+      // Callers can still override this if needed (e.g., set credentials: 'include'
+      // for cross-origin requests) by passing credentials in options.
+      credentials: options.credentials ?? 'same-origin',
       ...rest,
       headers: {
         'Content-Type': 'application/json',
