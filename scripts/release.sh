@@ -754,14 +754,28 @@ EOF
     echo ""
     echo -e "${YELLOW}Step 6: Committing version bump and changelog...${NC}"
     
-    # Check if there are actually changes to commit
-    if ! git diff --quiet package.json "$CHANGELOG_FILE" 2>/dev/null; then
-        git add package.json
-        if [ -f "$CHANGELOG_FILE" ]; then
-            git add "$CHANGELOG_FILE"
-        fi
+    # Check if there are actually changes to commit (check all package.json files)
+    FILES_TO_COMMIT=()
+    if ! git diff --quiet package.json 2>/dev/null; then
+        FILES_TO_COMMIT+=("package.json")
+    fi
+    if ! git diff --quiet api/package.json 2>/dev/null; then
+        FILES_TO_COMMIT+=("api/package.json")
+    fi
+    if ! git diff --quiet client/package.json 2>/dev/null; then
+        FILES_TO_COMMIT+=("client/package.json")
+    fi
+    if [ -f "$CHANGELOG_FILE" ] && ! git diff --quiet "$CHANGELOG_FILE" 2>/dev/null; then
+        FILES_TO_COMMIT+=("$CHANGELOG_FILE")
+    fi
+    
+    if [ ${#FILES_TO_COMMIT[@]} -gt 0 ]; then
+        git add "${FILES_TO_COMMIT[@]}"
         git commit -m "chore: bump version to ${NEW_VERSION} and update changelog"
-        echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION} and changelog updated${NC}"
+        echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION} in root, api, and client package.json files${NC}"
+        if [ -f "$CHANGELOG_FILE" ]; then
+            echo -e "${GREEN}✅ Changelog updated${NC}"
+        fi
         VERSION_BUMPED=true
     else
         echo -e "${YELLOW}⚠️  No changes detected. Version may already be ${NEW_VERSION}.${NC}"
