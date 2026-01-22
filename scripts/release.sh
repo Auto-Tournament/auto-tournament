@@ -242,17 +242,99 @@ for WS in "${WORKSPACES[@]}"; do
     fi
 done
 
-# Prompt for new version
+# Function to bump version
+bump_version() {
+    local current="$1"
+    local type="$2"  # patch, minor, or major
+    
+    IFS='.' read -r major minor patch <<< "$current"
+    
+    case "$type" in
+        patch)
+            patch=$((patch + 1))
+            ;;
+        minor)
+            minor=$((minor + 1))
+            patch=0
+            ;;
+        major)
+            major=$((major + 1))
+            minor=0
+            patch=0
+            ;;
+        *)
+            echo "$current"
+            return 1
+            ;;
+    esac
+    
+    echo "${major}.${minor}.${patch}"
+}
+
+# Prompt for version bump type or manual version
 echo ""
-echo "Enter new version to release (or press Enter to use ${CURRENT_VERSION}):"
-read -r VERSION_INPUT
-NEW_VERSION="${VERSION_INPUT:-$CURRENT_VERSION}"
+echo -e "${YELLOW}Current version: ${GREEN}${CURRENT_VERSION}${NC}"
+echo ""
+echo "How would you like to bump the version?"
+echo "  1) ${GREEN}patch${NC} - ${CURRENT_VERSION} → $(bump_version "$CURRENT_VERSION" patch) (bug fixes)"
+echo "  2) ${GREEN}minor${NC} - ${CURRENT_VERSION} → $(bump_version "$CURRENT_VERSION" minor) (new features, backwards compatible)"
+echo "  3) ${GREEN}major${NC} - ${CURRENT_VERSION} → $(bump_version "$CURRENT_VERSION" major) (breaking changes)"
+echo "  4) ${GREEN}custom${NC} - Enter a specific version"
+echo "  5) ${GREEN}skip${NC} - Keep current version (${CURRENT_VERSION})"
+echo ""
+read -p "Enter choice (1-5) or press Enter for patch: " -r VERSION_CHOICE
+VERSION_CHOICE="${VERSION_CHOICE:-1}"
+
+case "$VERSION_CHOICE" in
+    1|patch)
+        NEW_VERSION=$(bump_version "$CURRENT_VERSION" patch)
+        VERSION_TYPE="patch"
+        ;;
+    2|minor)
+        NEW_VERSION=$(bump_version "$CURRENT_VERSION" minor)
+        VERSION_TYPE="minor"
+        ;;
+    3|major)
+        NEW_VERSION=$(bump_version "$CURRENT_VERSION" major)
+        VERSION_TYPE="major"
+        ;;
+    4|custom)
+        echo ""
+        read -p "Enter new version (e.g., 1.2.3): " -r VERSION_INPUT
+        NEW_VERSION="$VERSION_INPUT"
+        VERSION_TYPE="custom"
+        ;;
+    5|skip)
+        NEW_VERSION="$CURRENT_VERSION"
+        VERSION_TYPE="unchanged"
+        ;;
+    *)
+        # Try to parse as version directly
+        if [[ "$VERSION_CHOICE" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            NEW_VERSION="$VERSION_CHOICE"
+            VERSION_TYPE="custom"
+        else
+            echo -e "${RED}Invalid choice. Defaulting to patch bump.${NC}"
+            NEW_VERSION=$(bump_version "$CURRENT_VERSION" patch)
+            VERSION_TYPE="patch"
+        fi
+        ;;
+esac
 
 # Validate version format (semver)
 if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo -e "${RED}Invalid version format. Use semantic versioning (e.g., 1.0.0)${NC}"
     exit 1
 fi
+
+# Display version comparison
+echo ""
+if [ "$NEW_VERSION" != "$CURRENT_VERSION" ]; then
+    echo -e "${GREEN}Version bump: ${CURRENT_VERSION} → ${NEW_VERSION} (${VERSION_TYPE})${NC}"
+else
+    echo -e "${YELLOW}Version unchanged: ${CURRENT_VERSION}${NC}"
+fi
+echo ""
 
 # Check if Discord webhook URL is set (required)
 if [ -z "$DISCORD_WEBHOOK_URL" ]; then
@@ -267,19 +349,29 @@ fi
 
 # Confirm release
 echo ""
-echo -e "Release plan:"
+echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
+echo -e "${YELLOW}                    RELEASE PLAN${NC}"
+echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
+echo ""
+echo -e "  ${BLUE}Version:${NC} ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
+if [ "$VERSION_TYPE" != "unchanged" ] && [ "$VERSION_TYPE" != "custom" ]; then
+    echo -e "  ${BLUE}Type:${NC} ${GREEN}${VERSION_TYPE}${NC} bump"
+fi
+echo ""
 echo -e "  ${BLUE}0.${NC} Clean up Docker (stop containers, remove images, prune cache)"
 echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
 echo -e "  ${BLUE}2.${NC} Run tests (yarn test) - ${RED}MUST PASS${NC}"
 echo -e "  ${BLUE}3.${NC} Build Docker image (test build)"
 echo -e "  ${BLUE}4.${NC} Update release branch (rebase onto main)"
-echo -e "  ${BLUE}5.${NC} Bump version to ${GREEN}${NEW_VERSION}${NC} on release branch"
+echo -e "  ${BLUE}5.${NC} Bump version: ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
 echo -e "  ${BLUE}6.${NC} Create PR and merge to main"
 echo -e "  ${BLUE}7.${NC} Rebase release branch back onto main"
 echo -e "  ${BLUE}8.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
 echo -e "  ${BLUE}9.${NC} Push Docker images to Docker Hub"
 echo -e "  ${BLUE}10.${NC} Create GitHub release"
 echo -e "  ${BLUE}11.${NC} Send Discord release notification"
+echo ""
+echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
 echo ""
 read -p "Continue? (y/n) " -n 1 -r
 echo
@@ -475,7 +567,10 @@ git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --
 
 # Step 5: Bump version
 echo ""
-echo -e "${YELLOW}Step 5: Bumping version to ${NEW_VERSION} (root, api, client)...${NC}"
+echo -e "${YELLOW}Step 5: Bumping version (root, api, client)...${NC}"
+echo -e "${BLUE}  Current: ${CURRENT_VERSION}${NC}"
+echo -e "${GREEN}  New:     ${NEW_VERSION}${NC}"
+echo ""
 
 VERSION_BUMPED=false
 
