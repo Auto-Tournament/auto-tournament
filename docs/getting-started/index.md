@@ -13,13 +13,13 @@ services:
     container_name: matchzy-postgres
     restart: unless-stopped
     environment:
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=matchzy_tournament
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
     volumes:
       - postgres-data:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,22 +33,24 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     ports:
-      - '3069:3069'
+      - '${HOST_PORT:-3069}:3069'
     environment:
       - NODE_ENV=production
       - PORT=3000
       - SERVER_TOKEN=${SERVER_TOKEN:-change-me}
-      - AUTH_STEAM_ENABLED=true
+      - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
       - STEAM_API_KEY=${STEAM_API_KEY:-}
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:3069}
-      - LOG_LEVEL=info
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/matchzy_tournament
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
+      - LOG_LEVEL=${LOG_LEVEL:-info}
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
       - DB_HOST=postgres
       - DB_PORT=5432
-      - DB_USER=postgres
-      - DB_PASSWORD=postgres
-      - DB_NAME=matchzy_tournament
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_NAME=${DB_NAME:-matchzy_tournament}
     volumes:
       - ./data:/app/data
     healthcheck:
@@ -69,9 +71,16 @@ volumes:
     driver: local
 ```
 
+> **Note:** This docker-compose.yml automatically reads variables from a `.env` file in the same directory. Values like `${DB_USER:-postgres}` mean "use DB_USER from .env, or default to 'postgres' if not set".
+
 **2. Save as `.env` (optional, for production):**
 
 ```bash
+# Database credentials (optional - defaults shown)
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=matchzy_tournament
+
 # CS2 server authentication token (required for servers to connect)
 SERVER_TOKEN=your-secure-token-here
 
@@ -90,7 +99,11 @@ docker compose up -d
 
 **4. Open in browser:** [http://localhost:3069](http://localhost:3069)
 
-> **Note:** The docker-compose.yml works without a `.env` file for quick testing, but you'll need to set `SERVER_TOKEN` and `STEAM_API_KEY` (via `.env` or environment variables) for full functionality. You can also configure these in **Settings** after first login.
+> **Note:** 
+> - The docker-compose.yml works without a `.env` file for quick testing (uses defaults)
+> - For production, create a `.env` file with `SERVER_TOKEN`, `STEAM_API_KEY`, and optionally custom `DB_*` values
+> - The `env_file: - .env` directive explicitly loads variables from `.env` into the container
+> - You can also configure `SERVER_TOKEN` and `STEAM_API_KEY` in **Settings** after first login
 
 ---
 

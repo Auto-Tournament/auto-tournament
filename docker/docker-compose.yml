@@ -3,6 +3,10 @@
 # Usage:
 #   docker compose -f docker/docker-compose.yml up -d
 #
+# Environment variables are loaded from:
+#   - ../.env file (project root) via env_file directive
+#   - Environment variables set in your shell (for docker-compose variable substitution)
+#
 # Optional: HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d
 # Default port: 3069
 
@@ -32,6 +36,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    env_file:
+      - .env
     ports:
       - '${HOST_PORT:-3069}:3069'
     environment:
