@@ -14,6 +14,10 @@ NC='\033[0m' # No Color
 # Source .env file if it exists (from project root)
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+# Change to project root directory so all paths work correctly
+cd "$PROJECT_ROOT"
+
 if [ -f "${PROJECT_ROOT}/.env" ]; then
     echo -e "${BLUE}Sourcing .env file...${NC}"
     # Export variables from .env, handling comments and empty lines
