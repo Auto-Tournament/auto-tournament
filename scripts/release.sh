@@ -956,7 +956,35 @@ echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 # Step 9: Build and push Docker images
 echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
-echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
+
+# Check if user wants to build only amd64 (useful if arm64 build is having network issues)
+if [ -z "${BUILD_PLATFORMS:-}" ]; then
+    echo ""
+    echo "Build platforms:"
+    echo "  1) ${GREEN}Both${NC} - linux/amd64 and linux/arm64 (default, slower but supports more platforms)"
+    echo "  2) ${GREEN}AMD64 only${NC} - linux/amd64 (faster, more reliable if network issues)"
+    echo ""
+    read -p "Enter choice (1-2) or press Enter for both: " -r PLATFORM_CHOICE
+    PLATFORM_CHOICE="${PLATFORM_CHOICE:-1}"
+    
+    case "$PLATFORM_CHOICE" in
+        1|both|all)
+            BUILD_PLATFORMS="linux/amd64,linux/arm64"
+            ;;
+        2|amd64|amd64-only)
+            BUILD_PLATFORMS="linux/amd64"
+            ;;
+        *)
+            BUILD_PLATFORMS="linux/amd64,linux/arm64"
+            ;;
+    esac
+fi
+
+if [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
+    echo -e "${BLUE}Platform: linux/amd64 only${NC}"
+else
+    echo -e "${BLUE}Platforms: ${BUILD_PLATFORMS}${NC}"
+fi
 echo ""
 
 # Ensure versions are synced before Docker build (critical - must use new version)
@@ -1007,14 +1035,16 @@ else
     echo -e "${GREEN}✅ Builder created${NC}"
 fi
 
+# Build with network host mode for better connectivity in ARM64 emulation
 docker buildx build \
-    --platform linux/amd64,linux/arm64 \
+    --platform "${BUILD_PLATFORMS}" \
     --file docker/Dockerfile \
     --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
     --tag "${DOCKER_IMAGE}:latest" \
     --push \
     --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
     --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
+    --build-arg BUILDKIT_INLINE_CACHE=1 \
     --progress=plain \
     .
 
@@ -1027,12 +1057,25 @@ fi
 echo ""
 echo -e "${YELLOW}Verifying pushed images...${NC}"
 docker buildx imagetools inspect "${DOCKER_IMAGE}:${NEW_VERSION}" > /tmp/image_inspect.txt 2>&1
-if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
-    echo -e "${RED}❌ Failed to verify pushed images${NC}"
-    rm -f /tmp/image_inspect.txt
-    exit 1
+# Check platforms based on what we built
+if [ "$BUILD_PLATFORMS" = "linux/amd64,linux/arm64" ]; then
+    if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
+        echo -e "${RED}❌ Multi-platform build verification failed${NC}"
+        echo -e "${YELLOW}Expected both linux/amd64 and linux/arm64, but got:${NC}"
+        cat /tmp/image_inspect.txt
+        rm -f /tmp/image_inspect.txt
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Verified images for both platforms (linux/amd64 and linux/arm64)${NC}"
+elif [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
+    if ! grep -q 'linux/amd64' /tmp/image_inspect.txt; then
+        echo -e "${RED}❌ AMD64 build verification failed${NC}"
+        cat /tmp/image_inspect.txt
+        rm -f /tmp/image_inspect.txt
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Verified linux/amd64 platform${NC}"
 fi
-echo -e "${GREEN}✅ Verified images for both platforms${NC}"
 rm -f /tmp/image_inspect.txt
 
 # Step 10: Create GitHub release

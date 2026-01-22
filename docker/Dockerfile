@@ -24,7 +24,10 @@ COPY api/package.json ./api/package.json
 COPY client/package.json ./client/package.json
 
 # Install all dependencies (including devDeps for build tools) for all workspaces
-RUN yarn install
+# Add retry logic for network issues, especially in ARM64 emulation
+RUN yarn install --network-timeout 300000 --network-concurrency 1 || \
+    (echo "First yarn install attempt failed, retrying..." && sleep 5 && yarn install --network-timeout 300000 --network-concurrency 1) || \
+    (echo "Second yarn install attempt failed, retrying..." && sleep 10 && yarn install --network-timeout 300000 --network-concurrency 1)
 
 # -------------------------------------------------------------------
 # build: compile TypeScript backend + React frontend
