@@ -45,20 +45,16 @@ services:
     ports:
       - '${HOST_PORT:-3069}:3069'
     environment:
+      # Container-specific settings (not from .env)
       - NODE_ENV=development
       - PORT=3000
-      - SERVER_TOKEN=${SERVER_TOKEN:-server123}
-      - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
-      - STEAM_API_KEY=${STEAM_API_KEY:-}
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
-      - LOG_LEVEL=${LOG_LEVEL:-debug}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-matchzy_tournament}
       - VITE_ENABLE_DEV_PAGE=true
+      # Docker service name for DB connection (not from .env)
+      - DB_HOST=postgres
+      # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # All other variables (SERVER_TOKEN, STEAM_API_KEY, FRONTEND_BASE_URL, LOG_LEVEL, etc.)
+      # are loaded from .env via env_file directive above
     volumes:
       - ./data:/app/data
     healthcheck:

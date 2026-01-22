@@ -38,19 +38,15 @@ services:
     ports:
       - '${HOST_PORT:-3069}:3069'
     environment:
+      # Container-specific settings
       - NODE_ENV=production
       - PORT=3000
-      - SERVER_TOKEN=${SERVER_TOKEN:-change-me}
-      - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
-      - STEAM_API_KEY=${STEAM_API_KEY:-}
-      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
-      - LOG_LEVEL=${LOG_LEVEL:-info}
-      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # Docker service name for DB connection
       - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
-      - DB_NAME=${DB_NAME:-matchzy_tournament}
+      # Computed DATABASE_URL (uses DB_* vars from .env or defaults)
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      # All other variables (SERVER_TOKEN, STEAM_API_KEY, FRONTEND_BASE_URL, LOG_LEVEL, etc.)
+      # are loaded from .env via env_file directive above
     volumes:
       - ./data:/app/data
     healthcheck:
@@ -76,7 +72,7 @@ volumes:
 **2. Save as `.env` (optional, for production):**
 
 ```bash
-# Database credentials (optional - defaults shown)
+# Database credentials (optional - defaults to postgres/postgres/matchzy_tournament)
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=matchzy_tournament
@@ -89,7 +85,15 @@ STEAM_API_KEY=your-steam-api-key
 
 # Frontend base URL (for auth redirects)
 FRONTEND_BASE_URL=http://localhost:3069
+
+# Logging (optional - defaults to info)
+LOG_LEVEL=info
+
+# Auth settings (optional)
+AUTH_STEAM_ENABLED=true
 ```
+
+> **Note:** The `env_file: - .env` directive in docker-compose.yml automatically loads all variables from your `.env` file into the container. You only need to set the variables you want to customize - defaults are used for the rest.
 
 **3. Start the stack:**
 
