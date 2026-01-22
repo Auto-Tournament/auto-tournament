@@ -9,7 +9,6 @@ import { wipeDatabaseAuto } from './database';
 export interface TestContext {
   page: Page;
   request: APIRequestContext;
-  apiToken: string;
   baseUrl: string;
 }
 
@@ -23,7 +22,6 @@ export async function setupTestContext(
   page: Page,
   request: APIRequestContext
 ): Promise<TestContext> {
-  const apiToken = process.env.API_TOKEN || 'admin123';
   const baseUrl = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
   
   // Ensure signed in
@@ -32,7 +30,6 @@ export async function setupTestContext(
   return {
     page,
     request,
-    apiToken,
     baseUrl,
   };
 }

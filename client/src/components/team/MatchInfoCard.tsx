@@ -9,12 +9,14 @@ import {
   isShuffleMatch as isShuffleMatchGlobal,
   isVetoDisabledForMatch,
 } from '../../utils/matchFlags';
+import { calculateOvertimeNumber } from '../../utils/matchUtils';
 import { MatchScoreboard } from './MatchScoreboard';
 import { MatchPlayerPerformance } from './MatchPlayerPerformance';
 import { MatchMapChips } from './MatchMapChips';
 import { MatchVetoHistory } from './MatchVetoHistory';
 import { MatchServerPanel } from './MatchServerPanel';
 import { api } from '../../utils/api';
+import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface MatchInfoCardProps {
   match: TeamMatchInfo;
@@ -26,6 +28,17 @@ interface MatchInfoCardProps {
   getRoundLabel: (round: number) => string;
   // Optional: when provided, this player's row will be highlighted and not linked
   highlightPlayerId?: string;
+  /**
+   * Optional override for whether the current viewer is allowed to act as a
+   * member of this team (for example, on the public player page we only want
+   * the *same* player to control veto/connect, even if other teammates can
+   * open the URL).
+   *
+   * - `true`: always treat viewer as team member
+   * - `false`: always treat viewer as NOT a team member
+   * - `undefined`: fall back to match.viewerIsTeamMember (server-provided)
+   */
+  viewerIsTeamMemberOverride?: boolean;
 }
 
 const LIVE_STATUS_DISPLAY: Record<
@@ -53,11 +66,13 @@ export function MatchInfoCard({
   onVetoComplete,
   getRoundLabel,
   highlightPlayerId,
+  viewerIsTeamMemberOverride,
 }: MatchInfoCardProps) {
   const [copied, setCopied] = useState(false);
   const [connected, setConnected] = useState(false);
   const [copyFallbackCommand, setCopyFallbackCommand] = useState<string | null>(null);
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
+  const { showError } = useSnackbar();
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
@@ -91,7 +106,38 @@ export function MatchInfoCard({
       thumbnail: `${baseUrl}/${currentMapSlug}_thumb.webp`,
     };
   }, [currentMapSlug]);
-  const liveStatusDisplay = liveStats ? LIVE_STATUS_DISPLAY[liveStats.status] : null;
+  
+  // Calculate overtime if match is live and in overtime
+  const maxRounds = match.config?.maxRounds;
+  const cvars = (match.config?.cvars || {}) as Record<string, string | number>;
+  const overtimeRoundsPerSegment =
+    typeof cvars['mp_overtime_maxrounds'] === 'number'
+      ? Number(cvars['mp_overtime_maxrounds'])
+      : 6; // Default MR3 = 6 rounds per OT segment
+  
+  const overtimeNumber =
+    liveStats?.status === 'live' &&
+    typeof mapRoundsTeam1 === 'number' &&
+    typeof mapRoundsTeam2 === 'number' &&
+    maxRounds
+      ? calculateOvertimeNumber(
+          mapRoundsTeam1,
+          mapRoundsTeam2,
+          maxRounds,
+          overtimeRoundsPerSegment
+        )
+      : null;
+  
+  const liveStatusDisplay = liveStats
+    ? {
+        ...LIVE_STATUS_DISPLAY[liveStats.status],
+        label:
+          overtimeNumber !== null
+            ? `OVERTIME #${overtimeNumber}`
+            : LIVE_STATUS_DISPLAY[liveStats.status].label,
+      }
+    : null;
+  
   const totalConnected = connectionStatus?.totalConnected ?? 0;
   const expectedPlayersTotal =
     match.config?.expected_players_total ||
@@ -110,6 +156,18 @@ export function MatchInfoCard({
   const playerStats = liveStats?.playerStats ?? null;
   const hasPlayerStats =
     !!playerStats && (playerStats.team1.length > 0 || playerStats.team2.length > 0);
+
+  // For team‑only controls like veto actions and server connection details,
+  // we rely on the backend to tell us whether the current viewer actually
+  // belongs to this team. When the flag is absent (older responses), we
+  // default to true to preserve existing behaviour. Callers (like the public
+  // player page) can explicitly override this via viewerIsTeamMemberOverride.
+  const serverViewerIsTeamMember =
+    (match as TeamMatchInfo & { viewerIsTeamMember?: boolean }).viewerIsTeamMember !== false;
+  const viewerIsTeamMember =
+    typeof viewerIsTeamMemberOverride === 'boolean'
+      ? viewerIsTeamMemberOverride
+      : serverViewerIsTeamMember;
 
   const serverStatus = match.server?.status ?? null;
   // Only treat explicit "online" (or transitional "checking") as truly online.
@@ -262,13 +320,20 @@ export function MatchInfoCard({
         .catch((err) => {
           console.warn('Clipboard write failed, falling back to manual copy:', err);
           setCopyFallbackCommand(connectCommand);
+          showError(
+            'Unable to copy connect command automatically. Command is shown below so you can copy it manually.'
+          );
         });
       return;
     }
 
     // Fallback for non-secure contexts (e.g. plain HTTP) or missing API:
-    // show the command so the user can copy it manually.
+    // show the command so the user can copy it manually, and surface a clear
+    // warning so they know why the button did not copy to the clipboard.
     setCopyFallbackCommand(connectCommand);
+    showError(
+      'Your browser blocked automatic copying (non-HTTPS or missing clipboard access). Command is shown below so you can copy it manually.'
+    );
   };
 
   const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
@@ -349,6 +414,7 @@ export function MatchInfoCard({
   const isVetoNotCompleted =
     !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
   if (
+    viewerIsTeamMember &&
     (isManualMatch || tournamentStatus === 'in_progress') &&
     match.status === 'pending' &&
     isVetoNotCompleted &&
@@ -447,7 +513,7 @@ export function MatchInfoCard({
             )}
 
             <MatchServerPanel
-              server={effectiveServer}
+              server={viewerIsTeamMember ? effectiveServer : null}
               currentMapData={currentMapData}
               currentMapNumber={mapNumber}
               connected={connected}

@@ -8,29 +8,24 @@
  * All API calls should use '/api' prefix (e.g., '/api/servers', '/api/teams')
  */
 
-const getAuthHeaders = (token?: string): Record<string, string> => {
-  const authToken = token || localStorage.getItem('api_token');
-
-  if (!authToken) {
-    return {};
-  }
-
-  return {
-    Authorization: `Bearer ${authToken}`,
-    'Content-Type': 'application/json',
-  };
-};
-
 export const api = {
   /**
    * Make an authenticated API request
    */
   async fetch(endpoint: string, options: RequestInit = {}) {
+    const { headers, ...rest } = options;
     const response = await fetch(endpoint, {
-      ...options,
+      // Send cookies for same-origin requests by default so admin-only routes
+      // like /api/maps work correctly. The app is served from the same origin
+      // (via Caddy/Vite proxy), so 'same-origin' is appropriate and more secure
+      // than 'include' which would send cookies on cross-origin requests.
+      // Callers can still override this if needed (e.g., set credentials: 'include'
+      // for cross-origin requests) by passing credentials in options.
+      credentials: options.credentials ?? 'same-origin',
+      ...rest,
       headers: {
-        ...getAuthHeaders(),
-        ...options.headers,
+        'Content-Type': 'application/json',
+        ...(headers || {}),
       },
     });
 
@@ -86,17 +81,4 @@ export const api = {
     return this.fetch(endpoint, { method: 'DELETE' });
   },
 
-  /**
-   * Verify authentication token
-   */
-  async verifyToken(token: string): Promise<boolean> {
-    try {
-      const response = await fetch('/api/auth/verify', {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      return response.ok;
-    } catch {
-      return false;
-    }
-  },
 };

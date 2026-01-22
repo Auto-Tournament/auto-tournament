@@ -185,7 +185,7 @@ docker compose logs api
 # Common issues:
 # - Port already in use: change PORT environment variable
 # - Database connection issues: check DB_HOST, DB_PORT, DB_USER, DB_PASSWORD, DB_NAME env vars
-# - Missing environment variables: ensure API_TOKEN, SERVER_TOKEN, and DB_* vars are set
+# - Missing environment variables: ensure SERVER_TOKEN and DB_* vars are set
 ```
 
 ### Can't Access from Other Machines
@@ -273,7 +273,6 @@ yarn install
 yarn db
 
 # Set environment variables
-export API_TOKEN=your-admin-password
 export SERVER_TOKEN=your-server-token
 export DB_HOST=localhost
 export DB_PORT=5432

@@ -16,7 +16,6 @@ BASE_PORT=3123
 PG_PORT=5433
 
 # Basic env (override via env if needed)
-API_TOKEN="${API_TOKEN:-admin123}"
 SERVER_TOKEN="${SERVER_TOKEN:-server123}"
 DB_USER="${DB_USER:-postgres}"
 DB_PASSWORD="${DB_PASSWORD:-postgres}"
@@ -138,9 +137,8 @@ start_api_container() {
     --name "${name}" \
     --network "${NETWORK_NAME}" \
     -p "${port}:3069" \
-    -e NODE_ENV=production \
+    -e NODE_ENV=test \
     -e PORT=3000 \
-    -e API_TOKEN="${API_TOKEN}" \
     -e SERVER_TOKEN="${SERVER_TOKEN}" \
     -e LOG_LEVEL=debug \
     -e DATABASE_URL="postgresql://${DB_USER}:${DB_PASSWORD}@${PG_CONTAINER}:5432/${db_name}" \

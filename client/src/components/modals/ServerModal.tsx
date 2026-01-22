@@ -12,15 +12,15 @@ import {
   FormControlLabel,
   InputAdornment,
   IconButton,
+  CircularProgress,
+  Alert,
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
-import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
-import type { Server as ApiServer, ServerStatusResponse } from '../../types/api.types';
+import type { Server as ApiServer } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -52,15 +52,8 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [port, setPort] = useState('27015');
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
-  const [chatPrefix, setChatPrefix] = useState<string>('');
-  const [adminChatPrefix, setAdminChatPrefix] = useState<string>('');
-  const [knifeEnabledDefault, setKnifeEnabledDefault] = useState<boolean | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
-  const [testing, setTesting] = useState(false);
-  const [apiToServerOk, setApiToServerOk] = useState<boolean | null>(null);
-  const [serverToApiOk, setServerToApiOk] = useState<boolean | null>(null);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -74,11 +67,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       setPort(server.port.toString());
       setPassword(server.password);
       setEnabled(server.enabled);
-      setChatPrefix(server.matchzyConfig?.chatPrefix ?? '');
-      setAdminChatPrefix(server.matchzyConfig?.adminChatPrefix ?? '');
-      setKnifeEnabledDefault(
-        server.matchzyConfig?.knifeEnabledDefault ?? null
-      );
     } else {
       resetForm();
     }
@@ -90,122 +78,92 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setPort('27015');
     setPassword('');
     setEnabled(true);
-    setChatPrefix('');
-    setAdminChatPrefix('');
-    setKnifeEnabledDefault(null);
     setError('');
-    setApiToServerOk(null);
-    setServerToApiOk(null);
   };
 
   const handleNameChange = (value: string) => {
     setName(value);
+    if (error) setError(''); // Clear error when user starts typing
   };
 
-  const handleTestConnection = async () => {
-    if (!server?.id) {
-      setError(t('serverModal.errors.testConnectionSaveFirst'));
-      return;
-    }
-
-    setTesting(true);
-    setApiToServerOk(null);
-    setServerToApiOk(null);
-    setError('');
-
-    try {
-      const response = await api.get<ServerStatusResponse>(`/api/servers/${server.id}/status`);
-      const canReach = response.status === 'online';
-      const serverBack = response.serverCanReachApi === true;
-
-      setApiToServerOk(canReach);
-      setServerToApiOk(serverBack);
-
-      if (canReach && serverBack) {
-        showSuccess(t('serverModal.success.connectivityOk'));
-      } else if (canReach && !serverBack) {
-        showError(t('serverModal.errors.rconReachableApiUnreachable'));
-      } else {
-        showError(t('serverModal.errors.serverOffline'));
-      }
-    } catch {
-      setError(t('serverModal.errors.testConnectionFailed'));
-      setApiToServerOk(false);
-      setServerToApiOk(false);
-    } finally {
-      setTesting(false);
-    }
-  };
 
   const handleSave = async () => {
+    console.log('handleSave called', { name, host, port, password: '***' });
+    console.log('Host value length:', host.length, 'Host trimmed length:', host.trim().length);
+    
     if (!name.trim()) {
+      console.log('Validation failed: name required');
       setError(t('serverModal.errors.nameRequired'));
       return;
     }
 
-    if (!host.trim()) {
+    if (!host || !host.trim()) {
+      console.log('Validation failed: host required', { host, hostLength: host?.length });
       setError(t('serverModal.errors.hostRequired'));
       return;
     }
 
     const portNum = parseInt(port);
     if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+      console.log('Validation failed: invalid port', portNum);
       setError(t('serverModal.errors.portInvalid'));
       return;
     }
 
     if (!password.trim()) {
+      console.log('Validation failed: password required');
       setError(t('serverModal.errors.rconRequired'));
       return;
     }
 
-    const generatedId = isEditing ? server.id : slugifyServerName(name);
-    if (!generatedId) {
-      setError(t('serverModal.errors.idGenerationFailed'));
-      return;
-    }
-
-    if (!isEditing && servers.some((existing) => existing.id === generatedId)) {
-      setError(t('serverModal.errors.duplicateId', { id: generatedId }));
-      return;
-    }
-
-    // Check for duplicate host:port combination
-    const duplicate = servers.find(
-      (s) => s.host === host.trim() && s.port === portNum && s.id !== (isEditing ? server?.id : '') // Exclude current server when editing
-    );
-
-    if (duplicate) {
-      setError(
-        t('serverModal.errors.duplicateHostPort', {
-          host: host.trim(),
-          port: portNum,
-          id: duplicate.id,
-          name: duplicate.name,
-        })
-      );
-      return;
-    }
-
+    console.log('Validation passed, saving server...');
     setSaving(true);
     setError('');
 
     try {
+      const trimmedHost = host.trim();
+      
+      // Check for existing server with same IP:port (excluding current server when editing)
+      const existingServerByHostPort = servers.find(
+        (s) => s.host === trimmedHost && s.port === portNum && s.id !== (isEditing ? server?.id : '')
+      );
+
+      // If found, use its ID to update it; otherwise generate new ID
+      const serverId = isEditing 
+        ? server.id 
+        : existingServerByHostPort?.id || slugifyServerName(name);
+
+      if (!serverId) {
+        console.log('Validation failed: server ID generation failed');
+        setError(t('serverModal.errors.idGenerationFailed'));
+        setSaving(false);
+        return;
+      }
+
+      // When creating, check if the generated ID conflicts with a different server (not by IP:port)
+      if (!isEditing && !existingServerByHostPort) {
+        const idConflict = servers.find((s) => s.id === serverId && (s.host !== trimmedHost || s.port !== portNum));
+        if (idConflict) {
+          console.log('Validation failed: duplicate server ID', serverId);
+          setError(t('serverModal.errors.duplicateId', { id: serverId }));
+          setSaving(false);
+          return;
+        }
+      }
+
+      console.log('Creating payload for server:', serverId);
       const payload = {
-        id: generatedId,
+        id: serverId,
         name: name.trim(),
-        host: host.trim(),
+        host: trimmedHost,
         port: portNum,
         password: password.trim(),
         enabled,
-        matchzyConfig: {
-          chatPrefix: chatPrefix.trim() || null,
-          adminChatPrefix: adminChatPrefix.trim() || null,
-          knifeEnabledDefault,
-        },
+        matchzyConfig: null,
       };
 
       if (isEditing) {
+        console.log('Updating existing server:', server.id);
         await api.put(`/api/servers/${server.id}`, {
           name: payload.name,
           host: payload.host,
@@ -214,9 +172,12 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           enabled: payload.enabled,
           matchzyConfig: payload.matchzyConfig,
         });
+        console.log('Server updated successfully');
         showSuccess(t('serverModal.success.serverUpdated'));
       } else {
+        console.log('Creating new server with payload:', payload);
         await api.post('/api/servers?upsert=true', payload);
+        console.log('Server created successfully');
         showSuccess(t('serverModal.success.serverCreated'));
       }
 
@@ -294,6 +255,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {error}
+            </Alert>
+          )}
 
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
@@ -311,7 +277,11 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             <TextField
               label={t('serverModal.hostLabel')}
               value={host}
-              onChange={(e) => setHost(e.target.value)}
+              onChange={(e) => {
+                console.log('Host changed:', e.target.value);
+                setHost(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder={t('serverModal.hostPlaceholder')}
               required
               fullWidth
@@ -323,7 +293,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             <TextField
               label={t('serverModal.portLabel')}
               value={port}
-              onChange={(e) => setPort(e.target.value)}
+              onChange={(e) => {
+                setPort(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder={t('serverModal.portPlaceholder')}
               type="number"
               required
@@ -336,7 +309,10 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             <TextField
               label={t('serverModal.rconPasswordLabel')}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (error) setError(''); // Clear error when user starts typing
+              }}
               placeholder={t('serverModal.rconPasswordPlaceholder')}
               type={showPassword ? 'text' : 'password'}
               required
@@ -373,114 +349,6 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
                 </Box>
               }
             />
-
-            <Box mt={1}>
-              <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                {t('serverModal.overridesTitle')}
-              </Typography>
-              <Typography variant="caption" color="text.secondary" display="block" mb={1}>
-                {t('serverModal.overridesDescription')}
-              </Typography>
-              <Box display="flex" flexDirection="column" gap={1.5}>
-                <TextField
-                  label={t('serverModal.chatPrefixLabel')}
-                  value={chatPrefix}
-                  onChange={(e) => setChatPrefix(e.target.value)}
-                  placeholder={t('serverModal.chatPrefixPlaceholder')}
-                  fullWidth
-                  helperText={t('serverModal.chatPrefixHelper')}
-                />
-                <TextField
-                  label={t('serverModal.adminChatPrefixLabel')}
-                  value={adminChatPrefix}
-                  onChange={(e) => setAdminChatPrefix(e.target.value)}
-                  placeholder={t('serverModal.adminChatPrefixPlaceholder')}
-                  fullWidth
-                  helperText={t('serverModal.adminChatPrefixHelper')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      checked={knifeEnabledDefault === true}
-                      indeterminate={knifeEnabledDefault === null}
-                      onChange={(e) =>
-                        setKnifeEnabledDefault(
-                          e.target.checked ? true : knifeEnabledDefault === null ? false : null
-                        )
-                      }
-                    />
-                  }
-                  label={
-                    <Box>
-                      <Typography variant="body2" fontWeight={500}>
-                        {t('serverModal.knifeOverrideLabel')}
-                      </Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.knifeOverrideHelper')}
-                      </Typography>
-                    </Box>
-                  }
-                />
-              </Box>
-            </Box>
-
-            {isEditing && (
-              <Box>
-                <Button
-                  variant="outlined"
-                  onClick={handleTestConnection}
-                  disabled={testing}
-                  fullWidth
-                  color={
-                    apiToServerOk && serverToApiOk
-                      ? 'success'
-                      : apiToServerOk === false || serverToApiOk === false
-                      ? 'error'
-                      : 'primary'
-                  }
-                >
-                  {testing
-                    ? t('serverModal.testingConnectivity')
-                    : t('serverModal.testConnectivity')}
-                </Button>
-                {apiToServerOk !== null && serverToApiOk !== null && !testing && (
-                  <Box mt={1}>
-                    <Box display="flex" alignItems="center" gap={1}>
-                      <ArrowUpwardIcon
-                        fontSize="small"
-                        sx={{
-                          color: apiToServerOk ? 'success.main' : 'error.main',
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.connectivity.apiToServer')}{' '}
-                        <strong style={{ color: apiToServerOk ? '#2e7d32' : '#d32f2f' }}>
-                          {apiToServerOk
-                            ? t('serverModal.connectivity.reachable')
-                            : t('serverModal.connectivity.unreachable')}
-                        </strong>
-                      </Typography>
-                    </Box>
-                    <Box display="flex" alignItems="center" gap={1} mt={0.5}>
-                      <ArrowDownwardIcon
-                        fontSize="small"
-                        sx={{
-                          color: serverToApiOk ? 'success.main' : 'error.main',
-                        }}
-                      />
-                      <Typography variant="caption" color="text.secondary">
-                        {t('serverModal.connectivity.serverToApi')}{' '}
-                        <strong style={{ color: serverToApiOk ? '#2e7d32' : '#d32f2f' }}>
-                          {serverToApiOk
-                            ? t('serverModal.connectivity.reachable')
-                            : t('serverModal.connectivity.unreachable')}
-                        </strong>
-                      </Typography>
-                    </Box>
-                  </Box>
-                )}
-              </Box>
-            )}
           </Box>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
@@ -505,6 +373,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
             onClick={handleSave}
             variant="contained"
             disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
             {saving

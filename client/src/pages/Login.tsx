@@ -1,65 +1,112 @@
-import React, { useState, useEffect } from 'react';
-import {
-  Box,
-  Card,
-  TextField,
-  Button,
-  Alert,
-  Container,
-  Link,
-  Stack,
-  Typography,
-  Divider,
-} from '@mui/material';
+import React, { useEffect, useState } from 'react';
+import { Box, Card, Button, Alert, Container, Link, Stack, Typography } from '@mui/material';
 import { OpenInNew as OpenInNewIcon } from '@mui/icons-material';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { SiDiscord, SiGithub, SiKeycloak } from 'react-icons/si';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { api } from '../utils/api';
 import { useTranslation } from 'react-i18next';
+import { SteamIcon } from '../components/icons/SteamIcon';
 
 export default function Login() {
   const { t } = useTranslation();
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login } = useAuth();
-  const navigate = useNavigate();
+  const { loginWithSteam } = useAuth();
+  const [providers, setProviders] = useState<
+    Array<{
+      id: string;
+      label: string;
+      loginUrl: string;
+      enabled: boolean;
+      buttonLabel?: string;
+      buttonBgColor?: string;
+      buttonTextColor?: string;
+      buttonHoverBgColor?: string;
+    }>
+  >([]);
+  const [loadingProviders, setLoadingProviders] = useState(false);
+  const [providersError, setProvidersError] = useState<string | null>(null);
   const location = useLocation();
+  const hasLoadedProvidersRef = React.useRef(false);
+  // __APP_VERSION__ is injected by Vite; declared globally in vite-env.d.ts
+  const appVersion = (globalThis as unknown as { __APP_VERSION__?: string }).__APP_VERSION__;
 
   // Set dynamic page title
   useEffect(() => {
+    if (hasLoadedProvidersRef.current) {
+      return;
+    }
+    hasLoadedProvidersRef.current = true;
+
     document.title = t('login.title');
   }, [t]);
 
-  interface LocationState {
-    from?: { pathname: string };
-  }
-  const from = (location.state as LocationState)?.from?.pathname || '/';
+  useEffect(() => {
+    const loadProviders = async () => {
+      try {
+        setLoadingProviders(true);
+        setProvidersError(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
+        const response = await fetch('/api/auth/providers');
+        if (!response.ok) {
+          throw new Error(`Failed to load auth providers: ${response.status}`);
+        }
 
-    if (!password.trim()) {
-      setError(t('login.passwordRequired'));
-      setLoading(false);
+        const data: {
+          success: boolean;
+          providers?: Array<{
+            id: string;
+            label: string;
+            loginUrl: string;
+            enabled: boolean;
+            buttonLabel?: string;
+            buttonBgColor?: string;
+            buttonTextColor?: string;
+            buttonHoverBgColor?: string;
+          }>;
+          error?: string;
+        } = await response.json();
+
+        if (!data || typeof data !== 'object') {
+          throw new Error('Invalid auth providers response');
+        }
+
+        const providersList = Array.isArray(data.providers) ? data.providers : [];
+        const enabledProviders = providersList.filter((p) => p.enabled);
+        setProviders(enabledProviders);
+
+        if (!data.success || enabledProviders.length === 0) {
+          throw new Error(
+            data.error ||
+              'No sign-in providers are configured. Please configure Steam or another SSO provider on the server.'
+          );
+        }
+
+        // If only Steam is configured, keep backwards-compatible behaviour.
+        if (enabledProviders.length === 1 && enabledProviders[0].id === 'steam') {
+          // no-op here; the primary button below will handle it.
+        }
+      } catch (error) {
+        console.error(error);
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to load sign-in options. Please try again or check server logs.';
+        setProvidersError(message);
+      } finally {
+        setLoadingProviders(false);
+      }
+    };
+
+    void loadProviders();
+  }, []);
+
+  const handleProviderClick = (providerId: string, loginUrl: string) => {
+    if (providerId === 'steam') {
+      // Use the existing helper so that future changes to the Steam flow are centralized.
+      loginWithSteam();
       return;
     }
 
-    try {
-      const isValid = await api.verifyToken(password);
-      if (isValid) {
-        login(password);
-        navigate(from, { replace: true });
-      } else {
-        setError(t('login.invalidPassword'));
-      }
-    } catch {
-      setError(t('login.connectionFailed'));
-    } finally {
-      setLoading(false);
-    }
+    window.location.href = loginUrl;
   };
 
   return (
@@ -109,47 +156,131 @@ export default function Login() {
               </Stack>
             </Stack>
 
-            <Stack component="form" onSubmit={handleSubmit} spacing={2.5} sx={{ width: '100%' }}>
-              <TextField
-                fullWidth
-                id="password"
-                label={t('login.apiTokenLabel')}
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('login.apiTokenPlaceholder')}
-                autoFocus
-                disabled={loading}
-                slotProps={{
-                  htmlInput: { 'data-testid': 'login-api-token-input' },
-                }}
-              />
-
-              {error && (
-                <Alert severity="error" sx={{ borderRadius: 2 }} data-testid="login-error-message">
-                  {error}
+            {/* Provider-based sign in (Steam, Keycloak, Discord, etc.) */}
+            <Stack spacing={2.5} sx={{ width: '100%' }}>
+              {providersError && (
+                <Alert severity="error" sx={{ borderRadius: 2 }}>
+                  <Stack spacing={0.5}>
+                    <Typography variant="body2">{providersError}</Typography>
+                    <Link
+                      href="https://mat.sivert.io/development/auth-providers-examples/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ fontSize: '0.8rem' }}
+                    >
+                      {t('login.documentation')}
+                    </Link>
+                  </Stack>
                 </Alert>
               )}
 
-              <Button
-                data-testid="login-sign-in-button"
-                type="submit"
-                variant="contained"
-                fullWidth
-                size="large"
-                disabled={loading}
-              >
-                {loading ? t('login.signingIn') : t('login.signIn')}
-              </Button>
+              <Stack spacing={1.5}>
+                {providers.map((provider) => {
+                  const isSteam = provider.id === 'steam';
+                  const isDiscord = provider.id === 'discord';
+                  const isGitHub = provider.id === 'github';
+                  const isKeycloak = provider.id === 'keycloak';
+
+                  // Brand-aligned button styles per provider
+                  const { variant, color, sx, icon } = (() => {
+                    if (isSteam) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'primary' as const,
+                        sx: {
+                          bgcolor: '#171a21',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#1b2838',
+                          },
+                        },
+                        icon: <SteamIcon />,
+                      };
+                    }
+                    if (isDiscord) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#5865F2',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#4752c4',
+                          },
+                        },
+                        icon: <SiDiscord />,
+                      };
+                    }
+                    if (isGitHub) {
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: '#24292e',
+                          color: '#ffffff',
+                          '&:hover': {
+                            bgcolor: '#1b1f23',
+                          },
+                        },
+                        icon: <SiGithub />,
+                      };
+                    }
+                    if (isKeycloak) {
+                      const bg = provider.buttonBgColor || '#3262a8';
+                      const text = provider.buttonTextColor || '#ffffff';
+                      const hoverBg = provider.buttonHoverBgColor || '#274c82';
+                      return {
+                        variant: 'contained' as const,
+                        color: 'inherit' as const,
+                        sx: {
+                          bgcolor: bg,
+                          color: text,
+                          '&:hover': {
+                            bgcolor: hoverBg,
+                          },
+                        },
+                        icon: <SiKeycloak />,
+                      };
+                    }
+                    return {
+                      variant: 'outlined' as const,
+                      color: 'inherit' as const,
+                      sx: undefined,
+                      icon: undefined,
+                    };
+                  })();
+
+                  return (
+                    <Button
+                      key={provider.id}
+                      fullWidth
+                      size="large"
+                      variant={variant}
+                      color={color}
+                      sx={sx}
+                      onClick={() => handleProviderClick(provider.id, provider.loginUrl)}
+                      startIcon={icon}
+                      disabled={loadingProviders}
+                      data-testid={
+                        isSteam
+                          ? 'login-steam-sign-in-button'
+                          : `login-${provider.id}-sign-in-button`
+                      }
+                    >
+                      {provider.buttonLabel || `Sign in with ${provider.label}`}
+                    </Button>
+                  );
+                })}
+
+                {loadingProviders && providers.length === 0 && (
+                  <Button fullWidth size="large" variant="contained" disabled>
+                    {t('login.signingIn')}
+                  </Button>
+                )}
+              </Stack>
             </Stack>
 
-            <Divider flexItem />
-
             <Stack spacing={1.5} alignItems="center" sx={{ width: '100%' }}>
-              <Typography variant="body2" color="text.secondary">
-                {t('login.needToken')}
-              </Typography>
-
               <Stack direction="row" spacing={2}>
                 <Link
                   href="https://github.com/sivert-io/matchzy-auto-tournament"
@@ -180,8 +311,7 @@ export default function Login() {
               </Stack>
 
               <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                {t('login.version')}{' '}
-                {typeof __APP_VERSION__ !== 'undefined' ? __APP_VERSION__ : 'Unknown'}
+                {t('login.version')} {appVersion || 'Unknown'}
               </Typography>
             </Stack>
           </Stack>

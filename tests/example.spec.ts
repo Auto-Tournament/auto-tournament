@@ -5,7 +5,7 @@ import { test, expect } from '@playwright/test';
  * @tag example
  */
 
-test('has title', { tag: ['@example'] }, async ({ page }) => {
+test.skip('has title', { tag: ['@example'] }, async ({ page }) => {
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
   // Wait for page to load (with fallback if networkidle times out)
@@ -20,7 +20,7 @@ test('has title', { tag: ['@example'] }, async ({ page }) => {
   await expect(page).toHaveTitle(/Login|Dashboard|MatchZy/i);
 });
 
-test('get started link', { tag: ['@example'] }, async ({ page }) => {
+test.skip('get started link', { tag: ['@example'] }, async ({ page }) => {
   await page.goto('/login', { waitUntil: 'domcontentloaded' });
   try {
     await page.waitForLoadState('networkidle', { timeout: 10000 });

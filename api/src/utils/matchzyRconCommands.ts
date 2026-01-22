@@ -52,14 +52,21 @@ export function getMatchZyReportUploadCommands(
  * Get RCON commands to configure MatchZy demo upload
  * Returns array of commands to set URL and authentication headers
  * (Similar to webhook configuration)
+ * 
+ * @param matchSlug - Optional match slug for specific match upload endpoint. 
+ *                    If null, sets base upload URL (for server initialization)
  */
 export function getMatchZyDemoUploadCommands(
   baseUrl: string,
-  matchSlug: string,
+  matchSlug: string | null,
   serverToken: string
 ): string[] {
+  const uploadUrl = matchSlug 
+    ? `${baseUrl}/api/demos/${matchSlug}/upload`
+    : `${baseUrl}/api/demos/upload`;
+    
   return [
-    `matchzy_demo_upload_url "${baseUrl}/api/demos/${matchSlug}/upload"`,
+    `matchzy_demo_upload_url "${uploadUrl}"`,
     `matchzy_demo_upload_header_key "X-MatchZy-Token"`,
     `matchzy_demo_upload_header_value "${serverToken}"`,
   ];
@@ -109,11 +116,10 @@ export function getMatchZyCoreSettingsCommands(options: {
 /**
  * Get RCON commands for per-server MatchZy configuration overrides.
  * All fields are optional; null/undefined means "do not touch this ConVar".
+ * Note: Chat prefixes and knife round defaults are not per-server settings;
+ * they are configured at the global/tournament/match level.
  */
 export function getMatchZyServerConfigCommands(config: {
-  chatPrefix?: string | null;
-  adminChatPrefix?: string | null;
-  knifeEnabledDefault?: boolean | null;
   minimumReadyRequired?: number | null;
   pauseAfterRestore?: boolean | null;
   stopCommandAvailable?: boolean | null;
@@ -130,16 +136,6 @@ export function getMatchZyServerConfigCommands(config: {
   debugChatEnabled?: boolean | null;
 }): string[] {
   const commands: string[] = [];
-
-  if (config.chatPrefix !== undefined && config.chatPrefix !== null) {
-    commands.push(`matchzy_chat_prefix "${config.chatPrefix}"`);
-  }
-  if (config.adminChatPrefix !== undefined && config.adminChatPrefix !== null) {
-    commands.push(`matchzy_admin_chat_prefix "${config.adminChatPrefix}"`);
-  }
-  if (config.knifeEnabledDefault !== undefined && config.knifeEnabledDefault !== null) {
-    commands.push(`matchzy_knife_enabled_default ${config.knifeEnabledDefault ? '1' : '0'}`);
-  }
 
   if (
     config.minimumReadyRequired !== undefined &&

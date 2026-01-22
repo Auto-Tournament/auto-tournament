@@ -61,6 +61,20 @@ csgo/
 
 The plugin zip file already contains the full `addons/counterstrikesharp/plugins/MatchZy/` structure, so extracting to `csgo/` puts everything in the right place.
 
+### MatchZy Enhanced v1.3.0 Configuration
+
+The tournament platform automatically configures **MatchZy Enhanced v1.3.0** features for all matches:
+
+- **Auto-ready system** — Players automatically marked ready (shuffle tournaments)
+- **Enhanced pause controls** — Pause limits, durations, unpause requirements
+- **Side selection timers** — Enforce time limits after knife round
+- **Match forfeit (.gg)** — Surrender via team vote (disabled by default)
+- **Forfeit/walkover (FFW)** — Automatic forfeit timer when team disconnects
+
+**No manual configuration required** — the system applies appropriate settings based on tournament type (official, shuffle, or manual match).
+
+> 📖 **[Feature Overview](../features/overview.md#matchzy-enhanced-configuration)** — Complete details on automatic configuration
+
 ---
 
 ## Configure RCON

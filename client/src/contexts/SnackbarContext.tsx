@@ -1,12 +1,13 @@
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
-import { SnackbarProvider as NotistackProvider, enqueueSnackbar, VariantType } from 'notistack';
+import { SnackbarProvider as NotistackProvider, enqueueSnackbar, closeSnackbar, VariantType, SnackbarKey } from 'notistack';
 import { Alert, Slide, TransitionProps } from '@mui/material';
 
 interface SnackbarContextType {
-  showSnackbar: (message: ReactNode, severity?: VariantType) => void;
-  showSuccess: (message: ReactNode) => void;
-  showError: (message: ReactNode) => void;
-  showWarning: (message: ReactNode) => void;
+  showSnackbar: (message: ReactNode, severity?: VariantType) => SnackbarKey;
+  showSuccess: (message: ReactNode) => SnackbarKey;
+  showError: (message: ReactNode) => SnackbarKey;
+  showWarning: (message: ReactNode) => SnackbarKey;
+  closeSnackbar: (key?: SnackbarKey) => void;
 }
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
@@ -152,8 +153,8 @@ const SlideTransition = React.forwardRef<unknown, TransitionProps & { children: 
 SlideTransition.displayName = 'SlideTransition';
 
 export function SnackbarProvider({ children }: { children: ReactNode }) {
-  const showSnackbar = useCallback((msg: ReactNode, variant: VariantType = 'success') => {
-    enqueueSnackbar(msg, {
+  const showSnackbar = useCallback((msg: ReactNode, variant: VariantType = 'success'): SnackbarKey => {
+    return enqueueSnackbar(msg, {
       variant,
       autoHideDuration: 6000,
       anchorOrigin: {
@@ -164,25 +165,29 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const showSuccess = useCallback(
-    (msg: ReactNode) => {
-      showSnackbar(msg, 'success');
+    (msg: ReactNode): SnackbarKey => {
+      return showSnackbar(msg, 'success');
     },
     [showSnackbar]
   );
 
   const showError = useCallback(
-    (msg: ReactNode) => {
-      showSnackbar(msg, 'error');
+    (msg: ReactNode): SnackbarKey => {
+      return showSnackbar(msg, 'error');
     },
     [showSnackbar]
   );
 
   const showWarning = useCallback(
-    (msg: ReactNode) => {
-      showSnackbar(msg, 'warning');
+    (msg: ReactNode): SnackbarKey => {
+      return showSnackbar(msg, 'warning');
     },
     [showSnackbar]
   );
+
+  const handleCloseSnackbar = useCallback((key?: SnackbarKey) => {
+    closeSnackbar(key);
+  }, []);
 
   return (
     <NotistackProvider
@@ -201,7 +206,7 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
         info: InfoSnackbar,
       }}
     >
-      <SnackbarContext.Provider value={{ showSnackbar, showSuccess, showError, showWarning }}>
+      <SnackbarContext.Provider value={{ showSnackbar, showSuccess, showError, showWarning, closeSnackbar: handleCloseSnackbar }}>
         {children}
       </SnackbarContext.Provider>
     </NotistackProvider>

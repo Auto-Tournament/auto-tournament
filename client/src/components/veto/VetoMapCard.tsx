@@ -14,6 +14,12 @@ interface VetoMapCardProps {
   side?: MapSide; // For picked maps with side selection
   onClick?: () => void;
   disabled?: boolean;
+  /**
+   * When true, this card is the primary actionable choice for the current team
+   * (e.g. it is their turn and the map is available). Used to visually
+   * highlight "click me now" maps during the veto phase.
+   */
+  isCurrentTurn?: boolean;
 }
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
@@ -25,6 +31,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   side,
   onClick,
   disabled,
+  isCurrentTurn,
 }) => {
   const [imageError] = React.useState(false);
   const isClickable = !disabled && state === 'available' && onClick;
@@ -36,15 +43,21 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
         position: 'relative',
         cursor: isClickable ? 'pointer' : 'default',
         opacity: state === 'banned' ? 0.5 : 1,
-        border: state === 'picked' ? 3 : 1,
-        borderColor: state === 'picked' ? 'success.main' : 'divider',
-        transition: 'all 0.3s ease',
+        border: state === 'picked' ? 3 : isCurrentTurn ? 2 : 1,
+        borderColor:
+          state === 'picked'
+            ? 'success.main'
+            : isCurrentTurn
+            ? 'warning.main'
+            : 'divider',
+        boxShadow: isCurrentTurn ? 6 : 1,
+        transition: 'all 0.25s ease',
         transform: isClickable ? 'scale(1)' : 'scale(1)',
         '&:hover': isClickable
           ? {
               transform: 'scale(1.05)',
-              boxShadow: 6,
-              borderColor: 'primary.main',
+              boxShadow: 8,
+              borderColor: isCurrentTurn ? 'warning.light' : 'primary.main',
             }
           : {},
       }}

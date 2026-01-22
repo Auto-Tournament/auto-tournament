@@ -1,5 +1,5 @@
 import React from 'react';
-import { Grid, Button } from '@mui/material';
+import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import CollectionsIcon from '@mui/icons-material/Collections';
 import { EmptyState } from '../shared/EmptyState';
@@ -22,14 +22,12 @@ export function MapPoolsTab({
   if (mapPools.length === 0) {
     return (
       <EmptyState
-        icon={<CollectionsIcon sx={{ fontSize: 64 }} />}
+        icon={CollectionsIcon}
         title="No map pools found"
         description="Get started by creating your first map pool"
-        action={
-          <Button variant="contained" startIcon={<AddIcon />} onClick={onCreatePool}>
-            Create Map Pool
-          </Button>
-        }
+        actionLabel="Create Map Pool"
+        actionIcon={AddIcon}
+        onAction={onCreatePool}
       />
     );
   }

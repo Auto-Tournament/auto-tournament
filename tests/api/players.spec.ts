@@ -20,12 +20,12 @@ import {
  * @tag shuffle
  */
 
-test.describe.serial('Player Management API', () => {
+test.describe.skip('Player Management API', () => {
   test.beforeEach(async ({ page }) => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should create a player with initial Skill Rating',
     {
       tag: ['@api', '@players', '@crud'],

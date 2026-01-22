@@ -11,66 +11,109 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 <a href="https://mat.sivert.io/" target="_blank">Full Documentation</a>** • <a href="https://mat.sivert.io/getting-started/quick-start/" target="_blank">Quick Start</a> • <a href="https://mat.sivert.io/features/overview/" target="_blank">Features</a> • <a href="https://mat.sivert.io/roadmap/" target="_blank">Roadmap</a> • <a href="https://mat.sivert.io/guides/troubleshooting/" target="_blank">Troubleshooting</a> • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord Support</a>
+**📚 <a href="https://mat.sivert.io/" target="_blank">Documentation</a>** • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord</a>
 
 </div>
 
 ---
 
-## ✨ Features
+## 🎯 Who is this for?
 
-🏆 **Tournament Formats** — Single/Double Elimination, Round Robin, Swiss, and Shuffle tournaments with auto-progression  
-🧩 **Custom Bracket Viewer** — Bundled fork of `brackets-viewer.js` with enhanced theming, matchup centering, and MatchZy integration  
-🗺️ **Interactive Map Veto** — FaceIT-style ban/pick system for BO1/BO3/BO5 with map pools and MR3 overtime support  
-📈 **Player Ratings** — OpenSkill-backed rating engine, ELO-style display, player pages, and public leaderboards  
-📊 **Dashboard & Live Stats** — Onboarding checklist, tournament/server stats, and live match metrics  
-⚡ **Real-Time Updates** — WebSocket-powered live scores, player connections, and status tracking  
-🎮 **Auto Server Allocation** — Matches load automatically when servers are available  
-👥 **Public Team & Match Pages** — No-auth pages for teams and viewers to monitor matches and veto  
-🎬 **Demo Management** — Automatic demo upload, verification, and download
+- **Tournament Organizers** — Run professional CS2 tournaments with automated brackets, veto, ratings, and live stats
+- **Casual Players** — Quick setup to play competitive matches with friends (5v5, 2v2, or custom)
+- **Developers** — Open source platform for building CS2 tournament features
+
+---
+
+## ⚡ Quick Start (5 minutes)
+
+### 1. Install Platform
+
+```bash
+# Clone and start
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+cp example.env .env
+docker compose up -d
+
+# Open http://localhost:3069
+```
+
+### 2. Add CS2 Servers
+
+**Option A: Automated (Recommended)**
+- Use the [CS2 Server Manager](https://mat.sivert.io/guides/cs2-server-manager/) to spin up servers with one command
+
+**Option B: Manual**
+- Install [CounterStrikeSharp](https://docs.cssharp.dev/) on your CS2 server
+- Install [MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
+- Add server in the platform: Settings → Servers
+
+### 3. Create Tournament
+
+Dashboard → New Tournament → Select format → Add teams → Start!
+
+**That's it!** Matches auto-load on servers, veto happens in the browser, and brackets update live.
+
+---
+
+## ✨ What You Get
+
+🏆 **Tournament Formats** — Single/Double Elimination, Swiss, Round Robin, Shuffle  
+🗺️ **Map Veto** — FaceIT-style ban/pick for BO1/BO3/BO5  
+📈 **Player Ratings** — OpenSkill-backed ELO system with leaderboards  
+⚡ **Real-Time** — WebSocket updates for scores, connections, status  
+🎮 **Auto-Everything** — Server allocation, match loading, bracket progression  
+🎬 **Demo Recording** — Automatic upload and download  
+👥 **Public Pages** — No-login team pages with server connect info
 
 <div align="center">
-  <img src="docs/assets/preview/08-bracket-view.png" alt="Tournament Bracket View" width="800">
-  <p><em>Double-elimination bracket with synchronized winner and loser paths plus interactive match zoom</em></p>
+  <img src="docs/assets/preview/bracket.png" alt="Tournament Bracket View" width="800">
 </div>
 
-**👉 <a href="https://mat.sivert.io/screenshots/" target="_blank">View More Screenshots</a>**
+---
+
+## 📖 Documentation
+
+**For Tournament Admins:**
+- [Admin Dashboard](https://mat.sivert.io/guides/admin-dashboard/)
+- [Server Setup](https://mat.sivert.io/getting-started/server-setup/)
+- [Creating Tournaments](https://mat.sivert.io/guides/how-to-set-up-a-tournament/)
+
+**For Developers:**
+- [Contributing Guide](.github/CONTRIBUTING.md)
+- [Architecture](https://mat.sivert.io/development/architecture/)
+- [Testing](https://mat.sivert.io/development/testing-pr/)
 
 ---
 
-## ⚙️ Requirements
+## 🔧 Requirements
 
-- **Docker** and **Docker Compose** ([Install Docker](https://docs.docker.com/engine/install/))
-- **CS2 servers** with the [enhanced MatchZy plugin](https://github.com/sivert-io/matchzy-Enhanced/releases)
-- **RCON access** to your CS2 servers
-
----
-
-## 🚀 Quick Start
-
-Get up and running in minutes with Docker:
-
-1. **Install the tournament platform** using Docker
-2. **Set up CS2 servers** using the CS2 Server Manager (recommended) or manual setup
-3. **Create your first tournament** and start playing!
-
-👉 **[Read the complete Quick Start Guide](https://mat.sivert.io/getting-started/quick-start/)** for step-by-step instructions.
+- Docker & Docker Compose
+- CS2 servers with [MatchZy Enhanced v1.3.0+](https://github.com/sivert-io/matchzy-Enhanced/releases)
+- RCON access to servers
 
 ---
 
 ## 🤝 Contributing
 
-Contributions are welcome! Whether you're fixing bugs, adding features, improving docs, or sharing ideas.
+Contributions welcome! Bug fixes, features, docs improvements, translations, or ideas.
 
-👉 **[Read the Contributing Guide](.github/CONTRIBUTING.md)**
+**Ways to contribute:**
+- 🐛 [Report bugs or request features](.github/ISSUE_TEMPLATE/)
+- 💻 [Submit code improvements](.github/CONTRIBUTING.md)
+- 🌍 [Translate to your language](TRANSLATING.md)
+- 📚 [Improve documentation](https://mat.sivert.io/)
+
+**[Read Full Contributing Guide](.github/CONTRIBUTING.md)**
 
 ---
 
 ## 📜 License
 
-MIT License - see [LICENSE](LICENSE) for details
+MIT License - see [LICENSE](LICENSE)
 
-**Credits:** <a href="https://github.com/sivert-io/cs2-server-manager" target="_blank">sivert-io/cs2-server-manager</a> (map images) • <a href="https://github.com/Drarig29/brackets-manager.js" target="_blank">brackets-manager.js</a> • <a href="https://github.com/Drarig29/brackets-viewer.js" target="_blank">brackets-viewer.js</a> (customized copy vendored in `client/src/brackets-viewer`)
+**Credits:** [cs2-server-manager](https://github.com/sivert-io/cs2-server-manager) • [brackets-manager.js](https://github.com/Drarig29/brackets-manager.js) • [brackets-viewer.js](https://github.com/Drarig29/brackets-viewer.js)
 
 ---
 

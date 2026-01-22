@@ -1,5 +1,11 @@
 ## Internationalization & Translation Guide
 
+
+!!! tip "🌍 Want to contribute a translation?"
+    **Quick Start:** Check out [TRANSLATING.md](https://github.com/sivert-io/matchzy-auto-tournament/blob/main/TRANSLATING.md) for a simple 5-step guide.
+    
+    This page is for developers who want to understand the technical details of the i18n system.
+
 MatchZy Auto Tournament ships with full frontend internationalization (i18n) using **i18next** and **react‑i18next**, plus Material UI’s locale support.
 
 This guide explains:

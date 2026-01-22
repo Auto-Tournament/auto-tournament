@@ -9,6 +9,7 @@
     "matches": "Matches",
     "teams": "Teams",
     "players": "Players",
+    "leaderboard": "Leaderboard",
     "servers": "Servers",
     "maps": "Maps & Map Pools",
     "templates": "Templates",
@@ -22,7 +23,9 @@
     "configurationSection": "Configuration",
     "systemSection": "System",
     "documentation": "Documentation",
-    "signOut": "Sign out"
+    "signOut": "Sign out",
+    "linkSteam": "Link Steam",
+    "myProfile": "My profile"
   },
   "layout": {
     "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
@@ -60,18 +63,23 @@
   "login": {
     "title": "Login",
     "welcome": "Welcome back",
-    "subtitle": "Enter the administrator API token to manage tournaments, servers, and teams.",
-    "apiTokenLabel": "API Token",
-    "apiTokenPlaceholder": "Enter your API token",
-    "passwordRequired": "Password is required",
-    "invalidPassword": "Invalid password. Please check your API token.",
-    "connectionFailed": "Failed to connect to the API. Please try again.",
+    "subtitle": "Sign in to get started",
+    "apiTokenLabel": "Sign-in method",
+    "apiTokenPlaceholder": "Choose a provider to continue",
+    "passwordRequired": "A sign-in method is required",
+    "invalidPassword": "Sign-in failed. Please try again.",
+    "connectionFailed": "Failed to connect to the authentication service. Please try again.",
     "signIn": "Sign In",
     "signingIn": "Signing in…",
-    "needToken": "Need the token or access instructions?",
     "github": "GitHub",
     "documentation": "Documentation",
     "version": "Version"
+  },
+  "connectSteam": {
+    "title": "Connect your Steam account",
+    "bodyIntro": "You're almost done. To use the tournament platform with this account (for example after signing in with Discord, Keycloak, or GitHub), you need to link a Steam profile.",
+    "bodyRequirement": "Linking Steam lets the system recognize you as a player and is required to sign in from non‑Steam providers.",
+    "button": "Connect with Steam"
   },
   "notFound": {
     "title": "Page not found",
@@ -147,10 +155,8 @@
     "openPlayerPageTooltip": "Open player page",
     "skillRatingTooltip": "Skill Rating is based on OpenSkill; higher is better.",
     "skillRatingLabel": "Skill Rating: {{elo}}",
-    "matchesCount": {
-      "one": "{{count}} match",
-      "other": "{{count}} matches"
-    }
+    "matchesCount_one": "{{count}} match",
+    "matchesCount_other": "{{count}} matches"
   },
   "teamModal": {
     "titleCreate": "Create New Team",
@@ -187,6 +193,7 @@
     },
     "success": {
       "playerAdded": "Player added to team",
+      "playerReplaced": "Player replaced",
       "teamUpdated": "Team updated successfully",
       "teamCreated": "Team created successfully",
       "teamDeleted": "Team deleted successfully"
@@ -201,7 +208,9 @@
     "confirmDelete": {
       "title": "Delete Team",
       "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
-    }
+    },
+    "replacePlayerAria": "Replace player {{name}}",
+    "replacePlayerTooltip": "Replace this player"
   },
   "playerModal": {
     "titleCreate": "Create Player",
@@ -422,6 +431,10 @@
       "rconFailed": "RCON failed",
       "onlineTesting": "Online (testing)"
     },
+    "ipBanned": {
+      "title": "Server May Have Banned Our IP",
+      "message": "Server is reachable but repeatedly rejecting RCON authentication. This may indicate an IP ban. If the RCON password is correct, please check the server's ban list and unban our IP address."
+    },
     "connectivity": {
       "apiToServer": "API → Server (RCON)",
       "serverToApi": "Server → API (/api/events)",
@@ -454,6 +467,10 @@
   "dashboard": {
     "title": "Dashboard",
     "notReady": "Tournament dashboard will appear here once the tournament is started.",
+    "restartTournament": {
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
+    },
     "onboarding": {
       "ready": "🎉 Ready to Go!",
       "gettingStarted": "Getting Started",
@@ -560,9 +577,10 @@
     "title": "Settings",
     "intro": "Configure core integrations, in-game defaults, and developer options.",
     "tabs": {
-      "integrations": "Integrations",
-      "matchRating": "Match & Rating",
-      "developer": "Developer"
+      "integrations": "Integrations & Webhooks",
+      "players": "Players & Access",
+      "matches": "Matches & Ratings",
+      "developer": "Developer / Simulation"
     },
     "integrations": {
       "webhook": {
@@ -611,6 +629,48 @@
         "description": "Control whether completed matches update player Skill Ratings. Disable this for events where an external system (for example your Excel sheet) is the source of truth for ratings.",
         "toggleLabel": "Update player ratings from completed matches",
         "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged."
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced v1.3.0 Features",
+        "description": "Configure advanced match features. Leave settings empty to use tournament-type defaults.",
+        "autoready": {
+          "title": "Auto-Ready System",
+          "label": "Auto-mark players as ready when they join",
+          "description": "Players are automatically ready on join. They can still use .unready to opt-out."
+        },
+        "pause": {
+          "title": "Pause Controls",
+          "bothTeamsUnpause": "Require both teams to unpause",
+          "maxPausesLabel": "Max pauses per team",
+          "maxPausesHelper": "0 = unlimited pauses",
+          "pauseDurationLabel": "Pause duration limit (seconds)",
+          "pauseDurationHelper": "0 = no time limit"
+        },
+        "sideSelection": {
+          "title": "Side Selection Timer",
+          "enabled": "Enable side selection timer",
+          "timeLabel": "Time allowed (seconds)",
+          "timeHelper": "Time after knife round to choose sides"
+        },
+        "gg": {
+          "title": "Early Match Termination (.gg)",
+          "enabled": "Enable .gg forfeit command",
+          "thresholdLabel": "Vote threshold (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% of team must vote (e.g., 4/5 players)",
+          "minScoreDiffLabel": "Minimum score difference",
+          "minScoreDiffHelper": "0 = disabled. Example: 6 = only allow .gg when losing by 6+ rounds"
+        },
+        "ffw": {
+          "title": "Forfeit/Walkover System",
+          "enabled": "Enable automatic forfeit when team disconnects",
+          "timeLabel": "Forfeit timer (seconds)",
+          "timeHelper": "Time before forfeit is declared when entire team leaves"
+        },
+        "demo": {
+          "title": "Demo Recording",
+          "enabled": "Enable automatic GOTV demo recording",
+          "description": "When disabled, server restarts ~10s after match end (vs 60-90s with recording)"
+        }
       }
     },
     "developer": {
@@ -1393,6 +1453,14 @@
     "testButton": "Test Sound",
     "footer": "Sound notifications will play when your match is ready or when important events occur."
   },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Delete Match",
+      "confirmTitle": "Delete this match?",
+      "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
+      "button": "Delete Match"
+    }
+  },
   "bracket": {
     "empty": {
       "noBracketTitle": "No bracket to display",
@@ -1412,7 +1480,7 @@
     },
     "playerProfile": {
       "title": "Player Profile (public)",
-      "description": "Direct link to a player profile by Steam ID64.",
+      "description": "Direct link to a player profile by Steam ID64. Players who are signed in with Steam can also use the \"My profile\" link in the top bar instead of copying URLs.",
       "requiresSteamId": "Requires Steam ID64"
     },
     "teamMatch": {

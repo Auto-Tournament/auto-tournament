@@ -87,7 +87,10 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
 
   // Player connection status
   const { status: connectionStatus } = usePlayerConnections(match?.slug || null);
-  const { stats: liveStats } = useLiveStats(match?.slug || null);
+  // Skip live stats for completed matches - we already have final scores from match data
+  const { stats: liveStats } = useLiveStats(
+    match?.slug && match?.status !== 'completed' ? match.slug : null
+  );
 
   // Team link copy with toast
   const { copyLink, ToastNotification } = useTeamLinkCopy();
@@ -543,7 +546,13 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                     false,
                     effectiveVetoCompleted,
                     tournamentStarted,
-                    Boolean(match.serverId)
+                    Boolean(match.serverId),
+                    mapRoundsTeam1,
+                    mapRoundsTeam2,
+                    match.config?.maxRounds,
+                    typeof cvars['mp_overtime_maxrounds'] === 'number'
+                      ? Number(cvars['mp_overtime_maxrounds'])
+                      : undefined
                   )}
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600 }}
@@ -600,7 +609,13 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                     false,
                     effectiveVetoCompleted,
                     tournamentStarted,
-                    Boolean(match.serverId)
+                    Boolean(match.serverId),
+                    mapRoundsTeam1,
+                    mapRoundsTeam2,
+                    match.config?.maxRounds,
+                    typeof cvars['mp_overtime_maxrounds'] === 'number'
+                      ? Number(cvars['mp_overtime_maxrounds'])
+                      : undefined
                   )}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -619,6 +634,15 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
               <Box>
                 <Typography variant="body2" color="text.secondary">
                   <strong>Server:</strong> {match.serverName}
+                </Typography>
+              </Box>
+            )}
+
+            {/* Queue Position */}
+            {!match.serverId && match.queuePosition && (
+              <Box>
+                <Typography variant="body2" color="primary.main" fontWeight={600}>
+                  <strong>Queue Position:</strong> #{match.queuePosition}
                 </Typography>
               </Box>
             )}

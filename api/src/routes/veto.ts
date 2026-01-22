@@ -8,12 +8,89 @@ import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { getVetoOrder } from '../utils/vetoConfig';
 import { settingsService } from '../services/settingsService';
+import { normalizeConfigPlayers } from '../utils/playerTransform';
 
 const router = Router();
 
+function parseCookies(cookieHeader: string | undefined): Record<string, string> {
+  if (!cookieHeader) return {};
+  return Object.fromEntries(
+    cookieHeader
+      .split(';')
+      .map((part) => part.trim())
+      .filter(Boolean)
+      .map((part) => {
+        const [name, ...rest] = part.split('=');
+        return [name, decodeURIComponent(rest.join('='))];
+      })
+  );
+}
+
+function getViewerSteamId(req: Request): string | null {
+  const cookies = parseCookies(req.headers.cookie);
+  const cookieSteamId = cookies.player_steam_id;
+
+  if (cookieSteamId && cookieSteamId.trim().length > 0) {
+    return cookieSteamId.trim();
+  }
+
+  const anyReq = req as Request & {
+    user?: {
+      steamId?: string;
+    };
+  };
+
+  if (anyReq.user?.steamId && anyReq.user.steamId.trim().length > 0) {
+    return anyReq.user.steamId.trim();
+  }
+
+  return null;
+}
+
+function resolveViewerTeamForMatch(
+  match: DbMatchRow,
+  viewerSteamId: string | null
+): 'team1' | 'team2' | null {
+  if (!viewerSteamId) {
+    return null;
+  }
+
+  const config = match.config
+    ? (JSON.parse(match.config) as {
+        team1?: { players?: unknown[] };
+        team2?: { players?: unknown[] };
+      })
+    : {};
+
+  const normalizedTeam1Players = config.team1
+    ? normalizeConfigPlayers(config.team1.players)
+    : [];
+  const normalizedTeam2Players = config.team2
+    ? normalizeConfigPlayers(config.team2.players)
+    : [];
+
+  const isInTeam1 = normalizedTeam1Players.some((p) => p.steamid === viewerSteamId);
+  const isInTeam2 = normalizedTeam2Players.some((p) => p.steamid === viewerSteamId);
+
+  if (isInTeam1 && !isInTeam2) {
+    return 'team1';
+  }
+  if (!isInTeam1 && isInTeam2) {
+    return 'team2';
+  }
+
+  // Ambiguous or not present – treat as spectator for veto security purposes.
+  return null;
+}
+
 /**
  * GET /api/veto/:matchSlug
- * Get current veto state for a match
+ * Get current veto state for a match.
+ *
+ * NOTE: This endpoint is intentionally public so spectators can still see
+ * high‑level veto results (picked maps, status) via pages like the player
+ * profile or bracket. Security‑sensitive operations (choosing bans/picks)
+ * are protected at the /action endpoint and via the team view UI.
  */
 router.get('/:matchSlug', async (req: Request, res: Response) => {
   try {
@@ -102,6 +179,33 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       }
     }
 
+    // Determine whether the current viewer is actually on one of the two teams.
+    // Team members get the full veto state; spectators get a redacted, read‑only
+    // view with only high‑level information (team names, status, picked maps).
+    const viewerSteamId = getViewerSteamId(req);
+    const viewerTeam = resolveViewerTeamForMatch(match, viewerSteamId);
+
+    if (!viewerTeam) {
+      const publicVeto = {
+        matchSlug: vetoState.matchSlug,
+        format: vetoState.format,
+        status: vetoState.status,
+        team1Name: vetoState.team1Name,
+        team2Name: vetoState.team2Name,
+        pickedMaps: Array.isArray(vetoState.pickedMaps)
+          ? vetoState.pickedMaps.map((p: { mapNumber?: number; mapName: string }) => ({
+              mapNumber: p.mapNumber,
+              mapName: p.mapName,
+            }))
+          : [],
+      };
+
+      return res.json({
+        success: true,
+        veto: publicVeto,
+      });
+    }
+
     return res.json({
       success: true,
       veto: vetoState,
@@ -117,7 +221,11 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
 
 /**
  * POST /api/veto/:matchSlug/action
- * Submit a veto action (ban/pick/side_pick)
+ * Submit a veto action (ban/pick/side_pick).
+ *
+ * Only logged‑in players who are actually on one of the two teams in this
+ * match are allowed to perform veto actions. Spectators and unauthenticated
+ * users are blocked here and can only see the public, read‑only views.
  */
 router.post('/:matchSlug/action', async (req: Request, res: Response) => {
   try {
@@ -132,6 +240,19 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       return res.status(404).json({
         success: false,
         error: 'Match not found',
+      });
+    }
+
+    // Resolve which team (if any) the current viewer belongs to based on their
+    // Steam ID (from player_steam_id cookie or Passport user).
+    const viewerSteamId = getViewerSteamId(req);
+    const viewerTeam = resolveViewerTeamForMatch(match, viewerSteamId);
+
+    if (!viewerSteamId || !viewerTeam) {
+      return res.status(403).json({
+        success: false,
+        error:
+          'Only logged-in players on one of the participating teams can perform veto actions for this match.',
       });
     }
 
@@ -217,19 +338,25 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
     const currentAction = currentStepConfig.action;
 
-    // Security: Validate that the correct team is making this action
-    if (teamSlug) {
-      const expectedTeam = currentStepConfig.team;
-      const actualTeam = teamSlug === team1?.id ? 'team1' : teamSlug === team2?.id ? 'team2' : null;
+    // Security: Validate that the correct team is making this action.
+    // At this point we already know the viewer belongs to one of the two
+    // participating teams (viewerTeam !== null). We still enforce turn
+    // order based on the teamSlug sent by the UI and the configured
+    // vetoOrder, so a team cannot act out of turn.
+    const expectedTeam = currentStepConfig.team;
 
-      if (!actualTeam) {
+    if (teamSlug) {
+      const actualTeamFromSlug =
+        teamSlug === team1?.id ? 'team1' : teamSlug === team2?.id ? 'team2' : null;
+
+      if (!actualTeamFromSlug) {
         return res.status(403).json({
           success: false,
           error: 'Invalid team',
         });
       }
 
-      if (actualTeam !== expectedTeam) {
+      if (actualTeamFromSlug !== expectedTeam) {
         return res.status(403).json({
           success: false,
           error: `It's not your turn. Waiting for the other team.`,

@@ -202,9 +202,6 @@ test.describe.serial('Veto API', () => {
     };
 
     const response = await request.post('/api/tournament', {
-      headers: {
-        Authorization: `Bearer ${process.env.API_TOKEN || 'admin123'}`,
-      },
       data: {
         name: `Invalid Veto Test ${Date.now()}`,
         type: 'single_elimination',

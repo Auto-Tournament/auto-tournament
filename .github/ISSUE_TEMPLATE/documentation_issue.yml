@@ -1,0 +1,101 @@
+name: 📚 Documentation Issue
+description: Report missing, unclear, outdated, or incorrect documentation
+title: "[DOCS] "
+labels: ["documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping improve our documentation! Clear docs help everyone in the community.
+
+  - type: dropdown
+    id: doc-issue-type
+    attributes:
+      label: Documentation Issue Type
+      description: What kind of documentation issue is this?
+      options:
+        - "Missing documentation"
+        - "Incorrect/outdated information"
+        - "Unclear/confusing explanation"
+        - "Broken link or 404"
+        - "Code example doesn't work"
+        - "Typo or grammar"
+        - "Other (specify below)"
+    validations:
+      required: true
+
+  - type: input
+    id: doc-location
+    attributes:
+      label: 📍 Documentation Location
+      description: Where is the problematic documentation? (URL, file path, or page title)
+      placeholder: "e.g., https://mat.sivert.io/guides/server-setup/ or README.md line 45"
+    validations:
+      required: true
+
+  - type: textarea
+    id: issue-description
+    attributes:
+      label: ❓ What's Wrong?
+      description: Clearly describe the documentation issue
+      placeholder: |
+        Example: "The server setup guide says to install MatchZy v1.2.0, but the platform requires v1.3.0+ which has breaking changes. Following the current docs results in connection errors."
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-docs
+    attributes:
+      label: ✅ What Should It Say?
+      description: How should the documentation be improved? (If you know)
+      placeholder: |
+        Example: 
+        "The guide should specify MatchZy Enhanced v1.3.0+ is required and link to the Enhanced release page. It should also mention the webhook URL configuration that's new in v1.3.0."
+    validations:
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: 🎯 Impact
+      description: How does this affect users?
+      placeholder: |
+        Example: "This causes all new users following the setup guide to have broken server connections. They waste hours debugging before finding they need a different version."
+    validations:
+      required: true
+
+  - type: textarea
+    id: suggested-content
+    attributes:
+      label: 📝 Suggested Content (Optional)
+      description: If you know how to fix it, provide suggested content/changes
+      placeholder: |
+        You can provide:
+        - Corrected text
+        - Updated code examples
+        - Additional steps to add
+        - Better explanations
+        
+        Or just describe what needs to be added/changed.
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: 🔗 Related Issues/Context
+      description: Link to related bugs, questions, or discussions
+      placeholder: |
+        Example: "Users in #110 and #125 ran into this same issue. Also discussed on Discord in #support channel."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      options:
+        - label: I'd be willing to submit a PR to fix this documentation
+          required: false
+        - label: I'd be willing to help review documentation changes
+          required: false

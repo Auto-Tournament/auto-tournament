@@ -2,6 +2,9 @@ import { Router, Request, Response } from 'express';
 import { serverService } from '../services/serverService';
 import { CreateServerInput, UpdateServerInput } from '../types/server.types';
 import { requireAuth } from '../middleware/auth';
+import { matchAllocationService } from '../services/matchAllocationService';
+import { serverInitializationService } from '../services/serverInitializationService';
+import { log } from '../utils/logger';
 
 const router = Router();
 
@@ -170,6 +173,14 @@ router.post('/', async (req: Request, res: Response) => {
 
     const server = await serverService.createServer(input, upsert);
 
+    // If the server is enabled (default is true), trigger immediate allocation
+    if (server.enabled !== false) {
+      log.info(`New server ${server.id} created and enabled, triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
+
     return res.status(201).json({
       success: true,
       message: upsert ? 'Server created or updated successfully' : 'Server created successfully',
@@ -198,6 +209,15 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     const server = await serverService.updateServer(id, input);
 
+    // If the update explicitly set enabled to true, trigger allocation
+    // (even if it was already true - safe and ensures waiting matches get allocated)
+    if (input.enabled === true) {
+      log.info(`Server ${id} updated with enabled=true, triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
+
     return res.json({
       success: true,
       message: 'Server updated successfully',
@@ -225,6 +245,14 @@ router.patch('/:id', async (req: Request, res: Response) => {
     const input: UpdateServerInput = req.body;
 
     const server = await serverService.updateServer(id, input);
+
+    // If the update explicitly set enabled to true, trigger allocation
+    if (input.enabled === true) {
+      log.info(`Server ${id} patched with enabled=true, triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
 
     return res.json({
       success: true,
@@ -324,6 +352,12 @@ router.post('/:id/enable', async (req: Request, res: Response) => {
     const { id } = req.params;
     const server = await serverService.setServerEnabled(id, true);
 
+    // Server is now available - trigger immediate allocation for waiting matches
+    log.info(`Server ${id} enabled, triggering immediate allocation`);
+    setImmediate(() => {
+      void matchAllocationService.tryImmediateAllocation();
+    });
+
     return res.json({
       success: true,
       message: 'Server enabled',
@@ -361,6 +395,64 @@ router.post('/:id/disable', async (req: Request, res: Response) => {
 
     console.error('Error disabling server:', error);
     return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * POST /api/servers/:id/reset-initialization
+ * Reset server initialization status
+ * Forces re-sending of persistent configuration on next match load
+ * Useful when configuration has changed or server was reconfigured
+ */
+router.post('/:id/reset-initialization', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    
+    // Verify server exists
+    const server = await serverService.getServerById(id);
+    if (!server) {
+      return res.status(404).json({
+        success: false,
+        error: 'Server not found',
+      });
+    }
+
+    await serverInitializationService.resetServerInitialization(id);
+
+    return res.json({
+      success: true,
+      message: `Server ${id} initialization reset. Persistent configuration will be resent on next match load.`,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to reset server initialization';
+    console.error('Error resetting server initialization:', error);
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * POST /api/servers/reset-all-initialization
+ * Reset initialization status for ALL servers
+ * Useful after global configuration changes
+ */
+router.post('/reset-all-initialization', async (req: Request, res: Response) => {
+  try {
+    await serverInitializationService.resetAllServers();
+
+    return res.json({
+      success: true,
+      message: 'All servers initialization reset. Persistent configuration will be resent on next match loads.',
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to reset all servers initialization';
+    console.error('Error resetting all servers initialization:', error);
+    return res.status(500).json({
       success: false,
       error: message,
     });

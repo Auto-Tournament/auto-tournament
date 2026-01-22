@@ -6,12 +6,7 @@
 
 import { db } from '../config/database';
 import { log } from '../utils/logger';
-import { rconService } from './rconService';
 import { refreshConnectionsFromServer, fetchMatchReport, applyMatchReport } from './connectionSnapshotService';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommands,
-} from '../utils/matchzyRconCommands';
 import { settingsService } from './settingsService';
 import type { DbMatchRow } from '../types/database.types';
 
@@ -20,7 +15,7 @@ export interface RecoveryResult {
   success: boolean;
   stateSynced: boolean;
   webhookReconfigured: boolean;
-  demoReconfigured: boolean;
+  demoUploadReconfigured: boolean;
   error?: string;
 }
 
@@ -83,7 +78,7 @@ async function recoverMatch(
     success: false,
     stateSynced: false,
     webhookReconfigured: false,
-    demoReconfigured: false,
+    demoUploadReconfigured: false,
   };
 
   try {
@@ -117,51 +112,21 @@ async function recoverMatch(
       });
     }
 
-    // 2. Reconfigure webhook and demo upload (if baseUrl is configured)
+    // 2. Ensure persistent configuration is initialized (webhook and demo upload)
+    // Note: With persistent configuration, the server stores webhook/demo URLs in its database.
+    // We just need to make sure it's been initialized once. This is idempotent.
     if (baseUrl && serverToken) {
       try {
-        // Reconfigure webhook
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, match.slug);
-        let webhookSuccess = true;
-        for (const cmd of webhookCommands) {
-          const cmdResult = await rconService.sendCommand(match.server_id, cmd);
-          if (!cmdResult.success) {
-            webhookSuccess = false;
-            log.warn(`[Recovery] Failed to reconfigure webhook for ${match.slug}`, {
-              command: cmd,
-              error: cmdResult.error,
-            });
-          }
-        }
-        if (webhookSuccess) {
-          result.webhookReconfigured = true;
-          log.success(`[Recovery] Reconfigured webhook for ${match.slug}`);
-        }
-
-        // Reconfigure demo upload (with headers for authentication)
-        const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, match.slug, serverToken);
-        let demoSuccess = true;
-        for (const cmd of demoUploadCommands) {
-          const cmdResult = await rconService.sendCommand(match.server_id, cmd);
-          if (!cmdResult.success) {
-            demoSuccess = false;
-            log.warn(`[Recovery] Failed to reconfigure demo upload for ${match.slug}`, {
-              command: cmd,
-              error: cmdResult.error,
-            });
-          }
-        }
-        if (demoSuccess) {
-          result.demoReconfigured = true;
-          log.success(`[Recovery] Reconfigured demo upload for ${match.slug}`);
-        }
-      } catch (reconfigError) {
-        log.warn(`[Recovery] Failed to reconfigure webhook/demo for ${match.slug}`, {
-          error: reconfigError instanceof Error ? reconfigError.message : String(reconfigError),
-        });
+        const { serverInitializationService } = await import('./serverInitializationService');
+        await serverInitializationService.initializeServer(match.server_id, false);
+        result.webhookReconfigured = true;
+        result.demoUploadReconfigured = true;
+        log.success(`[Recovery] Verified persistent config for ${match.slug} on server ${match.server_id}`);
+      } catch (error) {
+        log.warn(`[Recovery] Failed to verify persistent config for ${match.slug}`, { error });
       }
     } else {
-      log.warn(`[Recovery] Skipping webhook/demo reconfiguration for ${match.slug}`, {
+      log.warn(`[Recovery] Skipping persistent config verification for ${match.slug}`, {
         reason: !baseUrl ? 'Webhook URL not configured' : 'SERVER_TOKEN not set',
       });
     }
@@ -180,7 +145,7 @@ async function recoverMatch(
     log.success(`[Recovery] Successfully recovered match ${match.slug}`, {
       stateSynced: result.stateSynced,
       webhookReconfigured: result.webhookReconfigured,
-      demoReconfigured: result.demoReconfigured,
+      demoUploadReconfigured: result.demoUploadReconfigured,
     });
   } catch (error) {
     result.error = error instanceof Error ? error.message : String(error);

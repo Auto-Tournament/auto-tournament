@@ -254,14 +254,24 @@ Admins can:
 
 ## Security
 
-!!! success "Turn-Based Enforcement" - Backend validates which team is making each action - Returns `403 Forbidden` if wrong team tries to act - Frontend disables UI when it's not your turn - No way for teams to cheat or act out of order
+!!! success "Turn-Based Enforcement"
+    - Backend validates which team is making each action (based on the configured veto order).
+    - Returns `403 Forbidden` if the wrong team tries to act.
+    - Frontend disables the UI when it’s not your turn.
+    - No way for teams to cheat or act out of order from the UI.
 
-!!! info "No Authentication Required"
-Team pages are public (no login). Security is based on:
+!!! info "Player & Spectator Views"
+    - Team pages remain publicly reachable, but **sensitive controls are gated by Steam login**.
+    - Only logged‑in players whose Steam ID is on one of the two teams can:
+        - See the full interactive veto UI.
+        - Perform ban/pick/side pick actions via `/api/veto/{matchSlug}/action`.
+    - Spectators (or logged‑in users not on either team) can still see:
+        - The matchup (Team A vs Team B).
+        - The final picked map(s) once veto is complete.
+      But they **never** see:
+        - Veto controls (no ban/pick buttons).
+        - Server connection details (IP/port, connect commands).
 
-    - **Team identification** from URL (`/team/team-alpha/match`)
-    - **Turn validation** on backend
-    - **Visual UI hints** on frontend
 
 ---
 

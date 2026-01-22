@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
-import { getAuthHeader } from '../helpers/auth';
 import { createTestServer, deleteServer, type Server } from '../helpers/servers';
 
 /**
@@ -30,10 +29,8 @@ test.describe.serial('Server API', () => {
     expect(server?.name).toBeTruthy();
     createdServer = server;
 
-    // Verify server exists via API
-    const getResponse = await request.get(`/api/servers/${server!.id}`, {
-      headers: { Authorization: `Bearer ${context.apiToken}` },
-    });
+      // Verify server exists via API
+      const getResponse = await request.get(`/api/servers/${server!.id}`);
     expect(getResponse.ok()).toBeTruthy();
     const serverData = await getResponse.json();
     expect(serverData.server.id).toBe(server!.id);
@@ -43,10 +40,8 @@ test.describe.serial('Server API', () => {
     const deleteResult = await deleteServer(request, server!.id);
     expect(deleteResult).toBe(true);
 
-    // Verify server is deleted (with auth header)
-    const getDeletedResponse = await request.get(`/api/servers/${server!.id}`, {
-      headers: getAuthHeader(),
-    });
+      // Verify server is deleted
+      const getDeletedResponse = await request.get(`/api/servers/${server!.id}`);
     expect(getDeletedResponse.status()).toBe(404);
   });
 });

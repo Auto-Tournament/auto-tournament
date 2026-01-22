@@ -53,7 +53,11 @@ export default function Maps() {
           variant="contained"
           size="small"
           startIcon={<AddIcon />}
-          onClick={() => handleOpenModal()}
+          onClick={() => {
+            setEditingMap(null);
+            setModalOpen(true);
+            setActionsModalOpen(false);
+          }}
         >
           {t('mapsPage.headerActions.addMap')}
         </Button>
@@ -63,7 +67,11 @@ export default function Maps() {
           variant="contained"
           size="small"
           startIcon={<AddIcon />}
-          onClick={() => handleOpenMapPoolModal()}
+          onClick={() => {
+            setEditingMapPool(null);
+            setMapPoolModalOpen(true);
+            setPoolActionsModalOpen(false);
+          }}
         >
           {t('mapsPage.headerActions.createMapPool')}
         </Button>
@@ -73,7 +81,7 @@ export default function Maps() {
     return () => {
       setHeaderActions(null);
     };
-  }, [activeTab, setHeaderActions, t, handleOpenModal, handleOpenMapPoolModal]);
+  }, [activeTab, setHeaderActions, t]);
 
   const loadMaps = useCallback(async () => {
     try {

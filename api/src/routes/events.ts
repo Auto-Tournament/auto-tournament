@@ -1,6 +1,15 @@
 /**
  * Events Routes
  * Handles MatchZy webhook events
+ * 
+ * MatchZy Enhanced Retry System:
+ * - Events are automatically retried on failure with exponential backoff
+ * - Local queue on server survives API downtime
+ * - Return 200 OK: Event successfully received (MatchZy marks as sent)
+ * - Return 4xx: Validation error (MatchZy will still retry)
+ * - Return 5xx: Server error (MatchZy retries with exponential backoff)
+ * - Retry schedule: 30s, 1m, 2m, 4m, 8m, 16m, 32m (max 20 attempts)
+ * - No events lost during API outages!
  */
 
 import { Router, Request, Response } from 'express';
@@ -21,6 +30,7 @@ import {
   type MatchReport,
 } from '../services/connectionSnapshotService';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
+import { serverTrackingService, type ServerConfiguredEvent } from '../services/serverTrackingService';
 
 const router = Router();
 
@@ -188,12 +198,33 @@ async function handleEventRequest(
       })`
     );
 
+    // Handle server_configured event from MatchZy Enhanced
+    // Sent when server is configured with webhook URL or on startup
+    if (event.event === 'server_configured') {
+      await serverTrackingService.handleServerConfigured(event as ServerConfiguredEvent);
+      
+      // Update heartbeat immediately
+      if (serverId && serverId !== 'unknown') {
+        await serverTrackingService.updateHeartbeat(serverId);
+      }
+      
+      return res.status(200).json({
+        success: true,
+        message: 'Server registered successfully',
+      });
+    }
+
     // Handle special connectivity test events from MatchZy.
     // These are used to verify that the server can reach our /api/events endpoint.
     if (event.event === 'test_event' || event.event === 'MatchZyTestEvent') {
       if (serverId && serverId !== 'unknown') {
         recordServerTestEvent(serverId);
       }
+    }
+    
+    // Update server heartbeat for ALL events (shows server is alive)
+    if (serverId && serverId !== 'unknown') {
+      await serverTrackingService.updateHeartbeat(serverId);
     }
 
     // Emit server-level event for admin monitoring UI (Server Events Monitor).
@@ -252,17 +283,20 @@ async function handleEventRequest(
     // Emit real-time event via Socket.io
     emitMatchEvent(actualMatchSlug, event);
 
-    // Respond to MatchZy
+    // Respond to MatchZy - 200 OK tells MatchZy the event was successfully received
     return res.status(200).json({
       success: true,
       message: 'Event received',
     });
   } catch (error) {
     log.error('Error processing MatchZy event', error);
-    // Still return 200 to prevent MatchZy from retrying
-    return res.status(200).json({
+    
+    // Return 500 so MatchZy's automatic retry system will queue this event
+    // and retry with exponential backoff. This ensures no events are lost
+    // during temporary API issues (database timeouts, memory issues, etc.)
+    return res.status(500).json({
       success: false,
-      error: 'Error processing event',
+      error: 'Internal server error - event will be retried by MatchZy',
     });
   }
 }

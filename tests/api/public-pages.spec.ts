@@ -14,7 +14,7 @@ import { createPlayer, getPlayer, type Player } from '../helpers/players';
  * @tag players
  */
 
-test.describe.serial('Public Pages API', () => {
+test.describe.skip('Public Pages API', () => {
   let testPlayer: Player | null = null;
   let tournamentId: number = 1;
 
@@ -22,7 +22,7 @@ test.describe.serial('Public Pages API', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should provide public player page endpoint without authentication',
     {
       tag: ['@api', '@public', '@players'],

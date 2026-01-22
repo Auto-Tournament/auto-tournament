@@ -35,6 +35,7 @@ interface PlayerSelectionModalProps {
   onSelect: (playerIds: string[]) => void; // Called with selected player IDs
   title?: string; // Optional custom title
   confirmButtonText?: string; // Optional custom confirm button text
+  maxSelection?: number; // Optional maximum number of selectable players
 }
 
 export default function PlayerSelectionModal({
@@ -45,6 +46,7 @@ export default function PlayerSelectionModal({
   onSelect,
   title,
   confirmButtonText,
+  maxSelection,
 }: PlayerSelectionModalProps) {
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<PlayerDetail[]>([]);
@@ -140,6 +142,10 @@ export default function PlayerSelectionModal({
     if (newSelected.has(playerId)) {
       newSelected.delete(playerId);
     } else {
+      // Enforce maxSelection when adding new IDs
+      if (typeof maxSelection === 'number' && maxSelection > 0 && newSelected.size >= maxSelection) {
+        return;
+      }
       newSelected.add(playerId);
     }
     setSelectedIds(newSelected);
@@ -157,6 +163,8 @@ export default function PlayerSelectionModal({
 
   const isPlayerInTeam = (playerId: string) => teamPlayerIds.has(playerId);
   const isPlayerSelected = (playerId: string) => selectedIds.has(playerId);
+  const atMaxSelection =
+    typeof maxSelection === 'number' && maxSelection > 0 && selectedIds.size >= maxSelection;
 
   return (
     <Dialog
@@ -211,6 +219,19 @@ export default function PlayerSelectionModal({
                 showWarning(t('playerSelectionModal.errors.noSelectable'));
                 return;
               }
+
+              // For constrained selection (e.g. replacing a single player),
+              // "Select all" becomes "pick the first available".
+              if (typeof maxSelection === 'number' && maxSelection === 1) {
+                const first = selectablePlayers[0];
+                if (!first) {
+                  showWarning(t('playerSelectionModal.errors.noSelectable'));
+                  return;
+                }
+                setSelectedIds(new Set([first.id]));
+                return;
+              }
+
               const allSelectableIds = selectablePlayers.map((p) => p.id);
               const allSelected = allSelectableIds.every((id) => selectedIds.has(id));
               const newSelected = new Set(selectedIds);
@@ -219,7 +240,7 @@ export default function PlayerSelectionModal({
                 // Deselect all selectable players
                 allSelectableIds.forEach((id) => newSelected.delete(id));
               } else {
-                // Select all selectable players
+                // Select all selectable players (unconstrained mode)
                 allSelectableIds.forEach((id) => newSelected.add(id));
               }
               setSelectedIds(newSelected);
@@ -240,6 +261,12 @@ export default function PlayerSelectionModal({
               const allSelectableIds = selectablePlayers.map((p) => p.id);
               const allSelected =
                 allSelectableIds.length > 0 && allSelectableIds.every((id) => selectedIds.has(id));
+
+              if (typeof maxSelection === 'number' && maxSelection === 1) {
+                // When maxSelection is 1, this effectively means "pick one"
+                return t('playerSelectionModal.selectAll.select');
+              }
+
               return allSelected
                 ? t('playerSelectionModal.selectAll.deselect')
                 : t('playerSelectionModal.selectAll.select');
@@ -273,35 +300,43 @@ export default function PlayerSelectionModal({
                 const inTeam = isPlayerInTeam(player.id);
                 const selected = isPlayerSelected(player.id);
                 const disabled = inTeam && !selected; // Can't select if already in team (unless already selected)
+                const selectionLockedForOthers = atMaxSelection && !selected;
+                const checkboxVisible = !selectionLockedForOthers;
 
                 return (
                   <Grid size={{ xs: 12, sm: 6, md: 4 }} key={player.id}>
                     <Card
                       sx={{
-                        cursor: disabled ? 'not-allowed' : 'pointer',
-                        opacity: disabled ? 0.6 : 1,
+                        cursor: disabled || selectionLockedForOthers ? 'not-allowed' : 'pointer',
+                        opacity: disabled || selectionLockedForOthers ? 0.6 : 1,
                         border: selected ? 2 : 1,
                         borderColor: selected ? 'primary.main' : 'divider',
                         bgcolor: selected ? 'action.selected' : 'background.paper',
                         transition: 'all 0.2s',
-                        '&:hover': disabled
+                        '&:hover': disabled || selectionLockedForOthers
                           ? {}
                           : {
                               borderColor: 'primary.main',
                               boxShadow: 2,
                             },
                       }}
-                      onClick={() => !disabled && handleTogglePlayer(player.id)}
+                      onClick={() =>
+                        !disabled && !selectionLockedForOthers && handleTogglePlayer(player.id)
+                      }
                     >
                       <CardContent>
                         <Box display="flex" alignItems="center" gap={2}>
-                          <Checkbox
-                            checked={selected}
-                            disabled={disabled}
-                            onChange={() => !disabled && handleTogglePlayer(player.id)}
-                            onClick={(e) => e.stopPropagation()}
-                            sx={{ p: 0 }}
-                          />
+                          {checkboxVisible && (
+                            <Checkbox
+                              checked={selected}
+                              disabled={disabled}
+                              onChange={() =>
+                                !disabled && !selectionLockedForOthers && handleTogglePlayer(player.id)
+                              }
+                              onClick={(e) => e.stopPropagation()}
+                              sx={{ p: 0 }}
+                            />
+                          )}
                           <PlayerAvatar
                             id={player.id}
                             name={player.name}

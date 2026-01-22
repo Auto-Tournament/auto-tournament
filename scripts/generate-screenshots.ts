@@ -21,7 +21,7 @@
  *
  * Environment variables:
  *   PLAYWRIGHT_BASE_URL - Base URL of the application (default: http://localhost:3069)
- *   API_TOKEN - API token for authentication (default: admin123)
+ *   TEST_STEAM_ID       - Optional Steam ID to use for the test admin account
  */
 
 import { chromium, Page, APIRequestContext } from 'playwright';
@@ -36,7 +36,6 @@ import { generatePlayerProfile } from '../api/src/generation/playerProfile';
 const SCREENSHOT_WIDTH = 2560;
 const SCREENSHOT_HEIGHT = 1440;
 const BASE_URL = process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069';
-const API_TOKEN = process.env.API_TOKEN || 'admin123';
 const SCREENSHOT_DIR = path.join(process.cwd(), 'docs', 'assets', 'preview');
 
 // Logging configuration – all console output is also written to log files
@@ -280,11 +279,14 @@ async function wipeDatabase(request: APIRequestContext): Promise<boolean> {
  */
 async function signIn(page: Page): Promise<void> {
   await page.goto(`${BASE_URL}/`);
-  await page.evaluate((token) => {
-    // eslint-disable-next-line no-undef
-    localStorage.setItem('api_token', token);
-  }, API_TOKEN);
-  await page.reload();
+  // Use the same test helper endpoint as Playwright tests to create an admin session.
+  const response = await page.request.post('/api/test/login-admin', {
+    data: { steamId: process.env.TEST_STEAM_ID || '76561198000000001' },
+  });
+  if (!response.ok()) {
+    throw new Error(`Failed to create admin session for screenshots: ${response.status()} ${await response.text()}`);
+  }
+  await page.goto(`${BASE_URL}/`);
   await page.waitForLoadState('networkidle');
 }
 

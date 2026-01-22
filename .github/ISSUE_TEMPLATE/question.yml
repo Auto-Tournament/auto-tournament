@@ -1,0 +1,83 @@
+name: ❓ Question
+description: Ask a question about usage, configuration, or how things work
+title: "[QUESTION] "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Have a question? We're here to help! Please check the documentation first, then fill out the details below.
+
+  - type: textarea
+    id: question
+    attributes:
+      label: ❓ Your Question
+      description: What would you like to know?
+      placeholder: |
+        Example: "How do I configure custom veto orders for different tournament formats? I want BO1 to use a different ban sequence than BO3."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: 🎯 Context
+      description: What are you trying to accomplish?
+      placeholder: |
+        Example: "I'm setting up a tournament where BO1 matches should have each team ban 2 maps before picking sides, but BO3 matches should use the standard ban-ban-pick-ban-ban-pick-decider format."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: documentation-checked
+    attributes:
+      label: 📚 Documentation Checked
+      description: Please confirm you've checked these resources first
+      options:
+        - label: I've checked the README
+          required: false
+        - label: I've checked the documentation at https://mat.sivert.io/
+          required: false
+        - label: I've searched existing issues and discussions
+          required: true
+
+  - type: dropdown
+    id: topic
+    attributes:
+      label: Question Category
+      description: What topic is your question about?
+      options:
+        - Tournament setup and configuration
+        - Server setup and RCON
+        - Veto and map selection
+        - Player/team management
+        - Authentication and SSO
+        - WebSocket and real-time updates
+        - Docker deployment
+        - Local development
+        - API usage
+        - Other / Not sure
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: 🖥️ Environment (if relevant)
+      description: Optional - provide environment details if they're relevant to your question
+      placeholder: |
+        - Deployment: Docker / Local
+        - Runtime: Bun 1.0.20 / Node.js 20.11.0
+        - MatchZy Version: v1.3.6
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-info
+    attributes:
+      label: 📎 Additional Information
+      description: Any other relevant details, screenshots, or configuration snippets
+      placeholder: |
+        Example: "Here's my current tournament settings JSON..."
+    validations:
+      required: false

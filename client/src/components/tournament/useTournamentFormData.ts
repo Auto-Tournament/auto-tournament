@@ -22,11 +22,7 @@ export function useTournamentFormData({
 
   const refreshServers = useCallback(async () => {
     try {
-      const serversResponse = await fetch('/api/servers', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('api_token')}`,
-        },
-      });
+      const serversResponse = await fetch('/api/servers');
       const serversData = await serversResponse.json();
       const enabledServers = (serversData.servers || []).filter(
         (s: { enabled: boolean }) => s.enabled
@@ -41,11 +37,7 @@ export function useTournamentFormData({
     const loadData = async () => {
       try {
         // Load servers
-        const serversResponse = await fetch('/api/servers', {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem('api_token')}`,
-          },
-        });
+        const serversResponse = await fetch('/api/servers');
         const serversData = await serversResponse.json();
         const enabledServers = (serversData.servers || []).filter(
           (s: { enabled: boolean }) => s.enabled

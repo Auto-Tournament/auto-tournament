@@ -4,6 +4,7 @@ import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
+import { matchzyConfigService } from './matchzyConfigService';
 
 /**
  * Determine whether matches should be simulated (bots instead of real players).
@@ -233,8 +234,14 @@ export const generateMatchConfig = async (
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const maxRounds = resolveMaxRounds(tournament);
+  
+  // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type
+  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
+  
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
+    // Add MatchZy Enhanced cvars
+    ...matchzyEnhancedCvars,
   };
 
   const config: MatchConfig = {
@@ -311,6 +318,7 @@ export const generateMatchConfig = async (
     map_sides: config.map_sides,
     maxRounds,
     cvars,
+    matchzyProfile: matchzyConfigService.getProfileForTournamentType(tournament.type),
     team1: config.team1.name,
     team2: config.team2.name,
   });
@@ -411,8 +419,14 @@ async function generateShuffleMatchConfig(
   // IMPORTANT: This code is ONLY allowed to set cvars["mp_maxrounds"].
   // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
   const maxRounds = resolveMaxRounds(tournament);
+  
+  // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type (shuffle)
+  const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars('shuffle');
+  
   const cvars: Record<string, string | number> = {
     mp_maxrounds: maxRounds,
+    // Add MatchZy Enhanced cvars
+    ...matchzyEnhancedCvars,
   };
 
   const simulation = await getSimulationFlag();
@@ -497,6 +511,7 @@ async function generateShuffleMatchConfig(
     team2: config.team2.name,
     maxRounds,
     cvars,
+    matchzyProfile: 'shuffle',
   });
 
   return config;

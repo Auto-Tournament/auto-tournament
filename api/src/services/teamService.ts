@@ -50,10 +50,21 @@ class TeamService {
 
   /**
    * Enrich players with Steam avatars
-   * Fetches avatars for players that don't have one yet
-   * Gracefully handles Steam API unavailability
+   * Fetches avatars for players that don't have one yet.
+   *
+   * When creating purely local/dev data (like the test teams created from the
+   * Dev Tools page, which use IDs prefixed with "test-team-"), we explicitly
+   * skip any Steam Web API calls and rely on the UI's generated avatars /
+   * deterministic SVGs instead. This avoids network noise and failures when
+   * running without a Steam API key.
    */
-  private async enrichPlayersWithAvatars(players: Player[]): Promise<Player[]> {
+  private async enrichPlayersWithAvatars(
+    players: Player[],
+    options?: { skipSteamAvatar?: boolean }
+  ): Promise<Player[]> {
+    if (options?.skipSteamAvatar) {
+      return players;
+    }
     // Check if Steam API is available
     const isSteamAvailable = await steamService.isAvailable();
     if (!isSteamAvailable) {
@@ -121,8 +132,13 @@ class TeamService {
     // Validate no duplicate Steam IDs
     this.validateNoDuplicatePlayers(input.players);
 
-    // Enrich players with avatars from Steam API
-    const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
+    // Enrich players with avatars from Steam API.
+    // For dev/test teams created via the Development tools (IDs prefixed with
+    // "test-team-"), we skip Steam avatar lookups entirely and rely on the
+    // frontend's generated avatars / SVG fallback instead.
+    const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players, {
+      skipSteamAvatar: input.id.startsWith('test-team-'),
+    });
 
     // Auto-create players in players table (for shuffle tournaments)
     for (const player of enrichedPlayers) {
@@ -188,8 +204,12 @@ class TeamService {
     if (input.tag !== undefined) updateData.tag = input.tag || null;
     if (input.discordRoleId !== undefined) updateData.discord_role_id = input.discordRoleId || null;
     if (input.players !== undefined) {
-      // Enrich players with avatars from Steam API
-      const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players);
+      // Enrich players with avatars from Steam API. For test/dev teams created
+      // from the Dev Tools page (IDs starting with "test-team-"), skip Steam
+      // lookups so local development and CI don't depend on the Steam Web API.
+      const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players, {
+        skipSteamAvatar: id.startsWith('test-team-'),
+      });
       
       // Auto-create players in players table (for shuffle tournaments)
       for (const player of enrichedPlayers) {

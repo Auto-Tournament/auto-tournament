@@ -15,6 +15,7 @@ export interface RconCommandResponse {
   response?: string;
   error?: string;
   timestamp: number;
+  ipBanned?: boolean; // True if server has likely banned our IP
 }
 
 export interface RconBroadcastRequest {

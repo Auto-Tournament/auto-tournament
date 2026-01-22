@@ -886,7 +886,15 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
       if (tournament?.type === 'shuffle') {
         await checkAndAdvanceShuffleRound(match.round);
       }
-      await checkTournamentCompletion();
+      await checkTournamentCompletion(match.tournament_id ?? 1);
+
+      // Trigger immediate allocation for drawn matches too
+      if (match.server_id) {
+        serverAllocationTracker.markIdle(match.server_id);
+        setImmediate(() => {
+          void matchAllocationService.tryImmediateAllocation();
+        });
+      }
 
       return;
     }
@@ -915,6 +923,13 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     // it as idle in our internal tracker so that future allocation passes and
     // polling attempts will once again consider it for new matches.
     serverAllocationTracker.markIdle(match.server_id);
+
+    // Trigger immediate allocation attempt for any waiting matches now that
+    // a server has become available. This ensures we don't sit idle waiting
+    // for the next polling cycle (which could be 10-30 seconds away).
+    setImmediate(() => {
+      void matchAllocationService.tryImmediateAllocation();
+    });
   }
 
   // Progression / bracket wiring
@@ -1019,7 +1034,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   }
 
   // Check if tournament is complete
-  await checkTournamentCompletion();
+  await checkTournamentCompletion(match.tournament_id ?? 1);
 }
 
 /**

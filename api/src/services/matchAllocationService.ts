@@ -93,8 +93,12 @@ export class MatchAllocationService {
   }> {
     const enabledServers = await serverService.getAllServers(true);
 
+    // Filter out unconfigured servers from allocation status
+    // These servers haven't sent any events yet and cannot be used
+    const configuredServers = enabledServers.filter((server) => server.lastSeen !== null);
+
     // For the high‑level allocation *status* view we intentionally include all
-    // enabled servers, even if the in‑memory allocation tracker currently
+    // configured servers, even if the in‑memory allocation tracker currently
     // considers them "busy" or "preparing". The tracker is an optimisation
     // aid for the allocator itself, but the authoritative truth about whether
     // a server is actually idle comes from MatchZy's ConVars plus our DB
@@ -102,21 +106,11 @@ export class MatchAllocationService {
     // we ensure that UIs – including the manual match creator – always see a
     // complete snapshot of online servers together with their allocatable flag.
     const statusChecks = await Promise.all(
-      enabledServers.map(async (server) => {
+      configuredServers.map(async (server) => {
         try {
-          const connectionResult = await rconService.testConnection(server.id);
-
-          if (!connectionResult.success) {
-            return {
-              server,
-              status: null as ServerStatus | null,
-              matchSlug: null as string | null,
-              updatedAt: null as number | null,
-              online: false,
-            };
-          }
-
-          const serverStatus = await serverStatusService.getServerStatus(server.id);
+          // Use the short-lived status cache for availability checks so we don't
+          // block the entire API on fresh RCON calls every time the UI polls.
+          const serverStatus = await serverStatusService.getServerStatus(server.id, true);
           return {
             server,
             ...serverStatus,
@@ -139,17 +133,30 @@ export class MatchAllocationService {
     // highlight potential mismatches, but we no longer block allocatability
     // purely on the DB view. This avoids servers getting "stuck" as busy in
     // the UI after manual restarts when the plugin reports them as idle.
-    const dbBusyRows = await db.queryAsync<{ server_id: string; slug: string }>(
-      `SELECT server_id, slug
+    const dbBusyRows = await db.queryAsync<{ 
+      server_id: string; 
+      slug: string;
+      match_number: number;
+      round: number;
+    }>(
+      `SELECT server_id, slug, match_number, round
          FROM matches
         WHERE server_id IS NOT NULL
           AND server_id != ''
           AND status IN ('loaded', 'live')`
     );
-    const dbBusyByServer = new Map<string, { slug: string }>();
+    const dbBusyByServer = new Map<string, { 
+      slug: string;
+      matchNumber: number;
+      round: number;
+    }>();
     for (const row of dbBusyRows) {
       if (row.server_id && !dbBusyByServer.has(row.server_id)) {
-        dbBusyByServer.set(row.server_id, { slug: row.slug });
+        dbBusyByServer.set(row.server_id, { 
+          slug: row.slug,
+          matchNumber: row.match_number,
+          round: row.round,
+        });
       }
     }
 
@@ -167,6 +174,8 @@ export class MatchAllocationService {
       online: boolean;
       status: ServerStatus | null;
       matchSlug: string | null;
+      matchNumber: number | null;
+      matchRound: number | null;
       updatedAt: number | null;
       inGraceWindow: boolean;
       secondsUntilReady: number | null;
@@ -187,13 +196,15 @@ export class MatchAllocationService {
       const dbBusy = dbBusyByServer.get(server.id) || null;
       const effectiveMatchSlug = matchSlug || dbBusy?.slug || null;
 
-      // Follow MatchZy guidance strictly: only treat explicit "idle" as
-      // allocatable. All other states (including "postgame") remain busy.
-      // If the plugin says the server is idle but our DB still has a
-      // loaded/live match attached, we now trust the plugin and allow
-      // allocation, while still showing the DB match slug in the metadata
-      // so admins can see the mismatch.
-      const isIdle = status === ServerStatus.IDLE;
+      // Determine if server is truly idle:
+      // - Plugin must report IDLE status
+      // - AND database must not show a loaded/live match
+      // This prevents servers from showing as "Available" when they have
+      // a match in warmup but the plugin hasn't updated the ConVar yet.
+      const pluginSaysIdle = status === ServerStatus.IDLE;
+      const dbSaysBusy = dbBusy !== null;
+      const isIdle = pluginSaysIdle && !dbSaysBusy;
+      
       let inGraceWindow = false;
       let secondsUntilReady: number | null = null;
       let allocatable = false;
@@ -234,12 +245,18 @@ export class MatchAllocationService {
         online,
         status: status ?? null,
         matchSlug: effectiveMatchSlug,
+        matchNumber: dbBusy?.matchNumber ?? null,
+        matchRound: dbBusy?.round ?? null,
         updatedAt: updatedAt ?? null,
         inGraceWindow,
         secondsUntilReady,
         allocatable,
       });
     }
+
+    // How many matches are currently waiting for servers (ready + no server_id)
+    const readyMatches = await this.getReadyMatches();
+    const requiredServerCount = readyMatches.length;
 
     // This method is called both by UI endpoints and allocator helpers; only
     // emit a summary when there is contention so logs stay readable.
@@ -256,10 +273,6 @@ export class MatchAllocationService {
         );
       }
     }
-
-    // How many matches are currently waiting for servers (ready + no server_id)
-    const readyMatches = await this.getReadyMatches();
-    const requiredServerCount = readyMatches.length;
 
     return {
       availableServerCount,
@@ -282,11 +295,24 @@ export class MatchAllocationService {
   async getAvailableServers(): Promise<ServerResponse[]> {
     const enabledServers = await serverService.getAllServers(true); // Get only enabled servers
 
+    // Filter out unconfigured servers (never sent server_configured event)
+    // These servers cannot be used for matches until they've been initialized
+    // and have sent their first event (which sets lastSeen timestamp)
+    const configuredServers = enabledServers.filter((server) => {
+      if (!server.lastSeen) {
+        log.debug(
+          `[ALLOCATION] Skipping unconfigured server ${server.id} (${server.name}) - no events received yet`
+        );
+        return false;
+      }
+      return true;
+    });
+
     // We intentionally do NOT pre‑filter enabled servers by DB "busy" state
     // here. Instead we trust the MatchZy tournament status convars as the
     // authoritative view: if the plugin reports the server as idle, we allow
     // allocation even if our DB still has legacy loaded/live matches attached.
-    const candidateServers = enabledServers;
+    const candidateServers = configuredServers;
 
     // Check each server's MatchZy tournament status
     const statusChecks = await Promise.all(
@@ -352,6 +378,16 @@ export class MatchAllocationService {
       : MatchAllocationService.ALLOCATION_GRACE_PERIOD_SECONDS;
     const now = Math.floor(Date.now() / 1000);
 
+    // Check database for matches that are currently loaded/live on servers
+    const dbBusyRows = await db.queryAsync<{ server_id: string; slug: string }>(
+      `SELECT server_id, slug
+         FROM matches
+        WHERE server_id IS NOT NULL
+          AND server_id != ''
+          AND status IN ('loaded', 'live')`
+    );
+    const dbBusyServers = new Set(dbBusyRows.map((row) => row.server_id));
+
     // Filter servers based on MatchZy tournament status
     const availableServers: ServerResponse[] = [];
     for (const check of onlineServers) {
@@ -362,6 +398,15 @@ export class MatchAllocationService {
       if (status !== ServerStatus.IDLE) {
         log.debug(
           `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
+        );
+        continue;
+      }
+
+      // Also check database - if DB shows a loaded/live match, don't allocate
+      // even if plugin says idle (prevents race conditions during warmup)
+      if (dbBusyServers.has(server.id)) {
+        log.debug(
+          `Server ${server.id} (${server.name}) not available: database shows loaded/live match`
         );
         continue;
       }
@@ -1045,6 +1090,38 @@ export class MatchAllocationService {
     log.info(`Tournament: ${tournament.name} (${tournament.type}, ${tournament.format})`);
     log.info(`Current status: ${tournament.status}`);
     log.info(`Teams: ${tournament.teamIds.length}`);
+
+    // Hard safety check: ensure all referenced teams still exist at the moment
+    // the tournament is started. This prevents brackets from silently using
+    // "ghost" teams that were deleted or renamed after initial setup.
+    if (tournament.type !== 'shuffle' && tournament.teamIds.length > 0) {
+      const teamIds = tournament.teamIds;
+      const placeholders = teamIds.map(() => '?').join(',');
+      const existingTeams = await db.queryAsync<{ id: string }>(
+        `SELECT id FROM teams WHERE id IN (${placeholders})`,
+        teamIds
+      );
+      const existingIds = new Set(existingTeams.map((t) => t.id));
+      const missingIds = teamIds.filter((id) => !existingIds.has(id));
+
+      if (missingIds.length > 0) {
+        const message =
+          missingIds.length === 1
+            ? `Cannot start tournament: team '${missingIds[0]}' no longer exists. Update the Teams list on the tournament setup page and regenerate the bracket.`
+            : `Cannot start tournament: ${missingIds.length} teams referenced by this tournament no longer exist (${missingIds.join(
+                ', '
+              )}). Update the Teams list on the tournament setup page and regenerate the bracket.`;
+
+        log.warn('[TOURNAMENT] Start rejected due to missing teams', { missingIds });
+        return {
+          success: false,
+          message,
+          allocated: 0,
+          failed: 0,
+          results: [],
+        };
+      }
+    }
 
     if (tournament.status === 'completed') {
       log.warn('Tournament is already completed');
@@ -1787,6 +1864,57 @@ export class MatchAllocationService {
     }
 
     return match;
+  }
+
+  /**
+   * Attempt immediate allocation for all ready matches.
+   * This should be called when servers become available (match completes, deleted, etc.)
+   * to avoid waiting for the next polling cycle.
+   */
+  async tryImmediateAllocation(): Promise<void> {
+    try {
+      const webhookUrl = await settingsService.getWebhookUrl();
+      if (!webhookUrl) {
+        return;
+      }
+
+      const readyMatches = await this.getReadyMatches();
+      if (readyMatches.length === 0) {
+        return;
+      }
+
+      const availableCount = await this.getAvailableServerCount();
+      if (availableCount === 0) {
+        return;
+      }
+
+      log.info(
+        `[ALLOCATION] Triggering immediate allocation attempt for ${readyMatches.length} ready match(es) (${availableCount} server(s) available)`
+      );
+
+      // Try to allocate each ready match (will stop when no more servers available)
+      const results = await this.allocateSpecificMatches(
+        readyMatches.map((m) => m.slug),
+        webhookUrl
+      );
+
+      const successful = results.filter((r) => r.success).length;
+      if (successful > 0) {
+        log.success(`[ALLOCATION] Immediately allocated ${successful} match(es)`);
+      }
+
+      // Start polling for matches that couldn't be allocated immediately
+      const failed = results.filter((r) => !r.success);
+      if (failed.length > 0 && failed.length < readyMatches.length) {
+        // Only start polling if some (but not all) matches failed,
+        // indicating we might have servers available soon
+        for (const result of failed) {
+          this.startPollingForServer(result.matchSlug, webhookUrl);
+        }
+      }
+    } catch (error) {
+      log.error('Error in tryImmediateAllocation', error);
+    }
   }
 }
 

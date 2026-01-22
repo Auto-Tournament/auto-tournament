@@ -9,7 +9,6 @@ services:
     environment:
       - NODE_ENV=production
       - PORT=3000
-      - API_TOKEN=${API_TOKEN:-admin123}
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
       - LOG_LEVEL=${LOG_LEVEL:-debug}
       - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@SHARED_POSTGRES_HOST:SHARED_POSTGRES_PORT/SHARD_DB_NAME

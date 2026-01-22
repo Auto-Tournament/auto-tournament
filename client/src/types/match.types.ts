@@ -11,7 +11,7 @@ export interface Match {
   round: number;
   matchNumber: number;
   nextMatchId?: number | null;
-  status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed';
+  status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed' | 'cancelled';
   team1?: Team;
   team2?: Team;
   winner?: Team;
@@ -32,6 +32,7 @@ export interface Match {
   vetoCompleted?: boolean;
   mapResults?: MatchMapResult[];
   maps?: string[];
+  queuePosition?: number | null; // Position in allocation queue (1 = first in queue, null = already allocated)
 }
 
 export interface MatchConfigPlayer {
@@ -72,6 +73,16 @@ export interface MatchConfig {
    * should treat it as a fixed-map series (no veto phase).
    */
   vetoDisabled?: boolean;
+  /**
+   * MatchZy simulation mode flag.
+   * When true, the plugin runs the match in simulation mode (bots instead of human players).
+   */
+  simulation?: boolean;
+  /**
+   * Optional simulation speed multiplier for MatchZy.
+   * When provided alongside simulation: true, controls how fast the simulated match runs.
+   */
+  simulation_timescale?: number;
 }
 
 export interface PlayerStats {

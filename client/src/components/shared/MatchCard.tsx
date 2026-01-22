@@ -1,5 +1,6 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
@@ -15,6 +16,9 @@ interface MatchCardProps {
   selectable?: boolean;
   selected?: boolean;
   onToggleSelected?: () => void;
+  allocationETA?: number | null; // Estimated seconds until server allocation (null if already allocated)
+  queuePosition?: number | null; // Position in allocation queue (1 = first in queue)
+  hasAvailableServers?: boolean; // Whether there are servers available right now
 }
 
 export const MatchCard: React.FC<MatchCardProps> = ({
@@ -28,6 +32,9 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   selectable: _selectable,
   selected,
   onToggleSelected: _onToggleSelected,
+  allocationETA,
+  queuePosition,
+  hasAvailableServers,
 }) => {
   const getBorderColor = () => {
     // Bracket view / generic match card server status accents:
@@ -200,6 +207,49 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   Server: {match.serverName}
                 </Typography>
               )}
+              {!match.serverId && queuePosition !== undefined && queuePosition !== null && (
+                <Typography
+                  variant="caption"
+                  color="primary.main"
+                  display="block"
+                  fontWeight={600}
+                  sx={{ 
+                    bgcolor: 'primary.50',
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: 0.5,
+                    display: 'inline-block',
+                    mt: 0.5
+                  }}
+                >
+                  📋 Queue Position: #{queuePosition}
+                </Typography>
+              )}
+              {!match.serverId && allocationETA !== undefined && allocationETA !== null && (
+                <Typography
+                  variant="caption"
+                  color={
+                    allocationETA === -1
+                      ? 'error.main'
+                      : allocationETA === 0 && hasAvailableServers
+                      ? 'success.main'
+                      : allocationETA === 0
+                      ? 'error.main'
+                      : 'warning.main'
+                  }
+                  display="block"
+                  fontWeight={500}
+                  sx={{ mt: 0.25 }}
+                >
+                  {allocationETA === -1
+                    ? '⏸️ Waiting for servers...'
+                    : allocationETA === 0 && !hasAvailableServers
+                    ? '⏸️ Waiting for servers...'
+                    : allocationETA === 0
+                    ? '⚡ Allocating now...'
+                    : `⏳ Allocates in ${Math.floor(allocationETA / 60)}:${(allocationETA % 60).toString().padStart(2, '0')}`}
+                </Typography>
+              )}
             </Box>
           </Box>
           <Box display="flex" alignItems="center" gap={1}>
@@ -219,6 +269,15 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 sx={{ fontWeight: 500 }}
               />
             )}
+            {match.config?.simulation && (
+              <Chip
+                icon={<SmartToyIcon />}
+                label="Simulation"
+                size="small"
+                color="secondary"
+                sx={{ fontWeight: 500 }}
+              />
+            )}
             <Chip
               label={getStatusLabel(
                 match.status,
@@ -227,7 +286,21 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                 // as completed to avoid "VETO PENDING" labels on the list view.
                 vetoDisabled ? true : vetoCompleted,
                 tournamentStarted,
-                Boolean(match.serverId)
+                Boolean(match.serverId),
+                match.liveStats?.team1Score,
+                match.liveStats?.team2Score,
+                match.config?.maxRounds,
+                typeof match.config?.cvars === 'object' && match.config.cvars
+                  ? typeof (match.config.cvars as Record<string, string | number>)[
+                      'mp_overtime_maxrounds'
+                    ] === 'number'
+                    ? Number(
+                        (match.config.cvars as Record<string, string | number>)[
+                          'mp_overtime_maxrounds'
+                        ]
+                      )
+                    : undefined
+                  : undefined
               )}
               size="small"
               color={getStatusColor(match.status)}

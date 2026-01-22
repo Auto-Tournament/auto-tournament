@@ -1,65 +1,95 @@
----
-hide:
-  - navigation
-  - toc
----
-
 # MatchZy Auto Tournament
 
-Automated tournament management for Counter-Strike 2. Run CS2 tournaments from bracket creation to final scores with a single dashboard and full server integration.
+**Automated CS2 tournament platform with zero manual server configuration.**
 
-Designed to work hand-in-hand with:
-
-- **[CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/)** – multi-server CS2 deployment and management.
-- **[MatchZy Enhanced](https://me.sivert.io/)** – enhanced MatchZy plugin for in-server automation.
-
-## What it does
-
-- **Automated brackets & match flow**: Create tournaments, generate brackets, and let MAT handle match lifecycle and progression.
-- **Server allocation & monitoring**: Register CS2 servers, monitor status, and automatically load matches when servers are free.
-- **Team & player management**: Create teams, manage rosters, and keep player ratings in sync with shuffle tournaments.
-- **Public team pages & veto**: Share links so teams can view matches, run veto, and see server info without admin access.
-- **Demo uploads & match history**: Store demos and match data for later review, statistics, and recovery.
-
-See the **[Feature Overview](features/overview.md)** for a deeper look at everything MAT can do.
+---
 
 ## Quick Start
 
-For most setups, you can run MatchZy Auto Tournament with Docker:
+**Install and run in 5 minutes:**
 
 ```bash
-mkdir matchzy-tournament
-cd matchzy-tournament
-
-# 1. Create docker-compose.yml (see Getting Started for the full example)
-# 2. Then start the stack:
+git clone https://github.com/sivert-io/matchzy-auto-tournament.git
+cd matchzy-auto-tournament
+cp example.env .env
 docker compose up -d
+# Open http://localhost:3069
 ```
 
-Open `http://localhost:3069` in your browser and log in with the password you set as `API_TOKEN`.  
-Read the **[Getting Started](getting-started/quick-start.md)** guide for the complete configuration.
+[**Full Installation Guide →**](getting-started/)
+
+---
+
+## Documentation
+
+### 🎯 For Tournament Admins
+
+**Setup:**
+- [Installation](getting-started/) - Docker setup and first tournament
+- [Server Setup](getting-started/server-setup/) - CS2 server configuration
+- [Admin Settings](guides/admin-settings/) - Webhooks, maps, defaults
+
+**Running Tournaments:**
+- [Teams Guide](guides/teams/) - Creating and managing teams
+- [Creating Tournaments](guides/how-to-set-up-a-tournament/) - Tournament setup
+- [Running Matches](guides/running-matches/) - Match management
+- [Troubleshooting](guides/troubleshooting/) - Common issues
+
+### 👥 For Players
+
+Players use **team pages** (no login needed):
+```
+https://your-domain.com/team/team-name
+```
+
+Features:
+- View upcoming matches
+- Participate in map veto
+- Get server connection info
+- Monitor live scores
+
+[**Team Pages Guide →**](guides/team-pages/)
+
+### 💻 For Developers
+
+- [Contributing Guide](https://github.com/sivert-io/matchzy-auto-tournament/blob/main/.github/CONTRIBUTING.md)
+- [Architecture](development/architecture/) - System design
+- [Testing](development/testing-pr/) - Running tests
+
+---
+
+## Features
+
+**Tournament Formats:**
+- Single/Double Elimination
+- Swiss System
+- Round Robin
+- Shuffle (player-based)
+
+**Automation:**
+- Auto server allocation
+- Match loading via RCON
+- Real-time bracket updates
+- Demo recording & upload
+
+**Player Experience:**
+- FaceIT-style map veto
+- Public team pages
+- Live match tracking
+- OpenSkill-based ratings
+
+[**Full Feature List →**](features/overview/)
 
 ---
 
 ## Support
 
-- [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues) – report bugs or request features.
-- [Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) – ask questions and share ideas.
-- [Discord Community](https://discord.gg/n7gHYau7aW) – real-time support and chat with other tournament hosts.
+- 💬 [Discord Community](https://discord.gg/n7gHYau7aW)
+- 🐛 [GitHub Issues](https://github.com/sivert-io/matchzy-auto-tournament/issues)
+- 📖 [Troubleshooting Guide](guides/troubleshooting/)
 
 ---
 
-## Related projects
+## License
 
-- [CS2 Server Manager](https://sivert-io.github.io/cs2-server-manager/) – multi-server CS2 deployment and management.
-- [MatchZy Enhanced](https://me.sivert.io/) – enhanced MatchZy plugin for in-server automation.
-
----
-
-## License & credits
-
-<div align="center" markdown>
-
-MIT License • Made with :material-heart: for the CS2 community
-
-</div>
+MIT License - see [LICENSE](https://github.com/sivert-io/matchzy-auto-tournament/blob/main/LICENSE)

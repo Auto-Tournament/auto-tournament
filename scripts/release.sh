@@ -502,13 +502,19 @@ else
     # Update version in root package.json
     bump_version_file "package.json" "${CURRENT_VERSION}" "${NEW_VERSION}"
 
-    # Keep workspace versions in sync with root
-    for WS in "${WORKSPACES[@]}"; do
-        WS_PKG="${WS}/package.json"
-        if [ -f "$WS_PKG" ]; then
-            bump_version_file "$WS_PKG" "${CURRENT_VERSION}" "${NEW_VERSION}"
-        fi
-    done
+    # Keep workspace versions in sync with root using our sync script
+    echo -e "${BLUE}Syncing versions to api/package.json and client/package.json...${NC}"
+    if [ -f "scripts/sync-version.sh" ]; then
+        bash scripts/sync-version.sh
+    else
+        # Fallback: manual sync if script doesn't exist
+        for WS in "${WORKSPACES[@]}"; do
+            WS_PKG="${WS}/package.json"
+            if [ -f "$WS_PKG" ]; then
+                bump_version_file "$WS_PKG" "${CURRENT_VERSION}" "${NEW_VERSION}"
+            fi
+        done
+    fi
     
     # Update changelog.md
     echo ""
@@ -810,6 +816,15 @@ echo -e "${GREEN}✅ Tag v${NEW_VERSION} created and pushed${NC}"
 echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo -e "${BLUE}Platforms: linux/amd64, linux/arm64${NC}"
+echo ""
+
+# Ensure versions are synced before Docker build (uses the new version)
+echo -e "${BLUE}Ensuring versions are synced before Docker build...${NC}"
+if [ -f "scripts/sync-version.sh" ]; then
+    bash scripts/sync-version.sh
+else
+    echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
+fi
 echo ""
 
 # Re-check disk space before multi-platform build (requires more space)

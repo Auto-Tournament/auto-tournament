@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button } from '@mui/material';
+import { Box, Typography, Grid, LinearProgress, Snackbar, Alert, Stack, Button, Chip } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import AddIcon from '@mui/icons-material/Add';
 import { io } from 'socket.io-client';
@@ -10,10 +10,11 @@ import { CreateManualMatchModal } from '../components/modals/CreateManualMatchMo
 import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
+import { ServerAllocationWidget } from '../components/shared/ServerAllocationWidget';
 import { getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
-import type { Match, MatchEvent, MatchesResponse } from '../types';
+import type { Match, MatchEvent, MatchesResponse, ServerAvailabilityResponse } from '../types';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTranslation } from 'react-i18next';
 
@@ -36,10 +37,83 @@ export default function Matches() {
     nextAllocationInSeconds: null,
     gracePeriodSeconds: 120,
   });
+  const [serverAllocationStatus, setServerAllocationStatus] = useState<ServerAvailabilityResponse | null>(null);
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedMatchSlugs, setSelectedMatchSlugs] = useState<Set<string>>(() => new Set());
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const { t } = useTranslation();
+  
+  // Local countdown state for match allocation ETAs (match.id -> seconds remaining)
+  const [matchETAs, setMatchETAs] = useState<Map<number, number>>(new Map());
+
+  // Fetch matches
+  const fetchMatches = useCallback(async () => {
+    try {
+      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
+
+      if (data.success) {
+        const matches = data.matches || [];
+        setTournamentStatus(data.tournamentStatus || 'setup');
+
+        const hasTeams = (m: Match) => {
+          // Manual matches (round = 0) don't have bracket-seeded teams; rely on
+          // config team names, but skip pure "TBD" placeholders.
+          if (m.round === 0) {
+            const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
+            const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
+            return Boolean(
+              cfgTeam1Name &&
+                cfgTeam1Name !== 'TBD' &&
+                cfgTeam2Name &&
+                cfgTeam2Name !== 'TBD'
+            );
+          }
+
+          // Bracket / tournament matches: only consider teams truly assigned in
+          // the bracket (DB-backed team rows). This prevents future-round
+          // matches with "TBD" placeholders in config from appearing in
+          // Upcoming/Live sections.
+          return Boolean(m.team1 && m.team2);
+        };
+
+        // Upcoming matches: pending and ready (including veto phase)
+        const upcoming = matches.filter(
+          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
+        );
+
+        // Live matches: only show matches with both teams effectively assigned
+        const live = matches.filter(
+          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
+        );
+
+        // History: show all completed and cancelled matches including walkovers
+        const history = matches
+          .filter((m) => m.status === 'completed' || m.status === 'cancelled')
+          .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
+
+        setUpcomingMatches(upcoming);
+        setLiveMatches(live);
+        setMatchHistory(history);
+        // Clear any selections that no longer exist
+        setSelectedMatchSlugs((prev) => {
+          if (prev.size === 0) return prev;
+          const existingSlugs = new Set(matches.map((m) => m.slug));
+          const next = new Set<string>();
+          prev.forEach((slug) => {
+            if (existingSlugs.has(slug)) {
+              next.add(slug);
+            }
+          });
+          return next;
+        });
+      }
+    } catch (err) {
+      setError(t('matchesPage.errors.loadMatches'));
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }, [t]);
 
   // Set dynamic page title
   useEffect(() => {
@@ -174,20 +248,15 @@ export default function Matches() {
     };
   }, [fetchMatches]);
 
-  // Poll allocation status periodically so we can show a lightweight
-  // "next servers in Xs" indicator on the Matches page (mount-only).
+  // Poll allocation status periodically so we can show per-server cooldown timers
+  // and per-match allocation estimates (mount-only).
   useEffect(() => {
     const loadAllocationStatus = async () => {
       try {
-        const availability = await api.get<{
-          success: boolean;
-          availableServerCount: number;
-          gracePeriodSeconds?: number;
-          nextAllocationInSeconds?: number | null;
-          simulationEnabled?: boolean;
-        }>('/api/tournament/server-availability');
+        const availability = await api.get<ServerAvailabilityResponse>('/api/tournament/server-availability');
 
         if (availability.success) {
+          setServerAllocationStatus(availability);
           setAllocationCountdown({
             gracePeriodSeconds: availability.gracePeriodSeconds ?? 300,
             nextAllocationInSeconds:
@@ -204,7 +273,7 @@ export default function Matches() {
     void loadAllocationStatus();
     const interval = setInterval(() => {
       void loadAllocationStatus();
-    }, 30000);
+    }, 5000); // Poll more frequently (5s) for better countdown accuracy
     return () => clearInterval(interval);
   }, []);
 
@@ -253,74 +322,82 @@ export default function Matches() {
     );
   };
 
-  // Fetch matches
-  const fetchMatches = useCallback(async () => {
-    try {
-      const data = await api.get<MatchesResponse & { tournamentStatus?: string }>('/api/matches');
+  // Calculate allocation ETA for each match based on server cooldowns
+  // Returns: 0 = allocating now, positive number = cooldown seconds, -1 = waiting for busy servers
+  const getMatchAllocationETA = (matchIndex: number): number | null => {
+    if (!serverAllocationStatus) return null;
 
-      if (data.success) {
-        const matches = data.matches || [];
-        setTournamentStatus(data.tournamentStatus || 'setup');
-
-        const hasTeams = (m: Match) => {
-          // Manual matches (round = 0) don't have bracket-seeded teams; rely on
-          // config team names, but skip pure "TBD" placeholders.
-          if (m.round === 0) {
-            const cfgTeam1Name = (m.config?.team1 as { name?: string } | undefined)?.name;
-            const cfgTeam2Name = (m.config?.team2 as { name?: string } | undefined)?.name;
-            return Boolean(
-              cfgTeam1Name &&
-                cfgTeam1Name !== 'TBD' &&
-                cfgTeam2Name &&
-                cfgTeam2Name !== 'TBD'
-            );
-          }
-
-          // Bracket / tournament matches: only consider teams truly assigned in
-          // the bracket (DB-backed team rows). This prevents future-round
-          // matches with "TBD" placeholders in config from appearing in
-          // Upcoming/Live sections.
-          return Boolean(m.team1 && m.team2);
-        };
-
-        // Upcoming matches: pending and ready (including veto phase)
-        const upcoming = matches.filter(
-          (m) => (m.status === 'pending' || m.status === 'ready') && hasTeams(m)
-        );
-
-        // Live matches: only show matches with both teams effectively assigned
-        const live = matches.filter(
-          (m) => (m.status === 'live' || m.status === 'loaded') && hasTeams(m)
-        );
-
-        // History: show all completed matches including walkovers
-        const history = matches
-          .filter((m) => m.status === 'completed')
-          .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
-
-        setUpcomingMatches(upcoming);
-        setLiveMatches(live);
-        setMatchHistory(history);
-        // Clear any selections that no longer exist
-        setSelectedMatchSlugs((prev) => {
-          if (prev.size === 0) return prev;
-          const existingSlugs = new Set(matches.map((m) => m.slug));
-          const next = new Set<string>();
-          prev.forEach((slug) => {
-            if (existingSlugs.has(slug)) {
-              next.add(slug);
-            }
-          });
-          return next;
-        });
-      }
-    } catch (err) {
-      setError(t('matchesPage.errors.loadMatches'));
-      console.error(err);
-    } finally {
-      setLoading(false);
+    const { servers } = serverAllocationStatus;
+    const availableServers = servers.filter((s) => s.allocatable).length;
+    
+    // If we have enough available servers, no wait time
+    if (matchIndex < availableServers) {
+      return 0;
     }
-  }, [t]);
+
+    // Get all servers in grace window (cooling down after match completion)
+    const coolingServers = servers
+      .filter((s) => s.inGraceWindow && s.secondsUntilReady !== null)
+      .sort((a, b) => (a.secondsUntilReady || 0) - (b.secondsUntilReady || 0));
+
+    // Calculate which cooling server this match will get
+    const coolingServerIndex = matchIndex - availableServers;
+    if (coolingServerIndex < coolingServers.length) {
+      return coolingServers[coolingServerIndex].secondsUntilReady || null;
+    }
+
+    // Check if there are busy servers (with active matches, not cooling)
+    const busyServers = servers.filter((s) => s.online && !s.allocatable && !s.inGraceWindow);
+    
+    // If servers are busy with live matches, return -1 to indicate "waiting"
+    // Only show countdown when servers are actually cooling down
+    if (busyServers.length > 0 && coolingServers.length === 0) {
+      return -1; // Special value: waiting for busy servers
+    }
+
+    // No servers available and none cooling - return null
+    return null;
+  };
+
+  // Update match ETAs when server status or matches change
+  useEffect(() => {
+    if (!serverAllocationStatus) return;
+
+    const newETAs = new Map<number, number>();
+    upcomingMatches.forEach((match, index) => {
+      if (!match.serverId) {
+        const eta = getMatchAllocationETA(index);
+        if (eta !== null) {
+          newETAs.set(match.id, eta);
+        }
+      }
+    });
+    setMatchETAs(newETAs);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [serverAllocationStatus, upcomingMatches]);
+
+  // Local countdown timer for match ETAs
+  useEffect(() => {
+    if (matchETAs.size === 0) return;
+
+    const timer = setInterval(() => {
+      setMatchETAs((prev) => {
+        const next = new Map(prev);
+        let hasChanges = false;
+        
+        next.forEach((value, key) => {
+          if (value > 0) {
+            next.set(key, value - 1);
+            hasChanges = true;
+          }
+        });
+        
+        return hasChanges ? next : prev;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [matchETAs]);
 
   useEffect(() => {
     fetchMatches();
@@ -346,9 +423,12 @@ export default function Matches() {
   // Calculate global match number based on all matches
   const getGlobalMatchNumber = (match: Match, allMatches: Match[]): number => {
     // Sort all matches by round, then by matchNumber
+    // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
     const sortedMatches = [...allMatches].sort((a, b) => {
       if (a.round !== b.round) return a.round - b.round;
-      return a.matchNumber - b.matchNumber;
+      if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
+      // If round and match_number are the same (e.g., manual matches), sort by ID
+      return a.id - b.id;
     });
 
     return sortedMatches.findIndex((m) => m.id === match.id) + 1;
@@ -530,6 +610,15 @@ export default function Matches() {
         </Box>
       )}
 
+      {/* Server Allocation Status Widget */}
+      {hasMatches && serverAllocationStatus && serverAllocationStatus.servers.length > 0 && (
+        <ServerAllocationWidget
+          servers={serverAllocationStatus.servers}
+          gracePeriodSeconds={serverAllocationStatus.gracePeriodSeconds}
+          requiredServerCount={serverAllocationStatus.requiredServerCount}
+        />
+      )}
+
       {/* Status Legend */}
       {hasMatches && (
         <Box mb={3}>
@@ -618,19 +707,40 @@ export default function Matches() {
           {/* Upcoming Matches Section */}
           {upcomingMatches.length > 0 && (
             <Box>
-              <Typography variant="h6" fontWeight={600} mb={2}>
-                {t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
-              </Typography>
+              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                <Typography variant="h6" fontWeight={600}>
+                  {t('matchesPage.sections.upcoming', { count: upcomingMatches.length })}
+                </Typography>
+                {serverAllocationStatus && serverAllocationStatus.requiredServerCount > 0 && (
+                  <Chip 
+                    label={`${serverAllocationStatus.requiredServerCount} in queue`}
+                    color="primary"
+                    size="small"
+                    sx={{ fontWeight: 600 }}
+                  />
+                )}
+              </Box>
               <Grid container spacing={2}>
                 {upcomingMatches.map((match) => {
                   const matchNumber = getGlobalMatchNumber(match, allMatches);
                   const isManualMatch = isManualMatchFlag(match);
-                  const manualRoundLabel = isManualMatch
-                    ? t('matchesPage.manualMatchLabel')
-                    : undefined;
+                  // Don't show "Manual match" text - the pill is more explanatory
+                  const manualRoundLabel = undefined;
                   const tournamentStartedForCard = isManualMatch
                     ? undefined
                     : tournamentStatus === 'in_progress';
+                  
+                  // Use queue position from backend (calculated globally across all matches)
+                  const queuePosition = match.queuePosition;
+                  
+                  // Get allocation ETA from local countdown state
+                  const allocationETA = !match.serverId ? (matchETAs.get(match.id) ?? null) : null;
+                  
+                  // Check if there are servers available right now
+                  const hasAvailableServers = serverAllocationStatus
+                    ? serverAllocationStatus.availableServerCount > 0
+                    : false;
+                  
                   return (
                     <Grid size={{ xs: 12, sm: 6, md: 6, lg: 6 }} key={match.id}>
                       <MatchCard
@@ -642,6 +752,9 @@ export default function Matches() {
                         tournamentStarted={tournamentStartedForCard}
                         selectable={selectionMode && isManualMatchFlag(match)}
                         selected={selectedMatchSlugs.has(match.slug)}
+                        queuePosition={queuePosition}
+                        allocationETA={allocationETA}
+                        hasAvailableServers={hasAvailableServers}
                         onClick={() => {
                           if (selectionMode && isManualMatchFlag(match)) {
                             toggleMatchSelected(match);

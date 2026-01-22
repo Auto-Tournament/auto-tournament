@@ -17,11 +17,7 @@ import { initializeSocket } from './services/socketService';
 import { serverService } from './services/serverService';
 import { rconService } from './services/rconService';
 import { settingsService } from './services/settingsService';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyLoadMatchAuthCommands,
-  getMatchZyReportUploadCommands,
-} from './utils/matchzyRconCommands';
+import { serverInitializationService } from './services/serverInitializationService';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
 import teamRoutes from './routes/teams';
@@ -45,20 +41,63 @@ import manualMatchTemplatesRoutes from './routes/manualMatchTemplates';
 import playersRoutes from './routes/players';
 import eloTemplatesRoutes from './routes/eloTemplates';
 import testRoutes from './routes/test';
-import authSteamRoutes from './routes/authSteam';
+import authRoutes from './routes/auth';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
+import { healthMonitoringService } from './services/healthMonitoringService';
 import packageJson from '../package.json';
+import { configurePassportAuth, passport } from './config/passport';
+import session from 'express-session';
+import connectPgSimple from 'connect-pg-simple';
 
 const app = express();
 const httpServer = createServer(app);
 const PORT = process.env.PORT || 3000;
+
+// Configure Passport strategies
+configurePassportAuth();
 
 // Middleware
 app.use(cors());
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Session + Passport
+const sessionSecret = process.env.SESSION_SECRET || 'matchzy-dev-session-secret';
+const PgSession = connectPgSimple(session);
+
+// Reuse the same connection string logic as the main DatabaseManager so the
+// session store talks to the exact same PostgreSQL instance with known‑good
+// credentials. This avoids subtle mismatches when DATABASE_URL is unset or
+// when individual DB_* env vars are used instead.
+const sessionDbConnectionString =
+  process.env.DATABASE_URL ||
+  `postgresql://${process.env.DB_USER || 'postgres'}:${process.env.DB_PASSWORD || 'postgres'}@${
+    process.env.DB_HOST || '127.0.0.1'
+  }:${process.env.DB_PORT || '5432'}/${process.env.DB_NAME || 'matchzy_tournament'}`;
+
+app.use(
+  session({
+    // Persist sessions in PostgreSQL so admin logins survive API restarts.
+    // Note: Session table is created by our database schema, so we don't need
+    // connect-pg-simple to create it (which would require table.sql file).
+    store: new PgSession({
+      conString: sessionDbConnectionString,
+      tableName: 'session',
+      createTableIfMissing: false, // Table is created by our schema
+    }),
+    secret: sessionSecret,
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+    },
+  })
+);
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -233,40 +272,6 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
-/**
- * @openapi
- * /api/auth/verify:
- *   get:
- *     tags:
- *       - Authentication
- *     summary: Verify authentication token
- *     description: Check if the provided token is valid
- *     security:
- *       - BearerAuth: []
- *     responses:
- *       200:
- *         description: Token is valid
- *       401:
- *         description: Token is invalid
- */
-app.get('/api/auth/verify', (req: Request, res: Response): void => {
-  const token = req.headers.authorization?.replace('Bearer ', '');
-  const validToken = process.env.API_TOKEN;
-
-  if (!token || token !== validToken) {
-    res.status(401).json({
-      success: false,
-      error: 'Invalid token',
-    });
-    return;
-  }
-
-  res.json({
-    success: true,
-    message: 'Token is valid',
-  });
-});
-
 // API Routes
 app.use('/api/servers', serverRoutes);
 app.use('/api/servers', serverStatusRoutes); // Mount status routes under /api/servers
@@ -291,7 +296,7 @@ app.use('/api/players', playersRoutes); // Player management
 app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 app.use('/api/generation', generationRoutes); // Shared name/code generators (e.g. team names)
 app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
-app.use('/api/auth', authSteamRoutes); // Steam-based player login (players only)
+app.use('/api/auth', authRoutes); // Authentication (Steam, Keycloak, Discord)
 
 // Serve frontend at /app (built client lives under api/public)
 const publicPath = path.join(__dirname, '..', 'public');
@@ -377,6 +382,10 @@ cleanupOldLogs(30);
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
+        
+        // Start health monitoring for server tracking
+        // Checks every minute to mark inactive servers as offline
+        healthMonitoringService.start();
       });
     });
 
@@ -384,6 +393,7 @@ cleanupOldLogs(30);
     process.on('SIGINT', () => {
       log.warn('Received SIGINT, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
+      healthMonitoringService.stop();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -394,6 +404,7 @@ cleanupOldLogs(30);
     process.on('SIGTERM', () => {
       log.warn('Received SIGTERM, shutting down gracefully...');
       matchAllocationService.stopAllPolling();
+      healthMonitoringService.stop();
       server.close(() => {
         db.close();
         log.server('Server closed');
@@ -413,12 +424,31 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  let baseUrl: string;
-  try {
-    baseUrl = await settingsService.requireWebhookUrl();
-  } catch {
-    log.warn('Webhook URL is not configured. Skipping automatic webhook bootstrap.');
-    return;
+  // Resolve webhook base URL from settings, and auto-seed it from FRONTEND_BASE_URL
+  // on first run if it hasn't been configured yet.
+  let baseUrl = await settingsService.getWebhookUrl();
+  if (!baseUrl) {
+    const fromEnv = process.env.FRONTEND_BASE_URL;
+    if (fromEnv && fromEnv.trim().length > 0) {
+      try {
+        await settingsService.setSetting('webhook_url', fromEnv);
+        baseUrl = await settingsService.getWebhookUrl();
+        log.success(
+          `Webhook URL was not configured; initialized from FRONTEND_BASE_URL (${baseUrl})`
+        );
+      } catch (error) {
+        log.warn(
+          'Failed to initialize webhook URL from FRONTEND_BASE_URL; skipping automatic webhook bootstrap.',
+          { error }
+        );
+        return;
+      }
+    } else {
+      log.warn(
+        'Webhook URL is not configured and FRONTEND_BASE_URL is not set. Skipping automatic webhook bootstrap.'
+      );
+      return;
+    }
   }
 
   const enabledServers = await serverService.getAllServers(true);
@@ -427,8 +457,10 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  log.info(`Bootstrapping webhooks for ${enabledServers.length} server(s)...`);
+  log.info(`Initializing persistent configuration for ${enabledServers.length} server(s)...`);
 
+  // Use serverInitializationService to ensure persistent config is sent
+  // (only once per server, unless reset). The server stores this in its database.
   for (const serverInfo of enabledServers) {
     try {
       const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
@@ -437,22 +469,11 @@ async function bootstrapServerWebhooks(): Promise<void> {
         continue;
       }
 
-      const commands = [
-        // Configure a server-specific webhook for idle/test events. When a match
-        // is loaded, matchLoadingService will override this with a match-specific URL.
-        ...getMatchZyWebhookCommands(baseUrl, serverToken, serverInfo.id),
-        ...getMatchZyLoadMatchAuthCommands(serverToken),
-        ...getMatchZyReportUploadCommands(baseUrl, serverToken, serverInfo.id),
-      ];
-
-      for (const cmd of commands) {
-        await rconService.sendCommand(serverInfo.id, cmd);
-      }
-
-      log.webhookConfigured(serverInfo.id, `${baseUrl}/api/events/${serverInfo.id}`);
-      log.success(`Auto-configured MatchZy webhook/auth for ${serverInfo.name} (${serverInfo.id})`);
+      // Initialize server with persistent configuration (idempotent - only sends if not already initialized)
+      await serverInitializationService.initializeServer(serverInfo.id, false);
+      log.success(`Initialized persistent config for ${serverInfo.name} (${serverInfo.id})`);
     } catch (error) {
-      log.warn(`Failed to auto-configure webhook for server ${serverInfo.id}`, { error });
+      log.warn(`Failed to initialize server ${serverInfo.id}`, { error });
     }
   }
 }

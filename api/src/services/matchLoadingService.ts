@@ -7,22 +7,13 @@ import { db } from '../config/database';
 import { rconService } from './rconService';
 import { emitMatchUpdate, emitBracketUpdate } from './socketService';
 import { log } from '../utils/logger';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommand,
-  getMatchZyDemoUploadCommands,
-  getMatchZyLoadMatchAuthCommands,
-  getMatchZyCoreSettingsCommands,
-  getMatchZyServerConfigCommands,
-} from '../utils/matchzyRconCommands';
 import type { DbMatchRow } from '../types/database.types';
 import type { MatchConfig } from '../types/match.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
-import { settingsService } from './settingsService';
-import type { MatchzyServerConfig } from '../types/server.types';
+import { serverInitializationService } from './serverInitializationService';
 
 export interface MatchLoadOptions {
-  skipWebhook?: boolean;
+  skipWebhook?: boolean; // Deprecated: Webhooks are now persistent, this param is ignored
   baseUrl: string;
 }
 
@@ -43,8 +34,7 @@ export async function loadMatchOnServer(
   serverId: string,
   options: MatchLoadOptions
 ): Promise<MatchLoadResult> {
-  const { skipWebhook = false, baseUrl } = options;
-  const serverToken = process.env.SERVER_TOKEN || '';
+  const { baseUrl } = options;
   const results: Array<{ success: boolean; command: string; error?: string }> = [];
 
   try {
@@ -62,262 +52,70 @@ export async function loadMatchOnServer(
     const configUrl = `${baseUrl}/api/matches/${matchSlug}.json`;
     log.debug(`Match config URL: ${configUrl}`);
 
-    let webhookConfigured = false;
-
     // Helper to add small delay between RCON commands to avoid overwhelming the server
     const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    // Configure webhook (if SERVER_TOKEN is set and not skipped)
-    if (!skipWebhook && serverToken) {
-      log.debug(`Configuring webhook for match ${matchSlug} on server ${serverId}`);
-      const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, matchSlug);
-      for (const cmd of webhookCommands) {
-        log.debug(`Sending webhook command: ${cmd}`, { serverId });
-        const result = await rconService.sendCommand(serverId, cmd);
-        results.push({
-          success: result.success,
-          command: cmd,
-          error: result.error,
-        });
-        // Small delay between commands to avoid overwhelming the server
-        await delay(200);
-      }
-      const webhookUrl = `${baseUrl}/api/events/${matchSlug}`;
-      log.webhookConfigured(serverId, webhookUrl);
-      webhookConfigured = true;
-    } else if (!skipWebhook && !serverToken) {
-      log.warn(`No SERVER_TOKEN set, skipping webhook configuration for ${serverId}`);
-    }
-
-    // Small delay before next set of commands
-    await delay(300);
-
-    // Configure demo upload URL and headers (if SERVER_TOKEN is set)
-    let demoUploadConfigured = false;
-    const uploadUrl = `${baseUrl}/api/demos/${matchSlug}/upload`;
-
-    if (serverToken) {
-      console.log('\n');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log('CONFIGURING DEMO UPLOAD');
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log(`Match Slug:   ${matchSlug}`);
-      console.log(`Server ID:    ${serverId}`);
-      console.log(`Upload URL:   ${uploadUrl}`);
-      console.log(
-        '═══════════════════════════════════════════════════════════════════════════════'
-      );
-      console.log('\n');
-
-      log.debug(`Configuring demo upload for match ${matchSlug}`, {
-        serverId,
-        uploadUrl,
+    // STEP 1: Initialize server with persistent configuration (if not already done)
+    // This sends base webhook URL, auth tokens, chat prefixes, etc.
+    // These settings persist across server restarts and only need to be sent once.
+    const initResult = await serverInitializationService.initializeServer(serverId, baseUrl);
+    if (!initResult.success && !initResult.alreadyInitialized) {
+      log.error(`Cannot load match ${matchSlug}: server initialization failed`, {
+        error: initResult.error,
       });
-
-      const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, matchSlug, serverToken);
-      let allCommandsSucceeded = true;
-      const commandErrors: string[] = [];
-
-      for (const cmd of demoUploadCommands) {
-        log.debug(`Sending demo upload command: ${cmd}`, { serverId });
-        const result = await rconService.sendCommand(serverId, cmd);
-        results.push({
-          success: result.success,
-          command: cmd,
-          error: result.error,
-        });
-        if (!result.success) {
-          allCommandsSucceeded = false;
-          if (result.error) {
-            commandErrors.push(result.error);
-          }
-        }
-        // Small delay between commands to avoid overwhelming the server
-        await delay(200);
-      }
-
-      demoUploadConfigured = allCommandsSucceeded;
-
-      if (allCommandsSucceeded) {
-        console.log('\n');
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log('DEMO UPLOAD CONFIGURED SUCCESSFULLY');
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log(`Match Slug:   ${matchSlug}`);
-        console.log(`Server ID:    ${serverId}`);
-        console.log(`Upload URL:   ${uploadUrl}`);
-        console.log(`Auth Header:  X-MatchZy-Token`);
-        console.log(
-          `Status:       MatchZy will upload demos to this URL after match/map completion`
-        );
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log('\n');
-        log.info(`[DEMO UPLOAD] Demo upload configured for match ${matchSlug} on ${serverId}`);
-      } else {
-        console.log('\n');
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log('DEMO UPLOAD CONFIGURATION FAILED');
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log(`Match Slug:     ${matchSlug}`);
-        console.log(`Server ID:      ${serverId}`);
-        console.log(`Errors:         ${commandErrors.join('; ') || 'Unknown error'}`);
-        console.log(
-          '═══════════════════════════════════════════════════════════════════════════════'
-        );
-        console.log('\n');
-        log.warn(`Failed to configure demo upload for ${matchSlug}`, {
-          errors: commandErrors,
-        });
-      }
-    } else {
-      log.warn(`No SERVER_TOKEN set, skipping demo upload header configuration for ${serverId}`);
-      // Still try to set URL without auth headers (for backward compatibility)
-      const demoUploadCommand = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
-      const demoResult = await rconService.sendCommand(serverId, demoUploadCommand);
-      results.push({
-        success: demoResult.success,
-        command: demoUploadCommand,
-        error: demoResult.error,
-      });
-      demoUploadConfigured = demoResult.success;
+      return {
+        success: false,
+        error: `Server initialization failed: ${initResult.error}`,
+        rconResponses: results,
+      };
     }
 
-    // Small delay before auth commands
-    await delay(300);
-
-    // Configure bearer token auth for match config loading (uses same SERVER_TOKEN)
-    if (serverToken) {
-      log.debug(`Configuring match config auth for ${serverId}`);
-      const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
-      for (const cmd of authCommands) {
-        log.debug(`Sending auth command: ${cmd}`, { serverId });
-        const result = await rconService.sendCommand(serverId, cmd);
-        results.push({
-          success: result.success,
-          command: cmd,
-          error: result.error,
-        });
-        // Small delay between commands
-        await delay(200);
-      }
-      log.info(`[MATCH LOADING] Match config auth configured for ${serverId}`);
+    if (initResult.alreadyInitialized) {
+      log.debug(`[MATCH LOADING] Server ${serverId} already initialized, skipping persistent config`);
     } else {
-      log.warn(`No SERVER_TOKEN set - match loading will fail. Please set SERVER_TOKEN in .env`);
+      log.success(`[MATCH LOADING] Server ${serverId} initialized with persistent configuration`);
     }
 
-    // Small delay before applying core MatchZy settings (chat prefixes, knife round default)
-    await delay(300);
-
+    // STEP 2: Apply per-match cvar overrides (if any)
+    // These are match-specific settings that override server defaults for this particular match
+    // (e.g., knife round enabled/disabled, max rounds, etc.)
     try {
-      const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled] =
-        await Promise.all([
-          settingsService.getMatchzyChatPrefix(),
-          settingsService.getMatchzyAdminChatPrefix(),
-          settingsService.isKnifeRoundEnabledByDefault(),
-          settingsService.isMatchzyDebugChatEnabled(),
-        ]);
-
-      // Global defaults applied first
-      const coreSettingsCommands = getMatchZyCoreSettingsCommands({
-        chatPrefix,
-        adminChatPrefix,
-        knifeEnabledDefault,
-        debugChatEnabled,
-      });
-
-      // Per-server overrides (if any) applied afterwards
-      let serverConfig: MatchzyServerConfig | null = null;
-      try {
-        const serverRow = await db.queryOneAsync<{ matchzy_config: string | null }>(
-          'SELECT matchzy_config FROM servers WHERE id = ?',
-          [serverId]
-        );
-        if (serverRow?.matchzy_config) {
-          serverConfig = JSON.parse(serverRow.matchzy_config) as MatchzyServerConfig;
-        }
-      } catch (configError) {
-        log.warn('Failed to load per-server MatchZy config', {
-          serverId,
-          error: configError instanceof Error ? configError.message : String(configError),
-        });
-      }
-
-      const perServerCommands = serverConfig
-        ? getMatchZyServerConfigCommands(serverConfig)
-        : [];
-
-      const allSettingsCommands = [...coreSettingsCommands, ...perServerCommands];
-
-      if (allSettingsCommands.length > 0) {
+      const parsedConfig = (match.config
+        ? (JSON.parse(match.config) as Partial<MatchConfig> & {
+            cvars?: Record<string, string | number>;
+          })
+        : {}) as { cvars?: Record<string, string | number> };
+      const cvars = parsedConfig.cvars;
+      
+      if (cvars && Object.keys(cvars).length > 0) {
         log.debug(
-          `[MATCH LOADING] Applying MatchZy settings on ${serverId} (global + per-server overrides)`
+          `[MATCH LOADING] Applying per-match cvars for ${matchSlug} on ${serverId}`,
+          { keys: Object.keys(cvars) }
         );
-        for (const cmd of allSettingsCommands) {
+        for (const [key, value] of Object.entries(cvars)) {
+          const cmd = `${key} ${value}`;
           const result = await rconService.sendCommand(serverId, cmd);
           results.push({
             success: result.success,
             command: cmd,
             error: result.error,
           });
-          // Small delay between commands
           await delay(200);
         }
       }
-
-      // Apply per-match cvar overrides from the stored config (if any). This lets
-      // manual matches tweak settings like knife round behavior without changing
-      // global or per-server defaults permanently.
-      try {
-        const parsedConfig = (match.config
-          ? (JSON.parse(match.config) as Partial<MatchConfig> & {
-              cvars?: Record<string, string | number>;
-            })
-          : {}) as { cvars?: Record<string, string | number> };
-        const cvars = parsedConfig.cvars;
-        if (cvars && Object.keys(cvars).length > 0) {
-          log.debug(
-            `[MATCH LOADING] Applying per-match cvars for ${matchSlug} on ${serverId}`,
-            { keys: Object.keys(cvars) }
-          );
-          for (const [key, value] of Object.entries(cvars)) {
-            const cmd = `${key} ${value}`;
-            const result = await rconService.sendCommand(serverId, cmd);
-            results.push({
-              success: result.success,
-              command: cmd,
-              error: result.error,
-            });
-            await delay(200);
-          }
-        }
-      } catch (cfgError) {
-        log.warn(
-          `[MATCH LOADING] Failed to apply per-match cvars for ${matchSlug} on ${serverId}`,
-          cfgError as Error
-        );
-      }
-    } catch (settingsError) {
-      log.warn('Failed to apply MatchZy core settings before match load', settingsError as Error);
+    } catch (cfgError) {
+      log.warn(
+        `[MATCH LOADING] Failed to apply per-match cvars for ${matchSlug} on ${serverId}`,
+        cfgError as Error
+      );
     }
 
     // Delay before sending the load command to ensure previous commands are processed
     await delay(500);
 
     // Load match on server
+    // Server initialization has already ensured webhook, auth, and core config are set and persisted
+    log.success(`✅ Server ${serverId} ready. Loading match ${matchSlug}`);
     log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
     const loadResult = await rconService.sendCommand(
       serverId,
@@ -351,8 +149,8 @@ export async function loadMatchOnServer(
       return {
         success: false,
         error: errorMessage,
-        webhookConfigured,
-        demoUploadConfigured,
+        webhookConfigured: false,
+        demoUploadConfigured: false,
         rconResponses: results,
       };
     }
@@ -361,83 +159,9 @@ export async function loadMatchOnServer(
       log.success(`[MATCH LOADING] Match ${matchSlug} loaded successfully on ${serverId}`);
       matchLiveStatsService.reset(match.slug);
 
-      // MatchZy wipes remote log/upload cvars when a new match loads.
-      // Reapply them a short moment after the load command finishes so webhook + uploads keep working.
-      const reapplyCommands = async () => {
-        log.debug(`Reapplying MatchZy webhook/demo config after load for ${serverId}`);
-        if (!skipWebhook && serverToken) {
-          const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, matchSlug);
-          for (const cmd of webhookCommands) {
-            const result = await rconService.sendCommand(serverId, cmd);
-            results.push({
-              success: result.success,
-              command: `[reload] ${cmd}`,
-              error: result.error,
-            });
-            if (!result.success) {
-              log.warn(`Failed to reapply webhook command post-load`, {
-                serverId,
-                matchSlug,
-                command: cmd,
-                error: result.error,
-              });
-            }
-            // Small delay between reapply commands
-            await delay(200);
-          }
-        }
-
-        // Small delay before demo command
-        await delay(300);
-
-        // Reapply demo upload commands (with headers for authentication)
-        if (serverToken) {
-          const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, matchSlug, serverToken);
-          for (const cmd of demoUploadCommands) {
-            const cmdResult = await rconService.sendCommand(serverId, cmd);
-            results.push({
-              success: cmdResult.success,
-              command: `[reload] ${cmd}`,
-              error: cmdResult.error,
-            });
-            if (!cmdResult.success) {
-              log.warn(`Failed to reapply demo upload command post-load`, {
-                serverId,
-                matchSlug,
-                command: cmd,
-                error: cmdResult.error,
-              });
-            }
-            // Small delay between reapply commands
-            await delay(200);
-          }
-        } else {
-          // Fallback to old method if no server token
-          const demoCmd = getMatchZyDemoUploadCommand(baseUrl, matchSlug);
-          const demoReResult = await rconService.sendCommand(serverId, demoCmd);
-          results.push({
-            success: demoReResult.success,
-            command: `[reload] ${demoCmd}`,
-            error: demoReResult.error,
-          });
-          if (!demoReResult.success) {
-            log.warn(`Failed to reapply demo upload command post-load`, {
-              serverId,
-              matchSlug,
-              error: demoReResult.error,
-            });
-          }
-        }
-      };
-
-      try {
-        // Wait longer after match load - server needs time to process the match load
-        // MatchZy can be busy during this time, so we wait 8 seconds instead of 5
-        await new Promise((resolve) => setTimeout(resolve, 8000));
-        await reapplyCommands();
-      } catch (reapplyError) {
-        log.warn('Post-load MatchZy reconfiguration failed', reapplyError as Error);
-      }
+      // With persistent configuration, webhook and demo upload URLs are stored in the server's
+      // database and automatically loaded on startup. No need to reapply configuration after
+      // every match load!
 
       // Update match status to 'loaded'
       await db.updateAsync(
@@ -446,7 +170,7 @@ export async function loadMatchOnServer(
         'slug = ?',
         [matchSlug]
       );
-      log.matchLoaded(matchSlug, serverId, webhookConfigured);
+      log.matchLoaded(matchSlug, serverId, true);
 
       // Emit websocket events to notify clients
       const updatedMatch = await db.queryOneAsync<DbMatchRow>(
@@ -460,19 +184,19 @@ export async function loadMatchOnServer(
 
       return {
         success: true,
-        webhookConfigured,
-        demoUploadConfigured,
-        rconResponses: results,
-      };
-    } else {
-      return {
-        success: false,
-        error: loadResult.error,
-        webhookConfigured,
-        demoUploadConfigured,
+        webhookConfigured: true,
+        demoUploadConfigured: true,
         rconResponses: results,
       };
     }
+    
+    return {
+      success: false,
+      error: loadResult.error,
+      webhookConfigured: false,
+      demoUploadConfigured: false,
+      rconResponses: results,
+    };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {

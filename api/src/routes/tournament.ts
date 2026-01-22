@@ -23,7 +23,8 @@ import {
 import { eloTemplateService } from '../services/eloTemplateService';
 import { settingsService } from '../services/settingsService';
 import { serverService } from '../services/serverService';
-import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
+import { serverInitializationService } from '../services/serverInitializationService';
+import { checkTournamentCompletion } from '../utils/matchProgression';
 
 const router = Router();
 
@@ -33,7 +34,7 @@ const router = Router();
  * (which configures webhooks when testing server status) so that admins don't
  * have to visit the Servers view before allocations begin.
  */
-async function bootstrapServerWebhooksForTournamentStart(baseUrl: string): Promise<void> {
+async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
   const serverToken = process.env.SERVER_TOKEN;
   if (!serverToken) {
     log.warn(
@@ -48,22 +49,18 @@ async function bootstrapServerWebhooksForTournamentStart(baseUrl: string): Promi
   }
 
   log.info(
-    `[WEBHOOK] Bootstrapping MatchZy webhooks for ${enabledServers.length} server(s) before allocation...`
+    `[WEBHOOK] Ensuring persistent config for ${enabledServers.length} server(s) before allocation...`
   );
 
+  // Initialize servers with persistent configuration (idempotent - only sends if not already initialized)
   for (const server of enabledServers) {
     try {
-      const commands = getMatchZyWebhookCommands(baseUrl, serverToken, server.id);
-      for (const cmd of commands) {
-        await rconService.sendCommand(server.id, cmd);
-      }
-
-      const webhookUrl = `${baseUrl}/api/events/${server.id}`;
-      log.webhookConfigured(server.id, webhookUrl);
+      await serverInitializationService.initializeServer(server.id, false);
+      log.success(`Initialized persistent config for ${server.id}`);
     } catch (error) {
-      // Don't fail the start flow if a single server webhook setup fails.
+      // Don't fail the start flow if a single server init fails.
       log.warn(
-        `Failed to bootstrap MatchZy webhook for server ${server.id} during tournament start`,
+        `Failed to initialize server ${server.id} during tournament start`,
         { error }
       );
     }
@@ -149,6 +146,24 @@ router.get('/', async (_req: Request, res: Response) => {
         success: false,
         error: 'No tournament exists',
       });
+    }
+
+    log.info(`[TOURNAMENT API] GET /api/tournament - Current status: ${tournament.status}`);
+
+    // Automatically check if tournament should be marked as completed
+    // This ensures the status is always up-to-date when fetched
+    if (tournament.status === 'in_progress') {
+      log.info(`[TOURNAMENT API] Tournament is in_progress, checking completion...`);
+      await checkTournamentCompletion(tournament.id);
+      // Re-fetch tournament to get updated status
+      const updatedTournament = await tournamentService.getTournament();
+      if (updatedTournament) {
+        log.info(`[TOURNAMENT API] After completion check - Status: ${updatedTournament.status}`);
+        return res.json({
+          success: true,
+          tournament: updatedTournament,
+        });
+      }
     }
 
     return res.json({
@@ -294,7 +309,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/', async (req: Request, res: Response) => {
   try {
     const input: UpdateTournamentInput = req.body;
-    const tournament = tournamentService.updateTournament(input);
+    const tournament = await tournamentService.updateTournament(input);
 
     // Emit updates to all clients
     emitTournamentUpdate({ action: 'tournament_updated', ...tournament });
@@ -423,6 +438,13 @@ router.delete('/', async (_req: Request, res: Response) => {
  */
 router.get('/bracket', async (_req: Request, res: Response) => {
   try {
+    // Automatically check if tournament should be marked as completed
+    // This ensures the status is always up-to-date when bracket is fetched
+    const tournament = await tournamentService.getTournament();
+    if (tournament && tournament.status === 'in_progress') {
+      await checkTournamentCompletion(tournament.id);
+    }
+
     const bracket = await tournamentService.getBracket();
 
     if (!bracket) {
@@ -662,13 +684,11 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     }
 
     // Get base URL for webhook configuration
-    const baseUrl = await getWebhookBaseUrl(req);
-
     // Proactively configure MatchZy webhooks for all enabled servers using the
     // latest settings so that allocator connectivity checks (css_te events)
     // succeed without requiring a manual visit to the Servers page.
     try {
-      await bootstrapServerWebhooksForTournamentStart(baseUrl);
+      await bootstrapServerWebhooksForTournamentStart();
     } catch (err) {
       log.warn(
         'Failed to bootstrap server webhooks during tournament start; continuing with allocation.',
@@ -709,6 +729,7 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     // Kick off tournament start + server allocation in the background so the
     // HTTP request can return immediately and the UI doesn't sit in a pending
     // state while RCON/webhook calls are in flight.
+    const baseUrl = await getWebhookBaseUrl(req);
     void (async () => {
       try {
         const result = await matchAllocationService.startTournament(baseUrl);
@@ -1949,6 +1970,51 @@ router.put('/:id/elo-template', async (req: Request, res: Response) => {
   } catch (error) {
     log.error('Error updating tournament ELO template', { error, tournamentId: req.params.id });
     return res.status(500).json({ success: false, error: 'Failed to update template' });
+  }
+});
+
+/**
+ * POST /api/tournament/:id/check-completion
+ * Manually trigger tournament completion check (admin only)
+ */
+router.post('/:id/check-completion', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const tournamentId = parseInt(req.params.id, 10);
+    if (isNaN(tournamentId)) {
+      return res.status(400).json({ success: false, error: 'Invalid tournament ID' });
+    }
+
+    // Verify tournament exists
+    const tournament = await db.queryOneAsync<{ id: number; status: string }>(
+      'SELECT id, status FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+
+    if (!tournament) {
+      return res.status(404).json({ success: false, error: 'Tournament not found' });
+    }
+
+    // Trigger completion check
+    await checkTournamentCompletion(tournamentId);
+
+    // Fetch updated tournament status
+    const updated = await db.queryOneAsync<{ status: string; completed_at: number | null }>(
+      'SELECT status, completed_at FROM tournament WHERE id = ?',
+      [tournamentId]
+    );
+
+    return res.json({
+      success: true,
+      status: updated?.status,
+      completedAt: updated?.completed_at,
+      message:
+        updated?.status === 'completed'
+          ? 'Tournament marked as completed'
+          : 'Tournament completion check completed (tournament may still be in progress)',
+    });
+  } catch (error) {
+    log.error('Error checking tournament completion', { error, tournamentId: req.params.id });
+    return res.status(500).json({ success: false, error: 'Failed to check tournament completion' });
   }
 });
 

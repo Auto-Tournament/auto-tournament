@@ -1,0 +1,141 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this bug! Please fill out the sections below to help us fix it faster.
+
+  - type: textarea
+    id: bug-description
+    attributes:
+      label: 🐛 Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: |
+        Example: "When I try to start a tournament with more than 8 teams, the server allocation fails and shows 'No servers available' even though all servers are online."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps-to-reproduce
+    attributes:
+      label: 📋 Steps to Reproduce
+      description: How can we reproduce this issue?
+      placeholder: |
+        1. Go to 'Dashboard'
+        2. Click 'Create Tournament'
+        3. Add 10 teams
+        4. Click 'Start Tournament'
+        5. See error message
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected-behavior
+    attributes:
+      label: ✅ Expected Behavior
+      description: What did you expect to happen?
+      placeholder: |
+        Example: "The tournament should start and allocate matches across available servers."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual-behavior
+    attributes:
+      label: ❌ Actual Behavior
+      description: What actually happened?
+      placeholder: |
+        Example: "Got error: 'Failed to allocate servers for 5 matches. No servers available.' All matches show status 'pending'."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: 🖥️ Deployment Type
+      description: How are you running the platform?
+      options:
+        - Docker (docker compose)
+        - Local development (npm/bun run dev)
+        - Other (please specify in Additional Context)
+    validations:
+      required: true
+
+  - type: input
+    id: runtime
+    attributes:
+      label: Runtime Version
+      description: What runtime and version are you using?
+      placeholder: "e.g., Bun 1.0.20, Node.js 20.11.0"
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: What OS are you running on?
+      placeholder: "e.g., Ubuntu 22.04, Windows 11, macOS 14.2"
+    validations:
+      required: true
+
+  - type: input
+    id: matchzy-version
+    attributes:
+      label: MatchZy Enhanced Version
+      description: What version of MatchZy Enhanced is on your CS2 servers?
+      placeholder: "e.g., v1.3.6"
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: 📸 Screenshots / Logs
+      description: |
+        **Required** - Logs or screenshots help us diagnose issues faster.
+        Check browser console (F12), API logs (docker logs), or server console output.
+      placeholder: |
+        Paste error logs, stack traces, or screenshots here
+        
+        Browser Console (F12 → Console tab):
+        ```
+        [ERROR] WebSocket connection failed: net::ERR_CONNECTION_REFUSED
+        ```
+        
+        API Logs (docker logs matchzy-api):
+        ```
+        [ERROR] matchAllocationService: No available servers for match-1
+        [ERROR] Failed to start tournament: Server allocation failed
+        ```
+        
+        Or drag & drop screenshots here
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other context about the problem (configuration, recent changes, etc.)
+      placeholder: |
+        Example: "This started happening after I upgraded from v1.2.0 to v1.3.0. I have 5 servers configured, all showing 'online' status in the Servers page."
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      description: Please confirm you've done the following
+      options:
+        - label: I've searched existing issues to make sure this isn't a duplicate
+          required: true
+        - label: I've checked the documentation at https://mat.sivert.io/
+          required: false
+        - label: I've included relevant logs or screenshots
+          required: false

@@ -24,6 +24,31 @@ export const formatDuration = (seconds: number): string => {
 };
 
 /**
+ * Calculate if a match is in overtime and which overtime number
+ * @returns null if not in overtime, or the overtime number (1, 2, 3, etc.)
+ */
+export const calculateOvertimeNumber = (
+  team1Score: number,
+  team2Score: number,
+  maxRounds: number | undefined,
+  overtimeRoundsPerSegment: number = 6 // Default MR3 = 6 rounds per OT segment
+): number | null => {
+  if (!maxRounds || maxRounds <= 0) return null;
+
+  const totalRounds = team1Score + team2Score;
+  const isTied = team1Score === team2Score;
+  const isPastRegulation = totalRounds >= maxRounds;
+
+  // Match is in overtime if: past regulation AND scores are tied
+  if (!isPastRegulation || !isTied) return null;
+
+  const overtimeRounds = totalRounds - maxRounds;
+  const overtimeNumber = Math.floor(overtimeRounds / overtimeRoundsPerSegment) + 1;
+
+  return overtimeNumber;
+};
+
+/**
  * Get a human-readable label for a match status
  */
 export const getStatusLabel = (
@@ -31,7 +56,11 @@ export const getStatusLabel = (
   walkover: boolean = false,
   vetoCompleted?: boolean,
   tournamentStarted?: boolean,
-  hasServer?: boolean
+  hasServer?: boolean,
+  team1Score?: number,
+  team2Score?: number,
+  maxRounds?: number,
+  overtimeRoundsPerSegment?: number
 ): string => {
   if (walkover) return 'WALKOVER';
 
@@ -51,9 +80,27 @@ export const getStatusLabel = (
     case 'loaded':
       return 'WARMUP';
     case 'live':
+      // Check if in overtime
+      if (
+        typeof team1Score === 'number' &&
+        typeof team2Score === 'number' &&
+        maxRounds
+      ) {
+        const overtimeNumber = calculateOvertimeNumber(
+          team1Score,
+          team2Score,
+          maxRounds,
+          overtimeRoundsPerSegment
+        );
+        if (overtimeNumber !== null) {
+          return `OVERTIME #${overtimeNumber}`;
+        }
+      }
       return 'LIVE';
     case 'completed':
       return 'COMPLETED';
+    case 'cancelled':
+      return 'CANCELLED';
     default:
       return status.toUpperCase();
   }
@@ -69,7 +116,11 @@ export const getDetailedStatusLabel = (
   walkover: boolean = false,
   vetoCompleted?: boolean,
   tournamentStarted?: boolean,
-  hasServer?: boolean
+  hasServer?: boolean,
+  team1Score?: number,
+  team2Score?: number,
+  maxRounds?: number,
+  overtimeRoundsPerSegment?: number
 ): string => {
   if (walkover) return 'WALKOVER';
 
@@ -122,6 +173,22 @@ export const getDetailedStatusLabel = (
       }
       return 'Server ready - Waiting for players';
     case 'live':
+      // Check if in overtime
+      if (
+        typeof team1Score === 'number' &&
+        typeof team2Score === 'number' &&
+        maxRounds
+      ) {
+        const overtimeNumber = calculateOvertimeNumber(
+          team1Score,
+          team2Score,
+          maxRounds,
+          overtimeRoundsPerSegment
+        );
+        if (overtimeNumber !== null) {
+          return `Overtime #${overtimeNumber} in progress`;
+        }
+      }
       return 'Match in progress';
     case 'completed':
       return 'Match completed';
@@ -192,6 +259,8 @@ export const getStatusColor = (
       return 'warning'; // Yellow/Orange - ready to start
     case 'completed':
       return 'success'; // Green - match finished
+    case 'cancelled':
+      return 'error'; // Red - match was cancelled
     default:
       return 'default'; // Gray - pending or unknown
   }

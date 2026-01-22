@@ -126,8 +126,12 @@ export default function Teams() {
     try {
       setLoading(true);
       const data = await api.get<TeamsResponse>('/api/teams');
-      // Store all teams (including shuffle-generated) in state; we'll hide shuffle teams in the UI
-      setTeams(data.teams || []);
+      // Store all teams (including shuffle-generated) in state; we'll hide shuffle teams in the UI.
+      // Sort by team name (case-insensitive) for a stable, readable order.
+      const sorted = (data.teams || []).slice().sort((a, b) =>
+        a.name.localeCompare(b.name, undefined, { sensitivity: 'base' })
+      );
+      setTeams(sorted);
     } catch (err) {
       const errorMessage = t('teamsPage.loadError');
       showError(errorMessage);

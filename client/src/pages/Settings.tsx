@@ -9,8 +9,6 @@ import {
   TextField,
   Button,
   LinearProgress,
-  InputAdornment,
-  IconButton,
   Divider,
   CircularProgress,
   Tabs,
@@ -23,16 +21,11 @@ import {
 } from '@mui/material';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import SyncIcon from '@mui/icons-material/Sync';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
 import { useTranslation } from 'react-i18next';
-
-const STEAM_API_DOC_URL = 'https://steamcommunity.com/dev/apikey';
 
 declare const __APP_VERSION__: string | undefined;
 
@@ -69,13 +62,10 @@ export default function Settings() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showSnackbar } = useSnackbar();
   const [webhookUrl, setWebhookUrl] = useState('');
-  const [steamApiKey, setSteamApiKey] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [showSteamKey, setShowSteamKey] = useState(false);
   const [syncingMaps, setSyncingMaps] = useState(false);
   const [initialWebhookUrl, setInitialWebhookUrl] = useState('');
-  const [initialSteamApiKey, setInitialSteamApiKey] = useState('');
   const [simulateMatches, setSimulateMatches] = useState(false);
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
@@ -90,10 +80,35 @@ export default function Settings() {
   const [initialRatingsEnabled, setInitialRatingsEnabled] = useState(true);
   const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
   const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
+  const [allowSelfRegister, setAllowSelfRegister] = useState(false);
+  // MatchZy Enhanced v1.3.0 settings
+  const [matchzyAutoreadyEnabled, setMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
+  const [initialMatchzyAutoreadyEnabled, setInitialMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
+  const [matchzyBothTeamsUnpauseRequired, setMatchzyBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
+  const [initialMatchzyBothTeamsUnpauseRequired, setInitialMatchzyBothTeamsUnpauseRequired] = useState<0 | 1 | null>(null);
+  const [matchzyMaxPausesPerTeam, setMatchzyMaxPausesPerTeam] = useState<number | null>(null);
+  const [initialMatchzyMaxPausesPerTeam, setInitialMatchzyMaxPausesPerTeam] = useState<number | null>(null);
+  const [matchzyPauseDuration, setMatchzyPauseDuration] = useState<number | null>(null);
+  const [initialMatchzyPauseDuration, setInitialMatchzyPauseDuration] = useState<number | null>(null);
+  const [matchzySideSelectionEnabled, setMatchzySideSelectionEnabled] = useState<0 | 1 | null>(null);
+  const [initialMatchzySideSelectionEnabled, setInitialMatchzySideSelectionEnabled] = useState<0 | 1 | null>(null);
+  const [matchzySideSelectionTime, setMatchzySideSelectionTime] = useState<number | null>(null);
+  const [initialMatchzySideSelectionTime, setInitialMatchzySideSelectionTime] = useState<number | null>(null);
+  const [matchzyGgEnabled, setMatchzyGgEnabled] = useState<0 | 1 | null>(null);
+  const [initialMatchzyGgEnabled, setInitialMatchzyGgEnabled] = useState<0 | 1 | null>(null);
+  const [matchzyGgThreshold, setMatchzyGgThreshold] = useState<number | null>(null);
+  const [initialMatchzyGgThreshold, setInitialMatchzyGgThreshold] = useState<number | null>(null);
+  const [matchzyGgMinScoreDiff, setMatchzyGgMinScoreDiff] = useState<number | null>(null);
+  const [initialMatchzyGgMinScoreDiff, setInitialMatchzyGgMinScoreDiff] = useState<number | null>(null);
+  const [matchzyFfwEnabled, setMatchzyFfwEnabled] = useState<0 | 1 | null>(null);
+  const [initialMatchzyFfwEnabled, setInitialMatchzyFfwEnabled] = useState<0 | 1 | null>(null);
+  const [matchzyFfwTime, setMatchzyFfwTime] = useState<number | null>(null);
+  const [initialMatchzyFfwTime, setInitialMatchzyFfwTime] = useState<number | null>(null);
+  const [matchzyDemoRecordingEnabled, setMatchzyDemoRecordingEnabled] = useState<0 | 1 | null>(null);
+  const [initialMatchzyDemoRecordingEnabled, setInitialMatchzyDemoRecordingEnabled] = useState<0 | 1 | null>(null);
   const [resetApiDialogOpen, setResetApiDialogOpen] = useState(false);
   const [resettingApi, setResettingApi] = useState(false);
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [steamStatusChecking, setSteamStatusChecking] = useState(false);
   const [resetDialogOpen, setResetDialogOpen] = useState(false);
   const isDev = useIsDevelopment();
   const [tabIndex, setTabIndex] = useState(0);
@@ -109,7 +124,6 @@ export default function Settings() {
     try {
       const response: SettingsResponse = await api.get('/api/settings');
       const webhook = response.settings.webhookUrl ?? '';
-      const steamKey = response.settings.steamApiKey ?? '';
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
       const chatPrefix = response.settings.matchzyChatPrefix ?? '';
@@ -124,10 +138,26 @@ export default function Settings() {
         response.settings.matchzyDebugChatEnabled !== undefined
           ? response.settings.matchzyDebugChatEnabled
           : false;
+      const allowSelfRegisterValue =
+        response.settings.allowSelfRegister !== undefined
+          ? response.settings.allowSelfRegister
+          : false;
+      // MatchZy Enhanced v1.3.0 settings
+      const matchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
+      const matchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
+      const matchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
+      const matchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
+      const matchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
+      const matchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
+      const matchzyGg = response.settings.matchzyGgEnabled ?? null;
+      const matchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
+      const matchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
+      const matchzyFfw = response.settings.matchzyFfwEnabled ?? null;
+      const matchzyFfwT = response.settings.matchzyFfwTime ?? null;
+      const matchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
+      
       setWebhookUrl(webhook);
-      setSteamApiKey(steamKey);
       setInitialWebhookUrl(webhook);
-      setInitialSteamApiKey(steamKey);
       setSimulateMatches(simulate);
       setInitialSimulateMatches(simulate);
       setSimulationTimescale(timescale);
@@ -140,8 +170,34 @@ export default function Settings() {
       setInitialMatchzyKnifeEnabledDefault(knifeEnabled);
       setMatchzyDebugChatEnabled(debugChatEnabled);
       setInitialMatchzyDebugChatEnabled(debugChatEnabled);
+      setAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
+      // MatchZy Enhanced
+      setMatchzyAutoreadyEnabled(matchzyAutoready);
+      setInitialMatchzyAutoreadyEnabled(matchzyAutoready);
+      setMatchzyBothTeamsUnpauseRequired(matchzyBothTeamsUnpause);
+      setInitialMatchzyBothTeamsUnpauseRequired(matchzyBothTeamsUnpause);
+      setMatchzyMaxPausesPerTeam(matchzyMaxPauses);
+      setInitialMatchzyMaxPausesPerTeam(matchzyMaxPauses);
+      setMatchzyPauseDuration(matchzyPauseDur);
+      setInitialMatchzyPauseDuration(matchzyPauseDur);
+      setMatchzySideSelectionEnabled(matchzySideSelEnabled);
+      setInitialMatchzySideSelectionEnabled(matchzySideSelEnabled);
+      setMatchzySideSelectionTime(matchzySideSelTime);
+      setInitialMatchzySideSelectionTime(matchzySideSelTime);
+      setMatchzyGgEnabled(matchzyGg);
+      setInitialMatchzyGgEnabled(matchzyGg);
+      setMatchzyGgThreshold(matchzyGgThresh);
+      setInitialMatchzyGgThreshold(matchzyGgThresh);
+      setMatchzyGgMinScoreDiff(matchzyGgMinDiff);
+      setInitialMatchzyGgMinScoreDiff(matchzyGgMinDiff);
+      setMatchzyFfwEnabled(matchzyFfw);
+      setInitialMatchzyFfwEnabled(matchzyFfw);
+      setMatchzyFfwTime(matchzyFfwT);
+      setInitialMatchzyFfwTime(matchzyFfwT);
+      setMatchzyDemoRecordingEnabled(matchzyDemo);
+      setInitialMatchzyDemoRecordingEnabled(matchzyDemo);
     } catch (err) {
       const message = err instanceof Error ? err.message : t('settingsPage.errors.loadSettings');
       showError(message);
@@ -165,7 +221,7 @@ export default function Settings() {
   }, [setHeaderActions]);
 
   const handleSave = useCallback(
-    async (showSuccessMessage = true) => {
+    async (showSuccessMessage = true, overrides?: { matchzyDebugChatEnabled?: boolean }) => {
       setSaving(true);
 
       // Cancel any pending auto-save
@@ -177,13 +233,26 @@ export default function Settings() {
       try {
         const payload = {
           webhookUrl: webhookUrl.trim() === '' ? null : webhookUrl.trim(),
-          steamApiKey: steamApiKey.trim() === '' ? null : steamApiKey.trim(),
           matchzyChatPrefix: matchzyChatPrefix.trim() === '' ? null : matchzyChatPrefix.trim(),
           matchzyAdminChatPrefix:
             matchzyAdminChatPrefix.trim() === '' ? null : matchzyAdminChatPrefix.trim(),
           matchzyKnifeEnabledDefault,
           ratingsEnabled,
-          matchzyDebugChatEnabled,
+          matchzyDebugChatEnabled: overrides?.matchzyDebugChatEnabled ?? matchzyDebugChatEnabled,
+          allowSelfRegister,
+          // MatchZy Enhanced v1.3.0 settings
+          matchzyAutoreadyEnabled,
+          matchzyBothTeamsUnpauseRequired,
+          matchzyMaxPausesPerTeam,
+          matchzyPauseDuration,
+          matchzySideSelectionEnabled,
+          matchzySideSelectionTime,
+          matchzyGgEnabled,
+          matchzyGgThreshold,
+          matchzyGgMinScoreDiff,
+          matchzyFfwEnabled,
+          matchzyFfwTime,
+          matchzyDemoRecordingEnabled,
           // Only send developer options from dev builds to keep this feature
           // clearly scoped to development environments.
           ...(isDev && { simulateMatches, simulationTimescale }),
@@ -191,7 +260,6 @@ export default function Settings() {
 
         const response: SettingsResponse = await api.put('/api/settings', payload);
         const newWebhook = response.settings.webhookUrl ?? '';
-        const newSteamKey = response.settings.steamApiKey ?? '';
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
         const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
@@ -208,15 +276,31 @@ export default function Settings() {
           response.settings.matchzyDebugChatEnabled !== undefined
             ? response.settings.matchzyDebugChatEnabled
             : false;
+        const newAllowSelfRegister =
+          response.settings.allowSelfRegister !== undefined
+            ? response.settings.allowSelfRegister
+            : false;
+        // MatchZy Enhanced v1.3.0 settings
+        const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
+        const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
+        const newMatchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
+        const newMatchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
+        const newMatchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
+        const newMatchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
+        const newMatchzyGg = response.settings.matchzyGgEnabled ?? null;
+        const newMatchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
+        const newMatchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
+        const newMatchzyFfw = response.settings.matchzyFfwEnabled ?? null;
+        const newMatchzyFfwT = response.settings.matchzyFfwTime ?? null;
+        const newMatchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
+        
         // Compute deltas before updating state
         const simulationToggled = isDev && newSimulate !== initialSimulateMatches;
         const timescaleChanged =
           isDev && newTimescale !== initialSimulationTimescale;
 
         setWebhookUrl(newWebhook);
-        setSteamApiKey(newSteamKey);
         setInitialWebhookUrl(newWebhook);
-        setInitialSteamApiKey(newSteamKey);
         setSimulateMatches(newSimulate);
         setInitialSimulateMatches(newSimulate);
         setSimulationTimescale(newTimescale);
@@ -231,6 +315,32 @@ export default function Settings() {
         setInitialRatingsEnabled(newRatingsEnabled);
         setMatchzyDebugChatEnabled(newDebugChatEnabled);
         setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
+        setAllowSelfRegister(newAllowSelfRegister);
+        // MatchZy Enhanced
+        setMatchzyAutoreadyEnabled(newMatchzyAutoready);
+        setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
+        setMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
+        setInitialMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
+        setMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
+        setInitialMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
+        setMatchzyPauseDuration(newMatchzyPauseDur);
+        setInitialMatchzyPauseDuration(newMatchzyPauseDur);
+        setMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
+        setInitialMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
+        setMatchzySideSelectionTime(newMatchzySideSelTime);
+        setInitialMatchzySideSelectionTime(newMatchzySideSelTime);
+        setMatchzyGgEnabled(newMatchzyGg);
+        setInitialMatchzyGgEnabled(newMatchzyGg);
+        setMatchzyGgThreshold(newMatchzyGgThresh);
+        setInitialMatchzyGgThreshold(newMatchzyGgThresh);
+        setMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
+        setInitialMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
+        setMatchzyFfwEnabled(newMatchzyFfw);
+        setInitialMatchzyFfwEnabled(newMatchzyFfw);
+        setMatchzyFfwTime(newMatchzyFfwT);
+        setInitialMatchzyFfwTime(newMatchzyFfwT);
+        setMatchzyDemoRecordingEnabled(newMatchzyDemo);
+        setInitialMatchzyDemoRecordingEnabled(newMatchzyDemo);
 
         if (showSuccessMessage) {
           showSuccess(t('settingsPage.success.saveSettings'));
@@ -269,7 +379,6 @@ export default function Settings() {
     },
     [
       webhookUrl,
-      steamApiKey,
       matchzyChatPrefix,
       matchzyAdminChatPrefix,
       matchzyKnifeEnabledDefault,
@@ -277,6 +386,19 @@ export default function Settings() {
       matchzyDebugChatEnabled,
       simulateMatches,
       simulationTimescale,
+      allowSelfRegister,
+      matchzyAutoreadyEnabled,
+      matchzyBothTeamsUnpauseRequired,
+      matchzyMaxPausesPerTeam,
+      matchzyPauseDuration,
+      matchzySideSelectionEnabled,
+      matchzySideSelectionTime,
+      matchzyGgEnabled,
+      matchzyGgThreshold,
+      matchzyGgMinScoreDiff,
+      matchzyFfwEnabled,
+      matchzyFfwTime,
+      matchzyDemoRecordingEnabled,
       isDev,
       showSuccess,
       showError,
@@ -291,12 +413,23 @@ export default function Settings() {
     // Save immediately when field loses focus (if values changed)
     if (
       webhookUrl !== initialWebhookUrl ||
-      steamApiKey !== initialSteamApiKey ||
       matchzyChatPrefix !== initialMatchzyChatPrefix ||
       matchzyAdminChatPrefix !== initialMatchzyAdminChatPrefix ||
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
       ratingsEnabled !== initialRatingsEnabled ||
       matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
+      matchzyAutoreadyEnabled !== initialMatchzyAutoreadyEnabled ||
+      matchzyBothTeamsUnpauseRequired !== initialMatchzyBothTeamsUnpauseRequired ||
+      matchzyMaxPausesPerTeam !== initialMatchzyMaxPausesPerTeam ||
+      matchzyPauseDuration !== initialMatchzyPauseDuration ||
+      matchzySideSelectionEnabled !== initialMatchzySideSelectionEnabled ||
+      matchzySideSelectionTime !== initialMatchzySideSelectionTime ||
+      matchzyGgEnabled !== initialMatchzyGgEnabled ||
+      matchzyGgThreshold !== initialMatchzyGgThreshold ||
+      matchzyGgMinScoreDiff !== initialMatchzyGgMinScoreDiff ||
+      matchzyFfwEnabled !== initialMatchzyFfwEnabled ||
+      matchzyFfwTime !== initialMatchzyFfwTime ||
+      matchzyDemoRecordingEnabled !== initialMatchzyDemoRecordingEnabled ||
       (isDev &&
         (simulateMatches !== initialSimulateMatches ||
           simulationTimescale !== initialSimulationTimescale))
@@ -338,10 +471,23 @@ export default function Settings() {
     // Don't auto-save if values haven't changed
     if (
       webhookUrl === initialWebhookUrl &&
-      steamApiKey === initialSteamApiKey &&
       matchzyChatPrefix === initialMatchzyChatPrefix &&
       matchzyAdminChatPrefix === initialMatchzyAdminChatPrefix &&
       matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
+      matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
+      ratingsEnabled === initialRatingsEnabled &&
+      matchzyAutoreadyEnabled === initialMatchzyAutoreadyEnabled &&
+      matchzyBothTeamsUnpauseRequired === initialMatchzyBothTeamsUnpauseRequired &&
+      matchzyMaxPausesPerTeam === initialMatchzyMaxPausesPerTeam &&
+      matchzyPauseDuration === initialMatchzyPauseDuration &&
+      matchzySideSelectionEnabled === initialMatchzySideSelectionEnabled &&
+      matchzySideSelectionTime === initialMatchzySideSelectionTime &&
+      matchzyGgEnabled === initialMatchzyGgEnabled &&
+      matchzyGgThreshold === initialMatchzyGgThreshold &&
+      matchzyGgMinScoreDiff === initialMatchzyGgMinScoreDiff &&
+      matchzyFfwEnabled === initialMatchzyFfwEnabled &&
+      matchzyFfwTime === initialMatchzyFfwTime &&
+      matchzyDemoRecordingEnabled === initialMatchzyDemoRecordingEnabled &&
       (!isDev ||
         (simulateMatches === initialSimulateMatches &&
           simulationTimescale === initialSimulationTimescale))
@@ -365,15 +511,41 @@ export default function Settings() {
     };
   }, [
     webhookUrl,
-    steamApiKey,
     matchzyChatPrefix,
     matchzyAdminChatPrefix,
     matchzyKnifeEnabledDefault,
+    matchzyDebugChatEnabled,
+    ratingsEnabled,
+    matchzyAutoreadyEnabled,
+    matchzyBothTeamsUnpauseRequired,
+    matchzyMaxPausesPerTeam,
+    matchzyPauseDuration,
+    matchzySideSelectionEnabled,
+    matchzySideSelectionTime,
+    matchzyGgEnabled,
+    matchzyGgThreshold,
+    matchzyGgMinScoreDiff,
+    matchzyFfwEnabled,
+    matchzyFfwTime,
+    matchzyDemoRecordingEnabled,
     initialWebhookUrl,
-    initialSteamApiKey,
     initialMatchzyChatPrefix,
     initialMatchzyAdminChatPrefix,
     initialMatchzyKnifeEnabledDefault,
+    initialMatchzyDebugChatEnabled,
+    initialRatingsEnabled,
+    initialMatchzyAutoreadyEnabled,
+    initialMatchzyBothTeamsUnpauseRequired,
+    initialMatchzyMaxPausesPerTeam,
+    initialMatchzyPauseDuration,
+    initialMatchzySideSelectionEnabled,
+    initialMatchzySideSelectionTime,
+    initialMatchzyGgEnabled,
+    initialMatchzyGgThreshold,
+    initialMatchzyGgMinScoreDiff,
+    initialMatchzyFfwEnabled,
+    initialMatchzyFfwTime,
+    initialMatchzyDemoRecordingEnabled,
     simulateMatches,
     initialSimulateMatches,
     initialSimulationTimescale,
@@ -485,8 +657,9 @@ export default function Settings() {
                 scrollButtons="auto"
               >
                 <Tab label={t('settingsPage.tabs.integrations')} {...a11yProps(0)} />
-                <Tab label={t('settingsPage.tabs.matchRating')} {...a11yProps(1)} />
-                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(2)} />}
+                <Tab label={t('settingsPage.tabs.players')} {...a11yProps(1)} />
+                <Tab label={t('settingsPage.tabs.matches')} {...a11yProps(2)} />
+                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(3)} />}
               </Tabs>
             </Box>
 
@@ -517,101 +690,6 @@ export default function Settings() {
 
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.integrations.steam.title')}
-                  </Typography>
-                  <Stack
-                    direction={{ xs: 'column', sm: 'row' }}
-                    alignItems="flex-center"
-                    spacing={1}
-                  >
-                    <TextField
-                      label={t('settingsPage.integrations.steam.apiKeyLabel')}
-                      value={steamApiKey}
-                      onChange={(event) => setSteamApiKey(event.target.value)}
-                      onBlur={handleFieldBlur}
-                      onKeyDown={handleFieldKeyDown}
-                      type={showSteamKey ? 'text' : 'password'}
-                      fullWidth
-                      helperText={t('settingsPage.integrations.steam.apiKeyHelper')}
-                      slotProps={{
-                        htmlInput: { 'data-testid': 'settings-steam-api-key-input' },
-                      }}
-                      InputProps={{
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton onClick={() => setShowSteamKey((prev) => !prev)} edge="end">
-                              {showSteamKey ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                            </IconButton>
-                          </InputAdornment>
-                        ),
-                      }}
-                    />
-                    <IconButton
-                      href={STEAM_API_DOC_URL}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      color="primary"
-                      sx={{ width: '56px', height: '56px' }}
-                    >
-                      <OpenInNewIcon />
-                    </IconButton>
-                  </Stack>
-                  <Box mt={1}>
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      disabled={loading || steamStatusChecking}
-                      startIcon={
-                        steamStatusChecking ? <CircularProgress size={14} /> : <VisibilityIcon />
-                      }
-                      onClick={async () => {
-                        setSteamStatusChecking(true);
-                        try {
-                          const response = await api.get<{
-                            success: boolean;
-                            configured?: boolean;
-                            message?: string;
-                            error?: string;
-                          }>('/api/steam/status');
-
-                          if (response.success && response.configured) {
-                            showSuccess(
-                              response.message ||
-                                t('settingsPage.integrations.steam.statusOk')
-                            );
-                          } else if (!response.success && response.configured === false) {
-                            showError(
-                              response.error ||
-                                t('settingsPage.integrations.steam.statusNotConfigured')
-                            );
-                          } else {
-                            showError(
-                              response.error ||
-                                t('settingsPage.integrations.steam.statusUnreachable')
-                            );
-                          }
-                        } catch (err) {
-                          const message =
-                            err instanceof Error
-                              ? err.message
-                              : t('settingsPage.integrations.steam.statusError');
-                          showError(message);
-                        } finally {
-                          setSteamStatusChecking(false);
-                        }
-                      }}
-                    >
-                      {steamStatusChecking
-                        ? t('settingsPage.integrations.steam.checkButtonChecking')
-                        : t('settingsPage.integrations.steam.checkButtonIdle')}
-                    </Button>
-                  </Box>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
                     {t('settingsPage.integrations.mapSync.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
@@ -631,8 +709,68 @@ export default function Settings() {
               </Stack>
             </TabPanel>
 
+            {/* Players & access control */}
             <TabPanel value={tabIndex} index={1}>
               <Stack spacing={3}>
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    Player registration
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    Control whether new Steam logins automatically create player records. When
+                    disabled, only players created or imported by admins will appear in private
+                    tournaments and shuffle pools.
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={allowSelfRegister}
+                        onChange={(event) => setAllowSelfRegister(event.target.checked)}
+                        color="primary"
+                        size="small"
+                      />
+                    }
+                    label="Allow anyone to register via Steam login"
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    Recommended: keep this off for invite‑only or private tournaments so random
+                    Steam logins do not pollute the player list.
+                  </Typography>
+                </Box>
+
+                <Divider />
+
+              </Stack>
+            </TabPanel>
+
+            {/* Match behavior and rating rules */}
+            <TabPanel value={tabIndex} index={2}>
+              <Stack spacing={3}>
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    {t('settingsPage.matchRating.ratings.title')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    {t('settingsPage.matchRating.ratings.description')}
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={ratingsEnabled}
+                        onChange={(event) => setRatingsEnabled(event.target.checked)}
+                        color="primary"
+                        size="small"
+                      />
+                    }
+                    label={t('settingsPage.matchRating.ratings.toggleLabel')}
+                  />
+                  <Typography variant="caption" color="text.secondary" display="block">
+                    {t('settingsPage.matchRating.ratings.note')}
+                  </Typography>
+                </Box>
+
+                <Divider />
+
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     {t('settingsPage.matchRating.chatDefaults.title')}
@@ -668,6 +806,8 @@ export default function Settings() {
                         <Switch
                           checked={matchzyKnifeEnabledDefault}
                           onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
+                          color="primary"
+                          size="small"
                         />
                       }
                       label={t(
@@ -682,31 +822,242 @@ export default function Settings() {
 
                 <Divider />
 
+                {/* MatchZy Enhanced v1.3.0 Settings */}
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.matchRating.ratings.title')}
+                    {t('settingsPage.matchRating.matchzyEnhanced.title')}
                   </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.matchRating.ratings.description')}
+                  <Typography variant="body2" color="text.secondary" mb={3}>
+                    {t('settingsPage.matchRating.matchzyEnhanced.description')}
                   </Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={ratingsEnabled}
-                        onChange={(event) => setRatingsEnabled(event.target.checked)}
+
+                  <Stack spacing={3}>
+                    {/* Auto-Ready System */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.autoready.title')}
+                      </Typography>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={matchzyAutoreadyEnabled === 1}
+                            onChange={(e) => setMatchzyAutoreadyEnabled(e.target.checked ? 1 : 0)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={t('settingsPage.matchRating.matchzyEnhanced.autoready.label')}
                       />
-                    }
-                    label={t('settingsPage.matchRating.ratings.toggleLabel')}
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {t('settingsPage.matchRating.ratings.note')}
-                  </Typography>
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {t('settingsPage.matchRating.matchzyEnhanced.autoready.description')}
+                      </Typography>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Pause System */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.pause.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyBothTeamsUnpauseRequired === 1}
+                              onChange={(e) => setMatchzyBothTeamsUnpauseRequired(e.target.checked ? 1 : 0)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.bothTeamsUnpause')}
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesLabel')}
+                          type="number"
+                          value={matchzyMaxPausesPerTeam ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            setMatchzyMaxPausesPerTeam(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesHelper')}
+                          inputProps={{ min: 0, max: 999 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationLabel')}
+                          type="number"
+                          value={matchzyPauseDuration ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            setMatchzyPauseDuration(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationHelper')}
+                          inputProps={{ min: 0, max: 999 }}
+                          size="small"
+                          fullWidth
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Side Selection */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.sideSelection.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzySideSelectionEnabled === 1}
+                              onChange={(e) => setMatchzySideSelectionEnabled(e.target.checked ? 1 : 0)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.enabled')}
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeLabel')}
+                          type="number"
+                          value={matchzySideSelectionTime ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            setMatchzySideSelectionTime(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeHelper')}
+                          inputProps={{ min: 1, max: 999 }}
+                          size="small"
+                          fullWidth
+                          disabled={matchzySideSelectionEnabled !== 1}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* .gg Command */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.gg.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyGgEnabled === 1}
+                              onChange={(e) => setMatchzyGgEnabled(e.target.checked ? 1 : 0)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.enabled')}
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdLabel')}
+                          type="number"
+                          value={matchzyGgThreshold ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                            setMatchzyGgThreshold(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdHelper')}
+                          inputProps={{ min: 0, max: 1, step: 0.1 }}
+                          size="small"
+                          fullWidth
+                          disabled={matchzyGgEnabled !== 1}
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffLabel')}
+                          type="number"
+                          value={matchzyGgMinScoreDiff ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            setMatchzyGgMinScoreDiff(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffHelper')}
+                          inputProps={{ min: 0, max: 16 }}
+                          size="small"
+                          fullWidth
+                          disabled={matchzyGgEnabled !== 1}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* FFW System */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.ffw.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyFfwEnabled === 1}
+                              onChange={(e) => setMatchzyFfwEnabled(e.target.checked ? 1 : 0)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyEnhanced.ffw.enabled')}
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeLabel')}
+                          type="number"
+                          value={matchzyFfwTime ?? ''}
+                          onChange={(e) => {
+                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                            setMatchzyFfwTime(isNaN(val as number) ? null : val);
+                          }}
+                          onBlur={handleFieldBlur}
+                          helperText={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeHelper')}
+                          inputProps={{ min: 1, max: 999 }}
+                          size="small"
+                          fullWidth
+                          disabled={matchzyFfwEnabled !== 1}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Demo Recording */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyEnhanced.demo.title')}
+                      </Typography>
+                      <FormControlLabel
+                        control={
+                          <Switch
+                            checked={matchzyDemoRecordingEnabled === 1}
+                            onChange={(e) => setMatchzyDemoRecordingEnabled(e.target.checked ? 1 : 0)}
+                            color="primary"
+                            size="small"
+                          />
+                        }
+                        label={t('settingsPage.matchRating.matchzyEnhanced.demo.enabled')}
+                      />
+                      <Typography variant="caption" color="text.secondary" display="block">
+                        {t('settingsPage.matchRating.matchzyEnhanced.demo.description')}
+                      </Typography>
+                    </Box>
+                  </Stack>
                 </Box>
               </Stack>
             </TabPanel>
 
             {isDev && (
-              <TabPanel value={tabIndex} index={2}>
+              <TabPanel value={tabIndex} index={3}>
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -720,11 +1071,13 @@ export default function Settings() {
                         <Switch
                           checked={matchzyDebugChatEnabled}
                           onChange={(e) => {
-                            setMatchzyDebugChatEnabled(e.target.checked);
-                            void handleSave(true);
+                            const newValue = e.target.checked;
+                            setMatchzyDebugChatEnabled(newValue);
+                            // Pass the new value as an override to handleSave since state updates are async
+                            void handleSave(true, { matchzyDebugChatEnabled: newValue });
                           }}
-                          color="primary"
                           size="small"
+                          color="primary"
                         />
                       }
                       label={t('settingsPage.developer.debugChat.label')}
@@ -737,6 +1090,8 @@ export default function Settings() {
                         <Switch
                           checked={simulateMatches}
                           onChange={(event) => setSimulateMatches(event.target.checked)}
+                          color="error"
+                          size="small"
                           inputProps={
                             {
                               'data-testid': 'settings-simulate-matches-toggle',
@@ -744,9 +1099,13 @@ export default function Settings() {
                           }
                         />
                       }
-                      label={t('settingsPage.developer.simulateToggleLabel')}
+                      label={
+                        <Typography component="span" color="error.main" fontWeight={600}>
+                          {t('settingsPage.developer.simulateToggleLabel')}
+                        </Typography>
+                      }
                     />
-                    <Typography variant="caption" color="text.secondary" display="block" mt={1}>
+                    <Typography variant="caption" color="error.main" display="block" mt={1} fontWeight={500}>
                       {t('settingsPage.developer.simulateNote')}
                     </Typography>
                     <Box mt={3}>
@@ -866,19 +1225,43 @@ export default function Settings() {
                   try {
                     const resetPayload: {
                       webhookUrl: null;
-                      steamApiKey: null;
                       matchzyChatPrefix: null;
                       matchzyAdminChatPrefix: null;
                       matchzyKnifeEnabledDefault: null;
                       matchzyDebugChatEnabled?: boolean;
                       simulateMatches?: boolean;
+                      // MatchZy Enhanced v1.3.0 settings - reset to null (use tournament defaults)
+                      matchzyAutoreadyEnabled: null;
+                      matchzyBothTeamsUnpauseRequired: null;
+                      matchzyMaxPausesPerTeam: null;
+                      matchzyPauseDuration: null;
+                      matchzySideSelectionEnabled: null;
+                      matchzySideSelectionTime: null;
+                      matchzyGgEnabled: null;
+                      matchzyGgThreshold: null;
+                      matchzyGgMinScoreDiff: null;
+                      matchzyFfwEnabled: null;
+                      matchzyFfwTime: null;
+                      matchzyDemoRecordingEnabled: null;
                     } = {
                       webhookUrl: null,
-                      steamApiKey: null,
                       matchzyChatPrefix: null,
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
                       matchzyDebugChatEnabled: false,
+                      // MatchZy Enhanced - reset to null to use tournament defaults
+                      matchzyAutoreadyEnabled: null,
+                      matchzyBothTeamsUnpauseRequired: null,
+                      matchzyMaxPausesPerTeam: null,
+                      matchzyPauseDuration: null,
+                      matchzySideSelectionEnabled: null,
+                      matchzySideSelectionTime: null,
+                      matchzyGgEnabled: null,
+                      matchzyGgThreshold: null,
+                      matchzyGgMinScoreDiff: null,
+                      matchzyFfwEnabled: null,
+                      matchzyFfwTime: null,
+                      matchzyDemoRecordingEnabled: null,
                       ...(isDev && { simulateMatches: false }),
                     };
 
@@ -888,7 +1271,6 @@ export default function Settings() {
                     );
 
                     const newWebhook = response.settings.webhookUrl ?? '';
-                    const newSteamKey = response.settings.steamApiKey ?? '';
                     const newSimulate = response.settings.simulateMatches ?? false;
                     const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
                     const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
@@ -900,11 +1282,22 @@ export default function Settings() {
                       response.settings.matchzyDebugChatEnabled !== undefined
                         ? response.settings.matchzyDebugChatEnabled
                         : false;
+                    // MatchZy Enhanced settings
+                    const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
+                    const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
+                    const newMatchzyMaxPauses = response.settings.matchzyMaxPausesPerTeam ?? null;
+                    const newMatchzyPauseDur = response.settings.matchzyPauseDuration ?? null;
+                    const newMatchzySideSelEnabled = response.settings.matchzySideSelectionEnabled ?? null;
+                    const newMatchzySideSelTime = response.settings.matchzySideSelectionTime ?? null;
+                    const newMatchzyGg = response.settings.matchzyGgEnabled ?? null;
+                    const newMatchzyGgThresh = response.settings.matchzyGgThreshold ?? null;
+                    const newMatchzyGgMinDiff = response.settings.matchzyGgMinScoreDiff ?? null;
+                    const newMatchzyFfw = response.settings.matchzyFfwEnabled ?? null;
+                    const newMatchzyFfwT = response.settings.matchzyFfwTime ?? null;
+                    const newMatchzyDemo = response.settings.matchzyDemoRecordingEnabled ?? null;
 
                     setWebhookUrl(newWebhook);
-                    setSteamApiKey(newSteamKey);
                     setInitialWebhookUrl(newWebhook);
-                    setInitialSteamApiKey(newSteamKey);
                     setSimulateMatches(newSimulate);
                     setInitialSimulateMatches(newSimulate);
                     setMatchzyChatPrefix(newChatPrefix);
@@ -915,6 +1308,31 @@ export default function Settings() {
                     setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
                     setMatchzyDebugChatEnabled(newDebugChatEnabled);
                     setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
+                    // MatchZy Enhanced
+                    setMatchzyAutoreadyEnabled(newMatchzyAutoready);
+                    setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
+                    setMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
+                    setInitialMatchzyBothTeamsUnpauseRequired(newMatchzyBothTeamsUnpause);
+                    setMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
+                    setInitialMatchzyMaxPausesPerTeam(newMatchzyMaxPauses);
+                    setMatchzyPauseDuration(newMatchzyPauseDur);
+                    setInitialMatchzyPauseDuration(newMatchzyPauseDur);
+                    setMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
+                    setInitialMatchzySideSelectionEnabled(newMatchzySideSelEnabled);
+                    setMatchzySideSelectionTime(newMatchzySideSelTime);
+                    setInitialMatchzySideSelectionTime(newMatchzySideSelTime);
+                    setMatchzyGgEnabled(newMatchzyGg);
+                    setInitialMatchzyGgEnabled(newMatchzyGg);
+                    setMatchzyGgThreshold(newMatchzyGgThresh);
+                    setInitialMatchzyGgThreshold(newMatchzyGgThresh);
+                    setMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
+                    setInitialMatchzyGgMinScoreDiff(newMatchzyGgMinDiff);
+                    setMatchzyFfwEnabled(newMatchzyFfw);
+                    setInitialMatchzyFfwEnabled(newMatchzyFfw);
+                    setMatchzyFfwTime(newMatchzyFfwT);
+                    setInitialMatchzyFfwTime(newMatchzyFfwT);
+                    setMatchzyDemoRecordingEnabled(newMatchzyDemo);
+                    setInitialMatchzyDemoRecordingEnabled(newMatchzyDemo);
 
                     window.dispatchEvent(
                       new CustomEvent<SettingsResponse['settings']>('matchzy:settingsUpdated', {

@@ -17,6 +17,7 @@ import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
+import { serverAllocationTracker } from '../services/serverAllocationTracker';
 
 const router = Router();
 
@@ -71,7 +72,59 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
   );
   const isShuffleTournament = tournamentType?.type === 'shuffle';
 
-  const config = row.config ? JSON.parse(row.config as string) : {};
+  // For bracket-managed matches (round >= 1) rebuild the config on demand so
+  // team rosters and settings always reflect the latest DB state instead of a
+  // stale snapshot from when the match was first generated. Manual matches
+  // (round = 0) keep their stored config as-is.
+  let config: MatchConfig | Record<string, unknown>;
+  if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
+    const t = await db.queryOneAsync<DbTournamentRow>(
+      'SELECT * FROM tournament WHERE id = ?',
+      [row.tournament_id]
+    );
+
+    if (t) {
+      const tournament: TournamentResponse = {
+        id: t.id,
+        name: t.name,
+        type: t.type as TournamentResponse['type'],
+        format: t.format as TournamentResponse['format'],
+        status: t.status as TournamentResponse['status'],
+        maps: JSON.parse(t.maps),
+        teamIds: JSON.parse(t.team_ids),
+        settings: t.settings ? JSON.parse(t.settings) : {},
+        created_at: t.created_at,
+        updated_at: t.updated_at ?? t.created_at,
+        started_at: t.started_at,
+        completed_at: t.completed_at,
+        teams: [],
+        mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+        teamSize:
+          t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
+        maxRounds:
+          t.max_rounds === null || typeof t.max_rounds === 'undefined'
+            ? undefined
+            : t.max_rounds,
+        overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+        overtimeSegments:
+          t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+            ? undefined
+            : t.overtime_segments,
+        eloTemplateId: t.elo_template_id ?? undefined,
+      };
+
+      config = await generateMatchConfig(
+        tournament,
+        row.team1_id ?? undefined,
+        row.team2_id ?? undefined,
+        row.slug
+      );
+    } else {
+      config = row.config ? JSON.parse(row.config as string) : {};
+    }
+  } else {
+    config = row.config ? JSON.parse(row.config as string) : {};
+  }
   const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
   // Normalize players from config
@@ -560,6 +613,14 @@ router.post('/bulk-delete', requireAuth, async (req: Request, res: Response) => 
       }
     }
 
+    // After bulk deletion, trigger immediate allocation if any servers were freed
+    if (deleted > 0) {
+      log.info(`Bulk deleted ${deleted} match(es), triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
+
     const statusCode = failed.length > 0 ? 207 : 200;
     return res.status(statusCode).json({
       success: failed.length === 0,
@@ -632,7 +693,61 @@ router.get('/', async (req: Request, res: Response) => {
     // Transform players from dictionary to array for frontend
     const matches: MatchListItem[] = await Promise.all(
       rows.map(async (row) => {
-        const config = row.config ? JSON.parse(row.config as string) : {};
+        // For bracket-managed matches (round >= 1) rebuild config on demand so
+        // admin views always see the latest team composition and settings. Manual
+        // matches (round = 0) keep their stored config.
+        let config: MatchConfig | Record<string, unknown>;
+        if (typeof row.round === 'number' && row.round >= 1 && row.tournament_id) {
+          const tournamentRow = await db.queryOneAsync<DbTournamentRow>(
+            'SELECT * FROM tournament WHERE id = ?',
+            [row.tournament_id]
+          );
+          if (tournamentRow) {
+            const t = tournamentRow;
+            const tournament: TournamentResponse = {
+              id: t.id,
+              name: t.name,
+              type: t.type as TournamentResponse['type'],
+              format: t.format as TournamentResponse['format'],
+              status: t.status as TournamentResponse['status'],
+              maps: JSON.parse(t.maps),
+              teamIds: JSON.parse(t.team_ids),
+              settings: t.settings ? JSON.parse(t.settings) : {},
+              created_at: t.created_at,
+              updated_at: t.updated_at ?? t.created_at,
+              started_at: t.started_at,
+              completed_at: t.completed_at,
+              teams: [],
+              mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
+              teamSize:
+                t.team_size === null || typeof t.team_size === 'undefined'
+                  ? undefined
+                  : t.team_size,
+              maxRounds:
+                t.max_rounds === null || typeof t.max_rounds === 'undefined'
+                  ? undefined
+                  : t.max_rounds,
+              overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+              overtimeSegments:
+                t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
+                  ? undefined
+                  : t.overtime_segments,
+              eloTemplateId: t.elo_template_id ?? undefined,
+            };
+
+            config = await generateMatchConfig(
+              tournament,
+              row.team1_id ?? undefined,
+              row.team2_id ?? undefined,
+              row.slug
+            );
+          } else {
+            config = row.config ? JSON.parse(row.config as string) : {};
+          }
+        } else {
+          config = row.config ? JSON.parse(row.config as string) : {};
+        }
+
         const vetoState = row.veto_state ? JSON.parse(row.veto_state as string) : null;
 
         // Normalize players and enrich with avatars from team data
@@ -867,6 +982,36 @@ router.get('/', async (req: Request, res: Response) => {
         return match;
       })
     );
+
+    // Calculate queue positions for matches without servers
+    // Queue positions should match the display order (by round, then match_number)
+    // Include all matches that are waiting for allocation (pending, ready, or any status without a server)
+    // Exclude completed, cancelled, live, and loaded matches
+    const queueableStatuses = ['pending', 'ready'];
+    const waitingMatches = matches
+      .filter((m) => !m.serverId && queueableStatuses.includes(m.status))
+      .sort((a, b) => {
+        // Sort by round first, then by match_number
+        // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
+        if (a.round !== b.round) return a.round - b.round;
+        if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
+        // If round and match_number are the same (e.g., manual matches), sort by ID
+        return a.id - b.id;
+      });
+
+    const queuePositionMap = new Map<number, number>();
+    waitingMatches.forEach((match, index) => {
+      queuePositionMap.set(match.id, index + 1);
+    });
+
+    // Apply queue positions to all matches
+    matches.forEach((match) => {
+      if (queuePositionMap.has(match.id)) {
+        match.queuePosition = queuePositionMap.get(match.id)!;
+      } else {
+        match.queuePosition = null;
+      }
+    });
 
     // Get tournament status
     const tournamentStatus = await db.queryOneAsync<{ status: string }>(
@@ -1161,6 +1306,85 @@ router.patch('/:slug/status', requireAuth, async (req: Request, res: Response) =
 
     console.error('Error updating match status:', error);
     return res.status(statusCode).json({
+      success: false,
+      error: message,
+    });
+  }
+});
+
+/**
+ * POST /api/matches/:slug/force-cancel
+ * Force cancel a match even if the server is unreachable (authenticated)
+ * This will:
+ * - Try to end the match on the server (best effort, doesn't fail if server is down)
+ * - Mark the match as completed in database
+ * - Free up the server allocation
+ */
+router.post('/:slug/force-cancel', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    
+    // Get the match
+    const match = await db.queryOneAsync<DbMatchRow>(
+      'SELECT * FROM matches WHERE slug = ?',
+      [slug]
+    );
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match not found',
+      });
+    }
+
+    const serverId = match.server_id;
+    const warnings: string[] = [];
+
+    // Try to end the match on the server (best effort)
+    if (serverId) {
+      try {
+        const { rconService } = await import('../services/rconService');
+        await rconService.executeCommand(serverId, 'get5_endmatch');
+        log.info(`Successfully sent end match command to server ${serverId} for match ${slug}`);
+      } catch (rconError) {
+        // Don't fail the whole operation if RCON fails - this is the whole point
+        const errorMsg = rconError instanceof Error ? rconError.message : String(rconError);
+        log.warn(`Failed to send end match command to server (continuing anyway): ${errorMsg}`);
+        warnings.push(`Server unreachable (${errorMsg}) - match marked as cancelled anyway`);
+      }
+    }
+
+    // Mark match as cancelled in database (use seconds, not milliseconds)
+    await db.updateAsync(
+      'matches',
+      { status: 'cancelled', completed_at: Math.floor(Date.now() / 1000) },
+      'slug = ?',
+      [slug]
+    );
+
+    log.info(`Match ${slug} force-cancelled`);
+
+    // Free up the server if it was assigned
+    if (serverId) {
+      serverAllocationTracker.markIdle(serverId);
+      log.info(`Server ${serverId} freed by force-cancel, triggering immediate allocation`);
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+    }
+
+    // Emit match update
+    emitMatchUpdate({ slug, status: 'cancelled' });
+
+    return res.json({
+      success: true,
+      message: 'Match cancelled successfully',
+      warnings: warnings.length > 0 ? warnings : undefined,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Failed to cancel match';
+    log.error('Error force-cancelling match:', error);
+    return res.status(500).json({
       success: false,
       error: message,
     });

@@ -103,7 +103,6 @@ const Development: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
         },
         body: JSON.stringify(teams),
       });
@@ -165,7 +164,6 @@ const Development: React.FC = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
         },
         body: JSON.stringify(servers),
       });
@@ -286,11 +284,7 @@ const Development: React.FC = () => {
 
     try {
       // Delete all teams that start with 'test-team-'
-      const teamsResponse = await globalThis.fetch('/api/teams', {
-        headers: {
-          Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
-        },
-      });
+      const teamsResponse = await globalThis.fetch('/api/teams');
 
       if (teamsResponse.ok) {
         const teamsData = await teamsResponse.json();
@@ -300,19 +294,12 @@ const Development: React.FC = () => {
         for (const team of testTeams) {
           await globalThis.fetch(`/api/teams/${team.id}`, {
             method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
-            },
           });
         }
       }
 
       // Delete all servers that start with 'test-server-'
-      const serversResponse = await globalThis.fetch('/api/servers', {
-        headers: {
-          Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
-        },
-      });
+      const serversResponse = await globalThis.fetch('/api/servers');
 
       if (serversResponse.ok) {
         const serversData = await serversResponse.json();
@@ -322,9 +309,6 @@ const Development: React.FC = () => {
         for (const server of testServers) {
           await globalThis.fetch(`/api/servers/${server.id}`, {
             method: 'DELETE',
-            headers: {
-              Authorization: `Bearer ${globalThis.localStorage.getItem('api_token')}`,
-            },
           });
         }
       }

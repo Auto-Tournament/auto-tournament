@@ -16,6 +16,7 @@ import {
   Grid,
   Alert,
   IconButton,
+  CircularProgress,
 } from '@mui/material';
 import { Close as CloseIcon, Info as InfoIcon } from '@mui/icons-material';
 import { api } from '../../utils/api';
@@ -356,6 +357,7 @@ export default function EloTemplateEditorModal({
           }}
           variant="contained"
           disabled={saving}
+          startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
           sx={{
             ...(!name.trim() && {
               bgcolor: 'action.disabledBackground',

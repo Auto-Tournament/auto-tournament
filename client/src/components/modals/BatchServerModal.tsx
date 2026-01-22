@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -18,11 +18,13 @@ import {
   InputAdornment,
   IconButton,
   CircularProgress,
+  Autocomplete,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
+import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
 import { api } from '../../utils/api';
@@ -52,6 +54,7 @@ interface ServerVerification {
   index: number;
   status: ServerVerificationStatus;
   error?: string;
+  serverCanReachApi?: boolean; // Whether server can reach API (Server -> API)
 }
 
 const formatVerificationError = (error?: string): string | undefined => {
@@ -156,6 +159,29 @@ export default function BatchServerModal({
     setPorts(getDefaultPorts(value, existingServers, countNum));
   };
 
+  // Update ports when host changes - increment based on existing servers with that IP
+  useEffect(() => {
+    const trimmedHost = host.trim();
+    const countNum = parseInt(count) || 3;
+    
+    if (!trimmedHost || !existingServers || existingServers.length === 0) {
+      // If no host or no existing servers, use default ports based on baseId
+      setPorts(getDefaultPorts(baseId, existingServers, countNum));
+      return;
+    }
+
+    // Count how many existing servers have this IP
+    const serversWithHost = existingServers.filter((s) => s.host === trimmedHost);
+    const existingCountForHost = serversWithHost.length;
+
+    // Start from base port (27015) + increment by 10 for each existing server
+    // This ensures new servers continue the pattern after existing ones
+    const basePort = 27015 + existingCountForHost * 10;
+    const newPorts = Array.from({ length: countNum }, (_, idx) => String(basePort + idx * 10));
+    
+    setPorts(newPorts);
+  }, [host, count, baseId, existingServers]);
+
   const handleClose = () => {
     resetForm();
     onClose();
@@ -218,7 +244,7 @@ export default function BatchServerModal({
       const serverName = `${baseName.trim()} #${i + 1}`;
 
       try {
-        const result = await api.post<{ success: boolean; error?: string }>(
+        const result = await api.post<{ success: boolean; error?: string; serverCanReachApi?: boolean }>(
           '/api/rcon/test-connection',
           {
             host: host.trim(),
@@ -232,6 +258,7 @@ export default function BatchServerModal({
           index: i,
           status: result.success ? 'success' : 'error',
           error: result.error,
+          serverCanReachApi: result.serverCanReachApi,
         });
       } catch (err) {
         const error = err as { response?: { data?: { error?: string } }; message?: string };
@@ -337,14 +364,37 @@ export default function BatchServerModal({
         }
       }
 
+      // Check for existing servers with the same IP/host
+      const trimmedHost = host.trim();
+      const existingServersByHost = existingServers?.filter((s) => s.host === trimmedHost) || [];
+
       // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
         const index = existingMaxIndex + i;
         const portNum = parseInt(ports[i - 1]);
+        
+        // Check if a server with this IP and port already exists (check ALL servers, not just those with matching ID prefix)
+        const existingServerWithPort = existingServersByHost.find((s) => s.port === portNum);
+        
+        // If a server with this IP:port exists, use its ID to update it
+        // Otherwise, generate a new ID based on the base ID pattern
+        let serverId: string;
+        let serverName: string;
+        
+        if (existingServerWithPort) {
+          // Server already exists with this IP:port - use its ID and name to update it
+          serverId = existingServerWithPort.id;
+          serverName = existingServerWithPort.name;
+        } else {
+          // No existing server with this IP:port - generate new ID and name
+          serverId = `${trimmedBaseId}_${index}`;
+          serverName = `${trimmedBaseName} #${index}`;
+        }
+        
         const server: ServerConfig = {
-          id: `${trimmedBaseId}_${index}`,
-          name: `${trimmedBaseName} #${index}`,
-          host: host.trim(),
+          id: serverId,
+          name: serverName,
+          host: trimmedHost,
           port: portNum,
           password: password.trim(),
           enabled,
@@ -352,7 +402,7 @@ export default function BatchServerModal({
         servers.push(server);
       }
 
-      // Create all servers
+      // Create/update all servers
       let successCount = 0;
       const errors: string[] = [];
 
@@ -479,17 +529,23 @@ export default function BatchServerModal({
               {t('batchServerModal.sections.connection.title')}
             </Typography>
             <Stack spacing={2}>
-              <TextField
-                label={t('batchServerModal.host.label')}
+              <Autocomplete
+                freeSolo
+                options={Array.from(new Set((existingServers || []).map((s) => s.host))).sort()}
                 value={host}
-                onChange={(e) => {
-                  setHost(e.target.value);
+                onInputChange={(_, newValue) => {
+                  setHost(newValue);
                   // Reset verification when host changes
                   setVerificationStatuses(new Map());
                 }}
-                placeholder={t('batchServerModal.host.placeholder')}
-                required
-                fullWidth
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t('batchServerModal.host.label')}
+                    placeholder={t('batchServerModal.host.placeholder')}
+                    required
+                  />
+                )}
               />
 
               <TextField
@@ -592,7 +648,15 @@ export default function BatchServerModal({
                               status === 'checking' ? (
                                 <CircularProgress size={16} />
                               ) : status === 'success' ? (
-                                <ArrowUpwardIcon color="success" fontSize="small" />
+                                <Box display="flex" alignItems="center" gap={0.5}>
+                                  <ArrowUpwardIcon color="success" fontSize="small" />
+                                  {verification?.serverCanReachApi === true && (
+                                    <ArrowDownwardIcon color="success" fontSize="small" />
+                                  )}
+                                  {verification?.serverCanReachApi === false && (
+                                    <ArrowDownwardIcon color="error" fontSize="small" />
+                                  )}
+                                </Box>
                               ) : status === 'error' ? (
                                 <ErrorIcon color="error" fontSize="small" />
                               ) : null,
@@ -600,6 +664,10 @@ export default function BatchServerModal({
                           helperText={
                             verification?.status === 'error'
                               ? formatVerificationError(verification.error)
+                              : verification?.status === 'success' && verification.serverCanReachApi === false
+                              ? 'API → Server: OK • Server → API: Failed (check firewall/webhook config)'
+                              : verification?.status === 'success' && verification.serverCanReachApi === true
+                              ? 'API → Server: OK • Server → API: OK'
                               : undefined
                           }
                           error={verification?.status === 'error'}
@@ -681,6 +749,7 @@ export default function BatchServerModal({
           onClick={handleSave}
           variant="contained"
           disabled={saving}
+          startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
           sx={{
             ml: 'auto',
           }}

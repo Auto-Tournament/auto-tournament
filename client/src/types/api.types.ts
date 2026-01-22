@@ -29,12 +29,17 @@ export interface Server {
   currentMatch?: string | null;
   reachableFromApi?: boolean;
   serverCanReachApi?: boolean;
+  // Server tracking fields (from MatchZy Enhanced server_configured event)
+  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  hostname?: string | null; // CS2 server hostname (from hostname convar)
+  lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
   matchzyConfig?: {
     chatPrefix?: string | null;
     adminChatPrefix?: string | null;
@@ -75,6 +80,30 @@ export interface ServerStatusResponse extends ApiResponse {
   pluginStatus?: string | null;
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
+  ipBanned?: boolean; // True if server has banned our IP address
+}
+
+export interface ServerAllocationInfo {
+  id: string;
+  name: string;
+  online: boolean;
+  status: string | null;
+  matchSlug: string | null;
+  matchNumber: number | null;
+  matchRound: number | null;
+  updatedAt: number | null;
+  inGraceWindow: boolean;
+  secondsUntilReady: number | null;
+  allocatable: boolean;
+}
+
+export interface ServerAvailabilityResponse extends ApiResponse {
+  availableServerCount: number;
+  gracePeriodSeconds: number;
+  nextAllocationInSeconds: number | null;
+  requiredServerCount: number;
+  servers: ServerAllocationInfo[];
+  simulationEnabled: boolean;
 }
 
 // Team types
@@ -258,6 +287,20 @@ export interface SettingsResponse extends ApiResponse {
     matchzyKnifeEnabledDefault?: boolean;
     matchzyDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
+    allowSelfRegister?: boolean;
+    // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
+    matchzyAutoreadyEnabled?: 0 | 1 | null;
+    matchzyBothTeamsUnpauseRequired?: 0 | 1 | null;
+    matchzyMaxPausesPerTeam?: number | null;
+    matchzyPauseDuration?: number | null;
+    matchzySideSelectionEnabled?: 0 | 1 | null;
+    matchzySideSelectionTime?: number | null;
+    matchzyGgEnabled?: 0 | 1 | null;
+    matchzyGgThreshold?: number | null;
+    matchzyGgMinScoreDiff?: number | null;
+    matchzyFfwEnabled?: 0 | 1 | null;
+    matchzyFfwTime?: number | null;
+    matchzyDemoRecordingEnabled?: 0 | 1 | null;
   };
 }
 

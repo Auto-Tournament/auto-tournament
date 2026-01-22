@@ -30,10 +30,12 @@ import { MatchInfoCard } from '../components/team/MatchInfoCard';
 import { PlayerMatchDetailsModal } from '../components/player/PlayerMatchDetailsModal';
 import { useSoundSettings } from '../hooks/useSoundSettings';
 import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
+import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import type { PlayerDetail } from '../types/api.types';
+import { useAuth } from '../contexts/AuthContext';
 import type {
   Team,
   TeamMatchInfo,
@@ -219,6 +221,7 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
+  const { playerSteamId } = useAuth();
 
   // Shared sound settings (persisted via localStorage)
   const { isMuted, volume, soundFile } = useSoundSettings();
@@ -586,9 +589,16 @@ export default function PlayerProfile() {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <TopNavBar />
         <Container maxWidth="md">
-          <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+            minHeight="400px"
+            py={6}
+          >
             <CircularProgress />
           </Box>
         </Container>
@@ -598,22 +608,25 @@ export default function PlayerProfile() {
 
   if (error || !player) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <TopNavBar />
         <Container maxWidth="sm">
-          <Card>
-            <CardContent sx={{ textAlign: 'center', py: 4 }}>
-              <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
-                {error || 'No player is registered for this Steam ID yet.'}
-              </Alert>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                If you just logged in with Steam, ask a tournament admin to register you or create a
-                player with this Steam ID.
-              </Typography>
-              <Button variant="outlined" component={RouterLink} to="/player">
-                Back to Find Player
-              </Button>
-            </CardContent>
-          </Card>
+          <Box py={6}>
+            <Card>
+              <CardContent sx={{ textAlign: 'center', py: 4 }}>
+                <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
+                  {error || 'No player is registered for this Steam ID yet.'}
+                </Alert>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  If you just logged in with Steam, ask a tournament admin to register you or create
+                  a player with this Steam ID.
+                </Typography>
+                <Button variant="outlined" component={RouterLink} to="/player">
+                  Back to Find Player
+                </Button>
+              </CardContent>
+            </Card>
+          </Box>
         </Container>
       </Box>
     );
@@ -694,8 +707,14 @@ export default function PlayerProfile() {
   }
 
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="public-player-page">
+    <Box
+      minHeight="100vh"
+      bgcolor="background.default"
+      data-testid="public-player-page"
+    >
+      <TopNavBar />
       <Container maxWidth="md">
+        <Box py={6}>
         <Stack spacing={3}>
           <MatchNotificationAudio
             vetoReady={vetoReadyForPlayer}
@@ -704,29 +723,14 @@ export default function PlayerProfile() {
             volume={volume}
             soundFile={soundFile}
           />
-          {/* Local navigation */}
+          {/* Local navigation (kept minimal; main links live in the navbar) */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="subtitle2" color="text.secondary">
-              Public Player View
+              Player profile
             </Typography>
-            <Box display="flex" gap={1}>
-              <Button variant="outlined" size="small" component={RouterLink} to="/player">
-                Players
-              </Button>
-              <Button
-                variant="outlined"
-                size="small"
-                startIcon={<EmojiEventsIcon />}
-                onClick={() => {
-                  const url = latestTournamentId
-                    ? `/tournament/${latestTournamentId}/leaderboard`
-                    : '/tournament/1/leaderboard';
-                  window.open(url, '_blank');
-                }}
-              >
-                Leaderboard
-              </Button>
-            </Box>
+            {playerSteamId === steamId && (
+              <Chip color="primary" size="small" label="This is you" />
+            )}
           </Box>
 
           {/* Player Header */}
@@ -825,6 +829,11 @@ export default function PlayerProfile() {
               }}
               getRoundLabel={getRoundLabel}
               highlightPlayerId={player.id}
+              // Only allow veto and server controls on the player page when the
+              // signed‑in Steam ID matches the profile being viewed. Teammates
+              // visiting this URL can still *see* the page, but cannot drive
+              // the veto or connect for someone else.
+              viewerIsTeamMemberOverride={playerSteamId === steamId}
             />
           ) : (
             <Card>
@@ -1209,6 +1218,7 @@ export default function PlayerProfile() {
             />
           )}
         </Stack>
+        </Box>
       </Container>
     </Box>
   );

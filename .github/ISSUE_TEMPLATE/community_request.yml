@@ -1,0 +1,128 @@
+name: 🙏 Community Request
+description: Request help from the community for testing or feedback
+title: "[COMMUNITY REQUEST] "
+labels: ["help wanted", "community", "testing"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reaching out to the community! Please provide clear details so others can help you effectively.
+
+  - type: textarea
+    id: help-needed
+    attributes:
+      label: 🙏 What I Need Help With
+      description: A clear description of what you need help testing or providing feedback on
+      placeholder: |
+        Example: "I need help testing the new Steam authentication flow with multiple concurrent users to ensure session management works correctly."
+    validations:
+      required: true
+
+  - type: textarea
+    id: why-community
+    attributes:
+      label: 🎯 Why I Need Community Help
+      description: Explain why you need assistance (e.g., requires multiple players, specific setup, cross-platform, etc.)
+      placeholder: |
+        Example: "This requires 10+ simultaneous players with different Steam accounts to test matchmaking queue and team balancing. I can't test this alone."
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: testing-type
+    attributes:
+      label: 🧪 What Needs Testing
+      description: Select all that apply
+      options:
+        - label: Feature functionality
+        - label: Bug reproduction
+        - label: Performance testing
+        - label: User experience feedback
+        - label: Cross-platform compatibility
+        - label: Integration testing
+        - label: Load/stress testing
+        - label: Documentation review
+        - label: Other (specify below)
+    validations:
+      required: true
+
+  - type: textarea
+    id: testing-steps
+    attributes:
+      label: 📋 Testing Steps
+      description: Provide clear step-by-step instructions for community members
+      placeholder: |
+        1. Pull the latest `feat/matchmaking` branch
+        2. Run `docker compose up -d`
+        3. Navigate to http://localhost:3069/queue
+        4. Click "Join Queue" and wait for match
+        5. Report any errors in console or unexpected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment-requirements
+    attributes:
+      label: 🖥️ Environment Requirements
+      description: What setup do testers need?
+      placeholder: |
+        - Deployment: Docker (docker compose)
+        - Runtime: Bun 1.0.20+ or Node.js 20+
+        - OS: Any (Linux/Windows/macOS)
+        - MatchZy Version: v1.3.6+
+        - Other: Steam account required for authentication testing
+    validations:
+      required: true
+
+  - type: textarea
+    id: feedback-looking-for
+    attributes:
+      label: 📝 What Feedback You're Looking For
+      description: What specific information would be most helpful?
+      placeholder: |
+        - Does the queue UI feel responsive?
+        - Are there any error messages or crashes?
+        - How long does it take to find a match?
+        - Is the acceptance flow clear?
+        - Any confusion about what to do next?
+    validations:
+      required: true
+
+  - type: input
+    id: branch-or-pr
+    attributes:
+      label: Branch/PR Link
+      description: Link to the branch or PR that needs testing
+      placeholder: "https://github.com/sivert-io/matchzy-auto-tournament/pull/123"
+    validations:
+      required: false
+
+  - type: input
+    id: deadline
+    attributes:
+      label: Testing Deadline (if any)
+      description: When do you need feedback by?
+      placeholder: "e.g., January 30, 2026 - trying to merge by end of month"
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other relevant details, links, screenshots, or known issues
+      placeholder: |
+        Example: "Known issue: Queue timer might show incorrect time on first load. Refresh fixes it. This is already tracked in #456."
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🏆 Contributor Recognition
+        
+        **Thank you for helping!** Contributors who provide valuable testing or feedback will be:
+        - Recognized in the project's contributors list
+        - Given appropriate contribution credits  
+        - Appreciated by the maintainers and community

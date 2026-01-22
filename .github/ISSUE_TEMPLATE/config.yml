@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentation
+    url: https://mat.sivert.io/
+    about: Check the official documentation for guides and API reference
+  - name: 💬 Discord Community
+    url: https://discord.gg/n7gHYau7aW
+    about: Join our Discord for quick questions and community support
+  - name: 🌍 Translation Guide
+    url: https://github.com/sivert-io/matchzy-auto-tournament/blob/main/TRANSLATING.md
+    about: Help translate the platform into your language
+  - name: 🔒 Security Issue
+    url: https://github.com/sivert-io/matchzy-auto-tournament/security/advisories/new
+    about: Report security vulnerabilities privately

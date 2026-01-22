@@ -239,9 +239,13 @@ export default function Bracket() {
 
   // Calculate global match number
   const getGlobalMatchNumber = (match: Match): number => {
+    // Sort all matches by round, then by matchNumber
+    // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
     const sortedMatches = [...matches].sort((a, b) => {
       if (a.round !== b.round) return a.round - b.round;
-      return a.matchNumber - b.matchNumber;
+      if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
+      // If round and match_number are the same (e.g., manual matches), sort by ID
+      return a.id - b.id;
     });
     return sortedMatches.findIndex((m) => m.id === match.id) + 1;
   };

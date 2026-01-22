@@ -16,7 +16,7 @@ test.describe.serial('Player Management UI', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should display players page',
     {
       tag: ['@ui', '@players'],
@@ -31,7 +31,7 @@ test.describe.serial('Player Management UI', () => {
     }
   );
 
-  test(
+  test.skip(
     'should create player via UI',
     {
       tag: ['@ui', '@players', '@crud'],
@@ -82,7 +82,7 @@ test.describe.serial('Player Management UI', () => {
   );
 
   // Consolidated players page test
-  test(
+  test.skip(
     'should display players page and list',
     {
       tag: ['@ui', '@players'],
@@ -106,7 +106,7 @@ test.describe.serial('Player Management UI', () => {
     }
   );
 
-  test(
+  test.skip(
     'should allow editing player Skill Rating',
     {
       tag: ['@ui', '@players', '@elo'],

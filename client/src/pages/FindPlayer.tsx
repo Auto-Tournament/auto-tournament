@@ -18,15 +18,16 @@ import PersonIcon from '@mui/icons-material/Person';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
-import { SteamIcon } from '../components/icons/SteamIcon';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 interface PlayerOption {
   id: string;
   name: string;
   avatar?: string;
   currentElo?: number;
+  isAdmin?: boolean;
 }
 
 export default function FindPlayer() {
@@ -131,13 +132,10 @@ export default function FindPlayer() {
     }
   };
 
-  const handleSteamLogin = () => {
-    window.location.href = '/api/auth/steam';
-  };
-
   return (
-    <Box minHeight="100vh" bgcolor="background.default" py={6} data-testid="find-player-page">
-      <Container maxWidth="sm">
+    <Box minHeight="100vh" bgcolor="background.default" data-testid="find-player-page">
+      <TopNavBar />
+      <Container maxWidth="sm" sx={{ py: 6 }}>
         <Card data-testid="find-player-form">
           <CardContent>
             <Box textAlign="center" mb={4}>
@@ -146,8 +144,7 @@ export default function FindPlayer() {
                 Find Player
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Enter a Steam ID or Steam profile URL to view player statistics, or log in with
-                Steam to jump straight to your profile.
+                Search for registered players by name, Steam ID or Steam profile URL.
               </Typography>
             </Box>
 
@@ -242,16 +239,6 @@ export default function FindPlayer() {
                 startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
               >
                 {loading ? 'Searching...' : 'Find Player'}
-              </Button>
-
-              <Button
-                fullWidth
-                variant="outlined"
-                size="large"
-                onClick={handleSteamLogin}
-                startIcon={<SteamIcon />}
-              >
-                Login with Steam
               </Button>
             </Stack>
           </CardContent>

@@ -43,6 +43,27 @@ export interface MatchConfig {
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
+  /**
+   * Server ConVars to apply for this match.
+   * 
+   * Includes standard CS2 cvars (mp_maxrounds, mp_overtime_enable, etc.) and
+   * MatchZy Enhanced v1.3.0 configuration variables:
+   * 
+   * - matchzy_autoready_enabled: 0 or 1
+   * - matchzy_both_teams_unpause_required: 0 or 1
+   * - matchzy_max_pauses_per_team: 0-999
+   * - matchzy_pause_duration: 0-999 (seconds)
+   * - matchzy_side_selection_enabled: 0 or 1
+   * - matchzy_side_selection_time: 1-999 (seconds)
+   * - matchzy_gg_enabled: 0 or 1
+   * - matchzy_gg_threshold: 0.0-1.0
+   * - matchzy_gg_min_score_diff: 0-16 (minimum score difference for .gg, 0 = disabled)
+   * - matchzy_ffw_enabled: 0 or 1
+   * - matchzy_ffw_time: 1-999 (seconds)
+   * - matchzy_demo_recording_enabled: 0 or 1
+   * 
+   * These are automatically applied based on tournament type (see matchzyConfigService).
+   */
   cvars?: {
     [key: string]: string | number;
   };
@@ -178,6 +199,7 @@ export interface MatchListItem {
   mapNumber?: number;
   mapResults?: MatchMapResult[];
   maps?: string[];
+  queuePosition?: number | null; // Position in allocation queue (1 = first in queue, null = already allocated)
 }
 
 /**

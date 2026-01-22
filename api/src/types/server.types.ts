@@ -10,6 +10,11 @@ export interface Server {
   password: string;
   enabled: number; // PostgreSQL stores boolean as 0/1 in INTEGER column
   matchzy_config?: string | null; // JSON blob with per-server MatchZy ConVar overrides
+  persistent_config_sent?: number | null; // Unix timestamp when persistent config was last sent
+  plugin_version?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  hostname?: string | null; // CS2 server hostname (from hostname convar)
+  last_seen?: number | null; // Unix timestamp of last event received (heartbeat)
+  status?: string | null; // 'online', 'offline', 'unknown'
   created_at: number;
   updated_at: number;
 }
@@ -48,19 +53,20 @@ export interface ServerResponse {
   matchzyConfig: MatchzyServerConfig | null;
   created_at: number;
   updated_at: number;
+  // Server tracking fields (from MatchZy Enhanced server_configured event)
+  pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
+  hostname?: string | null; // CS2 server hostname (from hostname convar)
+  lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
+  status?: string | null; // 'online', 'offline', 'unknown'
 }
 
 /**
  * Per-server MatchZy configuration (backend representation)
  * This is intentionally a small, opinionated subset of all possible ConVars.
+ * Note: Chat prefixes and knife round defaults are configured at the global/tournament/match level,
+ * not per-server. Only server-specific operational settings are included here.
  */
 export interface MatchzyServerConfig {
-  // Override core settings if desired (otherwise fall back to global app settings)
-  chatPrefix?: string | null;
-  adminChatPrefix?: string | null;
-  knifeEnabledDefault?: boolean | null;
-  debugChatEnabled?: boolean | null;
-
   // Common operational toggles (all optional; null/undefined = do not touch)
   minimumReadyRequired?: number | null;
   pauseAfterRestore?: boolean | null;

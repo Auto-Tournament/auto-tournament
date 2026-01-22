@@ -52,8 +52,29 @@ services:
       # dev-only features like simulation mode can be enabled from Settings.
       - NODE_ENV=development
       - PORT=3000 # Backend internal port (proxied by Caddy)
-      - API_TOKEN=${API_TOKEN:-admin123}
+      # Token used by CS2 servers to authenticate webhooks
       - SERVER_TOKEN=${SERVER_TOKEN:-server123}
+      # Auth providers (Steam / SSO)
+      # Steam OpenID (players + future admin SSO)
+      - AUTH_STEAM_ENABLED=${AUTH_STEAM_ENABLED:-true}
+      # Optional: base URL of the frontend for post-login redirects (e.g. http://localhost:3069)
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-}
+      # Keycloak OIDC (planned) – enable and point to your realm to advertise it to the UI
+      - AUTH_KEYCLOAK_ENABLED=${AUTH_KEYCLOAK_ENABLED:-false}
+      - KEYCLOAK_ISSUER_URL=${KEYCLOAK_ISSUER_URL:-}
+      - KEYCLOAK_CLIENT_ID=${KEYCLOAK_CLIENT_ID:-}
+      - KEYCLOAK_CLIENT_SECRET=${KEYCLOAK_CLIENT_SECRET:-}
+      - KEYCLOAK_CALLBACK_PATH=${KEYCLOAK_CALLBACK_PATH:-/api/auth/keycloak/callback}
+      # Discord OAuth2
+      - AUTH_DISCORD_ENABLED=${AUTH_DISCORD_ENABLED:-false}
+      - DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID:-}
+      - DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET:-}
+      - DISCORD_REDIRECT_URI=${DISCORD_REDIRECT_URI:-}
+      # GitHub OAuth2
+      - AUTH_GITHUB_ENABLED=${AUTH_GITHUB_ENABLED:-false}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID:-}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET:-}
+      - GITHUB_CALLBACK_URL=${GITHUB_CALLBACK_URL:-}
       # Logging controls (see docs/development/architecture.md → Logging section)
       - LOG_LEVEL=${LOG_LEVEL:-debug}
       # Disable noisy per-request HTTP logs (still logs 4xx/5xx)

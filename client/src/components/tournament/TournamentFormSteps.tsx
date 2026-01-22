@@ -172,7 +172,10 @@ export function TournamentFormSteps({
     loadServers();
   }, []);
 
-  // Initialize selectedMapPool based on mapPoolId prop or default map pool when mapPools load
+  // Initialize selectedMapPool based on tournament type + mapPoolId prop or default map pool
+  // when mapPools load. For standard brackets (single/double elimination), prefer the
+  // "Active Duty" pool when available so tournament creation always starts from that
+  // familiar baseline, regardless of which pool is marked as default elsewhere.
   React.useEffect(() => {
     if (mapPools.length > 0 && !selectedMapPool) {
       // For shuffle tournaments, default to "Custom" so organizers are nudged
@@ -190,13 +193,29 @@ export function TournamentFormSteps({
           return;
         }
       }
-      // Otherwise, use default pool or first pool if maps are empty
+
+      // For classic brackets (single/double elimination) with no maps selected yet,
+      // try to default to the "Active Duty" pool if it exists and is enabled.
       if (maps.length === 0) {
+        if (type === 'single_elimination' || type === 'double_elimination') {
+          const activeDutyPool = mapPools.find(
+            (p) => p.enabled && p.name.toLowerCase() === 'active duty'
+          );
+          if (activeDutyPool) {
+            setSelectedMapPool(activeDutyPool.id.toString());
+            return;
+          }
+        }
+
+        // Fallback: use whatever pool is marked as default, or the first enabled pool.
         const defaultPool = mapPools.find((p) => p.isDefault);
         if (defaultPool) {
           setSelectedMapPool(defaultPool.id.toString());
-        } else if (mapPools.length > 0) {
-          setSelectedMapPool(mapPools[0].id.toString());
+        } else {
+          const firstEnabled = mapPools.find((p) => p.enabled) ?? mapPools[0];
+          if (firstEnabled) {
+            setSelectedMapPool(firstEnabled.id.toString());
+          }
         }
       }
     }
@@ -509,8 +528,14 @@ export function TournamentFormSteps({
                     placement="top"
                     enterDelay={500}
                   >
-                    <Box>
-                      <FormControl fullWidth sx={{ mb: 2 }}>
+                    <Box
+                      sx={{
+                        display: 'flex',
+                        flexDirection: { xs: 'column', sm: 'row' },
+                        gap: 2,
+                      }}
+                    >
+                      <FormControl sx={{ flex: 1, minWidth: 160 }}>
                         <InputLabel id="tournament-overtime-mode-label">Overtime</InputLabel>
                         <Select
                           labelId="tournament-overtime-mode-label"
@@ -524,18 +549,13 @@ export function TournamentFormSteps({
                           <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
                           <MenuItem value="disabled">Disabled (no overtime)</MenuItem>
                         </Select>
-                        <FormHelperText>
-                          When overtime is disabled, ties at max rounds can still be broken by total
-                          team damage if your MatchZy config enables performance tiebreaks.
-                        </FormHelperText>
                       </FormControl>
 
                       <TextField
+                        sx={{ flex: 1, minWidth: 200 }}
                         label="Overtime segments (optional)"
                         type="number"
-                        value={
-                          typeof overtimeSegments === 'number' ? overtimeSegments : ''
-                        }
+                        value={typeof overtimeSegments === 'number' ? overtimeSegments : ''}
                         onChange={(event) => {
                           const raw = event.target.value.trim();
                           if (!onOvertimeSegmentsChange) return;
@@ -550,19 +570,11 @@ export function TournamentFormSteps({
                           }
                           onOvertimeSegmentsChange(parsed);
                         }}
-                        disabled={!canEdit || saving}
+                        disabled={!canEdit || saving || overtimeMode === 'disabled'}
                         slotProps={{
                           htmlInput: { min: 0, max: 10 },
                         }}
-                        helperText={
-                          typeof overtimeSegments === 'number'
-                            ? overtimeMode === 'disabled' && overtimeSegments === 0
-                              ? '0 with overtime disabled: no overtime is played and ties at max rounds are resolved by total team damage (no draws, if damage differs).'
-                              : `When > 0 and overtime is enabled, ties that persist after ${overtimeSegments} overtime segment${
-                                  overtimeSegments === 1 ? '' : 's'
-                                } can be decided by total team damage.`
-                            : 'Leave empty for MatchZy default. Combine with overtime disabled + 0 segments for "no OT, no draws", or with a positive value and overtime enabled to use damage tiebreak after OT.'
-                        }
+                        helperText="Optional: limit the number of overtime segments. Leave empty for MatchZy default."
                         fullWidth
                       />
                     </Box>

@@ -16,9 +16,17 @@ export function getSchemaSQL(): string {
       password TEXT NOT NULL,
       enabled INTEGER NOT NULL DEFAULT 1,
       matchzy_config TEXT, -- JSON blob with per-server MatchZy ConVar overrides
+      persistent_config_sent INTEGER, -- Unix timestamp when persistent config was last sent (NULL = never sent)
+      plugin_version TEXT, -- MatchZy Enhanced version (e.g., "1.3.6")
+      hostname TEXT, -- Server hostname from CS2 (from hostname convar)
+      last_seen INTEGER, -- Unix timestamp of last event received (heartbeat)
+      status TEXT DEFAULT 'unknown', -- 'online', 'offline', 'unknown'
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
+    
+    CREATE INDEX IF NOT EXISTS idx_servers_status ON servers(status);
+    CREATE INDEX IF NOT EXISTS idx_servers_last_seen ON servers(last_seen);
 
     -- Application settings table
     CREATE TABLE IF NOT EXISTS app_settings (
@@ -231,6 +239,22 @@ export function getSchemaSQL(): string {
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
 
+    -- Auth identities table: links external auth providers (Discord, Keycloak, GitHub, etc.)
+    -- to a Steam player ID so that once a user has linked Steam, future logins via
+    -- the same provider automatically resolve their Steam identity.
+    CREATE TABLE IF NOT EXISTS auth_identities (
+      id SERIAL PRIMARY KEY,
+      provider TEXT NOT NULL,
+      provider_user_id TEXT NOT NULL,
+      steam_id TEXT NOT NULL,
+      created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      UNIQUE (provider, provider_user_id),
+      FOREIGN KEY (steam_id) REFERENCES players(id) ON DELETE CASCADE
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_auth_identities_provider_user
+      ON auth_identities(provider, provider_user_id);
+
     -- Player rating history table
     CREATE TABLE IF NOT EXISTS player_rating_history (
       id SERIAL PRIMARY KEY,
@@ -318,6 +342,16 @@ export function getSchemaSQL(): string {
 
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_tournament ON shuffle_tournament_players(tournament_id);
     CREATE INDEX IF NOT EXISTS idx_shuffle_tournament_players_player ON shuffle_tournament_players(player_id);
+
+    -- Session table for connect-pg-simple (express-session PostgreSQL store)
+    -- This table is required for session persistence across API restarts
+    CREATE TABLE IF NOT EXISTS session (
+      sid VARCHAR NOT NULL PRIMARY KEY,
+      sess JSON NOT NULL,
+      expire TIMESTAMP WITH TIME ZONE NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_session_expire ON session(expire);
   `;
 }
 

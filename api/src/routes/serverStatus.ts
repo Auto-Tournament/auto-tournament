@@ -3,8 +3,6 @@ import { serverService } from '../services/serverService';
 import { rconService } from '../services/rconService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
-import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { serverStatusService, ServerStatus } from '../services/serverStatusService';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
@@ -88,16 +86,37 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       ),
     ]);
 
+    // Check if server has banned our IP by testing RCON connection
+    // This will detect repeated authentication errors
+    let ipBanned = false;
+    if (!useCache) {
+      try {
+        const testResult = await rconService.testConnection(id);
+        ipBanned = testResult.ipBanned === true;
+      } catch {
+        // Ignore errors - we'll check from the statusInfo
+      }
+    }
+
     const reachableFromApi = statusInfo.online;
 
     if (!statusInfo.online) {
       log.warn(`Server ${id} is offline or unreachable (status check failed)`);
+      // For cached views, we can return immediately with a lightweight payload
+      // and avoid running connectivity tests or webhook configuration.
       return res.json({
         success: true,
         status: 'offline',
         serverId: id,
         isAvailable: false,
         currentMatch: null,
+        queuedMatch: null,
+        reachableFromApi,
+        serverCanReachApi: null,
+        pluginStatus: null,
+        allocationState: null,
+        allocationMatchSlug: null,
+        ipBanned,
       });
     }
 
@@ -140,28 +159,6 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       effectiveMatchSlug,
     });
 
-    // Configure webhook automatically when server is online
-    const serverToken = process.env.SERVER_TOKEN || '';
-    if (serverToken) {
-      try {
-        const baseUrl = await getWebhookBaseUrl(req);
-        // For server status check and connectivity tests, configure a server-specific
-        // webhook URL so test events include the server ID in the path.
-        // Match-specific webhook (with match slug) will still be configured when a match loads.
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, id);
-
-        for (const cmd of webhookCommands) {
-          await rconService.sendCommand(id, cmd);
-        }
-
-        const webhookUrl = `${baseUrl}/api/events/${id}`;
-        log.webhookConfigured(id, webhookUrl);
-      } catch (error) {
-        // Don't fail status check if webhook setup fails
-        log.warn(`Failed to configure webhook for server ${id}`, { error });
-      }
-    }
-
     const isAvailable =
       !effectiveMatchSlug ||
       effectiveStatus === ServerStatus.IDLE ||
@@ -170,6 +167,30 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     // Combine plugin status with internal allocation tracker state
     const allocationState = serverAllocationTracker.getState(id);
     const allocationLabel = allocationState?.state ?? 'unknown';
+
+    // For cached views (e.g. dashboard, servers list), skip the expensive
+    // bi-directional connectivity test and webhook reconfiguration. These
+    // routes can be called frequently and should remain lightweight.
+    if (useCache) {
+      return res.json({
+        success: true,
+        status: 'online',
+        serverId: id,
+        isAvailable,
+        currentMatch: effectiveMatchSlug,
+        queuedMatch: queuedMatchSlug,
+        reachableFromApi,
+        serverCanReachApi: null,
+        pluginStatus: effectiveStatus,
+        allocationState: allocationLabel,
+        allocationMatchSlug: allocationState?.matchSlug ?? null,
+        ipBanned,
+      });
+    }
+
+    // Note: Webhook configuration is now handled by serverInitializationService
+    // on first connection. The server stores it persistently in its database,
+    // so we don't need to reconfigure it on every status check.
 
     // Bi-directional connectivity check:
     //  - We already know we can reach the server via RCON (reachableFromApi).
@@ -208,6 +229,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       pluginStatus: effectiveStatus,
       allocationState: allocationLabel,
       allocationMatchSlug: allocationState?.matchSlug ?? null,
+      ipBanned,
     });
   } catch (error) {
     log.error('Error checking server status', error);

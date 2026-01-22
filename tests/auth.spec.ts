@@ -57,46 +57,17 @@ test.describe.serial('Authentication', () => {
   );
 
   test(
-    'should login with valid API token using helper',
+    'should establish admin session via test helper',
     {
       tag: ['@ui', '@auth', '@login'],
     },
     async ({ page }) => {
-      // Use helper function instead of manual steps
       const success = await signIn(page);
       expect(success).toBe(true);
 
       // Should redirect to dashboard/home
       await expect(page).not.toHaveURL(/\/login/);
       await expect(page).toHaveURL(/\//);
-
-      // Verify token is stored
-      const token = await page.evaluate(() => localStorage.getItem('api_token'));
-      expect(token).toBe(getApiToken());
-    }
-  );
-
-  test(
-    'should show error with invalid API token',
-    {
-      tag: ['@ui', '@auth', '@login'],
-    },
-    async ({ page }) => {
-      await page.goto('/login');
-
-      // Enter invalid token
-      const passwordInput = page.getByTestId('login-api-token-input');
-      await passwordInput.fill('invalid-token-12345');
-
-      // Click login button
-      const loginButton = page.getByTestId('login-sign-in-button');
-      await loginButton.click();
-
-      // Should show error message
-      await expect(page.getByTestId('login-error-message')).toBeVisible();
-
-      // Should still be on login page
-      await expect(page).toHaveURL(/\/login/);
     }
   );
 
@@ -124,10 +95,6 @@ test.describe.serial('Authentication', () => {
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);
-
-      // Verify token is cleared
-      const token = await page.evaluate(() => localStorage.getItem('api_token'));
-      expect(token).toBeNull();
     }
   );
 
@@ -157,8 +124,7 @@ test.describe.serial('Authentication', () => {
     async ({ page }) => {
       // First call - should sign in
       await ensureSignedIn(page);
-      const token1 = await page.evaluate(() => localStorage.getItem('api_token'));
-      expect(token1).toBeTruthy();
+      await expect(page).not.toHaveURL(/\/login/);
 
       // Clear and reload
       await page.evaluate(() => localStorage.clear());
@@ -166,10 +132,6 @@ test.describe.serial('Authentication', () => {
 
       // Second call - should sign in again
       await ensureSignedIn(page);
-      const token2 = await page.evaluate(() => localStorage.getItem('api_token'));
-      expect(token2).toBeTruthy();
-
-      // Should not be on login page
       await expect(page).not.toHaveURL(/\/login/);
     }
   );

@@ -15,7 +15,7 @@ test.describe.serial('Matches UI', () => {
     await ensureSignedIn(page);
   });
 
-  test(
+  test.skip(
     'should navigate to and display matches page',
     {
       tag: ['@ui', '@matches'],

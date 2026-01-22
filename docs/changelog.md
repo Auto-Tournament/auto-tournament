@@ -9,6 +9,14 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ## [Unreleased]
 
+### MatchZy Enhanced v1.3.0 Integration
+
+- **[Feature]** Added support for **MatchZy Enhanced v1.3.0** configuration (11 cvars) including auto-ready system, enhanced pause controls, side selection timers, match forfeit (.gg) system, forfeit/walkover (FFW) system, and demo recording control.
+- **[Feature]** Implemented automatic profile selection based on tournament type (official, fast, shuffle, default) with appropriate MatchZy Enhanced cvars.
+- **[Feature]** Added `matchzyConfigService` for generating, validating, and managing MatchZy Enhanced configurations.
+- **[Feature]** Tournament matches automatically receive MatchZy Enhanced cvars based on tournament type with sensible defaults.
+- **[Feature]** Manual matches receive safe default MatchZy Enhanced cvars with support for custom overrides.
+
 - **[Note]** Ongoing work is tracked in the repository; new entries will appear in the next tagged release.
 
 ---

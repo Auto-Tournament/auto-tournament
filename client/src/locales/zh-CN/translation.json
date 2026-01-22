@@ -9,6 +9,7 @@
     "matches": "比赛",
     "teams": "战队",
     "players": "选手",
+    "leaderboard": "排行榜",
     "servers": "服务器",
     "maps": "地图与地图池",
     "templates": "模板",
@@ -65,18 +66,23 @@
   "login": {
     "title": "登录",
     "welcome": "欢迎回来",
-    "subtitle": "请输入管理员 API Token 以管理锦标赛、服务器和战队。",
-    "apiTokenLabel": "API Token",
-    "apiTokenPlaceholder": "输入你的 API Token",
-    "passwordRequired": "密码为必填项",
-    "invalidPassword": "密码无效，请检查你的 API Token。",
-    "connectionFailed": "无法连接到 API，请稍后重试。",
+    "subtitle": "使用你偏好的身份提供商登录以管理锦标赛、服务器和战队。",
+    "apiTokenLabel": "登录方式",
+    "apiTokenPlaceholder": "选择一个提供商继续",
+    "passwordRequired": "需要选择登录方式",
+    "invalidPassword": "登录失败，请重试。",
+    "connectionFailed": "无法连接到身份验证服务，请稍后重试。",
     "signIn": "登录",
     "signingIn": "正在登录…",
-    "needToken": "需要获取 Token 或查看使用说明？",
     "github": "GitHub",
     "documentation": "文档",
     "version": "版本"
+  },
+  "connectSteam": {
+    "title": "关联你的 Steam 账号",
+    "bodyIntro": "快完成了。要使用当前账号访问锦标赛平台（例如通过 Discord、Keycloak 或 GitHub 登录后），你需要先关联一个 Steam 个人资料。",
+    "bodyRequirement": "关联 Steam 让系统能够将你识别为选手，并且是从非 Steam 提供商登录时的必备步骤。",
+    "button": "使用 Steam 关联"
   },
   "notFound": {
     "title": "页面未找到",
@@ -152,10 +158,8 @@
     "openPlayerPageTooltip": "打开选手页面",
     "skillRatingTooltip": "Skill Rating 基于 OpenSkill，数值越高越好。",
     "skillRatingLabel": "Skill Rating：{{elo}}",
-    "matchesCount": {
-      "one": "{{count}} 场比赛",
-      "other": "{{count}} 场比赛"
-    }
+    "matchesCount_one": "{{count}} 场比赛",
+    "matchesCount_other": "{{count}} 场比赛"
   },
   "teamModal": {
     "titleCreate": "创建战队",
@@ -192,6 +196,7 @@
     },
     "success": {
       "playerAdded": "选手已添加到战队",
+      "playerReplaced": "选手已被替换",
       "teamUpdated": "战队更新成功",
       "teamCreated": "战队创建成功",
       "teamDeleted": "战队删除成功"
@@ -206,7 +211,9 @@
     "confirmDelete": {
       "title": "删除战队",
       "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
-    }
+    },
+    "replacePlayerAria": "替换选手 {{name}}",
+    "replacePlayerTooltip": "替换此选手"
   },
   "playerModal": {
     "titleCreate": "创建选手",
@@ -424,6 +431,10 @@
       "rconFailed": "RCON 失败",
       "onlineTesting": "在线（测试中）"
     },
+    "ipBanned": {
+      "title": "服务器可能已封禁我们的 IP",
+      "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
+    },
     "connectivity": {
       "apiToServer": "API → 服务器（RCON）",
       "serverToApi": "服务器 → API（/api/events）",
@@ -456,6 +467,10 @@
   "dashboard": {
     "title": "控制台",
     "notReady": "当锦标赛开始后，锦标赛控制台将显示在这里。",
+    "restartTournament": {
+      "button": "重启锦标赛比赛",
+      "restarting": "正在重启锦标赛比赛…"
+    },
     "onboarding": {
       "ready": "🎉 一切就绪！",
       "gettingStarted": "快速开始",
@@ -562,9 +577,10 @@
     "title": "设置",
     "intro": "配置核心集成、游戏内默认值以及开发者选项。",
     "tabs": {
-      "integrations": "集成",
-      "matchRating": "比赛与评分",
-      "developer": "开发者"
+      "integrations": "集成与 Webhook",
+      "players": "选手与访问控制",
+      "matches": "比赛与评分",
+      "developer": "开发者 / 模拟"
     },
     "integrations": {
       "webhook": {
@@ -613,6 +629,48 @@
         "description": "控制已完成的比赛是否会更新玩家 Skill Rating。若外部系统（例如 Excel 表）是评分真值来源，可在此禁用。",
         "toggleLabel": "根据完成的比赛更新玩家评分",
         "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced v1.3.0 功能",
+        "description": "配置高级比赛功能。留空设置以使用锦标赛类型默认值。",
+        "autoready": {
+          "title": "自动准备系统",
+          "label": "玩家加入时自动标记为已准备",
+          "description": "玩家加入时自动准备。他们仍可使用 .unready 退出。"
+        },
+        "pause": {
+          "title": "暂停控制",
+          "bothTeamsUnpause": "要求双方队伍都取消暂停",
+          "maxPausesLabel": "每队最大暂停次数",
+          "maxPausesHelper": "0 = 无限制暂停",
+          "pauseDurationLabel": "暂停时长限制（秒）",
+          "pauseDurationHelper": "0 = 无时间限制"
+        },
+        "sideSelection": {
+          "title": "阵营选择计时器",
+          "enabled": "启用阵营选择计时器",
+          "timeLabel": "允许时间（秒）",
+          "timeHelper": "刀局后选择阵营的时间"
+        },
+        "gg": {
+          "title": "提前结束比赛 (.gg)",
+          "enabled": "启用 .gg 投降命令",
+          "thresholdLabel": "投票阈值 (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% 的队员必须投票（例如，5 人中的 4 人）",
+          "minScoreDiffLabel": "最小分差",
+          "minScoreDiffHelper": "0 = 禁用。例如：6 = 仅在落后 6+ 回合时允许 .gg"
+        },
+        "ffw": {
+          "title": "弃权/判负系统",
+          "enabled": "队伍断开连接时启用自动判负",
+          "timeLabel": "判负计时器（秒）",
+          "timeHelper": "整个队伍离开时宣布判负的时间"
+        },
+        "demo": {
+          "title": "Demo 录制",
+          "enabled": "启用自动 GOTV demo 录制",
+          "description": "禁用后，服务器在比赛结束后约 10 秒重启（启用录制时为 60-90 秒）"
+        }
       }
     },
     "developer": {
@@ -1346,6 +1404,14 @@
     },
     "testButton": "测试声音",
     "footer": "当比赛准备就绪或发生重要事件时，将播放声音通知。"
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "删除比赛",
+      "confirmTitle": "确认删除此比赛？",
+      "confirmBody": "确定要删除比赛 \"{{slug}}\" 吗？此操作无法撤销。",
+      "button": "删除比赛"
+    }
   },
   "manualMatchModal": {
     "title": "创建手动比赛",

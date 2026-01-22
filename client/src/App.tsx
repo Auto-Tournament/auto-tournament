@@ -21,6 +21,7 @@ import TeamMatch from './pages/TeamMatch';
 import FindPlayer from './pages/FindPlayer';
 import PlayerProfile from './pages/PlayerProfile';
 import TournamentLeaderboard from './pages/TournamentLeaderboard';
+import ConnectSteam from './pages/ConnectSteam';
 import Maps from './pages/Maps';
 import Templates from './pages/Templates';
 import ELOTemplates from './pages/ELOTemplates';
@@ -28,8 +29,20 @@ import Layout from './components/layout/Layout';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isLoading } = useAuth();
+interface ProtectedRouteProps {
+  children: React.ReactNode;
+  /**
+   * When true (default), only authenticated admins can access the route.
+   * Non-admin players are redirected away (to their player page or login).
+   *
+   * When false, any authenticated identity (admin or player) may access the
+   * route; anonymous visitors are still redirected to login.
+   */
+  adminOnly?: boolean;
+}
+
+function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
+  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -64,15 +77,45 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return isAuthenticated ? (
-    <>{children}</>
-  ) : (
-    <Navigate to="/login" state={{ from: location }} replace />
-  );
+  if (adminOnly) {
+    // Admin-only routes (default): require an authenticated admin session with a linked Steam ID.
+    if (isAuthenticated) {
+      // Admin session active – require Steam to be linked before allowing access
+      // to the main dashboard and other protected admin routes.
+      if (needsSteamLink && location.pathname !== '/connect-steam') {
+        return <Navigate to="/connect-steam" replace />;
+      }
+
+      return <>{children}</>;
+    }
+
+    // If the user has a Steam identity but no admin session, treat them as a
+    // signed-in player and send them to their player page instead of back to
+    // the login form.
+    if (playerSteamId) {
+      return <Navigate to={`/player/${playerSteamId}`} replace />;
+    }
+
+    // No admin session and no player Steam ID – go to login.
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // Non-admin-only "public" routes:
+  //
+  // These pages (e.g. /player, /team/:teamId, /tournament/:id/leaderboard) are
+  // intentionally viewable by anyone – including:
+  // - anonymous visitors
+  // - signed-in players
+  // - admins (even before linking a Steam account)
+  //
+  // The underlying components still *optionally* use auth context when present
+  // (e.g. to show "this is you" badges or quick links), but access itself
+  // should never be blocked or redirected here.
+  return <>{children}</>;
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const isDevelopment = useIsDevelopment();
 
   if (isLoading) {
@@ -81,13 +124,64 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/login" element={isAuthenticated ? <Navigate to="/" replace /> : <Login />} />
+      <Route
+        path="/login"
+        element={
+          isAuthenticated ? (
+            // Admins leaving login should land on the dashboard
+            <Navigate to="/" replace />
+          ) : // Signed-in players should go straight to their player page instead of seeing login again
+          playerSteamId ? (
+            <Navigate to={`/player/${playerSteamId}`} replace />
+          ) : (
+            <Login />
+          )
+        }
+      />
 
-      {/* Public pages - no auth required */}
-      <Route path="/team/:teamId" element={<TeamMatch />} />
-      <Route path="/player" element={<FindPlayer />} />
-      <Route path="/player/:steamId" element={<PlayerProfile />} />
-      <Route path="/tournament/:id/leaderboard" element={<TournamentLeaderboard />} />
+      {/* Admin Steam linking flow */}
+      <Route
+        path="/connect-steam"
+        element={
+          <ProtectedRoute>
+            <ConnectSteam />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Viewer & player-facing pages – require a signed-in identity (admin or player) */}
+      <Route
+        path="/team/:teamId"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <TeamMatch />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/tournament/:id/leaderboard"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <TournamentLeaderboard />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/player"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <FindPlayer />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/player/:steamId"
+        element={
+          <ProtectedRoute adminOnly={false}>
+            <PlayerProfile />
+          </ProtectedRoute>
+        }
+      />
 
       <Route
         path="/"

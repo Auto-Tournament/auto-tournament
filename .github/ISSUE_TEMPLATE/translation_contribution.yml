@@ -1,0 +1,171 @@
+name: 🌍 Translation Contribution
+description: Add or improve translations for a language
+title: "[i18n] Add/Update <Language> translation"
+labels: ["i18n", "translation", "documentation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping translate MatchZy Auto Tournament! 🌍
+        
+        **Quick Links:**
+        - [Translation Guide](https://mat.sivert.io/development/i18n-and-translation/)
+        - [Quick Start: TRANSLATING.md](../TRANSLATING.md)
+        - [Existing translations](../client/src/locales/)
+
+  - type: dropdown
+    id: contribution-type
+    attributes:
+      label: What are you contributing?
+      description: Select the type of translation work
+      options:
+        - "New language (starting from scratch)"
+        - "Complete existing translation (filling missing keys)"
+        - "Improve existing translation (better wording)"
+        - "Fix translation errors"
+    validations:
+      required: true
+
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      description: What language are you translating to/from?
+      placeholder: "e.g., German (Deutsch), Brazilian Portuguese (Português Brasileiro), Spanish (Español)"
+    validations:
+      required: true
+
+  - type: input
+    id: locale-code
+    attributes:
+      label: Locale Code
+      description: The i18n locale code you'll use
+      placeholder: "e.g., de, pt-BR, es, fr, it, ja, ko"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: native-speaker
+    attributes:
+      label: Are you a native speaker?
+      description: This helps us understand translation quality
+      options:
+        - "Yes, native speaker"
+        - "No, but fluent/proficient"
+        - "Using translation tools with review"
+    validations:
+      required: true
+
+  - type: textarea
+    id: coverage
+    attributes:
+      label: 🎯 Translation Coverage
+      description: What areas have you translated or plan to translate?
+      placeholder: |
+        Check what you've completed or plan to do:
+        - [ ] Core UI (navigation, buttons, common actions)
+        - [ ] Dashboard page
+        - [ ] Teams page
+        - [ ] Players page
+        - [ ] Servers page
+        - [ ] Matches page
+        - [ ] Tournament creation flow
+        - [ ] Tournament live view / brackets
+        - [ ] Settings page
+        - [ ] Templates (tournament, ELO, manual match)
+        - [ ] Veto process
+        - [ ] Public pages (team page, player profile)
+        - [ ] Error messages
+        - [ ] Form validations
+        - [ ] Tooltips and help text
+    validations:
+      required: true
+
+  - type: textarea
+    id: terminology-questions
+    attributes:
+      label: ❓ Terminology Questions (Optional)
+      description: Any CS/esports terms you're unsure how to translate?
+      placeholder: |
+        Example: 
+        - "Skill Rating" vs "ELO" - should I translate these or keep in English?
+        - "Bracket" - is there a common esports term for this in [language]?
+        - "Best of 3 (BO3)" - should I translate or keep abbreviation?
+    validations:
+      required: false
+
+  - type: textarea
+    id: testing-done
+    attributes:
+      label: ✅ Testing Done
+      description: How have you verified your translation?
+      placeholder: |
+        Example:
+        - [ ] Tested in language switcher - language appears and loads
+        - [ ] Walked through Dashboard page
+        - [ ] Created a test tournament
+        - [ ] Checked all major pages for layout issues
+        - [ ] Verified special characters display correctly
+        - [ ] Tested on mobile view
+    validations:
+      required: false
+
+  - type: dropdown
+    id: mui-locale
+    attributes:
+      label: MUI Locale Support
+      description: Does Material UI have a locale for your language?
+      options:
+        - "Yes - I've added it to the theme provider"
+        - "Yes - but I need help wiring it"
+        - "No - MUI doesn't have a locale for this language"
+        - "Not sure / Need to check"
+    validations:
+      required: false
+
+  - type: textarea
+    id: pr-link
+    attributes:
+      label: 🔗 Pull Request Link
+      description: Link to your PR (if you've already created one)
+      placeholder: "https://github.com/sivert-io/matchzy-auto-tournament/pull/XXX"
+    validations:
+      required: false
+
+  - type: textarea
+    id: help-needed
+    attributes:
+      label: 🙏 Help Needed (Optional)
+      description: Is there anything you need help with?
+      placeholder: |
+        Example:
+        - Need help testing with real tournaments
+        - Unsure how to add MUI locale
+        - Want feedback on terminology choices
+        - Need review from another speaker of this language
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I've read the translation guide
+          required: true
+        - label: I've kept the same JSON structure and keys as `en/translation.json`
+          required: true
+        - label: I've registered my language in `client/src/i18n.ts`
+          required: false
+        - label: I've added my language to the LanguageSwitcher component
+          required: false
+        - label: I've tested the translation in the running app
+          required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        ---
+        ## 🎉 Thank You!
+        
+        Your translation helps make MatchZy Auto Tournament accessible to more people around the world. We really appreciate your contribution! 🌍

@@ -15,12 +15,15 @@ import {
   Alert,
   Divider,
   ListItemAvatar,
+  Tooltip,
+  CircularProgress,
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import CloseIcon from '@mui/icons-material/Close';
+import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
@@ -97,6 +100,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   const [resolving, setResolving] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [playerSelectionModalOpen, setPlayerSelectionModalOpen] = useState(false);
+  const [replacePlayerSteamId, setReplacePlayerSteamId] = useState<string | null>(null);
 
   const isEditing = !!team;
 
@@ -208,9 +212,79 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   };
 
   const handleSelectPlayers = (selectedPlayerIds: string[]) => {
-    // Convert selected player IDs to Player objects
-    // We'll need to fetch player details or use the ones from the selection modal
-    // For now, we'll add them as basic player objects and let the user fill in details if needed
+    // If we're in "replace" mode, only the first selected ID is used to replace
+    // the targeted player. Otherwise we append all selected players.
+    if (replacePlayerSteamId) {
+      const replacementId = selectedPlayerIds[0];
+      if (!replacementId) {
+        setReplacePlayerSteamId(null);
+        return;
+      }
+
+      // Prevent replacing with the same player or creating duplicates
+      if (replacementId.toLowerCase() === replacePlayerSteamId.toLowerCase()) {
+        setReplacePlayerSteamId(null);
+        return;
+      }
+      if (players.some((p) => p.steamId.toLowerCase() === replacementId.toLowerCase())) {
+        showWarning(t('teamModal.errors.steamDuplicate'));
+        setReplacePlayerSteamId(null);
+        return;
+      }
+
+      const replaceIndex = players.findIndex(
+        (p) => p.steamId.toLowerCase() === replacePlayerSteamId.toLowerCase()
+      );
+      if (replaceIndex === -1) {
+        setReplacePlayerSteamId(null);
+        return;
+      }
+
+      const loadReplacement = async () => {
+        try {
+          const response = await api.get<{
+            success: boolean;
+            player: { id: string; name: string; avatar?: string; currentElo?: number };
+          }>(`/api/players/${replacementId}`);
+
+          let replacement: Player = {
+            steamId: replacementId,
+            name: `Player ${replacementId.substring(0, 8)}`,
+            avatar: undefined,
+          };
+
+          if (response.success && response.player) {
+            replacement = {
+              steamId: response.player.id,
+              name: response.player.name,
+              avatar: response.player.avatar,
+              elo: response.player.currentElo,
+            };
+          }
+
+          const next = [...players];
+          next[replaceIndex] = replacement;
+          setPlayers(next);
+          showSuccess(t('teamModal.success.playerReplaced'));
+        } catch {
+          const next = [...players];
+          next[replaceIndex] = {
+            steamId: replacementId,
+            name: `Player ${replacementId.substring(0, 8)}`,
+            avatar: undefined,
+          };
+          setPlayers(next);
+          showSuccess(t('teamModal.success.playerReplaced'));
+        } finally {
+          setReplacePlayerSteamId(null);
+        }
+      };
+
+      void loadReplacement();
+      return;
+    }
+
+    // Add mode: append any newly selected players that are not already on the team.
     const newPlayers: Player[] = selectedPlayerIds
       .filter((id) => !players.some((p) => p.steamId.toLowerCase() === id.toLowerCase()))
       .map((id) => ({
@@ -220,7 +294,6 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       }));
 
     if (newPlayers.length > 0) {
-      // Try to fetch player details for selected IDs
       Promise.all(
         newPlayers.map(async (player) => {
           try {
@@ -412,13 +485,31 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                   <ListItem
                     key={player.steamId}
                     secondaryAction={
-                      <IconButton
-                        edge="end"
-                        onClick={() => handleRemovePlayer(player.steamId)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
+                      <Box display="flex" alignItems="center" gap={1}>
+                        <IconButton
+                          edge="end"
+                          size="small"
+                          color="primary"
+                          onClick={() => {
+                            setReplacePlayerSteamId(player.steamId);
+                            setPlayerSelectionModalOpen(true);
+                          }}
+                          data-testid={`team-replace-player-${player.steamId}`}
+                          aria-label={t('teamModal.replacePlayerAria', { name: player.name })}
+                        >
+                          <Tooltip title={t('teamModal.replacePlayerTooltip')}>
+                            <SwapHorizIcon fontSize="small" />
+                          </Tooltip>
+                        </IconButton>
+                        <IconButton
+                          edge="end"
+                          onClick={() => handleRemovePlayer(player.steamId)}
+                          color="error"
+                          size="small"
+                        >
+                          <DeleteIcon fontSize="small" />
+                        </IconButton>
+                      </Box>
                     }
                   >
                     <ListItemAvatar>
@@ -433,11 +524,21 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
                       primary={player.name}
                       secondary={
                         <>
-                          <Typography component="span" variant="caption" display="block" fontFamily="monospace">
+                          <Typography
+                            component="span"
+                            variant="caption"
+                            display="block"
+                            fontFamily="monospace"
+                          >
                             {player.steamId}
                           </Typography>
                           {player.elo !== undefined && (
-                            <Typography component="span" variant="caption" color="text.secondary" display="block">
+                            <Typography
+                              component="span"
+                              variant="caption"
+                              color="text.secondary"
+                              display="block"
+                            >
                               ELO: {player.elo}
                             </Typography>
                           )}
@@ -553,6 +654,7 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
             onClick={handleSave}
             variant="contained"
             disabled={saving}
+            startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{ ml: isEditing ? 0 : 'auto' }}
           >
             {saving
@@ -576,8 +678,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       <PlayerSelectionModal
         open={playerSelectionModalOpen}
         teamId={team?.id}
-        selectedPlayerIds={players.map((p) => p.steamId)}
-        onClose={() => setPlayerSelectionModalOpen(false)}
+        selectedPlayerIds={replacePlayerSteamId ? [] : players.map((p) => p.steamId)}
+        maxSelection={replacePlayerSteamId ? 1 : undefined}
+        onClose={() => {
+          setPlayerSelectionModalOpen(false);
+          setReplacePlayerSteamId(null);
+        }}
         onSelect={handleSelectPlayers}
       />
     </>

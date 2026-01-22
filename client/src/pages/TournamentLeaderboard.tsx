@@ -35,6 +35,7 @@ import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -107,9 +108,22 @@ export default function TournamentLeaderboard() {
           document.title = `${response.tournament.name} - Leaderboard`;
         }
       }
-    } catch (err) {
-      setError('Failed to load tournament leaderboard');
-      console.error(err);
+    } catch (err: unknown) {
+      // Treat 404 / "not found" as a normal empty state instead of a hard error,
+      // so a fresh install without a tournament doesn't look broken.
+      const message =
+        err instanceof Error ? err.message : typeof err === 'string' ? err : '';
+      const isNotFound =
+        typeof message === 'string' &&
+        (message.includes('404') || message.toLowerCase().includes('not found'));
+
+      if (isNotFound) {
+        setData(null);
+        setError('');
+      } else {
+        setError('Failed to load tournament leaderboard');
+        console.error(err);
+      }
     } finally {
       if (showLoading) {
         setLoading(false);
@@ -241,8 +255,9 @@ export default function TournamentLeaderboard() {
 
   if (loading) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
-        <Container maxWidth="lg">
+      <Box minHeight="100vh" bgcolor="background.default">
+        <TopNavBar />
+        <Container maxWidth="lg" sx={{ py: 6 }}>
           <Box display="flex" justifyContent="center" alignItems="center" minHeight="400px">
             <CircularProgress />
           </Box>
@@ -251,11 +266,62 @@ export default function TournamentLeaderboard() {
     );
   }
 
-  if (error || !data) {
+  if (error) {
     return (
-      <Box minHeight="100vh" bgcolor="background.default" py={6}>
-        <Container maxWidth="lg">
-          <Alert severity="error">{error || 'Tournament not found'}</Alert>
+      <Box minHeight="100vh" bgcolor="background.default">
+        <TopNavBar />
+        <Container maxWidth="lg" sx={{ py: 6 }}>
+          <Alert severity="error">{error}</Alert>
+        </Container>
+      </Box>
+    );
+  }
+
+  // If there's simply no data (for example, no tournament has been created yet),
+  // show a gentle empty state instead of crashing or displaying an error.
+  if (!data) {
+    return (
+      <Box
+        minHeight="100vh"
+        bgcolor="background.default"
+        data-testid="public-leaderboard-page"
+      >
+        <TopNavBar />
+        <Container maxWidth="lg" sx={{ py: 6 }}>
+          <Stack spacing={3}>
+            <Card>
+              <CardContent>
+                <Box
+                  display="flex"
+                  alignItems="center"
+                  gap={2}
+                  role="status"
+                  aria-live="polite"
+                  aria-labelledby="tournament-leaderboard-empty-title"
+                  aria-describedby="tournament-leaderboard-empty-description"
+                >
+                  <EmojiEventsIcon sx={{ fontSize: 40, color: 'text.disabled' }} aria-hidden="true" />
+                  <Box>
+                    <Typography
+                      id="tournament-leaderboard-empty-title"
+                      variant="h5"
+                      component="h2"
+                      fontWeight={600}
+                    >
+                      No tournament leaderboard yet
+                    </Typography>
+                    <Typography
+                      id="tournament-leaderboard-empty-description"
+                      variant="body2"
+                      color="text.secondary"
+                    >
+                      Once a tournament is created and matches are played, standings will appear here.
+                    </Typography>
+                  </Box>
+                </Box>
+              </CardContent>
+            </Card>
+          </Stack>
         </Container>
       </Box>
     );
@@ -374,10 +440,10 @@ export default function TournamentLeaderboard() {
     <Box
       minHeight="100vh"
       bgcolor="background.default"
-      py={6}
       data-testid="public-leaderboard-page"
     >
-      <Container maxWidth="lg">
+      <TopNavBar />
+      <Container maxWidth="lg" sx={{ py: 6 }}>
         <Stack spacing={3}>
           {/* Tournament Header */}
           <Card>
