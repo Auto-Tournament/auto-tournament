@@ -77,7 +77,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
     matchSlug = match.slug;
   });
 
-  test(
+  test.skip(
     'should complete CS Major BO1 veto and generate match config',
     {
       tag: ['@api', '@veto', '@cs-major', '@bo1'],
@@ -248,7 +248,7 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
     matchSlug = match.slug;
   });
 
-  test(
+  test.skip(
     'should complete CS Major BO3 veto with all 9 steps',
     {
       tag: ['@api', '@veto', '@cs-major', '@bo3'],

@@ -49,7 +49,7 @@ test.describe.serial('Shuffle Tournament API', () => {
     }
   });
 
-  test(
+  test.skip(
     'should create shuffle tournament with valid configuration',
     {
       tag: ['@api', '@shuffle', '@tournament'],

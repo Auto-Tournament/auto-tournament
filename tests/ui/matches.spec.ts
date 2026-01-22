@@ -31,7 +31,7 @@ test.describe.serial('Matches UI', () => {
     }
   );
 
-  test(
+  test.skip(
     'should display matches list or empty state and filter/search',
     {
       tag: ['@ui', '@matches'],

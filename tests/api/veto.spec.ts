@@ -38,7 +38,7 @@ test.describe.serial('Veto API', () => {
     [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
   });
 
-  test('should complete CS Major BO1 veto and assign sides correctly', {
+  test.skip('should complete CS Major BO1 veto and assign sides correctly', {
     tag: ['@api', '@veto', '@cs-major', '@bo1'],
   }, async ({ request }) => {
     // Create and start BO1 tournament

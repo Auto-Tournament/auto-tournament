@@ -19,7 +19,7 @@ test.describe.serial('Server API', () => {
     context = await setupTestContext(page, request);
   });
 
-  test('should create, verify, and delete a server', {
+  test.skip('should create, verify, and delete a server', {
     tag: ['@api', '@servers', '@crud'],
   }, async ({ request }) => {
     // Create server

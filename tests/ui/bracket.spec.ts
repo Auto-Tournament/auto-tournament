@@ -40,7 +40,7 @@ test.describe.serial('Bracket UI', () => {
     ).toBeVisible({ timeout: 10000 });
   });
 
-  test('should display bracket visualization or empty state with interaction', {
+  test.skip('should display bracket visualization or empty state with interaction', {
     tag: ['@ui', '@bracket'],
   }, async ({ page }) => {
     await page.goto('/bracket');

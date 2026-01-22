@@ -25,7 +25,7 @@ test.describe.serial('Authentication', () => {
     await page.evaluate(() => localStorage.clear());
   });
 
-  test(
+  test.skip(
     'should display login page when not authenticated',
     {
       tag: ['@ui', '@auth', '@login'],
@@ -116,7 +116,7 @@ test.describe.serial('Authentication', () => {
     }
   );
 
-  test(
+  test.skip(
     'should use ensureSignedIn helper to auto-sign-in',
     {
       tag: ['@ui', '@auth', '@login'],

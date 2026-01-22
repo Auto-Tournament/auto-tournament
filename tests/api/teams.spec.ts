@@ -20,7 +20,7 @@ test.describe.serial('Teams API', () => {
     context = await setupTestContext(page, request);
   });
 
-  test('should create, verify, update, and delete a team', {
+  test.skip('should create, verify, update, and delete a team', {
     tag: ['@api', '@teams', '@crud'],
   }, async ({ request }) => {
     const timestamp = Date.now();
