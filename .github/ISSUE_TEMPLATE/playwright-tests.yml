@@ -1,0 +1,140 @@
+name: 🧪 Playwright E2E Tests
+description: Add end-to-end testing with Playwright
+title: "[TESTING] Add Playwright E2E Tests for "
+labels: ["enhancement", "testing", "playwright"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this template to track Playwright end-to-end test implementation for specific features or flows.
+
+  - type: textarea
+    id: overview
+    attributes:
+      label: Overview
+      description: What feature or user flow needs E2E testing?
+      placeholder: |
+        Example: "Add comprehensive E2E tests for the matchmaking queue system including join/leave queue, match acceptance, and veto flow."
+    validations:
+      required: true
+
+  - type: textarea
+    id: goals
+    attributes:
+      label: Goals
+      description: What are the testing objectives?
+      value: |
+        - Set up Playwright testing framework (if not already done)
+        - Write tests for critical user flows
+        - Ensure tests can be run locally and in CI/CD
+        - Use tags for test organization and filtering
+        - Generate HTML reports for test results
+    validations:
+      required: true
+
+  - type: textarea
+    id: test-coverage
+    attributes:
+      label: Test Coverage Plan
+      description: List the specific test cases that need to be implemented
+      placeholder: |
+        ### Matchmaking Queue Tests (`@matchmaking`, `@queue`)
+        - [ ] Join queue successfully
+        - [ ] Leave queue before match found
+        - [ ] Display accurate queue count
+        - [ ] Match found triggers acceptance UI
+        - [ ] Accept match within timeout
+        - [ ] Decline match returns to queue
+        
+        ### Veto Flow Tests (`@veto`, `@matchmaking`)
+        - [ ] Display veto UI after all players accept
+        - [ ] Ban maps in correct order
+        - [ ] Pick side successfully
+        - [ ] Show server info after veto completes
+    validations:
+      required: true
+
+  - type: textarea
+    id: technical-details
+    attributes:
+      label: Technical Details
+      description: Playwright configuration, test structure, and technical considerations
+      value: |
+        ### Playwright Configuration
+        - **Reporter**: HTML report (full, not basic)
+        - **Browsers**: Chromium, Firefox, WebKit
+        - **Tags**: Used for filtering tests (e.g., `@auth`, `@teams`, `@matchmaking`)
+        - **Base URL**: Configurable via `PLAYWRIGHT_BASE_URL` environment variable (default: `http://localhost:3069`)
+        
+        ### Test File Location
+        ```
+        tests/
+        ├── [feature-name].spec.ts   # Your new test file
+        ```
+        
+        ### Running Tests
+        ```bash
+        # Run all tests
+        yarn test:e2e
+        
+        # Run tests with specific tags
+        yarn test:e2e --grep @matchmaking
+        
+        # Run tests in UI mode
+        yarn test:e2e:ui
+        
+        # Generate HTML report
+        yarn test:e2e:report
+        ```
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Mark items as tests are implemented
+      options:
+        - label: Playwright is installed and configured
+        - label: Test files are created with proper tags
+        - label: HTML reporter is configured
+        - label: Tests can be filtered by tags
+        - label: Tests run successfully locally
+        - label: Tests run successfully in CI/CD
+        - label: Documentation is updated with testing instructions
+    validations:
+      required: false
+
+  - type: textarea
+    id: environment-variables
+    attributes:
+      label: Environment Variables
+      description: List any required environment variables for the tests
+      placeholder: |
+        - `API_TOKEN`: API token for authentication (default: `admin123`)
+        - `PLAYWRIGHT_BASE_URL`: Base URL for tests (default: `http://localhost:3069`)
+        - `TEST_STEAM_ID`: Steam ID for player authentication tests
+    validations:
+      required: false
+
+  - type: textarea
+    id: related-issues
+    attributes:
+      label: Related Issues/PRs
+      description: Link to related features, bugs, or documentation
+      placeholder: |
+        - Related feature: #123
+        - Part of milestone: v2.0.0
+        - Documentation PR: #456
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional Context
+      description: Any other relevant information, challenges, or considerations
+      placeholder: |
+        Example: "These tests require multiple browser contexts to simulate different users. May need to use Playwright's multi-context API."
+    validations:
+      required: false

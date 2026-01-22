@@ -52,6 +52,20 @@ For detailed contribution guidelines, please see:
 - ✅ Follow existing code style
 - ✅ Keep PRs focused on one feature/fix
 
+## 🌍 Translating the Project
+
+Want to help translate MatchZy Auto Tournament into your language? We'd love your help!
+
+**Quick Start:** See [TRANSLATING.md](../TRANSLATING.md) for a 5-step guide.
+
+**Full Guide:** [i18n Documentation](https://mat.sivert.io/development/i18n-and-translation/)
+
+**Currently supported:**
+- 🇬🇧 English
+- 🇨🇳 Simplified Chinese
+
+Translation contributions are highly valued and help make the platform accessible worldwide! 🌍
+
 ## 🐛 Reporting Issues
 
 Found a bug? Please [open an issue](https://github.com/sivert-io/matchzy-auto-tournament/issues/new) with:

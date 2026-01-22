@@ -97,9 +97,15 @@ Dashboard → New Tournament → Select format → Add teams → Start!
 
 ## 🤝 Contributing
 
-Contributions welcome! Bug fixes, features, docs improvements, or ideas.
+Contributions welcome! Bug fixes, features, docs improvements, translations, or ideas.
 
-**[Read Contributing Guide](.github/CONTRIBUTING.md)**
+**Ways to contribute:**
+- 🐛 [Report bugs or request features](.github/ISSUE_TEMPLATE/)
+- 💻 [Submit code improvements](.github/CONTRIBUTING.md)
+- 🌍 [Translate to your language](TRANSLATING.md)
+- 📚 [Improve documentation](https://mat.sivert.io/)
+
+**[Read Full Contributing Guide](.github/CONTRIBUTING.md)**
 
 ---
 

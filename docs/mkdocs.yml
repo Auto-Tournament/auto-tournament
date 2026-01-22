@@ -173,10 +173,10 @@ nav:
   - For Developers:
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md
+      - Translation Guide 🌍: development/i18n-and-translation.md
       - Testing PRs: development/testing-pr.md
       - CS2 Server Manager: guides/cs2-server-manager.md
       - Advanced:
-          - Internationalization: development/i18n-and-translation.md
           - Test Parallelization: development/test-parallelization.md
           - Auth Provider Examples: development/auth-providers-examples.md
   - Related:

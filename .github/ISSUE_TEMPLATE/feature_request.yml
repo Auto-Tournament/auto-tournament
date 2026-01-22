@@ -1,0 +1,100 @@
+name: 🚀 Feature Request
+description: Suggest a new feature or improvement
+title: "[FEATURE] "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for suggesting a feature! Please provide as much detail as possible to help us understand and prioritize your request.
+
+  - type: textarea
+    id: feature-description
+    attributes:
+      label: 🚀 Feature Description
+      description: A clear description of the feature you'd like to see
+      placeholder: |
+        Example: "Add support for Swiss-system tournament format with configurable rounds and tiebreakers."
+    validations:
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 💡 Motivation
+      description: Why is this feature needed? What problem does it solve?
+      placeholder: |
+        Example: "Swiss format is popular for large tournaments (16+ teams) because it ensures every team plays a set number of matches and provides better seeding for playoffs. Currently, we only support single/double elimination which doesn't work well for large player counts."
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposed-solution
+    attributes:
+      label: 📝 Proposed Solution
+      description: How do you envision this feature working?
+      placeholder: |
+        Example:
+        1. Add "Swiss" as a tournament type option
+        2. Admin configures number of rounds (e.g., 5 rounds)
+        3. System pairs teams with similar win/loss records each round
+        4. After all rounds, display final standings
+        5. Option to advance top X teams to playoff bracket
+    validations:
+      required: true
+
+  - type: textarea
+    id: use-case
+    attributes:
+      label: 🎯 Use Case
+      description: Describe a specific scenario where this feature would be useful
+      placeholder: |
+        Example: "I run monthly CS2 tournaments with 20 teams. Swiss format would let me run 5 rounds over 2 days, then advance the top 8 to a single-elimination playoff. This is much better than a 20-team single-elimination bracket which would be too long."
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 🔄 Alternatives Considered
+      description: Have you considered any alternative solutions or features?
+      placeholder: |
+        Example: "I considered running separate single-elimination groups and merging results, but that's manual and error-prone. I also looked at external bracket tools, but I'd lose the auto-server allocation and live stats integration."
+    validations:
+      required: false
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: 📎 Additional Context
+      description: Any other context, mockups, links to examples, or screenshots
+      placeholder: |
+        Example: "Here's how FACEIT does Swiss: [link]. Here's a mockup of what the UI could look like: [image]"
+    validations:
+      required: false
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: How important is this feature to you?
+      options:
+        - "Critical - Blocking my use of the platform"
+        - "High - Would significantly improve my workflow"
+        - "Medium - Nice to have"
+        - "Low - Just an idea"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you be willing to help implement this?
+      options:
+        - label: I'd be willing to submit a PR for this feature
+          required: false
+        - label: I'd be willing to help test this feature
+          required: false
+        - label: I'd be willing to help with documentation
+          required: false

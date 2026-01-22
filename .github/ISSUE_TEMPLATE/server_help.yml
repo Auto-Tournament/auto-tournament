@@ -1,0 +1,184 @@
+name: 🖥️ CS2 Server Setup Help
+description: Get help setting up or troubleshooting CS2 servers with MatchZy
+title: "[SERVER HELP] "
+labels: ["question", "server-setup", "help wanted"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Need help with CS2 server setup? We'll help you get configured! 
+        
+        **Quick Resources:**
+        - [Server Setup Guide](https://mat.sivert.io/getting-started/server-setup/)
+        - [CS2 Server Manager Tool](https://mat.sivert.io/guides/cs2-server-manager/)
+        - [MatchZy Enhanced Releases](https://github.com/sivert-io/matchzy-Enhanced/releases)
+
+  - type: dropdown
+    id: server-issue-type
+    attributes:
+      label: What do you need help with?
+      description: Select the primary issue you're facing
+      options:
+        - "Initial server setup (never done this before)"
+        - "Server won't connect to platform"
+        - "Webhook/RCON configuration"
+        - "MatchZy plugin not working"
+        - "Match won't load on server"
+        - "Server shows offline in platform"
+        - "Performance issues (lag, crashes)"
+        - "Config/ConVar questions"
+        - "Other (specify below)"
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem-description
+    attributes:
+      label: 🎯 Describe Your Issue
+      description: What's not working or what do you need help with?
+      placeholder: |
+        Example: "I've installed CounterStrikeSharp and MatchZy Enhanced v1.3.6 on my Ubuntu server. The server shows up in the platform but status is 'offline'. Matches won't load onto it."
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-tried
+    attributes:
+      label: 🔧 What Have You Tried?
+      description: What steps have you already taken?
+      placeholder: |
+        Example:
+        - Verified RCON password is correct
+        - Checked server is online (players can connect)
+        - Restarted CS2 server
+        - Checked MatchZy plugin loads (saw in console)
+        - Webhook URL is configured in matchzy.json
+    validations:
+      required: true
+
+  - type: dropdown
+    id: server-hosting
+    attributes:
+      label: Server Hosting
+      description: Where is your CS2 server hosted?
+      options:
+        - "Self-hosted (own hardware)"
+        - "VPS/Cloud (AWS, DigitalOcean, etc.)"
+        - "Dedicated game server provider"
+        - "Local/development machine"
+        - "Using CS2 Server Manager tool"
+        - "Other (specify below)"
+    validations:
+      required: true
+
+  - type: input
+    id: server-os
+    attributes:
+      label: Server Operating System
+      description: What OS is your CS2 server running?
+      placeholder: "e.g., Ubuntu 22.04, Windows Server 2022, Debian 12"
+    validations:
+      required: true
+
+  - type: input
+    id: matchzy-version
+    attributes:
+      label: MatchZy Enhanced Version
+      description: What version of MatchZy Enhanced is installed?
+      placeholder: "e.g., v1.3.6 (check addons/counterstrikesharp/plugins/MatchZy/MatchZy.dll properties)"
+    validations:
+      required: true
+
+  - type: input
+    id: css-version
+    attributes:
+      label: CounterStrikeSharp Version
+      description: What version of CounterStrikeSharp (CSS)?
+      placeholder: "e.g., v270 (check 'css_plugins list' in server console)"
+    validations:
+      required: false
+
+  - type: textarea
+    id: server-logs
+    attributes:
+      label: 📋 Server Console Output
+      description: |
+        **Required** - Paste recent server console output, especially:
+        - Server startup
+        - MatchZy plugin loading
+        - Any errors or warnings
+        - When you try to load a match
+      placeholder: |
+        Example:
+        ```
+        [CounterStrikeSharp] Loading plugin: MatchZy v1.3.6
+        [MatchZy] Initializing...
+        [MatchZy] Webhook URL: http://192.168.1.100:3069/api/webhook/events
+        [MatchZy] Plugin loaded successfully
+        
+        [ERROR] Failed to send webhook: Connection refused
+        ```
+      render: shell
+    validations:
+      required: true
+
+  - type: textarea
+    id: platform-config
+    attributes:
+      label: ⚙️ Platform Configuration
+      description: How is this server configured in the platform?
+      placeholder: |
+        From Settings → Servers page:
+        - Server name: "Server 1"
+        - Host: 192.168.1.50
+        - Port: 27015
+        - RCON password: (configured, not shown here)
+        - Status showing: "offline"
+    validations:
+      required: true
+
+  - type: textarea
+    id: network-info
+    attributes:
+      label: 🌐 Network Information
+      description: Network setup between platform and CS2 server
+      placeholder: |
+        - Platform hosted: Same server / Different server / Docker
+        - Can platform reach server IP? (ping test)
+        - Firewall rules: Ports 27015, 27016 open
+        - Using private network / public IP / NAT
+        - Webhook URL reachable from CS2 server? (curl test)
+    validations:
+      required: false
+
+  - type: textarea
+    id: config-files
+    attributes:
+      label: 📄 Relevant Config Files
+      description: |
+        Optional but helpful - paste relevant config snippets:
+        - matchzy.json (webhook URL)
+        - server.cfg
+        - gamemode_competitive.cfg
+      placeholder: |
+        matchzy.json:
+        ```json
+        {
+          "EventsUrl": "http://192.168.1.100:3069/api/webhook/events"
+        }
+        ```
+      render: json
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Pre-submission Checklist
+      options:
+        - label: I've checked the server setup documentation
+          required: true
+        - label: I've included server console output
+          required: true
+        - label: I've verified CS2 server is running and players can connect
+          required: false

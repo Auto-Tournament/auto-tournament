@@ -392,6 +392,25 @@ Examples:
 - `Fix: Match not loading on server allocation`
 - `Update: Improve veto UI responsiveness`
 
+## Translation & Internationalization 🌍
+
+Want to help translate MatchZy Auto Tournament into your language?
+
+**Quick Start:** See [Translation Guide](i18n-and-translation.md) for complete instructions.
+
+**Currently supported languages:**
+- 🇬🇧 English (en)
+- 🇨🇳 Simplified Chinese (zh-CN)
+
+Translation contributions are highly valued! The process is straightforward:
+1. Copy `client/src/locales/en/translation.json` to your language folder
+2. Translate the values (keep the keys in English)
+3. Register your language in `client/src/i18n.ts`
+4. Add to the language switcher component
+5. Test and submit a PR
+
+For detailed instructions, terminology guidelines, and examples, see the [full i18n guide](i18n-and-translation.md).
+
 ## Documentation
 
 When adding features:
