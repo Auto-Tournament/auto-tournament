@@ -8,14 +8,101 @@
 
 **Install and run in 5 minutes:**
 
-```bash
-git clone https://github.com/sivert-io/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
-cp example.env .env
-# Edit .env and set SESSION_SECRET, SERVER_TOKEN, STEAM_API_KEY (see example.env for details)
-docker compose -f docker/docker-compose.yml up -d
-# Open http://localhost:3069
+**1. Create a directory and save as `docker-compose.yml`:**
+
+```yaml
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: matchzy-postgres
+    restart: unless-stopped
+    environment:
+      - POSTGRES_USER=${DB_USER:-postgres}
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-postgres}
+      - POSTGRES_DB=${DB_NAME:-matchzy_tournament}
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U ${DB_USER:-postgres}']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - matchzy-network
+
+  matchzy-tournament:
+    image: sivertio/matchzy-auto-tournament:latest
+    container_name: matchzy-tournament-api
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - '${HOST_PORT:-3069}:3069'
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DB_HOST=postgres
+      - DATABASE_URL=postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-matchzy_tournament}
+      - SESSION_SECRET=${SESSION_SECRET:-}
+    volumes:
+      - ./data:/app/data
+    healthcheck:
+      test: ['CMD', 'wget', '--no-verbose', '--tries=1', '--spider', 'http://localhost:3069/health']
+      interval: 30s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+    networks:
+      - matchzy-network
+
+networks:
+  matchzy-network:
+    driver: bridge
+
+volumes:
+  postgres-data:
+    driver: local
 ```
+
+**2. Save as `.env` (create this file in the same directory):**
+
+```bash
+# Session secret (required - generate with: openssl rand -base64 32)
+SESSION_SECRET=change-this-session-secret
+
+# CS2 server authentication token (required for servers to connect)
+SERVER_TOKEN=your-secure-token-here
+
+# Steam API key (required for Steam login - get from https://steamcommunity.com/dev/apikey)
+STEAM_API_KEY=your-steam-api-key
+
+# Frontend base URL (for auth redirects)
+FRONTEND_BASE_URL=http://localhost:3069
+
+# Database (optional - defaults shown)
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=matchzy_tournament
+
+# Auth settings
+AUTH_STEAM_ENABLED=true
+
+# Logging
+LOG_LEVEL=info
+```
+
+**3. Start the stack:**
+
+```bash
+docker compose up -d
+```
+
+**4. Open in browser:** [http://localhost:3069](http://localhost:3069)
+
+> **Note:** You can configure `SERVER_TOKEN` and `STEAM_API_KEY` in **Settings** after first login, but `SESSION_SECRET` must be set in `.env` for session persistence.
 
 [**Full Installation Guide →**](getting-started/)
 
