@@ -9,7 +9,31 @@
 **If you land on your player profile:**
 
 - **You're an admin:** Click **Dashboard** in the top bar, or open the avatar menu (top right) → **Dashboard**. On your profile page, use the **Go to Admin Dashboard** button.
-- **You're not an admin:** Only administrators can access the dashboard. Ask an existing admin to add you as one. The first user to sign in with Steam is automatically promoted to admin.
+- **You're not an admin:** Only administrators can access the dashboard. See below.
+
+### I can't access the admin dashboard – am I an admin?
+
+**Check your status:** After signing in with Steam, open:
+
+```
+https://your-mat-url/api/auth/admin-status
+```
+
+(Use the same domain and port as the app, with your browser logged in.) The response shows `isAdmin`, `hasPlayerRecord`, `reason`, and a `hint` describing what to do.
+
+**How admin promotion works:**
+
+1. **First user only:** The *first* Steam user to sign in (when there are no other players) is automatically promoted to admin.
+2. **Fresh DB:** If you "restart" or reset the database, all players are wiped. The *first* person to sign in with Steam after that becomes admin again.
+3. **Already have players?** If anyone signed in before you (or players were imported), no one is auto‑promoted. An existing admin must add you as admin manually.
+
+**Common mistakes:**
+
+- **Restarted DB but didn’t sign in first:** Someone else signed in before you → they’re admin, you’re not. Have them add you, or reset DB again and be the first to sign in.
+- **Expecting admin without Steam:** Admin is always tied to a Steam ID. Sign in with Steam (or link Steam via Connect Steam if you use Keycloak/Discord/GitHub).
+- **Not in the players table:** You need a player record. Either enable self‑registration (Settings), or have an admin add you.
+
+**Debugging:** Set `LOG_LEVEL=debug` and check API logs when you sign in. Look for `[Steam callback] Redirect decision` (shows `isAdmin`, `redirectTo`) and `[ensureFirstAdmin]` (explains why promotion was skipped or applied).
 
 ---
 

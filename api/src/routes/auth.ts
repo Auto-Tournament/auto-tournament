@@ -291,11 +291,24 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       const baseUrl = getFrontendBaseUrl(req);
       try {
         const player = await playerService.getPlayerById(steamId);
+        const hasPlayer = !!player;
         const isAdmin = player?.isAdmin === true;
         const redirectTo = isAdmin ? `${baseUrl}/` : `${baseUrl}/player/${steamId}`;
+        log.info('[Steam callback] Redirect decision', {
+          steamId,
+          hasPlayer,
+          isAdmin,
+          redirectTo,
+        });
         return res.redirect(302, redirectTo);
       } catch (redirectError) {
-        log.warn('Failed to load player when deciding Steam redirect, falling back to player page', redirectError as Error);
+        log.warn(
+          '[Steam callback] Failed to load player when deciding redirect, falling back to player page',
+          {
+            steamId,
+            error: (redirectError as Error).message,
+          }
+        );
         const fallback = `${baseUrl}/player/${steamId}`;
         return res.redirect(302, fallback);
       }
@@ -823,6 +836,69 @@ router.get('/me', (req: Request, res: Response) => {
     log.warn('Failed to read player_steam_id cookie', error as Error);
     return res.json({
       authenticated: false,
+    });
+  }
+});
+
+/**
+ * Debug endpoint: admin status for the current user (player_steam_id cookie).
+ * Use this to troubleshoot "can't access admin" issues.
+ * Returns isAdmin, hasPlayerRecord, and a short reason.
+ */
+router.get('/admin-status', async (req: Request, res: Response) => {
+  try {
+    const cookies = parseCookies(req.headers.cookie);
+    const steamId = cookies.player_steam_id?.trim() || null;
+
+    if (!steamId) {
+      return res.json({
+        success: true,
+        steamId: null,
+        isAdmin: false,
+        hasPlayerRecord: false,
+        reason: 'no_steam_cookie',
+        hint: 'Sign in with Steam first. The player_steam_id cookie is set after Steam login.',
+      });
+    }
+
+    const player = await playerService.getPlayerById(steamId);
+    const hasPlayerRecord = !!player;
+    const isAdmin = player?.isAdmin === true;
+
+    let reason: string;
+    if (!hasPlayerRecord) {
+      reason = 'no_player_record';
+    } else if (isAdmin) {
+      reason = 'admin';
+    } else {
+      reason = 'not_admin';
+    }
+
+    const hasAnyAdmin = await playerService.hasAnyAdmin();
+    const hint =
+      !hasPlayerRecord
+        ? 'You are not in the players table. Ask an admin to add you, or enable self-registration.'
+        : !isAdmin && hasAnyAdmin
+          ? 'An admin already exists. Only the first user to sign in (after DB reset) is auto-promoted. Ask an existing admin to grant you access.'
+          : !isAdmin
+            ? 'No admins exist yet. The first user to sign in with Steam is auto-promoted. Ensure you are the only player, then sign in again.'
+            : undefined;
+
+    log.debug('[auth/admin-status]', { steamId, isAdmin, hasPlayerRecord, reason });
+
+    return res.json({
+      success: true,
+      steamId,
+      isAdmin,
+      hasPlayerRecord,
+      reason,
+      hint,
+    });
+  } catch (error) {
+    log.warn('Failed to compute admin status', { error: (error as Error).message });
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to compute admin status',
     });
   }
 });

@@ -335,43 +335,49 @@ class PlayerService {
     );
 
     if (existingAdmin) {
-      // An admin already exists – do not change anything automatically.
+      log.debug('[ensureFirstAdmin] An admin already exists, skipping', {
+        steamId,
+        existingAdminId: existingAdmin.id,
+      });
       return;
     }
 
-    // Count total players to enforce "first ever user only" semantics.
     const countRow = await db.queryOneAsync<{ count: number | string }>(
       'SELECT COUNT(1) as count FROM players',
       []
     );
     const totalPlayers = Number(countRow?.count ?? 0);
 
-    // If there are already multiple players, never auto‑promote anyone.
+    if (totalPlayers === 0) {
+      log.info('[ensureFirstAdmin] No players in DB yet; cannot promote. Create player first.', {
+        steamId,
+      });
+      return;
+    }
+
     if (totalPlayers > 1) {
       log.info(
-        `Skipping auto‑admin promotion for ${steamId} because there are already ${totalPlayers} players`
+        '[ensureFirstAdmin] Skipping auto‑admin promotion: multiple players exist',
+        { steamId, totalPlayers }
       );
       return;
     }
 
-    // If there is exactly one player, only promote when that record matches
-    // the current Steam ID (true "first user" semantics).
-    if (totalPlayers === 1) {
-      const firstPlayer = await db.queryOneAsync<{ id: string }>(
-        'SELECT id FROM players ORDER BY created_at ASC LIMIT 1',
-        []
-      );
+    const firstPlayer = await db.queryOneAsync<{ id: string }>(
+      'SELECT id FROM players ORDER BY created_at ASC LIMIT 1',
+      []
+    );
 
-      if (!firstPlayer || firstPlayer.id !== steamId) {
-        log.info(
-          `Skipping auto‑admin promotion for ${steamId} because first player record is ${firstPlayer?.id}`
-        );
-        return;
-      }
+    if (!firstPlayer || firstPlayer.id !== steamId) {
+      log.info('[ensureFirstAdmin] Skipping: first player does not match current Steam ID', {
+        steamId,
+        firstPlayerId: firstPlayer?.id ?? null,
+      });
+      return;
     }
 
     await this.updatePlayer(steamId, { isAdmin: true });
-    log.success(`Promoted first Steam user to admin: ${steamId}`);
+    log.info('[ensureFirstAdmin] Promoted first Steam user to admin', { steamId });
   }
 
   /**
