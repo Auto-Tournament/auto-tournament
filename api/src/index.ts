@@ -11,7 +11,7 @@ import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
 import { swaggerSpec } from './config/swagger';
-import { log, LOG_HTTP_REQUESTS } from './utils/logger';
+import { log, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
 import { serverService } from './services/serverService';
@@ -346,6 +346,11 @@ cleanupOldLogs(30);
       log.server(`Server running on port ${PORT}`);
       log.server(`Listening on: all interfaces (IPv4 & IPv6)`);
       log.server(`Environment: ${process.env.NODE_ENV || 'development'}`);
+      log.server(
+        `Logging: LOG_LEVEL=${process.env.LOG_LEVEL || 'info'} | ` +
+          `DB verbose=${LOG_DB_VERBOSE} | DB values=${LOG_DB_VALUES} | ` +
+          `HTTP requests=${LOG_HTTP_REQUESTS}`
+      );
 
       // Vite-style URL summary (Local + Network)
       const protocol = 'http';

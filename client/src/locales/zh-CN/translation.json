@@ -23,7 +23,10 @@
     "configurationSection": "配置",
     "systemSection": "系统",
     "documentation": "文档",
-    "signOut": "退出登录"
+    "signOut": "退出登录",
+    "myProfile": "我的资料",
+    "goToAdminDashboard": "前往管理控制台",
+    "goToAdminDashboardHint": "您正在查看自己的选手资料。打开管理控制台以管理战队、锦标赛和服务器。"
   },
   "layout": {
     "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",

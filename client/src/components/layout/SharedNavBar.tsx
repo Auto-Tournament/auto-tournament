@@ -1,5 +1,6 @@
 import React from 'react';
 import {
+  Avatar,
   Box,
   Button,
   IconButton,
@@ -9,12 +10,12 @@ import {
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
-import LogoutIcon from '@mui/icons-material/Logout';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 
 interface SharedNavBarProps {
@@ -36,6 +37,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     needsSteamLink,
     loginWithSteam,
     logout,
+    adminProfileName,
+    adminProfileAvatarUrl,
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -187,42 +190,43 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
         )}
 
         {isAuthenticated && (
-          <>
-            <Button
-              color="inherit"
-              href="https://mat.sivert.io/"
-              target="_blank"
-              rel="noopener noreferrer"
-              startIcon={<LibraryBooksIcon />}
-            >
-              {t('nav.documentation')}
-            </Button>
-            {/* Only show a standalone sign-out button when no player avatar is available.
-                For users with a Steam-linked profile, sign-out lives in the avatar menu
-                to keep the navbar cleaner. */}
-            {!playerSteamId && (
-              <Button
-                color="error"
-                onClick={handleLogout}
-                startIcon={<LogoutIcon />}
-                data-testid="sign-out-button"
-              >
-                {t('nav.signOut')}
-              </Button>
-            )}
-          </>
+          <Button
+            color="inherit"
+            href="https://mat.sivert.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+            startIcon={<LibraryBooksIcon />}
+          >
+            {t('nav.documentation')}
+          </Button>
         )}
 
-        {playerSteamId ? (
+        {playerSteamId || isAuthenticated ? (
           <>
-            <IconButton onClick={handleAvatarMenuOpen} size="small" sx={{ ml: 1 }}>
-              <PlayerAvatar
-                id={playerSteamId}
-                name={playerName}
-                avatarUrl={playerAvatarUrl}
-                size={32}
-                isLoading={isLoadingPlayer}
-              />
+            <IconButton
+              onClick={handleAvatarMenuOpen}
+              size="small"
+              sx={{ ml: 1 }}
+              data-testid="nav-avatar-button"
+            >
+              {playerSteamId ? (
+                <PlayerAvatar
+                  id={playerSteamId}
+                  name={playerName}
+                  avatarUrl={playerAvatarUrl}
+                  size={32}
+                  isLoading={isLoadingPlayer}
+                />
+              ) : (
+                <Avatar
+                  src={
+                    adminProfileAvatarUrl ||
+                    generateAvatarDataUrl(`admin:${adminProfileName || 'Admin'}`)
+                  }
+                  alt={adminProfileName || 'Admin'}
+                  sx={{ width: 32, height: 32, bgcolor: 'action.hover' }}
+                />
+              )}
             </IconButton>
             <Menu
               anchorEl={anchorEl}
@@ -231,25 +235,38 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              <MenuItem
-                onClick={() => {
-                  handleAvatarMenuClose();
-                  navigate(`/player/${playerSteamId}`);
-                }}
-              >
-                {t('nav.myProfile')}
-              </MenuItem>
+              {isAuthenticated && (
+                <MenuItem
+                  onClick={() => {
+                    handleAvatarMenuClose();
+                    navigate('/');
+                  }}
+                >
+                  {t('nav.dashboard')}
+                </MenuItem>
+              )}
+              {playerSteamId && (
+                <MenuItem
+                  onClick={() => {
+                    handleAvatarMenuClose();
+                    navigate(`/player/${playerSteamId}`);
+                  }}
+                >
+                  {t('nav.myProfile')}
+                </MenuItem>
+              )}
               <MenuItem
                 onClick={() => {
                   handleAvatarMenuClose();
                   handleLogout();
                 }}
+                data-testid="sign-out-button"
               >
                 {t('nav.signOut')}
               </MenuItem>
             </Menu>
           </>
-        ) : isAuthenticated ? null : (
+        ) : (
           <Button
             color="primary"
             variant="outlined"

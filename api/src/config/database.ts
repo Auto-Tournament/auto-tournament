@@ -10,8 +10,10 @@
  */
 
 import { Pool } from 'pg';
-import { log, LOG_DB_VERBOSE } from '../utils/logger';
+import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
 import { getSchemaSQL, getDefaultMapsSQL, getDefaultMapPoolsSQL } from './database.schema';
+
+const MAX_DB_VALUES_SAMPLE = 5;
 
 /**
  * Helper to convert ? placeholders to PostgreSQL placeholders ($1, $2, etc.)
@@ -371,16 +373,37 @@ class DatabaseManager {
       query += ` WHERE ${converted.sql}`;
       params = converted.params;
     }
+    if (LOG_DB_VERBOSE) {
+      log.database(`[DB] GETALL ${table} where=${where ?? 'none'} params=${this.safeJson(params ?? [])}`);
+    }
     const result = await this.postgresPool.query(query, params);
-    return result.rows as T[];
+    const rows = result.rows as T[];
+    if (LOG_DB_VERBOSE) {
+      log.database(`[DB] GETALL ${table} OK rows=${rows.length}`);
+    }
+    if (LOG_DB_VALUES && rows.length > 0) {
+      const sample = rows.slice(0, MAX_DB_VALUES_SAMPLE);
+      log.database(`[DB] GETALL ${table} result sample=${this.safeJson(sample)}`);
+    }
+    return rows;
   }
 
   async getOneAsync<T>(table: string, where: string, params: unknown[]): Promise<T | undefined> {
     if (!this.postgresPool) throw new Error('Database not initialized');
     const converted = convertPlaceholders(where, params);
     const query = `SELECT * FROM ${table} WHERE ${converted.sql} LIMIT 1`;
+    if (LOG_DB_VERBOSE) {
+      log.database(`[DB] GETONE ${table} where=${where} params=${this.safeJson(params)}`);
+    }
     const result = await this.postgresPool.query(query, converted.params);
-    return (result.rows[0] as T) || undefined;
+    const row = (result.rows[0] as T) || undefined;
+    if (LOG_DB_VERBOSE) {
+      log.database(`[DB] GETONE ${table} OK ${row ? 'found' : 'not found'}`);
+    }
+    if (LOG_DB_VALUES && row) {
+      log.database(`[DB] GETONE ${table} result=${this.safeJson(row)}`);
+    }
+    return row;
   }
 
   async insertAsync(
@@ -511,10 +534,15 @@ class DatabaseManager {
       }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };
       const result = await this.postgresPool.query(converted.sql, converted.params);
+      const rows = result.rows as T[];
       if (LOG_DB_VERBOSE) {
-        log.database(`[DB] QUERY OK rows=${result.rows.length}`);
+        log.database(`[DB] QUERY OK rows=${rows.length}`);
       }
-      return result.rows as T[];
+      if (LOG_DB_VALUES && rows.length > 0) {
+        const sample = rows.slice(0, MAX_DB_VALUES_SAMPLE);
+        log.database(`[DB] QUERY result sample=${this.safeJson(sample)}`);
+      }
+      return rows;
     } catch (err) {
       log.error(`[DB] QUERY failed: ${(err as Error).message}`);
       throw err;
@@ -531,10 +559,14 @@ class DatabaseManager {
       }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };
       const result = await this.postgresPool.query(converted.sql, converted.params);
+      const row = result.rows[0] as T | undefined;
       if (LOG_DB_VERBOSE) {
-        log.database(`[DB] QUERY ONE OK ${result.rows[0] ? 'found' : 'not found'}`);
+        log.database(`[DB] QUERY ONE OK ${row ? 'found' : 'not found'}`);
       }
-      return (result.rows[0] as T) || undefined;
+      if (LOG_DB_VALUES && row) {
+        log.database(`[DB] QUERY ONE result=${this.safeJson(row)}`);
+      }
+      return row ?? undefined;
     } catch (err) {
       log.error(`[DB] QUERY ONE failed: ${(err as Error).message}`);
       throw err;

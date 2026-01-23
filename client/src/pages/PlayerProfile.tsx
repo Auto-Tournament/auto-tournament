@@ -36,6 +36,7 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
 import type {
   Team,
   TeamMatchInfo,
@@ -221,7 +222,8 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
-  const { playerSteamId } = useAuth();
+  const { playerSteamId, isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   // Shared sound settings (persisted via localStorage)
   const { isMuted, volume, soundFile } = useSoundSettings();
@@ -723,6 +725,18 @@ export default function PlayerProfile() {
             volume={volume}
             soundFile={soundFile}
           />
+          {isAuthenticated && playerSteamId === steamId && (
+            <Alert
+              severity="info"
+              action={
+                <Button color="inherit" size="small" component={RouterLink} to="/">
+                  {t('nav.goToAdminDashboard')}
+                </Button>
+              }
+            >
+              {t('nav.goToAdminDashboardHint')}
+            </Alert>
+          )}
           {/* Local navigation (kept minimal; main links live in the navbar) */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="subtitle2" color="text.secondary">

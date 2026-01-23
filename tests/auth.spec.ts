@@ -89,9 +89,9 @@ test.describe.serial('Authentication', () => {
       await page.evaluate(() => window.scrollTo(0, 0));
       await page.waitForTimeout(200);
 
-      // Click the sign out button
-      const signOutButton = page.getByTestId('sign-out-button');
-      await signOutButton.click();
+      // Open avatar menu, then click sign out
+      await page.getByTestId('nav-avatar-button').click();
+      await page.getByTestId('sign-out-button').click();
 
       // Should redirect to login
       await expect(page).toHaveURL(/\/login/);

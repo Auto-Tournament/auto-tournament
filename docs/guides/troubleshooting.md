@@ -1,5 +1,18 @@
 # Troubleshooting
 
+## Login & Access
+
+### How do I get to the admin dashboard after signing in with Steam?
+
+**If you land on the dashboard:** You're an admin. Use the sidebar to access Teams, Servers, Tournament, Settings, etc.
+
+**If you land on your player profile:**
+
+- **You're an admin:** Click **Dashboard** in the top bar, or open the avatar menu (top right) → **Dashboard**. On your profile page, use the **Go to Admin Dashboard** button.
+- **You're not an admin:** Only administrators can access the dashboard. Ask an existing admin to add you as one. The first user to sign in with Steam is automatically promoted to admin.
+
+---
+
 ## Server Issues
 
 ### Server Shows Offline

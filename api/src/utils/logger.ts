@@ -2,6 +2,9 @@
 
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
+const _logLevel = (process.env.LOG_LEVEL || 'info').toLowerCase();
+const isLogLevelDebug = _logLevel === 'debug';
+
 /**
  * Logging feature flags
  *
@@ -9,16 +12,27 @@ const isDevelopment = process.env.NODE_ENV !== 'production';
  * without changing call sites everywhere:
  *
  * - LOG_HTTP_REQUESTS=false      → disable per-request [HTTP] logs
- * - LOG_DB_VERBOSE=true         → enable per-query [DATABASE] logs
+ * - LOG_DB_VERBOSE=true         → enable per-query [DATABASE] logs (SQL, params, row counts)
+ * - LOG_DB_VALUES=true          → when DB verbose, also log result rows (redacted via safeJson)
  * - LOG_RCON_VERBOSE=true       → enable high-volume RCON success logs
+ *
+ * When LOG_LEVEL=debug, LOG_DB_VERBOSE and LOG_DB_VALUES are enabled automatically
+ * unless explicitly set to false. Use LOG_DB_VERBOSE=false or LOG_DB_VALUES=false
+ * to override.
  *
  * Errors and warnings are **never** suppressed by these flags.
  */
 export const LOG_HTTP_REQUESTS =
   (process.env.LOG_HTTP_REQUESTS || '').toLowerCase() !== 'false';
 
+const _dbVerboseEnv = (process.env.LOG_DB_VERBOSE || '').toLowerCase();
+const _dbValuesEnv = (process.env.LOG_DB_VALUES || '').toLowerCase();
+
 export const LOG_DB_VERBOSE =
-  (process.env.LOG_DB_VERBOSE || '').toLowerCase() === 'true';
+  _dbVerboseEnv === 'true' || (isLogLevelDebug && _dbVerboseEnv !== 'false');
+
+export const LOG_DB_VALUES =
+  _dbValuesEnv === 'true' || (isLogLevelDebug && _dbValuesEnv !== 'false');
 
 export const LOG_RCON_VERBOSE =
   (process.env.LOG_RCON_VERBOSE || '').toLowerCase() === 'true';
