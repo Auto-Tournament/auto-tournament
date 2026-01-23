@@ -12,7 +12,8 @@
 git clone https://github.com/sivert-io/matchzy-auto-tournament.git
 cd matchzy-auto-tournament
 cp example.env .env
-docker compose up -d
+# Edit .env and set SESSION_SECRET, SERVER_TOKEN, STEAM_API_KEY (see example.env for details)
+docker compose -f docker/docker-compose.yml up -d
 # Open http://localhost:3069
 ```
 
