@@ -67,40 +67,55 @@ volumes:
     driver: local
 ```
 
-**2. Save as `.env` (create this file in the same directory):**
+**2. Generate secrets (copy-paste these commands):**
 
 ```bash
-# Session secret (required - generate with: openssl rand -base64 32)
-SESSION_SECRET=change-this-session-secret
+# Generate session secret
+openssl rand -base64 32
 
-# CS2 server authentication token (required for servers to connect)
-SERVER_TOKEN=your-secure-token-here
+# Generate server token
+openssl rand -base64 24 | tr -d '=+/'
+```
 
-# Steam API key (required for Steam login - get from https://steamcommunity.com/dev/apikey)
-STEAM_API_KEY=your-steam-api-key
+**3. Save as `.env` (create this file in the same directory, paste the generated values above):**
 
-# Frontend base URL (for auth redirects)
-FRONTEND_BASE_URL=http://localhost:3069
+```bash
+# API port (behind Docker this is usually 3000)
+PORT=3000
 
-# Database (optional - defaults shown)
+# Session secret (REQUIRED - paste the value from step 2)
+SESSION_SECRET=
+
+# Database settings
+DB_HOST=127.0.0.1
+DB_PORT=5432
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_NAME=matchzy_tournament
 
-# Auth settings
+# CS2 server authentication token (paste the generated value from step 2)
+# Generate with: openssl rand -base64 24 | tr -d '=+/'
+SERVER_TOKEN=
+
+# Frontend base URL (use http:// for local, https:// for production)
+FRONTEND_BASE_URL=http://localhost:3069
+
+# Steam auth
 AUTH_STEAM_ENABLED=true
+# Get your Steam API key from: https://steamcommunity.com/dev/apikey
+STEAM_API_KEY=
 
 # Logging
 LOG_LEVEL=info
 ```
 
-**3. Start the stack:**
+**4. Start the stack:**
 
 ```bash
 docker compose up -d
 ```
 
-**4. Open in browser:** [http://localhost:3069](http://localhost:3069)
+**5. Open in browser:** [http://localhost:3069](http://localhost:3069)
 
 > **Note:** You can configure `SERVER_TOKEN` and `STEAM_API_KEY` in **Settings** after first login, but `SESSION_SECRET` must be set in `.env` for session persistence.
 
