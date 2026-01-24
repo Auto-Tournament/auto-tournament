@@ -534,7 +534,7 @@ export default function PlayerProfile() {
           availableServerCount: number;
           gracePeriodSeconds?: number;
           nextAllocationInSeconds?: number | null;
-        }>('/api/tournament/server-availability');
+        }>('/api/tournament/allocation-status');
 
         if (availability.success) {
           setAllocationCountdown({
