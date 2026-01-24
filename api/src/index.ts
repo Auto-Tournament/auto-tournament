@@ -486,35 +486,47 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  log.info(`Initializing persistent configuration for ${enabledServers.length} server(s)...`);
+  log.info(`[STARTUP] Checking ${enabledServers.length} enabled server(s)...`);
 
-  for (const serverInfo of enabledServers) {
-    try {
-      const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
-      if (!statusResult.success) {
-        log.warn(`Skipping ${serverInfo.id}: unable to reach server (${statusResult.error})`);
-        continue;
+  // Process all servers concurrently for faster startup
+  await Promise.allSettled(
+    enabledServers.map(async (serverInfo) => {
+      try {
+        // Quick RCON ping to check if server is reachable
+        const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
+        if (!statusResult.success) {
+          log.warn(`[STARTUP] ${serverInfo.id}: Unreachable (${statusResult.error})`);
+          return;
+        }
+
+        const needsInit = !serverInfo.persistentConfigSent;
+        const needsRetry = !!serverInfo.persistentConfigSent && !serverInfo.lastSeen;
+
+        if (needsInit || needsRetry) {
+          // Server needs (re)configuration
+          await serverInitializationService.initializeServer(serverInfo.id, baseUrl, {
+            force: needsRetry,
+          });
+          log.success(
+            `[STARTUP] ${serverInfo.id}: ${needsInit ? 'Configured' : 'Retry sent'} – waiting for MatchZy events`
+          );
+        } else {
+          // Server is already configured and has sent events - just log status
+          const timeSinceLastSeen = serverInfo.lastSeen
+            ? Math.floor(Date.now() / 1000) - serverInfo.lastSeen
+            : null;
+          
+          if (timeSinceLastSeen !== null && timeSinceLastSeen < 300) {
+            log.info(`[STARTUP] ${serverInfo.id}: Online (last event ${timeSinceLastSeen}s ago)`);
+          } else {
+            log.info(`[STARTUP] ${serverInfo.id}: Configured but inactive (${timeSinceLastSeen ? `${timeSinceLastSeen}s` : 'never'} since last event)`);
+          }
+        }
+      } catch (error) {
+        log.warn(`[STARTUP] ${serverInfo.id}: Check failed`, { error });
       }
+    })
+  );
 
-      const needsInit = !serverInfo.persistentConfigSent;
-      const needsRetry =
-        !!serverInfo.persistentConfigSent && !serverInfo.lastSeen;
-
-      if (!needsInit && !needsRetry) {
-        log.debug(`[SERVER-INIT] ${serverInfo.id} already configured and connected, skipping`);
-        continue;
-      }
-
-      await serverInitializationService.initializeServer(serverInfo.id, baseUrl, {
-        force: needsRetry,
-      });
-      log.success(
-        needsRetry
-          ? `Retried persistent config for ${serverInfo.name} (${serverInfo.id}) – waiting for MatchZy`
-          : `Initialized persistent config for ${serverInfo.name} (${serverInfo.id})`
-      );
-    } catch (error) {
-      log.warn(`Failed to initialize server ${serverInfo.id}`, { error });
-    }
-  }
+  log.success(`[STARTUP] Server initialization complete`);
 }
