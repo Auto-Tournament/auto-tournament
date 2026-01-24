@@ -22,6 +22,8 @@ import {
 import Grid from '@mui/material/Grid';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
+import PersonSearchIcon from '@mui/icons-material/PersonSearch';
+import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import { api } from '../utils/api';
 import { io, Socket } from 'socket.io-client';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
@@ -222,7 +224,7 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
-  const { playerSteamId, isAuthenticated } = useAuth();
+  const { playerSteamId, hasPlayerRecord, isAuthenticated } = useAuth();
   const { t } = useTranslation();
 
   // Shared sound settings (persisted via localStorage)
@@ -423,9 +425,8 @@ export default function PlayerProfile() {
   };
 
   useEffect(() => {
-    if (steamId) {
-      loadPlayerData();
-    }
+    if (!steamId) return;
+    loadPlayerData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId]);
 
@@ -608,6 +609,12 @@ export default function PlayerProfile() {
     );
   }
 
+  const isOwnUnregistered =
+    steamId &&
+    playerSteamId &&
+    steamId === playerSteamId &&
+    hasPlayerRecord === false;
+
   if (error || !player) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
@@ -616,16 +623,56 @@ export default function PlayerProfile() {
           <Box py={6}>
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 4 }}>
-                <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
-                  {error || 'No player is registered for this Steam ID yet.'}
-                </Alert>
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  If you just logged in with Steam, ask a tournament admin to register you or create
-                  a player with this Steam ID.
-                </Typography>
-                <Button variant="outlined" component={RouterLink} to="/player">
-                  Back to Find Player
-                </Button>
+                {isOwnUnregistered ? (
+                  <>
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      {t('notRegistered.title')}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+                      {t('notRegistered.description')}
+                    </Typography>
+                    <Stack
+                      direction="row"
+                      spacing={2}
+                      justifyContent="center"
+                      flexWrap="wrap"
+                      useFlexGap
+                    >
+                      <Button
+                        variant="contained"
+                        component={RouterLink}
+                        to="/player"
+                        startIcon={<PersonSearchIcon />}
+                        data-testid="player-profile-find-players"
+                      >
+                        {t('notRegistered.findPlayers')}
+                      </Button>
+                      <Button
+                        variant="outlined"
+                        component={RouterLink}
+                        to="/tournament/1/leaderboard"
+                        startIcon={<LeaderboardIcon />}
+                        data-testid="player-profile-leaderboard"
+                      >
+                        {t('notRegistered.leaderboard')}
+                      </Button>
+                    </Stack>
+                  </>
+                ) : (
+                  <>
+                    <Alert severity="warning" sx={{ mb: 2 }} data-testid="player-not-found-error">
+                      {t('playerPage.playerNotFound')}
+                    </Alert>
+                    <Button
+                      variant="outlined"
+                      component={RouterLink}
+                      to="/player"
+                      data-testid="player-profile-back-to-find"
+                    >
+                      {t('playerPage.backToFindPlayer')}
+                    </Button>
+                  </>
+                )}
               </CardContent>
             </Card>
           </Box>

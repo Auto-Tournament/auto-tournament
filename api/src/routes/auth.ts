@@ -10,6 +10,7 @@ import {
   signPlayerSteamId,
   getVerifiedPlayerSteamId,
 } from '../utils/signedPlayerCookie';
+import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
 
 const router = Router();
 
@@ -113,7 +114,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
   }
 
   return passport.authenticate('steam', {
-    failureRedirect: '/app/login',
+    failureRedirect: '/login',
     // Use Passport sessions so admin routes can rely on req.isAuthenticated().
   })(req, res, async () => {
     try {
@@ -313,7 +314,11 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         const player = await playerService.getPlayerById(steamId);
         const hasPlayer = !!player;
         const isAdmin = player?.isAdmin === true;
-        redirectTo = isAdmin ? `${baseUrl}/` : `${baseUrl}/player/${steamId}`;
+        if (isAdmin) {
+          redirectTo = `${baseUrl}/`;
+        } else {
+          redirectTo = `${baseUrl}/player/${steamId}`;
+        }
         log.info('[Steam callback] Redirect decision', {
           steamId,
           hasPlayer,
@@ -322,7 +327,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         });
       } catch (redirectError) {
         log.warn(
-          '[Steam callback] Failed to load player when deciding redirect, falling back to player page',
+          '[Steam callback] Failed to load player when deciding redirect, falling back to player profile',
           {
             steamId,
             error: (redirectError as Error).message,
@@ -396,7 +401,7 @@ router.get(
 router.get(
   '/keycloak/callback',
   passport.authenticate('keycloak', {
-    failureRedirect: '/app/login',
+    failureRedirect: '/login',
   }),
   async (req: Request, res: Response) => {
     const anyReq = req as Request & {
@@ -540,7 +545,7 @@ router.get(
 router.get(
   '/discord/callback',
   passport.authenticate('discord', {
-    failureRedirect: '/app/login',
+    failureRedirect: '/login',
   }),
   async (req: Request, res: Response) => {
     const anyReq = req as Request & {
@@ -681,7 +686,7 @@ router.get(
 router.get(
   '/github/callback',
   passport.authenticate('github', {
-    failureRedirect: '/app/login',
+    failureRedirect: '/login',
   }),
   async (req: Request, res: Response) => {
     const anyReq = req as Request & {
@@ -821,8 +826,10 @@ router.get('/providers', (_req: Request, res: Response) => {
 /**
  * Lightweight "who am I" endpoint for players.
  * This is not a security boundary; it only reflects the player_steam_id cookie.
+ * Includes hasPlayerRecord so the frontend can show "not registered" for users
+ * who have signed in with Steam but are not in the players table.
  */
-router.get('/me', (req: Request, res: Response) => {
+router.get('/me', async (req: Request, res: Response) => {
   try {
     const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
 
@@ -838,11 +845,20 @@ router.get('/me', (req: Request, res: Response) => {
       });
     }
 
-    log.info('/api/auth/me: returning authenticated Steam identity', { steamId });
+    let hasPlayerRecord = false;
+    try {
+      const player = await playerService.getPlayerById(steamId);
+      hasPlayerRecord = !!player;
+    } catch {
+      // treat lookup failure as no record
+    }
+
+    log.info('/api/auth/me: returning authenticated Steam identity', { steamId, hasPlayerRecord });
 
     return res.json({
       authenticated: true,
       steamId,
+      hasPlayerRecord,
     });
   } catch (error) {
     log.warn('Failed to read player_steam_id cookie', error as Error);
@@ -859,6 +875,17 @@ router.get('/me', (req: Request, res: Response) => {
  */
 router.get('/admin-status', async (req: Request, res: Response) => {
   try {
+    if (shouldBlockAdminAsDirectAccess(req)) {
+      return res.json({
+        success: true,
+        steamId: null,
+        isAdmin: false,
+        hasPlayerRecord: false,
+        reason: 'direct_access_blocked',
+        hint: 'Admin access is only allowed via the configured frontend URL (reverse proxy). You are connecting directly to the container.',
+      });
+    }
+
     const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
 
     if (!steamId) {
@@ -928,6 +955,10 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  * - Fallback to the player_steam_id cookie for SSO logins that linked Steam.
  */
 router.get('/admin/me', async (req: Request, res: Response) => {
+  if (shouldBlockAdminAsDirectAccess(req)) {
+    return res.json({ authenticated: false });
+  }
+
   const anyReq = req as Request & {
     user?: {
       provider?: string;
@@ -973,16 +1004,23 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     }
 
     if (steamId) {
-      log.info('/api/auth/admin/me: returning authenticated admin identity (session)', {
-        provider,
-        steamId,
-      });
-      return res.json({
-        authenticated: true,
-        provider,
-        steamId,
-        providerProfile: { name: profileName, avatarUrl: profileAvatarUrl },
-      });
+      try {
+        const player = await playerService.getPlayerById(steamId);
+        if (player?.isAdmin) {
+          log.info('/api/auth/admin/me: returning authenticated admin identity (session)', {
+            provider,
+            steamId,
+          });
+          return res.json({
+            authenticated: true,
+            provider,
+            steamId,
+            providerProfile: { name: profileName, avatarUrl: profileAvatarUrl },
+          });
+        }
+      } catch (err) {
+        log.warn('Failed to verify admin from session in /admin/me', err as Error);
+      }
     }
   }
 

@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
+import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
 
 /**
  * Authentication middleware for admin routes.
@@ -14,7 +15,13 @@ import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
  * We accept **two** ways to prove admin access:
  *  1. **Passport session** (connect.sid) — used when it works (e.g. same-origin, no tunnel).
  *  2. **Signed player_steam_id cookie** — verified with SESSION_SECRET. Used when the
- *     session cookie is dropped (e.g. Cloudflare Tunnel). Steam ID must map to admin in DB.
+ *     session cookie is dropped (e.g. Cloudflare Tunnel, Chrome + 302). Steam ID must
+ *     map to admin in DB.
+ *
+ * **Direct access block:** Only when FRONTEND_BASE_URL is a **domain** (not IP/localhost)
+ * and the request has **no** X-Forwarded-* (direct to container) do we block admin.
+ * Otherwise we always run full auth (session + cookie fallback) so the alternative
+ * admin check is never skipped.
  */
 async function checkAdminBySteamId(steamId: string): Promise<boolean> {
   const row = await db.queryOneAsync<{ is_admin?: number }>(
@@ -25,6 +32,16 @@ async function checkAdminBySteamId(steamId: string): Promise<boolean> {
 }
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
+  if (shouldBlockAdminAsDirectAccess(req)) {
+    log.authFailed(req.path, 'Admin access blocked for direct container access (use reverse proxy)');
+    res.status(403).json({
+      success: false,
+      error:
+        'Admin access is only allowed via the configured frontend URL. Connect through your reverse proxy (e.g. HTTPS domain), not directly to the container.',
+    });
+    return;
+  }
+
   const anyReq = req as Request & {
     user?: {
       provider?: string;

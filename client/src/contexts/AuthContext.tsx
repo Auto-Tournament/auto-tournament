@@ -51,6 +51,12 @@ interface AuthContextType {
    */
   adminProfileName: string | null;
   adminProfileAvatarUrl: string | null;
+  /**
+   * True when the current Steam identity (playerSteamId) has a row in the
+   * players table. False for "unregistered" users who signed in with Steam
+   * but were never added by an admin (or self‑registration is off).
+   */
+  hasPlayerRecord: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -63,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [adminProvider, setAdminProvider] = useState<string | null>(null);
   const [adminProfileName, setAdminProfileName] = useState<string | null>(null);
   const [adminProfileAvatarUrl, setAdminProfileAvatarUrl] = useState<string | null>(null);
+  const [hasPlayerRecord, setHasPlayerRecord] = useState(false);
 
   useEffect(() => {
     let isMounted = true;
@@ -83,10 +90,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           if (!response.ok) {
             setPlayerSteamId(null);
+            setHasPlayerRecord(false);
             return;
           }
 
-          const data: { authenticated?: boolean; steamId?: string } = await response.json();
+          const data: {
+            authenticated?: boolean;
+            steamId?: string;
+            hasPlayerRecord?: boolean;
+          } = await response.json();
           if (
             data.authenticated &&
             typeof data.steamId === 'string' &&
@@ -94,13 +106,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             !adminSteamId // don't override an admin-linked Steam ID
           ) {
             setPlayerSteamId(data.steamId);
+            setHasPlayerRecord(Boolean(data.hasPlayerRecord));
           } else {
             setPlayerSteamId(null);
+            setHasPlayerRecord(false);
           }
         } catch (error) {
           if (!isMounted) return;
           console.warn('Failed to read player Steam identity from /api/auth/me', error);
           setPlayerSteamId(null);
+          setHasPlayerRecord(false);
         }
       };
 
@@ -117,6 +132,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             setAdminProvider(null);
             setAdminProfileName(null);
             setAdminProfileAvatarUrl(null);
+            setHasPlayerRecord(false);
             return;
           }
 
@@ -129,6 +145,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           setIsAdmin(Boolean(data.authenticated));
           setAdminProvider(data.provider ?? null);
+          if (data.authenticated) setHasPlayerRecord(true);
 
           const profile = data.providerProfile || {};
           const profileName =
@@ -158,6 +175,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           setAdminProvider(null);
           setAdminProfileName(null);
           setAdminProfileAvatarUrl(null);
+          setHasPlayerRecord(false);
         }
       };
 
@@ -187,6 +205,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     setIsAdmin(false);
     setPlayerSteamId(null);
+    setHasPlayerRecord(false);
     setAdminProvider(null);
     setAdminProfileName(null);
     setAdminProfileAvatarUrl(null);
@@ -227,6 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         adminProvider,
         adminProfileName,
         adminProfileAvatarUrl,
+        hasPlayerRecord,
       }}
     >
       {children}

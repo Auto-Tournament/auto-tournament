@@ -87,6 +87,19 @@
     "bodyRequirement": "关联 Steam 让系统能够将你识别为选手，并且是从非 Steam 提供商登录时的必备步骤。",
     "button": "使用 Steam 关联"
   },
+  "notRegistered": {
+    "title": "你尚未注册",
+    "description": "你已使用 Steam 登录，但尚未加入选手列表。请联系管理员添加你。在此之前，你只能查看选手和排行榜。",
+    "signInFirst": "请先使用 Steam 登录。若你尚未在选手列表中，系统会提示你联系管理员。",
+    "findPlayers": "查找选手",
+    "leaderboard": "排行榜",
+    "signOut": "退出登录",
+    "signIn": "使用 Steam 登录"
+  },
+  "playerPage": {
+    "playerNotFound": "该选手不存在。",
+    "backToFindPlayer": "返回查找选手"
+  },
   "notFound": {
     "title": "页面未找到",
     "description": "你访问的页面不存在或已被移动。",

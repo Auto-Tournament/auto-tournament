@@ -83,6 +83,19 @@
     "bodyRequirement": "Linking Steam lets the system recognize you as a player and is required to sign in from non‑Steam providers.",
     "button": "Connect with Steam"
   },
+  "notRegistered": {
+    "title": "You are not registered",
+    "description": "You've signed in with Steam, but you're not in the players list yet. Ask an admin to add you. Until then, you can only view players and leaderboards.",
+    "signInFirst": "Sign in with Steam to continue. If you're not in the players list yet, you'll see a message asking you to contact your admin.",
+    "findPlayers": "Find players",
+    "leaderboard": "Leaderboard",
+    "signOut": "Sign out",
+    "signIn": "Sign in with Steam"
+  },
+  "playerPage": {
+    "playerNotFound": "This player doesn't exist.",
+    "backToFindPlayer": "Back to Find Player"
+  },
   "notFound": {
     "title": "Page not found",
     "description": "The page you're looking for doesn't exist or has been moved.",

@@ -42,7 +42,7 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId, hasPlayerRecord, needsSteamLink } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -89,9 +89,8 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
       return <>{children}</>;
     }
 
-    // If the user has a Steam identity but no admin session, treat them as a
-    // signed-in player and send them to their player page instead of back to
-    // the login form.
+    // If the user has a Steam identity but no admin session, send them to
+    // their player page (registered or not – we show "not registered" there).
     if (playerSteamId) {
       return <Navigate to={`/player/${playerSteamId}`} replace />;
     }
@@ -115,7 +114,7 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading, playerSteamId } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId, hasPlayerRecord } = useAuth();
   const isDevelopment = useIsDevelopment();
 
   if (isLoading) {
@@ -130,8 +129,8 @@ function AppRoutes() {
           isAuthenticated ? (
             // Admins leaving login should land on the dashboard
             <Navigate to="/" replace />
-          ) : // Signed-in players should go straight to their player page instead of seeing login again
-          playerSteamId ? (
+          ) : playerSteamId ? (
+            // Signed-in but not admin → their player page (shows "not registered" if needed)
             <Navigate to={`/player/${playerSteamId}`} replace />
           ) : (
             <Login />

@@ -61,6 +61,7 @@ MAT uses this for:
 - OAuth redirect URIs (Steam, Discord, etc.)
 - Cookie configuration (secure cookies when the URL is `https://`)
 - **Session cookie domain** — when the host is not `localhost`, the admin session cookie (`connect.sid`) is explicitly set for this domain. This fixes “I’m admin but I don’t get an admin session” when running behind **Cloudflare Tunnel** or another proxy that forwards to an internal host: the app may see an internal `Host`, but the browser only talks to your public URL, so the cookie must be for that public host.
+- **Direct-access block** — when `FRONTEND_BASE_URL` is a **domain** (not IP or localhost), MAT blocks admin UI/API for requests that look **direct** (no `X-Forwarded-For` / `X-Forwarded-Proto`). If you use a reverse proxy, it sends those headers, so admin works (including the cookie fallback when the session is dropped). If you use **only** IP or localhost as `FRONTEND_BASE_URL`, this block is **not** applied.
 - Links in emails or redirects
 
 ## “Only works with HTTP” behind HTTPS
@@ -93,6 +94,13 @@ When you expose MAT via **Cloudflare Tunnel** (`cloudflared`), traffic flows: us
 4. Restart MAT.
 
 MAT sets the session cookie domain from `FRONTEND_BASE_URL` when the host is not localhost, enables `trust proxy`, and uses a **200 + HTML meta-refresh** redirect (instead of 302) after Steam login. Some browsers drop `Set-Cookie` on 302 responses when the request is a cross-site redirect (e.g. Steam → your domain); the 200 response avoids that, so the admin session is stored correctly behind the tunnel.
+
+## Direct container access
+
+If you expose the MAT container port (e.g. `3069`) directly (no reverse proxy), users may connect via `http://<host-ip>:3069` or `http://localhost:3069`.
+
+- **When `FRONTEND_BASE_URL` is a domain** (e.g. `https://domain.com`): MAT treats requests **without** `X-Forwarded-For` / `X-Forwarded-Proto` as “direct” and **blocks admin** (403, `authenticated: false`). Use the reverse proxy URL for admin; ensure the proxy sends those headers.
+- **When `FRONTEND_BASE_URL` is IP or localhost** (e.g. `http://192.168.1.1:3069` or `http://localhost:3069`): No direct-access block. Admin works via session or the **cookie fallback** (e.g. when Chrome drops the session cookie on 302). Suitable for setups without a reverse proxy.
 
 ## Webhook URL and API URL
 
