@@ -59,6 +59,10 @@ const PORT = process.env.PORT || 3000;
 // Configure Passport strategies
 configurePassportAuth();
 
+// Trust first proxy when behind Cloudflare Tunnel, nginx, Caddy, etc.
+// Required so X-Forwarded-Proto / Host are respected for cookies and redirects.
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(cors());
 // Increase body size limit to 50MB for image uploads (base64 encoded images can be large)
@@ -85,6 +89,32 @@ const frontendBaseUrl = process.env.FRONTEND_BASE_URL || '';
 const useSecureCookies =
   process.env.NODE_ENV === 'production' && frontendBaseUrl.startsWith('https://');
 
+// When behind Cloudflare Tunnel or another reverse proxy, the app often sees an
+// internal Host (e.g. from Caddy). Without an explicit domain, the session cookie
+// is set for that host, so the browser (which only talks to the public URL) never
+// sends it → admin session fails. Use FRONTEND_BASE_URL host as cookie domain.
+let sessionCookieDomain: string | undefined;
+try {
+  if (frontendBaseUrl) {
+    const u = new URL(frontendBaseUrl.startsWith('http') ? frontendBaseUrl : `https://${frontendBaseUrl}`);
+    const host = u.hostname.toLowerCase();
+    if (host && host !== 'localhost' && host !== '127.0.0.1') {
+      sessionCookieDomain = host;
+    }
+  }
+} catch {
+  // Invalid URL, skip domain
+}
+
+const sessionCookie: { sameSite: 'lax' | 'strict' | 'none'; secure: boolean; httpOnly: boolean; domain?: string } = {
+  sameSite: 'lax',
+  secure: useSecureCookies,
+  httpOnly: true, // Prevent JavaScript access to cookie (security best practice)
+};
+if (sessionCookieDomain) {
+  sessionCookie.domain = sessionCookieDomain;
+}
+
 app.use(
   session({
     // Persist sessions in PostgreSQL so admin logins survive API restarts.
@@ -98,11 +128,7 @@ app.use(
     secret: sessionSecret,
     resave: false,
     saveUninitialized: false,
-    cookie: {
-      sameSite: 'lax',
-      secure: useSecureCookies,
-      httpOnly: true, // Prevent JavaScript access to cookie (security best practice)
-    },
+    cookie: sessionCookie,
   })
 );
 app.use(passport.initialize());
@@ -430,7 +456,31 @@ cleanupOldLogs(30);
       });
     });
   } catch (error) {
-    log.error('Failed to initialize database', error as Error);
+    const err = error as NodeJS.ErrnoException;
+    log.error('Failed to initialize database', err);
+
+    const msg = typeof err?.message === 'string' ? err.message : '';
+    const isConnectionRefused =
+      err?.code === 'ECONNREFUSED' ||
+      msg.includes('ECONNREFUSED') ||
+      msg.toLowerCase().includes('connection refused');
+
+    if (isConnectionRefused) {
+      const host = process.env.DB_HOST || '127.0.0.1';
+      const port = process.env.DB_PORT || '5432';
+      log.server('');
+      log.server('⚠️  PostgreSQL is not running or not reachable.');
+      log.server(`   Attempted: ${host}:${port}`);
+      log.server('');
+      log.server('   For local development:');
+      log.server('     1. Start Postgres:  yarn db');
+      log.server('     2. Restart the API:  yarn dev');
+      log.server('');
+      log.server('   Using Docker Compose? Start the stack first:');
+      log.server('     docker compose -f docker/docker-compose.yml up -d postgres');
+      log.server('');
+    }
+
     process.exit(1);
   }
 })();

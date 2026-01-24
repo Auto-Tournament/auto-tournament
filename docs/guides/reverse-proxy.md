@@ -60,6 +60,7 @@ MAT uses this for:
 
 - OAuth redirect URIs (Steam, Discord, etc.)
 - Cookie configuration (secure cookies when the URL is `https://`)
+- **Session cookie domain** — when the host is not `localhost`, the admin session cookie (`connect.sid`) is explicitly set for this domain. This fixes “I’m admin but I don’t get an admin session” when running behind **Cloudflare Tunnel** or another proxy that forwards to an internal host: the app may see an internal `Host`, but the browser only talks to your public URL, so the cookie must be for that public host.
 - Links in emails or redirects
 
 ## “Only works with HTTP” behind HTTPS
@@ -80,6 +81,18 @@ Some admins report MAT “only works” when they set `FRONTEND_BASE_URL=http://
 
 After that, MAT should work correctly over HTTPS.
 
+## Cloudflare Tunnel
+
+When you expose MAT via **Cloudflare Tunnel** (`cloudflared`), traffic flows: user → Cloudflare → tunnel → your MAT instance (e.g. Docker). The app often sees an internal `Host` (e.g. from Caddy or the container). If the **session cookie** were bound to that host, the browser (which only ever sees your public URL) would not send it, so you’d be logged in as a **player** (`/me` works) but **admin** routes would return 401 (“Missing or invalid admin session”).
+
+**Fix:**
+
+1. Set `FRONTEND_BASE_URL` to the **public** URL you use in the browser (e.g. `https://cs.sivert.io`). No trailing slash.
+2. Ensure the tunnel forwards the original `Host` (and ideally `X-Forwarded-Proto`) to MAT. Many default setups already do.
+3. Restart MAT.
+
+MAT sets the session cookie domain from `FRONTEND_BASE_URL` when the host is not localhost, and enables `trust proxy`, so the admin session works correctly behind the tunnel.
+
 ## Webhook URL and API URL
 
 - **Webhook URL** (Settings in MAT, or `API_BASE_URL`): This is where **game servers** (MatchZy) send events. It must be reachable from your CS2 hosts (often a **public** URL or LAN IP), e.g. `https://domain.com/api/events` or `http://your-mat-ip:3069/api/events`.
@@ -95,4 +108,4 @@ See [Admin Settings](admin-settings.md) and [Server Setup](../getting-started/se
 | `FRONTEND_BASE_URL` | Use the public URL users see: `https://domain.com` when behind HTTPS |
 | Webhook / API URL | Use a URL your CS2 servers can reach (often same as `FRONTEND_BASE_URL` or `https://domain.com`) |
 
-If you use Caddy, Traefik, or another proxy, apply the same ideas: terminate TLS at the proxy, forward to MAT over HTTP, and send `X-Forwarded-Proto` (and `Host`) so MAT knows the public scheme and host.
+If you use Caddy, Traefik, Cloudflare Tunnel, or another proxy, apply the same ideas: terminate TLS at the proxy (or at Cloudflare), forward to MAT over HTTP, and send `X-Forwarded-Proto` (and `Host`) so MAT knows the public scheme and host. Always set `FRONTEND_BASE_URL` to the URL users see in the browser.

@@ -34,6 +34,7 @@ https://your-mat-url/api/auth/admin-status
 - **Restarted DB but didn’t sign in first:** Someone else signed in before you → they’re admin, you’re not. Have them add you, or reset DB again and be the first to sign in.
 - **Expecting admin without Steam:** Admin is always tied to a Steam ID. Sign in with Steam (or link Steam via Connect Steam if you use Keycloak/Discord/GitHub).
 - **Not in the players table:** You need a player record. Either enable self‑registration (Settings), or have an admin add you.
+- **Admin status says I'm admin, but admin routes return 401 / "Missing or invalid admin session":** This often happens when MAT is behind **Cloudflare Tunnel** or another reverse proxy. The session cookie can end up set for an internal host, so the browser never sends it. Set `FRONTEND_BASE_URL` to the **public** URL you use in the browser (e.g. `https://cs.sivert.io`), then restart MAT. See [Reverse proxy (nginx, HTTPS)](reverse-proxy.md#cloudflare-tunnel) for details.
 
 **Debugging:** Set `LOG_LEVEL=debug` and check API logs when you sign in. Look for `[Steam callback] Redirect decision` (shows `isAdmin`, `redirectTo`) and `[ensureFirstAdmin]` (explains why promotion was skipped or applied).
 
