@@ -445,6 +445,7 @@
       "unreachable": "Unreachable",
       "reachable": "Reachable",
       "unknown": "Unknown",
+      "loading": "Loading…",
       "pluginLabel": "MatchZy:"
     },
     "currentMatch": {
@@ -466,6 +467,10 @@
     "bulkDelete": {
       "title": "Delete Servers",
       "message": "Are you sure you want to delete {{count}} server{{suffix}}? This action cannot be undone."
+    },
+    "autoConfig": {
+      "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
+      "done": "New servers configured. Refreshing status…"
     }
   },
   "dashboard": {

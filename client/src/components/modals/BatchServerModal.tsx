@@ -35,7 +35,7 @@ import { useTranslation } from 'react-i18next';
 interface BatchServerModalProps {
   open: boolean;
   onClose: () => void;
-  onSave: () => void;
+  onSave: (createdIds?: string[]) => void;
   existingServers?: Server[];
 }
 
@@ -83,20 +83,23 @@ const formatVerificationError = (error?: string): string | undefined => {
   return error;
 };
 
-const getDefaultPorts = (baseId: string, existingServers: Server[] | undefined, count: number): string[] => {
-  const trimmedBaseId = baseId.trim();
+const ID_PREFIX = 's_';
 
-  // Count how many servers already exist with this base ID (id like "base_1", "base_2", ...).
-  // We then offset the starting port by that count so new servers continue the same 10-port pattern.
-  let existingCountForBaseId = 0;
-  if (trimmedBaseId && existingServers && existingServers.length > 0) {
-    const idPrefix = `${trimmedBaseId}_`;
-    existingCountForBaseId = existingServers.filter((s) => s.id.startsWith(idPrefix)).length;
+const getMaxExistingSIndex = (existingServers: Server[] | undefined): number => {
+  let max = 0;
+  if (!existingServers?.length) return max;
+  for (const s of existingServers) {
+    if (!s.id.startsWith(ID_PREFIX)) continue;
+    const n = parseInt(s.id.slice(ID_PREFIX.length), 10);
+    if (!Number.isNaN(n) && n > max) max = n;
   }
+  return max;
+};
 
-  const basePort = 27015 + existingCountForBaseId * 10;
+const getDefaultPorts = (existingServers: Server[] | undefined, count: number): string[] => {
+  const existingCount = existingServers?.filter((s) => s.id.startsWith(ID_PREFIX)).length ?? 0;
+  const basePort = 27015 + existingCount * 10;
   const validCount = Math.min(Math.max(count, 1), 50);
-
   return Array.from({ length: validCount }, (_, idx) => String(basePort + idx * 10));
 };
 
@@ -108,11 +111,10 @@ export default function BatchServerModal({
 }: BatchServerModalProps) {
   const { showSuccess, showError, showWarning } = useSnackbar();
   const [baseName, setBaseName] = useState('');
-  const [baseId, setBaseId] = useState('');
   const [host, setHost] = useState('');
   const [count, setCount] = useState('3');
   const [ports, setPorts] = useState<string[]>(() =>
-    getDefaultPorts('', existingServers, parseInt('3', 10))
+    getDefaultPorts(existingServers, parseInt('3', 10))
   );
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
@@ -128,10 +130,9 @@ export default function BatchServerModal({
 
   const resetForm = () => {
     setBaseName('');
-    setBaseId('');
     setHost('');
     setCount('3');
-    setPorts(getDefaultPorts('', existingServers, 3));
+    setPorts(getDefaultPorts(existingServers, 3));
     setPassword('');
     setEnabled(true);
     setError('');
@@ -142,7 +143,7 @@ export default function BatchServerModal({
   const handleCountChange = (newCount: string) => {
     setCount(newCount);
     const countNum = parseInt(newCount) || 3;
-    setPorts(getDefaultPorts(baseId, existingServers, countNum));
+    setPorts(getDefaultPorts(existingServers, countNum));
   };
 
   const handlePortChange = (index: number, value: string) => {
@@ -153,34 +154,22 @@ export default function BatchServerModal({
     });
   };
 
-  const handleBaseIdChange = (value: string) => {
-    setBaseId(value);
-    const countNum = parseInt(count) || 3;
-    setPorts(getDefaultPorts(value, existingServers, countNum));
-  };
-
   // Update ports when host changes - increment based on existing servers with that IP
   useEffect(() => {
     const trimmedHost = host.trim();
     const countNum = parseInt(count) || 3;
     
     if (!trimmedHost || !existingServers || existingServers.length === 0) {
-      // If no host or no existing servers, use default ports based on baseId
-      setPorts(getDefaultPorts(baseId, existingServers, countNum));
+      setPorts(getDefaultPorts(existingServers, countNum));
       return;
     }
 
-    // Count how many existing servers have this IP
     const serversWithHost = existingServers.filter((s) => s.host === trimmedHost);
     const existingCountForHost = serversWithHost.length;
-
-    // Start from base port (27015) + increment by 10 for each existing server
-    // This ensures new servers continue the pattern after existing ones
     const basePort = 27015 + existingCountForHost * 10;
     const newPorts = Array.from({ length: countNum }, (_, idx) => String(basePort + idx * 10));
-    
     setPorts(newPorts);
-  }, [host, count, baseId, existingServers]);
+  }, [host, count, existingServers]);
 
   const handleClose = () => {
     resetForm();
@@ -188,17 +177,10 @@ export default function BatchServerModal({
   };
 
   const handleCheckServers = async () => {
-    // Validation
     if (!baseName.trim()) {
       setError(t('batchServerModal.errors.baseNameRequired'));
       return;
     }
-
-    if (!baseId.trim()) {
-      setError(t('batchServerModal.errors.baseIdRequired'));
-      return;
-    }
-
     if (!host.trim()) {
       setError(t('batchServerModal.errors.hostRequired'));
       return;
@@ -292,17 +274,10 @@ export default function BatchServerModal({
   };
 
   const handleSave = async () => {
-    // Validation
     if (!baseName.trim()) {
       showWarning(t('batchServerModal.errors.baseNameRequired'));
       return;
     }
-
-    if (!baseId.trim()) {
-      showWarning(t('batchServerModal.errors.baseIdRequired'));
-      return;
-    }
-
     if (!host.trim()) {
       showWarning(t('batchServerModal.errors.hostRequired'));
       return;
@@ -345,61 +320,34 @@ export default function BatchServerModal({
 
     try {
       const servers: ServerConfig[] = [];
-
-      // Determine starting index based on existing servers with the same base ID
-      const trimmedBaseId = baseId.trim();
       const trimmedBaseName = baseName.trim();
-      const idPrefix = `${trimmedBaseId}_`;
-
-      let existingMaxIndex = 0;
-      if (existingServers && existingServers.length > 0 && trimmedBaseId) {
-        for (const existing of existingServers) {
-          if (existing.id.startsWith(idPrefix)) {
-            const suffix = existing.id.slice(idPrefix.length);
-            const index = parseInt(suffix, 10);
-            if (!Number.isNaN(index) && index > existingMaxIndex) {
-              existingMaxIndex = index;
-            }
-          }
-        }
-      }
-
-      // Check for existing servers with the same IP/host
       const trimmedHost = host.trim();
+      const existingMaxIndex = getMaxExistingSIndex(existingServers);
       const existingServersByHost = existingServers?.filter((s) => s.host === trimmedHost) || [];
 
-      // Generate server configs
       for (let i = 1; i <= serverCount; i++) {
         const index = existingMaxIndex + i;
         const portNum = parseInt(ports[i - 1]);
-        
-        // Check if a server with this IP and port already exists (check ALL servers, not just those with matching ID prefix)
         const existingServerWithPort = existingServersByHost.find((s) => s.port === portNum);
-        
-        // If a server with this IP:port exists, use its ID to update it
-        // Otherwise, generate a new ID based on the base ID pattern
+
         let serverId: string;
         let serverName: string;
-        
         if (existingServerWithPort) {
-          // Server already exists with this IP:port - use its ID and name to update it
           serverId = existingServerWithPort.id;
           serverName = existingServerWithPort.name;
         } else {
-          // No existing server with this IP:port - generate new ID and name
-          serverId = `${trimmedBaseId}_${index}`;
+          serverId = `${ID_PREFIX}${index}`;
           serverName = `${trimmedBaseName} #${index}`;
         }
-        
-        const server: ServerConfig = {
+
+        servers.push({
           id: serverId,
           name: serverName,
           host: trimmedHost,
           port: portNum,
           password: password.trim(),
           enabled,
-        };
-        servers.push(server);
+        });
       }
 
       // Create/update all servers
@@ -422,7 +370,7 @@ export default function BatchServerModal({
             count: successCount,
           })
         );
-        onSave();
+        onSave(servers.map((s) => s.id));
         handleClose();
       } else {
         const errorMessage = t('batchServerModal.errors.partialCreate', {
@@ -444,15 +392,17 @@ export default function BatchServerModal({
   };
 
   const previewServers = () => {
-    if (!baseId.trim() || !baseName.trim()) return [];
-
+    if (!baseName.trim()) return [];
     const serverCount = parseInt(count) || 3;
-
-    return Array.from({ length: Math.min(serverCount, 10) }, (_, i) => ({
-      id: `${baseId.trim()}_${i + 1}`,
-      name: `${baseName.trim()} #${i + 1}`,
-      port: parseInt(ports[i]) || 0,
-    }));
+    const max = getMaxExistingSIndex(existingServers);
+    return Array.from({ length: Math.min(serverCount, 10) }, (_, i) => {
+      const index = max + i + 1;
+      return {
+        id: `${ID_PREFIX}${index}`,
+        name: `${baseName.trim()} #${index}`,
+        port: parseInt(ports[i]) || 0,
+      };
+    });
   };
 
   const preview = previewServers();
@@ -499,16 +449,6 @@ export default function BatchServerModal({
               {t('batchServerModal.sections.identification.title')}
             </Typography>
             <Stack spacing={2}>
-              <TextField
-                label={t('batchServerModal.baseId.label')}
-                value={baseId}
-                onChange={(e) => handleBaseIdChange(e.target.value)}
-                placeholder={t('batchServerModal.baseId.placeholder')}
-                helperText={t('batchServerModal.baseId.helper')}
-                required
-                fullWidth
-              />
-
               <TextField
                 label={t('batchServerModal.baseName.label')}
                 value={baseName}

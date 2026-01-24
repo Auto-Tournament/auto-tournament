@@ -446,6 +446,7 @@
       "unreachable": "不可达",
       "reachable": "可达",
       "unknown": "未知",
+      "loading": "加载中…",
       "pluginLabel": "MatchZy："
     },
     "currentMatch": {
@@ -467,6 +468,10 @@
     "bulkDelete": {
       "title": "删除服务器",
       "message": "确定要删除 {{count}} 台服务器{{suffix}}吗？该操作无法撤销。"
+    },
+    "autoConfig": {
+      "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
+      "done": "新服务器已配置，正在刷新状态…"
     }
   },
   "dashboard": {

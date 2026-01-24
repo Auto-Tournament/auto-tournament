@@ -29,7 +29,7 @@ interface ServerModalProps {
   server: ApiServer | null;
   servers: ApiServer[]; // All existing servers for duplicate checking
   onClose: () => void;
-  onSave: () => void;
+  onSave: (createdIds?: string[]) => void;
 }
 
 const slugifyServerName = (name: string): string => {
@@ -54,6 +54,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
   const [enabled, setEnabled] = useState(true);
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
+  const [checking, setChecking] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -174,14 +175,14 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         });
         console.log('Server updated successfully');
         showSuccess(t('serverModal.success.serverUpdated'));
+        onSave();
       } else {
         console.log('Creating new server with payload:', payload);
         await api.post('/api/servers?upsert=true', payload);
         console.log('Server created successfully');
         showSuccess(t('serverModal.success.serverCreated'));
+        onSave([payload.id]);
       }
-
-      onSave();
       resetForm();
       onClose();
     } catch (err) {
@@ -191,6 +192,53 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
       showError(errorMessage);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleCheckConnection = async () => {
+    if (!host?.trim()) {
+      setError(t('serverModal.errors.hostRequired'));
+      return;
+    }
+    const portNum = parseInt(port);
+    if (isNaN(portNum) || portNum < 1 || portNum > 65535) {
+      setError(t('serverModal.errors.portInvalid'));
+      return;
+    }
+    if (!password.trim()) {
+      setError(t('serverModal.errors.rconRequired'));
+      return;
+    }
+    setError('');
+    setChecking(true);
+    try {
+      const result = await api.post<{ success: boolean; error?: string; serverCanReachApi?: boolean }>(
+        '/api/rcon/test-connection',
+        {
+          host: host.trim(),
+          port: portNum,
+          password: password.trim(),
+          name: name.trim() || `Test ${host.trim()}:${portNum}`,
+        }
+      );
+      if (result.success) {
+        if (result.serverCanReachApi === true) {
+          showSuccess(t('serverModal.success.connectivityOk'));
+        } else {
+          showError(t('serverModal.errors.rconReachableApiUnreachable'));
+        }
+      } else {
+        showError(result.error || t('serverModal.errors.serverOffline'));
+      }
+    } catch (err) {
+      const e = err as { response?: { data?: { error?: string } }; message?: string };
+      showError(
+        e.response?.data?.error ||
+          e.message ||
+          t('serverModal.errors.testConnectionFailed')
+      );
+    } finally {
+      setChecking(false);
     }
   };
 
@@ -357,24 +405,33 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
               data-testid="server-delete-button"
               onClick={handleDeleteClick}
               color="error"
-              disabled={saving}
+              disabled={saving || checking}
               sx={{ mr: 'auto' }}
             >
               {t('serverModal.buttons.deleteServer')}
             </Button>
           )}
           {isEditing && (
-            <Button onClick={onClose} disabled={saving}>
+            <Button onClick={onClose} disabled={saving || checking}>
               {t('serverModal.buttons.cancel')}
             </Button>
           )}
           <Button
+            variant="outlined"
+            onClick={handleCheckConnection}
+            disabled={saving || checking}
+            startIcon={checking ? <CircularProgress size={16} /> : undefined}
+            data-testid="server-check-button"
+          >
+            {checking ? t('serverModal.testingConnectivity') : t('serverModal.testConnectivity')}
+          </Button>
+          <Button
             data-testid="server-save-button"
             onClick={handleSave}
             variant="contained"
-            disabled={saving}
+            disabled={saving || checking}
             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
-            sx={{ ml: isEditing ? 0 : 'auto' }}
+            sx={{ ml: 'auto' }}
           >
             {saving
               ? t('serverModal.buttons.saving')

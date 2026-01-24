@@ -56,6 +56,7 @@ export default function Servers() {
   const [retryingServerId, setRetryingServerId] = useState<string | null>(null);
   const [retryingAll, setRetryingAll] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
+  const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
   const { t } = useTranslation();
 
   // Set dynamic page title
@@ -159,86 +160,89 @@ export default function Servers() {
         return;
       }
 
-      const statusPromises = enabledServersToCheck.map(async (server: Server) => {
-        const {
-          status,
-          currentMatch,
-          queuedMatch,
-          reachableFromApi,
-          serverCanReachApi,
-          pluginStatus,
-          allocationState,
-          allocationMatchSlug,
-          ipBanned,
-        } = await checkServerStatus(server.id, { useCached: options?.useCached });
-        return {
-          id: server.id,
-          status,
-          currentMatch,
-          queuedMatch,
-          reachableFromApi,
-          serverCanReachApi,
-          pluginStatus,
-          allocationState,
-          allocationMatchSlug,
-          ipBanned,
-        };
-      });
+      const checkingIds = new Set(enabledServersToCheck.map((s) => s.id));
+      setStatusCheckingIds(checkingIds);
 
-      const statuses = await Promise.all(statusPromises);
-
-      // Update servers with status (all enabled servers we checked)
-      setServers((prev) =>
+      const mergeStatusIntoServer = (
+        prev: Server[],
+        serverId: string,
+        statusInfo: {
+          status?: 'online' | 'offline';
+          currentMatch?: string | null;
+          queuedMatch?: string | null;
+          reachableFromApi?: boolean;
+          serverCanReachApi?: boolean;
+          pluginStatus?: string | null;
+          allocationState?: string | null;
+          allocationMatchSlug?: string | null;
+          ipBanned?: boolean;
+        }
+      ) =>
         prev.map((server) => {
-          if (!server.enabled) {
-            return { ...server, status: 'disabled' as const };
-          }
-
-          const statusInfo = statuses.find((s) => s.id === server.id);
-          if (!statusInfo) return server;
+          if (server.id !== serverId || !server.enabled) return server;
           const nextQueuedMatch =
-            statusInfo?.queuedMatch !== undefined
+            statusInfo.queuedMatch !== undefined
               ? statusInfo.queuedMatch
               : (server as Server & { queuedMatch?: string | null }).queuedMatch ?? null;
-
           return {
             ...server,
-            status: statusInfo?.status || server.status,
-            currentMatch:
-              statusInfo?.currentMatch !== undefined
-                ? statusInfo.currentMatch
-                : server.currentMatch ?? null,
+            status: (statusInfo.status || server.status) as Server['status'],
+            currentMatch: statusInfo.currentMatch !== undefined ? statusInfo.currentMatch : server.currentMatch ?? null,
             queuedMatch: nextQueuedMatch,
-            reachableFromApi:
-              statusInfo?.reachableFromApi !== undefined
-                ? statusInfo.reachableFromApi
-                : server.reachableFromApi,
-            serverCanReachApi:
-              statusInfo?.serverCanReachApi !== undefined
-                ? statusInfo.serverCanReachApi
-                : server.serverCanReachApi,
-            ipBanned:
-              statusInfo?.ipBanned !== undefined
-                ? statusInfo.ipBanned
-                : (server.ipBanned ?? false),
-            pluginStatus:
-              statusInfo?.pluginStatus !== undefined
-                ? statusInfo.pluginStatus
-                : server.pluginStatus ?? null,
-            allocationState:
-              statusInfo?.allocationState !== undefined
-                ? statusInfo.allocationState
-                : server.allocationState ?? null,
-            allocationMatchSlug:
-              statusInfo?.allocationMatchSlug !== undefined
-                ? statusInfo.allocationMatchSlug
-                : server.allocationMatchSlug ?? null,
+            reachableFromApi: statusInfo.reachableFromApi !== undefined ? statusInfo.reachableFromApi : server.reachableFromApi,
+            serverCanReachApi: statusInfo.serverCanReachApi !== undefined ? statusInfo.serverCanReachApi : server.serverCanReachApi,
+            ipBanned: statusInfo.ipBanned !== undefined ? statusInfo.ipBanned : (server.ipBanned ?? false),
+            pluginStatus: statusInfo.pluginStatus !== undefined ? statusInfo.pluginStatus : server.pluginStatus ?? null,
+            allocationState: statusInfo.allocationState !== undefined ? statusInfo.allocationState : server.allocationState ?? null,
+            allocationMatchSlug: statusInfo.allocationMatchSlug !== undefined ? statusInfo.allocationMatchSlug : server.allocationMatchSlug ?? null,
           };
-        })
-      );
+        });
+
+      const removeFromChecking = (id: string) => {
+        setStatusCheckingIds((prev) => {
+          const next = new Set(prev);
+          next.delete(id);
+          return next;
+        });
+      };
+
+      const statusPromises = enabledServersToCheck.map(async (server: Server) => {
+        try {
+          const {
+            status,
+            currentMatch,
+            queuedMatch,
+            reachableFromApi,
+            serverCanReachApi,
+            pluginStatus,
+            allocationState,
+            allocationMatchSlug,
+            ipBanned,
+          } = await checkServerStatus(server.id, { useCached: options?.useCached });
+          const statusInfo = {
+            status,
+            currentMatch,
+            queuedMatch,
+            reachableFromApi,
+            serverCanReachApi,
+            pluginStatus,
+            allocationState,
+            allocationMatchSlug,
+            ipBanned,
+          };
+          setServers((prev) => mergeStatusIntoServer(prev, server.id, statusInfo));
+        } catch {
+          // Leave server state unchanged; avoid sticking in "Checking..." forever
+        } finally {
+          removeFromChecking(server.id);
+        }
+      });
+
+      await Promise.allSettled(statusPromises);
     } catch (err) {
       showError(t('serversPage.errors.loadServers'));
       console.error(err);
+      setStatusCheckingIds(() => new Set());
     } finally {
       setRefreshing(false);
     }
@@ -494,9 +498,26 @@ export default function Servers() {
     setEditingServer(null);
   };
 
-  const handleSave = async () => {
-    // Do a full status check after adding/updating server to show real connectivity
+  const handleSave = async (createdIds?: string[]) => {
     await loadServers({ useCached: false });
+    if (createdIds?.length) {
+      const key = showSnackbar(`⏳ ${t('serversPage.autoConfig.configuring')}`, 'info');
+      try {
+        for (const id of createdIds) {
+          try {
+            await api.post(`/api/servers/${id}/reset-initialization`);
+          } catch (e) {
+            console.warn(`Auto-init failed for ${id}:`, e);
+          }
+          await new Promise((r) => setTimeout(r, 400));
+        }
+        closeSnackbar(key);
+        showSnackbar(`✅ ${t('serversPage.autoConfig.done')}`, 'success');
+        setTimeout(() => void loadServers({ useCached: false }), 1500);
+      } catch {
+        closeSnackbar(key);
+      }
+    }
     handleCloseModal();
   };
 
@@ -542,7 +563,7 @@ export default function Servers() {
 
   const handleRetryInitialization = async (serverId: string, event: React.MouseEvent) => {
     event.stopPropagation();
-    if (retryingServerId || retryingAll) return;
+    if (retryingServerId || retryingAll || statusCheckingIds.has(serverId)) return;
 
     setRetryingServerId(serverId);
     
@@ -781,6 +802,7 @@ export default function Servers() {
                 // Not initialized: we haven't sent config, or we don't know (no persistentConfigSent)
                 const needsInitialization =
                   server.enabled && !server.lastSeen && !server.persistentConfigSent;
+                const isChecking = statusCheckingIds.has(server.id);
 
                 return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
@@ -847,7 +869,9 @@ export default function Servers() {
                             Server Not Initialized
                           </Typography>
                           <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
-                            {server.reachableFromApi === false
+                            {isChecking
+                              ? "Checking connectivity…"
+                              : server.reachableFromApi === false
                               ? "RCON unreachable. Check host, port, and that the game server is running. Use Retry once it's reachable."
                               : server.reachableFromApi === true
                               ? "RCON reachable, but MatchZy hasn't sent events. Click retry button to configure."
@@ -876,7 +900,9 @@ export default function Servers() {
                             Config sent – no events received yet
                           </Typography>
                           <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
-                            Webhook config was sent via RCON. We have not received any events from MatchZy, so we cannot confirm it reached the plugin. Ensure the game server can reach the webhook URL and has MatchZy Enhanced. Use Retry to resend config.
+                            {isChecking
+                              ? 'Checking connectivity…'
+                              : 'Webhook config was sent via RCON. We have not received any events from MatchZy, so we cannot confirm it reached the plugin. Ensure the game server can reach the webhook URL and has MatchZy Enhanced. Use Retry to resend config.'}
                           </Typography>
                         </Box>
                       </Box>
@@ -923,7 +949,10 @@ export default function Servers() {
                             let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
                               'default';
 
-                            if (!server.enabled || server.status === 'disabled') {
+                            if (isChecking) {
+                              label = t('serversPage.statusChip.checking');
+                              color = 'default';
+                            } else if (!server.enabled || server.status === 'disabled') {
                               label = t('serversPage.statusChip.disabled');
                               color = 'default';
                             } else if (!server.lastSeen) {
@@ -952,7 +981,9 @@ export default function Servers() {
                               color = 'success';
                             }
 
-                            const icon = color === 'success' ? (
+                            const icon = isChecking ? (
+                              <CircularProgress size={16} sx={{ color: 'text.secondary' }} />
+                            ) : color === 'success' ? (
                               <CheckCircleIcon />
                             ) : color === 'warning' ? (
                               <RefreshIcon />
@@ -1000,11 +1031,11 @@ export default function Servers() {
                           )}
                         </Box>
                       </Box>
-                      <Tooltip title="Retry server initialization (send persistent config via RCON)">
+                        <Tooltip title="Retry server initialization (send persistent config via RCON)">
                         <IconButton
                           size="small"
                           onClick={(e) => handleRetryInitialization(server.id, e)}
-                          disabled={retryingServerId === server.id || retryingAll}
+                          disabled={isChecking || retryingServerId === server.id || retryingAll}
                           sx={{
                             ml: 1,
                             '&:hover': {
@@ -1081,24 +1112,30 @@ export default function Servers() {
                         </Typography>
                       )}
                     </Box>
-                    {server.reachableFromApi !== undefined && (
+                    {(server.reachableFromApi !== undefined || isChecking) && server.enabled && (
                       <Box display="flex" flexDirection="column" gap={0.5} mb={1}>
                         <Box display="flex" alignItems="center" gap={0.5}>
-                          <ArrowUpwardIcon
-                            fontSize="small"
-                            sx={{
-                              color:
-                                server.reachableFromApi === false
-                                  ? 'error.main'
-                                  : server.reachableFromApi
-                                  ? 'success.main'
-                                  : 'text.disabled',
-                            }}
-                          />
+                          {isChecking ? (
+                            <CircularProgress size={14} sx={{ color: 'text.disabled' }} />
+                          ) : (
+                            <ArrowUpwardIcon
+                              fontSize="small"
+                              sx={{
+                                color:
+                                  server.reachableFromApi === false
+                                    ? 'error.main'
+                                    : server.reachableFromApi
+                                    ? 'success.main'
+                                    : 'text.disabled',
+                              }}
+                            />
+                          )}
                           <Typography variant="caption" color="text.secondary">
                             {t('serversPage.connectivity.apiToServer')}{' '}
                             <strong>
-                              {server.reachableFromApi === false
+                              {isChecking
+                                ? t('serversPage.connectivity.loading')
+                                : server.reachableFromApi === false
                                 ? t('serversPage.connectivity.unreachable')
                                 : server.reachableFromApi
                                 ? t('serversPage.connectivity.reachable')
@@ -1107,21 +1144,27 @@ export default function Servers() {
                           </Typography>
                         </Box>
                         <Box display="flex" alignItems="center" gap={0.5}>
-                          <ArrowDownwardIcon
-                            fontSize="small"
-                            sx={{
-                              color:
-                                server.serverCanReachApi === false
-                                  ? 'error.main'
-                                  : server.serverCanReachApi
-                                  ? 'success.main'
-                                  : 'text.disabled',
-                            }}
-                          />
+                          {isChecking ? (
+                            <CircularProgress size={14} sx={{ color: 'text.disabled' }} />
+                          ) : (
+                            <ArrowDownwardIcon
+                              fontSize="small"
+                              sx={{
+                                color:
+                                  server.serverCanReachApi === false
+                                    ? 'error.main'
+                                    : server.serverCanReachApi
+                                    ? 'success.main'
+                                    : 'text.disabled',
+                              }}
+                            />
+                          )}
                           <Typography variant="caption" color="text.secondary">
                             {t('serversPage.connectivity.serverToApi')}{' '}
                             <strong>
-                              {server.serverCanReachApi === false
+                              {isChecking
+                                ? t('serversPage.connectivity.loading')
+                                : server.serverCanReachApi === false
                                 ? t('serversPage.connectivity.unreachable')
                                 : server.serverCanReachApi
                                 ? t('serversPage.connectivity.reachable')
@@ -1129,7 +1172,7 @@ export default function Servers() {
                             </strong>
                           </Typography>
                         </Box>
-                        {server.pluginStatus && server.status === 'online' && (
+                        {!isChecking && server.pluginStatus && server.status === 'online' && (
                           <Box display="flex" alignItems="center" gap={0.5}>
                             <Typography variant="caption" color="text.secondary">
                               <strong>{t('serversPage.connectivity.pluginLabel')}</strong>{' '}
