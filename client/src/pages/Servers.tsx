@@ -877,6 +877,11 @@ export default function Servers() {
                               ? "RCON reachable, but MatchZy hasn't sent events. Click retry button to configure."
                               : "Connectivity not checked yet. See status below. Click retry to configure once RCON is reachable."}
                           </Typography>
+                          {!isChecking && server.reachableFromApi === true && (
+                            <Typography variant="caption" display="block" mt={0.5} sx={{ color: 'inherit', opacity: 0.85 }}>
+                              {t('serversPage.checkServerLogs')}
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                     )}
@@ -904,6 +909,11 @@ export default function Servers() {
                               ? 'Checking connectivity…'
                               : 'Webhook config was sent via RCON. We have not received any events from MatchZy, so we cannot confirm it reached the plugin. Ensure the game server can reach the webhook URL and has MatchZy Enhanced. Use Retry to resend config.'}
                           </Typography>
+                          {!isChecking && (
+                            <Typography variant="caption" display="block" mt={0.5} sx={{ color: 'inherit', opacity: 0.85 }}>
+                              {t('serversPage.checkServerLogs')}
+                            </Typography>
+                          )}
                         </Box>
                       </Box>
                     )}

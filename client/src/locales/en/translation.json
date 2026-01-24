@@ -471,7 +471,8 @@
     "autoConfig": {
       "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
       "done": "New servers configured. Refreshing status…"
-    }
+    },
+    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events."
   },
   "dashboard": {
     "title": "Dashboard",

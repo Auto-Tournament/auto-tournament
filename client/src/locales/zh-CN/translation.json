@@ -472,7 +472,8 @@
     "autoConfig": {
       "configuring": "正在配置新服务器（通过 RCON 发送 MatchZy 配置）…",
       "done": "新服务器已配置，正在刷新状态…"
-    }
+    },
+    "checkServerLogs": "请查看游戏服务器控制台/日志，确认 MatchZy 是否收到配置并发送事件。"
   },
   "dashboard": {
     "title": "控制台",

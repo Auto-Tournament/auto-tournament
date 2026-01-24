@@ -78,7 +78,9 @@ https://your-mat-url/api/auth/admin-status
 
 ### Events Not Arriving
 
-**Symptoms:** No real-time updates, player connections not showing. Servers stay "Config sent – waiting for MatchZy" or "Not Configured".
+**Symptoms:** No real-time updates, player connections not showing. Servers stay "Config sent – no events received yet" or "Not Configured".
+
+**Check game server logs/console** (CS2 + MatchZy) to see if MatchZy receives the webhook config and sends events. Look for MatchZy startup messages, webhook-related output, or errors. This tells you whether the problem is on the game server side (config not received, wrong URL, etc.) or on the MAT API side (events not reaching us).
 
 **Check API logs** to see if the game server is actually sending events:
 
@@ -94,8 +96,8 @@ https://your-mat-url/api/auth/admin-status
    - Check API logs for `[EVENTS] Webhook reachability check`. If that appears, the API is reachable; MatchZy may not be sending or may be using a different URL.
 2. Verify **webhook URL** in Settings matches what the game server can reach (often `http://MAT_IP:3069`, not `localhost`).
 3. Verify **SERVER_TOKEN** matches what MatchZy sends (`matchzy_remote_log_header_value`).
-4. Check CS2 console for `[MatchZy] Remote log sent: ...` or errors.
-5. Click **Retry** on the server card to resend config, then check logs again for `[EVENTS] Incoming webhook` / `server_configured handled`.
+4. **Check the game server console/logs** for MatchZy output (e.g. `[MatchZy] Remote log sent: ...`) or errors. This confirms whether MatchZy is receiving config and attempting to send events.
+5. Click **Retry** on the server card to resend config, then check both **game server** and **API** logs again for `[EVENTS] Incoming webhook` / `server_configured handled`.
 6. Check firewall allows **inbound** on port **3069** (Docker) or **3000** (local dev).
 
 ## Match Issues
