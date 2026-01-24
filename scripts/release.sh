@@ -822,16 +822,28 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
         git checkout main
         git fetch origin --prune
         git branch --set-upstream-to=origin/main main 2>/dev/null || true
+        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+            echo -e "${YELLOW}Stashing uncommitted changes before pull...${NC}"
+            git stash push -u -m "release script: temp stash before pull main"
+            PULL_STASHED=1
+        else
+            PULL_STASHED=0
+        fi
         git pull --rebase
-        
-        # Verify we're on latest origin/main
+
+        # Verify we're on latest origin/main (reset if needed, before restoring stash)
         LOCAL_COMMIT=$(git rev-parse HEAD)
         REMOTE_COMMIT=$(git rev-parse origin/main)
         if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
             echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
             git reset --hard origin/main
         fi
-        
+
+        if [ "${PULL_STASHED}" = "1" ]; then
+            echo -e "${YELLOW}Restoring stashed changes...${NC}"
+            git stash pop
+        fi
+
         # Ensure versions are synced after pulling merged changes
         echo -e "${BLUE}Ensuring versions are synced after PR merge...${NC}"
         if [ -f "scripts/sync-version.sh" ]; then
@@ -856,29 +868,33 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
         git checkout main
         git fetch origin --prune
         git branch --set-upstream-to=origin/main main 2>/dev/null || true
+        if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+            echo -e "${YELLOW}Stashing uncommitted changes before pull...${NC}"
+            git stash push -u -m "release script: temp stash before pull main"
+            PULL_STASHED=1
+        else
+            PULL_STASHED=0
+        fi
         git pull --rebase
-        
-        # Verify we're on latest origin/main
+
+        # Verify we're on latest origin/main (reset if needed, before restoring stash)
         LOCAL_COMMIT=$(git rev-parse HEAD)
         REMOTE_COMMIT=$(git rev-parse origin/main)
         if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
             echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
             git reset --hard origin/main
         fi
-        
+
+        if [ "${PULL_STASHED}" = "1" ]; then
+            echo -e "${YELLOW}Restoring stashed changes...${NC}"
+            git stash pop
+        fi
+
         # Ensure versions are synced after pulling
         echo -e "${BLUE}Ensuring versions are synced...${NC}"
         if [ -f "scripts/sync-version.sh" ]; then
             bash scripts/sync-version.sh
             echo -e "${GREEN}✅ Versions synced${NC}"
-        else
-            echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
-        fi
-        
-        # Ensure versions are synced after pulling
-        echo -e "${BLUE}Ensuring versions are synced...${NC}"
-        if [ -f "scripts/sync-version.sh" ]; then
-            bash scripts/sync-version.sh
         else
             echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
         fi
@@ -896,29 +912,33 @@ else
     git checkout main
     git fetch origin --prune
     git branch --set-upstream-to=origin/main main 2>/dev/null || true
+    if ! git diff-index --quiet HEAD -- 2>/dev/null; then
+        echo -e "${YELLOW}Stashing uncommitted changes before pull...${NC}"
+        git stash push -u -m "release script: temp stash before pull main"
+        PULL_STASHED=1
+    else
+        PULL_STASHED=0
+    fi
     git pull --rebase
-    
-    # Verify we're on latest origin/main
+
+    # Verify we're on latest origin/main (reset if needed, before restoring stash)
     LOCAL_COMMIT=$(git rev-parse HEAD)
     REMOTE_COMMIT=$(git rev-parse origin/main)
     if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
         echo -e "${YELLOW}Resetting local main to match origin/main...${NC}"
         git reset --hard origin/main
     fi
-    
+
+    if [ "${PULL_STASHED}" = "1" ]; then
+        echo -e "${YELLOW}Restoring stashed changes...${NC}"
+        git stash pop
+    fi
+
     # Ensure versions are synced after pulling
     echo -e "${BLUE}Ensuring versions are synced...${NC}"
     if [ -f "scripts/sync-version.sh" ]; then
         bash scripts/sync-version.sh
         echo -e "${GREEN}✅ Versions synced${NC}"
-    else
-        echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
-    fi
-    
-    # Ensure versions are synced after pulling
-    echo -e "${BLUE}Ensuring versions are synced...${NC}"
-    if [ -f "scripts/sync-version.sh" ]; then
-        bash scripts/sync-version.sh
     else
         echo -e "${YELLOW}⚠️  sync-version.sh not found, skipping version sync${NC}"
     fi
