@@ -21,6 +21,13 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ---
 
+## [2.0.4] - 2026-01-24
+
+### Added
+- Release v2.0.4
+
+---
+
 ## [2.0.3] - 2026-01-24
 
 ### Added
@@ -163,7 +170,8 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ---
 
-[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v2.0.3...HEAD
+[Unreleased]: https://github.com/sivert-io/matchzy-auto-tournament/compare/v2.0.4...HEAD
+[2.0.4]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v2.0.4
 [2.0.3]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v2.0.3
 [2.0.2]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v2.0.2
 [2.0.1]: https://github.com/sivert-io/matchzy-auto-tournament/releases/tag/v2.0.1
