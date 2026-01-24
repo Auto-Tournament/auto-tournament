@@ -1,6 +1,6 @@
 {
     "name": "matchzy-auto-tournament",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "Tournament management API for CS2 MatchZy plugin",
     "private": true,
     "workspaces": [
