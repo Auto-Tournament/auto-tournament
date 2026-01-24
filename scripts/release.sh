@@ -1240,7 +1240,7 @@ echo ""
 echo -e "${YELLOW}Step 11: Sending Discord release notification...${NC}"
 
 # Call the standalone Discord webhook script
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Use SCRIPT_DIR that was set at the top of the script (before cd to PROJECT_ROOT)
 "${SCRIPT_DIR}/discord-webhook.sh" "${NEW_VERSION}"
 
 if [ $? -ne 0 ]; then
