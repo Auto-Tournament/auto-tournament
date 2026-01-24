@@ -471,8 +471,6 @@ async function bootstrapServerWebhooks(): Promise<void> {
 
   log.info(`Initializing persistent configuration for ${enabledServers.length} server(s)...`);
 
-  // Use serverInitializationService to ensure persistent config is sent
-  // (only once per server, unless reset). The server stores this in its database.
   for (const serverInfo of enabledServers) {
     try {
       const statusResult = await rconService.sendCommand(serverInfo.id, 'status');
@@ -481,9 +479,23 @@ async function bootstrapServerWebhooks(): Promise<void> {
         continue;
       }
 
-      // Initialize server with persistent configuration (idempotent - only sends if not already initialized)
-      await serverInitializationService.initializeServer(serverInfo.id, false);
-      log.success(`Initialized persistent config for ${serverInfo.name} (${serverInfo.id})`);
+      const needsInit = !serverInfo.persistentConfigSent;
+      const needsRetry =
+        !!serverInfo.persistentConfigSent && !serverInfo.lastSeen;
+
+      if (!needsInit && !needsRetry) {
+        log.debug(`[SERVER-INIT] ${serverInfo.id} already configured and connected, skipping`);
+        continue;
+      }
+
+      await serverInitializationService.initializeServer(serverInfo.id, baseUrl, {
+        force: needsRetry,
+      });
+      log.success(
+        needsRetry
+          ? `Retried persistent config for ${serverInfo.name} (${serverInfo.id}) – waiting for MatchZy`
+          : `Initialized persistent config for ${serverInfo.name} (${serverInfo.id})`
+      );
     } catch (error) {
       log.warn(`Failed to initialize server ${serverInfo.id}`, { error });
     }

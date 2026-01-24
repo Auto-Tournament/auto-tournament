@@ -58,6 +58,8 @@ export interface ServerResponse {
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
+  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
+  persistentConfigSent?: number | null;
 }
 
 /**

@@ -155,6 +155,7 @@ nav:
   - Getting Started:
       - Quick Start & First Tournament: getting-started/index.md
       - Server Setup: getting-started/server-setup.md
+      - Migrating to 2.0: guides/migration-to-2.md
   - Guides:
       - Tournament Admins:
           - Dashboard: guides/admin-dashboard.md

@@ -403,6 +403,8 @@
     "headerActions": {
       "refreshChecking": "正在检查…",
       "refresh": "刷新状态",
+      "retryUninitialized": "重试未初始化 ({{count}})",
+      "retryUninitializedChecking": "正在重试…",
       "batchAdd": "批量新增",
       "select": "选择",
       "done": "完成选择",

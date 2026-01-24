@@ -119,6 +119,9 @@ docker compose up -d
 
 > **Note:** You can configure `SERVER_TOKEN` and `STEAM_API_KEY` in **Settings** after first login, but `SESSION_SECRET` must be set in `.env` for session persistence.
 
+!!! info "Upgrading from 1.7.6 (or earlier) with existing data?"
+    If you’re moving from **1.7.6 → 2.0** and have teams, matches, and players in your DB, see **[Migrating to 2.0](guides/migration-to-2.md)**. You’ll need to set `SESSION_SECRET`, `STEAM_API_KEY`, and `FRONTEND_BASE_URL`, then **promote at least one admin** before signing in. Skip this only if you’re doing a **fresh install**.
+
 [**Full Installation Guide →**](getting-started/)
 
 ---
@@ -129,6 +132,7 @@ docker compose up -d
 
 **Setup:**
 - [Installation](getting-started/) - Docker setup and first tournament
+- [Migration (1.7.6 → 2.0)](guides/migration-to-2.md) - Upgrading with existing data, sign-in fixes
 - [Server Setup](getting-started/server-setup/) - CS2 server configuration
 - [Admin Settings](guides/admin-settings/) - Webhooks, maps, defaults
 

@@ -268,6 +268,7 @@ export class ServerService {
       hostname: server.hostname || null,
       lastSeen: server.last_seen || null,
       status: server.status || null,
+      persistentConfigSent: server.persistent_config_sent || null,
     };
   }
 }

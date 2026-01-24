@@ -4,6 +4,7 @@ import { CreateServerInput, UpdateServerInput } from '../types/server.types';
 import { requireAuth } from '../middleware/auth';
 import { matchAllocationService } from '../services/matchAllocationService';
 import { serverInitializationService } from '../services/serverInitializationService';
+import { settingsService } from '../services/settingsService';
 import { log } from '../utils/logger';
 
 const router = Router();
@@ -53,6 +54,26 @@ router.post('/batch', async (req: Request, res: Response) => {
     }
 
     const result = await serverService.createServers(servers, upsert);
+
+    if (result.successful.length > 0) {
+      setImmediate(() => {
+        void matchAllocationService.tryImmediateAllocation();
+      });
+      setImmediate(async () => {
+        try {
+          const baseUrl = await settingsService.getWebhookUrl();
+          if (baseUrl) {
+            for (const s of result.successful) {
+              if (s.enabled !== false) {
+                await serverInitializationService.initializeServer(s.id, baseUrl);
+              }
+            }
+          }
+        } catch (e) {
+          log.warn('Failed to initialize one or more servers from batch create', { error: e });
+        }
+      });
+    }
 
     return res.status(result.failed.length > 0 ? 207 : 201).json({
       success: result.failed.length === 0,
@@ -173,11 +194,21 @@ router.post('/', async (req: Request, res: Response) => {
 
     const server = await serverService.createServer(input, upsert);
 
-    // If the server is enabled (default is true), trigger immediate allocation
     if (server.enabled !== false) {
       log.info(`New server ${server.id} created and enabled, triggering immediate allocation`);
       setImmediate(() => {
         void matchAllocationService.tryImmediateAllocation();
+      });
+      // Send persistent config (webhook, etc.) so MatchZy can start sending events and server becomes "initialized"
+      setImmediate(async () => {
+        try {
+          const baseUrl = await settingsService.getWebhookUrl();
+          if (baseUrl) {
+            await serverInitializationService.initializeServer(server.id, baseUrl);
+          }
+        } catch (e) {
+          log.warn(`Failed to initialize new server ${server.id}`, { error: e });
+        }
       });
     }
 
@@ -403,14 +434,13 @@ router.post('/:id/disable', async (req: Request, res: Response) => {
 
 /**
  * POST /api/servers/:id/reset-initialization
- * Reset server initialization status
- * Forces re-sending of persistent configuration on next match load
- * Useful when configuration has changed or server was reconfigured
+ * Reset server initialization and immediately re-send persistent configuration via RCON.
+ * Use when a server shows "Not Initialized" or after configuration changes.
  */
 router.post('/:id/reset-initialization', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    
+
     // Verify server exists
     const server = await serverService.getServerById(id);
     if (!server) {
@@ -420,11 +450,30 @@ router.post('/:id/reset-initialization', async (req: Request, res: Response) => 
       });
     }
 
+    const baseUrl = await settingsService.getWebhookUrl();
+    if (!baseUrl) {
+      return res.status(400).json({
+        success: false,
+        error:
+          'Webhook URL is not configured. Set it in Settings or FRONTEND_BASE_URL in .env.',
+      });
+    }
+
     await serverInitializationService.resetServerInitialization(id);
+    const initResult = await serverInitializationService.initializeServer(id, baseUrl, {
+      force: true,
+    });
+
+    if (!initResult.success && initResult.error) {
+      return res.status(500).json({
+        success: false,
+        error: initResult.error,
+      });
+    }
 
     return res.json({
       success: true,
-      message: `Server ${id} initialization reset. Persistent configuration will be resent on next match load.`,
+      message: `Server ${id} initialization reset and configuration sent.`,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Failed to reset server initialization';

@@ -77,3 +77,5 @@ blob-report-merged.zip
 # Docker volumes (managed by Docker, not tracked in git)
 # Note: Docker volumes are managed by Docker and cleaned up by test scripts
 # To manually clean up volumes: docker volume prune -f
+
+.venv/

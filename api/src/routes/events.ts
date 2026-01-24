@@ -36,8 +36,14 @@ const router = Router();
 
 /**
  * GET /api/events/test
+ * Use this to verify the game server can reach the MAT API (e.g. curl from game host).
+ * Check API logs for [EVENTS] Webhook reachability check to confirm.
  */
-router.get('/test', (_req: Request, res: Response) => {
+router.get('/test', (req: Request, res: Response) => {
+  log.info('[EVENTS] Webhook reachability check (GET /test)', {
+    ip: req.ip ?? req.socket?.remoteAddress,
+    ua: req.get('user-agent') ?? undefined,
+  });
   res.json({
     success: true,
     message: 'events route is working',
@@ -138,19 +144,22 @@ async function handleEventRequest(
   res: Response,
   matchSlugOrServerIdFromUrl?: string
 ): Promise<Response> {
-  // Log raw request for debugging
-  console.log('\n[EVENT] RAW REQUEST RECEIVED:');
-  console.log('Headers:', JSON.stringify(req.headers, null, 2));
-  console.log('Body:', JSON.stringify(req.body, null, 2));
-  console.log('URL Path:', req.path);
-  console.log('---\n');
+  const body = req.body as MatchZyEvent | undefined;
+  const eventType = body?.event;
+  const payloadServerId = (body as { server_id?: string })?.server_id;
+
+  log.info('[EVENTS] Incoming webhook', {
+    path: req.path,
+    event: eventType ?? '(missing)',
+    server_id: payloadServerId ?? '(none)',
+    urlParam: matchSlugOrServerIdFromUrl ?? '(none)',
+  });
 
   try {
-    const event: MatchZyEvent = req.body;
+    const event: MatchZyEvent = body;
 
-    // Validate event has required fields
-    if (!event.event) {
-      console.log('[EVENT] WARNING: Event missing "event" field');
+    if (!event?.event) {
+      log.warn('[EVENTS] Rejected: missing event type', { path: req.path });
       return res.status(400).json({
         success: false,
         error: 'Invalid event: missing event type',
@@ -173,41 +182,28 @@ async function handleEventRequest(
     const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
     const isNoMatch = actualMatchSlug === '-1';
 
-    console.log(
-      `[EVENT] Match Slug: ${actualMatchSlug} (from ${matchFromUrl ? 'URL' : 'payload'})`
-    );
     log.webhookReceived(event.event, actualMatchSlug);
 
-    // Log full event payload
-    console.log('\n[EVENT] FULL EVENT RECEIVED:');
-    console.log(JSON.stringify(event, null, 2));
-    console.log('---\n');
-
-    // Get server ID
     const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
-
-    console.log(
-      `[EVENT] Server ID: ${serverId} (from ${
-        matchFromUrl
-          ? 'URL match lookup'
-          : resolvedMatch
-          ? 'matchid lookup'
-          : matchSlugOrServerIdFromUrl
-          ? 'URL fallback'
-          : 'unknown'
-      })`
-    );
 
     // Handle server_configured event from MatchZy Enhanced
     // Sent when server is configured with webhook URL or on startup
     if (event.event === 'server_configured') {
-      await serverTrackingService.handleServerConfigured(event as ServerConfiguredEvent);
-      
-      // Update heartbeat immediately
+      const ev = event as ServerConfiguredEvent;
+      await serverTrackingService.handleServerConfigured(ev);
+
+      log.info('[EVENTS] server_configured handled', {
+        server_id: ev.server_id,
+        hostname: ev.hostname,
+        plugin_version: ev.plugin_version,
+      });
+
       if (serverId && serverId !== 'unknown') {
         await serverTrackingService.updateHeartbeat(serverId);
+      } else if (ev.server_id) {
+        await serverTrackingService.updateHeartbeat(ev.server_id);
       }
-      
+
       return res.status(200).json({
         success: true,
         message: 'Server registered successfully',
@@ -240,10 +236,11 @@ async function handleEventRequest(
 
     // Handle events with no match loaded
     if (isNoMatch) {
-      console.log(
-        `[INFO] Event received but no match is loaded (matchid: ${actualMatchSlug}). Event type: ${event.event}`
-      );
-      console.log('   This is normal during server startup or between matches.');
+      log.info('[EVENTS] Event received, no match loaded', {
+        matchid: actualMatchSlug,
+        event: event.event,
+        serverId,
+      });
       logWebhookEvent(serverId, actualMatchSlug, event);
       return res.status(200).json({
         success: true,

@@ -13,6 +13,8 @@
 
 ### I can't access the admin dashboard – am I an admin?
 
+If you **upgraded from 1.x to 2.0**, see [Migrating to 2.0](migration-to-2.md) — you likely need to promote an existing player to admin.
+
 **Check your status:** After signing in with Steam, open:
 
 ```
@@ -76,24 +78,25 @@ https://your-mat-url/api/auth/admin-status
 
 ### Events Not Arriving
 
-**Symptoms:** No real-time updates, player connections not showing
+**Symptoms:** No real-time updates, player connections not showing. Servers stay "Config sent – waiting for MatchZy" or "Not Configured".
 
-**Check:**
+**Check API logs** to see if the game server is actually sending events:
 
-- CS2 console: `[MatchZy] Remote log sent: ...`
-- API console for events
-- Webhook configuration
-- SERVER_TOKEN matches
+- **`[EVENTS] Incoming webhook`** — A request reached the API. Look for `event` and `server_id` in the same log line.
+- **`[EVENTS] server_configured handled`** — MatchZy sent its "configured" confirmation; we updated `last_seen` for that server.
+- **`[EVENTS] Webhook reachability check (GET /test)`** — Someone (e.g. `curl`) hit `GET /api/events/test`; use this to test connectivity.
 
-**Fix:**
+**If you see no `[EVENTS]` lines when MatchZy should be sending:**
 
-1. Check CS2 can reach API (from your CS2 server):
-   - Docker: `curl http://192.168.1.50:3069/api/events/test`
-   - Local dev: `curl http://192.168.1.50:3000/api/events/test`
-2. Verify `matchzy_remote_log_url` is set correctly
-3. Verify `matchzy_remote_log_header_value` matches SERVER_TOKEN
-4. Click "Check Status" to reconfigure webhooks
-5. Check firewall allows inbound on port **3069** (Docker) or **3000** (local dev)
+1. **Test reachability** from the game server (or same network):
+   - Docker: `curl http://YOUR_MAT_IP:3069/api/events/test`
+   - Local dev: `curl http://YOUR_MAT_IP:3000/api/events/test`
+   - Check API logs for `[EVENTS] Webhook reachability check`. If that appears, the API is reachable; MatchZy may not be sending or may be using a different URL.
+2. Verify **webhook URL** in Settings matches what the game server can reach (often `http://MAT_IP:3069`, not `localhost`).
+3. Verify **SERVER_TOKEN** matches what MatchZy sends (`matchzy_remote_log_header_value`).
+4. Check CS2 console for `[MatchZy] Remote log sent: ...` or errors.
+5. Click **Retry** on the server card to resend config, then check logs again for `[EVENTS] Incoming webhook` / `server_configured handled`.
+6. Check firewall allows **inbound** on port **3069** (Docker) or **3000** (local dev).
 
 ## Match Issues
 

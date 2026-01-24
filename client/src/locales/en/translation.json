@@ -399,6 +399,8 @@
     "headerActions": {
       "refreshChecking": "Checking...",
       "refresh": "Refresh Status",
+      "retryUninitialized": "Retry uninitialized ({{count}})",
+      "retryUninitializedChecking": "Retrying...",
       "batchAdd": "Batch Add",
       "select": "Select",
       "done": "Done Selecting",

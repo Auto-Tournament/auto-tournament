@@ -43,6 +43,14 @@ async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
     return;
   }
 
+  const baseUrl = await settingsService.getWebhookUrl();
+  if (!baseUrl) {
+    log.warn(
+      'Webhook URL is not configured. Skipping automatic webhook bootstrap during tournament start.'
+    );
+    return;
+  }
+
   const enabledServers = await serverService.getAllServers(true);
   if (enabledServers.length === 0) {
     return;
@@ -55,7 +63,7 @@ async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
   // Initialize servers with persistent configuration (idempotent - only sends if not already initialized)
   for (const server of enabledServers) {
     try {
-      await serverInitializationService.initializeServer(server.id, false);
+      await serverInitializationService.initializeServer(server.id, baseUrl);
       log.success(`Initialized persistent config for ${server.id}`);
     } catch (error) {
       // Don't fail the start flow if a single server init fails.

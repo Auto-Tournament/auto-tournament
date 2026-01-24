@@ -54,6 +54,7 @@ export default function Servers() {
   const [selectionMode, setSelectionMode] = useState(false);
   const [selectedServerIds, setSelectedServerIds] = useState<Set<string>>(() => new Set());
   const [retryingServerId, setRetryingServerId] = useState<string | null>(null);
+  const [retryingAll, setRetryingAll] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const { t } = useTranslation();
 
@@ -96,6 +97,7 @@ export default function Servers() {
       return {
         status: isOnline ? 'online' : ('offline' as const),
         currentMatch: response.currentMatch ?? null,
+        queuedMatch: response.queuedMatch ?? null,
         reachableFromApi: response.reachableFromApi,
         serverCanReachApi: response.serverCanReachApi,
         pluginStatus: response.pluginStatus ?? null,
@@ -107,6 +109,7 @@ export default function Servers() {
       return {
         status: 'offline',
         currentMatch: null,
+        queuedMatch: null,
         reachableFromApi: false,
         serverCanReachApi: false,
         pluginStatus: null,
@@ -147,16 +150,16 @@ export default function Servers() {
       });
       setServers(serversWithStatus);
 
-      // Only check status for enabled servers that have been configured (have lastSeen)
-      // Unconfigured servers (no lastSeen) should use the retry button for manual initialization
-      const configuredEnabledServers = serverList.filter((s) => s.enabled && s.lastSeen);
-      
-      if (configuredEnabledServers.length === 0) {
+      // Check status for all enabled servers (including unconfigured) so we can show
+      // "API can reach server" / "server can reach API" even when MatchZy hasn't sent events yet.
+      const enabledServersToCheck = serverList.filter((s) => s.enabled);
+
+      if (enabledServersToCheck.length === 0) {
         setRefreshing(false);
         return;
       }
-      
-      const statusPromises = configuredEnabledServers.map(async (server: Server) => {
+
+      const statusPromises = enabledServersToCheck.map(async (server: Server) => {
         const {
           status,
           currentMatch,
@@ -184,19 +187,15 @@ export default function Servers() {
 
       const statuses = await Promise.all(statusPromises);
 
-      // Update servers with actual status (only configured servers that were checked)
+      // Update servers with status (all enabled servers we checked)
       setServers((prev) =>
         prev.map((server) => {
           if (!server.enabled) {
             return { ...server, status: 'disabled' as const };
           }
-          
-          // If server was never configured (no lastSeen), keep its initial status
-          if (!server.lastSeen) {
-            return server;
-          }
-          
+
           const statusInfo = statuses.find((s) => s.id === server.id);
+          if (!statusInfo) return server;
           const nextQueuedMatch =
             statusInfo?.queuedMatch !== undefined
               ? statusInfo.queuedMatch
@@ -290,6 +289,46 @@ export default function Servers() {
     }
   }, []);
 
+  const uninitializedCount = React.useMemo(
+    () => servers.filter((s) => s.enabled && !s.lastSeen).length,
+    [servers]
+  );
+
+  const handleRetryAllUninitialized = useCallback(async () => {
+    const needRetry = servers.filter((s) => s.enabled && !s.lastSeen);
+    if (needRetry.length === 0 || retryingAll) return;
+
+    setRetryingAll(true);
+    const loadingKey = showSnackbar(
+      `⏳ Retrying initialization for ${needRetry.length} server(s)...`,
+      'info'
+    );
+
+    try {
+      for (const server of needRetry) {
+        await api.post(`/api/servers/${server.id}/reset-initialization`);
+        await new Promise((r) => setTimeout(r, 500));
+      }
+      closeSnackbar(loadingKey);
+      showSnackbar(`✅ Retry triggered for ${needRetry.length} server(s)`, 'success');
+      setTimeout(() => void loadServers({ useCached: false }), 1500);
+    } catch (error) {
+      closeSnackbar(loadingKey);
+      showError(
+        `❌ Retry failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    } finally {
+      setRetryingAll(false);
+    }
+  }, [
+    servers,
+    retryingAll,
+    showSnackbar,
+    closeSnackbar,
+    showError,
+    loadServers,
+  ]);
+
   // Set header actions
   useEffect(() => {
     if (servers.length > 0) {
@@ -305,9 +344,6 @@ export default function Servers() {
                 size="small"
                 startIcon={refreshing ? <CircularProgress size={20} /> : <RefreshIcon />}
                 onClick={() => {
-                  // Treat an explicit click on the Refresh button as a manual
-                  // connectivity test – bypass the cached status snapshot and
-                  // force live checks for each enabled server.
                   void loadServers({ useCached: false });
                   void loadAllocationStatus();
                 }}
@@ -317,6 +353,28 @@ export default function Servers() {
                   ? t('serversPage.headerActions.refreshChecking')
                   : t('serversPage.headerActions.refresh')}
               </Button>
+              {uninitializedCount > 0 && (
+                <Button
+                  variant="outlined"
+                  size="small"
+                  color="warning"
+                  startIcon={
+                    retryingAll ? (
+                      <CircularProgress size={20} />
+                    ) : (
+                      <RefreshIcon />
+                    )
+                  }
+                  onClick={() => void handleRetryAllUninitialized()}
+                  disabled={retryingAll || refreshing}
+                >
+                  {retryingAll
+                    ? t('serversPage.headerActions.retryUninitializedChecking')
+                    : t('serversPage.headerActions.retryUninitialized', {
+                        count: uninitializedCount,
+                      })}
+                </Button>
+              )}
               <Button
                 variant="outlined"
                 size="small"
@@ -413,6 +471,9 @@ export default function Servers() {
     loadAllocationStatus,
     selectionMode,
     selectedServerIds,
+    uninitializedCount,
+    retryingAll,
+    handleRetryAllUninitialized,
     t,
   ]);
 
@@ -480,11 +541,9 @@ export default function Servers() {
   };
 
   const handleRetryInitialization = async (serverId: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent card click
-    
-    // Don't allow spamming the button
-    if (retryingServerId) return;
-    
+    event.stopPropagation();
+    if (retryingServerId || retryingAll) return;
+
     setRetryingServerId(serverId);
     
     // Show loading snackbar
@@ -509,6 +568,19 @@ export default function Servers() {
       setRetryingServerId(null);
     }
   };
+
+  // Sort servers by id: numeric suffix first (s_1, s_2, s_3), then by id string
+  const sortedServers = React.useMemo(() => {
+    const key = (id: string): [number, string] => {
+      const m = id.match(/_(\d+)$/);
+      return [m ? parseInt(m[1], 10) : Number.MAX_SAFE_INTEGER, id];
+    };
+    return [...servers].sort((a, b) => {
+      const [na, sa] = key(a.id);
+      const [nb, sb] = key(b.id);
+      return na !== nb ? na - nb : sa.localeCompare(sb);
+    });
+  }, [servers]);
 
   // Calculate server statistics based on heartbeat tracking
   const serverStats = React.useMemo(() => {
@@ -698,38 +770,52 @@ export default function Servers() {
             </Box>
 
             <Grid container spacing={2}>
-              {servers.map((server) => {
+              {sortedServers.map((server) => {
                 const allocSnapshot = allocationStatus?.servers.find((s) => s.id === server.id);
                 const inGraceWindow = !!allocSnapshot?.inGraceWindow;
                 const secondsUntilReady = allocSnapshot?.secondsUntilReady ?? null;
                 
-                // Check if server needs initialization (enabled but never sent events)
-                // Show warning immediately based on database state, don't wait for ping
-                const needsInitialization = server.enabled && !server.lastSeen;
+                // Config sent via RCON but MatchZy hasn't sent events yet (lastSeen still null)
+                const configSentWaitingForMatchzy =
+                  server.enabled && !server.lastSeen && !!server.persistentConfigSent;
+                // Not initialized: we haven't sent config, or we don't know (no persistentConfigSent)
+                const needsInitialization =
+                  server.enabled && !server.lastSeen && !server.persistentConfigSent;
 
                 return (
                 <Grid size={{ xs: 12, sm: 6, md: 4, lg: 4 }} key={server.id}>
                 <Card
                   data-testid={`server-card-${server.name.replace(/\s+/g, '-').toLowerCase()}`}
-                  sx={{
-                    cursor: 'pointer',
-                    transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s',
-                    border: selectedServerIds.has(server.id) 
-                      ? 2 
-                      : needsInitialization 
-                      ? 2 
-                      : 0,
-                    borderRadius: 2,
-                    borderStyle: 'solid',
-                    borderColor: selectedServerIds.has(server.id)
-                      ? 'primary.main'
-                      : needsInitialization
-                      ? 'error.main'
-                      : 'transparent',
-                    '&:hover': {
-                      transform: 'translateY(-4px)',
-                      boxShadow: 6,
-                    },
+                  sx={(theme) => {
+                    const selected = selectedServerIds.has(server.id);
+                    const ring = `0 0 0 2px ${theme.palette.primary.main}`;
+                    const hoverShadow = selected
+                      ? `${ring}, ${theme.shadows[6]}`
+                      : theme.shadows[6];
+                    return {
+                      cursor: 'pointer',
+                      transition: 'transform 0.2s, box-shadow 0.2s, border-color 0.2s, background-color 0.2s',
+                      border:
+                        needsInitialization || configSentWaitingForMatchzy ? 2 : 0,
+                      borderRadius: 2,
+                      borderStyle: 'solid',
+                      borderColor: needsInitialization
+                        ? 'error.main'
+                        : configSentWaitingForMatchzy
+                        ? 'info.main'
+                        : 'transparent',
+                      boxShadow: selected ? ring : undefined,
+                      ...(selected && {
+                        bgcolor: 'action.selected',
+                      }),
+                      '&:hover': {
+                        transform: 'translateY(-4px)',
+                        boxShadow: hoverShadow,
+                        ...(selected && {
+                          bgcolor: 'action.selected',
+                        }),
+                      },
+                    };
                   }}
                   onClick={() => {
                     if (selectionMode) {
@@ -752,15 +838,45 @@ export default function Servers() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
+                          color: 'grey.900',
                         }}
                       >
-                        <BlockIcon sx={{ color: 'text.primary', fontSize: 20 }} aria-label="Warning" />
+                        <BlockIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="Warning" />
                         <Box flex={1}>
-                          <Typography variant="body2" fontWeight={600} color="text.primary">
+                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
                             Server Not Initialized
                           </Typography>
-                          <Typography variant="caption" color="text.primary" display="block" mt={0.25}>
-                            RCON reachable, but MatchZy hasn't sent events. Click retry button to configure.
+                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
+                            {server.reachableFromApi === false
+                              ? "RCON unreachable. Check host, port, and that the game server is running. Use Retry once it's reachable."
+                              : server.reachableFromApi === true
+                              ? "RCON reachable, but MatchZy hasn't sent events. Click retry button to configure."
+                              : "Connectivity not checked yet. See status below. Click retry to configure once RCON is reachable."}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
+                    {configSentWaitingForMatchzy && (
+                      <Box
+                        sx={{
+                          bgcolor: 'info.light',
+                          border: 1,
+                          borderColor: 'info.main',
+                          borderRadius: 1,
+                          p: 1.5,
+                          mb: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          color: 'grey.900',
+                        }}
+                      >
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
+                            Config sent – no events received yet
+                          </Typography>
+                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
+                            Webhook config was sent via RCON. We have not received any events from MatchZy, so we cannot confirm it reached the plugin. Ensure the game server can reach the webhook URL and has MatchZy Enhanced. Use Retry to resend config.
                           </Typography>
                         </Box>
                       </Box>
@@ -777,14 +893,15 @@ export default function Servers() {
                           display: 'flex',
                           alignItems: 'center',
                           gap: 1,
+                          color: 'grey.900',
                         }}
                       >
-                        <BlockIcon sx={{ color: 'text.primary', fontSize: 20 }} aria-label="IP Banned" />
+                        <BlockIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="IP Banned" />
                         <Box flex={1}>
-                          <Typography variant="body2" fontWeight={600} color="text.primary">
+                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
                             {t('serversPage.ipBanned.title')}
                           </Typography>
-                          <Typography variant="caption" color="text.primary" display="block" mt={0.25}>
+                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
                             {t('serversPage.ipBanned.message')}
                           </Typography>
                         </Box>
@@ -810,9 +927,10 @@ export default function Servers() {
                               label = t('serversPage.statusChip.disabled');
                               color = 'default';
                             } else if (!server.lastSeen) {
-                              // Never connected - show unknown status
-                              label = 'Not Configured';
-                              color = 'error';
+                              label = server.persistentConfigSent
+                                ? 'No events yet'
+                                : 'Not Configured';
+                              color = server.persistentConfigSent ? 'info' : 'error';
                             } else if (server.lastSeen && !isHeartbeatActive) {
                               // Heartbeat-based offline detection (more reliable)
                               label = 'Offline (No Events)';
@@ -886,7 +1004,7 @@ export default function Servers() {
                         <IconButton
                           size="small"
                           onClick={(e) => handleRetryInitialization(server.id, e)}
-                          disabled={retryingServerId === server.id}
+                          disabled={retryingServerId === server.id || retryingAll}
                           sx={{
                             ml: 1,
                             '&:hover': {
@@ -963,7 +1081,7 @@ export default function Servers() {
                         </Typography>
                       )}
                     </Box>
-                    {server.status === 'online' && (
+                    {server.reachableFromApi !== undefined && (
                       <Box display="flex" flexDirection="column" gap={0.5} mb={1}>
                         <Box display="flex" alignItems="center" gap={0.5}>
                           <ArrowUpwardIcon
@@ -1011,7 +1129,7 @@ export default function Servers() {
                             </strong>
                           </Typography>
                         </Box>
-                        {server.pluginStatus && (
+                        {server.pluginStatus && server.status === 'online' && (
                           <Box display="flex" alignItems="center" gap={0.5}>
                             <Typography variant="caption" color="text.secondary">
                               <strong>{t('serversPage.connectivity.pluginLabel')}</strong>{' '}

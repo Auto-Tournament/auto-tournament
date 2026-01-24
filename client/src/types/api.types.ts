@@ -33,6 +33,8 @@ export interface Server {
   pluginVersion?: string | null; // MatchZy Enhanced version (e.g., "1.3.6")
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
+  /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
+  persistentConfigSent?: number | null;
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
