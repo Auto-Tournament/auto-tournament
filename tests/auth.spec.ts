@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { signIn, ensureSignedIn, getApiToken } from './helpers/auth';
+import { signIn, signInAsPlayer, ensureSignedIn, getApiToken } from './helpers/auth';
 
 /**
  * Authentication tests
@@ -133,6 +133,49 @@ test.describe.serial('Authentication', () => {
       // Second call - should sign in again
       await ensureSignedIn(page);
       await expect(page).not.toHaveURL(/\/login/);
+    }
+  );
+});
+
+test.describe.serial('Normal user cannot access admin', () => {
+  const nonAdminSteamId = '76561198000000002';
+
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/');
+    await page.evaluate(() => localStorage.clear());
+  });
+
+  test(
+    'redirects normal user to player page when visiting admin routes',
+    { tag: ['@ui', '@auth', '@admin'] },
+    async ({ page }) => {
+      const ok = await signInAsPlayer(page, nonAdminSteamId);
+      expect(ok).toBe(true);
+
+      const playerUrl = new RegExp(`/player/${nonAdminSteamId}`);
+
+      await page.goto('/');
+      await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
+
+      await page.goto('/admin');
+      await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
+
+      await page.goto('/teams');
+      await expect(page).toHaveURL(playerUrl, { timeout: 10000 });
+    }
+  );
+
+  test(
+    'admin API returns 403 for normal user',
+    { tag: ['@ui', '@auth', '@admin'] },
+    async ({ page }) => {
+      const ok = await signInAsPlayer(page, nonAdminSteamId);
+      expect(ok).toBe(true);
+
+      const response = await page.request.get('/api/tournament/server-availability', {
+        headers: { Accept: 'application/json' },
+      });
+      expect(response.status()).toBe(403);
     }
   );
 });

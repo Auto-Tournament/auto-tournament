@@ -54,6 +54,34 @@ export async function ensureSignedIn(page: Page): Promise<void> {
 }
 
 /**
+ * Sign in as a normal (non-admin) player via the test-only login-player endpoint.
+ * Sets the signed player_steam_id cookie only; no Passport session.
+ * Use this to verify that normal users cannot access admin UI or API.
+ *
+ * @param page Playwright page (uses page.request for the POST; cookies are shared)
+ * @param steamId Optional Steam ID (default 76561198000000002)
+ * @returns true if login-player returned 200
+ */
+export async function signInAsPlayer(
+  page: Page,
+  steamId: string = '76561198000000002'
+): Promise<boolean> {
+  try {
+    const response = await page.request.post('/api/test/login-player', {
+      data: { steamId },
+    });
+    if (!response.ok()) {
+      console.error('login-player test helper failed:', await response.text());
+      return false;
+    }
+    return true;
+  } catch (error) {
+    console.error('Sign in as player via test helper failed:', error);
+    return false;
+  }
+}
+
+/**
  * Legacy helper kept for backwards compatibility in tests.
  *
  * Now that admin auth is fully Passport/session-based, this returns an

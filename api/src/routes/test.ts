@@ -3,6 +3,7 @@ import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
+import { signPlayerSteamId } from '../utils/signedPlayerCookie';
 
 
 const router = Router();
@@ -183,6 +184,53 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
     res.status(500).json({
       success: false,
       error: 'Failed to create admin session',
+      details: error.message,
+    });
+  }
+});
+
+/**
+ * Test-only helper: create a non-admin player session (signed player_steam_id cookie only).
+ * Used to verify that normal users cannot access admin UI or API.
+ *
+ * POST /api/test/login-player
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/login-player', async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production') {
+    res.status(403).json({
+      success: false,
+      error: 'login-player test helper is disabled in production',
+    });
+    return;
+  }
+
+  try {
+    const { steamId: raw } = req.body as { steamId?: string };
+    const steamId = raw && raw.trim().length > 0 ? raw.trim() : '76561198000000002';
+
+    await playerService.getOrCreatePlayer(steamId, `Test Player ${steamId}`);
+    await playerService.updatePlayer(steamId, { isAdmin: false });
+
+    res.cookie('player_steam_id', signPlayerSteamId(steamId), {
+      httpOnly: false,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 1000 * 60 * 60 * 24 * 30,
+    });
+
+    res.json({
+      success: true,
+      steamId,
+    });
+  } catch (err) {
+    const error = err as Error;
+    log.error('Error in /api/test/login-player', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to create player session',
       details: error.message,
     });
   }
