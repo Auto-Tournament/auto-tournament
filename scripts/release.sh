@@ -445,24 +445,18 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Project build successful${NC}"
 
-# Step 2: Run tests
+# Step 2: Run tests (always run; no skip prompt)
 echo ""
 echo -e "${YELLOW}Step 2: Running tests...${NC}"
-read -p "Skip tests? (y/n) " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}⚠️  Skipping tests${NC}"
-else
-    echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
-    yarn test
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}❌ Tests failed${NC}"
-        echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
-        echo -e "${YELLOW}See .playwright-test-results/test-output-all.log for details${NC}"
-        exit 1
-    fi
-    echo -e "${GREEN}✅ All tests passed${NC}"
+echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
+yarn test
+if [ $? -ne 0 ]; then
+    echo -e "${RED}❌ Tests failed${NC}"
+    echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
+    echo -e "${YELLOW}See .playwright-test-results/test-output-all.log for details${NC}"
+    exit 1
 fi
+echo -e "${GREEN}✅ All tests passed${NC}"
 
 # Step 3: Build Docker image (test build)
 echo ""
@@ -992,36 +986,9 @@ echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo ""
 
-# Check if user wants to build only amd64 (useful if arm64 build is having network issues)
-# Always prompt unless explicitly set via environment variable
+# Build both platforms by default (no prompt). Override via BUILD_PLATFORMS env if needed.
 if [ -z "${BUILD_PLATFORMS:-}" ]; then
-    echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
-    echo -e "${YELLOW}              SELECT BUILD PLATFORMS${NC}"
-    echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
-    echo ""
-    echo "Which platforms should we build for?"
-    echo ""
-    echo "  1) ${GREEN}Both${NC} - linux/amd64 and linux/arm64"
-    echo "     (Default, slower but supports more platforms including Apple Silicon)"
-    echo ""
-    echo "  2) ${GREEN}AMD64 only${NC} - linux/amd64"
-    echo "     (Faster, more reliable if experiencing network issues with ARM64)"
-    echo ""
-    read -p "Enter choice (1-2) or press Enter for both: " -r PLATFORM_CHOICE
-    PLATFORM_CHOICE="${PLATFORM_CHOICE:-1}"
-    
-    case "$PLATFORM_CHOICE" in
-        1|both|all)
-            BUILD_PLATFORMS="linux/amd64,linux/arm64"
-            ;;
-        2|amd64|amd64-only)
-            BUILD_PLATFORMS="linux/amd64"
-            ;;
-        *)
-            BUILD_PLATFORMS="linux/amd64,linux/arm64"
-            ;;
-    esac
-    echo ""
+    BUILD_PLATFORMS="linux/amd64,linux/arm64"
 fi
 
 if [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then

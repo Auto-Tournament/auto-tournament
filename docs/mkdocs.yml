@@ -171,6 +171,7 @@ nav:
       - Troubleshooting:
           - Troubleshooting: guides/troubleshooting.md
           - Match Recovery: guides/match-recovery.md
+          - Reverse proxy (nginx, HTTPS): guides/reverse-proxy.md
   - For Developers:
       - Architecture: development/architecture.md
       - Contributing: development/contributing.md

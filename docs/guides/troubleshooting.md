@@ -501,6 +501,12 @@ The Docker setup uses Caddy as a reverse proxy:
 
 **Recommended:** Run on private network, expose via reverse proxy if needed.
 
+### Reverse proxy & HTTPS
+
+If you put MAT behind nginx (or another reverse proxy) with HTTPS, see **[Reverse proxy (nginx, HTTPS)](reverse-proxy.md)**. The guide includes a full nginx example, required headers (`X-Forwarded-Proto`, `Host`), and how to set `FRONTEND_BASE_URL`.
+
+**"Only works with HTTP" behind HTTPS:** Some admins find MAT works only when they set `FRONTEND_BASE_URL=http://...` in `.env` even though the site is served over HTTPS. This usually means the proxy is not sending `X-Forwarded-Proto: https`. Add `proxy_set_header X-Forwarded-Proto $scheme;` in nginx, then use `https://your-domain.com` in `FRONTEND_BASE_URL`. See the [reverse-proxy guide](reverse-proxy.md) for details.
+
 ## Getting Help
 
 If you're still stuck:
