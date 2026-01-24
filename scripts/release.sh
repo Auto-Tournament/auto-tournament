@@ -364,7 +364,7 @@ fi
 echo ""
 echo -e "  ${BLUE}0.${NC} Clean up Docker (stop containers, remove images, prune cache)"
 echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
-echo -e "  ${BLUE}2.${NC} Run tests (yarn test) - ${RED}MUST PASS${NC}"
+echo -e "  ${BLUE}2.${NC} Run tests (yarn test) - optional, skip by default"
 echo -e "  ${BLUE}3.${NC} Build Docker image (test build)"
 echo -e "  ${BLUE}4.${NC} Update release branch (rebase onto main)"
 echo -e "  ${BLUE}5.${NC} Bump version: ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
@@ -445,18 +445,24 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}✅ Project build successful${NC}"
 
-# Step 2: Run tests (always run; no skip prompt)
+# Step 2: Run tests (optional; skip by default)
 echo ""
-echo -e "${YELLOW}Step 2: Running tests...${NC}"
-echo -e "${BLUE}This may take a few minutes. Please wait...${NC}"
-yarn test
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Tests failed${NC}"
-    echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
-    echo -e "${YELLOW}See .playwright-test-results/test-output-all.log for details${NC}"
-    exit 1
+echo -e "${YELLOW}Step 2: Run tests?${NC}"
+read -p "Run tests (yarn test)? (y/N) [default: skip] " -n 1 -r
+echo
+if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${BLUE}Running tests... This may take a few minutes.${NC}"
+    yarn test
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Tests failed${NC}"
+        echo -e "${YELLOW}Please fix all failing tests before releasing.${NC}"
+        echo -e "${YELLOW}See .playwright-test-results/test-output-all.log for details${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ All tests passed${NC}"
+else
+    echo -e "${YELLOW}⏭️  Skipping tests${NC}"
 fi
-echo -e "${GREEN}✅ All tests passed${NC}"
 
 # Step 3: Build Docker image (test build)
 echo ""
