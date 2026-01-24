@@ -80,7 +80,7 @@ class ServerTrackingService {
     try {
       const now = Math.floor(Date.now() / 1000);
 
-      await db.updateAsync(
+      const result = await db.updateAsync(
         'servers',
         {
           last_seen: now,
@@ -90,9 +90,14 @@ class ServerTrackingService {
         'id = ?',
         [serverId]
       );
-    } catch {
-      // Silently fail - server might not be registered yet
-      // This is normal during initial connection
+      
+      if (result.changes === 0) {
+        log.warn(`[SERVER-TRACKING] Heartbeat update for ${serverId} affected 0 rows - server not found in database`);
+      } else {
+        log.debug(`[SERVER-TRACKING] ✓ Heartbeat updated for ${serverId}`);
+      }
+    } catch (error) {
+      log.warn(`[SERVER-TRACKING] Failed to update heartbeat for ${serverId}`, { error });
     }
   }
 
