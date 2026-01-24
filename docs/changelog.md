@@ -9,43 +9,64 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ## [Unreleased]
 
-### MatchZy Enhanced v1.3.0 Integration
-
-- **[Feature]** Added support for **MatchZy Enhanced v1.3.0** configuration (11 cvars) including auto-ready system, enhanced pause controls, side selection timers, match forfeit (.gg) system, forfeit/walkover (FFW) system, and demo recording control.
-- **[Feature]** Implemented automatic profile selection based on tournament type (official, fast, shuffle, default) with appropriate MatchZy Enhanced cvars.
-- **[Feature]** Added `matchzyConfigService` for generating, validating, and managing MatchZy Enhanced configurations.
-- **[Feature]** Tournament matches automatically receive MatchZy Enhanced cvars based on tournament type with sensible defaults.
-- **[Feature]** Manual matches receive safe default MatchZy Enhanced cvars with support for custom overrides.
-
-- **[Note]** Ongoing work is tracked in the repository; new entries will appear in the next tagged release.
+- _No unreleased changes._
 
 ---
 
 ## [2.0.4] - 2026-01-24
 
-### Added
-- Release v2.0.4
+### Auth, Security & Reverse Proxy
+
+- **[Feature]** Implemented **signed `player_steam_id` cookie** (HMAC-SHA256) to prevent admin impersonation; all cookie reads verify the signature.
+- **[Feature]** Enhanced **session management for reverse proxy setups**: `trust proxy`, configurable session `cookie.domain` from `FRONTEND_BASE_URL`, and Steam OAuth callback via 200 + HTML meta-refresh so `Set-Cookie` is respected behind Cloudflare Tunnel / nginx.
+- **[Docs]** Added **reverse proxy guide** (nginx + HTTPS, Cloudflare Tunnel) with `X-Forwarded-*`, `FRONTEND_BASE_URL`, and OAuth callback tips.
+
+### Release & Tooling
+
+- **[Feature]** Release script: **optional test run** with skip-by-default prompt (`y/N`).
+- **[Chore]** Release script: use predefined `SCRIPT_DIR` and general cleanup.
 
 ---
 
 ## [2.0.3] - 2026-01-24
 
-### Added
-- Release v2.0.3
+### Servers & MatchZy
+
+- **[Feature]** Integrated **MatchZy version fetching** (GitHub) and environment configuration; Servers UI shows latest version and outdated indicators.
+- **[Feature]** **Server initialization** optimized with concurrent checks and improved logging; webhook, demo upload, auth, and core config steps clarified.
+- **[Fix]** Improved error handling and logging in **server heartbeat** updates and server tracking.
+
+### Release & Tooling
+
+- **[Chore]** Release script: handle uncommitted changes (stash/restore) and improve reliability.
 
 ---
 
 ## [2.0.2] - 2026-01-24
 
-### Added
-- Release v2.0.2
+### Servers & Auth
+
+- **[Feature]** **Admin status endpoint** (`/api/auth/admin-status`) and richer Steam callback logging.
+- **[Feature]** Server modal and batch server modal: improved **ID handling** and **connectivity checks**; server initialization and webhook configuration logging enhanced.
+- **[Feature]** Server log checking improvements and translation updates.
+
+### Docs & Docker
+
+- **[Docs]** Docker: **getting started**, **environment variable** instructions, and setup steps updated.
+- **[Chore]** Database logging and configuration tweaks; release script: remove `--no-cache-filter` from Docker build.
 
 ---
 
 ## [2.0.1] - 2026-01-22
 
-### Added
-- Release v2.0.1
+### Docker & Configuration
+
+- **[Chore]** Docker Compose: **`.env`-based configuration**, refined `docker-compose` / `docker-compose.local` options, and `STEAM_API_KEY` support.
+- **[Chore]** Environment variable documentation and session handling improvements.
+
+### Docs & Troubleshooting
+
+- **[Docs]** **Troubleshooting**: admin access recovery, expanded admin access guidance, and reverse-proxy–related tips.
 
 ---
 
