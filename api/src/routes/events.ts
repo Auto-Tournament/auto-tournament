@@ -184,7 +184,7 @@ async function handleEventRequest(
 
     log.webhookReceived(event.event, actualMatchSlug);
 
-    const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
+    const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || payloadServerId || 'unknown';
 
     // Handle server_configured event from MatchZy Enhanced
     // Sent when server is configured with webhook URL or on startup

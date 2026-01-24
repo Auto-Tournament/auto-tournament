@@ -287,7 +287,7 @@
     "testConnectivity": "Test connectivity",
     "testingConnectivity": "Testing connectivity…",
     "connectivity": {
-      "apiToServer": "API → Server (RCON):",
+      "apiToServer": "MAT API → CS2 Server:",
       "serverToApi": "Server → API (/api/events):",
       "reachable": "Reachable",
       "unreachable": "Unreachable"
@@ -440,7 +440,7 @@
       "message": "Server is reachable but repeatedly rejecting RCON authentication. This may indicate an IP ban. If the RCON password is correct, please check the server's ban list and unban our IP address."
     },
     "connectivity": {
-      "apiToServer": "API → Server (RCON)",
+      "apiToServer": "MAT API → CS2 Server",
       "serverToApi": "Server → API (/api/events)",
       "unreachable": "Unreachable",
       "reachable": "Reachable",

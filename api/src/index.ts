@@ -42,6 +42,8 @@ import playersRoutes from './routes/players';
 import eloTemplatesRoutes from './routes/eloTemplates';
 import testRoutes from './routes/test';
 import authRoutes from './routes/auth';
+import matchzyRoutes from './routes/matchzy';
+import { initMatchZyVersionService } from './services/matchzyVersionService';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import { healthMonitoringService } from './services/healthMonitoringService';
@@ -304,6 +306,7 @@ app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
 app.use('/api/generation', generationRoutes); // Shared name/code generators (e.g. team names)
 app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
 app.use('/api/auth', authRoutes); // Authentication (Steam, Keycloak, Discord)
+app.use('/api/matchzy', matchzyRoutes); // MatchZy Enhanced version info
 
 // Serve frontend at /app (built client lives under api/public)
 const publicPath = path.join(__dirname, '..', 'public');
@@ -384,7 +387,7 @@ cleanupOldLogs(30);
       log.server(`Event logs: api/data/logs/events/ (30 day retention)`);
       log.server('='.repeat(60));
 
-      // Bootstrap webhooks and recover active matches (now database is ready)
+      // Bootstrap webhooks, recover matches, fetch MatchZy version (now database is ready)
       Promise.all([
         bootstrapServerWebhooks().catch((error) => {
           log.warn('Failed to auto-configure server webhooks on startup', { error });
@@ -394,6 +397,9 @@ cleanupOldLogs(30);
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
+        
+        // Fetch latest MatchZy Enhanced version (fire-and-forget, cached for 1 hour)
+        initMatchZyVersionService();
         
         // Start health monitoring for server tracking
         // Checks every minute to mark inactive servers as offline
@@ -436,30 +442,41 @@ async function bootstrapServerWebhooks(): Promise<void> {
     return;
   }
 
-  // Resolve webhook base URL from settings, and auto-seed it from FRONTEND_BASE_URL
-  // on first run if it hasn't been configured yet.
+  // Resolve webhook base URL from settings.
+  // Priority: 1) Database setting, 2) API_BASE_URL env var, 3) Auto-detect from PORT
   let baseUrl = await settingsService.getWebhookUrl();
   if (!baseUrl) {
-    const fromEnv = process.env.FRONTEND_BASE_URL;
-    if (fromEnv && fromEnv.trim().length > 0) {
+    // Try API_BASE_URL env var first (explicit configuration)
+    const fromEnv = process.env.API_BASE_URL?.trim();
+    if (fromEnv) {
       try {
         await settingsService.setSetting('webhook_url', fromEnv);
         baseUrl = await settingsService.getWebhookUrl();
-        log.success(
-          `Webhook URL was not configured; initialized from FRONTEND_BASE_URL (${baseUrl})`
+        log.success(`Webhook URL initialized from API_BASE_URL: ${baseUrl}`);
+      } catch (error) {
+        log.warn('Failed to set webhook URL from API_BASE_URL', { error });
+        return;
+      }
+    } else {
+      // Auto-detect: use the API port
+      const apiPort = parseInt(process.env.PORT || '3000', 10);
+      const detectedUrl = `http://localhost:${apiPort}`;
+      
+      try {
+        await settingsService.setSetting('webhook_url', detectedUrl);
+        baseUrl = await settingsService.getWebhookUrl();
+        log.warn(
+          `Webhook URL was not configured; auto-detected as ${baseUrl}. ` +
+          `Set API_BASE_URL in .env or update in Settings if your API is accessible at a different address.`
         );
       } catch (error) {
         log.warn(
-          'Failed to initialize webhook URL from FRONTEND_BASE_URL; skipping automatic webhook bootstrap.',
+          'Failed to auto-detect webhook URL; skipping automatic webhook bootstrap. ' +
+          'Set API_BASE_URL in .env or configure webhook URL in Settings.',
           { error }
         );
         return;
       }
-    } else {
-      log.warn(
-        'Webhook URL is not configured and FRONTEND_BASE_URL is not set. Skipping automatic webhook bootstrap.'
-      );
-      return;
     }
   }
 

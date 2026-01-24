@@ -291,7 +291,7 @@
     "testConnectivity": "测试连通性",
     "testingConnectivity": "正在测试连通性…",
     "connectivity": {
-      "apiToServer": "API → 服务器（RCON）：",
+      "apiToServer": "MAT API → CS2 服务器：",
       "serverToApi": "服务器 → API（/api/events）：",
       "reachable": "可达",
       "unreachable": "不可达"
@@ -441,7 +441,7 @@
       "message": "服务器可达但反复拒绝 RCON 身份验证。这可能表示 IP 被封禁。如果 RCON 密码正确，请检查服务器的封禁列表并解封我们的 IP 地址。"
     },
     "connectivity": {
-      "apiToServer": "API → 服务器（RCON）",
+      "apiToServer": "MAT API → CS2 服务器",
       "serverToApi": "服务器 → API（/api/events）",
       "unreachable": "不可达",
       "reachable": "可达",

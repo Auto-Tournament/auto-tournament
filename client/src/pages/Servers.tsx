@@ -57,6 +57,7 @@ export default function Servers() {
   const [retryingAll, setRetryingAll] = useState(false);
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
+  const [latestMatchZyVersion, setLatestMatchZyVersion] = useState<string | null>(null);
   const { t } = useTranslation();
 
   // Set dynamic page title
@@ -486,6 +487,18 @@ export default function Servers() {
     // Always do full connectivity checks to show real server status (not cached)
     void loadServers({ useCached: false });
     void loadAllocationStatus();
+    
+    // Fetch latest MatchZy Enhanced version from GitHub
+    api
+      .get<{ success: boolean; version?: string; releaseUrl?: string }>('/api/matchzy/latest-version')
+      .then((response) => {
+        if (response.success && response.version) {
+          setLatestMatchZyVersion(response.version);
+        }
+      })
+      .catch(() => {
+        // Silently fail - not critical
+      });
   }, [loadServers, loadAllocationStatus]);
 
   const handleOpenModal = (server?: Server) => {
@@ -719,6 +732,49 @@ export default function Servers() {
                       </Box>
                     )}
                   </Box>
+                  {latestMatchZyVersion && (
+                    <Box
+                      sx={{
+                        bgcolor: 'info.light',
+                        border: 1,
+                        borderColor: 'info.main',
+                        borderRadius: 1,
+                        p: 1.5,
+                        mt: 1,
+                        color: 'grey.900',
+                      }}
+                    >
+                      <Typography variant="caption" fontWeight={600} sx={{ color: 'inherit' }} display="block" mb={0.5}>
+                        ℹ️ Latest MatchZy Enhanced: v{latestMatchZyVersion}
+                      </Typography>
+                      {(() => {
+                        const serversWithVersion = servers.filter((s) => s.pluginVersion);
+                        const outdatedCount = serversWithVersion.filter(
+                          (s) => s.pluginVersion && s.pluginVersion !== latestMatchZyVersion
+                        ).length;
+                        if (outdatedCount > 0) {
+                          return (
+                            <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
+                              {outdatedCount} {outdatedCount === 1 ? 'server is' : 'servers are'} using an older version.{' '}
+                              <a
+                                href="https://github.com/sivert-io/MatchZy-Enhanced/releases"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: 'inherit', textDecoration: 'underline' }}
+                              >
+                                Download latest
+                              </a>
+                            </Typography>
+                          );
+                        }
+                        return (
+                          <Typography variant="caption" sx={{ color: 'inherit' }}>
+                            All servers are up to date ✓
+                          </Typography>
+                        );
+                      })()}
+                    </Box>
+                  )}
                   {versionInfo.hasMultipleVersions && (
                     <Box 
                       sx={{ 
