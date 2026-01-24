@@ -126,6 +126,30 @@ router.get('/:id/leaderboard', async (req: Request, res: Response) => {
   }
 });
 
+/**
+ * Player-accessible allocation status (no admin required).
+ * Used by the Player profile page to show "next allocation in X seconds" countdown
+ * during veto / match wait. Returns only countdown-related fields; full
+ * server-availability remains admin-only.
+ */
+router.get('/allocation-status', async (_req: Request, res: Response) => {
+  try {
+    const status = await matchAllocationService.getAllocationStatus();
+    return res.json({
+      success: true,
+      availableServerCount: status.availableServerCount,
+      gracePeriodSeconds: status.gracePeriodSeconds,
+      nextAllocationInSeconds: status.nextAllocationInSeconds,
+    });
+  } catch (error) {
+    log.error('Error fetching allocation status', error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to fetch allocation status',
+    });
+  }
+});
+
 // Protect all routes
 router.use(requireAuth);
 
