@@ -1,5 +1,13 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 
+// Load environment variables FIRST (before reading process.env.LOG_LEVEL)
+// This ensures LOG_LEVEL=debug from .env is respected
+try {
+  require('dotenv').config();
+} catch {
+  // dotenv not available, continue without it
+}
+
 const isDevelopment = process.env.NODE_ENV !== 'production';
 
 const _logLevel = (process.env.LOG_LEVEL || 'info').toLowerCase();

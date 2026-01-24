@@ -1,4 +1,5 @@
 import { log } from '../utils/logger';
+import fetch from 'node-fetch';
 
 interface GitHubRelease {
   tag_name: string;

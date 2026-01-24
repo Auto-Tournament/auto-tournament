@@ -123,7 +123,7 @@ export default function Servers() {
   };
 
   const loadServers = useCallback(
-    async (options?: { useCached?: boolean }) => {
+    async (options?: { useCached?: boolean; autoRetry?: boolean }) => {
     setRefreshing(true);
     try {
       const response = await api.get<ServersResponse>('/api/servers');
@@ -232,14 +232,47 @@ export default function Servers() {
             ipBanned,
           };
           setServers((prev) => mergeStatusIntoServer(prev, server.id, statusInfo));
+          return { server, statusInfo };
         } catch {
           // Leave server state unchanged; avoid sticking in "Checking..." forever
+          return null;
         } finally {
           removeFromChecking(server.id);
         }
       });
 
-      await Promise.allSettled(statusPromises);
+      const results = await Promise.allSettled(statusPromises);
+      
+      // Auto-retry servers that need initialization (unless explicitly disabled)
+      if (options?.autoRetry !== false) {
+        const serversNeedingRetry: Server[] = [];
+        
+        results.forEach((result) => {
+          if (result.status === 'fulfilled' && result.value) {
+            const { server, statusInfo } = result.value;
+            const needsConfig = !server.persistentConfigSent || statusInfo.serverCanReachApi === false;
+            if (needsConfig && statusInfo.reachableFromApi) {
+              serversNeedingRetry.push(server);
+            }
+          }
+        });
+
+        if (serversNeedingRetry.length > 0) {
+          // Trigger auto-retry in background without blocking
+          void (async () => {
+            for (const server of serversNeedingRetry) {
+              try {
+                await api.post(`/api/servers/${server.id}/reset-initialization`);
+                await new Promise((r) => setTimeout(r, 400));
+              } catch (e) {
+                console.warn(`Auto-retry failed for ${server.id}:`, e);
+              }
+            }
+            // Reload after auto-retry completes
+            setTimeout(() => void loadServers({ useCached: false, autoRetry: false }), 1500);
+          })();
+        }
+      }
     } catch (err) {
       showError(t('serversPage.errors.loadServers'));
       console.error(err);

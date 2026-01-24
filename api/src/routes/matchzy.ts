@@ -23,7 +23,7 @@ router.get('/latest-version', async (_req: Request, res: Response) => {
       version: versionInfo.version,
       releaseUrl: versionInfo.releaseUrl,
     });
-  } catch (error) {
+  } catch {
     return res.status(500).json({
       success: false,
       error: 'Failed to fetch MatchZy version',
