@@ -89,9 +89,10 @@ When you expose MAT via **Cloudflare Tunnel** (`cloudflared`), traffic flows: us
 
 1. Set `FRONTEND_BASE_URL` to the **public** URL you use in the browser (e.g. `https://cs.sivert.io`). No trailing slash.
 2. Ensure the tunnel forwards the original `Host` (and ideally `X-Forwarded-Proto`) to MAT. Many default setups already do.
-3. Restart MAT.
+3. **Cloudflare Tunnel "HTTP Host Header"**: Leave this **unset (Null)**. The tunnel will then forward the real `Host` (e.g. `cs.sivert.io`). If you override it to an internal hostname or IP, MAT may set cookies for that host and the browser won’t send them when visiting your public URL.
+4. Restart MAT.
 
-MAT sets the session cookie domain from `FRONTEND_BASE_URL` when the host is not localhost, and enables `trust proxy`, so the admin session works correctly behind the tunnel.
+MAT sets the session cookie domain from `FRONTEND_BASE_URL` when the host is not localhost, enables `trust proxy`, and uses a **200 + HTML meta-refresh** redirect (instead of 302) after Steam login. Some browsers drop `Set-Cookie` on 302 responses when the request is a cross-site redirect (e.g. Steam → your domain); the 200 response avoids that, so the admin session is stored correctly behind the tunnel.
 
 ## Webhook URL and API URL
 

@@ -352,9 +352,17 @@ export default function Servers() {
       setTimeout(() => void loadServers({ useCached: false }), 1500);
     } catch (error) {
       closeSnackbar(loadingKey);
-      showError(
-        `❌ Retry failed: ${error instanceof Error ? error.message : 'Unknown error'}`
-      );
+      const raw = error instanceof Error ? error.message : String(error);
+      let msg = raw;
+      try {
+        const parsed = JSON.parse(raw) as { error?: string };
+        if (typeof parsed?.error === 'string' && parsed.error.length > 0) {
+          msg = parsed.error;
+        }
+      } catch {
+        /* use raw */
+      }
+      showError(`❌ Retry failed: ${msg}`);
     } finally {
       setRetryingAll(false);
     }
@@ -628,9 +636,18 @@ export default function Servers() {
         void loadServers({ useCached: false });
       }, 1500);
     } catch (error) {
-      // Dismiss loading snackbar
       closeSnackbar(loadingKey);
-      showError(`❌ Failed to retry initialization: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      const raw = error instanceof Error ? error.message : String(error);
+      let msg = raw;
+      try {
+        const parsed = JSON.parse(raw) as { error?: string };
+        if (typeof parsed?.error === 'string' && parsed.error.length > 0) {
+          msg = parsed.error;
+        }
+      } catch {
+        /* use raw */
+      }
+      showError(`❌ Failed to retry initialization: ${msg}`);
     } finally {
       setRetryingServerId(null);
     }
@@ -765,49 +782,42 @@ export default function Servers() {
                       </Box>
                     )}
                   </Box>
-                  {latestMatchZyVersion && (
-                    <Box
-                      sx={{
-                        bgcolor: 'info.light',
-                        border: 1,
-                        borderColor: 'info.main',
-                        borderRadius: 1,
-                        p: 1.5,
-                        mt: 1,
-                        color: 'grey.900',
-                      }}
-                    >
-                      <Typography variant="caption" fontWeight={600} sx={{ color: 'inherit' }} display="block" mb={0.5}>
-                        ℹ️ Latest MatchZy Enhanced: v{latestMatchZyVersion}
-                      </Typography>
-                      {(() => {
-                        const serversWithVersion = servers.filter((s) => s.pluginVersion);
-                        const outdatedCount = serversWithVersion.filter(
-                          (s) => s.pluginVersion && s.pluginVersion !== latestMatchZyVersion
-                        ).length;
-                        if (outdatedCount > 0) {
-                          return (
-                            <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
-                              {outdatedCount} {outdatedCount === 1 ? 'server is' : 'servers are'} using an older version.{' '}
-                              <a
-                                href="https://github.com/sivert-io/MatchZy-Enhanced/releases"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: 'inherit', textDecoration: 'underline' }}
-                              >
-                                Download latest
-                              </a>
-                            </Typography>
-                          );
-                        }
-                        return (
-                          <Typography variant="caption" sx={{ color: 'inherit' }}>
-                            All servers are up to date ✓
-                          </Typography>
-                        );
-                      })()}
-                    </Box>
-                  )}
+                  {(() => {
+                    if (!latestMatchZyVersion) return null;
+                    const serversWithVersion = servers.filter((s) => s.pluginVersion);
+                    const outdatedCount = serversWithVersion.filter(
+                      (s) => s.pluginVersion && s.pluginVersion !== latestMatchZyVersion
+                    ).length;
+                    if (outdatedCount === 0) return null;
+                    return (
+                      <Box
+                        sx={{
+                          bgcolor: 'info.light',
+                          border: 1,
+                          borderColor: 'info.main',
+                          borderRadius: 1,
+                          p: 1.5,
+                          mt: 1,
+                          color: 'grey.900',
+                        }}
+                      >
+                        <Typography variant="caption" fontWeight={600} sx={{ color: 'inherit' }} display="block" mb={0.5}>
+                          ℹ️ Latest MatchZy Enhanced: v{latestMatchZyVersion}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
+                          {outdatedCount} {outdatedCount === 1 ? 'server is' : 'servers are'} using an older version.{' '}
+                          <a
+                            href="https://github.com/sivert-io/MatchZy-Enhanced/releases"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            style={{ color: 'inherit', textDecoration: 'underline' }}
+                          >
+                            Download latest
+                          </a>
+                        </Typography>
+                      </Box>
+                    );
+                  })()}
                   {versionInfo.hasMultipleVersions && (
                     <Box 
                       sx={{ 

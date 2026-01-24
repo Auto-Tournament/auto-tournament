@@ -8,41 +8,18 @@ import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
+import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
 
 const router = Router();
 
-function parseCookies(cookieHeader: string | undefined): Record<string, string> {
-  if (!cookieHeader) return {};
-  return Object.fromEntries(
-    cookieHeader
-      .split(';')
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const [name, ...rest] = part.split('=');
-        return [name, decodeURIComponent(rest.join('='))];
-      })
-  );
-}
-
 function getViewerSteamId(req: Request): string | null {
-  const cookies = parseCookies(req.headers.cookie);
-  const cookieSteamId = cookies.player_steam_id;
+  const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
+  if (cookieSteamId) return cookieSteamId;
 
-  if (cookieSteamId && cookieSteamId.trim().length > 0) {
-    return cookieSteamId.trim();
-  }
-
-  const anyReq = req as Request & {
-    user?: {
-      steamId?: string;
-    };
-  };
-
+  const anyReq = req as Request & { user?: { steamId?: string } };
   if (anyReq.user?.steamId && anyReq.user.steamId.trim().length > 0) {
     return anyReq.user.steamId.trim();
   }
-
   return null;
 }
 

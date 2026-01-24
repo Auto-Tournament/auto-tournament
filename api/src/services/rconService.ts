@@ -85,6 +85,33 @@ export class RconService {
   private clearAuthErrors(serverId: string): void {
     this.authErrorTracker.delete(serverId);
   }
+
+  /**
+   * Extract a non-empty, user-friendly error message from RCON/connection errors.
+   * Handles Error, AggregateError, and other throwables; never returns empty.
+   */
+  private normalizeRconError(error: unknown): string {
+    if (error instanceof Error && error.message && error.message.trim().length > 0) {
+      return error.message.trim();
+    }
+    const o = error && typeof error === 'object' ? (error as Record<string, unknown>) : null;
+    if (o) {
+      const msg = o.message; const code = o.code; const errno = o.errno; const reason = o.reason;
+      if (typeof msg === 'string' && msg.trim().length > 0) return msg.trim();
+      if (typeof code === 'string' && code.length > 0) return `Error: ${code}`;
+      if (typeof reason === 'string' && reason.trim().length > 0) return reason.trim();
+      if (typeof errno === 'number') return `Connection error (errno ${errno})`;
+      if (o.constructor?.name === 'AggregateError' && Array.isArray((o as { errors?: unknown[] }).errors)) {
+        const first = (o as { errors: unknown[] }).errors[0];
+        const sub = this.normalizeRconError(first);
+        if (sub && sub !== 'RCON command failed (no details)') return sub;
+      }
+    }
+    const s = String(error);
+    if (s && s !== '[object Object]') return s;
+    return 'RCON command failed (no details)';
+  }
+
   /**
    * Send a command to a specific server
    */
@@ -434,7 +461,7 @@ export class RconService {
         ipBanned: false,
       };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : String(error);
+      const errorMessage = this.normalizeRconError(error);
       const lowerMessage = errorMessage.toLowerCase();
       
       // Check if this is an authentication error (could be IP ban)

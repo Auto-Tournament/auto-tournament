@@ -6,6 +6,9 @@
  * to the server's database and survive restarts. This means we only need to send
  * them once (or when they change), not on every match load.
  * 
+ * Before sending config we run matchzy_clear_event_queue so the server does not
+ * keep retrying webhooks against a wrong URL.
+ *
  * Persistent configuration includes:
  * - matchzy_remote_log_url (webhook endpoint)
  * - matchzy_demo_upload_url (demo upload endpoint)
@@ -126,12 +129,27 @@ class ServerInitializationService {
       const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
       const errors: string[] = [];
 
+      const cmdTag = (c: string) => {
+        const first = c.trim().split(/\s+/)[0];
+        return first ? ` (${first})` : '';
+      };
+      const err = (detail: string | undefined) => detail && detail.trim().length > 0 ? detail.trim() : 'no details';
+
+      // 0. Clear MatchZy event queue so the server does not keep retrying with a wrong webhook URL
+      const clearResult = await rconService.sendCommand(serverId, 'matchzy_clear_event_queue');
+      if (!clearResult.success) {
+        log.debug(`[SERVER-INIT] Server ${serverId}: matchzy_clear_event_queue failed (continuing)`, {
+          error: clearResult.error,
+        });
+      }
+      await delay(200);
+
       // 1. Configure webhook (persistent)
       const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, null);
       for (const cmd of webhookCommands) {
         const result = await rconService.sendCommand(serverId, cmd);
         if (!result.success) {
-          errors.push(`Webhook config failed: ${result.error || 'Unknown error'}`);
+          errors.push(`Webhook config failed${cmdTag(cmd)}: ${err(result.error)}`);
         } else {
           configsSent.push('webhook');
         }
@@ -145,7 +163,7 @@ class ServerInitializationService {
       for (const cmd of demoUploadCommands) {
         const result = await rconService.sendCommand(serverId, cmd);
         if (!result.success) {
-          errors.push(`Demo upload config failed: ${result.error || 'Unknown error'}`);
+          errors.push(`Demo upload config failed${cmdTag(cmd)}: ${err(result.error)}`);
         } else {
           configsSent.push('demo_upload');
         }
@@ -155,12 +173,11 @@ class ServerInitializationService {
       await delay(300);
 
       // 3. Configure match loading authentication (persistent)
-      // This allows the server to fetch match configs with Bearer token
       const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
       for (const cmd of authCommands) {
         const result = await rconService.sendCommand(serverId, cmd);
         if (!result.success) {
-          errors.push(`Auth config failed: ${result.error || 'Unknown error'}`);
+          errors.push(`Auth config failed${cmdTag(cmd)}: ${err(result.error)}`);
         } else {
           configsSent.push('auth');
         }
@@ -188,7 +205,7 @@ class ServerInitializationService {
       for (const cmd of coreSettingsCommands) {
         const result = await rconService.sendCommand(serverId, cmd);
         if (!result.success) {
-          errors.push(`Core settings failed: ${result.error || 'Unknown error'}`);
+          errors.push(`Core settings failed${cmdTag(cmd)}: ${err(result.error)}`);
         } else {
           configsSent.push('core_settings');
         }
@@ -199,7 +216,7 @@ class ServerInitializationService {
       const serverIdCmd = `matchzy_server_id "${serverId}"`;
       const serverIdResult = await rconService.sendCommand(serverId, serverIdCmd);
       if (!serverIdResult.success) {
-        errors.push(`Server ID config failed: ${serverIdResult.error || 'Unknown error'}`);
+        errors.push(`Server ID config failed: ${err(serverIdResult.error)}`);
       } else {
         configsSent.push('server_id');
       }

@@ -6,6 +6,10 @@ import { playerService } from '../services/playerService';
 import { passport } from '../config/passport';
 import { settingsService } from '../services/settingsService';
 import { authIdentityService, AuthProvider } from '../services/authIdentityService';
+import {
+  signPlayerSteamId,
+  getVerifiedPlayerSteamId,
+} from '../utils/signedPlayerCookie';
 
 const router = Router();
 
@@ -36,6 +40,22 @@ function getFrontendBaseUrl(req: Request): string {
       ? configuredFrontendBaseUrl.trim().replace(/\/+$/, '')
       : getBaseUrl(req);
   return baseUrl;
+}
+
+/**
+ * Returns minimal HTML that redirects via meta refresh.
+ * Use instead of 302 when setting cookies (e.g. OAuth callback): some browsers
+ * (Chrome) drop Set-Cookie on 302 responses from cross-site redirects (e.g.
+ * Steam → our callback). A 200 + meta refresh avoids that.
+ */
+function htmlRedirectPage(redirectTo: string): string {
+  const u = redirectTo
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+  return `<!DOCTYPE html><html><head><meta http-equiv="refresh" content="0;url=${u}"></head><body>Signing you in&hellip;</body></html>`;
 }
 
 /**
@@ -273,14 +293,11 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         log.warn('Failed to persist external auth → Steam link', linkError as Error);
       }
 
-      // Set a lightweight, non-privileged cookie for convenience.
-      // This cookie is not used for authorization; it only lets the UI show a "My Profile" link.
-      res.cookie('player_steam_id', steamId, {
+      // Set a signed player_steam_id cookie (verified on read to prevent forgery).
+      res.cookie('player_steam_id', signPlayerSteamId(steamId), {
         httpOnly: false,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        // Make the cookie available to the whole site so the frontend can read it
-        // from any page (e.g. for a future "My Profile" entry point).
         path: '/',
         maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
       });
@@ -288,19 +305,21 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       // Redirect based on whether this Steam user is an admin:
       // - Admins go to the main dashboard (/).
       // - Non-admin players go to their public player page.
+      // Use 200 + HTML meta-refresh instead of 302 so browsers (Chrome) persist
+      // Set-Cookie when arriving from cross-site OAuth redirect (Steam → us).
       const baseUrl = getFrontendBaseUrl(req);
+      let redirectTo: string;
       try {
         const player = await playerService.getPlayerById(steamId);
         const hasPlayer = !!player;
         const isAdmin = player?.isAdmin === true;
-        const redirectTo = isAdmin ? `${baseUrl}/` : `${baseUrl}/player/${steamId}`;
+        redirectTo = isAdmin ? `${baseUrl}/` : `${baseUrl}/player/${steamId}`;
         log.info('[Steam callback] Redirect decision', {
           steamId,
           hasPlayer,
           isAdmin,
           redirectTo,
         });
-        return res.redirect(302, redirectTo);
       } catch (redirectError) {
         log.warn(
           '[Steam callback] Failed to load player when deciding redirect, falling back to player page',
@@ -309,9 +328,10 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
             error: (redirectError as Error).message,
           }
         );
-        const fallback = `${baseUrl}/player/${steamId}`;
-        return res.redirect(302, fallback);
+        redirectTo = `${baseUrl}/player/${steamId}`;
       }
+      res.status(200).type('text/html').send(htmlRedirectPage(redirectTo));
+      return;
     } catch (error) {
       log.error('Steam Passport callback failed', error as Error);
       return res.status(500).json({
@@ -411,11 +431,9 @@ router.get(
     try {
       const baseUrl = getFrontendBaseUrl(req);
 
-      // Fast-path: if a player_steam_id cookie already exists (e.g. previous direct
-      // Steam login), trust that and persist the mapping immediately so the user
-      // doesn't have to go through the link flow again.
-      const cookies = parseCookies(req.headers.cookie);
-      const cookieSteamId = cookies.player_steam_id;
+      // Fast-path: if a verified player_steam_id cookie exists (e.g. previous Steam
+      // login), persist the mapping so the user doesn't have to go through link again.
+      const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('Keycloak callback: checking for existing player_steam_id cookie', {
         sessionId,
         cookieSteamId: cookieSteamId ?? null,
@@ -423,7 +441,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', cookieSteamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -448,9 +466,8 @@ router.get(
       const baseUrlResolved = baseUrl;
 
       if (steamId) {
-        // Existing link: attach Steam to the session and set the lightweight cookie.
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', steamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -558,8 +575,7 @@ router.get(
     try {
       const baseUrl = getFrontendBaseUrl(req);
 
-      const cookies = parseCookies(req.headers.cookie);
-      const cookieSteamId = cookies.player_steam_id;
+      const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('Discord callback: checking for existing player_steam_id cookie', {
         sessionId,
         cookieSteamId: cookieSteamId ?? null,
@@ -567,7 +583,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', cookieSteamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -593,7 +609,7 @@ router.get(
 
       if (steamId) {
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', steamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -700,8 +716,7 @@ router.get(
     try {
       const baseUrl = getFrontendBaseUrl(req);
 
-      const cookies = parseCookies(req.headers.cookie);
-      const cookieSteamId = cookies.player_steam_id;
+      const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('GitHub callback: checking for existing player_steam_id cookie', {
         sessionId,
         cookieSteamId: cookieSteamId ?? null,
@@ -709,7 +724,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', cookieSteamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -735,7 +750,7 @@ router.get(
 
       if (steamId) {
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', steamId, {
+        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
           httpOnly: false,
           secure: process.env.NODE_ENV === 'production',
           sameSite: 'lax',
@@ -809,8 +824,7 @@ router.get('/providers', (_req: Request, res: Response) => {
  */
 router.get('/me', (req: Request, res: Response) => {
   try {
-    const cookies = parseCookies(req.headers.cookie);
-    const steamId = cookies.player_steam_id;
+    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
 
     log.info('/api/auth/me: evaluated cookie state', {
       rawCookieHeader: req.headers.cookie ?? null,
@@ -824,9 +838,7 @@ router.get('/me', (req: Request, res: Response) => {
       });
     }
 
-    log.info('/api/auth/me: returning authenticated Steam identity', {
-      steamId,
-    });
+    log.info('/api/auth/me: returning authenticated Steam identity', { steamId });
 
     return res.json({
       authenticated: true,
@@ -847,8 +859,7 @@ router.get('/me', (req: Request, res: Response) => {
  */
 router.get('/admin-status', async (req: Request, res: Response) => {
   try {
-    const cookies = parseCookies(req.headers.cookie);
-    const steamId = cookies.player_steam_id?.trim() || null;
+    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
 
     if (!steamId) {
       return res.json({
@@ -907,18 +918,20 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  * Admin "who am I" endpoint.
  * Returns basic info about the authenticated admin session (if any).
  *
- * Steam ID resolution:
- * - Prefer steamId from the Passport user object (Steam login or SSO with
- *   persisted link).
- * - Fallback to the player_steam_id cookie so that SSO logins that resolved
- *   a Steam mapping can still be treated as "linked" on the frontend.
+ * We accept two ways to be "admin" (same as requireAuth):
+ *  1. Passport session (connect.sid) — Steam/SSO login with session.
+ *  2. player_steam_id cookie + DB is_admin — used when session cookie is dropped
+ *     (e.g. Cloudflare Tunnel, Chrome + OAuth redirect). Same as /admin-status.
+ *
+ * Steam ID resolution (when session exists):
+ * - Prefer steamId from the Passport user object.
+ * - Fallback to the player_steam_id cookie for SSO logins that linked Steam.
  */
-router.get('/admin/me', (req: Request, res: Response) => {
+router.get('/admin/me', async (req: Request, res: Response) => {
   const anyReq = req as Request & {
     user?: {
       provider?: string;
       steamId?: string;
-      // Provider-specific profile fields (set by Passport strategies)
       displayName?: string;
       username?: string;
       avatarUrl?: string;
@@ -926,64 +939,85 @@ router.get('/admin/me', (req: Request, res: Response) => {
     isAuthenticated?: () => boolean;
   };
 
-  if (!anyReq.isAuthenticated || !anyReq.isAuthenticated() || !anyReq.user) {
-    log.info('/api/auth/admin/me: unauthenticated admin session', {
-      hasIsAuthenticated: !!anyReq.isAuthenticated,
-      isAuthenticated: anyReq.isAuthenticated ? anyReq.isAuthenticated() : null,
-      hasUser: !!anyReq.user,
-    });
-    return res.json({
-      authenticated: false,
-    });
-  }
+  const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
 
-  const { provider, steamId: userSteamId } = anyReq.user;
-  const cookies = parseCookies(req.headers.cookie);
-  const cookieSteamId = cookies.player_steam_id;
-  const steamId = userSteamId || cookieSteamId || null;
-
-  log.info('/api/auth/admin/me: returning authenticated admin identity', {
-    provider,
-    userSteamId: userSteamId ?? null,
-    cookieSteamId: cookieSteamId ?? null,
-    steamId,
-  });
-
-  // Build a lightweight, provider-agnostic profile preview for the frontend so
-  // pages like /connect-steam can show which SSO/OAuth account is currently in use.
-  const user = anyReq.user || {};
+  let steamId: string | null = null;
+  let provider: string = 'steam';
   let profileName: string | null = null;
   let profileAvatarUrl: string | null = null;
 
-  if (provider === 'steam') {
-    profileName = (user as { displayName?: string; username?: string }).displayName ?? null;
-    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-  } else if (provider === 'discord') {
-    profileName = (user as { username?: string }).username ?? null;
-    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-  } else if (provider === 'github') {
-    profileName =
-      (user as { displayName?: string; username?: string }).displayName ||
-      (user as { username?: string }).username ||
-      null;
-    profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
-  } else if (provider === 'keycloak') {
-    profileName =
-      (user as { displayName?: string; username?: string }).displayName ||
-      (user as { username?: string }).username ||
-      null;
-    profileAvatarUrl = null;
+  if (anyReq.isAuthenticated && anyReq.isAuthenticated() && anyReq.user) {
+    const user = anyReq.user;
+    const userSteamId = (user as { steamId?: string }).steamId;
+    steamId = userSteamId || cookieSteamId || null;
+    provider = (user as { provider?: string }).provider ?? 'steam';
+
+    if (provider === 'steam') {
+      profileName = (user as { displayName?: string }).displayName ?? null;
+      profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+    } else if (provider === 'discord') {
+      profileName = (user as { username?: string }).username ?? null;
+      profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+    } else if (provider === 'github') {
+      profileName =
+        (user as { displayName?: string }).displayName ||
+        (user as { username?: string }).username ||
+        null;
+      profileAvatarUrl = (user as { avatarUrl?: string }).avatarUrl ?? null;
+    } else if (provider === 'keycloak') {
+      profileName =
+        (user as { displayName?: string }).displayName ||
+        (user as { username?: string }).username ||
+        null;
+      profileAvatarUrl = null;
+    }
+
+    if (steamId) {
+      log.info('/api/auth/admin/me: returning authenticated admin identity (session)', {
+        provider,
+        steamId,
+      });
+      return res.json({
+        authenticated: true,
+        provider,
+        steamId,
+        providerProfile: { name: profileName, avatarUrl: profileAvatarUrl },
+      });
+    }
   }
 
-  return res.json({
-    authenticated: true,
-    provider,
-    steamId,
-    providerProfile: {
-      name: profileName,
-      avatarUrl: profileAvatarUrl,
-    },
+  if (cookieSteamId) {
+    try {
+      const player = await playerService.getPlayerById(cookieSteamId);
+      if (player?.isAdmin) {
+        steamId = cookieSteamId;
+        profileName = player.name ?? null;
+        profileAvatarUrl =
+          typeof player.avatar === 'string' && player.avatar.startsWith('http')
+            ? player.avatar
+            : null;
+        log.info('/api/auth/admin/me: returning authenticated admin identity (cookie)', {
+          steamId,
+        });
+        return res.json({
+          authenticated: true,
+          provider: 'steam',
+          steamId,
+          providerProfile: { name: profileName, avatarUrl: profileAvatarUrl },
+        });
+      }
+    } catch (err) {
+      log.warn('Failed to resolve admin/me from player_steam_id cookie', err as Error);
+    }
+  }
+
+  log.info('/api/auth/admin/me: unauthenticated admin session', {
+    hasIsAuthenticated: !!anyReq.isAuthenticated,
+    isAuthenticated: anyReq.isAuthenticated ? anyReq.isAuthenticated() : null,
+    hasUser: !!anyReq.user,
+    hasCookieSteamId: !!cookieSteamId,
   });
+  return res.json({ authenticated: false });
 });
 
 /**
