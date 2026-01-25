@@ -225,7 +225,7 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
-  const { playerSteamId, hasPlayerRecord, isAuthenticated } = useAuth();
+  const { playerSteamId, hasPlayerRecord } = useAuth();
   const { t } = useTranslation();
   const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
     steamId && playerSteamId === steamId ? steamId : null
@@ -258,7 +258,7 @@ export default function PlayerProfile() {
     return map;
   }, [ratingHistory]);
 
-  const loadPlayerData = async ({ silent = false }: { silent?: boolean } = {}) => {
+  const loadPlayerData = React.useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!steamId) return;
 
     if (!silent) {
@@ -429,24 +429,35 @@ export default function PlayerProfile() {
         setLoading(false);
       }
     }
-  };
+  }, [steamId]);
 
   const scheduleSilentRefresh = React.useCallback(() => {
     if (unmountedRef.current) return;
     if (silentRefreshTimerRef.current) return;
+    // Preserve scroll position across "silent" refreshes so real-time updates
+    // (and snackbars triggered by them) don't yank the user to the top.
+    const scrollY = typeof window !== 'undefined' ? window.scrollY : 0;
     // Coalesce bursts of websocket events into a single refresh to avoid UI "flashing".
     silentRefreshTimerRef.current = window.setTimeout(() => {
       silentRefreshTimerRef.current = null;
-      void loadPlayerData({ silent: true });
+      void loadPlayerData({ silent: true }).finally(() => {
+        // Restore on next paint(s) after DOM updates settle.
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            if (typeof window !== 'undefined') {
+              window.scrollTo({ top: scrollY, behavior: 'auto' });
+            }
+          });
+        });
+      });
     }, 150);
-  }, [steamId]); // steamId changes recreate loadPlayerData anyway
+  }, [loadPlayerData]);
 
   useEffect(() => {
     if (!steamId) return;
     loadPlayerData();
     lastRefetchedMatchSlugRef.current = null;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [steamId]);
+  }, [steamId, loadPlayerData]);
 
   // When match-status reports an active match (e.g. waiting_veto) and we're viewing our own
   // profile, refetch so current-match and veto UI appear without reload.
@@ -464,7 +475,6 @@ export default function PlayerProfile() {
     if (lastRefetchedMatchSlugRef.current === statusMatchSlug) return;
     lastRefetchedMatchSlugRef.current = statusMatchSlug;
     scheduleSilentRefresh();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId, playerSteamId, statusMatchSlug, currentMatch?.slug, scheduleSilentRefresh]);
 
   // Lazily create a shared Socket.IO connection for this page once per mount.
@@ -495,7 +505,6 @@ export default function PlayerProfile() {
         // player's ELO, match history, and "current match" card stay in sync
         // without requiring a manual page reload.
         'round_advanced',
-        'match_status',
       ]);
 
       if (refreshActions.has(event.action)) {

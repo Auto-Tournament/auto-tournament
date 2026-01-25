@@ -5,7 +5,10 @@ import { US, CN, FR, DE, ES, IT, PT, PL, NL } from 'country-flag-icons/react/3x2
 
 const LANGUAGES: {
   code: string;
-  Flag: React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  // `country-flag-icons` components have slightly different prop typings than React's
+  // built-in `SVGProps<SVGSVGElement>` (notably around event targets). We only pass
+  // `title` + `style`, so keep this permissive to avoid TS friction.
+  Flag: React.ComponentType<Record<string, unknown>>;
   label: string;
 }[] = [
   { code: 'en', Flag: US, label: 'English' },
@@ -70,7 +73,7 @@ export const LanguageSwitcher: React.FC = () => {
             sx={{
               width: 22,
               height: 16,
-              borderRadius: 0.25,
+              borderRadius: 0.5,
               overflow: 'hidden',
               display: 'block',
               boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',
@@ -103,7 +106,7 @@ export const LanguageSwitcher: React.FC = () => {
               sx={{
                 width: 28,
                 height: 20,
-                borderRadius: 0.25,
+                borderRadius: 0.5,
                 overflow: 'hidden',
                 display: 'block',
                 boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',

@@ -42,7 +42,7 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, playerSteamId, hasPlayerRecord, needsSteamLink } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink } = useAuth();
   const location = useLocation();
 
   if (isLoading) {
@@ -114,7 +114,7 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 }
 
 function AppRoutes() {
-  const { isAuthenticated, isLoading, playerSteamId, hasPlayerRecord } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId } = useAuth();
   const isDevelopment = useIsDevelopment();
 
   if (isLoading) {
