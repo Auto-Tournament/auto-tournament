@@ -81,6 +81,7 @@ export default function Settings() {
   const [matchzyDebugChatEnabled, setMatchzyDebugChatEnabled] = useState(false);
   const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
   const [allowSelfRegister, setAllowSelfRegister] = useState(false);
+  const [initialAllowSelfRegister, setInitialAllowSelfRegister] = useState(false);
   // MatchZy Enhanced v1.3.0 settings
   const [matchzyAutoreadyEnabled, setMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
   const [initialMatchzyAutoreadyEnabled, setInitialMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
@@ -171,6 +172,7 @@ export default function Settings() {
       setMatchzyDebugChatEnabled(debugChatEnabled);
       setInitialMatchzyDebugChatEnabled(debugChatEnabled);
       setAllowSelfRegister(allowSelfRegisterValue);
+      setInitialAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
       // MatchZy Enhanced
@@ -316,6 +318,7 @@ export default function Settings() {
         setMatchzyDebugChatEnabled(newDebugChatEnabled);
         setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
         setAllowSelfRegister(newAllowSelfRegister);
+        setInitialAllowSelfRegister(newAllowSelfRegister);
         // MatchZy Enhanced
         setMatchzyAutoreadyEnabled(newMatchzyAutoready);
         setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
@@ -418,6 +421,7 @@ export default function Settings() {
       matchzyKnifeEnabledDefault !== initialMatchzyKnifeEnabledDefault ||
       ratingsEnabled !== initialRatingsEnabled ||
       matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
+      allowSelfRegister !== initialAllowSelfRegister ||
       matchzyAutoreadyEnabled !== initialMatchzyAutoreadyEnabled ||
       matchzyBothTeamsUnpauseRequired !== initialMatchzyBothTeamsUnpauseRequired ||
       matchzyMaxPausesPerTeam !== initialMatchzyMaxPausesPerTeam ||
@@ -476,6 +480,7 @@ export default function Settings() {
       matchzyKnifeEnabledDefault === initialMatchzyKnifeEnabledDefault &&
       matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
       ratingsEnabled === initialRatingsEnabled &&
+      allowSelfRegister === initialAllowSelfRegister &&
       matchzyAutoreadyEnabled === initialMatchzyAutoreadyEnabled &&
       matchzyBothTeamsUnpauseRequired === initialMatchzyBothTeamsUnpauseRequired &&
       matchzyMaxPausesPerTeam === initialMatchzyMaxPausesPerTeam &&
@@ -516,6 +521,7 @@ export default function Settings() {
     matchzyKnifeEnabledDefault,
     matchzyDebugChatEnabled,
     ratingsEnabled,
+    allowSelfRegister,
     matchzyAutoreadyEnabled,
     matchzyBothTeamsUnpauseRequired,
     matchzyMaxPausesPerTeam,
@@ -534,6 +540,7 @@ export default function Settings() {
     initialMatchzyKnifeEnabledDefault,
     initialMatchzyDebugChatEnabled,
     initialRatingsEnabled,
+    initialAllowSelfRegister,
     initialMatchzyAutoreadyEnabled,
     initialMatchzyBothTeamsUnpauseRequired,
     initialMatchzyMaxPausesPerTeam,
