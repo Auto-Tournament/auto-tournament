@@ -126,6 +126,12 @@ class MatchService {
     const team1Id = config.team1?.id ?? null;
     const team2Id = config.team2?.id ?? null;
 
+    // Determine initial status based on whether veto is enabled
+    // If veto is enabled (vetoDisabled === false), start as 'pending' to allow veto flow
+    // Otherwise, start as 'ready' for immediate allocation
+    const vetoEnabled = config.vetoDisabled === false;
+    const initialStatus = vetoEnabled ? 'pending' : 'ready';
+
     await db.insertAsync('matches', {
       slug: input.slug,
       // Manual matches are **independent** of the primary tournament bracket.
@@ -140,9 +146,9 @@ class MatchService {
       team1_id: team1Id,
       team2_id: team2Id,
       config: JSON.stringify(config),
-      // Manual matches are immediately eligible for allocation/loading as soon
-      // as they are created, so we mark them as "ready" instead of "pending".
-      status: 'ready',
+      // If veto is enabled, start as 'pending' to allow teams to complete veto.
+      // Otherwise, start as 'ready' for immediate server allocation.
+      status: initialStatus,
     });
 
     const match = await db.getOneAsync<Match>('matches', 'slug = ?', [input.slug]);

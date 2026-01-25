@@ -1,0 +1,91 @@
+{
+  "origin-hint": {
+    "seed": "Seed {{position}}",
+    "winner-bracket": "Przegrany z $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Przegrany z półfinału $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Przegrany z finału $t(abbreviations.winner-bracket)",
+    "consolation-final": "Przegrany z półfinału {{position}}",
+    "grand-final": "Zwycięzca finału $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Przegrany z półfinału $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Przegrany z finału $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Mecz {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Półfinał {{matchNumber}}",
+    "standard-bracket-final": "Finał",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} Półfinał {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} Finał",
+    "consolation-final": "Mecz o 3. miejsce",
+    "grand-final-single": "Wielki finał",
+    "grand-final": "$t(abbreviations.grand-final) Runda {{roundNumber}}",
+    "match-game": "Mapa {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Zablokowany",
+    "waiting": "Oczekiwanie",
+    "ready": "Gotowy",
+    "running": "W trakcie",
+    "completed": "Zakończony",
+    "archived": "Zarchiwizowany"
+  },
+  "abbreviations": {
+    "win": "W",
+    "loss": "L",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": { "text": "#", "tooltip": "Pozycja" },
+    "id": { "text": "Nazwa", "tooltip": "Nazwa" },
+    "played": { "text": "P", "tooltip": "Rozegrane" },
+    "wins": { "text": "$t(abbreviations.win)", "tooltip": "Wygrane" },
+    "draws": { "text": "R", "tooltip": "Remisy" },
+    "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Przegrane" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Walkowery" },
+    "scoreFor": { "text": "SF", "tooltip": "Punkty zdobyte" },
+    "scoreAgainst": { "text": "SA", "tooltip": "Punkty stracone" },
+    "scoreDifference": { "text": "+/-", "tooltip": "Różnica" },
+    "points": { "text": "Pts", "tooltip": "Punkty" }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Consolation",
+    "group-name": "Grupa {{groupNumber}}",
+    "group-name-winner-bracket": "Winner Bracket",
+    "group-name-loser-bracket": "Loser Bracket",
+    "round-name": "Runda {{roundNumber}}",
+    "round-name-final": "Runda finałowa",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Runda {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Runda finałowa",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Runda {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Runda finałowa"
+  },
+  "form-creator": {
+    "stage-name-label": "Nazwa etapu",
+    "stage-name-placeholder": "Nadaj nazwę etapowi",
+    "stage-selector-label": "Wybierz etap",
+    "team-label": "Nazwy drużyn",
+    "team-label-placeholder": "Lista nazw oddzielona przecinkami (musi być 2^n)",
+    "team-count": "Albo liczba drużyn",
+    "team-count-placeholder": "Ile drużyn chcesz?",
+    "group-label": "Ile grup?",
+    "group-placeholder": "Ile grup chcesz?",
+    "seed-order-label": "Jak uporządkować seed?",
+    "double-elimination-seed-order-placeholder": "Kolejność seedów (double elimination), oddzielona przecinkami",
+    "round-robin-mode-label": "Jaki tryb round robin?",
+    "consolation-final-label": "Mecz o 3. miejsce",
+    "skip-first-round-label": "Pomiń pierwszą rundę",
+    "grand-final-type-label": "Typ wielkiego finału",
+    "submit": "Utwórz"
+  }
+}

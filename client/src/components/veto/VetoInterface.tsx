@@ -308,12 +308,12 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   // Get current team name
   const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
 
-  // Determine if it's this team's turn
-  // Compare current team slug with the team IDs in veto state
+  // Determine if it's this team's turn. Require valid team IDs and currentTeamSlug;
+  // otherwise we cannot reliably tell whose turn it is (don't default to "your turn").
   const isMyTurn =
-    !currentTeamSlug ||
-    !vetoState.team1Id ||
-    !vetoState.team2Id ||
+    !!currentTeamSlug &&
+    !!vetoState.team1Id &&
+    !!vetoState.team2Id &&
     (currentStepConfig?.team === 'team1'
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
@@ -445,29 +445,43 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {/* Side Picker (for side_pick actions) */}
       {currentAction === 'side_pick' &&
         (() => {
-          const pickedMaps = vetoState.pickedMaps || [];
-          if (pickedMaps.length === 0) {
+          const pickedMaps = Array.isArray(vetoState.pickedMaps) ? vetoState.pickedMaps : [];
+          const availableMaps = Array.isArray(vetoState.availableMaps) ? vetoState.availableMaps : [];
+
+          // BO1 and BO3 decider: the side pick is for the *remaining* map,
+          // which is not in pickedMaps yet (the server adds it when side is submitted).
+          const isDeciderSidePick =
+            (vetoState.format === 'bo1' || vetoState.format === 'bo3') &&
+            vetoState.currentStep === vetoState.totalSteps &&
+            availableMaps.length === 1;
+
+          const sidePickMapName = isDeciderSidePick
+            ? availableMaps[0]
+            : pickedMaps.length > 0
+              ? pickedMaps[pickedMaps.length - 1].mapName
+              : null;
+
+          if (!sidePickMapName) {
             return null;
           }
 
-          const lastPickedMap = pickedMaps[pickedMaps.length - 1];
-          const mapData = allMaps.get(lastPickedMap?.mapName || '');
-          const fallbackData = getMapData(lastPickedMap?.mapName || '');
+          const mapData = allMaps.get(sidePickMapName);
+          const fallbackData = getMapData(sidePickMapName);
 
           return (
             <Card sx={{ mb: 3 }}>
               <CardContent>
                 {/* Map Display */}
-                {lastPickedMap?.mapName && (
+                {sidePickMapName && (
                   <FadeInImage
                     src={
                       isRepoImageUrl(mapData?.imageUrl)
-                        ? fallbackData?.image || getFullImageUrl(lastPickedMap.mapName)
+                        ? fallbackData?.image || getFullImageUrl(sidePickMapName)
                         : mapData?.imageUrl ||
                           fallbackData?.image ||
-                          getFullImageUrl(lastPickedMap.mapName)
+                          getFullImageUrl(sidePickMapName)
                     }
-                    alt={mapData?.displayName || fallbackData?.displayName || lastPickedMap.mapName}
+                    alt={mapData?.displayName || fallbackData?.displayName || sidePickMapName}
                     height={250}
                     sx={{
                       borderRadius: 2,
@@ -502,7 +516,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                         >
                           {mapData?.displayName ||
                             fallbackData?.displayName ||
-                            lastPickedMap.mapName}
+                            sidePickMapName}
                         </Typography>
                         <Typography
                           variant="h6"

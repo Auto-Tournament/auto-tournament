@@ -2,7 +2,7 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { I18nextProvider } from 'react-i18next';
 import { ThemeProvider, CssBaseline } from '@mui/material';
-import { zhCN, enUS } from '@mui/material/locale';
+import { zhCN, enUS, frFR, deDE, esES, itIT, ptPT, plPL, nlNL } from '@mui/material/locale';
 import App from './App';
 import './index.css';
 import i18n from './i18n';
@@ -15,6 +15,13 @@ console.info('[MatchZy] App version:', __APP_VERSION__);
 
 const getMuiLocale = (lang: string) => {
   if (lang.startsWith('zh')) return zhCN;
+  if (lang.startsWith('fr')) return frFR;
+  if (lang.startsWith('de')) return deDE;
+  if (lang.startsWith('es')) return esES;
+  if (lang.startsWith('it')) return itIT;
+  if (lang.startsWith('pt')) return ptPT;
+  if (lang.startsWith('pl')) return plPL;
+  if (lang.startsWith('nl')) return nlNL;
   return enUS;
 };
 

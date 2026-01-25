@@ -12,30 +12,38 @@ interface SnackbarContextType {
 
 const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined);
 
-// Custom snackbar components with forwardRef for notistack
+// Custom snackbar components with forwardRef for notistack.
+//
+// Important: keep snackbars from affecting layout/scrollbars. Use a responsive
+// width so the toast never overflows the viewport (which can cause "page jump").
+const SNACKBAR_SX = {
+  width: 'min(500px, calc(100vw - 24px))',
+  minWidth: 0,
+  maxWidth: '500px',
+  borderRadius: 2,
+  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
+  fontWeight: 500,
+  '& .MuiAlert-icon': {
+    color: 'inherit',
+  },
+  '& .MuiAlert-action .MuiIconButton-root': {
+    color: 'inherit',
+    '&:hover': {
+      backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    },
+  },
+} as const;
+
 const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
   <Alert
     ref={ref}
     severity="success"
     variant="filled"
     sx={{
-      minWidth: '300px',
-      maxWidth: '500px',
-      borderRadius: 2,
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-      fontWeight: 500,
+      ...SNACKBAR_SX,
       // Use theme success colors so this matches the global palette
       backgroundColor: 'success.main',
       color: 'success.contrastText',
-      '& .MuiAlert-icon': {
-        color: 'inherit',
-      },
-      '& .MuiAlert-action .MuiIconButton-root': {
-        color: 'inherit',
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        },
-      },
     }}
   >
     {message}
@@ -49,22 +57,9 @@ const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>((
     severity="error"
     variant="filled"
     sx={{
-      minWidth: '300px',
-      maxWidth: '500px',
-      borderRadius: 2,
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-      fontWeight: 500,
+      ...SNACKBAR_SX,
       backgroundColor: 'error.main',
       color: 'error.contrastText',
-      '& .MuiAlert-icon': {
-        color: 'inherit',
-      },
-      '& .MuiAlert-action .MuiIconButton-root': {
-        color: 'inherit',
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        },
-      },
     }}
   >
     {message}
@@ -78,22 +73,9 @@ const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>
     severity="warning"
     variant="filled"
     sx={{
-      minWidth: '300px',
-      maxWidth: '500px',
-      borderRadius: 2,
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-      fontWeight: 500,
+      ...SNACKBAR_SX,
       backgroundColor: 'warning.main',
       color: 'warning.contrastText',
-      '& .MuiAlert-icon': {
-        color: 'inherit',
-      },
-      '& .MuiAlert-action .MuiIconButton-root': {
-        color: 'inherit',
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        },
-      },
     }}
   >
     {message}
@@ -107,22 +89,9 @@ const InfoSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({
     severity="info"
     variant="filled"
     sx={{
-      minWidth: '300px',
-      maxWidth: '500px',
-      borderRadius: 2,
-      boxShadow: '0 4px 12px rgba(0, 0, 0, 0.3)',
-      fontWeight: 500,
+      ...SNACKBAR_SX,
       backgroundColor: 'info.main',
       color: 'info.contrastText',
-      '& .MuiAlert-icon': {
-        color: 'inherit',
-      },
-      '& .MuiAlert-action .MuiIconButton-root': {
-        color: 'inherit',
-        '&:hover': {
-          backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        },
-      },
     }}
   >
     {message}
@@ -137,7 +106,8 @@ const SlideTransition = React.forwardRef<unknown, TransitionProps & { children: 
       <Slide
         {...props}
         ref={ref}
-        direction="left"
+        // Use vertical motion to avoid horizontal overflow/scrollbar shifts.
+        direction="up"
         timeout={{
           enter: 400,
           exit: 300,

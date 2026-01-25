@@ -90,7 +90,6 @@
         "@types/swagger-ui-express": "^4.1.8",
         "@typescript-eslint/eslint-plugin": "^8.46.2",
         "@typescript-eslint/parser": "^8.46.2",
-        "@vitejs/plugin-react": "^4.2.1",
         "cheerio": "^1.1.2",
         "concurrently": "^9.2.1",
         "esbuild": "^0.27.1",
@@ -105,10 +104,8 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-router-dom": "^6.21.0",
-        "sass": "^1.93.3",
         "tsx": "^4.7.0",
-        "typescript": "^5.3.3",
-        "vite": "^5.0.12"
+        "typescript": "^5.3.3"
     },
     "dependencies": {
         "@dicebear/collection": "^9.2.4",

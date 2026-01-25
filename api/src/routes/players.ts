@@ -25,6 +25,7 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { generateAvatarSvg } from '../generation/avatar';
+import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
 
 const router = Router();
 
@@ -250,6 +251,160 @@ function normalizeLiveStatsForPlayerView(
 }
 
 /**
+ * GET /api/players/me/match-status
+ * Lightweight status for the navbar CTA: "YOUR TURN IN VETO", "Match ready", etc.
+ * Requires player_steam_id cookie (Steam sign-in). Returns status, matchSlug, and a label key.
+ */
+router.get('/me/match-status', async (req: Request, res: Response) => {
+  try {
+    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
+    if (!steamId) {
+      return res.json({
+        success: true,
+        status: 'none',
+        matchSlug: null,
+        label: null,
+      });
+    }
+
+    const player = await playerService.getPlayerById(steamId);
+    if (!player) {
+      return res.json({
+        success: true,
+        status: 'none',
+        matchSlug: null,
+        label: null,
+      });
+    }
+
+    const likeParam = `%${steamId}%`;
+
+    let match = await db.queryOneAsync<
+      DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
+    >(
+      `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+              t1.players as team1_players, t2.players as team2_players
+       FROM matches m
+       LEFT JOIN teams t1 ON m.team1_id = t1.id
+       LEFT JOIN teams t2 ON m.team2_id = t2.id
+       WHERE m.status IN ('loaded', 'live')
+         AND (
+           (t1.players LIKE ? ESCAPE '\\')
+           OR (t2.players LIKE ? ESCAPE '\\')
+           OR (m.config LIKE ? ESCAPE '\\')
+         )
+       ORDER BY m.loaded_at DESC
+       LIMIT 1`,
+      [likeParam, likeParam, likeParam]
+    );
+
+    if (!match) {
+      match = await db.queryOneAsync<
+        DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
+      >(
+        `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+                t1.players as team1_players, t2.players as team2_players
+         FROM matches m
+         LEFT JOIN teams t1 ON m.team1_id = t1.id
+         LEFT JOIN teams t2 ON m.team2_id = t2.id
+         WHERE m.status IN ('pending', 'ready')
+           AND (
+             (t1.players LIKE ? ESCAPE '\\')
+             OR (t2.players LIKE ? ESCAPE '\\')
+             OR (m.config LIKE ? ESCAPE '\\')
+           )
+         ORDER BY m.round ASC, m.match_number ASC
+         LIMIT 1`,
+        [likeParam, likeParam, likeParam]
+      );
+    }
+
+    if (!match) {
+      return res.json({
+        success: true,
+        status: 'none',
+        matchSlug: null,
+        label: null,
+      });
+    }
+
+    const config = match.config
+      ? (JSON.parse(match.config) as {
+          team1?: { players?: Array<{ steamid: string }> };
+          team2?: { players?: Array<{ steamid: string }> };
+        })
+      : {};
+    const t1 = normalizeConfigPlayers(config.team1?.players ?? []);
+    const t2 = normalizeConfigPlayers(config.team2?.players ?? []);
+    const in1 = t1.some((p) => p.steamid === steamId);
+    const in2 = t2.some((p) => p.steamid === steamId);
+    const team1Json = (match.team1_players ?? '') as string;
+    const team2Json = (match.team2_players ?? '') as string;
+    const in1Json = team1Json.includes(steamId);
+    const in2Json = team2Json.includes(steamId);
+    const isTeam1 = in1 || (in1Json && !in2Json) || (!in2 && !in2Json);
+
+    if (!in1 && !in2 && !in1Json && !in2Json) {
+      return res.json({
+        success: true,
+        status: 'none',
+        matchSlug: null,
+        label: null,
+      });
+    }
+
+    const vetoState = match.veto_state
+      ? (JSON.parse(match.veto_state) as { status?: string; currentTurn?: string })
+      : null;
+    const vetoCompleted = vetoState?.status === 'completed';
+    const currentTurn = vetoState?.currentTurn ?? null;
+
+    if (['loaded', 'live'].includes(match.status)) {
+      return res.json({
+        success: true,
+        status: 'match_ready',
+        matchSlug: match.slug,
+        label: 'match_ready',
+      });
+    }
+
+    if ((match.status === 'pending' || match.status === 'ready') && !vetoCompleted) {
+      const myTurn =
+        currentTurn &&
+        ((currentTurn === 'team1' && isTeam1) || (currentTurn === 'team2' && !isTeam1));
+      return res.json({
+        success: true,
+        status: myTurn ? 'your_turn_veto' : 'waiting_veto',
+        matchSlug: match.slug,
+        label: myTurn ? 'your_turn_veto' : 'waiting_veto',
+      });
+    }
+
+    if ((match.status === 'pending' || match.status === 'ready') && vetoCompleted) {
+      return res.json({
+        success: true,
+        status: 'waiting_server',
+        matchSlug: match.slug,
+        label: 'waiting_server',
+      });
+    }
+
+    return res.json({
+      success: true,
+      status: 'match_ready',
+      matchSlug: match.slug,
+      label: 'match_ready',
+    });
+  } catch (e) {
+    log.error('Failed to compute match status for /me/match-status', e as Error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to load match status',
+    });
+  }
+});
+
+/**
  * GET /api/players/:playerId/current-match
  * Get the current or next match for a player (public)
  * This is primarily used for the public player page to show connect info
@@ -462,21 +617,27 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       isTeam1 = true;
     }
 
+    const isManualMatch = match.round === 0 && !match.team1_id && !match.team2_id;
+    const t1Name = match.team1_name ?? (config.team1 as { name?: string } | undefined)?.name;
+    const t2Name = match.team2_name ?? (config.team2 as { name?: string } | undefined)?.name;
+    const t1Tag = match.team1_tag ?? (config.team1 as { tag?: string } | undefined)?.tag ?? '';
+    const t2Tag = match.team2_tag ?? (config.team2 as { tag?: string } | undefined)?.tag ?? '';
+
     const playerTeam = isTeam1
       ? {
-          id: match.team1_id,
-          name: match.team1_name,
-          tag: match.team1_tag,
+          id: isManualMatch ? 'team1' : match.team1_id,
+          name: t1Name,
+          tag: t1Tag,
         }
       : {
-          id: match.team2_id,
-          name: match.team2_name,
-          tag: match.team2_tag,
+          id: isManualMatch ? 'team2' : match.team2_id,
+          name: t2Name,
+          tag: t2Tag,
         };
 
     const opponent = isTeam1
-      ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
-      : { id: match.team1_id, name: match.team1_name, tag: match.team1_tag };
+      ? { id: isManualMatch ? 'team2' : match.team2_id, name: t2Name, tag: t2Tag }
+      : { id: isManualMatch ? 'team1' : match.team1_id, name: t1Name, tag: t1Tag };
 
     // Get veto state to determine actual picked maps
     let pickedMaps: string[] = [];
@@ -523,8 +684,16 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
 
           vetoSummary = {
             status: vetoState.status || 'pending',
-            team1Name: vetoState.team1Name || match.team1_name || 'Team 1',
-            team2Name: vetoState.team2Name || match.team2_name || 'Team 2',
+            team1Name:
+              vetoState.team1Name ||
+              match.team1_name ||
+              (config.team1 as { name?: string } | undefined)?.name ||
+              'Team 1',
+            team2Name:
+              vetoState.team2Name ||
+              match.team2_name ||
+              (config.team2 as { name?: string } | undefined)?.name ||
+              'Team 2',
             pickedMaps: orderedPickedMaps,
             actions: Array.isArray(vetoState.actions)
               ? [...vetoState.actions].sort(
@@ -607,31 +776,64 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
       completedAt: result.completedAt,
     }));
 
-    // Normalize and enrich config players with avatars from team data
+    // Normalize and enrich config players with avatars from team data or players table
     const enrichPlayers = async (
       normalizedPlayers: Array<{ steamid: string; name: string }>,
       teamId?: string
     ) => {
-      if (!teamId) return normalizedPlayers;
-      try {
-        const teamData = await teamService.getTeamById(teamId);
-        if (teamData?.players) {
-          const avatarMap = new Map(teamData.players.map((p) => [p.steamId.toLowerCase(), p.avatar]));
-          return normalizedPlayers.map((p) => ({
-            ...p,
-            avatar: avatarMap.get(p.steamid.toLowerCase()),
-          }));
+      if (teamId) {
+        try {
+          const teamData = await teamService.getTeamById(teamId);
+          if (teamData?.players) {
+            const avatarMap = new Map(
+              teamData.players.map((p) => [p.steamId.toLowerCase(), p.avatar])
+            );
+            return normalizedPlayers.map((p) => ({
+              ...p,
+              avatar: avatarMap.get(p.steamid.toLowerCase()),
+            }));
+          }
+        } catch (error) {
+          console.debug('[PlayerMatch] Failed to enrich players with avatars:', error);
         }
-      } catch (error) {
-        console.debug('[PlayerMatch] Failed to enrich players with avatars:', error);
       }
       return normalizedPlayers;
     };
 
-    const [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
+    let [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
       enrichPlayers(normalizedTeam1Players, config.team1?.id),
       enrichPlayers(normalizedTeam2Players, config.team2?.id),
     ]);
+
+    // Manual matches: no team rows, enrich from players table
+    if (isManualMatch) {
+      const allSteamIds = [
+        ...enrichedTeam1Players.map((p) => p.steamid),
+        ...enrichedTeam2Players.map((p) => p.steamid),
+      ];
+      if (allSteamIds.length > 0) {
+        try {
+          const placeholders = allSteamIds.map(() => '?').join(', ');
+          const rows = await db.queryAsync<{ id: string; avatar_url: string | null }>(
+            `SELECT id, avatar_url FROM players WHERE id IN (${placeholders})`,
+            allSteamIds
+          );
+          const avatarMap = new Map(
+            rows.map((r) => [r.id.toLowerCase(), r.avatar_url ?? undefined])
+          );
+          enrichedTeam1Players = enrichedTeam1Players.map((p) => ({
+            ...p,
+            avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+          }));
+          enrichedTeam2Players = enrichedTeam2Players.map((p) => ({
+            ...p,
+            avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+          }));
+        } catch (error) {
+          console.debug('[PlayerMatch] Failed to enrich manual-match players with avatars:', error);
+        }
+      }
+    }
 
     return res.json({
       success: true,
@@ -698,7 +900,9 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         maps: pickedMaps.length > 0 ? pickedMaps : [],
         mapResults: normalizedMapResults,
         veto: vetoSummary,
-        matchFormat: (tournament?.format as 'bo1' | 'bo3' | 'bo5') || 'bo3',
+        matchFormat:
+          (tournament?.format as 'bo1' | 'bo3' | 'bo5') ||
+          (config.num_maps === 1 ? 'bo1' : config.num_maps === 5 ? 'bo5' : 'bo3'),
         loadedAt: match.loaded_at,
         config: {
           maplist: config.maplist,
@@ -707,6 +911,7 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
           expected_players_total: config.players_per_team ? config.players_per_team * 2 : 10,
           expected_players_team1: config.players_per_team || 5,
           expected_players_team2: config.players_per_team || 5,
+          vetoDisabled: config.vetoDisabled,
           team1: config.team1
             ? {
                 id: config.team1.id,

@@ -1,0 +1,91 @@
+{
+  "origin-hint": {
+    "seed": "Tête de série {{position}}",
+    "winner-bracket": "Perdant de $t(abbreviations.winner-bracket) {{round}}.{{position}}",
+    "winner-bracket-semi-final": "Perdant de la demi $t(abbreviations.winner-bracket) {{position}}",
+    "winner-bracket-final": "Perdant de la finale $t(abbreviations.winner-bracket)",
+    "consolation-final": "Perdant de la demi {{position}}",
+    "grand-final": "Vainqueur de la finale $t(abbreviations.loser-bracket)",
+    "double-elimination-consolation-final-opponent-1": "Perdant de la demi $t(abbreviations.loser-bracket) 1",
+    "double-elimination-consolation-final-opponent-2": "Perdant de la finale $t(abbreviations.loser-bracket)"
+  },
+  "match-label": {
+    "default": "Match {{matchNumber}}",
+    "winner-bracket": "$t(abbreviations.winner-bracket)",
+    "loser-bracket": "$t(abbreviations.loser-bracket)",
+    "standard-bracket": "$t(abbreviations.match)",
+    "standard-bracket-semi-final": "Demi {{matchNumber}}",
+    "standard-bracket-final": "Finale",
+    "double-elimination": "{{matchPrefix}} {{roundNumber}}.{{matchNumber}}",
+    "double-elimination-semi-final": "{{matchPrefix}} Demi {{matchNumber}}",
+    "double-elimination-final": "{{matchPrefix}} Finale",
+    "consolation-final": "Finale de consolation",
+    "grand-final-single": "Grande finale",
+    "grand-final": "$t(abbreviations.grand-final) Tour {{roundNumber}}",
+    "match-game": "Manche {{gameNumber}}"
+  },
+  "match-status": {
+    "locked": "Verrouillé",
+    "waiting": "En attente",
+    "ready": "Prêt",
+    "running": "En cours",
+    "completed": "Terminé",
+    "archived": "Archivé"
+  },
+  "abbreviations": {
+    "win": "V",
+    "loss": "D",
+    "forfeit": "F",
+    "position": "P",
+    "seed": "#",
+    "winner-bracket": "WB",
+    "loser-bracket": "LB",
+    "match": "M",
+    "grand-final": "GF"
+  },
+  "ranking": {
+    "rank": { "text": "#", "tooltip": "Rang" },
+    "id": { "text": "Nom", "tooltip": "Nom" },
+    "played": { "text": "J", "tooltip": "Joués" },
+    "wins": { "text": "$t(abbreviations.win)", "tooltip": "Victoires" },
+    "draws": { "text": "N", "tooltip": "Nuls" },
+    "losses": { "text": "$t(abbreviations.loss)", "tooltip": "Défaites" },
+    "forfeits": { "text": "$t(abbreviations.forfeit)", "tooltip": "Forfaits" },
+    "scoreFor": { "text": "PF", "tooltip": "Points marqués" },
+    "scoreAgainst": { "text": "PC", "tooltip": "Points encaissés" },
+    "scoreDifference": { "text": "+/-", "tooltip": "Différence" },
+    "points": { "text": "Pts", "tooltip": "Points" }
+  },
+  "common": {
+    "bye": "BYE",
+    "best-of-x": "Bo{{x}}",
+    "consolation": "Consolation",
+    "group-name": "Groupe {{groupNumber}}",
+    "group-name-winner-bracket": "Winner Bracket",
+    "group-name-loser-bracket": "Loser Bracket",
+    "round-name": "Tour {{roundNumber}}",
+    "round-name-final": "Dernier tour",
+    "round-name-winner-bracket": "$t(abbreviations.winner-bracket) Tour {{roundNumber}}",
+    "round-name-winner-bracket-final": "$t(abbreviations.winner-bracket) Dernier tour",
+    "round-name-loser-bracket": "$t(abbreviations.loser-bracket) Tour {{roundNumber}}",
+    "round-name-loser-bracket-final": "$t(abbreviations.loser-bracket) Dernier tour"
+  },
+  "form-creator": {
+    "stage-name-label": "Nom de l’étape",
+    "stage-name-placeholder": "Donnez un nom à cette étape",
+    "stage-selector-label": "Sélectionner une étape",
+    "team-label": "Nom des équipes",
+    "team-label-placeholder": "Liste de noms séparés par des virgules (doit être 2^n)",
+    "team-count": "Ou un nombre d’équipes",
+    "team-count-placeholder": "Combien d’équipes voulez-vous ?",
+    "group-label": "Combien de groupes ?",
+    "group-placeholder": "Combien de groupes voulez-vous ?",
+    "seed-order-label": "Comment ordonner les têtes de série ?",
+    "double-elimination-seed-order-placeholder": "Ordre des seeds en double élimination, séparé par des virgules",
+    "round-robin-mode-label": "Quel mode de round robin ?",
+    "consolation-final-label": "Finale de consolation",
+    "skip-first-round-label": "Ignorer le premier tour",
+    "grand-final-type-label": "Type de grande finale",
+    "submit": "Créer"
+  }
+}

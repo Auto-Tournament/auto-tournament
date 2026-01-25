@@ -31,6 +31,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import SearchIcon from '@mui/icons-material/Search';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
@@ -83,6 +84,7 @@ interface TournamentLeaderboardData {
 
 export default function TournamentLeaderboard() {
   const { id } = useParams<{ id: string }>();
+  const { t } = useTranslation();
   const [data, setData] = useState<TournamentLeaderboardData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -105,7 +107,7 @@ export default function TournamentLeaderboard() {
       if (response) {
         setData(response);
         if (response.tournament) {
-          document.title = `${response.tournament.name} - Leaderboard`;
+          document.title = `${response.tournament.name}${t('leaderboardPage.titleSuffix')}`;
         }
       }
     } catch (err: unknown) {
@@ -121,7 +123,7 @@ export default function TournamentLeaderboard() {
         setData(null);
         setError('');
       } else {
-        setError('Failed to load tournament leaderboard');
+        setError(t('leaderboardPage.loadError'));
         console.error(err);
       }
     } finally {
@@ -143,7 +145,7 @@ export default function TournamentLeaderboard() {
 
     return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id]);
+  }, [id, t]);
 
   // WebSocket-based realtime updates
   useEffect(() => {
@@ -308,14 +310,14 @@ export default function TournamentLeaderboard() {
                       component="h2"
                       fontWeight={600}
                     >
-                      No tournament leaderboard yet
+                      {t('leaderboardPage.emptyTitle')}
                     </Typography>
                     <Typography
                       id="tournament-leaderboard-empty-description"
                       variant="body2"
                       color="text.secondary"
                     >
-                      Once a tournament is created and matches are played, standings will appear here.
+                      {t('leaderboardPage.emptyDescription')}
                     </Typography>
                   </Box>
                 </Box>
@@ -345,14 +347,14 @@ export default function TournamentLeaderboard() {
 
   const exportToCSV = () => {
     const headers = [
-      'Rank',
-      'Player',
-      'Wins',
-      'Losses',
-      'Win Rate',
-      'Skill Rating',
-      'Rating Change',
-      'Avg ADR',
+      t('leaderboardPage.rank'),
+      t('leaderboardPage.player'),
+      t('leaderboardPage.wins'),
+      t('leaderboardPage.losses'),
+      t('leaderboardPage.winRate'),
+      t('leaderboardPage.skillRating'),
+      t('leaderboardPage.ratingChange'),
+      t('leaderboardPage.avgAdr'),
     ];
     const rows = filteredLeaderboard.map((player, index) => [
       index + 1,
@@ -456,14 +458,23 @@ export default function TournamentLeaderboard() {
                   </Typography>
                   <Box display="flex" gap={1} flexWrap="wrap">
                     <Chip
-                      label={isComplete ? 'Completed' : isActive ? 'In Progress' : 'Setup'}
+                      label={
+                        isComplete
+                          ? t('leaderboardPage.completed')
+                          : isActive
+                            ? t('leaderboardPage.inProgress')
+                            : t('leaderboardPage.setup')
+                      }
                       color={isComplete ? 'success' : isActive ? 'primary' : 'default'}
                       sx={{ fontWeight: 600 }}
                     />
-                    <Chip label="Shuffle Tournament" color="info" />
+                    <Chip label={t('leaderboardPage.shuffleTournament')} color="info" />
                     {roundStatus && (
                       <Chip
-                        label={`Round ${roundStatus.roundNumber} of ${totalRounds}`}
+                        label={t('leaderboardPage.roundOf', {
+                          current: roundStatus.roundNumber,
+                          total: totalRounds,
+                        })}
                         variant="outlined"
                       />
                     )}
@@ -477,11 +488,11 @@ export default function TournamentLeaderboard() {
                   <Grid container spacing={2}>
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        Top Players by Wins
+                        {t('leaderboardPage.topByWins')}
                       </Typography>
                       {topPerformers.byWins.length === 0 ? (
                         <Typography variant="body2" color="text.secondary">
-                          No matches played yet.
+                          {t('leaderboardPage.noMatchesYet')}
                         </Typography>
                       ) : (
                         <Stack spacing={0.5}>
@@ -513,7 +524,7 @@ export default function TournamentLeaderboard() {
                                 />
                               </Typography>
                               <Chip
-                                label={`${player.matchWins}W / ${player.matchLosses}L`}
+                                label={`${player.matchWins}${t('leaderboardPage.winsShort')} / ${player.matchLosses}${t('leaderboardPage.lossesShort')}`}
                                 size="small"
                                 color={index === 0 ? 'primary' : 'default'}
                               />
@@ -525,11 +536,11 @@ export default function TournamentLeaderboard() {
 
                     <Grid size={{ xs: 12, md: 6 }}>
                       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                        Top Players by ADR
+                        {t('leaderboardPage.topByAdr')}
                       </Typography>
                       {topPerformers.byAdr.length === 0 ? (
                         <Typography variant="body2" color="text.secondary">
-                          ADR data will appear once matches report stats.
+                          {t('leaderboardPage.adrDataLater')}
                         </Typography>
                       ) : (
                         <Stack spacing={0.5}>
@@ -579,10 +590,16 @@ export default function TournamentLeaderboard() {
                 <Box>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
                     <Typography variant="body2" color="text.secondary">
-                      Round {roundStatus.roundNumber} - {roundStatus.map}
+                      {t('leaderboardPage.roundMap', {
+                        round: roundStatus.roundNumber,
+                        map: roundStatus.map,
+                      })}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {roundStatus.completedMatches} / {roundStatus.totalMatches} matches completed
+                      {t('leaderboardPage.matchesCompleted', {
+                        completed: roundStatus.completedMatches,
+                        total: roundStatus.totalMatches,
+                      })}
                     </Typography>
                   </Box>
                   <LinearProgress
@@ -595,7 +612,7 @@ export default function TournamentLeaderboard() {
 
               {isComplete && (
                 <Alert severity="success" sx={{ mt: 2 }}>
-                  Tournament completed! Check the leaderboard below for final rankings.
+                  {t('leaderboardPage.tournamentCompletedAlert')}
                 </Alert>
               )}
             </CardContent>
@@ -608,10 +625,10 @@ export default function TournamentLeaderboard() {
                 <Box display="flex" alignItems="center" gap={1} mb={2}>
                   <EmojiEventsIcon color="secondary" />
                   <Typography variant="h5" fontWeight={600}>
-                    Team Standings
+                    {t('leaderboardPage.teamStandings')}
                   </Typography>
                   <Chip
-                    label={`${teams.length} teams`}
+                    label={t('leaderboardPage.teamsCount', { count: teams.length })}
                     size="small"
                     variant="outlined"
                   />
@@ -621,18 +638,18 @@ export default function TournamentLeaderboard() {
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Team</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.team')}</TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Wins
+                          {t('leaderboardPage.wins')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Losses
+                          {t('leaderboardPage.losses')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Matches
+                          {t('leaderboardPage.matches')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Win Rate
+                          {t('leaderboardPage.winRate')}
                         </TableCell>
                       </TableRow>
                     </TableHead>
@@ -697,10 +714,13 @@ export default function TournamentLeaderboard() {
                 <Box display="flex" alignItems="center" gap={1}>
                   <EmojiEventsIcon color="primary" />
                   <Typography variant="h5" fontWeight={600}>
-                    Leaderboard
+                    {t('leaderboardPage.leaderboardTitle')}
                   </Typography>
                   <Chip
-                    label={`${filteredLeaderboard.length} / ${leaderboard.length} players`}
+                    label={t('leaderboardPage.playersFiltered', {
+                      filtered: filteredLeaderboard.length,
+                      total: leaderboard.length,
+                    })}
                     size="small"
                     variant="outlined"
                   />
@@ -708,7 +728,7 @@ export default function TournamentLeaderboard() {
                 <Box display="flex" gap={1} flexWrap="wrap">
                   <TextField
                     size="small"
-                    placeholder="Search players..."
+                    placeholder={t('leaderboardPage.searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     InputProps={{
@@ -725,15 +745,15 @@ export default function TournamentLeaderboard() {
                     startIcon={<DownloadIcon />}
                     onClick={handleExportClick}
                   >
-                    Export
+                    {t('leaderboardPage.export')}
                   </Button>
                   <Menu
                     anchorEl={exportMenuAnchor}
                     open={Boolean(exportMenuAnchor)}
                     onClose={handleExportClose}
                   >
-                    <MenuItem onClick={exportToCSV}>Export as CSV</MenuItem>
-                    <MenuItem onClick={exportToJSON}>Export as JSON</MenuItem>
+                    <MenuItem onClick={exportToCSV}>{t('leaderboardPage.exportCsv')}</MenuItem>
+                    <MenuItem onClick={exportToJSON}>{t('leaderboardPage.exportJson')}</MenuItem>
                   </Menu>
                 </Box>
               </Box>
@@ -742,14 +762,14 @@ export default function TournamentLeaderboard() {
                 <Box textAlign="center" py={4}>
                   <PersonIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
-                    No players registered yet
+                    {t('leaderboardPage.noPlayersRegistered')}
                   </Typography>
                 </Box>
               ) : filteredLeaderboard.length === 0 ? (
                 <Box textAlign="center" py={4}>
                   <SearchIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
-                    No players found matching &quot;{searchQuery}&quot;
+                    {t('leaderboardPage.searchNoMatch', { query: searchQuery })}
                   </Typography>
                 </Box>
               ) : (
@@ -758,25 +778,25 @@ export default function TournamentLeaderboard() {
                     <TableHead>
                       <TableRow>
                         <TableCell sx={{ fontWeight: 600, width: 60 }}>#</TableCell>
-                        <TableCell sx={{ fontWeight: 600 }}>Player</TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>{t('leaderboardPage.player')}</TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Wins
+                          {t('leaderboardPage.wins')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Losses
+                          {t('leaderboardPage.losses')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Win Rate
+                          {t('leaderboardPage.winRate')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Skill Rating
+                          {t('leaderboardPage.skillRating')}
                         </TableCell>
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
-                          Rating Change
+                          {t('leaderboardPage.ratingChange')}
                         </TableCell>
                         {leaderboard.some((p) => p.averageAdr) && (
                           <TableCell align="right" sx={{ fontWeight: 600 }}>
-                            Avg ADR
+                            {t('leaderboardPage.avgAdr')}
                           </TableCell>
                         )}
                         <TableCell sx={{ width: 100 }}></TableCell>

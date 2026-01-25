@@ -7,12 +7,20 @@ import type { Team } from '../../types';
 
 interface TeamHeaderProps {
   team: Team | null;
-  isMuted: boolean;
-  onToggleMute: () => void;
-  onToggleSettings: () => void;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
+  onToggleSettings?: () => void;
+  /** When true, sound controls are hidden (e.g. team page used only for stats/roster). */
+  hideSoundControls?: boolean;
 }
 
-export function TeamHeader({ team, isMuted, onToggleMute, onToggleSettings }: TeamHeaderProps) {
+export function TeamHeader({
+  team,
+  isMuted,
+  onToggleMute,
+  onToggleSettings,
+  hideSoundControls,
+}: TeamHeaderProps) {
   return (
     <Card
       sx={{
@@ -27,18 +35,20 @@ export function TeamHeader({ team, isMuted, onToggleMute, onToggleSettings }: Te
               {team?.tag ? `[${team.tag}] ${team.name}` : team?.name}
             </Typography>
           </Box>
-          <Box display="flex" gap={1}>
-            <Tooltip title="Sound settings">
-              <IconButton onClick={onToggleSettings} color="primary">
-                <SettingsIcon />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title={isMuted ? 'Unmute notifications' : 'Mute notifications'}>
-              <IconButton onClick={onToggleMute} color={isMuted ? 'default' : 'primary'}>
-                {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
-              </IconButton>
-            </Tooltip>
-          </Box>
+          {!hideSoundControls && onToggleMute != null && onToggleSettings != null && (
+            <Box display="flex" gap={1}>
+              <Tooltip title="Sound settings">
+                <IconButton onClick={onToggleSettings} color="primary">
+                  <SettingsIcon />
+                </IconButton>
+              </Tooltip>
+              <Tooltip title={isMuted ? 'Unmute notifications' : 'Mute notifications'}>
+                <IconButton onClick={onToggleMute} color={isMuted ? 'default' : 'primary'}>
+                  {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
+                </IconButton>
+              </Tooltip>
+            </Box>
+          )}
         </Box>
       </CardContent>
     </Card>

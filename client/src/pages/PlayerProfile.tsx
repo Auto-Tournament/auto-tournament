@@ -38,6 +38,7 @@ import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
+import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
 import { useTranslation } from 'react-i18next';
 import type {
   Team,
@@ -226,6 +227,12 @@ export default function PlayerProfile() {
   const socketRef = useRef<Socket | null>(null);
   const { playerSteamId, hasPlayerRecord, isAuthenticated } = useAuth();
   const { t } = useTranslation();
+  const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
+    steamId && playerSteamId === steamId ? steamId : null
+  );
+  const lastRefetchedMatchSlugRef = useRef<string | null>(null);
+  const silentRefreshTimerRef = useRef<number | null>(null);
+  const unmountedRef = useRef(false);
 
   // Shared sound settings (persisted via localStorage)
   const { isMuted, volume, soundFile } = useSoundSettings();
@@ -256,8 +263,8 @@ export default function PlayerProfile() {
 
     if (!silent) {
       setLoading(true);
+      setError('');
     }
-    setError('');
 
     try {
       // Load aggregated player summary (details + history + matches + basic stats)
@@ -424,11 +431,41 @@ export default function PlayerProfile() {
     }
   };
 
+  const scheduleSilentRefresh = React.useCallback(() => {
+    if (unmountedRef.current) return;
+    if (silentRefreshTimerRef.current) return;
+    // Coalesce bursts of websocket events into a single refresh to avoid UI "flashing".
+    silentRefreshTimerRef.current = window.setTimeout(() => {
+      silentRefreshTimerRef.current = null;
+      void loadPlayerData({ silent: true });
+    }, 150);
+  }, [steamId]); // steamId changes recreate loadPlayerData anyway
+
   useEffect(() => {
     if (!steamId) return;
     loadPlayerData();
+    lastRefetchedMatchSlugRef.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [steamId]);
+
+  // When match-status reports an active match (e.g. waiting_veto) and we're viewing our own
+  // profile, refetch so current-match and veto UI appear without reload.
+  useEffect(() => {
+    if (!steamId || playerSteamId !== steamId) return;
+    if (!statusMatchSlug) {
+      lastRefetchedMatchSlugRef.current = null;
+      return;
+    }
+    // Only refresh when match-status reveals a *different* match slug than the one we have.
+    // Status changes (e.g. waiting_veto -> your_turn_veto) should not force a full page refresh.
+    if (currentMatch?.slug && currentMatch.slug === statusMatchSlug) {
+      return;
+    }
+    if (lastRefetchedMatchSlugRef.current === statusMatchSlug) return;
+    lastRefetchedMatchSlugRef.current = statusMatchSlug;
+    scheduleSilentRefresh();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [steamId, playerSteamId, statusMatchSlug, currentMatch?.slug, scheduleSilentRefresh]);
 
   // Lazily create a shared Socket.IO connection for this page once per mount.
   useEffect(() => {
@@ -462,7 +499,7 @@ export default function PlayerProfile() {
       ]);
 
       if (refreshActions.has(event.action)) {
-        void loadPlayerData({ silent: true });
+        scheduleSilentRefresh();
       }
     };
 
@@ -477,12 +514,17 @@ export default function PlayerProfile() {
       if (!data || data.status !== 'completed') {
         return;
       }
-      void loadPlayerData({ silent: true });
+      scheduleSilentRefresh();
     };
 
     socket.on('match:update', handleAnyMatchUpdate);
 
     return () => {
+      unmountedRef.current = true;
+      if (silentRefreshTimerRef.current) {
+        window.clearTimeout(silentRefreshTimerRef.current);
+        silentRefreshTimerRef.current = null;
+      }
       if (!socket) return;
       socket.off('bracket:update', handleBracketOrTournamentUpdate);
       socket.off('tournament:update', handleBracketOrTournamentUpdate);
@@ -508,7 +550,7 @@ export default function PlayerProfile() {
       if (!data.slug || data.slug !== slug) return;
       // Re‑fetch player data so currentMatch (and its nested server/veto/live
       // info) stay in lockstep with the team view.
-      void loadPlayerData({ silent: true });
+      scheduleSilentRefresh();
     };
 
     socket.on('match:update', handleUpdate);
@@ -582,12 +624,12 @@ export default function PlayerProfile() {
   }, [allocationCountdown.nextAllocationInSeconds]);
 
   const getRoundLabel = (round: number) => {
-    if (round === 1) return 'Round 1';
-    if (round === 2) return 'Round 2';
-    if (round === 3) return 'Quarterfinals';
-    if (round === 4) return 'Semifinals';
-    if (round === 5) return 'Finals';
-    return `Round ${round}`;
+    if (round === 1) return t('rounds.round1');
+    if (round === 2) return t('rounds.round2');
+    if (round === 3) return t('rounds.quarterfinals');
+    if (round === 4) return t('rounds.semifinals');
+    if (round === 5) return t('rounds.finals');
+    return t('rounds.roundN', { n: round });
   };
 
   if (loading) {
@@ -772,25 +814,10 @@ export default function PlayerProfile() {
             volume={volume}
             soundFile={soundFile}
           />
-          {isAuthenticated && playerSteamId === steamId && (
-            <Alert
-              severity="info"
-              action={
-                <Button color="inherit" size="small" component={RouterLink} to="/">
-                  {t('nav.goToAdminDashboard')}
-                </Button>
-              }
-            >
-              {t('nav.goToAdminDashboardHint')}
-            </Alert>
-          )}
           {/* Local navigation (kept minimal; main links live in the navbar) */}
-          <Box display="flex" justifyContent="space-between" alignItems="center">
-            <Typography variant="subtitle2" color="text.secondary">
-              Player profile
-            </Typography>
+          <Box display="flex" justifyContent="flex-end" alignItems="center">
             {playerSteamId === steamId && (
-              <Chip color="primary" size="small" label="This is you" />
+              <Chip color="primary" size="small" label={t('playerPage.thisIsYou')} />
             )}
           </Box>
 
@@ -815,13 +842,13 @@ export default function PlayerProfile() {
                       data-testid="public-player-name"
                     />
                     <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Steam ID: {player.id}
+                      {t('playerPage.steamId', { id: player.id })}
                     </Typography>
                     <Box display="flex" gap={2} mt={2} flexWrap="wrap" alignItems="center">
-                      <Tooltip title="Skill Rating is based on OpenSkill. Around 1500 is a typical starting rating; higher is better.">
+                      <Tooltip title={t('playerPage.skillRatingTooltip')}>
                         <Chip
                           data-testid="public-player-elo"
-                          label={`Skill Rating: ${player.currentElo}`}
+                          label={t('playerPage.skillRatingLabel', { elo: player.currentElo })}
                           color="primary"
                           sx={{ fontWeight: 600, fontSize: '1rem' }}
                         />
@@ -835,16 +862,15 @@ export default function PlayerProfile() {
                             window.open(`/tournament/${latestTournamentId}/leaderboard`, '_blank')
                           }
                         >
-                          View Tournament Leaderboard
+                          {t('playerPage.viewTournamentLeaderboard')}
                         </Button>
                       )}
                       {allocationCountdown.nextAllocationInSeconds !== null &&
                         allocationCountdown.nextAllocationInSeconds > 0 && (
                           <Typography variant="body2" color="text.secondary">
-                            Next servers allocated in{' '}
-                            <strong>
-                              {Math.max(0, allocationCountdown.nextAllocationInSeconds)}s
-                            </strong>
+                            {t('playerPage.nextServersAllocated', {
+                              seconds: Math.max(0, allocationCountdown.nextAllocationInSeconds),
+                            })}
                           </Typography>
                         )}
                     </Box>
@@ -852,7 +878,7 @@ export default function PlayerProfile() {
                 </Box>
                 {player.isAdmin && (
                   <Chip
-                    label="ADMIN"
+                    label={t('playerPage.admin')}
                     color="error"
                     size="small"
                     sx={{
@@ -903,30 +929,28 @@ export default function PlayerProfile() {
                 {tournamentIsCompleted && hasAnyMatches ? (
                   <>
                     <Typography variant="body1" color="text.secondary">
-                      Tournament finished – you have no more matches.
+                      {t('playerPage.tournamentFinishedNoMatches')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mt={1}>
-                      Final record: {wins} win{wins === 1 ? '' : 's'} / {losses} loss
-                      {losses === 1 ? '' : 'es'} in this tournament.
+                      {t('playerPage.finalRecord', { wins, losses })}
                     </Typography>
                   </>
                 ) : tournamentIsActive && hasAnyMatches ? (
                   <>
                     <Typography variant="body1" color="text.secondary">
-                      No upcoming match scheduled for you right now.
+                      {t('playerPage.noUpcomingMatch')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mt={1}>
-                      The tournament is still in progress, but your matches are complete.
+                      {t('playerPage.noUpcomingHint')}
                     </Typography>
                   </>
                 ) : (
                   <>
                     <Typography variant="body1" color="text.secondary">
-                      No active match right now
+                      {t('playerPage.noActiveMatch')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mt={1}>
-                      Once the next round is generated and your match is ready, it will appear here
-                      with server connect info.
+                      {t('playerPage.noActiveHint')}
                     </Typography>
                   </>
                 )}
@@ -940,7 +964,7 @@ export default function PlayerProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Matches Played
+                    {t('playerPage.matchesPlayed')}
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
                     {uniqueMatchHistory.length}
@@ -952,7 +976,7 @@ export default function PlayerProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Win Rate
+                    {t('playerPage.winRate')}
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
                     {winRate.toFixed(1)}%
@@ -964,7 +988,7 @@ export default function PlayerProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Wins / Losses
+                    {t('playerPage.winsLosses')}
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
                     {wins} / {losses}
@@ -976,7 +1000,7 @@ export default function PlayerProfile() {
               <Card>
                 <CardContent>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Average ADR
+                    {t('playerPage.averageAdr')}
                   </Typography>
                   <Typography variant="h4" fontWeight={700}>
                     {averageAdr > 0 ? averageAdr.toFixed(1) : 'N/A'}
@@ -991,7 +1015,7 @@ export default function PlayerProfile() {
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom textAlign="center">
-                  Recent Form & Highlights
+                  {t('playerPage.recentFormHighlights')}
                 </Typography>
 
                 {/* ADR highlights centered above timeline */}
@@ -999,20 +1023,32 @@ export default function PlayerProfile() {
                   {bestAdrMatch && (
                     <Box textAlign="center">
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Best Match (ADR)
+                        {t('playerPage.bestAdr')}
                       </Typography>
                       <Typography variant="body2">
-                        {bestAdrMatch.adr?.toFixed(1)} ADR in {getRoundLabel(bestAdrMatch.round)}
+                        {t('playerPage.bestAdrIn', {
+                          adr:
+                            typeof bestAdrMatch.adr === 'number'
+                              ? bestAdrMatch.adr.toFixed(1)
+                              : 'N/A',
+                          round: getRoundLabel(bestAdrMatch.round),
+                        })}
                       </Typography>
                     </Box>
                   )}
                   {worstAdrMatch && (
                     <Box textAlign="center">
                       <Typography variant="body2" color="text.secondary" gutterBottom>
-                        Toughest Match (ADR)
+                        {t('playerPage.toughestAdr')}
                       </Typography>
                       <Typography variant="body2">
-                        {worstAdrMatch.adr?.toFixed(1)} ADR in {getRoundLabel(worstAdrMatch.round)}
+                        {t('playerPage.bestAdrIn', {
+                          adr:
+                            typeof worstAdrMatch.adr === 'number'
+                              ? worstAdrMatch.adr.toFixed(1)
+                              : 'N/A',
+                          round: getRoundLabel(worstAdrMatch.round),
+                        })}
                       </Typography>
                     </Box>
                   )}
@@ -1021,7 +1057,7 @@ export default function PlayerProfile() {
                 {/* Full-width recent form timeline */}
                 <Box>
                   <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Recent Form (last {maxRecentTimelineMatches} matches)
+                    {t('playerPage.recentForm', { count: maxRecentTimelineMatches })}
                   </Typography>
                   {recentTimelineMatches.length > 0 ? (
                     <Box position="relative" mt={2} px={1}>
@@ -1064,9 +1100,9 @@ export default function PlayerProfile() {
                           if (match) {
                             const isTeam1 = match.team === 'team1';
                             const opponentName = isTeam1
-                              ? match.team2Name || 'Opponent'
-                              : match.team1Name || 'Opponent';
-                            const vsLabel = `vs ${opponentName}`;
+                              ? match.team2Name || t('playerPage.opponent')
+                              : match.team1Name || t('playerPage.opponent');
+                            const vsLabel = `${t('teamMatchHistory.vs')} ${opponentName}`;
                             tooltipTitle = `${vsLabel} — ${getRoundLabel(match.round)}`;
                           }
 
@@ -1146,29 +1182,29 @@ export default function PlayerProfile() {
             <Card>
               <CardContent>
                 <Typography variant="h6" fontWeight={600} gutterBottom>
-                  Match History
+                  {t('playerPage.matchHistory')}
                 </Typography>
                 <TableContainer>
                   <Table size="small">
                     <TableHead>
                       <TableRow>
-                        <TableCell align="left">Round</TableCell>
-                        <TableCell>Opponent</TableCell>
-                        <TableCell align="right">Kills</TableCell>
-                        <TableCell align="right">Deaths</TableCell>
-                        <TableCell align="right">Assists</TableCell>
-                        <TableCell align="right">HS%</TableCell>
-                        <TableCell align="right">DMG</TableCell>
-                        <TableCell align="right">Rating</TableCell>
-                        <TableCell>Result</TableCell>
+                        <TableCell align="left">{t('playerPage.round')}</TableCell>
+                        <TableCell>{t('playerPage.opponent')}</TableCell>
+                        <TableCell align="right">{t('playerPage.kills')}</TableCell>
+                        <TableCell align="right">{t('playerPage.deaths')}</TableCell>
+                        <TableCell align="right">{t('playerPage.assists')}</TableCell>
+                        <TableCell align="right">{t('playerPage.hsPercent')}</TableCell>
+                        <TableCell align="right">{t('playerPage.dmg')}</TableCell>
+                        <TableCell align="right">{t('playerPage.rating')}</TableCell>
+                        <TableCell>{t('playerPage.result')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
                       {uniqueMatchHistory.slice(0, 10).map((match) => {
                         const isTeam1 = match.team === 'team1';
                         const opponentName = isTeam1
-                          ? match.team2Name || 'Opponent'
-                          : match.team1Name || 'Opponent';
+                          ? match.team2Name || t('playerPage.opponent')
+                          : match.team1Name || t('playerPage.opponent');
 
                         return (
                           <TableRow
@@ -1180,7 +1216,7 @@ export default function PlayerProfile() {
                             <TableCell align="left">#{match.round}</TableCell>
                             <TableCell>
                               <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
-                                vs {opponentName}
+                                {t('teamMatchHistory.vs')} {opponentName}
                               </Typography>
                             </TableCell>
                             <TableCell align="right">
@@ -1211,7 +1247,7 @@ export default function PlayerProfile() {
                             </TableCell>
                             <TableCell>
                               <Chip
-                                label={match.wonMatch ? 'Win' : 'Loss'}
+                                label={match.wonMatch ? t('playerPage.win') : t('playerPage.loss')}
                                 size="small"
                                 color={match.wonMatch ? 'success' : 'error'}
                               />
@@ -1223,7 +1259,7 @@ export default function PlayerProfile() {
                       <TableRow hover={false} sx={{ cursor: 'default' }}>
                         <TableCell align="left">
                           <Typography variant="body2" color="text.secondary" noWrap>
-                            Baseline
+                            {t('playerPage.baseline')}
                           </Typography>
                         </TableCell>
                         <TableCell>—</TableCell>

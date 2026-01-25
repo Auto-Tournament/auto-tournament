@@ -438,6 +438,8 @@ export function useCreateManualMatchModal({
       (useVeto && selectedMatchMaps.length === 7)
     ) {
       const matchMaps = selectedMatchMaps.slice(0, requiredMaps);
+      // When veto enabled, store full 7-map pool for veto; otherwise store match maps only.
+      const maplistForConfig = useVeto ? selectedMatchMaps : matchMaps;
       const safePlayersPerTeam =
         typeof playersPerTeam === 'number' && playersPerTeam > 0 ? playersPerTeam : 5;
       const safeMaxRounds =
@@ -480,7 +482,7 @@ export function useCreateManualMatchModal({
 
       previewConfig = {
         vetoDisabled: !useVeto,
-        maplist: matchMaps,
+        maplist: maplistForConfig,
         num_maps: requiredMaps,
         players_per_team: safePlayersPerTeam,
         expected_players_total: safePlayersPerTeam * 2,

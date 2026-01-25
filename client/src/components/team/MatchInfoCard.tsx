@@ -336,9 +336,12 @@ export function MatchInfoCard({
     );
   };
 
-  const hasBothTeamsAssigned = Boolean(match.team1?.id) && Boolean(match.team2?.id);
-  const isCompletedMatch = match.status === 'completed';
   const isManualMatch = match.round === 0;
+  // For manual matches, teams exist only in config (no team1_id/team2_id). Use config presence.
+  const hasBothTeamsAssigned = isManualMatch
+    ? Boolean(match.config?.team1) && Boolean(match.config?.team2)
+    : Boolean(match.team1?.id) && Boolean(match.team2?.id);
+  const isCompletedMatch = match.status === 'completed';
   const vetoFlowDisabled = isVetoDisabledForMatch({
     round: match.round,
     team1: match.team1 ? { id: match.team1.id } : null,
@@ -413,10 +416,13 @@ export function MatchInfoCard({
   // Show veto interface if veto is not completed (check both state and match.veto.status)
   const isVetoNotCompleted =
     !vetoFlowDisabled && !vetoCompleted && match.veto?.status !== 'completed';
+  // For manual matches with veto enabled, also allow status 'ready' (they may start as ready
+  // if created before the fix, or if status hasn't updated yet)
+  const isVetoEligibleStatus = match.status === 'pending' || (isManualMatch && match.status === 'ready');
   if (
     viewerIsTeamMember &&
     (isManualMatch || tournamentStatus === 'in_progress') &&
-    match.status === 'pending' &&
+    isVetoEligibleStatus &&
     isVetoNotCompleted &&
     hasBothTeamsAssigned &&
     ['bo1', 'bo3', 'bo5'].includes(matchFormat)
@@ -435,9 +441,11 @@ export function MatchInfoCard({
           </Alert>
           <VetoInterface
             matchSlug={match.slug}
-            team1Name={match.team1?.name}
-            team2Name={match.team2?.name}
-            currentTeamSlug={team?.id}
+            team1Name={match.team1?.name ?? match.config?.team1?.name}
+            team2Name={match.team2?.name ?? match.config?.team2?.name}
+            currentTeamSlug={
+              team?.id ?? (match.isTeam1 ? 'team1' : 'team2')
+            }
             onComplete={onVetoComplete}
           />
         </CardContent>

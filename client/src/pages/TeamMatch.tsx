@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
   Box,
   Card,
@@ -13,70 +13,20 @@ import {
 } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { TeamHeader } from '../components/team/TeamHeader';
-import { SoundSettingsModal } from '../components/modals/SoundSettingsModal';
-import { MatchInfoCard } from '../components/team/MatchInfoCard';
+import { CurrentMatchDisplayCard } from '../components/team/CurrentMatchDisplayCard';
 import { TeamStatsCard } from '../components/team/TeamStatsCard';
 import { TeamMatchHistoryCard } from '../components/team/TeamMatchHistory';
 import { PlayerRosterCard } from '../components/team/PlayerRosterCard';
 import { useTeamMatchData } from '../hooks/useTeamMatchData';
 import { useTournamentStatus } from '../hooks/useTournamentStatus';
-import { useSoundSettings } from '../hooks/useSoundSettings';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
-import type { SelectChangeEvent } from '@mui/material';
-import type { Team } from '../types';
-import type { NotificationSoundValue } from '../utils/soundNotification';
-import { MatchNotificationAudio } from '../components/match/MatchNotificationAudio';
 import { useAuth } from '../contexts/AuthContext';
 import { TopNavBar } from '../components/layout/TopNavBar';
-
-type TeamSoundControlsProps = {
-  team: Team | null;
-  isMuted: boolean;
-  volume: number;
-  soundFile: NotificationSoundValue;
-  toggleMute: () => void;
-  handleVolumeChange: (newValue: number) => void;
-  handlePreviewSound: () => void;
-  handleSoundChange: (event: SelectChangeEvent<string>) => void;
-};
-
-function TeamSoundControls({
-  team,
-    isMuted,
-    volume,
-    soundFile,
-    toggleMute,
-    handleVolumeChange,
-    handlePreviewSound,
-    handleSoundChange,
-}: TeamSoundControlsProps) {
-  const [showSettings, setShowSettings] = useState(false);
-
-  return (
-    <>
-      <TeamHeader
-        team={team}
-        isMuted={isMuted}
-        onToggleMute={toggleMute}
-        onToggleSettings={() => setShowSettings(true)}
-      />
-      <SoundSettingsModal
-        open={showSettings}
-        onClose={() => setShowSettings(false)}
-        volume={volume}
-        soundFile={soundFile}
-        onVolumeChange={handleVolumeChange}
-        onSoundChange={handleSoundChange}
-        onPreviewSound={handlePreviewSound}
-      />
-    </>
-  );
-}
+import { useTranslation } from 'react-i18next';
 
 export default function TeamMatch() {
   const { teamId } = useParams<{ teamId: string }>();
-
-  // Custom hooks for data and sound
+  const { t } = useTranslation();
   const {
     team,
     match,
@@ -87,73 +37,35 @@ export default function TeamMatch() {
     loading,
     error,
     tournamentStatus,
-    loadTeamMatch,
   } = useTeamMatchData(teamId);
   const { tournament } = useTournamentStatus();
   const tournamentName = tournament?.name ?? null;
-  const {
-    isMuted,
-    volume,
-    soundFile,
-    toggleMute,
-    handleVolumeChange,
-    handlePreviewSound,
-    handleSoundChange,
-  } = useSoundSettings();
   const { playerSteamId } = useAuth();
 
-  // Get match format from match data (fallback to 'bo1' if not available)
   const matchFormat = (match?.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1';
 
-  // Derive veto completion status from match data.
-  // Manual matches (round === 0) never use the team veto UI and should behave
-  // as if veto is already completed from the team page's perspective.
-  const vetoCompleted =
-    match?.round === 0 ? true : match?.veto?.status === 'completed';
-
-  // Set dynamic page title
   useEffect(() => {
     if (team?.name) {
       document.title = team.name;
     } else {
-      document.title = 'Team Page';
+      document.title = t('teamPage.pageTitle');
     }
-  }, [team]);
-
-    const isEligibleFormat = ['bo1', 'bo3', 'bo5'].includes(matchFormat);
-
-    const vetoReady =
-    !!match &&
-      tournamentStatus === 'in_progress' &&
-      match.status === 'pending' &&
-      !vetoCompleted &&
-      isEligibleFormat &&
-      match.veto?.status !== 'completed';
-
-    const serverReady =
-    !!match && Boolean(match.server) && (match.status === 'loaded' || match.status === 'live');
-
-
-  const handleVetoComplete = async () => {
-    // Reload match data to get updated status and server assignment
-    setTimeout(() => {
-      loadTeamMatch();
-    }, 1000);
-  };
-
-  // No polling needed - rely on websockets for server assignment updates
-  // The backend will poll for available servers and emit updates via websockets
+  }, [team, t]);
 
   const getRoundLabel = (round: number) => {
-    if (round === 1) return 'Round 1';
-    if (round === 2) return 'Round 2';
-    if (round === 3) return 'Quarterfinals';
-    if (round === 4) return 'Semifinals';
-    if (round === 5) return 'Finals';
-    return `Round ${round}`;
+    if (round === 1) return t('rounds.round1');
+    if (round === 2) return t('rounds.round2');
+    if (round === 3) return t('rounds.quarterfinals');
+    if (round === 4) return t('rounds.semifinals');
+    if (round === 5) return t('rounds.finals');
+    return t('rounds.roundN', { n: round });
   };
 
-  // Loading state
+  const rulesFormat = matchFormat;
+  const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;
+  const rulesOvertimeMode = match?.config?.overtimeMode ?? tournament?.overtimeMode;
+  const rulesOvertimeSegments = match?.config?.overtimeSegments ?? tournament?.overtimeSegments;
+
   if (loading) {
     return (
       <Box
@@ -163,26 +75,20 @@ export default function TeamMatch() {
         bgcolor="background.default"
       >
         <TopNavBar />
-        <Box
-          flex={1}
-          display="flex"
-          alignItems="center"
-          justifyContent="center"
-        >
+        <Box flex={1} display="flex" alignItems="center" justifyContent="center">
           <CircularProgress />
         </Box>
       </Box>
     );
   }
 
-  // Error state
   if (error) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
         <TopNavBar />
         <Container maxWidth="md">
           <Box py={6}>
-          <Alert severity="error">{error}</Alert>
+            <Alert severity="error">{error}</Alert>
           </Box>
         </Container>
       </Box>
@@ -193,49 +99,33 @@ export default function TeamMatch() {
   const tournamentIsCompleted = tournamentStatus === 'completed';
   const teamHasPlayed = !!(stats && stats.totalMatches > 0);
 
-  // Tournament rules configuration for the "About this tournament" accordion.
-  const rulesFormat = matchFormat;
-  const rulesMaxRounds = match?.config?.maxRounds ?? tournament?.maxRounds;
-  const rulesOvertimeMode = match?.config?.overtimeMode ?? tournament?.overtimeMode;
-  const rulesOvertimeSegments = match?.config?.overtimeSegments ?? tournament?.overtimeSegments;
-
-  // No match state
   if (!hasMatch) {
     return (
       <Box minHeight="100vh" bgcolor="background.default">
         <TopNavBar />
         <Container maxWidth="md">
           <Stack spacing={3} py={6}>
-            <MatchNotificationAudio
-              vetoReady={vetoReady}
-              serverReady={serverReady}
-              isMuted={isMuted}
-              volume={volume}
-              soundFile={soundFile}
-            />
-            <TeamSoundControls
-              team={team}
-              isMuted={isMuted}
-              volume={volume}
-              soundFile={soundFile}
-              toggleMute={toggleMute}
-              handleVolumeChange={handleVolumeChange}
-              handlePreviewSound={handlePreviewSound}
-              handleSoundChange={handleSoundChange}
-            />
+            <TeamHeader team={team} hideSoundControls />
 
             {playerSteamId && (
               <Card>
-                <CardContent sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <CardContent
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
-                    Want to see your own stats and match history?
+                    {t('teamPage.wantYourStats')}
                   </Typography>
                   <Button
                     size="small"
                     variant="outlined"
-                    onClick={() => window.open(`/player/${playerSteamId}`, '_blank')}
+                    component={RouterLink}
+                    to={`/player/${playerSteamId}`}
                   >
-                    Open my player page
+                    {t('teamPage.openMyPlayerPage')}
                   </Button>
                 </CardContent>
               </Card>
@@ -250,34 +140,37 @@ export default function TeamMatch() {
 
             <Card>
               <CardContent sx={{ textAlign: 'center', py: 6 }}>
-                <SportsEsportsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
+                <SportsEsportsIcon
+                  sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
+                />
                 {tournamentIsCompleted && teamHasPlayed && standing ? (
                   <>
                     <Typography variant="h6" color="text.primary" mt={1} gutterBottom>
-                      Tournament finished
+                      {t('teamPage.tournamentFinished')}
                     </Typography>
                     <Typography variant="body1" color="text.secondary" mt={1}>
-                      Final placement: #{standing.position} of {standing.totalTeams}
+                      {t('teamPage.finalPlacement', {
+                        position: standing.position,
+                        total: standing.totalTeams,
+                      })}
                     </Typography>
                   </>
                 ) : tournamentIsActive ? (
                   <>
                     <Typography variant="body1" color="text.secondary" mt={2}>
-                      No match scheduled right now
+                      {t('teamPage.noMatchNow')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mt={1}>
-                      Your team is still in the tournament. Keep this page open to be notified when
-                      the next match is ready.
+                      {t('teamPage.noMatchNowHint')}
                     </Typography>
                   </>
                 ) : (
                   <>
                     <Typography variant="body1" color="text.secondary" mt={2}>
-                      No matches available right now
+                      {t('teamPage.noMatchesYet')}
                     </Typography>
                     <Typography variant="body2" color="text.secondary" mt={1}>
-                      The tournament hasn&apos;t started yet. Once it begins, your matches will
-                      appear here.
+                      {t('teamPage.noMatchesYetHint')}
                     </Typography>
                   </>
                 )}
@@ -285,7 +178,6 @@ export default function TeamMatch() {
             </Card>
 
             <PlayerRosterCard team={team} />
-
             <TeamStatsCard stats={stats} standing={standing} />
             <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
           </Stack>
@@ -294,68 +186,52 @@ export default function TeamMatch() {
     );
   }
 
-  // Active match state
   return (
     <Box minHeight="100vh" bgcolor="background.default">
       <TopNavBar />
       <Container maxWidth="md">
         <Box py={6}>
-        <Stack spacing={3}>
-          {tournamentName && (
-            <Typography
-              component="h1"
-              variant="h3"
-              fontWeight={800}
-              textAlign="center"
-              color="text.primary"
-            >
-              {tournamentName}
-            </Typography>
-          )}
-          
-          <TeamSoundControls
-            team={team}
-            isMuted={isMuted}
-            volume={volume}
-            soundFile={soundFile}
-            toggleMute={toggleMute}
-            handleVolumeChange={handleVolumeChange}
-            handlePreviewSound={handlePreviewSound}
-            handleSoundChange={handleSoundChange}
-          />
+          <Stack spacing={3}>
+            {tournamentName && (
+              <Typography
+                component="h1"
+                variant="h3"
+                fontWeight={800}
+                textAlign="center"
+                color="text.primary"
+              >
+                {tournamentName}
+              </Typography>
+            )}
 
-          <TournamentRulesAccordion
-            format={rulesFormat}
-            maxRounds={rulesMaxRounds}
-            overtimeMode={rulesOvertimeMode}
-            overtimeSegments={rulesOvertimeSegments}
-          />
+            <TeamHeader team={team} hideSoundControls />
 
-          <MatchNotificationAudio
-            vetoReady={vetoReady}
-            serverReady={serverReady}
-            isMuted={isMuted}
-            volume={volume}
-            soundFile={soundFile}
-          />
-
-          {match && (
-            <MatchInfoCard
-              match={match}
-              team={team}
-              tournamentStatus={tournamentStatus}
-              vetoCompleted={vetoCompleted}
-              matchFormat={matchFormat}
-              onVetoComplete={handleVetoComplete}
-              getRoundLabel={getRoundLabel}
+            <TournamentRulesAccordion
+              format={rulesFormat}
+              maxRounds={rulesMaxRounds}
+              overtimeMode={rulesOvertimeMode}
+              overtimeSegments={rulesOvertimeSegments}
             />
-          )}
 
-          <PlayerRosterCard team={team} />
+            {match && (
+              <CurrentMatchDisplayCard
+                match={match}
+                team={team}
+                getRoundLabel={getRoundLabel}
+                playerSteamId={playerSteamId}
+                labels={{
+                  title: t('teamPage.currentMatch'),
+                  versus: t('teamPage.versus'),
+                  goToPlayerPage: t('teamPage.goToPlayerPage'),
+                  manualMatch: t('teamPage.manualMatch'),
+                }}
+              />
+            )}
 
-          <TeamStatsCard stats={stats} standing={standing} />
-          <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
-        </Stack>
+            <PlayerRosterCard team={team} />
+            <TeamStatsCard stats={stats} standing={standing} />
+            <TeamMatchHistoryCard matchHistory={matchHistory} teamId={teamId} />
+          </Stack>
         </Box>
       </Container>
     </Box>

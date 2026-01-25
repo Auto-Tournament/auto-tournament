@@ -51,6 +51,7 @@ import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
+import { isIP } from 'net';
 
 const app = express();
 const httpServer = createServer(app);
@@ -98,7 +99,9 @@ try {
   if (frontendBaseUrl) {
     const u = new URL(frontendBaseUrl.startsWith('http') ? frontendBaseUrl : `https://${frontendBaseUrl}`);
     const host = u.hostname.toLowerCase();
-    if (host && host !== 'localhost' && host !== '127.0.0.1') {
+    // Only set an explicit cookie domain for real DNS names.
+    // Setting Domain= on an IP can cause cookies to be dropped or behave unexpectedly.
+    if (host && host !== 'localhost' && host !== '127.0.0.1' && isIP(host) === 0) {
       sessionCookieDomain = host;
     }
   }
@@ -493,40 +496,50 @@ async function bootstrapServerWebhooks(): Promise<void> {
   }
 
   // Resolve webhook base URL from settings.
-  // Priority: 1) Database setting, 2) API_BASE_URL env var, 3) Auto-detect from PORT
+  // Priority: 1) DB, 2) API_BASE_URL, 3) FRONTEND_BASE_URL, 4) http://localhost:{PORT}
+  const apiPort = parseInt(process.env.PORT || '3000', 10);
+  const localhostDefault = `http://localhost:${apiPort}`;
   let baseUrl = await settingsService.getWebhookUrl();
+
+  const fromApi = process.env.API_BASE_URL?.trim();
+  const fromFrontend = process.env.FRONTEND_BASE_URL?.trim();
+
+  // If DB has localhost:PORT but FRONTEND_BASE_URL is set, treat as "wrong default" and fix it.
+  if (
+    baseUrl &&
+    (baseUrl === localhostDefault || baseUrl === 'http://localhost:3000') &&
+    fromFrontend &&
+    !fromApi
+  ) {
+    try {
+      await settingsService.setSetting('webhook_url', fromFrontend);
+      baseUrl = await settingsService.getWebhookUrl();
+      log.success(`Webhook URL updated from localhost default to FRONTEND_BASE_URL: ${baseUrl}`);
+    } catch (e) {
+      log.warn('Failed to update webhook URL from FRONTEND_BASE_URL', { error: e });
+    }
+  }
+
   if (!baseUrl) {
-    // Try API_BASE_URL env var first (explicit configuration)
-    const fromEnv = process.env.API_BASE_URL?.trim();
-    if (fromEnv) {
-      try {
-        await settingsService.setSetting('webhook_url', fromEnv);
-        baseUrl = await settingsService.getWebhookUrl();
-        log.success(`Webhook URL initialized from API_BASE_URL: ${baseUrl}`);
-      } catch (error) {
-        log.warn('Failed to set webhook URL from API_BASE_URL', { error });
-        return;
-      }
-    } else {
-      // Auto-detect: use the API port
-      const apiPort = parseInt(process.env.PORT || '3000', 10);
-      const detectedUrl = `http://localhost:${apiPort}`;
-      
-      try {
-        await settingsService.setSetting('webhook_url', detectedUrl);
-        baseUrl = await settingsService.getWebhookUrl();
+    const fallback = fromApi || fromFrontend || localhostDefault;
+    const source = fromApi ? 'API_BASE_URL' : fromFrontend ? 'FRONTEND_BASE_URL' : 'auto-detect (PORT)';
+    try {
+      await settingsService.setSetting('webhook_url', fallback);
+      baseUrl = await settingsService.getWebhookUrl();
+      log.success(`Webhook URL initialized from ${source}: ${baseUrl}`);
+      if (source === 'auto-detect (PORT)') {
         log.warn(
-          `Webhook URL was not configured; auto-detected as ${baseUrl}. ` +
-          `Set API_BASE_URL in .env or update in Settings if your API is accessible at a different address.`
+          'Webhook URL was not configured; auto-detected from PORT. ' +
+            'Set API_BASE_URL or FRONTEND_BASE_URL in .env, or update in Settings, if your API is elsewhere.'
         );
-      } catch (error) {
-        log.warn(
-          'Failed to auto-detect webhook URL; skipping automatic webhook bootstrap. ' +
-          'Set API_BASE_URL in .env or configure webhook URL in Settings.',
-          { error }
-        );
-        return;
       }
+    } catch (error) {
+      log.warn(
+        'Failed to set webhook URL; skipping automatic webhook bootstrap. ' +
+          'Set API_BASE_URL or FRONTEND_BASE_URL in .env or configure in Settings.',
+        { error }
+      );
+      return;
     }
   }
 

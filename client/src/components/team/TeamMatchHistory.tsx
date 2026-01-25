@@ -9,6 +9,7 @@ import {
   CardActionArea,
 } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
+import { useTranslation } from 'react-i18next';
 import { formatDate } from '../../utils/matchUtils';
 import type { TeamMatchHistory } from '../../types';
 import { TeamMatchHistoryModal } from './TeamMatchHistoryModal';
@@ -22,6 +23,7 @@ export function TeamMatchHistoryCard({
   matchHistory,
   teamId,
 }: TeamMatchHistoryProps) {
+  const { t } = useTranslation();
   const [selectedMatch, setSelectedMatch] = useState<TeamMatchHistory | null>(null);
 
   if (matchHistory.length === 0) {
@@ -33,7 +35,7 @@ export function TeamMatchHistoryCard({
       <Box display="flex" alignItems="center" gap={1} mb={3}>
         <HistoryIcon color="primary" />
         <Typography variant="h6" fontWeight={600}>
-          Match History
+          {t('teamMatchHistory.title')}
         </Typography>
       </Box>
       <Stack spacing={2}>
@@ -50,7 +52,7 @@ export function TeamMatchHistoryCard({
                 <Box display="flex" justifyContent="space-between" alignItems="start" mb={1}>
                   <Box display="flex" gap={1} alignItems="center" flexWrap="wrap">
                     <Chip
-                      label={historyMatch.won ? 'WIN' : 'LOSS'}
+                      label={historyMatch.won ? t('teamMatchHistory.win') : t('teamMatchHistory.loss')}
                       size="small"
                       color={historyMatch.won ? 'success' : 'error'}
                       sx={{ fontWeight: 600 }}
@@ -64,11 +66,14 @@ export function TeamMatchHistoryCard({
                   </Box>
                 </Box>
                 <Typography variant="body1" fontWeight={600} gutterBottom>
-                  vs {historyMatch.opponent?.name || 'Unknown'}
+                  {t('teamMatchHistory.vs')} {historyMatch.opponent?.name || t('teamMatchHistory.unknown')}
                   {historyMatch.opponent?.tag && ` (${historyMatch.opponent.tag})`}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" display="block">
-                  Match #{historyMatch.matchNumber} • {formatDate(historyMatch.completedAt)}
+                  {t('teamMatchHistory.matchNumberDate', {
+                    number: historyMatch.matchNumber,
+                    date: formatDate(historyMatch.completedAt),
+                  })}
                 </Typography>
               </CardContent>
             </CardActionArea>

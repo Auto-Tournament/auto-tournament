@@ -31,12 +31,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
   const team2Players = normalizeConfigPlayers(team2PlayersRaw);
 
   const getPlayerStatus = (steamId: string) => {
-    console.log(`[PlayerRoster] Checking status for steamId: ${steamId}`);
-    const connected = connectedPlayers.find((p) => {
-      console.log(`  Comparing with connected player steamId: ${p.steamId}`);
-      return p.steamId === steamId;
-    });
-    console.log(`  Result: ${connected ? 'CONNECTED' : 'OFFLINE'}, ready: ${connected?.isReady}`);
+    const connected = connectedPlayers.find((p) => p.steamId === steamId);
     return {
       isConnected: !!connected,
       isReady: connected?.isReady || false,

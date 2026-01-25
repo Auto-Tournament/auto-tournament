@@ -60,6 +60,42 @@ function resolveViewerTeamForMatch(
   return null;
 }
 
+type VetoContext = {
+  format: 'bo1' | 'bo3' | 'bo5';
+  tournamentMaps: string[];
+  customVetoOrder?: { bo1?: unknown[]; bo3?: unknown[]; bo5?: unknown[] };
+};
+
+/**
+ * Resolve format and map pool for veto. Tournament matches use tournament row;
+ * manual matches (round === 0, no tournament) use match config.
+ */
+async function getVetoContext(match: DbMatchRow): Promise<VetoContext | null> {
+  const isManual = match.round === 0 || match.tournament_id == null;
+
+  if (isManual) {
+    const config = match.config ? (JSON.parse(match.config) as { maplist?: string[]; num_maps?: number }) : {};
+    const maplist = Array.isArray(config.maplist) ? config.maplist : [];
+    const numMaps = config.num_maps === 1 ? 1 : config.num_maps === 3 ? 3 : config.num_maps === 5 ? 5 : 1;
+    const format: 'bo1' | 'bo3' | 'bo5' = numMaps === 1 ? 'bo1' : numMaps === 3 ? 'bo3' : 'bo5';
+    if (maplist.length === 0) return null;
+    return { format, tournamentMaps: maplist };
+  }
+
+  const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
+    'SELECT format, maps, settings FROM tournament WHERE id = ?',
+    [match.tournament_id]
+  );
+  if (!tournament) return null;
+
+  const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
+  return {
+    format: tournament.format as 'bo1' | 'bo3' | 'bo5',
+    tournamentMaps: JSON.parse(tournament.maps),
+    customVetoOrder: tournamentSettings.customVetoOrder,
+  };
+}
+
 /**
  * GET /api/veto/:matchSlug
  * Get current veto state for a match.
@@ -84,39 +120,54 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
       });
     }
 
-    // Get teams (id is the slug)
-    const team1 = await db.queryOneAsync<{ name: string; id: string }>(
-      'SELECT name, id FROM teams WHERE id = ?',
-      [match.team1_id]
-    );
-    const team2 = await db.queryOneAsync<{ name: string; id: string }>(
-      'SELECT name, id FROM teams WHERE id = ?',
-      [match.team2_id]
-    );
+    const isManualMatch = match.round === 0 || match.tournament_id == null;
+    const config = match.config
+      ? (JSON.parse(match.config) as {
+          team1?: { name?: string };
+          team2?: { name?: string };
+        })
+      : {};
 
-    // Get tournament to determine format and settings
-    const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
-      'SELECT format, maps, settings FROM tournament WHERE id = ?',
-      [match.tournament_id]
-    );
+    let team1Id: string | null = match.team1_id;
+    let team2Id: string | null = match.team2_id;
+    let team1Name = 'Team 1';
+    let team2Name = 'Team 2';
 
-    if (!tournament) {
-      return res.status(404).json({
-        success: false,
-        error: 'Tournament not found',
-      });
+    if (isManualMatch && !match.team1_id && !match.team2_id) {
+      team1Id = 'team1';
+      team2Id = 'team2';
+      team1Name = (config.team1?.name as string) || 'Team 1';
+      team2Name = (config.team2?.name as string) || 'Team 2';
+    } else {
+      const team1 = await db.queryOneAsync<{ name: string; id: string }>(
+        'SELECT name, id FROM teams WHERE id = ?',
+        [match.team1_id]
+      );
+      const team2 = await db.queryOneAsync<{ name: string; id: string }>(
+        'SELECT name, id FROM teams WHERE id = ?',
+        [match.team2_id]
+      );
+      if (team1) {
+        team1Name = team1.name;
+      }
+      if (team2) {
+        team2Name = team2.name;
+      }
     }
 
-    const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
-    const tournamentMaps = JSON.parse(tournament.maps);
-    const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
-    const customVetoOrder = tournamentSettings.customVetoOrder;
+    const vetoContext = await getVetoContext(match);
+    if (!vetoContext) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match has no veto configuration (missing tournament or map pool).',
+      });
+    }
+    const { format, tournamentMaps, customVetoOrder } = vetoContext;
 
     // Parse existing veto state or create new one
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
 
     if (!vetoState) {
-      // Initialize veto state using custom veto order if available
       const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length);
       vetoState = {
         matchSlug,
@@ -127,21 +178,20 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
         availableMaps: [...tournamentMaps],
         bannedMaps: [],
         pickedMaps: [],
-        allMaps: [...tournamentMaps], // Store original order for display
+        allMaps: [...tournamentMaps],
         actions: [],
         currentTurn: vetoOrder[0].team,
         currentAction: vetoOrder[0].action,
-        team1Id: match.team1_id,
-        team2Id: match.team2_id,
-        team1Name: team1?.name || 'Team 1',
-        team2Name: team2?.name || 'Team 2',
+        team1Id,
+        team2Id,
+        team1Name,
+        team2Name,
       };
     } else {
-      // Update team info in case it changed
-      vetoState.team1Id = match.team1_id;
-      vetoState.team2Id = match.team2_id;
-      vetoState.team1Name = team1?.name || 'Team 1';
-      vetoState.team2Name = team2?.name || 'Team 2';
+      vetoState.team1Id = team1Id;
+      vetoState.team2Id = team2Id;
+      vetoState.team1Name = team1Name;
+      vetoState.team2Name = team2Name;
 
       // Ensure allMaps exists for backward compatibility (reconstruct from current state)
       if (!vetoState.allMaps) {
@@ -233,40 +283,46 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       });
     }
 
-    // Get teams to validate which team is allowed to make this action (id is the slug)
-    const team1 = await db.queryOneAsync<{ name: string; id: string }>(
-      'SELECT name, id FROM teams WHERE id = ?',
-      [match.team1_id]
-    );
-    const team2 = await db.queryOneAsync<{ name: string; id: string }>(
-      'SELECT name, id FROM teams WHERE id = ?',
-      [match.team2_id]
-    );
+    const isManualMatch = match.round === 0 || match.tournament_id == null;
+    let team1Id: string | null = match.team1_id;
+    let team2Id: string | null = match.team2_id;
+    let team1Name = 'Team 1';
+    let team2Name = 'Team 2';
 
-    // Get tournament with settings
-    const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
-      'SELECT format, maps, settings FROM tournament WHERE id = ?',
-      [match.tournament_id]
-    );
-
-    if (!tournament) {
-      return res.status(404).json({
-        success: false,
-        error: 'Tournament not found',
-      });
+    if (isManualMatch && !match.team1_id && !match.team2_id) {
+      team1Id = 'team1';
+      team2Id = 'team2';
+      const config = match.config
+        ? (JSON.parse(match.config) as { team1?: { name?: string }; team2?: { name?: string } })
+        : {};
+      team1Name = (config.team1?.name as string) || 'Team 1';
+      team2Name = (config.team2?.name as string) || 'Team 2';
+    } else {
+      const team1 = await db.queryOneAsync<{ name: string }>(
+        'SELECT name FROM teams WHERE id = ?',
+        [match.team1_id]
+      );
+      const team2 = await db.queryOneAsync<{ name: string }>(
+        'SELECT name FROM teams WHERE id = ?',
+        [match.team2_id]
+      );
+      if (team1) team1Name = team1.name;
+      if (team2) team2Name = team2.name;
     }
 
-    const format = tournament.format as 'bo1' | 'bo3' | 'bo5';
-    const tournamentMaps = JSON.parse(tournament.maps);
-    const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
-    const customVetoOrder = tournamentSettings.customVetoOrder;
+    const vetoContext = await getVetoContext(match);
+    if (!vetoContext) {
+      return res.status(404).json({
+        success: false,
+        error: 'Match has no veto configuration (missing tournament or map pool).',
+      });
+    }
+    const { format, tournamentMaps, customVetoOrder } = vetoContext;
     const vetoOrder = getVetoOrder(format, customVetoOrder, tournamentMaps.length);
 
-    // Get current veto state
     let vetoState = match.veto_state ? JSON.parse(match.veto_state) : null;
 
     if (!vetoState) {
-      // Initialize if not exists
       vetoState = {
         matchSlug,
         format,
@@ -276,21 +332,20 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         availableMaps: [...tournamentMaps],
         bannedMaps: [],
         pickedMaps: [],
-        allMaps: [...tournamentMaps], // Store original order for display
+        allMaps: [...tournamentMaps],
         actions: [],
         currentTurn: vetoOrder[0].team,
         currentAction: vetoOrder[0].action,
-        team1Id: match.team1_id,
-        team2Id: match.team2_id,
-        team1Name: team1?.name || 'Team 1',
-        team2Name: team2?.name || 'Team 2',
+        team1Id,
+        team2Id,
+        team1Name,
+        team2Name,
       };
     } else {
-      // Update team info in case it changed
-      vetoState.team1Id = match.team1_id;
-      vetoState.team2Id = match.team2_id;
-      vetoState.team1Name = team1?.name || 'Team 1';
-      vetoState.team2Name = team2?.name || 'Team 2';
+      vetoState.team1Id = team1Id;
+      vetoState.team2Id = team2Id;
+      vetoState.team1Name = team1Name;
+      vetoState.team2Name = team2Name;
       
       // Ensure allMaps exists for backward compatibility (reconstruct from current state)
       if (!vetoState.allMaps) {
@@ -317,28 +372,16 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
     // Security: Validate that the correct team is making this action.
     // At this point we already know the viewer belongs to one of the two
-    // participating teams (viewerTeam !== null). We still enforce turn
-    // order based on the teamSlug sent by the UI and the configured
-    // vetoOrder, so a team cannot act out of turn.
+    // participating teams (viewerTeam !== null). Enforce turn order based
+    // on the viewer's resolved team membership (NOT a client-provided slug),
+    // so a player cannot act out of turn by forging request parameters.
     const expectedTeam = currentStepConfig.team;
 
-    if (teamSlug) {
-      const actualTeamFromSlug =
-        teamSlug === team1?.id ? 'team1' : teamSlug === team2?.id ? 'team2' : null;
-
-      if (!actualTeamFromSlug) {
-        return res.status(403).json({
-          success: false,
-          error: 'Invalid team',
-        });
-      }
-
-      if (actualTeamFromSlug !== expectedTeam) {
-        return res.status(403).json({
-          success: false,
-          error: `It's not your turn. Waiting for the other team.`,
-        });
-      }
+    if (viewerTeam !== expectedTeam) {
+      return res.status(403).json({
+        success: false,
+        error: `It's not your turn. Waiting for the other team.`,
+      });
     }
 
     // Validate action
@@ -480,6 +523,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
         match.tournament_id,
       ]);
       if (t) {
+        // Tournament match: regenerate config from tournament settings
         const tournament: TournamentResponse = {
           id: t.id,
           name: t.name,
@@ -519,6 +563,33 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
           log.success(`Stored fresh config for match ${matchSlug} after veto completion`);
         } catch (e) {
           log.error(`Failed to generate/store config after veto for ${matchSlug}`, e as Error);
+        }
+      } else if (match.round === 0) {
+        // Manual match (round === 0, tournament_id === null): update config's maplist from veto picks
+        try {
+          const existingConfig = match.config ? JSON.parse(match.config) : {};
+          const orderedPickedMaps = [...vetoState.pickedMaps].sort(
+            (a: { mapNumber?: number }, b: { mapNumber?: number }) => (a.mapNumber || 0) - (b.mapNumber || 0)
+          );
+          const pickedMapNames = orderedPickedMaps
+            .map((m: { mapName: string }) => m.mapName)
+            .filter((name): name is string => Boolean(name));
+          const numMaps = format === 'bo1' ? 1 : format === 'bo3' ? 3 : 5;
+
+          const updatedConfig = {
+            ...existingConfig,
+            maplist: pickedMapNames.slice(0, numMaps),
+            map_sides: orderedPickedMaps.slice(0, numMaps).map((p: { sideTeam1?: string }) => {
+              if (p.sideTeam1 === 'CT') return 'team1_ct';
+              if (p.sideTeam1 === 'T') return 'team2_ct';
+              return 'knife';
+            }),
+          };
+
+          await db.updateAsync('matches', { config: JSON.stringify(updatedConfig) }, 'slug = ?', [matchSlug]);
+          log.success(`Updated config maplist for manual match ${matchSlug} after veto completion`);
+        } catch (e) {
+          log.error(`Failed to update config for manual match ${matchSlug} after veto`, e as Error);
         }
       }
 

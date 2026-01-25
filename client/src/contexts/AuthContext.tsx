@@ -99,11 +99,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             steamId?: string;
             hasPlayerRecord?: boolean;
           } = await response.json();
+          if (adminSteamId) {
+            // Admin already set playerSteamId; don't overwrite with /api/auth/me
+            return;
+          }
           if (
             data.authenticated &&
             typeof data.steamId === 'string' &&
-            data.steamId.trim() !== '' &&
-            !adminSteamId // don't override an admin-linked Steam ID
+            data.steamId.trim() !== ''
           ) {
             setPlayerSteamId(data.steamId);
             setHasPlayerRecord(Boolean(data.hasPlayerRecord));

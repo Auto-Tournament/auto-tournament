@@ -37,6 +37,7 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import BuildIcon from '@mui/icons-material/Build';
 import MapIcon from '@mui/icons-material/Map';
 import DescriptionIcon from '@mui/icons-material/Description';
+import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import PublicIcon from '@mui/icons-material/Public';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
@@ -540,6 +541,27 @@ export default function Layout() {
           </ListSubheader>
           {renderNavItems(systemNavItems)}
         </List>
+        <Divider />
+        <List>
+          <ListItem disablePadding sx={{ display: 'block' }}>
+            <ListItemButton
+              component="a"
+              href="https://mat.sivert.io/"
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                minHeight: 48,
+                px: 2.5,
+                justifyContent: 'initial',
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 0, justifyContent: 'center', mr: 3 }}>
+                <LibraryBooksIcon />
+              </ListItemIcon>
+              <ListItemText primary={t('nav.documentation')} />
+            </ListItemButton>
+          </ListItem>
+        </List>
       </MuiDrawer>
 
       {/* Desktop Drawer (permanent mini variant) */}
@@ -694,6 +716,36 @@ export default function Layout() {
             </ListSubheader>
           )}
           {renderNavItems(systemNavItems)}
+        </List>
+        <Divider />
+        <List>
+          <ListItem disablePadding sx={{ display: 'block' }}>
+            <Tooltip title={!open ? t('nav.documentation') : ''} placement="right">
+              <ListItemButton
+                component="a"
+                href="https://mat.sivert.io/"
+                target="_blank"
+                rel="noopener noreferrer"
+                sx={[
+                  { minHeight: 48, px: 2.5 },
+                  open ? { justifyContent: 'initial' } : { justifyContent: 'center' },
+                ]}
+              >
+                <ListItemIcon
+                  sx={[
+                    { minWidth: 0, justifyContent: 'center' },
+                    open ? { mr: 3 } : { mr: 'auto' },
+                  ]}
+                >
+                  <LibraryBooksIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={t('nav.documentation')}
+                  sx={open ? { opacity: 1 } : { opacity: 0 }}
+                />
+              </ListItemButton>
+            </Tooltip>
+          </ListItem>
         </List>
       </Drawer>
 

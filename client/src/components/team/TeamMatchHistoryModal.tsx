@@ -21,7 +21,8 @@ import {
 } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
-import { formatDate, getRoundLabel } from '../../utils/matchUtils';
+import { useTranslation } from 'react-i18next';
+import { formatDate } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
 import type { Match, PlayerStats, TeamMatchHistory } from '../../types';
 
@@ -36,9 +37,19 @@ export function TeamMatchHistoryModal({
   teamId,
   onClose,
 }: TeamMatchHistoryModalProps) {
+  const { t } = useTranslation();
   const [match, setMatch] = useState<Match | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const getRoundLabel = (round: number) => {
+    if (round === 1) return t('rounds.round1');
+    if (round === 2) return t('rounds.round2');
+    if (round === 3) return t('rounds.quarterfinals');
+    if (round === 4) return t('rounds.semifinals');
+    if (round === 5) return t('rounds.finals');
+    return t('rounds.roundN', { n: round });
+  };
 
   useEffect(() => {
     if (!matchHistory) {
@@ -60,14 +71,14 @@ export function TeamMatchHistoryModal({
         setMatch(data.match);
       } catch (err) {
         console.error('Error fetching match details:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load match details');
+        setError(t('teamMatchHistory.loadError'));
       } finally {
         setLoading(false);
       }
     };
 
     fetchMatchDetails();
-  }, [matchHistory, teamId]);
+  }, [matchHistory, teamId, t]);
 
   if (!matchHistory) {
     return null;
@@ -117,7 +128,7 @@ export function TeamMatchHistoryModal({
         <Table size="small">
           <TableHead>
             <TableRow>
-                <TableCell>Player</TableCell>
+                <TableCell>{t('teamMatchHistory.player')}</TableCell>
               <TableCell align="right">K</TableCell>
               <TableCell align="right">D</TableCell>
               <TableCell align="right">A</TableCell>
@@ -158,7 +169,7 @@ export function TeamMatchHistoryModal({
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Typography variant="h6" fontWeight={600}>
-            Match Details
+            {t('teamMatchHistory.modalTitle')}
           </Typography>
           <IconButton onClick={onClose} size="small">
             <CloseIcon />
@@ -185,12 +196,12 @@ export function TeamMatchHistoryModal({
               <Stack direction="row" spacing={2} alignItems="center" mb={2}>
                 <Chip
                   icon={<EmojiEventsIcon />}
-                  label={matchHistory.won ? 'VICTORY' : 'DEFEAT'}
+                  label={matchHistory.won ? t('teamMatchHistory.modalVictory') : t('teamMatchHistory.modalDefeat')}
                   color={matchHistory.won ? 'success' : 'error'}
                   sx={{ fontWeight: 600 }}
                 />
                 <Chip
-                  label={`Match #${matchHistory.matchNumber}`}
+                  label={t('teamMatchHistory.modalMatchNumber', { number: matchHistory.matchNumber })}
                   variant="outlined"
                 />
                 <Chip
@@ -202,9 +213,9 @@ export function TeamMatchHistoryModal({
               {/* Teams */}
               <Box mb={2}>
                 <Typography variant="h6" gutterBottom>
-                  {match.team1?.name || 'Team 1'}
-                  {match.team1?.tag && ` (${match.team1.tag})`} vs{' '}
-                  {match.team2?.name || 'Team 2'}
+                  {match.team1?.name || t('teamMatchHistory.team1')}
+                  {match.team1?.tag && ` (${match.team1.tag})`} {t('teamMatchHistory.vs')}{' '}
+                  {match.team2?.name || t('teamMatchHistory.team2')}
                   {match.team2?.tag && ` (${match.team2.tag})`}
                 </Typography>
               </Box>
@@ -220,7 +231,7 @@ export function TeamMatchHistoryModal({
                 }}
               >
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Final Series Score
+                  {t('teamMatchHistory.finalSeriesScore')}
                 </Typography>
                 <Typography variant="h4" fontWeight={700} textAlign="center">
                   {team1Score} - {team2Score}
@@ -229,7 +240,7 @@ export function TeamMatchHistoryModal({
 
               {/* Match Date */}
               <Typography variant="body2" color="text.secondary" mt={2}>
-                Completed: {formatDate(matchHistory.completedAt)}
+                {t('teamMatchHistory.completed', { date: formatDate(matchHistory.completedAt) })}
               </Typography>
             </Box>
 
@@ -239,7 +250,7 @@ export function TeamMatchHistoryModal({
             {match.maps && match.maps.length > 0 && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Maps Played
+                  {t('teamMatchHistory.mapsPlayed')}
                 </Typography>
                 <Stack spacing={1}>
                   {match.maps.map((mapName, index) => {
@@ -288,14 +299,14 @@ export function TeamMatchHistoryModal({
             )}
 
             {(!match.maps || match.maps.length === 0) && (
-              <Alert severity="info">No maps available for this match.</Alert>
+              <Alert severity="info">{t('teamMatchHistory.noMaps')}</Alert>
             )}
 
             {/* Aggregated player stats across the match/series */}
             {hasPlayerStats && match.team1 && match.team2 && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Player Stats (All Maps)
+                  {t('teamMatchHistory.playerStatsAllMaps')}
                 </Typography>
                 <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
                   <Box flex={1}>

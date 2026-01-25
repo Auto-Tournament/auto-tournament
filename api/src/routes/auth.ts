@@ -43,6 +43,27 @@ function getFrontendBaseUrl(req: Request): string {
   return baseUrl;
 }
 
+function shouldUseSecureCookie(req: Request): boolean {
+  // Prefer forwarded proto when behind proxies; fall back to Express detection.
+  const forwardedProto = (req.headers['x-forwarded-proto'] as string | undefined) || '';
+  if (forwardedProto.toLowerCase().includes('https')) return true;
+  if (req.secure) return true;
+  // As a final fallback, respect explicit FRONTEND_BASE_URL scheme.
+  return getFrontendBaseUrl(req).startsWith('https://');
+}
+
+function setPlayerSteamCookie(req: Request, res: Response, steamId: string): void {
+  res.cookie('player_steam_id', signPlayerSteamId(steamId), {
+    // Frontend never needs to read this cookie directly; it calls /api/auth/me.
+    // Keeping it httpOnly reduces XSS impact.
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+    path: '/',
+    maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
+  });
+}
+
 /**
  * Returns minimal HTML that redirects via meta refresh.
  * Use instead of 302 when setting cookies (e.g. OAuth callback): some browsers
@@ -295,13 +316,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       }
 
       // Set a signed player_steam_id cookie (verified on read to prevent forgery).
-      res.cookie('player_steam_id', signPlayerSteamId(steamId), {
-        httpOnly: false,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
-      });
+      setPlayerSteamCookie(req, res, steamId);
 
       // Redirect based on whether this Steam user is an admin:
       // - Admins go to the main dashboard (/).
@@ -360,7 +375,9 @@ router.post('/logout', (_req: Request, res: Response) => {
   try {
     res.clearCookie('player_steam_id', {
       path: '/',
-      httpOnly: false,
+      httpOnly: true,
+      // Clearing cookies does not require matching secure=true, but browsers can be picky.
+      // Use the common case here; if running HTTPS, this will still clear correctly.
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
@@ -446,13 +463,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('Keycloak login auto-linked via existing Steam cookie', {
           steamId: cookieSteamId,
@@ -472,13 +483,7 @@ router.get(
 
       if (steamId) {
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, steamId);
 
         log.success('Keycloak login resolved via existing Steam link', { steamId, sessionId });
         return res.redirect(302, `${baseUrlResolved}/`);
@@ -588,13 +593,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('Discord login auto-linked via existing Steam cookie', {
           steamId: cookieSteamId,
@@ -614,13 +613,7 @@ router.get(
 
       if (steamId) {
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, steamId);
 
         log.success('Discord login resolved via existing Steam link', { steamId, sessionId });
         return res.redirect(302, `${baseUrl}/`);
@@ -729,13 +722,7 @@ router.get(
       if (cookieSteamId) {
         await authIdentityService.linkIdentityToSteam(provider, providerUserId, cookieSteamId);
         (anyReq.user as { steamId?: string }).steamId = cookieSteamId;
-        res.cookie('player_steam_id', signPlayerSteamId(cookieSteamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('GitHub login auto-linked via existing Steam cookie', {
           steamId: cookieSteamId,
@@ -755,13 +742,7 @@ router.get(
 
       if (steamId) {
         (anyReq.user as { steamId?: string }).steamId = steamId;
-        res.cookie('player_steam_id', signPlayerSteamId(steamId), {
-          httpOnly: false,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 60 * 24 * 30,
-        });
+        setPlayerSteamCookie(req, res, steamId);
 
         log.success('GitHub login resolved via existing Steam link', { steamId, sessionId });
         return res.redirect(302, `${baseUrl}/`);

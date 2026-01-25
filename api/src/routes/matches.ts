@@ -181,6 +181,40 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
     }
   }
 
+  // Manual matches: no team rows in DB, enrich avatars from players table
+  if (!row.team1_id && !row.team2_id) {
+    const allSteamIds = [
+      ...normalizedTeam1Players.map((p) => p.steamid),
+      ...normalizedTeam2Players.map((p) => p.steamid),
+    ];
+    if (allSteamIds.length > 0) {
+      try {
+        const placeholders = allSteamIds.map(() => '?').join(', ');
+        const rows = await db.queryAsync<{ id: string; avatar_url: string | null }>(
+          `SELECT id, avatar_url FROM players WHERE id IN (${placeholders})`,
+          allSteamIds
+        );
+        const avatarMap = new Map(
+          rows.map((r) => [r.id.toLowerCase(), r.avatar_url ?? undefined])
+        );
+        enrichedTeam1Players = normalizedTeam1Players.map((p) => ({
+          ...p,
+          avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+        }));
+        enrichedTeam2Players = normalizedTeam2Players.map((p) => ({
+          ...p,
+          avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
+        }));
+      } catch (error) {
+        log.debug(
+          `Failed to enrich manual-match players with avatars: ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+      }
+    }
+  }
+
   // Transform config to include properly formatted team players with avatars
   const transformedConfig = {
     ...config,

@@ -6,6 +6,7 @@ import { useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import { SteamIcon } from '../components/icons/SteamIcon';
+import { TopNavBar } from '../components/layout/TopNavBar';
 
 export default function Login() {
   const { t } = useTranslation();
@@ -114,12 +115,20 @@ export default function Login() {
       sx={{
         minHeight: '100vh',
         display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
+        flexDirection: 'column',
         background: 'linear-gradient(135deg, #1C1B1F 0%, #2B2930 100%)',
       }}
     >
-      <Container maxWidth="xs">
+      <TopNavBar />
+      <Box
+        sx={{
+          flex: 1,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <Container maxWidth="xs">
         <Card
           elevation={0}
           sx={{
@@ -317,6 +326,7 @@ export default function Login() {
           </Stack>
         </Card>
       </Container>
+      </Box>
     </Box>
   );
 }

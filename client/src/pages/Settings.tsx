@@ -829,7 +829,7 @@ export default function Settings() {
 
                 <Divider />
 
-                {/* MatchZy Enhanced v1.3.0 Settings */}
+                {/* MatchZy Enhanced Settings */}
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     {t('settingsPage.matchRating.matchzyEnhanced.title')}

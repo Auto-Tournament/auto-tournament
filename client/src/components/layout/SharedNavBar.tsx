@@ -6,13 +6,14 @@ import {
   IconButton,
   Menu,
   MenuItem,
-  Typography,
 } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
-import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
+import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../contexts/AuthContext';
+import { useSnackbar } from '../../contexts/SnackbarContext';
+import { useCurrentMatchStatus } from '../../hooks/useCurrentMatchStatus';
 import { LanguageSwitcher } from '../common/LanguageSwitcher';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
@@ -42,8 +43,12 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const { status: matchStatus, label: matchStatusLabel, loading: matchStatusLoading } =
+    useCurrentMatchStatus(playerSteamId ?? null);
+  const { showSnackbar } = useSnackbar();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
+  const prevMatchRef = React.useRef<{ status: string; label: string | null } | null>(null);
   const [playerAvatarUrl, setPlayerAvatarUrl] = React.useState<string | undefined>(undefined);
   const [playerName, setPlayerName] = React.useState<string>('Player');
   const [isLoadingPlayer, setIsLoadingPlayer] = React.useState(false);
@@ -100,6 +105,46 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     };
   }, [playerSteamId]);
 
+  React.useEffect(() => {
+    if (!playerSteamId) {
+      prevMatchRef.current = null;
+      return;
+    }
+    if (matchStatusLoading) return;
+    const prev = prevMatchRef.current;
+    const now = { status: matchStatus, label: matchStatusLabel };
+    if (prev && (prev.status !== now.status || prev.label !== now.label)) {
+      const msg =
+        now.label === 'your_turn_veto'
+          ? t('nav.matchStatus.yourTurnVeto')
+          : now.label === 'waiting_veto' && prev.label === 'your_turn_veto'
+            ? t('nav.matchStatus.snackbarOpponentMoved')
+            : now.label === 'waiting_veto'
+              ? t('nav.matchStatus.waitingVeto')
+              : now.label === 'match_ready'
+                ? t('nav.matchStatus.matchReady')
+                : now.label === 'waiting_server'
+                  ? t('nav.matchStatus.waitingServer')
+                  : null;
+      if (msg) {
+        showSnackbar(msg, now.label === 'match_ready' ? 'success' : 'info');
+      }
+    }
+    prevMatchRef.current = now;
+  }, [playerSteamId, matchStatusLoading, matchStatus, matchStatusLabel, showSnackbar, t]);
+
+  const ctaLabels: Record<string, string> = {
+    your_turn_veto: t('nav.matchStatus.yourTurnVeto'),
+    waiting_veto: t('nav.matchStatus.waitingVeto'),
+    waiting_server: t('nav.matchStatus.waitingServer'),
+    match_ready: t('nav.matchStatus.matchReady'),
+  };
+  const ctaLabel =
+    playerSteamId &&
+    matchStatus !== 'none' &&
+    matchStatusLabel &&
+    ctaLabels[matchStatusLabel];
+
   return (
     <>
       {showMenuButton && (
@@ -129,23 +174,15 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
           sx={{
             display: 'flex',
             alignItems: 'center',
-            gap: 1.5,
             textDecoration: 'none',
           }}
         >
           <Box
             component="img"
             src="/icon.svg"
-            alt="Matchzy Auto Tournament Logo"
+            alt="Matchzy Auto Tournament"
             sx={{ height: 32 }}
           />
-          <Typography
-            variant="subtitle2"
-            noWrap
-            sx={{ fontWeight: 600, color: 'text.primary' }}
-          >
-            {t('app.name')}
-          </Typography>
         </Box>
 
         <Box
@@ -156,11 +193,6 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             flexShrink: 0,
           }}
         >
-          {isAuthenticated && (
-            <Button color="inherit" component={RouterLink} to="/" size="small">
-              {t('nav.dashboard')}
-            </Button>
-          )}
           <Button color="inherit" component={RouterLink} to="/player" size="small">
             {t('nav.players')}
           </Button>
@@ -176,6 +208,28 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
       </Box>
 
       <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+        {/* Reserve space for CTA so match-status changes don't "jump" the header layout */}
+        <Box
+          sx={{
+            display: { xs: 'none', sm: 'flex' },
+            alignItems: 'center',
+            minWidth: 210,
+          }}
+        >
+          {ctaLabel ? (
+            <Button
+              component={RouterLink}
+              to={`/player/${playerSteamId}`}
+              variant="contained"
+              color="primary"
+              size="small"
+              startIcon={<SportsEsportsIcon />}
+              sx={{ fontWeight: 600, textTransform: 'none', px: 2 }}
+            >
+              {ctaLabel}
+            </Button>
+          ) : null}
+        </Box>
         <LanguageSwitcher />
 
         {needsSteamLink && (
@@ -186,18 +240,6 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
             size="small"
           >
             {t('nav.linkSteam')}
-          </Button>
-        )}
-
-        {isAuthenticated && (
-          <Button
-            color="inherit"
-            href="https://mat.sivert.io/"
-            target="_blank"
-            rel="noopener noreferrer"
-            startIcon={<LibraryBooksIcon />}
-          >
-            {t('nav.documentation')}
           </Button>
         )}
 
@@ -266,16 +308,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               </MenuItem>
             </Menu>
           </>
-        ) : (
-          <Button
-            color="primary"
-            variant="outlined"
-            size="small"
-            onClick={() => navigate('/login')}
-          >
-            {t('login.signIn')}
-          </Button>
-        )}
+        ) : null}
       </Box>
     </>
   );

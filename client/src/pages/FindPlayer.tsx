@@ -15,6 +15,7 @@ import {
 import Stack from '@mui/material/Stack';
 import SearchIcon from '@mui/icons-material/Search';
 import PersonIcon from '@mui/icons-material/Person';
+import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 import PlayerSearchResultsModal from '../components/modals/PlayerSearchResultsModal';
 import { useSnackbar } from '../contexts/SnackbarContext';
@@ -32,6 +33,7 @@ interface PlayerOption {
 
 export default function FindPlayer() {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(false);
   const [searchResults, setSearchResults] = useState<
@@ -45,8 +47,8 @@ export default function FindPlayer() {
   const { showError } = useSnackbar();
 
   useEffect(() => {
-    document.title = 'Find Player';
-  }, []);
+    document.title = t('findPlayer.title');
+  }, [t]);
 
   useEffect(() => {
     const loadPlayers = async () => {
@@ -74,7 +76,7 @@ export default function FindPlayer() {
     const effectiveQuery = (rawQuery ?? query).trim();
 
     if (!effectiveQuery) {
-      setInputError('Please enter a Steam ID, Steam name, or profile URL');
+      setInputError(t('findPlayer.inputErrorEmpty'));
       return;
     }
 
@@ -105,20 +107,19 @@ export default function FindPlayer() {
             setShowResultsModal(true);
           }
         } else {
-          setInputError('Player not found. Check the Steam ID or URL and try again.');
+          setInputError(t('findPlayer.inputErrorNotFound'));
         }
       } else {
-        // Show a clear, inline error near the input instead of failing silently
         setInputError(
           response.error ||
             (response.steamApiConfigured === false
-              ? 'Steam API is not configured. Vanity URLs cannot be resolved – enter a Steam ID64 instead or ask an admin to set the Steam Web API key in Settings.'
-              : 'Player not found. Check the Steam ID or URL and try again.')
+              ? t('findPlayer.inputErrorSteamNotConfigured')
+              : t('findPlayer.inputErrorNotFound'))
         );
       }
     } catch (err) {
-      showError('Failed to search for player');
-      setInputError('Failed to search for player. Please try again.');
+      showError(t('findPlayer.searchError'));
+      setInputError(t('findPlayer.searchError'));
       console.error(err);
     } finally {
       setLoading(false);
@@ -141,10 +142,10 @@ export default function FindPlayer() {
             <Box textAlign="center" mb={4}>
               <PersonIcon sx={{ fontSize: 64, color: 'primary.main', mb: 2 }} />
               <Typography variant="h4" fontWeight={700} gutterBottom>
-                Find Player
+                {t('findPlayer.title')}
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                Search for registered players by name, Steam ID or Steam profile URL.
+                {t('findPlayer.subtitle')}
               </Typography>
             </Box>
 
@@ -198,8 +199,8 @@ export default function FindPlayer() {
                   <TextField
                     {...params}
                     fullWidth
-                    label="Search by name, Steam ID or profile URL"
-                    placeholder="Start typing a name or paste a Steam URL…"
+                    label={t('findPlayer.searchLabel')}
+                    placeholder={t('findPlayer.searchPlaceholder')}
                     onKeyPress={handleKeyPress}
                     disabled={loading}
                     error={!!inputError}
@@ -222,8 +223,8 @@ export default function FindPlayer() {
                 )}
                 noOptionsText={
                   playersLoading
-                    ? 'Loading players…'
-                    : 'No players found. Try typing a Steam ID or URL.'
+                    ? t('findPlayer.noOptionsLoading')
+                    : t('findPlayer.noOptionsEmpty')
                 }
               />
             </Box>
@@ -238,7 +239,7 @@ export default function FindPlayer() {
                 disabled={loading || !inputValue.trim()}
                 startIcon={loading ? <CircularProgress size={20} /> : <SearchIcon />}
               >
-                {loading ? 'Searching...' : 'Find Player'}
+                {loading ? t('findPlayer.searching') : t('findPlayer.searchButton')}
               </Button>
             </Stack>
           </CardContent>
