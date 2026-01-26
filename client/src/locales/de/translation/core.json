@@ -9,8 +9,8 @@
     },
     "dashboard": "Dashboard",
     "tournament": "Turnier",
-    "bracket": "Bracket",
-    "matches": "Matches",
+    "bracket": "Turnierbaum",
+    "matches": "Spiele",
     "teams": "Teams",
     "players": "Spieler",
     "leaderboard": "Rangliste",
@@ -30,8 +30,8 @@
     "signOut": "Abmelden",
     "linkSteam": "Steam verknüpfen",
     "myProfile": "Mein Profil",
-    "goToAdminDashboard": "Go to Admin Dashboard",
-    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
+    "goToAdminDashboard": "Zum Admin-Dashboard",
+    "goToAdminDashboardHint": "Du siehst dein Spielerprofil. Öffne das Admin-Dashboard, um Teams, Turniere und Server zu verwalten."
   },
   "layout": {
     "webhookNotConfigured": "Die Webhook-URL ist nicht konfiguriert. Matches und Server können keine Events empfangen, bis sie gesetzt ist.",
@@ -39,8 +39,8 @@
     "pageTitle": {
       "dashboard": "Dashboard",
       "tournament": "Turnier",
-      "bracket": "Bracket",
-      "matches": "Matches",
+      "bracket": "Turnierbaum",
+      "matches": "Spiele",
       "teams": "Teams",
       "players": "Spieler",
       "servers": "Server",
@@ -61,8 +61,8 @@
     "name": "Matchzy Auto Tournament"
   },
   "language": {
-    "label": "Language",
-    "en": "English",
-    "zhCN": "Chinese (Simplified)"
+    "label": "Sprache",
+    "en": "Englisch",
+    "zhCN": "Chinesisch (vereinfacht)"
   }
 }
