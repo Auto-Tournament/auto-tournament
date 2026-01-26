@@ -1,6 +1,6 @@
 {
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Kontrollpanel",
     "notReady": "Turneringsdashboardet vises her når turneringen er startet.",
     "restartTournament": {
       "button": "Start turneringskamper på nytt",
@@ -20,7 +20,7 @@
         },
         "servers": {
           "title": "Legg til minst én CS2-server",
-          "chip": "{{count}} server",
+          "chip": "{{count}}-server",
           "chipPlural": "{{count}} servere",
           "secondaryConfigured": "Servere konfigurert og klare",
           "secondaryMissing": "Start med å legge til CS2-spillservere",
@@ -65,7 +65,7 @@
         "pending": "Venter:",
         "ready": "Klar:",
         "loaded": "Lastet:",
-        "live": "Live:",
+        "live": "Live",
         "completed": "Fullført:"
       },
       "serverStatus": {
@@ -176,7 +176,7 @@
             "label": "Autostart‑modus ved plugin‑start",
             "helper": "0 = idle/sleep, 1 = match‑modus (anbefalt), 2 = practice‑modus",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Inaktiv / hvilemodus",
               "1": "1 — Match‑modus",
               "2": "2 — Practice‑modus"
             }
@@ -205,7 +205,7 @@
           "demoPathLabel": "Demo-sti (relativ til csgo/)",
           "demoPathHelper": "Må slutte med '/'. Standard: MatchZy/",
           "demoNameFormatLabel": "Demo-filnavnformat (uten .dem)",
-          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+          "demoNameFormatHelper": "Tokener: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
         "seriesEnd": {
           "title": "Timing ved serieslutt",

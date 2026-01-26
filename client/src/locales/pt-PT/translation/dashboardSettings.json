@@ -208,7 +208,7 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Painel de Controlo",
     "notReady": "O dashboard do torneio irá aparecer aqui assim que o torneio for iniciado.",
     "restartTournament": {
       "button": "Reiniciar jogos do torneio",
@@ -273,7 +273,7 @@
         "pending": "Pendentes:",
         "ready": "Prontos:",
         "loaded": "Carregados:",
-        "live": "Live:",
+        "live": "Ao vivo",
         "completed": "Concluídos:"
       },
       "serverStatus": {

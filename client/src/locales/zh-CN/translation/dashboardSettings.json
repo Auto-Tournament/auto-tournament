@@ -87,7 +87,7 @@
       "topPlayers": {
         "title": "按 ELO 排名前列的选手",
         "subtitle": "跨所有锦标赛类型的全局评分",
-        "chip": "ELO {{value}}"
+        "chip": "ELO __ I18N_TOKEN_0 __"
       },
       "eloDistribution": {
         "title": "选手 ELO 分布",
@@ -127,7 +127,7 @@
       },
       "steam": {
         "title": "Steam 集成",
-        "apiKeyLabel": "Steam Web API Key",
+        "apiKeyLabel": "Steam Web API 密钥:",
         "apiKeyHelper": "用于解析 Steam 自定义链接和玩家信息。留空则禁用解析功能。",
         "checkButtonChecking": "正在检查 Steam…",
         "checkButtonIdle": "检查 Steam 连通性",

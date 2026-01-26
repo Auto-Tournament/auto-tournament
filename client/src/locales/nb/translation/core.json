@@ -10,9 +10,9 @@
       "matchReady": "Kampen er klar – koble til",
       "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
     },
-    "dashboard": "Dashboard",
+    "dashboard": "Kontrollpanel",
     "tournament": "Turnering",
-    "bracket": "Bracket",
+    "bracket": "Parentes",
     "matches": "Kamper",
     "teams": "Lag",
     "players": "Spillere",
@@ -40,9 +40,9 @@
     "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
     "openSettings": "Åpne innstillinger",
     "pageTitle": {
-      "dashboard": "Dashboard",
+      "dashboard": "Kontrollpanel",
       "tournament": "Turnering",
-      "bracket": "Bracket",
+      "bracket": "Parentes",
       "matches": "Kamper",
       "teams": "Lag",
       "players": "Spillere",

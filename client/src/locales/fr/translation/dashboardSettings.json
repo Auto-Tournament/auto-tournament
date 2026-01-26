@@ -184,7 +184,7 @@
       }
     },
     "footer": {
-      "version": "Version",
+      "version": "Utilisation optimale de tous les propulseurs",
       "unknownVersion": "Inconnue",
       "resetButton": "Réinitialiser les paramètres"
     },
@@ -228,8 +228,8 @@
         },
         "servers": {
           "title": "Ajouter au moins un serveur CS2",
-          "chip": "{{count}} server",
-          "chipPlural": "{{count}} servers",
+          "chip": "{{count}} serveur",
+          "chipPlural": "{{count}} serveurs",
           "secondaryConfigured": "Serveurs configurés et prêts",
           "secondaryMissing": "Commencez par ajouter vos serveurs de jeu CS2",
           "addServer": "Ajouter un serveur"
@@ -263,7 +263,7 @@
       "tournamentStatus": {
         "title": "Statut du tournoi",
         "none": "Aucun tournoi actif",
-        "typeLabel": "Type",
+        "typeLabel": "Type ",
         "formatLabel": "Format",
         "matchesLabel": "Matchs"
       },
@@ -273,7 +273,7 @@
         "pending": "En attente :",
         "ready": "Prêts :",
         "loaded": "Chargés :",
-        "live": "Live:",
+        "live": "En direct :",
         "completed": "Terminés :"
       },
       "serverStatus": {

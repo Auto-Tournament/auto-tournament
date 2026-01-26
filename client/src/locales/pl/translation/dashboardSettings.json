@@ -67,7 +67,7 @@
             "label": "Tryb autostartu przy starcie pluginu",
             "helper": "0 = idle/sleep, 1 = tryb match (zalecane), 2 = tryb practice",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Bezczynność / uśpienie",
               "1": "1 — Tryb match",
               "2": "2 — Tryb practice"
             }
@@ -273,7 +273,7 @@
         "pending": "Oczekujące:",
         "ready": "Gotowe:",
         "loaded": "Wczytane:",
-        "live": "Live:",
+        "live": "Demo na żywo",
         "completed": "Zakończone:"
       },
       "serverStatus": {

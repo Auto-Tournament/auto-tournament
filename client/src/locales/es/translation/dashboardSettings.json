@@ -67,7 +67,7 @@
             "label": "Modo de autoinicio al cargar el plugin",
             "helper": "0 = idle/sleep, 1 = modo match (recomendado), 2 = modo practice",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Inactivo / dormir",
               "1": "1 — Modo match",
               "2": "2 — Modo practice"
             }

@@ -5,7 +5,7 @@
     "tabs": {
       "integrations": "Integrationen & Webhooks",
       "players": "Spieler & Zugriff",
-      "matches": "Matches & Ratings",
+      "matches": "Übereinstimmungen & Bewertungen",
       "matchzy": "MatchZy",
       "developer": "Entwickler / Simulation"
     },
@@ -67,7 +67,7 @@
             "label": "Autostart-Modus beim Plugin-Load",
             "helper": "0 = idle/sleep, 1 = match mode (empfohlen), 2 = practice mode",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Leerlauf / Schlaf",
               "1": "1 — Match-Modus",
               "2": "2 — Practice-Modus"
             }
@@ -96,7 +96,7 @@
           "demoPathLabel": "Demo-Pfad (relativ zu csgo/)",
           "demoPathHelper": "Muss mit '/' enden. Standard: MatchZy/",
           "demoNameFormatLabel": "Demo-Dateiname-Format (ohne .dem)",
-          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+          "demoNameFormatHelper": "Token: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
         "seriesEnd": {
           "title": "Timing am Serienende",
@@ -110,7 +110,7 @@
         "title": "MatchZy Enhanced Funktionen",
         "description": "Erweiterte Match-Funktionen. Leer lassen, um Turnier-Typ-Standards zu verwenden.",
         "autoready": {
-          "title": "Auto-Ready System",
+          "title": "Automatisch einsatzbereites System",
           "label": "Spieler beim Join automatisch als ready markieren",
           "description": "Spieler sind beim Join automatisch ready. Sie können weiterhin .unready nutzen."
         },
@@ -228,7 +228,7 @@
         },
         "servers": {
           "title": "Mindestens einen CS2-Server hinzufügen",
-          "chip": "{{count}} server",
+          "chip": "{{count}} Server",
           "chipPlural": "{{count}} Server",
           "secondaryConfigured": "Server konfiguriert und bereit",
           "secondaryMissing": "Beginne mit dem Hinzufügen deiner CS2-Server",
@@ -273,7 +273,7 @@
         "pending": "Ausstehend:",
         "ready": "Bereit:",
         "loaded": "Geladen:",
-        "live": "Live:",
+        "live": "Live",
         "completed": "Abgeschlossen:"
       },
       "serverStatus": {
@@ -286,7 +286,7 @@
       "players": {
         "title": "Spieler",
         "total": "Spieler insgesamt",
-        "inMatches": "In Matches:",
+        "inMatches": "In Übereinstimmungen:",
         "waiting": "Warten:"
       },
       "playerDistribution": {

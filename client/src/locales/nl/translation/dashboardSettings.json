@@ -7,7 +7,7 @@
       "players": "Spelers & toegang",
       "matches": "Wedstrijden & ratings",
       "matchzy": "MatchZy",
-      "developer": "Developer / Simulation"
+      "developer": "Ontwikkelaar / simulatie"
     },
     "integrations": {
       "webhook": {
@@ -21,23 +21,23 @@
         "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
         "buttonSyncing": "Synchroniseren...",
         "buttonIdle": "CS2-kaarten synchroniseren",
-        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
-        "partialError": "Some maps failed to sync: {{errors}}",
-        "failed": "Failed to sync maps",
-        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
-        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
-        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
+        "success": "Kaartsynchronisatie voltooid! {{added}} nieuwe kaart(en) toegevoegd, {{skipped}} bestond al.",
+        "partialError": "Sommige kaarten konden niet worden gesynchroniseerd: {{errors}}",
+        "failed": "Kan kaarten niet synchroniseren",
+        "rateLimit": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw. U kunt de GITHUB_TOKEN-OMGEVINGSVARIABELE instellen om de snelheidslimiet te verhogen.",
+        "rateLimitShort": "GitHub API-snelheidslimiet overschreden. Probeer het over een paar minuten opnieuw.",
+        "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
       },
       "steam": {
-        "title": "Steam Integration",
-        "apiKeyLabel": "Steam Web API Key",
-        "apiKeyHelper": "Resolves Steam vanity URLs and player info. Leave blank to disable lookups.",
-        "checkButtonChecking": "Checking Steam…",
-        "checkButtonIdle": "Check Steam connectivity",
-        "statusOk": "Steam API key is set and reachable.",
-        "statusNotConfigured": "Steam API key is not set. Vanity URLs cannot be resolved until you add a key.",
-        "statusUnreachable": "Steam API key appears set but Steam could not be reached. Check your network or key.",
-        "statusError": "Failed to check Steam API status. Please try again."
+        "title": "Stoomintegratie",
+        "apiKeyLabel": "Steam Web API-sleutel",
+        "apiKeyHelper": "Lost Steam-vanity-URL's en spelersinformatie op. Laat leeg om opzoekingen uit te schakelen.",
+        "checkButtonChecking": "Stoom controleren...",
+        "checkButtonIdle": "Controleer de stoomconnectiviteit",
+        "statusOk": "Steam API-sleutel is ingesteld en bereikbaar.",
+        "statusNotConfigured": "Steam API-sleutel is niet ingesteld. Vanity-URL's kunnen niet worden opgelost totdat u een sleutel toevoegt.",
+        "statusUnreachable": "Steam API-sleutel verschijnt ingesteld, maar Steam kon niet worden bereikt. Controleer uw netwerk of sleutel.",
+        "statusError": "Kan de Steam API-status niet controleren. Probeer het opnieuw."
       }
     },
     "matchRating": {
@@ -67,7 +67,7 @@
             "label": "Autostart-modus bij plugin-load",
             "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "inactieve slaapstand",
               "1": "1 — Match-modus",
               "2": "2 — Practice-modus"
             }
@@ -193,8 +193,8 @@
       "description": "Reset alle instellingen op deze pagina terug naar defaults. Bestaande toernooien en servers worden niet gewijzigd, maar nieuwe wedstrijden en lookups gebruiken de default-waarden. Doorgaan?",
       "cancel": "Annuleren",
       "confirm": "Resetten",
-      "success": "Settings reset to defaults",
-      "error": "Failed to reset settings"
+      "success": "Instellingen gereset naar standaard.",
+      "error": "Kon instellingen niet resetten"
     },
     "errors": {
       "loadSettings": "Instellingen laden mislukt",
@@ -208,111 +208,111 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
-    "notReady": "Tournament dashboard will appear here once the tournament is started.",
+    "title": "Gösterge Paneli",
+    "notReady": "Het toernooidashboard verschijnt hier zodra het toernooi is gestart.",
     "restartTournament": {
-      "button": "Restart Tournament Matches",
-      "restarting": "Restarting tournament matches…"
+      "button": "Wedstrijden opnieuw starten",
+      "restarting": "Toernooiwedstrijden worden opnieuw gestart..."
     },
     "onboarding": {
-      "ready": "🎉 Ready to Go!",
-      "gettingStarted": "Getting Started",
-      "stepsComplete": "{{completed}}/{{total}} Complete",
-      "subtitle": "Follow these steps to set up your first tournament",
+      "ready": "Ready to go!",
+      "gettingStarted": "Aan de Slag",
+      "stepsComplete": "{{completed}}/{{total}} Voltooid",
+      "subtitle": "Volg deze stappen om je eerste toernooi in te stellen",
       "steps": {
         "webhook": {
-          "title": "Configure webhook URL",
-          "secondaryConfigured": "Webhook endpoint configured",
-          "secondaryMissing": "Set the base URL for webhooks and demo uploads",
-          "openSettings": "Open Settings"
+          "title": "Webhook-URL configureren",
+          "secondaryConfigured": "Webhook-eindpunt geconfigureerd",
+          "secondaryMissing": "Stel de basis-URL in voor webhooks en demo-uploads",
+          "openSettings": "Open instellingen"
         },
         "servers": {
-          "title": "Add at least one CS2 server",
+          "title": "Voeg ten minste één CS2-server toe",
           "chip": "{{count}} server",
           "chipPlural": "{{count}} servers",
-          "secondaryConfigured": "Servers configured and ready",
-          "secondaryMissing": "Start by adding your CS2 game servers",
-          "addServer": "Add Server"
+          "secondaryConfigured": "Servers geconfigureerd en gereed",
+          "secondaryMissing": "Begin met het toevoegen van je CS2-gameservers",
+          "addServer": "Server toevoegen"
         },
         "teamsPlayers": {
-          "title": "Create teams or add players",
+          "title": "Teams maken of spelers toevoegen",
           "teamsChip": "{{count}} team",
           "teamsChipPlural": "{{count}} teams",
-          "playersChip": "{{count}} player",
-          "playersChipPlural": "{{count}} players",
+          "playersChip": "{{count}} speler",
+          "playersChipPlural": "{{count}} spelers",
           "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "Create teams and/or add players with their Steam IDs",
-          "createTeams": "Create Teams",
-          "addPlayers": "Add Players"
+          "secondaryMissing": "Maak teams en/of voeg spelers toe met hun Steam-ID's",
+          "createTeams": "Teams aanmaken",
+          "addPlayers": "Spelers toevoegen"
         },
         "tournament": {
-          "title": "Configure your tournament",
+          "title": "Configureer je toernooi",
           "chipStatus": "{{status}}",
-          "secondaryConfigured": "Tournament configured with teams and format",
-          "secondaryMissing": "Set up tournament type, format, teams, and maps",
-          "createTournament": "Create Tournament"
+          "secondaryConfigured": "Toernooi geconfigureerd met teams en format",
+          "secondaryMissing": "Toernooitype, -indeling, -teams en -kaarten instellen",
+          "createTournament": "Wedstrijdvorm maken"
         }
       },
       "startCta": {
-        "helper": "Everything is ready! Review your configuration and start the tournament from the Tournament page.",
-        "button": "Go to Tournament"
+        "helper": "Alles is klaar! Bekijk uw configuratie en start het toernooi vanaf de toernooipagina.",
+        "button": "Ga naar Toernooi"
       }
     },
     "stats": {
-      "heading": "Tournament Statistics",
+      "heading": "Wedstrijd Statistieken",
       "tournamentStatus": {
-        "title": "Tournament Status",
-        "none": "No tournament active",
+        "title": "Wedstrijd status",
+        "none": "Geen toernooi actief",
         "typeLabel": "Type",
-        "formatLabel": "Format",
-        "matchesLabel": "Matches"
+        "formatLabel": "Formaat",
+        "matchesLabel": "Wedstrijden"
       },
       "matchStatus": {
-        "title": "Match Status",
-        "total": "Total Matches",
-        "pending": "Pending:",
-        "ready": "Ready:",
-        "loaded": "Loaded:",
-        "live": "Live:",
-        "completed": "Completed:"
+        "title": "Wedstrijdstatus",
+        "total": "Total aantal matches:",
+        "pending": "In behandeling:",
+        "ready": "Gereed:",
+        "loaded": "Geladen:",
+        "live": "Rechtstreeks:",
+        "completed": "Voltooid:"
       },
       "serverStatus": {
-        "title": "Server Status",
+        "title": "Serverstatus",
         "onlineSummary": "Servers Online",
         "online": "{{count}} Online",
         "offline": "{{count}} Offline",
-        "distributionTitle": "Server Status"
+        "distributionTitle": "Serverstatus"
       },
       "players": {
-        "title": "Players",
-        "total": "Total Players",
-        "inMatches": "In Matches:",
-        "waiting": "Waiting:"
+        "title": "Voetballers",
+        "total": "Totaal aantal spelers",
+        "inMatches": "In wedstrijden:",
+        "waiting": "Aan het wachten"
       },
       "playerDistribution": {
-        "title": "Player Distribution"
+        "title": "Spelerverdeling"
       },
       "topPlayers": {
-        "title": "Top Players by ELO",
-        "subtitle": "Global rating across all tournament types",
+        "title": "Topspelers van ELO",
+        "subtitle": "Globale beoordeling voor alle toernooitypes",
         "chip": "ELO {{value}}"
       },
       "eloDistribution": {
-        "title": "Player ELO Distribution",
-        "subtitle": "Number of players per Skill Rating band (bucket size {{bucket}}).",
-        "xAxis": "Skill Rating band",
-        "yAxis": "Players",
-        "seriesLabel": "Players"
+        "title": "Speler ELO Distributie",
+        "subtitle": "Aantal spelers per Skill Rating-band (emmergrootte {{bucket}}).",
+        "xAxis": "Skill Rating-band",
+        "yAxis": "Voetballers",
+        "seriesLabel": "Voetballers"
       },
       "recentMatches": {
-        "title": "Recent Completed Matches",
-        "subtitle": "Last {{count}} finished matches",
-        "none": "No completed matches yet.",
-        "chipCompleted": "Completed"
+        "title": "Recent voltooide overeenkomsten",
+        "subtitle": "Laatste {{count}} voltooide wedstrijden",
+        "none": "Nog geen voltooide overeenkomsten.",
+        "chipCompleted": "Voldaan"
       },
-      "noData": "No data available. Create a tournament to see statistics.",
+      "noData": "Geen gegevens beschikbaar. Maak een toernooi om statistieken te bekijken.",
       "errors": {
-        "load": "Failed to load dashboard data"
+        "load": "Kan dashboardgegevens niet laden"
       }
     }
   }

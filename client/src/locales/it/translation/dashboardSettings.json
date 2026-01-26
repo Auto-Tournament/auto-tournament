@@ -67,7 +67,7 @@
             "label": "Modalità di avvio automatico al caricamento del plugin",
             "helper": "0 = idle/sleep, 1 = modalità match (consigliata), 2 = modalità practice",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Inattivo / inattivo",
               "1": "1 — Modalità match",
               "2": "2 — Modalità practice"
             }

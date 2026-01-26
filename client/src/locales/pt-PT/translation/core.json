@@ -7,7 +7,7 @@
       "matchReady": "Jogo pronto – ligar",
       "snackbarOpponentMoved": "O adversário jogou"
     },
-    "dashboard": "Dashboard",
+    "dashboard": "Painel de Controlo",
     "tournament": "Torneio",
     "bracket": "Quadro",
     "matches": "Jogos",
@@ -37,7 +37,7 @@
     "webhookNotConfigured": "O URL do webhook não está configurado. Jogos e servidores não podem receber eventos até ser definido.",
     "openSettings": "Abrir definições",
     "pageTitle": {
-      "dashboard": "Dashboard",
+      "dashboard": "Painel de Controlo",
       "tournament": "Torneio",
       "bracket": "Quadro",
       "matches": "Jogos",
