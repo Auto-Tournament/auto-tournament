@@ -79,3 +79,7 @@ blob-report-merged.zip
 # To manually clean up volumes: docker volume prune -f
 
 .venv/
+
+*.db
+*.sqlite
+*.zip
