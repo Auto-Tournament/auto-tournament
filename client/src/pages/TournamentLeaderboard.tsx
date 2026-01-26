@@ -91,6 +91,11 @@ export default function TournamentLeaderboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [exportMenuAnchor, setExportMenuAnchor] = useState<HTMLElement | null>(null);
 
+  // Always set a reasonable tab title, even before the tournament data loads (or if it doesn't exist yet).
+  useEffect(() => {
+    document.title = t('nav.leaderboard');
+  }, [t]);
+
   const loadStandings = async (showLoading = true) => {
     if (!id) return;
 

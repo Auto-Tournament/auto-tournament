@@ -22,6 +22,10 @@ export default function ConnectSteam() {
   const { t } = useTranslation();
 
   useEffect(() => {
+    document.title = t('connectSteam.title');
+  }, [t]);
+
+  useEffect(() => {
     if (isLoading) return;
 
     // No admin session – send back to login.

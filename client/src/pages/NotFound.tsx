@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Button, Card, CardContent, Container, Typography } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -6,6 +6,10 @@ import { useTranslation } from 'react-i18next';
 export default function NotFound() {
   const navigate = useNavigate();
   const { t } = useTranslation();
+
+  useEffect(() => {
+    document.title = t('notFound.title');
+  }, [t]);
 
   return (
     <Box minHeight="100vh" bgcolor="background.default" py={6}>

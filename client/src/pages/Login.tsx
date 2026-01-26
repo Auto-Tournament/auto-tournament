@@ -27,8 +27,8 @@ export default function Login() {
   const [providersError, setProvidersError] = useState<string | null>(null);
   const location = useLocation();
   const hasLoadedProvidersRef = React.useRef(false);
-  // __APP_VERSION__ is injected by Vite; declared globally in vite-env.d.ts
-  const appVersion = (globalThis as unknown as { __APP_VERSION__?: string }).__APP_VERSION__;
+  // __APP_VERSION__ is injected by Vite at build time (see client/vite.config.ts)
+  const appVersion = __APP_VERSION__;
 
   // Set dynamic page title
   useEffect(() => {

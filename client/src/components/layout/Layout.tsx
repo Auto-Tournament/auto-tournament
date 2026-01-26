@@ -39,7 +39,6 @@ import MapIcon from '@mui/icons-material/Map';
 import DescriptionIcon from '@mui/icons-material/Description';
 import LibraryBooksIcon from '@mui/icons-material/LibraryBooks';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
-import PublicIcon from '@mui/icons-material/Public';
 import { usePageHeader } from '../../contexts/PageHeaderContext';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
@@ -175,7 +174,6 @@ export default function Layout() {
         icon: BugReportIcon,
         color: 'warning.main',
       },
-      '/public': { title: t('layout.pageTitle.publicLinks'), icon: PublicIcon },
     };
 
   // Get current page header config
@@ -203,7 +201,6 @@ export default function Layout() {
 
   const systemNavItems = [
     { label: t('nav.adminTools'), path: '/admin', icon: CampaignIcon },
-    { label: t('nav.publicLinks'), path: '/public', icon: PublicIcon },
     ...(isDevelopment ? [{ label: t('nav.devTools'), path: '/dev', icon: BuildIcon }] : []),
   ];
 
