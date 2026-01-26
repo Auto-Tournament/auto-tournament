@@ -1,0 +1,71 @@
+{
+  "mapsPage": {
+    "title": "Kart og kartpooler",
+    "tabs": {
+      "maps": "Kart",
+      "mapPools": "Kartpooler"
+    },
+    "headerActions": {
+      "addMap": "Legg til kart",
+      "createMapPool": "Opprett kartpool"
+    },
+    "errors": {
+      "loadMaps": "Klarte ikke å laste kart",
+      "loadPools": "Klarte ikke å laste kartpooler",
+      "defaultPoolCannotDelete": "Standard kartpool kan ikke slettes.",
+      "setDefaultPool": "Klarte ikke å sette standard kartpool",
+      "togglePool": "Klarte ikke å endre status på kartpool",
+      "deleteMap": "Klarte ikke å slette kart",
+      "deletePool": "Klarte ikke å slette kartpool"
+    },
+    "success": {
+      "mapDeleted": "Kart slettet"
+    },
+    "confirmDeleteMap": {
+      "title": "Slett kart",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    },
+    "confirmDeletePool": {
+      "title": "Slett kartpool",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Legg til kart",
+    "titleEdit": "Rediger kart",
+    "mapIdLabel": "Kart-ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Kun små bokstaver, tall og understrek (de_dust2)",
+    "displayNameLabel": "Visningsnavn",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Kartbilde",
+    "uploadButton": "Last opp bilde",
+    "fetchFromGitHub": "Hent fra GitHub",
+    "uploadHelper": "Last opp PNG, JPG, GIF eller WebP (maks 5 MB)",
+    "previewLabel": "Forhåndsvisning:",
+    "removeImage": "Fjern bilde",
+    "errors": {
+      "mapIdRequired": "Kart-ID er påkrevd",
+      "displayNameRequired": "Visningsnavn er påkrevd",
+      "mapIdInvalid": "Kart-ID kan kun inneholde små bokstaver, tall og understrek",
+      "invalidFileType": "Ugyldig filtype. Velg PNG, JPG, GIF eller WebP.",
+      "fileTooLarge": "Filen er for stor. Velg et bilde under 5 MB.",
+      "readFileFailed": "Klarte ikke å lese bildefil",
+      "fetchImageIdRequired": "Skriv inn kart-ID først",
+      "fetchImageFailed": "Klarte ikke å hente bilde. Du kan laste opp manuelt.",
+      "imageNotFound": "Fant ikke bilde for {{id}}. Du kan laste opp manuelt.",
+      "uploadFailed": "Klarte ikke å laste opp bilde",
+      "saveFailed": "Klarte ikke å lagre kart"
+    },
+    "success": {
+      "mapUpdated": "Kart oppdatert",
+      "mapCreated": "Kart opprettet"
+    },
+    "buttons": {
+      "cancel": "Avbryt",
+      "saving": "Lagrer...",
+      "update": "Oppdater",
+      "create": "Opprett"
+    }
+  }
+}

@@ -1,0 +1,147 @@
+{
+  "serversPage": {
+    "title": "Servere",
+    "headerActions": {
+      "refreshChecking": "Sjekker...",
+      "refresh": "Oppdater status",
+      "retryUninitialized": "Prøv igjen uinitialiserte ({{count}})",
+      "retryUninitializedChecking": "Prøver igjen...",
+      "batchAdd": "Masseopprett",
+      "select": "Velg",
+      "done": "Ferdig",
+      "selectAll": "Velg alle",
+      "unselectAll": "Fjern alle valg",
+      "deleteSelected": "Slett valgte",
+      "addServer": "Legg til server"
+    },
+    "empty": {
+      "title": "Ingen servere registrert",
+      "description": "Legg til din første CS2-server for å komme i gang",
+      "addServer": "Legg til server",
+      "batchAdd": "Eller opprett flere servere samtidig"
+    },
+    "allocation": {
+      "title": "Serverallokering",
+      "loading": "Laster allokeringsstatus...",
+      "empty": "Ingen allokeringsdata tilgjengelig.",
+      "available": "Tilgjengelige servere:",
+      "waiting": "Kamper som venter på server:",
+      "nextPass": "Neste allokering om ~{{seconds}}s",
+      "cooldownLabel": "Nedkjøling",
+      "cooldownDescription": "Nylig ferdig kamp – i nedkjøling slik at demoer kan lastes opp og serveren kan resettes (ca. 2 minutter).",
+      "cooldownEta": "Klar om ~{{seconds}}s"
+    },
+    "statusChip": {
+      "checking": "Sjekker...",
+      "disabled": "Deaktivert",
+      "offline": "Offline",
+      "onlineOk": "Online (API ↔ server OK)",
+      "onlineRconOnly": "Online (kun RCON)",
+      "rconFailed": "RCON-feil",
+      "onlineTesting": "Online (tester)"
+    },
+    "ipBanned": {
+      "title": "Serveren kan ha blokkert IP-en vår",
+      "message": "Serveren er tilgjengelig, men avviser RCON-autentisering gjentatte ganger. Dette kan indikere IP-blokkering. Hvis RCON-passordet er korrekt, sjekk serverens ban-liste og fjern blokkeringen av IP-en vår."
+    },
+    "connectivity": {
+      "apiToServer": "MAT API → CS2-server",
+      "serverToApi": "Server → API (/api/events)",
+      "unreachable": "Ikke tilgjengelig",
+      "reachable": "Tilgjengelig",
+      "unknown": "Ukjent",
+      "loading": "Laster…",
+      "pluginLabel": "MatchZy:"
+    },
+    "currentMatch": {
+      "view": "Vis kamp",
+      "loading": "Laster...",
+      "queuedPrefix": "I kø: "
+    },
+    "labels": {
+      "host": "Vert:",
+      "port": "Port:",
+      "id": "ID:"
+    },
+    "errors": {
+      "loadServers": "Klarte ikke å laste servere",
+      "noMatchesForServer": "Ingen kamper funnet for denne serveren",
+      "loadCurrentMatch": "Klarte ikke å laste nåværende kamp for denne serveren",
+      "bulkDelete": "Klarte ikke å slette én eller flere servere"
+    },
+    "bulkDelete": {
+      "title": "Slett servere",
+      "message": "Er du sikker på at du vil slette {{count}} server{{suffix}}? Dette kan ikke angres."
+    },
+    "autoConfig": {
+      "configuring": "Konfigurerer nye servere (sender MatchZy-konfig via RCON)…",
+      "done": "Nye servere konfigurert. Oppdaterer status…"
+    },
+    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om MatchZy mottar konfigurasjon og sender hendelser."
+  },
+  "serverModal": {
+    "titleCreate": "Legg til server",
+    "titleEdit": "Rediger server",
+    "serverNameLabel": "Servernavn",
+    "serverNamePlaceholder": "Match-server #1",
+    "hostLabel": "Vert / IP-adresse",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "Port",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "RCON-passord",
+    "rconPasswordPlaceholder": "ditt-rcon-passord",
+    "rconPasswordHelper": "Passord for RCON-tilgang til serveren",
+    "enabledLabel": "Server aktivert",
+    "enabledHelper": "Deaktiverte servere brukes ikke til kamper",
+    "overridesTitle": "MatchZy-overstyringer (valgfritt)",
+    "overridesDescription": "Disse innstillingene overstyrer globale MatchZy-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
+    "chatPrefixLabel": "Overstyr chat-prefiks",
+    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixHelper": "Overstyrer matchzy_chat_prefix på denne serveren (valgfritt)",
+    "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
+    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixHelper": "Overstyrer matchzy_admin_chat_prefix på denne serveren (valgfritt)",
+    "knifeOverrideLabel": "Knivrunde aktivert som standard (overstyr)",
+    "knifeOverrideHelper": "Når satt, overstyrer matchzy_knife_enabled_default for denne serveren. La stå ubestemt for å bruke global standard.",
+    "testConnectivity": "Test tilkobling",
+    "testingConnectivity": "Tester tilkobling…",
+    "connectivity": {
+      "apiToServer": "MAT API → CS2-server:",
+      "serverToApi": "Server → API (/api/events):",
+      "reachable": "Tilgjengelig",
+      "unreachable": "Ikke tilgjengelig"
+    },
+    "errors": {
+      "nameRequired": "Servernavn er påkrevd",
+      "hostRequired": "Vert er påkrevd",
+      "portInvalid": "Port må være et gyldig tall mellom 1 og 65535",
+      "rconRequired": "RCON-passord er påkrevd",
+      "idGenerationFailed": "Kunne ikke generere server-ID. Juster servernavnet.",
+      "duplicateId": "Servernavnet gir en duplisert ID '{{id}}'. Velg et annet navn.",
+      "duplicateHostPort": "En server med vert:port '{{host}}:{{port}}' finnes allerede (ID: {{id}}, Navn: {{name}})",
+      "testConnectionSaveFirst": "Lagre serveren før du tester tilkobling",
+      "testConnectionFailed": "Klarte ikke å teste tilkobling",
+      "saveFailed": "Klarte ikke å lagre server",
+      "deleteFailed": "Klarte ikke å slette server",
+      "rconReachableApiUnreachable": "Vi når serveren via RCON, men serveren klarte ikke å nå API-endepunktet (testhendelse mangler).",
+      "serverOffline": "Serveren virker å være offline eller utilgjengelig via RCON."
+    },
+    "success": {
+      "connectivityOk": "Toveis tilkobling bekreftet: serveren er online og kan nå API-et.",
+      "serverUpdated": "Server oppdatert",
+      "serverCreated": "Server opprettet",
+      "serverDeleted": "Server slettet"
+    },
+    "buttons": {
+      "deleteServer": "Slett server",
+      "cancel": "Avbryt",
+      "saving": "Lagrer...",
+      "saveChanges": "Lagre endringer",
+      "addServer": "Legg til server"
+    },
+    "confirmDelete": {
+      "title": "Slett server",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    }
+  }
+}

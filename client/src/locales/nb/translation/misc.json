@@ -1,0 +1,8 @@
+{
+  "notFound": {
+    "title": "Siden ble ikke funnet",
+    "description": "Siden du leter etter finnes ikke eller er flyttet.",
+    "backToDashboard": "Tilbake til Dashboard",
+    "publicPlayerSearch": "Offentlig spillersøk"
+  }
+}

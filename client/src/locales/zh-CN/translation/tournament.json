@@ -53,6 +53,16 @@
       },
       "selectedChip": "已选择"
     },
+    "review": {
+      "summary": {
+        "info": "请检查你的锦标赛设置，准备好后点击“创建锦标赛”。",
+        "nameLabel": "锦标赛名称",
+        "typeLabel": "锦标赛类型",
+        "formatLabel": "比赛赛制",
+        "notSet": "未设置",
+        "estimatedVolume": "约 {{rounds}} 轮、{{matches}} 场比赛（BO{{mapsPerMatch}}，总计最多 {{totalMaps}} 张地图）。"
+      }
+    },
     "formSteps": {
       "steps": {
         "name": "名称",

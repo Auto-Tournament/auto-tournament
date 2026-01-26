@@ -26,7 +26,10 @@
       "empty": "暂无分配数据。",
       "available": "可用服务器：",
       "waiting": "等待服务器的比赛：",
-      "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后"
+      "nextPass": "下一次分配轮约在 ~{{seconds}} 秒后",
+      "cooldownLabel": "冷却",
+      "cooldownDescription": "最近完成了一场比赛——进入冷却，以便上传 Demo 并让服务器完全重置（约 2 分钟）。",
+      "cooldownEta": "约 {{seconds}} 秒后就绪"
     },
     "statusChip": {
       "checking": "正在检查…",

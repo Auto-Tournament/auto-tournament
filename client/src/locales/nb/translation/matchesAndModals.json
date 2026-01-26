@@ -1,0 +1,132 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Klarte ikke å laste kamper",
+      "loadTitle": "Feil ved lasting av kamper"
+    },
+    "allocation": {
+      "nextServers": "Neste servere tildeles om {{seconds}}s"
+    },
+    "header": {
+      "createMatch": "Opprett kamp"
+    },
+    "empty": {
+      "title": "Ingen kamper å vise",
+      "description": "Opprett en turnering og generer bracket for å se kamper her",
+      "createManual": "Eller opprett manuell kamp"
+    },
+    "sections": {
+      "live": "Live-kamper ({{count}})",
+      "upcoming": "Kommende kamper ({{count}})",
+      "history": "Kamphistorikk ({{count}})"
+    },
+    "manualMatchLabel": "Manuell kamp",
+    "create": {
+      "success": "Manuell kamp opprettet: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Slett manuelle kamper",
+      "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres."
+    }
+  },
+  "teamModal": {
+    "titleCreate": "Opprett nytt lag",
+    "titleEdit": "Rediger lag",
+    "teamNameLabel": "Lagnavn",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "Lagnavnet kan inneholde alle språk og spesialtegn",
+    "teamTagLabel": "Lagtag",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "Auto-generert fra lagnavn (maks 4 tegn)",
+    "playersHeader": "Spillere ({{count}})",
+    "selectPlayers": "Velg spillere",
+    "noPlayersInfo": "Ingen spillere lagt til ennå. Legg til minst én spiller.",
+    "addPlayersHelper": "Legg til spillere ved å lime inn Steam-URL eller velge fra eksisterende spillere",
+    "steamInputLabel": "Steam-ID / Vanity-URL",
+    "steamInputPlaceholder": "gaben eller steamcommunity.com/id/gaben",
+    "resolveSteam": "Slå opp Steam-ID",
+    "resolving": "Slår opp...",
+    "playerNameLabel": "Spillernavn",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO (valgfritt)",
+    "eloPlaceholder": "1500",
+    "eloHelper": "Standard: 1500",
+    "errors": {
+      "steamLookupEmpty": "Vennligst skriv inn Steam-ID, vanity-URL eller profil-URL",
+      "steamApiNotConfigured": "Steam-API er ikke konfigurert – skriv inn Steam ID64 manuelt",
+      "steamResolveFailed": "Kunne ikke slå opp Steam-ID – skriv inn Steam ID64 manuelt",
+      "steamAndNameRequired": "Både Steam-ID og spillernavn er påkrevd",
+      "steamDuplicate": "Denne Steam-ID-en er allerede i laget",
+      "teamNameRequired": "Lagnavn er påkrevd",
+      "playersRequired": "Minst én spiller er påkrevd",
+      "saveFailed": "Klarte ikke å lagre lag",
+      "deleteFailed": "Klarte ikke å slette lag"
+    },
+    "success": {
+      "playerAdded": "Spiller lagt til i laget",
+      "playerReplaced": "Spiller erstattet",
+      "teamUpdated": "Lag oppdatert",
+      "teamCreated": "Lag opprettet",
+      "teamDeleted": "Lag slettet"
+    },
+    "buttons": {
+      "deleteTeam": "Slett lag",
+      "cancel": "Avbryt",
+      "saving": "Lagrer...",
+      "saveChanges": "Lagre endringer",
+      "createTeam": "Opprett lag"
+    },
+    "confirmDelete": {
+      "title": "Slett lag",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    },
+    "replacePlayerAria": "Erstatt spiller {{name}}",
+    "replacePlayerTooltip": "Erstatt denne spilleren"
+  },
+  "playerModal": {
+    "titleCreate": "Opprett spiller",
+    "titleEdit": "Rediger spiller",
+    "steamLabel": "Steam-ID eller profil-URL",
+    "steamHelperEditing": "Steam-ID kan ikke endres",
+    "steamHelperNew": "Skriv inn Steam ID64, vanity-URL eller profil-URL. Klikk «Slå opp» for å fylle inn navn og avatar automatisk.",
+    "resolveSteam": "Slå opp Steam-ID",
+    "resolving": "Slår opp...",
+    "playerNameLabel": "Spillernavn",
+    "playerNamePlaceholder": "Spiller",
+    "eloLabelNew": "Start-ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "La stå tomt for standardverdi (1500 Skill Rating).",
+    "eloHelperEdit": "Endring av ELO vil tilbakestille spillerens rating og statistikk. Dette kan ikke angres.",
+    "isAdminLabel": "Er admin (har in-game adminrettigheter i alle kamper)",
+    "currentElo": "Nåværende ELO: {{value}}",
+    "startingElo": "Start-ELO: {{value}}",
+    "matchesPlayed": "Spilte kamper: {{count}}",
+    "errors": {
+      "steamRequired": "Steam-ID er påkrevd",
+      "nameRequired": "Spillernavn er påkrevd",
+      "steamLookupEmpty": "Vennligst skriv inn Steam-ID, vanity-URL eller profil-URL",
+      "steamApiNotConfigured": "Steam-API er ikke konfigurert – skriv inn Steam ID64 manuelt",
+      "steamResolveFailed": "Kunne ikke slå opp Steam-ID – skriv inn Steam ID64 manuelt",
+      "saveFailed": "Klarte ikke å lagre spiller"
+    },
+    "success": {
+      "playerUpdated": "Spiller oppdatert",
+      "playerCreated": "Spiller opprettet"
+    },
+    "buttons": {
+      "delete": "Slett",
+      "cancel": "Avbryt",
+      "saving": "Lagrer...",
+      "save": "Lagre",
+      "create": "Opprett"
+    },
+    "confirmDelete": {
+      "title": "Slett spiller",
+      "message": "Er du sikker på at du vil slette spilleren \"{{name}}\"? Dette kan ikke angres."
+    },
+    "confirmEloUpdate": {
+      "title": "Oppdater spiller-ELO",
+      "message": "Er du sikker på at du vil oppdatere denne spillerens ELO fra {{from}} til {{to}}? Dette vil tilbakestille statistikk og ratinghistorikk. Dette kan ikke angres."
+    }
+  }
+}
