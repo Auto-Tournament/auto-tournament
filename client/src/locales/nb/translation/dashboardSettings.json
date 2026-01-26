@@ -95,6 +95,16 @@
       "noData": "Ingen data tilgjengelig. Opprett en turnering for å se statistikk.",
       "errors": {
         "load": "Klarte ikke å laste dashboard-data"
+      },
+      "playerDistribution": {
+        "title": "Player Distribution"
+      },
+      "eloDistribution": {
+        "title": "Player ELO Distribution",
+        "subtitle": "Number of players per Skill Rating band (bucket size {{bucket}}).",
+        "xAxis": "Skill Rating band",
+        "yAxis": "Players",
+        "seriesLabel": "Players"
       }
     }
   },
@@ -130,7 +140,13 @@
         "title": "Kartsynkronisering",
         "description": "Synk CS2-kart fra GitHub-repositoriet.",
         "buttonSyncing": "Synkroniserer kart...",
-        "buttonIdle": "Synkroniser CS2-kart"
+        "buttonIdle": "Synkroniser CS2-kart",
+        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
+        "partialError": "Some maps failed to sync: {{errors}}",
+        "failed": "Failed to sync maps",
+        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
+        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
+        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
       }
     },
     "matchRating": {
@@ -285,7 +301,9 @@
       "title": "Tilbakestille innstillinger?",
       "description": "Tilbakestill alle innstillinger på denne siden til standardverdier. Eksisterende turneringer og servere endres ikke, men nye kamper og oppslag vil bruke standardverdiene. Fortsette?",
       "cancel": "Avbryt",
-      "confirm": "Tilbakestill"
+      "confirm": "Tilbakestill",
+      "success": "Settings reset to defaults",
+      "error": "Failed to reset settings"
     },
     "errors": {
       "loadSettings": "Klarte ikke å laste innstillinger",

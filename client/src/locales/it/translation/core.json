@@ -29,7 +29,9 @@
     "documentation": "Documentazione",
     "signOut": "Esci",
     "linkSteam": "Collega Steam",
-    "myProfile": "Il mio profilo"
+    "myProfile": "Il mio profilo",
+    "goToAdminDashboard": "Go to Admin Dashboard",
+    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
   },
   "layout": {
     "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
@@ -54,5 +56,13 @@
   "common": {
     "delete": "Elimina",
     "cancel": "Annulla"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zhCN": "Chinese (Simplified)"
   }
 }

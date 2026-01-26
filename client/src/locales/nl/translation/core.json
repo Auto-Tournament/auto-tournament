@@ -29,7 +29,9 @@
     "documentation": "Documentatie",
     "signOut": "Uitloggen",
     "linkSteam": "Steam koppelen",
-    "myProfile": "Mijn profiel"
+    "myProfile": "Mijn profiel",
+    "goToAdminDashboard": "Go to Admin Dashboard",
+    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
   },
   "layout": {
     "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
@@ -54,5 +56,13 @@
   "common": {
     "delete": "Verwijderen",
     "cancel": "Annuleren"
+  },
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zhCN": "Chinese (Simplified)"
   }
 }

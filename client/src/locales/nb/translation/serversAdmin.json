@@ -143,5 +143,48 @@
       "title": "Slett server",
       "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
     }
+  },
+  "adminToolsPage": {
+    "title": "Admin Tools",
+    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
+    "header": {
+      "refresh": "Refresh Servers"
+    },
+    "serverSelect": {
+      "label": "Target Server(s)",
+      "allServersChip": "All Servers",
+      "allServersDescription": "Execute on all {{count}} server(s)",
+      "sendStatus": "Send Status"
+    },
+    "command": {
+      "execute": "Execute"
+    },
+    "customRconWarning": "Warning: Use with caution!",
+    "results": {
+      "title": "Execution Results",
+      "successChip": "✓ Success",
+      "failedChip": "✗ Failed",
+      "errorPrefix": "Error:"
+    },
+    "quickActions": {
+      "title": "Quick Actions"
+    },
+    "advanced": {
+      "title": "Advanced Tools"
+    },
+    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "recovery": {
+      "title": "Match Recovery",
+      "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
+      "button": "Run Match Recovery Now",
+      "success": "Match recovery completed.",
+      "error": "Match recovery failed.",
+      "failedTrigger": "Failed to trigger match recovery. Please try again."
+    },
+    "monitoring": {
+      "title": "Monitoring & Logs",
+      "serverEvents": "Server Events Monitor",
+      "appLogs": "Application Logs"
+    }
   }
 }

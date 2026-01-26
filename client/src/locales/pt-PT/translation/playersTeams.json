@@ -56,7 +56,8 @@
     "rating": "Rating",
     "result": "Resultado",
     "baseline": "Base",
-    "matchHistory": "Histórico de jogos"
+    "matchHistory": "Histórico de jogos",
+    "profileTitle": "Player profile"
   },
   "teamPage": {
     "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",

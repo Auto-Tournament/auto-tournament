@@ -56,7 +56,8 @@
     "rating": "Rating",
     "result": "Wynik",
     "baseline": "Bazowy",
-    "matchHistory": "Historia meczów"
+    "matchHistory": "Historia meczów",
+    "profileTitle": "Player profile"
   },
   "teamPage": {
     "wantYourStats": "Chcesz zobaczyć swoje statystyki i historię meczów?",

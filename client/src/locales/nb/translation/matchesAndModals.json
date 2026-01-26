@@ -27,6 +27,13 @@
     "bulkDelete": {
       "title": "Slett manuelle kamper",
       "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres."
+    },
+    "bulkSelect": {
+      "select": "Select",
+      "done": "Done Selecting",
+      "selectAll": "Select All",
+      "unselectAll": "Unselect All",
+      "deleteSelected": "Delete Selected"
     }
   },
   "teamModal": {
@@ -128,5 +135,192 @@
       "title": "Oppdater spiller-ELO",
       "message": "Er du sikker på at du vil oppdatere denne spillerens ELO fra {{from}} til {{to}}? Dette vil tilbakestille statistikk og ratinghistorikk. Dette kan ikke angres."
     }
+  },
+  "manualMatchModal": {
+    "title": "Create Manual Match",
+    "steps": {
+      "matchSetup": "Match Setup",
+      "rules": "Rules",
+      "maps": "Maps",
+      "teams": "Teams",
+      "review": "Review"
+    },
+    "description": "Create a standalone match that is independent from the tournament bracket. The API will automatically allocate an available server for you.",
+    "buttons": {
+      "next": "Next",
+      "back": "Back",
+      "create": "Create Match",
+      "creating": "Creating…"
+    },
+    "saveTemplate": {
+      "title": "Save Match Template",
+      "nameLabel": "Template name",
+      "nameHelper": "For example: BO1 Inferno knife, BO3 map pool, etc.",
+      "description": "Current maps, series format, CT side rule, veto toggle, knife mode, and players per team will be saved in this template.",
+      "save": "Save"
+    },
+    "chooseMode": {
+      "heading": "How would you like to create this match?",
+      "template": {
+        "title": "Choose template",
+        "description": "Load a preset for maps, format, and rules, then choose the teams.",
+        "label": "Match template",
+        "none": "None",
+        "empty": "No templates saved yet. Configure a match and save it as a template."
+      },
+      "custom": {
+        "title": "Create new match",
+        "description": "Configure maps, rules, sides, and teams from scratch."
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "Delete Match",
+      "confirmTitle": "Delete this match?",
+      "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
+      "button": "Delete Match"
+    }
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "Bulk Create Shuffle Matches",
+    "description": "Configure a single‑map shuffle match (map + round limit), then define as many head‑to‑head matches as you like by choosing exact player lineups for each side. Matches are created as part of the current shuffle tournament and will be allocated to servers when you start the tournament.",
+    "mapSelect": {
+      "label": "Map",
+      "noMaps": "No maps configured for this tournament",
+      "helper": "All matches in this batch will use this map."
+    },
+    "maxRounds": {
+      "label": "Max rounds per map",
+      "helperWithValue": "Match plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds.",
+      "helperDefault": "Maximum number of rounds per map (default: 24, max: 30)."
+    },
+    "matchesSection": {
+      "title": "Matches ({{count}})",
+      "addMatch": "Add Match"
+    },
+    "players": {
+      "empty": "No players are registered for this shuffle tournament yet. Register players first, then you can create manual matches."
+    },
+    "matchRow": {
+      "title": "Match {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "Team 1 players ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Team 2 players ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Search & select players",
+      "mapOverrideLabel": "Map (optional override)",
+      "mapOverrideHelperOwn": "This match uses its own map.",
+      "mapOverrideHelperDefault": "Leave empty to use the default map above.",
+      "maxRoundsOverrideLabel": "Max rounds (optional override)",
+      "maxRoundsOverrideHelperOwn": "Overrides default max rounds for this match (currently {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Leave empty to use the default max rounds above."
+    },
+    "errors": {
+      "loadPlayers": "Failed to load registered players",
+      "noMatches": "Add at least one match to create.",
+      "bothTeamsRequired": "Match {{index}}: both teams must have at least one player.",
+      "conflictingPlayers": "Match {{index}}: the same player cannot be on both teams. Conflicting ID(s): {{ids}}",
+      "mapRequired": "Match {{index}}: map is required (set a default map above or choose a map for this match).",
+      "rowMaxRoundsRange": "Match {{index}}: max rounds must be between 1 and 30 when overridden per match.",
+      "globalMaxRoundsRange": "Max rounds must be between 1 and 30.",
+      "createFailed": "Failed to create manual shuffle matches"
+    },
+    "success": {
+      "created": "Manual shuffle matches created. They will be allocated when the tournament starts."
+    },
+    "createMatchesButton": {
+      "default": "Create Matches",
+      "creating": "Creating…"
+    }
+  },
+  "teamImportModal": {
+    "title": "Import Teams from JSON",
+    "info": {
+      "title": "Paste JSON with team data below.",
+      "format": "Expected format: Array of teams with name, tag (optional), and players (name + steamId).",
+      "link": "View documentation with examples"
+    },
+    "jsonLabel": "JSON Data",
+    "errors": {
+      "mustBeArray": "JSON must be an array of teams",
+      "emptyArray": "Array cannot be empty",
+      "parseWithMessage": "JSON Parse Error: {{message}}",
+      "parseGeneric": "Invalid JSON format. Please check your syntax.",
+      "importFailed": "Failed to import teams",
+      "noJson": "Please enter JSON data"
+    },
+    "preview": {
+      "summary": "✓ Valid JSON! Found {{teamCount}} team{{teamCount, plural, one {} other {s}}} with {{playerCount}} total players.",
+      "title": "Preview:",
+      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}"
+    },
+    "actions": {
+      "preview": "Preview",
+      "importing": "Importing...",
+      "import": "Import {{count}} Team{{count, plural, one {} other {s}}}"
+    }
+  },
+  "playerImportModal": {
+    "title": "Import Players",
+    "info": {
+      "description": "Import players from JSON or CSV format. Required fields: steamId, name. Optional: initialELO (defaults to 1500), avatarUrl.",
+      "link": "View documentation with examples"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "Parse & Validate",
+      "importing": "Importing...",
+      "import": "Import {{count}} Player{{count, plural, one {} other {s}}}"
+    },
+    "preview": {
+      "readyChip": "{{count}} player{{count, plural, one {} other {s}}} ready to import",
+      "title": "Players to Import ({{count}}):",
+      "steamId": "Steam ID: {{steamId}}",
+      "name": "Name: {{name}}",
+      "initialElo": "Initial ELO: {{elo}}",
+      "avatar": "Avatar: {{url}}"
+    },
+    "errors": {
+      "noData": "Please enter JSON or CSV data",
+      "noPlayers": "No players found in the data",
+      "validationPrefix": "Validation errors:",
+      "parseFailed": "Failed to parse data: {{message}}",
+      "importFailed": "Failed to import players",
+      "parseFirst": "Please parse and validate the data first"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "Select Players",
+    "selectedCount": "{{count}} selected",
+    "searchPlaceholder": "Search players by name or Steam ID...",
+    "selectAll": {
+      "select": "Select All",
+      "deselect": "Deselect All"
+    },
+    "empty": {
+      "noSearchResults": "No players found matching your search",
+      "noPlayers": "No players available"
+    },
+    "playerCard": {
+      "alreadyInTeam": "Already in team"
+    },
+    "addPlayersButton": "Add {{count}} Player{{count, plural, one {} other {s}}}",
+    "errors": {
+      "loadFailed": "Failed to load players",
+      "noSelectable": "No selectable players available"
+    }
+  },
+  "soundSettingsModal": {
+    "title": "Sound Settings",
+    "soundSelect": {
+      "label": "Notification Sound"
+    },
+    "volume": {
+      "label": "Volume: {{percent}}%"
+    },
+    "testButton": "Test Sound",
+    "footer": "Sound notifications will play when your match is ready or when important events occur."
   }
 }
