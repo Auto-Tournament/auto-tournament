@@ -45,8 +45,22 @@ function loadLocaleMergedJson(localesDir, localeName) {
 
 function isProbablyOkToMatchEnglish(s) {
   // Keys that are often identical across languages or are proper nouns/tech terms.
-  const exactOk = new Set(['ELO', 'MatchZy', 'CS2', 'CS']);
+  const exactOk = new Set([
+    'ELO',
+    'MatchZy',
+    'CS2',
+    'CS',
+    // Proper nouns / providers
+    'Steam',
+    'GitHub',
+    'Discord',
+    'Keycloak',
+    // App name / brand (usually not translated)
+    'Matchzy Auto Tournament',
+  ]);
   if (exactOk.has(s)) return true;
+  // Pure placeholder values (used as labels elsewhere)
+  if (/^\{\{[^}]+\}\}$/.test(s)) return true;
   if (/^[0-9\s.,:(){}[\]/_-]+$/.test(s)) return true;
   if (/^https?:\/\//i.test(s)) return true;
   if (/^[A-Z0-9]{2,}$/.test(s)) return true; // acronyms

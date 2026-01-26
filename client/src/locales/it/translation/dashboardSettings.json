@@ -229,17 +229,17 @@
         "servers": {
           "title": "Aggiungi almeno un server CS2",
           "chip": "{{count}} server",
-          "chipPlural": "{{count}} servers",
+          "chipPlural": "{{count}} server",
           "secondaryConfigured": "Server configurati e pronti",
           "secondaryMissing": "Inizia aggiungendo i tuoi server di gioco CS2",
           "addServer": "Aggiungi server"
         },
         "teamsPlayers": {
           "title": "Crea squadre o aggiungi giocatori",
-          "teamsChip": "{{count}} team",
-          "teamsChipPlural": "{{count}} teams",
-          "playersChip": "{{count}} player",
-          "playersChipPlural": "{{count}} players",
+          "teamsChip": "{{count}} squadra",
+          "teamsChipPlural": "{{count}} squadre",
+          "playersChip": "{{count}} giocatore",
+          "playersChipPlural": "{{count}} giocatori",
           "secondaryConfigured": "{{details}}",
           "secondaryMissing": "Crea squadre e/o aggiungi giocatori con i loro Steam ID",
           "createTeams": "Crea squadre",
