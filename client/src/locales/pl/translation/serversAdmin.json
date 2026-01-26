@@ -1,0 +1,20 @@
+{
+  "serversPage": {
+    "title": "Serwery",
+    "headerActions": {
+      "refreshChecking": "Sprawdzanie…",
+      "refresh": "Odśwież status",
+      "batchAdd": "Dodaj hurtowo",
+      "addServer": "Dodaj serwer"
+    },
+    "empty": {
+      "title": "Brak zarejestrowanych serwerów",
+      "description": "Dodaj pierwszy serwer CS2, aby rozpocząć turniej",
+      "addServer": "Dodaj serwer",
+      "batchAdd": "Lub dodaj wiele serwerów hurtowo"
+    },
+    "errors": {
+      "loadServers": "Nie udało się załadować serwerów"
+    }
+  }
+}

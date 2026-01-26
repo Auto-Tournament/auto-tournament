@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Jij bent aan de beurt (veto)",
+      "waitingVeto": "Wachten op veto",
+      "waitingServer": "Wachten op server",
+      "matchReady": "Match klaar – verbinden",
+      "snackbarOpponentMoved": "Tegenstander heeft gezet"
+    },
+    "dashboard": "Dashboard",
+    "tournament": "Toernooi",
+    "bracket": "Bracket",
+    "matches": "Wedstrijden",
+    "teams": "Teams",
+    "players": "Spelers",
+    "leaderboard": "Ranglijst",
+    "servers": "Servers",
+    "maps": "Kaarten & map-pools",
+    "templates": "Sjablonen",
+    "eloTemplates": "ELO-berekening",
+    "adminTools": "Admin-tools",
+    "publicLinks": "Publieke links",
+    "devTools": "Dev-tools",
+    "settings": "Instellingen",
+    "resourcesSection": "Resources",
+    "tournamentSection": "Toernooi",
+    "configurationSection": "Configuratie",
+    "systemSection": "Systeem",
+    "documentation": "Documentatie",
+    "signOut": "Uitloggen",
+    "linkSteam": "Steam koppelen",
+    "myProfile": "Mijn profiel"
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
+    "openSettings": "Instellingen openen",
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "tournament": "Toernooi",
+      "bracket": "Bracket",
+      "matches": "Wedstrijden",
+      "teams": "Teams",
+      "players": "Spelers",
+      "servers": "Servers",
+      "maps": "Kaarten & map-pools",
+      "templates": "Sjablonen",
+      "eloTemplates": "ELO-berekening",
+      "adminTools": "Admin-tools",
+      "settings": "Instellingen",
+      "devTools": "Dev-tools",
+      "publicLinks": "Publieke links"
+    }
+  },
+  "common": {
+    "delete": "Verwijderen",
+    "cancel": "Annuleren"
+  }
+}

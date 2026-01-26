@@ -1,0 +1,82 @@
+{
+  "serversPage": {
+    "title": "Servidores",
+    "headerActions": {
+      "refreshChecking": "Comprobando...",
+      "refresh": "Actualizar estado",
+      "retryUninitialized": "Reintentar no inicializados ({{count}})",
+      "retryUninitializedChecking": "Reintentando...",
+      "batchAdd": "Añadir en lote",
+      "select": "Seleccionar",
+      "done": "Terminar selección",
+      "selectAll": "Seleccionar todo",
+      "unselectAll": "Deseleccionar todo",
+      "deleteSelected": "Eliminar seleccionados",
+      "addServer": "Añadir servidor"
+    },
+    "empty": {
+      "title": "No hay servidores registrados",
+      "description": "Añade tu primer servidor de CS2 para empezar con el torneo",
+      "addServer": "Añadir servidor",
+      "batchAdd": "O añadir varios servidores en lote"
+    },
+    "allocation": {
+      "title": "Asignación de servidores",
+      "loading": "Cargando estado de asignación...",
+      "empty": "No hay datos de asignación disponibles.",
+      "available": "Servidores disponibles:",
+      "waiting": "Partidos esperando servidores:",
+      "nextPass": "Siguiente pasada del asignador en ~{{seconds}} s",
+      "cooldownLabel": "Enfriamiento",
+      "cooldownDescription": "Partido finalizado recientemente: en enfriamiento para subir demos y reiniciar el servidor (aprox. 2 minutos).",
+      "cooldownEta": "Listo en ~{{seconds}} s"
+    },
+    "statusChip": {
+      "checking": "Comprobando...",
+      "disabled": "Desactivado",
+      "offline": "Offline",
+      "onlineOk": "Online (API ↔ servidor OK)",
+      "onlineRconOnly": "Online (solo RCON)",
+      "rconFailed": "Fallo de RCON",
+      "onlineTesting": "Online (probando)"
+    },
+    "ipBanned": {
+      "title": "El servidor puede haber bloqueado nuestra IP",
+      "message": "El servidor es accesible pero rechaza repetidamente la autenticación RCON. Esto puede indicar un baneo de IP. Si la contraseña RCON es correcta, revisa la lista de baneos del servidor y desbloquea nuestra IP."
+    },
+    "connectivity": {
+      "apiToServer": "API de MAT → servidor CS2",
+      "serverToApi": "Servidor → API (/api/events)",
+      "unreachable": "Inaccesible",
+      "reachable": "Accesible",
+      "unknown": "Desconocido",
+      "loading": "Cargando…",
+      "pluginLabel": "MatchZy:"
+    },
+    "currentMatch": {
+      "view": "Ver partido",
+      "loading": "Cargando...",
+      "queuedPrefix": "En cola: "
+    },
+    "labels": {
+      "host": "Host:",
+      "port": "Puerto:",
+      "id": "ID:"
+    },
+    "errors": {
+      "loadServers": "No se pudieron cargar los servidores",
+      "noMatchesForServer": "No se encontraron partidos para este servidor",
+      "loadCurrentMatch": "No se pudo cargar el partido actual de este servidor",
+      "bulkDelete": "No se pudo eliminar uno o más servidores"
+    },
+    "bulkDelete": {
+      "title": "Eliminar servidores",
+      "message": "¿Seguro que quieres eliminar {{count}} servidor{{suffix}}? Esta acción no se puede deshacer."
+    },
+    "autoConfig": {
+      "configuring": "Configurando nuevos servidores (enviando configuración de MatchZy por RCON)…",
+      "done": "Nuevos servidores configurados. Actualizando estado…"
+    },
+    "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si MatchZy recibe la configuración y envía eventos."
+  }
+}

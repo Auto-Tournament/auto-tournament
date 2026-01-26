@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "A tua vez no veto",
+      "waitingVeto": "A aguardar veto",
+      "waitingServer": "A aguardar servidor",
+      "matchReady": "Jogo pronto – ligar",
+      "snackbarOpponentMoved": "O adversário jogou"
+    },
+    "dashboard": "Dashboard",
+    "tournament": "Torneio",
+    "bracket": "Quadro",
+    "matches": "Jogos",
+    "teams": "Equipas",
+    "players": "Jogadores",
+    "leaderboard": "Classificação",
+    "servers": "Servidores",
+    "maps": "Mapas e pools",
+    "templates": "Modelos",
+    "eloTemplates": "Cálculo ELO",
+    "adminTools": "Ferramentas admin",
+    "publicLinks": "Links públicos",
+    "devTools": "Ferramentas dev",
+    "settings": "Definições",
+    "resourcesSection": "Recursos",
+    "tournamentSection": "Torneio",
+    "configurationSection": "Configuração",
+    "systemSection": "Sistema",
+    "documentation": "Documentação",
+    "signOut": "Terminar sessão",
+    "linkSteam": "Ligar Steam",
+    "myProfile": "O meu perfil"
+  },
+  "layout": {
+    "webhookNotConfigured": "O URL do webhook não está configurado. Jogos e servidores não podem receber eventos até ser definido.",
+    "openSettings": "Abrir definições",
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "tournament": "Torneio",
+      "bracket": "Quadro",
+      "matches": "Jogos",
+      "teams": "Equipas",
+      "players": "Jogadores",
+      "servers": "Servidores",
+      "maps": "Mapas e pools",
+      "templates": "Modelos",
+      "eloTemplates": "Cálculo ELO",
+      "adminTools": "Ferramentas admin",
+      "settings": "Definições",
+      "devTools": "Ferramentas de desenvolvimento",
+      "publicLinks": "Links públicos"
+    }
+  },
+  "common": {
+    "delete": "Eliminar",
+    "cancel": "Cancelar"
+  }
+}

@@ -1,0 +1,58 @@
+{
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Twoja kolej w veto",
+      "waitingVeto": "Oczekiwanie na veto",
+      "waitingServer": "Oczekiwanie na serwer",
+      "matchReady": "Mecz gotowy – połącz",
+      "snackbarOpponentMoved": "Przeciwnik wykonał ruch"
+    },
+    "dashboard": "Panel",
+    "tournament": "Turniej",
+    "bracket": "Drabinka",
+    "matches": "Mecze",
+    "teams": "Drużyny",
+    "players": "Gracze",
+    "leaderboard": "Ranking",
+    "servers": "Serwery",
+    "maps": "Mapy i pule map",
+    "templates": "Szablony",
+    "eloTemplates": "Kalkulacja ELO",
+    "adminTools": "Narzędzia admina",
+    "publicLinks": "Linki publiczne",
+    "devTools": "Narzędzia dev",
+    "settings": "Ustawienia",
+    "resourcesSection": "Zasoby",
+    "tournamentSection": "Turniej",
+    "configurationSection": "Konfiguracja",
+    "systemSection": "System",
+    "documentation": "Dokumentacja",
+    "signOut": "Wyloguj się",
+    "linkSteam": "Połącz Steam",
+    "myProfile": "Mój profil"
+  },
+  "layout": {
+    "webhookNotConfigured": "URL webhooka nie jest skonfigurowany. Mecze i serwery nie mogą odbierać zdarzeń, dopóki nie zostanie ustawiony.",
+    "openSettings": "Otwórz ustawienia",
+    "pageTitle": {
+      "dashboard": "Panel",
+      "tournament": "Turniej",
+      "bracket": "Drabinka",
+      "matches": "Mecze",
+      "teams": "Drużyny",
+      "players": "Gracze",
+      "servers": "Serwery",
+      "maps": "Mapy i pule map",
+      "templates": "Szablony",
+      "eloTemplates": "Kalkulacja ELO",
+      "adminTools": "Narzędzia admina",
+      "settings": "Ustawienia",
+      "devTools": "Narzędzia deweloperskie",
+      "publicLinks": "Linki publiczne"
+    }
+  },
+  "common": {
+    "delete": "Usuń",
+    "cancel": "Anuluj"
+  }
+}

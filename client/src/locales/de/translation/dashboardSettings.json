@@ -1,0 +1,190 @@
+{
+  "settingsPage": {
+    "title": "Einstellungen",
+    "intro": "Konfiguriere Integrationen, Ingame-Defaults und Entwickleroptionen.",
+    "tabs": {
+      "integrations": "Integrationen & Webhooks",
+      "players": "Spieler & Zugriff",
+      "matches": "Matches & Ratings",
+      "matchzy": "MatchZy"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy Webhook",
+        "description": "MatchZy Webhook-URL, die deine CS2-Server erreichen können.",
+        "label": "Webhook-URL",
+        "helper": "Beispiel: https://deine-domain.de"
+      },
+      "mapSync": {
+        "title": "Map-Synchronisierung",
+        "description": "CS2-Maps aus dem GitHub-Repository synchronisieren.",
+        "buttonSyncing": "Synchronisiere...",
+        "buttonIdle": "CS2-Maps synchronisieren"
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Rating-Updates",
+        "description": "Steuere, ob abgeschlossene Matches die Skill Ratings der Spieler aktualisieren.",
+        "toggleLabel": "Spieler-Ratings aus abgeschlossenen Matches aktualisieren",
+        "note": "Wenn deaktiviert, werden weiterhin Stats (ADR, K/D, usw.) erfasst, aber Skill Ratings bleiben unverändert."
+      },
+      "chatDefaults": {
+        "title": "MatchZy Chat- & Knife-Standards",
+        "description": "Konfiguriere Ingame-Chat-Präfixe und das Standardverhalten der Knife-Runde.",
+        "chatPrefixLabel": "Chat-Präfix",
+        "chatPrefixHelper": "Standard: \"[MAT]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "adminChatPrefixLabel": "Admin-Chat-Präfix",
+        "adminChatPrefixHelper": "Standard: \"[ADMIN]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "knifeToggleLabel": "Knife-Runden standardmäßig für neue Matches aktivieren (wenn Seiten nicht vorab gewählt sind)",
+        "knifeNote": "Gilt nur, wenn MatchZy normalerweise eine Knife-Runde spielen würde; explizite Side-Picks werden nicht verändert."
+      },
+      "matchzyCore": {
+        "title": "MatchZy Core-Standards",
+        "description": "Diese Standards werden bei der Serverinitialisierung und vor jedem Match-Load an die Server gesendet.",
+        "expert": {
+          "title": "Experteneinstellungen",
+          "description": "Diese Einstellungen können bei falscher Konfiguration zu unerwartetem Serververhalten führen. Nur ändern, wenn du weißt, dass du sie brauchst.",
+          "autostartMode": {
+            "label": "Autostart-Modus beim Plugin-Load",
+            "helper": "0 = idle/sleep, 1 = match mode (empfohlen), 2 = practice mode",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Match-Modus",
+              "2": "2 — Practice-Modus"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Matchstart",
+          "minimumReadyLabel": "Mindestanzahl bereit gemeldeter Spieler",
+          "minimumReadyHelper": "0 = alle verbundenen Spieler müssen ready sein. Standard: 2.",
+          "allowForceReady": "Admins dürfen Spieler während des Setups force-ready setzen (!forceready)"
+        },
+        "access": {
+          "title": "Serverzugriff",
+          "kickWhenNoMatchLoaded": "Kicken/Joins verhindern, wenn kein Match geladen ist (Turnierserver)",
+          "whitelistEnabledDefault": "Whitelist standardmäßig aktivieren (Admins können mit .whitelist umschalten)"
+        },
+        "adminTools": {
+          "title": "Admin-Tools",
+          "pauseAfterRestore": "Nach Round-Restore (.stop) pausieren, damit Teams sich koordinieren können",
+          "stopCommandAvailable": ".stop (Round-Restore) aktivieren",
+          "stopCommandNoDamage": ".stop deaktivieren, nachdem Schaden am gegnerischen Team verursacht wurde",
+          "usePauseForTacticalPause": ".pause wie Tactical Pause behandeln"
+        },
+        "demos": {
+          "title": "Demos",
+          "demoPathLabel": "Demo-Pfad (relativ zu csgo/)",
+          "demoPathHelper": "Muss mit '/' enden. Standard: MatchZy/",
+          "demoNameFormatLabel": "Demo-Dateiname-Format (ohne .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing am Serienende",
+          "kickDelayNoDemoLabel": "Zusätzliche Kick-Verzögerung wenn Demos deaktiviert sind (Sekunden)",
+          "kickDelayDemoNoUploadLabel": "Zusätzliche Kick-Verzögerung wenn Demos aktiv sind, aber keine Upload-URL gesetzt ist (Sekunden)",
+          "kickDelayDemoUploadLabel": "Zusätzliche Kick-Verzögerung wenn Demos aktiv sind und Upload-URL gesetzt ist (Sekunden)",
+          "kickDelayHelper": "Wird zusätzlich zu mp_match_restart_delay addiert."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced Funktionen",
+        "description": "Erweiterte Match-Funktionen. Leer lassen, um Turnier-Typ-Standards zu verwenden.",
+        "autoready": {
+          "title": "Auto-Ready System",
+          "label": "Spieler beim Join automatisch als ready markieren",
+          "description": "Spieler sind beim Join automatisch ready. Sie können weiterhin .unready nutzen."
+        },
+        "pause": {
+          "title": "Pausensteuerung",
+          "bothTeamsUnpause": "Beide Teams müssen unpausen",
+          "maxPausesLabel": "Max. Pausen pro Team",
+          "maxPausesHelper": "0 = unbegrenzt",
+          "pauseDurationLabel": "Pausenlimit (Sekunden)",
+          "pauseDurationHelper": "0 = keine Zeitbegrenzung"
+        },
+        "sideSelection": {
+          "title": "Side-Selection Timer",
+          "enabled": "Timer für Side-Selection aktivieren",
+          "timeLabel": "Zeit (Sekunden)",
+          "timeHelper": "Zeit nach der Knife-Runde, um Seiten zu wählen"
+        },
+        "gg": {
+          "title": "Frühes Match-Ende (.gg)",
+          "enabled": ".gg Forfeit aktivieren",
+          "thresholdLabel": "Vote-Schwelle (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% des Teams müssen voten (z. B. 4/5 Spieler)",
+          "minScoreDiffLabel": "Minimale Score-Differenz",
+          "minScoreDiffHelper": "0 = deaktiviert. Beispiel: 6 = .gg nur erlauben bei 6+ Runden Rückstand"
+        },
+        "ffw": {
+          "title": "Forfeit / Walkover",
+          "enabled": "Automatischen Forfeit bei Team-Disconnect aktivieren",
+          "timeLabel": "Forfeit-Timer (Sekunden)",
+          "timeHelper": "Zeit, bis Forfeit erklärt wird, wenn das ganze Team geht"
+        },
+        "demo": {
+          "title": "Demo-Aufzeichnung",
+          "enabled": "Automatische GOTV-Demo-Aufzeichnung aktivieren",
+          "description": "Wenn deaktiviert, startet der Server ~10s nach Match-Ende neu (statt 60-90s mit Aufnahme)"
+        }
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Spielerregistrierung",
+        "description": "Steuere, ob neue Steam-Logins automatisch Spielerprofile erstellen. Wenn deaktiviert, erscheinen in privaten Turnieren und Shuffle-Pools nur Spieler, die von Admins erstellt oder importiert wurden.",
+        "toggleLabel": "Allen erlauben, sich per Steam-Login zu registrieren",
+        "recommendation": "Empfohlen: Für Einladungs- oder private Turniere deaktiviert lassen, damit zufällige Steam-Logins die Spielerliste nicht „vermüllen“."
+      }
+    },
+    "developer": {
+      "title": "Entwickleroptionen",
+      "description": "Nur für lokale Entwicklung; nicht in Produktion aktivieren.",
+      "simulateToggleLabel": "Matches simulieren (bot-gesteuerte Demo-Matches statt echter Spieler)",
+      "simulateNote": "Wenn aktiviert, enthalten generierte MatchZy-Konfigurationen \"simulation\": true für automatisierte Demo-Matches.",
+      "timescaleTitle": "Simulations-Zeitfaktor",
+      "timescaleDescription": "Steuert, wie schnell simulierte Matches laufen. Höhere Werte beschleunigen Bots und Round-Flow. Gilt nur, wenn Simulation aktiv ist.",
+      "timescaleWarning": "Werte über 2.0 können etwas instabil sein und zu seltsamem Bot-Verhalten führen, sind aber für schnelle lokale Tests ok.",
+      "resetApiTitle": "API & Datenbank zurücksetzen",
+      "resetApiDescription": "Gefahrenzone: Löscht und erstellt das komplette DB-Schema neu und initialisiert Defaults (Maps, Map-Pools, etc.) erneut. Nur für lokale Entwicklung. Irreversibel.",
+      "resetApiButton": "API zurücksetzen (alle Daten löschen)",
+      "resetApiButtonLoading": "API wird zurückgesetzt…",
+      "resetApiSuccess": "API und Datenbank erfolgreich zurückgesetzt. Alle Daten wurden gelöscht und Defaults neu initialisiert.",
+      "resetApiError": "API/Datenbank konnte nicht zurückgesetzt werden. Prüfe die API-Logs.",
+      "resetApiDialog": {
+        "title": "API zurücksetzen & alle Daten löschen?",
+        "description": "Dies löscht und erstellt das komplette DB-Schema neu. Alle Turniere, Matches, Spieler, Teams, Ratings, Events, Logs und Einstellungen werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?",
+        "cancel": "Abbrechen",
+        "confirm": "Ja, API zurücksetzen & Daten löschen",
+        "confirmLoading": "Zurücksetzen…"
+      },
+      "debugChat": {
+        "label": "MatchZy Debug-Chat-Nachrichten aktivieren",
+        "description": "Wenn aktiviert, schreibt MatchZy zusätzliche Debug-Nachrichten (Connects/Disconnects, Event-Traces, etc.) in den Chat. Nur für Entwicklung und Tests."
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Unbekannt",
+      "resetButton": "Einstellungen zurücksetzen"
+    },
+    "resetDialog": {
+      "title": "Einstellungen zurücksetzen?",
+      "description": "Setze alle Einstellungen auf dieser Seite auf Defaults zurück. Bestehende Turniere und Server werden nicht geändert, aber neue Matches und Lookups verwenden die Default-Werte. Fortfahren?",
+      "cancel": "Abbrechen",
+      "confirm": "Zurücksetzen"
+    },
+    "errors": {
+      "loadSettings": "Einstellungen konnten nicht geladen werden",
+      "saveSettings": "Einstellungen konnten nicht gespeichert werden"
+    },
+    "success": {
+      "saveSettings": "Einstellungen gespeichert",
+      "simulationEnabled": "Simulationsmodus aktiviert{{suffix}}",
+      "simulationDisabled": "Simulationsmodus deaktiviert",
+      "timescaleUpdated": "Simulations-Zeitfaktor auf {{value}}x gesetzt"
+    }
+  }
+}

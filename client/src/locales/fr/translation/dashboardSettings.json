@@ -1,0 +1,190 @@
+{
+  "settingsPage": {
+    "title": "Paramètres",
+    "intro": "Configurez les intégrations, les valeurs par défaut en jeu et les options de développement.",
+    "tabs": {
+      "integrations": "Intégrations & webhooks",
+      "players": "Joueurs & accès",
+      "matches": "Matchs & rating",
+      "matchzy": "MatchZy"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook MatchZy",
+        "description": "URL de webhook MatchZy accessible par vos serveurs CS2.",
+        "label": "URL de webhook",
+        "helper": "Exemple : https://votre-domaine.com"
+      },
+      "mapSync": {
+        "title": "Synchronisation des cartes",
+        "description": "Synchroniser les cartes CS2 depuis le dépôt GitHub.",
+        "buttonSyncing": "Synchronisation...",
+        "buttonIdle": "Synchroniser les cartes CS2"
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Mises à jour du rating",
+        "description": "Contrôlez si les matchs terminés mettent à jour le Skill Rating des joueurs.",
+        "toggleLabel": "Mettre à jour le rating des joueurs à partir des matchs terminés",
+        "note": "Quand désactivé, les stats (ADR, K/D, etc.) sont toujours enregistrées, mais les Skill Ratings ne changent pas."
+      },
+      "chatDefaults": {
+        "title": "Paramètres par défaut MatchZy (chat & knife)",
+        "description": "Configurez les préfixes du chat en jeu et le comportement par défaut des manches knife.",
+        "chatPrefixLabel": "Préfixe du chat",
+        "chatPrefixHelper": "Par défaut : \"[MAT]\". Laissez vide pour rétablir la valeur par défaut.",
+        "adminChatPrefixLabel": "Préfixe chat admin",
+        "adminChatPrefixHelper": "Par défaut : \"[ADMIN]\". Laissez vide pour rétablir la valeur par défaut.",
+        "knifeToggleLabel": "Activer les manches knife par défaut pour les nouveaux matchs (quand les camps ne sont pas pré-sélectionnés)",
+        "knifeNote": "S’applique uniquement quand MatchZy lancerait normalement une manche knife ; les choix de camps explicites ne sont pas modifiés."
+      },
+      "matchzyCore": {
+        "title": "Valeurs par défaut MatchZy (core)",
+        "description": "Ces valeurs par défaut sont envoyées aux serveurs lors de l’initialisation et avant chaque chargement de match.",
+        "expert": {
+          "title": "Paramètres experts",
+          "description": "Ces paramètres peuvent provoquer un comportement serveur inattendu s’ils sont mal configurés. Ne les modifiez que si nécessaire.",
+          "autostartMode": {
+            "label": "Mode de démarrage automatique au chargement du plugin",
+            "helper": "0 = inactif/veille, 1 = mode match (recommandé), 2 = mode entraînement",
+            "options": {
+              "0": "0 — Inactif / veille",
+              "1": "1 — Mode match",
+              "2": "2 — Mode entraînement"
+            }
+          }
+        },
+        "ready": {
+          "title": "Prêt / Début du match",
+          "minimumReadyLabel": "Nombre minimum de joueurs prêts requis",
+          "minimumReadyHelper": "0 = tous les joueurs connectés doivent être prêts. Par défaut : 2.",
+          "allowForceReady": "Autoriser les admins à forcer le ready pendant la préparation (!forceready)"
+        },
+        "access": {
+          "title": "Accès serveur",
+          "kickWhenNoMatchLoaded": "Expulser/empêcher les connexions lorsqu’aucun match n’est chargé (serveurs de tournoi)",
+          "whitelistEnabledDefault": "Activer la whitelist par défaut (les admins peuvent basculer avec .whitelist)"
+        },
+        "adminTools": {
+          "title": "Outils admin",
+          "pauseAfterRestore": "Mettre en pause après restauration de round (.stop) pour laisser les équipes se coordonner",
+          "stopCommandAvailable": "Activer la commande .stop (restauration de round)",
+          "stopCommandNoDamage": "Désactiver .stop après des dégâts infligés à l’équipe adverse",
+          "usePauseForTacticalPause": "Faire que .pause se comporte comme une pause tactique"
+        },
+        "demos": {
+          "title": "Démos",
+          "demoPathLabel": "Chemin des démos (relatif à csgo/)",
+          "demoPathHelper": "Doit se terminer par '/'. Par défaut : MatchZy/",
+          "demoNameFormatLabel": "Format du nom de fichier de démo (sans .dem)",
+          "demoNameFormatHelper": "Jetons : {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing fin de série",
+          "kickDelayNoDemoLabel": "Délai d’expulsion supplémentaire quand les démos sont désactivées (secondes)",
+          "kickDelayDemoNoUploadLabel": "Délai d’expulsion supplémentaire quand les démos sont activées mais sans URL d’upload (secondes)",
+          "kickDelayDemoUploadLabel": "Délai d’expulsion supplémentaire quand les démos sont activées et l’URL d’upload est définie (secondes)",
+          "kickDelayHelper": "Ajouté en plus de mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "Fonctionnalités MatchZy Enhanced",
+        "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut du type de tournoi.",
+        "autoready": {
+          "title": "Système auto-ready",
+          "label": "Marquer automatiquement les joueurs comme prêts à la connexion",
+          "description": "Les joueurs sont automatiquement prêts à la connexion. Ils peuvent toujours utiliser .unready."
+        },
+        "pause": {
+          "title": "Contrôle des pauses",
+          "bothTeamsUnpause": "Exiger que les deux équipes reprennent",
+          "maxPausesLabel": "Nombre max de pauses par équipe",
+          "maxPausesHelper": "0 = pauses illimitées",
+          "pauseDurationLabel": "Durée max d’une pause (secondes)",
+          "pauseDurationHelper": "0 = pas de limite"
+        },
+        "sideSelection": {
+          "title": "Minuteur de choix de camp",
+          "enabled": "Activer le minuteur de choix de camp",
+          "timeLabel": "Temps autorisé (secondes)",
+          "timeHelper": "Temps après la manche knife pour choisir le camp"
+        },
+        "gg": {
+          "title": "Fin anticipée (.gg)",
+          "enabled": "Activer la commande .gg (forfeit)",
+          "thresholdLabel": "Seuil de vote (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% de l’équipe doit voter (ex. 4/5 joueurs)",
+          "minScoreDiffLabel": "Écart de score minimum",
+          "minScoreDiffHelper": "0 = désactivé. Exemple : 6 = autoriser .gg seulement avec 6+ rounds de retard"
+        },
+        "ffw": {
+          "title": "Forfeit / walkover",
+          "enabled": "Activer le forfeit automatique quand une équipe se déconnecte",
+          "timeLabel": "Minuteur de forfeit (secondes)",
+          "timeHelper": "Temps avant de déclarer le forfeit quand toute l’équipe quitte"
+        },
+        "demo": {
+          "title": "Enregistrement des démos",
+          "enabled": "Activer l’enregistrement automatique des démos GOTV",
+          "description": "Quand désactivé, le serveur redémarre ~10s après la fin du match (contre 60-90s avec enregistrement)"
+        }
+      }
+    },
+    "players": {
+      "registration": {
+        "title": "Inscription des joueurs",
+        "description": "Contrôlez si les nouvelles connexions Steam créent automatiquement des fiches joueur. Quand désactivé, seuls les joueurs créés ou importés par les admins apparaîtront dans les tournois privés et les pools shuffle.",
+        "toggleLabel": "Autoriser tout le monde à s’inscrire via la connexion Steam",
+        "recommendation": "Recommandé : laissez ceci désactivé pour les tournois sur invitation/privés afin d’éviter que des connexions Steam aléatoires n’encombrent la liste des joueurs."
+      }
+    },
+    "developer": {
+      "title": "Options développeur",
+      "description": "Outils de développement local uniquement ; ne pas activer en production.",
+      "simulateToggleLabel": "Simuler les matchs (utiliser des matchs démo pilotés par des bots au lieu de vrais joueurs)",
+      "simulateNote": "Quand activé, les configs MatchZy générées incluent \"simulation\": true pour des matchs démo automatisés.",
+      "timescaleTitle": "Vitesse de simulation",
+      "timescaleDescription": "Contrôle la vitesse d’exécution des matchs simulés. Des valeurs plus élevées accélèrent les bots et le déroulement des rounds. Cela ne s’applique que lorsque la simulation est activée.",
+      "timescaleWarning": "Des vitesses au-dessus de 2.0 peuvent être instables et provoquer un comportement étrange des bots, mais conviennent pour des tests rapides.",
+      "resetApiTitle": "Réinitialiser l’API & la base de données",
+      "resetApiDescription": "Zone dangereuse : supprime et recrée tout le schéma de base de données, puis réinitialise les données par défaut (cartes, pools, etc.). À utiliser uniquement en développement local. Irréversible.",
+      "resetApiButton": "Réinitialiser l’API (effacer toutes les données)",
+      "resetApiButtonLoading": "Réinitialisation de l’API…",
+      "resetApiSuccess": "API et base de données réinitialisées. Toutes les données ont été effacées et les valeurs par défaut réinitialisées.",
+      "resetApiError": "Échec de la réinitialisation de l’API et de la base de données. Vérifiez les logs de l’API.",
+      "resetApiDialog": {
+        "title": "Réinitialiser l’API & effacer toutes les données ?",
+        "description": "Cela supprimera et recréera tout le schéma de base de données. Tous les tournois, matchs, joueurs, équipes, ratings, événements, logs et paramètres seront définitivement supprimés. Cette action est irréversible. Continuer ?",
+        "cancel": "Annuler",
+        "confirm": "Oui, réinitialiser l’API & effacer",
+        "confirmLoading": "Réinitialisation…"
+      },
+      "debugChat": {
+        "label": "Activer les messages de debug MatchZy dans le chat",
+        "description": "Quand activé, MatchZy affiche des messages de debug supplémentaires (connexions/déconnexions, traces d’événements, etc.) dans le chat. À utiliser uniquement pour le développement et les tests."
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Inconnue",
+      "resetButton": "Réinitialiser les paramètres"
+    },
+    "resetDialog": {
+      "title": "Réinitialiser les paramètres ?",
+      "description": "Réinitialiser tous les paramètres de cette page aux valeurs par défaut. Les tournois et serveurs existants ne sont pas modifiés, mais les nouveaux matchs et recherches utiliseront les valeurs par défaut. Continuer ?",
+      "cancel": "Annuler",
+      "confirm": "Réinitialiser"
+    },
+    "errors": {
+      "loadSettings": "Échec du chargement des paramètres",
+      "saveSettings": "Échec de l’enregistrement des paramètres"
+    },
+    "success": {
+      "saveSettings": "Paramètres enregistrés",
+      "simulationEnabled": "Mode simulation activé{{suffix}}",
+      "simulationDisabled": "Mode simulation désactivé",
+      "timescaleUpdated": "Vitesse de simulation mise à jour à {{value}}x"
+    }
+  }
+}

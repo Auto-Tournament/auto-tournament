@@ -1,0 +1,20 @@
+{
+  "serversPage": {
+    "title": "Servidores",
+    "headerActions": {
+      "refreshChecking": "A verificar…",
+      "refresh": "Atualizar estado",
+      "batchAdd": "Adicionar em lote",
+      "addServer": "Adicionar servidor"
+    },
+    "empty": {
+      "title": "Nenhum servidor registado",
+      "description": "Adiciona o teu primeiro servidor CS2 para começar o torneio",
+      "addServer": "Adicionar servidor",
+      "batchAdd": "Ou adicionar vários servidores em lote"
+    },
+    "errors": {
+      "loadServers": "Falha ao carregar servidores"
+    }
+  }
+}

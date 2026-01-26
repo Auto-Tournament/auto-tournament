@@ -1,0 +1,20 @@
+{
+  "serversPage": {
+    "title": "Servers",
+    "headerActions": {
+      "refreshChecking": "Controleren…",
+      "refresh": "Status vernieuwen",
+      "batchAdd": "Batch toevoegen",
+      "addServer": "Server toevoegen"
+    },
+    "empty": {
+      "title": "Geen servers geregistreerd",
+      "description": "Voeg je eerste CS2-server toe om met het toernooi te beginnen",
+      "addServer": "Server toevoegen",
+      "batchAdd": "Of meerdere servers in batch toevoegen"
+    },
+    "errors": {
+      "loadServers": "Kon servers niet laden"
+    }
+  }
+}
