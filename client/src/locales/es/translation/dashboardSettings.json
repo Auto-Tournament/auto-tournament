@@ -7,7 +7,7 @@
       "players": "Jugadores y acceso",
       "matches": "Partidos y rating",
       "matchzy": "MatchZy",
-      "developer": "Developer / Simulation"
+      "developer": "Desarrollador / simulación"
     },
     "integrations": {
       "webhook": {
@@ -21,23 +21,23 @@
         "description": "Sincroniza mapas de CS2 desde el repositorio de GitHub.",
         "buttonSyncing": "Sincronizando...",
         "buttonIdle": "Sincronizar mapas de CS2",
-        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
-        "partialError": "Some maps failed to sync: {{errors}}",
-        "failed": "Failed to sync maps",
-        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
-        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
-        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
+        "success": "¡Sincronización de mapas completada! {{added}} mapa(s) nuevo(s) añadido(s), {{skipped}} ya existían.",
+        "partialError": "Algunos mapas no se pudieron sincronizar: {{errors}}",
+        "failed": "No se pudieron sincronizar los mapas",
+        "rateLimit": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos. Puedes configurar la variable de entorno GITHUB_TOKEN para aumentar el límite.",
+        "rateLimitShort": "Se excedió el límite de la API de GitHub. Inténtalo de nuevo en unos minutos.",
+        "githubError": "No se pudo acceder al repositorio de GitHub. Comprueba tu conexión a internet e inténtalo más tarde."
       },
       "steam": {
-        "title": "Steam Integration",
-        "apiKeyLabel": "Steam Web API Key",
-        "apiKeyHelper": "Resolves Steam vanity URLs and player info. Leave blank to disable lookups.",
-        "checkButtonChecking": "Checking Steam…",
-        "checkButtonIdle": "Check Steam connectivity",
-        "statusOk": "Steam API key is set and reachable.",
-        "statusNotConfigured": "Steam API key is not set. Vanity URLs cannot be resolved until you add a key.",
-        "statusUnreachable": "Steam API key appears set but Steam could not be reached. Check your network or key.",
-        "statusError": "Failed to check Steam API status. Please try again."
+        "title": "Integración de Steam",
+        "apiKeyLabel": "Clave de Steam Web API",
+        "apiKeyHelper": "Resuelve vanity URLs de Steam e información del jugador. Déjalo en blanco para desactivar las búsquedas.",
+        "checkButtonChecking": "Comprobando Steam…",
+        "checkButtonIdle": "Comprobar conectividad con Steam",
+        "statusOk": "La clave de la API de Steam está configurada y Steam es accesible.",
+        "statusNotConfigured": "La clave de la API de Steam no está configurada. No se podrán resolver vanity URLs hasta que añadas una clave.",
+        "statusUnreachable": "La clave de la API de Steam parece configurada, pero Steam no es accesible. Revisa tu red o la clave.",
+        "statusError": "No se pudo comprobar el estado de la API de Steam. Inténtalo de nuevo."
       }
     },
     "matchRating": {
@@ -193,8 +193,8 @@
       "description": "Restablece todos los ajustes de esta página a los valores por defecto. Los torneos y servidores existentes no se modifican, pero los nuevos partidos y consultas usarán los valores por defecto. ¿Continuar?",
       "cancel": "Cancelar",
       "confirm": "Restablecer",
-      "success": "Settings reset to defaults",
-      "error": "Failed to reset settings"
+      "success": "Ajustes restablecidos a los valores por defecto",
+      "error": "No se pudieron restablecer los ajustes"
     },
     "errors": {
       "loadSettings": "No se pudieron cargar los ajustes",
@@ -208,111 +208,111 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
-    "notReady": "Tournament dashboard will appear here once the tournament is started.",
+    "title": "Panel",
+    "notReady": "El panel del torneo aparecerá aquí una vez que el torneo haya comenzado.",
     "restartTournament": {
-      "button": "Restart Tournament Matches",
-      "restarting": "Restarting tournament matches…"
+      "button": "Reiniciar partidos del torneo",
+      "restarting": "Reiniciando partidos del torneo…"
     },
     "onboarding": {
-      "ready": "🎉 Ready to Go!",
-      "gettingStarted": "Getting Started",
-      "stepsComplete": "{{completed}}/{{total}} Complete",
-      "subtitle": "Follow these steps to set up your first tournament",
+      "ready": "🎉 ¡Listo!",
+      "gettingStarted": "Primeros pasos",
+      "stepsComplete": "{{completed}}/{{total}} completado(s)",
+      "subtitle": "Sigue estos pasos para configurar tu primer torneo",
       "steps": {
         "webhook": {
-          "title": "Configure webhook URL",
-          "secondaryConfigured": "Webhook endpoint configured",
-          "secondaryMissing": "Set the base URL for webhooks and demo uploads",
-          "openSettings": "Open Settings"
+          "title": "Configurar URL del webhook",
+          "secondaryConfigured": "Endpoint del webhook configurado",
+          "secondaryMissing": "Configura la URL base para webhooks y subida de demos",
+          "openSettings": "Abrir ajustes"
         },
         "servers": {
-          "title": "Add at least one CS2 server",
+          "title": "Añadir al menos un servidor CS2",
           "chip": "{{count}} server",
           "chipPlural": "{{count}} servers",
-          "secondaryConfigured": "Servers configured and ready",
-          "secondaryMissing": "Start by adding your CS2 game servers",
-          "addServer": "Add Server"
+          "secondaryConfigured": "Servidores configurados y listos",
+          "secondaryMissing": "Empieza añadiendo tus servidores de CS2",
+          "addServer": "Añadir servidor"
         },
         "teamsPlayers": {
-          "title": "Create teams or add players",
+          "title": "Crear equipos o añadir jugadores",
           "teamsChip": "{{count}} team",
           "teamsChipPlural": "{{count}} teams",
           "playersChip": "{{count}} player",
           "playersChipPlural": "{{count}} players",
           "secondaryConfigured": "{{details}}",
-          "secondaryMissing": "Create teams and/or add players with their Steam IDs",
-          "createTeams": "Create Teams",
-          "addPlayers": "Add Players"
+          "secondaryMissing": "Crea equipos y/o añade jugadores con sus Steam IDs",
+          "createTeams": "Crear equipos",
+          "addPlayers": "Añadir jugadores"
         },
         "tournament": {
-          "title": "Configure your tournament",
+          "title": "Configurar el torneo",
           "chipStatus": "{{status}}",
-          "secondaryConfigured": "Tournament configured with teams and format",
-          "secondaryMissing": "Set up tournament type, format, teams, and maps",
-          "createTournament": "Create Tournament"
+          "secondaryConfigured": "Torneo configurado con equipos y formato",
+          "secondaryMissing": "Configura el tipo, formato, equipos y mapas del torneo",
+          "createTournament": "Crear torneo"
         }
       },
       "startCta": {
-        "helper": "Everything is ready! Review your configuration and start the tournament from the Tournament page.",
-        "button": "Go to Tournament"
+        "helper": "¡Todo está listo! Revisa tu configuración e inicia el torneo desde la página del Torneo.",
+        "button": "Ir al torneo"
       }
     },
     "stats": {
-      "heading": "Tournament Statistics",
+      "heading": "Estadísticas del torneo",
       "tournamentStatus": {
-        "title": "Tournament Status",
-        "none": "No tournament active",
-        "typeLabel": "Type",
-        "formatLabel": "Format",
-        "matchesLabel": "Matches"
+        "title": "Estado del torneo",
+        "none": "No hay torneo activo",
+        "typeLabel": "Tipo",
+        "formatLabel": "Formato",
+        "matchesLabel": "Partidos"
       },
       "matchStatus": {
-        "title": "Match Status",
-        "total": "Total Matches",
-        "pending": "Pending:",
-        "ready": "Ready:",
-        "loaded": "Loaded:",
+        "title": "Estado de los partidos",
+        "total": "Partidos totales",
+        "pending": "Pendientes:",
+        "ready": "Listos:",
+        "loaded": "Cargados:",
         "live": "Live:",
-        "completed": "Completed:"
+        "completed": "Completados:"
       },
       "serverStatus": {
-        "title": "Server Status",
-        "onlineSummary": "Servers Online",
-        "online": "{{count}} Online",
-        "offline": "{{count}} Offline",
-        "distributionTitle": "Server Status"
+        "title": "Estado de los servidores",
+        "onlineSummary": "Servidores en línea",
+        "online": "{{count}} en línea",
+        "offline": "{{count}} fuera de línea",
+        "distributionTitle": "Estado de los servidores"
       },
       "players": {
-        "title": "Players",
-        "total": "Total Players",
-        "inMatches": "In Matches:",
-        "waiting": "Waiting:"
+        "title": "Jugadores",
+        "total": "Jugadores totales",
+        "inMatches": "En partidos:",
+        "waiting": "En espera:"
       },
       "playerDistribution": {
-        "title": "Player Distribution"
+        "title": "Distribución de jugadores"
       },
       "topPlayers": {
-        "title": "Top Players by ELO",
-        "subtitle": "Global rating across all tournament types",
+        "title": "Mejores jugadores por ELO",
+        "subtitle": "Rating global en todos los tipos de torneo",
         "chip": "ELO {{value}}"
       },
       "eloDistribution": {
-        "title": "Player ELO Distribution",
-        "subtitle": "Number of players per Skill Rating band (bucket size {{bucket}}).",
-        "xAxis": "Skill Rating band",
-        "yAxis": "Players",
-        "seriesLabel": "Players"
+        "title": "Distribución de ELO de jugadores",
+        "subtitle": "Número de jugadores por banda de Skill Rating (tamaño de bucket {{bucket}}).",
+        "xAxis": "Banda de Skill Rating",
+        "yAxis": "Jugadores",
+        "seriesLabel": "Jugadores"
       },
       "recentMatches": {
-        "title": "Recent Completed Matches",
-        "subtitle": "Last {{count}} finished matches",
-        "none": "No completed matches yet.",
-        "chipCompleted": "Completed"
+        "title": "Partidos completados recientemente",
+        "subtitle": "Últimos {{count}} partidos finalizados",
+        "none": "Todavía no hay partidos completados.",
+        "chipCompleted": "Completado"
       },
-      "noData": "No data available. Create a tournament to see statistics.",
+      "noData": "No hay datos disponibles. Crea un torneo para ver estadísticas.",
       "errors": {
-        "load": "Failed to load dashboard data"
+        "load": "No se pudieron cargar los datos del panel"
       }
     }
   }
