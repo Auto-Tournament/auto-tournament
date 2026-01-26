@@ -1,138 +1,138 @@
 {
   "devToolsPage": {
-    "alert": "These tools are only available in development mode. Use them to quickly generate test data for testing the application.",
+    "alert": "Disse verktøyene er bare tilgjengelige i utviklingsmodus. Bruk dem til å raskt generere testdata for å teste applikasjonen.",
     "sections": {
       "testData": {
-        "title": "Create Test Data"
+        "title": "Lag testdata"
       }
     },
     "testTeams": {
-      "title": "Test Teams",
-      "description": "Create teams with random player data for testing tournament brackets and matches.",
-      "success": "Successfully created {{count}} test team(s)!",
+      "title": "Testlag",
+      "description": "Opprett lag med tilfeldige spillerdata for å teste turneringsbraketter og kamper.",
+      "success": "Opprettet {{count}} testlag!",
       "errors": {
-        "create": "Failed to create test teams",
-        "partial": "Created {{created}} team(s), but {{failed}} failed. Check console for details."
+        "create": "Kunne ikke opprette testlag",
+        "partial": "Opprettet {{created}} lag, men {{failed}} feilet. Sjekk konsollen for detaljer."
       },
-      "customLabel": "Custom team count",
+      "customLabel": "Egendefinert antall lag",
       "buttons": {
-        "createFixed": "Create {{count}} Teams",
-        "createCustom": "Create Teams"
+        "createFixed": "Opprett {{count}} lag",
+        "createCustom": "Opprett lag"
       }
     },
     "testPlayers": {
-      "title": "Test Players",
-      "description": "Create players with ELO ratings for testing shuffle tournaments and player management.",
-      "success": "Successfully created {{created}} player(s){{updated, number} > 0 ? (', and updated ' + updated) : ''}}!",
+      "title": "Testspillere",
+      "description": "Opprett spillere med ELO-rating for å teste shuffle-turneringer og spilleradministrasjon.",
+      "success": "Opprettet {{created}} spiller(e){{updated, number} > 0 ? (', og oppdaterte ' + updated) : ''}}!",
       "errors": {
-        "create": "Failed to create test players",
-        "partial": "Created {{created}} player(s), updated {{updated}}, but {{failed}} failed. Check console for details."
+        "create": "Kunne ikke opprette testspillere",
+        "partial": "Opprettet {{created}} spiller(e), oppdaterte {{updated}}, men {{failed}} feilet. Sjekk konsollen for detaljer."
       },
-      "customLabel": "Custom player count",
+      "customLabel": "Egendefinert antall spillere",
       "buttons": {
-        "createFixed": "Create {{count}} Players",
-        "createCustom": "Create Players"
+        "createFixed": "Opprett {{count}} spillere",
+        "createCustom": "Opprett spillere"
       }
     },
     "testServers": {
-      "title": "Test Servers",
-      "description": "Create server configurations for testing match management and RCON commands.",
-      "success": "Successfully created {{count}} test server(s)!",
+      "title": "Testservere",
+      "description": "Opprett serverkonfigurasjoner for å teste kamphåndtering og RCON-kommandoer.",
+      "success": "Opprettet {{count}} testserver(e)!",
       "errors": {
-        "create": "Failed to create test servers",
-        "partial": "Created {{created}} server(s), but {{failed}} failed. Check console for details."
+        "create": "Kunne ikke opprette testservere",
+        "partial": "Opprettet {{created}} server(e), men {{failed}} feilet. Sjekk konsollen for detaljer."
       },
-      "customLabel": "Custom server count",
+      "customLabel": "Egendefinert antall servere",
       "buttons": {
-        "createFixed": "Create {{count}} Server{{count === 1 ? '' : 's'}}",
-        "createCustom": "Create Servers"
+        "createFixed": "Opprett {{count}} server{{count === 1 ? '' : 'e'}}",
+        "createCustom": "Opprett servere"
       }
     },
     "dangerZone": {
-      "title": "Danger Zone"
+      "title": "Faresone"
     },
     "deleteTestData": {
-      "title": "Delete Test Data",
-      "description": "Delete all test data (teams and servers with 'test-' prefix). This action cannot be undone.",
-      "button": "Delete All Test Data",
-      "confirmPrompt": "Are you sure you want to delete ALL test data?",
-      "success": "Successfully deleted all test data!",
-      "error": "Failed to delete test data"
+      "title": "Slett testdata",
+      "description": "Slett all testdata (lag og servere med 'test-' prefiks). Denne handlingen kan ikke angres.",
+      "button": "Slett all testdata",
+      "confirmPrompt": "Er du sikker på at du vil slette ALL testdata?",
+      "success": "All testdata ble slettet!",
+      "error": "Kunne ikke slette testdata"
     },
     "wipeTable": {
-      "title": "Wipe Specific Tables",
-      "description": "Delete all data from a specific table. Useful for cleaning up without resetting everything. Tables are organized by category.",
-      "confirmPrompt": "Are you sure you want to wipe the {{table}} table? This will delete all data in that table.",
-      "success": "Table {{table}} wiped successfully!",
-      "error": "Failed to wipe {{table}} table",
+      "title": "Tøm bestemte tabeller",
+      "description": "Slett alle data fra en bestemt tabell. Nyttig for å rydde opp uten å nullstille alt. Tabeller er organisert etter kategori.",
+      "confirmPrompt": "Er du sikker på at du vil tømme tabellen {{table}}? Dette vil slette alle data i tabellen.",
+      "success": "Tabellen {{table}} ble tømt!",
+      "error": "Kunne ikke tømme tabellen {{table}}",
       "core": {
-        "title": "Core Tables",
-        "teams": "Wipe Teams",
-        "servers": "Wipe Servers",
-        "tournament": "Wipe Tournament",
-        "matches": "Wipe Matches"
+        "title": "Kjernetabeller",
+        "teams": "Tøm lag",
+        "servers": "Tøm servere",
+        "tournament": "Tøm turnering",
+        "matches": "Tøm kamper"
       },
       "players": {
-        "title": "Players & Shuffle Tournaments",
-        "players": "Wipe Players",
-        "ratingHistory": "Wipe Rating History",
-        "matchStats": "Wipe Match Stats",
-        "shufflePlayers": "Wipe Shuffle Players"
+        "title": "Spillere og shuffle-turneringer",
+        "players": "Tøm spillere",
+        "ratingHistory": "Tøm ratinghistorikk",
+        "matchStats": "Tøm kampstatistikk",
+        "shufflePlayers": "Tøm shuffle-spillere"
       },
       "maps": {
-        "title": "Maps & Templates",
-        "maps": "Wipe Maps",
-        "mapPools": "Wipe Map Pools",
-        "tournamentTemplates": "Wipe Tourn. Templates",
-        "eloTemplates": "Wipe ELO Templates"
+        "title": "Kart og maler",
+        "maps": "Tøm kart",
+        "mapPools": "Tøm kartpooler",
+        "tournamentTemplates": "Tøm turneringsmaler",
+        "eloTemplates": "Tøm ELO-maler"
       },
       "matchEvents": {
-        "title": "Match Events & Results",
-        "events": "Wipe Match Events",
-        "mapResults": "Wipe Map Results"
+        "title": "Kamp-hendelser og resultater",
+        "events": "Tøm kamp-hendelser",
+        "mapResults": "Tøm kartresultater"
       },
       "settings": {
-        "title": "Settings",
-        "appSettings": "Wipe App Settings"
+        "title": "Innstillinger",
+        "appSettings": "Tøm app-innstillinger"
       }
     },
     "simulation": {
-      "title": "Simulation State",
-      "description": "Clear all matches and historical stats so you can click \"Start Tournament\" in simulation mode on a clean bracket, while keeping servers, teams, maps, and the current tournament setup.",
-      "button": "Reset Simulation State (preserve config)",
+      "title": "Simuleringsstatus",
+      "description": "Slett alle kamper og historiske statistikker slik at du kan klikke \"Start turnering\" i simuleringsmodus på en ren brakett, samtidig som servere, lag, kart og gjeldende turneringsoppsett beholdes.",
+      "button": "Tilbakestill simuleringsstatus (behold konfig)",
       "reset": {
-        "success": "Simulation state reset. Matches and stats cleared; servers, teams, and tournament setup preserved.",
-        "error": "Failed to reset simulation state"
+        "success": "Simuleringsstatus tilbakestilt. Kamper og statistikk slettet; servere, lag og turneringsoppsett beholdt.",
+        "error": "Kunne ikke tilbakestille simuleringsstatus"
       }
     },
     "wipeDatabase": {
-      "title": "Wipe Entire Database",
-      "warningTitle": "EXTREMELY DESTRUCTIVE!",
-      "warningBody": "This will delete ALL data.",
-      "permanentlyDeletes": "Permanently deletes:",
+      "title": "Slett hele databasen",
+      "warningTitle": "EKSTREMT DESTRUKTIVT!",
+      "warningBody": "Dette vil slette ALLE data.",
+      "permanentlyDeletes": "Sletter permanent:",
       "items": {
-        "tournaments": "All tournaments & brackets",
-        "matches": "All matches & events",
-        "teams": "All teams & players",
-        "servers": "All server configurations"
+        "tournaments": "Alle turneringer og braketter",
+        "matches": "Alle kamper og hendelser",
+        "teams": "Alle lag og spillere",
+        "servers": "Alle serverkonfigurasjoner"
       },
-      "button": "Wipe Entire Database",
-      "successRedirect": "Database wiped successfully! Redirecting...",
-      "error": "Failed to wipe database",
+      "button": "Slett hele databasen",
+      "successRedirect": "Databasen ble slettet! Omdirigerer...",
+      "error": "Kunne ikke slette databasen",
       "dialog": {
-        "title": "Confirm Database Wipe",
-        "areYouSure": "Are you absolutely sure?",
-        "actionWill": "This action will",
-        "permanentlyDelete": "permanently delete",
+        "title": "Bekreft sletting av database",
+        "areYouSure": "Er du helt sikker?",
+        "actionWill": "Denne handlingen vil",
+        "permanentlyDelete": "slette permanent",
         "items": {
-          "tournaments": "All tournament data and brackets",
-          "matches": "All match history and events",
-          "teams": "All teams and player configurations",
-          "servers": "All server configurations"
+          "tournaments": "Alle turneringsdata og braketter",
+          "matches": "All kamphistorikk og hendelser",
+          "teams": "Alle lag og spillerkonfigurasjoner",
+          "servers": "Alle serverkonfigurasjoner"
         },
-        "cannotUndo": "This action cannot be undone!",
-        "wiping": "Wiping Database...",
-        "yesWipe": "Yes, Wipe Everything"
+        "cannotUndo": "Denne handlingen kan ikke angres!",
+        "wiping": "Sletter database...",
+        "yesWipe": "Ja, slett alt"
       }
     }
   }
