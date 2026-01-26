@@ -97,14 +97,14 @@
         "load": "Klarte ikke å laste dashboard-data"
       },
       "playerDistribution": {
-        "title": "Player Distribution"
+        "title": "Spillerfordeling"
       },
       "eloDistribution": {
-        "title": "Player ELO Distribution",
-        "subtitle": "Number of players per Skill Rating band (bucket size {{bucket}}).",
-        "xAxis": "Skill Rating band",
-        "yAxis": "Players",
-        "seriesLabel": "Players"
+        "title": "ELO-fordeling for spillere",
+        "subtitle": "Antall spillere per Skill Rating-bånd (bøttestørrelse {{bucket}}).",
+        "xAxis": "Skill Rating-bånd",
+        "yAxis": "Spillere",
+        "seriesLabel": "Spillere"
       }
     }
   },
@@ -141,12 +141,12 @@
         "description": "Synk CS2-kart fra GitHub-repositoriet.",
         "buttonSyncing": "Synkroniserer kart...",
         "buttonIdle": "Synkroniser CS2-kart",
-        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
-        "partialError": "Some maps failed to sync: {{errors}}",
-        "failed": "Failed to sync maps",
-        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
-        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
-        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
+        "success": "Kartsynk fullført! {{added}} nye kart lagt til, {{skipped}} fantes allerede.",
+        "partialError": "Noen kart kunne ikke synkroniseres: {{errors}}",
+        "failed": "Klarte ikke å synkronisere kart",
+        "rateLimit": "GitHub API rate limit er nådd. Prøv igjen om noen minutter. Du kan sette miljøvariabelen GITHUB_TOKEN for å øke rate limit.",
+        "rateLimitShort": "GitHub API rate limit er nådd. Prøv igjen om noen minutter.",
+        "githubError": "Klarte ikke å nå GitHub-repositoriet. Sjekk nettverket ditt og prøv igjen senere."
       }
     },
     "matchRating": {
@@ -302,8 +302,8 @@
       "description": "Tilbakestill alle innstillinger på denne siden til standardverdier. Eksisterende turneringer og servere endres ikke, men nye kamper og oppslag vil bruke standardverdiene. Fortsette?",
       "cancel": "Avbryt",
       "confirm": "Tilbakestill",
-      "success": "Settings reset to defaults",
-      "error": "Failed to reset settings"
+      "success": "Innstillinger tilbakestilt til standardverdier",
+      "error": "Klarte ikke å tilbakestille innstillinger"
     },
     "errors": {
       "loadSettings": "Klarte ikke å laste innstillinger",

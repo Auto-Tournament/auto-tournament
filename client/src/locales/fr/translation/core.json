@@ -30,8 +30,8 @@
     "signOut": "Se déconnecter",
     "linkSteam": "Lier Steam",
     "myProfile": "Mon profil",
-    "goToAdminDashboard": "Go to Admin Dashboard",
-    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
+    "goToAdminDashboard": "Ouvrir le tableau de bord admin",
+    "goToAdminDashboardHint": "Vous consultez votre profil joueur. Ouvrez le tableau de bord admin pour gérer les équipes, tournois et serveurs."
   },
   "layout": {
     "webhookNotConfigured": "L’URL du webhook n’est pas configurée. Les matchs et serveurs ne peuvent pas recevoir d’événements tant qu’elle n’est pas définie.",
@@ -61,8 +61,8 @@
     "name": "Matchzy Auto Tournament"
   },
   "language": {
-    "label": "Language",
-    "en": "English",
-    "zhCN": "Chinese (Simplified)"
+    "label": "Langue",
+    "en": "Anglais",
+    "zhCN": "Chinois (simplifié)"
   }
 }

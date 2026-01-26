@@ -3,84 +3,84 @@
     "nameLabel": "Turneringsnavn",
     "namePlaceholder": "NTLAN 2025 vårturnering",
     "steps": {
-      "create": "Create Tournament",
-      "review": "Review & Confirm",
-      "live": "Live Tournament"
+      "create": "Opprett turnering",
+      "review": "Gjennomgå og bekreft",
+      "live": "Pågående turnering"
     },
     "welcome": {
-      "heading": "Create Tournament",
-      "chooseMethod": "Choose how you'd like to create your tournament",
-      "createNewTitle": "Create New Tournament",
-      "createNewDescription": "Start from scratch and configure all tournament settings manually"
+      "heading": "Opprett turnering",
+      "chooseMethod": "Velg hvordan du vil opprette turneringen",
+      "createNewTitle": "Opprett ny turnering",
+      "createNewDescription": "Start fra bunnen av og konfigurer alle turneringsinnstillinger manuelt"
     },
     "typeSelector": {
       "categories": {
         "professional": {
-          "label": "Professional Series"
+          "label": "Proffserie"
         },
         "party": {
-          "label": "Party & Fun"
+          "label": "Fest og moro"
         }
       },
       "types": {
         "single_elimination": {
-          "label": "Single Elimination",
-          "description": "One loss and you're out. Classic bracket format used in professional tournaments."
+          "label": "Enkelt eliminasjon",
+          "description": "Ett tap og du er ute. Klassisk bracket-format brukt i profesjonelle turneringer."
         },
         "double_elimination": {
-          "label": "Double Elimination",
-          "description": "Two losses to be eliminated. Teams get a second chance in the lower bracket."
+          "label": "Dobbel eliminasjon",
+          "description": "To tap før du ryker ut. Lag får en ny sjanse i lower bracket."
         },
         "round_robin": {
-          "label": "Round Robin",
-          "description": "Everyone plays everyone. Perfect for league-style competitions."
+          "label": "Alle-mot-alle",
+          "description": "Alle møter alle. Perfekt for ligaspill."
         },
         "swiss": {
-          "label": "Swiss System",
-          "description": "Similar records face each other. Balanced matchups throughout the tournament."
+          "label": "Swiss-system",
+          "description": "Lag med likt resultat møter hverandre. Balanserte oppgjør gjennom hele turneringen."
         },
         "shuffle": {
-          "label": "Shuffle Tournament",
-          "description": "Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing."
+          "label": "Shuffle-turnering",
+          "description": "Spillere shuffles dynamisk til balanserte lag hver runde. Individuell konkurranse med ELO-basert lagbalansering."
         }
       },
-      "selectedChip": "Selected"
+      "selectedChip": "Valgt"
     },
     "review": {
       "summary": {
-        "info": "Review your tournament settings and click \"Create Tournament\" when ready.",
-        "nameLabel": "Tournament Name",
-        "typeLabel": "Tournament Type",
-        "formatLabel": "Match Format",
-        "notSet": "Not set",
-        "estimatedVolume": "Approximately {{matches}} match{{matches, plural, one {} other {es}}} over {{rounds}} round{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, up to {{totalMaps}} map{{totalMaps, plural, one {} other {s}}} total)."
+        "info": "Gå gjennom turneringsinnstillingene og klikk «Opprett turnering» når du er klar.",
+        "nameLabel": "Turneringsnavn",
+        "typeLabel": "Turneringstype",
+        "formatLabel": "Matchformat",
+        "notSet": "Ikke satt",
+        "estimatedVolume": "Omtrent {{matches}} kamp{{matches, plural, one {} other {er}}} over {{rounds}} runde{{rounds, plural, one {} other {r}}} (best av {{mapsPerMatch}}, opptil {{totalMaps}} kart{{totalMaps, plural, one {} other {}}} totalt)."
       }
     },
     "formSteps": {
       "steps": {
-        "name": "Name",
+        "name": "Navn",
         "type": "Type",
         "format": "Format",
-        "maps": "Maps",
-        "teams": "Teams",
-        "review": "Review"
+        "maps": "Kart",
+        "teams": "Lag",
+        "review": "Gjennomgå"
       },
-      "backToWelcome": "Back to Welcome",
-      "back": "Back",
-      "next": "Next"
+      "backToWelcome": "Tilbake til velkomst",
+      "back": "Tilbake",
+      "next": "Neste"
     },
     "emptyBracket": {
-      "title": "No bracket to display",
-      "description": "Create a tournament and generate the bracket to get started"
+      "title": "Ingen bracket å vise",
+      "description": "Opprett en turnering og generer bracket for å komme i gang"
     },
     "common": {
-      "createTournament": "Create Tournament"
+      "createTournament": "Opprett turnering"
     }
   },
   "bracket": {
     "empty": {
-      "noBracketTitle": "No bracket to display",
-      "noBracketDescription": "Create a tournament and generate the bracket to get started"
+      "noBracketTitle": "Ingen bracket å vise",
+      "noBracketDescription": "Opprett en turnering og generer bracket for å komme i gang"
     }
   }
 }

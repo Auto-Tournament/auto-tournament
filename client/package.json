@@ -10,6 +10,7 @@
     "i18n:check": "node scripts/check-duplicate-json-keys.mjs",
     "i18n:missing": "node scripts/check-missing-i18n-keys.mjs",
     "i18n:sync": "node scripts/sync-missing-i18n-keys.mjs",
+    "i18n:fallback": "node scripts/check-english-fallback-strings.mjs",
     "preview": "vite preview"
   },
   "devDependencies": {
