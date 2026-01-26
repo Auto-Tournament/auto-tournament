@@ -40,7 +40,7 @@
     "statusChip": {
       "checking": "Vérification…",
       "disabled": "Désactivé",
-      "offline": "Offline",
+      "offline": "Hors ligne",
       "onlineOk": "En ligne (API ↔ serveur OK)",
       "onlineRconOnly": "En ligne (RCON uniquement)",
       "rconFailed": "Échec RCON",
@@ -57,7 +57,7 @@
       "reachable": "Joignable",
       "unknown": "Inconnu",
       "loading": "Chargement…",
-      "pluginLabel": "MatchZy:"
+      "pluginLabel": "MatchZy :"
     },
     "currentMatch": {
       "view": "Voir le match",
@@ -67,7 +67,7 @@
     "labels": {
       "host": "Hôte :",
       "port": "Port :",
-      "id": "ID:"
+      "id": "ID :"
     },
     "bulkDelete": {
       "title": "Supprimer des serveurs",
@@ -86,7 +86,7 @@
     "serverNamePlaceholder": "Serveur match #1",
     "hostLabel": "Hôte / adresse IP",
     "hostPlaceholder": "192.168.1.100",
-    "portLabel": "Port",
+    "portLabel": "Port :",
     "portPlaceholder": "27015",
     "rconPasswordLabel": "Mot de passe RCON",
     "rconPasswordPlaceholder": "your-rcon-password",

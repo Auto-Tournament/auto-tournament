@@ -133,7 +133,7 @@
   "saveTemplateModal": {
     "title": "Enregistrer comme modèle",
     "nameLabel": "Nom du modèle",
-    "namePlaceholder": "8-team Single Elim BO3",
+    "namePlaceholder": "8 équipes – élimination simple BO3",
     "descriptionLabel": "Description (facultatif)",
     "descriptionPlaceholder": "Tournoi hebdomadaire à 8 équipes en élimination simple",
     "saveButton": "Enregistrer le modèle",
@@ -293,7 +293,7 @@
       "info": "Configurez l’impact des statistiques individuelles sur les ajustements ELO. Les poids sont appliqués après qu’OpenSkill a calculé la variation ELO de base (victoire/défaite). Les poids positifs augmentent l’ELO, les poids négatifs le diminuent.",
       "nameLabel": "Nom du modèle",
       "nameDefaultLocked": "Le nom du modèle par défaut ne peut pas être modifié",
-      "descriptionLabel": "Description",
+      "descriptionLabel": "Description (facultatif)",
       "descriptionPlaceholder": "Description facultative du but de ce modèle",
       "enabledLabel": "Activé",
       "weights": {

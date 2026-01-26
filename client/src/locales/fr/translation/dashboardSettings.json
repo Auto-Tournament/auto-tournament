@@ -184,7 +184,7 @@
       }
     },
     "footer": {
-      "version": "Utilisation optimale de tous les propulseurs",
+      "version": "Version :",
       "unknownVersion": "Inconnue",
       "resetButton": "Réinitialiser les paramètres"
     },
@@ -264,7 +264,7 @@
         "title": "Statut du tournoi",
         "none": "Aucun tournoi actif",
         "typeLabel": "Type ",
-        "formatLabel": "Format",
+        "formatLabel": "Format du match",
         "matchesLabel": "Matchs"
       },
       "matchStatus": {
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Meilleurs joueurs par ELO",
         "subtitle": "Rating global tous types de tournois confondus",
-        "chip": "ELO {{value}}"
+        "chip": "ELO : {{value}}"
       },
       "eloDistribution": {
         "title": "Répartition ELO des joueurs",
