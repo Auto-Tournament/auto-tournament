@@ -7,7 +7,7 @@
       "matchReady": "Match klaar – verbinden",
       "snackbarOpponentMoved": "Tegenstander heeft gezet"
     },
-    "dashboard": "Gösterge Paneli",
+    "dashboard": "Overzicht",
     "tournament": "Toernooi",
     "bracket": "Schema",
     "matches": "Wedstrijden",
@@ -37,7 +37,7 @@
     "webhookNotConfigured": "Webhook-URL is niet ingesteld. Wedstrijden en servers kunnen geen events ontvangen totdat dit is ingesteld.",
     "openSettings": "Instellingen openen",
     "pageTitle": {
-      "dashboard": "Gösterge Paneli",
+      "dashboard": "Overzicht",
       "tournament": "Toernooi",
       "bracket": "Schema",
       "matches": "Wedstrijden",

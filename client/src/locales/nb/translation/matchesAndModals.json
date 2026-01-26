@@ -29,11 +29,11 @@
       "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres."
     },
     "bulkSelect": {
-      "select": "Select",
-      "done": "Done Selecting",
-      "selectAll": "Select All",
-      "unselectAll": "Unselect All",
-      "deleteSelected": "Delete Selected"
+      "select": "Velg",
+      "done": "Ferdig",
+      "selectAll": "Velg alle",
+      "unselectAll": "Fjern alle valg",
+      "deleteSelected": "Slett valgte"
     }
   },
   "teamModal": {
@@ -137,190 +137,190 @@
     }
   },
   "manualMatchModal": {
-    "title": "Create Manual Match",
+    "title": "Opprett manuell kamp",
     "steps": {
-      "matchSetup": "Match Setup",
-      "rules": "Rules",
-      "maps": "Maps",
-      "teams": "Teams",
-      "review": "Review"
+      "matchSetup": "Kampoppsett",
+      "rules": "Regler",
+      "maps": "Kart",
+      "teams": "Lag",
+      "review": "Oppsummering"
     },
-    "description": "Create a standalone match that is independent from the tournament bracket. The API will automatically allocate an available server for you.",
+    "description": "Opprett en frittstående kamp som er uavhengig av turneringsoppsettet. API-et tildeler automatisk en tilgjengelig server for deg.",
     "buttons": {
-      "next": "Next",
-      "back": "Back",
-      "create": "Create Match",
-      "creating": "Creating…"
+      "next": "Neste",
+      "back": "Tilbake",
+      "create": "Opprett kamp",
+      "creating": "Oppretter…"
     },
     "saveTemplate": {
-      "title": "Save Match Template",
-      "nameLabel": "Template name",
-      "nameHelper": "For example: BO1 Inferno knife, BO3 map pool, etc.",
-      "description": "Current maps, series format, CT side rule, veto toggle, knife mode, and players per team will be saved in this template.",
-      "save": "Save"
+      "title": "Lagre kampmal",
+      "nameLabel": "Malnavn",
+      "nameHelper": "For eksempel: BO1 Inferno kniv, BO3 kartpool, osv.",
+      "description": "Nåværende kart, serieformat, CT-side-regel, veto-bryter, knivmodus og spillere per lag blir lagret i denne malen.",
+      "save": "Lagre"
     },
     "chooseMode": {
-      "heading": "How would you like to create this match?",
+      "heading": "Hvordan vil du opprette denne kampen?",
       "template": {
-        "title": "Choose template",
-        "description": "Load a preset for maps, format, and rules, then choose the teams.",
-        "label": "Match template",
-        "none": "None",
-        "empty": "No templates saved yet. Configure a match and save it as a template."
+        "title": "Velg mal",
+        "description": "Last inn en forhåndsinnstilling for kart, format og regler, og velg deretter lagene.",
+        "label": "Kampmal",
+        "none": "Ingen",
+        "empty": "Ingen maler lagret ennå. Konfigurer en kamp og lagre den som en mal."
       },
       "custom": {
-        "title": "Create new match",
-        "description": "Configure maps, rules, sides, and teams from scratch."
+        "title": "Opprett ny kamp",
+        "description": "Konfigurer kart, regler, sider og lag fra bunnen av."
       }
     }
   },
   "matchDetailsModal": {
     "delete": {
-      "dialogTitle": "Delete Match",
-      "confirmTitle": "Delete this match?",
-      "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
-      "button": "Delete Match"
+      "dialogTitle": "Slett kamp",
+      "confirmTitle": "Slette denne kampen?",
+      "confirmBody": "Er du sikker på at du vil slette kampen \"{{slug}}\"? Dette kan ikke angres.",
+      "button": "Slett kamp"
     }
   },
   "bulkShuffleMatchesModal": {
-    "title": "Bulk Create Shuffle Matches",
-    "description": "Configure a single‑map shuffle match (map + round limit), then define as many head‑to‑head matches as you like by choosing exact player lineups for each side. Matches are created as part of the current shuffle tournament and will be allocated to servers when you start the tournament.",
+    "title": "Opprett shuffle-kamper i bulk",
+    "description": "Konfigurer en shuffle-kamp med ett kart (kart + rundegrense), og definer deretter så mange hode‑til‑hode‑kamper du vil ved å velge nøyaktige spilleroppsett for hver side. Kampene opprettes som del av den nåværende shuffle-turneringen og blir tildelt servere når du starter turneringen.",
     "mapSelect": {
-      "label": "Map",
-      "noMaps": "No maps configured for this tournament",
-      "helper": "All matches in this batch will use this map."
+      "label": "Kart",
+      "noMaps": "Ingen kart er konfigurert for denne turneringen",
+      "helper": "Alle kamper i denne batchen bruker dette kartet."
     },
     "maxRounds": {
-      "label": "Max rounds per map",
-      "helperWithValue": "Match plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds.",
-      "helperDefault": "Maximum number of rounds per map (default: 24, max: 30)."
+      "label": "Maks runder per kart",
+      "helperWithValue": "Kampen spilles opptil {{maxRounds}} runder; vinneren er først til {{winRounds}} runder.",
+      "helperDefault": "Maks antall runder per kart (standard: 24, maks: 30)."
     },
     "matchesSection": {
-      "title": "Matches ({{count}})",
-      "addMatch": "Add Match"
+      "title": "Kamper ({{count}})",
+      "addMatch": "Legg til kamp"
     },
     "players": {
-      "empty": "No players are registered for this shuffle tournament yet. Register players first, then you can create manual matches."
+      "empty": "Ingen spillere er registrert for denne shuffle-turneringen ennå. Registrer spillere først, så kan du opprette manuelle kamper."
     },
     "matchRow": {
-      "title": "Match {{index}}",
+      "title": "Kamp {{index}}",
       "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
-      "team1Label": "Team 1 players ({{team1Count}}/{{teamSize}})",
-      "team2Label": "Team 2 players ({{team2Count}}/{{teamSize}})",
-      "searchPlaceholder": "Search & select players",
-      "mapOverrideLabel": "Map (optional override)",
-      "mapOverrideHelperOwn": "This match uses its own map.",
-      "mapOverrideHelperDefault": "Leave empty to use the default map above.",
-      "maxRoundsOverrideLabel": "Max rounds (optional override)",
-      "maxRoundsOverrideHelperOwn": "Overrides default max rounds for this match (currently {{value}}).",
-      "maxRoundsOverrideHelperDefault": "Leave empty to use the default max rounds above."
+      "team1Label": "Lag 1-spillere ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Lag 2-spillere ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Søk og velg spillere",
+      "mapOverrideLabel": "Kart (valgfri overstyring)",
+      "mapOverrideHelperOwn": "Denne kampen bruker et eget kart.",
+      "mapOverrideHelperDefault": "La stå tomt for å bruke standardkartet over.",
+      "maxRoundsOverrideLabel": "Maks runder (valgfri overstyring)",
+      "maxRoundsOverrideHelperOwn": "Overstyrer standard maks runder for denne kampen (for øyeblikket {{value}}).",
+      "maxRoundsOverrideHelperDefault": "La stå tomt for å bruke standard maks runder over."
     },
     "errors": {
-      "loadPlayers": "Failed to load registered players",
-      "noMatches": "Add at least one match to create.",
-      "bothTeamsRequired": "Match {{index}}: both teams must have at least one player.",
-      "conflictingPlayers": "Match {{index}}: the same player cannot be on both teams. Conflicting ID(s): {{ids}}",
-      "mapRequired": "Match {{index}}: map is required (set a default map above or choose a map for this match).",
-      "rowMaxRoundsRange": "Match {{index}}: max rounds must be between 1 and 30 when overridden per match.",
-      "globalMaxRoundsRange": "Max rounds must be between 1 and 30.",
-      "createFailed": "Failed to create manual shuffle matches"
+      "loadPlayers": "Klarte ikke å laste registrerte spillere",
+      "noMatches": "Legg til minst én kamp for å opprette.",
+      "bothTeamsRequired": "Kamp {{index}}: begge lag må ha minst én spiller.",
+      "conflictingPlayers": "Kamp {{index}}: samme spiller kan ikke være på begge lag. Konflikt-ID(er): {{ids}}",
+      "mapRequired": "Kamp {{index}}: kart er påkrevd (sett et standardkart over eller velg et kart for denne kampen).",
+      "rowMaxRoundsRange": "Kamp {{index}}: maks runder må være mellom 1 og 30 når det overstyres per kamp.",
+      "globalMaxRoundsRange": "Maks runder må være mellom 1 og 30.",
+      "createFailed": "Klarte ikke å opprette manuelle shuffle-kamper"
     },
     "success": {
-      "created": "Manual shuffle matches created. They will be allocated when the tournament starts."
+      "created": "Manuelle shuffle-kamper opprettet. De blir tildelt når turneringen starter."
     },
     "createMatchesButton": {
-      "default": "Create Matches",
-      "creating": "Creating…"
+      "default": "Opprett kamper",
+      "creating": "Oppretter…"
     }
   },
   "teamImportModal": {
-    "title": "Import Teams from JSON",
+    "title": "Importer lag fra JSON",
     "info": {
-      "title": "Paste JSON with team data below.",
-      "format": "Expected format: Array of teams with name, tag (optional), and players (name + steamId).",
-      "link": "View documentation with examples"
+      "title": "Lim inn JSON med lagdata under.",
+      "format": "Forventet format: en liste med lag med navn, tag (valgfritt) og spillere (navn + steamId).",
+      "link": "Se dokumentasjon med eksempler"
     },
-    "jsonLabel": "JSON Data",
+    "jsonLabel": "JSON-data",
     "errors": {
-      "mustBeArray": "JSON must be an array of teams",
-      "emptyArray": "Array cannot be empty",
-      "parseWithMessage": "JSON Parse Error: {{message}}",
-      "parseGeneric": "Invalid JSON format. Please check your syntax.",
-      "importFailed": "Failed to import teams",
-      "noJson": "Please enter JSON data"
+      "mustBeArray": "JSON må være en liste med lag",
+      "emptyArray": "Listen kan ikke være tom",
+      "parseWithMessage": "JSON-feil ved parsing: {{message}}",
+      "parseGeneric": "Ugyldig JSON-format. Sjekk syntaksen.",
+      "importFailed": "Klarte ikke å importere lag",
+      "noJson": "Skriv inn JSON-data"
     },
     "preview": {
-      "summary": "✓ Valid JSON! Found {{teamCount}} team{{teamCount, plural, one {} other {s}}} with {{playerCount}} total players.",
-      "title": "Preview:",
+      "summary": "✓ Gyldig JSON! Fant {{teamCount}} lag{{teamCount, plural, one {} other {}}} med totalt {{playerCount}} spillere.",
+      "title": "Forhåndsvisning:",
       "playersChip": "{{count}} player{{count, plural, one {} other {s}}}"
     },
     "actions": {
-      "preview": "Preview",
-      "importing": "Importing...",
-      "import": "Import {{count}} Team{{count, plural, one {} other {s}}}"
+      "preview": "Forhåndsvis",
+      "importing": "Importerer...",
+      "import": "Importer {{count}} lag{{count, plural, one {} other {}}}"
     }
   },
   "playerImportModal": {
-    "title": "Import Players",
+    "title": "Importer spillere",
     "info": {
-      "description": "Import players from JSON or CSV format. Required fields: steamId, name. Optional: initialELO (defaults to 1500), avatarUrl.",
-      "link": "View documentation with examples"
+      "description": "Importer spillere fra JSON- eller CSV-format. Påkrevde felt: steamId, name. Valgfritt: initialELO (standard 1500), avatarUrl.",
+      "link": "Se dokumentasjon med eksempler"
     },
     "placeholders": {
-      "jsonCsv": "JSON format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+      "jsonCsv": "JSON-format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV-format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
     },
     "actions": {
-      "parseValidate": "Parse & Validate",
-      "importing": "Importing...",
-      "import": "Import {{count}} Player{{count, plural, one {} other {s}}}"
+      "parseValidate": "Parse og valider",
+      "importing": "Importerer...",
+      "import": "Importer {{count}} spiller{{count, plural, one {} other {e}}}"
     },
     "preview": {
-      "readyChip": "{{count}} player{{count, plural, one {} other {s}}} ready to import",
-      "title": "Players to Import ({{count}}):",
-      "steamId": "Steam ID: {{steamId}}",
-      "name": "Name: {{name}}",
-      "initialElo": "Initial ELO: {{elo}}",
-      "avatar": "Avatar: {{url}}"
+      "readyChip": "{{count}} spiller{{count, plural, one {} other {e}}} klar til import",
+      "title": "Spillere å importere ({{count}}):",
+      "steamId": "Steam-ID: {{steamId}}",
+      "name": "Navn: {{name}}",
+      "initialElo": "Start-ELO: {{elo}}",
+      "avatar": "Avatar-URL: {{url}}"
     },
     "errors": {
-      "noData": "Please enter JSON or CSV data",
-      "noPlayers": "No players found in the data",
-      "validationPrefix": "Validation errors:",
-      "parseFailed": "Failed to parse data: {{message}}",
-      "importFailed": "Failed to import players",
-      "parseFirst": "Please parse and validate the data first"
+      "noData": "Skriv inn JSON- eller CSV-data",
+      "noPlayers": "Ingen spillere funnet i dataene",
+      "validationPrefix": "Valideringsfeil:",
+      "parseFailed": "Klarte ikke å parse data: {{message}}",
+      "importFailed": "Klarte ikke å importere spillere",
+      "parseFirst": "Vennligst parse og valider dataene først"
     }
   },
   "playerSelectionModal": {
-    "title": "Select Players",
-    "selectedCount": "{{count}} selected",
-    "searchPlaceholder": "Search players by name or Steam ID...",
+    "title": "Velg spillere",
+    "selectedCount": "{{count}} valgt",
+    "searchPlaceholder": "Søk spillere etter navn eller Steam-ID…",
     "selectAll": {
-      "select": "Select All",
-      "deselect": "Deselect All"
+      "select": "Velg alle",
+      "deselect": "Fjern alle valg"
     },
     "empty": {
-      "noSearchResults": "No players found matching your search",
-      "noPlayers": "No players available"
+      "noSearchResults": "Ingen spillere som matcher søket ditt",
+      "noPlayers": "Ingen spillere tilgjengelig"
     },
     "playerCard": {
-      "alreadyInTeam": "Already in team"
+      "alreadyInTeam": "Allerede i lag"
     },
-    "addPlayersButton": "Add {{count}} Player{{count, plural, one {} other {s}}}",
+    "addPlayersButton": "Legg til {{count}} spiller{{count, plural, one {} other {e}}}",
     "errors": {
-      "loadFailed": "Failed to load players",
-      "noSelectable": "No selectable players available"
+      "loadFailed": "Klarte ikke å laste spillere",
+      "noSelectable": "Ingen spillere tilgjengelig for valg"
     }
   },
   "soundSettingsModal": {
-    "title": "Sound Settings",
+    "title": "Lydinnstillinger",
     "soundSelect": {
-      "label": "Notification Sound"
+      "label": "Varslingslyd"
     },
     "volume": {
-      "label": "Volume: {{percent}}%"
+      "label": "Volum: {{percent}}%"
     },
-    "testButton": "Test Sound",
-    "footer": "Sound notifications will play when your match is ready or when important events occur."
+    "testButton": "Test lyd",
+    "footer": "Lydvarsler spilles av når kampen din er klar eller når viktige hendelser oppstår."
   }
 }

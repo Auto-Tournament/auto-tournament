@@ -34,7 +34,7 @@
     "statusChip": {
       "checking": "Sjekker...",
       "disabled": "Deaktivert",
-      "offline": "Offline",
+      "offline": "Frakoblet",
       "onlineOk": "Online (API ↔ server OK)",
       "onlineRconOnly": "Online (kun RCON)",
       "rconFailed": "RCON-feil",
@@ -46,12 +46,12 @@
     },
     "connectivity": {
       "apiToServer": "MAT API → CS2-server",
-      "serverToApi": "Server → API (/api/events)",
+      "serverToApi": "Server → API (/api/events) (hendelser)",
       "unreachable": "Ikke tilgjengelig",
       "reachable": "Tilgjengelig",
       "unknown": "Ukjent",
       "loading": "Laster…",
-      "pluginLabel": "MatchZy:"
+      "pluginLabel": "MatchZy"
     },
     "currentMatch": {
       "view": "Vis kamp",
@@ -60,8 +60,8 @@
     },
     "labels": {
       "host": "Vert:",
-      "port": "Port:",
-      "id": "ID:"
+      "port": "Portnr.:",
+      "id": "ID-nummer:"
     },
     "errors": {
       "loadServers": "Klarte ikke å laste servere",
@@ -86,7 +86,7 @@
     "serverNamePlaceholder": "Match-server #1",
     "hostLabel": "Vert / IP-adresse",
     "hostPlaceholder": "192.168.1.100",
-    "portLabel": "Port",
+    "portLabel": "Portnummer",
     "portPlaceholder": "27015",
     "rconPasswordLabel": "RCON-passord",
     "rconPasswordPlaceholder": "ditt-rcon-passord",
@@ -107,7 +107,7 @@
     "testingConnectivity": "Tester tilkobling…",
     "connectivity": {
       "apiToServer": "MAT API → CS2-server:",
-      "serverToApi": "Server → API (/api/events):",
+      "serverToApi": "Server → API (/api/events) (hendelser):",
       "reachable": "Tilgjengelig",
       "unreachable": "Ikke tilgjengelig"
     },
@@ -145,46 +145,46 @@
     }
   },
   "adminToolsPage": {
-    "title": "Admin Tools",
-    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
+    "title": "Adminverktøy",
+    "description": "Kjør vanlige kamp- og serverhandlinger på tvers av CS2-serverne dine. Hurtighandlinger vises først, med mer avanserte verktøy under.",
     "header": {
-      "refresh": "Refresh Servers"
+      "refresh": "Oppdater servere"
     },
     "serverSelect": {
-      "label": "Target Server(s)",
-      "allServersChip": "All Servers",
-      "allServersDescription": "Execute on all {{count}} server(s)",
-      "sendStatus": "Send Status"
+      "label": "Målserver(e)",
+      "allServersChip": "Alle servere",
+      "allServersDescription": "Kjør på alle {{count}} server{{count, plural, one {} other {e}}}",
+      "sendStatus": "Send status"
     },
     "command": {
-      "execute": "Execute"
+      "execute": "Kjør"
     },
-    "customRconWarning": "Warning: Use with caution!",
+    "customRconWarning": "Advarsel: bruk med forsiktighet!",
     "results": {
-      "title": "Execution Results",
-      "successChip": "✓ Success",
-      "failedChip": "✗ Failed",
-      "errorPrefix": "Error:"
+      "title": "Resultater",
+      "successChip": "✓ Vellykket",
+      "failedChip": "✗ Feilet",
+      "errorPrefix": "Feil:"
     },
     "quickActions": {
-      "title": "Quick Actions"
+      "title": "Hurtighandlinger"
     },
     "advanced": {
-      "title": "Advanced Tools"
+      "title": "Avanserte verktøy"
     },
-    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "noServers": "Ingen aktiverte servere funnet. Legg til og aktiver servere på Servers-siden.",
     "recovery": {
-      "title": "Match Recovery",
-      "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
-      "button": "Run Match Recovery Now",
-      "success": "Match recovery completed.",
-      "error": "Match recovery failed.",
-      "failedTrigger": "Failed to trigger match recovery. Please try again."
+      "title": "Kampgjenoppretting",
+      "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser usynkron ut (f.eks. kamper som sitter fast i warmup eller mangler live-score), kan du manuelt starte en gjenoppretting. Dette ber alle servere om sin nåværende kamp-rapport, synkroniserer score/faser og re-konfigurerer webhooks og demo-opplasting der det er mulig.",
+      "button": "Kjør kampgjenoppretting nå",
+      "success": "Kampgjenoppretting fullført.",
+      "error": "Kampgjenoppretting feilet.",
+      "failedTrigger": "Klarte ikke å starte kampgjenoppretting. Prøv igjen."
     },
     "monitoring": {
-      "title": "Monitoring & Logs",
-      "serverEvents": "Server Events Monitor",
-      "appLogs": "Application Logs"
+      "title": "Overvåking og logger",
+      "serverEvents": "Overvåk serverhendelser",
+      "appLogs": "Applikasjonslogger"
     }
   }
 }

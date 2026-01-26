@@ -87,7 +87,7 @@
       "topPlayers": {
         "title": "按 ELO 排名前列的选手",
         "subtitle": "跨所有锦标赛类型的全局评分",
-        "chip": "ELO __ I18N_TOKEN_0 __"
+        "chip": "ELO：{{value}}"
       },
       "eloDistribution": {
         "title": "选手 ELO 分布",
@@ -120,9 +120,9 @@
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy Webhook",
+        "title": "MatchZy Webhook 地址",
         "description": "供 CS2 服务器访问的 MatchZy Webhook 地址。",
-        "label": "Webhook URL",
+        "label": "Webhook 地址",
         "helper": "示例：https://your-domain.com"
       },
       "steam": {

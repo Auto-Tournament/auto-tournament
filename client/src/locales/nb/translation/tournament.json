@@ -59,8 +59,8 @@
     "formSteps": {
       "steps": {
         "name": "Navn",
-        "type": "Type",
-        "format": "Format",
+        "type": "Turneringstype",
+        "format": "Spillformat",
         "maps": "Kart",
         "teams": "Lag",
         "review": "Gjennomgå"

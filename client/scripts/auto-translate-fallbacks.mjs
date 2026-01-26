@@ -63,9 +63,33 @@ function isProbablyOkToMatchEnglish(s) {
   ]);
   if (exactOk.has(s)) return true;
   if (/^\{\{[^}]+\}\}$/.test(s)) return true;
+  if (/^\[[A-Za-z0-9_]+\]$/.test(s)) return true;
+  const stripped = s
+    .replace(/\{\{[\s\S]*?\}\}/g, '')
+    .replace(/\{[A-Z0-9_]+\}/g, '')
+    .trim();
+  if (stripped.length === 0) return true;
+  if (/^[0-9\s.,:(){}[\]/_-•]+$/.test(stripped)) return true;
+  if (/^de_[a-z0-9_]+$/.test(s)) return true;
+  if (s === 'Dust II') return true;
+  if (s === 'Astralis') return true;
+  if (s === 's1mple') return true;
+  if (s === 'ntlan') return true;
+  if (s === 'shared-rcon-password') return true;
+  if (s === 'your-rcon-password') return true;
   if (/^[0-9\s.,:(){}[\]/_-]+$/.test(s)) return true;
   if (/^https?:\/\//i.test(s)) return true;
   if (/^[A-Z0-9]{2,}$/.test(s)) return true;
+  return false;
+}
+
+function isBadTranslationOutput(s) {
+  // Hard safety rails: reject markup/HTML or quota warning bodies.
+  if (s.includes('MYMEMORY WARNING')) return true;
+  if (s.includes('USED ALL AVAILABLE FREE TRANSLATIONS')) return true;
+  // Markup injection / HTML pages
+  if (/[<>]/.test(s)) return true;
+  if (s.toLowerCase().includes('<!doctype')) return true;
   return false;
 }
 
@@ -184,6 +208,9 @@ async function translateViaMyMemory(text, target) {
       const t = data?.responseData?.translatedText;
       if (typeof t !== 'string') {
         throw new Error(`Translate returned unexpected payload: ${JSON.stringify(data).slice(0, 200)}`);
+      }
+      if (isBadTranslationOutput(t)) {
+        throw new Error(`Translate returned unsafe output: ${t.slice(0, 120)}`);
       }
       return t;
     } catch (e) {

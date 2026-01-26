@@ -69,260 +69,260 @@
     }
   },
   "mapActionsModal": {
-    "mapId": "Map ID",
-    "preview": "Preview",
-    "edit": "Edit"
+    "mapId": "Kart-ID",
+    "preview": "Forhåndsvis",
+    "edit": "Rediger"
   },
   "mapPoolActionsModal": {
-    "defaultChip": "Default",
+    "defaultChip": "Standard",
     "status": {
-      "label": "Status",
-      "enabled": "Enabled",
-      "disabled": "Disabled"
+      "label": "Tilstand",
+      "enabled": "Aktivert",
+      "disabled": "Deaktivert"
     },
     "maps": {
-      "label": "Maps ({{count}})"
+      "label": "Kart ({{count}})"
     },
     "actions": {
-      "edit": "Edit",
-      "enable": "Enable",
-      "disable": "Disable",
-      "setDefault": "Set as Default"
+      "edit": "Rediger",
+      "enable": "Aktiver",
+      "disable": "Deaktiver",
+      "setDefault": "Sett som standard"
     }
   },
   "templatesPage": {
     "header": {
-      "createFromTournament": "Create Template from Tournament"
+      "createFromTournament": "Opprett mal fra turnering"
     },
-    "empty": "No templates yet. Create your first template from the Tournament page.",
+    "empty": "Ingen maler ennå. Opprett den første malen din fra turneringssiden.",
     "errors": {
-      "load": "Failed to load templates"
+      "load": "Klarte ikke å laste maler"
     },
     "delete": {
-      "title": "Delete Template",
-      "message": "Are you sure you want to delete the template \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template"
+      "title": "Slett mal",
+      "message": "Er du sikker på at du vil slette malen \"{{name}}\"? Dette kan ikke angres.",
+      "success": "Malen \"{{name}}\" ble slettet",
+      "error": "Klarte ikke å slette mal"
     },
     "update": {
-      "success": "Template \"{{name}}\" updated successfully",
-      "error": "Failed to update template"
+      "success": "Malen \"{{name}}\" ble oppdatert",
+      "error": "Klarte ikke å oppdatere mal"
     },
     "createFromTemplate": {
       "errors": {
-        "inProgressOrCompleted": "Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.",
-        "alreadyExists": "A tournament already exists. Please delete or reset the current tournament before creating a new one from a template."
+        "inProgressOrCompleted": "Kan ikke opprette turnering fra mal mens en turnering pågår eller er fullført. Slett eller tilbakestill den nåværende turneringen først.",
+        "alreadyExists": "En turnering finnes allerede. Slett eller tilbakestill den nåværende turneringen før du oppretter en ny fra en mal."
       }
     },
     "edit": {
-      "title": "Edit Template",
-      "nameLabel": "Template Name",
-      "descriptionLabel": "Description (optional)",
-      "typeLabel": "Tournament Type",
-      "formatLabel": "Match Format",
+      "title": "Rediger mal",
+      "nameLabel": "Malnavn",
+      "descriptionLabel": "Beskrivelse (valgfritt)",
+      "typeLabel": "Turneringstype",
+      "formatLabel": "Kampformat",
       "mapPool": {
-        "title": "Map Pool",
-        "selectLabel": "Choose a map pool",
-        "customOption": "Custom",
-        "selectedLabel": "Selected Maps ({{count}}):",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}"
+        "title": "Kartpool",
+        "selectLabel": "Velg en kartpool",
+        "customOption": "Egendefinert",
+        "selectedLabel": "Valgte kart ({{count}}):",
+        "vetoWarning": "Veto-formater (BO1/BO3/BO5) krever nøyaktig 7 kart. Valgt nå: {{count}}"
       },
-      "save": "Save"
+      "save": "Lagre"
     }
   },
   "saveTemplateModal": {
-    "title": "Save as Template",
-    "nameLabel": "Template Name",
-    "namePlaceholder": "8-team Single Elim BO3",
-    "descriptionLabel": "Description (optional)",
-    "descriptionPlaceholder": "Weekly 8-team single elimination tournament",
-    "saveButton": "Save Template",
+    "title": "Lagre som mal",
+    "nameLabel": "Malnavn",
+    "namePlaceholder": "8-lags enkelt utslag BO3",
+    "descriptionLabel": "Beskrivelse (valgfritt)",
+    "descriptionPlaceholder": "Ukentlig 8-lags turnering med enkelt utslag",
+    "saveButton": "Lagre mal",
     "errors": {
-      "nameRequired": "Template name is required",
-      "saveFailed": "Failed to save template"
+      "nameRequired": "Malnavn er påkrevd",
+      "saveFailed": "Klarte ikke å lagre mal"
     }
   },
   "saveMapPoolModal": {
-    "title": "Save Map Pool",
-    "nameLabel": "Map Pool Name",
-    "namePlaceholder": "My Custom Pool",
-    "info": "This will save a map pool with {{count}} map{{count, plural, one {} other {s}}}.",
-    "saveButton": "Save",
+    "title": "Lagre kartpool",
+    "nameLabel": "Navn på kartpool",
+    "namePlaceholder": "Min egendefinerte pool",
+    "info": "Dette vil lagre en kartpool med {{count}} kart{{count, plural, one {} other {}}}.",
+    "saveButton": "Lagre",
     "errors": {
-      "nameRequired": "Map pool name is required",
-      "noMaps": "Please select at least one map",
-      "saveFailed": "Failed to save map pool"
+      "nameRequired": "Navn på kartpool er påkrevd",
+      "noMaps": "Velg minst ett kart",
+      "saveFailed": "Klarte ikke å lagre kartpool"
     }
   },
   "batchServerModal": {
-    "title": "Batch Create Servers",
-    "info": "Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect for LAN setups with servers on the same machine.",
+    "title": "Opprett servere i bulk",
+    "info": "Opprett flere servere med porter som øker med 10 (27015, 27025, 27035...). Perfekt for LAN-oppsett med servere på samme maskin.",
     "sections": {
       "identification": {
-        "title": "Server Identification"
+        "title": "Serveridentifikasjon"
       },
       "connection": {
-        "title": "Connection Settings"
+        "title": "Tilkoblingsinnstillinger"
       },
       "configuration": {
-        "title": "Server Configuration"
+        "title": "Serverkonfigurasjon"
       }
     },
     "baseId": {
-      "label": "Base ID",
+      "label": "Basis-ID",
       "placeholder": "ntlan",
-      "helper": "Server IDs will be: base_1, base_2, base_3..."
+      "helper": "Server-ID-er blir: base_1, base_2, base_3..."
     },
     "baseName": {
-      "label": "Base Name",
+      "label": "Basisnavn",
       "placeholder": "NTLAN",
-      "helper": "Server names will be: Base #1, Base #2, Base #3..."
+      "helper": "Servernavn blir: Base #1, Base #2, Base #3..."
     },
     "host": {
-      "label": "Host / IP Address",
+      "label": "Vert / IP-adresse",
       "placeholder": "192.168.1.100"
     },
     "rconPassword": {
-      "label": "RCON Password",
+      "label": "RCON-passord",
       "placeholder": "shared-rcon-password",
-      "helper": "Same password for all servers"
+      "helper": "Samme passord for alle servere"
     },
     "numServers": {
-      "label": "Number of Servers",
+      "label": "Antall servere",
       "placeholder": "3",
-      "helper": "Max: 50"
+      "helper": "Maks: 50"
     },
     "assignPorts": {
-      "label": "Assign Ports",
-      "helper": "API → Server (RCON test)"
+      "label": "Tildel porter",
+      "helper": "API → server (RCON-test)"
     },
-    "serverPortLabel": "Server #{{index}}",
+    "serverPortLabel": "Server nr. {{index}}",
     "portPlaceholder": "27015",
     "enabled": {
-      "label": "Servers Enabled",
-      "helper": "All servers will be created as enabled/disabled"
+      "label": "Servere aktivert",
+      "helper": "Alle servere opprettes som aktivert/deaktivert"
     },
     "preview": {
-      "title": "Preview ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
-      "more": "...and {{count}} more"
+      "title": "Forhåndsvisning ({{showingFirst10, boolean, true {viser de første 10} false {alle}}})",
+      "more": "...og {{count}} flere"
     },
     "checkServersButton": {
-      "default": "Check Servers",
-      "checking": "Checking..."
+      "default": "Sjekk servere",
+      "checking": "Sjekker..."
     },
     "createServersButton": {
-      "default": "Create {{count}} Server{{count, plural, one {} other {s}}}",
-      "creating": "Creating..."
+      "default": "Opprett {{count}} server{{count, plural, one {} other {e}}}",
+      "creating": "Oppretter..."
     },
     "warnings": {
-      "notAllVerified": "Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured."
+      "notAllVerified": "Noen servere bestod ikke tilkoblingssjekkene. De lagres likevel, men kan vises som offline til RCON og webhook er konfigurert."
     },
     "success": {
-      "createdAll": "Successfully created {{count}} server(s)"
+      "createdAll": "{{count}} server{{count, plural, one {} other {e}}} ble opprettet"
     },
     "errors": {
-      "baseNameRequired": "Base name is required",
-      "baseIdRequired": "Base ID is required",
-      "hostRequired": "Host is required",
-      "countRange": "Number of servers must be between 1 and 50",
-      "passwordRequired": "RCON password is required",
-      "portRange": "Server #{{index}} port must be between 1 and 65535",
-      "connectionFailed": "Connection failed",
-      "createFailed": "Failed to create servers",
-      "partialCreate": "Created {{created}}/{{total}} servers. Errors:\n{{details}}"
+      "baseNameRequired": "Basisnavn er påkrevd",
+      "baseIdRequired": "Basis-ID er påkrevd",
+      "hostRequired": "Vert er påkrevd",
+      "countRange": "Antall servere må være mellom 1 og 50",
+      "passwordRequired": "RCON-passord er påkrevd",
+      "portRange": "Server #{{index}}-port må være mellom 1 og 65535",
+      "connectionFailed": "Tilkobling feilet",
+      "createFailed": "Klarte ikke å opprette servere",
+      "partialCreate": "Opprettet {{created}}/{{total}} servere. Feil:\n{{details}}"
     }
   },
   "eloTemplatesPage": {
     "errors": {
-      "load": "Failed to load ELO templates"
+      "load": "Klarte ikke å laste ELO-maler"
     },
     "header": {
-      "createTemplate": "Create Template",
-      "importJson": "Import from JSON"
+      "createTemplate": "Opprett mal",
+      "importJson": "Importer fra JSON"
     },
     "empty": {
-      "title": "No ELO Calculation Templates",
-      "description": "Create your first template to customize how player statistics influence ELO adjustments",
-      "action": "Create Template"
+      "title": "Ingen ELO-beregningsmaler",
+      "description": "Opprett din første mal for å tilpasse hvordan spillerstatistikk påvirker ELO-justeringer",
+      "action": "Opprett mal"
     },
     "delete": {
-      "title": "Delete ELO Template",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template",
-      "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
+      "title": "Slett ELO-mal",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres.",
+      "success": "Malen \"{{name}}\" ble slettet",
+      "error": "Klarte ikke å slette mal",
+      "defaultProtected": "Standardmalen \"pure-win-loss\" kan ikke slettes."
     },
     "import": {
-      "success": "Successfully imported {{count}} ELO template(s)"
+      "success": "Importerte {{count}} ELO-mal{{count, plural, one {} other {er}}}"
     },
     "weights": {
-      "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
+      "noAdjustmentsPure": "Ingen statistikkjusteringer (ren vinn/tap)"
     },
     "card": {
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "default": "Default",
+      "enabled": "Aktivert",
+      "disabled": "Deaktivert",
+      "default": "Standard",
       "adjustment": {
-        "none": "Per‑match stat adjustment: none (0; result‑only ELO)",
-        "uncapped": "Per‑match stat adjustment: uncapped (use with care)",
-        "range": "Per‑match stat adjustment range: {{min}} to {{max}} ELO",
-        "noMin": "no min",
-        "noMax": "no max"
+        "none": "Statistikkjustering per kamp: ingen (0; kun resultat-ELO)",
+        "uncapped": "Statistikkjustering per kamp: ubegrenset (bruk med forsiktighet)",
+        "range": "Statistikkjustering per kamp: {{min}} til {{max}} ELO",
+        "noMin": "ingen min",
+        "noMax": "ingen maks"
       },
       "tooltips": {
-        "edit": "Edit Template",
-        "delete": "Delete Template"
+        "edit": "Rediger mal",
+        "delete": "Slett mal"
       },
-      "weightsTitle": "Stat Weights:",
-      "limitsTitle": "Adjustment Limits:"
+      "weightsTitle": "Statistikkvekter:",
+      "limitsTitle": "Justeringsgrenser:"
     },
     "importModal": {
-      "title": "Import ELO Templates from JSON",
-      "introTitle": "Paste JSON with ELO template definitions below.",
-      "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
-      "jsonLabel": "JSON Data",
-      "validJsonTitle": "✓ Valid JSON!",
-      "validJsonBody": "Found {{count}} template{{count !== 1 ? 's' : ''}}.",
-      "previewTitle": "Preview:",
-      "previewButton": "Preview",
-      "importButton": "Import Templates"
+      "title": "Importer ELO-maler fra JSON",
+      "introTitle": "Lim inn JSON med ELO-maldefinisjoner under.",
+      "introBody": "Forventet format: en liste med maler med navn, valgfri beskrivelse, aktivert, vekter, maxAdjustment og minAdjustment. Hvis du utelater id, genereres den fra navnet.",
+      "jsonLabel": "JSON-data",
+      "validJsonTitle": "✓ Gyldig JSON!",
+      "validJsonBody": "Fant {{count}} mal{{count !== 1 ? 'er' : ''}}.",
+      "previewTitle": "Forhåndsvisning:",
+      "previewButton": "Forhåndsvis",
+      "importButton": "Importer maler"
     },
     "editor": {
-      "titleEdit": "Edit ELO Template",
-      "titleCreate": "Create ELO Template",
-      "info": "Configure how individual player statistics influence ELO adjustments. Weights are applied after OpenSkill calculates the base ELO change (win/loss). Positive weights increase ELO, negative weights decrease it.",
-      "nameLabel": "Template Name",
-      "nameDefaultLocked": "Default template name cannot be changed",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Optional description of this template's purpose",
-      "enabledLabel": "Enabled",
+      "titleEdit": "Rediger ELO-mal",
+      "titleCreate": "Opprett ELO-mal",
+      "info": "Konfigurer hvordan individuell spillerstatistikk påvirker ELO-justeringer. Vekter brukes etter at OpenSkill har beregnet grunnendringen i ELO (vinn/tap). Positive vekter øker ELO, negative vekter senker den.",
+      "nameLabel": "Malnavn",
+      "nameDefaultLocked": "Standard malnavn kan ikke endres",
+      "descriptionLabel": "Beskrivelse",
+      "descriptionPlaceholder": "Valgfri beskrivelse av hva denne malen er til for",
+      "enabledLabel": "Aktivert",
       "weights": {
-        "title": "Stat Weights",
-        "subtitle": "Adjust the slider for each statistic. Value of 0 means no adjustment for that stat."
+        "title": "Statistikkvekter",
+        "subtitle": "Juster skyveknappen for hver statistikk. Verdien 0 betyr ingen justering for den statistikken."
       },
       "limits": {
-        "title": "Adjustment Limits (Optional)",
-        "subtitle": "Set maximum and minimum ELO adjustments per match to prevent extreme changes.",
-        "maxLabel": "Max Adjustment",
-        "maxHelper": "Maximum positive ELO adjustment per match",
-        "minLabel": "Min Adjustment",
-        "minHelper": "Maximum negative ELO adjustment per match"
+        "title": "Justeringsgrenser (valgfritt)",
+        "subtitle": "Sett maks- og min-grenser for ELO-justering per kamp for å unngå ekstreme endringer.",
+        "maxLabel": "Maks justering",
+        "maxHelper": "Maksimal positiv ELO-justering per kamp",
+        "minLabel": "Min justering",
+        "minHelper": "Maksimal negativ ELO-justering per kamp"
       },
       "errors": {
-        "nameRequired": "Template name is required"
+        "nameRequired": "Malnavn er påkrevd"
       },
       "create": {
-        "success": "Template \"{{name}}\" created successfully",
-        "error": "Failed to create template"
+        "success": "Malen \"{{name}}\" ble opprettet",
+        "error": "Klarte ikke å opprette mal"
       },
       "update": {
-        "success": "Template \"{{name}}\" updated successfully",
-        "error": "Failed to update template"
+        "success": "Malen \"{{name}}\" ble oppdatert",
+        "error": "Klarte ikke å oppdatere mal"
       },
       "buttons": {
-        "saving": "Saving...",
-        "update": "Update",
-        "create": "Create"
+        "saving": "Lagrer...",
+        "update": "Oppdater",
+        "create": "Opprett"
       }
     }
   }

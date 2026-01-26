@@ -61,6 +61,26 @@ function isProbablyOkToMatchEnglish(s) {
   if (exactOk.has(s)) return true;
   // Pure placeholder values (used as labels elsewhere)
   if (/^\{\{[^}]+\}\}$/.test(s)) return true;
+  // Bracketed prefixes/tokens (commonly used as chat prefixes)
+  if (/^\[[A-Za-z0-9_]+\]$/.test(s)) return true;
+  // Strings that are *only* placeholders + separators/punctuation are not translatable UI.
+  // Examples:
+  // - "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}"
+  // - "[ADMIN] {{name}}"
+  const stripped = s
+    .replace(/\{\{[\s\S]*?\}\}/g, '')
+    .replace(/\{[A-Z0-9_]+\}/g, '')
+    .trim();
+  if (stripped.length === 0) return true;
+  if (/^[0-9\s.,:(){}[\]/_-•]+$/.test(stripped)) return true;
+  // Common example placeholders / sample values (not UI text)
+  if (/^de_[a-z0-9_]+$/.test(s)) return true; // map id example, e.g. de_dust2
+  if (s === 'Dust II') return true;
+  if (s === 'Astralis') return true;
+  if (s === 's1mple') return true;
+  if (s === 'ntlan') return true;
+  if (s === 'shared-rcon-password') return true;
+  if (s === 'your-rcon-password') return true;
   if (/^[0-9\s.,:(){}[\]/_-]+$/.test(s)) return true;
   if (/^https?:\/\//i.test(s)) return true;
   if (/^[A-Z0-9]{2,}$/.test(s)) return true; // acronyms
@@ -113,10 +133,15 @@ const locales = fs
   .sort((a, b) => a.localeCompare(b));
 
 const limit = Number(process.env.I18N_FALLBACK_LIMIT ?? '40');
+const onlyLocales = (process.env.I18N_FALLBACK_LOCALES ?? '')
+  .split(',')
+  .map((s) => s.trim())
+  .filter(Boolean);
 
 let total = 0;
 
 for (const locale of locales) {
+  if (onlyLocales.length && !onlyLocales.includes(locale)) continue;
   const merged = loadLocaleMergedJson(localesDir, locale);
   if (!merged) continue;
   const locStrings = flattenStringLeaves(merged);

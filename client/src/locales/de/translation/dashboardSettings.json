@@ -11,7 +11,7 @@
     },
     "integrations": {
       "webhook": {
-        "title": "MatchZy Webhook",
+        "title": "MatchZy-Webhook",
         "description": "MatchZy Webhook-URL, die deine CS2-Server erreichen können.",
         "label": "Webhook-URL",
         "helper": "Beispiel: https://deine-domain.de"
@@ -92,7 +92,7 @@
           "usePauseForTacticalPause": ".pause wie Tactical Pause behandeln"
         },
         "demos": {
-          "title": "Demos",
+          "title": "Demoaufnahmen",
           "demoPathLabel": "Demo-Pfad (relativ zu csgo/)",
           "demoPathHelper": "Muss mit '/' enden. Standard: MatchZy/",
           "demoNameFormatLabel": "Demo-Dateiname-Format (ohne .dem)",
@@ -184,7 +184,7 @@
       }
     },
     "footer": {
-      "version": "Version",
+      "version": "Version:",
       "unknownVersion": "Unbekannt",
       "resetButton": "Einstellungen zurücksetzen"
     },
@@ -208,7 +208,7 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Übersicht",
     "notReady": "Das Turnier-Dashboard wird hier angezeigt, sobald das Turnier gestartet wurde.",
     "restartTournament": {
       "button": "Turniermatches neu starten",
@@ -264,8 +264,8 @@
         "title": "Turnierstatus",
         "none": "Kein aktives Turnier",
         "typeLabel": "Typ",
-        "formatLabel": "Format",
-        "matchesLabel": "Matches"
+        "formatLabel": "Modus",
+        "matchesLabel": "Spiele"
       },
       "matchStatus": {
         "title": "Matchstatus",
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Top-Spieler nach ELO",
         "subtitle": "Globales Rating über alle Turniertypen",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "ELO-Verteilung der Spieler",

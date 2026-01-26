@@ -14,7 +14,7 @@
     "searchError": "Klarte ikke å søke etter spiller. Prøv igjen.",
     "modalTitle": "Flere spillere funnet",
     "modalSelectPrompt": "{{count}} spillere funnet. Velg én for å se profilen:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO-rating: {{elo}}"
   },
   "playerPage": {
     "playerNotFound": "Denne spilleren finnes ikke.",
@@ -23,7 +23,7 @@
     "thisIsYou": "Dette er deg",
     "steamId": "Steam-ID: {{id}}",
     "skillRatingTooltip": "Skill Rating er basert på OpenSkill. Rundt 1500 er en typisk startverdi; høyere er bedre.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "viewTournamentLeaderboard": "Se turneringens toppliste",
     "admin": "ADMIN",
     "nextServersAllocated": "Neste servere tildeles om {{seconds}}s",
@@ -49,14 +49,14 @@
     "recentFormHighlights": "Form og høydepunkter",
     "averageAdr": "Gjennomsnittlig ADR",
     "round": "Runde",
-    "kills": "Kills",
-    "deaths": "Deaths",
-    "assists": "Assists",
-    "hsPercent": "HS%",
+    "kills": "Drap",
+    "deaths": "Dødsfall",
+    "assists": "Assist",
+    "hsPercent": "HS-prosent",
     "dmg": "DMG",
-    "rating": "Rating",
+    "rating": "Spillrating",
     "result": "Resultat",
-    "baseline": "Baseline",
+    "baseline": "Basislinje",
     "matchHistory": "Kamphistorikk"
   },
   "teamPage": {
@@ -130,7 +130,7 @@
     "wins": "Seire",
     "losses": "Tap",
     "winRate": "Seiersprosent",
-    "skillRating": "Skill Rating",
+    "skillRating": "Ferdighetsrating",
     "ratingChange": "Endring i rating",
     "avgAdr": "Snitt ADR",
     "teamStandings": "Lagplasseringer",
@@ -211,7 +211,7 @@
     },
     "openPlayerPageTooltip": "Åpne spiller-side",
     "skillRatingTooltip": "Skill Rating er basert på OpenSkill; høyere er bedre.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Ferdighetsrating: {{elo}}",
     "matchesCount_one": "{{count}} kamp",
     "matchesCount_other": "{{count}} kamper"
   }

@@ -6,30 +6,30 @@
     "publicPlayerSearch": "Offentlig spillersøk"
   },
   "publicLinks": {
-    "intro": "Quick links to the public pages you can share with players and viewers.",
+    "intro": "Hurtiglenker til offentlige sider du kan dele med spillere og seere.",
     "common": {
-      "publicUrl": "Public URL",
-      "urlPattern": "URL pattern"
+      "publicUrl": "Offentlig URL",
+      "urlPattern": "URL-mønster"
     },
     "playerSearch": {
-      "title": "Public Player Search",
-      "description": "Search for registered players by name, Steam ID or profile URL.",
-      "openButton": "Open /player"
+      "title": "Offentlig spillersøk",
+      "description": "Søk etter registrerte spillere med navn, Steam-ID eller profil-URL.",
+      "openButton": "Åpne /player"
     },
     "playerProfile": {
-      "title": "Player Profile (public)",
-      "description": "Direct link to a player profile by Steam ID64. Players who are signed in with Steam can also use the \"My profile\" link in the top bar instead of copying URLs.",
-      "requiresSteamId": "Requires Steam ID64"
+      "title": "Spillerprofil (offentlig)",
+      "description": "Direktelenke til en spillerprofil via Steam ID64. Spillere som er logget inn med Steam kan også bruke lenken «Min profil» i topplinjen i stedet for å kopiere URL-er.",
+      "requiresSteamId": "Krever Steam ID64"
     },
     "teamMatch": {
-      "title": "Team Match Page (public)",
-      "description": "Read-only view of a team's current or most recent match.",
-      "openExample": "Open example team"
+      "title": "Lag-kampside (offentlig)",
+      "description": "Kun-visning av et lags nåværende eller siste kamp.",
+      "openExample": "Åpne eksempel-lag"
     },
     "tournamentLeaderboard": {
-      "title": "Tournament Leaderboard (public)",
-      "description": "Public standings page for the current tournament (defaults to tournament 1).",
-      "open": "Open leaderboard"
+      "title": "Turneringstoppliste (offentlig)",
+      "description": "Offentlig resultat-/plasseringstabell for gjeldende turnering (standard er turnering 1).",
+      "open": "Åpne toppliste"
     }
   }
 }

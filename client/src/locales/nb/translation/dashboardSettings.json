@@ -55,8 +55,8 @@
       "tournamentStatus": {
         "title": "Turneringsstatus",
         "none": "Ingen aktiv turnering",
-        "typeLabel": "Type",
-        "formatLabel": "Format",
+        "typeLabel": "Turneringstype",
+        "formatLabel": "Spillformat",
         "matchesLabel": "Kamper"
       },
       "matchStatus": {
@@ -84,7 +84,7 @@
       "topPlayers": {
         "title": "Topp spillere etter ELO",
         "subtitle": "Global rating på tvers av alle turneringstyper",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "recentMatches": {
         "title": "Siste fullførte kamper",

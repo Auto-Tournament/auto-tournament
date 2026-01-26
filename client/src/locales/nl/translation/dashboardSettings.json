@@ -29,11 +29,11 @@
         "githubError": "Kan GitHub-repository niet bereiken. Controleer uw internetverbinding en probeer het later opnieuw."
       },
       "steam": {
-        "title": "Stoomintegratie",
+        "title": "Steam-integratie",
         "apiKeyLabel": "Steam Web API-sleutel",
         "apiKeyHelper": "Lost Steam-vanity-URL's en spelersinformatie op. Laat leeg om opzoekingen uit te schakelen.",
-        "checkButtonChecking": "Stoom controleren...",
-        "checkButtonIdle": "Controleer de stoomconnectiviteit",
+        "checkButtonChecking": "Steam controleren…",
+        "checkButtonIdle": "Steam-connectiviteit controleren",
         "statusOk": "Steam API-sleutel is ingesteld en bereikbaar.",
         "statusNotConfigured": "Steam API-sleutel is niet ingesteld. Vanity-URL's kunnen niet worden opgelost totdat u een sleutel toevoegt.",
         "statusUnreachable": "Steam API-sleutel verschijnt ingesteld, maar Steam kon niet worden bereikt. Controleer uw netwerk of sleutel.",
@@ -67,7 +67,7 @@
             "label": "Autostart-modus bij plugin-load",
             "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
             "options": {
-              "0": "inactieve slaapstand",
+              "0": "0 — Inactief / slaapstand",
               "1": "1 — Match-modus",
               "2": "2 — Practice-modus"
             }
@@ -208,15 +208,15 @@
     }
   },
   "dashboard": {
-    "title": "Gösterge Paneli",
+    "title": "Dashboard",
     "notReady": "Het toernooidashboard verschijnt hier zodra het toernooi is gestart.",
     "restartTournament": {
       "button": "Wedstrijden opnieuw starten",
       "restarting": "Toernooiwedstrijden worden opnieuw gestart..."
     },
     "onboarding": {
-      "ready": "Ready to go!",
-      "gettingStarted": "Aan de Slag",
+      "ready": "🎉 Klaar voor gebruik!",
+      "gettingStarted": "Aan de slag",
       "stepsComplete": "{{completed}}/{{total}} Voltooid",
       "subtitle": "Volg deze stappen om je eerste toernooi in te stellen",
       "steps": {
@@ -259,9 +259,9 @@
       }
     },
     "stats": {
-      "heading": "Wedstrijd Statistieken",
+      "heading": "Toernooistatistieken",
       "tournamentStatus": {
-        "title": "Wedstrijd status",
+        "title": "Toernooistatus",
         "none": "Geen toernooi actief",
         "typeLabel": "Type",
         "formatLabel": "Formaat",
@@ -269,11 +269,11 @@
       },
       "matchStatus": {
         "title": "Wedstrijdstatus",
-        "total": "Total aantal matches:",
+        "total": "Totaal aantal wedstrijden",
         "pending": "In behandeling:",
         "ready": "Gereed:",
         "loaded": "Geladen:",
-        "live": "Rechtstreeks:",
+        "live": "Live:",
         "completed": "Voltooid:"
       },
       "serverStatus": {
@@ -284,10 +284,10 @@
         "distributionTitle": "Serverstatus"
       },
       "players": {
-        "title": "Voetballers",
+        "title": "Spelers",
         "total": "Totaal aantal spelers",
         "inMatches": "In wedstrijden:",
-        "waiting": "Aan het wachten"
+        "waiting": "Wachten:"
       },
       "playerDistribution": {
         "title": "Spelerverdeling"
@@ -301,14 +301,14 @@
         "title": "Speler ELO Distributie",
         "subtitle": "Aantal spelers per Skill Rating-band (emmergrootte {{bucket}}).",
         "xAxis": "Skill Rating-band",
-        "yAxis": "Voetballers",
-        "seriesLabel": "Voetballers"
+        "yAxis": "Spelers",
+        "seriesLabel": "Spelers"
       },
       "recentMatches": {
-        "title": "Recent voltooide overeenkomsten",
+        "title": "Recent afgeronde wedstrijden",
         "subtitle": "Laatste {{count}} voltooide wedstrijden",
-        "none": "Nog geen voltooide overeenkomsten.",
-        "chipCompleted": "Voldaan"
+        "none": "Nog geen afgeronde wedstrijden.",
+        "chipCompleted": "Afgerond"
       },
       "noData": "Geen gegevens beschikbaar. Maak een toernooi om statistieken te bekijken.",
       "errors": {

@@ -14,7 +14,7 @@
     "searchError": "Spieler konnte nicht gesucht werden. Bitte erneut versuchen.",
     "modalTitle": "Mehrere Spieler gefunden",
     "modalSelectPrompt": "{{count}} Spieler gefunden. Wähle einen aus, um sein Profil zu öffnen:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO-Wert: {{elo}}"
   },
   "playerPage": {
     "playerNotFound": "Dieser Spieler existiert nicht.",
@@ -22,7 +22,7 @@
     "thisIsYou": "Das bist du",
     "steamId": "Steam-ID: {{id}}",
     "skillRatingTooltip": "Skill Rating basiert auf OpenSkill. Etwa 1500 ist ein typischer Startwert; höher ist besser.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Skill-Rating: {{elo}}",
     "viewTournamentLeaderboard": "Turnier-Rangliste ansehen",
     "admin": "ADMIN",
     "nextServersAllocated": "Nächste Serverzuweisung in {{seconds}}s",
@@ -37,7 +37,7 @@
     "losses": "Niederlagen",
     "winRate": "Siegquote",
     "recentMatches": "Letzte Matches",
-    "bestAdrIn": "{{adr}} ADR in {{round}}",
+    "bestAdrIn": "{{adr}} ADR in Runde {{round}}",
     "win": "Sieg",
     "loss": "Niederlage",
     "opponent": "Gegner",
@@ -48,16 +48,16 @@
     "recentFormHighlights": "Form & Highlights",
     "averageAdr": "Ø ADR",
     "round": "Runde",
-    "kills": "Kills",
+    "kills": "Abschüsse",
     "deaths": "Tode",
-    "assists": "Assists",
-    "hsPercent": "HS%",
+    "assists": "Vorlagen",
+    "hsPercent": "HS-%",
     "dmg": "DMG",
-    "rating": "Rating",
+    "rating": "Bewertung",
     "result": "Ergebnis",
-    "baseline": "Baseline",
+    "baseline": "Basiswert",
     "matchHistory": "Matchverlauf",
-    "profileTitle": "Player profile"
+    "profileTitle": "Spielerprofil"
   },
   "teamPage": {
     "wantYourStats": "Willst du deine eigenen Stats und Match-Historie sehen?",
@@ -88,13 +88,13 @@
     "loss": "NIEDERLAGE",
     "vs": "vs",
     "unknown": "Unbekannt",
-    "matchNumberDate": "Match #{{number}} • {{date}}",
+    "matchNumberDate": "Match Nr. {{number}} • {{date}}",
     "modalTitle": "Matchdetails",
     "modalVictory": "SIEG",
     "modalDefeat": "NIEDERLAGE",
-    "modalMatchNumber": "Match #{{number}}",
-    "team1": "Team 1",
-    "team2": "Team 2",
+    "modalMatchNumber": "Match Nr. {{number}}",
+    "team1": "Mannschaft 1",
+    "team2": "Mannschaft 2",
     "finalSeriesScore": "Endstand der Serie",
     "completed": "Abgeschlossen: {{date}}",
     "mapsPlayed": "Gespielte Maps",
@@ -111,7 +111,7 @@
     "titleSuffix": " - Rangliste",
     "completed": "Abgeschlossen",
     "inProgress": "Läuft",
-    "setup": "Setup",
+    "setup": "Einrichtung",
     "shuffleTournament": "Turnier mischen",
     "roundOf": "Runde {{current}} von {{total}}",
     "topByWins": "Top-Spieler nach Siegen",
@@ -130,7 +130,7 @@
     "wins": "Siege",
     "losses": "Niederlagen",
     "winRate": "Siegquote",
-    "skillRating": "Skill Rating",
+    "skillRating": "Skill-Rating",
     "ratingChange": "Änderung",
     "avgAdr": "Ø ADR",
     "teamStandings": "Team-Rangliste",
@@ -141,8 +141,8 @@
     "teamsCount": "{{count}} Teams",
     "noPlayersRegistered": "Noch keine Spieler registriert",
     "searchNoMatch": "Keine Spieler gefunden für „{{query}}“",
-    "team": "Team",
-    "matches": "Matches"
+    "team": "Mannschaft",
+    "matches": "Spiele"
   },
   "teamsPage": {
     "headerSelect": {
@@ -211,7 +211,7 @@
     },
     "openPlayerPageTooltip": "Spielerseite öffnen",
     "skillRatingTooltip": "Skill Rating basiert auf OpenSkill; höher ist besser.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Skill-Rating: {{elo}}",
     "matchesCount_one": "{{count}} Match",
     "matchesCount_other": "{{count}} Matches"
   }
