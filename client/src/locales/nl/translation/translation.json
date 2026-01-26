@@ -306,5 +306,113 @@
     "errors": {
       "loadServers": "Kon servers niet laden"
     }
+  },
+  "settingsPage": {
+    "tabs": {
+      "matchzy": "MatchZy"
+    },
+    "matchRating": {
+      "chatDefaults": {
+        "title": "MatchZy chat- & knife-standaarden",
+        "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
+        "chatPrefixLabel": "Chat-prefix",
+        "chatPrefixHelper": "Standaard: \"[MAT]\". Laat leeg om terug te zetten naar de standaard.",
+        "adminChatPrefixLabel": "Admin chat-prefix",
+        "adminChatPrefixHelper": "Standaard: \"[ADMIN]\". Laat leeg om terug te zetten naar de standaard.",
+        "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
+        "knifeNote": "Geldt alleen wanneer MatchZy normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
+      },
+      "matchzyCore": {
+        "title": "MatchZy Core-standaarden",
+        "description": "Deze standaarden worden naar servers gestuurd tijdens initialisatie en vóór elke wedstrijd-load.",
+        "expert": {
+          "title": "Expertinstellingen",
+          "description": "Deze instellingen kunnen onverwacht servergedrag veroorzaken als ze verkeerd zijn ingesteld. Wijzig ze alleen als je weet dat je ze nodig hebt.",
+          "autostartMode": {
+            "label": "Autostart-modus bij plugin-load",
+            "helper": "0 = idle/sleep, 1 = match mode (aanbevolen), 2 = practice mode",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Match-modus",
+              "2": "2 — Practice-modus"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Start wedstrijd",
+          "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
+          "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 2.",
+          "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
+        },
+        "access": {
+          "title": "Servertoegang",
+          "kickWhenNoMatchLoaded": "Kick/voorkom joins wanneer geen wedstrijd geladen is (toernooiservers)",
+          "whitelistEnabledDefault": "Whitelist standaard inschakelen (admins kunnen togglen met .whitelist)"
+        },
+        "adminTools": {
+          "title": "Admin-tools",
+          "pauseAfterRestore": "Pauzeren na round restore (.stop) zodat teams kunnen overleggen",
+          "stopCommandAvailable": "Schakel .stop (round restore) commando in",
+          "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
+          "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
+        },
+        "demos": {
+          "title": "Demo’s",
+          "demoPathLabel": "Demo-pad (relatief aan csgo/)",
+          "demoPathHelper": "Moet eindigen op '/'. Standaard: MatchZy/",
+          "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing einde serie",
+          "kickDelayNoDemoLabel": "Extra kick-vertraging wanneer demo’s uit staan (seconden)",
+          "kickDelayDemoNoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan maar geen upload-URL (seconden)",
+          "kickDelayDemoUploadLabel": "Extra kick-vertraging wanneer demo’s aan staan en upload-URL is ingesteld (seconden)",
+          "kickDelayHelper": "Wordt opgeteld bij mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced-functies",
+        "description": "Configureer geavanceerde match-functies. Laat velden leeg om toernooitype-standaarden te gebruiken.",
+        "autoready": {
+          "title": "Auto-ready",
+          "label": "Markeer spelers automatisch als ready wanneer ze joinen",
+          "description": "Spelers zijn automatisch ready bij join. Ze kunnen nog steeds .unready gebruiken."
+        },
+        "pause": {
+          "title": "Pauzes",
+          "bothTeamsUnpause": "Vereis dat beide teams unpausen",
+          "maxPausesLabel": "Max. pauzes per team",
+          "maxPausesHelper": "0 = onbeperkt",
+          "pauseDurationLabel": "Pauzelimiet (seconden)",
+          "pauseDurationHelper": "0 = geen tijdslimiet"
+        },
+        "sideSelection": {
+          "title": "Timer side-keuze",
+          "enabled": "Timer voor side-keuze inschakelen",
+          "timeLabel": "Tijd (seconden)",
+          "timeHelper": "Tijd na knife-round om sides te kiezen"
+        },
+        "gg": {
+          "title": "Vroegtijdig beëindigen (.gg)",
+          "enabled": ".gg forfeit inschakelen",
+          "thresholdLabel": "Stem-drempel (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% van het team moet stemmen (bijv. 4/5 spelers)",
+          "minScoreDiffLabel": "Minimum scoreverschil",
+          "minScoreDiffHelper": "0 = uitgeschakeld. Voorbeeld: 6 = .gg alleen toestaan bij 6+ rounds achter"
+        },
+        "ffw": {
+          "title": "Forfeit/walkover",
+          "enabled": "Automatische forfeit inschakelen wanneer team disconnect",
+          "timeLabel": "Forfeit-timer (seconden)",
+          "timeHelper": "Tijd voordat forfeit wordt verklaard wanneer het hele team vertrekt"
+        },
+        "demo": {
+          "title": "Demo-opname",
+          "enabled": "Automatische GOTV demo-opname inschakelen",
+          "description": "Wanneer uitgeschakeld, herstart de server ~10s na match-einde (vs 60-90s met opname)"
+        }
+      }
+    }
   }
 }

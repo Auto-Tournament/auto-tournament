@@ -48,6 +48,7 @@ const mapSettingsResponse = async () => {
     matchzyDebugChatEnabled,
     allowSelfRegister,
     // MatchZy core defaults
+    matchzyAutostartMode: matchzyCore.autostartMode,
     matchzyMinimumReadyRequired: matchzyCore.minimumReadyRequired,
     matchzyAllowForceReady: matchzyCore.allowForceReady,
     matchzyKickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
@@ -96,6 +97,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyDebugChatEnabled,
     allowSelfRegister,
     // MatchZy core defaults
+    matchzyAutostartMode,
     matchzyMinimumReadyRequired,
     matchzyAllowForceReady,
     matchzyKickWhenNoMatchLoaded,
@@ -133,6 +135,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyDebugChatEnabled?: unknown;
     allowSelfRegister?: unknown;
     // MatchZy core defaults
+    matchzyAutostartMode?: unknown;
     matchzyMinimumReadyRequired?: unknown;
     matchzyAllowForceReady?: unknown;
     matchzyKickWhenNoMatchLoaded?: unknown;
@@ -318,6 +321,19 @@ router.put('/', async (req: Request, res: Response) => {
       await settingsService.setSetting(
         'matchzy_minimum_ready_required',
         matchzyMinimumReadyRequired === null ? null : String(matchzyMinimumReadyRequired)
+      );
+    }
+
+    if (matchzyAutostartMode !== undefined) {
+      if (typeof matchzyAutostartMode !== 'number' && matchzyAutostartMode !== null) {
+        return res.status(400).json({
+          success: false,
+          error: 'matchzyAutostartMode must be a number (0-2) or null',
+        });
+      }
+      await settingsService.setSetting(
+        'matchzy_autostart_mode',
+        matchzyAutostartMode === null ? null : String(matchzyAutostartMode)
       );
     }
 

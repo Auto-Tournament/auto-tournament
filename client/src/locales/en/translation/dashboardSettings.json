@@ -115,6 +115,7 @@
       "integrations": "Integrations & Webhooks",
       "players": "Players & Access",
       "matches": "Matches & Ratings",
+      "matchzy": "MatchZy",
       "developer": "Developer / Simulation"
     },
     "integrations": {
@@ -168,6 +169,19 @@
       "matchzyCore": {
         "title": "MatchZy Core Defaults",
         "description": "These defaults are sent to servers during initialization and before each match load.",
+        "expert": {
+          "title": "Expert settings",
+          "description": "These settings can make servers behave unexpectedly if misconfigured. Change them only if you know you need them.",
+          "autostartMode": {
+            "label": "Autostart mode on plugin load",
+            "helper": "0 = idle/sleep, 1 = match mode (recommended), 2 = practice mode",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Match mode",
+              "2": "2 — Practice mode"
+            }
+          }
+        },
         "ready": {
           "title": "Ready / Match Start",
           "minimumReadyLabel": "Minimum ready players required",

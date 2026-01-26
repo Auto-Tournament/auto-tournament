@@ -218,6 +218,7 @@ class ServerInitializationService {
       // 4b. Configure MatchZy core defaults (persistent)
       const matchzyCore = await settingsService.getMatchzyCoreDefaults();
       const matchzyCoreCommands = getMatchZyServerConfigCommands({
+        autostartMode: matchzyCore.autostartMode,
         minimumReadyRequired: matchzyCore.minimumReadyRequired,
         allowForceReady: matchzyCore.allowForceReady,
         kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,

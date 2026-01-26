@@ -83,6 +83,8 @@ export default function Settings() {
   const [allowSelfRegister, setAllowSelfRegister] = useState(false);
   const [initialAllowSelfRegister, setInitialAllowSelfRegister] = useState(false);
   // MatchZy core defaults
+  const [matchzyAutostartMode, setMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
+  const [initialMatchzyAutostartMode, setInitialMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
   const [matchzyMinimumReadyRequired, setMatchzyMinimumReadyRequired] = useState<number>(2);
   const [initialMatchzyMinimumReadyRequired, setInitialMatchzyMinimumReadyRequired] =
     useState<number>(2);
@@ -197,6 +199,7 @@ export default function Settings() {
           ? response.settings.allowSelfRegister
           : false;
       // MatchZy core defaults
+      const autostartMode = response.settings.matchzyAutostartMode ?? 1;
       const minimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
       const allowForceReady = response.settings.matchzyAllowForceReady ?? true;
       const kickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
@@ -246,6 +249,8 @@ export default function Settings() {
       setInitialAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
+      setMatchzyAutostartMode(autostartMode);
+      setInitialMatchzyAutostartMode(autostartMode);
       setMatchzyMinimumReadyRequired(minimumReadyRequired);
       setInitialMatchzyMinimumReadyRequired(minimumReadyRequired);
       setMatchzyAllowForceReady(allowForceReady);
@@ -340,6 +345,7 @@ export default function Settings() {
           matchzyDebugChatEnabled: overrides?.matchzyDebugChatEnabled ?? matchzyDebugChatEnabled,
           allowSelfRegister,
           // MatchZy core defaults
+          matchzyAutostartMode,
           matchzyMinimumReadyRequired,
           matchzyAllowForceReady,
           matchzyKickWhenNoMatchLoaded,
@@ -393,6 +399,7 @@ export default function Settings() {
           response.settings.allowSelfRegister !== undefined
             ? response.settings.allowSelfRegister
             : false;
+        const newAutostartMode = response.settings.matchzyAutostartMode ?? 1;
         const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
         const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
         const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
@@ -447,6 +454,8 @@ export default function Settings() {
         setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
         setAllowSelfRegister(newAllowSelfRegister);
         setInitialAllowSelfRegister(newAllowSelfRegister);
+        setMatchzyAutostartMode(newAutostartMode);
+        setInitialMatchzyAutostartMode(newAutostartMode);
         setMatchzyMinimumReadyRequired(newMinimumReadyRequired);
         setInitialMatchzyMinimumReadyRequired(newMinimumReadyRequired);
         setMatchzyAllowForceReady(newAllowForceReady);
@@ -544,6 +553,7 @@ export default function Settings() {
       simulateMatches,
       simulationTimescale,
       allowSelfRegister,
+      matchzyAutostartMode,
       matchzyMinimumReadyRequired,
       matchzyAllowForceReady,
       matchzyKickWhenNoMatchLoaded,
@@ -589,6 +599,7 @@ export default function Settings() {
       ratingsEnabled !== initialRatingsEnabled ||
       matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
       allowSelfRegister !== initialAllowSelfRegister ||
+      matchzyAutostartMode !== initialMatchzyAutostartMode ||
       matchzyMinimumReadyRequired !== initialMatchzyMinimumReadyRequired ||
       matchzyAllowForceReady !== initialMatchzyAllowForceReady ||
       matchzyKickWhenNoMatchLoaded !== initialMatchzyKickWhenNoMatchLoaded ||
@@ -661,6 +672,7 @@ export default function Settings() {
       matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
       ratingsEnabled === initialRatingsEnabled &&
       allowSelfRegister === initialAllowSelfRegister &&
+      matchzyAutostartMode === initialMatchzyAutostartMode &&
       matchzyMinimumReadyRequired === initialMatchzyMinimumReadyRequired &&
       matchzyAllowForceReady === initialMatchzyAllowForceReady &&
       matchzyKickWhenNoMatchLoaded === initialMatchzyKickWhenNoMatchLoaded &&
@@ -747,6 +759,7 @@ export default function Settings() {
     initialMatchzyDebugChatEnabled,
     initialRatingsEnabled,
     initialAllowSelfRegister,
+    initialMatchzyAutostartMode,
     initialMatchzyMinimumReadyRequired,
     initialMatchzyAllowForceReady,
     initialMatchzyKickWhenNoMatchLoaded,
@@ -885,7 +898,8 @@ export default function Settings() {
                 <Tab label={t('settingsPage.tabs.integrations')} {...a11yProps(0)} />
                 <Tab label={t('settingsPage.tabs.players')} {...a11yProps(1)} />
                 <Tab label={t('settingsPage.tabs.matches')} {...a11yProps(2)} />
-                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(3)} />}
+                <Tab label={t('settingsPage.tabs.matchzy')} {...a11yProps(3)} />
+                {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(4)} />}
               </Tabs>
             </Box>
 
@@ -994,9 +1008,12 @@ export default function Settings() {
                     {t('settingsPage.matchRating.ratings.note')}
                   </Typography>
                 </Box>
+              </Stack>
+            </TabPanel>
 
-                <Divider />
-
+            {/* MatchZy settings */}
+            <TabPanel value={tabIndex} index={3}>
+              <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
                     {t('settingsPage.matchRating.chatDefaults.title')}
@@ -1011,9 +1028,7 @@ export default function Settings() {
                       onChange={(event) => setMatchzyChatPrefix(event.target.value)}
                       onBlur={handleFieldBlur}
                       onKeyDown={handleFieldKeyDown}
-                      helperText={t(
-                        'settingsPage.matchRating.chatDefaults.chatPrefixHelper'
-                      )}
+                      helperText={t('settingsPage.matchRating.chatDefaults.chatPrefixHelper')}
                       fullWidth
                     />
                     <TextField
@@ -1022,9 +1037,7 @@ export default function Settings() {
                       onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
                       onBlur={handleFieldBlur}
                       onKeyDown={handleFieldKeyDown}
-                      helperText={t(
-                        'settingsPage.matchRating.chatDefaults.adminChatPrefixHelper'
-                      )}
+                      helperText={t('settingsPage.matchRating.chatDefaults.adminChatPrefixHelper')}
                       fullWidth
                     />
                     <FormControlLabel
@@ -1036,9 +1049,7 @@ export default function Settings() {
                           size="small"
                         />
                       }
-                      label={t(
-                        'settingsPage.matchRating.chatDefaults.knifeToggleLabel'
-                      )}
+                      label={t('settingsPage.matchRating.chatDefaults.knifeToggleLabel')}
                     />
                     <Typography variant="caption" color="text.secondary" display="block">
                       {t('settingsPage.matchRating.chatDefaults.knifeNote')}
@@ -1096,180 +1107,216 @@ export default function Settings() {
 
                     <Divider />
 
-                    {/* Access / server lockdown */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.access.title')}
+                    <Box
+                      sx={{
+                        bgcolor: 'warning.50',
+                        border: 1,
+                        borderColor: 'warning.main',
+                        borderRadius: 1,
+                        p: 2,
+                      }}
+                    >
+                      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.expert.title')}
                       </Typography>
-                      <Stack spacing={1}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyKickWhenNoMatchLoaded}
-                              onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded')}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyWhitelistEnabledDefault}
-                              onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault')}
-                        />
-                      </Stack>
-                    </Box>
-
-                    <Divider />
-
-                    {/* Admin tools */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
+                      <Typography variant="body2" color="text.secondary" mb={2}>
+                        {t('settingsPage.matchRating.matchzyCore.expert.description')}
                       </Typography>
-                      <Stack spacing={1}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyPauseAfterRestore}
-                              onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore')}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyStopCommandAvailable}
-                              onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable')}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyStopCommandNoDamage}
-                              onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
-                              color="primary"
-                              size="small"
-                              disabled={!matchzyStopCommandAvailable}
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage')}
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyUsePauseCommandForTacticalPause}
-                              onChange={(e) => setMatchzyUsePauseCommandForTacticalPause(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause')}
-                        />
-                      </Stack>
-                    </Box>
 
-                    <Divider />
-
-                    {/* Demos */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.demos.title')}
-                      </Typography>
                       <Stack spacing={2}>
                         <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
-                          value={matchzyDemoPath}
-                          onChange={(e) => setMatchzyDemoPath(e.target.value)}
+                          select
+                          label={t('settingsPage.matchRating.matchzyCore.expert.autostartMode.label')}
+                          value={matchzyAutostartMode}
+                          onChange={(e) => setMatchzyAutostartMode(Number(e.target.value) as 0 | 1 | 2)}
                           onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
-                          fullWidth
+                          helperText={t('settingsPage.matchRating.matchzyCore.expert.autostartMode.helper')}
                           size="small"
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
-                          value={matchzyDemoNameFormat}
-                          onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
-                          onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
                           fullWidth
-                          size="small"
-                        />
-                      </Stack>
-                    </Box>
+                        >
+                          <option value={0}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.0')}</option>
+                          <option value={1}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.1')}</option>
+                          <option value={2}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.2')}</option>
+                        </TextField>
 
-                    <Divider />
+                        <Divider />
 
-                    {/* Series end */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
-                          type="number"
-                          value={matchzySeriesEndKickDelayNoDemo}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayNoDemo(v);
-                          }}
-                          onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          inputProps={{ min: 0, max: 600 }}
-                          size="small"
-                          fullWidth
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel')}
-                          type="number"
-                          value={matchzySeriesEndKickDelayDemoNoUpload}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayDemoNoUpload(v);
-                          }}
-                          onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          inputProps={{ min: 0, max: 600 }}
-                          size="small"
-                          fullWidth
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel')}
-                          type="number"
-                          value={matchzySeriesEndKickDelayDemoUpload}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            setMatchzySeriesEndKickDelayDemoUpload(v);
-                          }}
-                          onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          inputProps={{ min: 0, max: 600 }}
-                          size="small"
-                          fullWidth
-                        />
-                        <Typography variant="caption" color="text.secondary">
-                          {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
-                        </Typography>
+                        {/* Access / server lockdown */}
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                            {t('settingsPage.matchRating.matchzyCore.access.title')}
+                          </Typography>
+                          <Stack spacing={1}>
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyKickWhenNoMatchLoaded}
+                                  onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded')}
+                            />
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyWhitelistEnabledDefault}
+                                  onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault')}
+                            />
+                          </Stack>
+                        </Box>
+
+                        <Divider />
+
+                        {/* Admin tools */}
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                            {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
+                          </Typography>
+                          <Stack spacing={1}>
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyPauseAfterRestore}
+                                  onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore')}
+                            />
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyStopCommandAvailable}
+                                  onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable')}
+                            />
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyStopCommandNoDamage}
+                                  onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                  disabled={!matchzyStopCommandAvailable}
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage')}
+                            />
+                            <FormControlLabel
+                              control={
+                                <Switch
+                                  checked={matchzyUsePauseCommandForTacticalPause}
+                                  onChange={(e) => setMatchzyUsePauseCommandForTacticalPause(e.target.checked)}
+                                  color="primary"
+                                  size="small"
+                                />
+                              }
+                              label={t('settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause')}
+                            />
+                          </Stack>
+                        </Box>
+
+                        <Divider />
+
+                        {/* Demos */}
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                            {t('settingsPage.matchRating.matchzyCore.demos.title')}
+                          </Typography>
+                          <Stack spacing={2}>
+                            <TextField
+                              label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
+                              value={matchzyDemoPath}
+                              onChange={(e) => setMatchzyDemoPath(e.target.value)}
+                              onBlur={handleFieldBlur}
+                              onKeyDown={handleFieldKeyDown}
+                              helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
+                              fullWidth
+                              size="small"
+                            />
+                            <TextField
+                              label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
+                              value={matchzyDemoNameFormat}
+                              onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
+                              onBlur={handleFieldBlur}
+                              onKeyDown={handleFieldKeyDown}
+                              helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
+                              fullWidth
+                              size="small"
+                            />
+                          </Stack>
+                        </Box>
+
+                        <Divider />
+
+                        {/* Series end */}
+                        <Box>
+                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                            {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
+                          </Typography>
+                          <Stack spacing={2}>
+                            <TextField
+                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
+                              type="number"
+                              value={matchzySeriesEndKickDelayNoDemo}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                if (!Number.isFinite(v)) return;
+                                setMatchzySeriesEndKickDelayNoDemo(v);
+                              }}
+                              onBlur={handleFieldBlur}
+                              onKeyDown={handleFieldKeyDown}
+                              inputProps={{ min: 0, max: 600 }}
+                              size="small"
+                              fullWidth
+                            />
+                            <TextField
+                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel')}
+                              type="number"
+                              value={matchzySeriesEndKickDelayDemoNoUpload}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                if (!Number.isFinite(v)) return;
+                                setMatchzySeriesEndKickDelayDemoNoUpload(v);
+                              }}
+                              onBlur={handleFieldBlur}
+                              onKeyDown={handleFieldKeyDown}
+                              inputProps={{ min: 0, max: 600 }}
+                              size="small"
+                              fullWidth
+                            />
+                            <TextField
+                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel')}
+                              type="number"
+                              value={matchzySeriesEndKickDelayDemoUpload}
+                              onChange={(e) => {
+                                const v = parseInt(e.target.value, 10);
+                                if (!Number.isFinite(v)) return;
+                                setMatchzySeriesEndKickDelayDemoUpload(v);
+                              }}
+                              onBlur={handleFieldBlur}
+                              onKeyDown={handleFieldKeyDown}
+                              inputProps={{ min: 0, max: 600 }}
+                              size="small"
+                              fullWidth
+                            />
+                            <Typography variant="caption" color="text.secondary">
+                              {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
+                            </Typography>
+                          </Stack>
+                        </Box>
                       </Stack>
                     </Box>
                   </Stack>
@@ -1512,7 +1559,7 @@ export default function Settings() {
             </TabPanel>
 
             {isDev && (
-              <TabPanel value={tabIndex} index={3}>
+              <TabPanel value={tabIndex} index={4}>
                 <Stack spacing={3}>
                   <Box>
                     <Typography variant="h6" fontWeight={600} gutterBottom>

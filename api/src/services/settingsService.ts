@@ -12,6 +12,7 @@ export type AppSettingKey =
   | 'ratings_enabled'
   | 'allow_self_register'
   // MatchZy core defaults (persisted convars)
+  | 'matchzy_autostart_mode'
   | 'matchzy_minimum_ready_required'
   | 'matchzy_allow_force_ready'
   | 'matchzy_kick_when_no_match_loaded'
@@ -56,6 +57,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'ratings_enabled',
   'allow_self_register',
   // MatchZy core defaults (persisted convars)
+  'matchzy_autostart_mode',
   'matchzy_minimum_ready_required',
   'matchzy_allow_force_ready',
   'matchzy_kick_when_no_match_loaded',
@@ -229,6 +231,7 @@ class SettingsService {
 
       // MatchZy core integer settings
       if (
+        key === 'matchzy_autostart_mode' ||
         key === 'matchzy_minimum_ready_required' ||
         key === 'matchzy_series_end_kick_delay_no_demo' ||
         key === 'matchzy_series_end_kick_delay_demo_no_upload' ||
@@ -237,6 +240,9 @@ class SettingsService {
         const parsed = Number(trimmed);
         if (!Number.isInteger(parsed)) {
           throw new Error(`${key} must be an integer`);
+        }
+        if (key === 'matchzy_autostart_mode' && (parsed < 0 || parsed > 2)) {
+          throw new Error('matchzy_autostart_mode must be 0, 1, or 2');
         }
         if (key === 'matchzy_minimum_ready_required' && (parsed < 0 || parsed > 10)) {
           throw new Error('matchzy_minimum_ready_required must be 0-10');
@@ -439,6 +445,14 @@ class SettingsService {
     return parsed;
   }
 
+  async getMatchzyAutostartMode(): Promise<0 | 1 | 2> {
+    const value = await this.getSetting('matchzy_autostart_mode');
+    if (!value) return 1; // MatchZy default
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0 || parsed > 2) return 1;
+    return parsed as 0 | 1 | 2;
+  }
+
   async isMatchzyAllowForceReadyEnabled(): Promise<boolean> {
     const value = await this.getSetting('matchzy_allow_force_ready');
     if (!value) return true; // MatchZy default
@@ -528,6 +542,7 @@ class SettingsService {
   }
 
   async getMatchzyCoreDefaults(): Promise<{
+    autostartMode: 0 | 1 | 2;
     minimumReadyRequired: number;
     allowForceReady: boolean;
     kickWhenNoMatchLoaded: boolean;
@@ -543,6 +558,7 @@ class SettingsService {
     seriesEndKickDelayDemoUpload: number;
   }> {
     const [
+      autostartMode,
       minimumReadyRequired,
       allowForceReady,
       kickWhenNoMatchLoaded,
@@ -557,6 +573,7 @@ class SettingsService {
       seriesEndKickDelayDemoNoUpload,
       seriesEndKickDelayDemoUpload,
     ] = await Promise.all([
+      this.getMatchzyAutostartMode(),
       this.getMatchzyMinimumReadyRequired(),
       this.isMatchzyAllowForceReadyEnabled(),
       this.isMatchzyKickWhenNoMatchLoadedEnabled(),
@@ -573,6 +590,7 @@ class SettingsService {
     ]);
 
     return {
+      autostartMode,
       minimumReadyRequired,
       allowForceReady,
       kickWhenNoMatchLoaded,

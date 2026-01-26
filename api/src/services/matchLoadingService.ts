@@ -84,6 +84,7 @@ export async function loadMatchOnServer(
     try {
       const matchzyCore = await settingsService.getMatchzyCoreDefaults();
       const cmds = getMatchZyServerConfigCommands({
+        autostartMode: matchzyCore.autostartMode,
         minimumReadyRequired: matchzyCore.minimumReadyRequired,
         allowForceReady: matchzyCore.allowForceReady,
         kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,

@@ -368,5 +368,113 @@
       "done": "Nuevos servidores configurados. Actualizando estado…"
     },
     "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si MatchZy recibe la configuración y envía eventos."
+  },
+  "settingsPage": {
+    "tabs": {
+      "matchzy": "MatchZy"
+    },
+    "matchRating": {
+      "chatDefaults": {
+        "title": "Valores por defecto de chat y knife de MatchZy",
+        "description": "Configura los prefijos del chat en el juego y el comportamiento predeterminado de la ronda de knife.",
+        "chatPrefixLabel": "Prefijo del chat",
+        "chatPrefixHelper": "Predeterminado: \"[MAT]\". Déjalo vacío para restaurar el prefijo por defecto.",
+        "adminChatPrefixLabel": "Prefijo del chat de admin",
+        "adminChatPrefixHelper": "Predeterminado: \"[ADMIN]\". Déjalo vacío para restaurar el prefijo de admin por defecto.",
+        "knifeToggleLabel": "Habilitar rondas de knife por defecto para nuevos partidos (cuando los lados no están preseleccionados)",
+        "knifeNote": "Se aplica solo cuando MatchZy normalmente ejecutaría una ronda de knife; no cambia selecciones explícitas de lado."
+      },
+      "matchzyCore": {
+        "title": "Valores predeterminados de MatchZy Core",
+        "description": "Estos valores se envían a los servidores durante la inicialización y antes de cada carga de partido.",
+        "expert": {
+          "title": "Ajustes avanzados",
+          "description": "Estos ajustes pueden hacer que el servidor se comporte de forma inesperada si están mal configurados. Cámbialos solo si sabes que los necesitas.",
+          "autostartMode": {
+            "label": "Modo de autoinicio al cargar el plugin",
+            "helper": "0 = idle/sleep, 1 = modo match (recomendado), 2 = modo practice",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Modo match",
+              "2": "2 — Modo practice"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Inicio del partido",
+          "minimumReadyLabel": "Mínimo de jugadores listos requerido",
+          "minimumReadyHelper": "0 = todos los jugadores conectados deben estar listos. Predeterminado: 2.",
+          "allowForceReady": "Permitir a los admins forzar el ready durante la configuración (!forceready)"
+        },
+        "access": {
+          "title": "Acceso al servidor",
+          "kickWhenNoMatchLoaded": "Expulsar/impedir unirse cuando no hay un partido cargado (servidores de torneo)",
+          "whitelistEnabledDefault": "Habilitar whitelist por defecto (los admins pueden alternar con .whitelist)"
+        },
+        "adminTools": {
+          "title": "Herramientas de admin",
+          "pauseAfterRestore": "Pausar después de restaurar ronda (.stop) para que los equipos se coordinen",
+          "stopCommandAvailable": "Habilitar el comando .stop (restaurar ronda)",
+          "stopCommandNoDamage": "Deshabilitar .stop tras daño al equipo contrario",
+          "usePauseForTacticalPause": "Hacer que .pause se comporte como pausa táctica"
+        },
+        "demos": {
+          "title": "Demos",
+          "demoPathLabel": "Ruta de demos (relativa a csgo/)",
+          "demoPathHelper": "Debe terminar con '/'. Predeterminado: MatchZy/",
+          "demoNameFormatLabel": "Formato del nombre del demo (sin .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Tiempo al finalizar la serie",
+          "kickDelayNoDemoLabel": "Retraso extra de expulsión cuando los demos están desactivados (segundos)",
+          "kickDelayDemoNoUploadLabel": "Retraso extra de expulsión cuando los demos están activados pero no hay URL de subida (segundos)",
+          "kickDelayDemoUploadLabel": "Retraso extra de expulsión cuando los demos están activados y la URL de subida está configurada (segundos)",
+          "kickDelayHelper": "Se añade encima de mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "Funciones de MatchZy Enhanced",
+        "description": "Configura funciones avanzadas de partido. Deja los ajustes vacíos para usar los valores por defecto del tipo de torneo.",
+        "autoready": {
+          "title": "Sistema de auto-ready",
+          "label": "Marcar automáticamente a los jugadores como listos al unirse",
+          "description": "Los jugadores se marcan como listos al unirse. Aun así pueden usar .unready."
+        },
+        "pause": {
+          "title": "Controles de pausa",
+          "bothTeamsUnpause": "Requerir que ambos equipos reanuden",
+          "maxPausesLabel": "Máx. pausas por equipo",
+          "maxPausesHelper": "0 = pausas ilimitadas",
+          "pauseDurationLabel": "Límite de duración de pausa (segundos)",
+          "pauseDurationHelper": "0 = sin límite de tiempo"
+        },
+        "sideSelection": {
+          "title": "Temporizador de selección de lado",
+          "enabled": "Habilitar temporizador de selección de lado",
+          "timeLabel": "Tiempo permitido (segundos)",
+          "timeHelper": "Tiempo tras la ronda de knife para elegir lado"
+        },
+        "gg": {
+          "title": "Finalización anticipada (.gg)",
+          "enabled": "Habilitar comando .gg (forfeit)",
+          "thresholdLabel": "Umbral de votos (0.0-1.0)",
+          "thresholdHelper": "0.8 = debe votar el 80% del equipo (p. ej. 4/5 jugadores)",
+          "minScoreDiffLabel": "Diferencia mínima de marcador",
+          "minScoreDiffHelper": "0 = deshabilitado. Ejemplo: 6 = permitir .gg solo perdiendo por 6+ rondas"
+        },
+        "ffw": {
+          "title": "Forfeit/Walkover",
+          "enabled": "Habilitar forfeit automático cuando el equipo se desconecta",
+          "timeLabel": "Temporizador de forfeit (segundos)",
+          "timeHelper": "Tiempo antes de declarar forfeit cuando todo el equipo se va"
+        },
+        "demo": {
+          "title": "Grabación de demos",
+          "enabled": "Habilitar grabación automática de demos GOTV",
+          "description": "Cuando está deshabilitado, el servidor reinicia ~10s tras el final del partido (vs 60-90s con grabación)"
+        }
+      }
+    }
   }
 }

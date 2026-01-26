@@ -306,5 +306,113 @@
     "errors": {
       "loadServers": "Falha ao carregar servidores"
     }
+  },
+  "settingsPage": {
+    "tabs": {
+      "matchzy": "MatchZy"
+    },
+    "matchRating": {
+      "chatDefaults": {
+        "title": "Predefinições do MatchZy (chat e knife)",
+        "description": "Configura os prefíxos do chat no jogo e o comportamento padrão da ronda de knife.",
+        "chatPrefixLabel": "Prefíxo do chat",
+        "chatPrefixHelper": "Predefinição: \"[MAT]\". Deixa vazio para repor o prefíxo padrão.",
+        "adminChatPrefixLabel": "Prefíxo de chat admin",
+        "adminChatPrefixHelper": "Predefinição: \"[ADMIN]\". Deixa vazio para repor o prefíxo de admin padrão.",
+        "knifeToggleLabel": "Ativar rondas de knife por defeito para novos jogos (quando os lados não estão pré-selecionados)",
+        "knifeNote": "Aplica-se apenas quando o MatchZy normalmente executaria uma ronda de knife; escolhas explícitas de lado não são alteradas."
+      },
+      "matchzyCore": {
+        "title": "Predefinições do MatchZy Core",
+        "description": "Estas predefinições são enviadas para os servidores durante a inicialização e antes de cada carregamento de jogo.",
+        "expert": {
+          "title": "Definições avançadas",
+          "description": "Estas definições podem fazer com que os servidores se comportem de forma inesperada se estiverem mal configuradas. Altera-as apenas se souberes que precisas.",
+          "autostartMode": {
+            "label": "Modo de autoinício ao carregar o plugin",
+            "helper": "0 = idle/sleep, 1 = modo match (recomendado), 2 = modo practice",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Modo match",
+              "2": "2 — Modo practice"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / Início do jogo",
+          "minimumReadyLabel": "Mínimo de jogadores prontos necessário",
+          "minimumReadyHelper": "0 = todos os jogadores ligados têm de estar prontos. Predefinição: 2.",
+          "allowForceReady": "Permitir que admins forcem ready durante o setup (!forceready)"
+        },
+        "access": {
+          "title": "Acesso ao servidor",
+          "kickWhenNoMatchLoaded": "Expulsar/impedir entrada quando não há jogo carregado (servidores de torneio)",
+          "whitelistEnabledDefault": "Ativar whitelist por defeito (admins podem alternar com .whitelist)"
+        },
+        "adminTools": {
+          "title": "Ferramentas de admin",
+          "pauseAfterRestore": "Pausar após restauração de ronda (.stop) para as equipas coordenarem",
+          "stopCommandAvailable": "Ativar o comando .stop (restaurar ronda)",
+          "stopCommandNoDamage": "Desativar .stop após dano na equipa adversária",
+          "usePauseForTacticalPause": "Fazer com que .pause se comporte como pausa tática"
+        },
+        "demos": {
+          "title": "Demos",
+          "demoPathLabel": "Caminho dos demos (relativo a csgo/)",
+          "demoPathHelper": "Tem de terminar com '/'. Predefinição: MatchZy/",
+          "demoNameFormatLabel": "Formato do nome do demo (sem .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing no fim da série",
+          "kickDelayNoDemoLabel": "Atraso extra de kick quando demos estão desativados (segundos)",
+          "kickDelayDemoNoUploadLabel": "Atraso extra de kick quando demos estão ativados mas sem URL de upload (segundos)",
+          "kickDelayDemoUploadLabel": "Atraso extra de kick quando demos estão ativados e o URL de upload está definido (segundos)",
+          "kickDelayHelper": "Adicionado por cima de mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "Funcionalidades MatchZy Enhanced",
+        "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar os padrões do tipo de torneio.",
+        "autoready": {
+          "title": "Auto-ready",
+          "label": "Marcar automaticamente jogadores como prontos ao entrar",
+          "description": "Os jogadores ficam automaticamente prontos ao entrar. Ainda podem usar .unready."
+        },
+        "pause": {
+          "title": "Pausas",
+          "bothTeamsUnpause": "Exigir que ambas as equipas retirem a pausa",
+          "maxPausesLabel": "Máx. pausas por equipa",
+          "maxPausesHelper": "0 = pausas ilimitadas",
+          "pauseDurationLabel": "Limite de duração da pausa (segundos)",
+          "pauseDurationHelper": "0 = sem limite de tempo"
+        },
+        "sideSelection": {
+          "title": "Temporizador de escolha de lado",
+          "enabled": "Ativar temporizador de escolha de lado",
+          "timeLabel": "Tempo permitido (segundos)",
+          "timeHelper": "Tempo após a ronda de knife para escolher lados"
+        },
+        "gg": {
+          "title": "Fim antecipado (.gg)",
+          "enabled": "Ativar comando .gg (forfeit)",
+          "thresholdLabel": "Limite de votos (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% da equipa tem de votar (ex.: 4/5 jogadores)",
+          "minScoreDiffLabel": "Diferença mínima de score",
+          "minScoreDiffHelper": "0 = desativado. Exemplo: 6 = permitir .gg apenas a perder por 6+ rondas"
+        },
+        "ffw": {
+          "title": "Forfeit/walkover",
+          "enabled": "Ativar forfeit automático quando a equipa desconecta",
+          "timeLabel": "Temporizador de forfeit (segundos)",
+          "timeHelper": "Tempo até declarar forfeit quando a equipa inteira sai"
+        },
+        "demo": {
+          "title": "Gravação de demos",
+          "enabled": "Ativar gravação automática de demos GOTV",
+          "description": "Quando desativado, o servidor reinicia ~10s após o fim do jogo (vs 60-90s com gravação)"
+        }
+      }
+    }
   }
 }

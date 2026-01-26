@@ -79,7 +79,11 @@ export interface MatchzyServerConfig {
   playoutEnabledDefault?: boolean | null;
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
-  autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+  /**
+   * MatchZy Enhanced autostart mode:
+   * 0 = idle/sleep, 1 = match mode, 2 = practice mode
+   */
+  autostartMode?: 0 | 1 | 2 | null;
 
   // Demo / logging settings
   demoPath?: string | null;

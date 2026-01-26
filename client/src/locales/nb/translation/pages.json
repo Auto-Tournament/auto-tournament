@@ -105,6 +105,7 @@
       "integrations": "Integrasjoner og webhooks",
       "players": "Spillere og tilgang",
       "matches": "Kamper og rating",
+      "matchzy": "MatchZy",
       "developer": "Utvikler / simulering"
     },
     "integrations": {
@@ -127,11 +128,112 @@
       }
     },
     "matchRating": {
+      "chatDefaults": {
+        "title": "MatchZy chat- og knivstandarder",
+        "description": "Konfigurer chat‑prefikser og standard oppførsel for knivrunde.",
+        "chatPrefixLabel": "Chat‑prefiks",
+        "chatPrefixHelper": "Standard: \"[MAT]\". La stå tomt for standard.",
+        "adminChatPrefixLabel": "Admin chat‑prefiks",
+        "adminChatPrefixHelper": "Standard: \"[ADMIN]\". La stå tomt for standard.",
+        "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
+        "knifeNote": "Gjelder kun når MatchZy ellers ville kjørt knivrunde."
+      },
       "ratings": {
         "title": "Ratingoppdateringer",
         "description": "Styr om fullførte kamper oppdaterer spillernes Skill Rating.",
         "toggleLabel": "Oppdater spiller-rating etter kamper",
         "note": "Statistikk spores fortsatt selv om rating er deaktivert."
+      },
+      "matchzyCore": {
+        "title": "MatchZy core-standarder",
+        "description": "Disse standardene sendes til servere under initialisering og før hver kamp lastes inn.",
+        "expert": {
+          "title": "Ekspertinnstillinger",
+          "description": "Disse innstillingene kan gi uventet serveroppførsel hvis de settes feil.",
+          "autostartMode": {
+            "label": "Autostart‑modus ved plugin‑start",
+            "helper": "0 = idle/sleep, 1 = match‑modus (anbefalt), 2 = practice‑modus",
+            "options": {
+              "0": "0 — Idle / sleep",
+              "1": "1 — Match‑modus",
+              "2": "2 — Practice‑modus"
+            }
+          }
+        },
+        "ready": {
+          "title": "Ready / kampstart",
+          "minimumReadyLabel": "Minimum antall ready-spillere",
+          "minimumReadyHelper": "0 = alle tilkoblede spillere må ready. Standard: 2.",
+          "allowForceReady": "Tillat admin å force-ready spillere under oppsett (!forceready)"
+        },
+        "access": {
+          "title": "Servertilgang",
+          "kickWhenNoMatchLoaded": "Kick/hindre joins når ingen kamp er lastet (turneringsservere)",
+          "whitelistEnabledDefault": "Aktiver whitelist som standard (admin kan toggle med .whitelist)"
+        },
+        "adminTools": {
+          "title": "Adminverktøy",
+          "pauseAfterRestore": "Pause etter round restore (.stop) slik at lag kan koordinere",
+          "stopCommandAvailable": "Aktiver .stop (round restore)-kommandoen",
+          "stopCommandNoDamage": "Deaktiver .stop etter skade på motstanderlaget",
+          "usePauseForTacticalPause": "La .pause oppføre seg som taktisk pause"
+        },
+        "demos": {
+          "title": "Demoer",
+          "demoPathLabel": "Demo-sti (relativ til csgo/)",
+          "demoPathHelper": "Må slutte med '/'. Standard: MatchZy/",
+          "demoNameFormatLabel": "Demo-filnavnformat (uten .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Timing ved serieslutt",
+          "kickDelayNoDemoLabel": "Ekstra kick-forsinkelse når demoer er av (sekunder)",
+          "kickDelayDemoNoUploadLabel": "Ekstra kick-forsinkelse når demoer er på, men ingen upload-URL (sekunder)",
+          "kickDelayDemoUploadLabel": "Ekstra kick-forsinkelse når demoer er på og upload-URL er satt (sekunder)",
+          "kickDelayHelper": "Legges oppå mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced‑funksjoner",
+        "description": "Avanserte match‑funksjoner. La stå tomt for turnerings‑standard.",
+        "autoready": {
+          "title": "Auto‑ready",
+          "label": "Auto‑marker spillere som ready når de joiner",
+          "description": "Spillere blir automatisk ready ved join (kan fortsatt .unready)."
+        },
+        "pause": {
+          "title": "Pauser",
+          "bothTeamsUnpause": "Krev at begge lag unpauser",
+          "maxPausesLabel": "Maks pauser per lag",
+          "maxPausesHelper": "0 = ubegrenset",
+          "pauseDurationLabel": "Maks pauselengde (sekunder)",
+          "pauseDurationHelper": "0 = ingen tidsgrense"
+        },
+        "sideSelection": {
+          "title": "Sidevalg‑timer",
+          "enabled": "Aktiver timer for sidevalg",
+          "timeLabel": "Tid (sekunder)",
+          "timeHelper": "Tid etter knivrunde til å velge side"
+        },
+        "gg": {
+          "title": "Tidlig avslutning (.gg)",
+          "enabled": "Aktiver .gg forfeit",
+          "thresholdLabel": "Stemmeterskel (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% av laget må stemme (f.eks. 4/5)",
+          "minScoreDiffLabel": "Minimum score‑forskjell",
+          "minScoreDiffHelper": "0 = deaktivert"
+        },
+        "ffw": {
+          "title": "Forfeit/walkover",
+          "enabled": "Aktiver auto‑forfeit når lag disconnecter",
+          "timeLabel": "Forfeit‑timer (sekunder)",
+          "timeHelper": "Tid før forfeit erklæres"
+        },
+        "demo": {
+          "title": "Demo‑opptak",
+          "enabled": "Aktiver automatisk GOTV demo‑opptak",
+          "description": "Når deaktivert restarter serveren raskere etter match."
+        }
       }
     },
     "developer": {

@@ -55,7 +55,8 @@ export interface Server {
     playoutEnabledDefault?: boolean | null;
     resetCvarsOnSeriesEnd?: boolean | null;
     usePauseCommandForTacticalPause?: boolean | null;
-    autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+    /** MatchZy Enhanced: 0=idle, 1=match, 2=practice */
+    autostartMode?: 0 | 1 | 2 | null;
     demoPath?: string | null;
     demoNameFormat?: string | null;
     demoUploadUrl?: string | null;
@@ -291,6 +292,7 @@ export interface SettingsResponse extends ApiResponse {
     ratingsEnabled?: boolean;
     allowSelfRegister?: boolean;
     // MatchZy core defaults
+    matchzyAutostartMode?: 0 | 1 | 2;
     matchzyMinimumReadyRequired?: number;
     matchzyAllowForceReady?: boolean;
     matchzyKickWhenNoMatchLoaded?: boolean;

@@ -130,7 +130,11 @@ export function getMatchZyServerConfigCommands(config: {
   playoutEnabledDefault?: boolean | null;
   resetCvarsOnSeriesEnd?: boolean | null;
   usePauseCommandForTacticalPause?: boolean | null;
-  autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
+  /**
+   * MatchZy Enhanced autostart mode:
+   * 0 = idle/sleep, 1 = match mode, 2 = practice mode
+   */
+  autostartMode?: 0 | 1 | 2 | null;
   demoPath?: string | null;
   demoNameFormat?: string | null;
   seriesEndKickDelayNoDemo?: number | null;
@@ -186,7 +190,7 @@ export function getMatchZyServerConfigCommands(config: {
   }
 
   if (config.autostartMode !== undefined && config.autostartMode !== null) {
-    commands.push(`matchzy_autostart_mode "${config.autostartMode}"`);
+    commands.push(`matchzy_autostart_mode ${config.autostartMode}`);
   }
 
   if (config.demoPath !== undefined && config.demoPath !== null) {

@@ -115,6 +115,7 @@
       "integrations": "集成与 Webhook",
       "players": "选手与访问控制",
       "matches": "比赛与评分",
+      "matchzy": "MatchZy",
       "developer": "开发者 / 模拟"
     },
     "integrations": {
@@ -164,6 +165,55 @@
         "description": "控制已完成的比赛是否会更新玩家 Skill Rating。若外部系统（例如 Excel 表）是评分真值来源，可在此禁用。",
         "toggleLabel": "根据完成的比赛更新玩家评分",
         "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
+      },
+      "matchzyCore": {
+        "title": "MatchZy 核心默认值",
+        "description": "这些默认值会在服务器初始化以及每次加载比赛前下发到服务器。",
+        "expert": {
+          "title": "专家设置",
+          "description": "如果配置不当，这些设置可能导致服务器出现意外行为。仅在你确实需要时再修改。",
+          "autostartMode": {
+            "label": "插件加载时的自动启动模式",
+            "helper": "0 = 空闲/休眠，1 = 比赛模式（推荐），2 = 练习模式",
+            "options": {
+              "0": "0 — 空闲 / 休眠",
+              "1": "1 — 比赛模式",
+              "2": "2 — 练习模式"
+            }
+          }
+        },
+        "ready": {
+          "title": "准备 / 比赛开始",
+          "minimumReadyLabel": "最少准备人数要求",
+          "minimumReadyHelper": "0 = 所有已连接玩家都必须准备。默认：2。",
+          "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）"
+        },
+        "access": {
+          "title": "服务器访问",
+          "kickWhenNoMatchLoaded": "未加载比赛时踢出/阻止加入（赛事服务器）",
+          "whitelistEnabledDefault": "默认启用白名单（管理员可用 .whitelist 切换）"
+        },
+        "adminTools": {
+          "title": "管理员工具",
+          "pauseAfterRestore": "回合恢复（.stop）后自动暂停，便于队伍沟通",
+          "stopCommandAvailable": "启用 .stop（回合恢复）命令",
+          "stopCommandNoDamage": "当发生对方队伤害后禁用 .stop",
+          "usePauseForTacticalPause": "让 .pause 的行为类似战术暂停"
+        },
+        "demos": {
+          "title": "Demo",
+          "demoPathLabel": "Demo 路径（相对于 csgo/）",
+          "demoPathHelper": "必须以 “/” 结尾。默认：MatchZy/",
+          "demoNameFormatLabel": "Demo 文件名格式（不含 .dem）",
+          "demoNameFormatHelper": "可用标记：{TIME}、{MATCH_ID}、{MAP}、{MAPNUMBER}、{TEAM1}、{TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "系列结束时间",
+          "kickDelayNoDemoLabel": "禁用 Demo 时额外踢出延迟（秒）",
+          "kickDelayDemoNoUploadLabel": "启用 Demo 但未设置上传 URL 时额外踢出延迟（秒）",
+          "kickDelayDemoUploadLabel": "启用 Demo 且已设置上传 URL 时额外踢出延迟（秒）",
+          "kickDelayHelper": "在 mp_match_restart_delay 的基础上额外增加。"
+        }
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced 功能",
