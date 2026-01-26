@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Einstellungen",
+    "intro": "Konfiguriere Integrationen, Ingame-Defaults und Entwickleroptionen.",
     "tabs": {
+      "integrations": "Integrationen & Webhooks",
+      "players": "Spieler & Zugriff",
+      "matches": "Matches & Ratings",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy Webhook",
+        "description": "MatchZy Webhook-URL, die deine CS2-Server erreichen können.",
+        "label": "Webhook-URL",
+        "helper": "Beispiel: https://deine-domain.de"
+      },
+      "mapSync": {
+        "title": "Map-Synchronisierung",
+        "description": "CS2-Maps aus dem GitHub-Repository synchronisieren.",
+        "buttonSyncing": "Synchronisiere...",
+        "buttonIdle": "CS2-Maps synchronisieren"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Rating-Updates",
+        "description": "Steuere, ob abgeschlossene Matches die Skill Ratings der Spieler aktualisieren.",
+        "toggleLabel": "Spieler-Ratings aus abgeschlossenen Matches aktualisieren",
+        "note": "Wenn deaktiviert, werden weiterhin Stats (ADR, K/D, usw.) erfasst, aber Skill Ratings bleiben unverändert."
+      },
       "chatDefaults": {
         "title": "MatchZy Chat- & Knife-Standards",
         "description": "Konfiguriere Ingame-Chat-Präfixe und das Standardverhalten der Knife-Runde.",
@@ -413,6 +438,61 @@
           "description": "Wenn deaktiviert, startet der Server ~10s nach Match-Ende neu (statt 60-90s mit Aufnahme)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Spielerregistrierung",
+        "description": "Steuere, ob neue Steam-Logins automatisch Spielerprofile erstellen. Wenn deaktiviert, erscheinen in privaten Turnieren und Shuffle-Pools nur Spieler, die von Admins erstellt oder importiert wurden.",
+        "toggleLabel": "Allen erlauben, sich per Steam-Login zu registrieren",
+        "recommendation": "Empfohlen: Für Einladungs- oder private Turniere deaktiviert lassen, damit zufällige Steam-Logins die Spielerliste nicht „vermüllen“."
+      }
+    },
+    "developer": {
+      "title": "Entwickleroptionen",
+      "description": "Nur für lokale Entwicklung; nicht in Produktion aktivieren.",
+      "simulateToggleLabel": "Matches simulieren (bot-gesteuerte Demo-Matches statt echter Spieler)",
+      "simulateNote": "Wenn aktiviert, enthalten generierte MatchZy-Konfigurationen \"simulation\": true für automatisierte Demo-Matches.",
+      "timescaleTitle": "Simulations-Zeitfaktor",
+      "timescaleDescription": "Steuert, wie schnell simulierte Matches laufen. Höhere Werte beschleunigen Bots und Round-Flow. Gilt nur, wenn Simulation aktiv ist.",
+      "timescaleWarning": "Werte über 2.0 können etwas instabil sein und zu seltsamem Bot-Verhalten führen, sind aber für schnelle lokale Tests ok.",
+      "resetApiTitle": "API & Datenbank zurücksetzen",
+      "resetApiDescription": "Gefahrenzone: Löscht und erstellt das komplette DB-Schema neu und initialisiert Defaults (Maps, Map-Pools, etc.) erneut. Nur für lokale Entwicklung. Irreversibel.",
+      "resetApiButton": "API zurücksetzen (alle Daten löschen)",
+      "resetApiButtonLoading": "API wird zurückgesetzt…",
+      "resetApiSuccess": "API und Datenbank erfolgreich zurückgesetzt. Alle Daten wurden gelöscht und Defaults neu initialisiert.",
+      "resetApiError": "API/Datenbank konnte nicht zurückgesetzt werden. Prüfe die API-Logs.",
+      "resetApiDialog": {
+        "title": "API zurücksetzen & alle Daten löschen?",
+        "description": "Dies löscht und erstellt das komplette DB-Schema neu. Alle Turniere, Matches, Spieler, Teams, Ratings, Events, Logs und Einstellungen werden dauerhaft gelöscht. Diese Aktion kann nicht rückgängig gemacht werden. Fortfahren?",
+        "cancel": "Abbrechen",
+        "confirm": "Ja, API zurücksetzen & Daten löschen",
+        "confirmLoading": "Zurücksetzen…"
+      },
+      "debugChat": {
+        "label": "MatchZy Debug-Chat-Nachrichten aktivieren",
+        "description": "Wenn aktiviert, schreibt MatchZy zusätzliche Debug-Nachrichten (Connects/Disconnects, Event-Traces, etc.) in den Chat. Nur für Entwicklung und Tests."
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Unbekannt",
+      "resetButton": "Einstellungen zurücksetzen"
+    },
+    "resetDialog": {
+      "title": "Einstellungen zurücksetzen?",
+      "description": "Setze alle Einstellungen auf dieser Seite auf Defaults zurück. Bestehende Turniere und Server werden nicht geändert, aber neue Matches und Lookups verwenden die Default-Werte. Fortfahren?",
+      "cancel": "Abbrechen",
+      "confirm": "Zurücksetzen"
+    },
+    "errors": {
+      "loadSettings": "Einstellungen konnten nicht geladen werden",
+      "saveSettings": "Einstellungen konnten nicht gespeichert werden"
+    },
+    "success": {
+      "saveSettings": "Einstellungen gespeichert",
+      "simulationEnabled": "Simulationsmodus aktiviert{{suffix}}",
+      "simulationDisabled": "Simulationsmodus deaktiviert",
+      "timescaleUpdated": "Simulations-Zeitfaktor auf {{value}}x gesetzt"
     }
   }
 }

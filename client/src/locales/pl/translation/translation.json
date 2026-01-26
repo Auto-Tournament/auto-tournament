@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Ustawienia",
+    "intro": "Skonfiguruj integracje, domyślne ustawienia w grze oraz opcje deweloperskie.",
     "tabs": {
+      "integrations": "Integracje i webhooki",
+      "players": "Gracze i dostęp",
+      "matches": "Mecze i rating",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook MatchZy",
+        "description": "URL webhooka MatchZy, do którego mogą dotrzeć Twoje serwery CS2.",
+        "label": "URL webhooka",
+        "helper": "Przykład: https://twoja-domena.pl"
+      },
+      "mapSync": {
+        "title": "Synchronizacja map",
+        "description": "Synchronizuj mapy CS2 z repozytorium GitHub.",
+        "buttonSyncing": "Synchronizowanie...",
+        "buttonIdle": "Synchronizuj mapy CS2"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Aktualizacje ratingu",
+        "description": "Kontroluj, czy zakończone mecze aktualizują Skill Rating graczy.",
+        "toggleLabel": "Aktualizuj rating graczy na podstawie zakończonych meczów",
+        "note": "Gdy wyłączone, mecze nadal będą zapisywać statystyki (ADR, K/D, itd.), ale Skill Rating pozostanie bez zmian."
+      },
       "chatDefaults": {
         "title": "Domyślne ustawienia MatchZy (chat i knife)",
         "description": "Skonfiguruj prefiksy czatu w grze oraz domyślne zachowanie rundy knife.",
@@ -413,6 +438,61 @@
           "description": "Gdy wyłączone, serwer restartuje ~10s po zakończeniu meczu (vs 60-90s z nagrywaniem)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Rejestracja graczy",
+        "description": "Kontroluj, czy nowe logowania Steam automatycznie tworzą rekordy graczy. Gdy wyłączone, w prywatnych turniejach i pulach shuffle pojawią się tylko gracze utworzeni lub zaimportowani przez adminów.",
+        "toggleLabel": "Pozwól każdemu rejestrować się przez logowanie Steam",
+        "recommendation": "Zalecane: pozostaw to wyłączone dla turniejów prywatnych lub na zaproszenie, aby przypadkowe logowania Steam nie zaśmiecały listy graczy."
+      }
+    },
+    "developer": {
+      "title": "Opcje deweloperskie",
+      "description": "Tylko do lokalnego rozwoju; nie włączaj na produkcji.",
+      "simulateToggleLabel": "Symuluj mecze (mecze demo z botami zamiast prawdziwych graczy)",
+      "simulateNote": "Gdy włączone, generowane konfiguracje zawierają \"simulation\": true dla zautomatyzowanych meczów demo.",
+      "timescaleTitle": "Prędkość symulacji",
+      "timescaleDescription": "Kontroluje szybkość symulowanych meczów. Wyższe wartości przyspieszają boty i przebieg rund. Działa tylko, gdy symulacja jest włączona.",
+      "timescaleWarning": "Wartości powyżej 2.0 mogą być niestabilne i powodować dziwne zachowanie botów, ale są ok do szybkich testów lokalnych.",
+      "resetApiTitle": "Reset API i bazy danych",
+      "resetApiDescription": "Strefa niebezpieczna: usuwa i odtwarza cały schemat bazy danych, a następnie inicjalizuje dane domyślne (mapy, pule map, itp.). Tylko do lokalnego rozwoju. Nieodwracalne.",
+      "resetApiButton": "Reset API (wyczyść wszystkie dane)",
+      "resetApiButtonLoading": "Resetowanie API…",
+      "resetApiSuccess": "API i baza danych zostały zresetowane. Wszystkie dane zostały usunięte i domyślne wartości przywrócone.",
+      "resetApiError": "Nie udało się zresetować API i bazy danych. Sprawdź logi API.",
+      "resetApiDialog": {
+        "title": "Zresetować API i usunąć wszystkie dane?",
+        "description": "To usunie i odtworzy cały schemat bazy danych. Wszystkie turnieje, mecze, gracze, drużyny, ratingi, zdarzenia, logi i ustawienia zostaną trwale usunięte. Tej akcji nie można cofnąć. Kontynuować?",
+        "cancel": "Anuluj",
+        "confirm": "Tak, zresetuj API i usuń dane",
+        "confirmLoading": "Resetowanie…"
+      },
+      "debugChat": {
+        "label": "Włącz wiadomości debug w czacie MatchZy",
+        "description": "Gdy włączone, MatchZy będzie wypisywać dodatkowe wiadomości debug (połączenia/rozłączenia, śledzenie zdarzeń, itd.) na czacie. Używaj tylko do rozwoju i testów."
+      }
+    },
+    "footer": {
+      "version": "Wersja",
+      "unknownVersion": "Nieznana",
+      "resetButton": "Resetuj ustawienia"
+    },
+    "resetDialog": {
+      "title": "Resetować ustawienia?",
+      "description": "Resetuje wszystkie ustawienia na tej stronie do wartości domyślnych. Istniejące turnieje i serwery nie zostaną zmienione, ale nowe mecze i wyszukiwania użyją wartości domyślnych. Kontynuować?",
+      "cancel": "Anuluj",
+      "confirm": "Resetuj"
+    },
+    "errors": {
+      "loadSettings": "Nie udało się załadować ustawień",
+      "saveSettings": "Nie udało się zapisać ustawień"
+    },
+    "success": {
+      "saveSettings": "Ustawienia zapisane",
+      "simulationEnabled": "Tryb symulacji włączony{{suffix}}",
+      "simulationDisabled": "Tryb symulacji wyłączony",
+      "timescaleUpdated": "Prędkość symulacji zaktualizowana do {{value}}x"
     }
   }
 }

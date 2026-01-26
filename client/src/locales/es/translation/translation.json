@@ -370,10 +370,35 @@
     "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si MatchZy recibe la configuración y envía eventos."
   },
   "settingsPage": {
+    "title": "Ajustes",
+    "intro": "Configura integraciones, valores por defecto en juego y opciones de desarrollo.",
     "tabs": {
+      "integrations": "Integraciones y webhooks",
+      "players": "Jugadores y acceso",
+      "matches": "Partidos y rating",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook de MatchZy",
+        "description": "URL de webhook de MatchZy a la que puedan acceder tus servidores CS2.",
+        "label": "URL de webhook",
+        "helper": "Ejemplo: https://tu-dominio.com"
+      },
+      "mapSync": {
+        "title": "Sincronización de mapas",
+        "description": "Sincroniza mapas de CS2 desde el repositorio de GitHub.",
+        "buttonSyncing": "Sincronizando...",
+        "buttonIdle": "Sincronizar mapas de CS2"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Actualizaciones de rating",
+        "description": "Controla si los partidos completados actualizan el Skill Rating de los jugadores.",
+        "toggleLabel": "Actualizar el rating de los jugadores con los partidos completados",
+        "note": "Cuando está deshabilitado, los partidos seguirán registrando estadísticas (ADR, K/D, etc.), pero el Skill Rating no cambiará."
+      },
       "chatDefaults": {
         "title": "Valores por defecto de chat y knife de MatchZy",
         "description": "Configura los prefijos del chat en el juego y el comportamiento predeterminado de la ronda de knife.",
@@ -475,6 +500,61 @@
           "description": "Cuando está deshabilitado, el servidor reinicia ~10s tras el final del partido (vs 60-90s con grabación)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Registro de jugadores",
+        "description": "Controla si los nuevos inicios de sesión con Steam crean automáticamente registros de jugador. Cuando está deshabilitado, solo los jugadores creados o importados por admins aparecerán en torneos privados y pools shuffle.",
+        "toggleLabel": "Permitir que cualquiera se registre mediante inicio de sesión con Steam",
+        "recommendation": "Recomendado: mantenlo desactivado para torneos por invitación o privados, para que inicios de sesión aleatorios no ensucien la lista de jugadores."
+      }
+    },
+    "developer": {
+      "title": "Opciones de desarrollador",
+      "description": "Solo para desarrollo local; no habilitar en producción.",
+      "simulateToggleLabel": "Simular partidos (usar demos con bots en lugar de jugadores reales)",
+      "simulateNote": "Cuando está habilitado, las configuraciones generadas incluyen \"simulation\": true para demos automatizadas.",
+      "timescaleTitle": "Velocidad de simulación",
+      "timescaleDescription": "Controla lo rápido que se ejecutan los partidos simulados. Valores más altos aceleran bots y rondas. Solo aplica cuando la simulación está habilitada.",
+      "timescaleWarning": "Velocidades por encima de 2.0 pueden ser inestables y causar comportamientos raros de bots, pero sirven para pruebas rápidas.",
+      "resetApiTitle": "Restablecer API y base de datos",
+      "resetApiDescription": "Zona de peligro: elimina y recrea todo el esquema de base de datos y reinicializa datos por defecto (mapas, pools, etc.). Solo para desarrollo local. Irreversible.",
+      "resetApiButton": "Restablecer API (borrar todos los datos)",
+      "resetApiButtonLoading": "Restableciendo API…",
+      "resetApiSuccess": "API y base de datos restablecidas. Todos los datos se borraron y se reinicializaron los valores por defecto.",
+      "resetApiError": "No se pudo restablecer la API y la base de datos. Revisa los logs del API.",
+      "resetApiDialog": {
+        "title": "¿Restablecer API y borrar todos los datos?",
+        "description": "Esto eliminará y recreará todo el esquema de base de datos. Todos los torneos, partidos, jugadores, equipos, ratings, eventos, logs y ajustes se eliminarán permanentemente. Esta acción no se puede deshacer. ¿Continuar?",
+        "cancel": "Cancelar",
+        "confirm": "Sí, restablecer API y borrar datos",
+        "confirmLoading": "Restableciendo…"
+      },
+      "debugChat": {
+        "label": "Habilitar mensajes de chat de depuración de MatchZy",
+        "description": "Cuando está habilitado, MatchZy imprimirá mensajes de depuración adicionales (conexiones/desconexiones, trazas de eventos, etc.) en el chat. Úsalo solo para desarrollo y pruebas."
+      }
+    },
+    "footer": {
+      "version": "Versión",
+      "unknownVersion": "Desconocida",
+      "resetButton": "Restablecer ajustes"
+    },
+    "resetDialog": {
+      "title": "¿Restablecer ajustes?",
+      "description": "Restablece todos los ajustes de esta página a los valores por defecto. Los torneos y servidores existentes no se modifican, pero los nuevos partidos y consultas usarán los valores por defecto. ¿Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Restablecer"
+    },
+    "errors": {
+      "loadSettings": "No se pudieron cargar los ajustes",
+      "saveSettings": "No se pudieron guardar los ajustes"
+    },
+    "success": {
+      "saveSettings": "Ajustes guardados",
+      "simulationEnabled": "Modo de simulación habilitado{{suffix}}",
+      "simulationDisabled": "Modo de simulación deshabilitado",
+      "timescaleUpdated": "Velocidad de simulación actualizada a {{value}}x"
     }
   }
 }

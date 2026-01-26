@@ -954,12 +954,10 @@ export default function Settings() {
               <Stack spacing={3}>
                 <Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom>
-                    Player registration
+                    {t('settingsPage.players.registration.title')}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Control whether new Steam logins automatically create player records. When
-                    disabled, only players created or imported by admins will appear in private
-                    tournaments and shuffle pools.
+                    {t('settingsPage.players.registration.description')}
                   </Typography>
                   <FormControlLabel
                     control={
@@ -970,11 +968,10 @@ export default function Settings() {
                         size="small"
                       />
                     }
-                    label="Allow anyone to register via Steam login"
+                    label={t('settingsPage.players.registration.toggleLabel')}
                   />
                   <Typography variant="caption" color="text.secondary" display="block">
-                    Recommended: keep this off for invite‑only or private tournaments so random
-                    Steam logins do not pollute the player list.
+                    {t('settingsPage.players.registration.recommendation')}
                   </Typography>
                 </Box>
 

@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Impostazioni",
+    "intro": "Configura integrazioni, valori predefiniti in gioco e opzioni di sviluppo.",
     "tabs": {
+      "integrations": "Integrazioni e webhooks",
+      "players": "Giocatori e accesso",
+      "matches": "Match e rating",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook MatchZy",
+        "description": "URL del webhook MatchZy raggiungibile dai tuoi server CS2.",
+        "label": "URL webhook",
+        "helper": "Esempio: https://il-tuo-dominio.com"
+      },
+      "mapSync": {
+        "title": "Sincronizzazione mappe",
+        "description": "Sincronizza le mappe CS2 dal repository GitHub.",
+        "buttonSyncing": "Sincronizzazione...",
+        "buttonIdle": "Sincronizza mappe CS2"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Aggiornamenti rating",
+        "description": "Controlla se i match completati aggiornano lo Skill Rating dei giocatori.",
+        "toggleLabel": "Aggiorna il rating dei giocatori dai match completati",
+        "note": "Quando disabilitato, i match continueranno a tracciare le statistiche (ADR, K/D, ecc.), ma lo Skill Rating non cambierà."
+      },
       "chatDefaults": {
         "title": "Predefiniti MatchZy (chat e knife)",
         "description": "Configura i prefissi della chat in gioco e il comportamento predefinito della knife round.",
@@ -413,6 +438,61 @@
           "description": "Se disabilitato, il server riavvia ~10s dopo la fine del match (vs 60-90s con registrazione)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Registrazione giocatori",
+        "description": "Controlla se i nuovi accessi Steam creano automaticamente profili giocatore. Quando disabilitato, solo i giocatori creati o importati dagli admin compariranno in tornei privati e shuffle pool.",
+        "toggleLabel": "Consenti a chiunque di registrarsi tramite accesso Steam",
+        "recommendation": "Consigliato: lascialo disattivato per tornei su invito o privati, così accessi Steam casuali non “sporcano” la lista giocatori."
+      }
+    },
+    "developer": {
+      "title": "Opzioni sviluppatore",
+      "description": "Solo per sviluppo locale; non abilitare in produzione.",
+      "simulateToggleLabel": "Simula i match (usa match demo con bot invece di giocatori reali)",
+      "simulateNote": "Quando abilitato, le configurazioni generate includono \"simulation\": true per match demo automatizzati.",
+      "timescaleTitle": "Velocità simulazione",
+      "timescaleDescription": "Controlla quanto velocemente girano i match simulati. Valori più alti accelerano bot e round. Si applica solo quando la simulazione è abilitata.",
+      "timescaleWarning": "Velocità sopra 2.0 possono essere instabili e causare comportamenti strani dei bot, ma vanno bene per test rapidi.",
+      "resetApiTitle": "Reimposta API e database",
+      "resetApiDescription": "Zona pericolosa: elimina e ricrea l’intero schema del database, poi reinizializza i dati predefiniti (mappe, pool, ecc.). Solo per sviluppo locale. Irreversibile.",
+      "resetApiButton": "Reimposta API (cancella tutti i dati)",
+      "resetApiButtonLoading": "Reimpostazione API…",
+      "resetApiSuccess": "API e database reimpostati. Tutti i dati sono stati cancellati e i predefiniti reinizializzati.",
+      "resetApiError": "Impossibile reimpostare API e database. Controlla i log dell’API.",
+      "resetApiDialog": {
+        "title": "Reimpostare API e cancellare tutti i dati?",
+        "description": "Questo eliminerà e ricreerà l’intero schema del database. Tutti i tornei, match, giocatori, squadre, rating, eventi, log e impostazioni saranno eliminati definitivamente. Questa azione non può essere annullata. Continuare?",
+        "cancel": "Annulla",
+        "confirm": "Sì, reimposta API e cancella dati",
+        "confirmLoading": "Reimpostazione…"
+      },
+      "debugChat": {
+        "label": "Abilita messaggi chat di debug di MatchZy",
+        "description": "Quando abilitato, MatchZy stamperà messaggi di debug aggiuntivi (connessioni/disconnessioni, tracce eventi, ecc.) nella chat. Usalo solo per sviluppo e test."
+      }
+    },
+    "footer": {
+      "version": "Versione",
+      "unknownVersion": "Sconosciuta",
+      "resetButton": "Reimposta impostazioni"
+    },
+    "resetDialog": {
+      "title": "Reimpostare le impostazioni?",
+      "description": "Reimposta tutte le impostazioni di questa pagina ai valori predefiniti. I tornei e server esistenti non vengono modificati, ma nuovi match e lookup useranno i valori predefiniti. Continuare?",
+      "cancel": "Annulla",
+      "confirm": "Reimposta"
+    },
+    "errors": {
+      "loadSettings": "Impossibile caricare le impostazioni",
+      "saveSettings": "Impossibile salvare le impostazioni"
+    },
+    "success": {
+      "saveSettings": "Impostazioni salvate",
+      "simulationEnabled": "Modalità simulazione abilitata{{suffix}}",
+      "simulationDisabled": "Modalità simulazione disabilitata",
+      "timescaleUpdated": "Velocità simulazione aggiornata a {{value}}x"
     }
   }
 }

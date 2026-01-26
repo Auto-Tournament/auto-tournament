@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Definições",
+    "intro": "Configura integrações, predefinições no jogo e opções de desenvolvimento.",
     "tabs": {
+      "integrations": "Integrações e webhooks",
+      "players": "Jogadores e acesso",
+      "matches": "Jogos e rating",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook do MatchZy",
+        "description": "URL de webhook do MatchZy que os teus servidores CS2 conseguem alcançar.",
+        "label": "URL de webhook",
+        "helper": "Exemplo: https://o-teu-dominio.com"
+      },
+      "mapSync": {
+        "title": "Sincronização de mapas",
+        "description": "Sincroniza mapas de CS2 a partir do repositório GitHub.",
+        "buttonSyncing": "A sincronizar...",
+        "buttonIdle": "Sincronizar mapas de CS2"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Atualizações de rating",
+        "description": "Controla se jogos concluídos atualizam o Skill Rating dos jogadores.",
+        "toggleLabel": "Atualizar o rating dos jogadores a partir de jogos concluídos",
+        "note": "Quando desativado, os jogos continuam a registar estatísticas (ADR, K/D, etc.), mas o Skill Rating mantém-se inalterado."
+      },
       "chatDefaults": {
         "title": "Predefinições do MatchZy (chat e knife)",
         "description": "Configura os prefíxos do chat no jogo e o comportamento padrão da ronda de knife.",
@@ -413,6 +438,61 @@
           "description": "Quando desativado, o servidor reinicia ~10s após o fim do jogo (vs 60-90s com gravação)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Registo de jogadores",
+        "description": "Controla se novos logins Steam criam automaticamente registos de jogador. Quando desativado, apenas jogadores criados ou importados por admins aparecem em torneios privados e pools shuffle.",
+        "toggleLabel": "Permitir que qualquer pessoa se registe via login Steam",
+        "recommendation": "Recomendado: mantém isto desativado para torneios por convite ou privados, para que logins Steam aleatórios não poluam a lista de jogadores."
+      }
+    },
+    "developer": {
+      "title": "Opções de programador",
+      "description": "Apenas para desenvolvimento local; não ativar em produção.",
+      "simulateToggleLabel": "Simular jogos (usar demos com bots em vez de jogadores reais)",
+      "simulateNote": "Quando ativado, as configurações geradas incluem \"simulation\": true para demos automatizadas.",
+      "timescaleTitle": "Velocidade de simulação",
+      "timescaleDescription": "Controla quão rápido os jogos simulados correm. Valores mais altos aceleram bots e rondas. Só se aplica quando a simulação está ativa.",
+      "timescaleWarning": "Velocidades acima de 2.0 podem ser instáveis e causar comportamento estranho dos bots, mas são úteis para testes rápidos.",
+      "resetApiTitle": "Repor API e base de dados",
+      "resetApiDescription": "Zona de perigo: apaga e recria todo o esquema da base de dados e reinicializa os dados predefinidos (mapas, pools, etc.). Apenas para desenvolvimento local. Irreversível.",
+      "resetApiButton": "Repor API (apagar todos os dados)",
+      "resetApiButtonLoading": "A repor API…",
+      "resetApiSuccess": "API e base de dados repostas. Todos os dados foram apagados e os predefinidos reinicializados.",
+      "resetApiError": "Falha ao repor API e base de dados. Verifica os logs do API.",
+      "resetApiDialog": {
+        "title": "Repor API e apagar todos os dados?",
+        "description": "Isto vai apagar e recriar todo o esquema da base de dados. Todos os torneios, jogos, jogadores, equipas, ratings, eventos, logs e definições serão apagados permanentemente. Esta ação não pode ser desfeita. Continuar?",
+        "cancel": "Cancelar",
+        "confirm": "Sim, repor API e apagar dados",
+        "confirmLoading": "A repor…"
+      },
+      "debugChat": {
+        "label": "Ativar mensagens de chat de debug do MatchZy",
+        "description": "Quando ativado, o MatchZy vai imprimir mensagens de debug adicionais (conexões/desconexões, traces de eventos, etc.) no chat. Usa apenas para desenvolvimento e testes."
+      }
+    },
+    "footer": {
+      "version": "Versão",
+      "unknownVersion": "Desconhecida",
+      "resetButton": "Repor definições"
+    },
+    "resetDialog": {
+      "title": "Repor definições?",
+      "description": "Repõe todas as definições desta página para os valores predefinidos. Torneios e servidores existentes não são alterados, mas novos jogos e pesquisas usarão os valores predefinidos. Continuar?",
+      "cancel": "Cancelar",
+      "confirm": "Repor"
+    },
+    "errors": {
+      "loadSettings": "Falha ao carregar definições",
+      "saveSettings": "Falha ao guardar definições"
+    },
+    "success": {
+      "saveSettings": "Definições guardadas",
+      "simulationEnabled": "Modo de simulação ativado{{suffix}}",
+      "simulationDisabled": "Modo de simulação desativado",
+      "timescaleUpdated": "Velocidade de simulação atualizada para {{value}}x"
     }
   }
 }

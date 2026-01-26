@@ -125,6 +125,12 @@
         "statusNotConfigured": "Steam API-nøkkel er ikke satt.",
         "statusUnreachable": "Steam API-nøkkel er satt, men Steam kan ikke nås.",
         "statusError": "Klarte ikke å sjekke Steam API-status."
+      },
+      "mapSync": {
+        "title": "Kartsynkronisering",
+        "description": "Synk CS2-kart fra GitHub-repositoriet.",
+        "buttonSyncing": "Synkroniserer kart...",
+        "buttonIdle": "Synkroniser CS2-kart"
       }
     },
     "matchRating": {
@@ -236,17 +242,60 @@
         }
       }
     },
+    "players": {
+      "registration": {
+        "title": "Spillerregistrering",
+        "description": "Styr om nye Steam-innlogginger automatisk oppretter spillerprofiler. Når deaktivert vil kun spillere som admins har opprettet eller importert vises i private turneringer og shuffle-pooler.",
+        "toggleLabel": "Tillat at hvem som helst kan registrere seg via Steam-innlogging",
+        "recommendation": "Anbefalt: la dette være av for invitasjons‑ eller private turneringer, slik at tilfeldige Steam-innlogginger ikke fyller opp spillerlisten."
+      }
+    },
     "developer": {
       "title": "Utvikleralternativer",
       "description": "Kun for lokal utvikling – ikke bruk i produksjon.",
-      "simulateToggleLabel": "Simuler kamper (bot-styrt)",
-      "simulateNote": "Aktiverer automatiserte demo-kamper.",
+      "simulateToggleLabel": "Simuler kamper (bruk bot-styrte demo-kamper i stedet for ekte spillere)",
+      "simulateNote": "Når aktivert, inkluderer genererte MatchZy-konfiger \"simulation\": true for automatiserte demo-kamper.",
+      "timescaleTitle": "Simuleringshastighet",
+      "timescaleDescription": "Styrer hvor raskt simulerte kamper kjører. Høyere verdier gjør bots og runde-flow raskere. Gjelder kun når simulering er aktivert.",
+      "timescaleWarning": "Hastigheter over 2.0 kan være litt ustabile og gi rar bot-oppførsel, men fungerer fint for rask lokal testing.",
       "resetApiTitle": "Tilbakestill API og database",
-      "resetApiDescription": "Sletter all data og gjenoppretter standardoppsett.",
+      "resetApiDescription": "Faresone: sletter og gjenoppretter hele databaseskjemaet, og initialiserer deretter standarddata (kart, kartpooler osv.). Kun for lokal utvikling. Dette kan ikke angres.",
       "resetApiButton": "Tilbakestill API (slett alt)",
       "resetApiButtonLoading": "Tilbakestiller API…",
-      "resetApiSuccess": "API og database er tilbakestilt.",
-      "resetApiError": "Klarte ikke å tilbakestille API."
+      "resetApiSuccess": "API og database er tilbakestilt. All data er slettet og standardverdier er gjenopprettet.",
+      "resetApiError": "Klarte ikke å tilbakestille API og database. Sjekk API-loggene for detaljer.",
+      "resetApiDialog": {
+        "title": "Tilbakestill API og slett all data?",
+        "description": "Dette vil slette og gjenopprette hele databaseskjemaet. Alle turneringer, kamper, spillere, lag, ratinger, hendelser, logger og innstillinger vil bli permanent slettet. Dette kan ikke angres. Fortsette?",
+        "cancel": "Avbryt",
+        "confirm": "Ja, tilbakestill API og slett data",
+        "confirmLoading": "Tilbakestiller…"
+      },
+      "debugChat": {
+        "label": "Aktiver MatchZy debug-chatmeldinger",
+        "description": "Når aktivert, skriver MatchZy ekstra debug-meldinger (connect/disconnect, event-traces osv.) i in-game chat. Bruk kun for utvikling og testing."
+      }
+    },
+    "footer": {
+      "version": "Versjon",
+      "unknownVersion": "Ukjent",
+      "resetButton": "Tilbakestill innstillinger"
+    },
+    "resetDialog": {
+      "title": "Tilbakestille innstillinger?",
+      "description": "Tilbakestill alle innstillinger på denne siden til standardverdier. Eksisterende turneringer og servere endres ikke, men nye kamper og oppslag vil bruke standardverdiene. Fortsette?",
+      "cancel": "Avbryt",
+      "confirm": "Tilbakestill"
+    },
+    "errors": {
+      "loadSettings": "Klarte ikke å laste innstillinger",
+      "saveSettings": "Klarte ikke å lagre innstillinger"
+    },
+    "success": {
+      "saveSettings": "Innstillinger lagret",
+      "simulationEnabled": "Simuleringsmodus aktivert{{suffix}}",
+      "simulationDisabled": "Simuleringsmodus deaktivert",
+      "timescaleUpdated": "Simuleringshastighet oppdatert til {{value}}x"
     }
   },
   "matchesPage": {

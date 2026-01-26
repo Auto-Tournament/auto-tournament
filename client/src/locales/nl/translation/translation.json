@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Instellingen",
+    "intro": "Configureer integraties, in-game standaarden en ontwikkelaarsopties.",
     "tabs": {
+      "integrations": "Integraties & webhooks",
+      "players": "Spelers & toegang",
+      "matches": "Wedstrijden & ratings",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy webhook",
+        "description": "MatchZy webhook-URL die je CS2-servers kunnen bereiken.",
+        "label": "Webhook-URL",
+        "helper": "Voorbeeld: https://jouw-domein.nl"
+      },
+      "mapSync": {
+        "title": "Kaart-synchronisatie",
+        "description": "Synchroniseer CS2-kaarten vanuit de GitHub-repository.",
+        "buttonSyncing": "Synchroniseren...",
+        "buttonIdle": "CS2-kaarten synchroniseren"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Rating-updates",
+        "description": "Bepaal of afgeronde wedstrijden de Skill Rating van spelers bijwerken.",
+        "toggleLabel": "Werk spelersratings bij op basis van afgeronde wedstrijden",
+        "note": "Wanneer uitgeschakeld, blijven wedstrijden statistieken bijhouden (ADR, K/D, etc.), maar Skill Ratings veranderen niet."
+      },
       "chatDefaults": {
         "title": "MatchZy chat- & knife-standaarden",
         "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
@@ -413,6 +438,61 @@
           "description": "Wanneer uitgeschakeld, herstart de server ~10s na match-einde (vs 60-90s met opname)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Spelerregistratie",
+        "description": "Bepaal of nieuwe Steam-logins automatisch spelersrecords aanmaken. Wanneer uitgeschakeld, verschijnen in private toernooien en shuffle-pools alleen spelers die door admins zijn aangemaakt of geïmporteerd.",
+        "toggleLabel": "Sta iedereen toe om zich te registreren via Steam-login",
+        "recommendation": "Aanbevolen: laat dit uit voor invite-only of private toernooien, zodat willekeurige Steam-logins de spelerslijst niet vervuilen."
+      }
+    },
+    "developer": {
+      "title": "Ontwikkelaarsopties",
+      "description": "Alleen voor lokale ontwikkeling; niet inschakelen in productie.",
+      "simulateToggleLabel": "Simuleer wedstrijden (gebruik bot-gestuurde demo-wedstrijden i.p.v. echte spelers)",
+      "simulateNote": "Wanneer ingeschakeld, bevatten gegenereerde MatchZy-configs \"simulation\": true voor geautomatiseerde demo-wedstrijden.",
+      "timescaleTitle": "Simulatie-snelheid",
+      "timescaleDescription": "Bepaalt hoe snel gesimuleerde wedstrijden lopen. Hogere waarden versnellen bots en rondes. Dit geldt alleen wanneer simulatie is ingeschakeld.",
+      "timescaleWarning": "Snelheden boven 2.0 kunnen instabiel zijn en vreemd bot-gedrag veroorzaken, maar zijn ok voor snelle lokale tests.",
+      "resetApiTitle": "API & database resetten",
+      "resetApiDescription": "Gevarenzone: verwijdert en hermaakt het volledige databaseschema en initialiseert daarna defaults opnieuw (kaarten, map-pools, etc.). Alleen voor lokale ontwikkeling. Onomkeerbaar.",
+      "resetApiButton": "API resetten (alle data wissen)",
+      "resetApiButtonLoading": "API resetten…",
+      "resetApiSuccess": "API en database succesvol gereset. Alle data is gewist en defaults zijn opnieuw geïnitialiseerd.",
+      "resetApiError": "API en database resetten mislukt. Controleer de API-logs.",
+      "resetApiDialog": {
+        "title": "API resetten & alle data wissen?",
+        "description": "Dit verwijdert en hermaakt het volledige databaseschema. Alle toernooien, wedstrijden, spelers, teams, ratings, events, logs en instellingen worden permanent verwijderd. Deze actie kan niet ongedaan worden gemaakt. Doorgaan?",
+        "cancel": "Annuleren",
+        "confirm": "Ja, API resetten & data wissen",
+        "confirmLoading": "Resetten…"
+      },
+      "debugChat": {
+        "label": "MatchZy debug-chatberichten inschakelen",
+        "description": "Wanneer ingeschakeld, toont MatchZy extra debug-berichten (connects/disconnects, event-traces, etc.) in de chat. Gebruik dit alleen voor ontwikkeling en testen."
+      }
+    },
+    "footer": {
+      "version": "Versie",
+      "unknownVersion": "Onbekend",
+      "resetButton": "Instellingen resetten"
+    },
+    "resetDialog": {
+      "title": "Instellingen resetten?",
+      "description": "Reset alle instellingen op deze pagina terug naar defaults. Bestaande toernooien en servers worden niet gewijzigd, maar nieuwe wedstrijden en lookups gebruiken de default-waarden. Doorgaan?",
+      "cancel": "Annuleren",
+      "confirm": "Resetten"
+    },
+    "errors": {
+      "loadSettings": "Instellingen laden mislukt",
+      "saveSettings": "Instellingen opslaan mislukt"
+    },
+    "success": {
+      "saveSettings": "Instellingen opgeslagen",
+      "simulationEnabled": "Simulatiemodus ingeschakeld{{suffix}}",
+      "simulationDisabled": "Simulatiemodus uitgeschakeld",
+      "timescaleUpdated": "Simulatiesnelheid bijgewerkt naar {{value}}x"
     }
   }
 }

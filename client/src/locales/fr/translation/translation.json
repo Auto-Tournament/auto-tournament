@@ -308,10 +308,35 @@
     }
   },
   "settingsPage": {
+    "title": "Paramètres",
+    "intro": "Configurez les intégrations, les valeurs par défaut en jeu et les options de développement.",
     "tabs": {
+      "integrations": "Intégrations & webhooks",
+      "players": "Joueurs & accès",
+      "matches": "Matchs & rating",
       "matchzy": "MatchZy"
     },
+    "integrations": {
+      "webhook": {
+        "title": "Webhook MatchZy",
+        "description": "URL de webhook MatchZy accessible par vos serveurs CS2.",
+        "label": "URL de webhook",
+        "helper": "Exemple : https://votre-domaine.com"
+      },
+      "mapSync": {
+        "title": "Synchronisation des cartes",
+        "description": "Synchroniser les cartes CS2 depuis le dépôt GitHub.",
+        "buttonSyncing": "Synchronisation...",
+        "buttonIdle": "Synchroniser les cartes CS2"
+      }
+    },
     "matchRating": {
+      "ratings": {
+        "title": "Mises à jour du rating",
+        "description": "Contrôlez si les matchs terminés mettent à jour le Skill Rating des joueurs.",
+        "toggleLabel": "Mettre à jour le rating des joueurs à partir des matchs terminés",
+        "note": "Quand désactivé, les stats (ADR, K/D, etc.) sont toujours enregistrées, mais les Skill Ratings ne changent pas."
+      },
       "chatDefaults": {
         "title": "Paramètres par défaut MatchZy (chat & knife)",
         "description": "Configurez les préfixes du chat en jeu et le comportement par défaut des manches knife.",
@@ -413,6 +438,61 @@
           "description": "Quand désactivé, le serveur redémarre ~10s après la fin du match (contre 60-90s avec enregistrement)"
         }
       }
+    },
+    "players": {
+      "registration": {
+        "title": "Inscription des joueurs",
+        "description": "Contrôlez si les nouvelles connexions Steam créent automatiquement des fiches joueur. Quand désactivé, seuls les joueurs créés ou importés par les admins apparaîtront dans les tournois privés et les pools shuffle.",
+        "toggleLabel": "Autoriser tout le monde à s’inscrire via la connexion Steam",
+        "recommendation": "Recommandé : laissez ceci désactivé pour les tournois sur invitation/privés afin d’éviter que des connexions Steam aléatoires n’encombrent la liste des joueurs."
+      }
+    },
+    "developer": {
+      "title": "Options développeur",
+      "description": "Outils de développement local uniquement ; ne pas activer en production.",
+      "simulateToggleLabel": "Simuler les matchs (utiliser des matchs démo pilotés par des bots au lieu de vrais joueurs)",
+      "simulateNote": "Quand activé, les configs MatchZy générées incluent \"simulation\": true pour des matchs démo automatisés.",
+      "timescaleTitle": "Vitesse de simulation",
+      "timescaleDescription": "Contrôle la vitesse d’exécution des matchs simulés. Des valeurs plus élevées accélèrent les bots et le déroulement des rounds. Cela ne s’applique que lorsque la simulation est activée.",
+      "timescaleWarning": "Des vitesses au-dessus de 2.0 peuvent être instables et provoquer un comportement étrange des bots, mais conviennent pour des tests rapides.",
+      "resetApiTitle": "Réinitialiser l’API & la base de données",
+      "resetApiDescription": "Zone dangereuse : supprime et recrée tout le schéma de base de données, puis réinitialise les données par défaut (cartes, pools, etc.). À utiliser uniquement en développement local. Irréversible.",
+      "resetApiButton": "Réinitialiser l’API (effacer toutes les données)",
+      "resetApiButtonLoading": "Réinitialisation de l’API…",
+      "resetApiSuccess": "API et base de données réinitialisées. Toutes les données ont été effacées et les valeurs par défaut réinitialisées.",
+      "resetApiError": "Échec de la réinitialisation de l’API et de la base de données. Vérifiez les logs de l’API.",
+      "resetApiDialog": {
+        "title": "Réinitialiser l’API & effacer toutes les données ?",
+        "description": "Cela supprimera et recréera tout le schéma de base de données. Tous les tournois, matchs, joueurs, équipes, ratings, événements, logs et paramètres seront définitivement supprimés. Cette action est irréversible. Continuer ?",
+        "cancel": "Annuler",
+        "confirm": "Oui, réinitialiser l’API & effacer",
+        "confirmLoading": "Réinitialisation…"
+      },
+      "debugChat": {
+        "label": "Activer les messages de debug MatchZy dans le chat",
+        "description": "Quand activé, MatchZy affiche des messages de debug supplémentaires (connexions/déconnexions, traces d’événements, etc.) dans le chat. À utiliser uniquement pour le développement et les tests."
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Inconnue",
+      "resetButton": "Réinitialiser les paramètres"
+    },
+    "resetDialog": {
+      "title": "Réinitialiser les paramètres ?",
+      "description": "Réinitialiser tous les paramètres de cette page aux valeurs par défaut. Les tournois et serveurs existants ne sont pas modifiés, mais les nouveaux matchs et recherches utiliseront les valeurs par défaut. Continuer ?",
+      "cancel": "Annuler",
+      "confirm": "Réinitialiser"
+    },
+    "errors": {
+      "loadSettings": "Échec du chargement des paramètres",
+      "saveSettings": "Échec de l’enregistrement des paramètres"
+    },
+    "success": {
+      "saveSettings": "Paramètres enregistrés",
+      "simulationEnabled": "Mode simulation activé{{suffix}}",
+      "simulationDisabled": "Mode simulation désactivé",
+      "timescaleUpdated": "Vitesse de simulation mise à jour à {{value}}x"
     }
   }
 }
