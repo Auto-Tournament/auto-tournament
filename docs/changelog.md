@@ -9,7 +9,20 @@ Each bullet is tagged with a type such as **[Feature]**, **[Fix]**, **[Docs]**, 
 
 ## [Unreleased]
 
-- _No unreleased changes._
+### Refactoring & Localization
+- **[Refactor]** Removed `PublicPages` component and streamlined routing structure.
+- **[Refactor]** Streamlined authentication and match status handling for improved reliability.
+- **[Feature]** Enhanced localization system with improved match handling and translation management.
+- **[Feature]** Added initial state for `allowSelfRegister` in settings for better player registration control.
+
+### Access & Authentication
+- **[Feature]** Added allocation status endpoint for player access control.
+- **[Feature]** Implemented direct access block for admin routes to prevent unauthorized access.
+- **[Feature]** Added test-only login endpoint for non-admin players to support development and testing.
+
+### Chores
+- **[Chore]** Updated `.gitignore` to exclude additional file types.
+- **[Chore]** Removed tracked local tournament.db from repository.
 
 ---
 

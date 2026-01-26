@@ -82,6 +82,59 @@ export default function Settings() {
   const [initialMatchzyDebugChatEnabled, setInitialMatchzyDebugChatEnabled] = useState(false);
   const [allowSelfRegister, setAllowSelfRegister] = useState(false);
   const [initialAllowSelfRegister, setInitialAllowSelfRegister] = useState(false);
+  // MatchZy core defaults
+  const [matchzyMinimumReadyRequired, setMatchzyMinimumReadyRequired] = useState<number>(2);
+  const [initialMatchzyMinimumReadyRequired, setInitialMatchzyMinimumReadyRequired] =
+    useState<number>(2);
+  const [matchzyAllowForceReady, setMatchzyAllowForceReady] = useState<boolean>(true);
+  const [initialMatchzyAllowForceReady, setInitialMatchzyAllowForceReady] =
+    useState<boolean>(true);
+  const [matchzyKickWhenNoMatchLoaded, setMatchzyKickWhenNoMatchLoaded] =
+    useState<boolean>(false);
+  const [initialMatchzyKickWhenNoMatchLoaded, setInitialMatchzyKickWhenNoMatchLoaded] =
+    useState<boolean>(false);
+  const [matchzyWhitelistEnabledDefault, setMatchzyWhitelistEnabledDefault] =
+    useState<boolean>(false);
+  const [initialMatchzyWhitelistEnabledDefault, setInitialMatchzyWhitelistEnabledDefault] =
+    useState<boolean>(false);
+  const [matchzyPauseAfterRestore, setMatchzyPauseAfterRestore] = useState<boolean>(true);
+  const [initialMatchzyPauseAfterRestore, setInitialMatchzyPauseAfterRestore] =
+    useState<boolean>(true);
+  const [matchzyStopCommandAvailable, setMatchzyStopCommandAvailable] =
+    useState<boolean>(false);
+  const [initialMatchzyStopCommandAvailable, setInitialMatchzyStopCommandAvailable] =
+    useState<boolean>(false);
+  const [matchzyStopCommandNoDamage, setMatchzyStopCommandNoDamage] = useState<boolean>(false);
+  const [initialMatchzyStopCommandNoDamage, setInitialMatchzyStopCommandNoDamage] =
+    useState<boolean>(false);
+  const [matchzyUsePauseCommandForTacticalPause, setMatchzyUsePauseCommandForTacticalPause] =
+    useState<boolean>(false);
+  const [
+    initialMatchzyUsePauseCommandForTacticalPause,
+    setInitialMatchzyUsePauseCommandForTacticalPause,
+  ] = useState<boolean>(false);
+  const [matchzyDemoPath, setMatchzyDemoPath] = useState<string>('MatchZy/');
+  const [initialMatchzyDemoPath, setInitialMatchzyDemoPath] = useState<string>('MatchZy/');
+  const [matchzyDemoNameFormat, setMatchzyDemoNameFormat] = useState<string>(
+    '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'
+  );
+  const [initialMatchzyDemoNameFormat, setInitialMatchzyDemoNameFormat] = useState<string>(
+    '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'
+  );
+  const [matchzySeriesEndKickDelayNoDemo, setMatchzySeriesEndKickDelayNoDemo] =
+    useState<number>(5);
+  const [initialMatchzySeriesEndKickDelayNoDemo, setInitialMatchzySeriesEndKickDelayNoDemo] =
+    useState<number>(5);
+  const [matchzySeriesEndKickDelayDemoNoUpload, setMatchzySeriesEndKickDelayDemoNoUpload] =
+    useState<number>(10);
+  const [
+    initialMatchzySeriesEndKickDelayDemoNoUpload,
+    setInitialMatchzySeriesEndKickDelayDemoNoUpload,
+  ] = useState<number>(10);
+  const [matchzySeriesEndKickDelayDemoUpload, setMatchzySeriesEndKickDelayDemoUpload] =
+    useState<number>(60);
+  const [initialMatchzySeriesEndKickDelayDemoUpload, setInitialMatchzySeriesEndKickDelayDemoUpload] =
+    useState<number>(60);
   // MatchZy Enhanced v1.3.0 settings
   const [matchzyAutoreadyEnabled, setMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
   const [initialMatchzyAutoreadyEnabled, setInitialMatchzyAutoreadyEnabled] = useState<0 | 1 | null>(null);
@@ -143,6 +196,24 @@ export default function Settings() {
         response.settings.allowSelfRegister !== undefined
           ? response.settings.allowSelfRegister
           : false;
+      // MatchZy core defaults
+      const minimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+      const allowForceReady = response.settings.matchzyAllowForceReady ?? true;
+      const kickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
+      const whitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
+      const pauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
+      const stopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
+      const stopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+      const usePauseCommandForTacticalPause =
+        response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+      const demoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+      const demoNameFormat =
+        response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+      const seriesEndKickDelayNoDemo = response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+      const seriesEndKickDelayDemoNoUpload =
+        response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+      const seriesEndKickDelayDemoUpload =
+        response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
       // MatchZy Enhanced v1.3.0 settings
       const matchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
       const matchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
@@ -175,6 +246,32 @@ export default function Settings() {
       setInitialAllowSelfRegister(allowSelfRegisterValue);
       setRatingsEnabled(ratingsEnabledValue);
       setInitialRatingsEnabled(ratingsEnabledValue);
+      setMatchzyMinimumReadyRequired(minimumReadyRequired);
+      setInitialMatchzyMinimumReadyRequired(minimumReadyRequired);
+      setMatchzyAllowForceReady(allowForceReady);
+      setInitialMatchzyAllowForceReady(allowForceReady);
+      setMatchzyKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
+      setInitialMatchzyKickWhenNoMatchLoaded(kickWhenNoMatchLoaded);
+      setMatchzyWhitelistEnabledDefault(whitelistEnabledDefault);
+      setInitialMatchzyWhitelistEnabledDefault(whitelistEnabledDefault);
+      setMatchzyPauseAfterRestore(pauseAfterRestore);
+      setInitialMatchzyPauseAfterRestore(pauseAfterRestore);
+      setMatchzyStopCommandAvailable(stopCommandAvailable);
+      setInitialMatchzyStopCommandAvailable(stopCommandAvailable);
+      setMatchzyStopCommandNoDamage(stopCommandNoDamage);
+      setInitialMatchzyStopCommandNoDamage(stopCommandNoDamage);
+      setMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
+      setInitialMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
+      setMatchzyDemoPath(demoPath);
+      setInitialMatchzyDemoPath(demoPath);
+      setMatchzyDemoNameFormat(demoNameFormat);
+      setInitialMatchzyDemoNameFormat(demoNameFormat);
+      setMatchzySeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
+      setInitialMatchzySeriesEndKickDelayNoDemo(seriesEndKickDelayNoDemo);
+      setMatchzySeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
+      setInitialMatchzySeriesEndKickDelayDemoNoUpload(seriesEndKickDelayDemoNoUpload);
+      setMatchzySeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
+      setInitialMatchzySeriesEndKickDelayDemoUpload(seriesEndKickDelayDemoUpload);
       // MatchZy Enhanced
       setMatchzyAutoreadyEnabled(matchzyAutoready);
       setInitialMatchzyAutoreadyEnabled(matchzyAutoready);
@@ -242,6 +339,20 @@ export default function Settings() {
           ratingsEnabled,
           matchzyDebugChatEnabled: overrides?.matchzyDebugChatEnabled ?? matchzyDebugChatEnabled,
           allowSelfRegister,
+          // MatchZy core defaults
+          matchzyMinimumReadyRequired,
+          matchzyAllowForceReady,
+          matchzyKickWhenNoMatchLoaded,
+          matchzyWhitelistEnabledDefault,
+          matchzyPauseAfterRestore,
+          matchzyStopCommandAvailable,
+          matchzyStopCommandNoDamage,
+          matchzyUsePauseCommandForTacticalPause,
+          matchzyDemoPath: matchzyDemoPath.trim(),
+          matchzyDemoNameFormat: matchzyDemoNameFormat.trim(),
+          matchzySeriesEndKickDelayNoDemo,
+          matchzySeriesEndKickDelayDemoNoUpload,
+          matchzySeriesEndKickDelayDemoUpload,
           // MatchZy Enhanced v1.3.0 settings
           matchzyAutoreadyEnabled,
           matchzyBothTeamsUnpauseRequired,
@@ -282,6 +393,23 @@ export default function Settings() {
           response.settings.allowSelfRegister !== undefined
             ? response.settings.allowSelfRegister
             : false;
+        const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+        const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
+        const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
+        const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
+        const newPauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
+        const newStopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
+        const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+        const newUsePauseCommandForTacticalPause =
+          response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+        const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+        const newDemoNameFormat =
+          response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+        const newSeriesEndKickDelayNoDemo = response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+        const newSeriesEndKickDelayDemoNoUpload =
+          response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+        const newSeriesEndKickDelayDemoUpload =
+          response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
         // MatchZy Enhanced v1.3.0 settings
         const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
         const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
@@ -319,6 +447,32 @@ export default function Settings() {
         setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
         setAllowSelfRegister(newAllowSelfRegister);
         setInitialAllowSelfRegister(newAllowSelfRegister);
+        setMatchzyMinimumReadyRequired(newMinimumReadyRequired);
+        setInitialMatchzyMinimumReadyRequired(newMinimumReadyRequired);
+        setMatchzyAllowForceReady(newAllowForceReady);
+        setInitialMatchzyAllowForceReady(newAllowForceReady);
+        setMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+        setInitialMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+        setMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
+        setInitialMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
+        setMatchzyPauseAfterRestore(newPauseAfterRestore);
+        setInitialMatchzyPauseAfterRestore(newPauseAfterRestore);
+        setMatchzyStopCommandAvailable(newStopCommandAvailable);
+        setInitialMatchzyStopCommandAvailable(newStopCommandAvailable);
+        setMatchzyStopCommandNoDamage(newStopCommandNoDamage);
+        setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
+        setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+        setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+        setMatchzyDemoPath(newDemoPath);
+        setInitialMatchzyDemoPath(newDemoPath);
+        setMatchzyDemoNameFormat(newDemoNameFormat);
+        setInitialMatchzyDemoNameFormat(newDemoNameFormat);
+        setMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+        setInitialMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+        setMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+        setInitialMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+        setMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+        setInitialMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
         // MatchZy Enhanced
         setMatchzyAutoreadyEnabled(newMatchzyAutoready);
         setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);
@@ -390,6 +544,19 @@ export default function Settings() {
       simulateMatches,
       simulationTimescale,
       allowSelfRegister,
+      matchzyMinimumReadyRequired,
+      matchzyAllowForceReady,
+      matchzyKickWhenNoMatchLoaded,
+      matchzyWhitelistEnabledDefault,
+      matchzyPauseAfterRestore,
+      matchzyStopCommandAvailable,
+      matchzyStopCommandNoDamage,
+      matchzyUsePauseCommandForTacticalPause,
+      matchzyDemoPath,
+      matchzyDemoNameFormat,
+      matchzySeriesEndKickDelayNoDemo,
+      matchzySeriesEndKickDelayDemoNoUpload,
+      matchzySeriesEndKickDelayDemoUpload,
       matchzyAutoreadyEnabled,
       matchzyBothTeamsUnpauseRequired,
       matchzyMaxPausesPerTeam,
@@ -422,6 +589,19 @@ export default function Settings() {
       ratingsEnabled !== initialRatingsEnabled ||
       matchzyDebugChatEnabled !== initialMatchzyDebugChatEnabled ||
       allowSelfRegister !== initialAllowSelfRegister ||
+      matchzyMinimumReadyRequired !== initialMatchzyMinimumReadyRequired ||
+      matchzyAllowForceReady !== initialMatchzyAllowForceReady ||
+      matchzyKickWhenNoMatchLoaded !== initialMatchzyKickWhenNoMatchLoaded ||
+      matchzyWhitelistEnabledDefault !== initialMatchzyWhitelistEnabledDefault ||
+      matchzyPauseAfterRestore !== initialMatchzyPauseAfterRestore ||
+      matchzyStopCommandAvailable !== initialMatchzyStopCommandAvailable ||
+      matchzyStopCommandNoDamage !== initialMatchzyStopCommandNoDamage ||
+      matchzyUsePauseCommandForTacticalPause !== initialMatchzyUsePauseCommandForTacticalPause ||
+      matchzyDemoPath !== initialMatchzyDemoPath ||
+      matchzyDemoNameFormat !== initialMatchzyDemoNameFormat ||
+      matchzySeriesEndKickDelayNoDemo !== initialMatchzySeriesEndKickDelayNoDemo ||
+      matchzySeriesEndKickDelayDemoNoUpload !== initialMatchzySeriesEndKickDelayDemoNoUpload ||
+      matchzySeriesEndKickDelayDemoUpload !== initialMatchzySeriesEndKickDelayDemoUpload ||
       matchzyAutoreadyEnabled !== initialMatchzyAutoreadyEnabled ||
       matchzyBothTeamsUnpauseRequired !== initialMatchzyBothTeamsUnpauseRequired ||
       matchzyMaxPausesPerTeam !== initialMatchzyMaxPausesPerTeam ||
@@ -481,6 +661,19 @@ export default function Settings() {
       matchzyDebugChatEnabled === initialMatchzyDebugChatEnabled &&
       ratingsEnabled === initialRatingsEnabled &&
       allowSelfRegister === initialAllowSelfRegister &&
+      matchzyMinimumReadyRequired === initialMatchzyMinimumReadyRequired &&
+      matchzyAllowForceReady === initialMatchzyAllowForceReady &&
+      matchzyKickWhenNoMatchLoaded === initialMatchzyKickWhenNoMatchLoaded &&
+      matchzyWhitelistEnabledDefault === initialMatchzyWhitelistEnabledDefault &&
+      matchzyPauseAfterRestore === initialMatchzyPauseAfterRestore &&
+      matchzyStopCommandAvailable === initialMatchzyStopCommandAvailable &&
+      matchzyStopCommandNoDamage === initialMatchzyStopCommandNoDamage &&
+      matchzyUsePauseCommandForTacticalPause === initialMatchzyUsePauseCommandForTacticalPause &&
+      matchzyDemoPath === initialMatchzyDemoPath &&
+      matchzyDemoNameFormat === initialMatchzyDemoNameFormat &&
+      matchzySeriesEndKickDelayNoDemo === initialMatchzySeriesEndKickDelayNoDemo &&
+      matchzySeriesEndKickDelayDemoNoUpload === initialMatchzySeriesEndKickDelayDemoNoUpload &&
+      matchzySeriesEndKickDelayDemoUpload === initialMatchzySeriesEndKickDelayDemoUpload &&
       matchzyAutoreadyEnabled === initialMatchzyAutoreadyEnabled &&
       matchzyBothTeamsUnpauseRequired === initialMatchzyBothTeamsUnpauseRequired &&
       matchzyMaxPausesPerTeam === initialMatchzyMaxPausesPerTeam &&
@@ -522,6 +715,19 @@ export default function Settings() {
     matchzyDebugChatEnabled,
     ratingsEnabled,
     allowSelfRegister,
+    matchzyMinimumReadyRequired,
+    matchzyAllowForceReady,
+    matchzyKickWhenNoMatchLoaded,
+    matchzyWhitelistEnabledDefault,
+    matchzyPauseAfterRestore,
+    matchzyStopCommandAvailable,
+    matchzyStopCommandNoDamage,
+    matchzyUsePauseCommandForTacticalPause,
+    matchzyDemoPath,
+    matchzyDemoNameFormat,
+    matchzySeriesEndKickDelayNoDemo,
+    matchzySeriesEndKickDelayDemoNoUpload,
+    matchzySeriesEndKickDelayDemoUpload,
     matchzyAutoreadyEnabled,
     matchzyBothTeamsUnpauseRequired,
     matchzyMaxPausesPerTeam,
@@ -541,6 +747,19 @@ export default function Settings() {
     initialMatchzyDebugChatEnabled,
     initialRatingsEnabled,
     initialAllowSelfRegister,
+    initialMatchzyMinimumReadyRequired,
+    initialMatchzyAllowForceReady,
+    initialMatchzyKickWhenNoMatchLoaded,
+    initialMatchzyWhitelistEnabledDefault,
+    initialMatchzyPauseAfterRestore,
+    initialMatchzyStopCommandAvailable,
+    initialMatchzyStopCommandNoDamage,
+    initialMatchzyUsePauseCommandForTacticalPause,
+    initialMatchzyDemoPath,
+    initialMatchzyDemoNameFormat,
+    initialMatchzySeriesEndKickDelayNoDemo,
+    initialMatchzySeriesEndKickDelayDemoNoUpload,
+    initialMatchzySeriesEndKickDelayDemoUpload,
     initialMatchzyAutoreadyEnabled,
     initialMatchzyBothTeamsUnpauseRequired,
     initialMatchzyMaxPausesPerTeam,
@@ -824,6 +1043,235 @@ export default function Settings() {
                     <Typography variant="caption" color="text.secondary" display="block">
                       {t('settingsPage.matchRating.chatDefaults.knifeNote')}
                     </Typography>
+                  </Stack>
+                </Box>
+
+                <Divider />
+
+                {/* MatchZy Core Defaults */}
+                <Box>
+                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                    {t('settingsPage.matchRating.matchzyCore.title')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" mb={3}>
+                    {t('settingsPage.matchRating.matchzyCore.description')}
+                  </Typography>
+
+                  <Stack spacing={3}>
+                    {/* Ready / flow */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.ready.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyLabel')}
+                          type="number"
+                          value={matchzyMinimumReadyRequired}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzyMinimumReadyRequired(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          helperText={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyHelper')}
+                          inputProps={{ min: 0, max: 10 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyAllowForceReady}
+                              onChange={(e) => setMatchzyAllowForceReady(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.ready.allowForceReady')}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Access / server lockdown */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.access.title')}
+                      </Typography>
+                      <Stack spacing={1}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyKickWhenNoMatchLoaded}
+                              onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded')}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyWhitelistEnabledDefault}
+                              onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault')}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Admin tools */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
+                      </Typography>
+                      <Stack spacing={1}>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyPauseAfterRestore}
+                              onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore')}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyStopCommandAvailable}
+                              onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable')}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyStopCommandNoDamage}
+                              onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
+                              color="primary"
+                              size="small"
+                              disabled={!matchzyStopCommandAvailable}
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage')}
+                        />
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyUsePauseCommandForTacticalPause}
+                              onChange={(e) => setMatchzyUsePauseCommandForTacticalPause(e.target.checked)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause')}
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Demos */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.demos.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
+                          value={matchzyDemoPath}
+                          onChange={(e) => setMatchzyDemoPath(e.target.value)}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
+                          fullWidth
+                          size="small"
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
+                          value={matchzyDemoNameFormat}
+                          onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
+                          fullWidth
+                          size="small"
+                        />
+                      </Stack>
+                    </Box>
+
+                    <Divider />
+
+                    {/* Series end */}
+                    <Box>
+                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                        {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
+                          type="number"
+                          value={matchzySeriesEndKickDelayNoDemo}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayNoDemo(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel')}
+                          type="number"
+                          value={matchzySeriesEndKickDelayDemoNoUpload}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayDemoNoUpload(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel')}
+                          type="number"
+                          value={matchzySeriesEndKickDelayDemoUpload}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayDemoUpload(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
+                        </Typography>
+                      </Stack>
+                    </Box>
                   </Stack>
                 </Box>
 
@@ -1237,6 +1685,20 @@ export default function Settings() {
                       matchzyKnifeEnabledDefault: null;
                       matchzyDebugChatEnabled?: boolean;
                       simulateMatches?: boolean;
+                      // MatchZy core defaults
+                      matchzyMinimumReadyRequired?: null;
+                      matchzyAllowForceReady?: null;
+                      matchzyKickWhenNoMatchLoaded?: null;
+                      matchzyWhitelistEnabledDefault?: null;
+                      matchzyPauseAfterRestore?: null;
+                      matchzyStopCommandAvailable?: null;
+                      matchzyStopCommandNoDamage?: null;
+                      matchzyUsePauseCommandForTacticalPause?: null;
+                      matchzyDemoPath?: null;
+                      matchzyDemoNameFormat?: null;
+                      matchzySeriesEndKickDelayNoDemo?: null;
+                      matchzySeriesEndKickDelayDemoNoUpload?: null;
+                      matchzySeriesEndKickDelayDemoUpload?: null;
                       // MatchZy Enhanced v1.3.0 settings - reset to null (use tournament defaults)
                       matchzyAutoreadyEnabled: null;
                       matchzyBothTeamsUnpauseRequired: null;
@@ -1256,6 +1718,19 @@ export default function Settings() {
                       matchzyAdminChatPrefix: null,
                       matchzyKnifeEnabledDefault: null,
                       matchzyDebugChatEnabled: false,
+                      matchzyMinimumReadyRequired: null,
+                      matchzyAllowForceReady: null,
+                      matchzyKickWhenNoMatchLoaded: null,
+                      matchzyWhitelistEnabledDefault: null,
+                      matchzyPauseAfterRestore: null,
+                      matchzyStopCommandAvailable: null,
+                      matchzyStopCommandNoDamage: null,
+                      matchzyUsePauseCommandForTacticalPause: null,
+                      matchzyDemoPath: null,
+                      matchzyDemoNameFormat: null,
+                      matchzySeriesEndKickDelayNoDemo: null,
+                      matchzySeriesEndKickDelayDemoNoUpload: null,
+                      matchzySeriesEndKickDelayDemoUpload: null,
                       // MatchZy Enhanced - reset to null to use tournament defaults
                       matchzyAutoreadyEnabled: null,
                       matchzyBothTeamsUnpauseRequired: null,
@@ -1289,6 +1764,25 @@ export default function Settings() {
                       response.settings.matchzyDebugChatEnabled !== undefined
                         ? response.settings.matchzyDebugChatEnabled
                         : false;
+                    const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+                    const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
+                    const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
+                    const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
+                    const newPauseAfterRestore = response.settings.matchzyPauseAfterRestore ?? true;
+                    const newStopCommandAvailable = response.settings.matchzyStopCommandAvailable ?? false;
+                    const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
+                    const newUsePauseCommandForTacticalPause =
+                      response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+                    const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
+                    const newDemoNameFormat =
+                      response.settings.matchzyDemoNameFormat ??
+                      '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+                    const newSeriesEndKickDelayNoDemo =
+                      response.settings.matchzySeriesEndKickDelayNoDemo ?? 5;
+                    const newSeriesEndKickDelayDemoNoUpload =
+                      response.settings.matchzySeriesEndKickDelayDemoNoUpload ?? 10;
+                    const newSeriesEndKickDelayDemoUpload =
+                      response.settings.matchzySeriesEndKickDelayDemoUpload ?? 60;
                     // MatchZy Enhanced settings
                     const newMatchzyAutoready = response.settings.matchzyAutoreadyEnabled ?? null;
                     const newMatchzyBothTeamsUnpause = response.settings.matchzyBothTeamsUnpauseRequired ?? null;
@@ -1315,6 +1809,32 @@ export default function Settings() {
                     setInitialMatchzyKnifeEnabledDefault(newKnifeEnabled);
                     setMatchzyDebugChatEnabled(newDebugChatEnabled);
                     setInitialMatchzyDebugChatEnabled(newDebugChatEnabled);
+                    setMatchzyMinimumReadyRequired(newMinimumReadyRequired);
+                    setInitialMatchzyMinimumReadyRequired(newMinimumReadyRequired);
+                    setMatchzyAllowForceReady(newAllowForceReady);
+                    setInitialMatchzyAllowForceReady(newAllowForceReady);
+                    setMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+                    setInitialMatchzyKickWhenNoMatchLoaded(newKickWhenNoMatchLoaded);
+                    setMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
+                    setInitialMatchzyWhitelistEnabledDefault(newWhitelistEnabledDefault);
+                    setMatchzyPauseAfterRestore(newPauseAfterRestore);
+                    setInitialMatchzyPauseAfterRestore(newPauseAfterRestore);
+                    setMatchzyStopCommandAvailable(newStopCommandAvailable);
+                    setInitialMatchzyStopCommandAvailable(newStopCommandAvailable);
+                    setMatchzyStopCommandNoDamage(newStopCommandNoDamage);
+                    setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
+                    setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+                    setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+                    setMatchzyDemoPath(newDemoPath);
+                    setInitialMatchzyDemoPath(newDemoPath);
+                    setMatchzyDemoNameFormat(newDemoNameFormat);
+                    setInitialMatchzyDemoNameFormat(newDemoNameFormat);
+                    setMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+                    setInitialMatchzySeriesEndKickDelayNoDemo(newSeriesEndKickDelayNoDemo);
+                    setMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+                    setInitialMatchzySeriesEndKickDelayDemoNoUpload(newSeriesEndKickDelayDemoNoUpload);
+                    setMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
+                    setInitialMatchzySeriesEndKickDelayDemoUpload(newSeriesEndKickDelayDemoUpload);
                     // MatchZy Enhanced
                     setMatchzyAutoreadyEnabled(newMatchzyAutoready);
                     setInitialMatchzyAutoreadyEnabled(newMatchzyAutoready);

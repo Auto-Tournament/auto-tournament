@@ -1,0 +1,329 @@
+{
+  "mapsPage": {
+    "title": "Maps & Map Pools",
+    "tabs": {
+      "maps": "Maps",
+      "mapPools": "Map Pools"
+    },
+    "headerActions": {
+      "addMap": "Add Map",
+      "createMapPool": "Create Map Pool"
+    },
+    "errors": {
+      "loadMaps": "Failed to load maps",
+      "loadPools": "Failed to load map pools",
+      "defaultPoolCannotDelete": "Default map pool cannot be deleted.",
+      "setDefaultPool": "Failed to set default map pool",
+      "togglePool": "Failed to toggle map pool status",
+      "deleteMap": "Failed to delete map",
+      "deletePool": "Failed to delete map pool"
+    },
+    "success": {
+      "mapDeleted": "Map deleted successfully"
+    },
+    "confirmDeleteMap": {
+      "title": "Delete Map",
+      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+    },
+    "confirmDeletePool": {
+      "title": "Delete Map Pool",
+      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+    }
+  },
+  "mapModal": {
+    "titleCreate": "Add Map",
+    "titleEdit": "Edit Map",
+    "mapIdLabel": "Map ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "Lowercase letters, numbers, and underscores only (de_dust2)",
+    "displayNameLabel": "Display Name",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "Map Image",
+    "uploadButton": "Upload Image",
+    "fetchFromGitHub": "Fetch from GitHub",
+    "uploadHelper": "Upload a PNG, JPG, GIF, or WebP image (max 5MB)",
+    "previewLabel": "Preview:",
+    "removeImage": "Remove Image",
+    "errors": {
+      "mapIdRequired": "Map ID is required",
+      "displayNameRequired": "Display name is required",
+      "mapIdInvalid": "Map ID must contain only lowercase letters, numbers, and underscores",
+      "invalidFileType": "Invalid file type. Please select a PNG, JPG, GIF, or WebP image.",
+      "fileTooLarge": "File size too large. Please select an image smaller than 5MB.",
+      "readFileFailed": "Failed to read image file",
+      "fetchImageIdRequired": "Please enter a map ID first",
+      "fetchImageFailed": "Failed to fetch image. You can upload an image instead.",
+      "imageNotFound": "Image not found for {{id}}. You can upload an image instead.",
+      "uploadFailed": "Failed to upload image",
+      "saveFailed": "Failed to save map"
+    },
+    "success": {
+      "mapUpdated": "Map updated successfully",
+      "mapCreated": "Map created successfully"
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "update": "Update",
+      "create": "Create"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "Map ID",
+    "preview": "Preview",
+    "edit": "Edit"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "Default",
+    "status": {
+      "label": "Status",
+      "enabled": "Enabled",
+      "disabled": "Disabled"
+    },
+    "maps": {
+      "label": "Maps ({{count}})"
+    },
+    "actions": {
+      "edit": "Edit",
+      "enable": "Enable",
+      "disable": "Disable",
+      "setDefault": "Set as Default"
+    }
+  },
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "Create Template from Tournament"
+    },
+    "empty": "No templates yet. Create your first template from the Tournament page.",
+    "errors": {
+      "load": "Failed to load templates"
+    },
+    "delete": {
+      "title": "Delete Template",
+      "message": "Are you sure you want to delete the template \"{{name}}\"? This action cannot be undone.",
+      "success": "Template \"{{name}}\" deleted successfully",
+      "error": "Failed to delete template"
+    },
+    "update": {
+      "success": "Template \"{{name}}\" updated successfully",
+      "error": "Failed to update template"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.",
+        "alreadyExists": "A tournament already exists. Please delete or reset the current tournament before creating a new one from a template."
+      }
+    },
+    "edit": {
+      "title": "Edit Template",
+      "nameLabel": "Template Name",
+      "descriptionLabel": "Description (optional)",
+      "typeLabel": "Tournament Type",
+      "formatLabel": "Match Format",
+      "mapPool": {
+        "title": "Map Pool",
+        "selectLabel": "Choose a map pool",
+        "customOption": "Custom",
+        "selectedLabel": "Selected Maps ({{count}}):",
+        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}"
+      },
+      "save": "Save"
+    }
+  },
+  "saveTemplateModal": {
+    "title": "Save as Template",
+    "nameLabel": "Template Name",
+    "namePlaceholder": "8-team Single Elim BO3",
+    "descriptionLabel": "Description (optional)",
+    "descriptionPlaceholder": "Weekly 8-team single elimination tournament",
+    "saveButton": "Save Template",
+    "errors": {
+      "nameRequired": "Template name is required",
+      "saveFailed": "Failed to save template"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "Save Map Pool",
+    "nameLabel": "Map Pool Name",
+    "namePlaceholder": "My Custom Pool",
+    "info": "This will save a map pool with {{count}} map{{count, plural, one {} other {s}}}.",
+    "saveButton": "Save",
+    "errors": {
+      "nameRequired": "Map pool name is required",
+      "noMaps": "Please select at least one map",
+      "saveFailed": "Failed to save map pool"
+    }
+  },
+  "batchServerModal": {
+    "title": "Batch Create Servers",
+    "info": "Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect for LAN setups with servers on the same machine.",
+    "sections": {
+      "identification": {
+        "title": "Server Identification"
+      },
+      "connection": {
+        "title": "Connection Settings"
+      },
+      "configuration": {
+        "title": "Server Configuration"
+      }
+    },
+    "baseId": {
+      "label": "Base ID",
+      "placeholder": "ntlan",
+      "helper": "Server IDs will be: base_1, base_2, base_3..."
+    },
+    "baseName": {
+      "label": "Base Name",
+      "placeholder": "NTLAN",
+      "helper": "Server names will be: Base #1, Base #2, Base #3..."
+    },
+    "host": {
+      "label": "Host / IP Address",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "RCON Password",
+      "placeholder": "shared-rcon-password",
+      "helper": "Same password for all servers"
+    },
+    "numServers": {
+      "label": "Number of Servers",
+      "placeholder": "3",
+      "helper": "Max: 50"
+    },
+    "assignPorts": {
+      "label": "Assign Ports",
+      "helper": "API → Server (RCON test)"
+    },
+    "serverPortLabel": "Server #{{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "Servers Enabled",
+      "helper": "All servers will be created as enabled/disabled"
+    },
+    "preview": {
+      "title": "Preview ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
+      "more": "...and {{count}} more"
+    },
+    "checkServersButton": {
+      "default": "Check Servers",
+      "checking": "Checking..."
+    },
+    "createServersButton": {
+      "default": "Create {{count}} Server{{count, plural, one {} other {s}}}",
+      "creating": "Creating..."
+    },
+    "warnings": {
+      "notAllVerified": "Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured."
+    },
+    "success": {
+      "createdAll": "Successfully created {{count}} server(s)"
+    },
+    "errors": {
+      "baseNameRequired": "Base name is required",
+      "baseIdRequired": "Base ID is required",
+      "hostRequired": "Host is required",
+      "countRange": "Number of servers must be between 1 and 50",
+      "passwordRequired": "RCON password is required",
+      "portRange": "Server #{{index}} port must be between 1 and 65535",
+      "connectionFailed": "Connection failed",
+      "createFailed": "Failed to create servers",
+      "partialCreate": "Created {{created}}/{{total}} servers. Errors:\n{{details}}"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "Failed to load ELO templates"
+    },
+    "header": {
+      "createTemplate": "Create Template",
+      "importJson": "Import from JSON"
+    },
+    "empty": {
+      "title": "No ELO Calculation Templates",
+      "description": "Create your first template to customize how player statistics influence ELO adjustments",
+      "action": "Create Template"
+    },
+    "delete": {
+      "title": "Delete ELO Template",
+      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
+      "success": "Template \"{{name}}\" deleted successfully",
+      "error": "Failed to delete template",
+      "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
+    },
+    "import": {
+      "success": "Successfully imported {{count}} ELO template(s)"
+    },
+    "weights": {
+      "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
+    },
+    "card": {
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "default": "Default",
+      "adjustment": {
+        "none": "Per‑match stat adjustment: none (0; result‑only ELO)",
+        "uncapped": "Per‑match stat adjustment: uncapped (use with care)",
+        "range": "Per‑match stat adjustment range: {{min}} to {{max}} ELO",
+        "noMin": "no min",
+        "noMax": "no max"
+      },
+      "tooltips": {
+        "edit": "Edit Template",
+        "delete": "Delete Template"
+      },
+      "weightsTitle": "Stat Weights:",
+      "limitsTitle": "Adjustment Limits:"
+    },
+    "importModal": {
+      "title": "Import ELO Templates from JSON",
+      "introTitle": "Paste JSON with ELO template definitions below.",
+      "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
+      "jsonLabel": "JSON Data",
+      "validJsonTitle": "✓ Valid JSON!",
+      "validJsonBody": "Found {{count}} template{{count !== 1 ? 's' : ''}}.",
+      "previewTitle": "Preview:",
+      "previewButton": "Preview",
+      "importButton": "Import Templates"
+    },
+    "editor": {
+      "titleEdit": "Edit ELO Template",
+      "titleCreate": "Create ELO Template",
+      "info": "Configure how individual player statistics influence ELO adjustments. Weights are applied after OpenSkill calculates the base ELO change (win/loss). Positive weights increase ELO, negative weights decrease it.",
+      "nameLabel": "Template Name",
+      "nameDefaultLocked": "Default template name cannot be changed",
+      "descriptionLabel": "Description",
+      "descriptionPlaceholder": "Optional description of this template's purpose",
+      "enabledLabel": "Enabled",
+      "weights": {
+        "title": "Stat Weights",
+        "subtitle": "Adjust the slider for each statistic. Value of 0 means no adjustment for that stat."
+      },
+      "limits": {
+        "title": "Adjustment Limits (Optional)",
+        "subtitle": "Set maximum and minimum ELO adjustments per match to prevent extreme changes.",
+        "maxLabel": "Max Adjustment",
+        "maxHelper": "Maximum positive ELO adjustment per match",
+        "minLabel": "Min Adjustment",
+        "minHelper": "Maximum negative ELO adjustment per match"
+      },
+      "errors": {
+        "nameRequired": "Template name is required"
+      },
+      "create": {
+        "success": "Template \"{{name}}\" created successfully",
+        "error": "Failed to create template"
+      },
+      "update": {
+        "success": "Template \"{{name}}\" updated successfully",
+        "error": "Failed to update template"
+      },
+      "buttons": {
+        "saving": "Saving...",
+        "update": "Update",
+        "create": "Create"
+      }
+    }
+  }
+}

@@ -1,0 +1,67 @@
+{
+  "app": {
+    "name": "Matchzy 自动锦标赛"
+  },
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "轮到你选图",
+      "waitingVeto": "等待选图",
+      "waitingServer": "等待服务器",
+      "matchReady": "比赛就绪 – 连接",
+      "snackbarOpponentMoved": "对方已行动"
+    },
+    "dashboard": "控制台",
+    "tournament": "锦标赛",
+    "bracket": "对阵图",
+    "matches": "比赛",
+    "teams": "战队",
+    "players": "选手",
+    "leaderboard": "排行榜",
+    "servers": "服务器",
+    "maps": "地图与地图池",
+    "templates": "模板",
+    "eloTemplates": "ELO 计算",
+    "adminTools": "管理工具",
+    "publicLinks": "公开链接",
+    "devTools": "开发工具",
+    "settings": "设置",
+    "resourcesSection": "资源",
+    "tournamentSection": "锦标赛",
+    "configurationSection": "配置",
+    "systemSection": "系统",
+    "documentation": "文档",
+    "signOut": "退出登录",
+    "myProfile": "我的资料",
+    "goToAdminDashboard": "前往管理控制台",
+    "goToAdminDashboardHint": "您正在查看自己的选手资料。打开管理控制台以管理战队、锦标赛和服务器。"
+  },
+  "layout": {
+    "webhookNotConfigured": "尚未配置 Webhook URL。配置完成之前，比赛和服务器无法接收事件。",
+    "openSettings": "打开设置",
+    "pageTitle": {
+      "dashboard": "控制台",
+      "tournament": "锦标赛",
+      "bracket": "对阵图",
+      "matches": "比赛",
+      "teams": "战队",
+      "players": "选手",
+      "servers": "服务器",
+      "maps": "地图与地图池",
+      "templates": "模板",
+      "eloTemplates": "ELO 计算",
+      "adminTools": "管理工具",
+      "settings": "设置",
+      "devTools": "开发工具",
+      "publicLinks": "公开链接"
+    }
+  },
+  "language": {
+    "label": "语言",
+    "en": "英语",
+    "zhCN": "简体中文"
+  },
+  "common": {
+    "delete": "删除",
+    "cancel": "取消"
+  }
+}

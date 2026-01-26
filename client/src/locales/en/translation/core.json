@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Your turn in veto",
+      "waitingVeto": "Waiting for veto",
+      "waitingServer": "Waiting for server",
+      "matchReady": "Match ready – connect",
+      "snackbarOpponentMoved": "Opponent made their move"
+    },
+    "dashboard": "Dashboard",
+    "tournament": "Tournament",
+    "bracket": "Bracket",
+    "matches": "Matches",
+    "teams": "Teams",
+    "players": "Players",
+    "leaderboard": "Leaderboard",
+    "servers": "Servers",
+    "maps": "Maps & Map Pools",
+    "templates": "Templates",
+    "eloTemplates": "ELO Calculation",
+    "adminTools": "Admin Tools",
+    "publicLinks": "Public Links",
+    "devTools": "Dev Tools",
+    "settings": "Settings",
+    "resourcesSection": "Resources",
+    "tournamentSection": "Tournament",
+    "configurationSection": "Configuration",
+    "systemSection": "System",
+    "documentation": "Documentation",
+    "signOut": "Sign out",
+    "linkSteam": "Link Steam",
+    "myProfile": "My profile",
+    "goToAdminDashboard": "Go to Admin Dashboard",
+    "goToAdminDashboardHint": "You're viewing your player profile. Open the admin dashboard to manage teams, tournaments, and servers."
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook URL is not configured. Matches and servers cannot receive events until it is set.",
+    "openSettings": "Open settings",
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "tournament": "Tournament",
+      "bracket": "Bracket",
+      "matches": "Matches",
+      "teams": "Teams",
+      "players": "Players",
+      "servers": "Servers",
+      "maps": "Maps & Map Pools",
+      "templates": "Templates",
+      "eloTemplates": "ELO Calculation",
+      "adminTools": "Admin Tools",
+      "settings": "Settings",
+      "devTools": "Development Tools",
+      "publicLinks": "Public Links"
+    }
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "zhCN": "Chinese (Simplified)"
+  },
+  "common": {
+    "delete": "Delete",
+    "cancel": "Cancel"
+  }
+}

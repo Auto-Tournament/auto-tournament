@@ -11,6 +11,20 @@ export type AppSettingKey =
   | 'matchzy_debug_chat'
   | 'ratings_enabled'
   | 'allow_self_register'
+  // MatchZy core defaults (persisted convars)
+  | 'matchzy_minimum_ready_required'
+  | 'matchzy_allow_force_ready'
+  | 'matchzy_kick_when_no_match_loaded'
+  | 'matchzy_whitelist_enabled_default'
+  | 'matchzy_pause_after_restore'
+  | 'matchzy_stop_command_available'
+  | 'matchzy_stop_command_no_damage'
+  | 'matchzy_use_pause_command_for_tactical_pause'
+  | 'matchzy_demo_path'
+  | 'matchzy_demo_name_format'
+  | 'matchzy_series_end_kick_delay_no_demo'
+  | 'matchzy_series_end_kick_delay_demo_no_upload'
+  | 'matchzy_series_end_kick_delay_demo_upload'
   // MatchZy Enhanced v1.3.0 settings
   | 'matchzy_autoready_enabled'
   | 'matchzy_both_teams_unpause_required'
@@ -41,6 +55,20 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_debug_chat',
   'ratings_enabled',
   'allow_self_register',
+  // MatchZy core defaults (persisted convars)
+  'matchzy_minimum_ready_required',
+  'matchzy_allow_force_ready',
+  'matchzy_kick_when_no_match_loaded',
+  'matchzy_whitelist_enabled_default',
+  'matchzy_pause_after_restore',
+  'matchzy_stop_command_available',
+  'matchzy_stop_command_no_damage',
+  'matchzy_use_pause_command_for_tactical_pause',
+  'matchzy_demo_path',
+  'matchzy_demo_name_format',
+  'matchzy_series_end_kick_delay_no_demo',
+  'matchzy_series_end_kick_delay_demo_no_upload',
+  'matchzy_series_end_kick_delay_demo_upload',
   // MatchZy Enhanced v1.3.0 settings
   'matchzy_autoready_enabled',
   'matchzy_both_teams_unpause_required',
@@ -174,6 +202,70 @@ class SettingsService {
           normalized === 'enabled';
         await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
         log.success(`Player self‑registration ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
+
+      // MatchZy core boolean settings (0/1)
+      if (
+        key === 'matchzy_allow_force_ready' ||
+        key === 'matchzy_kick_when_no_match_loaded' ||
+        key === 'matchzy_whitelist_enabled_default' ||
+        key === 'matchzy_pause_after_restore' ||
+        key === 'matchzy_stop_command_available' ||
+        key === 'matchzy_stop_command_no_damage' ||
+        key === 'matchzy_use_pause_command_for_tactical_pause'
+      ) {
+        const normalized = trimmed.toLowerCase();
+        const isEnabled =
+          normalized === '1' ||
+          normalized === 'true' ||
+          normalized === 'yes' ||
+          normalized === 'on' ||
+          normalized === 'enabled';
+        await db.setAppSettingAsync(key, isEnabled ? '1' : '0');
+        log.success(`${key} ${isEnabled ? 'enabled' : 'disabled'}`);
+        return;
+      }
+
+      // MatchZy core integer settings
+      if (
+        key === 'matchzy_minimum_ready_required' ||
+        key === 'matchzy_series_end_kick_delay_no_demo' ||
+        key === 'matchzy_series_end_kick_delay_demo_no_upload' ||
+        key === 'matchzy_series_end_kick_delay_demo_upload'
+      ) {
+        const parsed = Number(trimmed);
+        if (!Number.isInteger(parsed)) {
+          throw new Error(`${key} must be an integer`);
+        }
+        if (key === 'matchzy_minimum_ready_required' && (parsed < 0 || parsed > 10)) {
+          throw new Error('matchzy_minimum_ready_required must be 0-10');
+        }
+        if (
+          (key === 'matchzy_series_end_kick_delay_no_demo' ||
+            key === 'matchzy_series_end_kick_delay_demo_no_upload' ||
+            key === 'matchzy_series_end_kick_delay_demo_upload') &&
+          (parsed < 0 || parsed > 600)
+        ) {
+          throw new Error(`${key} must be 0-600 seconds`);
+        }
+        await db.setAppSettingAsync(key, String(parsed));
+        log.success(`${key} updated to ${parsed}`);
+        return;
+      }
+
+      // MatchZy core string settings
+      if (key === 'matchzy_demo_path') {
+        // MatchZy expects a path relative to csgo/ and it must end with "/".
+        const normalized = trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
+        await db.setAppSettingAsync(key, normalized);
+        log.success('matchzy_demo_path updated');
+        return;
+      }
+
+      if (key === 'matchzy_demo_name_format') {
+        await db.setAppSettingAsync(key, trimmed);
+        log.success('matchzy_demo_name_format updated');
         return;
       }
 
@@ -337,6 +429,164 @@ class SettingsService {
 
     const normalized = value.toLowerCase();
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async getMatchzyMinimumReadyRequired(): Promise<number> {
+    const value = await this.getSetting('matchzy_minimum_ready_required');
+    if (!value) return 2; // MatchZy default
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) return 2;
+    return parsed;
+  }
+
+  async isMatchzyAllowForceReadyEnabled(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_allow_force_ready');
+    if (!value) return true; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyKickWhenNoMatchLoadedEnabled(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_kick_when_no_match_loaded');
+    if (!value) return false; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyWhitelistEnabledDefault(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_whitelist_enabled_default');
+    if (!value) return false; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyPauseAfterRestoreEnabled(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_pause_after_restore');
+    if (!value) return true; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyStopCommandAvailable(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_stop_command_available');
+    if (!value) return false; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyStopCommandNoDamage(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_stop_command_no_damage');
+    if (!value) return false; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async isMatchzyUsePauseCommandForTacticalPause(): Promise<boolean> {
+    const value = await this.getSetting('matchzy_use_pause_command_for_tactical_pause');
+    if (!value) return false; // MatchZy default
+    const normalized = value.toLowerCase();
+    return normalized === '1' || normalized === 'true' || normalized === 'yes';
+  }
+
+  async getMatchzyDemoPath(): Promise<string> {
+    const value = await this.getSetting('matchzy_demo_path');
+    if (!value) return 'MatchZy/'; // MatchZy default
+    const trimmed = value.trim();
+    if (!trimmed) return 'MatchZy/';
+    return trimmed.endsWith('/') ? trimmed : `${trimmed}/`;
+  }
+
+  async getMatchzyDemoNameFormat(): Promise<string> {
+    const value = await this.getSetting('matchzy_demo_name_format');
+    if (!value) return '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}'; // MatchZy default
+    const trimmed = value.trim();
+    return trimmed !== '' ? trimmed : '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
+  }
+
+  async getMatchzySeriesEndKickDelayNoDemo(): Promise<number> {
+    const value = await this.getSetting('matchzy_series_end_kick_delay_no_demo');
+    if (!value) return 5; // MatchZy default
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) return 5;
+    return parsed;
+  }
+
+  async getMatchzySeriesEndKickDelayDemoNoUpload(): Promise<number> {
+    const value = await this.getSetting('matchzy_series_end_kick_delay_demo_no_upload');
+    if (!value) return 10; // MatchZy default
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) return 10;
+    return parsed;
+  }
+
+  async getMatchzySeriesEndKickDelayDemoUpload(): Promise<number> {
+    const value = await this.getSetting('matchzy_series_end_kick_delay_demo_upload');
+    if (!value) return 60; // MatchZy default
+    const parsed = Number(value);
+    if (!Number.isInteger(parsed) || parsed < 0) return 60;
+    return parsed;
+  }
+
+  async getMatchzyCoreDefaults(): Promise<{
+    minimumReadyRequired: number;
+    allowForceReady: boolean;
+    kickWhenNoMatchLoaded: boolean;
+    whitelistEnabledDefault: boolean;
+    pauseAfterRestore: boolean;
+    stopCommandAvailable: boolean;
+    stopCommandNoDamage: boolean;
+    usePauseCommandForTacticalPause: boolean;
+    demoPath: string;
+    demoNameFormat: string;
+    seriesEndKickDelayNoDemo: number;
+    seriesEndKickDelayDemoNoUpload: number;
+    seriesEndKickDelayDemoUpload: number;
+  }> {
+    const [
+      minimumReadyRequired,
+      allowForceReady,
+      kickWhenNoMatchLoaded,
+      whitelistEnabledDefault,
+      pauseAfterRestore,
+      stopCommandAvailable,
+      stopCommandNoDamage,
+      usePauseCommandForTacticalPause,
+      demoPath,
+      demoNameFormat,
+      seriesEndKickDelayNoDemo,
+      seriesEndKickDelayDemoNoUpload,
+      seriesEndKickDelayDemoUpload,
+    ] = await Promise.all([
+      this.getMatchzyMinimumReadyRequired(),
+      this.isMatchzyAllowForceReadyEnabled(),
+      this.isMatchzyKickWhenNoMatchLoadedEnabled(),
+      this.isMatchzyWhitelistEnabledDefault(),
+      this.isMatchzyPauseAfterRestoreEnabled(),
+      this.isMatchzyStopCommandAvailable(),
+      this.isMatchzyStopCommandNoDamage(),
+      this.isMatchzyUsePauseCommandForTacticalPause(),
+      this.getMatchzyDemoPath(),
+      this.getMatchzyDemoNameFormat(),
+      this.getMatchzySeriesEndKickDelayNoDemo(),
+      this.getMatchzySeriesEndKickDelayDemoNoUpload(),
+      this.getMatchzySeriesEndKickDelayDemoUpload(),
+    ]);
+
+    return {
+      minimumReadyRequired,
+      allowForceReady,
+      kickWhenNoMatchLoaded,
+      whitelistEnabledDefault,
+      pauseAfterRestore,
+      stopCommandAvailable,
+      stopCommandNoDamage,
+      usePauseCommandForTacticalPause,
+      demoPath,
+      demoNameFormat,
+      seriesEndKickDelayNoDemo,
+      seriesEndKickDelayDemoNoUpload,
+      seriesEndKickDelayDemoUpload,
+    };
   }
 
   /**

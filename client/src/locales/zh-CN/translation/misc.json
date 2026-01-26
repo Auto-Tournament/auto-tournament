@@ -1,0 +1,35 @@
+{
+  "notFound": {
+    "title": "页面未找到",
+    "description": "你访问的页面不存在或已被移动。",
+    "backToDashboard": "返回控制台",
+    "publicPlayerSearch": "公开选手搜索"
+  },
+  "publicLinks": {
+    "intro": "以下是可以分享给选手和观众的公共页面快捷链接。",
+    "common": {
+      "publicUrl": "公开地址",
+      "urlPattern": "URL 模式"
+    },
+    "playerSearch": {
+      "title": "公开选手搜索",
+      "description": "按姓名、Steam ID 或个人资料链接搜索已登记的选手。",
+      "openButton": "打开 /player"
+    },
+    "playerProfile": {
+      "title": "选手资料页（公开）",
+      "description": "通过 Steam ID64 直接访问选手公开资料页。",
+      "requiresSteamId": "需要提供 Steam ID64"
+    },
+    "teamMatch": {
+      "title": "战队比赛页面（公开）",
+      "description": "只读视图：展示战队当前或最近一场比赛。",
+      "openExample": "打开示例战队"
+    },
+    "tournamentLeaderboard": {
+      "title": "锦标赛排行榜（公开）",
+      "description": "当前锦标赛的公开积分榜页面（默认锦标赛 ID 为 1）。",
+      "open": "打开排行榜"
+    }
+  }
+}

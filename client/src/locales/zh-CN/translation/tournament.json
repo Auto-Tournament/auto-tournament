@@ -1,0 +1,76 @@
+{
+  "tournament": {
+    "steps": {
+      "create": "创建锦标赛",
+      "review": "复核与确认",
+      "live": "进行中的锦标赛"
+    },
+    "nameLabel": "锦标赛名称",
+    "namePlaceholder": "NTLAN 2025 春季赛",
+    "welcome": {
+      "heading": "创建锦标赛",
+      "chooseMethod": "选择你希望如何创建锦标赛",
+      "createNewTitle": "创建新锦标赛",
+      "createNewDescription": "从空白开始，手动配置所有锦标赛设置"
+    },
+    "emptyBracket": {
+      "title": "暂无可显示的对阵图",
+      "description": "创建锦标赛并生成对阵图即可在这里查看"
+    },
+    "common": {
+      "createTournament": "创建锦标赛"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "职业系列"
+        },
+        "party": {
+          "label": "派对与趣味模式"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "单败淘汰",
+          "description": "一场失利即被淘汰。适用于职业赛事的经典对阵赛制。"
+        },
+        "double_elimination": {
+          "label": "双败淘汰",
+          "description": "需要输掉两场才会被淘汰。队伍在败者组中获得第二次机会。"
+        },
+        "round_robin": {
+          "label": "循环赛",
+          "description": "所有队伍彼此对战一次，非常适合联赛或积分赛制。"
+        },
+        "swiss": {
+          "label": "瑞士轮",
+          "description": "根据战绩自动配对战队。整场锦标赛中都保持较为均衡的对局。"
+        },
+        "shuffle": {
+          "label": "洗牌锦标赛",
+          "description": "每轮自动将选手洗牌成平衡的队伍。基于 ELO 的个人赛制，适合社区与线下活动。"
+        }
+      },
+      "selectedChip": "已选择"
+    },
+    "formSteps": {
+      "steps": {
+        "name": "名称",
+        "type": "类型",
+        "format": "赛制",
+        "maps": "地图",
+        "teams": "战队",
+        "review": "确认"
+      },
+      "backToWelcome": "返回欢迎页",
+      "back": "上一步",
+      "next": "下一步"
+    }
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "暂无可显示的对阵图",
+      "noBracketDescription": "创建锦标赛并生成对阵图即可在这里查看"
+    }
+  }
+}

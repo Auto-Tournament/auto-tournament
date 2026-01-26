@@ -1,0 +1,139 @@
+{
+  "devToolsPage": {
+    "alert": "These tools are only available in development mode. Use them to quickly generate test data for testing the application.",
+    "sections": {
+      "testData": {
+        "title": "Create Test Data"
+      }
+    },
+    "testTeams": {
+      "title": "Test Teams",
+      "description": "Create teams with random player data for testing tournament brackets and matches.",
+      "success": "Successfully created {{count}} test team(s)!",
+      "errors": {
+        "create": "Failed to create test teams",
+        "partial": "Created {{created}} team(s), but {{failed}} failed. Check console for details."
+      },
+      "customLabel": "Custom team count",
+      "buttons": {
+        "createFixed": "Create {{count}} Teams",
+        "createCustom": "Create Teams"
+      }
+    },
+    "testPlayers": {
+      "title": "Test Players",
+      "description": "Create players with ELO ratings for testing shuffle tournaments and player management.",
+      "success": "Successfully created {{created}} player(s){{updated, number} > 0 ? (', and updated ' + updated) : ''}}!",
+      "errors": {
+        "create": "Failed to create test players",
+        "partial": "Created {{created}} player(s), updated {{updated}}, but {{failed}} failed. Check console for details."
+      },
+      "customLabel": "Custom player count",
+      "buttons": {
+        "createFixed": "Create {{count}} Players",
+        "createCustom": "Create Players"
+      }
+    },
+    "testServers": {
+      "title": "Test Servers",
+      "description": "Create server configurations for testing match management and RCON commands.",
+      "success": "Successfully created {{count}} test server(s)!",
+      "errors": {
+        "create": "Failed to create test servers",
+        "partial": "Created {{created}} server(s), but {{failed}} failed. Check console for details."
+      },
+      "customLabel": "Custom server count",
+      "buttons": {
+        "createFixed": "Create {{count}} Server{{count === 1 ? '' : 's'}}",
+        "createCustom": "Create Servers"
+      }
+    },
+    "dangerZone": {
+      "title": "Danger Zone"
+    },
+    "deleteTestData": {
+      "title": "Delete Test Data",
+      "description": "Delete all test data (teams and servers with 'test-' prefix). This action cannot be undone.",
+      "button": "Delete All Test Data",
+      "confirmPrompt": "Are you sure you want to delete ALL test data?",
+      "success": "Successfully deleted all test data!",
+      "error": "Failed to delete test data"
+    },
+    "wipeTable": {
+      "title": "Wipe Specific Tables",
+      "description": "Delete all data from a specific table. Useful for cleaning up without resetting everything. Tables are organized by category.",
+      "confirmPrompt": "Are you sure you want to wipe the {{table}} table? This will delete all data in that table.",
+      "success": "Table {{table}} wiped successfully!",
+      "error": "Failed to wipe {{table}} table",
+      "core": {
+        "title": "Core Tables",
+        "teams": "Wipe Teams",
+        "servers": "Wipe Servers",
+        "tournament": "Wipe Tournament",
+        "matches": "Wipe Matches"
+      },
+      "players": {
+        "title": "Players & Shuffle Tournaments",
+        "players": "Wipe Players",
+        "ratingHistory": "Wipe Rating History",
+        "matchStats": "Wipe Match Stats",
+        "shufflePlayers": "Wipe Shuffle Players"
+      },
+      "maps": {
+        "title": "Maps & Templates",
+        "maps": "Wipe Maps",
+        "mapPools": "Wipe Map Pools",
+        "tournamentTemplates": "Wipe Tourn. Templates",
+        "eloTemplates": "Wipe ELO Templates"
+      },
+      "matchEvents": {
+        "title": "Match Events & Results",
+        "events": "Wipe Match Events",
+        "mapResults": "Wipe Map Results"
+      },
+      "settings": {
+        "title": "Settings",
+        "appSettings": "Wipe App Settings"
+      }
+    },
+    "simulation": {
+      "title": "Simulation State",
+      "description": "Clear all matches and historical stats so you can click \"Start Tournament\" in simulation mode on a clean bracket, while keeping servers, teams, maps, and the current tournament setup.",
+      "button": "Reset Simulation State (preserve config)",
+      "reset": {
+        "success": "Simulation state reset. Matches and stats cleared; servers, teams, and tournament setup preserved.",
+        "error": "Failed to reset simulation state"
+      }
+    },
+    "wipeDatabase": {
+      "title": "Wipe Entire Database",
+      "warningTitle": "EXTREMELY DESTRUCTIVE!",
+      "warningBody": "This will delete ALL data.",
+      "permanentlyDeletes": "Permanently deletes:",
+      "items": {
+        "tournaments": "All tournaments & brackets",
+        "matches": "All matches & events",
+        "teams": "All teams & players",
+        "servers": "All server configurations"
+      },
+      "button": "Wipe Entire Database",
+      "successRedirect": "Database wiped successfully! Redirecting...",
+      "error": "Failed to wipe database",
+      "dialog": {
+        "title": "Confirm Database Wipe",
+        "areYouSure": "Are you absolutely sure?",
+        "actionWill": "This action will",
+        "permanentlyDelete": "permanently delete",
+        "items": {
+          "tournaments": "All tournament data and brackets",
+          "matches": "All match history and events",
+          "teams": "All teams and player configurations",
+          "servers": "All server configurations"
+        },
+        "cannotUndo": "This action cannot be undone!",
+        "wiping": "Wiping Database...",
+        "yesWipe": "Yes, Wipe Everything"
+      }
+    }
+  }
+}

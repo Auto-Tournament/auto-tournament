@@ -65,6 +65,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     // flapping between online/offline. Manual checks (e.g. "Test Connection") call
     // this route without the ?cached=true flag and therefore always bypass the cache.
     const useCache = req.query.cached === 'true' || req.query.cached === '1';
+    // While a server is being configured (persistent convars being set via RCON),
+    // status reads can take longer than usual. Don't declare it offline too early.
+    const STATUS_READ_TIMEOUT_MS = 10_000;
     const statusInfo = await Promise.race([
       serverStatusService.getServerStatus(id, useCache),
       new Promise<{
@@ -81,7 +84,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
               updatedAt: null,
               online: false,
             }),
-          2000
+          STATUS_READ_TIMEOUT_MS
         )
       ),
     ]);
@@ -201,7 +204,8 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     try {
       await rconService.sendCommand(id, 'css_te');
 
-      const timeoutMs = 5000;
+      // Give servers a bit more time to emit the test event while busy/configuring.
+      const timeoutMs = 10_000;
       const pollIntervalMs = 250;
       const deadline = Date.now() + timeoutMs;
 

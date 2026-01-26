@@ -25,6 +25,7 @@ import {
   getMatchZyDemoUploadCommands,
   getMatchZyLoadMatchAuthCommands,
   getMatchZyCoreSettingsCommands,
+  getMatchZyServerConfigCommands,
 } from '../utils/matchzyRconCommands';
 import { settingsService } from './settingsService';
 
@@ -208,6 +209,35 @@ class ServerInitializationService {
           errors.push(`Core settings failed${cmdTag(cmd)}: ${err(result.error)}`);
         } else {
           configsSent.push('core_settings');
+        }
+        await delay(200);
+      }
+
+      await delay(300);
+
+      // 4b. Configure MatchZy core defaults (persistent)
+      const matchzyCore = await settingsService.getMatchzyCoreDefaults();
+      const matchzyCoreCommands = getMatchZyServerConfigCommands({
+        minimumReadyRequired: matchzyCore.minimumReadyRequired,
+        allowForceReady: matchzyCore.allowForceReady,
+        kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
+        whitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
+        pauseAfterRestore: matchzyCore.pauseAfterRestore,
+        stopCommandAvailable: matchzyCore.stopCommandAvailable,
+        stopCommandNoDamage: matchzyCore.stopCommandNoDamage,
+        usePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
+        demoPath: matchzyCore.demoPath,
+        demoNameFormat: matchzyCore.demoNameFormat,
+        seriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
+        seriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
+        seriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
+      });
+      for (const cmd of matchzyCoreCommands) {
+        const result = await rconService.sendCommand(serverId, cmd);
+        if (!result.success) {
+          errors.push(`MatchZy defaults failed${cmdTag(cmd)}: ${err(result.error)}`);
+        } else {
+          configsSent.push('matchzy_defaults');
         }
         await delay(200);
       }

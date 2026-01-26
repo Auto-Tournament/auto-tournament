@@ -1,0 +1,86 @@
+{
+  "tournament": {
+    "steps": {
+      "create": "Create Tournament",
+      "review": "Review & Confirm",
+      "live": "Live Tournament"
+    },
+    "welcome": {
+      "heading": "Create Tournament",
+      "chooseMethod": "Choose how you'd like to create your tournament",
+      "createNewTitle": "Create New Tournament",
+      "createNewDescription": "Start from scratch and configure all tournament settings manually"
+    },
+    "typeSelector": {
+      "categories": {
+        "professional": {
+          "label": "Professional Series"
+        },
+        "party": {
+          "label": "Party & Fun"
+        }
+      },
+      "types": {
+        "single_elimination": {
+          "label": "Single Elimination",
+          "description": "One loss and you're out. Classic bracket format used in professional tournaments."
+        },
+        "double_elimination": {
+          "label": "Double Elimination",
+          "description": "Two losses to be eliminated. Teams get a second chance in the lower bracket."
+        },
+        "round_robin": {
+          "label": "Round Robin",
+          "description": "Everyone plays everyone. Perfect for league-style competitions."
+        },
+        "swiss": {
+          "label": "Swiss System",
+          "description": "Similar records face each other. Balanced matchups throughout the tournament."
+        },
+        "shuffle": {
+          "label": "Shuffle Tournament",
+          "description": "Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing."
+        }
+      },
+      "selectedChip": "Selected"
+    },
+    "review": {
+      "summary": {
+        "info": "Review your tournament settings and click \"Create Tournament\" when ready.",
+        "nameLabel": "Tournament Name",
+        "typeLabel": "Tournament Type",
+        "formatLabel": "Match Format",
+        "notSet": "Not set",
+        "estimatedVolume": "Approximately {{matches}} match{{matches, plural, one {} other {es}}} over {{rounds}} round{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, up to {{totalMaps}} map{{totalMaps, plural, one {} other {s}}} total)."
+      }
+    },
+    "formSteps": {
+      "steps": {
+        "name": "Name",
+        "type": "Type",
+        "format": "Format",
+        "maps": "Maps",
+        "teams": "Teams",
+        "review": "Review"
+      },
+      "backToWelcome": "Back to Welcome",
+      "back": "Back",
+      "next": "Next"
+    },
+    "emptyBracket": {
+      "title": "No bracket to display",
+      "description": "Create a tournament and generate the bracket to get started"
+    },
+    "common": {
+      "createTournament": "Create Tournament"
+    },
+    "nameLabel": "Tournament Name",
+    "namePlaceholder": "NTLAN 2025 Spring Tournament"
+  },
+  "bracket": {
+    "empty": {
+      "noBracketTitle": "No bracket to display",
+      "noBracketDescription": "Create a tournament and generate the bracket to get started"
+    }
+  }
+}

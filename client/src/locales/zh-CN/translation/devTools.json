@@ -1,0 +1,139 @@
+{
+  "devToolsPage": {
+    "alert": "这些工具仅在开发模式下可用，可用于快速生成测试数据以验证应用功能。",
+    "sections": {
+      "testData": {
+        "title": "创建测试数据"
+      }
+    },
+    "testTeams": {
+      "title": "测试战队",
+      "description": "创建包含随机选手数据的战队，用于测试锦标赛对阵与比赛流程。",
+      "success": "已成功创建 {{count}} 支测试战队！",
+      "errors": {
+        "create": "创建测试战队失败",
+        "partial": "已创建 {{created}} 支战队，但 {{failed}} 支创建失败。详情请查看控制台。"
+      },
+      "customLabel": "自定义战队数量",
+      "buttons": {
+        "createFixed": "创建 {{count}} 支战队",
+        "createCustom": "创建战队"
+      }
+    },
+    "testPlayers": {
+      "title": "测试选手",
+      "description": "创建带有 ELO 评分的选手，用于测试洗牌锦标赛和选手管理。",
+      "success": "已成功创建 {{created}} 名选手{{updated, number} > 0 ? ('，并更新 ' + updated + ' 名') : ''}}！",
+      "errors": {
+        "create": "创建测试选手失败",
+        "partial": "已创建 {{created}} 名选手，更新 {{updated}} 名，但 {{failed}} 名失败。详情请查看控制台。"
+      },
+      "customLabel": "自定义选手数量",
+      "buttons": {
+        "createFixed": "创建 {{count}} 名选手",
+        "createCustom": "创建选手"
+      }
+    },
+    "testServers": {
+      "title": "测试服务器",
+      "description": "创建服务器配置，用于测试比赛管理与 RCON 命令。",
+      "success": "已成功创建 {{count}} 台测试服务器！",
+      "errors": {
+        "create": "创建测试服务器失败",
+        "partial": "已创建 {{created}} 台服务器，但 {{failed}} 台创建失败。详情请查看控制台。"
+      },
+      "customLabel": "自定义服务器数量",
+      "buttons": {
+        "createFixed": "创建 {{count}} 台服务器",
+        "createCustom": "创建服务器"
+      }
+    },
+    "dangerZone": {
+      "title": "危险区域"
+    },
+    "deleteTestData": {
+      "title": "删除测试数据",
+      "description": "删除所有测试数据（ID 以 “test-” 开头的战队与服务器）。此操作不可撤销。",
+      "button": "删除所有测试数据",
+      "confirmPrompt": "确定要删除所有测试数据吗？",
+      "success": "已成功删除所有测试数据！",
+      "error": "删除测试数据失败"
+    },
+    "wipeTable": {
+      "title": "清空指定数据表",
+      "description": "清空某张数据表中的所有数据。适用于在不重置全部数据的情况下进行局部清理。数据表按类别分组展示。",
+      "confirmPrompt": "确定要清空 {{table}} 表吗？此操作将删除该表中的所有数据。",
+      "success": "{{table}} 表已成功清空！",
+      "error": "清空 {{table}} 表失败",
+      "core": {
+        "title": "核心数据表",
+        "teams": "清空战队",
+        "servers": "清空服务器",
+        "tournament": "清空锦标赛",
+        "matches": "清空比赛"
+      },
+      "players": {
+        "title": "选手与洗牌锦标赛",
+        "players": "清空选手",
+        "ratingHistory": "清空评分历史",
+        "matchStats": "清空比赛统计",
+        "shufflePlayers": "清空洗牌选手"
+      },
+      "maps": {
+        "title": "地图与模板",
+        "maps": "清空地图",
+        "mapPools": "清空地图池",
+        "tournamentTemplates": "清空锦标赛模板",
+        "eloTemplates": "清空 ELO 模板"
+      },
+      "matchEvents": {
+        "title": "比赛事件与结果",
+        "events": "清空比赛事件",
+        "mapResults": "清空地图结果"
+      },
+      "settings": {
+        "title": "设置",
+        "appSettings": "清空应用设置"
+      }
+    },
+    "simulation": {
+      "title": "模拟状态",
+      "description": "清空所有比赛与历史统计，以便在模拟模式下在干净的对阵图上点击“开始锦标赛”，同时保留服务器、战队、地图与当前锦标赛配置。",
+      "button": "重置模拟状态（保留配置）",
+      "reset": {
+        "success": "模拟状态已重置。比赛与统计已清空；服务器、战队与锦标赛配置已保留。",
+        "error": "重置模拟状态失败"
+      }
+    },
+    "wipeDatabase": {
+      "title": "清空整个数据库",
+      "warningTitle": "极度危险操作！",
+      "warningBody": "此操作将删除所有数据。",
+      "permanentlyDeletes": "将永久删除：",
+      "items": {
+        "tournaments": "所有锦标赛与对阵图",
+        "matches": "所有比赛与事件",
+        "teams": "所有战队与选手",
+        "servers": "所有服务器配置"
+      },
+      "button": "清空整个数据库",
+      "successRedirect": "数据库已清空，正在跳转…",
+      "error": "清空数据库失败",
+      "dialog": {
+        "title": "确认清空数据库",
+        "areYouSure": "你确定要这么做吗？",
+        "actionWill": "此操作将",
+        "permanentlyDelete": "永久删除",
+        "items": {
+          "tournaments": "所有锦标赛数据与对阵图",
+          "matches": "所有比赛历史与事件",
+          "teams": "所有战队与选手配置",
+          "servers": "所有服务器配置"
+        },
+        "cannotUndo": "此操作不可撤销！",
+        "wiping": "正在清空数据库…",
+        "yesWipe": "是的，清空所有内容"
+      }
+    }
+  }
+}

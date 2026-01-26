@@ -1,0 +1,326 @@
+{
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "加载比赛失败",
+      "loadTitle": "加载比赛时出错"
+    },
+    "allocation": {
+      "nextServers": "下一批服务器分配约在 {{seconds}} 秒后"
+    },
+    "header": {
+      "createMatch": "创建比赛"
+    },
+    "bulkSelect": {
+      "select": "选择",
+      "done": "完成选择",
+      "selectAll": "全选",
+      "unselectAll": "取消全选",
+      "deleteSelected": "删除所选"
+    },
+    "empty": {
+      "title": "暂无可显示的比赛",
+      "description": "创建锦标赛并生成对阵图后即可在此查看比赛",
+      "createManual": "或创建手动比赛"
+    },
+    "sections": {
+      "live": "进行中的比赛（{{count}}）",
+      "upcoming": "即将开始的比赛（{{count}}）",
+      "history": "比赛历史（{{count}}）"
+    },
+    "manualMatchLabel": "手动比赛",
+    "create": {
+      "success": "已创建手动比赛：{{slug}}"
+    },
+    "bulkDelete": {
+      "title": "删除手动比赛",
+      "message": "确定要删除 {{count}} 场手动比赛{{suffix}}吗？该操作无法撤销。"
+    }
+  },
+  "manualMatchModal": {
+    "title": "创建手动比赛",
+    "steps": {
+      "matchSetup": "比赛设置",
+      "rules": "规则",
+      "maps": "地图",
+      "teams": "战队",
+      "review": "确认"
+    },
+    "description": "创建一场独立于锦标赛对阵图的单独比赛。API 会自动为你分配一台可用服务器。",
+    "buttons": {
+      "next": "下一步",
+      "back": "上一步",
+      "create": "创建比赛",
+      "creating": "正在创建…"
+    },
+    "saveTemplate": {
+      "title": "保存比赛模板",
+      "nameLabel": "模板名称",
+      "nameHelper": "例如：BO1 Inferno 刀局、BO3 地图池等。",
+      "description": "当前所选地图、系列赛制、CT 选边规则、Veto 开关、刀局模式以及每队人数等配置都会保存到该模板中。",
+      "save": "保存"
+    },
+    "chooseMode": {
+      "heading": "你希望如何创建这场比赛？",
+      "template": {
+        "title": "使用模板",
+        "description": "加载一套预设的地图、赛制和规则，然后选择双方队伍。",
+        "label": "比赛模板",
+        "none": "无",
+        "empty": "当前还没有保存的比赛模板。先配置一场比赛并将其保存为模板。"
+      },
+      "custom": {
+        "title": "全新创建比赛",
+        "description": "从零开始配置地图、规则、选边和队伍。"
+      }
+    }
+  },
+  "matchDetailsModal": {
+    "delete": {
+      "dialogTitle": "删除比赛",
+      "confirmTitle": "确认删除此比赛？",
+      "confirmBody": "确定要删除比赛 \"{{slug}}\" 吗？此操作无法撤销。",
+      "button": "删除比赛"
+    }
+  },
+  "bulkShuffleMatchesModal": {
+    "title": "批量创建洗牌比赛",
+    "description": "配置单张地图的洗牌比赛（地图 + 回合上限），然后为每一场比赛指定双方阵容，创建任意数量的一对一比赛。这些比赛会作为当前洗牌锦标赛的一部分创建，并在你开始锦标赛时分配到服务器。",
+    "mapSelect": {
+      "label": "地图",
+      "noMaps": "此锦标赛尚未配置任何地图",
+      "helper": "本批次中的所有比赛都会使用该地图。"
+    },
+    "maxRounds": {
+      "label": "每张地图的最大回合数",
+      "helperWithValue": "比赛最多打 {{maxRounds}} 回合；先拿到 {{winRounds}} 回合的一方获胜。",
+      "helperDefault": "每张地图的最大回合数（默认 24，上限 30）。"
+    },
+    "matchesSection": {
+      "title": "比赛（{{count}}）",
+      "addMatch": "添加比赛"
+    },
+    "players": {
+      "empty": "当前尚无选手报名该洗牌锦标赛。请先注册选手，然后再创建手动比赛。"
+    },
+    "matchRow": {
+      "title": "比赛 {{index}}",
+      "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
+      "team1Label": "队伍 1 选手（{{team1Count}}/{{teamSize}}）",
+      "team2Label": "队伍 2 选手（{{team2Count}}/{{teamSize}}）",
+      "searchPlaceholder": "搜索并选择选手",
+      "mapOverrideLabel": "地图（可选覆盖）",
+      "mapOverrideHelperOwn": "本场比赛使用自定义地图。",
+      "mapOverrideHelperDefault": "留空则使用上方默认地图。",
+      "maxRoundsOverrideLabel": "最大回合数（可选覆盖）",
+      "maxRoundsOverrideHelperOwn": "覆盖本场比赛的默认最大回合数（当前为 {{value}}）。",
+      "maxRoundsOverrideHelperDefault": "留空则使用上方默认最大回合数。"
+    },
+    "errors": {
+      "loadPlayers": "加载已报名选手失败",
+      "noMatches": "请至少添加一场比赛。",
+      "bothTeamsRequired": "比赛 {{index}}：双方都必须至少有一名选手。",
+      "conflictingPlayers": "比赛 {{index}}：同一名选手不能同时出现在两队。冲突 ID：{{ids}}",
+      "mapRequired": "比赛 {{index}}：必须选择地图（请设置默认地图或为本场选择地图）。",
+      "rowMaxRoundsRange": "比赛 {{index}}：按比赛覆盖时，最大回合数必须在 1 到 30 之间。",
+      "globalMaxRoundsRange": "最大回合数必须在 1 到 30 之间。",
+      "createFailed": "创建手动洗牌比赛失败"
+    },
+    "success": {
+      "created": "手动洗牌比赛已创建，在锦标赛开始时会分配到服务器。"
+    },
+    "createMatchesButton": {
+      "default": "创建比赛",
+      "creating": "正在创建…"
+    }
+  },
+  "teamModal": {
+    "titleCreate": "创建战队",
+    "titleEdit": "编辑战队",
+    "teamNameLabel": "战队名称",
+    "teamNamePlaceholder": "Astralis",
+    "teamNameHelper": "战队名称可以包含任意语言和特殊字符",
+    "teamTagLabel": "战队简称",
+    "teamTagPlaceholder": "AST",
+    "teamTagHelper": "根据战队名称自动生成（最多 4 个字符）",
+    "playersHeader": "选手（{{count}}）",
+    "selectPlayers": "选择选手",
+    "noPlayersInfo": "尚未添加选手，请至少添加一名选手。",
+    "addPlayersHelper": "通过粘贴 Steam 链接或从现有选手中选择来添加选手",
+    "steamInputLabel": "Steam ID / 自定义链接",
+    "steamInputPlaceholder": "gaben 或 steamcommunity.com/id/gaben",
+    "resolveSteam": "解析 Steam ID",
+    "resolving": "正在解析…",
+    "playerNameLabel": "选手名称",
+    "playerNamePlaceholder": "s1mple",
+    "eloLabel": "ELO（可选）",
+    "eloPlaceholder": "1500",
+    "eloHelper": "默认：1500",
+    "errors": {
+      "steamLookupEmpty": "请输入 Steam ID、自定义链接或个人资料链接",
+      "steamApiNotConfigured": "未配置 Steam API——请手动输入 Steam ID64",
+      "steamResolveFailed": "无法解析 Steam ID——请手动输入 Steam ID64",
+      "steamAndNameRequired": "Steam ID 和选手名称均为必填项",
+      "steamDuplicate": "该 Steam ID 已在此战队中",
+      "teamNameRequired": "战队名称为必填项",
+      "playersRequired": "至少需要一名选手",
+      "saveFailed": "保存战队失败",
+      "deleteFailed": "删除战队失败"
+    },
+    "success": {
+      "playerAdded": "选手已添加到战队",
+      "playerReplaced": "选手已被替换",
+      "teamUpdated": "战队更新成功",
+      "teamCreated": "战队创建成功",
+      "teamDeleted": "战队删除成功"
+    },
+    "buttons": {
+      "deleteTeam": "删除战队",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "saveChanges": "保存更改",
+      "createTeam": "创建战队"
+    },
+    "confirmDelete": {
+      "title": "删除战队",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    },
+    "replacePlayerAria": "替换选手 {{name}}",
+    "replacePlayerTooltip": "替换此选手"
+  },
+  "playerModal": {
+    "titleCreate": "创建选手",
+    "titleEdit": "编辑选手",
+    "steamLabel": "Steam ID 或个人资料链接",
+    "steamHelperEditing": "Steam ID 不可更改",
+    "steamHelperNew": "输入 Steam ID64、自定义链接或个人资料链接。单击“解析”可自动填充名称和头像。",
+    "resolveSteam": "解析 Steam ID",
+    "resolving": "正在解析…",
+    "playerNameLabel": "选手名称",
+    "playerNamePlaceholder": "选手",
+    "eloLabelNew": "初始 ELO",
+    "eloLabelEdit": "ELO",
+    "eloHelperNew": "留空则使用默认值（1500 Skill Rating）。",
+    "eloHelperEdit": "修改 ELO 将重置该选手的评分与历史统计。此操作无法撤销。",
+    "isAdminLabel": "管理员（对所有比赛拥有游戏内管理权限）",
+    "currentElo": "当前 ELO：{{value}}",
+    "startingElo": "初始 ELO：{{value}}",
+    "matchesPlayed": "已比赛场次：{{count}}",
+    "errors": {
+      "steamRequired": "Steam ID 为必填项",
+      "nameRequired": "选手名称为必填项",
+      "steamLookupEmpty": "请输入 Steam ID、自定义链接或个人资料链接",
+      "steamApiNotConfigured": "未配置 Steam API——请手动输入 Steam ID64",
+      "steamResolveFailed": "无法解析 Steam ID——请手动输入 Steam ID64",
+      "saveFailed": "保存选手失败"
+    },
+    "success": {
+      "playerUpdated": "选手更新成功",
+      "playerCreated": "选手创建成功"
+    },
+    "buttons": {
+      "delete": "删除",
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "save": "保存",
+      "create": "创建"
+    },
+    "confirmDelete": {
+      "title": "删除选手",
+      "message": "确定要删除选手 “{{name}}” 吗？该操作无法撤销。"
+    },
+    "confirmEloUpdate": {
+      "title": "更新选手 ELO",
+      "message": "确定要将该选手的 ELO 从 {{from}} 更新为 {{to}} 吗？这将重置其统计和评分历史。此操作无法撤销。"
+    }
+  },
+  "teamImportModal": {
+    "title": "从 JSON 导入战队",
+    "info": {
+      "title": "在下方粘贴包含战队数据的 JSON。",
+      "format": "预期格式：战队数组，每个战队包含 name、可选 tag，以及 players（name + steamId）。",
+      "link": "查看带示例的文档"
+    },
+    "jsonLabel": "JSON 数据",
+    "errors": {
+      "mustBeArray": "JSON 必须是战队数组",
+      "emptyArray": "数组不能为空",
+      "parseWithMessage": "JSON 解析错误：{{message}}",
+      "parseGeneric": "JSON 格式无效，请检查语法。",
+      "importFailed": "导入战队失败",
+      "noJson": "请先粘贴 JSON 数据"
+    },
+    "preview": {
+      "summary": "✓ JSON 校验通过！找到 {{teamCount}} 支战队，共 {{playerCount}} 名选手。",
+      "title": "预览：",
+      "playersChip": "{{count}} 名选手"
+    },
+    "actions": {
+      "preview": "预览",
+      "importing": "正在导入…",
+      "import": "导入 {{count}} 支战队"
+    }
+  },
+  "playerImportModal": {
+    "title": "导入选手",
+    "info": {
+      "description": "从 JSON 或 CSV 导入选手。必填字段：steamId、name。可选：initialELO（默认 1500）、avatarUrl。",
+      "link": "查看带示例的文档"
+    },
+    "placeholders": {
+      "jsonCsv": "JSON 示例：\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV 示例：\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+    },
+    "actions": {
+      "parseValidate": "解析并校验",
+      "importing": "正在导入…",
+      "import": "导入 {{count}} 名选手"
+    },
+    "preview": {
+      "readyChip": "{{count}} 名选手可导入",
+      "title": "待导入选手（{{count}}）：",
+      "steamId": "Steam ID：{{steamId}}",
+      "name": "姓名：{{name}}",
+      "initialElo": "初始 ELO：{{elo}}",
+      "avatar": "头像：{{url}}"
+    },
+    "errors": {
+      "noData": "请先输入 JSON 或 CSV 数据",
+      "noPlayers": "数据中未找到任何选手",
+      "validationPrefix": "校验错误：",
+      "parseFailed": "解析数据失败：{{message}}",
+      "importFailed": "导入选手失败",
+      "parseFirst": "请先解析并校验数据"
+    }
+  },
+  "playerSelectionModal": {
+    "title": "选择选手",
+    "selectedCount": "已选择 {{count}} 人",
+    "searchPlaceholder": "按姓名或 Steam ID 搜索选手…",
+    "selectAll": {
+      "select": "全选",
+      "deselect": "取消全选"
+    },
+    "empty": {
+      "noSearchResults": "没有找到符合搜索条件的选手",
+      "noPlayers": "当前没有可用选手"
+    },
+    "playerCard": {
+      "alreadyInTeam": "已在该战队中"
+    },
+    "addPlayersButton": "添加 {{count}} 名选手",
+    "errors": {
+      "loadFailed": "加载选手列表失败",
+      "noSelectable": "没有可选择的选手"
+    }
+  },
+  "soundSettingsModal": {
+    "title": "声音设置",
+    "soundSelect": {
+      "label": "通知声音"
+    },
+    "volume": {
+      "label": "音量：{{percent}}%"
+    },
+    "testButton": "测试声音",
+    "footer": "当比赛准备就绪或发生重要事件时，将播放声音通知。"
+  }
+}

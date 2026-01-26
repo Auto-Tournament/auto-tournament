@@ -1,0 +1,68 @@
+{
+  "app": {
+    "name": "Matchzy Auto Tournament"
+  },
+  "nav": {
+    "matchStatus": {
+      "yourTurnVeto": "Din tur i veto",
+      "waitingVeto": "Venter på veto",
+      "waitingServer": "Venter på server",
+      "matchReady": "Kampen er klar – koble til",
+      "snackbarOpponentMoved": "Motstanderen gjorde sitt valg"
+    },
+    "dashboard": "Dashboard",
+    "tournament": "Turnering",
+    "bracket": "Bracket",
+    "matches": "Kamper",
+    "teams": "Lag",
+    "players": "Spillere",
+    "leaderboard": "Toppliste",
+    "servers": "Servere",
+    "maps": "Kart og kartpooler",
+    "templates": "Maler",
+    "eloTemplates": "ELO-beregning",
+    "adminTools": "Adminverktøy",
+    "publicLinks": "Offentlige lenker",
+    "devTools": "Dev-verktøy",
+    "settings": "Innstillinger",
+    "resourcesSection": "Ressurser",
+    "tournamentSection": "Turnering",
+    "configurationSection": "Konfigurasjon",
+    "systemSection": "System",
+    "documentation": "Dokumentasjon",
+    "signOut": "Logg ut",
+    "linkSteam": "Koble til Steam",
+    "myProfile": "Min profil",
+    "goToAdminDashboard": "Gå til admin-dashboard",
+    "goToAdminDashboardHint": "Du ser spillerprofilen din. Åpne admin-dashboardet for å administrere lag, turneringer og servere."
+  },
+  "layout": {
+    "webhookNotConfigured": "Webhook-URL er ikke konfigurert. Kamper og servere kan ikke motta hendelser før den er satt.",
+    "openSettings": "Åpne innstillinger",
+    "pageTitle": {
+      "dashboard": "Dashboard",
+      "tournament": "Turnering",
+      "bracket": "Bracket",
+      "matches": "Kamper",
+      "teams": "Lag",
+      "players": "Spillere",
+      "servers": "Servere",
+      "maps": "Kart og kartpooler",
+      "templates": "Maler",
+      "eloTemplates": "ELO-beregning",
+      "adminTools": "Adminverktøy",
+      "settings": "Innstillinger",
+      "devTools": "Utviklerverktøy",
+      "publicLinks": "Offentlige lenker"
+    }
+  },
+  "language": {
+    "label": "Språk",
+    "en": "Engelsk",
+    "zhCN": "Kinesisk (forenklet)"
+  },
+  "common": {
+    "delete": "Slett",
+    "cancel": "Avbryt"
+  }
+}

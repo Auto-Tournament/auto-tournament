@@ -121,6 +121,7 @@ export function getMatchZyCoreSettingsCommands(options: {
  */
 export function getMatchZyServerConfigCommands(config: {
   minimumReadyRequired?: number | null;
+  allowForceReady?: boolean | null;
   pauseAfterRestore?: boolean | null;
   stopCommandAvailable?: boolean | null;
   stopCommandNoDamage?: boolean | null;
@@ -132,6 +133,9 @@ export function getMatchZyServerConfigCommands(config: {
   autostartMode?: 'enabled' | 'disabled' | 'ready_check' | null;
   demoPath?: string | null;
   demoNameFormat?: string | null;
+  seriesEndKickDelayNoDemo?: number | null;
+  seriesEndKickDelayDemoNoUpload?: number | null;
+  seriesEndKickDelayDemoUpload?: number | null;
   demoUploadUrl?: string | null;
   debugChatEnabled?: boolean | null;
 }): string[] {
@@ -143,6 +147,9 @@ export function getMatchZyServerConfigCommands(config: {
     Number.isFinite(config.minimumReadyRequired)
   ) {
     commands.push(`matchzy_minimum_ready_required ${config.minimumReadyRequired}`);
+  }
+  if (config.allowForceReady !== undefined && config.allowForceReady !== null) {
+    commands.push(`matchzy_allow_force_ready ${config.allowForceReady ? '1' : '0'}`);
   }
   if (config.pauseAfterRestore !== undefined && config.pauseAfterRestore !== null) {
     commands.push(`matchzy_pause_after_restore ${config.pauseAfterRestore ? '1' : '0'}`);
@@ -187,6 +194,31 @@ export function getMatchZyServerConfigCommands(config: {
   }
   if (config.demoNameFormat !== undefined && config.demoNameFormat !== null) {
     commands.push(`matchzy_demo_name_format "${config.demoNameFormat}"`);
+  }
+  if (
+    config.seriesEndKickDelayNoDemo !== undefined &&
+    config.seriesEndKickDelayNoDemo !== null &&
+    Number.isFinite(config.seriesEndKickDelayNoDemo)
+  ) {
+    commands.push(`matchzy_series_end_kick_delay_no_demo ${config.seriesEndKickDelayNoDemo}`);
+  }
+  if (
+    config.seriesEndKickDelayDemoNoUpload !== undefined &&
+    config.seriesEndKickDelayDemoNoUpload !== null &&
+    Number.isFinite(config.seriesEndKickDelayDemoNoUpload)
+  ) {
+    commands.push(
+      `matchzy_series_end_kick_delay_demo_no_upload ${config.seriesEndKickDelayDemoNoUpload}`
+    );
+  }
+  if (
+    config.seriesEndKickDelayDemoUpload !== undefined &&
+    config.seriesEndKickDelayDemoUpload !== null &&
+    Number.isFinite(config.seriesEndKickDelayDemoUpload)
+  ) {
+    commands.push(
+      `matchzy_series_end_kick_delay_demo_upload ${config.seriesEndKickDelayDemoUpload}`
+    );
   }
   if (config.demoUploadUrl !== undefined && config.demoUploadUrl !== null) {
     commands.push(`matchzy_demo_upload_url "${config.demoUploadUrl}"`);

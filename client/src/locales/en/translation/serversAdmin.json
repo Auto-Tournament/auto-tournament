@@ -1,0 +1,190 @@
+{
+  "serversPage": {
+    "title": "Servers",
+    "headerActions": {
+      "refreshChecking": "Checking...",
+      "refresh": "Refresh Status",
+      "retryUninitialized": "Retry uninitialized ({{count}})",
+      "retryUninitializedChecking": "Retrying...",
+      "batchAdd": "Batch Add",
+      "select": "Select",
+      "done": "Done Selecting",
+      "selectAll": "Select All",
+      "unselectAll": "Unselect All",
+      "deleteSelected": "Delete Selected",
+      "addServer": "Add Server"
+    },
+    "empty": {
+      "title": "No servers registered",
+      "description": "Add your first CS2 server to get started with the tournament",
+      "addServer": "Add Server",
+      "batchAdd": "Or Batch Add Multiple Servers"
+    },
+    "allocation": {
+      "title": "Server allocation",
+      "loading": "Loading allocation status...",
+      "empty": "No allocation data available.",
+      "available": "Available servers:",
+      "waiting": "Matches waiting for servers:",
+      "nextPass": "Next allocator pass in ~{{seconds}}s",
+      "cooldownLabel": "Cooldown",
+      "cooldownDescription": "Recently finished a match – in cooldown so demos can upload and the server can fully reset (about 2 minutes).",
+      "cooldownEta": "Ready in ~{{seconds}}s"
+    },
+    "statusChip": {
+      "checking": "Checking...",
+      "disabled": "Disabled",
+      "offline": "Offline",
+      "onlineOk": "Online (API ↔ Server OK)",
+      "onlineRconOnly": "Online (RCON only)",
+      "rconFailed": "RCON failed",
+      "onlineTesting": "Online (testing)"
+    },
+    "ipBanned": {
+      "title": "Server May Have Banned Our IP",
+      "message": "Server is reachable but repeatedly rejecting RCON authentication. This may indicate an IP ban. If the RCON password is correct, please check the server's ban list and unban our IP address."
+    },
+    "connectivity": {
+      "apiToServer": "MAT API → CS2 Server",
+      "serverToApi": "Server → API (/api/events)",
+      "unreachable": "Unreachable",
+      "reachable": "Reachable",
+      "unknown": "Unknown",
+      "loading": "Loading…",
+      "pluginLabel": "MatchZy:"
+    },
+    "currentMatch": {
+      "view": "View Match",
+      "loading": "Loading...",
+      "queuedPrefix": "Queued: "
+    },
+    "labels": {
+      "host": "Host:",
+      "port": "Port:",
+      "id": "ID:"
+    },
+    "errors": {
+      "loadServers": "Failed to load servers",
+      "noMatchesForServer": "No matches found for this server",
+      "loadCurrentMatch": "Failed to load current match for this server",
+      "bulkDelete": "Failed to delete one or more servers"
+    },
+    "bulkDelete": {
+      "title": "Delete Servers",
+      "message": "Are you sure you want to delete {{count}} server{{suffix}}? This action cannot be undone."
+    },
+    "autoConfig": {
+      "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
+      "done": "New servers configured. Refreshing status…"
+    },
+    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events."
+  },
+  "serverModal": {
+    "titleCreate": "Add Server",
+    "titleEdit": "Edit Server",
+    "serverNameLabel": "Server Name",
+    "serverNamePlaceholder": "Match Server #1",
+    "hostLabel": "Host / IP Address",
+    "hostPlaceholder": "192.168.1.100",
+    "portLabel": "Port",
+    "portPlaceholder": "27015",
+    "rconPasswordLabel": "RCON Password",
+    "rconPasswordPlaceholder": "your-rcon-password",
+    "rconPasswordHelper": "Password for RCON access to the server",
+    "enabledLabel": "Server Enabled",
+    "enabledHelper": "Disabled servers won't be used for matches",
+    "overridesTitle": "MatchZy Overrides (optional)",
+    "overridesDescription": "These settings override the global MatchZy defaults for this server only. Leave blank to use global values from Settings.",
+    "chatPrefixLabel": "Chat Prefix Override",
+    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixHelper": "Overrides matchzy_chat_prefix on this server (optional)",
+    "adminChatPrefixLabel": "Admin Chat Prefix Override",
+    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixHelper": "Overrides matchzy_admin_chat_prefix on this server (optional)",
+    "knifeOverrideLabel": "Knife Round Enabled by Default (override)",
+    "knifeOverrideHelper": "When set, overrides matchzy_knife_enabled_default for this server. Leave in indeterminate state to use global default.",
+    "testConnectivity": "Test connectivity",
+    "testingConnectivity": "Testing connectivity…",
+    "connectivity": {
+      "apiToServer": "MAT API → CS2 Server:",
+      "serverToApi": "Server → API (/api/events):",
+      "reachable": "Reachable",
+      "unreachable": "Unreachable"
+    },
+    "errors": {
+      "nameRequired": "Server name is required",
+      "hostRequired": "Host is required",
+      "portInvalid": "Port must be a valid number between 1 and 65535",
+      "rconRequired": "RCON password is required",
+      "idGenerationFailed": "Unable to generate server ID. Please adjust the server name.",
+      "duplicateId": "Server name creates duplicate ID '{{id}}'. Choose a different name.",
+      "duplicateHostPort": "A server with host:port '{{host}}:{{port}}' already exists (ID: {{id}}, Name: {{name}})",
+      "testConnectionSaveFirst": "Save the server first before testing connection",
+      "testConnectionFailed": "Failed to test connection",
+      "saveFailed": "Failed to save server",
+      "deleteFailed": "Failed to delete server",
+      "rconReachableApiUnreachable": "We can reach the server via RCON, but the server could not reach the API endpoint (test event missing).",
+      "serverOffline": "Server appears offline or unreachable via RCON."
+    },
+    "success": {
+      "connectivityOk": "Bi-directional connectivity verified: server is online and can reach the API.",
+      "serverUpdated": "Server updated successfully",
+      "serverCreated": "Server created successfully",
+      "serverDeleted": "Server deleted successfully"
+    },
+    "buttons": {
+      "deleteServer": "Delete Server",
+      "cancel": "Cancel",
+      "saving": "Saving...",
+      "saveChanges": "Save Changes",
+      "addServer": "Add Server"
+    },
+    "confirmDelete": {
+      "title": "Delete Server",
+      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+    }
+  },
+  "adminToolsPage": {
+    "title": "Admin Tools",
+    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
+    "header": {
+      "refresh": "Refresh Servers"
+    },
+    "serverSelect": {
+      "label": "Target Server(s)",
+      "allServersChip": "All Servers",
+      "allServersDescription": "Execute on all {{count}} server(s)",
+      "sendStatus": "Send Status"
+    },
+    "command": {
+      "execute": "Execute"
+    },
+    "customRconWarning": "Warning: Use with caution!",
+    "results": {
+      "title": "Execution Results",
+      "successChip": "✓ Success",
+      "failedChip": "✗ Failed",
+      "errorPrefix": "Error:"
+    },
+    "quickActions": {
+      "title": "Quick Actions"
+    },
+    "advanced": {
+      "title": "Advanced Tools"
+    },
+    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "recovery": {
+      "title": "Match Recovery",
+      "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
+      "button": "Run Match Recovery Now",
+      "success": "Match recovery completed.",
+      "error": "Match recovery failed.",
+      "failedTrigger": "Failed to trigger match recovery. Please try again."
+    },
+    "monitoring": {
+      "title": "Monitoring & Logs",
+      "serverEvents": "Server Events Monitor",
+      "appLogs": "Application Logs"
+    }
+  }
+}

@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { US, CN, FR, DE, ES, IT, PT, PL, NL } from 'country-flag-icons/react/3x2';
+import { US, CN, FR, DE, ES, IT, PT, PL, NL, NO } from 'country-flag-icons/react/3x2';
 
 const LANGUAGES: {
   code: string;
@@ -20,6 +20,7 @@ const LANGUAGES: {
   { code: 'pl', Flag: PL, label: 'Polski' },
   { code: 'nl', Flag: NL, label: 'Nederlands' },
   { code: 'zh-CN', Flag: CN, label: '简体中文' },
+  { code: 'nb', Flag: NO, label: 'Norsk bokmål' },
 ];
 
 function normalizeLanguageCode(raw: string): string {
@@ -32,6 +33,7 @@ function normalizeLanguageCode(raw: string): string {
   if (lng.startsWith('it')) return 'it';
   if (lng.startsWith('pl')) return 'pl';
   if (lng.startsWith('nl')) return 'nl';
+  if (lng.startsWith('nb') || lng.startsWith('no')) return 'nb';
   if (lng.startsWith('en')) return 'en';
   return 'en';
 }

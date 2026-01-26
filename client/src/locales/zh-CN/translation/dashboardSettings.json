@@ -1,0 +1,261 @@
+{
+  "dashboard": {
+    "title": "控制台",
+    "notReady": "当锦标赛开始后，锦标赛控制台将显示在这里。",
+    "restartTournament": {
+      "button": "重启锦标赛比赛",
+      "restarting": "正在重启锦标赛比赛…"
+    },
+    "onboarding": {
+      "ready": "🎉 一切就绪！",
+      "gettingStarted": "快速开始",
+      "stepsComplete": "{{completed}}/{{total}} 已完成",
+      "subtitle": "按照以下步骤完成首次锦标赛的设置",
+      "steps": {
+        "webhook": {
+          "title": "配置 Webhook URL",
+          "secondaryConfigured": "Webhook 端点已配置",
+          "secondaryMissing": "设置用于 Webhook 与 Demo 上传的基础 URL",
+          "openSettings": "打开设置"
+        },
+        "servers": {
+          "title": "至少添加一台 CS2 服务器",
+          "chip": "{{count}} 台服务器",
+          "chipPlural": "{{count}} 台服务器",
+          "secondaryConfigured": "服务器已配置并就绪",
+          "secondaryMissing": "先从添加 CS2 游戏服务器开始",
+          "addServer": "新增服务器"
+        },
+        "teamsPlayers": {
+          "title": "创建战队或添加选手",
+          "teamsChip": "{{count}} 支战队",
+          "teamsChipPlural": "{{count}} 支战队",
+          "playersChip": "{{count}} 名选手",
+          "playersChipPlural": "{{count}} 名选手",
+          "secondaryConfigured": "{{details}}",
+          "secondaryMissing": "创建战队和/或添加包含 Steam ID 的选手",
+          "createTeams": "创建战队",
+          "addPlayers": "添加选手"
+        },
+        "tournament": {
+          "title": "配置锦标赛",
+          "chipStatus": "{{status}}",
+          "secondaryConfigured": "锦标赛已配置战队与赛制",
+          "secondaryMissing": "设置锦标赛类型、赛制、战队与地图",
+          "createTournament": "创建锦标赛"
+        }
+      },
+      "startCta": {
+        "helper": "所有步骤均已完成！前往“锦标赛”页面复核配置并启动锦标赛。",
+        "button": "前往锦标赛页面"
+      }
+    },
+    "stats": {
+      "heading": "锦标赛统计",
+      "tournamentStatus": {
+        "title": "锦标赛状态",
+        "none": "当前没有活动中的锦标赛",
+        "typeLabel": "类型",
+        "formatLabel": "赛制",
+        "matchesLabel": "比赛场次"
+      },
+      "matchStatus": {
+        "title": "比赛状态",
+        "total": "总比赛数",
+        "pending": "待开始：",
+        "ready": "就绪：",
+        "loaded": "已加载：",
+        "live": "进行中：",
+        "completed": "已完成："
+      },
+      "serverStatus": {
+        "title": "服务器状态",
+        "onlineSummary": "在线服务器",
+        "online": "{{count}} 台在线",
+        "offline": "{{count}} 台离线",
+        "distributionTitle": "服务器状态"
+      },
+      "players": {
+        "title": "选手",
+        "total": "总选手数",
+        "inMatches": "比赛中：",
+        "waiting": "等待中："
+      },
+      "playerDistribution": {
+        "title": "选手分布"
+      },
+      "topPlayers": {
+        "title": "按 ELO 排名前列的选手",
+        "subtitle": "跨所有锦标赛类型的全局评分",
+        "chip": "ELO {{value}}"
+      },
+      "eloDistribution": {
+        "title": "选手 ELO 分布",
+        "subtitle": "每个 Skill Rating 区间内的选手数量（区间大小 {{bucket}}）。",
+        "xAxis": "Skill Rating 区间",
+        "yAxis": "选手数",
+        "seriesLabel": "选手"
+      },
+      "recentMatches": {
+        "title": "最近完成的比赛",
+        "subtitle": "最近 {{count}} 场已结束的比赛",
+        "none": "暂时还没有已完成的比赛。",
+        "chipCompleted": "已完成"
+      },
+      "noData": "暂无数据。创建锦标赛后将显示统计信息。",
+      "errors": {
+        "load": "加载控制台数据失败"
+      }
+    }
+  },
+  "settingsPage": {
+    "title": "设置",
+    "intro": "配置核心集成、游戏内默认值以及开发者选项。",
+    "tabs": {
+      "integrations": "集成与 Webhook",
+      "players": "选手与访问控制",
+      "matches": "比赛与评分",
+      "developer": "开发者 / 模拟"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy Webhook",
+        "description": "供 CS2 服务器访问的 MatchZy Webhook 地址。",
+        "label": "Webhook URL",
+        "helper": "示例：https://your-domain.com"
+      },
+      "steam": {
+        "title": "Steam 集成",
+        "apiKeyLabel": "Steam Web API Key",
+        "apiKeyHelper": "用于解析 Steam 自定义链接和玩家信息。留空则禁用解析功能。",
+        "checkButtonChecking": "正在检查 Steam…",
+        "checkButtonIdle": "检查 Steam 连通性",
+        "statusOk": "Steam API Key 已设置且可访问。",
+        "statusNotConfigured": "尚未设置 Steam API Key。在添加密钥之前无法解析自定义链接。",
+        "statusUnreachable": "看起来已设置 Steam API Key，但无法访问 Steam。请检查网络或密钥。",
+        "statusError": "检查 Steam API 状态失败，请重试。"
+      },
+      "mapSync": {
+        "title": "地图同步",
+        "description": "从 GitHub 仓库同步 CS2 地图。",
+        "buttonSyncing": "正在同步地图…",
+        "buttonIdle": "同步 CS2 地图",
+        "success": "地图同步完成！新增 {{added}} 张地图，{{skipped}} 张已存在。",
+        "partialError": "部分地图同步失败：{{errors}}",
+        "failed": "同步地图失败",
+        "rateLimit": "GitHub API 访问频率受限。请几分钟后重试。你可以设置 GITHUB_TOKEN 环境变量以提高限额。",
+        "rateLimitShort": "GitHub API 访问频率受限。请几分钟后重试。",
+        "githubError": "无法访问 GitHub 仓库。请检查你的网络连接并稍后重试。"
+      }
+    },
+    "matchRating": {
+      "chatDefaults": {
+        "title": "MatchZy 聊天与刀局默认值",
+        "description": "配置游戏内聊天前缀和默认刀局行为。",
+        "chatPrefixLabel": "聊天前缀",
+        "chatPrefixHelper": "默认值：\"[MAT]\"。留空以重置为默认前缀。",
+        "adminChatPrefixLabel": "管理员聊天前缀",
+        "adminChatPrefixHelper": "默认值：\"[ADMIN]\"。留空以重置为默认管理员前缀。",
+        "knifeToggleLabel": "对未预先选择阵营的新比赛默认启用刀局",
+        "knifeNote": "仅在 MatchZy 正常会运行刀局时生效；不会改变显式选择阵营或洗牌分配阵营的情况。"
+      },
+      "ratings": {
+        "title": "评分更新",
+        "description": "控制已完成的比赛是否会更新玩家 Skill Rating。若外部系统（例如 Excel 表）是评分真值来源，可在此禁用。",
+        "toggleLabel": "根据完成的比赛更新玩家评分",
+        "note": "禁用后，所有比赛仍会记录数据（ADR、K/D 等），但玩家 Skill Rating 将保持不变。"
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced 功能",
+        "description": "配置高级比赛功能。留空设置以使用锦标赛类型默认值。",
+        "autoready": {
+          "title": "自动准备系统",
+          "label": "玩家加入时自动标记为已准备",
+          "description": "玩家加入时自动准备。他们仍可使用 .unready 退出。"
+        },
+        "pause": {
+          "title": "暂停控制",
+          "bothTeamsUnpause": "要求双方队伍都取消暂停",
+          "maxPausesLabel": "每队最大暂停次数",
+          "maxPausesHelper": "0 = 无限制暂停",
+          "pauseDurationLabel": "暂停时长限制（秒）",
+          "pauseDurationHelper": "0 = 无时间限制"
+        },
+        "sideSelection": {
+          "title": "阵营选择计时器",
+          "enabled": "启用阵营选择计时器",
+          "timeLabel": "允许时间（秒）",
+          "timeHelper": "刀局后选择阵营的时间"
+        },
+        "gg": {
+          "title": "提前结束比赛 (.gg)",
+          "enabled": "启用 .gg 投降命令",
+          "thresholdLabel": "投票阈值 (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% 的队员必须投票（例如，5 人中的 4 人）",
+          "minScoreDiffLabel": "最小分差",
+          "minScoreDiffHelper": "0 = 禁用。例如：6 = 仅在落后 6+ 回合时允许 .gg"
+        },
+        "ffw": {
+          "title": "弃权/判负系统",
+          "enabled": "队伍断开连接时启用自动判负",
+          "timeLabel": "判负计时器（秒）",
+          "timeHelper": "整个队伍离开时宣布判负的时间"
+        },
+        "demo": {
+          "title": "Demo 录制",
+          "enabled": "启用自动 GOTV demo 录制",
+          "description": "禁用后，服务器在比赛结束后约 10 秒重启（启用录制时为 60-90 秒）"
+        }
+      }
+    },
+    "developer": {
+      "title": "开发者选项",
+      "description": "仅用于本地开发，请勿在生产环境启用。",
+      "simulateToggleLabel": "模拟比赛（使用机器人驱动的 Demo 比赛代替真实玩家）",
+      "simulateNote": "启用后，生成的 MatchZy 配置会包含 \"simulation\": true 字段，用于自动化 Demo 比赛。",
+      "timescaleTitle": "模拟时间倍率",
+      "timescaleDescription": "控制模拟比赛的运行速度。数值越高，机器人和回合流程越快。仅在启用模拟时生效。",
+      "timescaleWarning": "大于 2.0 的速度可能略显不稳定，并可能导致奇怪的机器人行为，但适合快速本地测试。",
+      "resetApiTitle": "重置 API 与数据库",
+      "resetApiDescription": "危险操作：删除并重建整个数据库结构，然后重新初始化默认数据（地图、地图池等）。仅用于本地开发。此操作不可恢复。",
+      "resetApiButton": "重置 API（清空所有数据）",
+      "resetApiButtonLoading": "正在重置 API…",
+      "resetApiSuccess": "API 与数据库已成功重置，所有数据已被清空并重新初始化默认值。",
+      "resetApiError": "重置 API 与数据库失败。请检查 API 日志获取详细信息。",
+      "resetApiDialog": {
+        "title": "重置 API 并清空所有数据？",
+        "description": "此操作将删除并重建整个数据库结构。所有锦标赛、比赛、选手、战队、评分、事件、日志和设置都将被永久删除，且无法恢复。是否继续？",
+        "cancel": "取消",
+        "confirm": "是的，重置 API 并清空数据",
+        "confirmLoading": "正在重置…"
+      },
+      "debugChat": {
+        "label": "启用 MatchZy 调试聊天消息",
+        "description": "启用后，MatchZy 会在游戏内聊天中打印额外的调试消息（例如玩家连接/断开、事件追踪等）。仅建议在开发和测试环境中使用，请不要在正式赛事中启用。"
+      }
+    },
+    "footer": {
+      "version": "版本",
+      "unknownVersion": "未知",
+      "resetButton": "重置设置"
+    },
+    "resetDialog": {
+      "title": "重置设置？",
+      "description": "将此页面上的所有设置重置为默认值。现有锦标赛和服务器不会改变，但新的比赛和查询将使用默认值。是否继续？",
+      "cancel": "取消",
+      "confirm": "重置",
+      "success": "设置已重置为默认值",
+      "error": "重置设置失败"
+    },
+    "errors": {
+      "loadSettings": "加载设置失败",
+      "saveSettings": "保存设置失败"
+    },
+    "success": {
+      "saveSettings": "设置已保存",
+      "simulationEnabled": "已启用模拟模式{{suffix}}",
+      "simulationDisabled": "已禁用模拟模式",
+      "timescaleUpdated": "模拟时间倍率已更新为 {{value}} 倍"
+    }
+  }
+}

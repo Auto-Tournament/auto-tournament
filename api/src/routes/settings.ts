@@ -28,6 +28,7 @@ const mapSettingsResponse = async () => {
   const ratingsEnabled = await settingsService.areRatingsEnabled();
   const matchzyDebugChatEnabled = await settingsService.isMatchzyDebugChatEnabled();
   const allowSelfRegister = await settingsService.isSelfRegistrationAllowed();
+  const matchzyCore = await settingsService.getMatchzyCoreDefaults();
   
   // MatchZy Enhanced v1.3.0 settings
   const matchzyEnhanced = await settingsService.getMatchzyEnhancedSettings();
@@ -46,6 +47,20 @@ const mapSettingsResponse = async () => {
     ratingsEnabled,
     matchzyDebugChatEnabled,
     allowSelfRegister,
+    // MatchZy core defaults
+    matchzyMinimumReadyRequired: matchzyCore.minimumReadyRequired,
+    matchzyAllowForceReady: matchzyCore.allowForceReady,
+    matchzyKickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
+    matchzyWhitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
+    matchzyPauseAfterRestore: matchzyCore.pauseAfterRestore,
+    matchzyStopCommandAvailable: matchzyCore.stopCommandAvailable,
+    matchzyStopCommandNoDamage: matchzyCore.stopCommandNoDamage,
+    matchzyUsePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
+    matchzyDemoPath: matchzyCore.demoPath,
+    matchzyDemoNameFormat: matchzyCore.demoNameFormat,
+    matchzySeriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
+    matchzySeriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
+    matchzySeriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
     // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
     matchzyAutoreadyEnabled: matchzyEnhanced.matchzy_autoready_enabled,
     matchzyBothTeamsUnpauseRequired: matchzyEnhanced.matchzy_both_teams_unpause_required,
@@ -80,6 +95,20 @@ router.put('/', async (req: Request, res: Response) => {
     ratingsEnabled,
     matchzyDebugChatEnabled,
     allowSelfRegister,
+    // MatchZy core defaults
+    matchzyMinimumReadyRequired,
+    matchzyAllowForceReady,
+    matchzyKickWhenNoMatchLoaded,
+    matchzyWhitelistEnabledDefault,
+    matchzyPauseAfterRestore,
+    matchzyStopCommandAvailable,
+    matchzyStopCommandNoDamage,
+    matchzyUsePauseCommandForTacticalPause,
+    matchzyDemoPath,
+    matchzyDemoNameFormat,
+    matchzySeriesEndKickDelayNoDemo,
+    matchzySeriesEndKickDelayDemoNoUpload,
+    matchzySeriesEndKickDelayDemoUpload,
     // MatchZy Enhanced v1.3.0 settings
     matchzyAutoreadyEnabled,
     matchzyBothTeamsUnpauseRequired,
@@ -103,6 +132,20 @@ router.put('/', async (req: Request, res: Response) => {
     ratingsEnabled?: unknown;
     matchzyDebugChatEnabled?: unknown;
     allowSelfRegister?: unknown;
+    // MatchZy core defaults
+    matchzyMinimumReadyRequired?: unknown;
+    matchzyAllowForceReady?: unknown;
+    matchzyKickWhenNoMatchLoaded?: unknown;
+    matchzyWhitelistEnabledDefault?: unknown;
+    matchzyPauseAfterRestore?: unknown;
+    matchzyStopCommandAvailable?: unknown;
+    matchzyStopCommandNoDamage?: unknown;
+    matchzyUsePauseCommandForTacticalPause?: unknown;
+    matchzyDemoPath?: unknown;
+    matchzyDemoNameFormat?: unknown;
+    matchzySeriesEndKickDelayNoDemo?: unknown;
+    matchzySeriesEndKickDelayDemoNoUpload?: unknown;
+    matchzySeriesEndKickDelayDemoUpload?: unknown;
     // MatchZy Enhanced v1.3.0 settings
     matchzyAutoreadyEnabled?: unknown;
     matchzyBothTeamsUnpauseRequired?: unknown;
@@ -260,6 +303,113 @@ router.put('/', async (req: Request, res: Response) => {
         allowSelfRegister === null ? null : allowSelfRegister === true ? '1' : '0';
 
       await settingsService.setSetting('allow_self_register', value);
+    }
+
+    if (matchzyMinimumReadyRequired !== undefined) {
+      if (
+        typeof matchzyMinimumReadyRequired !== 'number' &&
+        matchzyMinimumReadyRequired !== null
+      ) {
+        return res.status(400).json({
+          success: false,
+          error: 'matchzyMinimumReadyRequired must be a number or null',
+        });
+      }
+      await settingsService.setSetting(
+        'matchzy_minimum_ready_required',
+        matchzyMinimumReadyRequired === null ? null : String(matchzyMinimumReadyRequired)
+      );
+    }
+
+    const putBoolOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      if (v === undefined) return;
+      if (typeof v !== 'boolean' && v !== null) {
+        return res.status(400).json({
+          success: false,
+          error: `${label} must be a boolean or null`,
+        });
+      }
+      const value = v === null ? null : v === true ? '1' : '0';
+      await settingsService.setSetting(key, value);
+      return;
+    };
+
+    const putStringOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      if (v === undefined) return;
+      if (typeof v !== 'string' && v !== null) {
+        return res.status(400).json({
+          success: false,
+          error: `${label} must be a string or null`,
+        });
+      }
+      await settingsService.setSetting(key, typeof v === 'string' ? v : null);
+      return;
+    };
+
+    const putNumberOrNull = async (key: Parameters<typeof settingsService.setSetting>[0], v: unknown, label: string) => {
+      if (v === undefined) return;
+      if (typeof v !== 'number' && v !== null) {
+        return res.status(400).json({
+          success: false,
+          error: `${label} must be a number or null`,
+        });
+      }
+      await settingsService.setSetting(key, v === null ? null : String(v));
+      return;
+    };
+
+    // MatchZy core defaults (booleans)
+    if (matchzyAllowForceReady !== undefined) {
+      const resp = await putBoolOrNull('matchzy_allow_force_ready', matchzyAllowForceReady, 'matchzyAllowForceReady');
+      if (resp) return resp;
+    }
+    if (matchzyKickWhenNoMatchLoaded !== undefined) {
+      const resp = await putBoolOrNull('matchzy_kick_when_no_match_loaded', matchzyKickWhenNoMatchLoaded, 'matchzyKickWhenNoMatchLoaded');
+      if (resp) return resp;
+    }
+    if (matchzyWhitelistEnabledDefault !== undefined) {
+      const resp = await putBoolOrNull('matchzy_whitelist_enabled_default', matchzyWhitelistEnabledDefault, 'matchzyWhitelistEnabledDefault');
+      if (resp) return resp;
+    }
+    if (matchzyPauseAfterRestore !== undefined) {
+      const resp = await putBoolOrNull('matchzy_pause_after_restore', matchzyPauseAfterRestore, 'matchzyPauseAfterRestore');
+      if (resp) return resp;
+    }
+    if (matchzyStopCommandAvailable !== undefined) {
+      const resp = await putBoolOrNull('matchzy_stop_command_available', matchzyStopCommandAvailable, 'matchzyStopCommandAvailable');
+      if (resp) return resp;
+    }
+    if (matchzyStopCommandNoDamage !== undefined) {
+      const resp = await putBoolOrNull('matchzy_stop_command_no_damage', matchzyStopCommandNoDamage, 'matchzyStopCommandNoDamage');
+      if (resp) return resp;
+    }
+    if (matchzyUsePauseCommandForTacticalPause !== undefined) {
+      const resp = await putBoolOrNull('matchzy_use_pause_command_for_tactical_pause', matchzyUsePauseCommandForTacticalPause, 'matchzyUsePauseCommandForTacticalPause');
+      if (resp) return resp;
+    }
+
+    // MatchZy core defaults (strings)
+    if (matchzyDemoPath !== undefined) {
+      const resp = await putStringOrNull('matchzy_demo_path', matchzyDemoPath, 'matchzyDemoPath');
+      if (resp) return resp;
+    }
+    if (matchzyDemoNameFormat !== undefined) {
+      const resp = await putStringOrNull('matchzy_demo_name_format', matchzyDemoNameFormat, 'matchzyDemoNameFormat');
+      if (resp) return resp;
+    }
+
+    // MatchZy core defaults (numbers)
+    if (matchzySeriesEndKickDelayNoDemo !== undefined) {
+      const resp = await putNumberOrNull('matchzy_series_end_kick_delay_no_demo', matchzySeriesEndKickDelayNoDemo, 'matchzySeriesEndKickDelayNoDemo');
+      if (resp) return resp;
+    }
+    if (matchzySeriesEndKickDelayDemoNoUpload !== undefined) {
+      const resp = await putNumberOrNull('matchzy_series_end_kick_delay_demo_no_upload', matchzySeriesEndKickDelayDemoNoUpload, 'matchzySeriesEndKickDelayDemoNoUpload');
+      if (resp) return resp;
+    }
+    if (matchzySeriesEndKickDelayDemoUpload !== undefined) {
+      const resp = await putNumberOrNull('matchzy_series_end_kick_delay_demo_upload', matchzySeriesEndKickDelayDemoUpload, 'matchzySeriesEndKickDelayDemoUpload');
+      if (resp) return resp;
     }
 
     // MatchZy Enhanced v1.3.0 settings

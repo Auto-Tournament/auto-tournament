@@ -11,6 +11,8 @@ import type { DbMatchRow } from '../types/database.types';
 import type { MatchConfig } from '../types/match.types';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import { serverInitializationService } from './serverInitializationService';
+import { settingsService } from './settingsService';
+import { getMatchZyServerConfigCommands } from '../utils/matchzyRconCommands';
 
 export interface MatchLoadOptions {
   skipWebhook?: boolean; // Deprecated: Webhooks are now persistent, this param is ignored
@@ -74,6 +76,38 @@ export async function loadMatchOnServer(
       log.debug(`[MATCH LOADING] Server ${serverId} already initialized, skipping persistent config`);
     } else {
       log.success(`[MATCH LOADING] Server ${serverId} initialized with persistent configuration`);
+    }
+
+    // STEP 1.5: Apply MatchZy global defaults from Settings.
+    // Even though these are persisted by MatchZy Enhanced, we re-apply them on
+    // each match load so updates take effect without requiring a server init reset.
+    try {
+      const matchzyCore = await settingsService.getMatchzyCoreDefaults();
+      const cmds = getMatchZyServerConfigCommands({
+        minimumReadyRequired: matchzyCore.minimumReadyRequired,
+        allowForceReady: matchzyCore.allowForceReady,
+        kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
+        whitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
+        pauseAfterRestore: matchzyCore.pauseAfterRestore,
+        stopCommandAvailable: matchzyCore.stopCommandAvailable,
+        stopCommandNoDamage: matchzyCore.stopCommandNoDamage,
+        usePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
+        demoPath: matchzyCore.demoPath,
+        demoNameFormat: matchzyCore.demoNameFormat,
+        seriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
+        seriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
+        seriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
+      });
+      for (const cmd of cmds) {
+        const result = await rconService.sendCommand(serverId, cmd);
+        results.push({ success: result.success, command: cmd, error: result.error });
+        await delay(150);
+      }
+    } catch (coreError) {
+      log.warn(
+        `[MATCH LOADING] Failed to apply MatchZy global defaults for ${matchSlug} on ${serverId}`,
+        coreError as Error
+      );
     }
 
     // STEP 2: Apply per-match cvar overrides (if any)

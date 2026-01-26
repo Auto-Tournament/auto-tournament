@@ -42,6 +42,32 @@ https://your-mat-url/api/auth/admin-status
 
 ## Server Issues
 
+### Server Crashes or Plugins Not Working After CS2 Update
+
+**Symptoms:** Server crashes, plugins fail to load, or MatchZy stops working after a CS2 game update.
+
+**Solution:** CS2 updates often require server and plugin updates. Follow this order:
+
+1. **Update the CS2 server first using CS2 Server Manager (CSM):**
+   - Use CSM to update your CS2 server to the latest version
+   - This ensures the server binary matches the current CS2 version
+   - See [CS2 Server Manager guide](cs2-server-manager.md) for details
+
+2. **Then update plugins:**
+   - After the server is updated, update MatchZy and other plugins
+   - Plugins may be incompatible with older server versions after a CS2 update
+   - Restart the server after updating plugins
+
+**Why this order matters:**
+- CS2 updates can change server APIs that plugins depend on
+- Updating plugins before the server may cause compatibility issues
+- CSM ensures the server is on the correct version before plugin updates
+
+**If issues persist:**
+- Check server logs for plugin loading errors
+- Verify plugin versions are compatible with the current CS2 server version
+- Consider temporarily disabling plugins to isolate the issue
+
 ### Server Shows Offline
 
 **Symptoms:** Status shows 🔴 Offline

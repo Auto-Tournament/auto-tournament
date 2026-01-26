@@ -290,6 +290,20 @@ export interface SettingsResponse extends ApiResponse {
     matchzyDebugChatEnabled?: boolean;
     ratingsEnabled?: boolean;
     allowSelfRegister?: boolean;
+    // MatchZy core defaults
+    matchzyMinimumReadyRequired?: number;
+    matchzyAllowForceReady?: boolean;
+    matchzyKickWhenNoMatchLoaded?: boolean;
+    matchzyWhitelistEnabledDefault?: boolean;
+    matchzyPauseAfterRestore?: boolean;
+    matchzyStopCommandAvailable?: boolean;
+    matchzyStopCommandNoDamage?: boolean;
+    matchzyUsePauseCommandForTacticalPause?: boolean;
+    matchzyDemoPath?: string;
+    matchzyDemoNameFormat?: string;
+    matchzySeriesEndKickDelayNoDemo?: number;
+    matchzySeriesEndKickDelayDemoNoUpload?: number;
+    matchzySeriesEndKickDelayDemoUpload?: number;
     // MatchZy Enhanced v1.3.0 settings (null = use tournament defaults)
     matchzyAutoreadyEnabled?: 0 | 1 | null;
     matchzyBothTeamsUnpauseRequired?: 0 | 1 | null;

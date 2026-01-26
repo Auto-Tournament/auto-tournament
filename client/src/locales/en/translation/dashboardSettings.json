@@ -1,0 +1,297 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "notReady": "Tournament dashboard will appear here once the tournament is started.",
+    "restartTournament": {
+      "button": "Restart Tournament Matches",
+      "restarting": "Restarting tournament matches…"
+    },
+    "onboarding": {
+      "ready": "🎉 Ready to Go!",
+      "gettingStarted": "Getting Started",
+      "stepsComplete": "{{completed}}/{{total}} Complete",
+      "subtitle": "Follow these steps to set up your first tournament",
+      "steps": {
+        "webhook": {
+          "title": "Configure webhook URL",
+          "secondaryConfigured": "Webhook endpoint configured",
+          "secondaryMissing": "Set the base URL for webhooks and demo uploads",
+          "openSettings": "Open Settings"
+        },
+        "servers": {
+          "title": "Add at least one CS2 server",
+          "chip": "{{count}} server",
+          "chipPlural": "{{count}} servers",
+          "secondaryConfigured": "Servers configured and ready",
+          "secondaryMissing": "Start by adding your CS2 game servers",
+          "addServer": "Add Server"
+        },
+        "teamsPlayers": {
+          "title": "Create teams or add players",
+          "teamsChip": "{{count}} team",
+          "teamsChipPlural": "{{count}} teams",
+          "playersChip": "{{count}} player",
+          "playersChipPlural": "{{count}} players",
+          "secondaryConfigured": "{{details}}",
+          "secondaryMissing": "Create teams and/or add players with their Steam IDs",
+          "createTeams": "Create Teams",
+          "addPlayers": "Add Players"
+        },
+        "tournament": {
+          "title": "Configure your tournament",
+          "chipStatus": "{{status}}",
+          "secondaryConfigured": "Tournament configured with teams and format",
+          "secondaryMissing": "Set up tournament type, format, teams, and maps",
+          "createTournament": "Create Tournament"
+        }
+      },
+      "startCta": {
+        "helper": "Everything is ready! Review your configuration and start the tournament from the Tournament page.",
+        "button": "Go to Tournament"
+      }
+    },
+    "stats": {
+      "heading": "Tournament Statistics",
+      "tournamentStatus": {
+        "title": "Tournament Status",
+        "none": "No tournament active",
+        "typeLabel": "Type",
+        "formatLabel": "Format",
+        "matchesLabel": "Matches"
+      },
+      "matchStatus": {
+        "title": "Match Status",
+        "total": "Total Matches",
+        "pending": "Pending:",
+        "ready": "Ready:",
+        "loaded": "Loaded:",
+        "live": "Live:",
+        "completed": "Completed:"
+      },
+      "serverStatus": {
+        "title": "Server Status",
+        "onlineSummary": "Servers Online",
+        "online": "{{count}} Online",
+        "offline": "{{count}} Offline",
+        "distributionTitle": "Server Status"
+      },
+      "players": {
+        "title": "Players",
+        "total": "Total Players",
+        "inMatches": "In Matches:",
+        "waiting": "Waiting:"
+      },
+      "playerDistribution": {
+        "title": "Player Distribution"
+      },
+      "topPlayers": {
+        "title": "Top Players by ELO",
+        "subtitle": "Global rating across all tournament types",
+        "chip": "ELO {{value}}"
+      },
+      "eloDistribution": {
+        "title": "Player ELO Distribution",
+        "subtitle": "Number of players per Skill Rating band (bucket size {{bucket}}).",
+        "xAxis": "Skill Rating band",
+        "yAxis": "Players",
+        "seriesLabel": "Players"
+      },
+      "recentMatches": {
+        "title": "Recent Completed Matches",
+        "subtitle": "Last {{count}} finished matches",
+        "none": "No completed matches yet.",
+        "chipCompleted": "Completed"
+      },
+      "noData": "No data available. Create a tournament to see statistics.",
+      "errors": {
+        "load": "Failed to load dashboard data"
+      }
+    }
+  },
+  "settingsPage": {
+    "title": "Settings",
+    "intro": "Configure core integrations, in-game defaults, and developer options.",
+    "tabs": {
+      "integrations": "Integrations & Webhooks",
+      "players": "Players & Access",
+      "matches": "Matches & Ratings",
+      "developer": "Developer / Simulation"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy Webhook",
+        "description": "MatchZy webhook URL that your CS2 servers can reach.",
+        "label": "Webhook URL",
+        "helper": "Example: https://your-domain.com"
+      },
+      "steam": {
+        "title": "Steam Integration",
+        "apiKeyLabel": "Steam Web API Key",
+        "apiKeyHelper": "Resolves Steam vanity URLs and player info. Leave blank to disable lookups.",
+        "checkButtonChecking": "Checking Steam…",
+        "checkButtonIdle": "Check Steam connectivity",
+        "statusOk": "Steam API key is set and reachable.",
+        "statusNotConfigured": "Steam API key is not set. Vanity URLs cannot be resolved until you add a key.",
+        "statusUnreachable": "Steam API key appears set but Steam could not be reached. Check your network or key.",
+        "statusError": "Failed to check Steam API status. Please try again."
+      },
+      "mapSync": {
+        "title": "Map Synchronization",
+        "description": "Sync CS2 maps from the GitHub repository.",
+        "buttonSyncing": "Syncing Maps...",
+        "buttonIdle": "Sync CS2 Maps",
+        "success": "Map sync completed! {{added}} new map(s) added, {{skipped}} already existed.",
+        "partialError": "Some maps failed to sync: {{errors}}",
+        "failed": "Failed to sync maps",
+        "rateLimit": "GitHub API rate limit exceeded. Please try again in a few minutes. You can set GITHUB_TOKEN environment variable to increase the rate limit.",
+        "rateLimitShort": "GitHub API rate limit exceeded. Please try again in a few minutes.",
+        "githubError": "Unable to reach GitHub repository. Please check your internet connection and try again later."
+      }
+    },
+    "matchRating": {
+      "chatDefaults": {
+        "title": "MatchZy Chat & Knife Defaults",
+        "description": "Configure in-game chat prefixes and default knife round behavior.",
+        "chatPrefixLabel": "Chat Prefix",
+        "chatPrefixHelper": "Default: \"[MAT]\". Leave blank to reset to the default prefix.",
+        "adminChatPrefixLabel": "Admin Chat Prefix",
+        "adminChatPrefixHelper": "Default: \"[ADMIN]\". Leave blank to reset to the default admin prefix.",
+        "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",
+        "knifeNote": "Applies only when MatchZy would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
+      },
+      "ratings": {
+        "title": "Rating Updates",
+        "description": "Control whether completed matches update player Skill Ratings. Disable this for events where an external system (for example your Excel sheet) is the source of truth for ratings.",
+        "toggleLabel": "Update player ratings from completed matches",
+        "note": "When disabled, all matches will still track stats (ADR, K/D, etc.), but player Skill Ratings will remain unchanged."
+      },
+      "matchzyCore": {
+        "title": "MatchZy Core Defaults",
+        "description": "These defaults are sent to servers during initialization and before each match load.",
+        "ready": {
+          "title": "Ready / Match Start",
+          "minimumReadyLabel": "Minimum ready players required",
+          "minimumReadyHelper": "0 = everyone connected must ready. Default: 2.",
+          "allowForceReady": "Allow admins to force-ready players during setup (!forceready)"
+        },
+        "access": {
+          "title": "Server Access",
+          "kickWhenNoMatchLoaded": "Kick/prevent joins when no match is loaded (tournament servers)",
+          "whitelistEnabledDefault": "Enable whitelist by default (admins can toggle with .whitelist)"
+        },
+        "adminTools": {
+          "title": "Admin Tools",
+          "pauseAfterRestore": "Pause after round restore (.stop) so teams can coordinate",
+          "stopCommandAvailable": "Enable .stop (round restore) command",
+          "stopCommandNoDamage": "Disable .stop after opposing-team damage occurs",
+          "usePauseForTacticalPause": "Make .pause behave like tactical pause"
+        },
+        "demos": {
+          "title": "Demos",
+          "demoPathLabel": "Demo path (relative to csgo/)",
+          "demoPathHelper": "Must end with '/'. Default: MatchZy/",
+          "demoNameFormatLabel": "Demo filename format (without .dem)",
+          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+        },
+        "seriesEnd": {
+          "title": "Series End Timing",
+          "kickDelayNoDemoLabel": "Extra kick delay when demos are disabled (seconds)",
+          "kickDelayDemoNoUploadLabel": "Extra kick delay when demos enabled but no upload URL (seconds)",
+          "kickDelayDemoUploadLabel": "Extra kick delay when demos enabled and upload URL is set (seconds)",
+          "kickDelayHelper": "Added on top of mp_match_restart_delay."
+        }
+      },
+      "matchzyEnhanced": {
+        "title": "MatchZy Enhanced Features",
+        "description": "Configure advanced match features. Leave settings empty to use tournament-type defaults.",
+        "autoready": {
+          "title": "Auto-Ready System",
+          "label": "Auto-mark players as ready when they join",
+          "description": "Players are automatically ready on join. They can still use .unready to opt-out."
+        },
+        "pause": {
+          "title": "Pause Controls",
+          "bothTeamsUnpause": "Require both teams to unpause",
+          "maxPausesLabel": "Max pauses per team",
+          "maxPausesHelper": "0 = unlimited pauses",
+          "pauseDurationLabel": "Pause duration limit (seconds)",
+          "pauseDurationHelper": "0 = no time limit"
+        },
+        "sideSelection": {
+          "title": "Side Selection Timer",
+          "enabled": "Enable side selection timer",
+          "timeLabel": "Time allowed (seconds)",
+          "timeHelper": "Time after knife round to choose sides"
+        },
+        "gg": {
+          "title": "Early Match Termination (.gg)",
+          "enabled": "Enable .gg forfeit command",
+          "thresholdLabel": "Vote threshold (0.0-1.0)",
+          "thresholdHelper": "0.8 = 80% of team must vote (e.g., 4/5 players)",
+          "minScoreDiffLabel": "Minimum score difference",
+          "minScoreDiffHelper": "0 = disabled. Example: 6 = only allow .gg when losing by 6+ rounds"
+        },
+        "ffw": {
+          "title": "Forfeit/Walkover System",
+          "enabled": "Enable automatic forfeit when team disconnects",
+          "timeLabel": "Forfeit timer (seconds)",
+          "timeHelper": "Time before forfeit is declared when entire team leaves"
+        },
+        "demo": {
+          "title": "Demo Recording",
+          "enabled": "Enable automatic GOTV demo recording",
+          "description": "When disabled, server restarts ~10s after match end (vs 60-90s with recording)"
+        }
+      }
+    },
+    "developer": {
+      "title": "Developer Options",
+      "description": "Local development helpers only; don't enable in production.",
+      "simulateToggleLabel": "Simulate matches (use bot-driven demo matches instead of real players)",
+      "simulateNote": "When enabled, generated MatchZy configs include \"simulation\": true for automated demo matches.",
+      "timescaleTitle": "Simulation Timescale",
+      "timescaleDescription": "Controls how fast simulated matches run. Higher values speed up bots and round flow. This only applies when simulation is enabled.",
+      "timescaleWarning": "Speeds above 2.0 can be a bit unstable and may cause odd bot behavior, but are fine to use for quick local testing.",
+      "resetApiTitle": "Reset API & Database",
+      "resetApiDescription": "Danger zone: drops and recreates the entire database schema, then reinitializes default data (maps, map pools, etc.). Use only for local development. This is irreversible.",
+      "resetApiButton": "Reset API (wipe all data)",
+      "resetApiButtonLoading": "Resetting API…",
+      "resetApiSuccess": "API and database reset successfully. All data has been wiped and defaults reinitialized.",
+      "resetApiError": "Failed to reset API and database. Check API logs for details.",
+      "resetApiDialog": {
+        "title": "Reset API & wipe all data?",
+        "description": "This will drop and recreate the entire database schema. All tournaments, matches, players, teams, ratings, events, logs, and settings will be permanently deleted. This action cannot be undone. Continue?",
+        "cancel": "Cancel",
+        "confirm": "Yes, reset API & wipe data",
+        "confirmLoading": "Resetting…"
+      },
+      "debugChat": {
+        "label": "Enable MatchZy debug chat messages",
+        "description": "When enabled, MatchZy will print additional debug messages (like player connects, disconnects, and event traces) into in-game chat. Use this only for development and testing – not during live events."
+      }
+    },
+    "footer": {
+      "version": "Version",
+      "unknownVersion": "Unknown",
+      "resetButton": "Reset Settings"
+    },
+    "resetDialog": {
+      "title": "Reset settings?",
+      "description": "Reset all settings on this page back to defaults. Existing tournaments and servers are not changed, but new matches and lookups will use the default values. Continue?",
+      "cancel": "Cancel",
+      "confirm": "Reset",
+      "success": "Settings reset to defaults",
+      "error": "Failed to reset settings"
+    },
+    "errors": {
+      "loadSettings": "Failed to load settings",
+      "saveSettings": "Failed to save settings"
+    },
+    "success": {
+      "saveSettings": "Settings saved",
+      "simulationEnabled": "Simulation mode enabled{{suffix}}",
+      "simulationDisabled": "Simulation mode disabled",
+      "timescaleUpdated": "Simulation timescale updated to {{value}}x"
+    }
+  }
+}

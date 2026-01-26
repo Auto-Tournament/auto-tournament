@@ -2,15 +2,16 @@ import { createInstance } from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import { initReactI18next } from 'react-i18next';
 
-import en from './locales/en/translation.json';
-import zhCN from './locales/zh-CN/translation.json';
-import fr from './locales/fr/translation.json';
-import de from './locales/de/translation.json';
-import es from './locales/es/translation.json';
-import it from './locales/it/translation.json';
-import pt from './locales/pt-PT/translation.json';
-import pl from './locales/pl/translation.json';
-import nl from './locales/nl/translation.json';
+import en from './locales/en/translation';
+import zhCN from './locales/zh-CN/translation';
+import fr from './locales/fr/translation';
+import de from './locales/de/translation';
+import es from './locales/es/translation';
+import it from './locales/it/translation';
+import pt from './locales/pt-PT/translation';
+import pl from './locales/pl/translation';
+import nl from './locales/nl/translation';
+import nb from './locales/nb/translation';
 import bracketsViewerEn from './locales/brackets-viewer/en.json';
 import bracketsViewerZhCN from './locales/brackets-viewer/zh-CN.json';
 import bracketsViewerFr from './locales/brackets-viewer/fr.json';
@@ -60,6 +61,10 @@ export const resources = {
     translation: nl,
     bracketsViewer: bracketsViewerNl,
   },
+  nb: {
+    translation: nb,
+    bracketsViewer: bracketsViewerEn, // Use English as fallback for brackets-viewer
+  },
 } as const;
 
 const i18n = createInstance();
@@ -70,7 +75,7 @@ void i18n
   .init({
     resources,
     fallbackLng: 'en',
-    supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN'],
+    supportedLngs: ['en', 'fr', 'de', 'es', 'it', 'pt-PT', 'pl', 'nl', 'zh-CN', 'nb'],
     ns: ['translation', 'bracketsViewer'],
     defaultNS,
     interpolation: {

@@ -1,0 +1,297 @@
+{
+  "dashboard": {
+    "title": "Dashboard",
+    "notReady": "Turneringsdashboardet vises her når turneringen er startet.",
+    "restartTournament": {
+      "button": "Start turneringskamper på nytt",
+      "restarting": "Starter turneringskamper på nytt…"
+    },
+    "onboarding": {
+      "ready": "🎉 Klar til bruk!",
+      "gettingStarted": "Kom i gang",
+      "stepsComplete": "{{completed}}/{{total}} fullført",
+      "subtitle": "Følg disse stegene for å sette opp din første turnering",
+      "steps": {
+        "webhook": {
+          "title": "Konfigurer webhook-URL",
+          "secondaryConfigured": "Webhook-endepunkt konfigurert",
+          "secondaryMissing": "Sett base-URL for webhooks og demo-opplasting",
+          "openSettings": "Åpne innstillinger"
+        },
+        "servers": {
+          "title": "Legg til minst én CS2-server",
+          "chip": "{{count}} server",
+          "chipPlural": "{{count}} servere",
+          "secondaryConfigured": "Servere konfigurert og klare",
+          "secondaryMissing": "Start med å legge til CS2-spillservere",
+          "addServer": "Legg til server"
+        },
+        "teamsPlayers": {
+          "title": "Opprett lag eller legg til spillere",
+          "teamsChip": "{{count}} lag",
+          "teamsChipPlural": "{{count}} lag",
+          "playersChip": "{{count}} spiller",
+          "playersChipPlural": "{{count}} spillere",
+          "secondaryConfigured": "{{details}}",
+          "secondaryMissing": "Opprett lag og/eller legg til spillere med Steam-ID",
+          "createTeams": "Opprett lag",
+          "addPlayers": "Legg til spillere"
+        },
+        "tournament": {
+          "title": "Konfigurer turneringen",
+          "chipStatus": "{{status}}",
+          "secondaryConfigured": "Turnering konfigurert med lag og format",
+          "secondaryMissing": "Sett opp turneringstype, format, lag og kart",
+          "createTournament": "Opprett turnering"
+        }
+      },
+      "startCta": {
+        "helper": "Alt er klart! Gå gjennom oppsettet og start turneringen fra Turneringssiden.",
+        "button": "Gå til turnering"
+      }
+    },
+    "stats": {
+      "heading": "Turneringsstatistikk",
+      "tournamentStatus": {
+        "title": "Turneringsstatus",
+        "none": "Ingen aktiv turnering",
+        "typeLabel": "Type",
+        "formatLabel": "Format",
+        "matchesLabel": "Kamper"
+      },
+      "matchStatus": {
+        "title": "Kampstatus",
+        "total": "Totalt antall kamper",
+        "pending": "Venter:",
+        "ready": "Klar:",
+        "loaded": "Lastet:",
+        "live": "Live:",
+        "completed": "Fullført:"
+      },
+      "serverStatus": {
+        "title": "Serverstatus",
+        "onlineSummary": "Servere online",
+        "online": "{{count}} online",
+        "offline": "{{count}} offline",
+        "distributionTitle": "Serverstatus"
+      },
+      "players": {
+        "title": "Spillere",
+        "total": "Totalt antall spillere",
+        "inMatches": "I kamper:",
+        "waiting": "Venter:"
+      },
+      "topPlayers": {
+        "title": "Topp spillere etter ELO",
+        "subtitle": "Global rating på tvers av alle turneringstyper",
+        "chip": "ELO {{value}}"
+      },
+      "recentMatches": {
+        "title": "Siste fullførte kamper",
+        "subtitle": "Siste {{count}} fullførte kamper",
+        "none": "Ingen fullførte kamper ennå.",
+        "chipCompleted": "Fullført"
+      },
+      "noData": "Ingen data tilgjengelig. Opprett en turnering for å se statistikk.",
+      "errors": {
+        "load": "Klarte ikke å laste dashboard-data"
+      }
+    }
+  },
+  "settingsPage": {
+    "title": "Innstillinger",
+    "intro": "Konfigurer integrasjoner, spillstandarder og utvikleralternativer.",
+    "tabs": {
+      "integrations": "Integrasjoner og webhooks",
+      "players": "Spillere og tilgang",
+      "matches": "Kamper og rating",
+      "developer": "Utvikler / simulering"
+    },
+    "integrations": {
+      "webhook": {
+        "title": "MatchZy-webhook",
+        "description": "Webhook-URL som CS2-serverne kan nå.",
+        "label": "Webhook-URL",
+        "helper": "Eksempel: https://ditt-domene.no"
+      },
+      "steam": {
+        "title": "Steam-integrasjon",
+        "apiKeyLabel": "Steam Web API-nøkkel",
+        "apiKeyHelper": "Brukes til å slå opp Steam-vanity-URL-er og spillerinfo.",
+        "checkButtonChecking": "Sjekker Steam…",
+        "checkButtonIdle": "Sjekk Steam-tilkobling",
+        "statusOk": "Steam API-nøkkel er satt og tilgjengelig.",
+        "statusNotConfigured": "Steam API-nøkkel er ikke satt.",
+        "statusUnreachable": "Steam API-nøkkel er satt, men Steam kan ikke nås.",
+        "statusError": "Klarte ikke å sjekke Steam API-status."
+      }
+    },
+    "matchRating": {
+      "ratings": {
+        "title": "Ratingoppdateringer",
+        "description": "Styr om fullførte kamper oppdaterer spillernes Skill Rating.",
+        "toggleLabel": "Oppdater spiller-rating etter kamper",
+        "note": "Statistikk spores fortsatt selv om rating er deaktivert."
+      }
+    },
+    "developer": {
+      "title": "Utvikleralternativer",
+      "description": "Kun for lokal utvikling – ikke bruk i produksjon.",
+      "simulateToggleLabel": "Simuler kamper (bot-styrt)",
+      "simulateNote": "Aktiverer automatiserte demo-kamper.",
+      "resetApiTitle": "Tilbakestill API og database",
+      "resetApiDescription": "Sletter all data og gjenoppretter standardoppsett.",
+      "resetApiButton": "Tilbakestill API (slett alt)",
+      "resetApiButtonLoading": "Tilbakestiller API…",
+      "resetApiSuccess": "API og database er tilbakestilt.",
+      "resetApiError": "Klarte ikke å tilbakestille API."
+    }
+  },
+  "matchesPage": {
+    "errors": {
+      "loadMatches": "Klarte ikke å laste kamper",
+      "loadTitle": "Feil ved lasting av kamper"
+    },
+    "allocation": {
+      "nextServers": "Neste servere tildeles om {{seconds}}s"
+    },
+    "header": {
+      "createMatch": "Opprett kamp"
+    },
+    "empty": {
+      "title": "Ingen kamper å vise",
+      "description": "Opprett en turnering og generer bracket for å se kamper her",
+      "createManual": "Eller opprett manuell kamp"
+    },
+    "sections": {
+      "live": "Live-kamper ({{count}})",
+      "upcoming": "Kommende kamper ({{count}})",
+      "history": "Kamphistorikk ({{count}})"
+    },
+    "manualMatchLabel": "Manuell kamp",
+    "create": {
+      "success": "Manuell kamp opprettet: {{slug}}"
+    },
+    "bulkDelete": {
+      "title": "Slett manuelle kamper",
+      "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres."
+    }
+  },
+  "serversPage": {
+    "title": "Servere",
+    "headerActions": {
+      "refreshChecking": "Sjekker...",
+      "refresh": "Oppdater status",
+      "retryUninitialized": "Prøv igjen uinitialiserte ({{count}})",
+      "retryUninitializedChecking": "Prøver igjen...",
+      "batchAdd": "Masseopprett",
+      "select": "Velg",
+      "done": "Ferdig",
+      "selectAll": "Velg alle",
+      "unselectAll": "Fjern alle valg",
+      "deleteSelected": "Slett valgte",
+      "addServer": "Legg til server"
+    },
+    "empty": {
+      "title": "Ingen servere registrert",
+      "description": "Legg til din første CS2-server for å komme i gang",
+      "addServer": "Legg til server",
+      "batchAdd": "Eller opprett flere servere samtidig"
+    },
+    "allocation": {
+      "title": "Serverallokering",
+      "loading": "Laster allokeringsstatus...",
+      "empty": "Ingen allokeringsdata tilgjengelig.",
+      "available": "Tilgjengelige servere:",
+      "waiting": "Kamper som venter på server:",
+      "nextPass": "Neste allokering om ~{{seconds}}s",
+      "cooldownLabel": "Nedkjøling",
+      "cooldownDescription": "Nylig ferdig kamp – i nedkjøling slik at demoer kan lastes opp og serveren kan resettes (ca. 2 minutter).",
+      "cooldownEta": "Klar om ~{{seconds}}s"
+    },
+    "statusChip": {
+      "checking": "Sjekker...",
+      "disabled": "Deaktivert",
+      "offline": "Offline",
+      "onlineOk": "Online (API ↔ server OK)",
+      "onlineRconOnly": "Online (kun RCON)",
+      "rconFailed": "RCON-feil",
+      "onlineTesting": "Online (tester)"
+    },
+    "ipBanned": {
+      "title": "Serveren kan ha blokkert IP-en vår",
+      "message": "Serveren er tilgjengelig, men avviser RCON-autentisering gjentatte ganger. Dette kan indikere IP-blokkering. Hvis RCON-passordet er korrekt, sjekk serverens ban-liste og fjern blokkeringen av IP-en vår."
+    },
+    "connectivity": {
+      "apiToServer": "MAT API → CS2-server",
+      "serverToApi": "Server → API (/api/events)",
+      "unreachable": "Ikke tilgjengelig",
+      "reachable": "Tilgjengelig",
+      "unknown": "Ukjent",
+      "loading": "Laster…",
+      "pluginLabel": "MatchZy:"
+    },
+    "currentMatch": {
+      "view": "Vis kamp",
+      "loading": "Laster...",
+      "queuedPrefix": "I kø: "
+    },
+    "labels": {
+      "host": "Vert:",
+      "port": "Port:",
+      "id": "ID:"
+    },
+    "errors": {
+      "loadServers": "Klarte ikke å laste servere",
+      "noMatchesForServer": "Ingen kamper funnet for denne serveren",
+      "loadCurrentMatch": "Klarte ikke å laste nåværende kamp for denne serveren",
+      "bulkDelete": "Klarte ikke å slette én eller flere servere"
+    },
+    "bulkDelete": {
+      "title": "Slett servere",
+      "message": "Er du sikker på at du vil slette {{count}} server{{suffix}}? Dette kan ikke angres."
+    },
+    "autoConfig": {
+      "configuring": "Konfigurerer nye servere (sender MatchZy-konfig via RCON)…",
+      "done": "Nye servere konfigurert. Oppdaterer status…"
+    },
+    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om MatchZy mottar konfigurasjon og sender hendelser."
+  },
+  "mapsPage": {
+    "title": "Kart og kartpooler",
+    "tabs": {
+      "maps": "Kart",
+      "mapPools": "Kartpooler"
+    },
+    "headerActions": {
+      "addMap": "Legg til kart",
+      "createMapPool": "Opprett kartpool"
+    },
+    "errors": {
+      "loadMaps": "Klarte ikke å laste kart",
+      "loadPools": "Klarte ikke å laste kartpooler",
+      "defaultPoolCannotDelete": "Standard kartpool kan ikke slettes.",
+      "setDefaultPool": "Klarte ikke å sette standard kartpool",
+      "togglePool": "Klarte ikke å endre status på kartpool",
+      "deleteMap": "Klarte ikke å slette kart",
+      "deletePool": "Klarte ikke å slette kartpool"
+    },
+    "success": {
+      "mapDeleted": "Kart slettet"
+    },
+    "confirmDeleteMap": {
+      "title": "Slett kart",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    },
+    "confirmDeletePool": {
+      "title": "Slett kartpool",
+      "message": "Er du sikker på at du vil slette \"{{name}}\"? Dette kan ikke angres."
+    }
+  },
+  "notFound": {
+    "title": "Siden ble ikke funnet",
+    "description": "Siden du leter etter finnes ikke eller er flyttet.",
+    "backToDashboard": "Tilbake til Dashboard",
+    "publicPlayerSearch": "Offentlig spillersøk"
+  }
+}

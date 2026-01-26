@@ -1,0 +1,329 @@
+{
+  "mapsPage": {
+    "title": "地图与地图池",
+    "tabs": {
+      "maps": "地图",
+      "mapPools": "地图池"
+    },
+    "headerActions": {
+      "addMap": "新增地图",
+      "createMapPool": "创建地图池"
+    },
+    "errors": {
+      "loadMaps": "加载地图失败",
+      "loadPools": "加载地图池失败",
+      "defaultPoolCannotDelete": "默认地图池无法删除。",
+      "setDefaultPool": "设置默认地图池失败",
+      "togglePool": "切换地图池状态失败",
+      "deleteMap": "删除地图失败",
+      "deletePool": "删除地图池失败"
+    },
+    "success": {
+      "mapDeleted": "地图删除成功"
+    },
+    "confirmDeleteMap": {
+      "title": "删除地图",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    },
+    "confirmDeletePool": {
+      "title": "删除地图池",
+      "message": "确定要删除 “{{name}}” 吗？该操作无法撤销。"
+    }
+  },
+  "mapModal": {
+    "titleCreate": "新增地图",
+    "titleEdit": "编辑地图",
+    "mapIdLabel": "地图 ID",
+    "mapIdPlaceholder": "de_dust2",
+    "mapIdHelper": "仅允许小写字母、数字和下划线（例如：de_dust2）",
+    "displayNameLabel": "显示名称",
+    "displayNamePlaceholder": "Dust II",
+    "mapImageLabel": "地图图片",
+    "uploadButton": "上传图片",
+    "fetchFromGitHub": "从 GitHub 获取",
+    "uploadHelper": "上传 PNG、JPG、GIF 或 WebP 图片（最大 5MB）",
+    "previewLabel": "预览：",
+    "removeImage": "移除图片",
+    "errors": {
+      "mapIdRequired": "地图 ID 为必填项",
+      "displayNameRequired": "显示名称为必填项",
+      "mapIdInvalid": "地图 ID 只能包含小写字母、数字和下划线",
+      "invalidFileType": "文件类型无效，请选择 PNG、JPG、GIF 或 WebP 图片。",
+      "fileTooLarge": "文件过大，请选择小于 5MB 的图片。",
+      "readFileFailed": "读取图片文件失败",
+      "fetchImageIdRequired": "请先输入地图 ID",
+      "fetchImageFailed": "获取图片失败，你可以改为上传图片。",
+      "imageNotFound": "未找到 ID 为 {{id}} 的图片，你可以改为上传图片。",
+      "uploadFailed": "上传图片失败",
+      "saveFailed": "保存地图失败"
+    },
+    "success": {
+      "mapUpdated": "地图更新成功",
+      "mapCreated": "地图创建成功"
+    },
+    "buttons": {
+      "cancel": "取消",
+      "saving": "正在保存…",
+      "update": "更新",
+      "create": "创建"
+    }
+  },
+  "mapActionsModal": {
+    "mapId": "地图 ID",
+    "preview": "预览",
+    "edit": "编辑"
+  },
+  "mapPoolActionsModal": {
+    "defaultChip": "默认",
+    "status": {
+      "label": "状态",
+      "enabled": "已启用",
+      "disabled": "已禁用"
+    },
+    "maps": {
+      "label": "地图（{{count}}）"
+    },
+    "actions": {
+      "edit": "编辑",
+      "enable": "启用",
+      "disable": "禁用",
+      "setDefault": "设为默认"
+    }
+  },
+  "templatesPage": {
+    "header": {
+      "createFromTournament": "从锦标赛创建模板"
+    },
+    "empty": "还没有模板。请在“锦标赛”页面创建你的第一个模板。",
+    "errors": {
+      "load": "加载模板失败"
+    },
+    "delete": {
+      "title": "删除模板",
+      "message": "确定要删除模板 “{{name}}” 吗？该操作无法撤销。",
+      "success": "模板 “{{name}}” 已成功删除",
+      "error": "删除模板失败"
+    },
+    "update": {
+      "success": "模板 “{{name}}” 更新成功",
+      "error": "更新模板失败"
+    },
+    "createFromTemplate": {
+      "errors": {
+        "inProgressOrCompleted": "当前已有锦标赛正在进行或已完成，无法从模板创建新锦标赛。请先删除或重置当前锦标赛。",
+        "alreadyExists": "当前已存在一个锦标赛。在从模板创建新锦标赛之前，请先删除或重置现有锦标赛。"
+      }
+    },
+    "edit": {
+      "title": "编辑模板",
+      "nameLabel": "模板名称",
+      "descriptionLabel": "描述（可选）",
+      "typeLabel": "锦标赛类型",
+      "formatLabel": "比赛赛制",
+      "mapPool": {
+        "title": "地图池",
+        "selectLabel": "选择地图池",
+        "customOption": "自定义",
+        "selectedLabel": "已选地图（{{count}} 张）：",
+        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. 当前已选：{{count}}"
+      },
+      "save": "保存"
+    }
+  },
+  "saveTemplateModal": {
+    "title": "保存为模板",
+    "nameLabel": "模板名称",
+    "namePlaceholder": "8 队单败 BO3",
+    "descriptionLabel": "描述（可选）",
+    "descriptionPlaceholder": "每周 8 队单败淘汰赛",
+    "saveButton": "保存模板",
+    "errors": {
+      "nameRequired": "模板名称为必填项",
+      "saveFailed": "保存模板失败"
+    }
+  },
+  "saveMapPoolModal": {
+    "title": "保存地图池",
+    "nameLabel": "地图池名称",
+    "namePlaceholder": "我的自定义地图池",
+    "info": "将保存一个包含 {{count}} 张地图的地图池。",
+    "saveButton": "保存",
+    "errors": {
+      "nameRequired": "地图池名称为必填项",
+      "noMaps": "请至少选择一张地图",
+      "saveFailed": "保存地图池失败"
+    }
+  },
+  "batchServerModal": {
+    "title": "批量创建服务器",
+    "info": "按端口递增 10（27015、27025、27035…）批量创建多台服务器，非常适合多台服务器位于同一机器的 LAN 环境。",
+    "sections": {
+      "identification": {
+        "title": "服务器标识"
+      },
+      "connection": {
+        "title": "连接设置"
+      },
+      "configuration": {
+        "title": "服务器配置"
+      }
+    },
+    "baseId": {
+      "label": "基础 ID",
+      "placeholder": "ntlan",
+      "helper": "服务器 ID 示例：base_1、base_2、base_3…"
+    },
+    "baseName": {
+      "label": "基础名称",
+      "placeholder": "NTLAN",
+      "helper": "服务器名称示例：Base #1、Base #2、Base #3…"
+    },
+    "host": {
+      "label": "主机 / IP 地址",
+      "placeholder": "192.168.1.100"
+    },
+    "rconPassword": {
+      "label": "RCON 密码",
+      "placeholder": "shared-rcon-password",
+      "helper": "所有服务器共用同一密码"
+    },
+    "numServers": {
+      "label": "服务器数量",
+      "placeholder": "3",
+      "helper": "最大值：50"
+    },
+    "assignPorts": {
+      "label": "端口分配",
+      "helper": "API → 服务器（RCON 测试）"
+    },
+    "serverPortLabel": "服务器 #{{index}}",
+    "portPlaceholder": "27015",
+    "enabled": {
+      "label": "服务器启用状态",
+      "helper": "所有服务器将按此设置为启用或禁用"
+    },
+    "preview": {
+      "title": "预览（{{showingFirst10, boolean, true {仅显示前 10 条} false {全部}}})",
+      "more": "……以及另外 {{count}} 台"
+    },
+    "checkServersButton": {
+      "default": "检查服务器",
+      "checking": "正在检查…"
+    },
+    "createServersButton": {
+      "default": "创建 {{count}} 台服务器",
+      "creating": "正在创建…"
+    },
+    "warnings": {
+      "notAllVerified": "部分服务器尚未通过连通性测试。它们仍会被保存，但在正确配置 RCON 和 Webhook 之前可能显示为离线。"
+    },
+    "success": {
+      "createdAll": "已成功创建 {{count}} 台服务器"
+    },
+    "errors": {
+      "baseNameRequired": "基础名称为必填项",
+      "baseIdRequired": "基础 ID 为必填项",
+      "hostRequired": "主机地址为必填项",
+      "countRange": "服务器数量必须在 1 到 50 之间",
+      "passwordRequired": "RCON 密码为必填项",
+      "portRange": "服务器 #{{index}} 端口必须在 1 到 65535 之间",
+      "connectionFailed": "连接失败",
+      "createFailed": "创建服务器失败",
+      "partialCreate": "已创建 {{created}}/{{total}} 台服务器。错误详情：\n{{details}}"
+    }
+  },
+  "eloTemplatesPage": {
+    "errors": {
+      "load": "加载 ELO 模板失败"
+    },
+    "header": {
+      "createTemplate": "创建模板",
+      "importJson": "从 JSON 导入"
+    },
+    "empty": {
+      "title": "暂无 ELO 计算模板",
+      "description": "创建你的第一个模板，以自定义选手数据如何影响 ELO 调整",
+      "action": "创建模板"
+    },
+    "delete": {
+      "title": "删除 ELO 模板",
+      "message": "确定要删除模板 “{{name}}” 吗？该操作无法撤销。",
+      "success": "模板 “{{name}}” 已成功删除",
+      "error": "删除模板失败",
+      "defaultProtected": "默认模板 \"pure-win-loss\" 不可删除。"
+    },
+    "import": {
+      "success": "已成功导入 {{count}} 个 ELO 模板"
+    },
+    "weights": {
+      "noAdjustmentsPure": "无数据加成（纯胜负 ELO）"
+    },
+    "card": {
+      "enabled": "已启用",
+      "disabled": "已禁用",
+      "default": "默认",
+      "adjustment": {
+        "none": "每场比赛的数据加成：无（0；仅基于结果的 ELO）",
+        "uncapped": "每场比赛的数据加成：不设上限（请谨慎使用）",
+        "range": "每场比赛的数据加成范围：{{min}} 到 {{max}} ELO",
+        "noMin": "无下限",
+        "noMax": "无上限"
+      },
+      "tooltips": {
+        "edit": "编辑模板",
+        "delete": "删除模板"
+      },
+      "weightsTitle": "数据权重：",
+      "limitsTitle": "加成上限："
+    },
+    "importModal": {
+      "title": "从 JSON 导入 ELO 模板",
+      "introTitle": "在下方粘贴包含 ELO 模板定义的 JSON。",
+      "introBody": "期望格式：由模板对象构成的数组，每个对象包含 name、可选的 description、enabled、weights、maxAdjustment 和 minAdjustment。如省略 id，将根据名称自动生成。",
+      "jsonLabel": "JSON 数据",
+      "validJsonTitle": "✓ JSON 校验通过！",
+      "validJsonBody": "共检测到 {{count}} 个模板。",
+      "previewTitle": "预览：",
+      "previewButton": "预览",
+      "importButton": "导入模板"
+    },
+    "editor": {
+      "titleEdit": "编辑 ELO 模板",
+      "titleCreate": "创建 ELO 模板",
+      "info": "配置单场比赛中选手各项数据如何影响 ELO 调整。权重会在 OpenSkill 计算出基础 ELO 变化（胜负）之后应用。正权重会增加 ELO，负权重会减少 ELO。",
+      "nameLabel": "模板名称",
+      "nameDefaultLocked": "默认模板名称不可更改",
+      "descriptionLabel": "描述",
+      "descriptionPlaceholder": "可选：简要说明该模板的用途",
+      "enabledLabel": "启用",
+      "weights": {
+        "title": "数据权重",
+        "subtitle": "调节每项数据的滑块。数值为 0 时，该数据不会影响 ELO。"
+      },
+      "limits": {
+        "title": "加成上限（可选）",
+        "subtitle": "为单场比赛设置最大和最小 ELO 调整值，以避免极端变动。",
+        "maxLabel": "最大加成",
+        "maxHelper": "每场比赛正向 ELO 调整的最大值",
+        "minLabel": "最小加成",
+        "minHelper": "每场比赛负向 ELO 调整的最大值"
+      },
+      "errors": {
+        "nameRequired": "模板名称为必填项"
+      },
+      "create": {
+        "success": "模板 “{{name}}” 创建成功",
+        "error": "创建模板失败"
+      },
+      "update": {
+        "success": "模板 “{{name}}” 更新成功",
+        "error": "更新模板失败"
+      },
+      "buttons": {
+        "saving": "正在保存…",
+        "update": "更新",
+        "create": "创建"
+      }
+    }
+  }
+}
