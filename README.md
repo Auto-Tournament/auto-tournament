@@ -11,7 +11,7 @@
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED?logo=docker&logoColor=white)](docker-compose.yml)
 [![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 
-**📚 <a href="https://mat.sivert.io/" target="_blank">Documentation</a>** • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord</a>
+**📚 <a href="https://docs.sivert.io/docs/mat" target="_blank">Documentation</a>** • <a href="https://discord.gg/n7gHYau7aW" target="_blank">💬 Discord</a>
 
 </div>
 
@@ -42,7 +42,7 @@ docker compose up -d
 ### 2. Add CS2 Servers
 
 **Option A: Automated (Recommended)**
-- Use the [CS2 Server Manager](https://mat.sivert.io/guides/cs2-server-manager/) to spin up servers with one command
+- Use [CS2 Server Manager (CSM)](https://docs.sivert.io/docs/csm) to spin up servers with one command
 
 **Option B: Manual**
 - Install [CounterStrikeSharp](https://docs.cssharp.dev/) on your CS2 server
@@ -67,23 +67,21 @@ Dashboard → New Tournament → Select format → Add teams → Start!
 🎬 **Demo Recording** — Automatic upload and download  
 👥 **Public Pages** — No-login team pages with server connect info
 
-<div align="center">
-  <img src="docs/assets/preview/bracket.png" alt="Tournament Bracket View" width="800">
-</div>
+See screenshots in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 
 ---
 
-## 📖 Documentation
+## 📖 Documentation (docs.sivert.io)
 
-**For Tournament Admins:**
-- [Admin Dashboard](https://mat.sivert.io/guides/admin-dashboard/)
-- [Server Setup](https://mat.sivert.io/getting-started/server-setup/)
-- [Creating Tournaments](https://mat.sivert.io/guides/how-to-set-up-a-tournament/)
+**For Tournament Admins (Operators):**
+- [Admin Dashboard](https://docs.sivert.io/docs/mat/user/admin-dashboard)
+- [Server Setup](https://docs.sivert.io/docs/mat/user/server-setup)
+- [Creating Tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
 
 **For Developers:**
 - [Contributing Guide](.github/CONTRIBUTING.md)
-- [Architecture](https://mat.sivert.io/development/architecture/)
-- [Testing](https://mat.sivert.io/development/testing-pr/)
+- [Architecture](https://docs.sivert.io/docs/mat/developer/architecture)
+- [Testing](https://docs.sivert.io/docs/mat/developer/testing)
 
 ---
 
@@ -103,7 +101,7 @@ Contributions welcome! Bug fixes, features, docs improvements, translations, or 
 - 🐛 [Report bugs or request features](.github/ISSUE_TEMPLATE/)
 - 💻 [Submit code improvements](.github/CONTRIBUTING.md)
 - 🌍 [Translate to your language](TRANSLATING.md)
-- 📚 [Improve documentation](https://mat.sivert.io/)
+- 📚 [Improve documentation](https://docs.sivert.io/docs/mat)
 
 **[Read Full Contributing Guide](.github/CONTRIBUTING.md)**
 

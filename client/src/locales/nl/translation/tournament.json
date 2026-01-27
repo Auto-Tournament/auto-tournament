@@ -1,86 +1,86 @@
 {
   "tournament": {
     "steps": {
-      "create": "Create Tournament",
-      "review": "Review & Confirm",
-      "live": "Live Tournament"
+      "create": "Toernooi maken",
+      "review": "Controleren & bevestigen",
+      "live": "Live-toernooi"
     },
     "welcome": {
-      "heading": "Create Tournament",
-      "chooseMethod": "Choose how you'd like to create your tournament",
-      "createNewTitle": "Create New Tournament",
-      "createNewDescription": "Start from scratch and configure all tournament settings manually"
+      "heading": "Toernooi maken",
+      "chooseMethod": "Kies hoe je je toernooi wilt aanmaken",
+      "createNewTitle": "Nieuw toernooi maken",
+      "createNewDescription": "Begin vanaf nul en configureer alle toernooi-instellingen handmatig"
     },
     "typeSelector": {
       "categories": {
         "professional": {
-          "label": "Professional Series"
+          "label": "Professionele serie"
         },
         "party": {
-          "label": "Party & Fun"
+          "label": "Feest & fun"
         }
       },
       "types": {
         "single_elimination": {
-          "label": "Single Elimination",
-          "description": "One loss and you're out. Classic bracket format used in professional tournaments."
+          "label": "Enkele eliminatie",
+          "description": "Eén verlies en je ligt eruit. Klassiek schemaformaat dat vaak in pro-toernooien wordt gebruikt."
         },
         "double_elimination": {
-          "label": "Double Elimination",
-          "description": "Two losses to be eliminated. Teams get a second chance in the lower bracket."
+          "label": "Dubbele eliminatie",
+          "description": "Twee keer verliezen om te worden uitgeschakeld. Teams krijgen een tweede kans via het onderste schema."
         },
         "round_robin": {
-          "label": "Round Robin",
-          "description": "Everyone plays everyone. Perfect for league-style competitions."
+          "label": "Round robin",
+          "description": "Iedereen speelt tegen iedereen. Ideaal voor competities in league-stijl."
         },
         "swiss": {
-          "label": "Swiss System",
-          "description": "Similar records face each other. Balanced matchups throughout the tournament."
+          "label": "Zwitsers systeem",
+          "description": "Teams met vergelijkbare scores spelen tegen elkaar. Gebalanceerde match-ups door het hele toernooi."
         },
         "shuffle": {
-          "label": "Shuffle Tournament",
-          "description": "Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing."
+          "label": "Shuffle-toernooi",
+          "description": "Spelers worden per ronde dynamisch geschud in gebalanceerde ploegen. Individuele competitie met ELO-gebaseerde teambalans."
         }
       },
-      "selectedChip": "Selected"
+      "selectedChip": "Geselecteerd"
     },
     "review": {
       "summary": {
-        "info": "Review your tournament settings and click \"Create Tournament\" when ready.",
-        "nameLabel": "Tournament Name",
-        "typeLabel": "Tournament Type",
-        "formatLabel": "Match Format",
-        "notSet": "Not set",
-        "estimatedVolume": "Approximately {{matches}} match{{matches, plural, one {} other {es}}} over {{rounds}} round{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, up to {{totalMaps}} map{{totalMaps, plural, one {} other {s}}} total)."
+        "info": "Controleer je toernooi-instellingen en klik op \"Toernooi maken\" wanneer je klaar bent.",
+        "nameLabel": "Toernooinaam",
+        "typeLabel": "Toernooitype",
+        "formatLabel": "Matchformaat",
+        "notSet": "Niet ingesteld",
+        "estimatedVolume": "Ongeveer {{matches}} wedstrijd{{matches, plural, one {} other {en}}} over {{rounds}} ronde{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, tot {{totalMaps}} kaart{{totalMaps, plural, one {} other {en}}} in totaal)."
       }
     },
     "formSteps": {
       "steps": {
-        "name": "Name",
-        "type": "Type",
-        "format": "Format",
-        "maps": "Maps",
-        "teams": "Teams",
-        "review": "Review"
+        "name": "Naam",
+        "type": "Soort",
+        "format": "Formaat",
+        "maps": "Kaarten",
+        "teams": "Ploegen",
+        "review": "Controle"
       },
-      "backToWelcome": "Back to Welcome",
-      "back": "Back",
-      "next": "Next"
+      "backToWelcome": "Terug naar start",
+      "back": "Terug",
+      "next": "Volgende"
     },
     "emptyBracket": {
-      "title": "No bracket to display",
-      "description": "Create a tournament and generate the bracket to get started"
+      "title": "Geen schema om te tonen",
+      "description": "Maak een toernooi en genereer het schema om te beginnen"
     },
     "common": {
-      "createTournament": "Create Tournament"
+      "createTournament": "Toernooi maken"
     },
-    "nameLabel": "Tournament Name",
-    "namePlaceholder": "NTLAN 2025 Spring Tournament"
+    "nameLabel": "Toernooinaam",
+    "namePlaceholder": "NTLAN 2025 Voorjaarstoernooi"
   },
   "bracket": {
     "empty": {
-      "noBracketTitle": "No bracket to display",
-      "noBracketDescription": "Create a tournament and generate the bracket to get started"
+      "noBracketTitle": "Geen schema om te tonen",
+      "noBracketDescription": "Maak een toernooi en genereer het schema om te beginnen"
     }
   }
 }

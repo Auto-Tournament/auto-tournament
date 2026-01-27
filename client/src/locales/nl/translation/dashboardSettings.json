@@ -96,7 +96,7 @@
           "demoPathLabel": "Demo-pad (relatief aan csgo/)",
           "demoPathHelper": "Moet eindigen op '/'. Standaard: MatchZy/",
           "demoNameFormatLabel": "Demo-bestandsnaamformaat (zonder .dem)",
-          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+          "demoNameFormatHelper": "Plaatsvervangers: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
         "seriesEnd": {
           "title": "Timing einde serie",
@@ -208,7 +208,7 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Overzicht",
     "notReady": "Het toernooidashboard verschijnt hier zodra het toernooi is gestart.",
     "restartTournament": {
       "button": "Wedstrijden opnieuw starten",
@@ -263,7 +263,7 @@
       "tournamentStatus": {
         "title": "Toernooistatus",
         "none": "Geen toernooi actief",
-        "typeLabel": "Type",
+        "typeLabel": "Soort",
         "formatLabel": "Formaat",
         "matchesLabel": "Wedstrijden"
       },
@@ -273,14 +273,14 @@
         "pending": "In behandeling:",
         "ready": "Gereed:",
         "loaded": "Geladen:",
-        "live": "Live:",
+        "live": "Live (nu):",
         "completed": "Voltooid:"
       },
       "serverStatus": {
         "title": "Serverstatus",
-        "onlineSummary": "Servers Online",
-        "online": "{{count}} Online",
-        "offline": "{{count}} Offline",
+        "onlineSummary": "Online servers",
+        "online": "{{count}} online",
+        "offline": "{{count}} offline",
         "distributionTitle": "Serverstatus"
       },
       "players": {
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Topspelers van ELO",
         "subtitle": "Globale beoordeling voor alle toernooitypes",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "Speler ELO Distributie",

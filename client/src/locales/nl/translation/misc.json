@@ -1,35 +1,35 @@
 {
   "notFound": {
-    "title": "Page not found",
-    "description": "The page you're looking for doesn't exist or has been moved.",
-    "backToDashboard": "Back to Dashboard",
-    "publicPlayerSearch": "Public Player Search"
+    "title": "Pagina niet gevonden",
+    "description": "De pagina die je zoekt bestaat niet of is verplaatst.",
+    "backToDashboard": "Terug naar overzicht",
+    "publicPlayerSearch": "Publieke spelerzoeker"
   },
   "publicLinks": {
-    "intro": "Quick links to the public pages you can share with players and viewers.",
+    "intro": "Snelle links naar openbare pagina’s die je kunt delen met spelers en kijkers.",
     "common": {
-      "publicUrl": "Public URL",
-      "urlPattern": "URL pattern"
+      "publicUrl": "Publieke URL",
+      "urlPattern": "URL-patroon"
     },
     "playerSearch": {
-      "title": "Public Player Search",
-      "description": "Search for registered players by name, Steam ID or profile URL.",
-      "openButton": "Open /player"
+      "title": "Publieke spelerzoeker",
+      "description": "Zoek geregistreerde spelers op naam, Steam-ID of profiel-URL.",
+      "openButton": "Open /player-pagina"
     },
     "playerProfile": {
-      "title": "Player Profile (public)",
-      "description": "Direct link to a player profile by Steam ID64. Players who are signed in with Steam can also use the \"My profile\" link in the top bar instead of copying URLs.",
-      "requiresSteamId": "Requires Steam ID64"
+      "title": "Spelerprofiel (publiek)",
+      "description": "Directe link naar een spelerprofiel via Steam ID64. Spelers die met Steam zijn ingelogd kunnen ook de link \"Mijn profiel\" in de bovenbalk gebruiken in plaats van URL’s te kopiëren.",
+      "requiresSteamId": "Vereist Steam ID64"
     },
     "teamMatch": {
-      "title": "Team Match Page (public)",
-      "description": "Read-only view of a team's current or most recent match.",
-      "openExample": "Open example team"
+      "title": "Teamwedstrijdpagina (publiek)",
+      "description": "Alleen-lezen weergave van de huidige of meest recente wedstrijd van een team.",
+      "openExample": "Voorbeeldteam openen"
     },
     "tournamentLeaderboard": {
-      "title": "Tournament Leaderboard (public)",
-      "description": "Public standings page for the current tournament (defaults to tournament 1).",
-      "open": "Open leaderboard"
+      "title": "Toernooiranglijst (publiek)",
+      "description": "Openbare standenpagina voor het huidige toernooi (standaard: toernooi 1).",
+      "open": "Ranglijst openen"
     }
   }
 }

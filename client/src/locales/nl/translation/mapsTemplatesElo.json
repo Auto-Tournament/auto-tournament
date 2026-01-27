@@ -1,328 +1,328 @@
 {
   "mapsPage": {
-    "title": "Maps & Map Pools",
+    "title": "Kaarten & kaartpools",
     "tabs": {
-      "maps": "Maps",
-      "mapPools": "Map Pools"
+      "maps": "Kaarten",
+      "mapPools": "Kaartpools"
     },
     "headerActions": {
-      "addMap": "Add Map",
-      "createMapPool": "Create Map Pool"
+      "addMap": "Kaart toevoegen",
+      "createMapPool": "Kaartpool maken"
     },
     "errors": {
-      "loadMaps": "Failed to load maps",
-      "loadPools": "Failed to load map pools",
-      "defaultPoolCannotDelete": "Default map pool cannot be deleted.",
-      "setDefaultPool": "Failed to set default map pool",
-      "togglePool": "Failed to toggle map pool status",
-      "deleteMap": "Failed to delete map",
-      "deletePool": "Failed to delete map pool"
+      "loadMaps": "Kan kaarten niet laden",
+      "loadPools": "Kan kaartpools niet laden",
+      "defaultPoolCannotDelete": "De standaard kaartpool kan niet worden verwijderd.",
+      "setDefaultPool": "Kan de standaard kaartpool niet instellen",
+      "togglePool": "Kan de status van de kaartpool niet wijzigen",
+      "deleteMap": "Kan kaart niet verwijderen",
+      "deletePool": "Kan kaartpool niet verwijderen"
     },
     "success": {
-      "mapDeleted": "Map deleted successfully"
+      "mapDeleted": "Kaart succesvol verwijderd"
     },
     "confirmDeleteMap": {
-      "title": "Delete Map",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Kaart verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "confirmDeletePool": {
-      "title": "Delete Map Pool",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Kaartpool verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     }
   },
   "mapModal": {
-    "titleCreate": "Add Map",
-    "titleEdit": "Edit Map",
-    "mapIdLabel": "Map ID",
+    "titleCreate": "Kaart toevoegen",
+    "titleEdit": "Kaart bewerken",
+    "mapIdLabel": "Kaart-ID",
     "mapIdPlaceholder": "de_dust2",
-    "mapIdHelper": "Lowercase letters, numbers, and underscores only (de_dust2)",
-    "displayNameLabel": "Display Name",
+    "mapIdHelper": "Alleen kleine letters, cijfers en underscores (de_dust2)",
+    "displayNameLabel": "Weergavenaam",
     "displayNamePlaceholder": "Dust II",
-    "mapImageLabel": "Map Image",
-    "uploadButton": "Upload Image",
-    "fetchFromGitHub": "Fetch from GitHub",
-    "uploadHelper": "Upload a PNG, JPG, GIF, or WebP image (max 5MB)",
-    "previewLabel": "Preview:",
-    "removeImage": "Remove Image",
+    "mapImageLabel": "Kaartafbeelding",
+    "uploadButton": "Afbeelding uploaden",
+    "fetchFromGitHub": "Ophalen van GitHub",
+    "uploadHelper": "Upload een PNG-, JPG-, GIF- of WebP-afbeelding (max 5MB)",
+    "previewLabel": "Voorbeeld:",
+    "removeImage": "Afbeelding verwijderen",
     "errors": {
-      "mapIdRequired": "Map ID is required",
-      "displayNameRequired": "Display name is required",
-      "mapIdInvalid": "Map ID must contain only lowercase letters, numbers, and underscores",
-      "invalidFileType": "Invalid file type. Please select a PNG, JPG, GIF, or WebP image.",
-      "fileTooLarge": "File size too large. Please select an image smaller than 5MB.",
-      "readFileFailed": "Failed to read image file",
-      "fetchImageIdRequired": "Please enter a map ID first",
-      "fetchImageFailed": "Failed to fetch image. You can upload an image instead.",
-      "imageNotFound": "Image not found for {{id}}. You can upload an image instead.",
-      "uploadFailed": "Failed to upload image",
-      "saveFailed": "Failed to save map"
+      "mapIdRequired": "Kaart-ID is verplicht",
+      "displayNameRequired": "Weergavenaam is verplicht",
+      "mapIdInvalid": "Kaart-ID mag alleen kleine letters, cijfers en underscores bevatten",
+      "invalidFileType": "Ongeldig bestandstype. Kies een PNG-, JPG-, GIF- of WebP-afbeelding.",
+      "fileTooLarge": "Bestand te groot. Kies een afbeelding kleiner dan 5MB.",
+      "readFileFailed": "Kan afbeeldingsbestand niet lezen",
+      "fetchImageIdRequired": "Vul eerst een kaart-ID in",
+      "fetchImageFailed": "Kan afbeelding niet ophalen. Je kunt ook een afbeelding uploaden.",
+      "imageNotFound": "Geen afbeelding gevonden voor {{id}}. Je kunt ook een afbeelding uploaden.",
+      "uploadFailed": "Uploaden van afbeelding mislukt",
+      "saveFailed": "Kaart opslaan mislukt"
     },
     "success": {
-      "mapUpdated": "Map updated successfully",
-      "mapCreated": "Map created successfully"
+      "mapUpdated": "Kaart succesvol bijgewerkt",
+      "mapCreated": "Kaart succesvol aangemaakt"
     },
     "buttons": {
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "update": "Update",
-      "create": "Create"
+      "cancel": "Annuleren",
+      "saving": "Opslaan...",
+      "update": "Bijwerken",
+      "create": "Aanmaken"
     }
   },
   "mapActionsModal": {
-    "mapId": "Map ID",
-    "preview": "Preview",
-    "edit": "Edit"
+    "mapId": "Kaart-ID",
+    "preview": "Voorbeeld",
+    "edit": "Bewerken"
   },
   "mapPoolActionsModal": {
-    "defaultChip": "Default",
+    "defaultChip": "Standaard",
     "status": {
-      "label": "Status",
-      "enabled": "Enabled",
-      "disabled": "Disabled"
+      "label": "Toestand",
+      "enabled": "Ingeschakeld",
+      "disabled": "Uitgeschakeld"
     },
     "maps": {
-      "label": "Maps ({{count}})"
+      "label": "Kaarten ({{count}})"
     },
     "actions": {
-      "edit": "Edit",
-      "enable": "Enable",
-      "disable": "Disable",
-      "setDefault": "Set as Default"
+      "edit": "Bewerken",
+      "enable": "Inschakelen",
+      "disable": "Uitschakelen",
+      "setDefault": "Als standaard instellen"
     }
   },
   "templatesPage": {
     "header": {
-      "createFromTournament": "Create Template from Tournament"
+      "createFromTournament": "Sjabloon maken vanuit toernooi"
     },
-    "empty": "No templates yet. Create your first template from the Tournament page.",
+    "empty": "Nog geen sjablonen. Maak je eerste sjabloon op de toernooipagina.",
     "errors": {
-      "load": "Failed to load templates"
+      "load": "Kan sjablonen niet laden"
     },
     "delete": {
-      "title": "Delete Template",
-      "message": "Are you sure you want to delete the template \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template"
+      "title": "Sjabloon verwijderen",
+      "message": "Weet je zeker dat je sjabloon \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "success": "Sjabloon \"{{name}}\" succesvol verwijderd",
+      "error": "Sjabloon verwijderen mislukt"
     },
     "update": {
-      "success": "Template \"{{name}}\" updated successfully",
-      "error": "Failed to update template"
+      "success": "Sjabloon \"{{name}}\" succesvol bijgewerkt",
+      "error": "Sjabloon bijwerken mislukt"
     },
     "createFromTemplate": {
       "errors": {
-        "inProgressOrCompleted": "Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.",
-        "alreadyExists": "A tournament already exists. Please delete or reset the current tournament before creating a new one from a template."
+        "inProgressOrCompleted": "Kan geen toernooi aanmaken vanuit een sjabloon wanneer er al een toernooi loopt of is afgerond. Verwijder of reset eerst het huidige toernooi.",
+        "alreadyExists": "Er bestaat al een toernooi. Verwijder of reset eerst het huidige toernooi voordat je een nieuw toernooi vanuit een sjabloon aanmaakt."
       }
     },
     "edit": {
-      "title": "Edit Template",
-      "nameLabel": "Template Name",
-      "descriptionLabel": "Description (optional)",
-      "typeLabel": "Tournament Type",
-      "formatLabel": "Match Format",
+      "title": "Sjabloon bewerken",
+      "nameLabel": "Sjabloonnaam",
+      "descriptionLabel": "Beschrijving (optioneel)",
+      "typeLabel": "Toernooitype",
+      "formatLabel": "Matchformaat",
       "mapPool": {
-        "title": "Map Pool",
-        "selectLabel": "Choose a map pool",
-        "customOption": "Custom",
-        "selectedLabel": "Selected Maps ({{count}}):",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}"
+        "title": "Kaartpool",
+        "selectLabel": "Kies een kaartpool",
+        "customOption": "Aangepast",
+        "selectedLabel": "Geselecteerde kaarten ({{count}}):",
+        "vetoWarning": "Veto-formaten (BO1/BO3/BO5) vereisen precies 7 kaarten. Nu geselecteerd: {{count}}"
       },
-      "save": "Save"
+      "save": "Opslaan"
     }
   },
   "saveTemplateModal": {
-    "title": "Save as Template",
-    "nameLabel": "Template Name",
-    "namePlaceholder": "8-team Single Elim BO3",
-    "descriptionLabel": "Description (optional)",
-    "descriptionPlaceholder": "Weekly 8-team single elimination tournament",
-    "saveButton": "Save Template",
+    "title": "Opslaan als sjabloon",
+    "nameLabel": "Sjabloonnaam",
+    "namePlaceholder": "8 teams – eliminatie (single) BO3",
+    "descriptionLabel": "Beschrijving (optioneel)",
+    "descriptionPlaceholder": "Wekelijks toernooi met 8 teams in eliminatievorm",
+    "saveButton": "Sjabloon opslaan",
     "errors": {
-      "nameRequired": "Template name is required",
-      "saveFailed": "Failed to save template"
+      "nameRequired": "Sjabloonnaam is verplicht",
+      "saveFailed": "Sjabloon opslaan mislukt"
     }
   },
   "saveMapPoolModal": {
-    "title": "Save Map Pool",
-    "nameLabel": "Map Pool Name",
-    "namePlaceholder": "My Custom Pool",
-    "info": "This will save a map pool with {{count}} map{{count, plural, one {} other {s}}}.",
-    "saveButton": "Save",
+    "title": "Kaartpool opslaan",
+    "nameLabel": "Naam kaartpool",
+    "namePlaceholder": "Mijn aangepaste pool",
+    "info": "Dit slaat een kaartpool op met {{count}} kaart{{count, plural, one {} other {en}}}.",
+    "saveButton": "Opslaan",
     "errors": {
-      "nameRequired": "Map pool name is required",
-      "noMaps": "Please select at least one map",
-      "saveFailed": "Failed to save map pool"
+      "nameRequired": "Naam van de kaartpool is verplicht",
+      "noMaps": "Selecteer minstens één kaart",
+      "saveFailed": "Kaartpool opslaan mislukt"
     }
   },
   "batchServerModal": {
-    "title": "Batch Create Servers",
-    "info": "Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect for LAN setups with servers on the same machine.",
+    "title": "Servers in bulk aanmaken",
+    "info": "Maak meerdere servers aan met poorten die per 10 oplopen (27015, 27025, 27035...). Ideaal voor LAN-opstellingen met servers op dezelfde machine.",
     "sections": {
       "identification": {
-        "title": "Server Identification"
+        "title": "Server-identificatie"
       },
       "connection": {
-        "title": "Connection Settings"
+        "title": "Verbindingsinstellingen"
       },
       "configuration": {
-        "title": "Server Configuration"
+        "title": "Serverconfiguratie"
       }
     },
     "baseId": {
-      "label": "Base ID",
+      "label": "Basis-ID",
       "placeholder": "ntlan",
-      "helper": "Server IDs will be: base_1, base_2, base_3..."
+      "helper": "Server-ID’s worden: base_1, base_2, base_3..."
     },
     "baseName": {
-      "label": "Base Name",
+      "label": "Basisnaam",
       "placeholder": "NTLAN",
-      "helper": "Server names will be: Base #1, Base #2, Base #3..."
+      "helper": "Servernamen worden: Basis #1, Basis #2, Basis #3..."
     },
     "host": {
-      "label": "Host / IP Address",
+      "label": "Host / IP-adres",
       "placeholder": "192.168.1.100"
     },
     "rconPassword": {
-      "label": "RCON Password",
+      "label": "RCON-wachtwoord",
       "placeholder": "shared-rcon-password",
-      "helper": "Same password for all servers"
+      "helper": "Hetzelfde wachtwoord voor alle servers"
     },
     "numServers": {
-      "label": "Number of Servers",
+      "label": "Aantal servers",
       "placeholder": "3",
-      "helper": "Max: 50"
+      "helper": "Maximaal: 50"
     },
     "assignPorts": {
-      "label": "Assign Ports",
-      "helper": "API → Server (RCON test)"
+      "label": "Poorten toewijzen",
+      "helper": "API → server (RCON-test)"
     },
-    "serverPortLabel": "Server #{{index}}",
+    "serverPortLabel": "Server nr. {{index}}",
     "portPlaceholder": "27015",
     "enabled": {
-      "label": "Servers Enabled",
-      "helper": "All servers will be created as enabled/disabled"
+      "label": "Servers ingeschakeld",
+      "helper": "Alle servers worden aangemaakt als ingeschakeld/uitgeschakeld"
     },
     "preview": {
-      "title": "Preview ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
-      "more": "...and {{count}} more"
+      "title": "Voorbeeld ({{showingFirst10, boolean, true {eerste 10} false {alle}}})",
+      "more": "...en nog {{count}}"
     },
     "checkServersButton": {
-      "default": "Check Servers",
-      "checking": "Checking..."
+      "default": "Servers controleren",
+      "checking": "Controleren..."
     },
     "createServersButton": {
-      "default": "Create {{count}} Server{{count, plural, one {} other {s}}}",
-      "creating": "Creating..."
+      "default": "{{count}} server{{count, plural, one {} other {s}}} aanmaken",
+      "creating": "Aanmaken..."
     },
     "warnings": {
-      "notAllVerified": "Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured."
+      "notAllVerified": "Sommige servers zijn niet door de connectiviteitscontrole gekomen. Ze worden opgeslagen, maar kunnen als offline worden weergegeven totdat RCON en webhook zijn geconfigureerd."
     },
     "success": {
-      "createdAll": "Successfully created {{count}} server(s)"
+      "createdAll": "{{count}} server(s) succesvol aangemaakt"
     },
     "errors": {
-      "baseNameRequired": "Base name is required",
-      "baseIdRequired": "Base ID is required",
-      "hostRequired": "Host is required",
-      "countRange": "Number of servers must be between 1 and 50",
-      "passwordRequired": "RCON password is required",
-      "portRange": "Server #{{index}} port must be between 1 and 65535",
-      "connectionFailed": "Connection failed",
-      "createFailed": "Failed to create servers",
-      "partialCreate": "Created {{created}}/{{total}} servers. Errors:\n{{details}}"
+      "baseNameRequired": "Basisnaam is verplicht",
+      "baseIdRequired": "Basis-ID is verplicht",
+      "hostRequired": "Host is verplicht",
+      "countRange": "Aantal servers moet tussen 1 en 50 liggen",
+      "passwordRequired": "RCON-wachtwoord is verplicht",
+      "portRange": "Poort van server #{{index}} moet tussen 1 en 65535 liggen",
+      "connectionFailed": "Verbinding mislukt",
+      "createFailed": "Servers aanmaken mislukt",
+      "partialCreate": "{{created}}/{{total}} servers aangemaakt. Fouten:\n{{details}}"
     }
   },
   "eloTemplatesPage": {
     "errors": {
-      "load": "Failed to load ELO templates"
+      "load": "Kan ELO-sjablonen niet laden"
     },
     "header": {
-      "createTemplate": "Create Template",
-      "importJson": "Import from JSON"
+      "createTemplate": "Sjabloon maken",
+      "importJson": "Importeren vanuit JSON"
     },
     "empty": {
-      "title": "No ELO Calculation Templates",
-      "description": "Create your first template to customize how player statistics influence ELO adjustments",
-      "action": "Create Template"
+      "title": "Geen ELO-berekeningssjablonen",
+      "description": "Maak je eerste sjabloon om te bepalen hoe spelersstatistieken ELO-aanpassingen beïnvloeden",
+      "action": "Sjabloon maken"
     },
     "delete": {
-      "title": "Delete ELO Template",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template",
-      "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
+      "title": "ELO-sjabloon verwijderen",
+      "message": "Weet je zeker dat je \"{{name}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "success": "Sjabloon \"{{name}}\" succesvol verwijderd",
+      "error": "Sjabloon verwijderen mislukt",
+      "defaultProtected": "Het standaardsjabloon \"pure-win-loss\" kan niet worden verwijderd."
     },
     "import": {
-      "success": "Successfully imported {{count}} ELO template(s)"
+      "success": "{{count}} ELO-sjabloon/sjablonen succesvol geïmporteerd"
     },
     "weights": {
-      "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
+      "noAdjustmentsPure": "Geen stat-aanpassingen (alleen winst/verlies)"
     },
     "card": {
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "default": "Default",
+      "enabled": "Ingeschakeld",
+      "disabled": "Uitgeschakeld",
+      "default": "Standaard",
       "adjustment": {
-        "none": "Per‑match stat adjustment: none (0; result‑only ELO)",
-        "uncapped": "Per‑match stat adjustment: uncapped (use with care)",
-        "range": "Per‑match stat adjustment range: {{min}} to {{max}} ELO",
-        "noMin": "no min",
-        "noMax": "no max"
+        "none": "Stat-aanpassing per match: geen (0; ELO alleen op resultaat)",
+        "uncapped": "Stat-aanpassing per match: onbeperkt (voorzichtig gebruiken)",
+        "range": "Bereik stat-aanpassing per match: {{min}} tot {{max}} ELO",
+        "noMin": "geen min",
+        "noMax": "geen max"
       },
       "tooltips": {
-        "edit": "Edit Template",
-        "delete": "Delete Template"
+        "edit": "Sjabloon bewerken",
+        "delete": "Sjabloon verwijderen"
       },
-      "weightsTitle": "Stat Weights:",
-      "limitsTitle": "Adjustment Limits:"
+      "weightsTitle": "Stat-gewichten:",
+      "limitsTitle": "Aanpassingslimieten:"
     },
     "importModal": {
-      "title": "Import ELO Templates from JSON",
-      "introTitle": "Paste JSON with ELO template definitions below.",
-      "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
-      "jsonLabel": "JSON Data",
-      "validJsonTitle": "✓ Valid JSON!",
-      "validJsonBody": "Found {{count}} template{{count !== 1 ? 's' : ''}}.",
-      "previewTitle": "Preview:",
-      "previewButton": "Preview",
-      "importButton": "Import Templates"
+      "title": "ELO-sjablonen importeren vanuit JSON",
+      "introTitle": "Plak hieronder JSON met ELO-sjabloondefinities.",
+      "introBody": "Verwacht formaat: lijst van sjablonen met name, optionele description, enabled, weights, maxAdjustment en minAdjustment. Als je id weglaat, wordt deze uit de naam gegenereerd.",
+      "jsonLabel": "JSON-gegevens",
+      "validJsonTitle": "✓ Geldige JSON!",
+      "validJsonBody": "{{count}} sjabloon{{count !== 1 ? 'en' : ''}} gevonden.",
+      "previewTitle": "Voorbeeld:",
+      "previewButton": "Voorbeeld",
+      "importButton": "Sjablonen importeren"
     },
     "editor": {
-      "titleEdit": "Edit ELO Template",
-      "titleCreate": "Create ELO Template",
-      "info": "Configure how individual player statistics influence ELO adjustments. Weights are applied after OpenSkill calculates the base ELO change (win/loss). Positive weights increase ELO, negative weights decrease it.",
-      "nameLabel": "Template Name",
-      "nameDefaultLocked": "Default template name cannot be changed",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Optional description of this template's purpose",
-      "enabledLabel": "Enabled",
+      "titleEdit": "ELO-sjabloon bewerken",
+      "titleCreate": "ELO-sjabloon maken",
+      "info": "Bepaal hoe individuele spelersstatistieken ELO-aanpassingen beïnvloeden. Gewichten worden toegepast nadat OpenSkill de basis ELO-wijziging (winst/verlies) heeft berekend. Positieve gewichten verhogen ELO, negatieve verlagen het.",
+      "nameLabel": "Sjabloonnaam",
+      "nameDefaultLocked": "De naam van het standaardsjabloon kan niet worden gewijzigd",
+      "descriptionLabel": "Beschrijving",
+      "descriptionPlaceholder": "Optionele beschrijving van het doel van dit sjabloon",
+      "enabledLabel": "Ingeschakeld",
       "weights": {
-        "title": "Stat Weights",
-        "subtitle": "Adjust the slider for each statistic. Value of 0 means no adjustment for that stat."
+        "title": "Stat-gewichten",
+        "subtitle": "Pas de schuifregelaar aan per statistiek. Een waarde van 0 betekent geen aanpassing voor die stat."
       },
       "limits": {
-        "title": "Adjustment Limits (Optional)",
-        "subtitle": "Set maximum and minimum ELO adjustments per match to prevent extreme changes.",
-        "maxLabel": "Max Adjustment",
-        "maxHelper": "Maximum positive ELO adjustment per match",
-        "minLabel": "Min Adjustment",
-        "minHelper": "Maximum negative ELO adjustment per match"
+        "title": "Aanpassingslimieten (optioneel)",
+        "subtitle": "Stel maximale en minimale ELO-aanpassingen per match in om extreme schommelingen te voorkomen.",
+        "maxLabel": "Max. aanpassing",
+        "maxHelper": "Maximale positieve ELO-aanpassing per match",
+        "minLabel": "Min. aanpassing",
+        "minHelper": "Maximale negatieve ELO-aanpassing per match"
       },
       "errors": {
-        "nameRequired": "Template name is required"
+        "nameRequired": "Sjabloonnaam is verplicht"
       },
       "create": {
-        "success": "Template \"{{name}}\" created successfully",
-        "error": "Failed to create template"
+        "success": "Sjabloon \"{{name}}\" succesvol aangemaakt",
+        "error": "Sjabloon aanmaken mislukt"
       },
       "update": {
-        "success": "Template \"{{name}}\" updated successfully",
-        "error": "Failed to update template"
+        "success": "Sjabloon \"{{name}}\" succesvol bijgewerkt",
+        "error": "Sjabloon bijwerken mislukt"
       },
       "buttons": {
-        "saving": "Saving...",
-        "update": "Update",
-        "create": "Create"
+        "saving": "Opslaan...",
+        "update": "Bijwerken",
+        "create": "Aanmaken"
       }
     }
   }
