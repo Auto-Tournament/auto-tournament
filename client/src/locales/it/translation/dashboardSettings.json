@@ -208,7 +208,7 @@
     }
   },
   "dashboard": {
-    "title": "Dashboard",
+    "title": "Cruscotto",
     "notReady": "Il dashboard del torneo apparirà qui una volta avviato il torneo.",
     "restartTournament": {
       "button": "Riavvia i match del torneo",
@@ -273,7 +273,7 @@
         "pending": "In attesa:",
         "ready": "Pronti:",
         "loaded": "Caricati:",
-        "live": "Live:",
+        "live": "In diretta:",
         "completed": "Completati:"
       },
       "serverStatus": {
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Migliori giocatori per ELO",
         "subtitle": "Rating globale su tutti i tipi di torneo",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "Distribuzione ELO giocatori",

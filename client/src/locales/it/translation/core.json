@@ -7,7 +7,7 @@
       "matchReady": "Match pronto – connettiti",
       "snackbarOpponentMoved": "L’avversario ha fatto la sua mossa"
     },
-    "dashboard": "Dashboard",
+    "dashboard": "Cruscotto",
     "tournament": "Torneo",
     "bracket": "Tabellone",
     "matches": "Match",
@@ -37,7 +37,7 @@
     "webhookNotConfigured": "L’URL del webhook non è configurato. Match e server non possono ricevere eventi finché non viene impostato.",
     "openSettings": "Apri impostazioni",
     "pageTitle": {
-      "dashboard": "Dashboard",
+      "dashboard": "Cruscotto",
       "tournament": "Torneo",
       "bracket": "Tabellone",
       "matches": "Match",

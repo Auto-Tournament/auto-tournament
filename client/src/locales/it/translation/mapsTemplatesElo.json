@@ -190,13 +190,13 @@
     "numServers": {
       "label": "Numero di server",
       "placeholder": "3",
-      "helper": "Max: 50"
+      "helper": "Massimo: 50"
     },
     "assignPorts": {
       "label": "Assegna porte",
       "helper": "API → server (test RCON)"
     },
-    "serverPortLabel": "Server #{{index}}",
+    "serverPortLabel": "Server n. {{index}}",
     "portPlaceholder": "27015",
     "enabled": {
       "label": "Server abilitati",

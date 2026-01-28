@@ -6,13 +6,13 @@
       "refresh": "Aggiorna stato",
       "batchAdd": "Aggiunta in batch",
       "addServer": "Aggiungi server",
-      "retryUninitialized": "Retry uninitialized ({{count}})",
-      "retryUninitializedChecking": "Retrying...",
-      "select": "Select",
-      "done": "Done Selecting",
-      "selectAll": "Select All",
-      "unselectAll": "Unselect All",
-      "deleteSelected": "Delete Selected"
+      "retryUninitialized": "Riprova non inizializzati ({{count}})",
+      "retryUninitializedChecking": "Riprovo...",
+      "select": "Seleziona",
+      "done": "Fine selezione",
+      "selectAll": "Seleziona tutto",
+      "unselectAll": "Deseleziona tutto",
+      "deleteSelected": "Elimina selezionati"
     },
     "empty": {
       "title": "Nessun server registrato",
@@ -22,169 +22,169 @@
     },
     "errors": {
       "loadServers": "Impossibile caricare i server",
-      "noMatchesForServer": "No matches found for this server",
-      "loadCurrentMatch": "Failed to load current match for this server",
-      "bulkDelete": "Failed to delete one or more servers"
+      "noMatchesForServer": "Nessun match trovato per questo server",
+      "loadCurrentMatch": "Impossibile caricare il match corrente per questo server",
+      "bulkDelete": "Impossibile eliminare uno o più server"
     },
     "allocation": {
-      "title": "Server allocation",
-      "loading": "Loading allocation status...",
-      "empty": "No allocation data available.",
-      "available": "Available servers:",
-      "waiting": "Matches waiting for servers:",
-      "nextPass": "Next allocator pass in ~{{seconds}}s",
-      "cooldownLabel": "Cooldown",
-      "cooldownDescription": "Recently finished a match – in cooldown so demos can upload and the server can fully reset (about 2 minutes).",
-      "cooldownEta": "Ready in ~{{seconds}}s"
+      "title": "Allocazione server",
+      "loading": "Caricamento stato allocazione...",
+      "empty": "Nessun dato di allocazione disponibile.",
+      "available": "Server disponibili:",
+      "waiting": "Match in attesa di server:",
+      "nextPass": "Prossimo passaggio dell’allocatore tra ~{{seconds}}s",
+      "cooldownLabel": "Raffreddamento",
+      "cooldownDescription": "Match terminato di recente — in cooldown per consentire l’upload dei demo e il reset completo del server (circa 2 minuti).",
+      "cooldownEta": "Pronto tra ~{{seconds}}s"
     },
     "statusChip": {
-      "checking": "Checking...",
-      "disabled": "Disabled",
-      "offline": "Offline",
-      "onlineOk": "Online (API ↔ Server OK)",
-      "onlineRconOnly": "Online (RCON only)",
-      "rconFailed": "RCON failed",
-      "onlineTesting": "Online (testing)"
+      "checking": "Controllo...",
+      "disabled": "Disabilitato",
+      "offline": "Non in linea",
+      "onlineOk": "Online (API ↔ server OK)",
+      "onlineRconOnly": "Online (solo RCON)",
+      "rconFailed": "RCON fallito",
+      "onlineTesting": "Online (test)"
     },
     "ipBanned": {
-      "title": "Server May Have Banned Our IP",
-      "message": "Server is reachable but repeatedly rejecting RCON authentication. This may indicate an IP ban. If the RCON password is correct, please check the server's ban list and unban our IP address."
+      "title": "Il server potrebbe aver bannato il nostro IP",
+      "message": "Il server è raggiungibile ma rifiuta ripetutamente l’autenticazione RCON. Questo può indicare un ban IP. Se la password RCON è corretta, controlla la lista ban del server e rimuovi il ban del nostro indirizzo IP."
     },
     "connectivity": {
-      "apiToServer": "MAT API → CS2 Server",
-      "serverToApi": "Server → API (/api/events)",
-      "unreachable": "Unreachable",
-      "reachable": "Reachable",
-      "unknown": "Unknown",
-      "loading": "Loading…",
-      "pluginLabel": "MatchZy:"
+      "apiToServer": "API MAT → server CS2",
+      "serverToApi": "Server → API (/api/events) (eventi)",
+      "unreachable": "Non raggiungibile",
+      "reachable": "Raggiungibile",
+      "unknown": "Sconosciuto",
+      "loading": "Caricamento…",
+      "pluginLabel": "MatchZy :"
     },
     "currentMatch": {
-      "view": "View Match",
-      "loading": "Loading...",
-      "queuedPrefix": "Queued: "
+      "view": "Vedi match",
+      "loading": "Caricamento...",
+      "queuedPrefix": "In coda: "
     },
     "labels": {
-      "host": "Host:",
-      "port": "Port:",
-      "id": "ID:"
+      "host": "Host :",
+      "port": "Porta:",
+      "id": "ID :"
     },
     "bulkDelete": {
-      "title": "Delete Servers",
-      "message": "Are you sure you want to delete {{count}} server{{suffix}}? This action cannot be undone."
+      "title": "Elimina server",
+      "message": "Vuoi davvero eliminare {{count}} server{{suffix}}? Questa azione non può essere annullata."
     },
     "autoConfig": {
-      "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
-      "done": "New servers configured. Refreshing status…"
+      "configuring": "Configurazione nuovi server (invio config MatchZy via RCON)…",
+      "done": "Nuovi server configurati. Aggiornamento stato…"
     },
-    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events."
+    "checkServerLogs": "Controlla la console/log del server di gioco per verificare che MatchZy riceva la configurazione e invii eventi."
   },
   "serverModal": {
-    "titleCreate": "Add Server",
-    "titleEdit": "Edit Server",
-    "serverNameLabel": "Server Name",
-    "serverNamePlaceholder": "Match Server #1",
-    "hostLabel": "Host / IP Address",
+    "titleCreate": "Aggiungi server",
+    "titleEdit": "Modifica server",
+    "serverNameLabel": "Nome server",
+    "serverNamePlaceholder": "Server match #1",
+    "hostLabel": "Host / indirizzo IP",
     "hostPlaceholder": "192.168.1.100",
-    "portLabel": "Port",
+    "portLabel": "Porta",
     "portPlaceholder": "27015",
-    "rconPasswordLabel": "RCON Password",
+    "rconPasswordLabel": "Password RCON",
     "rconPasswordPlaceholder": "your-rcon-password",
-    "rconPasswordHelper": "Password for RCON access to the server",
-    "enabledLabel": "Server Enabled",
-    "enabledHelper": "Disabled servers won't be used for matches",
-    "overridesTitle": "MatchZy Overrides (optional)",
-    "overridesDescription": "These settings override the global MatchZy defaults for this server only. Leave blank to use global values from Settings.",
-    "chatPrefixLabel": "Chat Prefix Override",
+    "rconPasswordHelper": "Password per l’accesso RCON al server",
+    "enabledLabel": "Server abilitato",
+    "enabledHelper": "I server disabilitati non verranno usati per i match",
+    "overridesTitle": "Override MatchZy (opzionale)",
+    "overridesDescription": "Queste impostazioni sovrascrivono i predefiniti globali di MatchZy solo per questo server. Lascia vuoto per usare i valori globali dalle Impostazioni.",
+    "chatPrefixLabel": "Override prefisso chat",
     "chatPrefixPlaceholder": "[MatchZy]",
-    "chatPrefixHelper": "Overrides matchzy_chat_prefix on this server (optional)",
-    "adminChatPrefixLabel": "Admin Chat Prefix Override",
+    "chatPrefixHelper": "Sovrascrive matchzy_chat_prefix su questo server (opzionale)",
+    "adminChatPrefixLabel": "Override prefisso chat admin",
     "adminChatPrefixPlaceholder": "[ADMIN]",
-    "adminChatPrefixHelper": "Overrides matchzy_admin_chat_prefix on this server (optional)",
-    "knifeOverrideLabel": "Knife Round Enabled by Default (override)",
-    "knifeOverrideHelper": "When set, overrides matchzy_knife_enabled_default for this server. Leave in indeterminate state to use global default.",
-    "testConnectivity": "Test connectivity",
-    "testingConnectivity": "Testing connectivity…",
+    "adminChatPrefixHelper": "Sovrascrive matchzy_admin_chat_prefix su questo server (opzionale)",
+    "knifeOverrideLabel": "Knife round abilitata di default (override)",
+    "knifeOverrideHelper": "Se impostato, sovrascrive matchzy_knife_enabled_default per questo server. Lascia indeterminato per usare il predefinito globale.",
+    "testConnectivity": "Test connettività",
+    "testingConnectivity": "Test connettività…",
     "connectivity": {
-      "apiToServer": "MAT API → CS2 Server:",
-      "serverToApi": "Server → API (/api/events):",
-      "reachable": "Reachable",
-      "unreachable": "Unreachable"
+      "apiToServer": "API MAT → server CS2:",
+      "serverToApi": "Server → API (/api/events) (eventi):",
+      "reachable": "Raggiungibile",
+      "unreachable": "Non raggiungibile"
     },
     "errors": {
-      "nameRequired": "Server name is required",
-      "hostRequired": "Host is required",
-      "portInvalid": "Port must be a valid number between 1 and 65535",
-      "rconRequired": "RCON password is required",
-      "idGenerationFailed": "Unable to generate server ID. Please adjust the server name.",
-      "duplicateId": "Server name creates duplicate ID '{{id}}'. Choose a different name.",
-      "duplicateHostPort": "A server with host:port '{{host}}:{{port}}' already exists (ID: {{id}}, Name: {{name}})",
-      "testConnectionSaveFirst": "Save the server first before testing connection",
-      "testConnectionFailed": "Failed to test connection",
-      "saveFailed": "Failed to save server",
-      "deleteFailed": "Failed to delete server",
-      "rconReachableApiUnreachable": "We can reach the server via RCON, but the server could not reach the API endpoint (test event missing).",
-      "serverOffline": "Server appears offline or unreachable via RCON."
+      "nameRequired": "Il nome server è obbligatorio",
+      "hostRequired": "L’host è obbligatorio",
+      "portInvalid": "La porta deve essere un numero valido tra 1 e 65535",
+      "rconRequired": "La password RCON è obbligatoria",
+      "idGenerationFailed": "Impossibile generare l’ID server. Modifica il nome server.",
+      "duplicateId": "Il nome server crea un ID duplicato '{{id}}'. Scegli un nome diverso.",
+      "duplicateHostPort": "Esiste già un server con host:porta '{{host}}:{{port}}' (ID: {{id}}, Nome: {{name}})",
+      "testConnectionSaveFirst": "Salva prima il server prima di testare la connessione",
+      "testConnectionFailed": "Impossibile testare la connessione",
+      "saveFailed": "Impossibile salvare il server",
+      "deleteFailed": "Impossibile eliminare il server",
+      "rconReachableApiUnreachable": "Riusciamo a raggiungere il server via RCON, ma il server non riesce a raggiungere l’endpoint API (evento di test mancante).",
+      "serverOffline": "Il server sembra offline o non raggiungibile via RCON."
     },
     "success": {
-      "connectivityOk": "Bi-directional connectivity verified: server is online and can reach the API.",
-      "serverUpdated": "Server updated successfully",
-      "serverCreated": "Server created successfully",
-      "serverDeleted": "Server deleted successfully"
+      "connectivityOk": "Connettività bidirezionale verificata: il server è online e può raggiungere l’API.",
+      "serverUpdated": "Server aggiornato",
+      "serverCreated": "Server creato",
+      "serverDeleted": "Server eliminato"
     },
     "buttons": {
-      "deleteServer": "Delete Server",
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "addServer": "Add Server"
+      "deleteServer": "Elimina server",
+      "cancel": "Annulla",
+      "saving": "Salvataggio...",
+      "saveChanges": "Salva modifiche",
+      "addServer": "Aggiungi server"
     },
     "confirmDelete": {
-      "title": "Delete Server",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Elimina server",
+      "message": "Vuoi davvero eliminare \"{{name}}\"? Questa azione non può essere annullata."
     }
   },
   "adminToolsPage": {
-    "title": "Admin Tools",
-    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
+    "title": "Strumenti admin",
+    "description": "Esegui azioni comuni sui match e sui server CS2. Le azioni rapide vengono mostrate per prime, con strumenti più avanzati disponibili sotto.",
     "header": {
-      "refresh": "Refresh Servers"
+      "refresh": "Aggiorna server"
     },
     "serverSelect": {
-      "label": "Target Server(s)",
-      "allServersChip": "All Servers",
-      "allServersDescription": "Execute on all {{count}} server(s)",
-      "sendStatus": "Send Status"
+      "label": "Server di destinazione",
+      "allServersChip": "Tutti i server",
+      "allServersDescription": "Esegui su {{count}} server",
+      "sendStatus": "Invia status"
     },
     "command": {
-      "execute": "Execute"
+      "execute": "Esegui"
     },
-    "customRconWarning": "Warning: Use with caution!",
+    "customRconWarning": "Attenzione: usare con cautela!",
     "results": {
-      "title": "Execution Results",
-      "successChip": "✓ Success",
-      "failedChip": "✗ Failed",
-      "errorPrefix": "Error:"
+      "title": "Risultati esecuzione",
+      "successChip": "✓ Successo",
+      "failedChip": "✗ Fallito",
+      "errorPrefix": "Errore:"
     },
     "quickActions": {
-      "title": "Quick Actions"
+      "title": "Azioni rapide"
     },
     "advanced": {
-      "title": "Advanced Tools"
+      "title": "Strumenti avanzati"
     },
-    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "noServers": "Nessun server abilitato trovato. Aggiungi e abilita i server nella pagina Server.",
     "recovery": {
-      "title": "Match Recovery",
-      "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
-      "button": "Run Match Recovery Now",
-      "success": "Match recovery completed.",
-      "error": "Match recovery failed.",
-      "failedTrigger": "Failed to trigger match recovery. Please try again."
+      "title": "Recupero match",
+      "description": "Se l’API o i server sono stati riavviati durante un torneo e lo stato dei match sembra desincronizzato (es. match bloccati in warmup o punteggi live mancanti), puoi avviare manualmente un passaggio di recupero. Questo chiederà a tutti i server il report del match corrente, risincronizzerà punteggi/fasi e riconfigurerà webhooks e upload demo dove possibile.",
+      "button": "Esegui recupero match ora",
+      "success": "Recupero match completato.",
+      "error": "Recupero match fallito.",
+      "failedTrigger": "Impossibile avviare il recupero match. Riprova."
     },
     "monitoring": {
-      "title": "Monitoring & Logs",
-      "serverEvents": "Server Events Monitor",
-      "appLogs": "Application Logs"
+      "title": "Monitoraggio e log",
+      "serverEvents": "Monitor eventi server",
+      "appLogs": "Log applicazione"
     }
   }
 }

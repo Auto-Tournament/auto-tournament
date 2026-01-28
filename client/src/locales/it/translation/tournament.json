@@ -1,86 +1,86 @@
 {
   "tournament": {
     "steps": {
-      "create": "Create Tournament",
-      "review": "Review & Confirm",
-      "live": "Live Tournament"
+      "create": "Crea torneo",
+      "review": "Controlla e conferma",
+      "live": "Torneo live"
     },
     "welcome": {
-      "heading": "Create Tournament",
-      "chooseMethod": "Choose how you'd like to create your tournament",
-      "createNewTitle": "Create New Tournament",
-      "createNewDescription": "Start from scratch and configure all tournament settings manually"
+      "heading": "Crea torneo",
+      "chooseMethod": "Scegli come vuoi creare il tuo torneo",
+      "createNewTitle": "Crea un nuovo torneo",
+      "createNewDescription": "Inizia da zero e configura manualmente tutte le impostazioni del torneo"
     },
     "typeSelector": {
       "categories": {
         "professional": {
-          "label": "Professional Series"
+          "label": "Serie pro"
         },
         "party": {
-          "label": "Party & Fun"
+          "label": "Party e divertimento"
         }
       },
       "types": {
         "single_elimination": {
-          "label": "Single Elimination",
-          "description": "One loss and you're out. Classic bracket format used in professional tournaments."
+          "label": "Eliminazione singola",
+          "description": "Una sconfitta e sei fuori. Formato classico del tabellone usato nei tornei professionali."
         },
         "double_elimination": {
-          "label": "Double Elimination",
-          "description": "Two losses to be eliminated. Teams get a second chance in the lower bracket."
+          "label": "Doppia eliminazione",
+          "description": "Due sconfitte per essere eliminati. Le squadre hanno una seconda chance nel tabellone inferiore."
         },
         "round_robin": {
-          "label": "Round Robin",
-          "description": "Everyone plays everyone. Perfect for league-style competitions."
+          "label": "Girone all’italiana",
+          "description": "Tutti giocano contro tutti. Perfetto per competizioni in stile lega."
         },
         "swiss": {
-          "label": "Swiss System",
-          "description": "Similar records face each other. Balanced matchups throughout the tournament."
+          "label": "Sistema svizzero",
+          "description": "Si affrontano squadre con risultati simili. Match-up bilanciati durante tutto il torneo."
         },
         "shuffle": {
-          "label": "Shuffle Tournament",
-          "description": "Players are dynamically shuffled into balanced teams each round. Individual player competition with ELO-based team balancing."
+          "label": "Torneo shuffle",
+          "description": "I giocatori vengono rimescolati dinamicamente in squadre bilanciate a ogni turno. Competizione individuale con bilanciamento basato su ELO."
         }
       },
-      "selectedChip": "Selected"
+      "selectedChip": "Selezionato"
     },
     "review": {
       "summary": {
-        "info": "Review your tournament settings and click \"Create Tournament\" when ready.",
-        "nameLabel": "Tournament Name",
-        "typeLabel": "Tournament Type",
-        "formatLabel": "Match Format",
-        "notSet": "Not set",
-        "estimatedVolume": "Approximately {{matches}} match{{matches, plural, one {} other {es}}} over {{rounds}} round{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, up to {{totalMaps}} map{{totalMaps, plural, one {} other {s}}} total)."
+        "info": "Controlla le impostazioni del torneo e clicca su \"Crea torneo\" quando sei pronto.",
+        "nameLabel": "Nome torneo",
+        "typeLabel": "Tipo di torneo",
+        "formatLabel": "Formato match",
+        "notSet": "Non impostato",
+        "estimatedVolume": "Circa {{matches}} match{{matches, plural, one {} other {}}} in {{rounds}} round{{rounds, plural, one {} other {}}} (best of {{mapsPerMatch}}, fino a {{totalMaps}} mapp{{totalMaps, plural, one {a} other {e}}} totali)."
       }
     },
     "formSteps": {
       "steps": {
-        "name": "Name",
-        "type": "Type",
-        "format": "Format",
-        "maps": "Maps",
-        "teams": "Teams",
-        "review": "Review"
+        "name": "Nome",
+        "type": "Tipo",
+        "format": "Formato",
+        "maps": "Mappe",
+        "teams": "Squadre",
+        "review": "Riepilogo"
       },
-      "backToWelcome": "Back to Welcome",
-      "back": "Back",
-      "next": "Next"
+      "backToWelcome": "Torna all’inizio",
+      "back": "Indietro",
+      "next": "Avanti"
     },
     "emptyBracket": {
-      "title": "No bracket to display",
-      "description": "Create a tournament and generate the bracket to get started"
+      "title": "Nessun tabellone da mostrare",
+      "description": "Crea un torneo e genera il tabellone per iniziare"
     },
     "common": {
-      "createTournament": "Create Tournament"
+      "createTournament": "Crea torneo"
     },
-    "nameLabel": "Tournament Name",
-    "namePlaceholder": "NTLAN 2025 Spring Tournament"
+    "nameLabel": "Nome torneo",
+    "namePlaceholder": "Torneo NTLAN Primavera 2025"
   },
   "bracket": {
     "empty": {
-      "noBracketTitle": "No bracket to display",
-      "noBracketDescription": "Create a tournament and generate the bracket to get started"
+      "noBracketTitle": "Nessun tabellone da mostrare",
+      "noBracketDescription": "Crea un torneo e genera il tabellone per iniziare"
     }
   }
 }

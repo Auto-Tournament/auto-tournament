@@ -1,328 +1,328 @@
 {
   "mapsPage": {
-    "title": "Maps & Map Pools",
+    "title": "Mapy i pule map",
     "tabs": {
-      "maps": "Maps",
-      "mapPools": "Map Pools"
+      "maps": "Mapy",
+      "mapPools": "Pule map"
     },
     "headerActions": {
-      "addMap": "Add Map",
-      "createMapPool": "Create Map Pool"
+      "addMap": "Dodaj mapę",
+      "createMapPool": "Utwórz pulę map"
     },
     "errors": {
-      "loadMaps": "Failed to load maps",
-      "loadPools": "Failed to load map pools",
-      "defaultPoolCannotDelete": "Default map pool cannot be deleted.",
-      "setDefaultPool": "Failed to set default map pool",
-      "togglePool": "Failed to toggle map pool status",
-      "deleteMap": "Failed to delete map",
-      "deletePool": "Failed to delete map pool"
+      "loadMaps": "Nie udało się wczytać map",
+      "loadPools": "Nie udało się wczytać pul map",
+      "defaultPoolCannotDelete": "Nie można usunąć domyślnej puli map.",
+      "setDefaultPool": "Nie udało się ustawić domyślnej puli map",
+      "togglePool": "Nie udało się zmienić statusu puli map",
+      "deleteMap": "Nie udało się usunąć mapy",
+      "deletePool": "Nie udało się usunąć puli map"
     },
     "success": {
-      "mapDeleted": "Map deleted successfully"
+      "mapDeleted": "Mapa została usunięta"
     },
     "confirmDeleteMap": {
-      "title": "Delete Map",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Usuń mapę",
+      "message": "Czy na pewno chcesz usunąć \"{{name}}\"? Tej akcji nie można cofnąć."
     },
     "confirmDeletePool": {
-      "title": "Delete Map Pool",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Usuń pulę map",
+      "message": "Czy na pewno chcesz usunąć \"{{name}}\"? Tej akcji nie można cofnąć."
     }
   },
   "mapModal": {
-    "titleCreate": "Add Map",
-    "titleEdit": "Edit Map",
-    "mapIdLabel": "Map ID",
+    "titleCreate": "Dodaj mapę",
+    "titleEdit": "Edytuj mapę",
+    "mapIdLabel": "ID mapy",
     "mapIdPlaceholder": "de_dust2",
-    "mapIdHelper": "Lowercase letters, numbers, and underscores only (de_dust2)",
-    "displayNameLabel": "Display Name",
+    "mapIdHelper": "Tylko małe litery, cyfry i podkreślenia (de_dust2)",
+    "displayNameLabel": "Nazwa wyświetlana",
     "displayNamePlaceholder": "Dust II",
-    "mapImageLabel": "Map Image",
-    "uploadButton": "Upload Image",
-    "fetchFromGitHub": "Fetch from GitHub",
-    "uploadHelper": "Upload a PNG, JPG, GIF, or WebP image (max 5MB)",
-    "previewLabel": "Preview:",
-    "removeImage": "Remove Image",
+    "mapImageLabel": "Obraz mapy",
+    "uploadButton": "Prześlij obraz",
+    "fetchFromGitHub": "Pobierz z GitHub",
+    "uploadHelper": "Prześlij obraz PNG, JPG, GIF lub WebP (max 5MB)",
+    "previewLabel": "Podgląd:",
+    "removeImage": "Usuń obraz",
     "errors": {
-      "mapIdRequired": "Map ID is required",
-      "displayNameRequired": "Display name is required",
-      "mapIdInvalid": "Map ID must contain only lowercase letters, numbers, and underscores",
-      "invalidFileType": "Invalid file type. Please select a PNG, JPG, GIF, or WebP image.",
-      "fileTooLarge": "File size too large. Please select an image smaller than 5MB.",
-      "readFileFailed": "Failed to read image file",
-      "fetchImageIdRequired": "Please enter a map ID first",
-      "fetchImageFailed": "Failed to fetch image. You can upload an image instead.",
-      "imageNotFound": "Image not found for {{id}}. You can upload an image instead.",
-      "uploadFailed": "Failed to upload image",
-      "saveFailed": "Failed to save map"
+      "mapIdRequired": "ID mapy jest wymagane",
+      "displayNameRequired": "Nazwa wyświetlana jest wymagana",
+      "mapIdInvalid": "ID mapy może zawierać tylko małe litery, cyfry i podkreślenia",
+      "invalidFileType": "Nieprawidłowy typ pliku. Wybierz obraz PNG, JPG, GIF lub WebP.",
+      "fileTooLarge": "Plik jest za duży. Wybierz obraz mniejszy niż 5MB.",
+      "readFileFailed": "Nie udało się odczytać pliku obrazu",
+      "fetchImageIdRequired": "Najpierw wpisz ID mapy",
+      "fetchImageFailed": "Nie udało się pobrać obrazu. Możesz zamiast tego przesłać obraz.",
+      "imageNotFound": "Nie znaleziono obrazu dla {{id}}. Możesz zamiast tego przesłać obraz.",
+      "uploadFailed": "Nie udało się przesłać obrazu",
+      "saveFailed": "Nie udało się zapisać mapy"
     },
     "success": {
-      "mapUpdated": "Map updated successfully",
-      "mapCreated": "Map created successfully"
+      "mapUpdated": "Mapa została zaktualizowana",
+      "mapCreated": "Mapa została utworzona"
     },
     "buttons": {
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "update": "Update",
-      "create": "Create"
+      "cancel": "Anuluj",
+      "saving": "Zapisywanie...",
+      "update": "Aktualizuj",
+      "create": "Utwórz"
     }
   },
   "mapActionsModal": {
-    "mapId": "Map ID",
-    "preview": "Preview",
-    "edit": "Edit"
+    "mapId": "ID mapy",
+    "preview": "Podgląd",
+    "edit": "Edytuj"
   },
   "mapPoolActionsModal": {
-    "defaultChip": "Default",
+    "defaultChip": "Domyślna",
     "status": {
       "label": "Status",
-      "enabled": "Enabled",
-      "disabled": "Disabled"
+      "enabled": "Włączona",
+      "disabled": "Wyłączona"
     },
     "maps": {
-      "label": "Maps ({{count}})"
+      "label": "Mapy ({{count}})"
     },
     "actions": {
-      "edit": "Edit",
-      "enable": "Enable",
-      "disable": "Disable",
-      "setDefault": "Set as Default"
+      "edit": "Edytuj",
+      "enable": "Włącz",
+      "disable": "Wyłącz",
+      "setDefault": "Ustaw jako domyślną"
     }
   },
   "templatesPage": {
     "header": {
-      "createFromTournament": "Create Template from Tournament"
+      "createFromTournament": "Utwórz szablon z turnieju"
     },
-    "empty": "No templates yet. Create your first template from the Tournament page.",
+    "empty": "Brak szablonów. Utwórz pierwszy szablon na stronie Turniej.",
     "errors": {
-      "load": "Failed to load templates"
+      "load": "Nie udało się wczytać szablonów"
     },
     "delete": {
-      "title": "Delete Template",
-      "message": "Are you sure you want to delete the template \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template"
+      "title": "Usuń szablon",
+      "message": "Czy na pewno chcesz usunąć szablon \"{{name}}\"? Tej akcji nie można cofnąć.",
+      "success": "Szablon \"{{name}}\" został usunięty",
+      "error": "Nie udało się usunąć szablonu"
     },
     "update": {
-      "success": "Template \"{{name}}\" updated successfully",
-      "error": "Failed to update template"
+      "success": "Szablon \"{{name}}\" został zaktualizowany",
+      "error": "Nie udało się zaktualizować szablonu"
     },
     "createFromTemplate": {
       "errors": {
-        "inProgressOrCompleted": "Cannot create tournament from template while a tournament is in progress or completed. Please delete or reset the current tournament first.",
-        "alreadyExists": "A tournament already exists. Please delete or reset the current tournament before creating a new one from a template."
+        "inProgressOrCompleted": "Nie można utworzyć turnieju z szablonu, gdy turniej jest w toku lub zakończony. Najpierw usuń lub zresetuj bieżący turniej.",
+        "alreadyExists": "Turniej już istnieje. Usuń lub zresetuj bieżący turniej przed utworzeniem nowego z szablonu."
       }
     },
     "edit": {
-      "title": "Edit Template",
-      "nameLabel": "Template Name",
-      "descriptionLabel": "Description (optional)",
-      "typeLabel": "Tournament Type",
-      "formatLabel": "Match Format",
+      "title": "Edytuj szablon",
+      "nameLabel": "Nazwa szablonu",
+      "descriptionLabel": "Opis (opcjonalnie)",
+      "typeLabel": "Typ turnieju",
+      "formatLabel": "Format meczu",
       "mapPool": {
-        "title": "Map Pool",
-        "selectLabel": "Choose a map pool",
-        "customOption": "Custom",
-        "selectedLabel": "Selected Maps ({{count}}):",
-        "vetoWarning": "Veto formats (BO1/BO3/BO5) require exactly 7 maps. Currently selected: {{count}}"
+        "title": "Pula map",
+        "selectLabel": "Wybierz pulę map",
+        "customOption": "Niestandardowa",
+        "selectedLabel": "Wybrane mapy ({{count}}):",
+        "vetoWarning": "Formaty veto (BO1/BO3/BO5) wymagają dokładnie 7 map. Obecnie wybrano: {{count}}"
       },
-      "save": "Save"
+      "save": "Zapisz"
     }
   },
   "saveTemplateModal": {
-    "title": "Save as Template",
-    "nameLabel": "Template Name",
-    "namePlaceholder": "8-team Single Elim BO3",
-    "descriptionLabel": "Description (optional)",
-    "descriptionPlaceholder": "Weekly 8-team single elimination tournament",
-    "saveButton": "Save Template",
+    "title": "Zapisz jako szablon",
+    "nameLabel": "Nazwa szablonu",
+    "namePlaceholder": "8 drużyn – single elim BO3",
+    "descriptionLabel": "Opis (opcjonalnie)",
+    "descriptionPlaceholder": "Cotygodniowy turniej 8 drużyn, pojedyncza eliminacja",
+    "saveButton": "Zapisz szablon",
     "errors": {
-      "nameRequired": "Template name is required",
-      "saveFailed": "Failed to save template"
+      "nameRequired": "Nazwa szablonu jest wymagana",
+      "saveFailed": "Nie udało się zapisać szablonu"
     }
   },
   "saveMapPoolModal": {
-    "title": "Save Map Pool",
-    "nameLabel": "Map Pool Name",
-    "namePlaceholder": "My Custom Pool",
-    "info": "This will save a map pool with {{count}} map{{count, plural, one {} other {s}}}.",
-    "saveButton": "Save",
+    "title": "Zapisz pulę map",
+    "nameLabel": "Nazwa puli map",
+    "namePlaceholder": "Moja niestandardowa pula",
+    "info": "To zapisze pulę map zawierającą {{count}} map.",
+    "saveButton": "Zapisz",
     "errors": {
-      "nameRequired": "Map pool name is required",
-      "noMaps": "Please select at least one map",
-      "saveFailed": "Failed to save map pool"
+      "nameRequired": "Nazwa puli map jest wymagana",
+      "noMaps": "Wybierz co najmniej jedną mapę",
+      "saveFailed": "Nie udało się zapisać puli map"
     }
   },
   "batchServerModal": {
-    "title": "Batch Create Servers",
-    "info": "Create multiple servers with ports incrementing by 10 (27015, 27025, 27035...). Perfect for LAN setups with servers on the same machine.",
+    "title": "Tworzenie serwerów zbiorczo",
+    "info": "Utwórz wiele serwerów z portami zwiększanymi o 10 (27015, 27025, 27035...). Idealne dla konfiguracji LAN z serwerami na tej samej maszynie.",
     "sections": {
       "identification": {
-        "title": "Server Identification"
+        "title": "Identyfikacja serwera"
       },
       "connection": {
-        "title": "Connection Settings"
+        "title": "Ustawienia połączenia"
       },
       "configuration": {
-        "title": "Server Configuration"
+        "title": "Konfiguracja serwera"
       }
     },
     "baseId": {
-      "label": "Base ID",
+      "label": "Bazowe ID",
       "placeholder": "ntlan",
-      "helper": "Server IDs will be: base_1, base_2, base_3..."
+      "helper": "ID serwerów będą: base_1, base_2, base_3..."
     },
     "baseName": {
-      "label": "Base Name",
+      "label": "Nazwa bazowa",
       "placeholder": "NTLAN",
-      "helper": "Server names will be: Base #1, Base #2, Base #3..."
+      "helper": "Nazwy serwerów będą: Base #1, Base #2, Base #3..."
     },
     "host": {
-      "label": "Host / IP Address",
+      "label": "Host / adres IP",
       "placeholder": "192.168.1.100"
     },
     "rconPassword": {
-      "label": "RCON Password",
+      "label": "Hasło RCON",
       "placeholder": "shared-rcon-password",
-      "helper": "Same password for all servers"
+      "helper": "To samo hasło dla wszystkich serwerów"
     },
     "numServers": {
-      "label": "Number of Servers",
+      "label": "Liczba serwerów",
       "placeholder": "3",
-      "helper": "Max: 50"
+      "helper": "Maks.: 50"
     },
     "assignPorts": {
-      "label": "Assign Ports",
-      "helper": "API → Server (RCON test)"
+      "label": "Przypisz porty",
+      "helper": "API → serwer (test RCON)"
     },
-    "serverPortLabel": "Server #{{index}}",
+    "serverPortLabel": "Serwer nr {{index}}",
     "portPlaceholder": "27015",
     "enabled": {
-      "label": "Servers Enabled",
-      "helper": "All servers will be created as enabled/disabled"
+      "label": "Serwery włączone",
+      "helper": "Wszystkie serwery zostaną utworzone jako włączone/wyłączone"
     },
     "preview": {
-      "title": "Preview ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
-      "more": "...and {{count}} more"
+      "title": "Podgląd ({{showingFirst10, boolean, true {pierwsze 10} false {wszystkie}}})",
+      "more": "...i jeszcze {{count}}"
     },
     "checkServersButton": {
-      "default": "Check Servers",
-      "checking": "Checking..."
+      "default": "Sprawdź serwery",
+      "checking": "Sprawdzanie..."
     },
     "createServersButton": {
-      "default": "Create {{count}} Server{{count, plural, one {} other {s}}}",
-      "creating": "Creating..."
+      "default": "Utwórz {{count}} serwerów",
+      "creating": "Tworzenie..."
     },
     "warnings": {
-      "notAllVerified": "Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured."
+      "notAllVerified": "Niektóre serwery nie przeszły testów łączności. Zostaną zapisane, ale mogą wyglądać na offline, dopóki RCON i webhook nie zostaną skonfigurowane."
     },
     "success": {
-      "createdAll": "Successfully created {{count}} server(s)"
+      "createdAll": "Utworzono {{count}} serwerów"
     },
     "errors": {
-      "baseNameRequired": "Base name is required",
-      "baseIdRequired": "Base ID is required",
-      "hostRequired": "Host is required",
-      "countRange": "Number of servers must be between 1 and 50",
-      "passwordRequired": "RCON password is required",
-      "portRange": "Server #{{index}} port must be between 1 and 65535",
-      "connectionFailed": "Connection failed",
-      "createFailed": "Failed to create servers",
-      "partialCreate": "Created {{created}}/{{total}} servers. Errors:\n{{details}}"
+      "baseNameRequired": "Nazwa bazowa jest wymagana",
+      "baseIdRequired": "Bazowe ID jest wymagane",
+      "hostRequired": "Host jest wymagany",
+      "countRange": "Liczba serwerów musi być w zakresie 1–50",
+      "passwordRequired": "Hasło RCON jest wymagane",
+      "portRange": "Port serwera #{{index}} musi być w zakresie 1–65535",
+      "connectionFailed": "Połączenie nie powiodło się",
+      "createFailed": "Nie udało się utworzyć serwerów",
+      "partialCreate": "Utworzono {{created}}/{{total}} serwerów. Błędy:\n{{details}}"
     }
   },
   "eloTemplatesPage": {
     "errors": {
-      "load": "Failed to load ELO templates"
+      "load": "Nie udało się wczytać szablonów ELO"
     },
     "header": {
-      "createTemplate": "Create Template",
-      "importJson": "Import from JSON"
+      "createTemplate": "Utwórz szablon",
+      "importJson": "Importuj z JSON"
     },
     "empty": {
-      "title": "No ELO Calculation Templates",
-      "description": "Create your first template to customize how player statistics influence ELO adjustments",
-      "action": "Create Template"
+      "title": "Brak szablonów obliczania ELO",
+      "description": "Utwórz pierwszy szablon, aby dostosować wpływ statystyk graczy na zmiany ELO",
+      "action": "Utwórz szablon"
     },
     "delete": {
-      "title": "Delete ELO Template",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone.",
-      "success": "Template \"{{name}}\" deleted successfully",
-      "error": "Failed to delete template",
-      "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
+      "title": "Usuń szablon ELO",
+      "message": "Czy na pewno chcesz usunąć \"{{name}}\"? Tej akcji nie można cofnąć.",
+      "success": "Szablon \"{{name}}\" został usunięty",
+      "error": "Nie udało się usunąć szablonu",
+      "defaultProtected": "Domyślny szablon \"pure-win-loss\" nie może zostać usunięty."
     },
     "import": {
-      "success": "Successfully imported {{count}} ELO template(s)"
+      "success": "Pomyślnie zaimportowano {{count}} szablon(ów) ELO"
     },
     "weights": {
-      "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
+      "noAdjustmentsPure": "Brak korekt statystyk (czyste win/loss)"
     },
     "card": {
-      "enabled": "Enabled",
-      "disabled": "Disabled",
-      "default": "Default",
+      "enabled": "Włączony",
+      "disabled": "Wyłączony",
+      "default": "Domyślny",
       "adjustment": {
-        "none": "Per‑match stat adjustment: none (0; result‑only ELO)",
-        "uncapped": "Per‑match stat adjustment: uncapped (use with care)",
-        "range": "Per‑match stat adjustment range: {{min}} to {{max}} ELO",
-        "noMin": "no min",
-        "noMax": "no max"
+        "none": "Korekta statystyk na mecz: brak (0; ELO tylko wynik)",
+        "uncapped": "Korekta statystyk na mecz: bez limitu (używaj ostrożnie)",
+        "range": "Zakres korekty statystyk na mecz: {{min}} do {{max}} ELO",
+        "noMin": "brak min",
+        "noMax": "brak max"
       },
       "tooltips": {
-        "edit": "Edit Template",
-        "delete": "Delete Template"
+        "edit": "Edytuj szablon",
+        "delete": "Usuń szablon"
       },
-      "weightsTitle": "Stat Weights:",
-      "limitsTitle": "Adjustment Limits:"
+      "weightsTitle": "Wagi statystyk:",
+      "limitsTitle": "Limity korekty:"
     },
     "importModal": {
-      "title": "Import ELO Templates from JSON",
-      "introTitle": "Paste JSON with ELO template definitions below.",
-      "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
-      "jsonLabel": "JSON Data",
-      "validJsonTitle": "✓ Valid JSON!",
-      "validJsonBody": "Found {{count}} template{{count !== 1 ? 's' : ''}}.",
-      "previewTitle": "Preview:",
-      "previewButton": "Preview",
-      "importButton": "Import Templates"
+      "title": "Importuj szablony ELO z JSON",
+      "introTitle": "Wklej poniżej JSON z definicjami szablonów ELO.",
+      "introBody": "Oczekiwany format: tablica szablonów z name, opcjonalnym description, enabled, weights, maxAdjustment oraz minAdjustment. Jeśli pominiesz id, zostanie wygenerowane na podstawie nazwy.",
+      "jsonLabel": "Dane JSON",
+      "validJsonTitle": "✓ Poprawny JSON!",
+      "validJsonBody": "Znaleziono {{count}} szablon{{count !== 1 ? 'y' : ''}}.",
+      "previewTitle": "Podgląd:",
+      "previewButton": "Podgląd",
+      "importButton": "Importuj szablony"
     },
     "editor": {
-      "titleEdit": "Edit ELO Template",
-      "titleCreate": "Create ELO Template",
-      "info": "Configure how individual player statistics influence ELO adjustments. Weights are applied after OpenSkill calculates the base ELO change (win/loss). Positive weights increase ELO, negative weights decrease it.",
-      "nameLabel": "Template Name",
-      "nameDefaultLocked": "Default template name cannot be changed",
-      "descriptionLabel": "Description",
-      "descriptionPlaceholder": "Optional description of this template's purpose",
-      "enabledLabel": "Enabled",
+      "titleEdit": "Edytuj szablon ELO",
+      "titleCreate": "Utwórz szablon ELO",
+      "info": "Skonfiguruj, jak statystyki indywidualne wpływają na zmiany ELO. Wagi są stosowane po tym, jak OpenSkill obliczy bazową zmianę ELO (win/loss). Dodatnie wagi zwiększają ELO, ujemne je zmniejszają.",
+      "nameLabel": "Nazwa szablonu",
+      "nameDefaultLocked": "Nie można zmienić nazwy domyślnego szablonu",
+      "descriptionLabel": "Opis",
+      "descriptionPlaceholder": "Opcjonalny opis przeznaczenia tego szablonu",
+      "enabledLabel": "Włączony",
       "weights": {
-        "title": "Stat Weights",
-        "subtitle": "Adjust the slider for each statistic. Value of 0 means no adjustment for that stat."
+        "title": "Wagi statystyk",
+        "subtitle": "Dostosuj suwak dla każdej statystyki. Wartość 0 oznacza brak korekty dla tej statystyki."
       },
       "limits": {
-        "title": "Adjustment Limits (Optional)",
-        "subtitle": "Set maximum and minimum ELO adjustments per match to prevent extreme changes.",
-        "maxLabel": "Max Adjustment",
-        "maxHelper": "Maximum positive ELO adjustment per match",
-        "minLabel": "Min Adjustment",
-        "minHelper": "Maximum negative ELO adjustment per match"
+        "title": "Limity korekty (opcjonalnie)",
+        "subtitle": "Ustaw maksymalne i minimalne korekty ELO na mecz, aby uniknąć skrajnych zmian.",
+        "maxLabel": "Maks. korekta",
+        "maxHelper": "Maksymalna dodatnia korekta ELO na mecz",
+        "minLabel": "Min. korekta",
+        "minHelper": "Maksymalna ujemna korekta ELO na mecz"
       },
       "errors": {
-        "nameRequired": "Template name is required"
+        "nameRequired": "Nazwa szablonu jest wymagana"
       },
       "create": {
-        "success": "Template \"{{name}}\" created successfully",
-        "error": "Failed to create template"
+        "success": "Szablon \"{{name}}\" utworzony",
+        "error": "Nie udało się utworzyć szablonu"
       },
       "update": {
-        "success": "Template \"{{name}}\" updated successfully",
-        "error": "Failed to update template"
+        "success": "Szablon \"{{name}}\" zaktualizowany",
+        "error": "Nie udało się zaktualizować szablonu"
       },
       "buttons": {
-        "saving": "Saving...",
-        "update": "Update",
-        "create": "Create"
+        "saving": "Zapisywanie...",
+        "update": "Aktualizuj",
+        "create": "Utwórz"
       }
     }
   }
