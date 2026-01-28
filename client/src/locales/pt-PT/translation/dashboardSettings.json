@@ -67,7 +67,7 @@
             "label": "Modo de autoinício ao carregar o plugin",
             "helper": "0 = idle/sleep, 1 = modo match (recomendado), 2 = modo practice",
             "options": {
-              "0": "0 — Idle / sleep",
+              "0": "0 — Inativo / suspensão",
               "1": "1 — Modo match",
               "2": "2 — Modo practice"
             }
@@ -92,11 +92,11 @@
           "usePauseForTacticalPause": "Fazer com que .pause se comporte como pausa tática"
         },
         "demos": {
-          "title": "Demos",
+          "title": "Demos (GOTV)",
           "demoPathLabel": "Caminho dos demos (relativo a csgo/)",
           "demoPathHelper": "Tem de terminar com '/'. Predefinição: MatchZy/",
           "demoNameFormatLabel": "Formato do nome do demo (sem .dem)",
-          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+          "demoNameFormatHelper": "Marcadores: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
         "seriesEnd": {
           "title": "Timing no fim da série",
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Melhores jogadores por ELO",
         "subtitle": "Rating global em todos os tipos de torneio",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "Distribuição ELO dos jogadores",

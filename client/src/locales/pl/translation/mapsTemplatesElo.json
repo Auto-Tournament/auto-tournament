@@ -76,7 +76,7 @@
   "mapPoolActionsModal": {
     "defaultChip": "Domyślna",
     "status": {
-      "label": "Status",
+      "label": "Stan",
       "enabled": "Włączona",
       "disabled": "Wyłączona"
     },

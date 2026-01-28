@@ -14,15 +14,15 @@
     "searchError": "Nie udało się wyszukać gracza. Spróbuj ponownie.",
     "modalTitle": "Znaleziono wielu graczy",
     "modalSelectPrompt": "Znaleziono {{count}} graczy. Wybierz jednego, aby zobaczyć profil:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO: {{elo}} pkt"
   },
   "playerPage": {
     "playerNotFound": "Ten gracz nie istnieje.",
     "backToFindPlayer": "Powrót do Znajdź gracza",
     "thisIsYou": "To Ty",
-    "steamId": "Steam ID: {{id}}",
+    "steamId": "Steam ID64: {{id}}",
     "skillRatingTooltip": "Skill Rating opiera się na OpenSkill. Około 1500 to typowa wartość startowa; im wyżej, tym lepiej.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Skill Rating: {{elo}} pkt",
     "viewTournamentLeaderboard": "Zobacz ranking turnieju",
     "admin": "ADMIN",
     "nextServersAllocated": "Następna alokacja serwerów za {{seconds}} s",
@@ -51,13 +51,13 @@
     "kills": "Zabójstwa",
     "deaths": "Zgony",
     "assists": "Asysty",
-    "hsPercent": "HS%",
+    "hsPercent": "% HS",
     "dmg": "DMG",
-    "rating": "Rating",
+    "rating": "Ocena",
     "result": "Wynik",
     "baseline": "Bazowy",
     "matchHistory": "Historia meczów",
-    "profileTitle": "Player profile"
+    "profileTitle": "Profil gracza"
   },
   "teamPage": {
     "wantYourStats": "Chcesz zobaczyć swoje statystyki i historię meczów?",
@@ -130,12 +130,12 @@
     "wins": "Zwycięstwa",
     "losses": "Porażki",
     "winRate": "Procent zwycięstw",
-    "skillRating": "Skill Rating",
+    "skillRating": "Skill Rating (OpenSkill)",
     "ratingChange": "Zmiana",
     "avgAdr": "Śr. ADR",
     "teamStandings": "Ranking drużyn",
-    "winsShort": "W",
-    "lossesShort": "L",
+    "winsShort": "Z",
+    "lossesShort": "P",
     "leaderboardTitle": "Ranking",
     "playersFiltered": "{{filtered}} / {{total}} graczy",
     "teamsCount": "{{count}} drużyn",
@@ -211,7 +211,7 @@
     },
     "openPlayerPageTooltip": "Otwórz stronę gracza",
     "skillRatingTooltip": "Skill Rating opiera się na OpenSkill; im wyżej, tym lepiej.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Skill Rating: {{elo}} pkt",
     "matchesCount_one": "{{count}} mecz",
     "matchesCount_other": "{{count}} mecze"
   }

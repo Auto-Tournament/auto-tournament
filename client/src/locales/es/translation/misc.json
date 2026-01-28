@@ -1,35 +1,35 @@
 {
   "notFound": {
-    "title": "Page not found",
-    "description": "The page you're looking for doesn't exist or has been moved.",
-    "backToDashboard": "Back to Dashboard",
-    "publicPlayerSearch": "Public Player Search"
+    "title": "Página no encontrada",
+    "description": "La página que buscas no existe o se ha movido.",
+    "backToDashboard": "Volver al panel",
+    "publicPlayerSearch": "Búsqueda pública de jugadores"
   },
   "publicLinks": {
-    "intro": "Quick links to the public pages you can share with players and viewers.",
+    "intro": "Enlaces rápidos a páginas públicas que puedes compartir con jugadores y espectadores.",
     "common": {
-      "publicUrl": "Public URL",
-      "urlPattern": "URL pattern"
+      "publicUrl": "URL pública",
+      "urlPattern": "Patrón de URL"
     },
     "playerSearch": {
-      "title": "Public Player Search",
-      "description": "Search for registered players by name, Steam ID or profile URL.",
-      "openButton": "Open /player"
+      "title": "Búsqueda pública de jugadores",
+      "description": "Busca jugadores registrados por nombre, Steam ID o URL de perfil.",
+      "openButton": "Abrir /player"
     },
     "playerProfile": {
-      "title": "Player Profile (public)",
-      "description": "Direct link to a player profile by Steam ID64. Players who are signed in with Steam can also use the \"My profile\" link in the top bar instead of copying URLs.",
-      "requiresSteamId": "Requires Steam ID64"
+      "title": "Perfil del jugador (público)",
+      "description": "Enlace directo a un perfil de jugador por Steam ID64. Los jugadores que han iniciado sesión con Steam también pueden usar el enlace \"Mi perfil\" en la barra superior en lugar de copiar URLs.",
+      "requiresSteamId": "Requiere Steam ID64"
     },
     "teamMatch": {
-      "title": "Team Match Page (public)",
-      "description": "Read-only view of a team's current or most recent match.",
-      "openExample": "Open example team"
+      "title": "Página del partido del equipo (pública)",
+      "description": "Vista de solo lectura del partido actual o más reciente de un equipo.",
+      "openExample": "Abrir equipo de ejemplo"
     },
     "tournamentLeaderboard": {
-      "title": "Tournament Leaderboard (public)",
-      "description": "Public standings page for the current tournament (defaults to tournament 1).",
-      "open": "Open leaderboard"
+      "title": "Clasificación del torneo (pública)",
+      "description": "Página pública de la clasificación del torneo actual (por defecto, torneo 1).",
+      "open": "Abrir clasificación"
     }
   }
 }

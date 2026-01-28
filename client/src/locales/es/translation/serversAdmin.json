@@ -34,7 +34,7 @@
     "statusChip": {
       "checking": "Comprobando...",
       "disabled": "Desactivado",
-      "offline": "Offline",
+      "offline": "Fuera de línea",
       "onlineOk": "Online (API ↔ servidor OK)",
       "onlineRconOnly": "Online (solo RCON)",
       "rconFailed": "Fallo de RCON",
@@ -51,7 +51,7 @@
       "reachable": "Accesible",
       "unknown": "Desconocido",
       "loading": "Cargando…",
-      "pluginLabel": "MatchZy:"
+      "pluginLabel": "MatchZy :"
     },
     "currentMatch": {
       "view": "Ver partido",
@@ -59,9 +59,9 @@
       "queuedPrefix": "En cola: "
     },
     "labels": {
-      "host": "Host:",
+      "host": "Host :",
       "port": "Puerto:",
-      "id": "ID:"
+      "id": "ID :"
     },
     "errors": {
       "loadServers": "No se pudieron cargar los servidores",
@@ -80,111 +80,111 @@
     "checkServerLogs": "Revisa la consola/logs del servidor de juego para ver si MatchZy recibe la configuración y envía eventos."
   },
   "serverModal": {
-    "titleCreate": "Add Server",
-    "titleEdit": "Edit Server",
-    "serverNameLabel": "Server Name",
-    "serverNamePlaceholder": "Match Server #1",
-    "hostLabel": "Host / IP Address",
+    "titleCreate": "Añadir servidor",
+    "titleEdit": "Editar servidor",
+    "serverNameLabel": "Nombre del servidor",
+    "serverNamePlaceholder": "Servidor de partida #1",
+    "hostLabel": "Host / dirección IP",
     "hostPlaceholder": "192.168.1.100",
-    "portLabel": "Port",
+    "portLabel": "Puerto",
     "portPlaceholder": "27015",
-    "rconPasswordLabel": "RCON Password",
+    "rconPasswordLabel": "Contraseña RCON",
     "rconPasswordPlaceholder": "your-rcon-password",
-    "rconPasswordHelper": "Password for RCON access to the server",
-    "enabledLabel": "Server Enabled",
-    "enabledHelper": "Disabled servers won't be used for matches",
-    "overridesTitle": "MatchZy Overrides (optional)",
-    "overridesDescription": "These settings override the global MatchZy defaults for this server only. Leave blank to use global values from Settings.",
-    "chatPrefixLabel": "Chat Prefix Override",
+    "rconPasswordHelper": "Contraseña para acceso RCON al servidor",
+    "enabledLabel": "Servidor activado",
+    "enabledHelper": "Los servidores desactivados no se usarán para partidos",
+    "overridesTitle": "Sobrescrituras de MatchZy (opcional)",
+    "overridesDescription": "Estos ajustes sobrescriben los valores globales de MatchZy solo para este servidor. Déjalo en blanco para usar los valores globales de Ajustes.",
+    "chatPrefixLabel": "Sobrescritura del prefijo de chat",
     "chatPrefixPlaceholder": "[MatchZy]",
-    "chatPrefixHelper": "Overrides matchzy_chat_prefix on this server (optional)",
-    "adminChatPrefixLabel": "Admin Chat Prefix Override",
+    "chatPrefixHelper": "Sobrescribe matchzy_chat_prefix en este servidor (opcional)",
+    "adminChatPrefixLabel": "Sobrescritura del prefijo de chat de admin",
     "adminChatPrefixPlaceholder": "[ADMIN]",
-    "adminChatPrefixHelper": "Overrides matchzy_admin_chat_prefix on this server (optional)",
-    "knifeOverrideLabel": "Knife Round Enabled by Default (override)",
-    "knifeOverrideHelper": "When set, overrides matchzy_knife_enabled_default for this server. Leave in indeterminate state to use global default.",
-    "testConnectivity": "Test connectivity",
-    "testingConnectivity": "Testing connectivity…",
+    "adminChatPrefixHelper": "Sobrescribe matchzy_admin_chat_prefix en este servidor (opcional)",
+    "knifeOverrideLabel": "Ronda de knife activada por defecto (sobrescritura)",
+    "knifeOverrideHelper": "Cuando se configura, sobrescribe matchzy_knife_enabled_default para este servidor. Déjalo en estado indeterminado para usar el valor global.",
+    "testConnectivity": "Probar conectividad",
+    "testingConnectivity": "Probando conectividad…",
     "connectivity": {
-      "apiToServer": "MAT API → CS2 Server:",
-      "serverToApi": "Server → API (/api/events):",
-      "reachable": "Reachable",
-      "unreachable": "Unreachable"
+      "apiToServer": "API de MAT → servidor CS2:",
+      "serverToApi": "Servidor → API (/api/events):",
+      "reachable": "Accesible",
+      "unreachable": "Inaccesible"
     },
     "errors": {
-      "nameRequired": "Server name is required",
-      "hostRequired": "Host is required",
-      "portInvalid": "Port must be a valid number between 1 and 65535",
-      "rconRequired": "RCON password is required",
-      "idGenerationFailed": "Unable to generate server ID. Please adjust the server name.",
-      "duplicateId": "Server name creates duplicate ID '{{id}}'. Choose a different name.",
-      "duplicateHostPort": "A server with host:port '{{host}}:{{port}}' already exists (ID: {{id}}, Name: {{name}})",
-      "testConnectionSaveFirst": "Save the server first before testing connection",
-      "testConnectionFailed": "Failed to test connection",
-      "saveFailed": "Failed to save server",
-      "deleteFailed": "Failed to delete server",
-      "rconReachableApiUnreachable": "We can reach the server via RCON, but the server could not reach the API endpoint (test event missing).",
-      "serverOffline": "Server appears offline or unreachable via RCON."
+      "nameRequired": "El nombre del servidor es obligatorio",
+      "hostRequired": "El host es obligatorio",
+      "portInvalid": "El puerto debe ser un número válido entre 1 y 65535",
+      "rconRequired": "La contraseña RCON es obligatoria",
+      "idGenerationFailed": "No se pudo generar el ID del servidor. Ajusta el nombre del servidor.",
+      "duplicateId": "El nombre del servidor crea un ID duplicado '{{id}}'. Elige un nombre diferente.",
+      "duplicateHostPort": "Ya existe un servidor con host:puerto '{{host}}:{{port}}' (ID: {{id}}, Nombre: {{name}})",
+      "testConnectionSaveFirst": "Guarda el servidor primero antes de probar la conexión",
+      "testConnectionFailed": "No se pudo probar la conexión",
+      "saveFailed": "No se pudo guardar el servidor",
+      "deleteFailed": "No se pudo eliminar el servidor",
+      "rconReachableApiUnreachable": "Podemos llegar al servidor por RCON, pero el servidor no pudo llegar al endpoint de la API (falta el evento de prueba).",
+      "serverOffline": "El servidor parece estar fuera de línea o inaccesible por RCON."
     },
     "success": {
-      "connectivityOk": "Bi-directional connectivity verified: server is online and can reach the API.",
-      "serverUpdated": "Server updated successfully",
-      "serverCreated": "Server created successfully",
-      "serverDeleted": "Server deleted successfully"
+      "connectivityOk": "Conectividad bidireccional verificada: el servidor está en línea y puede acceder a la API.",
+      "serverUpdated": "Servidor actualizado correctamente",
+      "serverCreated": "Servidor creado correctamente",
+      "serverDeleted": "Servidor eliminado correctamente"
     },
     "buttons": {
-      "deleteServer": "Delete Server",
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "addServer": "Add Server"
+      "deleteServer": "Eliminar servidor",
+      "cancel": "Cancelar",
+      "saving": "Guardando...",
+      "saveChanges": "Guardar cambios",
+      "addServer": "Añadir servidor"
     },
     "confirmDelete": {
-      "title": "Delete Server",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Eliminar servidor",
+      "message": "¿Seguro que quieres eliminar \"{{name}}\"? Esta acción no se puede deshacer."
     }
   },
   "adminToolsPage": {
-    "title": "Admin Tools",
-    "description": "Run common match and server actions across your CS2 servers. Quick actions are shown first, with more advanced tools available below.",
+    "title": "Herramientas de admin",
+    "description": "Ejecuta acciones comunes de partidos y servidores en tus servidores CS2. Las acciones rápidas aparecen primero, con herramientas más avanzadas disponibles abajo.",
     "header": {
-      "refresh": "Refresh Servers"
+      "refresh": "Actualizar servidores"
     },
     "serverSelect": {
-      "label": "Target Server(s)",
-      "allServersChip": "All Servers",
-      "allServersDescription": "Execute on all {{count}} server(s)",
-      "sendStatus": "Send Status"
+      "label": "Servidor(es) objetivo",
+      "allServersChip": "Todos los servidores",
+      "allServersDescription": "Ejecutar en {{count}} servidor(es)",
+      "sendStatus": "Enviar estado"
     },
     "command": {
-      "execute": "Execute"
+      "execute": "Ejecutar"
     },
-    "customRconWarning": "Warning: Use with caution!",
+    "customRconWarning": "Aviso: úsalo con precaución",
     "results": {
-      "title": "Execution Results",
-      "successChip": "✓ Success",
-      "failedChip": "✗ Failed",
-      "errorPrefix": "Error:"
+      "title": "Resultados de la ejecución",
+      "successChip": "✓ Éxito",
+      "failedChip": "✗ Fallo",
+      "errorPrefix": "Error :"
     },
     "quickActions": {
-      "title": "Quick Actions"
+      "title": "Acciones rápidas"
     },
     "advanced": {
-      "title": "Advanced Tools"
+      "title": "Herramientas avanzadas"
     },
-    "noServers": "No enabled servers found. Please add and enable servers in the Servers page.",
+    "noServers": "No se encontraron servidores activados. Añade y activa servidores en la página Servidores.",
     "recovery": {
-      "title": "Match Recovery",
-      "description": "If the API or servers were restarted during a tournament and match state looks out of sync (e.g. matches stuck in warmup or missing live scores), you can manually trigger a recovery pass. This will ask all servers for their current match report, resync scores/phases, and reconfigure webhooks and demo uploads where possible.",
-      "button": "Run Match Recovery Now",
-      "success": "Match recovery completed.",
-      "error": "Match recovery failed.",
-      "failedTrigger": "Failed to trigger match recovery. Please try again."
+      "title": "Recuperación de partidos",
+      "description": "Si la API o los servidores se reiniciaron durante un torneo y el estado de los partidos parece desincronizado (p. ej., partidos atascados en warmup o sin marcadores en directo), puedes ejecutar una recuperación manual. Se solicitará a todos los servidores el informe del partido actual, se resincronizarán marcadores/fases y se reconfigurarán webhooks y subidas de demos cuando sea posible.",
+      "button": "Ejecutar recuperación ahora",
+      "success": "Recuperación completada.",
+      "error": "La recuperación falló.",
+      "failedTrigger": "No se pudo iniciar la recuperación. Inténtalo de nuevo."
     },
     "monitoring": {
-      "title": "Monitoring & Logs",
-      "serverEvents": "Server Events Monitor",
-      "appLogs": "Application Logs"
+      "title": "Monitorización y logs",
+      "serverEvents": "Monitor de eventos del servidor",
+      "appLogs": "Logs de la aplicación"
     }
   }
 }

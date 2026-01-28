@@ -14,13 +14,13 @@
     "searchError": "No se pudo buscar al jugador. Inténtalo de nuevo.",
     "modalTitle": "Se encontraron varios jugadores",
     "modalSelectPrompt": "Se encontraron {{count}} jugadores. Selecciona uno para ver su perfil:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO: {{elo}} pts"
   },
   "playerPage": {
     "playerNotFound": "Este jugador no existe.",
     "backToFindPlayer": "Volver a Buscar jugador",
     "thisIsYou": "Eres tú",
-    "steamId": "Steam ID: {{id}}",
+    "steamId": "Steam ID64: {{id}}",
     "skillRatingTooltip": "La puntuación de habilidad se basa en OpenSkill. Alrededor de 1500 es un valor inicial típico; cuanto más alto, mejor.",
     "skillRatingLabel": "Puntuación de habilidad: {{elo}}",
     "viewTournamentLeaderboard": "Ver clasificación del torneo",
@@ -51,13 +51,13 @@
     "kills": "Bajas",
     "deaths": "Muertes",
     "assists": "Asistencias",
-    "hsPercent": "HS%",
+    "hsPercent": "% HS",
     "dmg": "Daño",
-    "rating": "Rating",
+    "rating": "Valoración",
     "result": "Resultado",
     "baseline": "Base",
     "matchHistory": "Historial de partidos",
-    "profileTitle": "Player profile"
+    "profileTitle": "Perfil del jugador"
   },
   "teamPage": {
     "wantYourStats": "¿Quieres ver tus propias estadísticas e historial de partidos?",

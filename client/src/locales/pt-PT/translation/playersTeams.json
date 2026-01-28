@@ -14,13 +14,13 @@
     "searchError": "Não foi possível procurar o jogador. Tenta novamente.",
     "modalTitle": "Vários jogadores encontrados",
     "modalSelectPrompt": "{{count}} jogadores encontrados. Seleciona um para ver o perfil:",
-    "modalElo": "ELO: {{elo}}"
+    "modalElo": "ELO: {{elo}} pts"
   },
   "playerPage": {
     "playerNotFound": "Este jogador não existe.",
     "backToFindPlayer": "Voltar a Procurar jogador",
     "thisIsYou": "És tu",
-    "steamId": "Steam ID: {{id}}",
+    "steamId": "Steam ID64: {{id}}",
     "skillRatingTooltip": "A classificação de habilidade baseia-se em OpenSkill. Cerca de 1500 é um valor inicial típico; mais alto é melhor.",
     "skillRatingLabel": "Classificação: {{elo}}",
     "viewTournamentLeaderboard": "Ver classificação do torneio",
@@ -48,16 +48,16 @@
     "recentFormHighlights": "Forma recente e destaques",
     "averageAdr": "ADR médio",
     "round": "Ronda",
-    "kills": "Kills",
+    "kills": "Abates",
     "deaths": "Mortes",
     "assists": "Assistências",
-    "hsPercent": "HS%",
+    "hsPercent": "% HS",
     "dmg": "DMG",
-    "rating": "Rating",
+    "rating": "Classificação",
     "result": "Resultado",
     "baseline": "Base",
     "matchHistory": "Histórico de jogos",
-    "profileTitle": "Player profile"
+    "profileTitle": "Perfil do jogador"
   },
   "teamPage": {
     "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",
@@ -125,7 +125,7 @@
     "export": "Exportar",
     "exportCsv": "Exportar CSV",
     "exportJson": "Exportar JSON",
-    "rank": "Rank",
+    "rank": "Posição",
     "player": "Jogador",
     "wins": "Vitórias",
     "losses": "Derrotas",
@@ -211,7 +211,7 @@
     },
     "openPlayerPageTooltip": "Abrir página do jogador",
     "skillRatingTooltip": "A Skill Rating baseia-se em OpenSkill; mais alto é melhor.",
-    "skillRatingLabel": "Skill Rating: {{elo}}",
+    "skillRatingLabel": "Classificação: {{elo}}",
     "matchesCount_one": "{{count}} jogo",
     "matchesCount_other": "{{count}} jogos"
   }

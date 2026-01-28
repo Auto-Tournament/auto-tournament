@@ -6,7 +6,7 @@ This doc tracks progress toward making `cd client && npm run -s i18n:fallback` r
 
 - **Key coverage**: ✅ `npm run -s i18n:missing` reports `0 missing, 0 extra` (leaf paths).
 - **Duplicate keys**: ✅ `npm run -s i18n:check` reports no duplicate JSON keys.
-- **Remaining identical-to-English strings (filtered)**: **1505**
+- **Remaining identical-to-English strings (filtered)**: **0**
 
 Locales progress:
 - ✅ `zh-CN`: **0**
@@ -15,9 +15,9 @@ Locales progress:
 - ✅ `fr`: **0**
 - ✅ `nl`: **0**
 - ✅ `it`: **0**
-- ⏳ `pl`: **394** (in progress; `pl/mapsTemplatesElo.json` translated, remaining is mostly other files like `matchesAndModals.json`)
-- ⏳ `es`: **533**
-- ⏳ `pt-PT`: **578**
+- ✅ `pl`: **0**
+- ✅ `es`: **0**
+- ✅ `pt-PT`: **0**
 
 ## How to run the checks locally
 

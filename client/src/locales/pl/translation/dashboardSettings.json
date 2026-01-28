@@ -264,7 +264,7 @@
         "title": "Status turnieju",
         "none": "Brak aktywnego turnieju",
         "typeLabel": "Typ",
-        "formatLabel": "Format",
+        "formatLabel": "Format meczu",
         "matchesLabel": "Mecze"
       },
       "matchStatus": {
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Najlepsi gracze wg ELO",
         "subtitle": "Globalny rating we wszystkich typach turniejów",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "Rozkład ELO graczy",

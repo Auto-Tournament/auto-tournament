@@ -1,326 +1,326 @@
 {
   "matchesPage": {
     "errors": {
-      "loadMatches": "Failed to load matches",
-      "loadTitle": "Error loading matches"
+      "loadMatches": "Não foi possível carregar os jogos",
+      "loadTitle": "Erro ao carregar os jogos"
     },
     "allocation": {
-      "nextServers": "Next servers allocated in {{seconds}}s"
+      "nextServers": "Próxima alocação de servidores em {{seconds}} s"
     },
     "header": {
-      "createMatch": "Create Match"
+      "createMatch": "Criar jogo"
     },
     "bulkSelect": {
-      "select": "Select",
-      "done": "Done Selecting",
-      "selectAll": "Select All",
-      "unselectAll": "Unselect All",
-      "deleteSelected": "Delete Selected"
+      "select": "Selecionar",
+      "done": "Concluir seleção",
+      "selectAll": "Selecionar tudo",
+      "unselectAll": "Desmarcar tudo",
+      "deleteSelected": "Eliminar selecionados"
     },
     "empty": {
-      "title": "No matches to display",
-      "description": "Create a tournament and generate brackets to see matches here",
-      "createManual": "Or Create Manual Match"
+      "title": "Sem jogos para mostrar",
+      "description": "Crie um torneio e gere a bracket para ver jogos aqui",
+      "createManual": "Ou crie um jogo manual"
     },
     "sections": {
-      "live": "Live Matches ({{count}})",
-      "upcoming": "Upcoming Matches ({{count}})",
-      "history": "Match History ({{count}})"
+      "live": "Jogos em direto ({{count}})",
+      "upcoming": "Próximos jogos ({{count}})",
+      "history": "Histórico de jogos ({{count}})"
     },
-    "manualMatchLabel": "Manual match",
+    "manualMatchLabel": "Jogo manual",
     "create": {
-      "success": "Manual match created: {{slug}}"
+      "success": "Jogo manual criado: {{slug}}"
     },
     "bulkDelete": {
-      "title": "Delete Manual Matches",
-      "message": "Are you sure you want to delete {{count}} manual match{{suffix}}? This action cannot be undone."
+      "title": "Eliminar jogos manuais",
+      "message": "Tem a certeza de que pretende eliminar {{count}} jogo manual{{suffix}}? Esta ação não pode ser anulada."
     }
   },
   "manualMatchModal": {
-    "title": "Create Manual Match",
+    "title": "Criar jogo manual",
     "steps": {
-      "matchSetup": "Match Setup",
-      "rules": "Rules",
-      "maps": "Maps",
-      "teams": "Teams",
-      "review": "Review"
+      "matchSetup": "Configuração do jogo",
+      "rules": "Regras",
+      "maps": "Mapas",
+      "teams": "Equipas",
+      "review": "Rever"
     },
-    "description": "Create a standalone match that is independent from the tournament bracket. The API will automatically allocate an available server for you.",
+    "description": "Crie um jogo independente que não depende da bracket do torneio. A API irá alocar automaticamente um servidor disponível.",
     "buttons": {
-      "next": "Next",
-      "back": "Back",
-      "create": "Create Match",
-      "creating": "Creating…"
+      "next": "Seguinte",
+      "back": "Voltar",
+      "create": "Criar jogo",
+      "creating": "A criar…"
     },
     "saveTemplate": {
-      "title": "Save Match Template",
-      "nameLabel": "Template name",
-      "nameHelper": "For example: BO1 Inferno knife, BO3 map pool, etc.",
-      "description": "Current maps, series format, CT side rule, veto toggle, knife mode, and players per team will be saved in this template.",
-      "save": "Save"
+      "title": "Guardar modelo de jogo",
+      "nameLabel": "Nome do modelo",
+      "nameHelper": "Por exemplo: BO1 Inferno knife, BO3 pool de mapas, etc.",
+      "description": "Os mapas atuais, formato da série, regra do lado CT, alternância de veto, modo knife e jogadores por equipa serão guardados neste modelo.",
+      "save": "Guardar"
     },
     "chooseMode": {
-      "heading": "How would you like to create this match?",
+      "heading": "Como gostaria de criar este jogo?",
       "template": {
-        "title": "Choose template",
-        "description": "Load a preset for maps, format, and rules, then choose the teams.",
-        "label": "Match template",
-        "none": "None",
-        "empty": "No templates saved yet. Configure a match and save it as a template."
+        "title": "Escolher modelo",
+        "description": "Carregue um predefinido para mapas, formato e regras e, depois, escolha as equipas.",
+        "label": "Modelo de jogo",
+        "none": "Nenhum",
+        "empty": "Ainda não existem modelos guardados. Configure um jogo e guarde-o como modelo."
       },
       "custom": {
-        "title": "Create new match",
-        "description": "Configure maps, rules, sides, and teams from scratch."
+        "title": "Criar novo jogo",
+        "description": "Configure mapas, regras, lados e equipas do zero."
       }
     }
   },
   "matchDetailsModal": {
     "delete": {
-      "dialogTitle": "Delete Match",
-      "confirmTitle": "Delete this match?",
-      "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
-      "button": "Delete Match"
+      "dialogTitle": "Eliminar jogo",
+      "confirmTitle": "Eliminar este jogo?",
+      "confirmBody": "Tem a certeza de que pretende eliminar o jogo \"{{slug}}\"? Esta ação não pode ser anulada.",
+      "button": "Eliminar jogo"
     }
   },
   "bulkShuffleMatchesModal": {
-    "title": "Bulk Create Shuffle Matches",
-    "description": "Configure a single‑map shuffle match (map + round limit), then define as many head‑to‑head matches as you like by choosing exact player lineups for each side. Matches are created as part of the current shuffle tournament and will be allocated to servers when you start the tournament.",
+    "title": "Criar jogos shuffle em lote",
+    "description": "Configure um jogo shuffle de mapa único (mapa + limite de rondas) e, depois, defina quantos jogos head‑to‑head quiser, escolhendo alinhamentos exatos de jogadores para cada lado. Os jogos são criados como parte do torneio shuffle atual e serão alocados a servidores quando iniciar o torneio.",
     "mapSelect": {
-      "label": "Map",
-      "noMaps": "No maps configured for this tournament",
-      "helper": "All matches in this batch will use this map."
+      "label": "Mapa",
+      "noMaps": "Não existem mapas configurados para este torneio",
+      "helper": "Todos os jogos deste lote usarão este mapa."
     },
     "maxRounds": {
-      "label": "Max rounds per map",
-      "helperWithValue": "Match plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds.",
-      "helperDefault": "Maximum number of rounds per map (default: 24, max: 30)."
+      "label": "Máx. rondas por mapa",
+      "helperWithValue": "O jogo decorre até {{maxRounds}} rondas; vence quem chegar primeiro a {{winRounds}} rondas.",
+      "helperDefault": "Número máximo de rondas por mapa (predefinição: 24, máx.: 30)."
     },
     "matchesSection": {
-      "title": "Matches ({{count}})",
-      "addMatch": "Add Match"
+      "title": "Jogos ({{count}})",
+      "addMatch": "Adicionar jogo"
     },
     "players": {
-      "empty": "No players are registered for this shuffle tournament yet. Register players first, then you can create manual matches."
+      "empty": "Ainda não existem jogadores registados neste torneio shuffle. Registe jogadores primeiro e, depois, poderá criar jogos manuais."
     },
     "matchRow": {
-      "title": "Match {{index}}",
+      "title": "Jogo {{index}}",
       "teamCounts": "{{team1}}/{{teamSize}} • {{team2}}/{{teamSize}}",
-      "team1Label": "Team 1 players ({{team1Count}}/{{teamSize}})",
-      "team2Label": "Team 2 players ({{team2Count}}/{{teamSize}})",
-      "searchPlaceholder": "Search & select players",
-      "mapOverrideLabel": "Map (optional override)",
-      "mapOverrideHelperOwn": "This match uses its own map.",
-      "mapOverrideHelperDefault": "Leave empty to use the default map above.",
-      "maxRoundsOverrideLabel": "Max rounds (optional override)",
-      "maxRoundsOverrideHelperOwn": "Overrides default max rounds for this match (currently {{value}}).",
-      "maxRoundsOverrideHelperDefault": "Leave empty to use the default max rounds above."
+      "team1Label": "Jogadores da equipa 1 ({{team1Count}}/{{teamSize}})",
+      "team2Label": "Jogadores da equipa 2 ({{team2Count}}/{{teamSize}})",
+      "searchPlaceholder": "Pesquisar e selecionar jogadores",
+      "mapOverrideLabel": "Mapa (substituição opcional)",
+      "mapOverrideHelperOwn": "Este jogo usa o seu próprio mapa.",
+      "mapOverrideHelperDefault": "Deixe em branco para usar o mapa predefinido acima.",
+      "maxRoundsOverrideLabel": "Máx. rondas (substituição opcional)",
+      "maxRoundsOverrideHelperOwn": "Substitui as rondas máximas predefinidas para este jogo (atualmente {{value}}).",
+      "maxRoundsOverrideHelperDefault": "Deixe em branco para usar as rondas máximas predefinidas acima."
     },
     "errors": {
-      "loadPlayers": "Failed to load registered players",
-      "noMatches": "Add at least one match to create.",
-      "bothTeamsRequired": "Match {{index}}: both teams must have at least one player.",
-      "conflictingPlayers": "Match {{index}}: the same player cannot be on both teams. Conflicting ID(s): {{ids}}",
-      "mapRequired": "Match {{index}}: map is required (set a default map above or choose a map for this match).",
-      "rowMaxRoundsRange": "Match {{index}}: max rounds must be between 1 and 30 when overridden per match.",
-      "globalMaxRoundsRange": "Max rounds must be between 1 and 30.",
-      "createFailed": "Failed to create manual shuffle matches"
+      "loadPlayers": "Não foi possível carregar os jogadores registados",
+      "noMatches": "Adicione pelo menos um jogo para criar.",
+      "bothTeamsRequired": "Jogo {{index}}: ambas as equipas têm de ter pelo menos um jogador.",
+      "conflictingPlayers": "Jogo {{index}}: o mesmo jogador não pode estar em ambas as equipas. ID(s) em conflito: {{ids}}",
+      "mapRequired": "Jogo {{index}}: o mapa é obrigatório (defina um mapa predefinido acima ou escolha um mapa para este jogo).",
+      "rowMaxRoundsRange": "Jogo {{index}}: as rondas máximas têm de estar entre 1 e 30 quando substituídas por jogo.",
+      "globalMaxRoundsRange": "As rondas máximas têm de estar entre 1 e 30.",
+      "createFailed": "Não foi possível criar jogos shuffle manuais"
     },
     "success": {
-      "created": "Manual shuffle matches created. They will be allocated when the tournament starts."
+      "created": "Jogos shuffle manuais criados. Serão alocados quando o torneio começar."
     },
     "createMatchesButton": {
-      "default": "Create Matches",
-      "creating": "Creating…"
+      "default": "Criar jogos",
+      "creating": "A criar…"
     }
   },
   "teamModal": {
-    "titleCreate": "Create New Team",
-    "titleEdit": "Edit Team",
-    "teamNameLabel": "Team Name",
+    "titleCreate": "Criar nova equipa",
+    "titleEdit": "Editar equipa",
+    "teamNameLabel": "Nome da equipa",
     "teamNamePlaceholder": "Astralis",
-    "teamNameHelper": "Team name can include any language or special characters",
-    "teamTagLabel": "Team Tag",
+    "teamNameHelper": "O nome da equipa pode incluir qualquer idioma ou caracteres especiais",
+    "teamTagLabel": "Tag da equipa",
     "teamTagPlaceholder": "AST",
-    "teamTagHelper": "Auto-generated from team name (max 4 characters)",
-    "playersHeader": "Players ({{count}})",
-    "selectPlayers": "Select Players",
-    "noPlayersInfo": "No players added yet. Add at least one player.",
-    "addPlayersHelper": "Add players by pasting Steam URL or selecting from existing players",
-    "steamInputLabel": "Steam ID / Vanity URL",
+    "teamTagHelper": "Gerada automaticamente a partir do nome da equipa (máx. 4 caracteres)",
+    "playersHeader": "Jogadores ({{count}})",
+    "selectPlayers": "Selecionar jogadores",
+    "noPlayersInfo": "Ainda não existem jogadores adicionados. Adicione pelo menos um jogador.",
+    "addPlayersHelper": "Adicione jogadores colando um URL Steam ou selecionando de jogadores existentes",
+    "steamInputLabel": "Steam ID / vanity URL",
     "steamInputPlaceholder": "gaben or steamcommunity.com/id/gaben",
-    "resolveSteam": "Resolve Steam ID",
-    "resolving": "Resolving...",
-    "playerNameLabel": "Player Name",
+    "resolveSteam": "Resolver Steam ID",
+    "resolving": "A resolver...",
+    "playerNameLabel": "Nome do jogador",
     "playerNamePlaceholder": "s1mple",
-    "eloLabel": "ELO (optional)",
+    "eloLabel": "ELO (opcional)",
     "eloPlaceholder": "1500",
-    "eloHelper": "Default: 1500",
+    "eloHelper": "Predefinição: 1500",
     "errors": {
-      "steamLookupEmpty": "Please enter a Steam ID, vanity URL, or profile URL",
-      "steamApiNotConfigured": "Steam API not configured - enter Steam ID64 manually",
-      "steamResolveFailed": "Could not resolve Steam ID - please enter Steam ID64 manually",
-      "steamAndNameRequired": "Both Steam ID and player name are required",
-      "steamDuplicate": "This Steam ID is already in the team",
-      "teamNameRequired": "Team name is required",
-      "playersRequired": "At least one player is required",
-      "saveFailed": "Failed to save team",
-      "deleteFailed": "Failed to delete team"
+      "steamLookupEmpty": "Introduza um Steam ID, vanity URL ou URL de perfil",
+      "steamApiNotConfigured": "A API Steam não está configurada — introduza o Steam ID64 manualmente",
+      "steamResolveFailed": "Não foi possível resolver o Steam ID — introduza o Steam ID64 manualmente",
+      "steamAndNameRequired": "O Steam ID e o nome do jogador são obrigatórios",
+      "steamDuplicate": "Este Steam ID já está na equipa",
+      "teamNameRequired": "O nome da equipa é obrigatório",
+      "playersRequired": "É necessário pelo menos um jogador",
+      "saveFailed": "Não foi possível guardar a equipa",
+      "deleteFailed": "Não foi possível eliminar a equipa"
     },
     "success": {
-      "playerAdded": "Player added to team",
-      "playerReplaced": "Player replaced",
-      "teamUpdated": "Team updated successfully",
-      "teamCreated": "Team created successfully",
-      "teamDeleted": "Team deleted successfully"
+      "playerAdded": "Jogador adicionado à equipa",
+      "playerReplaced": "Jogador substituído",
+      "teamUpdated": "Equipa atualizada com sucesso",
+      "teamCreated": "Equipa criada com sucesso",
+      "teamDeleted": "Equipa eliminada com sucesso"
     },
     "buttons": {
-      "deleteTeam": "Delete Team",
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "saveChanges": "Save Changes",
-      "createTeam": "Create Team"
+      "deleteTeam": "Eliminar equipa",
+      "cancel": "Cancelar",
+      "saving": "A guardar...",
+      "saveChanges": "Guardar alterações",
+      "createTeam": "Criar equipa"
     },
     "confirmDelete": {
-      "title": "Delete Team",
-      "message": "Are you sure you want to delete \"{{name}}\"? This action cannot be undone."
+      "title": "Eliminar equipa",
+      "message": "Tem a certeza de que pretende eliminar \"{{name}}\"? Esta ação não pode ser anulada."
     },
-    "replacePlayerAria": "Replace player {{name}}",
-    "replacePlayerTooltip": "Replace this player"
+    "replacePlayerAria": "Substituir jogador {{name}}",
+    "replacePlayerTooltip": "Substituir este jogador"
   },
   "playerModal": {
-    "titleCreate": "Create Player",
-    "titleEdit": "Edit Player",
-    "steamLabel": "Steam ID or Profile URL",
-    "steamHelperEditing": "Steam ID cannot be changed",
-    "steamHelperNew": "Enter Steam ID64, vanity URL, or profile URL. Click \"Resolve\" to auto-fill name and avatar.",
-    "resolveSteam": "Resolve Steam ID",
-    "resolving": "Resolving...",
-    "playerNameLabel": "Player Name",
-    "playerNamePlaceholder": "Player",
-    "eloLabelNew": "Initial ELO",
+    "titleCreate": "Criar jogador",
+    "titleEdit": "Editar jogador",
+    "steamLabel": "Steam ID ou URL de perfil",
+    "steamHelperEditing": "O Steam ID não pode ser alterado",
+    "steamHelperNew": "Introduza o Steam ID64, vanity URL ou URL de perfil. Clique em \"Resolver\" para preencher automaticamente o nome e avatar.",
+    "resolveSteam": "Resolver Steam ID",
+    "resolving": "A resolver...",
+    "playerNameLabel": "Nome do jogador",
+    "playerNamePlaceholder": "Jogador",
+    "eloLabelNew": "ELO inicial",
     "eloLabelEdit": "ELO",
-    "eloHelperNew": "Leave empty to use default (1500 Skill Rating).",
-    "eloHelperEdit": "Changing ELO will reset the player's rating and stats. This action cannot be undone.",
-    "isAdminLabel": "Is admin (has in-game admin rights for all matches)",
-    "currentElo": "Current ELO: {{value}}",
-    "startingElo": "Starting ELO: {{value}}",
-    "matchesPlayed": "Matches Played: {{count}}",
+    "eloHelperNew": "Deixe em branco para usar a predefinição (1500 Skill Rating).",
+    "eloHelperEdit": "Alterar o ELO irá repor o rating e as estatísticas do jogador. Esta ação não pode ser anulada.",
+    "isAdminLabel": "Admin (tem direitos de admin no jogo para todos os jogos)",
+    "currentElo": "ELO atual: {{value}}",
+    "startingElo": "ELO inicial: {{value}}",
+    "matchesPlayed": "Jogos disputados: {{count}}",
     "errors": {
-      "steamRequired": "Steam ID is required",
-      "nameRequired": "Player name is required",
-      "steamLookupEmpty": "Please enter a Steam ID, vanity URL, or profile URL",
-      "steamApiNotConfigured": "Steam API not configured - enter Steam ID64 manually",
-      "steamResolveFailed": "Could not resolve Steam ID - please enter Steam ID64 manually",
-      "saveFailed": "Failed to save player"
+      "steamRequired": "O Steam ID é obrigatório",
+      "nameRequired": "O nome do jogador é obrigatório",
+      "steamLookupEmpty": "Introduza um Steam ID, vanity URL ou URL de perfil",
+      "steamApiNotConfigured": "A API Steam não está configurada — introduza o Steam ID64 manualmente",
+      "steamResolveFailed": "Não foi possível resolver o Steam ID — introduza o Steam ID64 manualmente",
+      "saveFailed": "Não foi possível guardar o jogador"
     },
     "success": {
-      "playerUpdated": "Player updated successfully",
-      "playerCreated": "Player created successfully"
+      "playerUpdated": "Jogador atualizado com sucesso",
+      "playerCreated": "Jogador criado com sucesso"
     },
     "buttons": {
-      "delete": "Delete",
-      "cancel": "Cancel",
-      "saving": "Saving...",
-      "save": "Save",
-      "create": "Create"
+      "delete": "Eliminar",
+      "cancel": "Cancelar",
+      "saving": "A guardar...",
+      "save": "Guardar",
+      "create": "Criar"
     },
     "confirmDelete": {
-      "title": "Delete Player",
-      "message": "Are you sure you want to delete player \"{{name}}\"? This action cannot be undone."
+      "title": "Eliminar jogador",
+      "message": "Tem a certeza de que pretende eliminar o jogador \"{{name}}\"? Esta ação não pode ser anulada."
     },
     "confirmEloUpdate": {
-      "title": "Update Player ELO",
-      "message": "Are you sure you want to update this player's ELO from {{from}} to {{to}}? This will reset their stats and rating history. This action cannot be undone."
+      "title": "Atualizar ELO do jogador",
+      "message": "Tem a certeza de que pretende atualizar o ELO deste jogador de {{from}} para {{to}}? Isto irá repor as estatísticas e o histórico de rating. Esta ação não pode ser anulada."
     }
   },
   "teamImportModal": {
-    "title": "Import Teams from JSON",
+    "title": "Importar equipas de JSON",
     "info": {
-      "title": "Paste JSON with team data below.",
-      "format": "Expected format: Array of teams with name, tag (optional), and players (name + steamId).",
-      "link": "View documentation with examples"
+      "title": "Cole abaixo o JSON com os dados das equipas.",
+      "format": "Formato esperado: array de equipas com name, tag (opcional) e players (name + steamId).",
+      "link": "Ver documentação com exemplos"
     },
-    "jsonLabel": "JSON Data",
+    "jsonLabel": "Dados JSON",
     "errors": {
-      "mustBeArray": "JSON must be an array of teams",
-      "emptyArray": "Array cannot be empty",
-      "parseWithMessage": "JSON Parse Error: {{message}}",
-      "parseGeneric": "Invalid JSON format. Please check your syntax.",
-      "importFailed": "Failed to import teams",
-      "noJson": "Please enter JSON data"
+      "mustBeArray": "O JSON tem de ser um array de equipas",
+      "emptyArray": "O array não pode estar vazio",
+      "parseWithMessage": "Erro ao analisar JSON: {{message}}",
+      "parseGeneric": "Formato JSON inválido. Verifique a sintaxe.",
+      "importFailed": "Não foi possível importar equipas",
+      "noJson": "Introduza dados JSON"
     },
     "preview": {
-      "summary": "✓ Valid JSON! Found {{teamCount}} team{{teamCount, plural, one {} other {s}}} with {{playerCount}} total players.",
-      "title": "Preview:",
-      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}"
+      "summary": "✓ JSON válido! Encontrada(s) {{teamCount}} equipa{{teamCount, plural, one {} other {s}}} com {{playerCount}} jogadores no total.",
+      "title": "Pré-visualização:",
+      "playersChip": "{{count}} jogador{{count, plural, one {} other {es}}}"
     },
     "actions": {
-      "preview": "Preview",
-      "importing": "Importing...",
-      "import": "Import {{count}} Team{{count, plural, one {} other {s}}}"
+      "preview": "Pré-visualizar",
+      "importing": "A importar...",
+      "import": "Importar {{count}} equipa{{count, plural, one {} other {s}}}"
     }
   },
   "playerImportModal": {
-    "title": "Import Players",
+    "title": "Importar jogadores",
     "info": {
-      "description": "Import players from JSON or CSV format. Required fields: steamId, name. Optional: initialELO (defaults to 1500), avatarUrl.",
-      "link": "View documentation with examples"
+      "description": "Importe jogadores a partir de JSON ou CSV. Campos obrigatórios: steamId, name. Opcional: initialELO (predefinição 1500), avatarUrl.",
+      "link": "Ver documentação com exemplos"
     },
     "placeholders": {
-      "jsonCsv": "JSON format:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Player One\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nCSV format:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Player One,1500,https://..."
+      "jsonCsv": "Formato JSON:\n[\n  {\n    \"steamId\": \"76561198012345678\",\n    \"name\": \"Jogador Um\",\n    \"initialELO\": 1500,\n    \"avatarUrl\": \"https://...\"\n  }\n]\n\nFormato CSV:\nsteamId,name,initialELO,avatarUrl\n76561198012345678,Jogador Um,1500,https://..."
     },
     "actions": {
-      "parseValidate": "Parse & Validate",
-      "importing": "Importing...",
-      "import": "Import {{count}} Player{{count, plural, one {} other {s}}}"
+      "parseValidate": "Analisar e validar",
+      "importing": "A importar...",
+      "import": "Importar {{count}} jogador{{count, plural, one {} other {es}}}"
     },
     "preview": {
-      "readyChip": "{{count}} player{{count, plural, one {} other {s}}} ready to import",
-      "title": "Players to Import ({{count}}):",
-      "steamId": "Steam ID: {{steamId}}",
-      "name": "Name: {{name}}",
-      "initialElo": "Initial ELO: {{elo}}",
-      "avatar": "Avatar: {{url}}"
+      "readyChip": "{{count}} jogador{{count, plural, one {} other {es}}} pronto(s) para importar",
+      "title": "Jogadores a importar ({{count}}):",
+      "steamId": "Steam ID64: {{steamId}}",
+      "name": "Nome: {{name}}",
+      "initialElo": "ELO inicial: {{elo}}",
+      "avatar": "URL do avatar: {{url}}"
     },
     "errors": {
-      "noData": "Please enter JSON or CSV data",
-      "noPlayers": "No players found in the data",
-      "validationPrefix": "Validation errors:",
-      "parseFailed": "Failed to parse data: {{message}}",
-      "importFailed": "Failed to import players",
-      "parseFirst": "Please parse and validate the data first"
+      "noData": "Introduza dados JSON ou CSV",
+      "noPlayers": "Não foram encontrados jogadores nos dados",
+      "validationPrefix": "Erros de validação:",
+      "parseFailed": "Não foi possível analisar os dados: {{message}}",
+      "importFailed": "Não foi possível importar jogadores",
+      "parseFirst": "Analise e valide os dados primeiro"
     }
   },
   "playerSelectionModal": {
-    "title": "Select Players",
-    "selectedCount": "{{count}} selected",
-    "searchPlaceholder": "Search players by name or Steam ID...",
+    "title": "Selecionar jogadores",
+    "selectedCount": "{{count}} selecionado(s)",
+    "searchPlaceholder": "Pesquisar jogadores por nome ou Steam ID...",
     "selectAll": {
-      "select": "Select All",
-      "deselect": "Deselect All"
+      "select": "Selecionar tudo",
+      "deselect": "Desmarcar tudo"
     },
     "empty": {
-      "noSearchResults": "No players found matching your search",
-      "noPlayers": "No players available"
+      "noSearchResults": "Não foram encontrados jogadores para a sua pesquisa",
+      "noPlayers": "Não existem jogadores disponíveis"
     },
     "playerCard": {
-      "alreadyInTeam": "Already in team"
+      "alreadyInTeam": "Já está na equipa"
     },
-    "addPlayersButton": "Add {{count}} Player{{count, plural, one {} other {s}}}",
+    "addPlayersButton": "Adicionar {{count}} jogador{{count, plural, one {} other {es}}}",
     "errors": {
-      "loadFailed": "Failed to load players",
-      "noSelectable": "No selectable players available"
+      "loadFailed": "Não foi possível carregar os jogadores",
+      "noSelectable": "Não existem jogadores selecionáveis"
     }
   },
   "soundSettingsModal": {
-    "title": "Sound Settings",
+    "title": "Definições de som",
     "soundSelect": {
-      "label": "Notification Sound"
+      "label": "Som de notificação"
     },
     "volume": {
-      "label": "Volume: {{percent}}%"
+      "label": "Volume: {{percent}} %"
     },
-    "testButton": "Test Sound",
-    "footer": "Sound notifications will play when your match is ready or when important events occur."
+    "testButton": "Testar som",
+    "footer": "As notificações sonoras serão reproduzidas quando o seu jogo estiver pronto ou quando ocorrerem eventos importantes."
   }
 }

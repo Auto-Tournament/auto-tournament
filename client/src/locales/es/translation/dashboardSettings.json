@@ -92,11 +92,11 @@
           "usePauseForTacticalPause": "Hacer que .pause se comporte como pausa táctica"
         },
         "demos": {
-          "title": "Demos",
+          "title": "Demos (GOTV)",
           "demoPathLabel": "Ruta de demos (relativa a csgo/)",
           "demoPathHelper": "Debe terminar con '/'. Predeterminado: MatchZy/",
           "demoNameFormatLabel": "Formato del nombre del demo (sin .dem)",
-          "demoNameFormatHelper": "Tokens: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
+          "demoNameFormatHelper": "Marcadores: {TIME}, {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}"
         },
         "seriesEnd": {
           "title": "Tiempo al finalizar la serie",
@@ -273,7 +273,7 @@
         "pending": "Pendientes:",
         "ready": "Listos:",
         "loaded": "Cargados:",
-        "live": "Live:",
+        "live": "En directo:",
         "completed": "Completados:"
       },
       "serverStatus": {
@@ -295,7 +295,7 @@
       "topPlayers": {
         "title": "Mejores jugadores por ELO",
         "subtitle": "Rating global en todos los tipos de torneo",
-        "chip": "ELO {{value}}"
+        "chip": "ELO: {{value}}"
       },
       "eloDistribution": {
         "title": "Distribución de ELO de jugadores",
