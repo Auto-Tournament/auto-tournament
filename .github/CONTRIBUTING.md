@@ -6,7 +6,7 @@ Thank you for your interest in contributing! 🎉
 
 For detailed contribution guidelines, please see:
 
-**[Development → Contributing](https://mat.sivert.io/development/contributing/)**
+**[Development → Contributing](https://docs.sivert.io/docs/mat/developer/contributing)**
 
 ## 🚀 Quick Start
 
@@ -58,7 +58,7 @@ Want to help translate MatchZy Auto Tournament into your language? We'd love you
 
 **Quick Start:** See [TRANSLATING.md](../TRANSLATING.md) for a 5-step guide.
 
-**Full Guide:** [i18n Documentation](https://mat.sivert.io/development/i18n-and-translation/)
+**Full Guide:** [i18n Documentation](https://docs.sivert.io/docs/mat/developer/i18n-and-translation)
 
 **Currently supported:**
 - 🇬🇧 English
@@ -88,7 +88,7 @@ Need help testing something or getting feedback? Use the **Community Request** i
 ## 💬 Questions?
 
 - [GitHub Discussions](https://github.com/sivert-io/matchzy-auto-tournament/discussions) - Ask questions
-- [Documentation](https://mat.sivert.io/) - Read the docs
+- [Documentation](https://docs.sivert.io/docs/mat) - Read the docs
 
 ## 📖 Code of Conduct
 
@@ -96,4 +96,4 @@ Be respectful and constructive. We're all here to build something awesome for th
 
 ---
 
-**Full Contribution Guide:** https://mat.sivert.io/development/contributing/
+**Full Contribution Guide:** https://docs.sivert.io/docs/mat/developer/contributing

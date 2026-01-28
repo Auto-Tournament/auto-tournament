@@ -29,7 +29,7 @@ body:
     attributes:
       label: 📍 Documentation Location
       description: Where is the problematic documentation? (URL, file path, or page title)
-      placeholder: "e.g., https://mat.sivert.io/guides/server-setup/ or README.md line 45"
+      placeholder: "e.g., https://docs.sivert.io/docs/mat/user/server-setup or README.md line 45"
     validations:
       required: true
 

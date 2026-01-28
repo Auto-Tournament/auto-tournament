@@ -213,7 +213,7 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
           </Typography>
           <Typography variant="caption" component="div">
             <Link
-              href="https://mat.sivert.io/guides/shuffle-tournaments/#bulk-import-players-with-elo"
+              href="https://docs.sivert.io/docs/mat/user/shuffle-tournaments#importing-players"
               target="_blank"
               rel="noopener noreferrer"
               sx={{

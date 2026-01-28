@@ -188,7 +188,7 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
             </Typography>
             <Typography variant="caption" component="div" sx={{ mt: 1 }}>
               <Link
-                href="https://mat.sivert.io/guides/managing-teams/#advanced-bulk-import-json"
+                href="https://docs.sivert.io/docs/mat/user/teams#bulk-import-json"
                 target="_blank"
                 rel="noopener noreferrer"
                 sx={{

@@ -172,7 +172,7 @@ export default function Login() {
                   <Stack spacing={0.5}>
                     <Typography variant="body2">{providersError}</Typography>
                     <Link
-                      href="https://mat.sivert.io/development/auth-providers-examples/"
+                      href="https://docs.sivert.io/docs/mat/developer/auth-providers"
                       target="_blank"
                       rel="noopener noreferrer"
                       sx={{ fontSize: '0.8rem' }}
@@ -305,7 +305,7 @@ export default function Login() {
                   <OpenInNewIcon sx={{ fontSize: '1rem' }} />
                 </Link>
                 <Link
-                  href="https://mat.sivert.io/"
+                  href="https://docs.sivert.io/docs/mat"
                   target="_blank"
                   rel="noopener noreferrer"
                   sx={{

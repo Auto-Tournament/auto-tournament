@@ -9,8 +9,8 @@ body:
         Need help with CS2 server setup? We'll help you get configured! 
         
         **Quick Resources:**
-        - [Server Setup Guide](https://mat.sivert.io/getting-started/server-setup/)
-        - [CS2 Server Manager Tool](https://mat.sivert.io/guides/cs2-server-manager/)
+        - [Server Setup Guide](https://docs.sivert.io/docs/mat/user/server-setup)
+        - [CS2 Server Manager Tool](https://docs.sivert.io/docs/csm/quick-start)
         - [MatchZy Enhanced Releases](https://github.com/sivert-io/matchzy-Enhanced/releases)
 
   - type: dropdown

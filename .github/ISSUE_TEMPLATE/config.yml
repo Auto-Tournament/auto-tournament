@@ -1,7 +1,7 @@
 blank_issues_enabled: false
 contact_links:
   - name: 📚 Documentation
-    url: https://mat.sivert.io/
+    url: https://docs.sivert.io/docs/mat
     about: Check the official documentation for guides and API reference
   - name: 💬 Discord Community
     url: https://discord.gg/n7gHYau7aW

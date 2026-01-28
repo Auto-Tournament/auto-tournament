@@ -9,7 +9,7 @@ body:
         Thanks for helping translate MatchZy Auto Tournament! 🌍
         
         **Quick Links:**
-        - [Translation Guide](https://mat.sivert.io/development/i18n-and-translation/)
+        - [Translation Guide](https://docs.sivert.io/docs/mat/developer/i18n-and-translation)
         - [Quick Start: TRANSLATING.md](../TRANSLATING.md)
         - [Existing translations](../client/src/locales/)
 

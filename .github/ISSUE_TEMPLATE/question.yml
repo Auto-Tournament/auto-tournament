@@ -36,7 +36,7 @@ body:
       options:
         - label: I've checked the README
           required: false
-        - label: I've checked the documentation at https://mat.sivert.io/
+        - label: I've checked the documentation at https://docs.sivert.io/docs/mat
           required: false
         - label: I've searched existing issues and discussions
           required: true

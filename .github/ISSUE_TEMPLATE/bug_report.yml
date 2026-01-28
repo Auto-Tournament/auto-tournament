@@ -135,7 +135,7 @@ body:
       options:
         - label: I've searched existing issues to make sure this isn't a duplicate
           required: true
-        - label: I've checked the documentation at https://mat.sivert.io/
+        - label: I've checked the documentation at https://docs.sivert.io/docs/mat
           required: false
         - label: I've included relevant logs or screenshots
           required: false

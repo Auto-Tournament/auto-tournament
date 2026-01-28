@@ -149,7 +149,7 @@ Can't get your language to load? Open a "Question" or "Bug Report" issue.
 ## 📖 Full Documentation
 
 For detailed technical information, see:
-**[Development → i18n and Translation](https://mat.sivert.io/development/i18n-and-translation/)**
+**[Development → i18n and Translation](https://docs.sivert.io/docs/mat/developer/i18n-and-translation)**
 
 ## 🎉 Contributing Your Translation
 
