@@ -20,9 +20,7 @@ router.use(requireAuth);
  *       - BearerAuth: []
  *     responses:
  *       200:
- *         description: Steam API is configured and available
- *       200:
- *         description: Steam API is not configured
+ *         description: Steam API status. Returns configured=true when key is set and reachable, otherwise configured=false.
  *       503:
  *         description: Steam API key is set but Steam could not be reached
  */

@@ -92,7 +92,7 @@ async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
  *           type: string
  *         description: Tournament ID (currently only "1" is supported)
  *     responses:
-       200:
+ *       200:
  *         description: Leaderboard retrieved successfully
  *       400:
  *         description: Invalid tournament ID
