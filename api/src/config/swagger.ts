@@ -23,7 +23,30 @@ const options: swaggerJsdoc.Options = {
       },
     ],
     components: {
-      securitySchemes: {},
+      securitySchemes: {
+        bearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Dashboard/admin authentication. Send `Authorization: Bearer <token>`.',
+        },
+        // Backward compatible alias: many route docs use BearerAuth.
+        BearerAuth: {
+          type: 'http',
+          scheme: 'bearer',
+          bearerFormat: 'JWT',
+          description:
+            'Dashboard/admin authentication. Send `Authorization: Bearer <token>`.',
+        },
+        matchzyServerToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-MatchZy-Token',
+          description:
+            'Server-to-API authentication (webhooks, reports, demo uploads). Send `X-MatchZy-Token: <token>`.',
+        },
+      },
       schemas: {
         Server: {
           type: 'object',
@@ -185,7 +208,9 @@ const options: swaggerJsdoc.Options = {
       },
     ],
   },
-  apis: ['./src/routes/*.swagger.ts', './src/index.ts'],
+  // Scan all route files so any `@openapi` blocks are included.
+  // (Many endpoints document OpenAPI inline in their route file, not only in `*.swagger.ts`.)
+  apis: ['./src/routes/*.ts', './src/index.ts'],
 };
 
 export const swaggerSpec = swaggerJsdoc(options);
