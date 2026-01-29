@@ -34,6 +34,9 @@ services:
     build:
       context: ..
       dockerfile: docker/Dockerfile
+      args:
+        # Enable developer menus/tools in the client build (see client/src/hooks/useIsDevelopment.ts)
+        VITE_ENABLE_DEV_PAGE: "true"
     container_name: matchzy-tournament-api
     restart: unless-stopped
     depends_on:
