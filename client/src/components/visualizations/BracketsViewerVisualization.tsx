@@ -7,13 +7,14 @@ import {
   type ReactZoomPanPinchRef,
 } from 'react-zoom-pan-pinch';
 import { render } from '../../brackets-viewer';
-import type { Match } from '../../types';
+import type { Match, MatchLiveStats } from '../../types';
 import type { Id, Stage, ParticipantResult } from 'brackets-model';
 import type { Group, Round, Match as ViewerMatch, Participant } from 'brackets-viewer';
 import '../../brackets-viewer/style.scss';
+import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 
 interface BracketsViewerVisualizationProps {
-  matches: Match[];
+  matches: Array<Match & { liveStats?: MatchLiveStats | null }>;
   tournamentType: string;
   isFullscreen?: boolean;
   onMatchClick?: (match: Match) => void;
@@ -244,7 +245,9 @@ export default function BracketsViewerVisualization({
       );
     });
 
-    const registerMatch = (matchId: Id, match: Match) => {
+    type BracketMatch = Match & { liveStats?: MatchLiveStats | null };
+
+    const registerMatch = (matchId: Id, match: BracketMatch) => {
       matchLookup.set(matchId, match);
 
       const stringKey = String(matchId) as Id;
@@ -256,25 +259,19 @@ export default function BracketsViewerVisualization({
       }
     };
 
-    const getBracketScores = (match: Match): { team1Score?: number; team2Score?: number } => {
-      const s1 = match.team1Score;
-      const s2 = match.team2Score;
-
-      // If either side has a numeric score, default the other side to 0 so the
-      // bracket shows "0–1" instead of "–1" or "1–-".
-      if (typeof s1 === 'number' || typeof s2 === 'number') {
-        return {
-          team1Score: typeof s1 === 'number' ? s1 : 0,
-          team2Score: typeof s2 === 'number' ? s2 : 0,
-        };
+    const getBracketScores = (match: BracketMatch): { team1Score?: number; team2Score?: number } => {
+      // Bracket view should always display SERIES score (maps won),
+      // never current-map round score.
+      const series = deriveSeriesScore(match, match.liveStats ?? null);
+      if (series.source !== 'default' || series.team1 !== 0 || series.team2 !== 0) {
+        return { team1Score: series.team1, team2Score: series.team2 };
       }
-
-      // No scores yet (match not started) – let the viewer show dashes.
+      // No series score yet (match not started) – let the viewer show dashes.
       return { team1Score: undefined, team2Score: undefined };
     };
 
     const buildOpponent = (
-      match: Match,
+      match: BracketMatch,
       explicitTeam: Match['team1'],
       position: number | undefined,
       score: number | undefined,

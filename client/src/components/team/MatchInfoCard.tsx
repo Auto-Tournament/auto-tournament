@@ -495,9 +495,9 @@ export function MatchInfoCard({
                 isShuffleMatch && team2AverageElo !== null ? Math.round(team2AverageElo) : undefined
               }
               liveStatusDisplay={liveStatusDisplay}
-              // For BO1, completed, shuffle, or manual matches, showing both "Series Maps Won" and
-              // "Map Rounds" can look duplicated or misleading. Hide the series row and keep the
-              // per‑map round result instead.
+              // For BO1, completed, shuffle, or manual matches, showing both "Series score (Maps won)"
+              // and "Current map score (Rounds)" can look duplicated or misleading. Hide the series row
+              // and keep the per-map rounds instead.
               hideSeriesWins={
                 isShuffleMatch || isCompletedMatch || matchFormat === 'bo1' || isManualMatch
               }

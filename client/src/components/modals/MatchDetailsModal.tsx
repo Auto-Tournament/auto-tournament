@@ -59,6 +59,12 @@ import { isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import { normalizeConfigPlayers } from '../../utils/playerUtils';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
+import {
+  CURRENT_MAP_SCORE_LABEL,
+  SERIES_SCORE_LABEL,
+  deriveCurrentMapScore,
+  deriveSeriesScore,
+} from '../../utils/matchScoreDisplay';
 
 interface MatchDetailsModalProps {
   match: Match | null;
@@ -149,60 +155,21 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
       return { team1: 0, team2: 0 };
     }
 
-    const dbSeriesTeam1 = typeof match.team1Score === 'number' ? match.team1Score : 0;
-    const dbSeriesTeam2 = typeof match.team2Score === 'number' ? match.team2Score : 0;
-    const hasSeriesOnMatch = dbSeriesTeam1 > 0 || dbSeriesTeam2 > 0;
+    const derived = deriveSeriesScore(match, liveStats ?? null);
 
-    // Completed series: trust the DB-enriched series score.
-    if (match.status === 'completed' && hasSeriesOnMatch) {
-      return {
-        team1: dbSeriesTeam1,
-        team2: dbSeriesTeam2,
-      };
-    }
+    // Keep the modal consistent with bracket views which may already have a
+    // non-zero series score stored on the match object.
+    // NOTE: we ONLY trust match.team1Score/team2Score as series score when completed
+    // (deriveSeriesScore enforces this), so this cannot be polluted by live round overlays.
+    const dbBaseline =
+      match.status === 'completed'
+        ? { team1: match.team1Score ?? 0, team2: match.team2Score ?? 0 }
+        : { team1: 0, team2: 0 };
 
-    // Live / in-progress series: prefer live series scores from the snapshot, but
-    // never show a score lower than what we already have on the match object.
-    // This keeps the modal consistent with the bracket view (which reads DB scores).
-    if (
-      liveStats &&
-      (typeof liveStats.team1SeriesScore === 'number' ||
-        typeof liveStats.team2SeriesScore === 'number')
-    ) {
-      const liveTeam1 = liveStats.team1SeriesScore ?? 0;
-      const liveTeam2 = liveStats.team2SeriesScore ?? 0;
-      return {
-        team1: Math.max(dbSeriesTeam1, liveTeam1),
-        team2: Math.max(dbSeriesTeam2, liveTeam2),
-      };
-    }
-
-    // If we have a DB series score on the match, use it as a baseline even if
-    // the series is still technically in progress.
-    if (hasSeriesOnMatch) {
-      return {
-        team1: dbSeriesTeam1,
-        team2: dbSeriesTeam2,
-      };
-    }
-
-    // Fallback: derive from finished maps we have in match.mapResults.
-    if (match.mapResults && match.mapResults.length > 0) {
-      return match.mapResults.reduce(
-        (acc, result) => {
-          if (result.team1Score > result.team2Score) {
-            acc.team1 += 1;
-          } else if (result.team2Score > result.team1Score) {
-            acc.team2 += 1;
-          }
-          return acc;
-        },
-        { team1: 0, team2: 0 }
-      );
-    }
-
-    // Last resort: no series score and no map results yet.
-    return { team1: 0, team2: 0 };
+    return {
+      team1: Math.max(dbBaseline.team1, derived.team1),
+      team2: Math.max(dbBaseline.team2, derived.team2),
+    };
   }, [match, liveStats]);
 
   const handleDelete = async () => {
@@ -265,8 +232,8 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
   };
 
   // Start from DB-backed scores
-  let mapRoundsTeam1 = match.team1Score ?? 0;
-  let mapRoundsTeam2 = match.team2Score ?? 0;
+  let mapRoundsTeam1 = 0;
+  let mapRoundsTeam2 = 0;
   let activeMapNumber: number | null = match.mapNumber ?? null;
   const mapList = Array.isArray(match.config?.maplist) ? match.config.maplist : [];
   const configMaps =
@@ -283,31 +250,13 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
       : Array.isArray(match.maps) && match.maps.length > 0
       ? match.maps
       : mapResultsFallback;
-  // For completed matches, always trust persisted map results / DB scores and
-  // ignore any late or reset live stats that might report 0-0 after the fact.
-  if (match.status === 'completed') {
-    if (match.mapResults && match.mapResults.length > 0) {
-      const fallbackResult = match.mapResults[match.mapResults.length - 1];
-      const completedMapNumber =
-        typeof activeMapNumber === 'number' ? activeMapNumber : fallbackResult.mapNumber;
-      const resultForScore =
-        match.mapResults.find((mr) => mr.mapNumber === completedMapNumber) ?? fallbackResult;
-
-      mapRoundsTeam1 = resultForScore.team1Score;
-      mapRoundsTeam2 = resultForScore.team2Score;
-      // Keep activeMapNumber consistent with whichever result we used
-      activeMapNumber = resultForScore.mapNumber;
-    } else {
-      // We don't have per-map round scores here (only series wins), so avoid
-      // showing misleading "Map Rounds 1–2" by resetting map rounds to 0–0.
-      mapRoundsTeam1 = 0;
-      mapRoundsTeam2 = 0;
-    }
-  } else if (liveStats) {
-    // While match is in progress, prefer live stats so the UI updates in real time.
-    mapRoundsTeam1 = liveStats.team1Score ?? mapRoundsTeam1;
-    mapRoundsTeam2 = liveStats.team2Score ?? mapRoundsTeam2;
-    activeMapNumber = liveStats.mapNumber ?? activeMapNumber;
+  const currentMapScore = deriveCurrentMapScore(match, liveStats ?? null, {
+    mapNumber: activeMapNumber,
+  });
+  mapRoundsTeam1 = currentMapScore.team1;
+  mapRoundsTeam2 = currentMapScore.team2;
+  if (match.status !== 'completed' && liveStats && typeof liveStats.mapNumber === 'number') {
+    activeMapNumber = liveStats.mapNumber;
   }
 
   const activeMapKey =
@@ -727,7 +676,7 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                         </Typography>
                       </Box>
                       <Typography variant="caption" color="text.secondary" mt={1}>
-                        Series Maps Won
+                        {SERIES_SCORE_LABEL}
                       </Typography>
                     </>
                   )}
@@ -755,7 +704,7 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                     </Typography>
                   </Box>
                   <Typography variant="caption" color="text.secondary">
-                    Map Rounds
+                    {CURRENT_MAP_SCORE_LABEL}
                   </Typography>
                   {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
                     <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>

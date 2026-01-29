@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
-import type { Match, Tournament } from '../types';
+import type { Match, MatchLiveStats, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
 export const useBracket = () => {
@@ -9,7 +9,8 @@ export const useBracket = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [tournament, setTournament] = useState<Tournament | null>(null);
-  const [matches, setMatches] = useState<Match[]>([]);
+  type BracketMatch = Match & { liveStats?: MatchLiveStats | null };
+  const [matches, setMatches] = useState<BracketMatch[]>([]);
   const [totalRounds, setTotalRounds] = useState(0);
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
@@ -39,7 +40,7 @@ export const useBracket = () => {
 
       if (response.success && response.tournament) {
         setTournament(response.tournament);
-        setMatches(response.matches || []);
+        setMatches((response.matches || []) as BracketMatch[]);
         setTotalRounds(response.totalRounds || 0);
       } else {
         // No tournament yet - not an error, just empty state
@@ -129,7 +130,7 @@ export const useBracket = () => {
         if (index === -1) return prev;
 
         const current = prev[index];
-        const next: Match = { ...current };
+        const next: BracketMatch = { ...current };
         let changed = false;
 
         let newStatus: Match['status'] | undefined;
@@ -176,30 +177,17 @@ export const useBracket = () => {
           changed = true;
         }
 
-        // If we received liveStats with a current map score, overlay those
-        // for in-progress matches so the bracket cards can display live
-        // map rounds (e.g. 8‑5) instead of staying at 0‑0 until the map
-        // finishes. For completed matches we always trust the persisted
-        // series result and never override it with live stats.
+        // IMPORTANT: In bracket context, `team1Score/team2Score` represent the
+        // series score (maps won). We must NOT overwrite them with current-map
+        // round score from liveStats, otherwise bracket tiles show 8–5 etc.
+        // Store liveStats separately so tooltips/details can still show rounds.
         const liveStats = (payload as {
           liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
         }).liveStats;
         const effectiveStatus = newStatus ?? current.status;
         if (liveStats && effectiveStatus !== 'completed') {
-          if (
-            typeof liveStats.team1Score === 'number' &&
-            liveStats.team1Score !== next.team1Score
-          ) {
-            next.team1Score = liveStats.team1Score;
-            changed = true;
-          }
-          if (
-            typeof liveStats.team2Score === 'number' &&
-            liveStats.team2Score !== next.team2Score
-          ) {
-            next.team2Score = liveStats.team2Score;
-            changed = true;
-          }
+          next.liveStats = liveStats as MatchLiveStats;
+          changed = true;
         }
 
         const winnerId =

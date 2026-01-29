@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box, Card, CardContent, Typography, Chip, Stack } from '@mui/material';
+import { Box, Card, CardContent, Typography, Chip, Stack, Tooltip } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
+import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
 
 interface MatchCardProps {
   match: Match;
@@ -346,20 +347,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </Box>
             {getTeamScoreDisplay('team1') !== undefined && (
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{
-                  minWidth: 24,
-                  textAlign: 'right',
-                  ml: 1,
-                  // On the green winner background we want a dark score color
-                  // for better contrast; on non-winner rows keep the default.
-                  color: team1IsWinner ? 'grey.900' : 'text.primary',
-                }}
+              <Tooltip
+                title={match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL}
+                placement="top"
               >
-                {getTeamScoreDisplay('team1')}
-              </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{
+                    minWidth: 24,
+                    textAlign: 'right',
+                    ml: 1,
+                    // On the green winner background we want a dark score color
+                    // for better contrast; on non-winner rows keep the default.
+                    color: team1IsWinner ? 'grey.900' : 'text.primary',
+                  }}
+                >
+                  {getTeamScoreDisplay('team1')}
+                </Typography>
+              </Tooltip>
             )}
           </Box>
 
@@ -398,18 +404,23 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               )}
             </Box>
             {getTeamScoreDisplay('team2') !== undefined && (
-              <Typography
-                variant="h6"
-                fontWeight={700}
-                sx={{
-                  minWidth: 24,
-                  textAlign: 'right',
-                  ml: 1,
-                  color: team2IsWinner ? 'grey.900' : 'text.primary',
-                }}
+              <Tooltip
+                title={match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL}
+                placement="top"
               >
-                {getTeamScoreDisplay('team2')}
-              </Typography>
+                <Typography
+                  variant="h6"
+                  fontWeight={700}
+                  sx={{
+                    minWidth: 24,
+                    textAlign: 'right',
+                    ml: 1,
+                    color: team2IsWinner ? 'grey.900' : 'text.primary',
+                  }}
+                >
+                  {getTeamScoreDisplay('team2')}
+                </Typography>
+              </Tooltip>
             )}
           </Box>
         </Stack>

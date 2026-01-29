@@ -1,5 +1,6 @@
 import React from 'react';
 import { Stack, Typography, Chip, Paper, Box } from '@mui/material';
+import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
 
 interface MatchScoreboardProps {
   leftName?: string | null;
@@ -53,7 +54,7 @@ export function MatchScoreboard({
                 {leftSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Series Maps Won
+                {SERIES_SCORE_LABEL}
               </Typography>
             </>
           )}
@@ -61,7 +62,7 @@ export function MatchScoreboard({
             {leftMapRounds}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Map Rounds
+            {CURRENT_MAP_SCORE_LABEL}
           </Typography>
         </Stack>
         <Stack spacing={1} alignItems="center" mx={3}>
@@ -92,7 +93,7 @@ export function MatchScoreboard({
                 {rightSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Series Maps Won
+                {SERIES_SCORE_LABEL}
               </Typography>
             </>
           )}
@@ -100,7 +101,7 @@ export function MatchScoreboard({
             {rightMapRounds}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Map Rounds
+            {CURRENT_MAP_SCORE_LABEL}
           </Typography>
         </Stack>
       </Box>

@@ -259,7 +259,7 @@ export default function Bracket() {
     setSelectedMatchOverride(null);
 
     // Bracket matches often only have series score; load full details (including
-    // mapResults) so the modal can show correct "Map Rounds" even when opened
+    // mapResults) so the modal can show correct per-map rounds even when opened
     // from the bracket list view.
     try {
       const response = await api.get<{ success: boolean; match: Match }>(
@@ -769,6 +769,7 @@ export default function Bracket() {
                         match={match}
                         matchNumber={getGlobalMatchNumber(match)}
                         roundLabel={getBracketRoundLabel(round)}
+                        scoreDisplayMode="series"
                         onClick={() => handleMatchClick(match)}
                       />
                     ))}

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, Box, Typography, Chip } from '@mui/material';
+import { Card, CardContent, Box, Typography, Chip, Tooltip } from '@mui/material';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import {
   isManualMatch,
@@ -7,13 +7,20 @@ import {
   isVetoDisabledForMatch,
   type MatchLike,
 } from '../../utils/matchFlags';
-import type { Match } from '../../types';
+import type { Match, MatchLiveStats } from '../../types';
+import {
+  CURRENT_MAP_SCORE_LABEL,
+  SERIES_SCORE_LABEL,
+  deriveCurrentMapScore,
+  deriveSeriesScore,
+} from '../../utils/matchScoreDisplay';
 
 interface MatchListCardProps {
   match: Match;
   matchNumber: number;
   roundLabel?: string;
   onClick?: () => void;
+  scoreDisplayMode?: 'auto' | 'series';
 }
 
 export const MatchListCard: React.FC<MatchListCardProps> = ({
@@ -21,7 +28,9 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   matchNumber,
   roundLabel: _roundLabel,
   onClick,
+  scoreDisplayMode = 'auto',
 }) => {
+  const bracketMatch = match as Match & { liveStats?: MatchLiveStats | null };
   const matchLike = match as unknown as MatchLike;
   const shuffle = isShuffleMatch(matchLike);
   const manual = isManualMatch(matchLike);
@@ -86,6 +95,11 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   };
 
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
+    if (scoreDisplayMode === 'series') {
+      const series = deriveSeriesScore(bracketMatch, bracketMatch.liveStats ?? null);
+      return team === 'team1' ? series.team1 : series.team2;
+    }
+
     if (match.status === 'completed') {
       // Normal path: use derived series maps (best-of-N).
       let seriesScore = team === 'team1' ? seriesMapsTeam1 : seriesMapsTeam2;
@@ -115,6 +129,23 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   // the round label, so always show "Map N" (defaulting to Map 1 when unknown).
   const metaLabel =
     typeof match.mapNumber === 'number' ? `Map ${match.mapNumber + 1}` : 'Map 1';
+
+  const tooltipTitle = (() => {
+    if (scoreDisplayMode === 'series') {
+      const series = deriveSeriesScore(bracketMatch, bracketMatch.liveStats ?? null);
+      const current = deriveCurrentMapScore(bracketMatch, bracketMatch.liveStats ?? null, {
+        mapNumber: match.mapNumber ?? null,
+      });
+      const hasLiveRounds =
+        !!bracketMatch.liveStats &&
+        (match.status === 'live' || match.status === 'loaded') &&
+        (current.source === 'liveStats' || current.team1 !== 0 || current.team2 !== 0);
+      return hasLiveRounds
+        ? `${CURRENT_MAP_SCORE_LABEL}: ${current.team1} - ${current.team2}`
+        : `${SERIES_SCORE_LABEL}: ${series.team1} - ${series.team2}`;
+    }
+    return match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL;
+  })();
 
   const getBorderColor = () => {
     // Bracket list view server status accents:
@@ -200,11 +231,13 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                 {getTeamName(match.team1?.id, 'team1')}
               </Typography>
 
-              <Typography variant="h6" fontWeight={700}>
-                {getTeamScoreDisplay('team1') !== undefined &&
-                  getTeamScoreDisplay('team2') !== undefined &&
-                  `${getTeamScoreDisplay('team1')} - ${getTeamScoreDisplay('team2')}`}
-              </Typography>
+              <Tooltip title={tooltipTitle} placement="top">
+                <Typography variant="h6" fontWeight={700}>
+                  {getTeamScoreDisplay('team1') !== undefined &&
+                    getTeamScoreDisplay('team2') !== undefined &&
+                    `${getTeamScoreDisplay('team1')} - ${getTeamScoreDisplay('team2')}`}
+                </Typography>
+              </Tooltip>
 
               <Typography
                 variant="body2"
