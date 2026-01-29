@@ -702,8 +702,13 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
     const { enableSimulation } = (req.body ?? {}) as { enableSimulation?: unknown };
 
     // Optional one-shot toggle to enable simulation mode at the moment the
-    // tournament is started (dev-only safety; ignored in production).
-    if (enableSimulation === true && process.env.NODE_ENV !== 'production') {
+    // tournament is started (dev-only safety; ignored in production unless explicitly enabled).
+    const simulationAllowedInProd =
+      process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
+    if (
+      enableSimulation === true &&
+      (process.env.NODE_ENV !== 'production' || simulationAllowedInProd)
+    ) {
       try {
         await settingsService.setSetting('simulate_matches', '1');
         log.info('[VETO-SIM] Simulation mode enabled via /api/tournament/start payload');
