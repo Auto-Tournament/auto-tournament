@@ -114,6 +114,31 @@ export default [
     },
   },
 
+  // Frontend tooling scripts (client/scripts/**/*.mjs)
+  // These run in Node, but may use modern Web APIs available in Node (fetch, AbortController, etc).
+  {
+    files: ['client/scripts/**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'module',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly',
+        setInterval: 'readonly',
+        clearInterval: 'readonly',
+        fetch: 'readonly',
+        AbortController: 'readonly',
+        structuredClone: 'readonly',
+        Promise: 'readonly',
+      },
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+
   // Tests TypeScript files (tests/**/*.ts)
   {
     files: ['tests/**/*.ts'],

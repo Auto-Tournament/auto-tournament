@@ -116,20 +116,6 @@ function flattenStringLeaves(obj) {
  * @param {unknown} obj
  * @param {string[]} pathParts
  */
-function getAtPath(obj, pathParts) {
-  let cur = obj;
-  for (const p of pathParts) {
-    if (!isPlainObject(cur)) return undefined;
-    cur = cur[p];
-  }
-  return cur;
-}
-
-/**
- * @param {unknown} obj
- * @param {string[]} pathParts
- * @param {string} newValue
- */
 function setAtPath(obj, pathParts, newValue) {
   let cur = obj;
   for (let i = 0; i < pathParts.length - 1; i++) {
@@ -241,7 +227,6 @@ const localeToTarget = {
 
 const en = loadLocaleMergedJson(localesDir, 'en');
 if (!en) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: English locale not found at src/locales/en/translation');
   process.exit(1);
 }
@@ -263,14 +248,12 @@ const onlyFiles = (process.env.I18N_TRANSLATE_FILES ?? '')
   .map((s) => s.trim())
   .filter(Boolean);
 
-// eslint-disable-next-line no-console
 console.log(`Locales: ${locales.join(', ')}`);
 
 for (const locale of locales) {
   if (onlyLocales.length && !onlyLocales.includes(locale)) continue;
   const target = localeToTarget[locale];
   if (!target) {
-    // eslint-disable-next-line no-console
     console.warn(`Skipping ${locale}: no target language mapping`);
     continue;
   }
@@ -287,11 +270,9 @@ for (const locale of locales) {
   const cache = exists(cachePath) ? readJson(cachePath) : {};
   let cacheDirty = false;
 
-  // eslint-disable-next-line no-console
   console.log(`\n== ${locale} (${target}) ==`);
 
   for (const fileName of jsonFiles) {
-    // eslint-disable-next-line no-console
     console.log(`-- ${fileName}`);
     const filePath = path.join(localeDir, fileName);
     const obj = readJson(filePath);
@@ -316,7 +297,6 @@ for (const locale of locales) {
           // gentle pacing
           await sleep(250);
         } catch (e) {
-          // eslint-disable-next-line no-console
           console.warn(`Translate failed for ${locale} ${p}: ${(e && e.message) || e}`);
           continue;
         }
@@ -330,7 +310,6 @@ for (const locale of locales) {
 
     if (changed > 0) {
       writeJsonPretty(filePath, obj);
-      // eslint-disable-next-line no-console
       console.log(`- ${fileName}: translated ${changed} string(s)`);
       changed = 0;
     }

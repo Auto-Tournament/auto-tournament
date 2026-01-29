@@ -44,14 +44,12 @@ const repoRoot = path.resolve(process.cwd(), '..');
 const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
 
 if (!exists(localesDir)) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: locales dir not found:', localesDir);
   process.exit(1);
 }
 
 const enDir = path.join(localesDir, 'en', 'translation');
 if (!exists(enDir)) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: English translation dir not found:', enDir);
   process.exit(1);
 }
@@ -91,5 +89,4 @@ for (const locale of locales) {
   }
 }
 
-// eslint-disable-next-line no-console
 console.log(`i18n sync complete: updated ${filesChanged} file(s).`);

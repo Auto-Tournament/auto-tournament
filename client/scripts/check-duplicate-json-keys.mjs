@@ -265,19 +265,15 @@ for (const file of targets) {
 }
 
 if (failures.length) {
-  // eslint-disable-next-line no-console
   console.error('Duplicate JSON keys detected:\\n');
   for (const f of failures) {
-    // eslint-disable-next-line no-console
     console.error(`- ${path.relative(repoRoot, f.file)}`);
     const unique = new Set(f.dups.map((d) => d.path));
     for (const p of unique) {
-      // eslint-disable-next-line no-console
       console.error(`  - ${p}`);
     }
   }
   process.exit(1);
 }
 
-// eslint-disable-next-line no-console
 console.log(`OK: No duplicate JSON keys in ${targets.length} file(s).`);

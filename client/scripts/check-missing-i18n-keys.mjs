@@ -77,14 +77,12 @@ const repoRoot = path.resolve(process.cwd(), '..');
 const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
 
 if (!exists(localesDir)) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: locales dir not found:', localesDir);
   process.exit(1);
 }
 
 const en = loadLocaleMergedJson(localesDir, 'en');
 if (!en) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: English locale not found at src/locales/en/translation');
   process.exit(1);
 }
@@ -113,22 +111,18 @@ for (const locale of locales) {
 const totalMissing = results.reduce((sum, r) => sum + r.missing.length, 0);
 const totalExtra = results.reduce((sum, r) => sum + r.extra.length, 0);
 
-// eslint-disable-next-line no-console
 console.log(`i18n missing keys vs en: ${totalMissing} missing, ${totalExtra} extra (leaf paths).`);
 
 const limit = Number(process.env.I18N_MISSING_LIMIT ?? '50');
 for (const r of results) {
   if (r.missing.length === 0 && r.extra.length === 0) continue;
-  // eslint-disable-next-line no-console
   console.log(`\n${r.locale}: missing ${r.missing.length}, extra ${r.extra.length}`);
   if (r.missing.length) {
-    // eslint-disable-next-line no-console
     console.log('  missing (first):');
     for (const p of r.missing.slice(0, limit)) console.log(`    - ${p}`);
     if (r.missing.length > limit) console.log(`    ... (${r.missing.length - limit} more)`);
   }
   if (r.extra.length) {
-    // eslint-disable-next-line no-console
     console.log('  extra (first):');
     for (const p of r.extra.slice(0, limit)) console.log(`    - ${p}`);
     if (r.extra.length > limit) console.log(`    ... (${r.extra.length - limit} more)`);

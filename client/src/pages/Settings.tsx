@@ -727,6 +727,7 @@ export default function Settings() {
     matchzyDebugChatEnabled,
     ratingsEnabled,
     allowSelfRegister,
+    matchzyAutostartMode,
     matchzyMinimumReadyRequired,
     matchzyAllowForceReady,
     matchzyKickWhenNoMatchLoaded,

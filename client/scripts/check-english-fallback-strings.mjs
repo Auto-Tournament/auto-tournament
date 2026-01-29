@@ -112,14 +112,12 @@ const repoRoot = path.resolve(process.cwd(), '..');
 const localesDir = path.join(repoRoot, 'client', 'src', 'locales');
 
 if (!exists(localesDir)) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: locales dir not found:', localesDir);
   process.exit(1);
 }
 
 const en = loadLocaleMergedJson(localesDir, 'en');
 if (!en) {
-  // eslint-disable-next-line no-console
   console.error('ERROR: English locale not found at src/locales/en/translation');
   process.exit(1);
 }
@@ -157,19 +155,15 @@ for (const locale of locales) {
 
   if (sameAsEn.length === 0) continue;
   total += sameAsEn.length;
-  // eslint-disable-next-line no-console
   console.log(`\n${locale}: ${sameAsEn.length} string(s) identical to en (excluding obvious OK matches)`);
   for (const item of sameAsEn.slice(0, limit)) {
-    // eslint-disable-next-line no-console
     console.log(`  - ${item.path}: ${JSON.stringify(item.value)}`);
   }
   if (sameAsEn.length > limit) {
-    // eslint-disable-next-line no-console
     console.log(`  ... (${sameAsEn.length - limit} more)`);
   }
 }
 
-// eslint-disable-next-line no-console
 console.log(`\nTotal identical-to-en strings (filtered): ${total}`);
 
 if (total > 0) process.exitCode = 2;
