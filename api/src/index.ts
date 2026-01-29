@@ -341,11 +341,6 @@ app.use('/api/matchzy', matchzyRoutes); // MatchZy Enhanced version info
 const publicPath = path.join(__dirname, '..', 'public');
 app.use('/app', express.static(publicPath));
 
-// Flagpack assets are referenced from an absolute /flags/* path.
-// Since the SPA is mounted under /app, we also expose the same static folder at /flags
-// so flags resolve correctly in production.
-app.use('/flags', express.static(path.join(publicPath, 'flags')));
-
 // Serve map images statically
 app.use('/map-images', express.static(path.join(publicPath, 'map-images')));
 app.get('/app/*', (_req: Request, res: Response) => {

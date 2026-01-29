@@ -1,7 +1,7 @@
 import React from 'react';
 import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import Flag from 'react-flagpack';
+import * as Flags from 'country-flag-icons/react/3x2';
 
 const LANGUAGES: {
   code: string;
@@ -19,6 +19,36 @@ const LANGUAGES: {
   { code: 'zh-CN', flagCode: 'CN', label: '简体中文' },
   { code: 'nb', flagCode: 'NO', label: 'Norsk bokmål' },
 ];
+
+type FlagComponent = React.ComponentType<Record<string, never>>;
+const FlagByCode = Flags as unknown as Record<string, FlagComponent>;
+
+function FlagIcon({ code }: { code: string }) {
+  const C = FlagByCode[code] ?? FlagByCode.GB;
+  return (
+    <Box
+      component="span"
+      sx={{
+        width: 26,
+        height: 19,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+        borderRadius: '7px',
+        border: '1px solid rgba(255, 255, 255, 0.18)',
+        boxShadow: '0 1px 2px rgba(0, 0, 0, 0.35)',
+        '& svg': {
+          width: '100%',
+          height: '100%',
+          display: 'block',
+        },
+      }}
+    >
+      <C />
+    </Box>
+  );
+}
 
 function normalizeLanguageCode(raw: string): string {
   const lng = raw || 'en';
@@ -67,9 +97,7 @@ export const LanguageSwitcher: React.FC = () => {
           aria-label={`Language: ${currentLang.label}`}
           sx={{ p: 0.75 }}
         >
-          <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-            <Flag code={currentLang.flagCode} size="S" />
-          </Box>
+          <FlagIcon code={currentLang.flagCode} />
         </IconButton>
       </Tooltip>
       <Menu
@@ -87,9 +115,7 @@ export const LanguageSwitcher: React.FC = () => {
             sx={{ minHeight: 40 }}
             aria-label={label}
           >
-            <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
-              <Flag code={flagCode} size="S" />
-            </Box>
+            <FlagIcon code={flagCode} />
           </MenuItem>
         ))}
       </Menu>

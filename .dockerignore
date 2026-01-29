@@ -36,6 +36,10 @@ dist/
 dist-ssr/
 *.local
 
+# Flagpack legacy artifacts (no longer used)
+client/public/flags/
+api/public/flags/
+
 # IDE
 .vscode
 .idea
