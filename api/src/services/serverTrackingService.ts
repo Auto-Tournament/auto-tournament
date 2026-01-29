@@ -25,6 +25,76 @@ export interface ServerConfiguredEvent {
 
 class ServerTrackingService {
   /**
+   * In-memory reachability failure counter per server.
+   * This avoids flapping "offline" due to transient RCON issues.
+   *
+   * NOTE: This is intentionally not persisted (no DB migration required).
+   */
+  private readonly reachabilityFailureCounts = new Map<string, number>();
+
+  recordReachability(serverId: string, ok: boolean): number {
+    if (ok) {
+      this.reachabilityFailureCounts.delete(serverId);
+      return 0;
+    }
+
+    const next = (this.reachabilityFailureCounts.get(serverId) ?? 0) + 1;
+    this.reachabilityFailureCounts.set(serverId, next);
+    return next;
+  }
+
+  shouldMarkOffline(serverId: string, failureThreshold: number): boolean {
+    if (failureThreshold <= 0) return true;
+    return (this.reachabilityFailureCounts.get(serverId) ?? 0) >= failureThreshold;
+  }
+
+  pruneReachabilityFailures(activeServerIds: Set<string>): void {
+    for (const serverId of this.reachabilityFailureCounts.keys()) {
+      if (!activeServerIds.has(serverId)) {
+        this.reachabilityFailureCounts.delete(serverId);
+      }
+    }
+  }
+
+  async markServerOnline(serverId: string, reason?: string): Promise<boolean> {
+    const now = Math.floor(Date.now() / 1000);
+
+    // Only update when it actually changes to avoid noisy writes/logs.
+    const result = await db.updateAsync(
+      'servers',
+      { status: 'online', updated_at: now },
+      "id = ? AND (status IS NULL OR status != 'online')",
+      [serverId]
+    );
+
+    if (result.changes > 0) {
+      log.info(`[SERVER-TRACKING] ✓ Marked server online: ${serverId}${reason ? ` (${reason})` : ''}`);
+      return true;
+    }
+
+    return false;
+  }
+
+  async markServerOffline(serverId: string, reason?: string): Promise<boolean> {
+    const now = Math.floor(Date.now() / 1000);
+
+    // Only update when it actually changes to avoid noisy writes/logs.
+    const result = await db.updateAsync(
+      'servers',
+      { status: 'offline', updated_at: now },
+      "id = ? AND (status IS NULL OR status != 'offline')",
+      [serverId]
+    );
+
+    if (result.changes > 0) {
+      log.warn(`[SERVER-TRACKING] ⚠️  Marked server offline: ${serverId}${reason ? ` (${reason})` : ''}`);
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * Handle server_configured event from MatchZy
    * Registers or updates server information
    */
@@ -96,6 +166,9 @@ class ServerTrackingService {
       } else {
         log.info(`[SERVER-TRACKING] ✓ Heartbeat updated for ${serverId}`);
       }
+
+      // A fresh event is a strong online signal; reset reachability failures.
+      this.recordReachability(serverId, true);
     } catch (error) {
       log.warn(`[SERVER-TRACKING] Failed to update heartbeat for ${serverId}`, { error });
     }

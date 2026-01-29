@@ -129,20 +129,18 @@ export default function Servers() {
       const response = await api.get<ServersResponse>('/api/servers');
       const serverList = response.servers || [];
 
-      // Determine initial status from database fields (no "checking" state)
-      const now = Math.floor(Date.now() / 1000);
-      const INACTIVE_THRESHOLD = 5 * 60; // 5 minutes
-      
+      // Determine an initial status without treating "no recent events" as offline.
+      // Actual reachability is populated shortly after via `/api/servers/:id/status`.
       const serversWithStatus = serverList.map((s: Server) => {
         let initialStatus: string;
         if (!s.enabled) {
           initialStatus = 'disabled';
+        } else if (s.status === 'offline') {
+          initialStatus = 'offline';
         } else if (!s.lastSeen) {
           initialStatus = 'unknown'; // Never connected
-        } else if (now - s.lastSeen < INACTIVE_THRESHOLD) {
-          initialStatus = 'online'; // Active heartbeat
         } else {
-          initialStatus = 'offline'; // Inactive
+          initialStatus = 'online';
         }
         
         return {
@@ -669,7 +667,7 @@ export default function Servers() {
   // Calculate server statistics based on heartbeat tracking
   const serverStats = React.useMemo(() => {
     const now = Math.floor(Date.now() / 1000);
-    const INACTIVE_THRESHOLD = 5 * 60; // 5 minutes
+    const HEARTBEAT_RECENT_THRESHOLD = 5 * 60; // 5 minutes
     
     let online = 0;
     let offline = 0;
@@ -681,10 +679,19 @@ export default function Servers() {
         disabled++;
       } else if (!server.lastSeen) {
         notConfigured++; // Enabled but never configured - cannot be used
-      } else if (now - server.lastSeen < INACTIVE_THRESHOLD) {
-        online++;
       } else {
-        offline++;
+        const heartbeatRecent = now - server.lastSeen < HEARTBEAT_RECENT_THRESHOLD;
+        const reachable = server.reachableFromApi === true;
+        const explicitlyOffline = server.status !== 'online' && server.reachableFromApi === false;
+
+        if (explicitlyOffline) {
+          offline++;
+        } else if (reachable || heartbeatRecent || server.status === 'online') {
+          online++;
+        } else {
+          // Conservatively treat as online until we have a definitive reachability failure.
+          online++;
+        }
       }
     });
     
@@ -1053,6 +1060,7 @@ export default function Servers() {
                             const serverCanReachApi = server.serverCanReachApi;
                             const now = Math.floor(Date.now() / 1000);
                             const isHeartbeatActive = server.lastSeen && (now - server.lastSeen < 300); // 5 minutes
+                            const isHeartbeatStale = !!server.lastSeen && !isHeartbeatActive;
 
                             let label: string;
                             let color: 'default' | 'success' | 'error' | 'warning' | 'info' =
@@ -1069,11 +1077,11 @@ export default function Servers() {
                                 ? 'No events yet'
                                 : 'Not Configured';
                               color = server.persistentConfigSent ? 'info' : 'error';
-                            } else if (server.lastSeen && !isHeartbeatActive) {
-                              // Heartbeat-based offline detection (more reliable)
-                              label = 'Offline (No Events)';
-                              color = 'error';
-                            } else if (server.status !== 'online') {
+                            } else if (isHeartbeatStale && reachableFromApi === true) {
+                              label = 'Online (Idle — no recent events)';
+                              color = 'info';
+                            } else if (server.status !== 'online' && reachableFromApi === false) {
+                              // Reserve "Offline" for true reachability failure (or when backend marks it offline).
                               label = t('serversPage.statusChip.offline');
                               color = 'error';
                             } else if (reachableFromApi && serverCanReachApi) {
