@@ -97,6 +97,21 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
     if (scoreDisplayMode === 'series') {
       const series = deriveSeriesScore(bracketMatch, bracketMatch.liveStats ?? null);
+      const isInProgress = match.status === 'loaded' || match.status === 'live';
+      const isNotStarted = match.status === 'pending' || match.status === 'ready';
+      const isUnknownZero =
+        series.source === 'default' && series.team1 === 0 && series.team2 === 0;
+
+      // Keep dashes for not-started matches with no known series score yet.
+      if (isNotStarted && isUnknownZero) {
+        return undefined;
+      }
+
+      // For loaded/live matches, show at least 0-0 immediately.
+      if (isInProgress) {
+        return team === 'team1' ? series.team1 : series.team2;
+      }
+
       return team === 'team1' ? series.team1 : series.team2;
     }
 

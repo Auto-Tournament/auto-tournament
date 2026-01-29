@@ -4,6 +4,52 @@ import { io } from 'socket.io-client';
 import type { Match, MatchLiveStats, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
+const LIVE_STATS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const getLiveStatsCacheKey = (tournamentId: number) => `mat:bracket:liveStats:v1:${tournamentId}`;
+type CachedLiveStatsEntry = { liveStats: MatchLiveStats; cachedAt: number };
+
+function readLiveStatsCache(tournamentId: number): Record<string, CachedLiveStatsEntry> {
+  try {
+    const raw = globalThis.localStorage.getItem(getLiveStatsCacheKey(tournamentId));
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, CachedLiveStatsEntry>;
+    if (!parsed || typeof parsed !== 'object') return {};
+    return parsed;
+  } catch {
+    return {};
+  }
+}
+
+function writeLiveStatsCache(tournamentId: number, next: Record<string, CachedLiveStatsEntry>): void {
+  try {
+    globalThis.localStorage.setItem(getLiveStatsCacheKey(tournamentId), JSON.stringify(next));
+  } catch {
+    // best-effort only
+  }
+}
+
+function pruneLiveStatsCache(
+  tournamentId: number,
+  nowMs: number
+): Record<string, CachedLiveStatsEntry> {
+  const cache = readLiveStatsCache(tournamentId);
+  let changed = false;
+  for (const [slug, entry] of Object.entries(cache)) {
+    if (
+      !entry ||
+      typeof entry.cachedAt !== 'number' ||
+      nowMs - entry.cachedAt > LIVE_STATS_CACHE_TTL_MS
+    ) {
+      delete cache[slug];
+      changed = true;
+    }
+  }
+  if (changed) {
+    writeLiveStatsCache(tournamentId, cache);
+  }
+  return cache;
+}
+
 export const useBracket = () => {
   const { showSuccess, showError, showSnackbar } = useSnackbar();
   const [loading, setLoading] = useState(true);
@@ -14,6 +60,7 @@ export const useBracket = () => {
   const [totalRounds, setTotalRounds] = useState(0);
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
+  const tournamentIdRef = useRef<number | null>(null);
 
   /**
    * Load or reload the current bracket.
@@ -40,11 +87,27 @@ export const useBracket = () => {
 
       if (response.success && response.tournament) {
         setTournament(response.tournament);
-        setMatches((response.matches || []) as BracketMatch[]);
+        tournamentIdRef.current = response.tournament.id;
+
+        const nowMs = Date.now();
+        const cache = pruneLiveStatsCache(response.tournament.id, nowMs);
+
+        const rehydrated = (response.matches || []).map((m) => {
+          // Only rehydrate liveStats for matches that are actually in progress.
+          if (m.status !== 'loaded' && m.status !== 'live') {
+            return m as BracketMatch;
+          }
+          const cached = cache[m.slug];
+          if (!cached?.liveStats) return m as BracketMatch;
+          return { ...(m as BracketMatch), liveStats: cached.liveStats };
+        });
+
+        setMatches(rehydrated);
         setTotalRounds(response.totalRounds || 0);
       } else {
         // No tournament yet - not an error, just empty state
         setTournament(null);
+        tournamentIdRef.current = null;
         setMatches([]);
         setTotalRounds(0);
       }
@@ -53,6 +116,7 @@ export const useBracket = () => {
       // Handle 404 gracefully - tournament doesn't exist yet (empty state)
       if (error.message.includes('404') || error.message.includes('No tournament')) {
         setTournament(null);
+        tournamentIdRef.current = null;
         setMatches([]);
         setTotalRounds(0);
       } else {
@@ -188,6 +252,23 @@ export const useBracket = () => {
         if (liveStats && effectiveStatus !== 'completed') {
           next.liveStats = liveStats as MatchLiveStats;
           changed = true;
+        }
+
+        // Persist the last known liveStats so a refresh can rehydrate them.
+        const tournamentId = tournamentIdRef.current;
+        if (tournamentId && liveStats && effectiveStatus !== 'completed') {
+          const cache = readLiveStatsCache(tournamentId);
+          cache[slug] = { liveStats: liveStats as MatchLiveStats, cachedAt: Date.now() };
+          writeLiveStatsCache(tournamentId, cache);
+        }
+
+        // Once completed, clear any cached liveStats for this match.
+        if (tournamentIdRef.current && effectiveStatus === 'completed') {
+          const cache = readLiveStatsCache(tournamentIdRef.current);
+          if (cache[slug]) {
+            delete cache[slug];
+            writeLiveStatsCache(tournamentIdRef.current, cache);
+          }
         }
 
         const winnerId =

@@ -263,11 +263,27 @@ export default function BracketsViewerVisualization({
       // Bracket view should always display SERIES score (maps won),
       // never current-map round score.
       const series = deriveSeriesScore(match, match.liveStats ?? null);
-      if (series.source !== 'default' || series.team1 !== 0 || series.team2 !== 0) {
+      const isInProgress = match.status === 'loaded' || match.status === 'live';
+      const isNotStarted = match.status === 'pending' || match.status === 'ready';
+
+      // For loaded/live matches, always show a score (at least 0-0) so refreshes
+      // don't temporarily display dashes while we wait for websocket updates.
+      if (isInProgress) {
         return { team1Score: series.team1, team2Score: series.team2 };
       }
-      // No series score yet (match not started) – let the viewer show dashes.
-      return { team1Score: undefined, team2Score: undefined };
+
+      // For not-started matches, keep dashes unless we have a real series score source.
+      if (
+        isNotStarted &&
+        series.source === 'default' &&
+        series.team1 === 0 &&
+        series.team2 === 0
+      ) {
+        return { team1Score: undefined, team2Score: undefined };
+      }
+
+      // Completed (or otherwise) matches: show whatever series score we can derive.
+      return { team1Score: series.team1, team2Score: series.team2 };
     };
 
     const buildOpponent = (

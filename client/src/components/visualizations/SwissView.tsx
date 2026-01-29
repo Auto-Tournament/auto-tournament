@@ -14,7 +14,8 @@ import {
   TableRow,
 } from '@mui/material';
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
-import type { Match, Team } from '../../types';
+import type { Match, MatchLiveStats, Team } from '../../types';
+import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 
 interface SwissViewProps {
   matches: Match[];
@@ -34,6 +35,8 @@ interface SwissTeamRecord {
 }
 
 export default function SwissView({ matches, teams, totalRounds, onMatchClick }: SwissViewProps) {
+  type SwissMatch = Match & { liveStats?: MatchLiveStats | null };
+
   // Calculate team records
   const calculateRecords = (): SwissTeamRecord[] => {
     const records: { [teamId: string]: SwissTeamRecord } = {};
@@ -200,6 +203,24 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                     {hasMatches ? (
                       <Box display="flex" flexDirection="column" gap={1}>
                         {roundMatches.map((match) => (
+                          // Note: `useBracket` can attach `liveStats` onto matches.
+                          // SwissView treats them as optional to show last-known series score.
+                          (() => {
+                            const m = match as SwissMatch;
+                            const series = deriveSeriesScore(m, m.liveStats ?? null);
+                            const isInProgress = m.status === 'loaded' || m.status === 'live';
+                            const isNotStarted = m.status === 'pending' || m.status === 'ready';
+                            const isUnknownZero =
+                              series.source === 'default' &&
+                              series.team1 === 0 &&
+                              series.team2 === 0;
+                            const showScore = m.status === 'completed' || isInProgress;
+                            const left =
+                              showScore && !(isNotStarted && isUnknownZero) ? series.team1 : null;
+                            const right =
+                              showScore && !(isNotStarted && isUnknownZero) ? series.team2 : null;
+
+                            return (
                           <Card
                             key={match.id}
                             variant="outlined"
@@ -225,9 +246,13 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                                   <Typography variant="body2" sx={{ minWidth: 120 }}>
                                     {match.team1?.name || 'TBD'}
                                   </Typography>
-                                  {match.status === 'completed' && (
+                                  {left !== null ? (
                                     <Typography variant="body2" fontWeight={600}>
-                                      {match.team1Score || 0}
+                                      {left}
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                                      —
                                     </Typography>
                                   )}
                                 </Box>
@@ -245,9 +270,13 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                                   gap={1}
                                   flex={1}
                                 >
-                                  {match.status === 'completed' && (
+                                  {right !== null ? (
                                     <Typography variant="body2" fontWeight={600}>
-                                      {match.team2Score || 0}
+                                      {right}
+                                    </Typography>
+                                  ) : (
+                                    <Typography variant="body2" fontWeight={600} color="text.secondary">
+                                      —
                                     </Typography>
                                   )}
                                   <Typography
@@ -266,6 +295,8 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                               </Box>
                             </CardContent>
                           </Card>
+                            );
+                          })()
                         ))}
                       </Box>
                     ) : (
