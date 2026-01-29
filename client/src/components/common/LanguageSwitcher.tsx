@@ -1,26 +1,23 @@
 import React from 'react';
 import { Box, IconButton, Menu, MenuItem, Tooltip } from '@mui/material';
 import { useTranslation } from 'react-i18next';
-import { US, CN, FR, DE, ES, IT, PT, PL, NL, NO } from 'country-flag-icons/react/3x2';
+import Flag from 'react-flagpack';
 
 const LANGUAGES: {
   code: string;
-  // `country-flag-icons` components have slightly different prop typings than React's
-  // built-in `SVGProps<SVGSVGElement>` (notably around event targets). We only pass
-  // `title` + `style`, so keep this permissive to avoid TS friction.
-  Flag: React.ComponentType<Record<string, unknown>>;
+  flagCode: string;
   label: string;
 }[] = [
-  { code: 'en', Flag: US, label: 'English' },
-  { code: 'fr', Flag: FR, label: 'Français' },
-  { code: 'de', Flag: DE, label: 'Deutsch' },
-  { code: 'es', Flag: ES, label: 'Español' },
-  { code: 'it', Flag: IT, label: 'Italiano' },
-  { code: 'pt-PT', Flag: PT, label: 'Português' },
-  { code: 'pl', Flag: PL, label: 'Polski' },
-  { code: 'nl', Flag: NL, label: 'Nederlands' },
-  { code: 'zh-CN', Flag: CN, label: '简体中文' },
-  { code: 'nb', Flag: NO, label: 'Norsk bokmål' },
+  { code: 'en', flagCode: 'GB', label: 'English' },
+  { code: 'fr', flagCode: 'FR', label: 'Français' },
+  { code: 'de', flagCode: 'DE', label: 'Deutsch' },
+  { code: 'es', flagCode: 'ES', label: 'Español' },
+  { code: 'it', flagCode: 'IT', label: 'Italiano' },
+  { code: 'pt-PT', flagCode: 'PT', label: 'Português' },
+  { code: 'pl', flagCode: 'PL', label: 'Polski' },
+  { code: 'nl', flagCode: 'NL', label: 'Nederlands' },
+  { code: 'zh-CN', flagCode: 'CN', label: '简体中文' },
+  { code: 'nb', flagCode: 'NO', label: 'Norsk bokmål' },
 ];
 
 function normalizeLanguageCode(raw: string): string {
@@ -70,21 +67,8 @@ export const LanguageSwitcher: React.FC = () => {
           aria-label={`Language: ${currentLang.label}`}
           sx={{ p: 0.75 }}
         >
-          <Box
-            component="span"
-            sx={{
-              width: 22,
-              height: 16,
-              borderRadius: 0.5,
-              overflow: 'hidden',
-              display: 'block',
-              boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',
-            }}
-          >
-            <currentLang.Flag
-              title={currentLang.label}
-              style={{ width: '100%', height: '100%', display: 'block' }}
-            />
+          <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+            <Flag code={currentLang.flagCode} size="S" />
           </Box>
         </IconButton>
       </Tooltip>
@@ -95,7 +79,7 @@ export const LanguageSwitcher: React.FC = () => {
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        {LANGUAGES.map(({ code, Flag, label }) => (
+        {LANGUAGES.map(({ code, flagCode, label }) => (
           <MenuItem
             key={code}
             selected={isSelected(code)}
@@ -103,18 +87,8 @@ export const LanguageSwitcher: React.FC = () => {
             sx={{ minHeight: 40 }}
             aria-label={label}
           >
-            <Box
-              component="span"
-              sx={{
-                width: 28,
-                height: 20,
-                borderRadius: 0.5,
-                overflow: 'hidden',
-                display: 'block',
-                boxShadow: 'inset 0 0 0 1px rgba(255,255,255,0.18)',
-              }}
-            >
-              <Flag title={label} style={{ width: '100%', height: '100%', display: 'block' }} />
+            <Box component="span" sx={{ display: 'flex', alignItems: 'center' }}>
+              <Flag code={flagCode} size="S" />
             </Box>
           </MenuItem>
         ))}

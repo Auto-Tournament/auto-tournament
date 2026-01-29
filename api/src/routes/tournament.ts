@@ -1325,11 +1325,7 @@ router.post('/:id/manual-matches', async (req: Request, res: Response) => {
       }
       const raw = tournament.maxRounds;
       const parsed =
-        typeof raw === 'number'
-          ? raw
-          : typeof raw === 'string' && raw.trim() !== ''
-          ? Number(raw)
-          : undefined;
+        typeof raw === 'number' && Number.isFinite(raw) && raw > 0 ? raw : undefined;
       const value =
         typeof parsed === 'number' && Number.isFinite(parsed) && parsed > 0 ? parsed : 24;
       return value;

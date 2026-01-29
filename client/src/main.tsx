@@ -5,6 +5,7 @@ import { ThemeProvider, CssBaseline } from '@mui/material';
 import { zhCN, enUS, frFR, deDE, esES, itIT, ptPT, plPL, nlNL } from '@mui/material/locale';
 import App from './App';
 import './index.css';
+import 'react-flagpack/dist/style.css';
 import i18n from './i18n';
 import { theme as baseTheme } from './theme';
 import { createTheme } from '@mui/material/styles';

@@ -5,8 +5,6 @@
 
 # Documentation
 docs/
-mkdocs.yml
-requirements.txt
 *.md
 LICENSE
 
@@ -111,9 +109,6 @@ temp/
 
 # Test shard compose files
 .test-shards/
-
-# MkDocs build output
-site/
 
 # Package manager lock files (we use yarn.lock, exclude others)
 package-lock.json

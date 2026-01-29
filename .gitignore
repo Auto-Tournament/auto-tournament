@@ -39,10 +39,6 @@ Thumbs.db
 # Data
 data
 
-# MkDocs
-site/
-.cache/
-
 # TypeScript
 *.tsbuildinfo
 
