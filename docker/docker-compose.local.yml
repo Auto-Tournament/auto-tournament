@@ -50,6 +50,8 @@ services:
       # Container-specific settings (not from .env)
       - NODE_ENV=production
       - PORT=3000
+      # Allow simulation settings in local "prod-like" builds
+      - MATCHZY_ENABLE_SIMULATION_IN_PROD=true
       # Docker service name for DB connection (not from .env)
       - DB_HOST=postgres
       # Computed DATABASE_URL (uses DB_* vars from .env or defaults)

@@ -179,8 +179,12 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     if (simulateMatches !== undefined) {
-      // This is a **developer-only** option – ignore it completely in production.
-      if (process.env.NODE_ENV === 'production') {
+      // This is a **developer-only** option.
+      // In production, ignore it by default for safety, unless explicitly enabled
+      // via MATCHZY_ENABLE_SIMULATION_IN_PROD=true (e.g. lab/test environments).
+      const simulationAllowedInProd =
+        process.env.MATCHZY_ENABLE_SIMULATION_IN_PROD?.toLowerCase() === 'true';
+      if (process.env.NODE_ENV === 'production' && !simulationAllowedInProd) {
         log.warn(
           'Received simulateMatches setting update in production environment – ignoring for safety'
         );
