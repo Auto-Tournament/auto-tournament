@@ -21,6 +21,12 @@ export interface Server {
   cs2_update_phase?: string | null;
   /** Unix timestamp when update was last reported. */
   cs2_update_required_at?: number | null;
+  /** Best-effort: CS2 server build ID parsed from `version` output. */
+  cs2_build_id?: number | null;
+  /** Best-effort: `version` output (display-only; may include multiple lines). */
+  cs2_version_string?: string | null;
+  /** Unix timestamp when version/build was last fetched via RCON. */
+  cs2_version_fetched_at?: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -72,6 +78,12 @@ export interface ServerResponse {
   cs2UpdatePhase?: string | null;
   /** Unix timestamp when update was last reported. */
   cs2UpdateRequiredAt?: number | null;
+  /** Best-effort: CS2 server build ID parsed from `version` output. */
+  cs2BuildId?: number | null;
+  /** Best-effort: `version` output (display-only; may include multiple lines). */
+  cs2VersionString?: string | null;
+  /** Unix timestamp when version/build was last fetched via RCON. */
+  cs2VersionFetchedAt?: number | null;
 }
 
 /**

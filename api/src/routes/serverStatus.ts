@@ -10,6 +10,19 @@ import { db } from '../config/database';
 
 const router = Router();
 
+function parseCs2BuildId(versionOutput: string): number | null {
+  // Common patterns we’ve seen across Source engine/CS2:
+  // - "BuildID 1234567"
+  // - "BuildId: 1234567"
+  // - Sometimes embedded in multi-line output.
+  const m = versionOutput.match(/\bBuildID\b[:\s]+(\d{4,})/i);
+  if (m?.[1]) {
+    const n = Number(m[1]);
+    return Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
 // Protect all routes
 router.use(requireAuth);
 
@@ -120,6 +133,10 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         allocationState: null,
         allocationMatchSlug: null,
         ipBanned,
+        // Best-effort: last known CS2 version/build from DB
+        cs2BuildId: server.cs2BuildId ?? null,
+        cs2VersionString: server.cs2VersionString ?? null,
+        cs2VersionFetchedAt: server.cs2VersionFetchedAt ?? null,
       });
     }
 
@@ -188,7 +205,48 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         allocationState: allocationLabel,
         allocationMatchSlug: allocationState?.matchSlug ?? null,
         ipBanned,
+        // Best-effort: last known CS2 version/build from DB
+        cs2BuildId: server.cs2BuildId ?? null,
+        cs2VersionString: server.cs2VersionString ?? null,
+        cs2VersionFetchedAt: server.cs2VersionFetchedAt ?? null,
       });
+    }
+
+    // Best-effort: Fetch CS2 version/build via RCON `version` and persist it.
+    // This runs only for non-cached (manual/admin) refreshes so the default UI polling stays lightweight.
+    let cs2BuildId: number | null = server.cs2BuildId ?? null;
+    let cs2VersionString: string | null = server.cs2VersionString ?? null;
+    let cs2VersionFetchedAt: number | null = server.cs2VersionFetchedAt ?? null;
+
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const STALE_AFTER_SECONDS = 5 * 60; // Avoid spamming `version` when the page polls frequently
+      const isStale =
+        !cs2VersionFetchedAt || now - cs2VersionFetchedAt >= STALE_AFTER_SECONDS;
+
+      if (isStale) {
+        const versionResult = await rconService.sendCommand(id, 'version');
+        if (versionResult.success && typeof versionResult.response === 'string') {
+          cs2VersionString = versionResult.response;
+          cs2BuildId = parseCs2BuildId(versionResult.response);
+          cs2VersionFetchedAt = now;
+
+          await db.updateAsync(
+            'servers',
+            {
+              cs2_build_id: cs2BuildId,
+              cs2_version_string: cs2VersionString,
+              cs2_version_fetched_at: cs2VersionFetchedAt,
+              updated_at: now,
+            },
+            'id = ?',
+            [id]
+          );
+        }
+      }
+    } catch (error) {
+      // Non-fatal: keep the rest of the status response.
+      log.debug(`Failed to fetch CS2 version via RCON for server ${id}`, { error });
     }
 
     // Note: Webhook configuration is now handled by serverInitializationService
@@ -234,6 +292,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       allocationState: allocationLabel,
       allocationMatchSlug: allocationState?.matchSlug ?? null,
       ipBanned,
+      cs2BuildId,
+      cs2VersionString,
+      cs2VersionFetchedAt,
     });
   } catch (error) {
     log.error('Error checking server status', error);

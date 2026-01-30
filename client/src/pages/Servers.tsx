@@ -22,11 +22,12 @@ import type { Match, Server, ServersResponse, ServerStatusResponse, MatchesRespo
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useTranslation } from 'react-i18next';
+import type { SnackbarKey } from 'notistack';
 
 export default function Servers() {
   const { setHeaderActions } = usePageHeader();
   const [servers, setServers] = useState<Server[]>([]);
-  const { showError, showSnackbar, closeSnackbar } = useSnackbar();
+  const { showError, showSnackbar, showPersistentError, closeSnackbar } = useSnackbar();
   const [modalOpen, setModalOpen] = useState(false);
   const [batchModalOpen, setBatchModalOpen] = useState(false);
   const [editingServer, setEditingServer] = useState<Server | null>(null);
@@ -58,6 +59,7 @@ export default function Servers() {
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
   const [latestMatchZyVersion, setLatestMatchZyVersion] = useState<string | null>(null);
+  const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useTranslation();
 
   // Set dynamic page title
@@ -84,6 +86,9 @@ export default function Servers() {
     allocationState?: string | null;
     allocationMatchSlug?: string | null;
     ipBanned?: boolean;
+    cs2BuildId?: number | null;
+    cs2VersionString?: string | null;
+    cs2VersionFetchedAt?: number | null;
   }> => {
     try {
       const useCached = options?.useCached !== false;
@@ -106,6 +111,9 @@ export default function Servers() {
         allocationState: response.allocationState ?? null,
         allocationMatchSlug: response.allocationMatchSlug ?? null,
         ipBanned: response.ipBanned ?? false,
+        cs2BuildId: response.cs2BuildId ?? null,
+        cs2VersionString: response.cs2VersionString ?? null,
+        cs2VersionFetchedAt: response.cs2VersionFetchedAt ?? null,
       };
     } catch {
       return {
@@ -118,6 +126,9 @@ export default function Servers() {
         allocationState: null,
         allocationMatchSlug: null,
         ipBanned: false,
+        cs2BuildId: null,
+        cs2VersionString: null,
+        cs2VersionFetchedAt: null,
       };
     }
   };
@@ -175,6 +186,9 @@ export default function Servers() {
           allocationState?: string | null;
           allocationMatchSlug?: string | null;
           ipBanned?: boolean;
+          cs2BuildId?: number | null;
+          cs2VersionString?: string | null;
+          cs2VersionFetchedAt?: number | null;
         }
       ) =>
         prev.map((server) => {
@@ -194,6 +208,13 @@ export default function Servers() {
             pluginStatus: statusInfo.pluginStatus !== undefined ? statusInfo.pluginStatus : server.pluginStatus ?? null,
             allocationState: statusInfo.allocationState !== undefined ? statusInfo.allocationState : server.allocationState ?? null,
             allocationMatchSlug: statusInfo.allocationMatchSlug !== undefined ? statusInfo.allocationMatchSlug : server.allocationMatchSlug ?? null,
+            cs2BuildId: statusInfo.cs2BuildId !== undefined ? statusInfo.cs2BuildId : server.cs2BuildId ?? null,
+            cs2VersionString:
+              statusInfo.cs2VersionString !== undefined ? statusInfo.cs2VersionString : server.cs2VersionString ?? null,
+            cs2VersionFetchedAt:
+              statusInfo.cs2VersionFetchedAt !== undefined
+                ? statusInfo.cs2VersionFetchedAt
+                : server.cs2VersionFetchedAt ?? null,
           };
         });
 
@@ -217,6 +238,9 @@ export default function Servers() {
             allocationState,
             allocationMatchSlug,
             ipBanned,
+            cs2BuildId,
+            cs2VersionString,
+            cs2VersionFetchedAt,
           } = await checkServerStatus(server.id, { useCached: options?.useCached });
           const statusInfo = {
             status,
@@ -228,6 +252,9 @@ export default function Servers() {
             allocationState,
             allocationMatchSlug,
             ipBanned,
+            cs2BuildId,
+            cs2VersionString,
+            cs2VersionFetchedAt,
           };
           setServers((prev) => mergeStatusIntoServer(prev, server.id, statusInfo));
           return { server, statusInfo };
@@ -539,6 +566,30 @@ export default function Servers() {
         // Silently fail - not critical
       });
   }, [loadServers, loadAllocationStatus]);
+
+  // 🚨 Urgent: keep an error snackbar on screen while any enabled server reports CS2 update required.
+  useEffect(() => {
+    const outdatedEnabledServers = servers.filter(
+      (s) => s.enabled && typeof s.cs2RequiredVersion === 'number'
+    );
+
+    if (outdatedEnabledServers.length > 0) {
+      if (!cs2OutdatedSnackbarKey) {
+        const key = showPersistentError(
+          <span>
+            🚨 <strong>CS2 update required</strong> — {outdatedEnabledServers.length}{' '}
+            {outdatedEnabledServers.length === 1 ? 'server is' : 'servers are'} out of date. Update
+            the server installation and restart.
+          </span>,
+          'cs2-update-required'
+        );
+        setCs2OutdatedSnackbarKey(key);
+      }
+    } else if (cs2OutdatedSnackbarKey) {
+      closeSnackbar(cs2OutdatedSnackbarKey);
+      setCs2OutdatedSnackbarKey(null);
+    }
+  }, [servers, cs2OutdatedSnackbarKey, showPersistentError, closeSnackbar]);
 
   const handleOpenModal = (server?: Server) => {
     setEditingServer(server || null);
@@ -1231,6 +1282,15 @@ export default function Servers() {
                                 )}
                             </>
                           )}
+                          {typeof server.cs2BuildId === 'number' && server.enabled && (
+                            <Chip
+                              label={`CS2 build ${server.cs2BuildId}`}
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                              sx={{ fontWeight: 600 }}
+                            />
+                          )}
                           {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
                             <Chip
                               label={`CS2 update required (${server.cs2RequiredVersion})`}
@@ -1286,6 +1346,14 @@ export default function Servers() {
                           <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">
                             <strong>Plugin:</strong> MatchZy Enhanced v{server.pluginVersion}
+                          </Typography>
+                        </Box>
+                      )}
+                      {typeof server.cs2BuildId === 'number' && (
+                        <Box display="flex" alignItems="center" gap={0.5}>
+                          <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
+                          <Typography variant="body2" color="text.secondary">
+                            <strong>CS2:</strong> build {server.cs2BuildId}
                           </Typography>
                         </Box>
                       )}

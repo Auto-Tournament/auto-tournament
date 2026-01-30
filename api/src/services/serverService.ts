@@ -272,6 +272,9 @@ export class ServerService {
       cs2RequiredVersion: server.cs2_required_version ?? null,
       cs2UpdatePhase: server.cs2_update_phase ?? null,
       cs2UpdateRequiredAt: server.cs2_update_required_at ?? null,
+      cs2BuildId: server.cs2_build_id ?? null,
+      cs2VersionString: server.cs2_version_string ?? null,
+      cs2VersionFetchedAt: server.cs2_version_fetched_at ?? null,
     };
   }
 }

@@ -158,6 +158,9 @@ class DatabaseManager {
         { table: 'servers', column: 'cs2_required_version', type: 'INTEGER' },
         { table: 'servers', column: 'cs2_update_phase', type: 'TEXT' },
         { table: 'servers', column: 'cs2_update_required_at', type: 'INTEGER' },
+        { table: 'servers', column: 'cs2_build_id', type: 'INTEGER' },
+        { table: 'servers', column: 'cs2_version_string', type: 'TEXT' },
+        { table: 'servers', column: 'cs2_version_fetched_at', type: 'INTEGER' },
       ];
 
       // Check if tournament_templates table exists, create if not

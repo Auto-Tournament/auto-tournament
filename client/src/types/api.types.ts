@@ -41,6 +41,12 @@ export interface Server {
   cs2UpdatePhase?: string | null;
   /** Unix timestamp when update was last reported. */
   cs2UpdateRequiredAt?: number | null;
+  /** Best-effort: CS2 server build ID parsed from `version` output. */
+  cs2BuildId?: number | null;
+  /** Best-effort: `version` output (display-only; may include multiple lines). */
+  cs2VersionString?: string | null;
+  /** Unix timestamp when version/build was last fetched via RCON. */
+  cs2VersionFetchedAt?: number | null;
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.
@@ -90,6 +96,9 @@ export interface ServerStatusResponse extends ApiResponse {
   allocationState?: string | null;
   allocationMatchSlug?: string | null;
   ipBanned?: boolean; // True if server has banned our IP address
+  cs2BuildId?: number | null;
+  cs2VersionString?: string | null;
+  cs2VersionFetchedAt?: number | null;
 }
 
 export interface ServerAllocationInfo {

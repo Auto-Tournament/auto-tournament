@@ -24,6 +24,9 @@ export function getSchemaSQL(): string {
       cs2_required_version INTEGER, -- If set, server has reported CS2 update required
       cs2_update_phase TEXT, -- 'available' | 'shutdown' (best-effort)
       cs2_update_required_at INTEGER, -- Unix timestamp when update was last reported
+      cs2_build_id INTEGER, -- Best-effort: CS2 server build ID parsed from `version` output
+      cs2_version_string TEXT, -- Best-effort: raw/parsed `version` output (display only)
+      cs2_version_fetched_at INTEGER, -- Unix timestamp when cs2_version_string/build_id was last fetched via RCON
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );
