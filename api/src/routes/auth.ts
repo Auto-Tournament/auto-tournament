@@ -850,6 +850,72 @@ router.get('/me', async (req: Request, res: Response) => {
 });
 
 /**
+ * Self-registration endpoint for players who already have a valid Steam cookie.
+ *
+ * This is intended to cover the case where:
+ * - a user signed in with Steam while self-registration was disabled (so no player row was created)
+ * - an admin later enables self-registration
+ * - the user refreshes and should be able to "sign up" without re-authenticating
+ *
+ * POST /api/auth/self-register
+ */
+router.post('/self-register', async (req: Request, res: Response) => {
+  try {
+    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
+    if (!steamId) {
+      return res.status(401).json({
+        success: false,
+        error: 'Not signed in with Steam',
+      });
+    }
+
+    const selfRegistrationAllowed = await settingsService.isSelfRegistrationAllowed();
+    if (!selfRegistrationAllowed) {
+      return res.status(403).json({
+        success: false,
+        error: 'Self-registration is disabled',
+      });
+    }
+
+    const existing = await playerService.getPlayerById(steamId);
+    if (existing) {
+      return res.json({
+        success: true,
+        created: false,
+        player: existing,
+      });
+    }
+
+    let displayName = steamId;
+    let avatarUrl: string | undefined;
+    if (await steamService.isAvailable()) {
+      const info = await steamService.getPlayerInfo(steamId);
+      if (info) {
+        displayName = info.name;
+        avatarUrl = info.avatarUrl;
+      }
+    }
+
+    await playerService.getOrCreatePlayer(steamId, displayName, avatarUrl);
+    // Maintain the "first admin bootstrap" behaviour when safe.
+    await playerService.ensureFirstAdmin(steamId);
+
+    const createdPlayer = await playerService.getPlayerById(steamId);
+    return res.json({
+      success: true,
+      created: true,
+      player: createdPlayer,
+    });
+  } catch (error) {
+    log.warn('Self-registration failed', error as Error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to self-register',
+    });
+  }
+});
+
+/**
  * Debug endpoint: admin status for the current user (player_steam_id cookie).
  * Use this to troubleshoot "can't access admin" issues.
  * Returns isAdmin, hasPlayerRecord, and a short reason.

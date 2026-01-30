@@ -79,6 +79,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // When both an admin session and a player cookie exist, prefer the admin's
       // Steam ID so we don't "flip" identities on reload if the cookie is stale.
       let adminSteamId: string | null = null;
+      let cookieSteamId: string | null = null;
+      let cookieHasPlayerRecord = false;
 
       const fetchPlayerIdentity = async () => {
         try {
@@ -108,15 +110,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             typeof data.steamId === 'string' &&
             data.steamId.trim() !== ''
           ) {
+            cookieSteamId = data.steamId;
+            cookieHasPlayerRecord = Boolean(data.hasPlayerRecord);
             setPlayerSteamId(data.steamId);
             setHasPlayerRecord(Boolean(data.hasPlayerRecord));
           } else {
+            cookieSteamId = null;
+            cookieHasPlayerRecord = false;
             setPlayerSteamId(null);
             setHasPlayerRecord(false);
           }
         } catch (error) {
           if (!isMounted) return;
           console.warn('Failed to read player Steam identity from /api/auth/me', error);
+          cookieSteamId = null;
+          cookieHasPlayerRecord = false;
           setPlayerSteamId(null);
           setHasPlayerRecord(false);
         }
@@ -188,6 +196,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Steam user after a reload.
       await fetchAdminIdentity();
       await fetchPlayerIdentity();
+
+      // If the user has a valid Steam cookie but no player record, and an admin
+      // enables self-registration later, we want a simple refresh to "sign up"
+      // without requiring a full Steam re-login.
+      //
+      // This call is idempotent and will no-op if self-registration is disabled.
+      if (!adminSteamId && cookieSteamId && !cookieHasPlayerRecord) {
+        try {
+          const resp = await fetch('/api/auth/self-register', {
+            method: 'POST',
+            credentials: 'include',
+          });
+
+          // 200: created or already exists
+          // 403: self-registration disabled (expected in private setups)
+          // 401: not signed in (cookie missing/invalid)
+          if (resp.ok) {
+            // Re-read /api/auth/me so hasPlayerRecord is always consistent with server.
+            await fetchPlayerIdentity();
+          }
+        } catch (err) {
+          // Best-effort. If this fails, user can still re-login or be added by admin.
+          console.debug('Auto self-registration attempt failed (best-effort)', err);
+        }
+      }
 
       if (isMounted) {
         setIsLoading(false);
