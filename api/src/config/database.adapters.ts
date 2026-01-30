@@ -104,6 +104,9 @@ export class PostgresAdapter implements DatabaseAdapter {
         { table: 'player_match_stats', column: 'mvps', type: 'INTEGER' },
         { table: 'player_match_stats', column: 'score', type: 'INTEGER' },
         { table: 'player_match_stats', column: 'rounds_played', type: 'INTEGER' },
+        { table: 'servers', column: 'cs2_required_version', type: 'INTEGER' },
+        { table: 'servers', column: 'cs2_update_phase', type: 'TEXT' },
+        { table: 'servers', column: 'cs2_update_required_at', type: 'INTEGER' },
       ];
 
       // Check if tournament_templates table exists, create if not

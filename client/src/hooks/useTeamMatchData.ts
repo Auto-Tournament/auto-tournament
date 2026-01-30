@@ -415,16 +415,26 @@ export function useTeamMatchData(teamId: string | undefined): UseTeamMatchDataRe
 
       const refreshActions = new Set([
         'tournament_reset',
+        'tournament_started',
         'tournament_restarted',
+        'tournament_completed',
         'bracket_regenerated',
         'match_loaded',
         'match_restarted',
         'server_assigned',
+        'match_allocated',
+        'round_advanced',
       ]);
 
-      if (data.action && !refreshActions.has(data.action)) {
+      // Future-proof: if a status change is sent without an allowlisted action,
+      // refresh so veto/match readiness doesn't get stuck.
+      const status = (data as { status?: string }).status;
+      if (typeof status === 'string' && status.trim() !== '' && status !== tournamentStatus) {
+        loadTeamMatch(true);
         return;
       }
+
+      if (data.action && !refreshActions.has(data.action)) return;
 
       loadTeamMatch(true);
     };

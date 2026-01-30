@@ -101,10 +101,14 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
             label={side}
             color="primary"
             size="small"
-            sx={{
-              fontWeight: 700,
-              bgcolor: side === 'CT' ? 'info.main' : 'warning.main',
-              color: 'white',
+            sx={(theme) => {
+              const bgColor =
+                side === 'CT' ? theme.palette.info.main : theme.palette.warning.main;
+              return {
+                fontWeight: 700,
+                bgcolor: bgColor,
+                color: theme.palette.getContrastText(bgColor),
+              };
             }}
           />
         </Box>

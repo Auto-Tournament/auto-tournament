@@ -23,6 +23,15 @@ export interface ServerConfiguredEvent {
   configured_by: 'Console' | 'Startup';
 }
 
+export interface Cs2UpdateRequiredEvent {
+  event: 'cs2_update_required';
+  matchid: -1;
+  server_id: string;
+  required_version: number;
+  phase?: 'available' | 'shutdown';
+  timestamp: number;
+}
+
 class ServerTrackingService {
   /**
    * In-memory reachability failure counter per server.
@@ -118,6 +127,16 @@ class ServerTrackingService {
             plugin_version,
             last_seen: lastSeen,
             status: 'online',
+            // On startup we consider the server "back" and clear any stale
+            // CS2 update-required banner. If the server is still out of date,
+            // it will report it again shortly.
+            ...(event.configured_by === 'Startup'
+              ? {
+                  cs2_required_version: null,
+                  cs2_update_phase: null,
+                  cs2_update_required_at: null,
+                }
+              : {}),
             updated_at: Math.floor(Date.now() / 1000),
           },
           'id = ?',
@@ -139,6 +158,33 @@ class ServerTrackingService {
       }
     } catch (error) {
       log.error('[SERVER-TRACKING] Failed to handle server_configured event', error as Error);
+    }
+  }
+
+  async setCs2UpdateRequired(
+    serverId: string,
+    requiredVersion: number,
+    opts?: { phase?: string | null; timestamp?: number }
+  ): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
+    const ts = Math.floor(opts?.timestamp ?? now);
+    const phase = opts?.phase ?? null;
+    try {
+      await db.updateAsync(
+        'servers',
+        {
+          cs2_required_version: requiredVersion,
+          cs2_update_phase: phase,
+          cs2_update_required_at: ts,
+          updated_at: now,
+        },
+        'id = ?',
+        [serverId]
+      );
+    } catch (error) {
+      log.warn(`[SERVER-TRACKING] Failed to persist CS2 update-required for ${serverId}`, {
+        error,
+      });
     }
   }
 

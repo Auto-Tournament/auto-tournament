@@ -35,6 +35,12 @@ export interface Server {
   lastSeen?: number | null; // Unix timestamp of last event received (heartbeat)
   /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
   persistentConfigSent?: number | null;
+  /** If set, the server has reported a CS2 update is required (Steam required_version). */
+  cs2RequiredVersion?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2UpdatePhase?: string | null;
+  /** Unix timestamp when update was last reported. */
+  cs2UpdateRequiredAt?: number | null;
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.

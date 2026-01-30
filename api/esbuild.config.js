@@ -1,3 +1,4 @@
+/* global console */
 const esbuild = require('esbuild');
 const fs = require('fs');
 const path = require('path');
@@ -111,7 +112,6 @@ async function build() {
 }
 
 build().catch((err) => {
-  // eslint-disable-next-line no-console
   console.error(err);
   process.exit(1);
 });

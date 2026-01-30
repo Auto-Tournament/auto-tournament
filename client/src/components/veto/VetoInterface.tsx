@@ -352,40 +352,44 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         <Stack spacing={2}>
           {/* Big, high‑contrast turn banner */}
           <Box
-            sx={{
-              p: 2,
-              borderRadius: 2,
-              textAlign: 'center',
-              color: 'common.white',
-              bgcolor: isMyTurn
+            sx={(theme) => {
+              const bgColor = isMyTurn
                 ? currentAction === 'ban'
-                  ? 'error.main'
+                  ? theme.palette.error.main
                   : currentAction === 'pick'
-                  ? 'success.main'
-                  : 'info.main'
-                : 'grey.900',
-              boxShadow: isMyTurn ? 6 : 1,
-              border: '2px solid',
-              borderColor: isMyTurn
-                ? currentAction === 'ban'
-                  ? 'error.light'
-                  : currentAction === 'pick'
-                  ? 'success.light'
-                  : 'info.light'
-                : 'grey.700',
-              position: 'relative',
-              overflow: 'hidden',
-              '@keyframes vetoTurnPulse': {
-                '0%': { boxShadow: '0 0 0 0 rgba(255,255,255,0.5)' },
-                '70%': { boxShadow: '0 0 0 12px rgba(255,255,255,0)' },
-                '100%': { boxShadow: '0 0 0 0 rgba(255,255,255,0)' },
-              },
-              animation: isMyTurn ? 'vetoTurnPulse 1.6s ease-out infinite' : 'none',
+                    ? theme.palette.success.main
+                    : theme.palette.info.main
+                : theme.palette.grey[900];
+
+              return {
+                p: 2,
+                borderRadius: 2,
+                textAlign: 'center',
+                bgcolor: bgColor,
+                color: theme.palette.getContrastText(bgColor),
+                boxShadow: isMyTurn ? 6 : 1,
+                border: '2px solid',
+                borderColor: isMyTurn
+                  ? currentAction === 'ban'
+                    ? 'error.light'
+                    : currentAction === 'pick'
+                      ? 'success.light'
+                      : 'info.light'
+                  : 'grey.700',
+                position: 'relative',
+                overflow: 'hidden',
+                '@keyframes vetoTurnPulse': {
+                  '0%': { boxShadow: '0 0 0 0 rgba(255,255,255,0.5)' },
+                  '70%': { boxShadow: '0 0 0 12px rgba(255,255,255,0)' },
+                  '100%': { boxShadow: '0 0 0 0 rgba(255,255,255,0)' },
+                },
+                animation: isMyTurn ? 'vetoTurnPulse 1.6s ease-out infinite' : 'none',
+              };
             }}
           >
             {isMyTurn ? (
               <>
-                <Typography variant="h5" fontWeight={800}>
+                <Typography variant="h5" fontWeight={800} color="inherit">
                   YOUR TEAM&apos;S TURN TO{' '}
                   {currentAction === 'ban'
                     ? 'BAN A MAP'
@@ -394,14 +398,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     : 'CHOOSE A SIDE'}
                 </Typography>
                 {currentAction !== 'side_pick' && (
-                  <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.9 }}>
+                  <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
                     Click one of the highlighted maps below to confirm your choice.
                   </Typography>
                 )}
               </>
             ) : (
               <>
-                <Typography variant="h6" fontWeight={700}>
+                <Typography variant="h6" fontWeight={700} color="inherit">
                   Waiting for {currentTeamName} to{' '}
                   {currentAction === 'ban'
                     ? 'ban a map'
@@ -409,7 +413,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     ? 'pick a map'
                     : 'choose a side'}
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 0.5, opacity: 0.9 }}>
+                <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
                   Keep this page open – it will update automatically when it&apos;s your turn.
                 </Typography>
               </>

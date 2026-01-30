@@ -30,7 +30,11 @@ import {
   type MatchReport,
 } from '../services/connectionSnapshotService';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
-import { serverTrackingService, type ServerConfiguredEvent } from '../services/serverTrackingService';
+import {
+  serverTrackingService,
+  type ServerConfiguredEvent,
+  type Cs2UpdateRequiredEvent,
+} from '../services/serverTrackingService';
 
 const router = Router();
 
@@ -216,6 +220,32 @@ async function handleEventRequest(
       if (serverId && serverId !== 'unknown') {
         recordServerTestEvent(serverId);
       }
+    }
+
+    // Handle CS2 update-required marker from MatchZy Enhanced safe auto-updater.
+    // This is a server-level signal (matchid=-1) and should not enter the match event pipeline.
+    if (event.event === 'cs2_update_required') {
+      const ev = event as Cs2UpdateRequiredEvent;
+      const effectiveServerId = ev.server_id || serverId;
+      if (effectiveServerId && effectiveServerId !== 'unknown') {
+        await serverTrackingService.setCs2UpdateRequired(effectiveServerId, ev.required_version, {
+          phase: ev.phase ?? null,
+          timestamp: ev.timestamp,
+        });
+
+        log.warn('[EVENTS] CS2 update required reported by server', {
+          server_id: effectiveServerId,
+          required_version: ev.required_version,
+          phase: ev.phase ?? null,
+        });
+      }
+
+      // Still log and fan out for admin monitoring.
+      logWebhookEvent(serverId, actualMatchSlug, event);
+      return res.status(200).json({
+        success: true,
+        message: 'CS2 update-required event received',
+      });
     }
     
     // Update server heartbeat for ALL events (shows server is alive)

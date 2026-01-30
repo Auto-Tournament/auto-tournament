@@ -21,6 +21,9 @@ export function getSchemaSQL(): string {
       hostname TEXT, -- Server hostname from CS2 (from hostname convar)
       last_seen INTEGER, -- Unix timestamp of last event received (heartbeat)
       status TEXT DEFAULT 'unknown', -- 'online', 'offline', 'unknown'
+      cs2_required_version INTEGER, -- If set, server has reported CS2 update required
+      cs2_update_phase TEXT, -- 'available' | 'shutdown' (best-effort)
+      cs2_update_required_at INTEGER, -- Unix timestamp when update was last reported
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );

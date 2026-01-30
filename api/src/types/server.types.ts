@@ -15,6 +15,12 @@ export interface Server {
   hostname?: string | null; // CS2 server hostname (from hostname convar)
   last_seen?: number | null; // Unix timestamp of last event received (heartbeat)
   status?: string | null; // 'online', 'offline', 'unknown'
+  /** If set, the server has reported a CS2 update is required (Steam required_version). */
+  cs2_required_version?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2_update_phase?: string | null;
+  /** Unix timestamp when update was last reported. */
+  cs2_update_required_at?: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -60,6 +66,12 @@ export interface ServerResponse {
   status?: string | null; // 'online', 'offline', 'unknown'
   /** Unix timestamp when we last sent persistent config via RCON. Set before MatchZy sends events. */
   persistentConfigSent?: number | null;
+  /** If set, the server has reported a CS2 update is required (Steam required_version). */
+  cs2RequiredVersion?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2UpdatePhase?: string | null;
+  /** Unix timestamp when update was last reported. */
+  cs2UpdateRequiredAt?: number | null;
 }
 
 /**

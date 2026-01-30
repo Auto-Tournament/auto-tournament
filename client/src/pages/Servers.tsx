@@ -727,6 +727,20 @@ export default function Servers() {
     };
   }, [servers]);
 
+  // Detect CS2 update-required servers
+  const cs2UpdateInfo = React.useMemo(() => {
+    const outOfDate = servers.filter((s) => s.enabled && typeof s.cs2RequiredVersion === 'number');
+    const byVersion = new Map<number, Server[]>();
+    for (const s of outOfDate) {
+      const v = s.cs2RequiredVersion as number;
+      const list = byVersion.get(v) ?? [];
+      list.push(s);
+      byVersion.set(v, list);
+    }
+    const versions = Array.from(byVersion.keys()).sort((a, b) => b - a);
+    return { outOfDate, byVersion, versions };
+  }, [servers]);
+
   return (
     <Box data-testid="servers-page" sx={{ width: '100%', height: '100%' }}>
       {servers.length === 0 ? (
@@ -825,6 +839,45 @@ export default function Servers() {
                       </Box>
                     );
                   })()}
+                  {cs2UpdateInfo.outOfDate.length > 0 && (
+                    <Box
+                      sx={{
+                        bgcolor: 'error.light',
+                        border: 2,
+                        borderColor: 'error.main',
+                        borderRadius: 2,
+                        p: 2,
+                        mt: 1.5,
+                        color: 'grey.900',
+                      }}
+                    >
+                      <Typography
+                        variant="subtitle2"
+                        fontWeight={800}
+                        sx={{ color: 'inherit' }}
+                        display="block"
+                        mb={0.5}
+                      >
+                        🚨 CS2 servers out of date — update required
+                      </Typography>
+                      <Typography variant="body2" sx={{ color: 'inherit' }} display="block">
+                        {cs2UpdateInfo.outOfDate.length}{' '}
+                        {cs2UpdateInfo.outOfDate.length === 1 ? 'server has' : 'servers have'} reported a required CS2
+                        update from Steam. Update the server installation (SteamCMD/host) and restart.
+                      </Typography>
+                      <Box mt={1} display="flex" gap={1} flexWrap="wrap">
+                        {cs2UpdateInfo.versions.map((v) => (
+                          <Chip
+                            key={v}
+                            label={`required_version=${v} (${cs2UpdateInfo.byVersion.get(v)?.length ?? 0})`}
+                            color="error"
+                            variant="outlined"
+                            sx={{ fontWeight: 700 }}
+                          />
+                        ))}
+                      </Box>
+                    </Box>
+                  )}
                   {versionInfo.hasMultipleVersions && (
                     <Box 
                       sx={{ 
@@ -954,6 +1007,38 @@ export default function Servers() {
                   }}
                 >
                   <CardContent>
+                    {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
+                      <Box
+                        sx={{
+                          bgcolor: 'error.light',
+                          border: 2,
+                          borderColor: 'error.main',
+                          borderRadius: 1,
+                          p: 1.5,
+                          mb: 2,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 1,
+                          color: 'grey.900',
+                        }}
+                      >
+                        <UpdateIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="CS2 update required" />
+                        <Box flex={1}>
+                          <Typography variant="body2" fontWeight={800} sx={{ color: 'inherit' }}>
+                            CS2 update required
+                          </Typography>
+                          <Typography
+                            variant="caption"
+                            display="block"
+                            mt={0.25}
+                            sx={{ color: 'inherit', opacity: 0.9 }}
+                          >
+                            required_version={server.cs2RequiredVersion}
+                            {server.cs2UpdatePhase ? ` • phase=${server.cs2UpdatePhase}` : ''}
+                          </Typography>
+                        </Box>
+                      </Box>
+                    )}
                     {needsInitialization && (
                       <Box
                         sx={{
@@ -1145,6 +1230,14 @@ export default function Servers() {
                                   />
                                 )}
                             </>
+                          )}
+                          {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
+                            <Chip
+                              label={`CS2 update required (${server.cs2RequiredVersion})`}
+                              size="small"
+                              color="error"
+                              sx={{ fontWeight: 700 }}
+                            />
                           )}
                         </Box>
                       </Box>

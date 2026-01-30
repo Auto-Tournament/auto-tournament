@@ -269,6 +269,9 @@ export class ServerService {
       lastSeen: server.last_seen || null,
       status: server.status || null,
       persistentConfigSent: server.persistent_config_sent || null,
+      cs2RequiredVersion: server.cs2_required_version ?? null,
+      cs2UpdatePhase: server.cs2_update_phase ?? null,
+      cs2UpdateRequiredAt: server.cs2_update_required_at ?? null,
     };
   }
 }

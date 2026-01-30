@@ -1,3 +1,4 @@
+/* global AbortController */
 import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link as RouterLink } from 'react-router-dom';
 import {
@@ -233,6 +234,7 @@ export default function PlayerProfile() {
   const lastRefetchedMatchSlugRef = useRef<string | null>(null);
   const silentRefreshTimerRef = useRef<number | null>(null);
   const unmountedRef = useRef(false);
+  const loadAbortControllerRef = useRef<AbortController | null>(null);
 
   // Shared sound settings (persisted via localStorage)
   const { isMuted, volume, soundFile } = useSoundSettings();
@@ -258,7 +260,8 @@ export default function PlayerProfile() {
     return map;
   }, [ratingHistory]);
 
-  const loadPlayerData = React.useCallback(async ({ silent = false }: { silent?: boolean } = {}) => {
+  const loadPlayerData = React.useCallback(
+    async ({ silent = false }: { silent?: boolean } = {}) => {
     if (!steamId) return;
 
     if (!silent) {
@@ -267,8 +270,15 @@ export default function PlayerProfile() {
     }
 
     try {
+      // Cancel any in-flight refresh so socket bursts don't race and apply stale data.
+      if (loadAbortControllerRef.current) {
+        loadAbortControllerRef.current.abort();
+      }
+      const controller = new AbortController();
+      loadAbortControllerRef.current = controller;
+
       // Load aggregated player summary (details + history + matches + basic stats)
-      const summaryResponse = await api.get<{
+      const summaryResponse = await api.fetch<{
         success: boolean;
         player: PlayerDetail;
         stats?: {
@@ -313,7 +323,7 @@ export default function PlayerProfile() {
           assists?: number;
           headshots?: number;
         }>;
-      }>(`/api/players/${steamId}/summary`);
+      }>(`/api/players/${steamId}/summary`, { method: 'GET', signal: controller.signal });
 
       if (!summaryResponse.success || !summaryResponse.player) {
         setError('Player not found');
@@ -371,13 +381,13 @@ export default function PlayerProfile() {
 
       // Load current or upcoming match (for connect info)
       try {
-        const currentMatchResponse = await api.get<{
+        const currentMatchResponse = await api.fetch<{
           success: boolean;
           player: { id: string; name: string; avatar?: string };
           hasMatch: boolean;
           tournamentStatus?: string;
           match?: TeamMatchInfo;
-        }>(`/api/players/${steamId}/current-match`);
+        }>(`/api/players/${steamId}/current-match`, { method: 'GET', signal: controller.signal });
 
         if (
           currentMatchResponse.success &&
@@ -422,6 +432,10 @@ export default function PlayerProfile() {
         setCurrentTeam(null);
       }
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        // Swallow aborts: a newer refresh has been scheduled.
+        return;
+      }
       setError('Failed to load player data');
       console.error(err);
     } finally {
@@ -429,7 +443,9 @@ export default function PlayerProfile() {
         setLoading(false);
       }
     }
-  }, [steamId]);
+  },
+    [steamId]
+  );
 
   const scheduleSilentRefresh = React.useCallback(() => {
     if (unmountedRef.current) return;
@@ -457,6 +473,12 @@ export default function PlayerProfile() {
     if (!steamId) return;
     loadPlayerData();
     lastRefetchedMatchSlugRef.current = null;
+    return () => {
+      if (loadAbortControllerRef.current) {
+        loadAbortControllerRef.current.abort();
+        loadAbortControllerRef.current = null;
+      }
+    };
   }, [steamId, loadPlayerData]);
 
   // When match-status reports an active match (e.g. waiting_veto) and we're viewing our own
@@ -488,14 +510,20 @@ export default function PlayerProfile() {
     // React to high‑level tournament / bracket events (e.g. server_assigned,
     // match_loaded) by refreshing the player data. This keeps the page in sync
     // even if the match (or its server) is created after the player page is opened.
-    const handleBracketOrTournamentUpdate = (event?: { action?: string | null }) => {
+    const handleBracketOrTournamentUpdate = (event?: { action?: string | null; status?: string | null }) => {
       if (!event || !event.action) {
+        // If we ever emit status-only updates without an action, treat them as refresh-worthy.
+        if (event && typeof event.status === 'string' && event.status.trim() !== '') {
+          scheduleSilentRefresh();
+        }
         return;
       }
 
       const refreshActions = new Set([
         'tournament_reset',
+        'tournament_started',
         'tournament_restarted',
+        'tournament_completed',
         'bracket_regenerated',
         'match_loaded',
         'match_restarted',
@@ -564,11 +592,15 @@ export default function PlayerProfile() {
 
     socket.on('match:update', handleUpdate);
     socket.on(`match:update:${slug}`, handleUpdate);
+    // Veto updates can happen without a match status change (especially at the
+    // moment veto becomes available). Keep the player page in sync.
+    socket.on(`veto:update:${slug}`, scheduleSilentRefresh);
 
     return () => {
       if (!socket) return;
       socket.off('match:update', handleUpdate);
       socket.off(`match:update:${slug}`, handleUpdate);
+      socket.off(`veto:update:${slug}`, scheduleSilentRefresh);
       // Keep the socket open for reuse across slug changes; it will be fully
       // disconnected when there is no active match above.
     };
