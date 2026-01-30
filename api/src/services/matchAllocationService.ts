@@ -209,6 +209,10 @@ export class MatchAllocationService {
       let secondsUntilReady: number | null = null;
       let allocatable = false;
 
+      // If the server has reported a CS2 update is required, it must not be
+      // allocated to new matches.
+      const isOutOfDate = typeof server.cs2RequiredVersion === 'number';
+
       if (isIdle) {
         if (updatedAt) {
           const age = now - updatedAt;
@@ -223,11 +227,11 @@ export class MatchAllocationService {
               nextAllocationInSeconds = secondsUntilReady;
             }
           } else {
-            allocatable = true;
+            allocatable = !isOutOfDate;
           }
         } else {
           // No timestamp – treat as long‑idle and allocatable.
-          allocatable = true;
+          allocatable = !isOutOfDate;
         }
       }
 
@@ -392,6 +396,13 @@ export class MatchAllocationService {
     const availableServers: ServerResponse[] = [];
     for (const check of onlineServers) {
       const { server, status, matchSlug, updatedAt } = check;
+
+      if (typeof server.cs2RequiredVersion === 'number') {
+        log.debug(
+          `[ALLOCATION] Skipping out-of-date server ${server.id} (${server.name}) - cs2RequiredVersion=${server.cs2RequiredVersion}`
+        );
+        continue;
+      }
 
       // Follow MatchZy spec: ONLY allocate when status is "idle". All other
       // states, including "postgame", are considered busy.

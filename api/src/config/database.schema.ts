@@ -27,6 +27,12 @@ export function getSchemaSQL(): string {
       cs2_build_id INTEGER, -- Best-effort: CS2 server build ID parsed from the version output
       cs2_version_string TEXT, -- Best-effort: raw/parsed version output (display only)
       cs2_version_fetched_at INTEGER, -- Unix timestamp when cs2_version_string/build_id was last fetched via RCON
+      matchzy_db_ok INTEGER, -- Best-effort: MatchZy plugin DB reachable (1/0)
+      matchzy_db_type TEXT, -- Best-effort: 'sqlite' | 'mysql'
+      matchzy_db_error TEXT, -- Best-effort: last DB error message (if any)
+      matchzy_db_last_ok_at INTEGER, -- Unix timestamp when DB was last reported OK
+      matchzy_db_last_seen_at INTEGER, -- Unix timestamp when DB health was last reported
+      server_can_reach_api_at INTEGER, -- Unix timestamp when server last successfully sent any event to /api/events
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
     );

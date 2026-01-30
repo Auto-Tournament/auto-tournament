@@ -253,6 +253,30 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     // on first connection. The server stores it persistently in its database,
     // so we don't need to reconfigure it on every status check.
 
+    // If the server has successfully sent *any* event to /api/events recently,
+    // we already know it can reach the API. Avoid the expensive css_te roundtrip.
+    const nowSec = Math.floor(Date.now() / 1000);
+    const canReachAt = server.serverCanReachApiAt ?? null;
+    if (canReachAt && nowSec - canReachAt <= 10 * 60) {
+      return res.json({
+        success: true,
+        status: 'online',
+        serverId: id,
+        isAvailable,
+        currentMatch: effectiveMatchSlug,
+        queuedMatch: queuedMatchSlug,
+        reachableFromApi,
+        serverCanReachApi: true,
+        pluginStatus: effectiveStatus,
+        allocationState: allocationLabel,
+        allocationMatchSlug: allocationState?.matchSlug ?? null,
+        ipBanned,
+        cs2BuildId,
+        cs2VersionString,
+        cs2VersionFetchedAt,
+      });
+    }
+
     // Bi-directional connectivity check:
     //  - We already know we can reach the server via RCON (reachableFromApi).
     //  - Now trigger css_te so the server sends a test event back to /api/events.

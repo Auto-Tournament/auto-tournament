@@ -135,8 +135,9 @@ export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const { headerActions } = usePageHeader();
-  const { showError } = useSnackbar();
+  const { showError, showPersistentError, closeSnackbar } = useSnackbar();
   const hasShownWebhookWarningRef = React.useRef(false);
+  const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(null);
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
@@ -234,6 +235,48 @@ export default function Layout() {
       window.removeEventListener('matchzy:settingsUpdated', handleSettingsUpdated);
     };
   }, []);
+
+  // Global admin warning: keep a persistent snackbar while any server reports plugin DB down.
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const checkDbHealth = async () => {
+      try {
+        const response = await api.get<{ success: boolean; servers?: Array<{ enabled?: boolean; matchzyDbOk?: boolean | null }> }>(
+          '/api/servers'
+        );
+        if (cancelled) return;
+        const servers = response.servers ?? [];
+        const downCount = servers.filter((s) => s.enabled !== false && s.matchzyDbOk === false).length;
+
+        if (downCount > 0) {
+          if (!dbHealthSnackbarKey) {
+            const key = showPersistentError(
+              <span>
+                <strong>MatchZy DB unreachable</strong> — {downCount}{' '}
+                {downCount === 1 ? 'server has' : 'servers have'} reported that the plugin cannot reach its database.
+                Backups/event queue may be impacted.
+              </span>,
+              'matchzy-db-down'
+            );
+            setDbHealthSnackbarKey(key);
+          }
+        } else if (dbHealthSnackbarKey) {
+          closeSnackbar(dbHealthSnackbarKey);
+          setDbHealthSnackbarKey(null);
+        }
+      } catch {
+        // Non-fatal; we don't want global UI to hard-fail.
+      }
+    };
+
+    void checkDbHealth();
+    const interval = window.setInterval(checkDbHealth, 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar]);
 
   // Show a single global snackbar when webhook is not configured
   const handleOpenSettingsFromSnackbar = React.useCallback(() => {

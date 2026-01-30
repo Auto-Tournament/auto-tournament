@@ -32,6 +32,17 @@ export interface Cs2UpdateRequiredEvent {
   timestamp: number;
 }
 
+export interface ServerHealthEvent {
+  event: 'server_health';
+  server_id: string;
+  plugin_version: string;
+  timestamp: number;
+  db_ok: boolean;
+  db_type: 'sqlite' | 'mysql' | string;
+  db_error?: string | null;
+  reason?: 'startup' | 'periodic' | 'change' | string;
+}
+
 class ServerTrackingService {
   /**
    * In-memory reachability failure counter per server.
@@ -111,6 +122,7 @@ class ServerTrackingService {
     try {
       const { server_id, hostname, plugin_version, timestamp } = event;
       const lastSeen = Math.floor(timestamp || Date.now() / 1000);
+      const now = Math.floor(Date.now() / 1000);
 
       // Check if server exists
       const existingServer = await db.queryOneAsync<{ id: string }>(
@@ -127,6 +139,7 @@ class ServerTrackingService {
             plugin_version,
             last_seen: lastSeen,
             status: 'online',
+            server_can_reach_api_at: now,
             // On startup we consider the server "back" and clear any stale
             // CS2 update-required banner. If the server is still out of date,
             // it will report it again shortly.
@@ -137,7 +150,7 @@ class ServerTrackingService {
                   cs2_update_required_at: null,
                 }
               : {}),
-            updated_at: Math.floor(Date.now() / 1000),
+            updated_at: now,
           },
           'id = ?',
           [server_id]
@@ -158,6 +171,34 @@ class ServerTrackingService {
       }
     } catch (error) {
       log.error('[SERVER-TRACKING] Failed to handle server_configured event', error as Error);
+    }
+  }
+
+  async setServerHealth(
+    serverId: string,
+    health: { dbOk: boolean; dbType: string; dbError?: string | null; timestamp?: number }
+  ): Promise<void> {
+    const now = Math.floor(Date.now() / 1000);
+    const ts = Math.floor(health.timestamp ?? now);
+    const matchzyDbLastOkAt = health.dbOk ? ts : null;
+
+    try {
+      await db.updateAsync(
+        'servers',
+        {
+          matchzy_db_ok: health.dbOk ? 1 : 0,
+          matchzy_db_type: health.dbType,
+          matchzy_db_error: health.dbOk ? null : health.dbError ?? null,
+          matchzy_db_last_ok_at: matchzyDbLastOkAt,
+          matchzy_db_last_seen_at: ts,
+          server_can_reach_api_at: now,
+          updated_at: now,
+        },
+        'id = ?',
+        [serverId]
+      );
+    } catch (error) {
+      log.warn(`[SERVER-TRACKING] Failed to persist server health for ${serverId}`, { error });
     }
   }
 
@@ -201,6 +242,7 @@ class ServerTrackingService {
         {
           last_seen: now,
           status: 'online',
+          server_can_reach_api_at: now,
           updated_at: now,
         },
         'id = ?',

@@ -275,6 +275,15 @@ export class ServerService {
       cs2BuildId: server.cs2_build_id ?? null,
       cs2VersionString: server.cs2_version_string ?? null,
       cs2VersionFetchedAt: server.cs2_version_fetched_at ?? null,
+      matchzyDbOk:
+        typeof server.matchzy_db_ok === 'number'
+          ? server.matchzy_db_ok === 1
+          : server.matchzy_db_ok ?? null,
+      matchzyDbType: server.matchzy_db_type ?? null,
+      matchzyDbError: server.matchzy_db_error ?? null,
+      matchzyDbLastOkAt: server.matchzy_db_last_ok_at ?? null,
+      matchzyDbLastSeenAt: server.matchzy_db_last_seen_at ?? null,
+      serverCanReachApiAt: server.server_can_reach_api_at ?? null,
     };
   }
 }

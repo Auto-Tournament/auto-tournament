@@ -27,6 +27,18 @@ export interface Server {
   cs2_version_string?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2_version_fetched_at?: number | null;
+  /** Best-effort: MatchZy plugin DB reachable (1/0). */
+  matchzy_db_ok?: number | null;
+  /** Best-effort: 'sqlite' | 'mysql'. */
+  matchzy_db_type?: string | null;
+  /** Best-effort: last DB error message (if any). */
+  matchzy_db_error?: string | null;
+  /** Unix timestamp when DB was last reported OK. */
+  matchzy_db_last_ok_at?: number | null;
+  /** Unix timestamp when DB health was last reported. */
+  matchzy_db_last_seen_at?: number | null;
+  /** Unix timestamp when server last successfully sent any event to /api/events. */
+  server_can_reach_api_at?: number | null;
   created_at: number;
   updated_at: number;
 }
@@ -84,6 +96,18 @@ export interface ServerResponse {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
+  /** Best-effort: MatchZy plugin DB reachable. */
+  matchzyDbOk?: boolean | null;
+  /** Best-effort: 'sqlite' | 'mysql'. */
+  matchzyDbType?: string | null;
+  /** Best-effort: last DB error message (if any). */
+  matchzyDbError?: string | null;
+  /** Unix timestamp when DB was last reported OK. */
+  matchzyDbLastOkAt?: number | null;
+  /** Unix timestamp when DB health was last reported. */
+  matchzyDbLastSeenAt?: number | null;
+  /** Unix timestamp when server last successfully sent any event to /api/events. */
+  serverCanReachApiAt?: number | null;
 }
 
 /**

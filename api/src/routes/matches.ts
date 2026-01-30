@@ -1311,6 +1311,121 @@ router.post('/:slug/restart', requireAuth, async (req: Request, res: Response) =
 });
 
 /**
+ * POST /api/matches/:slug/reallocate
+ * Reallocate a match to a different server (authenticated).
+ *
+ * Intended for pre-live recovery (e.g. the assigned server is out of date).
+ * Allowed only when match status is 'ready' or 'loaded' (never during live play).
+ */
+router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const baseUrl = await getWebhookBaseUrl(req);
+
+    const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+      slug,
+    ]);
+
+    if (!match) {
+      return res.status(404).json({
+        success: false,
+        error: `Match '${slug}' not found`,
+      });
+    }
+
+    const status = match.status as string | null;
+    if (status !== 'ready' && status !== 'loaded') {
+      return res.status(400).json({
+        success: false,
+        error: `Match is in '${status}' status. Can only reallocate ready/loaded matches.`,
+      });
+    }
+
+    const oldServerId = match.server_id;
+    if (!oldServerId) {
+      return res.status(409).json({
+        success: false,
+        error: 'Match has no server assigned. There is nothing to reallocate.',
+      });
+    }
+
+    const availableServers = await matchAllocationService.getAvailableServers();
+    const fallback = availableServers.find((s) => s.id !== oldServerId);
+
+    if (!fallback) {
+      return res.status(409).json({
+        success: false,
+        error:
+          'No alternative idle servers are available for reallocation. Please free up a server or update existing ones.',
+      });
+    }
+
+    // Best-effort: ask the old server to restart so it returns to a clean state.
+    try {
+      const { rconService } = await import('../services/rconService');
+      await rconService.sendCommand(oldServerId, 'css_restart');
+    } catch (err) {
+      log.warn(`Failed to restart old server during reallocation (continuing)`, {
+        matchSlug: slug,
+        serverId: oldServerId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
+
+    // Free old server from allocation tracker immediately.
+    serverAllocationTracker.markIdle(oldServerId);
+
+    // Reserve the new server in the tracker so the allocator won't race us.
+    serverAllocationTracker.markAllocated(fallback.id, slug);
+
+    // Update match to point to the new server and reset it to a clean pre-load state.
+    await db.updateAsync(
+      'matches',
+      {
+        server_id: fallback.id,
+        status: 'ready',
+        loaded_at: null,
+      },
+      'slug = ?',
+      [slug]
+    );
+
+    // Load on the new server.
+    const load = await loadMatchOnServer(slug, fallback.id, { baseUrl });
+
+    if (!load.success) {
+      // Roll back the tracker reservation; keep match assigned to the new server
+      // so the admin can retry once the underlying issue is fixed.
+      serverAllocationTracker.markIdle(fallback.id);
+      return res.status(400).json({
+        success: false,
+        error: load.error || 'Failed to load match on the reallocated server',
+        rconResponses: load.rconResponses,
+      });
+    }
+
+    const updatedMatch = await matchService.getMatchBySlug(slug, baseUrl);
+    if (updatedMatch) {
+      emitMatchUpdate(updatedMatch);
+      emitBracketUpdate({ action: 'match_reallocated', matchSlug: slug });
+    }
+
+    return res.json({
+      success: true,
+      message: `Match reallocated from ${oldServerId} to ${fallback.id}`,
+      match: updatedMatch,
+      rconResponses: load.rconResponses,
+    });
+  } catch (error) {
+    log.error(`Error reallocating match`, error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to reallocate match',
+    });
+  }
+});
+
+/**
  * PATCH /api/matches/:slug/status
  * Update match status (authenticated)
  */

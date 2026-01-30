@@ -294,7 +294,7 @@ export default function Servers() {
               }
             }
             // Reload after auto-retry completes
-            setTimeout(() => void loadServers({ useCached: false, autoRetry: false }), 1500);
+            setTimeout(() => void loadServers({ useCached: true, autoRetry: false }), 1500);
           })();
         }
       }
@@ -1289,6 +1289,14 @@ export default function Servers() {
                               variant="outlined"
                               color="secondary"
                               sx={{ fontWeight: 600 }}
+                            />
+                          )}
+                          {server.enabled && server.matchzyDbOk === false && (
+                            <Chip
+                              label="Plugin DB DOWN"
+                              size="small"
+                              color="error"
+                              sx={{ fontWeight: 800 }}
                             />
                           )}
                           {typeof server.cs2RequiredVersion === 'number' && server.enabled && (

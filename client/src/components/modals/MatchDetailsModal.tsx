@@ -1147,6 +1147,7 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                   <AdminMatchControls
                     serverId={match.serverId}
                     matchSlug={match.slug}
+                    matchStatus={match.status}
                     onSuccess={(message) => {
                       setSuccess(message);
                       setTimeout(() => setSuccess(''), 3000);

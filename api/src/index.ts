@@ -20,6 +20,7 @@ import { settingsService } from './services/settingsService';
 import { serverInitializationService } from './services/serverInitializationService';
 import serverRoutes from './routes/servers';
 import serverStatusRoutes from './routes/serverStatus';
+import serverBootstrapRoutes from './routes/serverBootstrap';
 import teamRoutes from './routes/teams';
 import rconRoutes from './routes/rcon';
 import matchRoutes from './routes/matches';
@@ -311,6 +312,7 @@ app.get('/health', (_req: Request, res: Response) => {
 });
 
 // API Routes
+app.use('/api/servers', serverBootstrapRoutes);
 app.use('/api/servers', serverRoutes);
 app.use('/api/servers', serverStatusRoutes); // Mount status routes under /api/servers
 app.use('/api/teams', teamRoutes);

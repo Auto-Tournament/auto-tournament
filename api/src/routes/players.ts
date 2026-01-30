@@ -165,6 +165,7 @@ router.get('/public-selection', async (_req: Request, res: Response) => {
       name: p.name,
       avatar: p.avatar,
       currentElo: p.currentElo,
+      isAdmin: p.isAdmin,
     }));
 
     return res.json({

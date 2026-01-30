@@ -47,6 +47,18 @@ export interface Server {
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */
   cs2VersionFetchedAt?: number | null;
+  /** Best-effort: MatchZy plugin DB reachable. */
+  matchzyDbOk?: boolean | null;
+  /** Best-effort: 'sqlite' | 'mysql'. */
+  matchzyDbType?: string | null;
+  /** Best-effort: last DB error message (if any). */
+  matchzyDbError?: string | null;
+  /** Unix timestamp when DB was last reported OK. */
+  matchzyDbLastOkAt?: number | null;
+  /** Unix timestamp when DB health was last reported. */
+  matchzyDbLastSeenAt?: number | null;
+  /** Unix timestamp when server last successfully sent any event to /api/events. */
+  serverCanReachApiAt?: number | null;
   // Optional real-time status values reported by the MatchZy plugin and
   // allocator. These are populated by /api/servers/:id/status and are used
   // purely for UI display on the Servers page.

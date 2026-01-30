@@ -44,6 +44,7 @@ export default function FindPlayer() {
   const [playersLoading, setPlayersLoading] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerOption | null>(null);
   const { showError } = useSnackbar();
 
   useEffect(() => {
@@ -156,11 +157,17 @@ export default function FindPlayer() {
                 getOptionLabel={(option) => option.name}
                 onChange={(_, newValue) => {
                   if (newValue && typeof newValue !== 'string') {
+                    setSelectedPlayer(newValue);
                     navigate(`/player/${newValue.id}`);
                   }
                 }}
                 inputValue={inputValue}
                 onInputChange={(_, newInputValue) => {
+                  // If the user is typing, drop any prior selection so styling
+                  // doesn't "stick" incorrectly.
+                  if (selectedPlayer && newInputValue !== selectedPlayer.name) {
+                    setSelectedPlayer(null);
+                  }
                   setInputValue(newInputValue);
                   setQuery(newInputValue);
                   if (inputError) {
@@ -188,7 +195,7 @@ export default function FindPlayer() {
                       isAdmin={option.isAdmin}
                     />
                     <Box>
-                      <PlayerName name={option.name} variant="body2" />
+                      <PlayerName name={option.name} isAdmin={option.isAdmin} variant="body2" />
                       <Typography variant="caption" color="text.secondary">
                         {option.id}
                       </Typography>
@@ -205,6 +212,16 @@ export default function FindPlayer() {
                     disabled={loading}
                     error={!!inputError}
                     helperText={inputError || undefined}
+                    sx={{
+                      ...(selectedPlayer?.isAdmin
+                        ? {
+                            '& .MuiInputBase-input': {
+                              color: 'error.main',
+                              fontWeight: 700,
+                            },
+                          }
+                        : undefined),
+                    }}
                     slotProps={{
                       htmlInput: {
                         ...params.inputProps,

@@ -20,14 +20,8 @@
 import { db } from '../config/database';
 import { rconService } from './rconService';
 import { log } from '../utils/logger';
-import {
-  getMatchZyWebhookCommands,
-  getMatchZyDemoUploadCommands,
-  getMatchZyLoadMatchAuthCommands,
-  getMatchZyCoreSettingsCommands,
-  getMatchZyServerConfigCommands,
-} from '../utils/matchzyRconCommands';
-import { settingsService } from './settingsService';
+// NOTE: Remaining MatchZy configuration is fetched by the server itself
+// via /api/servers/:id/bootstrap to avoid RCON command churn.
 
 export interface ServerInitializationResult {
   success: boolean;
@@ -125,135 +119,30 @@ class ServerInitializationService {
         };
       }
 
-      log.info(`[SERVER-INIT] Initializing server ${serverId} with persistent configuration`);
+      log.info(`[SERVER-INIT] Initializing server ${serverId} via bootstrap URL`);
 
-      const delay = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      const bootstrapUrl = `${baseUrl}/api/servers/${serverId}/bootstrap`;
       const errors: string[] = [];
 
-      const cmdTag = (c: string) => {
-        const first = c.trim().split(/\s+/)[0];
-        return first ? ` (${first})` : '';
-      };
-      const err = (detail: string | undefined) => detail && detail.trim().length > 0 ? detail.trim() : 'no details';
+      const commands = [
+        'matchzy_clear_event_queue',
+        `matchzy_server_id "${serverId}"`,
+        `matchzy_bootstrap_url "${bootstrapUrl}"`,
+        `matchzy_bootstrap_token "${serverToken}"`,
+      ];
 
-      // 0. Clear MatchZy event queue so the server does not keep retrying with a wrong webhook URL
-      const clearResult = await rconService.sendCommand(serverId, 'matchzy_clear_event_queue');
-      if (!clearResult.success) {
-        log.debug(`[SERVER-INIT] Server ${serverId}: matchzy_clear_event_queue failed (continuing)`, {
-          error: clearResult.error,
-        });
-      }
-      await delay(200);
-
-      // 1. Configure webhook (persistent)
-      const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, null);
-      for (const cmd of webhookCommands) {
+      for (const cmd of commands) {
         const result = await rconService.sendCommand(serverId, cmd);
         if (!result.success) {
-          errors.push(`Webhook config failed${cmdTag(cmd)}: ${err(result.error)}`);
-        } else {
-          configsSent.push('webhook');
+          errors.push(`${cmd}: ${result.error ?? 'no details'}`);
         }
-        await delay(200);
       }
 
-      await delay(300);
-
-      // 2. Configure demo upload (persistent)
-      const demoUploadCommands = getMatchZyDemoUploadCommands(baseUrl, null, serverToken);
-      for (const cmd of demoUploadCommands) {
-        const result = await rconService.sendCommand(serverId, cmd);
-        if (!result.success) {
-          errors.push(`Demo upload config failed${cmdTag(cmd)}: ${err(result.error)}`);
-        } else {
-          configsSent.push('demo_upload');
-        }
-        await delay(200);
-      }
-
-      await delay(300);
-
-      // 3. Configure match loading authentication (persistent)
-      const authCommands = getMatchZyLoadMatchAuthCommands(serverToken);
-      for (const cmd of authCommands) {
-        const result = await rconService.sendCommand(serverId, cmd);
-        if (!result.success) {
-          errors.push(`Auth config failed${cmdTag(cmd)}: ${err(result.error)}`);
-        } else {
-          configsSent.push('auth');
-        }
-        await delay(200);
-      }
-
-      await delay(300);
-
-      // 4. Configure chat prefixes (persistent)
-      const [chatPrefix, adminChatPrefix, knifeEnabledDefault, debugChatEnabled] =
-        await Promise.all([
-          settingsService.getMatchzyChatPrefix(),
-          settingsService.getMatchzyAdminChatPrefix(),
-          settingsService.isKnifeRoundEnabledByDefault(),
-          settingsService.isMatchzyDebugChatEnabled(),
-        ]);
-
-      const coreSettingsCommands = getMatchZyCoreSettingsCommands({
-        chatPrefix,
-        adminChatPrefix,
-        knifeEnabledDefault,
-        debugChatEnabled,
-      });
-
-      for (const cmd of coreSettingsCommands) {
-        const result = await rconService.sendCommand(serverId, cmd);
-        if (!result.success) {
-          errors.push(`Core settings failed${cmdTag(cmd)}: ${err(result.error)}`);
-        } else {
-          configsSent.push('core_settings');
-        }
-        await delay(200);
-      }
-
-      await delay(300);
-
-      // 4b. Configure MatchZy core defaults (persistent)
-      const matchzyCore = await settingsService.getMatchzyCoreDefaults();
-      const matchzyCoreCommands = getMatchZyServerConfigCommands({
-        autostartMode: matchzyCore.autostartMode,
-        minimumReadyRequired: matchzyCore.minimumReadyRequired,
-        allowForceReady: matchzyCore.allowForceReady,
-        kickWhenNoMatchLoaded: matchzyCore.kickWhenNoMatchLoaded,
-        whitelistEnabledDefault: matchzyCore.whitelistEnabledDefault,
-        pauseAfterRestore: matchzyCore.pauseAfterRestore,
-        stopCommandAvailable: matchzyCore.stopCommandAvailable,
-        stopCommandNoDamage: matchzyCore.stopCommandNoDamage,
-        usePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
-        demoPath: matchzyCore.demoPath,
-        demoNameFormat: matchzyCore.demoNameFormat,
-        seriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
-        seriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
-        seriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
-      });
-      for (const cmd of matchzyCoreCommands) {
-        const result = await rconService.sendCommand(serverId, cmd);
-        if (!result.success) {
-          errors.push(`MatchZy defaults failed${cmdTag(cmd)}: ${err(result.error)}`);
-        } else {
-          configsSent.push('matchzy_defaults');
-        }
-        await delay(200);
-      }
-
-      // 5. Set server ID (persistent)
-      const serverIdCmd = `matchzy_server_id "${serverId}"`;
-      const serverIdResult = await rconService.sendCommand(serverId, serverIdCmd);
-      if (!serverIdResult.success) {
-        errors.push(`Server ID config failed: ${err(serverIdResult.error)}`);
-      } else {
-        configsSent.push('server_id');
-      }
+      await this.markServerInitialized(serverId);
+      configsSent.push('bootstrap');
 
       if (errors.length > 0) {
-        log.warn(`[SERVER-INIT] Server ${serverId} initialization completed with errors`, {
+        log.warn(`[SERVER-INIT] Server ${serverId} bootstrap initialization completed with errors`, {
           errors,
           configsSent,
         });
@@ -265,10 +154,7 @@ class ServerInitializationService {
         };
       }
 
-      // Mark as initialized
-      await this.markServerInitialized(serverId);
-
-      log.success(`[SERVER-INIT] Server ${serverId} successfully initialized with persistent configuration`);
+      log.success(`[SERVER-INIT] Server ${serverId} bootstrap initialization scheduled`);
       return {
         success: true,
         alreadyInitialized: false,

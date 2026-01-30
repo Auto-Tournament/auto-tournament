@@ -35,6 +35,7 @@ import { api } from '../../utils/api';
 interface AdminMatchControlsProps {
   serverId?: string;
   matchSlug?: string;
+  matchStatus?: 'pending' | 'ready' | 'loaded' | 'live' | 'completed' | 'cancelled';
   onSuccess?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -59,6 +60,7 @@ interface InputDialogState {
 const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
   serverId,
   matchSlug,
+  matchStatus,
   onSuccess,
   onError,
 }) => {
@@ -92,7 +94,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
 
   const executeAction = async (action: string, params?: Record<string, unknown>) => {
     // Force cancel doesn't require a server - it works even when server is offline
-    if (!serverId && action !== 'forceCancel') {
+    if (!serverId && action !== 'forceCancel' && action !== 'restartMatch' && action !== 'reallocateServer') {
       showError('No server assigned to this match');
       return;
     }
@@ -113,6 +115,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
         addTime: '/api/rcon/add-time',
         broadcast: '/api/rcon/say',
         restartMatch: matchSlug ? `/api/matches/${matchSlug}/restart` : '',
+        reallocateServer: matchSlug ? `/api/matches/${matchSlug}/reallocate` : '',
         forceCancel: matchSlug ? `/api/matches/${matchSlug}/force-cancel` : '',
       };
 
@@ -121,7 +124,10 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
         throw new Error('Unknown action');
       }
 
-      const requestBody = action === 'restartMatch' || action === 'forceCancel' ? {} : { serverId, ...params };
+      const requestBody =
+        action === 'restartMatch' || action === 'forceCancel' || action === 'reallocateServer'
+          ? {}
+          : { serverId, ...params };
       const response = await api.post(endpoint, requestBody);
 
       const messages: Record<string, string> = {
@@ -137,6 +143,7 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
         addTime: `Added ${params?.seconds || 0} seconds to round time`,
         broadcast: 'Message sent to server',
         restartMatch: 'Match restarted (ended and reloaded)',
+        reallocateServer: 'Match reallocated to a different server',
         forceCancel: 'Match cancelled successfully',
       };
 
@@ -412,6 +419,40 @@ const AdminMatchControls: React.FC<AdminMatchControlsProps> = ({
                         disabled={executing}
                       >
                         Restart Match
+                      </Button>
+                    </span>
+                  </Tooltip>
+                </Grid>
+              )}
+              {matchSlug && (
+                <Grid size={{ xs: 6, sm: 4 }}>
+                  <Tooltip
+                    title={
+                      matchStatus === 'ready' || matchStatus === 'loaded'
+                        ? 'Move match to a different server (pre-live recovery)'
+                        : 'Only available for ready/loaded matches (not during live play)'
+                    }
+                    arrow
+                  >
+                    <span>
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        color="warning"
+                        startIcon={<SwapHorizIcon />}
+                        onClick={() =>
+                          handleActionClick(
+                            'reallocateServer',
+                            'Reallocate Server',
+                            'This will move the match to a different idle server and reload it. Use this if the current server is out of date or players cannot connect. This is not allowed during a live match.',
+                            'warning'
+                          )
+                        }
+                        disabled={
+                          executing || !(matchStatus === 'ready' || matchStatus === 'loaded')
+                        }
+                      >
+                        Reallocate Server
                       </Button>
                     </span>
                   </Tooltip>

@@ -161,6 +161,12 @@ class DatabaseManager {
         { table: 'servers', column: 'cs2_build_id', type: 'INTEGER' },
         { table: 'servers', column: 'cs2_version_string', type: 'TEXT' },
         { table: 'servers', column: 'cs2_version_fetched_at', type: 'INTEGER' },
+        { table: 'servers', column: 'matchzy_db_ok', type: 'INTEGER' },
+        { table: 'servers', column: 'matchzy_db_type', type: 'TEXT' },
+        { table: 'servers', column: 'matchzy_db_error', type: 'TEXT' },
+        { table: 'servers', column: 'matchzy_db_last_ok_at', type: 'INTEGER' },
+        { table: 'servers', column: 'matchzy_db_last_seen_at', type: 'INTEGER' },
+        { table: 'servers', column: 'server_can_reach_api_at', type: 'INTEGER' },
       ];
 
       // Check if tournament_templates table exists, create if not

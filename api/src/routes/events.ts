@@ -34,6 +34,7 @@ import {
   serverTrackingService,
   type ServerConfiguredEvent,
   type Cs2UpdateRequiredEvent,
+  type ServerHealthEvent,
 } from '../services/serverTrackingService';
 
 const router = Router();
@@ -248,6 +249,29 @@ async function handleEventRequest(
       });
     }
     
+    // Handle server health signals (DB connectivity etc).
+    // This is a server-level signal and should not enter the match event pipeline.
+    if (event.event === 'server_health') {
+      const ev = event as ServerHealthEvent;
+      const effectiveServerId = ev.server_id || serverId;
+      if (effectiveServerId && effectiveServerId !== 'unknown') {
+        await serverTrackingService.setServerHealth(effectiveServerId, {
+          dbOk: Boolean(ev.db_ok),
+          dbType: String(ev.db_type || ''),
+          dbError: ev.db_error ?? null,
+          timestamp: ev.timestamp,
+        });
+        await serverTrackingService.updateHeartbeat(effectiveServerId);
+      }
+
+      // Still log and fan out for admin monitoring.
+      logWebhookEvent(serverId, actualMatchSlug, event);
+      return res.status(200).json({
+        success: true,
+        message: 'Server health event received',
+      });
+    }
+
     // Update server heartbeat for ALL events (shows server is alive)
     if (serverId && serverId !== 'unknown') {
       await serverTrackingService.updateHeartbeat(serverId);
