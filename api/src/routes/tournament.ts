@@ -25,6 +25,8 @@ import { settingsService } from '../services/settingsService';
 import { serverService } from '../services/serverService';
 import { serverInitializationService } from '../services/serverInitializationService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
+import { cs2UpdateService } from '../services/cs2UpdateService';
+import { parseCs2BuildId } from '../utils/cs2Version';
 
 const router = Router();
 
@@ -73,6 +75,126 @@ async function bootstrapServerWebhooksForTournamentStart(): Promise<void> {
       );
     }
   }
+}
+
+async function preflightServersUpToDateForTournamentStart(): Promise<
+  | { ok: true }
+  | {
+      ok: false;
+      servers: Array<{
+        id: string;
+        name: string;
+        installedBuildId: number | null;
+        requiredVersion: number | null;
+        reason: string;
+      }>;
+    }
+> {
+  const enabledServers = await serverService.getAllServers(true);
+  if (enabledServers.length === 0) {
+    return { ok: true };
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  const problems: Array<{
+    id: string;
+    name: string;
+    installedBuildId: number | null;
+    requiredVersion: number | null;
+    reason: string;
+  }> = [];
+
+  for (const server of enabledServers) {
+    // Fake servers for screenshots/testing should not block tournament start.
+    if (server.host === '0.0.0.0') {
+      continue;
+    }
+
+    try {
+      const versionResult = await rconService.sendCommand(server.id, 'version');
+      if (!versionResult.success || typeof versionResult.response !== 'string') {
+        problems.push({
+          id: server.id,
+          name: server.name,
+          installedBuildId: server.cs2BuildId ?? null,
+          requiredVersion: null,
+          reason: `Could not fetch CS2 version via RCON: ${versionResult.error ?? 'no details'}`,
+        });
+        continue;
+      }
+
+      const installedBuildId = parseCs2BuildId(versionResult.response);
+      if (!installedBuildId) {
+        problems.push({
+          id: server.id,
+          name: server.name,
+          installedBuildId: null,
+          requiredVersion: null,
+          reason: 'Could not parse CS2 BuildID from RCON `version` output',
+        });
+        continue;
+      }
+
+      const check = await cs2UpdateService.upToDateCheck(installedBuildId);
+
+      // Persist latest known version output + build id (best-effort) and the UpToDateCheck outcome.
+      if (check.upToDate) {
+        await db.updateAsync(
+          'servers',
+          {
+            cs2_build_id: installedBuildId,
+            cs2_version_string: versionResult.response,
+            cs2_version_fetched_at: now,
+            cs2_required_version: null,
+            cs2_update_phase: null,
+            cs2_update_required_at: null,
+            cs2_update_checked_at: now,
+            updated_at: now,
+          },
+          'id = ?',
+          [server.id]
+        );
+      } else {
+        await db.updateAsync(
+          'servers',
+          {
+            cs2_build_id: installedBuildId,
+            cs2_version_string: versionResult.response,
+            cs2_version_fetched_at: now,
+            cs2_required_version: check.requiredVersion ?? null,
+            cs2_update_phase: 'available',
+            cs2_update_required_at: now,
+            cs2_update_checked_at: now,
+            updated_at: now,
+          },
+          'id = ?',
+          [server.id]
+        );
+
+        problems.push({
+          id: server.id,
+          name: server.name,
+          installedBuildId,
+          requiredVersion: check.requiredVersion ?? null,
+          reason: 'Server is out of date according to Steam UpToDateCheck',
+        });
+      }
+    } catch (error) {
+      problems.push({
+        id: server.id,
+        name: server.name,
+        installedBuildId: server.cs2BuildId ?? null,
+        requiredVersion: server.cs2RequiredVersion ?? null,
+        reason: `Failed to verify CS2 build against Steam: ${error instanceof Error ? error.message : String(error)}`,
+      });
+    }
+  }
+
+  if (problems.length > 0) {
+    return { ok: false, servers: problems };
+  }
+
+  return { ok: true };
 }
 
 // Public routes (before auth middleware)
@@ -718,6 +840,18 @@ router.post('/start', requireAuth, async (req: Request, res: Response) => {
           err as Error
         );
       }
+    }
+
+    // One last preflight: verify enabled servers are up to date (RCON BuildID + Steam UpToDateCheck).
+    const preflight = await preflightServersUpToDateForTournamentStart();
+    if (!preflight.ok) {
+      return res.status(409).json({
+        success: false,
+        errorCode: 'cs2_outdated_servers',
+        message:
+          'One or more enabled servers are out of date (or could not be verified). Update or disable the affected servers before starting the tournament.',
+        servers: preflight.servers,
+      });
     }
 
     // Get base URL for webhook configuration

@@ -14,6 +14,7 @@ import { TournamentDialogs } from '../components/tournament/TournamentDialogs';
 import TournamentChangePreviewModal from '../components/modals/TournamentChangePreviewModal';
 import SaveTemplateModal from '../components/modals/SaveTemplateModal';
 import { BulkShuffleMatchesModal } from '../components/modals/BulkShuffleMatchesModal';
+import ConfirmDialog from '../components/modals/ConfirmDialog';
 import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
@@ -82,6 +83,17 @@ const Tournament: React.FC = () => {
   const { showSuccess, showError } = useSnackbar();
   const [saving, setSaving] = useState(false);
   const [starting, setStarting] = useState(false);
+  const [outdatedServers, setOutdatedServers] = useState<
+    Array<{
+      id: string;
+      name: string;
+      installedBuildId: number | null;
+      requiredVersion: number | null;
+      reason: string;
+    }>
+  >([]);
+  const [showOutdatedDialog, setShowOutdatedDialog] = useState(false);
+  const [disablingOutdated, setDisablingOutdated] = useState(false);
   const [saveTemplateModalOpen, setSaveTemplateModalOpen] = useState(false);
 
   // Set dynamic page title
@@ -835,7 +847,30 @@ const Tournament: React.FC = () => {
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to start tournament');
+      try {
+        const parsed = JSON.parse(error.message || '') as {
+          errorCode?: string;
+          servers?: Array<{
+            id: string;
+            name: string;
+            installedBuildId: number | null;
+            requiredVersion: number | null;
+            reason: string;
+          }>;
+        };
+        if (
+          parsed?.errorCode === 'cs2_outdated_servers' &&
+          Array.isArray(parsed.servers) &&
+          parsed.servers.length > 0
+        ) {
+          setOutdatedServers(parsed.servers);
+          setShowOutdatedDialog(true);
+        } else {
+          showError(error.message || 'Failed to start tournament');
+        }
+      } catch {
+        showError(error.message || 'Failed to start tournament');
+      }
     } finally {
       setStarting(false);
     }
@@ -1051,6 +1086,51 @@ const Tournament: React.FC = () => {
         onStartCancel={() => {
           setShowStartConfirm(false);
           setStartWarningInfo(null);
+        }}
+      />
+
+      <ConfirmDialog
+        open={showOutdatedDialog}
+        title="Servers need update"
+        message={
+          <>
+            <Box sx={{ mb: 1 }}>
+              One or more enabled servers are out of date (or could not be verified) according to
+              Steam. Update them, or disable them to continue with the remaining fleet.
+            </Box>
+            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
+              {outdatedServers.map((s) => (
+                <li key={s.id}>
+                  {s.name} ({s.id})
+                  {typeof s.installedBuildId === 'number' ? ` — installed=${s.installedBuildId}` : ''}
+                  {typeof s.requiredVersion === 'number' ? `, required=${s.requiredVersion}` : ''}
+                  {s.reason ? ` — ${s.reason}` : ''}
+                </li>
+              ))}
+            </Box>
+          </>
+        }
+        confirmLabel={disablingOutdated ? 'Disabling...' : 'Disable affected servers & retry'}
+        cancelLabel="Cancel"
+        confirmColor="warning"
+        loading={disablingOutdated}
+        onCancel={() => setShowOutdatedDialog(false)}
+        onConfirm={async () => {
+          if (disablingOutdated) return;
+          setDisablingOutdated(true);
+          try {
+            for (const s of outdatedServers) {
+              await api.post(`/api/servers/${s.id}/disable`);
+            }
+            await refreshData();
+            setShowOutdatedDialog(false);
+            await performTournamentStart();
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            showError(`Failed to disable one or more servers: ${msg}`);
+          } finally {
+            setDisablingOutdated(false);
+          }
         }}
       />
 

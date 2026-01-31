@@ -44,6 +44,59 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
   const [enableSimulation, setEnableSimulation] = useState(false);
   const isDev = useIsDevelopment();
   const { simulationEnabled, refresh: refreshSimulation } = useSimulationMode();
+  const [outdatedServers, setOutdatedServers] = useState<
+    Array<{
+      id: string;
+      name: string;
+      installedBuildId: number | null;
+      requiredVersion: number | null;
+      reason: string;
+    }>
+  >([]);
+  const [showOutdatedDialog, setShowOutdatedDialog] = useState(false);
+  const [disablingOutdated, setDisablingOutdated] = useState(false);
+
+  const parseCs2OutdatedError = (raw: string): null | {
+    errorCode: string;
+    message?: string;
+    servers?: Array<{
+      id: string;
+      name: string;
+      installedBuildId: number | null;
+      requiredVersion: number | null;
+      reason: string;
+    }>;
+  } => {
+    try {
+      const parsed = JSON.parse(raw) as {
+        errorCode?: unknown;
+        message?: unknown;
+        servers?: unknown;
+      };
+      if (!parsed || typeof parsed !== 'object') return null;
+      if (typeof parsed.errorCode !== 'string') return null;
+      if (parsed.errorCode !== 'cs2_outdated_servers') return null;
+      const servers = Array.isArray(parsed.servers) ? (parsed.servers as any[]) : [];
+      return {
+        errorCode: parsed.errorCode,
+        message: typeof parsed.message === 'string' ? parsed.message : undefined,
+        servers: servers
+          .filter((s) => s && typeof s === 'object')
+          .map((s) => ({
+            id: String((s as any).id ?? ''),
+            name: String((s as any).name ?? ''),
+            installedBuildId:
+              typeof (s as any).installedBuildId === 'number' ? (s as any).installedBuildId : null,
+            requiredVersion:
+              typeof (s as any).requiredVersion === 'number' ? (s as any).requiredVersion : null,
+            reason: String((s as any).reason ?? 'Unknown reason'),
+          }))
+          .filter((s) => s.id && s.name),
+      };
+    } catch {
+      return null;
+    }
+  };
 
   // Check server availability when dialog opens (when user clicks "Start Tournament" button)
   useEffect(() => {
@@ -152,7 +205,13 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to start tournament');
+      const parsed = parseCs2OutdatedError(error.message || '');
+      if (parsed?.errorCode === 'cs2_outdated_servers' && parsed.servers && parsed.servers.length > 0) {
+        setOutdatedServers(parsed.servers);
+        setShowOutdatedDialog(true);
+      } else {
+        setError(error.message || 'Failed to start tournament');
+      }
     } finally {
       clearTimeout(spinnerTimeout);
       setStarting(false);
@@ -284,6 +343,56 @@ export const StartTournamentButton: React.FC<StartTournamentButtonProps> = ({
           navigate('/servers');
         }}
         confirmColor="warning"
+      />
+
+      <ConfirmDialog
+        open={showOutdatedDialog}
+        title="Servers need update"
+        message={
+          <>
+            <Typography variant="body2" color="text.secondary" paragraph>
+              One or more enabled servers are out of date (or could not be verified) according to Steam.
+              Update them, or disable them to continue with the remaining fleet.
+            </Typography>
+            <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
+              {outdatedServers.map((s) => (
+                <Typography key={s.id} component="li" variant="body2" color="text.secondary" sx={{ mb: 0.5 }}>
+                  <strong>{s.name}</strong> ({s.id})
+                  {typeof s.installedBuildId === 'number' ? ` — installed=${s.installedBuildId}` : ''}
+                  {typeof s.requiredVersion === 'number' ? `, required=${s.requiredVersion}` : ''}
+                  {s.reason ? ` — ${s.reason}` : ''}
+                </Typography>
+              ))}
+            </Box>
+          </>
+        }
+        confirmLabel={disablingOutdated ? 'Disabling...' : 'Disable affected servers & retry'}
+        cancelLabel="Go to Servers"
+        confirmColor="warning"
+        loading={disablingOutdated}
+        onCancel={() => {
+          setShowOutdatedDialog(false);
+          navigate('/servers');
+        }}
+        onConfirm={async () => {
+          if (disablingOutdated) return;
+          setDisablingOutdated(true);
+          setError('');
+          try {
+            for (const s of outdatedServers) {
+              await api.post(`/api/servers/${s.id}/disable`);
+            }
+            await refreshData();
+            setShowOutdatedDialog(false);
+            // Retry immediately (will run preflight again with the remaining enabled servers).
+            await performTournamentStart();
+          } catch (e) {
+            const msg = e instanceof Error ? e.message : String(e);
+            setError(`Failed to disable one or more servers: ${msg}`);
+          } finally {
+            setDisablingOutdated(false);
+          }
+        }}
       />
 
       <Snackbar

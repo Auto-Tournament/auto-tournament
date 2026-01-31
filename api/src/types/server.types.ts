@@ -21,6 +21,8 @@ export interface Server {
   cs2_update_phase?: string | null;
   /** Unix timestamp when update was last reported. */
   cs2_update_required_at?: number | null;
+  /** Unix timestamp when MAT last checked UpToDateCheck for this server. */
+  cs2_update_checked_at?: number | null;
   /** Best-effort: CS2 server build ID parsed from `version` output. */
   cs2_build_id?: number | null;
   /** Best-effort: `version` output (display-only; may include multiple lines). */
@@ -90,6 +92,8 @@ export interface ServerResponse {
   cs2UpdatePhase?: string | null;
   /** Unix timestamp when update was last reported. */
   cs2UpdateRequiredAt?: number | null;
+  /** Unix timestamp when MAT last checked UpToDateCheck for this server. */
+  cs2UpdateCheckedAt?: number | null;
   /** Best-effort: CS2 server build ID parsed from `version` output. */
   cs2BuildId?: number | null;
   /** Best-effort: `version` output (display-only; may include multiple lines). */

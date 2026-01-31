@@ -7,21 +7,10 @@ import { serverStatusService, ServerStatus } from '../services/serverStatusServi
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
 import { db } from '../config/database';
+import { parseCs2BuildId } from '../utils/cs2Version';
+import { cs2UpdateService } from '../services/cs2UpdateService';
 
 const router = Router();
-
-function parseCs2BuildId(versionOutput: string): number | null {
-  // Common patterns we’ve seen across Source engine/CS2:
-  // - "BuildID 1234567"
-  // - "BuildId: 1234567"
-  // - Sometimes embedded in multi-line output.
-  const m = versionOutput.match(/\bBuildID\b[:\s]+(\d{4,})/i);
-  if (m?.[1]) {
-    const n = Number(m[1]);
-    return Number.isFinite(n) ? n : null;
-  }
-  return null;
-}
 
 // Protect all routes
 router.use(requireAuth);
@@ -217,6 +206,7 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     let cs2BuildId: number | null = server.cs2BuildId ?? null;
     let cs2VersionString: string | null = server.cs2VersionString ?? null;
     let cs2VersionFetchedAt: number | null = server.cs2VersionFetchedAt ?? null;
+    const cs2UpdateCheckedAt: number | null = server.cs2UpdateCheckedAt ?? null;
 
     try {
       const now = Math.floor(Date.now() / 1000);
@@ -247,6 +237,51 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     } catch (error) {
       // Non-fatal: keep the rest of the status response.
       log.debug(`Failed to fetch CS2 version via RCON for server ${id}`, { error });
+    }
+
+    // Best-effort: check CS2 build against Steam UpToDateCheck (BuildID-based).
+    // Persist cs2_required_version so allocator/UI can block out-of-date servers
+    // without waiting for the plugin to emit cs2_update_required.
+    try {
+      const now = Math.floor(Date.now() / 1000);
+      const STALE_AFTER_SECONDS = 10 * 60; // Steam checks should be infrequent
+      const isStale = !cs2UpdateCheckedAt || now - cs2UpdateCheckedAt >= STALE_AFTER_SECONDS;
+
+      if (isStale && typeof cs2BuildId === 'number' && Number.isFinite(cs2BuildId)) {
+        const result = await cs2UpdateService.upToDateCheck(cs2BuildId);
+
+        if (result.upToDate) {
+          await db.updateAsync(
+            'servers',
+            {
+              cs2_required_version: null,
+              cs2_update_phase: null,
+              cs2_update_required_at: null,
+              cs2_update_checked_at: now,
+              updated_at: now,
+            },
+            'id = ?',
+            [id]
+          );
+        } else {
+          const existingPhase = server.cs2UpdatePhase ?? null;
+          await db.updateAsync(
+            'servers',
+            {
+              cs2_required_version: result.requiredVersion ?? server.cs2RequiredVersion ?? null,
+              cs2_update_phase: existingPhase === 'shutdown' ? 'shutdown' : 'available',
+              cs2_update_required_at: now,
+              cs2_update_checked_at: now,
+              updated_at: now,
+            },
+            'id = ?',
+            [id]
+          );
+        }
+      }
+    } catch (error) {
+      // Non-fatal: if Steam check fails, keep last known cs2_required_version state.
+      log.debug(`Failed to check CS2 UpToDateCheck for server ${id}`, { error });
     }
 
     // Note: Webhook configuration is now handled by serverInitializationService

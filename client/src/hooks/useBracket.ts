@@ -164,7 +164,22 @@ export const useBracket = () => {
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to start tournament');
+      try {
+        const parsed = JSON.parse(error.message || '') as {
+          errorCode?: string;
+          message?: string;
+        };
+        if (parsed?.errorCode === 'cs2_outdated_servers') {
+          showError(
+            parsed.message ||
+              'One or more servers are out of date (or could not be verified). Update or disable affected servers and try again.'
+          );
+        } else {
+          showError(error.message || 'Failed to start tournament');
+        }
+      } catch {
+        showError(error.message || 'Failed to start tournament');
+      }
     } finally {
       setStarting(false);
     }
