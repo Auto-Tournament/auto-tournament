@@ -1,5 +1,31 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
+const PLAYER_AVATAR_CACHE_KEY_PREFIX = 'mat.playerAvatarUrl:';
+
+function getPlayerAvatarCacheKey(steamId: string): string {
+  return `${PLAYER_AVATAR_CACHE_KEY_PREFIX}${steamId}`;
+}
+
+function writeCachedPlayerAvatarUrl(steamId: string, avatarUrl: string): void {
+  try {
+    if (typeof window === 'undefined') return;
+    const key = getPlayerAvatarCacheKey(steamId);
+    window.localStorage.setItem(key, avatarUrl);
+  } catch {
+    // best-effort only
+  }
+}
+
+function clearCachedPlayerAvatarUrl(steamId: string): void {
+  try {
+    if (typeof window === 'undefined') return;
+    const key = getPlayerAvatarCacheKey(steamId);
+    window.localStorage.removeItem(key);
+  } catch {
+    // best-effort only
+  }
+}
+
 interface AuthContextType {
   /**
    * Steam ID for the current player (if any), derived from the lightweight
@@ -100,6 +126,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             authenticated?: boolean;
             steamId?: string;
             hasPlayerRecord?: boolean;
+            avatarUrl?: string;
           } = await response.json();
           if (adminSteamId) {
             // Admin already set playerSteamId; don't overwrite with /api/auth/me
@@ -114,6 +141,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             cookieHasPlayerRecord = Boolean(data.hasPlayerRecord);
             setPlayerSteamId(data.steamId);
             setHasPlayerRecord(Boolean(data.hasPlayerRecord));
+
+            if (
+              typeof data.avatarUrl === 'string' &&
+              data.avatarUrl.trim() !== '' &&
+              data.avatarUrl.startsWith('http')
+            ) {
+              writeCachedPlayerAvatarUrl(data.steamId, data.avatarUrl);
+            }
           } else {
             cookieSteamId = null;
             cookieHasPlayerRecord = false;
@@ -239,12 +274,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    const steamIdToClear = playerSteamId;
     setIsAdmin(false);
     setPlayerSteamId(null);
     setHasPlayerRecord(false);
     setAdminProvider(null);
     setAdminProfileName(null);
     setAdminProfileAvatarUrl(null);
+
+    if (steamIdToClear) {
+      clearCachedPlayerAvatarUrl(steamIdToClear);
+    }
 
     try {
       // Destroy admin session

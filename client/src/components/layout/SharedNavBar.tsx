@@ -19,6 +19,23 @@ import { PlayerAvatar } from '../player/PlayerAvatar';
 import { generateAvatarDataUrl } from '../../generation/avatar';
 import { api } from '../../utils/api';
 
+const PLAYER_AVATAR_CACHE_KEY_PREFIX = 'mat.playerAvatarUrl:';
+
+function readCachedPlayerAvatarUrl(steamId: string): string | undefined {
+  try {
+    if (typeof window === 'undefined') return undefined;
+    const raw = window.localStorage.getItem(`${PLAYER_AVATAR_CACHE_KEY_PREFIX}${steamId}`);
+    if (typeof raw !== 'string') return undefined;
+    const value = raw.trim();
+    if (value === '') return undefined;
+    // Only accept http(s) URLs as cached avatars.
+    if (!value.startsWith('http')) return undefined;
+    return value;
+  } catch {
+    return undefined;
+  }
+}
+
 interface SharedNavBarProps {
   /**
    * Optional sidebar menu button for admin layouts.
@@ -74,6 +91,10 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     }
 
     let isMounted = true;
+    const cachedAvatarUrl = readCachedPlayerAvatarUrl(playerSteamId);
+    if (cachedAvatarUrl) {
+      setPlayerAvatarUrl(cachedAvatarUrl);
+    }
     setIsLoadingPlayer(true);
 
     const loadPlayerSummary = async () => {
@@ -87,10 +108,20 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
 
         if (response.success && response.player) {
           setPlayerName(response.player.name);
-          setPlayerAvatarUrl(response.player.avatar ?? undefined);
+          const avatarCandidate = response.player.avatar ?? undefined;
+          if (typeof avatarCandidate === 'string' && avatarCandidate.trim() !== '') {
+            setPlayerAvatarUrl(avatarCandidate);
+          } else if (cachedAvatarUrl) {
+            setPlayerAvatarUrl(cachedAvatarUrl);
+          } else {
+            setPlayerAvatarUrl(undefined);
+          }
         }
       } catch {
         // Best-effort only; fall back to deterministic SVG avatar.
+        if (isMounted) {
+          setPlayerAvatarUrl(cachedAvatarUrl);
+        }
       } finally {
         if (isMounted) {
           setIsLoadingPlayer(false);
