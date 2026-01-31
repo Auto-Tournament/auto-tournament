@@ -59,8 +59,30 @@ export default function Servers() {
   const [bulkDeleteConfirmOpen, setBulkDeleteConfirmOpen] = useState(false);
   const [statusCheckingIds, setStatusCheckingIds] = useState<Set<string>>(() => new Set());
   const [latestMatchZyVersion, setLatestMatchZyVersion] = useState<string | null>(null);
+  const [latestMatchZyReleaseUrl, setLatestMatchZyReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useTranslation();
+
+  const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
+    const normalize = (v: string) => {
+      const cleaned = v.trim().replace(/^v/i, '').split('-')[0]; // drop leading v + prerelease
+      const parts = cleaned.split('.').map((p) => Number(p));
+      if (parts.length === 0 || parts.some((n) => !Number.isFinite(n))) return null;
+      return parts;
+    };
+
+    const pa = normalize(a);
+    const pb = normalize(b);
+    if (!pa || !pb) return null;
+
+    const len = Math.max(pa.length, pb.length);
+    for (let i = 0; i < len; i++) {
+      const na = pa[i] ?? 0;
+      const nb = pb[i] ?? 0;
+      if (na !== nb) return na < nb ? -1 : 1;
+    }
+    return 0;
+  }, []);
 
   // Set dynamic page title
   useEffect(() => {
@@ -560,6 +582,7 @@ export default function Servers() {
       .then((response) => {
         if (response.success && response.version) {
           setLatestMatchZyVersion(response.version);
+          setLatestMatchZyReleaseUrl(response.releaseUrl ?? null);
         }
       })
       .catch(() => {
@@ -857,36 +880,61 @@ export default function Servers() {
                   {(() => {
                     if (!latestMatchZyVersion) return null;
                     const serversWithVersion = servers.filter((s) => s.pluginVersion);
-                    const outdatedCount = serversWithVersion.filter(
-                      (s) => s.pluginVersion && s.pluginVersion !== latestMatchZyVersion
-                    ).length;
-                    if (outdatedCount === 0) return null;
+                    const comparisons = serversWithVersion
+                      .map((s) => {
+                        const v = s.pluginVersion;
+                        if (!v) return null;
+                        return compareDottedVersions(v, latestMatchZyVersion);
+                      })
+                      .filter((x): x is number => typeof x === 'number');
+
+                    const olderCount = comparisons.filter((c) => c < 0).length;
+                    const newerCount = comparisons.filter((c) => c > 0).length;
+                    if (olderCount === 0 && newerCount === 0) return null;
+
+                    const boxColor = olderCount > 0 ? 'warning' : 'info';
+                    const releaseHref =
+                      latestMatchZyReleaseUrl ??
+                      'https://github.com/sivert-io/MatchZy-Enhanced/releases';
+
                     return (
                       <Box
                         sx={{
-                          bgcolor: 'info.light',
+                          bgcolor: `${boxColor}.light`,
                           border: 1,
-                          borderColor: 'info.main',
+                          borderColor: `${boxColor}.main`,
                           borderRadius: 1,
                           p: 1.5,
                           mt: 1,
                           color: 'grey.900',
                         }}
                       >
-                        <Typography variant="caption" fontWeight={600} sx={{ color: 'inherit' }} display="block" mb={0.5}>
-                          ℹ️ Latest MatchZy Enhanced: v{latestMatchZyVersion}
+                        <Typography
+                          variant="caption"
+                          fontWeight={600}
+                          sx={{ color: 'inherit' }}
+                          display="block"
+                          mb={0.5}
+                        >
+                          ℹ️ Latest released MatchZy Enhanced: v{latestMatchZyVersion}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
-                          {outdatedCount} {outdatedCount === 1 ? 'server is' : 'servers are'} using an older version.{' '}
-                          <a
-                            href="https://github.com/sivert-io/MatchZy-Enhanced/releases"
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            style={{ color: 'inherit', textDecoration: 'underline' }}
+                        {olderCount > 0 && (
+                          <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
+                            {olderCount} {olderCount === 1 ? 'server is' : 'servers are'} running an older version than the latest release.{' '}
+                            <a href={releaseHref} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
+                              Download latest
+                            </a>
+                          </Typography>
+                        )}
+                        {newerCount > 0 && (
+                          <Typography
+                            variant="caption"
+                            sx={{ color: 'inherit', opacity: 0.9 }}
+                            display="block"
                           >
-                            Download latest
-                          </a>
-                        </Typography>
+                            {newerCount} {newerCount === 1 ? 'server is' : 'servers are'} running a newer version than the latest GitHub release (likely an unreleased build).
+                          </Typography>
+                        )}
                       </Box>
                     );
                   })()}
