@@ -311,6 +311,51 @@ app.get('/health', (_req: Request, res: Response) => {
   });
 });
 
+/**
+ * @openapi
+ * /api/health/fleet:
+ *   get:
+ *     tags:
+ *       - Health
+ *     summary: Fleet health snapshot
+ *     description: Quick operator snapshot of enabled servers and CS2 update status.
+ *     responses:
+ *       200:
+ *         description: Fleet snapshot
+ */
+app.get('/api/health/fleet', async (_req: Request, res: Response) => {
+  const now = Math.floor(Date.now() / 1000);
+  const servers = await serverService.getAllServers(true);
+
+  const enabled = servers.filter((s) => s.enabled === 1 && s.host !== '0.0.0.0');
+  const outdated = enabled.filter((s) => typeof s.cs2_required_version === 'number');
+  const stale = enabled.filter((s) => !s.cs2_update_checked_at || now - s.cs2_update_checked_at >= 30 * 60);
+  const neverChecked = enabled.filter((s) => !s.cs2_update_checked_at);
+
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    cs2Fleet: {
+      enabled: enabled.length,
+      outdated: outdated.length,
+      stale: stale.length,
+      neverChecked: neverChecked.length,
+    },
+    servers: enabled.map((s) => ({
+      id: s.id,
+      name: s.name,
+      status: s.status ?? null,
+      lastSeen: s.last_seen ?? null,
+      cs2BuildId: s.cs2_build_id ?? null,
+      cs2RequiredVersion: s.cs2_required_version ?? null,
+      cs2UpdatePhase: s.cs2_update_phase ?? null,
+      cs2UpdateRequiredAt: s.cs2_update_required_at ?? null,
+      cs2UpdateCheckedAt: s.cs2_update_checked_at ?? null,
+      cs2VersionFetchedAt: s.cs2_version_fetched_at ?? null,
+    })),
+  });
+});
+
 // API Routes
 app.use('/api/servers', serverBootstrapRoutes);
 app.use('/api/servers', serverRoutes);

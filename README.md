@@ -93,6 +93,29 @@ See screenshots in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 
 ---
 
+## 🔄 Updating (Docker)
+
+If you run MAT via Docker Compose, the basic update flow is:
+
+```bash
+# (recommended) backup your database first
+mkdir -p backups
+docker compose exec -T postgres pg_dump -U "${DB_USER:-postgres}" "${DB_NAME:-matchzy_tournament}" > "backups/mat-$(date +%F-%H%M%S).sql"
+
+# pull latest image + recreate containers
+docker compose pull
+docker compose up -d
+
+# watch logs for startup/migrations
+docker compose logs -f matchzy-tournament
+```
+
+More details: https://docs.sivert.io/docs/mat/user/updating
+
+For local dev builds (build from source): `yarn docker:local:restart`.
+
+---
+
 ## 🤝 Contributing
 
 Contributions welcome! Bug fixes, features, docs improvements, translations, or ideas.

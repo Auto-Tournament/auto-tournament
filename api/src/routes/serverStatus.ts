@@ -207,12 +207,13 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     let cs2VersionString: string | null = server.cs2VersionString ?? null;
     let cs2VersionFetchedAt: number | null = server.cs2VersionFetchedAt ?? null;
     const cs2UpdateCheckedAt: number | null = server.cs2UpdateCheckedAt ?? null;
+    const wasMarkedOutOfDate = typeof server.cs2RequiredVersion === 'number';
 
     try {
       const now = Math.floor(Date.now() / 1000);
       const STALE_AFTER_SECONDS = 5 * 60; // Avoid spamming `version` when the page polls frequently
       const isStale =
-        !cs2VersionFetchedAt || now - cs2VersionFetchedAt >= STALE_AFTER_SECONDS;
+        wasMarkedOutOfDate || !cs2VersionFetchedAt || now - cs2VersionFetchedAt >= STALE_AFTER_SECONDS;
 
       if (isStale) {
         const versionResult = await rconService.sendCommand(id, 'version');
@@ -245,7 +246,8 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     try {
       const now = Math.floor(Date.now() / 1000);
       const STALE_AFTER_SECONDS = 10 * 60; // Steam checks should be infrequent
-      const isStale = !cs2UpdateCheckedAt || now - cs2UpdateCheckedAt >= STALE_AFTER_SECONDS;
+      const isStale =
+        wasMarkedOutOfDate || !cs2UpdateCheckedAt || now - cs2UpdateCheckedAt >= STALE_AFTER_SECONDS;
 
       if (isStale && typeof cs2BuildId === 'number' && Number.isFinite(cs2BuildId)) {
         const result = await cs2UpdateService.upToDateCheck(cs2BuildId);
