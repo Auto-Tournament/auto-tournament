@@ -75,6 +75,7 @@ function isProbablyOkToMatchEnglish(s) {
   if (s === 'Astralis') return true;
   if (s === 's1mple') return true;
   if (s === 'ntlan') return true;
+  if (s === 'server') return true;
   if (s === 'shared-rcon-password') return true;
   if (s === 'your-rcon-password') return true;
   if (/^[0-9\s.,:(){}[\]/_-]+$/.test(s)) return true;

@@ -26,7 +26,7 @@ export function TournamentNameStep({
         disabled={!canEdit || saving}
         fullWidth
         required
-        placeholder={t('tournament.namePlaceholder', 'NTLAN 2025 Spring Tournament')}
+        placeholder={t('tournament.namePlaceholder', 'MAT 2025 Spring Tournament')}
         slotProps={{
           htmlInput: { 'data-testid': 'tournament-name-input' },
         }}

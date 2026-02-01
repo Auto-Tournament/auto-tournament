@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { usePageHeader } from '../contexts/PageHeaderContext';
-import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress, IconButton, Tooltip } from '@mui/material';
+import { Box, Button, Card, CardContent, Typography, Grid, Chip, CircularProgress, IconButton, Tooltip, Link } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import StorageIcon from '@mui/icons-material/Storage';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -62,6 +62,15 @@ export default function Servers() {
   const [latestMatchZyReleaseUrl, setLatestMatchZyReleaseUrl] = useState<string | null>(null);
   const [cs2OutdatedSnackbarKey, setCs2OutdatedSnackbarKey] = useState<SnackbarKey | null>(null);
   const { t } = useTranslation();
+
+  const docs = {
+    fleetHealth: '/docs/mat/user/fleet-health',
+    pluginDbDown: '/docs/mat/user/fleet-health#plugin-db-down',
+    cs2Outdated: '/docs/mat/user/fleet-health#cs2-update-required',
+    offline: '/docs/mat/user/fleet-health#server-offline-or-unreachable',
+    ipBanned: '/docs/mat/user/fleet-health#ip-banned-rcon',
+    versionMismatch: '/docs/mat/user/fleet-health#plugin-version-mismatch',
+  } as const;
 
   const compareDottedVersions = React.useCallback((a: string, b: string): number | null => {
     const normalize = (v: string) => {
@@ -1175,64 +1184,6 @@ export default function Servers() {
                         </Box>
                       </Box>
                     )}
-                    {configSentWaitingForMatchzy && (
-                      <Box
-                        sx={{
-                          bgcolor: 'info.light',
-                          border: 1,
-                          borderColor: 'info.main',
-                          borderRadius: 1,
-                          p: 1.5,
-                          mb: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'grey.900',
-                        }}
-                      >
-                        <Box flex={1}>
-                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
-                            Config sent – no events received yet
-                          </Typography>
-                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
-                            {isChecking
-                              ? 'Checking connectivity…'
-                              : 'Webhook config was sent via RCON. We have not received any events from MatchZy, so we cannot confirm it reached the plugin. Ensure the game server can reach the webhook URL and has MatchZy Enhanced. Use Retry to resend config.'}
-                          </Typography>
-                          {!isChecking && (
-                            <Typography variant="caption" display="block" mt={0.5} sx={{ color: 'inherit', opacity: 0.85 }}>
-                              {t('serversPage.checkServerLogs')}
-                            </Typography>
-                          )}
-                        </Box>
-                      </Box>
-                    )}
-                    {server.ipBanned && (
-                      <Box
-                        sx={{
-                          bgcolor: 'error.light',
-                          border: 1,
-                          borderColor: 'error.main',
-                          borderRadius: 1,
-                          p: 1.5,
-                          mb: 2,
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 1,
-                          color: 'grey.900',
-                        }}
-                      >
-                        <BlockIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="IP Banned" />
-                        <Box flex={1}>
-                          <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
-                            {t('serversPage.ipBanned.title')}
-                          </Typography>
-                          <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
-                            {t('serversPage.ipBanned.message')}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    )}
                     <Box display="flex" justifyContent="space-between" alignItems="start" mb={2}>
                       <Box flex={1}>
                         <Typography variant="h6" fontWeight={600} gutterBottom>
@@ -1294,7 +1245,103 @@ export default function Servers() {
                               <CancelIcon />
                             );
 
-                            return (
+                            let tooltip: React.ReactNode | null = null;
+                            let tooltipHref: string | null = null;
+
+                            if (!server.enabled || server.status === 'disabled') {
+                              tooltip = (
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    Disabled server
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    Disabled servers are ignored by allocation and health checks.
+                                  </Typography>
+                                </Box>
+                              );
+                            } else if (!server.lastSeen) {
+                              if (server.persistentConfigSent) {
+                                tooltipHref = docs.offline;
+                                tooltip = (
+                                  <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                      No MatchZy events received yet
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      MAT sent webhook config via RCON, but hasn’t received any events. This usually means the
+                                      server can’t reach the MAT webhook URL, or MatchZy isn’t running.
+                                    </Typography>
+                                    <Link
+                                      href={tooltipHref}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      underline="hover"
+                                      sx={{ display: 'inline-block', mt: 0.5 }}
+                                    >
+                                      Fix guide
+                                    </Link>
+                                  </Box>
+                                );
+                              } else {
+                                tooltip = (
+                                  <Box>
+                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                      Not configured
+                                    </Typography>
+                                    <Typography variant="body2">
+                                      MAT hasn’t sent persistent config to this server yet. Use <strong>Retry</strong> to
+                                      initialize it.
+                                    </Typography>
+                                  </Box>
+                                );
+                              }
+                            } else if (label === t('serversPage.statusChip.offline') || label === t('serversPage.statusChip.rconFailed')) {
+                              tooltipHref = docs.offline;
+                              tooltip = (
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    Server unreachable from MAT
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    MAT can’t reach the server via RCON. Check host/port, RCON password, firewall, and that
+                                    the server is running.
+                                  </Typography>
+                                  <Link
+                                    href={tooltipHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    underline="hover"
+                                    sx={{ display: 'inline-block', mt: 0.5 }}
+                                  >
+                                    Fix guide
+                                  </Link>
+                                </Box>
+                              );
+                            } else if (reachableFromApi && serverCanReachApi === false) {
+                              tooltipHref = docs.offline;
+                              tooltip = (
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    Server can’t reach MAT (webhook)
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    MAT can reach the server via RCON, but the server can’t reach MAT’s webhook. Check egress,
+                                    DNS, and the configured webhook URL.
+                                  </Typography>
+                                  <Link
+                                    href={tooltipHref}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    underline="hover"
+                                    sx={{ display: 'inline-block', mt: 0.5 }}
+                                  >
+                                    Fix guide
+                                  </Link>
+                                </Box>
+                              );
+                            }
+
+                            const chip = (
                               <Chip
                                 icon={icon}
                                 label={label}
@@ -1302,6 +1349,16 @@ export default function Servers() {
                                 color={color}
                                 sx={{ fontWeight: 600 }}
                               />
+                            );
+
+                            if (!tooltip) {
+                              return chip;
+                            }
+
+                            return (
+                              <Tooltip arrow title={tooltip}>
+                                {chip}
+                              </Tooltip>
                             );
                           })()}
                           {server.pluginVersion && (
@@ -1321,14 +1378,71 @@ export default function Servers() {
                               {versionInfo.hasMultipleVersions &&
                                 versionInfo.mostCommonVersion &&
                                 server.pluginVersion !== versionInfo.mostCommonVersion && (
-                                  <Chip
-                                    label="Version Mismatch"
-                                    size="small"
-                                    color="warning"
-                                    sx={{ fontWeight: 500 }}
-                                  />
+                                  <Tooltip
+                                    arrow
+                                    title={
+                                      <Box>
+                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                          Plugin versions differ across servers
+                                        </Typography>
+                                        <Typography variant="body2">
+                                          Some servers are running a different MatchZy Enhanced version. If you use CSM, run{' '}
+                                          <strong>sudo csm update-plugins</strong> and restart servers.
+                                        </Typography>
+                                        <Link
+                                          href={docs.versionMismatch}
+                                          target="_blank"
+                                          rel="noreferrer"
+                                          underline="hover"
+                                          sx={{ display: 'inline-block', mt: 0.5 }}
+                                        >
+                                          Fix guide
+                                        </Link>
+                                      </Box>
+                                    }
+                                  >
+                                    <Chip
+                                      label="Version Mismatch"
+                                      size="small"
+                                      color="warning"
+                                      sx={{ fontWeight: 500 }}
+                                    />
+                                  </Tooltip>
                                 )}
                             </>
+                          )}
+                          {server.ipBanned && server.enabled && (
+                            <Tooltip
+                              arrow
+                              title={
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    RCON IP banned
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    The server has temporarily banned MAT’s IP due to repeated RCON auth failures. Fix the RCON
+                                    password and unban the IP.
+                                  </Typography>
+                                  <Link
+                                    href={docs.ipBanned}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    underline="hover"
+                                    sx={{ display: 'inline-block', mt: 0.5 }}
+                                  >
+                                    Fix guide
+                                  </Link>
+                                </Box>
+                              }
+                            >
+                              <Chip
+                                label="IP Banned"
+                                size="small"
+                                color="error"
+                                variant="outlined"
+                                sx={{ fontWeight: 700 }}
+                              />
+                            </Tooltip>
                           )}
                           {typeof server.cs2BuildId === 'number' && server.enabled && (
                             <Chip
@@ -1340,20 +1454,68 @@ export default function Servers() {
                             />
                           )}
                           {server.enabled && server.matchzyDbOk === false && (
-                            <Chip
-                              label="Plugin DB DOWN"
-                              size="small"
-                              color="error"
-                              sx={{ fontWeight: 800 }}
-                            />
+                            <Tooltip
+                              arrow
+                              title={
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    MatchZy plugin can’t reach its database.
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    If you use CSM: run <strong>sudo csm</strong> → Tools →{' '}
+                                    <strong>MatchZy DB: verify/repair</strong>.
+                                  </Typography>
+                                  <Link
+                                    href={docs.pluginDbDown}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    underline="hover"
+                                    sx={{ display: 'inline-block', mt: 0.5 }}
+                                  >
+                                    Fix guide
+                                  </Link>
+                                </Box>
+                              }
+                            >
+                              <Chip
+                                label="Plugin DB DOWN"
+                                size="small"
+                                color="error"
+                                sx={{ fontWeight: 800 }}
+                              />
+                            </Tooltip>
                           )}
                           {typeof server.cs2RequiredVersion === 'number' && server.enabled && (
-                            <Chip
-                              label={`CS2 update required (${server.cs2RequiredVersion})`}
-                              size="small"
-                              color="error"
-                              sx={{ fontWeight: 700 }}
-                            />
+                            <Tooltip
+                              arrow
+                              title={
+                                <Box>
+                                  <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                    CS2 update required
+                                  </Typography>
+                                  <Typography variant="body2">
+                                    MAT verified this server’s build is behind Steam. It will be blocked from new allocations
+                                    (and tournament start) until updated.
+                                  </Typography>
+                                  <Link
+                                    href={docs.cs2Outdated}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    underline="hover"
+                                    sx={{ display: 'inline-block', mt: 0.5 }}
+                                  >
+                                    Fix guide
+                                  </Link>
+                                </Box>
+                              }
+                            >
+                              <Chip
+                                label={`CS2 update required (${server.cs2RequiredVersion})`}
+                                size="small"
+                                color="error"
+                                sx={{ fontWeight: 700 }}
+                              />
+                            </Tooltip>
                           )}
                         </Box>
                       </Box>

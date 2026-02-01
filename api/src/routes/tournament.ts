@@ -358,7 +358,7 @@ router.get('/', async (_req: Request, res: Response) => {
  *             properties:
  *               name:
  *                 type: string
- *                 example: "NTLAN 2025 Spring Cup"
+ *                 example: "Spring Cup 2026"
  *               type:
  *                 type: string
  *                 enum: [single_elimination, double_elimination, round_robin, swiss]

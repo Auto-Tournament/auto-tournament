@@ -170,12 +170,12 @@
     },
     "baseId": {
       "label": "ID base",
-      "placeholder": "ntlan",
+      "placeholder": "server",
       "helper": "Gli ID server saranno: base_1, base_2, base_3..."
     },
     "baseName": {
       "label": "Nome base",
-      "placeholder": "NTLAN",
+      "placeholder": "MAT",
       "helper": "I nomi server saranno: Base #1, Base #2, Base #3..."
     },
     "host": {

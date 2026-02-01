@@ -286,7 +286,7 @@
  *                 example: cs1
  *               message:
  *                 type: string
- *                 example: Welcome to NTLAN 2025!
+ *                 example: Welcome to the tournament!
  *                 maxLength: 200
  *     responses:
  *       200:

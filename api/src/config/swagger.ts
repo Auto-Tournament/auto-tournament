@@ -59,7 +59,7 @@ const options: swaggerJsdoc.Options = {
             name: {
               type: 'string',
               description: 'Server display name',
-              example: 'NTLAN #1',
+              example: 'Server #1',
             },
             host: {
               type: 'string',
@@ -105,7 +105,7 @@ const options: swaggerJsdoc.Options = {
             name: {
               type: 'string',
               description: 'Server display name',
-              example: 'NTLAN #1',
+              example: 'Server #1',
             },
             host: {
               type: 'string',
@@ -130,7 +130,7 @@ const options: swaggerJsdoc.Options = {
             name: {
               type: 'string',
               description: 'Server display name',
-              example: 'NTLAN #1 Updated',
+              example: 'Server #1 Updated',
             },
             host: {
               type: 'string',
@@ -162,7 +162,7 @@ const options: swaggerJsdoc.Options = {
             },
             serverName: {
               type: 'string',
-              example: 'NTLAN #1',
+              example: 'Server #1',
             },
             command: {
               type: 'string',

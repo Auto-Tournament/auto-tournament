@@ -170,12 +170,12 @@
     },
     "baseId": {
       "label": "基础 ID",
-      "placeholder": "ntlan",
+      "placeholder": "server",
       "helper": "服务器 ID 示例：base_1、base_2、base_3…"
     },
     "baseName": {
       "label": "基础名称",
-      "placeholder": "NTLAN",
+      "placeholder": "MAT",
       "helper": "服务器名称示例：Base #1、Base #2、Base #3…"
     },
     "host": {

@@ -1,7 +1,7 @@
 {
   "tournament": {
     "nameLabel": "Turneringsnavn",
-    "namePlaceholder": "NTLAN 2025 vårturnering",
+    "namePlaceholder": "MAT 2025 vårturnering",
     "steps": {
       "create": "Opprett turnering",
       "review": "Gjennomgå og bekreft",
