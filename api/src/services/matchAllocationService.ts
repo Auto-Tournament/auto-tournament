@@ -212,6 +212,9 @@ export class MatchAllocationService {
       // If the server has reported a CS2 update is required, it must not be
       // allocated to new matches.
       const isOutOfDate = typeof server.cs2RequiredVersion === 'number';
+      // Safer default: require that MAT has verified CS2 version at least once.
+      const isCs2Verified =
+        typeof server.cs2BuildId === 'number' && typeof server.cs2UpdateCheckedAt === 'number';
 
       if (isIdle) {
         if (updatedAt) {
@@ -227,11 +230,11 @@ export class MatchAllocationService {
               nextAllocationInSeconds = secondsUntilReady;
             }
           } else {
-            allocatable = !isOutOfDate;
+            allocatable = !isOutOfDate && isCs2Verified;
           }
         } else {
           // No timestamp – treat as long‑idle and allocatable.
-          allocatable = !isOutOfDate;
+          allocatable = !isOutOfDate && isCs2Verified;
         }
       }
 
@@ -400,6 +403,15 @@ export class MatchAllocationService {
       if (typeof server.cs2RequiredVersion === 'number') {
         log.debug(
           `[ALLOCATION] Skipping out-of-date server ${server.id} (${server.name}) - cs2RequiredVersion=${server.cs2RequiredVersion}`
+        );
+        continue;
+      }
+
+      const isCs2Verified =
+        typeof server.cs2BuildId === 'number' && typeof server.cs2UpdateCheckedAt === 'number';
+      if (!isCs2Verified) {
+        log.debug(
+          `[ALLOCATION] Skipping unverified server ${server.id} (${server.name}) - cs2BuildId=${server.cs2BuildId ?? null}, cs2UpdateCheckedAt=${server.cs2UpdateCheckedAt ?? null}`
         );
         continue;
       }

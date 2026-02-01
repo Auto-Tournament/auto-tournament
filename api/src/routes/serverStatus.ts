@@ -7,7 +7,7 @@ import { serverStatusService, ServerStatus } from '../services/serverStatusServi
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
 import { db } from '../config/database';
-import { parseCs2BuildId } from '../utils/cs2Version';
+import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 import { cs2UpdateService } from '../services/cs2UpdateService';
 
 const router = Router();
@@ -220,6 +220,16 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         if (versionResult.success && typeof versionResult.response === 'string') {
           cs2VersionString = versionResult.response;
           cs2BuildId = parseCs2BuildId(versionResult.response);
+
+          // Fallback: `status` contains `version  : 1.41.3.4/14134 ...` when `version` lacks BuildID.
+          if (!cs2BuildId) {
+            const statusResult = await rconService.sendCommand(id, 'status');
+            if (statusResult.success && typeof statusResult.response === 'string') {
+              cs2BuildId = parseCs2BuildId(statusResult.response);
+              cs2VersionString =
+                extractCs2StatusVersionLine(statusResult.response) ?? statusResult.response;
+            }
+          }
           cs2VersionFetchedAt = now;
 
           await db.updateAsync(

@@ -18,7 +18,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { serverService } from './serverService';
 import { rconService } from './rconService';
-import { parseCs2BuildId } from '../utils/cs2Version';
+import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 import { cs2UpdateService } from './cs2UpdateService';
 import type { Server } from '../types/server.types';
 
@@ -116,14 +116,28 @@ class Cs2FleetMonitoringService {
 
       for (const s of queue) {
         try {
+          let cs2VersionString: string | null = null;
+
+          // Prefer the lighter `version` command, but fall back to `status` if it doesn't include a parsable BuildID.
           const versionResult = await rconService.sendCommand(s.id, 'version');
-          if (!versionResult.success || typeof versionResult.response !== 'string') {
-            failed += 1;
-            continue;
+          let buildId: number | null =
+            versionResult.success && typeof versionResult.response === 'string'
+              ? parseCs2BuildId(versionResult.response)
+              : null;
+          cs2VersionString =
+            versionResult.success && typeof versionResult.response === 'string'
+              ? versionResult.response
+              : null;
+
+          if (!buildId) {
+            const statusResult = await rconService.sendCommand(s.id, 'status');
+            if (statusResult.success && typeof statusResult.response === 'string') {
+              buildId = parseCs2BuildId(statusResult.response);
+              cs2VersionString = extractCs2StatusVersionLine(statusResult.response) ?? statusResult.response;
+            }
           }
 
-          const buildId = parseCs2BuildId(versionResult.response);
-          if (!buildId) {
+          if (!buildId || !cs2VersionString) {
             failed += 1;
             continue;
           }
@@ -136,7 +150,7 @@ class Cs2FleetMonitoringService {
               'servers',
               {
                 cs2_build_id: buildId,
-                cs2_version_string: versionResult.response,
+                cs2_version_string: cs2VersionString,
                 cs2_version_fetched_at: now,
                 cs2_required_version: null,
                 cs2_update_phase: null,
@@ -155,7 +169,7 @@ class Cs2FleetMonitoringService {
               'servers',
               {
                 cs2_build_id: buildId,
-                cs2_version_string: versionResult.response,
+                cs2_version_string: cs2VersionString,
                 cs2_version_fetched_at: now,
                 cs2_required_version: check.requiredVersion ?? null,
                 cs2_update_phase: (s.cs2_update_phase === 'shutdown' ? 'shutdown' : 'available'),

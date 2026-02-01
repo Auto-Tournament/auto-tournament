@@ -26,7 +26,7 @@ import { serverService } from '../services/serverService';
 import { serverInitializationService } from '../services/serverInitializationService';
 import { checkTournamentCompletion } from '../utils/matchProgression';
 import { cs2UpdateService } from '../services/cs2UpdateService';
-import { parseCs2BuildId } from '../utils/cs2Version';
+import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 
 const router = Router();
 
@@ -123,14 +123,30 @@ async function preflightServersUpToDateForTournamentStart(): Promise<
         continue;
       }
 
-      const installedBuildId = parseCs2BuildId(versionResult.response);
+      let installedBuildId = parseCs2BuildId(versionResult.response);
+      let cs2VersionString: string | null = versionResult.response;
+
       if (!installedBuildId) {
+        // Fallback: some servers do not include BuildID in `version` output, but `status` includes
+        // `version  : 1.41.3.4/14134 ...` where the trailing number matches Steam required_version.
+        const statusResult = await rconService.sendCommand(server.id, 'status');
+        if (statusResult.success && typeof statusResult.response === 'string') {
+          installedBuildId = parseCs2BuildId(statusResult.response);
+          cs2VersionString = extractCs2StatusVersionLine(statusResult.response) ?? statusResult.response;
+        }
+      }
+
+      if (!installedBuildId) {
+        log.warn('[TOURNAMENT] Could not verify CS2 version via RCON for server', {
+          serverId: server.id,
+          versionExcerpt: String(versionResult.response).slice(0, 200),
+        });
         problems.push({
           id: server.id,
           name: server.name,
           installedBuildId: null,
           requiredVersion: null,
-          reason: 'Could not parse CS2 BuildID from RCON `version` output',
+          reason: 'Could not verify CS2 version via RCON (`version`/`status` parsing failed)',
         });
         continue;
       }
@@ -143,7 +159,7 @@ async function preflightServersUpToDateForTournamentStart(): Promise<
           'servers',
           {
             cs2_build_id: installedBuildId,
-            cs2_version_string: versionResult.response,
+            cs2_version_string: cs2VersionString,
             cs2_version_fetched_at: now,
             cs2_required_version: null,
             cs2_update_phase: null,
@@ -159,7 +175,7 @@ async function preflightServersUpToDateForTournamentStart(): Promise<
           'servers',
           {
             cs2_build_id: installedBuildId,
-            cs2_version_string: versionResult.response,
+            cs2_version_string: cs2VersionString,
             cs2_version_fetched_at: now,
             cs2_required_version: check.requiredVersion ?? null,
             cs2_update_phase: 'available',
