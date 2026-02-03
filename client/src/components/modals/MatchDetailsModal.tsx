@@ -14,7 +14,6 @@ import {
   CardContent,
   Snackbar,
   Alert,
-  Tooltip,
   Accordion,
   AccordionSummary,
   AccordionDetails,
@@ -27,9 +26,8 @@ import GroupsIcon from '@mui/icons-material/Groups';
 import MapIcon from '@mui/icons-material/Map';
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import LinkIcon from '@mui/icons-material/Link';
-import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import CodeIcon from '@mui/icons-material/Code';
+import { Link as RouterLink } from 'react-router-dom';
 import {
   formatDate,
   formatDuration,
@@ -40,8 +38,6 @@ import {
 } from '../../utils/matchUtils';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useLiveStats } from '../../hooks/useLiveStats';
-import { useTeamLinkCopy } from '../../hooks/useTeamLinkCopy';
-import { getTeamMatchUrl } from '../../utils/teamLinks';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import AdminMatchControls from '../admin/AdminMatchControls';
 import { PlayerRoster } from '../match/PlayerRoster';
@@ -97,9 +93,6 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
   const { stats: liveStats } = useLiveStats(
     match?.slug && match?.status !== 'completed' ? match.slug : null
   );
-
-  // Team link copy with toast
-  const { copyLink, ToastNotification } = useTeamLinkCopy();
 
   const { status: tournamentStatus } = useTournamentStatus();
   const isManualMatch = match?.round === 0;
@@ -293,6 +286,8 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
 
   const seriesWinsTeam1 = derivedSeriesWins.team1;
   const seriesWinsTeam2 = derivedSeriesWins.team2;
+  const showSeriesScoreRow = match.status === 'completed' || (!isManualMatch && match.status !== 'completed');
+  const showMapRoundsRow = match.status !== 'completed';
 
   // Approximate average ELO per team (shuffle matches only), using current
   // player ratings. This is purely informational to let admins verify that
@@ -610,30 +605,23 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                 {/* Team 1 */}
                 <Box flex={1} textAlign="left">
                   <Box display="flex" alignItems="center" gap={1}>
-                    <Typography variant="h5" fontWeight={700}>
+                    <Typography
+                      variant="h5"
+                      fontWeight={700}
+                      component={match.team1?.id ? RouterLink : 'span'}
+                      to={match.team1?.id ? `/team/${match.team1.id}` : undefined}
+                      sx={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        '&:hover': {
+                          textDecoration: match.team1?.id ? 'underline' : 'none',
+                        },
+                      }}
+                    >
                       {match.team1?.name ||
                         (match.config?.team1 as { name?: string } | undefined)?.name ||
                         (match.status === 'completed' ? '—' : 'TBD')}
                     </Typography>
-                    {match.team1?.id && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Tooltip title="Copy team match link">
-                          <IconButton size="small" onClick={() => copyLink(match.team1?.id)}>
-                            <LinkIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Open team match page">
-                          <IconButton
-                            size="small"
-                            href={getTeamMatchUrl(match.team1?.id || '')}
-                            target="_blank"
-                            color="primary"
-                          >
-                            <OpenInNewIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    )}
                   </Box>
                   <Typography variant="caption" color="text.secondary">
                     {match.team1?.tag}
@@ -650,7 +638,7 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                   {/* Hide series wins row for completed and manual matches to avoid duplicated or
                       misleading stats. While tournament series are live, we still show the current
                       series score (e.g. 1–0 when entering Map 2). */}
-                  {match.status !== 'completed' && !isManualMatch && (
+                  {showSeriesScoreRow && (
                     <>
                       <Box display="flex" alignItems="center" justifyContent="center" gap={2}>
                         <Typography
@@ -680,45 +668,49 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                       </Typography>
                     </>
                   )}
-                  <Box display="flex" alignItems="center" justifyContent="center" gap={2} mt={1}>
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      sx={{
-                        color: winnerSide === 'team1' ? 'success.main' : 'text.primary',
-                      }}
-                    >
-                      {mapRoundsTeam1}
-                    </Typography>
-                    <Typography variant="h5" color="text.disabled">
-                      -
-                    </Typography>
-                    <Typography
-                      variant="h4"
-                      fontWeight={700}
-                      sx={{
-                        color: winnerSide === 'team2' ? 'success.main' : 'text.primary',
-                      }}
-                    >
-                      {mapRoundsTeam2}
-                    </Typography>
-                  </Box>
-                  <Typography variant="caption" color="text.secondary">
-                    {CURRENT_MAP_SCORE_LABEL}
-                  </Typography>
+                  {showMapRoundsRow && (
+                    <>
+                      <Box display="flex" alignItems="center" justifyContent="center" gap={2} mt={1}>
+                        <Typography
+                          variant="h4"
+                          fontWeight={700}
+                          sx={{
+                            color: winnerSide === 'team1' ? 'success.main' : 'text.primary',
+                          }}
+                        >
+                          {mapRoundsTeam1}
+                        </Typography>
+                        <Typography variant="h5" color="text.disabled">
+                          -
+                        </Typography>
+                        <Typography
+                          variant="h4"
+                          fontWeight={700}
+                          sx={{
+                            color: winnerSide === 'team2' ? 'success.main' : 'text.primary',
+                          }}
+                        >
+                          {mapRoundsTeam2}
+                        </Typography>
+                      </Box>
+                      <Typography variant="caption" color="text.secondary">
+                        {CURRENT_MAP_SCORE_LABEL}
+                      </Typography>
+                    </>
+                  )}
                   {(normalizedTeam1Players.length > 0 || normalizedTeam2Players.length > 0) && (
                     <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
                       Total Damage: {team1TotalDamage} - {team2TotalDamage}
                     </Typography>
                   )}
-                  {currentMapLabel && (
+                  {showMapRoundsRow && currentMapLabel && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {`Map ${displayMapIndex !== null ? displayMapIndex + 1 : ''}${
                         totalMapCount ? ` of ${totalMapCount}` : ''
                       }: ${currentMapLabel}`}
                     </Typography>
                   )}
-                  {roundNumber !== null && roundNumber > 0 && (
+                  {showMapRoundsRow && roundNumber !== null && roundNumber > 0 && (
                     <Typography variant="caption" color="text.secondary" display="block">
                       {`Round ${roundNumber}`}
                     </Typography>
@@ -728,27 +720,19 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
                 {/* Team 2 */}
                 <Box flex={1} textAlign="right">
                   <Box display="flex" alignItems="center" justifyContent="flex-end" gap={1}>
-                    {match.team2?.id && match.team2?.id !== '' && (
-                      <Box display="flex" alignItems="center" gap={1}>
-                        <Tooltip title="Open team match page">
-                          <IconButton
-                            size="small"
-                            href={getTeamMatchUrl(match.team2?.id || '')}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            color="primary"
-                          >
-                            <OpenInNewIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                        <Tooltip title="Copy team match link">
-                          <IconButton size="small" onClick={() => copyLink(match.team2?.id)}>
-                            <LinkIcon fontSize="small" />
-                          </IconButton>
-                        </Tooltip>
-                      </Box>
-                    )}
-                    <Typography variant="h5" fontWeight={700}>
+                    <Typography
+                      variant="h5"
+                      fontWeight={700}
+                      component={match.team2?.id ? RouterLink : 'span'}
+                      to={match.team2?.id ? `/team/${match.team2.id}` : undefined}
+                      sx={{
+                        textDecoration: 'none',
+                        color: 'inherit',
+                        '&:hover': {
+                          textDecoration: match.team2?.id ? 'underline' : 'none',
+                        },
+                      }}
+                    >
                       {match.team2?.name ||
                         (match.config?.team2 as { name?: string } | undefined)?.name ||
                         (match.status === 'completed' ? '—' : 'TBD')}
@@ -1205,8 +1189,6 @@ const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
           </Box>
         </DialogActions>
       </Dialog>
-
-      <ToastNotification />
 
       {/* Confirm delete manual match */}
       {match && (

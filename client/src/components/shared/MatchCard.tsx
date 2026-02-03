@@ -5,6 +5,7 @@ import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/match
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
 import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
+import { TeamNameLink } from '../team/TeamNameLink';
 
 interface MatchCardProps {
   match: Match;
@@ -326,13 +327,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             }}
           >
             <Box display="flex" alignItems="center" gap={1} flex={1}>
-              <Typography
+              <TeamNameLink
+                teamId={match.team1?.id}
+                name={getTeamName(match.team1?.id, 'team1')}
+                showTag={false}
                 variant="body1"
-                fontWeight={team1IsWinner ? 600 : 500}
-                sx={{ color: getTeamTextColor('team1') }}
-              >
-                {getTeamName(match.team1?.id, 'team1')}
-              </Typography>
+                sx={{ color: getTeamTextColor('team1'), fontWeight: team1IsWinner ? 600 : 500 }}
+                onClick={(e) => e.stopPropagation()}
+              />
               {team1IsWinner && (
                 <Chip
                   label="WINNER"
@@ -383,13 +385,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             }}
           >
             <Box display="flex" alignItems="center" gap={1} flex={1}>
-              <Typography
+              <TeamNameLink
+                teamId={match.team2?.id}
+                name={getTeamName(match.team2?.id, 'team2')}
+                showTag={false}
                 variant="body1"
-                fontWeight={team2IsWinner ? 600 : 500}
-                sx={{ color: getTeamTextColor('team2') }}
-              >
-                {getTeamName(match.team2?.id, 'team2')}
-              </Typography>
+                sx={{ color: getTeamTextColor('team2'), fontWeight: team2IsWinner ? 600 : 500 }}
+                onClick={(e) => e.stopPropagation()}
+              />
               {team2IsWinner && (
                 <Chip
                   label="WINNER"

@@ -15,6 +15,7 @@ import { SportsEsports as MatchIcon } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import type { MatchListItem } from '../../types';
 import { formatDate } from '../../utils/matchUtils';
+import { TeamNameLink } from '../team/TeamNameLink';
 
 interface RecentMatchesListProps {
   matches: MatchListItem[];
@@ -105,9 +106,27 @@ export default function RecentMatchesList({ matches, maxItems = 10 }: RecentMatc
                 <ListItemText
                   primary={
                     <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap">
-                      <Typography variant="body2" fontWeight={600}>
-                        {match.team1?.name || 'TBD'} vs {match.team2?.name || 'TBD'}
-                      </Typography>
+                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap">
+                        <TeamNameLink
+                          teamId={match.team1?.id}
+                          name={match.team1?.name || 'TBD'}
+                          showTag={false}
+                          variant="body2"
+                          sx={{ fontWeight: 600 }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                        <Typography variant="body2" fontWeight={600}>
+                          vs
+                        </Typography>
+                        <TeamNameLink
+                          teamId={match.team2?.id}
+                          name={match.team2?.name || 'TBD'}
+                          showTag={false}
+                          variant="body2"
+                          sx={{ fontWeight: 600 }}
+                          onClick={(e) => e.stopPropagation()}
+                        />
+                      </Stack>
                       <Chip
                         label={getStatusLabel(match.status)}
                         size="small"

@@ -154,7 +154,7 @@
         "title": "MatchZy Chat & Knife Defaults",
         "description": "Configure in-game chat prefixes and default knife round behavior.",
         "chatPrefixLabel": "Chat Prefix",
-        "chatPrefixHelper": "Default: \"[MAT]\". Leave blank to reset to the default prefix.",
+        "chatPrefixHelper": "Default: \"[{Green}MAT{Default}]\". Leave blank to reset to the default prefix.",
         "adminChatPrefixLabel": "Admin Chat Prefix",
         "adminChatPrefixHelper": "Default: \"[ADMIN]\". Leave blank to reset to the default admin prefix.",
         "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",

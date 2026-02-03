@@ -154,7 +154,7 @@
         "title": "MatchZy 聊天与刀局默认值",
         "description": "配置游戏内聊天前缀和默认刀局行为。",
         "chatPrefixLabel": "聊天前缀",
-        "chatPrefixHelper": "默认值：\"[MAT]\"。留空以重置为默认前缀。",
+        "chatPrefixHelper": "默认值：\"[{Green}MAT{Default}]\"。留空以重置为默认前缀。",
         "adminChatPrefixLabel": "管理员聊天前缀",
         "adminChatPrefixHelper": "默认值：\"[ADMIN]\"。留空以重置为默认管理员前缀。",
         "knifeToggleLabel": "对未预先选择阵营的新比赛默认启用刀局",

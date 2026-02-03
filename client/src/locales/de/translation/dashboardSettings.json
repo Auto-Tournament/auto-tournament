@@ -51,7 +51,7 @@
         "title": "MatchZy Chat- & Knife-Standards",
         "description": "Konfiguriere Ingame-Chat-Präfixe und das Standardverhalten der Knife-Runde.",
         "chatPrefixLabel": "Chat-Präfix",
-        "chatPrefixHelper": "Standard: \"[MAT]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "adminChatPrefixLabel": "Admin-Chat-Präfix",
         "adminChatPrefixHelper": "Standard: \"[ADMIN]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "knifeToggleLabel": "Knife-Runden standardmäßig für neue Matches aktivieren (wenn Seiten nicht vorab gewählt sind)",

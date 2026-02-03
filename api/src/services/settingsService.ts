@@ -378,7 +378,7 @@ class SettingsService {
     const value = await this.getSetting('matchzy_chat_prefix');
     const trimmed = value ? value.trim() : '';
     // Default to a sensible prefix if none is configured explicitly
-    return trimmed !== '' ? trimmed : '[MAT]';
+    return trimmed !== '' ? trimmed : '[{Green}MAT{Default}]';
   }
 
   async getMatchzyAdminChatPrefix(): Promise<string | null> {

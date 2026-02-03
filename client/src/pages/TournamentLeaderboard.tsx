@@ -37,6 +37,8 @@ import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import { TopNavBar } from '../components/layout/TopNavBar';
+import { TeamNameLink } from '../components/team/TeamNameLink';
+import type { Tournament } from '../types/tournament.types';
 
 interface PlayerLeaderboardEntry {
   playerId: string;
@@ -62,12 +64,7 @@ interface TeamLeaderboardEntry {
 }
 
 interface TournamentLeaderboardData {
-  tournament: {
-    id: number;
-    name: string;
-    status: string;
-    type: string;
-  };
+  tournament: Pick<Tournament, 'id' | 'name' | 'status' | 'type'>;
   leaderboard: PlayerLeaderboardEntry[];
   teams?: TeamLeaderboardEntry[];
   currentRound: number;
@@ -336,6 +333,24 @@ export default function TournamentLeaderboard() {
 
   const { tournament, leaderboard, currentRound, totalRounds, roundStatus, teams } = data;
 
+  const tournamentTypeKeyPrefix = `tournament.typeSelector.types.${tournament.type}`;
+
+  const getTranslationWithFallback = (key: string, fallback: string) => {
+    const value = t(key);
+    return value === key ? fallback : value;
+  };
+
+  const tournamentTypeLabel = getTranslationWithFallback(
+    `${tournamentTypeKeyPrefix}.label`,
+    tournament.type
+  );
+
+  const tournamentTypeDescription = (() => {
+    const key = `${tournamentTypeKeyPrefix}.description`;
+    const value = t(key);
+    return value === key ? '' : value;
+  })();
+
   // Determine tournament status
   const isComplete = tournament.status === 'completed';
   // Backend uses 'setup' | 'in_progress' | 'completed' for tournaments
@@ -473,7 +488,7 @@ export default function TournamentLeaderboard() {
                       color={isComplete ? 'success' : isActive ? 'primary' : 'default'}
                       sx={{ fontWeight: 600 }}
                     />
-                    <Chip label={t('leaderboardPage.shuffleTournament')} color="info" />
+                    <Chip label={tournamentTypeLabel} color="info" />
                     {roundStatus && (
                       <Chip
                         label={t('leaderboardPage.roundOf', {
@@ -671,10 +686,14 @@ export default function TournamentLeaderboard() {
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography variant="body1" fontWeight={600}>
-                              {team.name}
-                              {team.tag ? ` (${team.tag})` : ''}
-                            </Typography>
+                            <TeamNameLink
+                              teamId={team.teamId}
+                              name={team.name}
+                              tag={team.tag ?? undefined}
+                              showTag
+                              variant="body1"
+                              sx={{ fontWeight: 600 }}
+                            />
                           </TableCell>
                           <TableCell align="right">
                             <Typography variant="body1" fontWeight={600} color="success.main">
@@ -929,13 +948,13 @@ export default function TournamentLeaderboard() {
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} gutterBottom>
-                About Shuffle Tournaments
+                {tournamentTypeLabel}
               </Typography>
-              <Typography variant="body2" color="text.secondary" paragraph>
-                In shuffle tournaments, players compete individually. Teams are automatically
-                balanced based on Skill Rating for each match. The player with the most match wins
-                wins the tournament.
-              </Typography>
+              {tournamentTypeDescription && (
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {tournamentTypeDescription}
+                </Typography>
+              )}
               <Typography variant="body2" color="text.secondary">
                 Click on any player&apos;s name or the &quot;View&quot; link to see their detailed
                 profile, match history, and Skill Rating progression.

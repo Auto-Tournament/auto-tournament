@@ -51,7 +51,7 @@
         "title": "MatchZy chat- & knife-standaarden",
         "description": "Configureer chat-prefixen in-game en het standaard knife-round gedrag.",
         "chatPrefixLabel": "Chat-prefix",
-        "chatPrefixHelper": "Standaard: \"[MAT]\". Laat leeg om terug te zetten naar de standaard.",
+        "chatPrefixHelper": "Standaard: \"[{Green}MAT{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "adminChatPrefixLabel": "Admin chat-prefix",
         "adminChatPrefixHelper": "Standaard: \"[ADMIN]\". Laat leeg om terug te zetten naar de standaard.",
         "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",

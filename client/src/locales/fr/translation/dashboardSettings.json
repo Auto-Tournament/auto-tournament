@@ -51,7 +51,7 @@
         "title": "Paramètres par défaut MatchZy (chat & knife)",
         "description": "Configurez les préfixes du chat en jeu et le comportement par défaut des manches knife.",
         "chatPrefixLabel": "Préfixe du chat",
-        "chatPrefixHelper": "Par défaut : \"[MAT]\". Laissez vide pour rétablir la valeur par défaut.",
+        "chatPrefixHelper": "Par défaut : \"[{Green}MAT{Default}]\". Laissez vide pour rétablir la valeur par défaut.",
         "adminChatPrefixLabel": "Préfixe chat admin",
         "adminChatPrefixHelper": "Par défaut : \"[ADMIN]\". Laissez vide pour rétablir la valeur par défaut.",
         "knifeToggleLabel": "Activer les manches knife par défaut pour les nouveaux matchs (quand les camps ne sont pas pré-sélectionnés)",

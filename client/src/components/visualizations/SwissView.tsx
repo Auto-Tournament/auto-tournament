@@ -16,6 +16,7 @@ import {
 import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import type { Match, MatchLiveStats, Team } from '../../types';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
+import { TeamNameLink } from '../team/TeamNameLink';
 
 interface SwissViewProps {
   matches: Match[];
@@ -149,9 +150,14 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                           <Typography fontWeight={index < 4 ? 700 : 400}>{index + 1}</Typography>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="body2" fontWeight={index < 4 ? 600 : 400}>
-                            {record.team.name}
-                          </Typography>
+                          <TeamNameLink
+                            teamId={record.team.id}
+                            name={record.team.name}
+                            tag={record.team.tag ?? null}
+                            showTag={false}
+                            variant="body2"
+                            sx={{ fontWeight: index < 4 ? 600 : 400 }}
+                          />
                         </TableCell>
                         <TableCell align="center">
                           <Typography variant="body2" fontWeight={600}>

@@ -14,6 +14,7 @@ import {
   deriveCurrentMapScore,
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
+import { TeamNameLink } from '../team/TeamNameLink';
 
 interface MatchListCardProps {
   match: Match;
@@ -243,7 +244,18 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                 justifyContent="center"
                 color={winnerSide === 'team1' ? 'success' : 'text.secondary'}
               >
-                {getTeamName(match.team1?.id, 'team1')}
+                <TeamNameLink
+                  teamId={match.team1?.id}
+                  name={getTeamName(match.team1?.id, 'team1')}
+                  showTag={false}
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    color: winnerSide === 'team1' ? 'success.main' : 'text.secondary',
+                    fontWeight: winnerSide === 'team1' ? 600 : 500,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
               </Typography>
 
               <Tooltip title={tooltipTitle} placement="top">
@@ -267,7 +279,18 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
                 justifyContent="center"
                 color={winnerSide === 'team2' ? 'success' : 'text.secondary'}
               >
-                {getTeamName(match.team2?.id, 'team2')}
+                <TeamNameLink
+                  teamId={match.team2?.id}
+                  name={getTeamName(match.team2?.id, 'team2')}
+                  showTag={false}
+                  variant="body2"
+                  noWrap
+                  sx={{
+                    color: winnerSide === 'team2' ? 'success.main' : 'text.secondary',
+                    fontWeight: winnerSide === 'team2' ? 600 : 500,
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                />
               </Typography>
             </Box>
           </Box>

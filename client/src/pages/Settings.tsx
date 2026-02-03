@@ -61,6 +61,7 @@ function a11yProps(index: number) {
 export default function Settings() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showSnackbar } = useSnackbar();
+  const DEFAULT_MATCHZY_CHAT_PREFIX = '[{Green}MAT{Default}]';
   const [webhookUrl, setWebhookUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -70,8 +71,9 @@ export default function Settings() {
   const [initialSimulateMatches, setInitialSimulateMatches] = useState(false);
   const [simulationTimescale, setSimulationTimescale] = useState<number>(1);
   const [initialSimulationTimescale, setInitialSimulationTimescale] = useState<number>(1);
-  const [matchzyChatPrefix, setMatchzyChatPrefix] = useState('');
-  const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] = useState('');
+  const [matchzyChatPrefix, setMatchzyChatPrefix] = useState(DEFAULT_MATCHZY_CHAT_PREFIX);
+  const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] =
+    useState(DEFAULT_MATCHZY_CHAT_PREFIX);
   const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
   const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState('');
   const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
@@ -182,7 +184,7 @@ export default function Settings() {
       const webhook = response.settings.webhookUrl ?? '';
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
-      const chatPrefix = response.settings.matchzyChatPrefix ?? '';
+      const chatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
       const adminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
       const knifeEnabled =
         response.settings.matchzyKnifeEnabledDefault !== undefined
@@ -381,7 +383,7 @@ export default function Settings() {
         const newWebhook = response.settings.webhookUrl ?? '';
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
-        const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
+        const newChatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
         const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
         const newKnifeEnabled =
           response.settings.matchzyKnifeEnabledDefault !== undefined
@@ -1799,7 +1801,8 @@ export default function Settings() {
 
                     const newWebhook = response.settings.webhookUrl ?? '';
                     const newSimulate = response.settings.simulateMatches ?? false;
-                    const newChatPrefix = response.settings.matchzyChatPrefix ?? '';
+                    const newChatPrefix =
+                      response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
                     const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
                     const newKnifeEnabled =
                       response.settings.matchzyKnifeEnabledDefault !== undefined
