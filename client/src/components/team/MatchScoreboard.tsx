@@ -16,6 +16,11 @@ interface MatchScoreboardProps {
     chipColor: 'success' | 'info' | 'warning' | 'default';
   } | null;
   hideSeriesWins?: boolean;
+  /**
+   * When true, hide the per-map rounds score row and only show the series score (maps won).
+   * Used for player-facing views where live round counts are confusing.
+   */
+  hideMapRounds?: boolean;
 }
 
 export function MatchScoreboard({
@@ -29,6 +34,7 @@ export function MatchScoreboard({
   rightTeamElo,
   liveStatusDisplay,
   hideSeriesWins,
+  hideMapRounds,
 }: MatchScoreboardProps) {
   return (
     <Paper
@@ -58,12 +64,16 @@ export function MatchScoreboard({
               </Typography>
             </>
           )}
-          <Typography variant="h4" fontWeight={700} color="primary.main">
-            {leftMapRounds}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {CURRENT_MAP_SCORE_LABEL}
-          </Typography>
+          {!hideMapRounds && (
+            <>
+              <Typography variant="h4" fontWeight={700} color="primary.main">
+                {leftMapRounds}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {CURRENT_MAP_SCORE_LABEL}
+              </Typography>
+            </>
+          )}
         </Stack>
         <Stack spacing={1} alignItems="center" mx={3}>
           <Typography variant="h3" color="text.secondary" fontWeight={700}>
@@ -97,12 +107,16 @@ export function MatchScoreboard({
               </Typography>
             </>
           )}
-          <Typography variant="h4" fontWeight={700} color="error.main">
-            {rightMapRounds}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {CURRENT_MAP_SCORE_LABEL}
-          </Typography>
+          {!hideMapRounds && (
+            <>
+              <Typography variant="h4" fontWeight={700} color="error.main">
+                {rightMapRounds}
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                {CURRENT_MAP_SCORE_LABEL}
+              </Typography>
+            </>
+          )}
         </Stack>
       </Box>
     </Paper>

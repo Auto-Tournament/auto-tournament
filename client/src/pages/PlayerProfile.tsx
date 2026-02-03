@@ -89,21 +89,11 @@ interface MatchHistoryEntry {
 function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): TeamMatchInfo {
   const playerId = steamId.toLowerCase();
 
-  // Try to detect which side this player is on from live stats first (most reliable in‑match).
+  // Prefer config-based membership first (stable), then trust server-provided isTeam1.
+  // Only fall back to live stats if config is missing/ambiguous.
   let playerSide: 'team1' | 'team2' | null = null;
-  const stats = rawMatch.liveStats?.playerStats;
-  if (stats) {
-    const inTeam1 = stats.team1.some((p) => p.steamId === steamId);
-    const inTeam2 = stats.team2.some((p) => p.steamId === steamId);
-    if (inTeam1 && !inTeam2) {
-      playerSide = 'team1';
-    } else if (!inTeam1 && inTeam2) {
-      playerSide = 'team2';
-    }
-  }
 
-  // Fallback to config players if live stats don't contain this player yet.
-  if (!playerSide && rawMatch.config) {
+  if (rawMatch.config) {
     const team1Players = rawMatch.config.team1?.players ?? [];
     const team2Players = rawMatch.config.team2?.players ?? [];
     const inTeam1 = team1Players.some((p) => p.steamid.toLowerCase() === playerId);
@@ -115,9 +105,23 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
     }
   }
 
-  // Final fallback: trust the server‑provided isTeam1 flag.
+  // Fallback: trust the server‑provided isTeam1 flag.
   if (!playerSide) {
     playerSide = rawMatch.isTeam1 ? 'team1' : 'team2';
+  }
+
+  // Final fallback: detect from live stats (in case config is absent).
+  if (!playerSide) {
+    const stats = rawMatch.liveStats?.playerStats;
+    if (stats) {
+      const inTeam1 = stats.team1.some((p) => p.steamId?.toLowerCase() === playerId);
+      const inTeam2 = stats.team2.some((p) => p.steamId?.toLowerCase() === playerId);
+      if (inTeam1 && !inTeam2) {
+        playerSide = 'team1';
+      } else if (!inTeam1 && inTeam2) {
+        playerSide = 'team2';
+      }
+    }
   }
 
   // If the player's team is already on the "team1" side, just ensure isTeam1 is true.
@@ -208,6 +212,13 @@ function normalizeMatchForPlayerView(rawMatch: TeamMatchInfo, steamId: string): 
 }
 
 export default function PlayerProfile() {
+  type AssignedTeam = {
+    id: string;
+    name: string;
+    tag?: string;
+    players: Array<{ steamId: string; name: string; avatar?: string }>;
+  };
+
   const { steamId } = useParams<{ steamId: string }>();
   const [player, setPlayer] = useState<PlayerDetail | null>(null);
   const [ratingHistory, setRatingHistory] = useState<RatingHistoryEntry[]>([]);
@@ -216,6 +227,7 @@ export default function PlayerProfile() {
   const [error, setError] = useState('');
   const [currentMatch, setCurrentMatch] = useState<TeamMatchInfo | null>(null);
   const [currentTeam, setCurrentTeam] = useState<Team | null>(null);
+  const [assignedTeam, setAssignedTeam] = useState<AssignedTeam | null>(null);
   const [currentTournamentStatus, setCurrentTournamentStatus] = useState<string>('setup');
   const [selectedMatch, setSelectedMatch] = useState<MatchHistoryEntry | null>(null);
   const [allocationCountdown, setAllocationCountdown] = useState<{
@@ -277,8 +289,7 @@ export default function PlayerProfile() {
       const controller = new AbortController();
       loadAbortControllerRef.current = controller;
 
-      // Load aggregated player summary (details + history + matches + basic stats)
-      const summaryResponse = await api.fetch<{
+      type PlayerSummaryResponse = {
         success: boolean;
         player: PlayerDetail;
         stats?: {
@@ -323,18 +334,44 @@ export default function PlayerProfile() {
           assists?: number;
           headshots?: number;
         }>;
-      }>(`/api/players/${steamId}/summary`, { method: 'GET', signal: controller.signal });
+      };
+
+      // Load aggregated player summary (details + history + matches + basic stats)
+      const summaryResponse = (await api.fetch(`/api/players/${steamId}/summary`, {
+        method: 'GET',
+        signal: controller.signal,
+      })) as PlayerSummaryResponse;
 
       if (!summaryResponse.success || !summaryResponse.player) {
         setError('Player not found');
         setPlayer(null);
         setRatingHistory([]);
         setMatchHistory([]);
+        setAssignedTeam(null);
         return;
       }
 
       setPlayer(summaryResponse.player);
       document.title = `${summaryResponse.player.name} - Player Profile`;
+
+      // Resolve team membership (used for "My Team" even when player has no current match)
+      try {
+        const teamResp = (await api.fetch(`/api/players/${steamId}/team`, {
+          method: 'GET',
+          signal: controller.signal,
+        })) as {
+          success: boolean;
+          team: AssignedTeam | null;
+        };
+        if (teamResp?.success) {
+          setAssignedTeam(teamResp.team ?? null);
+        } else {
+          setAssignedTeam(null);
+        }
+      } catch {
+        // Best-effort: don't fail the page if team lookup fails
+        setAssignedTeam(null);
+      }
 
       // Rating history
       setRatingHistory(
@@ -381,13 +418,16 @@ export default function PlayerProfile() {
 
       // Load current or upcoming match (for connect info)
       try {
-        const currentMatchResponse = await api.fetch<{
+        const currentMatchResponse = (await api.fetch(`/api/players/${steamId}/current-match`, {
+          method: 'GET',
+          signal: controller.signal,
+        })) as {
           success: boolean;
           player: { id: string; name: string; avatar?: string };
           hasMatch: boolean;
           tournamentStatus?: string;
           match?: TeamMatchInfo;
-        }>(`/api/players/${steamId}/current-match`, { method: 'GET', signal: controller.signal });
+        };
 
         if (
           currentMatchResponse.success &&
@@ -446,6 +486,13 @@ export default function PlayerProfile() {
   },
     [steamId]
   );
+
+  const handleVetoComplete = React.useCallback(() => {
+    // Give the backend a moment to persist veto completion + derived match state.
+    window.setTimeout(() => {
+      void loadPlayerData({ silent: true });
+    }, 1000);
+  }, [loadPlayerData]);
 
   const scheduleSilentRefresh = React.useCallback(() => {
     if (unmountedRef.current) return;
@@ -882,6 +929,45 @@ export default function PlayerProfile() {
                       sx={{ fontWeight: 700, mb: 0.5 }}
                       data-testid="public-player-name"
                     />
+                    {(assignedTeam?.name || currentTeam?.name) && (
+                      <Box mt={0.5}>
+                        {(() => {
+                          const teamId = assignedTeam?.id || currentTeam?.id;
+                          const teamName = assignedTeam?.name || currentTeam?.name || '';
+                          const teamTag = assignedTeam?.tag || currentTeam?.tag;
+                          const label = `Team: ${teamTag ? `[${teamTag}] ` : ''}${teamName}`;
+                          const isLink =
+                            !!teamId && teamId !== 'team1' && teamId !== 'team2';
+
+                          if (isLink) {
+                            return (
+                              <Chip
+                                data-testid="public-player-team"
+                                size="small"
+                                variant="outlined"
+                                color="secondary"
+                                label={label}
+                                component={RouterLink}
+                                to={`/team/${teamId}`}
+                                clickable
+                                sx={{ fontWeight: 600 }}
+                              />
+                            );
+                          }
+
+                          return (
+                            <Chip
+                              data-testid="public-player-team"
+                              size="small"
+                              variant="outlined"
+                              color="secondary"
+                              label={label}
+                              sx={{ fontWeight: 600 }}
+                            />
+                          );
+                        })()}
+                      </Box>
+                    )}
                     <Typography variant="body2" color="text.secondary" gutterBottom>
                       {t('playerPage.steamId', { id: player.id })}
                     </Typography>
@@ -950,11 +1036,7 @@ export default function PlayerProfile() {
               tournamentStatus={currentTournamentStatus}
               vetoCompleted={currentMatch.veto?.status === 'completed'}
               matchFormat={(currentMatch.matchFormat as 'bo1' | 'bo3' | 'bo5') || 'bo1'}
-              onVetoComplete={async () => {
-                setTimeout(() => {
-                  void loadPlayerData({ silent: true });
-                }, 1000);
-              }}
+              onVetoComplete={handleVetoComplete}
               getRoundLabel={getRoundLabel}
               highlightPlayerId={player.id}
               // Only allow veto and server controls on the player page when the
@@ -1330,6 +1412,90 @@ export default function PlayerProfile() {
                     Showing last 10 matches. Total: {uniqueMatchHistory.length}
                   </Typography>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {(assignedTeam || (currentTeam && currentTeam.players?.length)) && (
+            <Card data-testid="public-player-my-team">
+              <CardContent>
+                <Box
+                  display="flex"
+                  justifyContent="space-between"
+                  alignItems="center"
+                  gap={2}
+                  flexWrap="wrap"
+                  mb={2}
+                >
+                  <Typography variant="h6" fontWeight={600}>
+                    My Team
+                  </Typography>
+                  {(assignedTeam?.id || currentTeam?.id) &&
+                    (assignedTeam?.id || currentTeam?.id) !== 'team1' &&
+                    (assignedTeam?.id || currentTeam?.id) !== 'team2' && (
+                      <Chip
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        label={`Open team: ${assignedTeam?.tag || currentTeam?.tag ? `[${assignedTeam?.tag || currentTeam?.tag}] ` : ''}${
+                          assignedTeam?.name || currentTeam?.name || ''
+                        }`}
+                        component={RouterLink}
+                        to={`/team/${assignedTeam?.id || currentTeam?.id}`}
+                        clickable
+                        sx={{ fontWeight: 600 }}
+                      />
+                    )}
+                </Box>
+
+                <Grid container spacing={2}>
+                  {(assignedTeam?.players ||
+                    currentTeam?.players?.map((p) => ({
+                      steamId: p.steamId,
+                      name: p.name,
+                      avatar: (p as unknown as { avatar?: string }).avatar,
+                    })) ||
+                    []
+                  ).map((p) => (
+                    <Grid key={p.steamId} size={{ xs: 12, sm: 6 }}>
+                      <Box
+                        component={RouterLink}
+                        to={`/player/${p.steamId}`}
+                        sx={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 2,
+                          textDecoration: 'none',
+                          color: 'inherit',
+                          p: 1,
+                          borderRadius: 1,
+                          '&:hover': {
+                            bgcolor: 'action.hover',
+                          },
+                        }}
+                      >
+                        <PlayerAvatar
+                          id={p.steamId}
+                          name={p.name}
+                          avatarUrl={p.avatar}
+                          size={36}
+                          isAdmin={false}
+                        />
+                        <Box flex={1} minWidth={0}>
+                          <Typography variant="body2" fontWeight={700} noWrap>
+                            {p.name}
+                          </Typography>
+                          <Typography variant="caption" color="text.secondary" noWrap>
+                            {p.steamId}
+                          </Typography>
+                        </Box>
+                        {p.steamId === steamId && (
+                          <Chip size="small" color="primary" label="You" />
+                        )}
+                      </Box>
+                    </Grid>
+                  ))}
+                </Grid>
               </CardContent>
             </Card>
           )}

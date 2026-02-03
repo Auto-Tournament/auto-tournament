@@ -1,6 +1,6 @@
 import type { MatchLiveStats } from '../types';
 
-export const SERIES_SCORE_LABEL = 'Series score (Maps won)';
+export const SERIES_SCORE_LABEL = 'Maps won';
 export const CURRENT_MAP_SCORE_LABEL = 'Current map score (Rounds)';
 
 type MatchMapResultLike = {

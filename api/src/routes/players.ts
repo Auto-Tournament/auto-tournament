@@ -16,9 +16,9 @@ import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { serverStatusService } from '../services/serverStatusService';
 import { playerConnectionService } from '../services/playerConnectionService';
-import { normalizeConfigPlayers } from '../utils/playerTransform';
+import { normalizeConfigPlayers, type NormalizedServerPlayer } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
-import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
+import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
@@ -228,28 +228,140 @@ router.get('/selection', requireAuth, async (req: Request, res: Response) => {
   }
 });
 
-function normalizeLiveStatsForPlayerView(
-  liveStats: MatchLiveStats,
-  isTeam1: boolean
-): MatchLiveStats {
-  if (isTeam1) {
-    return liveStats;
-  }
+/**
+ * GET /api/players/:playerId/team
+ * Resolve the team a player belongs to (public).
+ *
+ * Used by the public player page to show "My Team" even when the player has no
+ * current/upcoming match.
+ */
+router.get('/:playerId/team', async (req: Request, res: Response) => {
+  try {
+    const { playerId } = req.params;
 
-  return {
-    ...liveStats,
-    team1Score: liveStats.team2Score,
-    team2Score: liveStats.team1Score,
-    team1SeriesScore: liveStats.team2SeriesScore,
-    team2SeriesScore: liveStats.team1SeriesScore,
-    playerStats: liveStats.playerStats
-      ? {
-          team1: [...liveStats.playerStats.team2],
-          team2: [...liveStats.playerStats.team1],
+    // Ensure player exists (consistent with other public player endpoints)
+    const player = await playerService.getPlayerById(playerId);
+    if (!player) {
+      return res.status(404).json({
+        success: false,
+        error: `Player '${playerId}' not found`,
+      });
+    }
+
+    const likeParam = `%${playerId}%`;
+
+    // Prefilter: string LIKE on JSON column, then verify by parsing to avoid false positives.
+    const rows = await db.queryAsync<{
+      id: string;
+      name: string;
+      tag: string | null;
+      players: string;
+      created_at: number;
+      updated_at: number | null;
+    }>(
+      `SELECT id, name, tag, players, created_at, updated_at
+       FROM teams
+       WHERE players LIKE ? ESCAPE '\\'
+       ORDER BY COALESCE(updated_at, created_at) DESC`,
+      [likeParam]
+    );
+
+    const parsePlayers = (
+      playersJson: string
+    ): Array<{ steamId: string; name: string; avatar?: string }> => {
+      try {
+        const parsed = JSON.parse(playersJson) as unknown;
+        if (!parsed) return [];
+
+        // Canonical format: Player[]
+        if (Array.isArray(parsed)) {
+          return parsed
+            .map((p) => {
+              if (!p || typeof p !== 'object') return null;
+              const anyP = p as { steamId?: unknown; name?: unknown; avatar?: unknown };
+              if (typeof anyP.steamId !== 'string' || typeof anyP.name !== 'string') return null;
+              const base: { steamId: string; name: string; avatar?: string } = {
+                steamId: anyP.steamId,
+                name: anyP.name,
+              };
+              if (typeof anyP.avatar === 'string') {
+                base.avatar = anyP.avatar;
+              }
+              return base;
+            })
+            .filter((p): p is { steamId: string; name: string; avatar?: string } => !!p);
         }
-      : liveStats.playerStats,
-  };
-}
+
+        // Legacy formats:
+        // - Object map { idx: { steamId, name, avatar? } }
+        // - Object map { steamId: name }
+        if (typeof parsed === 'object') {
+          const record = parsed as Record<string, unknown>;
+
+          // Old: { steamId: name }
+          const fromEntries = Object.entries(record)
+            .map(([k, v]) => {
+              if (typeof v === 'string' && k.trim().length > 0) {
+                return { steamId: k, name: v };
+              }
+              return null;
+            })
+            .filter((p): p is { steamId: string; name: string } => !!p);
+          if (fromEntries.length > 0) return fromEntries;
+
+          // New-ish map: { idx: { steamId, name, avatar? } }
+          return Object.values(record)
+            .map((v) => {
+              if (!v || typeof v !== 'object') return null;
+              const anyV = v as { steamId?: unknown; name?: unknown; avatar?: unknown };
+              if (typeof anyV.steamId !== 'string' || typeof anyV.name !== 'string') return null;
+              const base: { steamId: string; name: string; avatar?: string } = {
+                steamId: anyV.steamId,
+                name: anyV.name,
+              };
+              if (typeof anyV.avatar === 'string') {
+                base.avatar = anyV.avatar;
+              }
+              return base;
+            })
+            .filter((p): p is { steamId: string; name: string; avatar?: string } => !!p);
+        }
+      } catch {
+        // ignore parse errors, treat as empty
+      }
+      return [];
+    };
+
+    const matching = rows.find((team) => {
+      const players = parsePlayers(team.players);
+      return players.some((p) => p.steamId === playerId);
+    });
+
+    if (!matching) {
+      return res.json({
+        success: true,
+        team: null,
+      });
+    }
+
+    return res.json({
+      success: true,
+      team: {
+        id: matching.id,
+        name: matching.name,
+        tag: matching.tag ?? undefined,
+        players: parsePlayers(matching.players),
+      },
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    log.error('Error resolving player team', { error, playerId: req.params.playerId });
+    return res.status(500).json({
+      success: false,
+      error: message,
+    });
+  }
+});
 
 /**
  * GET /api/players/me/match-status
@@ -568,11 +680,13 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         : {};
     }
 
-    const normalizedTeam1Players = config.team1
-      ? normalizeConfigPlayers(config.team1.players)
+    const cfg = config as Partial<MatchConfig>;
+
+    const normalizedTeam1Players = cfg.team1
+      ? normalizeConfigPlayers(cfg.team1.players)
       : [];
-    const normalizedTeam2Players = config.team2
-      ? normalizeConfigPlayers(config.team2.players)
+    const normalizedTeam2Players = cfg.team2
+      ? normalizeConfigPlayers(cfg.team2.players)
       : [];
 
     const isPlayerInTeam1 = normalizedTeam1Players.some((p) => p.steamid === playerId);
@@ -619,10 +733,10 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     }
 
     const isManualMatch = match.round === 0 && !match.team1_id && !match.team2_id;
-    const t1Name = match.team1_name ?? (config.team1 as { name?: string } | undefined)?.name;
-    const t2Name = match.team2_name ?? (config.team2 as { name?: string } | undefined)?.name;
-    const t1Tag = match.team1_tag ?? (config.team1 as { tag?: string } | undefined)?.tag ?? '';
-    const t2Tag = match.team2_tag ?? (config.team2 as { tag?: string } | undefined)?.tag ?? '';
+    const t1Name = match.team1_name ?? cfg.team1?.name;
+    const t2Name = match.team2_name ?? cfg.team2?.name;
+    const t1Tag = match.team1_tag ?? cfg.team1?.tag ?? '';
+    const t2Tag = match.team2_tag ?? cfg.team2?.tag ?? '';
 
     const playerTeam = isTeam1
       ? {
@@ -667,11 +781,18 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     if (match.veto_state) {
       try {
         const vetoState = JSON.parse(match.veto_state) as {
-          status?: string;
+          status?: 'pending' | 'in_progress' | 'completed' | string;
           team1Name?: string;
           team2Name?: string;
           pickedMaps?: Array<{ mapNumber?: number; mapName?: string }>;
-          actions?: Array<{ step?: number }>;
+          actions?: Array<{
+            step?: number;
+            team?: 'team1' | 'team2';
+            action?: string;
+            mapName?: string;
+            side?: string;
+            timestamp?: number;
+          }>;
         };
         if (vetoState) {
           const orderedPickedMaps = Array.isArray(vetoState.pickedMaps)
@@ -681,25 +802,47 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
               )
             : [];
 
-          pickedMaps = orderedPickedMaps.map((m: { mapName: string }) => m.mapName);
+          const sanitizedPickedMaps = orderedPickedMaps.filter(
+            (m): m is { mapNumber?: number; mapName: string } =>
+              typeof m.mapName === 'string' && m.mapName.trim().length > 0
+          );
+
+          pickedMaps = sanitizedPickedMaps.map((m) => m.mapName);
+
+          const status: 'pending' | 'in_progress' | 'completed' =
+            vetoState.status === 'completed' || vetoState.status === 'in_progress'
+              ? vetoState.status
+              : 'pending';
 
           vetoSummary = {
-            status: vetoState.status || 'pending',
+            status,
             team1Name:
               vetoState.team1Name ||
               match.team1_name ||
-              (config.team1 as { name?: string } | undefined)?.name ||
+              cfg.team1?.name ||
               'Team 1',
             team2Name:
               vetoState.team2Name ||
               match.team2_name ||
-              (config.team2 as { name?: string } | undefined)?.name ||
+              cfg.team2?.name ||
               'Team 2',
-            pickedMaps: orderedPickedMaps,
+            pickedMaps: sanitizedPickedMaps,
             actions: Array.isArray(vetoState.actions)
-              ? [...vetoState.actions].sort(
-                  (a: { step?: number }, b: { step?: number }) => (a.step || 0) - (b.step || 0)
-                )
+              ? vetoState.actions
+                  .filter(
+                    (a): a is {
+                      step: number;
+                      team: 'team1' | 'team2';
+                      action: string;
+                      mapName?: string;
+                      side?: string;
+                      timestamp?: number;
+                    } =>
+                      typeof a.step === 'number' &&
+                      (a.team === 'team1' || a.team === 'team2') &&
+                      typeof a.action === 'string'
+                  )
+                  .sort((a, b) => (a.step || 0) - (b.step || 0))
               : [],
           };
         }
@@ -757,29 +900,21 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     const connectionStatus = playerConnectionService.getStatus(match.slug);
     const liveStats = matchLiveStatsService.getStats(match.slug);
 
-    const normalizedLiveStats = liveStats
-      ? normalizeLiveStatsForPlayerView(liveStats, isTeam1)
-      : null;
     const rawMapResults = await getMapResults(match.slug);
     const normalizedMapResults = rawMapResults.map((result) => ({
       mapNumber: result.mapNumber,
       mapName: result.mapName,
-      team1Score: isTeam1 ? result.team1Score : result.team2Score,
-      team2Score: isTeam1 ? result.team2Score : result.team1Score,
-      winner: isTeam1
-        ? result.winnerTeam
-        : result.winnerTeam === 'team1'
-        ? 'team2'
-        : result.winnerTeam === 'team2'
-        ? 'team1'
-        : result.winnerTeam,
+      team1Score: result.team1Score,
+      team2Score: result.team2Score,
+      winner: result.winnerTeam,
+      winnerTeam: result.winnerTeam,
       demoFilePath: result.demoFilePath,
       completedAt: result.completedAt,
     }));
 
     // Normalize and enrich config players with avatars from team data or players table
     const enrichPlayers = async (
-      normalizedPlayers: Array<{ steamid: string; name: string }>,
+      normalizedPlayers: NormalizedServerPlayer[],
       teamId?: string
     ) => {
       if (teamId) {
@@ -802,8 +937,8 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
     };
 
     let [enrichedTeam1Players, enrichedTeam2Players] = await Promise.all([
-      enrichPlayers(normalizedTeam1Players, config.team1?.id),
-      enrichPlayers(normalizedTeam2Players, config.team2?.id),
+      enrichPlayers(normalizedTeam1Players, cfg.team1?.id),
+      enrichPlayers(normalizedTeam2Players, cfg.team2?.id),
     ]);
 
     // Manual matches: no team rows, enrich from players table
@@ -897,37 +1032,40 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
               })),
             }
           : null,
-        liveStats: normalizedLiveStats,
+        liveStats,
         maps: pickedMaps.length > 0 ? pickedMaps : [],
         mapResults: normalizedMapResults,
         veto: vetoSummary,
         matchFormat:
           (tournament?.format as 'bo1' | 'bo3' | 'bo5') ||
-          (config.num_maps === 1 ? 'bo1' : config.num_maps === 5 ? 'bo5' : 'bo3'),
+          (cfg.num_maps === 1 ? 'bo1' : cfg.num_maps === 5 ? 'bo5' : 'bo3'),
         loadedAt: match.loaded_at,
         config: {
-          maplist: config.maplist,
-          num_maps: config.num_maps,
-          players_per_team: config.players_per_team,
-          expected_players_total: config.players_per_team ? config.players_per_team * 2 : 10,
-          expected_players_team1: config.players_per_team || 5,
-          expected_players_team2: config.players_per_team || 5,
-          vetoDisabled: config.vetoDisabled,
-          team1: config.team1
+          maplist: cfg.maplist ?? null,
+          num_maps: cfg.num_maps ?? null,
+          players_per_team: typeof cfg.players_per_team === 'number' ? cfg.players_per_team : null,
+          expected_players_total:
+            typeof cfg.players_per_team === 'number' ? cfg.players_per_team * 2 : 10,
+          expected_players_team1:
+            typeof cfg.players_per_team === 'number' ? cfg.players_per_team : 5,
+          expected_players_team2:
+            typeof cfg.players_per_team === 'number' ? cfg.players_per_team : 5,
+          vetoDisabled: cfg.vetoDisabled,
+          team1: cfg.team1
             ? {
-                id: config.team1.id,
-                name: config.team1.name,
-                tag: config.team1.tag,
-                flag: config.team1.flag,
+                id: cfg.team1.id,
+                name: cfg.team1.name,
+                tag: cfg.team1.tag,
+                flag: cfg.team1.flag,
                 players: enrichedTeam1Players,
               }
             : undefined,
-          team2: config.team2
+          team2: cfg.team2
             ? {
-                id: config.team2.id,
-                name: config.team2.name,
-                tag: config.team2.tag,
-                flag: config.team2.flag,
+                id: cfg.team2.id,
+                name: cfg.team2.name,
+                tag: cfg.team2.tag,
+                flag: cfg.team2.flag,
                 players: enrichedTeam2Players,
               }
             : undefined,

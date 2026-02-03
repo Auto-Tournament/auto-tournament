@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import {
   Box,
   Typography,
@@ -12,6 +12,7 @@ import {
   Paper,
   LinearProgress,
 } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
 import { getMapData } from '../../constants/maps';
@@ -42,6 +43,13 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const [allMaps, setAllMaps] = useState<
     Map<string, { id: string; displayName: string; imageUrl: string | null }>
   >(new Map());
+
+  // Keep a stable reference to the latest onComplete callback so veto effects
+  // don't restart (socket reconnect + loading flashes) when parents re-render.
+  const onCompleteRef = useRef<VetoInterfaceProps['onComplete']>(onComplete);
+  useEffect(() => {
+    onCompleteRef.current = onComplete;
+  }, [onComplete]);
 
   const MAP_IMAGE_BASE =
     'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
@@ -84,8 +92,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
       if (data.success) {
         setVetoState(data.veto);
-        if (data.veto.status === 'completed' && onComplete) {
-          onComplete(data.veto);
+        if (data.veto.status === 'completed') {
+          onCompleteRef.current?.(data.veto);
         }
       } else {
         setError(data.error || 'Failed to load veto state');
@@ -96,7 +104,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [matchSlug, onComplete]);
+  }, [matchSlug]);
 
   useEffect(() => {
     loadMaps();
@@ -110,15 +118,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
     newSocket.on(`veto:update:${matchSlug}`, (updatedVeto: VetoState) => {
       setVetoState(updatedVeto);
-      if (updatedVeto.status === 'completed' && onComplete) {
-        onComplete(updatedVeto);
+      if (updatedVeto.status === 'completed') {
+        onCompleteRef.current?.(updatedVeto);
       }
     });
 
     return () => {
       newSocket.close();
     };
-  }, [matchSlug, onComplete, loadVetoState]);
+  }, [matchSlug, loadVetoState]);
 
   // Memoize mapsToShow - must be called before any early returns (Rules of Hooks)
   const mapsToShow = useMemo(() => {
@@ -323,13 +331,71 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       {/* Match Header */}
       <Paper elevation={2} sx={{ mb: 3, p: 3, bgcolor: 'background.paper' }}>
         <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
-          <Typography variant="h4" fontWeight={700} color="primary">
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            component={
+              vetoState.team1Id &&
+              vetoState.team1Id !== 'team1' &&
+              vetoState.team1Id !== 'team2'
+                ? RouterLink
+                : 'span'
+            }
+            to={
+              vetoState.team1Id &&
+              vetoState.team1Id !== 'team1' &&
+              vetoState.team1Id !== 'team2'
+                ? `/team/${vetoState.team1Id}`
+                : undefined
+            }
+            sx={{
+              color: 'primary.main',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration:
+                  vetoState.team1Id &&
+                  vetoState.team1Id !== 'team1' &&
+                  vetoState.team1Id !== 'team2'
+                    ? 'underline'
+                    : 'none',
+              },
+            }}
+          >
             {team1Name}
           </Typography>
           <Typography variant="h3" fontWeight={300} color="text.secondary">
             VS
           </Typography>
-          <Typography variant="h4" fontWeight={700} color="error">
+          <Typography
+            variant="h4"
+            fontWeight={700}
+            component={
+              vetoState.team2Id &&
+              vetoState.team2Id !== 'team1' &&
+              vetoState.team2Id !== 'team2'
+                ? RouterLink
+                : 'span'
+            }
+            to={
+              vetoState.team2Id &&
+              vetoState.team2Id !== 'team1' &&
+              vetoState.team2Id !== 'team2'
+                ? `/team/${vetoState.team2Id}`
+                : undefined
+            }
+            sx={{
+              color: 'error.main',
+              textDecoration: 'none',
+              '&:hover': {
+                textDecoration:
+                  vetoState.team2Id &&
+                  vetoState.team2Id !== 'team1' &&
+                  vetoState.team2Id !== 'team2'
+                    ? 'underline'
+                    : 'none',
+              },
+            }}
+          >
             {team2Name}
           </Typography>
         </Box>
