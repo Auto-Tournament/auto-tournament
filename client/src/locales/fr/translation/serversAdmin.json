@@ -96,7 +96,7 @@
     "overridesTitle": "Surcharges MatchZy (optionnel)",
     "overridesDescription": "Ces paramètres surchargent les valeurs globales MatchZy uniquement pour ce serveur. Laissez vide pour utiliser les valeurs globales dans Paramètres.",
     "chatPrefixLabel": "Surcharge du préfixe de chat",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
     "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

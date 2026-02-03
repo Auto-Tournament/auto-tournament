@@ -96,7 +96,7 @@
     "overridesTitle": "Nadpisania MatchZy (opcjonalnie)",
     "overridesDescription": "Te ustawienia nadpisują globalne wartości domyślne MatchZy tylko dla tego serwera. Pozostaw puste, aby użyć wartości globalnych z Ustawień.",
     "chatPrefixLabel": "Nadpisanie prefiksu czatu",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Nadpisuje matchzy_chat_prefix na tym serwerze (opcjonalnie)",
     "adminChatPrefixLabel": "Nadpisanie prefiksu czatu admina",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

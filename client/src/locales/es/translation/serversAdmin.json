@@ -96,7 +96,7 @@
     "overridesTitle": "Sobrescrituras de MatchZy (opcional)",
     "overridesDescription": "Estos ajustes sobrescriben los valores globales de MatchZy solo para este servidor. Déjalo en blanco para usar los valores globales de Ajustes.",
     "chatPrefixLabel": "Sobrescritura del prefijo de chat",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Sobrescribe matchzy_chat_prefix en este servidor (opcional)",
     "adminChatPrefixLabel": "Sobrescritura del prefijo de chat de admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

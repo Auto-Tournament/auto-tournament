@@ -96,7 +96,7 @@
     "overridesTitle": "Substituições MatchZy (opcional)",
     "overridesDescription": "Estas definições substituem as predefinições globais do MatchZy apenas para este servidor. Deixe em branco para usar os valores globais das Definições.",
     "chatPrefixLabel": "Substituição do prefixo do chat",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Substitui matchzy_chat_prefix neste servidor (opcional)",
     "adminChatPrefixLabel": "Substituição do prefixo do chat admin",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

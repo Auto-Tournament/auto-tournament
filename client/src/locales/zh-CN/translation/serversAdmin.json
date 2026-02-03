@@ -96,7 +96,7 @@
     "overridesTitle": "MatchZy 覆盖配置（可选）",
     "overridesDescription": "这些设置仅覆盖此服务器的全局 MatchZy 默认值。留空则使用“设置”中的全局值。",
     "chatPrefixLabel": "聊天前缀覆盖",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
     "adminChatPrefixLabel": "管理员聊天前缀覆盖",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

@@ -96,7 +96,7 @@
     "overridesTitle": "MatchZy-Overrides (optional)",
     "overridesDescription": "Diese Einstellungen überschreiben die globalen MatchZy-Standards nur für diesen Server. Leer lassen, um globale Werte aus den Einstellungen zu verwenden.",
     "chatPrefixLabel": "Chat-Präfix überschreiben",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Überschreibt matchzy_chat_prefix auf diesem Server (optional)",
     "adminChatPrefixLabel": "Admin-Chat-Präfix überschreiben",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

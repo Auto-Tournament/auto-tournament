@@ -96,7 +96,7 @@
     "overridesTitle": "MatchZy Overrides (optional)",
     "overridesDescription": "These settings override the global MatchZy defaults for this server only. Leave blank to use global values from Settings.",
     "chatPrefixLabel": "Chat Prefix Override",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Overrides matchzy_chat_prefix on this server (optional)",
     "adminChatPrefixLabel": "Admin Chat Prefix Override",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",

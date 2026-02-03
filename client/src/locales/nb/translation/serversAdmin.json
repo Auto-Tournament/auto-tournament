@@ -96,7 +96,7 @@
     "overridesTitle": "MatchZy-overstyringer (valgfritt)",
     "overridesDescription": "Disse innstillingene overstyrer globale MatchZy-standarder kun for denne serveren. La stå tomt for å bruke globale verdier fra Innstillinger.",
     "chatPrefixLabel": "Overstyr chat-prefiks",
-    "chatPrefixPlaceholder": "[MatchZy]",
+    "chatPrefixPlaceholder": "[{Green}MAT{Default}]",
     "chatPrefixHelper": "Overstyrer matchzy_chat_prefix på denne serveren (valgfritt)",
     "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
     "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
