@@ -53,7 +53,7 @@
         "chatPrefixLabel": "Chat-Präfix",
         "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "adminChatPrefixLabel": "Admin-Chat-Präfix",
-        "adminChatPrefixHelper": "Standard: \"[ADMIN]\". Leer lassen, um auf den Standard zurückzusetzen.",
+        "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". Leer lassen, um auf den Standard zurückzusetzen.",
         "knifeToggleLabel": "Knife-Runden standardmäßig für neue Matches aktivieren (wenn Seiten nicht vorab gewählt sind)",
         "knifeNote": "Gilt nur, wenn MatchZy normalerweise eine Knife-Runde spielen würde; explizite Side-Picks werden nicht verändert."
       },

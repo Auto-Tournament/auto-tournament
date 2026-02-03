@@ -62,6 +62,7 @@ export default function Settings() {
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError, showSnackbar } = useSnackbar();
   const DEFAULT_MATCHZY_CHAT_PREFIX = '[{Green}MAT{Default}]';
+  const DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX = '[{Red}ADMIN{Default}]';
   const [webhookUrl, setWebhookUrl] = useState('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -74,8 +75,12 @@ export default function Settings() {
   const [matchzyChatPrefix, setMatchzyChatPrefix] = useState(DEFAULT_MATCHZY_CHAT_PREFIX);
   const [initialMatchzyChatPrefix, setInitialMatchzyChatPrefix] =
     useState(DEFAULT_MATCHZY_CHAT_PREFIX);
-  const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState('');
-  const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState('');
+  const [matchzyAdminChatPrefix, setMatchzyAdminChatPrefix] = useState(
+    DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX
+  );
+  const [initialMatchzyAdminChatPrefix, setInitialMatchzyAdminChatPrefix] = useState(
+    DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX
+  );
   const [matchzyKnifeEnabledDefault, setMatchzyKnifeEnabledDefault] = useState(true);
   const [initialMatchzyKnifeEnabledDefault, setInitialMatchzyKnifeEnabledDefault] = useState(true);
   const [ratingsEnabled, setRatingsEnabled] = useState(true);
@@ -185,7 +190,8 @@ export default function Settings() {
       const simulate = response.settings.simulateMatches ?? false;
       const timescale = response.settings.simulationTimescale ?? 1;
       const chatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
-      const adminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
+      const adminChatPrefix =
+        response.settings.matchzyAdminChatPrefix ?? DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
       const knifeEnabled =
         response.settings.matchzyKnifeEnabledDefault !== undefined
           ? response.settings.matchzyKnifeEnabledDefault
@@ -384,7 +390,8 @@ export default function Settings() {
         const newSimulate = response.settings.simulateMatches ?? false;
         const newTimescale = response.settings.simulationTimescale ?? 1;
         const newChatPrefix = response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
-        const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
+        const newAdminChatPrefix =
+          response.settings.matchzyAdminChatPrefix ?? DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
         const newKnifeEnabled =
           response.settings.matchzyKnifeEnabledDefault !== undefined
             ? response.settings.matchzyKnifeEnabledDefault
@@ -1803,7 +1810,9 @@ export default function Settings() {
                     const newSimulate = response.settings.simulateMatches ?? false;
                     const newChatPrefix =
                       response.settings.matchzyChatPrefix ?? DEFAULT_MATCHZY_CHAT_PREFIX;
-                    const newAdminChatPrefix = response.settings.matchzyAdminChatPrefix ?? '';
+                    const newAdminChatPrefix =
+                      response.settings.matchzyAdminChatPrefix ??
+                      DEFAULT_MATCHZY_ADMIN_CHAT_PREFIX;
                     const newKnifeEnabled =
                       response.settings.matchzyKnifeEnabledDefault !== undefined
                         ? response.settings.matchzyKnifeEnabledDefault

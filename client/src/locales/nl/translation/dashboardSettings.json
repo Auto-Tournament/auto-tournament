@@ -53,7 +53,7 @@
         "chatPrefixLabel": "Chat-prefix",
         "chatPrefixHelper": "Standaard: \"[{Green}MAT{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "adminChatPrefixLabel": "Admin chat-prefix",
-        "adminChatPrefixHelper": "Standaard: \"[ADMIN]\". Laat leeg om terug te zetten naar de standaard.",
+        "adminChatPrefixHelper": "Standaard: \"[{Red}ADMIN{Default}]\". Laat leeg om terug te zetten naar de standaard.",
         "knifeToggleLabel": "Knife-rounds standaard inschakelen voor nieuwe wedstrijden (wanneer sides niet vooraf gekozen zijn)",
         "knifeNote": "Geldt alleen wanneer MatchZy normaal een knife-round zou spelen; expliciete side-picks worden niet aangepast."
       },

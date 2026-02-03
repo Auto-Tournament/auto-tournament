@@ -99,7 +99,7 @@
     "chatPrefixPlaceholder": "[MatchZy]",
     "chatPrefixHelper": "Überschreibt matchzy_chat_prefix auf diesem Server (optional)",
     "adminChatPrefixLabel": "Admin-Chat-Präfix überschreiben",
-    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
     "adminChatPrefixHelper": "Überschreibt matchzy_admin_chat_prefix auf diesem Server (optional)",
     "knifeOverrideLabel": "Knife-Runde standardmäßig aktiv (Override)",
     "knifeOverrideHelper": "Wenn gesetzt, überschreibt dies matchzy_knife_enabled_default für diesen Server. Unbestimmt lassen, um den globalen Standard zu verwenden.",

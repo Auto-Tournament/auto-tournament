@@ -156,7 +156,7 @@
         "chatPrefixLabel": "Chat‑prefiks",
         "chatPrefixHelper": "Standard: \"[{Green}MAT{Default}]\". La stå tomt for standard.",
         "adminChatPrefixLabel": "Admin chat‑prefiks",
-        "adminChatPrefixHelper": "Standard: \"[ADMIN]\". La stå tomt for standard.",
+        "adminChatPrefixHelper": "Standard: \"[{Red}ADMIN{Default}]\". La stå tomt for standard.",
         "knifeToggleLabel": "Aktiver knivrunder som standard for nye kamper",
         "knifeNote": "Gjelder kun når MatchZy ellers ville kjørt knivrunde."
       },

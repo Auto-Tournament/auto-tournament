@@ -99,7 +99,7 @@
     "chatPrefixPlaceholder": "[MatchZy]",
     "chatPrefixHelper": "Nadpisuje matchzy_chat_prefix na tym serwerze (opcjonalnie)",
     "adminChatPrefixLabel": "Nadpisanie prefiksu czatu admina",
-    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
     "adminChatPrefixHelper": "Nadpisuje matchzy_admin_chat_prefix na tym serwerze (opcjonalnie)",
     "knifeOverrideLabel": "Domyślnie włącz rundę knife (nadpisanie)",
     "knifeOverrideHelper": "Gdy ustawione, nadpisuje matchzy_knife_enabled_default dla tego serwera. Pozostaw w stanie nieokreślonym, aby użyć globalnej wartości domyślnej.",

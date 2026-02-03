@@ -53,7 +53,7 @@
         "chatPrefixLabel": "Prefisso chat",
         "chatPrefixHelper": "Predefinito: \"[{Green}MAT{Default}]\". Lascia vuoto per ripristinare il prefisso predefinito.",
         "adminChatPrefixLabel": "Prefisso chat admin",
-        "adminChatPrefixHelper": "Predefinito: \"[ADMIN]\". Lascia vuoto per ripristinare il prefisso admin predefinito.",
+        "adminChatPrefixHelper": "Predefinito: \"[{Red}ADMIN{Default}]\". Lascia vuoto per ripristinare il prefisso admin predefinito.",
         "knifeToggleLabel": "Abilita la knife round di default per i nuovi match (quando i lati non sono preselezionati)",
         "knifeNote": "Si applica solo quando MatchZy eseguirebbe normalmente una knife round; le scelte esplicite dei lati non vengono modificate."
       },

@@ -99,7 +99,7 @@
     "chatPrefixPlaceholder": "[MatchZy]",
     "chatPrefixHelper": "Surcharge matchzy_chat_prefix sur ce serveur (optionnel)",
     "adminChatPrefixLabel": "Surcharge du préfixe de chat admin",
-    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
     "adminChatPrefixHelper": "Surcharge matchzy_admin_chat_prefix sur ce serveur (optionnel)",
     "knifeOverrideLabel": "Couteau activé par défaut (surcharge)",
     "knifeOverrideHelper": "Si défini, surcharge matchzy_knife_enabled_default pour ce serveur. Laissez indéterminé pour utiliser la valeur globale.",

@@ -53,7 +53,7 @@
         "chatPrefixLabel": "Prefiks czatu",
         "chatPrefixHelper": "Domyślnie: \"[{Green}MAT{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "adminChatPrefixLabel": "Prefiks czatu admina",
-        "adminChatPrefixHelper": "Domyślnie: \"[ADMIN]\". Zostaw puste, aby przywrócić wartość domyślną.",
+        "adminChatPrefixHelper": "Domyślnie: \"[{Red}ADMIN{Default}]\". Zostaw puste, aby przywrócić wartość domyślną.",
         "knifeToggleLabel": "Domyślnie włącz rundy knife dla nowych meczów (gdy strony nie są wcześniej wybrane)",
         "knifeNote": "Dotyczy tylko sytuacji, gdy MatchZy normalnie uruchomiłby rundę knife; jawne wybory stron nie są zmieniane."
       },

@@ -156,7 +156,7 @@
         "chatPrefixLabel": "聊天前缀",
         "chatPrefixHelper": "默认值：\"[{Green}MAT{Default}]\"。留空以重置为默认前缀。",
         "adminChatPrefixLabel": "管理员聊天前缀",
-        "adminChatPrefixHelper": "默认值：\"[ADMIN]\"。留空以重置为默认管理员前缀。",
+        "adminChatPrefixHelper": "默认值：\"[{Red}ADMIN{Default}]\"。留空以重置为默认管理员前缀。",
         "knifeToggleLabel": "对未预先选择阵营的新比赛默认启用刀局",
         "knifeNote": "仅在 MatchZy 正常会运行刀局时生效；不会改变显式选择阵营或洗牌分配阵营的情况。"
       },

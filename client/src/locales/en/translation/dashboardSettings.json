@@ -156,7 +156,7 @@
         "chatPrefixLabel": "Chat Prefix",
         "chatPrefixHelper": "Default: \"[{Green}MAT{Default}]\". Leave blank to reset to the default prefix.",
         "adminChatPrefixLabel": "Admin Chat Prefix",
-        "adminChatPrefixHelper": "Default: \"[ADMIN]\". Leave blank to reset to the default admin prefix.",
+        "adminChatPrefixHelper": "Default: \"[{Red}ADMIN{Default}]\". Leave blank to reset to the default admin prefix.",
         "knifeToggleLabel": "Enable knife rounds by default for new matches (when sides are not pre-selected)",
         "knifeNote": "Applies only when MatchZy would normally run a knife round; explicit side picks or shuffle-assigned sides are not changed."
       },

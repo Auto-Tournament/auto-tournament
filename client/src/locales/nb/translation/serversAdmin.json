@@ -99,7 +99,7 @@
     "chatPrefixPlaceholder": "[MatchZy]",
     "chatPrefixHelper": "Overstyrer matchzy_chat_prefix på denne serveren (valgfritt)",
     "adminChatPrefixLabel": "Overstyr admin-chat-prefiks",
-    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
     "adminChatPrefixHelper": "Overstyrer matchzy_admin_chat_prefix på denne serveren (valgfritt)",
     "knifeOverrideLabel": "Knivrunde aktivert som standard (overstyr)",
     "knifeOverrideHelper": "Når satt, overstyrer matchzy_knife_enabled_default for denne serveren. La stå ubestemt for å bruke global standard.",

@@ -385,7 +385,7 @@ class SettingsService {
     const value = await this.getSetting('matchzy_admin_chat_prefix');
     const trimmed = value ? value.trim() : '';
     // Default to a sensible admin prefix if none is configured explicitly
-    return trimmed !== '' ? trimmed : '[ADMIN]';
+    return trimmed !== '' ? trimmed : '[{Red}ADMIN{Default}]';
   }
 
   async isMatchzyDebugChatEnabled(): Promise<boolean> {

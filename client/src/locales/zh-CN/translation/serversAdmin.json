@@ -99,7 +99,7 @@
     "chatPrefixPlaceholder": "[MatchZy]",
     "chatPrefixHelper": "覆盖此服务器上的 matchzy_chat_prefix（可选）",
     "adminChatPrefixLabel": "管理员聊天前缀覆盖",
-    "adminChatPrefixPlaceholder": "[ADMIN]",
+    "adminChatPrefixPlaceholder": "[{Red}ADMIN{Default}]",
     "adminChatPrefixHelper": "覆盖此服务器上的 matchzy_admin_chat_prefix（可选）",
     "knifeOverrideLabel": "默认启用刀局（覆盖）",
     "knifeOverrideHelper": "设置后会覆盖此服务器上的 matchzy_knife_enabled_default。保持中间态以使用全局默认值。",
