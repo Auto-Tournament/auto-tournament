@@ -217,7 +217,7 @@
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced Features",
-        "description": "Configure advanced match features. Leave settings empty to use tournament-type defaults.",
+        "description": "Configure advanced match features. Leave settings empty to use MatchZy plugin defaults.",
         "autoready": {
           "title": "Auto-Ready System",
           "label": "Auto-mark players as ready when they join",

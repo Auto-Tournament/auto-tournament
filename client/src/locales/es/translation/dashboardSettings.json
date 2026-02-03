@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "Funciones de MatchZy Enhanced",
-        "description": "Configura funciones avanzadas de partido. Deja los ajustes vacíos para usar los valores por defecto del tipo de torneo.",
+        "description": "Configura funciones avanzadas de partido. Deja los ajustes vacíos para usar los valores predeterminados de MatchZy.",
         "autoready": {
           "title": "Sistema de auto-ready",
           "label": "Marcar automáticamente a los jugadores como listos al unirse",

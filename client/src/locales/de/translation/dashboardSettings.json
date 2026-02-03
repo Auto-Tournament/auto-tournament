@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced Funktionen",
-        "description": "Erweiterte Match-Funktionen. Leer lassen, um Turnier-Typ-Standards zu verwenden.",
+        "description": "Erweiterte Match-Funktionen. Leer lassen, um die MatchZy-Standardwerte zu verwenden.",
         "autoready": {
           "title": "Automatisch einsatzbereites System",
           "label": "Spieler beim Join automatisch als ready markieren",

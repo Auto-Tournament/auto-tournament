@@ -318,7 +318,6 @@ export const generateMatchConfig = async (
     map_sides: config.map_sides,
     maxRounds,
     cvars,
-    matchzyProfile: matchzyConfigService.getProfileForTournamentType(tournament.type),
     team1: config.team1.name,
     team2: config.team2.name,
   });

@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "Funzionalità MatchZy Enhanced",
-        "description": "Configura funzionalità avanzate del match. Lascia i campi vuoti per usare i valori predefiniti del tipo di torneo.",
+        "description": "Configura funzionalità avanzate del match. Lascia i campi vuoti per usare i valori predefiniti di MatchZy.",
         "autoready": {
           "title": "Sistema auto-ready",
           "label": "Segna automaticamente i giocatori come ready quando entrano",

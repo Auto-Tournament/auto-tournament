@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "Fonctionnalités MatchZy Enhanced",
-        "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut du type de tournoi.",
+        "description": "Configurez des fonctionnalités de match avancées. Laissez vide pour utiliser les valeurs par défaut de MatchZy.",
         "autoready": {
           "title": "Système auto-ready",
           "label": "Marquer automatiquement les joueurs comme prêts à la connexion",

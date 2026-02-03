@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "Funkcje MatchZy Enhanced",
-        "description": "Skonfiguruj zaawansowane funkcje meczu. Zostaw pola puste, aby użyć domyślnych ustawień typu turnieju.",
+        "description": "Skonfiguruj zaawansowane funkcje meczu. Zostaw pola puste, aby użyć domyślnych ustawień MatchZy.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Automatycznie oznaczaj graczy jako gotowych po dołączeniu",

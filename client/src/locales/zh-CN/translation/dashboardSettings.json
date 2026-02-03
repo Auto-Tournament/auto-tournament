@@ -217,7 +217,7 @@
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced 功能",
-        "description": "配置高级比赛功能。留空设置以使用锦标赛类型默认值。",
+        "description": "配置高级比赛功能。留空设置以使用 MatchZy 插件默认值。",
         "autoready": {
           "title": "自动准备系统",
           "label": "玩家加入时自动标记为已准备",

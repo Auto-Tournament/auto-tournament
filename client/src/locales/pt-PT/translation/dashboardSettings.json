@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "Funcionalidades MatchZy Enhanced",
-        "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar os padrões do tipo de torneio.",
+        "description": "Configura funcionalidades avançadas de jogo. Deixa os campos vazios para usar as predefinições do MatchZy.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Marcar automaticamente jogadores como prontos ao entrar",

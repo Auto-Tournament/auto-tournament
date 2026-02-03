@@ -1,12 +1,16 @@
-import { TournamentType } from '../types/tournament.types';
+import type { TournamentType } from '../types/tournament.types';
 import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
 
 /**
  * MatchZy Enhanced v1.3.0 Configuration Service
- * 
- * Generates appropriate MatchZy cvars based on tournament/match type.
- * All features are disabled by default or set to safe/unlimited values.
+ *
+ * Generates MatchZy Enhanced cvars for match configs.
+ *
+ * Important: We intentionally include a baseline set of MatchZy Enhanced cvars
+ * even when the MAT Settings page does not define any overrides. This ensures
+ * all matches and servers follow the same configuration (useful when servers
+ * have stale persistent config or are running with drift).
  */
 
 export interface MatchzyEnhancedCvars {
@@ -36,117 +40,43 @@ export interface MatchzyEnhancedCvars {
 }
 
 /**
- * Match profile types for MatchZy configuration
+ * Baseline defaults aligned with MatchZy Enhanced plugin defaults.
+ * These match the defaults documented in the plugin's shipped config.
  */
-export type MatchzyConfigProfile = 
-  | 'official'      // High-stakes official matches
-  | 'fast'          // Fast-paced tournaments
-  | 'shuffle'       // Shuffle tournaments (similar to fast but tailored)
-  | 'default';      // Safe fallback
+const DEFAULT_MATCHZY_ENHANCED_CVARS: MatchzyEnhancedCvars = {
+  // READY / AUTO-READY
+  matchzy_autoready_enabled: 0,
 
-/**
- * Configuration templates based on the MatchZy Enhanced v1.3.0 documentation
- */
-const CONFIG_TEMPLATES: Record<MatchzyConfigProfile, MatchzyEnhancedCvars> = {
-  /**
-   * Official Competitive Tournament
-   * Use case: High-stakes official matches, no forfeits allowed
-   */
-  official: {
-    matchzy_autoready_enabled: 0,              // Manual ready (players need warmup)
-    matchzy_both_teams_unpause_required: 1,    // Both teams must unpause (prevent trolling)
-    matchzy_max_pauses_per_team: 2,            // 2 pauses per team (standard competitive)
-    matchzy_pause_duration: 300,               // 5 minute pause limit (prevents abuse)
-    matchzy_side_selection_enabled: 1,         // Timer enabled
-    matchzy_side_selection_time: 60,           // 60 seconds (standard)
-    matchzy_gg_enabled: 0,                     // NO forfeits in official matches
-    matchzy_ffw_enabled: 1,                    // Handle connection issues fairly
-    matchzy_ffw_time: 240,                     // 4 minutes (default)
-    matchzy_demo_recording_enabled: 1,         // Always record demos
-  },
+  // PAUSES
+  matchzy_both_teams_unpause_required: 1,
+  matchzy_max_pauses_per_team: 0,
+  matchzy_pause_duration: 0,
 
-  /**
-   * Fast-Paced Tournament
-   * Use case: Multiple matches per day, quick turnaround
-   */
-  fast: {
-    matchzy_autoready_enabled: 1,              // Auto-ready (start immediately)
-    matchzy_both_teams_unpause_required: 1,    // Both teams must unpause
-    matchzy_max_pauses_per_team: 1,            // 1 pause per team (minimize delays)
-    matchzy_pause_duration: 180,               // 3 minute pause limit (fast-paced)
-    matchzy_side_selection_enabled: 1,         // Timer enabled
-    matchzy_side_selection_time: 30,           // 30 seconds (quick decisions)
-    matchzy_gg_enabled: 0,                     // Complete all matches
-    matchzy_ffw_enabled: 1,                    // Handle disconnects
-    matchzy_ffw_time: 120,                     // 2 minutes (fast walkover)
-    matchzy_demo_recording_enabled: 1,         // Record demos
-  },
+  // ENHANCED FEATURES
+  matchzy_side_selection_enabled: 1,
+  matchzy_side_selection_time: 60,
 
-  /**
-   * Shuffle Tournament
-   * Use case: Quick rotating teams, casual/fast-paced
-   */
-  shuffle: {
-    matchzy_autoready_enabled: 1,              // Auto-ready (quick start)
-    matchzy_both_teams_unpause_required: 1,    // Both teams must unpause
-    matchzy_max_pauses_per_team: 1,            // 1 pause (fast pace)
-    matchzy_pause_duration: 180,               // 3 minutes
-    matchzy_side_selection_enabled: 1,         // Timer enabled
-    matchzy_side_selection_time: 30,           // 30 seconds (quick)
-    matchzy_gg_enabled: 0,                     // No forfeits (complete rounds)
-    matchzy_ffw_enabled: 0,                    // No FFW (temporary teams)
-    matchzy_demo_recording_enabled: 1,         // Record demos
-  },
+  // .gg
+  matchzy_gg_enabled: 0,
+  matchzy_gg_threshold: 0.8,
+  matchzy_gg_min_score_diff: 0,
 
-  /**
-   * Default/Safe Configuration
-   * Use case: When uncertain, or testing
-   */
-  default: {
-    matchzy_autoready_enabled: 0,              // Manual ready (safe default)
-    matchzy_both_teams_unpause_required: 1,    // Both teams must unpause
-    matchzy_max_pauses_per_team: 0,            // Unlimited pauses (safe)
-    matchzy_pause_duration: 0,                 // No time limit (safe)
-    matchzy_side_selection_enabled: 1,         // Timer enabled
-    matchzy_side_selection_time: 60,           // 60 seconds (standard)
-    matchzy_gg_enabled: 0,                     // No forfeits (safe)
-    matchzy_ffw_enabled: 0,                    // No automatic forfeit (safe)
-    matchzy_demo_recording_enabled: 1,         // Record demos (safe default)
-  },
+  // FFW
+  matchzy_ffw_enabled: 0,
+  matchzy_ffw_time: 240,
+
+  // DEMOS
+  matchzy_demo_recording_enabled: 1,
 };
 
 /**
- * Map tournament types to MatchZy configuration profiles
- */
-function getProfileForTournamentType(tournamentType: TournamentType): MatchzyConfigProfile {
-  switch (tournamentType) {
-    case 'shuffle':
-      return 'shuffle';
-    
-    case 'single_elimination':
-    case 'double_elimination':
-    case 'swiss':
-    case 'round_robin':
-      // Standard competitive tournaments use official profile
-      return 'official';
-    
-    default:
-      log.warn('Unknown tournament type, using default MatchZy config', { tournamentType });
-      return 'default';
-  }
-}
-
-/**
  * Generate MatchZy Enhanced cvars for a tournament
- * Loads global settings from SettingsService and uses them as overrides to tournament defaults
+ * Loads global settings from SettingsService and uses them as overrides.
  */
 export async function generateMatchzyEnhancedCvars(
   tournamentType: TournamentType,
   overrides?: Partial<MatchzyEnhancedCvars>
 ): Promise<MatchzyEnhancedCvars> {
-  const profile = getProfileForTournamentType(tournamentType);
-  const baseConfig = CONFIG_TEMPLATES[profile];
-  
   // Load global settings from SettingsService (only non-null values override)
   const globalSettings = await settingsService.getMatchzyEnhancedSettings();
   const globalOverrides: Partial<MatchzyEnhancedCvars> = {};
@@ -189,16 +119,15 @@ export async function generateMatchzyEnhancedCvars(
     globalOverrides.matchzy_demo_recording_enabled = globalSettings.matchzy_demo_recording_enabled;
   }
   
-  // Apply overrides: tournament defaults -> global settings -> explicit overrides
+  // Apply overrides: baseline defaults -> global settings -> explicit overrides
   const config = {
-    ...baseConfig,
+    ...DEFAULT_MATCHZY_ENHANCED_CVARS,
     ...globalOverrides,
     ...overrides, // Explicit overrides take precedence
   };
   
   log.debug('Generated MatchZy Enhanced cvars', {
     tournamentType,
-    profile,
     globalOverrides: Object.keys(globalOverrides).length > 0 ? globalOverrides : undefined,
     config,
   });
@@ -210,7 +139,7 @@ export async function generateMatchzyEnhancedCvars(
  * Get default cvars (backward compatible - all features disabled/unlimited)
  */
 export function getDefaultMatchzyEnhancedCvars(): MatchzyEnhancedCvars {
-  return CONFIG_TEMPLATES.default;
+  return DEFAULT_MATCHZY_ENHANCED_CVARS;
 }
 
 /**
@@ -287,28 +216,8 @@ export function validateMatchzyEnhancedCvars(
   };
 }
 
-/**
- * Get a human-readable description of a MatchZy configuration profile
- */
-export function getProfileDescription(profile: MatchzyConfigProfile): string {
-  switch (profile) {
-    case 'official':
-      return 'Official competitive tournament (strict rules, no forfeits, FFW enabled)';
-    case 'fast':
-      return 'Fast-paced tournament (auto-ready, short timers, quick walkovers)';
-    case 'shuffle':
-      return 'Shuffle tournament (auto-ready, quick pace, no FFW)';
-    case 'default':
-      return 'Default safe configuration (manual ready, unlimited pauses, no forfeits)';
-    default:
-      return 'Unknown profile';
-  }
-}
-
 export const matchzyConfigService = {
   generateMatchzyEnhancedCvars,
   getDefaultMatchzyEnhancedCvars,
   validateMatchzyEnhancedCvars,
-  getProfileDescription,
-  getProfileForTournamentType,
 };

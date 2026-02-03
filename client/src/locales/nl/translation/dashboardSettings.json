@@ -108,7 +108,7 @@
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced-functies",
-        "description": "Configureer geavanceerde match-functies. Laat velden leeg om toernooitype-standaarden te gebruiken.",
+        "description": "Configureer geavanceerde match-functies. Laat velden leeg om de MatchZy-standaard te gebruiken.",
         "autoready": {
           "title": "Auto-ready",
           "label": "Markeer spelers automatisch als ready wanneer ze joinen",

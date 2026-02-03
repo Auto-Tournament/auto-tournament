@@ -217,7 +217,7 @@
       },
       "matchzyEnhanced": {
         "title": "MatchZy Enhanced‑funksjoner",
-        "description": "Avanserte match‑funksjoner. La stå tomt for turnerings‑standard.",
+        "description": "Avanserte match‑funksjoner. La stå tomt for MatchZy‑standard.",
         "autoready": {
           "title": "Auto‑ready",
           "label": "Auto‑marker spillere som ready når de joiner",
