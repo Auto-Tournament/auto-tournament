@@ -14,6 +14,23 @@ const _logLevel = (process.env.LOG_LEVEL || 'info').toLowerCase();
 const isLogLevelDebug = _logLevel === 'debug';
 
 /**
+ * Detect whether we're running from a bundled `dist/` output.
+ *
+ * In bundled builds, Pino transports can try to resolve worker files relative
+ * to the bundle directory (e.g. `dist/lib/worker.js`) which do not exist. To
+ * keep `yarn start` healthy in such environments (including Playwright's
+ * webServer), we disable transports when running from dist.
+ */
+const isBundledDist = (() => {
+  try {
+    const path = require('node:path') as typeof import('node:path');
+    return typeof __dirname === 'string' && __dirname.split(path.sep).includes('dist');
+  } catch {
+    return false;
+  }
+})();
+
+/**
  * Logging feature flags
  *
  * These allow you to control *what* gets written to the main API logs
@@ -78,7 +95,7 @@ function createPinoLogger() {
   // "unable to determine transport target for \"pino-pretty\"".
   let transport: unknown = undefined;
 
-  if (isDevelopment) {
+  if (isDevelopment && !isBundledDist) {
     try {
       // Throws if pino-pretty cannot be resolved at runtime
       // (e.g. in the minimal Docker release image).

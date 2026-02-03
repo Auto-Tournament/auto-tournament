@@ -792,16 +792,40 @@ router.get(
  * This is safe to expose to the frontend and is intended to drive dynamic
  * "Sign in with X" buttons (Steam, Keycloak, Discord, etc.).
  */
-router.get('/providers', (_req: Request, res: Response) => {
-  const providers = getAuthProvidersConfig();
-  const hasProviders = providers.length > 0;
-  return res.json({
-    success: hasProviders,
-    providers,
-    error: hasProviders
-      ? undefined
-      : 'No authentication providers are configured. Enable at least Steam or another SSO provider in the server environment.',
-  });
+router.get('/providers', async (_req: Request, res: Response) => {
+  const genericUnavailable =
+    'Sign-in is temporarily unavailable. Please contact an administrator.';
+
+  try {
+    let providers = getAuthProvidersConfig();
+
+    // If Steam appears enabled from env, verify that the key is actually usable.
+    // This is cached (short TTL) inside the service so it won't hit Steam every request.
+    const steamProvider = providers.find((p) => p.id === 'steam');
+    if (steamProvider && steamProvider.enabled) {
+      const health = await steamService.checkSteamWebApiHealth();
+      if (!health.ok) {
+        providers = providers.map((p) => (p.id === 'steam' ? { ...p, enabled: false } : p));
+      }
+    }
+
+    const enabledProviders = providers.filter((p) => p.enabled);
+    const hasProviders = enabledProviders.length > 0;
+
+    return res.json({
+      success: hasProviders,
+      // Always return the full provider list so the UI can render (or hide) buttons.
+      providers,
+      error: hasProviders ? undefined : genericUnavailable,
+    });
+  } catch (err) {
+    log.warn('Failed to compute auth providers config', err as Error);
+    return res.json({
+      success: false,
+      providers: [],
+      error: genericUnavailable,
+    });
+  }
 });
 
 /**

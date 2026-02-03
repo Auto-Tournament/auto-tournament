@@ -50,6 +50,13 @@ services:
       # Container-specific settings (not from .env)
       - NODE_ENV=production
       - PORT=3000
+      # Default frontend URL for session cookies and redirects.
+      # Override in your shell if needed; this value also ensures E2E tests
+      # run against localhost without cookie domain issues.
+      - FRONTEND_BASE_URL=${FRONTEND_BASE_URL:-http://localhost:${HOST_PORT:-3069}}
+      # Allow enabling /api/test/* helpers for E2E in prod-like stacks.
+      # Keep disabled by default for safety.
+      - ENABLE_TEST_ENDPOINTS=${ENABLE_TEST_ENDPOINTS:-false}
       # Allow simulation settings in local "prod-like" builds
       - MATCHZY_ENABLE_SIMULATION_IN_PROD=true
       # Docker service name for DB connection (not from .env)

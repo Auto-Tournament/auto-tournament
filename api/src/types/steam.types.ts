@@ -25,3 +25,24 @@ export interface SteamPlayerSummaryResponse {
     }>;
   };
 }
+
+export type SteamWebApiHealthErrorType = 'not_configured' | 'invalid_key' | 'unreachable' | 'unknown';
+
+export type SteamWebApiHealth =
+  | {
+      configured: false;
+      ok: false;
+      errorType: 'not_configured';
+      error: string;
+    }
+  | {
+      configured: true;
+      ok: true;
+    }
+  | {
+      configured: true;
+      ok: false;
+      errorType: Exclude<SteamWebApiHealthErrorType, 'not_configured'>;
+      error: string;
+      statusCode?: number;
+    };

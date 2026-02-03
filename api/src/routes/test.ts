@@ -8,6 +8,11 @@ import { signPlayerSteamId } from '../utils/signedPlayerCookie';
 
 const router = Router();
 
+function isE2eTestHelperEnabled(): boolean {
+  const enabled = (process.env.ENABLE_TEST_ENDPOINTS || '').toLowerCase();
+  return enabled === '1' || enabled === 'true' || enabled === 'yes';
+}
+
 /**
  * @openapi
  * /api/test/marker:
@@ -94,7 +99,7 @@ router.post('/marker', requireAuth, (req: Request, res: Response): void => {
  *         description: Failed to reset database
  */
 router.post('/reset-database', requireAuth, async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
     res.status(403).json({
       success: false,
       error: 'Database reset endpoint is disabled in production',
@@ -130,7 +135,7 @@ router.post('/reset-database', requireAuth, async (req: Request, res: Response):
  * NOTE: This endpoint is only available in non-production environments.
  */
 router.post('/login-admin', async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
     res.status(403).json({
       success: false,
       error: 'login-admin test helper is disabled in production',
@@ -173,6 +178,18 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
         return;
       }
 
+      // Also set the signed player_steam_id cookie so that auth can fall back to
+      // cookie-based admin resolution in environments where the session cookie
+      // is not persisted (e.g. some reverse proxy / browser combinations).
+      res.cookie('player_steam_id', signPlayerSteamId(testSteamId), {
+        httpOnly: false,
+        // Test helpers must work over plain HTTP in E2E containers.
+        secure: false,
+        sameSite: 'lax',
+        path: '/',
+        maxAge: 1000 * 60 * 60 * 24 * 30,
+      });
+
       res.json({
         success: true,
         steamId: testSteamId,
@@ -198,7 +215,7 @@ router.post('/login-admin', async (req: Request, res: Response): Promise<void> =
  * NOTE: This endpoint is only available in non-production environments.
  */
 router.post('/login-player', async (req: Request, res: Response): Promise<void> => {
-  if (process.env.NODE_ENV === 'production') {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
     res.status(403).json({
       success: false,
       error: 'login-player test helper is disabled in production',
@@ -215,7 +232,8 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
 
     res.cookie('player_steam_id', signPlayerSteamId(steamId), {
       httpOnly: false,
-      secure: process.env.NODE_ENV === 'production',
+      // Test helpers must work over plain HTTP in E2E containers.
+      secure: false,
       sameSite: 'lax',
       path: '/',
       maxAge: 1000 * 60 * 60 * 24 * 30,

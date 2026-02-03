@@ -26,31 +26,36 @@ router.use(requireAuth);
  */
 router.get('/status', async (_req: Request, res: Response) => {
   try {
-    const available = await steamService.isAvailable();
-    if (!available) {
+    const health = await steamService.checkSteamWebApiHealth({ force: true });
+
+    if (!health.configured) {
       return res.json({
         success: false,
         configured: false,
-        error: 'Steam API key is not set. Configure it on the Settings page to enable vanity URL lookups.',
+        valid: false,
+        errorType: health.errorType,
+        // Keep wording generic for operators; details are in server logs.
+        error: 'Steam integration is not configured on the server.',
       });
     }
 
-    // Try a lightweight resolve call to verify connectivity (without failing hard on errors)
-    try {
-      await steamService.resolveSteamId('76561197960287930'); // Well-known test ID; will short-circuit as already ID64
-    } catch (error) {
-      log.warn('Steam API key appears configured but connectivity test failed', { error });
-      return res.status(503).json({
-        success: false,
+    if (health.ok) {
+      return res.json({
+        success: true,
         configured: true,
-        error: 'Steam API key is set but Steam could not be reached. Check your network or key.',
+        valid: true,
+        message: 'Steam integration is configured and reachable.',
       });
     }
 
     return res.json({
-      success: true,
+      success: false,
       configured: true,
-      message: 'Steam API key is set and reachable.',
+      valid: false,
+      errorType: health.errorType,
+      statusCode: health.statusCode,
+      // Keep wording generic for the UI. Admins can still inspect API logs for details.
+      error: 'Steam integration is currently unavailable. Check server configuration and connectivity.',
     });
   } catch (error) {
     log.error('Error in Steam status endpoint', error);

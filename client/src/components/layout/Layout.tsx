@@ -138,6 +138,9 @@ export default function Layout() {
   const { showError, showPersistentError, closeSnackbar } = useSnackbar();
   const hasShownWebhookWarningRef = React.useRef(false);
   const [dbHealthSnackbarKey, setDbHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(null);
+  const [steamHealthSnackbarKey, setSteamHealthSnackbarKey] = React.useState<import('notistack').SnackbarKey | null>(
+    null
+  );
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
@@ -277,6 +280,54 @@ export default function Layout() {
       window.clearInterval(interval);
     };
   }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar]);
+
+  // Global admin warning: keep a persistent snackbar while Steam integration is unhealthy.
+  React.useEffect(() => {
+    let cancelled = false;
+
+    const checkSteamHealth = async () => {
+      try {
+        const response = await api.get<{
+          success?: boolean;
+          configured?: boolean;
+          valid?: boolean;
+          errorType?: string;
+          error?: string;
+        }>('/api/steam/status');
+
+        if (cancelled) return;
+
+        const configured = response.configured;
+        const valid = response.valid;
+        const isUnhealthy =
+          configured === false || valid === false || response.success === false;
+
+        if (isUnhealthy) {
+          if (!steamHealthSnackbarKey) {
+            const key = showPersistentError(
+              <span>
+                <strong>Steam integration unavailable</strong> — Sign-ins and vanity URL lookups may not work. Check server configuration and connectivity.
+              </span>,
+              'steam-api-health'
+            );
+            setSteamHealthSnackbarKey(key);
+          }
+        } else if (steamHealthSnackbarKey) {
+          closeSnackbar(steamHealthSnackbarKey);
+          setSteamHealthSnackbarKey(null);
+        }
+      } catch {
+        // Non-fatal. This endpoint is admin-authenticated and can fail during login bootstrap.
+      }
+    };
+
+    void checkSteamHealth();
+    const interval = window.setInterval(checkSteamHealth, 5 * 60_000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(interval);
+    };
+  }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar]);
 
   // Show a single global snackbar when webhook is not configured
   const handleOpenSettingsFromSnackbar = React.useCallback(() => {
