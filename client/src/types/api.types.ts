@@ -111,6 +111,12 @@ export interface ServerStatusResponse extends ApiResponse {
   cs2BuildId?: number | null;
   cs2VersionString?: string | null;
   cs2VersionFetchedAt?: number | null;
+  /** If set, Steam reports this server is out of date (required_version). */
+  cs2RequiredVersion?: number | null;
+  /** Best-effort: phase of the update signal ('available'|'shutdown'). */
+  cs2UpdatePhase?: string | null;
+  /** Unix timestamp when MAT last checked UpToDateCheck for this server. */
+  cs2UpdateCheckedAt?: number | null;
 }
 
 export interface ServerAllocationInfo {

@@ -50,6 +50,13 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       });
     }
 
+    // Keep a local view of the CS2 update-required signal so this endpoint can
+    // immediately reflect clears/updates during manual refresh without requiring
+    // a second GET /api/servers roundtrip from the UI.
+    let effectiveCs2RequiredVersion: number | null = server.cs2RequiredVersion ?? null;
+    let effectiveCs2UpdatePhase: string | null = server.cs2UpdatePhase ?? null;
+    let effectiveCs2UpdateCheckedAt: number | null = server.cs2UpdateCheckedAt ?? null;
+
     // Fake server for screenshots/testing - always return online
     // Servers with IP 0.0.0.0 are treated as always online (fake servers)
     if (server.host === '0.0.0.0') {
@@ -59,6 +66,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         serverId: id,
         isAvailable: true,
         currentMatch: null,
+        cs2RequiredVersion: effectiveCs2RequiredVersion,
+        cs2UpdatePhase: effectiveCs2UpdatePhase,
+        cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
       });
     }
 
@@ -126,6 +136,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         cs2BuildId: server.cs2BuildId ?? null,
         cs2VersionString: server.cs2VersionString ?? null,
         cs2VersionFetchedAt: server.cs2VersionFetchedAt ?? null,
+        cs2RequiredVersion: effectiveCs2RequiredVersion,
+        cs2UpdatePhase: effectiveCs2UpdatePhase,
+        cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
       });
     }
 
@@ -198,6 +211,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         cs2BuildId: server.cs2BuildId ?? null,
         cs2VersionString: server.cs2VersionString ?? null,
         cs2VersionFetchedAt: server.cs2VersionFetchedAt ?? null,
+        cs2RequiredVersion: effectiveCs2RequiredVersion,
+        cs2UpdatePhase: effectiveCs2UpdatePhase,
+        cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
       });
     }
 
@@ -275,13 +291,20 @@ router.get('/:id/status', async (req: Request, res: Response) => {
             'id = ?',
             [id]
           );
+          effectiveCs2RequiredVersion = null;
+          effectiveCs2UpdatePhase = null;
+          effectiveCs2UpdateCheckedAt = now;
         } else {
           const existingPhase = server.cs2UpdatePhase ?? null;
+          const requiredVersion =
+            result.requiredVersion ?? server.cs2RequiredVersion ?? null;
+          const phase =
+            existingPhase === 'shutdown' ? 'shutdown' : 'available';
           await db.updateAsync(
             'servers',
             {
-              cs2_required_version: result.requiredVersion ?? server.cs2RequiredVersion ?? null,
-              cs2_update_phase: existingPhase === 'shutdown' ? 'shutdown' : 'available',
+              cs2_required_version: requiredVersion,
+              cs2_update_phase: phase,
               cs2_update_required_at: now,
               cs2_update_checked_at: now,
               updated_at: now,
@@ -289,6 +312,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
             'id = ?',
             [id]
           );
+          effectiveCs2RequiredVersion = requiredVersion;
+          effectiveCs2UpdatePhase = phase;
+          effectiveCs2UpdateCheckedAt = now;
         }
       }
     } catch (error) {
@@ -321,6 +347,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
         cs2BuildId,
         cs2VersionString,
         cs2VersionFetchedAt,
+        cs2RequiredVersion: effectiveCs2RequiredVersion,
+        cs2UpdatePhase: effectiveCs2UpdatePhase,
+        cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
       });
     }
 
@@ -366,6 +395,9 @@ router.get('/:id/status', async (req: Request, res: Response) => {
       cs2BuildId,
       cs2VersionString,
       cs2VersionFetchedAt,
+      cs2RequiredVersion: effectiveCs2RequiredVersion,
+      cs2UpdatePhase: effectiveCs2UpdatePhase,
+      cs2UpdateCheckedAt: effectiveCs2UpdateCheckedAt,
     });
   } catch (error) {
     log.error('Error checking server status', error);

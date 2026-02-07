@@ -120,6 +120,9 @@ export default function Servers() {
     cs2BuildId?: number | null;
     cs2VersionString?: string | null;
     cs2VersionFetchedAt?: number | null;
+    cs2RequiredVersion?: number | null;
+    cs2UpdatePhase?: string | null;
+    cs2UpdateCheckedAt?: number | null;
   }> => {
     try {
       const useCached = options?.useCached !== false;
@@ -145,6 +148,9 @@ export default function Servers() {
         cs2BuildId: response.cs2BuildId ?? null,
         cs2VersionString: response.cs2VersionString ?? null,
         cs2VersionFetchedAt: response.cs2VersionFetchedAt ?? null,
+        cs2RequiredVersion: response.cs2RequiredVersion ?? null,
+        cs2UpdatePhase: response.cs2UpdatePhase ?? null,
+        cs2UpdateCheckedAt: response.cs2UpdateCheckedAt ?? null,
       };
     } catch {
       return {
@@ -160,6 +166,9 @@ export default function Servers() {
         cs2BuildId: null,
         cs2VersionString: null,
         cs2VersionFetchedAt: null,
+        cs2RequiredVersion: null,
+        cs2UpdatePhase: null,
+        cs2UpdateCheckedAt: null,
       };
     }
   };
@@ -220,6 +229,9 @@ export default function Servers() {
           cs2BuildId?: number | null;
           cs2VersionString?: string | null;
           cs2VersionFetchedAt?: number | null;
+          cs2RequiredVersion?: number | null;
+          cs2UpdatePhase?: string | null;
+          cs2UpdateCheckedAt?: number | null;
         }
       ) =>
         prev.map((server) => {
@@ -246,6 +258,18 @@ export default function Servers() {
               statusInfo.cs2VersionFetchedAt !== undefined
                 ? statusInfo.cs2VersionFetchedAt
                 : server.cs2VersionFetchedAt ?? null,
+            cs2RequiredVersion:
+              statusInfo.cs2RequiredVersion !== undefined
+                ? statusInfo.cs2RequiredVersion
+                : server.cs2RequiredVersion ?? null,
+            cs2UpdatePhase:
+              statusInfo.cs2UpdatePhase !== undefined
+                ? statusInfo.cs2UpdatePhase
+                : server.cs2UpdatePhase ?? null,
+            cs2UpdateCheckedAt:
+              statusInfo.cs2UpdateCheckedAt !== undefined
+                ? statusInfo.cs2UpdateCheckedAt
+                : server.cs2UpdateCheckedAt ?? null,
           };
         });
 
