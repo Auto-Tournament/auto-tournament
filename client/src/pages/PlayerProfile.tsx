@@ -19,12 +19,14 @@ import {
   TableRow,
   Button,
   Tooltip,
+  IconButton,
 } from '@mui/material';
 import Grid from '@mui/material/Grid';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import PersonSearchIcon from '@mui/icons-material/PersonSearch';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../utils/api';
 import { io, Socket } from 'socket.io-client';
 import { ELOProgressionChart } from '../components/player/ELOProgressionChart';
@@ -1320,6 +1322,7 @@ export default function PlayerProfile() {
                         <TableCell align="right">{t('playerPage.dmg')}</TableCell>
                         <TableCell align="right">{t('playerPage.rating')}</TableCell>
                         <TableCell>{t('playerPage.result')}</TableCell>
+                        <TableCell>Demo</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1375,6 +1378,27 @@ export default function PlayerProfile() {
                                 color={match.wonMatch ? 'success' : 'error'}
                               />
                             </TableCell>
+                            <TableCell>
+                              <Tooltip title="Download demo">
+                                <span>
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      const link = document.createElement('a');
+                                      link.href = `/api/demos/${match.slug}/download`;
+                                      link.download = '';
+                                      document.body.appendChild(link);
+                                      link.click();
+                                      document.body.removeChild(link);
+                                    }}
+                                    disabled={match.status !== 'completed'}
+                                  >
+                                    <DownloadIcon fontSize="inherit" />
+                                  </IconButton>
+                                </span>
+                              </Tooltip>
+                            </TableCell>
                           </TableRow>
                         );
                       })}
@@ -1399,6 +1423,7 @@ export default function PlayerProfile() {
                             —
                           </Typography>
                         </TableCell>
+                        <TableCell>—</TableCell>
                       </TableRow>
                     </TableBody>
                   </Table>

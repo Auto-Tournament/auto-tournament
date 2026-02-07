@@ -6,6 +6,7 @@
       "integrations": "Intégrations & webhooks",
       "players": "Joueurs & accès",
       "matches": "Matchs & rating",
+      "advanced": "Avancé",
       "matchzy": "MatchZy",
       "developer": "Développeur / simulation"
     },
@@ -76,7 +77,7 @@
         "ready": {
           "title": "Prêt / Début du match",
           "minimumReadyLabel": "Nombre minimum de joueurs prêts requis",
-          "minimumReadyHelper": "0 = tous les joueurs connectés doivent être prêts. Par défaut : 2.",
+          "minimumReadyHelper": "0 = tous les joueurs connectés doivent être prêts. Par défaut : 0.",
           "allowForceReady": "Autoriser les admins à forcer le ready pendant la préparation (!forceready)"
         },
         "access": {

@@ -115,6 +115,7 @@
       "integrations": "Integrations & Webhooks",
       "players": "Players & Access",
       "matches": "Matches & Ratings",
+      "advanced": "Advanced",
       "matchzy": "MatchZy",
       "developer": "Developer / Simulation"
     },
@@ -185,7 +186,7 @@
         "ready": {
           "title": "Ready / Match Start",
           "minimumReadyLabel": "Minimum ready players required",
-          "minimumReadyHelper": "0 = everyone connected must ready. Default: 2.",
+          "minimumReadyHelper": "0 = everyone connected must ready. Default: 0.",
           "allowForceReady": "Allow admins to force-ready players during setup (!forceready)"
         },
         "access": {
@@ -252,9 +253,9 @@
           "timeHelper": "Time before forfeit is declared when entire team leaves"
         },
         "demo": {
-          "title": "Demo Recording",
-          "enabled": "Enable automatic GOTV demo recording",
-          "description": "When disabled, server restarts ~10s after match end (vs 60-90s with recording)"
+          "title": "Demos",
+          "enabled": "Enable demo recording (auto-configure GOTV + uploads)",
+          "description": "When enabled, MAT sets tv_enable 1 and configures MatchZy Enhanced to upload demos to MAT automatically after each map."
         }
       }
     },

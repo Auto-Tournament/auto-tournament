@@ -11,7 +11,6 @@
  *
  * Persistent configuration includes:
  * - matchzy_remote_log_url (webhook endpoint)
- * - matchzy_demo_upload_url (demo upload endpoint)
  * - matchzy_chat_prefix
  * - matchzy_admin_chat_prefix
  * - matchzy_server_id

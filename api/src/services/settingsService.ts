@@ -439,9 +439,9 @@ class SettingsService {
 
   async getMatchzyMinimumReadyRequired(): Promise<number> {
     const value = await this.getSetting('matchzy_minimum_ready_required');
-    if (!value) return 2; // MatchZy default
+    if (!value) return 0; // MatchZy Enhanced default (0 = everyone connected must ready)
     const parsed = Number(value);
-    if (!Number.isInteger(parsed) || parsed < 0) return 2;
+    if (!Number.isInteger(parsed) || parsed < 0) return 0;
     return parsed;
   }
 

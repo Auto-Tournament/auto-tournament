@@ -6,6 +6,7 @@
       "integrations": "Integracje i webhooki",
       "players": "Gracze i dostęp",
       "matches": "Mecze i rating",
+      "advanced": "Zaawansowane",
       "matchzy": "MatchZy",
       "developer": "Deweloper / symulacja"
     },
@@ -76,7 +77,7 @@
         "ready": {
           "title": "Gotowość / Start meczu",
           "minimumReadyLabel": "Minimalna wymagana liczba gotowych graczy",
-          "minimumReadyHelper": "0 = wszyscy podłączeni gracze muszą być gotowi. Domyślnie: 2.",
+          "minimumReadyHelper": "0 = wszyscy podłączeni gracze muszą być gotowi. Domyślnie: 0.",
           "allowForceReady": "Pozwól adminom wymusić gotowość podczas konfiguracji (!forceready)"
         },
         "access": {

@@ -19,6 +19,7 @@ import RefreshIcon from '@mui/icons-material/Refresh';
 import ClearIcon from '@mui/icons-material/Clear';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
+import DownloadIcon from '@mui/icons-material/Download';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
 import type { ServerEvent, ServerEventsResponse } from '../../types';
@@ -279,6 +280,16 @@ export const ServerEventsMonitor: React.FC = () => {
       case 'test_event':
       case 'MatchZyTestEvent':
         return '#A855F7'; // connectivity test events (purple)
+      case 'demo_recording_start':
+      case 'demo_recording_stop':
+        return '#22C55E'; // recording markers (green)
+      case 'demo_upload_start':
+        return '#38BDF8'; // upload started (sky)
+      case 'demo_upload_success':
+      case 'demo_upload_ended':
+        return '#A6E3D0'; // upload success (mint)
+      case 'demo_upload_fail':
+        return '#F87171'; // upload failures (red)
       default:
         return '#E5E7EB'; // neutral light grey
     }
@@ -448,6 +459,30 @@ const EventItem: React.FC<{
   const hasSeriesScore =
     typeof rawTeam1Series === 'number' && typeof rawTeam2Series === 'number';
 
+  const isDemoEvent =
+    typeof event.event?.event === 'string' &&
+    (event.event.event === 'demo_upload_success' || event.event.event === 'demo_upload_ended');
+
+  const demoSuccess =
+    event.event.event === 'demo_upload_success'
+      ? true
+      : event.event.event === 'demo_upload_ended'
+      ? Boolean(payload['success'] ?? true)
+      : false;
+
+  const canDownloadDemo = isDemoEvent && demoSuccess;
+
+  const handleDownloadDemo = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    const mapSegment = mapNumber !== undefined ? `/${mapNumber}` : '';
+    const link = document.createElement('a');
+    link.href = `/api/demos/${event.matchSlug}/download${mapSegment}`;
+    link.download = '';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // When expanding an event, make sure it scrolls into view within the console
   React.useEffect(() => {
     if (expanded && containerRef.current) {
@@ -509,6 +544,22 @@ const EventItem: React.FC<{
           {mapNumber !== undefined ? `, map: ${mapNumber}` : ''}
           {roundNumber !== undefined ? `, round: ${roundNumber}` : ''}
         </Typography>
+        {canDownloadDemo && (
+          <Tooltip title="Download demo">
+            <IconButton
+              size="small"
+              onClick={handleDownloadDemo}
+              sx={{
+                color: '#E5E7EB',
+                border: '1px solid rgba(229, 231, 235, 0.3)',
+                borderRadius: 1,
+                p: 0.5,
+              }}
+            >
+              <DownloadIcon fontSize="inherit" />
+            </IconButton>
+          </Tooltip>
+        )}
         {hasMapScore && (
           <Typography
             component="span"

@@ -6,6 +6,7 @@
       "integrations": "Integrações e webhooks",
       "players": "Jogadores e acesso",
       "matches": "Jogos e rating",
+      "advanced": "Avançado",
       "matchzy": "MatchZy",
       "developer": "Programador / simulação"
     },
@@ -76,7 +77,7 @@
         "ready": {
           "title": "Ready / Início do jogo",
           "minimumReadyLabel": "Mínimo de jogadores prontos necessário",
-          "minimumReadyHelper": "0 = todos os jogadores ligados têm de estar prontos. Predefinição: 2.",
+          "minimumReadyHelper": "0 = todos os jogadores ligados têm de estar prontos. Predefinição: 0.",
           "allowForceReady": "Permitir que admins forcem ready durante o setup (!forceready)"
         },
         "access": {

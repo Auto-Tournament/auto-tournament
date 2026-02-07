@@ -4,6 +4,7 @@ import { useSnackbar } from '../contexts/SnackbarContext';
 import {
   Box,
   Typography,
+  Alert,
   Paper,
   Stack,
   TextField,
@@ -13,6 +14,9 @@ import {
   CircularProgress,
   Tabs,
   Tab,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -22,6 +26,7 @@ import {
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import SyncIcon from '@mui/icons-material/Sync';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { api } from '../utils/api';
 import type { SettingsResponse } from '../types/api.types';
 import { useIsDevelopment } from '../hooks/useIsDevelopment';
@@ -92,9 +97,9 @@ export default function Settings() {
   // MatchZy core defaults
   const [matchzyAutostartMode, setMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
   const [initialMatchzyAutostartMode, setInitialMatchzyAutostartMode] = useState<0 | 1 | 2>(1);
-  const [matchzyMinimumReadyRequired, setMatchzyMinimumReadyRequired] = useState<number>(2);
+  const [matchzyMinimumReadyRequired, setMatchzyMinimumReadyRequired] = useState<number>(0);
   const [initialMatchzyMinimumReadyRequired, setInitialMatchzyMinimumReadyRequired] =
-    useState<number>(2);
+    useState<number>(0);
   const [matchzyAllowForceReady, setMatchzyAllowForceReady] = useState<boolean>(true);
   const [initialMatchzyAllowForceReady, setInitialMatchzyAllowForceReady] =
     useState<boolean>(true);
@@ -177,6 +182,22 @@ export default function Settings() {
   const [tabIndex, setTabIndex] = useState(0);
   const { t } = useTranslation();
 
+  const ACCORDION_SX = {
+    bgcolor: 'rgba(0, 0, 0, 0.18)',
+    border: '1px solid rgba(255, 255, 255, 0.08)',
+    boxShadow: 'none',
+    // MUI renders a default divider line via :before; hide it so our border is the only separator
+    '&:before': { display: 'none' },
+  } as const;
+
+  const ACCORDION_SUMMARY_SX = {
+    bgcolor: 'rgba(0, 0, 0, 0.26)',
+  } as const;
+
+  const ACCORDION_DETAILS_SX = {
+    bgcolor: 'rgba(0, 0, 0, 0.18)',
+  } as const;
+
   const handleTabChange = (_event: React.SyntheticEvent, newValue: number) => {
     setTabIndex(newValue);
   };
@@ -208,7 +229,7 @@ export default function Settings() {
           : false;
       // MatchZy core defaults
       const autostartMode = response.settings.matchzyAutostartMode ?? 1;
-      const minimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+      const minimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
       const allowForceReady = response.settings.matchzyAllowForceReady ?? true;
       const kickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
       const whitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
@@ -409,7 +430,7 @@ export default function Settings() {
             ? response.settings.allowSelfRegister
             : false;
         const newAutostartMode = response.settings.matchzyAutostartMode ?? 1;
-        const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+        const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
         const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
         const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
         const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;
@@ -908,7 +929,7 @@ export default function Settings() {
                 <Tab label={t('settingsPage.tabs.integrations')} {...a11yProps(0)} />
                 <Tab label={t('settingsPage.tabs.players')} {...a11yProps(1)} />
                 <Tab label={t('settingsPage.tabs.matches')} {...a11yProps(2)} />
-                <Tab label={t('settingsPage.tabs.matchzy')} {...a11yProps(3)} />
+                <Tab label={t('settingsPage.tabs.advanced')} {...a11yProps(3)} />
                 {isDev && <Tab label={t('settingsPage.tabs.developer')} {...a11yProps(4)} />}
               </Tabs>
             </Box>
@@ -993,563 +1014,101 @@ export default function Settings() {
             {/* Match behavior and rating rules */}
             <TabPanel value={tabIndex} index={2}>
               <Stack spacing={3}>
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.matchRating.ratings.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.matchRating.ratings.description')}
-                  </Typography>
-                  <FormControlLabel
-                    control={
-                      <Switch
-                        checked={ratingsEnabled}
-                        onChange={(event) => setRatingsEnabled(event.target.checked)}
-                        color="primary"
-                        size="small"
-                      />
-                    }
-                    label={t('settingsPage.matchRating.ratings.toggleLabel')}
-                  />
-                  <Typography variant="caption" color="text.secondary" display="block">
-                    {t('settingsPage.matchRating.ratings.note')}
-                  </Typography>
-                </Box>
-              </Stack>
-            </TabPanel>
-
-            {/* MatchZy settings */}
-            <TabPanel value={tabIndex} index={3}>
-              <Stack spacing={3}>
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.matchRating.chatDefaults.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={2}>
-                    {t('settingsPage.matchRating.chatDefaults.description')}
-                  </Typography>
-                  <Stack spacing={2}>
-                    <TextField
-                      label={t('settingsPage.matchRating.chatDefaults.chatPrefixLabel')}
-                      value={matchzyChatPrefix}
-                      onChange={(event) => setMatchzyChatPrefix(event.target.value)}
-                      onBlur={handleFieldBlur}
-                      onKeyDown={handleFieldKeyDown}
-                      helperText={t('settingsPage.matchRating.chatDefaults.chatPrefixHelper')}
-                      fullWidth
-                    />
-                    <TextField
-                      label={t('settingsPage.matchRating.chatDefaults.adminChatPrefixLabel')}
-                      value={matchzyAdminChatPrefix}
-                      onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
-                      onBlur={handleFieldBlur}
-                      onKeyDown={handleFieldKeyDown}
-                      helperText={t('settingsPage.matchRating.chatDefaults.adminChatPrefixHelper')}
-                      fullWidth
-                    />
+                <Accordion defaultExpanded sx={ACCORDION_SX}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600}>
+                        {t('settingsPage.matchRating.ratings.title')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('settingsPage.matchRating.ratings.description')}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
                     <FormControlLabel
                       control={
                         <Switch
-                          checked={matchzyKnifeEnabledDefault}
-                          onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
+                          checked={ratingsEnabled}
+                          onChange={(event) => setRatingsEnabled(event.target.checked)}
                           color="primary"
                           size="small"
                         />
                       }
-                      label={t('settingsPage.matchRating.chatDefaults.knifeToggleLabel')}
+                      label={t('settingsPage.matchRating.ratings.toggleLabel')}
                     />
                     <Typography variant="caption" color="text.secondary" display="block">
-                      {t('settingsPage.matchRating.chatDefaults.knifeNote')}
+                      {t('settingsPage.matchRating.ratings.note')}
                     </Typography>
-                  </Stack>
-                </Box>
+                  </AccordionDetails>
+                </Accordion>
 
-                <Divider />
-
-                {/* MatchZy Core Defaults */}
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.matchRating.matchzyCore.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={3}>
-                    {t('settingsPage.matchRating.matchzyCore.description')}
-                  </Typography>
-
-                  <Stack spacing={3}>
-                    {/* Ready / flow */}
+                <Accordion sx={ACCORDION_SX}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.ready.title')}
+                      <Typography variant="h6" fontWeight={600}>
+                        {t('settingsPage.matchRating.chatDefaults.title')}
                       </Typography>
-                      <Stack spacing={2}>
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyLabel')}
-                          type="number"
-                          value={matchzyMinimumReadyRequired}
-                          onChange={(e) => {
-                            const v = parseInt(e.target.value, 10);
-                            if (!Number.isFinite(v)) return;
-                            setMatchzyMinimumReadyRequired(v);
-                          }}
-                          onBlur={handleFieldBlur}
-                          onKeyDown={handleFieldKeyDown}
-                          helperText={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyHelper')}
-                          inputProps={{ min: 0, max: 10 }}
-                          size="small"
-                          fullWidth
-                        />
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyAllowForceReady}
-                              onChange={(e) => setMatchzyAllowForceReady(e.target.checked)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyCore.ready.allowForceReady')}
-                        />
-                      </Stack>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('settingsPage.matchRating.chatDefaults.description')}
+                      </Typography>
                     </Box>
-
-                    <Divider />
-
-                    <Box
-                      sx={{
-                        bgcolor: 'warning.50',
-                        border: 1,
-                        borderColor: 'warning.main',
-                        borderRadius: 1,
-                        p: 2,
-                      }}
-                    >
-                      <Typography variant="subtitle1" fontWeight={700} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyCore.expert.title')}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary" mb={2}>
-                        {t('settingsPage.matchRating.matchzyCore.expert.description')}
-                      </Typography>
-
-                      <Stack spacing={2}>
-                        <TextField
-                          select
-                          label={t('settingsPage.matchRating.matchzyCore.expert.autostartMode.label')}
-                          value={matchzyAutostartMode}
-                          onChange={(e) => setMatchzyAutostartMode(Number(e.target.value) as 0 | 1 | 2)}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyCore.expert.autostartMode.helper')}
-                          size="small"
-                          fullWidth
-                        >
-                          <option value={0}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.0')}</option>
-                          <option value={1}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.1')}</option>
-                          <option value={2}>{t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.2')}</option>
-                        </TextField>
-
-                        <Divider />
-
-                        {/* Access / server lockdown */}
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                            {t('settingsPage.matchRating.matchzyCore.access.title')}
-                          </Typography>
-                          <Stack spacing={1}>
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyKickWhenNoMatchLoaded}
-                                  onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded')}
-                            />
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyWhitelistEnabledDefault}
-                                  onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault')}
-                            />
-                          </Stack>
-                        </Box>
-
-                        <Divider />
-
-                        {/* Admin tools */}
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                            {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
-                          </Typography>
-                          <Stack spacing={1}>
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyPauseAfterRestore}
-                                  onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore')}
-                            />
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyStopCommandAvailable}
-                                  onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable')}
-                            />
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyStopCommandNoDamage}
-                                  onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                  disabled={!matchzyStopCommandAvailable}
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage')}
-                            />
-                            <FormControlLabel
-                              control={
-                                <Switch
-                                  checked={matchzyUsePauseCommandForTacticalPause}
-                                  onChange={(e) => setMatchzyUsePauseCommandForTacticalPause(e.target.checked)}
-                                  color="primary"
-                                  size="small"
-                                />
-                              }
-                              label={t('settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause')}
-                            />
-                          </Stack>
-                        </Box>
-
-                        <Divider />
-
-                        {/* Demos */}
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                            {t('settingsPage.matchRating.matchzyCore.demos.title')}
-                          </Typography>
-                          <Stack spacing={2}>
-                            <TextField
-                              label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
-                              value={matchzyDemoPath}
-                              onChange={(e) => setMatchzyDemoPath(e.target.value)}
-                              onBlur={handleFieldBlur}
-                              onKeyDown={handleFieldKeyDown}
-                              helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
-                              fullWidth
-                              size="small"
-                            />
-                            <TextField
-                              label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
-                              value={matchzyDemoNameFormat}
-                              onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
-                              onBlur={handleFieldBlur}
-                              onKeyDown={handleFieldKeyDown}
-                              helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
-                              fullWidth
-                              size="small"
-                            />
-                          </Stack>
-                        </Box>
-
-                        <Divider />
-
-                        {/* Series end */}
-                        <Box>
-                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                            {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
-                          </Typography>
-                          <Stack spacing={2}>
-                            <TextField
-                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
-                              type="number"
-                              value={matchzySeriesEndKickDelayNoDemo}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value, 10);
-                                if (!Number.isFinite(v)) return;
-                                setMatchzySeriesEndKickDelayNoDemo(v);
-                              }}
-                              onBlur={handleFieldBlur}
-                              onKeyDown={handleFieldKeyDown}
-                              inputProps={{ min: 0, max: 600 }}
-                              size="small"
-                              fullWidth
-                            />
-                            <TextField
-                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel')}
-                              type="number"
-                              value={matchzySeriesEndKickDelayDemoNoUpload}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value, 10);
-                                if (!Number.isFinite(v)) return;
-                                setMatchzySeriesEndKickDelayDemoNoUpload(v);
-                              }}
-                              onBlur={handleFieldBlur}
-                              onKeyDown={handleFieldKeyDown}
-                              inputProps={{ min: 0, max: 600 }}
-                              size="small"
-                              fullWidth
-                            />
-                            <TextField
-                              label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel')}
-                              type="number"
-                              value={matchzySeriesEndKickDelayDemoUpload}
-                              onChange={(e) => {
-                                const v = parseInt(e.target.value, 10);
-                                if (!Number.isFinite(v)) return;
-                                setMatchzySeriesEndKickDelayDemoUpload(v);
-                              }}
-                              onBlur={handleFieldBlur}
-                              onKeyDown={handleFieldKeyDown}
-                              inputProps={{ min: 0, max: 600 }}
-                              size="small"
-                              fullWidth
-                            />
-                            <Typography variant="caption" color="text.secondary">
-                              {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
-                            </Typography>
-                          </Stack>
-                        </Box>
-                      </Stack>
-                    </Box>
-                  </Stack>
-                </Box>
-
-                <Divider />
-
-                {/* MatchZy Enhanced Settings */}
-                <Box>
-                  <Typography variant="h6" fontWeight={600} gutterBottom>
-                    {t('settingsPage.matchRating.matchzyEnhanced.title')}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" mb={3}>
-                    {t('settingsPage.matchRating.matchzyEnhanced.description')}
-                  </Typography>
-
-                  <Stack spacing={3}>
-                    {/* Auto-Ready System */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyEnhanced.autoready.title')}
-                      </Typography>
+                  </AccordionSummary>
+                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+                    <Stack spacing={2}>
+                      <TextField
+                        label={t('settingsPage.matchRating.chatDefaults.chatPrefixLabel')}
+                        value={matchzyChatPrefix}
+                        onChange={(event) => setMatchzyChatPrefix(event.target.value)}
+                        onBlur={handleFieldBlur}
+                        onKeyDown={handleFieldKeyDown}
+                        helperText={t('settingsPage.matchRating.chatDefaults.chatPrefixHelper')}
+                        fullWidth
+                      />
+                      <TextField
+                        label={t('settingsPage.matchRating.chatDefaults.adminChatPrefixLabel')}
+                        value={matchzyAdminChatPrefix}
+                        onChange={(event) => setMatchzyAdminChatPrefix(event.target.value)}
+                        onBlur={handleFieldBlur}
+                        onKeyDown={handleFieldKeyDown}
+                        helperText={t('settingsPage.matchRating.chatDefaults.adminChatPrefixHelper')}
+                        fullWidth
+                      />
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={matchzyAutoreadyEnabled === 1}
-                            onChange={(e) => setMatchzyAutoreadyEnabled(e.target.checked ? 1 : 0)}
+                            checked={matchzyKnifeEnabledDefault}
+                            onChange={(event) => setMatchzyKnifeEnabledDefault(event.target.checked)}
                             color="primary"
                             size="small"
                           />
                         }
-                        label={t('settingsPage.matchRating.matchzyEnhanced.autoready.label')}
+                        label={t('settingsPage.matchRating.chatDefaults.knifeToggleLabel')}
                       />
                       <Typography variant="caption" color="text.secondary" display="block">
-                        {t('settingsPage.matchRating.matchzyEnhanced.autoready.description')}
+                        {t('settingsPage.matchRating.chatDefaults.knifeNote')}
                       </Typography>
-                    </Box>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
 
-                    <Divider />
-
-                    {/* Pause System */}
+                <Accordion sx={ACCORDION_SX}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
                     <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyEnhanced.pause.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyBothTeamsUnpauseRequired === 1}
-                              onChange={(e) => setMatchzyBothTeamsUnpauseRequired(e.target.checked ? 1 : 0)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.bothTeamsUnpause')}
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesLabel')}
-                          type="number"
-                          value={matchzyMaxPausesPerTeam ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            setMatchzyMaxPausesPerTeam(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesHelper')}
-                          inputProps={{ min: 0, max: 999 }}
-                          size="small"
-                          fullWidth
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationLabel')}
-                          type="number"
-                          value={matchzyPauseDuration ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            setMatchzyPauseDuration(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationHelper')}
-                          inputProps={{ min: 0, max: 999 }}
-                          size="small"
-                          fullWidth
-                        />
-                      </Stack>
-                    </Box>
-
-                    <Divider />
-
-                    {/* Side Selection */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyEnhanced.sideSelection.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzySideSelectionEnabled === 1}
-                              onChange={(e) => setMatchzySideSelectionEnabled(e.target.checked ? 1 : 0)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.enabled')}
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeLabel')}
-                          type="number"
-                          value={matchzySideSelectionTime ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            setMatchzySideSelectionTime(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeHelper')}
-                          inputProps={{ min: 1, max: 999 }}
-                          size="small"
-                          fullWidth
-                          disabled={matchzySideSelectionEnabled !== 1}
-                        />
-                      </Stack>
-                    </Box>
-
-                    <Divider />
-
-                    {/* .gg Command */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyEnhanced.gg.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyGgEnabled === 1}
-                              onChange={(e) => setMatchzyGgEnabled(e.target.checked ? 1 : 0)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.enabled')}
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdLabel')}
-                          type="number"
-                          value={matchzyGgThreshold ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseFloat(e.target.value);
-                            setMatchzyGgThreshold(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdHelper')}
-                          inputProps={{ min: 0, max: 1, step: 0.1 }}
-                          size="small"
-                          fullWidth
-                          disabled={matchzyGgEnabled !== 1}
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffLabel')}
-                          type="number"
-                          value={matchzyGgMinScoreDiff ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            setMatchzyGgMinScoreDiff(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffHelper')}
-                          inputProps={{ min: 0, max: 16 }}
-                          size="small"
-                          fullWidth
-                          disabled={matchzyGgEnabled !== 1}
-                        />
-                      </Stack>
-                    </Box>
-
-                    <Divider />
-
-                    {/* FFW System */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                        {t('settingsPage.matchRating.matchzyEnhanced.ffw.title')}
-                      </Typography>
-                      <Stack spacing={2}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              checked={matchzyFfwEnabled === 1}
-                              onChange={(e) => setMatchzyFfwEnabled(e.target.checked ? 1 : 0)}
-                              color="primary"
-                              size="small"
-                            />
-                          }
-                          label={t('settingsPage.matchRating.matchzyEnhanced.ffw.enabled')}
-                        />
-                        <TextField
-                          label={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeLabel')}
-                          type="number"
-                          value={matchzyFfwTime ?? ''}
-                          onChange={(e) => {
-                            const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
-                            setMatchzyFfwTime(isNaN(val as number) ? null : val);
-                          }}
-                          onBlur={handleFieldBlur}
-                          helperText={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeHelper')}
-                          inputProps={{ min: 1, max: 999 }}
-                          size="small"
-                          fullWidth
-                          disabled={matchzyFfwEnabled !== 1}
-                        />
-                      </Stack>
-                    </Box>
-
-                    <Divider />
-
-                    {/* Demo Recording */}
-                    <Box>
-                      <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                      <Typography variant="h6" fontWeight={600}>
                         {t('settingsPage.matchRating.matchzyEnhanced.demo.title')}
                       </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+                    <Stack spacing={2}>
                       <FormControlLabel
                         control={
                           <Switch
-                            checked={matchzyDemoRecordingEnabled === 1}
-                            onChange={(e) => setMatchzyDemoRecordingEnabled(e.target.checked ? 1 : 0)}
+                            checked={matchzyDemoRecordingEnabled !== 0}
+                            onChange={(e) =>
+                              setMatchzyDemoRecordingEnabled(e.target.checked ? 1 : 0)
+                            }
                             color="primary"
                             size="small"
                           />
@@ -1559,9 +1118,530 @@ export default function Settings() {
                       <Typography variant="caption" color="text.secondary" display="block">
                         {t('settingsPage.matchRating.matchzyEnhanced.demo.description')}
                       </Typography>
+
+                      <Divider />
+
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {t('settingsPage.matchRating.matchzyCore.demos.title')}
+                      </Typography>
+                      <TextField
+                        label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
+                        value={matchzyDemoPath}
+                        onChange={(e) => setMatchzyDemoPath(e.target.value)}
+                        onBlur={handleFieldBlur}
+                        onKeyDown={handleFieldKeyDown}
+                        helperText={t('settingsPage.matchRating.matchzyCore.demos.demoPathHelper')}
+                        fullWidth
+                        size="small"
+                      />
+                      <TextField
+                        label={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatLabel')}
+                        value={matchzyDemoNameFormat}
+                        onChange={(e) => setMatchzyDemoNameFormat(e.target.value)}
+                        onBlur={handleFieldBlur}
+                        onKeyDown={handleFieldKeyDown}
+                        helperText={t('settingsPage.matchRating.matchzyCore.demos.demoNameFormatHelper')}
+                        fullWidth
+                        size="small"
+                      />
+
+                      <Divider />
+
+                      <Typography variant="subtitle1" fontWeight={600}>
+                        {t('settingsPage.matchRating.matchzyCore.seriesEnd.title')}
+                      </Typography>
+                      <Stack spacing={2}>
+                        <TextField
+                          label={t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayNoDemoLabel')}
+                          type="number"
+                          value={matchzySeriesEndKickDelayNoDemo}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayNoDemo(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <TextField
+                          label={t(
+                            'settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoNoUploadLabel'
+                          )}
+                          type="number"
+                          value={matchzySeriesEndKickDelayDemoNoUpload}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayDemoNoUpload(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <TextField
+                          label={t(
+                            'settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayDemoUploadLabel'
+                          )}
+                          type="number"
+                          value={matchzySeriesEndKickDelayDemoUpload}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (!Number.isFinite(v)) return;
+                            setMatchzySeriesEndKickDelayDemoUpload(v);
+                          }}
+                          onBlur={handleFieldBlur}
+                          onKeyDown={handleFieldKeyDown}
+                          inputProps={{ min: 0, max: 600 }}
+                          size="small"
+                          fullWidth
+                        />
+                        <Typography variant="caption" color="text.secondary">
+                          {t('settingsPage.matchRating.matchzyCore.seriesEnd.kickDelayHelper')}
+                        </Typography>
+                      </Stack>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Stack>
+            </TabPanel>
+
+            {/* Advanced settings */}
+            <TabPanel value={tabIndex} index={3}>
+              <Stack spacing={3}>
+                <Alert severity="warning">
+                  {t('settingsPage.matchRating.matchzyCore.expert.description')}
+                </Alert>
+
+                <Accordion defaultExpanded sx={ACCORDION_SX}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600}>
+                        {t('settingsPage.matchRating.matchzyCore.title')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('settingsPage.matchRating.matchzyCore.description')}
+                      </Typography>
                     </Box>
-                  </Stack>
-                </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+                    <Stack spacing={3}>
+                      {/* Ready / flow */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyCore.ready.title')}
+                        </Typography>
+                        <Stack spacing={2}>
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyCore.ready.minimumReadyLabel')}
+                            type="number"
+                            value={matchzyMinimumReadyRequired}
+                            onChange={(e) => {
+                              const v = parseInt(e.target.value, 10);
+                              if (!Number.isFinite(v)) return;
+                              setMatchzyMinimumReadyRequired(v);
+                            }}
+                            onBlur={handleFieldBlur}
+                            onKeyDown={handleFieldKeyDown}
+                            helperText={t(
+                              'settingsPage.matchRating.matchzyCore.ready.minimumReadyHelper'
+                            )}
+                            inputProps={{ min: 0, max: 10 }}
+                            size="small"
+                            fullWidth
+                          />
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={matchzyAllowForceReady}
+                                onChange={(e) => setMatchzyAllowForceReady(e.target.checked)}
+                                color="primary"
+                                size="small"
+                              />
+                            }
+                            label={t('settingsPage.matchRating.matchzyCore.ready.allowForceReady')}
+                          />
+                        </Stack>
+                      </Box>
+
+                      <Divider />
+
+                      <Box
+                        sx={{
+                          bgcolor: 'warning.50',
+                          border: 1,
+                          borderColor: 'warning.main',
+                          borderRadius: 1,
+                          p: 2,
+                        }}
+                      >
+                        <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyCore.expert.title')}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary" mb={2}>
+                          {t('settingsPage.matchRating.matchzyCore.expert.description')}
+                        </Typography>
+
+                        <Stack spacing={2}>
+                          <TextField
+                            select
+                            label={t(
+                              'settingsPage.matchRating.matchzyCore.expert.autostartMode.label'
+                            )}
+                            value={matchzyAutostartMode}
+                            onChange={(e) =>
+                              setMatchzyAutostartMode(Number(e.target.value) as 0 | 1 | 2)
+                            }
+                            onBlur={handleFieldBlur}
+                            helperText={t(
+                              'settingsPage.matchRating.matchzyCore.expert.autostartMode.helper'
+                            )}
+                            size="small"
+                            fullWidth
+                          >
+                            <option value={0}>
+                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.0')}
+                            </option>
+                            <option value={1}>
+                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.1')}
+                            </option>
+                            <option value={2}>
+                              {t('settingsPage.matchRating.matchzyCore.expert.autostartMode.options.2')}
+                            </option>
+                          </TextField>
+
+                          <Divider />
+
+                          {/* Access / server lockdown */}
+                          <Box>
+                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                              {t('settingsPage.matchRating.matchzyCore.access.title')}
+                            </Typography>
+                            <Stack spacing={1}>
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyKickWhenNoMatchLoaded}
+                                    onChange={(e) => setMatchzyKickWhenNoMatchLoaded(e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.access.kickWhenNoMatchLoaded'
+                                )}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyWhitelistEnabledDefault}
+                                    onChange={(e) => setMatchzyWhitelistEnabledDefault(e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.access.whitelistEnabledDefault'
+                                )}
+                              />
+                            </Stack>
+                          </Box>
+
+                          <Divider />
+
+                          {/* Admin tools */}
+                          <Box>
+                            <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                              {t('settingsPage.matchRating.matchzyCore.adminTools.title')}
+                            </Typography>
+                            <Stack spacing={1}>
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyPauseAfterRestore}
+                                    onChange={(e) => setMatchzyPauseAfterRestore(e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.adminTools.pauseAfterRestore'
+                                )}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyStopCommandAvailable}
+                                    onChange={(e) => setMatchzyStopCommandAvailable(e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.adminTools.stopCommandAvailable'
+                                )}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyStopCommandNoDamage}
+                                    onChange={(e) => setMatchzyStopCommandNoDamage(e.target.checked)}
+                                    color="primary"
+                                    size="small"
+                                    disabled={!matchzyStopCommandAvailable}
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.adminTools.stopCommandNoDamage'
+                                )}
+                              />
+                              <FormControlLabel
+                                control={
+                                  <Switch
+                                    checked={matchzyUsePauseCommandForTacticalPause}
+                                    onChange={(e) =>
+                                      setMatchzyUsePauseCommandForTacticalPause(e.target.checked)
+                                    }
+                                    color="primary"
+                                    size="small"
+                                  />
+                                }
+                                label={t(
+                                  'settingsPage.matchRating.matchzyCore.adminTools.usePauseForTacticalPause'
+                                )}
+                              />
+                            </Stack>
+                          </Box>
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+
+                <Accordion sx={ACCORDION_SX}>
+                  <AccordionSummary expandIcon={<ExpandMoreIcon />} sx={ACCORDION_SUMMARY_SX}>
+                    <Box>
+                      <Typography variant="h6" fontWeight={600}>
+                        {t('settingsPage.matchRating.matchzyEnhanced.title')}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {t('settingsPage.matchRating.matchzyEnhanced.description')}
+                      </Typography>
+                    </Box>
+                  </AccordionSummary>
+                  <AccordionDetails sx={ACCORDION_DETAILS_SX}>
+                    <Stack spacing={3}>
+                      {/* Auto-Ready System */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyEnhanced.autoready.title')}
+                        </Typography>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={matchzyAutoreadyEnabled === 1}
+                              onChange={(e) => setMatchzyAutoreadyEnabled(e.target.checked ? 1 : 0)}
+                              color="primary"
+                              size="small"
+                            />
+                          }
+                          label={t('settingsPage.matchRating.matchzyEnhanced.autoready.label')}
+                        />
+                        <Typography variant="caption" color="text.secondary" display="block">
+                          {t('settingsPage.matchRating.matchzyEnhanced.autoready.description')}
+                        </Typography>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Pause System */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyEnhanced.pause.title')}
+                        </Typography>
+                        <Stack spacing={2}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={matchzyBothTeamsUnpauseRequired === 1}
+                                onChange={(e) =>
+                                  setMatchzyBothTeamsUnpauseRequired(e.target.checked ? 1 : 0)
+                                }
+                                color="primary"
+                                size="small"
+                              />
+                            }
+                            label={t('settingsPage.matchRating.matchzyEnhanced.pause.bothTeamsUnpause')}
+                          />
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesLabel')}
+                            type="number"
+                            value={matchzyMaxPausesPerTeam ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                              setMatchzyMaxPausesPerTeam(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t('settingsPage.matchRating.matchzyEnhanced.pause.maxPausesHelper')}
+                            inputProps={{ min: 0, max: 999 }}
+                            size="small"
+                            fullWidth
+                          />
+                          <TextField
+                            label={t(
+                              'settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationLabel'
+                            )}
+                            type="number"
+                            value={matchzyPauseDuration ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                              setMatchzyPauseDuration(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t(
+                              'settingsPage.matchRating.matchzyEnhanced.pause.pauseDurationHelper'
+                            )}
+                            inputProps={{ min: 0, max: 999 }}
+                            size="small"
+                            fullWidth
+                          />
+                        </Stack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* Side Selection */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyEnhanced.sideSelection.title')}
+                        </Typography>
+                        <Stack spacing={2}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={matchzySideSelectionEnabled === 1}
+                                onChange={(e) =>
+                                  setMatchzySideSelectionEnabled(e.target.checked ? 1 : 0)
+                                }
+                                color="primary"
+                                size="small"
+                              />
+                            }
+                            label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.enabled')}
+                          />
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeLabel')}
+                            type="number"
+                            value={matchzySideSelectionTime ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                              setMatchzySideSelectionTime(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t('settingsPage.matchRating.matchzyEnhanced.sideSelection.timeHelper')}
+                            inputProps={{ min: 1, max: 999 }}
+                            size="small"
+                            fullWidth
+                            disabled={matchzySideSelectionEnabled !== 1}
+                          />
+                        </Stack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* .gg Command */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyEnhanced.gg.title')}
+                        </Typography>
+                        <Stack spacing={2}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={matchzyGgEnabled === 1}
+                                onChange={(e) => setMatchzyGgEnabled(e.target.checked ? 1 : 0)}
+                                color="primary"
+                                size="small"
+                              />
+                            }
+                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.enabled')}
+                          />
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdLabel')}
+                            type="number"
+                            value={matchzyGgThreshold ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseFloat(e.target.value);
+                              setMatchzyGgThreshold(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.thresholdHelper')}
+                            inputProps={{ min: 0, max: 1, step: 0.1 }}
+                            size="small"
+                            fullWidth
+                            disabled={matchzyGgEnabled !== 1}
+                          />
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffLabel')}
+                            type="number"
+                            value={matchzyGgMinScoreDiff ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                              setMatchzyGgMinScoreDiff(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t('settingsPage.matchRating.matchzyEnhanced.gg.minScoreDiffHelper')}
+                            inputProps={{ min: 0, max: 16 }}
+                            size="small"
+                            fullWidth
+                            disabled={matchzyGgEnabled !== 1}
+                          />
+                        </Stack>
+                      </Box>
+
+                      <Divider />
+
+                      {/* FFW System */}
+                      <Box>
+                        <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                          {t('settingsPage.matchRating.matchzyEnhanced.ffw.title')}
+                        </Typography>
+                        <Stack spacing={2}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={matchzyFfwEnabled === 1}
+                                onChange={(e) => setMatchzyFfwEnabled(e.target.checked ? 1 : 0)}
+                                color="primary"
+                                size="small"
+                              />
+                            }
+                            label={t('settingsPage.matchRating.matchzyEnhanced.ffw.enabled')}
+                          />
+                          <TextField
+                            label={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeLabel')}
+                            type="number"
+                            value={matchzyFfwTime ?? ''}
+                            onChange={(e) => {
+                              const val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+                              setMatchzyFfwTime(isNaN(val as number) ? null : val);
+                            }}
+                            onBlur={handleFieldBlur}
+                            helperText={t('settingsPage.matchRating.matchzyEnhanced.ffw.timeHelper')}
+                            inputProps={{ min: 1, max: 999 }}
+                            size="small"
+                            fullWidth
+                            disabled={matchzyFfwEnabled !== 1}
+                          />
+                        </Stack>
+                      </Box>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
               </Stack>
             </TabPanel>
 
@@ -1821,7 +1901,7 @@ export default function Settings() {
                       response.settings.matchzyDebugChatEnabled !== undefined
                         ? response.settings.matchzyDebugChatEnabled
                         : false;
-                    const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 2;
+                    const newMinimumReadyRequired = response.settings.matchzyMinimumReadyRequired ?? 0;
                     const newAllowForceReady = response.settings.matchzyAllowForceReady ?? true;
                     const newKickWhenNoMatchLoaded = response.settings.matchzyKickWhenNoMatchLoaded ?? false;
                     const newWhitelistEnabledDefault = response.settings.matchzyWhitelistEnabledDefault ?? false;

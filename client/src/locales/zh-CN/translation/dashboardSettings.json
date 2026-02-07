@@ -115,6 +115,7 @@
       "integrations": "集成与 Webhook",
       "players": "选手与访问控制",
       "matches": "比赛与评分",
+      "advanced": "高级",
       "matchzy": "MatchZy",
       "developer": "开发者 / 模拟"
     },
@@ -185,7 +186,7 @@
         "ready": {
           "title": "准备 / 比赛开始",
           "minimumReadyLabel": "最少准备人数要求",
-          "minimumReadyHelper": "0 = 所有已连接玩家都必须准备。默认：2。",
+          "minimumReadyHelper": "0 = 所有已连接玩家都必须准备。默认：0。",
           "allowForceReady": "允许管理员在设置阶段强制准备玩家（!forceready）"
         },
         "access": {

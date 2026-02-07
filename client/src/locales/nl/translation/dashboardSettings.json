@@ -6,6 +6,7 @@
       "integrations": "Integraties & webhooks",
       "players": "Spelers & toegang",
       "matches": "Wedstrijden & ratings",
+      "advanced": "Geavanceerd",
       "matchzy": "MatchZy",
       "developer": "Ontwikkelaar / simulatie"
     },
@@ -76,7 +77,7 @@
         "ready": {
           "title": "Ready / Start wedstrijd",
           "minimumReadyLabel": "Minimum aantal ready-spelers vereist",
-          "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 2.",
+          "minimumReadyHelper": "0 = iedereen die verbonden is moet ready zijn. Standaard: 0.",
           "allowForceReady": "Sta admins toe spelers force-ready te zetten tijdens setup (!forceready)"
         },
         "access": {

@@ -234,6 +234,11 @@ export const generateMatchConfig = async (
   const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   const maxRounds = resolveMaxRounds(tournament);
+
+  // In MatchZy Enhanced, min_players_to_ready is interpreted as a per-team threshold.
+  // 0 = everyone connected on that team must ready.
+  const minPlayersToReadyRaw = await settingsService.getMatchzyMinimumReadyRequired();
+  const minPlayersToReady = Math.max(0, Math.min(playersPerTeam, minPlayersToReadyRaw));
   
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type
   const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars(tournament.type);
@@ -250,7 +255,7 @@ export const generateMatchConfig = async (
     matchid: existingMatch?.id ?? 0,
     num_maps: numMaps,
     players_per_team: playersPerTeam,
-    min_players_to_ready: 1,
+    min_players_to_ready: minPlayersToReady,
     min_spectators_to_ready: 0,
     wingman: false,
 
