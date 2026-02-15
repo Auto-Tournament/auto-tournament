@@ -57,7 +57,7 @@ class SteamService {
     const url = `${this.baseUrl}/ISteamUser/GetPlayerSummaries/v0002/?key=${apiKey}&steamids=${testSteamId}`;
 
     try {
-      const controller = new AbortController();
+      const controller = new globalThis.AbortController();
       const timeout = setTimeout(() => controller.abort(), 5000);
 
       let response: import('node-fetch').Response;

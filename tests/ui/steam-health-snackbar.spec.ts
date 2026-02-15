@@ -31,7 +31,7 @@ test.describe.serial('Steam health snackbar', () => {
     await page.goto('/login', { waitUntil: 'domcontentloaded' });
 
     const loginResult = await page.evaluate(async (id) => {
-      const resp = await fetch('/api/test/login-admin', {
+      const resp = await globalThis.fetch('/api/test/login-admin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ steamId: id }),
@@ -43,7 +43,7 @@ test.describe.serial('Steam health snackbar', () => {
     expect(loginResult.ok, `login-admin failed: ${loginResult.status} ${loginResult.text}`).toBeTruthy();
 
     const adminMe = await page.evaluate(async () => {
-      const resp = await fetch('/api/auth/admin/me', { credentials: 'include' });
+      const resp = await globalThis.fetch('/api/auth/admin/me', { credentials: 'include' });
       const json = await resp.json().catch(() => null);
       return { ok: resp.ok, status: resp.status, json };
     });

@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
+import fetch from 'node-fetch';
 import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { URLSearchParams } from 'url';
 
 const router = Router();
 
@@ -200,6 +202,89 @@ router.get('/player/:steamId', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to fetch player info',
     });
+  }
+});
+
+function extractWorkshopId(input: string): string | null {
+  const raw = (input || '').trim();
+  if (!raw) return null;
+  // Plain numeric ID.
+  if (/^\d{6,}$/.test(raw)) return raw;
+  // URLs: try common workshop patterns, then fallback to any long numeric.
+  const m =
+    raw.match(/[?&]id=(\d{6,})/i) ||
+    raw.match(/\/sharedfiles\/filedetails\/\?id=(\d{6,})/i) ||
+    raw.match(/\/filedetails\/(\d{6,})/i) ||
+    raw.match(/(\d{6,})/);
+  return m?.[1] ?? null;
+}
+
+/**
+ * GET /api/steam/workshop-map?input=<url-or-id>
+ *
+ * Resolves a Steam Workshop published file ID to a title + preview image URL.
+ * Does not require a Steam Web API key (uses RemoteStorage endpoint).
+ */
+router.get('/workshop-map', async (req: Request, res: Response) => {
+  try {
+    const input = typeof req.query.input === 'string' ? req.query.input : '';
+    const workshopId = extractWorkshopId(input);
+    if (!workshopId) {
+      return res.status(400).json({ success: false, error: 'Invalid workshop input' });
+    }
+
+    const form = new URLSearchParams();
+    form.set('itemcount', '1');
+    form.set('publishedfileids[0]', workshopId);
+
+    const response = await fetch(
+      'https://api.steampowered.com/ISteamRemoteStorage/GetPublishedFileDetails/v1/',
+      {
+        method: 'POST',
+        body: form,
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      }
+    );
+
+    if (!response.ok) {
+      return res.status(502).json({
+        success: false,
+        error: `Steam RemoteStorage error (${response.status})`,
+      });
+    }
+
+    type WorkshopDetailsResponse = {
+      response?: {
+        publishedfiledetails?: Array<{
+          result?: number;
+          title?: string;
+          preview_url?: string;
+        }>;
+      };
+    };
+    const data = (await response.json()) as WorkshopDetailsResponse;
+    const details = data?.response?.publishedfiledetails?.[0];
+    const result = typeof details?.result === 'number' ? details.result : 0;
+    if (result !== 1) {
+      return res.status(404).json({
+        success: false,
+        error: 'Workshop item not found',
+        result,
+      });
+    }
+
+    const title = typeof details?.title === 'string' ? details.title : null;
+    const previewUrl = typeof details?.preview_url === 'string' ? details.preview_url : null;
+
+    return res.json({
+      success: true,
+      workshopId,
+      title,
+      previewUrl,
+    });
+  } catch (error) {
+    log.error('Error in Steam workshop-map endpoint', error);
+    return res.status(500).json({ success: false, error: 'Failed to resolve workshop map' });
   }
 });
 

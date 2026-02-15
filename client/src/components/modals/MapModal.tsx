@@ -40,6 +40,10 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [previewUrl, setPreviewUrl] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [workshopInput, setWorkshopInput] = useState('');
+  const [workshopLoading, setWorkshopLoading] = useState(false);
+  const [workshopHint, setWorkshopHint] = useState<string>('');
+  const workshopTimerRef = useRef<number | null>(null);
 
   const isEditing = !!map;
 
@@ -58,6 +62,8 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
           : getDefaultWebpUrlForId(map.id);
       setImageUrl(normalizedImageUrl || '');
       setPreviewUrl(normalizedImageUrl || '');
+      setWorkshopInput('');
+      setWorkshopHint('');
     } else {
       resetForm();
     }
@@ -69,11 +75,84 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
     setImageUrl('');
     setPreviewUrl('');
     setSelectedFile(null);
+    setWorkshopInput('');
+    setWorkshopHint('');
     setError('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
+
+  useEffect(() => {
+    // Support two flows:
+    // - User pastes a Workshop URL/ID into the dedicated field
+    // - User pastes a numeric Workshop ID into Map ID
+    if (!open || isEditing) return;
+
+    const candidate =
+      (workshopInput || '').trim() || (/^\d{6,}$/.test(id.trim()) ? id.trim() : '');
+    if (!candidate) {
+      setWorkshopHint('');
+      setWorkshopLoading(false);
+      if (workshopTimerRef.current) {
+        window.clearTimeout(workshopTimerRef.current);
+        workshopTimerRef.current = null;
+      }
+      return;
+    }
+
+    if (workshopTimerRef.current) {
+      window.clearTimeout(workshopTimerRef.current);
+      workshopTimerRef.current = null;
+    }
+
+    setWorkshopLoading(true);
+    workshopTimerRef.current = window.setTimeout(async () => {
+      try {
+        const resp = await api.get<{
+          success: boolean;
+          workshopId?: string;
+          title?: string | null;
+          previewUrl?: string | null;
+          error?: string;
+        }>(`/api/steam/workshop-map?input=${encodeURIComponent(candidate)}`);
+
+        if (!resp?.success || !resp.workshopId) {
+          setWorkshopHint(resp?.error || t('mapModal.workshop.lookupFailed'));
+          setWorkshopLoading(false);
+          return;
+        }
+
+        // Auto-fill fields for create flow.
+        setId(String(resp.workshopId));
+        if (resp.title) setDisplayName(resp.title);
+        if (resp.previewUrl) {
+          setImageUrl(resp.previewUrl);
+          setPreviewUrl(resp.previewUrl);
+          setSelectedFile(null);
+          if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+
+        setWorkshopHint(
+          t('mapModal.workshop.found', {
+            title: resp.title || resp.workshopId,
+          })
+        );
+      } catch (err) {
+        const e = err as Error;
+        setWorkshopHint(e.message || t('mapModal.workshop.lookupFailed'));
+      } finally {
+        setWorkshopLoading(false);
+      }
+    }, 650);
+
+    return () => {
+      if (workshopTimerRef.current) {
+        window.clearTimeout(workshopTimerRef.current);
+        workshopTimerRef.current = null;
+      }
+    };
+  }, [open, isEditing, workshopInput, id, t]);
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -277,6 +356,25 @@ export default function MapModal({ open, map, onClose, onSave }: MapModalProps) 
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          {!isEditing && (
+            <TextField
+              label={t('mapModal.workshop.inputLabel')}
+              value={workshopInput}
+              onChange={(e) => {
+                setWorkshopInput(e.target.value);
+              }}
+              placeholder={t('mapModal.workshop.inputPlaceholder')}
+              helperText={workshopHint || t('mapModal.workshop.inputHelper')}
+              fullWidth
+              slotProps={{
+                input: {
+                  endAdornment: workshopLoading ? (
+                    <CircularProgress size={18} />
+                  ) : undefined,
+                },
+              }}
+            />
+          )}
           <TextField
             label={t('mapModal.mapIdLabel')}
             value={id}
