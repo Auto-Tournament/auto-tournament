@@ -39,6 +39,23 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   onComplete,
 }) => {
   const { t } = useTranslation();
+
+  const translateVetoError = useCallback(
+    (backendError: string | undefined, tFn: typeof t): string | undefined => {
+      if (!backendError) return undefined;
+      if (backendError.includes('not your turn') || backendError.includes('Waiting for the other team'))
+        return tFn('vetoInterface.errors.notYourTurn');
+      if (backendError.includes('already completed')) return tFn('vetoInterface.errors.vetoAlreadyCompleted');
+      if (backendError.includes('Invalid map')) return tFn('vetoInterface.errors.invalidMapSelection');
+      if (backendError.includes('Invalid side')) return tFn('vetoInterface.errors.invalidSideSelection');
+      if (backendError.includes('No map to pick')) return tFn('vetoInterface.errors.noMapToPickSide');
+      if (backendError.includes('Match not found')) return tFn('vetoInterface.errors.matchNotFound');
+      if (backendError.includes('participating teams')) return tFn('vetoInterface.errors.unauthorized');
+      return backendError;
+    },
+    [],
+  );
+
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -98,11 +115,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           onCompleteRef.current?.(data.veto);
         }
       } else {
-        setError(data.error || 'Failed to load veto state');
+        setError(translateVetoError(data.error, t) || t('vetoInterface.errors.failedToLoadVetoState'));
       }
     } catch (err) {
       console.error('Error loading veto:', err);
-      setError('Failed to load veto state');
+      setError(t('vetoInterface.errors.failedToLoadVetoState'));
     } finally {
       setLoading(false);
     }
@@ -200,13 +217,13 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const data = await response.json();
 
       if (!data.success) {
-        setError(data.error || 'Failed to process veto action');
+        setError(translateVetoError(data.error, t) || t('vetoInterface.errors.failedToProcessVetoAction'));
       } else {
         setError(''); // Clear any previous errors
       }
     } catch (err) {
       console.error('Error submitting veto action:', err);
-      setError('Failed to submit veto action');
+      setError(t('vetoInterface.errors.failedToSubmitVetoAction'));
     }
   };
 
@@ -232,11 +249,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         setError('');
       } else {
         console.error('Side pick failed:', data.error);
-        setError(data.error || 'Failed to pick side');
+        setError(translateVetoError(data.error, t) || t('vetoInterface.errors.failedToPickSide'));
       }
     } catch (err) {
       console.error('Error picking side:', err);
-      setError('Failed to pick side');
+      setError(t('vetoInterface.errors.failedToPickSide'));
     }
   };
 

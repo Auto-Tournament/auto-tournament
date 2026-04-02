@@ -240,6 +240,19 @@
     "vetoHistory": "Veto-geschiedenis",
     "historyStep": "Stap {{step}}:",
     "startingSide": "Start {{side}}",
-    "otherTeam": "het andere team"
+    "otherTeam": "het andere team",
+    "errors": {
+      "failedToLoadVetoState": "Kan veto-status niet laden",
+      "failedToProcessVetoAction": "Kan veto-actie niet verwerken",
+      "failedToSubmitVetoAction": "Kan veto-actie niet verzenden",
+      "failedToPickSide": "Kan kant niet kiezen",
+      "notYourTurn": "Het is niet jouw beurt. Wachten op het andere team.",
+      "vetoAlreadyCompleted": "Veto al voltooid",
+      "invalidMapSelection": "Ongeldige kaartselectie",
+      "invalidSideSelection": "Ongeldige zijkeuze",
+      "noMapToPickSide": "Geen kaart om kant voor te kiezen",
+      "matchNotFound": "Match niet gevonden",
+      "unauthorized": "Alleen spelers van een van de twee deelnemende teams kunnen veto-acties uitvoeren voor deze match."
+    }
   }
 }

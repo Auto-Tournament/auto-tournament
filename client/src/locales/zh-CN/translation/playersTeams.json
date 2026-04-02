@@ -240,6 +240,19 @@
     "vetoHistory": "禁选历史",
     "historyStep": "第 {{step}} 步：",
     "startingSide": "初始 {{side}}",
-    "otherTeam": "另一支队伍"
+    "otherTeam": "另一支队伍",
+    "errors": {
+      "failedToLoadVetoState": "加载禁选状态失败",
+      "failedToProcessVetoAction": "处理禁选操作失败",
+      "failedToSubmitVetoAction": "提交禁选操作失败",
+      "failedToPickSide": "选择阵营失败",
+      "notYourTurn": "还没到你的回合，等待另一支队伍。",
+      "vetoAlreadyCompleted": "禁选已完成",
+      "invalidMapSelection": "无效的地图选择",
+      "invalidSideSelection": "无效的阵营选择",
+      "noMapToPickSide": "没有地图可供选择阵营",
+      "matchNotFound": "未找到比赛",
+      "unauthorized": "只有参与队伍中的队员才能对此比赛执行禁选操作。"
+    }
   }
 }

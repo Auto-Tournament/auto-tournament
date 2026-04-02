@@ -240,6 +240,19 @@
     "vetoHistory": "Veto-historikk",
     "historyStep": "Trinn {{step}}:",
     "startingSide": "Start {{side}}",
-    "otherTeam": "det andre laget"
+    "otherTeam": "det andre laget",
+    "errors": {
+      "failedToLoadVetoState": "Kunne ikke laste veto-tilstand",
+      "failedToProcessVetoAction": "Kunne ikke behandle veto-handlingen",
+      "failedToSubmitVetoAction": "Kunne ikke sende veto-handlingen",
+      "failedToPickSide": "Kunne ikke velge side",
+      "notYourTurn": "Det er ikke din tur. Venter på det andre laget.",
+      "vetoAlreadyCompleted": "Veto allerede fullført",
+      "invalidMapSelection": "Ugyldig kartvalg",
+      "invalidSideSelection": "Ugyldig sidevalg",
+      "noMapToPickSide": "Ingen kart å velge side for",
+      "matchNotFound": "Kampen ble ikke funnet",
+      "unauthorized": "Bare spillere på ett av de to deltakende lagene kan utføre veto-handlinger for denne kampen."
+    }
   }
 }

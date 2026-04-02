@@ -24,20 +24,84 @@ function getViewerSteamId(req: Request): string | null {
   return null;
 }
 
-function resolveViewerTeamForMatch(
+function normalizeTeamRosterPlayers(players: string | null | undefined) {
+  if (!players || players.trim().length === 0) {
+    return [];
+  }
+
+  try {
+    const parsed = JSON.parse(players) as Record<string, unknown> | Array<unknown>;
+    return normalizeConfigPlayers(parsed);
+  } catch {
+    const steamIds = players.match(/\b\d{17}\b/g) ?? [];
+    return steamIds.map((steamId) => ({ steamid: steamId, name: steamId }));
+  }
+}
+
+async function resolveViewerTeamForMatch(
   match: DbMatchRow,
   viewerSteamId: string | null
-): 'team1' | 'team2' | null {
+): Promise<'team1' | 'team2' | null> {
   if (!viewerSteamId) {
     return null;
   }
 
-  const config = match.config
-    ? (JSON.parse(match.config) as {
-        team1?: { players?: unknown[] };
-        team2?: { players?: unknown[] };
-      })
-    : {};
+  let config: {
+    team1?: { players?: Record<string, unknown> | Array<unknown> };
+    team2?: { players?: Record<string, unknown> | Array<unknown> };
+  } = {};
+
+  if (typeof match.round === 'number' && match.round >= 1 && match.tournament_id) {
+    const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = ?', [
+      match.tournament_id,
+    ]);
+
+    if (tournament) {
+      const tournamentResponse: TournamentResponse = {
+        id: tournament.id,
+        name: tournament.name,
+        type: tournament.type as TournamentResponse['type'],
+        format: tournament.format as TournamentResponse['format'],
+        status: tournament.status as TournamentResponse['status'],
+        maps: JSON.parse(tournament.maps),
+        teamIds: JSON.parse(tournament.team_ids),
+        settings: tournament.settings ? JSON.parse(tournament.settings) : {},
+        created_at: tournament.created_at,
+        updated_at: tournament.updated_at ?? tournament.created_at,
+        started_at: tournament.started_at,
+        completed_at: tournament.completed_at,
+        teams: [],
+        mapSequence: tournament.map_sequence ? JSON.parse(tournament.map_sequence) : undefined,
+        teamSize:
+          tournament.team_size === null || typeof tournament.team_size === 'undefined'
+            ? undefined
+            : tournament.team_size,
+        maxRounds:
+          tournament.max_rounds === null || typeof tournament.max_rounds === 'undefined'
+            ? undefined
+            : tournament.max_rounds,
+        overtimeMode:
+          (tournament.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
+        overtimeSegments:
+          tournament.overtime_segments === null ||
+          typeof tournament.overtime_segments === 'undefined'
+            ? undefined
+            : tournament.overtime_segments,
+        eloTemplateId: tournament.elo_template_id ?? undefined,
+      };
+
+      config = (await generateMatchConfig(
+        tournamentResponse,
+        match.team1_id ?? undefined,
+        match.team2_id ?? undefined,
+        match.slug
+      )) as typeof config;
+    }
+  }
+
+  if ((!config.team1 && !config.team2) && match.config) {
+    config = JSON.parse(match.config) as typeof config;
+  }
 
   const normalizedTeam1Players = config.team1
     ? normalizeConfigPlayers(config.team1.players)
@@ -53,6 +117,33 @@ function resolveViewerTeamForMatch(
     return 'team1';
   }
   if (!isInTeam1 && isInTeam2) {
+    return 'team2';
+  }
+
+  const [team1Roster, team2Roster] = await Promise.all([
+    match.team1_id
+      ? db.queryOneAsync<{ players: string | null }>('SELECT players FROM teams WHERE id = ?', [
+          match.team1_id,
+        ])
+      : Promise.resolve(null),
+    match.team2_id
+      ? db.queryOneAsync<{ players: string | null }>('SELECT players FROM teams WHERE id = ?', [
+          match.team2_id,
+        ])
+      : Promise.resolve(null),
+  ]);
+
+  const isInTeam1Roster = normalizeTeamRosterPlayers(team1Roster?.players).some(
+    (player) => player.steamid === viewerSteamId
+  );
+  const isInTeam2Roster = normalizeTeamRosterPlayers(team2Roster?.players).some(
+    (player) => player.steamid === viewerSteamId
+  );
+
+  if ((isInTeam1 || isInTeam1Roster) && !(isInTeam2 || isInTeam2Roster)) {
+    return 'team1';
+  }
+  if (!(isInTeam1 || isInTeam1Roster) && (isInTeam2 || isInTeam2Roster)) {
     return 'team2';
   }
 
@@ -210,7 +301,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     // Team members get the full veto state; spectators get a redacted, read‑only
     // view with only high‑level information (team names, status, picked maps).
     const viewerSteamId = getViewerSteamId(req);
-    const viewerTeam = resolveViewerTeamForMatch(match, viewerSteamId);
+    const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
 
     if (!viewerTeam) {
       const publicVeto = {
@@ -273,7 +364,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Resolve which team (if any) the current viewer belongs to based on their
     // Steam ID (from player_steam_id cookie or Passport user).
     const viewerSteamId = getViewerSteamId(req);
-    const viewerTeam = resolveViewerTeamForMatch(match, viewerSteamId);
+    const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
 
     if (!viewerSteamId || !viewerTeam) {
       return res.status(403).json({

@@ -240,6 +240,19 @@
     "vetoHistory": "Historia veto",
     "historyStep": "Krok {{step}}:",
     "startingSide": "Start {{side}}",
-    "otherTeam": "drugi zespół"
+    "otherTeam": "drugi zespół",
+    "errors": {
+      "failedToLoadVetoState": "Nie można załadować stanu veto",
+      "failedToProcessVetoAction": "Nie można przetworzyć akcji veto",
+      "failedToSubmitVetoAction": "Nie można wysłać akcji veto",
+      "failedToPickSide": "Nie można wybrać strony",
+      "notYourTurn": "To nie twoja kolej. Czekam na drugi zespół.",
+      "vetoAlreadyCompleted": "Veto już zakończone",
+      "invalidMapSelection": "Nieprawidłowy wybór mapy",
+      "invalidSideSelection": "Nieprawidłowy wybór strony",
+      "noMapToPickSide": "Brak mapy do wyboru strony",
+      "matchNotFound": "Mecz nie znaleziony",
+      "unauthorized": "Tylko gracze jednego z dwóch uczestniczących zespołów mogą wykonywać akcje veto dla tego meczu."
+    }
   }
 }
