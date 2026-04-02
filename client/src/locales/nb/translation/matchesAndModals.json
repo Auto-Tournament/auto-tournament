@@ -172,6 +172,14 @@
         "title": "Opprett ny kamp",
         "description": "Konfigurer kart, regler, sider og lag fra bunnen av."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug og minst ett kart er påkrevd.",
+      "teamsMustDiffer": "Lag 1 og lag 2 må være forskjellige.",
+      "invalidMapSelectionVeto": "Ugyldig kartvalg for veto. Velg nøyaktig 7 kart eller deaktiver veto.",
+      "invalidMapSelectionFormat": "Ugyldig kartvalg for dette serieformatet. Velg riktig antall kart.",
+      "configIncomplete": "Matchkonfigurasjonen er ufullstendig. Kontroller innstillingene.",
+      "createFailed": "Kunne ikke opprette kampen. Prøv igjen."
     }
   },
   "matchDetailsModal": {

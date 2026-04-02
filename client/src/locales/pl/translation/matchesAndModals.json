@@ -72,6 +72,14 @@
         "title": "Utwórz nowy mecz",
         "description": "Skonfiguruj mapy, zasady, strony i drużyny od zera."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Wymagany jest slug i co najmniej jedna mapa.",
+      "teamsMustDiffer": "Drużyna 1 i drużyna 2 muszą być różne.",
+      "invalidMapSelectionVeto": "Nieprawidłowy wybór map dla veto. Wybierz dokładnie 7 map lub wyłącz veto.",
+      "invalidMapSelectionFormat": "Nieprawidłowy wybór map dla tego formatu. Wybierz właściwą liczbę map.",
+      "configIncomplete": "Konfiguracja meczu jest niekompletna. Sprawdź ustawienia.",
+      "createFailed": "Nie udało się utworzyć meczu. Spróbuj ponownie."
     }
   },
   "matchDetailsModal": {

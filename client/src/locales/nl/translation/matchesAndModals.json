@@ -72,6 +72,14 @@
         "title": "Nieuwe wedstrijd maken",
         "description": "Configureer kaarten, regels, sides en ploegen vanaf nul."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Een slug en minimaal één kaart zijn vereist.",
+      "teamsMustDiffer": "Team 1 en team 2 moeten verschillende teams zijn.",
+      "invalidMapSelectionVeto": "Ongeldige kaartselectie voor veto. Selecteer precies 7 kaarten of schakel veto uit.",
+      "invalidMapSelectionFormat": "Ongeldige kaartselectie voor dit serieformaat. Selecteer het juiste aantal kaarten.",
+      "configIncomplete": "De matchconfiguratie is onvolledig. Controleer de instellingen.",
+      "createFailed": "Aanmaken van match mislukt. Probeer het opnieuw."
     }
   },
   "matchDetailsModal": {

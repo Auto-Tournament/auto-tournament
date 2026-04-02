@@ -72,6 +72,14 @@
         "title": "Criar novo jogo",
         "description": "Configure mapas, regras, lados e equipas do zero."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "O slug e pelo menos um mapa são obrigatórios.",
+      "teamsMustDiffer": "A equipa 1 e a equipa 2 têm de ser diferentes.",
+      "invalidMapSelectionVeto": "Seleção de mapas inválida para o veto. Selecione exatamente 7 mapas ou desative o veto.",
+      "invalidMapSelectionFormat": "Seleção de mapas inválida para este formato. Selecione o número correto de mapas.",
+      "configIncomplete": "A configuração da partida está incompleta. Reveja as configurações.",
+      "createFailed": "Falha ao criar a partida. Tente novamente."
     }
   },
   "matchDetailsModal": {

@@ -72,6 +72,14 @@
         "title": "Créer un nouveau match",
         "description": "Configurez les cartes, les règles, les camps et les équipes depuis zéro."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Le slug et au moins une carte sont requis.",
+      "teamsMustDiffer": "L'équipe 1 et l'équipe 2 doivent être différentes.",
+      "invalidMapSelectionVeto": "Sélection de cartes invalide pour le veto. Veuillez sélectionner exactement 7 cartes ou désactiver le veto.",
+      "invalidMapSelectionFormat": "Sélection de cartes invalide pour ce format. Veuillez sélectionner le nombre correct de cartes.",
+      "configIncomplete": "La configuration du match est incomplète. Veuillez vérifier les paramètres.",
+      "createFailed": "Échec de la création du match. Veuillez réessayer."
     }
   },
   "matchDetailsModal": {

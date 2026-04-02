@@ -72,6 +72,14 @@
         "title": "全新创建比赛",
         "description": "从零开始配置地图、规则、选边和队伍。"
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "需要提供标识符和至少一张地图。",
+      "teamsMustDiffer": "队伍1和队伍2必须是不同的队伍。",
+      "invalidMapSelectionVeto": "禁选模式的地图选择无效。请选择恰好7张地图或禁用禁选。",
+      "invalidMapSelectionFormat": "此系列赛格式的地图选择无效。请选择正确数量的地图。",
+      "configIncomplete": "比赛配置不完整。请检查设置。",
+      "createFailed": "创建比赛失败。请重试。"
     }
   },
   "matchDetailsModal": {
