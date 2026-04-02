@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, signInAsPlayer } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
@@ -18,6 +18,8 @@ import { executeVetoActions, getVetoState, getCSMajorBO1Actions, getCSMajorBO3Ac
 test.describe.serial('Veto API', () => {
   let team1Id: string;
   let team2Id: string;
+  let team1PlayerSteamId: string;
+  let team2PlayerSteamId: string;
   const maps = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
 
   test.beforeEach(async ({ page, request }) => {
@@ -36,6 +38,65 @@ test.describe.serial('Veto API', () => {
     if (!setup) return;
     
     [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
+    team1PlayerSteamId = setup.teams[0].players[0].steamId;
+    team2PlayerSteamId = setup.teams[1].players[0].steamId;
+  });
+
+  test('should give team2 the full BO1 veto turn after team1 bans twice', {
+    tag: ['@api', '@veto', '@bo1', '@regression'],
+  }, async ({ page, request }) => {
+    let match: any = null;
+    await expect.poll(async () => {
+      const found = await findMatchByTeams(request, team1Id, team2Id);
+      if (found) {
+        match = found;
+        return true;
+      }
+      return false;
+    }, {
+      message: 'BO1 match to be created',
+      timeout: 10000,
+      intervals: [500, 1000],
+    }).toBe(true);
+
+    expect(match?.slug).toBeTruthy();
+
+    expect(await signInAsPlayer(page, team1PlayerSteamId)).toBe(true);
+
+    for (const mapName of ['de_mirage', 'de_inferno']) {
+      const actionResponse = await page.request.post(`/api/veto/${match.slug}/action`, {
+        data: { mapName, teamSlug: team1Id },
+      });
+
+      expect(actionResponse.ok()).toBe(true);
+
+      const actionData = await actionResponse.json();
+      expect(actionData.success).toBe(true);
+    }
+
+    expect(await signInAsPlayer(page, team2PlayerSteamId)).toBe(true);
+
+    const vetoResponse = await page.request.get(`/api/veto/${match.slug}`);
+    expect(vetoResponse.ok()).toBe(true);
+
+    const vetoData = await vetoResponse.json();
+    expect(vetoData.success).toBe(true);
+    expect(Array.isArray(vetoData.veto.availableMaps)).toBe(true);
+    expect(vetoData.veto.availableMaps).toHaveLength(5);
+    expect(vetoData.veto.currentTurn).toBe('team2');
+    expect(vetoData.veto.currentAction).toBe('ban');
+    expect(vetoData.veto.currentStep).toBe(3);
+
+    const team2ActionResponse = await page.request.post(`/api/veto/${match.slug}/action`, {
+      data: { mapName: 'de_ancient', teamSlug: team2Id },
+    });
+    expect(team2ActionResponse.ok()).toBe(true);
+
+    const team2ActionData = await team2ActionResponse.json();
+    expect(team2ActionData.success).toBe(true);
+    expect(team2ActionData.veto.currentStep).toBe(4);
+    expect(team2ActionData.veto.currentTurn).toBe('team2');
+    expect(team2ActionData.veto.currentAction).toBe('ban');
   });
 
   test.skip('should complete CS Major BO1 veto and assign sides correctly', {

@@ -310,11 +310,34 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }
 
   const vetoOrder = getVetoOrder(vetoState.format);
-  const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
-  const currentAction = currentStepConfig?.action;
+  const fallbackStepIndex =
+    typeof vetoState.currentStep === 'number' && vetoState.currentStep > 0
+      ? vetoState.currentStep - 1
+      : 0;
+  const currentStepConfig = vetoOrder[fallbackStepIndex];
+  const currentAction = vetoState.currentAction ?? currentStepConfig?.action;
+  const currentTurn = vetoState.currentTurn ?? currentStepConfig?.team;
 
   // Get current team name
-  const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
+  const currentTeamName =
+    currentTurn === 'team1' ? team1Name : currentTurn === 'team2' ? team2Name : 'the other team';
+
+  const hasDetailedVetoState =
+    typeof vetoState.currentStep === 'number' &&
+    typeof vetoState.totalSteps === 'number' &&
+    Array.isArray(vetoState.availableMaps) &&
+    Array.isArray(vetoState.bannedMaps) &&
+    !!currentAction &&
+    !!currentTurn;
+
+  if (!hasDetailedVetoState) {
+    return (
+      <Alert severity="warning">
+        Veto details are unavailable for this account. Sign in as a player on one of the two
+        teams to continue the veto.
+      </Alert>
+    );
+  }
 
   // Determine if it's this team's turn. Require valid team IDs and currentTeamSlug;
   // otherwise we cannot reliably tell whose turn it is (don't default to "your turn").
@@ -322,7 +345,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     !!currentTeamSlug &&
     !!vetoState.team1Id &&
     !!vetoState.team2Id &&
-    (currentStepConfig?.team === 'team1'
+    (currentTurn === 'team1'
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
