@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type {
@@ -83,6 +84,7 @@ export function useCreateManualMatchModal({
   onClose,
 }: UseCreateManualMatchModalParams) {
   const { showError } = useSnackbar();
+  const { t } = useTranslation();
 
   const [servers, setServers] = useState<Server[]>([]);
   const [loadingServers, setLoadingServers] = useState(false);
@@ -422,9 +424,13 @@ export function useCreateManualMatchModal({
   };
 
   const team1DisplayName =
-    team1Mode === 'existing' ? existingTeam1?.name ?? '' : team1NewName || 'New Team 1';
+    team1Mode === 'existing'
+      ? existingTeam1?.name ?? ''
+      : team1NewName || t('playersTeams.teamMatchHistory.team1');
   const team2DisplayName =
-    team2Mode === 'existing' ? existingTeam2?.name ?? '' : team2NewName || 'New Team 2';
+    team2Mode === 'existing'
+      ? existingTeam2?.name ?? ''
+      : team2NewName || t('playersTeams.teamMatchHistory.team2');
 
   // Preview the config that would be sent to MatchZy, for review step.
   // Teams are **optional** for manual matches: when no teams are selected,
@@ -786,7 +792,7 @@ export function useCreateManualMatchModal({
       });
 
     if (!trimmedSlug || selectedMatchMaps.length === 0) {
-      const message = 'Slug and at least one map are required.';
+      const message = t('manualMatchModal.errors.slugAndMapsRequired');
       setError(message);
       showError(message);
       console.warn('[CreateManualMatchModal] Missing required fields, aborting submit', {
@@ -799,7 +805,7 @@ export function useCreateManualMatchModal({
     }
 
     if (team1Id && team2Id && team1Id === team2Id) {
-      const message = 'Team 1 and Team 2 must be different teams.';
+      const message = t('manualMatchModal.errors.teamsMustDiffer');
       setError(message);
       showError(message);
       return;
@@ -807,15 +813,13 @@ export function useCreateManualMatchModal({
 
     if (useVeto) {
       if (selectedMatchMaps.length !== 7) {
-        const message =
-          'Invalid map selection for veto. Please select exactly 7 maps or disable veto.';
+        const message = t('manualMatchModal.errors.invalidMapSelectionVeto');
         setError(message);
         showError(message);
         return;
       }
     } else if (selectedMatchMaps.length !== requiredMaps) {
-      const message =
-        'Invalid map selection for this series format. Please select the correct number of maps.';
+      const message = t('manualMatchModal.errors.invalidMapSelectionFormat');
       setError(message);
       showError(message);
       return;
@@ -824,7 +828,7 @@ export function useCreateManualMatchModal({
     // At this point validation has passed; reuse the same config that powers the
     // Review step so POSTed config always matches what the user saw.
     if (!previewConfig) {
-      const message = 'Match configuration is incomplete. Please review the settings.';
+      const message = t('manualMatchModal.errors.configIncomplete');
       setError(message);
       showError(message);
       return;
@@ -859,7 +863,7 @@ export function useCreateManualMatchModal({
     } catch (err) {
       console.error('Failed to create manual match', err);
       const message =
-        err instanceof Error ? err.message : 'Failed to create match. Please try again.';
+        err instanceof Error ? err.message : t('manualMatchModal.errors.createFailed');
       setError(message);
       showError(message);
     } finally {

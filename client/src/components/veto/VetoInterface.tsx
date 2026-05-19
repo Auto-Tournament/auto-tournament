@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Box,
   Typography,
@@ -37,6 +38,24 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   currentTeamSlug,
   onComplete,
 }) => {
+  const { t } = useTranslation();
+
+  const translateVetoError = useCallback(
+    (backendError: string | undefined): string | undefined => {
+      if (!backendError) return undefined;
+      if (backendError.includes('not your turn') || backendError.includes('Waiting for the other team'))
+        return t('vetoInterface.errors.notYourTurn');
+      if (backendError.includes('already completed')) return t('vetoInterface.errors.vetoAlreadyCompleted');
+      if (backendError.includes('Invalid map')) return t('vetoInterface.errors.invalidMapSelection');
+      if (backendError.includes('Invalid side')) return t('vetoInterface.errors.invalidSideSelection');
+      if (backendError.includes('No map to pick')) return t('vetoInterface.errors.noMapToPickSide');
+      if (backendError.includes('Match not found')) return t('vetoInterface.errors.matchNotFound');
+      if (backendError.includes('participating teams')) return t('vetoInterface.errors.unauthorized');
+      return backendError;
+    },
+    [t],
+  );
+
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -96,15 +115,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           onCompleteRef.current?.(data.veto);
         }
       } else {
-        setError(data.error || 'Failed to load veto state');
+        setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToLoadVetoState'));
       }
     } catch (err) {
       console.error('Error loading veto:', err);
-      setError('Failed to load veto state');
+      setError(t('vetoInterface.errors.failedToLoadVetoState'));
     } finally {
       setLoading(false);
     }
-  }, [matchSlug]);
+  }, [matchSlug, t, translateVetoError]);
 
   useEffect(() => {
     loadMaps();
@@ -198,13 +217,13 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const data = await response.json();
 
       if (!data.success) {
-        setError(data.error || 'Failed to process veto action');
+          setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToProcessVetoAction'));
       } else {
         setError(''); // Clear any previous errors
       }
     } catch (err) {
       console.error('Error submitting veto action:', err);
-      setError('Failed to submit veto action');
+      setError(t('vetoInterface.errors.failedToSubmitVetoAction'));
     }
   };
 
@@ -230,11 +249,11 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         setError('');
       } else {
         console.error('Side pick failed:', data.error);
-        setError(data.error || 'Failed to pick side');
+        setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToPickSide'));
       }
     } catch (err) {
       console.error('Error picking side:', err);
-      setError('Failed to pick side');
+      setError(t('vetoInterface.errors.failedToPickSide'));
     }
   };
 
@@ -242,9 +261,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return (
       <Box py={4}>
         <LinearProgress />
-        <Typography variant="body2" textAlign="center" mt={2}>
-          Loading veto...
-        </Typography>
       </Box>
     );
   }
@@ -254,12 +270,22 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }
 
   if (!vetoState) {
-    return <Alert severity="warning">Veto not available for this match</Alert>;
+    return <Alert severity="warning">{t('vetoInterface.vetoNotAvailable')}</Alert>;
+  }
+
+  const hasDetailedVetoState =
+    typeof vetoState.currentStep === 'number' &&
+    typeof vetoState.totalSteps === 'number' &&
+    Boolean(vetoState.team1Id) &&
+    Boolean(vetoState.team2Id);
+
+  if (!hasDetailedVetoState) {
+    return <Alert severity="warning">{t('vetoInterface.vetoUnavailable')}</Alert>;
   }
 
   // Determine which team is viewing (must be defined before early returns)
-  const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
-  const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
+  const team1Name = vetoState.team1Name || propTeam1Name || t('playersTeams.teamMatchHistory.team1');
+  const team2Name = vetoState.team2Name || propTeam2Name || t('playersTeams.teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
 
@@ -268,15 +294,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       <Box>
         <Alert severity="success" sx={{ mb: 3 }}>
           <Typography variant="body1" fontWeight={600}>
-            ✅ Veto Completed!
+            ✅ {t('vetoInterface.vetoCompleted')}
           </Typography>
           <Typography variant="body2">
-            Map selection is complete. Match will start shortly.
+            {t('vetoInterface.vetoCompletedSubtitle')}
           </Typography>
         </Alert>
 
         <Typography variant="h6" fontWeight={600} mb={2}>
-          Selected Maps
+          {t('vetoInterface.selectedMaps')}
         </Typography>
         <Grid container spacing={2}>
           {vetoState.pickedMaps.map((pick) => {
@@ -311,10 +337,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   const vetoOrder = getVetoOrder(vetoState.format);
   const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
-  const currentAction = currentStepConfig?.action;
+  const currentAction = vetoState.currentAction ?? currentStepConfig?.action;
+  const currentTurn =
+    typeof vetoState.currentTurn === 'string' ? vetoState.currentTurn : currentStepConfig?.team;
+  const hasKnownCurrentTurn = currentTurn === 'team1' || currentTurn === 'team2';
 
   // Get current team name
-  const currentTeamName = currentStepConfig?.team === 'team1' ? team1Name : team2Name;
+  const currentTeamName = hasKnownCurrentTurn
+    ? currentTurn === 'team1'
+      ? team1Name
+      : team2Name
+    : t('vetoInterface.otherTeam');
 
   // Determine if it's this team's turn. Require valid team IDs and currentTeamSlug;
   // otherwise we cannot reliably tell whose turn it is (don't default to "your turn").
@@ -322,7 +355,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     !!currentTeamSlug &&
     !!vetoState.team1Id &&
     !!vetoState.team2Id &&
-    (currentStepConfig?.team === 'team1'
+    hasKnownCurrentTurn &&
+    (currentTurn === 'team1'
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
@@ -364,7 +398,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {team1Name}
           </Typography>
           <Typography variant="h3" fontWeight={300} color="text.secondary">
-            VS
+            {t('playersTeams.teamMatchHistory.vs')}
           </Typography>
           <Typography
             variant="h4"
@@ -400,7 +434,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           </Typography>
         </Box>
         <Typography variant="body2" textAlign="center" color="text.secondary" mt={1}>
-          Best of {vetoState.format === 'bo1' ? '1' : vetoState.format === 'bo3' ? '3' : '5'}
+          {vetoState.format.toUpperCase()}
         </Typography>
       </Paper>
 
@@ -456,31 +490,29 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {isMyTurn ? (
               <>
                 <Typography variant="h5" fontWeight={800} color="inherit">
-                  YOUR TEAM&apos;S TURN TO{' '}
                   {currentAction === 'ban'
-                    ? 'BAN A MAP'
+                    ? t('vetoInterface.yourTurnToBan')
                     : currentAction === 'pick'
-                    ? 'PICK A MAP'
-                    : 'CHOOSE A SIDE'}
+                    ? t('vetoInterface.yourTurnToPick')
+                    : t('vetoInterface.yourTurnToChooseSide')}
                 </Typography>
                 {currentAction !== 'side_pick' && (
                   <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
-                    Click one of the highlighted maps below to confirm your choice.
+                    {t('vetoInterface.clickMapToConfirm')}
                   </Typography>
                 )}
               </>
             ) : (
               <>
                 <Typography variant="h6" fontWeight={700} color="inherit">
-                  Waiting for {currentTeamName} to{' '}
                   {currentAction === 'ban'
-                    ? 'ban a map'
+                    ? t('vetoInterface.waitingToBan', { team: currentTeamName })
                     : currentAction === 'pick'
-                    ? 'pick a map'
-                    : 'choose a side'}
+                    ? t('vetoInterface.waitingToPick', { team: currentTeamName })
+                    : t('vetoInterface.waitingToChooseSide', { team: currentTeamName })}
                 </Typography>
                 <Typography variant="body2" color="inherit" sx={{ mt: 0.5, opacity: 0.9 }}>
-                  Keep this page open – it will update automatically when it&apos;s your turn.
+                  {t('vetoInterface.pageUpdatesAutomatically')}
                 </Typography>
               </>
             )}
@@ -489,10 +521,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           {/* Step / progress row */}
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Typography variant="body2" color="text.secondary">
-              Step {vetoState.currentStep} of {vetoState.totalSteps}
+              {t('vetoInterface.stepOf', { current: vetoState.currentStep, total: vetoState.totalSteps })}
             </Typography>
             <Chip
-              label={currentAction === 'ban' ? 'Ban phase' : currentAction === 'pick' ? 'Pick phase' : 'Side choice'}
+              label={currentAction === 'ban' ? t('vetoInterface.banPhase') : currentAction === 'pick' ? t('vetoInterface.pickPhase') : t('vetoInterface.sideChoice')}
               size="small"
               color={
                 currentAction === 'ban'
@@ -593,7 +625,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                           color="rgba(255,255,255,0.9)"
                           sx={{ textShadow: '1px 1px 2px rgba(0,0,0,0.8)' }}
                         >
-                          Choose Your Starting Side
+                          {t('vetoInterface.chooseYourStartingSide')}
                         </Typography>
                       </Box>
                     </Box>
@@ -602,7 +634,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
                 {!isMyTurn && (
                   <Alert severity="info" sx={{ mb: 2 }}>
-                    Waiting for {currentTeamName} to choose their starting side...
+                    {t('vetoInterface.waitingForSidePick', { team: currentTeamName })}
                   </Alert>
                 )}
 
@@ -618,7 +650,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       disabled={!isMyTurn}
                       sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
                     >
-                      🛡️ Counter-Terrorist
+                      🛡️ {t('vetoInterface.counterTerrorist')}
                     </Button>
                   </Grid>
                   <Grid size={{ xs: 6 }}>
@@ -632,7 +664,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       disabled={!isMyTurn}
                       sx={{ py: 2, fontSize: '1.1rem', fontWeight: 600 }}
                     >
-                      💣 Terrorist
+                      💣 {t('vetoInterface.terrorist')}
                     </Button>
                   </Grid>
                 </Grid>
@@ -709,7 +741,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
         <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="h6" fontWeight={600} mb={2}>
-              Veto History
+              {t('vetoInterface.vetoHistory')}
             </Typography>
             <Stack spacing={1}>
               {(vetoState.actions || []).map((action, idx) => (
@@ -724,7 +756,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   }}
                 >
                   <Typography variant="body2">
-                    <strong>Step {action.step}:</strong>{' '}
+                    <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
                     {action.team === 'team1' ? team1Name : team2Name}{' '}
                     <Chip
                       label={action.action.toUpperCase()}
@@ -741,7 +773,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     {allMaps.get(action.mapName || '')?.displayName ||
                       getMapData(action.mapName || '')?.displayName ||
                       action.mapName}
-                    {action.side && ` (Starting ${action.side})`}
+                    {action.side && ` (${t('vetoInterface.startingSide', { side: action.side })})`}
                   </Typography>
                 </Box>
               ))}

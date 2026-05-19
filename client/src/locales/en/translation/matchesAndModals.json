@@ -72,6 +72,14 @@
         "title": "Create new match",
         "description": "Configure maps, rules, sides, and teams from scratch."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug and at least one map are required.",
+      "teamsMustDiffer": "Team 1 and Team 2 must be different teams.",
+      "invalidMapSelectionVeto": "Invalid map selection for veto. Please select exactly 7 maps or disable veto.",
+      "invalidMapSelectionFormat": "Invalid map selection for this series format. Please select the correct number of maps.",
+      "configIncomplete": "Match configuration is incomplete. Please review the settings.",
+      "createFailed": "Failed to create match. Please try again."
     }
   },
   "matchDetailsModal": {

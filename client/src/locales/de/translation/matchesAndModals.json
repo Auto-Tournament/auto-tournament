@@ -72,6 +72,14 @@
         "title": "Neue Partie erstellen",
         "description": "Konfigurieren Sie Karten, Regeln, Seiten und Teams von Grund auf."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Slug und mindestens eine Karte sind erforderlich.",
+      "teamsMustDiffer": "Team 1 und Team 2 müssen unterschiedlich sein.",
+      "invalidMapSelectionVeto": "Ungültige Kartenauswahl für das Veto. Bitte wähle genau 7 Karten aus oder deaktiviere das Veto.",
+      "invalidMapSelectionFormat": "Ungültige Kartenauswahl für dieses Serienformat. Bitte wähle die richtige Anzahl an Karten aus.",
+      "configIncomplete": "Die Match-Konfiguration ist unvollständig. Bitte überprüfe die Einstellungen.",
+      "createFailed": "Match konnte nicht erstellt werden. Bitte versuche es erneut."
     }
   },
   "matchDetailsModal": {

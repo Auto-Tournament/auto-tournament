@@ -72,6 +72,14 @@
         "title": "Crea nuovo match",
         "description": "Configura mappe, regole, lati e squadre da zero."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Sono necessari lo slug e almeno una mappa.",
+      "teamsMustDiffer": "Il team 1 e il team 2 devono essere diversi.",
+      "invalidMapSelectionVeto": "Selezione mappe non valida per il veto. Seleziona esattamente 7 mappe o disabilita il veto.",
+      "invalidMapSelectionFormat": "Selezione mappe non valida per questo formato. Seleziona il numero corretto di mappe.",
+      "configIncomplete": "La configurazione della partita è incompleta. Controlla le impostazioni.",
+      "createFailed": "Impossibile creare la partita. Riprova."
     }
   },
   "matchDetailsModal": {

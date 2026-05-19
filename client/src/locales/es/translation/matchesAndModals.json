@@ -72,6 +72,14 @@
         "title": "Crear nuevo partido",
         "description": "Configura mapas, reglas, lados y equipos desde cero."
       }
+    },
+    "errors": {
+      "slugAndMapsRequired": "Se requieren el slug y al menos un mapa.",
+      "teamsMustDiffer": "El equipo 1 y el equipo 2 deben ser diferentes.",
+      "invalidMapSelectionVeto": "Selección de mapas inválida para el veto. Por favor selecciona exactamente 7 mapas o deshabilita el veto.",
+      "invalidMapSelectionFormat": "Selección de mapas inválida para este formato. Por favor selecciona el número correcto de mapas.",
+      "configIncomplete": "La configuración del partido está incompleta. Por favor revisa los ajustes.",
+      "createFailed": "Error al crear el partido. Por favor inténtalo de nuevo."
     }
   },
   "matchDetailsModal": {
