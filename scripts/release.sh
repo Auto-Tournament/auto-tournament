@@ -315,7 +315,7 @@ if [ -n "$RELEASE_TYPE_INPUT" ]; then
     VERSION_CHOICE="$RELEASE_TYPE_INPUT"
     echo -e "${BLUE}Using release type from input:${NC} ${GREEN}${VERSION_CHOICE}${NC}"
 elif [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
-    VERSION_CHOICE="1"
+    VERSION_CHOICE="patch"
     echo -e "${BLUE}Non-interactive mode enabled: defaulting to patch bump${NC}"
 else
     read -p "Enter choice (1-5) or press Enter for patch: " -r VERSION_CHOICE
