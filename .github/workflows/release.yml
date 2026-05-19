@@ -34,8 +34,8 @@ jobs:
       # Optional secret:
       # - RELEASE_GITHUB_TOKEN: PAT with repo permissions for gh CLI operations (PR create/merge, tags, release)
       #   If omitted, workflow falls back to the auto-generated github.token.
-      GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN != '' && secrets.RELEASE_GITHUB_TOKEN || github.token }}
-      GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN != '' && secrets.RELEASE_GITHUB_TOKEN || github.token }}
+      GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN || github.token }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN || github.token }}
       DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
       DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
       RELEASE_NON_INTERACTIVE: "true"

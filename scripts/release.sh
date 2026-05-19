@@ -59,7 +59,7 @@ if [ -n "$RELEASE_TYPE_INPUT" ]; then
             ;;
         *)
             echo -e "${RED}Invalid release type: ${RELEASE_TYPE_INPUT}${NC}"
-            echo -e "${YELLOW}Valid values: patch, minor, major${NC}"
+            echo -e "${YELLOW}Valid values: patch, minor, major, custom, skip, unchanged${NC}"
             exit 1
             ;;
     esac
