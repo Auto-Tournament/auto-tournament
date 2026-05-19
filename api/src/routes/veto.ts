@@ -107,12 +107,21 @@ async function resolveViewerTeamForMatch(
           eloTemplateId: tournament.elo_template_id ?? undefined,
         };
 
-        config = (await generateMatchConfig(
+        const generatedConfig = (await generateMatchConfig(
           tournamentResponse,
           match.team1_id ?? undefined,
           match.team2_id ?? undefined,
           match.slug
-        )) as typeof config;
+        )) as {
+          team1?: { players?: Record<string, unknown> | Array<unknown> };
+          team2?: { players?: Record<string, unknown> | Array<unknown> };
+        } | null;
+        if (generatedConfig && typeof generatedConfig === 'object') {
+          config = {
+            team1: generatedConfig.team1,
+            team2: generatedConfig.team2,
+          };
+        }
       }
     } catch (error) {
       log.warn(`Failed to regenerate match config while resolving veto viewer team for ${match.slug}`, {
