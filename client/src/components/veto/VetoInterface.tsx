@@ -123,7 +123,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     } finally {
       setLoading(false);
     }
-  }, [matchSlug]);
+  }, [matchSlug, t, translateVetoError]);
 
   useEffect(() => {
     loadMaps();
@@ -261,9 +261,6 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return (
       <Box py={4}>
         <LinearProgress />
-        <Typography variant="body2" textAlign="center" mt={2}>
-          Loading veto...
-        </Typography>
       </Box>
     );
   }
@@ -276,9 +273,19 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     return <Alert severity="warning">{t('vetoInterface.vetoNotAvailable')}</Alert>;
   }
 
+  const hasDetailedVetoState =
+    typeof vetoState.currentStep === 'number' &&
+    typeof vetoState.totalSteps === 'number' &&
+    Boolean(vetoState.team1Id) &&
+    Boolean(vetoState.team2Id);
+
+  if (!hasDetailedVetoState) {
+    return <Alert severity="warning">{t('vetoInterface.vetoUnavailable')}</Alert>;
+  }
+
   // Determine which team is viewing (must be defined before early returns)
-  const team1Name = vetoState.team1Name || propTeam1Name || 'Team 1';
-  const team2Name = vetoState.team2Name || propTeam2Name || 'Team 2';
+  const team1Name = vetoState.team1Name || propTeam1Name || t('playersTeams.teamMatchHistory.team1');
+  const team2Name = vetoState.team2Name || propTeam2Name || t('playersTeams.teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
 
@@ -330,10 +337,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   const vetoOrder = getVetoOrder(vetoState.format);
   const currentStepConfig = vetoOrder[vetoState.currentStep - 1];
-  const currentAction = currentStepConfig?.action;
+  const currentAction = vetoState.currentAction ?? currentStepConfig?.action;
+  const currentTurn =
+    typeof vetoState.currentTurn === 'string' ? vetoState.currentTurn : currentStepConfig?.team;
+  const hasKnownCurrentTurn = currentTurn === 'team1' || currentTurn === 'team2';
 
   // Get current team name
-  const currentTeamName = vetoState.currentTurn === 'team1' ? team1Name : team2Name;
+  const currentTeamName = hasKnownCurrentTurn
+    ? currentTurn === 'team1'
+      ? team1Name
+      : team2Name
+    : t('vetoInterface.otherTeam');
 
   // Determine if it's this team's turn. Require valid team IDs and currentTeamSlug;
   // otherwise we cannot reliably tell whose turn it is (don't default to "your turn").
@@ -341,7 +355,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
     !!currentTeamSlug &&
     !!vetoState.team1Id &&
     !!vetoState.team2Id &&
-    (vetoState.currentTurn === 'team1'
+    hasKnownCurrentTurn &&
+    (currentTurn === 'team1'
       ? currentTeamSlug === vetoState.team1Id
       : currentTeamSlug === vetoState.team2Id);
 
@@ -383,7 +398,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {team1Name}
           </Typography>
           <Typography variant="h3" fontWeight={300} color="text.secondary">
-            VS
+            {t('playersTeams.teamMatchHistory.vs')}
           </Typography>
           <Typography
             variant="h4"
@@ -419,7 +434,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
           </Typography>
         </Box>
         <Typography variant="body2" textAlign="center" color="text.secondary" mt={1}>
-          Best of {vetoState.format === 'bo1' ? '1' : vetoState.format === 'bo3' ? '3' : '5'}
+          {vetoState.format.toUpperCase()}
         </Typography>
       </Paper>
 

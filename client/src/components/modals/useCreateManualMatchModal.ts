@@ -84,6 +84,7 @@ export function useCreateManualMatchModal({
   onClose,
 }: UseCreateManualMatchModalParams) {
   const { showError } = useSnackbar();
+  const { t } = useTranslation();
 
   const [servers, setServers] = useState<Server[]>([]);
   const [loadingServers, setLoadingServers] = useState(false);
@@ -423,9 +424,13 @@ export function useCreateManualMatchModal({
   };
 
   const team1DisplayName =
-    team1Mode === 'existing' ? existingTeam1?.name ?? '' : team1NewName || 'New Team 1';
+    team1Mode === 'existing'
+      ? existingTeam1?.name ?? ''
+      : team1NewName || t('playersTeams.teamMatchHistory.team1');
   const team2DisplayName =
-    team2Mode === 'existing' ? existingTeam2?.name ?? '' : team2NewName || 'New Team 2';
+    team2Mode === 'existing'
+      ? existingTeam2?.name ?? ''
+      : team2NewName || t('playersTeams.teamMatchHistory.team2');
 
   // Preview the config that would be sent to MatchZy, for review step.
   // Teams are **optional** for manual matches: when no teams are selected,
@@ -769,8 +774,6 @@ export function useCreateManualMatchModal({
       return next as Array<'knife' | 'team1_ct' | 'team2_ct'>;
     });
   }, [bestOf]);
-
-  const { t } = useTranslation();
 
   const handleSubmit = async () => {
     setError(null);

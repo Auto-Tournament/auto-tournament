@@ -225,7 +225,7 @@
     "yourTurnToPick": "È IL TURNO DEL TUO TEAM DI SCEGLIERE UNA MAPPA",
     "yourTurnToChooseSide": "È IL TURNO DEL TUO TEAM DI SCEGLIERE UN LATO",
     "clickMapToConfirm": "Clicca su una delle mappe evidenziate per confermare la tua scelta.",
-    "waitingToBan": "In attesa che {{team}} banki una mappa",
+    "waitingToBan": "In attesa che {{team}} banni una mappa",
     "waitingToPick": "In attesa che {{team}} scelga una mappa",
     "waitingToChooseSide": "In attesa che {{team}} scelga un lato",
     "pageUpdatesAutomatically": "Tieni aperta questa pagina – si aggiornerà automaticamente quando è il tuo turno.",

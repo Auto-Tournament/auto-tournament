@@ -216,7 +216,7 @@
     "matchesCount_other": "{{count}} wedstrijden"
   },
   "vetoInterface": {
-    "vetoNotAvailable": "Veto niet beschikbaar voor dit match",
+    "vetoNotAvailable": "Veto niet beschikbaar voor deze match",
     "vetoUnavailable": "Veto-details zijn niet beschikbaar voor dit account. Log in als speler van een van de twee teams om het veto te voltooien.",
     "vetoCompleted": "Veto voltooid!",
     "vetoCompletedSubtitle": "De kaartselectie is voltooid. De match begint binnenkort.",
