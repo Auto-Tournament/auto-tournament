@@ -1,0 +1,81 @@
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_type:
+        description: Release type
+        required: true
+        default: patch
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+permissions:
+  contents: write
+  pull-requests: write
+  packages: write
+
+concurrency:
+  group: release-workflow
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    env:
+      # Required secrets:
+      # - DISCORD_WEBHOOK_URL: Discord incoming webhook URL used by scripts/discord-webhook.sh
+      # - DOCKERHUB_USERNAME: Docker Hub username used for docker login and image naming
+      # - DOCKERHUB_TOKEN: Docker Hub access token/password for docker login
+      # Optional secret:
+      # - RELEASE_GITHUB_TOKEN: PAT with repo permissions for gh CLI operations (PR create/merge, tags, release)
+      #   If omitted, workflow falls back to the auto-generated github.token.
+      GH_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN || github.token }}
+      GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN || github.token }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      DOCKER_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+      RELEASE_NON_INTERACTIVE: "true"
+      RELEASE_RUN_TESTS: "false"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install required tooling
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+          corepack enable
+          yarn install --frozen-lockfile
+
+      - name: Configure git user
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Run release script
+        shell: bash
+        run: |
+          set -euo pipefail
+          bash ./scripts/release.sh "${{ inputs.release_type }}"

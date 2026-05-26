@@ -44,6 +44,27 @@ echo -e "${GREEN}MatchZy Auto Tournament - Release${NC}"
 echo "========================================="
 echo ""
 
+# Optional non-interactive mode for CI/workflows
+RELEASE_TYPE_INPUT="${1:-${RELEASE_TYPE:-}}"
+RELEASE_NON_INTERACTIVE="${RELEASE_NON_INTERACTIVE:-false}"
+RELEASE_RUN_TESTS="${RELEASE_RUN_TESTS:-false}"
+
+if [ "${CI:-false}" = "true" ]; then
+    RELEASE_NON_INTERACTIVE=true
+fi
+
+if [ -n "$RELEASE_TYPE_INPUT" ]; then
+    case "$RELEASE_TYPE_INPUT" in
+        patch|minor|major|custom|skip|unchanged)
+            ;;
+        *)
+            echo -e "${RED}Invalid release type: ${RELEASE_TYPE_INPUT}${NC}"
+            echo -e "${YELLOW}Valid values: patch, minor, major, custom, skip, unchanged${NC}"
+            exit 1
+            ;;
+    esac
+fi
+
 # Early safety confirmation before doing anything destructive
 echo -e "${YELLOW}This script will:${NC}"
 echo "  - Check disk space and Docker status"
@@ -51,11 +72,15 @@ echo "  - Stop and remove existing MatchZy-related containers/images"
 echo "  - Prune Docker build and system caches"
 echo "  - Build, test, tag, and publish a new release"
 echo ""
-read -p "Are you sure you want to continue with the release process? (y/N) " -r EARLY_CONFIRM
-echo
-if [[ ! "$EARLY_CONFIRM" =~ ^[Yy]$ ]]; then
-    echo "Release aborted before making any changes."
-    exit 0
+if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+    echo -e "${BLUE}Non-interactive mode enabled: auto-confirming release start${NC}"
+else
+    read -p "Are you sure you want to continue with the release process? (y/N) " -r EARLY_CONFIRM
+    echo
+    if [[ ! "$EARLY_CONFIRM" =~ ^[Yy]$ ]]; then
+        echo "Release aborted before making any changes."
+        exit 0
+    fi
 fi
 
 # Check prerequisites
@@ -286,8 +311,16 @@ echo "  3) ${GREEN}major${NC} - ${CURRENT_VERSION} → $(bump_version "$CURRENT_
 echo "  4) ${GREEN}custom${NC} - Enter a specific version"
 echo "  5) ${GREEN}skip${NC} - Keep current version (${CURRENT_VERSION})"
 echo ""
-read -p "Enter choice (1-5) or press Enter for patch: " -r VERSION_CHOICE
-VERSION_CHOICE="${VERSION_CHOICE:-1}"
+if [ -n "$RELEASE_TYPE_INPUT" ]; then
+    VERSION_CHOICE="$RELEASE_TYPE_INPUT"
+    echo -e "${BLUE}Using release type from input:${NC} ${GREEN}${VERSION_CHOICE}${NC}"
+elif [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+    VERSION_CHOICE="patch"
+    echo -e "${BLUE}Non-interactive mode enabled: defaulting to patch bump${NC}"
+else
+    read -p "Enter choice (1-5) or press Enter for patch: " -r VERSION_CHOICE
+    VERSION_CHOICE="${VERSION_CHOICE:-1}"
+fi
 
 case "$VERSION_CHOICE" in
     1|patch)
@@ -377,11 +410,15 @@ echo -e "  ${BLUE}11.${NC} Send Discord release notification"
 echo ""
 echo -e "${YELLOW}═══════════════════════════════════════════════════════════${NC}"
 echo ""
-read -p "Continue? (y/n) " -n 1 -r
-echo
-if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-    echo "Release cancelled."
-    exit 0
+if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+    echo -e "${BLUE}Non-interactive mode enabled: auto-confirming release plan${NC}"
+else
+    read -p "Continue? (y/n) " -n 1 -r
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo "Release cancelled."
+        exit 0
+    fi
 fi
 
 # Ensure we're on main and up to date
@@ -448,9 +485,20 @@ echo -e "${GREEN}✅ Project build successful${NC}"
 # Step 2: Run tests (optional; skip by default)
 echo ""
 echo -e "${YELLOW}Step 2: Run tests?${NC}"
-read -p "Run tests (yarn test)? (y/N) [default: skip] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]]; then
+RUN_TESTS_REPLY="n"
+if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+    if [ "$RELEASE_RUN_TESTS" = "true" ]; then
+        RUN_TESTS_REPLY="y"
+        echo -e "${BLUE}Non-interactive mode: RELEASE_RUN_TESTS=true, running tests${NC}"
+    else
+        echo -e "${BLUE}Non-interactive mode: skipping tests${NC}"
+    fi
+else
+    read -p "Run tests (yarn test)? (y/N) [default: skip] " -n 1 -r
+    echo
+    RUN_TESTS_REPLY="$REPLY"
+fi
+if [[ $RUN_TESTS_REPLY =~ ^[Yy]$ ]]; then
     echo -e "${BLUE}Running tests... This may take a few minutes.${NC}"
     yarn test
     if [ $? -ne 0 ]; then
@@ -813,8 +861,13 @@ This PR bumps the version to ${NEW_VERSION} in preparation for release.
         
         if [ $? -ne 0 ]; then
             echo -e "${YELLOW}⚠️  Could not auto-merge PR. Please merge manually: ${PR_URL}${NC}"
-            echo -e "${BLUE}Press Enter after the PR is merged to continue...${NC}"
-            read -r
+            if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+                echo -e "${RED}Non-interactive mode cannot continue with manual PR merge. Aborting.${NC}"
+                exit 1
+            else
+                echo -e "${BLUE}Press Enter after the PR is merged to continue...${NC}"
+                read -r
+            fi
         fi
         
         # Switch back to main and ensure it's up to date
@@ -1012,10 +1065,15 @@ if [ -f "scripts/sync-version.sh" ]; then
 else
     echo -e "${RED}⚠️  sync-version.sh not found! Versions may be out of sync.${NC}"
     echo -e "${YELLOW}Please manually verify api/package.json and client/package.json have version ${NEW_VERSION}${NC}"
-    read -p "Continue anyway? (y/n) " -r CONTINUE_BUILD
-    if [[ ! "$CONTINUE_BUILD" =~ ^[Yy]$ ]]; then
-        echo "Build cancelled. Please fix version sync manually."
+    if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+        echo -e "${RED}Non-interactive mode cannot continue without sync-version.sh. Aborting.${NC}"
         exit 1
+    else
+        read -p "Continue anyway? (y/n) " -r CONTINUE_BUILD
+        if [[ ! "$CONTINUE_BUILD" =~ ^[Yy]$ ]]; then
+            echo "Build cancelled. Please fix version sync manually."
+            exit 1
+        fi
     fi
 fi
 echo ""
