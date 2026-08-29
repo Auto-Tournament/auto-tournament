@@ -43,8 +43,6 @@ interface MatchStatusChartProps {
 export default function MatchStatusChart({
   totalMatches,
   completedMatches,
-  _liveMatches,
-  _pendingMatches,
   matchData,
 }: MatchStatusChartProps) {
   const theme = useTheme();
