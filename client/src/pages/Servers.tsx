@@ -657,6 +657,16 @@ export default function Servers() {
     setEditingServer(null);
   };
 
+  /**
+   * Runs after a server is created, updated or deleted.
+   *
+   * Note this deliberately does NOT close the modal: ServerModal already calls
+   * onClose() itself, synchronously, right after onSave(). This function is
+   * async and can run for several seconds — auto-configuration posts to each
+   * new server with a 400ms gap, then schedules another reload 1.5s later — so
+   * a close here lands long after the dialog is gone, and shuts whatever the
+   * user has opened in the meantime.
+   */
   const handleSave = async (createdIds?: string[]) => {
     await loadServers({ useCached: false });
     if (createdIds?.length) {
@@ -677,7 +687,6 @@ export default function Servers() {
         closeSnackbar(key);
       }
     }
-    handleCloseModal();
   };
 
   const handleViewCurrentMatch = async (server: Server, event: React.MouseEvent) => {

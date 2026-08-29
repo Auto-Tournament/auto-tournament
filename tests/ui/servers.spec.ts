@@ -88,14 +88,11 @@ test.describe.serial('Server UI', () => {
       // modal. The previous version looked for that button, found nothing, and
       // silently skipped the entire delete stage while still reporting success.
       //
-      // Saving is asynchronous: handleSave runs auto-configuration, schedules a
-      // server reload 1.5s later, and only then calls handleCloseModal(). Reopen
-      // a dialog inside that window and the trailing close tears it down —
-      // Playwright sees the delete button detach mid-click. Wait the timer out.
-      // (Tracked as a real UI bug; a user clicking quickly hits the same thing.)
-      await page.waitForTimeout(2500);
-      await page.waitForLoadState('networkidle');
-
+      // Reopen the dialog immediately, with no wait. Saving kicks off several
+      // seconds of asynchronous work, and this used to end in a stale
+      // handleCloseModal() that tore down whichever dialog was open by then —
+      // Playwright saw the delete button detach mid-click. Clicking straight
+      // away is what a real user does, and is the point of the assertion.
       await serverCard.click();
       await expect(modal).toBeVisible();
 
