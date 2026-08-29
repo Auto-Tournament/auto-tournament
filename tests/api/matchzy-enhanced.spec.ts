@@ -1,277 +1,153 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
-import { wipeDatabaseAuto } from '../helpers/database';
-import { createTournament, startTournament } from '../helpers/tournaments';
-import { createTeams } from '../helpers/teams';
+import { setupTournament } from '../helpers/tournamentSetup';
+import { findMatchByTeams } from '../helpers/matches';
 
 /**
- * MatchZy Enhanced v1.3.0 Configuration Tests
- * 
- * These tests verify that MatchZy Enhanced cvars are correctly applied
- * to tournament and manual matches based on tournament type.
- * 
- * DISABLED: Tests require createTeams helper function and proper authentication setup
+ * MatchZy Enhanced cvar tests
+ *
+ * Every generated match config carries the MatchZy Enhanced cvar block that the
+ * game servers read. These tests pin down two things:
+ *
+ *  1. the baseline cvar set and its default values, and
+ *  2. that the admin's global settings override those defaults in new configs.
+ *
+ * NOTE: there are deliberately no "official vs shuffle profile" assertions here.
+ * `generateMatchzyEnhancedCvars` takes a tournament type but does not branch on
+ * it — the resolution order is baseline defaults → global settings → explicit
+ * overrides. An earlier version of this file asserted per-type profiles that the
+ * API has never implemented, which is why it sat disabled.
+ *
+ * @tag api
+ * @tag matchzy
  */
 
-test.describe.skip('MatchZy Enhanced Configuration', () => {
+/** Baseline values from DEFAULT_MATCHZY_ENHANCED_CVARS (api/src/services/matchzyConfigService.ts). */
+const DEFAULT_CVARS = {
+  matchzy_autoready_enabled: 0,
+  matchzy_both_teams_unpause_required: 1,
+  matchzy_max_pauses_per_team: 0,
+  matchzy_pause_duration: 0,
+  matchzy_side_selection_enabled: 1,
+  matchzy_side_selection_time: 60,
+  matchzy_gg_enabled: 0,
+  matchzy_gg_threshold: 0.8,
+  matchzy_gg_min_score_diff: 0,
+  matchzy_ffw_enabled: 0,
+  matchzy_ffw_time: 240,
+  matchzy_demo_recording_enabled: 1,
+};
+
+/** Reset the global MatchZy Enhanced settings back to "unset" (null = use defaults). */
+const CLEARED_SETTINGS = {
+  matchzyAutoreadyEnabled: null,
+  matchzyBothTeamsUnpauseRequired: null,
+  matchzyMaxPausesPerTeam: null,
+  matchzyPauseDuration: null,
+  matchzySideSelectionEnabled: null,
+  matchzySideSelectionTime: null,
+  matchzyGgEnabled: null,
+  matchzyGgThreshold: null,
+  matchzyGgMinScoreDiff: null,
+  matchzyFfwEnabled: null,
+  matchzyFfwTime: null,
+  matchzyDemoRecordingEnabled: null,
+};
+
+test.describe.serial('MatchZy Enhanced cvars', () => {
   test.beforeEach(async ({ page, request }) => {
-    // Authenticate first so we can wipe the database
     await setupTestContext(page, request);
-    // Then wipe database (page.request will have session cookies from authentication)
-    await wipeDatabaseAuto(page, request);
+    // Start from defaults so one test's overrides cannot leak into the next.
+    await request.put('/api/settings', { data: CLEARED_SETTINGS });
   });
 
-  test('Single elimination tournament should use official profile', async ({ request }) => {
-    // Create teams
-    const team1 = await createTeams(request, 1, 'Official Team 1');
-    const team2 = await createTeams(request, 1, 'Official Team 2');
-
-    // Create single elimination tournament
-    const tournament = await createTournament(request, {
-      name: 'Official Tournament',
-      type: 'single_elimination',
-      format: 'bo3',
-      teamIds: [team1[0].id, team2[0].id],
-    });
-
-    // Start tournament
-    await startTournament(request, tournament.id);
-
-    // Get first match
-    const matchesResponse = await request.get(`/api/tournament/${tournament.id}/bracket`);
-    expect(matchesResponse.ok()).toBeTruthy();
-    const bracketData = await matchesResponse.json();
-    const firstMatch = bracketData.matches[0];
-
-    // Get match config
-    const configResponse = await request.get(`/api/matches/${firstMatch.slug}/config`);
-    expect(configResponse.ok()).toBeTruthy();
-    const config = await configResponse.json();
-
-    // Verify MatchZy Enhanced cvars (official profile)
-    expect(config.cvars).toBeDefined();
-    expect(config.cvars.matchzy_autoready_enabled).toBe(0); // Manual ready
-    expect(config.cvars.matchzy_both_teams_unpause_required).toBe(1);
-    expect(config.cvars.matchzy_max_pauses_per_team).toBe(2);
-    expect(config.cvars.matchzy_pause_duration).toBe(300); // 5 minutes
-    expect(config.cvars.matchzy_side_selection_enabled).toBe(1);
-    expect(config.cvars.matchzy_side_selection_time).toBe(60);
-    expect(config.cvars.matchzy_gg_enabled).toBe(0); // No forfeits
-    expect(config.cvars.matchzy_ffw_enabled).toBe(1); // Handle disconnects
-    expect(config.cvars.matchzy_ffw_time).toBe(240); // 4 minutes
+  test.afterEach(async ({ request }) => {
+    await request.put('/api/settings', { data: CLEARED_SETTINGS });
   });
 
-  test('Shuffle tournament should use shuffle profile', async ({ request }) => {
-    // Create players
-    const team = await createTeams(request, 1, 'Shuffle Players', 6); // 6 players for 2v2
-    const playerIds = Object.keys(JSON.parse(team[0].players));
+  test(
+    'should include the full Enhanced cvar block with default values in a tournament match config',
+    { tag: ['@api', '@matchzy', '@cvars'] },
+    async ({ request }) => {
+      const setup = await setupTournament(request, {
+        type: 'single_elimination',
+        format: 'bo1',
+        teamCount: 2,
+        serverCount: 1,
+        prefix: 'matchzy-defaults',
+      });
+      expect(setup).toBeTruthy();
 
-    // Create shuffle tournament
-    const createResponse = await request.post('/api/tournament/shuffle', {
-      data: {
-        name: 'Shuffle Tournament',
-        teamSize: 2,
-        maps: ['de_dust2', 'de_mirage'],
-        mapSequence: ['de_dust2', 'de_mirage'],
-        playerIds: playerIds.slice(0, 4), // 4 players for 2v2
-        maxRounds: 16,
-        overtimeMode: 'disabled',
-      },
-    });
-    expect(createResponse.ok()).toBeTruthy();
-    const tournament = await createResponse.json();
+      const match = await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id);
+      expect(match).toBeTruthy();
 
-    // Start tournament
-    await startTournament(request, tournament.id);
+      const config = await (await request.get(`/api/matches/${match!.slug}.json`)).json();
+      expect(config.cvars).toBeDefined();
 
-    // Get first match
-    const matchesResponse = await request.get(`/api/tournament/${tournament.id}/bracket`);
-    expect(matchesResponse.ok()).toBeTruthy();
-    const bracketData = await matchesResponse.json();
-    const firstMatch = bracketData.matches[0];
+      for (const [cvar, value] of Object.entries(DEFAULT_CVARS)) {
+        expect(config.cvars[cvar], `${cvar} should use its documented default`).toBe(value);
+      }
 
-    // Get match config
-    const configResponse = await request.get(`/api/matches/${firstMatch.slug}/config`);
-    expect(configResponse.ok()).toBeTruthy();
-    const config = await configResponse.json();
+      // mp_maxrounds is added alongside the Enhanced block, from tournament settings.
+      expect(config.cvars.mp_maxrounds).toBeGreaterThan(0);
+    }
+  );
 
-    // Verify MatchZy Enhanced cvars (shuffle profile)
-    expect(config.cvars).toBeDefined();
-    expect(config.cvars.matchzy_autoready_enabled).toBe(1); // Auto-ready
-    expect(config.cvars.matchzy_both_teams_unpause_required).toBe(1);
-    expect(config.cvars.matchzy_max_pauses_per_team).toBe(1);
-    expect(config.cvars.matchzy_pause_duration).toBe(180); // 3 minutes
-    expect(config.cvars.matchzy_side_selection_enabled).toBe(1);
-    expect(config.cvars.matchzy_side_selection_time).toBe(30); // Quick
-    expect(config.cvars.matchzy_gg_enabled).toBe(0); // No forfeits
-    expect(config.cvars.matchzy_ffw_enabled).toBe(0); // No FFW for shuffle
-  });
+  test(
+    'should apply global MatchZy Enhanced settings as overrides in generated configs',
+    { tag: ['@api', '@matchzy', '@cvars', '@settings'] },
+    async ({ request }) => {
+      // Deliberately different from every default above.
+      const overrides = {
+        matchzyAutoreadyEnabled: 1,
+        matchzyMaxPausesPerTeam: 2,
+        matchzyPauseDuration: 300,
+        matchzySideSelectionTime: 30,
+        matchzyFfwEnabled: 1,
+        matchzyFfwTime: 120,
+      };
 
-  test('Double elimination tournament should use official profile', async ({ request }) => {
-    // Create teams
-    const teams = await createTeams(request, 4, 'DE Team');
+      const settingsResponse = await request.put('/api/settings', { data: overrides });
+      expect(settingsResponse.ok()).toBe(true);
 
-    // Create double elimination tournament
-    const tournament = await createTournament(request, {
-      name: 'Double Elimination',
-      type: 'double_elimination',
-      format: 'bo3',
-      teamIds: teams.map((t) => t.id),
-    });
+      const setup = await setupTournament(request, {
+        type: 'single_elimination',
+        format: 'bo1',
+        teamCount: 2,
+        serverCount: 1,
+        prefix: 'matchzy-overrides',
+      });
+      expect(setup).toBeTruthy();
 
-    // Start tournament
-    await startTournament(request, tournament.id);
+      const match = await findMatchByTeams(request, setup!.teams[0].id, setup!.teams[1].id);
+      expect(match).toBeTruthy();
 
-    // Get first match
-    const matchesResponse = await request.get(`/api/tournament/${tournament.id}/bracket`);
-    expect(matchesResponse.ok()).toBeTruthy();
-    const bracketData = await matchesResponse.json();
-    const firstMatch = bracketData.matches[0];
+      const config = await (await request.get(`/api/matches/${match!.slug}.json`)).json();
 
-    // Get match config
-    const configResponse = await request.get(`/api/matches/${firstMatch.slug}/config`);
-    expect(configResponse.ok()).toBeTruthy();
-    const config = await configResponse.json();
+      expect(config.cvars.matchzy_autoready_enabled).toBe(1);
+      expect(config.cvars.matchzy_max_pauses_per_team).toBe(2);
+      expect(config.cvars.matchzy_pause_duration).toBe(300);
+      expect(config.cvars.matchzy_side_selection_time).toBe(30);
+      expect(config.cvars.matchzy_ffw_enabled).toBe(1);
+      expect(config.cvars.matchzy_ffw_time).toBe(120);
 
-    // Verify MatchZy Enhanced cvars (official profile)
-    expect(config.cvars).toBeDefined();
-    expect(config.cvars.matchzy_autoready_enabled).toBe(0);
-    expect(config.cvars.matchzy_max_pauses_per_team).toBe(2);
-    expect(config.cvars.matchzy_pause_duration).toBe(300);
-    expect(config.cvars.matchzy_gg_enabled).toBe(0);
-    expect(config.cvars.matchzy_ffw_enabled).toBe(1);
-  });
+      // Settings that were not overridden keep their defaults.
+      expect(config.cvars.matchzy_both_teams_unpause_required).toBe(1);
+      expect(config.cvars.matchzy_gg_enabled).toBe(0);
+      expect(config.cvars.matchzy_demo_recording_enabled).toBe(1);
+    }
+  );
 
-  test('Manual match should use default profile', async ({ request }) => {
-    // Create teams
-    const teams = await createTeams(request, 2, 'Manual Team');
+  test(
+    'should reject invalid MatchZy Enhanced setting values',
+    { tag: ['@api', '@matchzy', '@settings', '@validation'] },
+    async ({ request }) => {
+      const response = await request.put('/api/settings', {
+        data: { matchzyAutoreadyEnabled: 'yes-please' },
+      });
 
-    // Create manual match
-    const createResponse = await request.post('/api/matches', {
-      data: {
-        slug: 'manual-match-test',
-        config: {
-          matchid: 0,
-          skip_veto: true,
-          players_per_team: 5,
-          num_maps: 1,
-          maplist: ['de_mirage'],
-          map_sides: ['knife'],
-          team1: {
-            id: teams[0].id,
-            name: teams[0].name,
-            tag: teams[0].tag,
-            players: JSON.parse(teams[0].players),
-            series_score: 0,
-          },
-          team2: {
-            id: teams[1].id,
-            name: teams[1].name,
-            tag: teams[1].tag,
-            players: JSON.parse(teams[1].players),
-            series_score: 0,
-          },
-        },
-      },
-    });
-    expect(createResponse.ok()).toBeTruthy();
-    const match = await createResponse.json();
-
-    // Verify MatchZy Enhanced cvars (default profile)
-    expect(match.config.cvars).toBeDefined();
-    expect(match.config.cvars.matchzy_autoready_enabled).toBe(0); // Manual ready
-    expect(match.config.cvars.matchzy_both_teams_unpause_required).toBe(1);
-    expect(match.config.cvars.matchzy_max_pauses_per_team).toBe(0); // Unlimited
-    expect(match.config.cvars.matchzy_pause_duration).toBe(0); // Unlimited
-    expect(match.config.cvars.matchzy_side_selection_enabled).toBe(1);
-    expect(match.config.cvars.matchzy_side_selection_time).toBe(60);
-    expect(match.config.cvars.matchzy_gg_enabled).toBe(0); // No forfeits
-    expect(match.config.cvars.matchzy_ffw_enabled).toBe(0); // No FFW
-  });
-
-  test('Manual match with custom MatchZy cvars should preserve them', async ({ request }) => {
-    // Create teams
-    const teams = await createTeams(request, 2, 'Custom Team');
-
-    // Create manual match with custom MatchZy Enhanced cvars
-    const createResponse = await request.post('/api/matches', {
-      data: {
-        slug: 'custom-match-test',
-        config: {
-          matchid: 0,
-          skip_veto: true,
-          players_per_team: 5,
-          num_maps: 1,
-          maplist: ['de_nuke'],
-          map_sides: ['team1_ct'],
-          team1: {
-            id: teams[0].id,
-            name: teams[0].name,
-            tag: teams[0].tag,
-            players: JSON.parse(teams[0].players),
-            series_score: 0,
-          },
-          team2: {
-            id: teams[1].id,
-            name: teams[1].name,
-            tag: teams[1].tag,
-            players: JSON.parse(teams[1].players),
-            series_score: 0,
-          },
-          cvars: {
-            mp_maxrounds: 16,
-            matchzy_autoready_enabled: 1, // Custom: auto-ready
-            matchzy_gg_enabled: 1, // Custom: allow forfeits
-            matchzy_gg_threshold: 0.6, // Custom: 60% threshold
-          },
-        },
-      },
-    });
-    expect(createResponse.ok()).toBeTruthy();
-    const match = await createResponse.json();
-
-    // Verify custom MatchZy Enhanced cvars were preserved
-    expect(match.config.cvars).toBeDefined();
-    expect(match.config.cvars.matchzy_autoready_enabled).toBe(1); // Custom
-    expect(match.config.cvars.matchzy_gg_enabled).toBe(1); // Custom
-    expect(match.config.cvars.matchzy_gg_threshold).toBe(0.6); // Custom
-    expect(match.config.cvars.mp_maxrounds).toBe(16);
-  });
-
-  test('Swiss tournament should use official profile', async ({ request }) => {
-    // Create teams (8 teams for Swiss)
-    const teams = await createTeams(request, 8, 'Swiss Team');
-
-    // Create Swiss tournament
-    const tournament = await createTournament(request, {
-      name: 'Swiss Tournament',
-      type: 'swiss',
-      format: 'bo1',
-      teamIds: teams.map((t) => t.id),
-    });
-
-    // Start tournament
-    await startTournament(request, tournament.id);
-
-    // Get first match
-    const matchesResponse = await request.get(`/api/tournament/${tournament.id}/bracket`);
-    expect(matchesResponse.ok()).toBeTruthy();
-    const bracketData = await matchesResponse.json();
-    const firstMatch = bracketData.matches[0];
-
-    // Get match config
-    const configResponse = await request.get(`/api/matches/${firstMatch.slug}/config`);
-    expect(configResponse.ok()).toBeTruthy();
-    const config = await configResponse.json();
-
-    // Verify MatchZy Enhanced cvars (official profile)
-    expect(config.cvars).toBeDefined();
-    expect(config.cvars.matchzy_autoready_enabled).toBe(0);
-    expect(config.cvars.matchzy_both_teams_unpause_required).toBe(1);
-    expect(config.cvars.matchzy_max_pauses_per_team).toBe(2);
-    expect(config.cvars.matchzy_pause_duration).toBe(300);
-    expect(config.cvars.matchzy_gg_enabled).toBe(0);
-    expect(config.cvars.matchzy_ffw_enabled).toBe(1);
-    expect(config.cvars.matchzy_ffw_time).toBe(240);
-  });
+      expect(response.ok()).toBe(false);
+      expect((await response.json()).error).toContain('matchzyAutoreadyEnabled');
+    }
+  );
 });

@@ -1,9 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
-import { executeVetoActions, getVetoState, getCSMajorBO1Actions, getCSMajorBO3Actions } from '../helpers/veto';
+import {
+  executeVetoActions,
+  getVetoState,
+  getCSMajorBO1Actions,
+  getCSMajorBO3Actions,
+  actingSteamIdFor,
+} from '../helpers/veto';
+import type { Team } from '../helpers/teams';
 
 /**
  * Veto API tests
@@ -16,12 +23,17 @@ import { executeVetoActions, getVetoState, getCSMajorBO1Actions, getCSMajorBO3Ac
  */
 
 test.describe.serial('Veto API', () => {
+  let team1: Team;
+  let team2: Team;
   let team1Id: string;
   let team2Id: string;
   const maps = ['de_mirage', 'de_inferno', 'de_ancient', 'de_anubis', 'de_dust2', 'de_vertigo', 'de_nuke'];
 
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
     
     // Setup tournament with all prerequisites (webhook, servers, teams)
     const setup = await setupTournament(request, {
@@ -35,10 +47,11 @@ test.describe.serial('Veto API', () => {
     expect(setup).toBeTruthy();
     if (!setup) return;
     
-    [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
+    [team1, team2] = [setup.teams[0], setup.teams[1]];
+    [team1Id, team2Id] = [team1.id, team2.id];
   });
 
-  test.skip('should complete CS Major BO1 veto and assign sides correctly', {
+  test('should complete CS Major BO1 veto and assign sides correctly', {
     tag: ['@api', '@veto', '@cs-major', '@bo1'],
   }, async ({ request }) => {
     // Create and start BO1 tournament
@@ -57,12 +70,12 @@ test.describe.serial('Veto API', () => {
     expect(match?.slug).toBeTruthy();
 
     // Execute CS Major BO1 veto (7 steps)
-    const actions = getCSMajorBO1Actions(team1Id, team2Id);
+    const actions = getCSMajorBO1Actions(team1, team2);
     const finalResponse = await executeVetoActions(request, match!.slug, actions);
     expect(finalResponse).toBeTruthy();
 
     // Verify veto completed
-    const vetoState = await getVetoState(request, match!.slug);
+    const vetoState = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(vetoState).toBeTruthy();
     expect(vetoState.status).toBe('completed');
     expect(vetoState.pickedMaps).toHaveLength(1);
@@ -107,12 +120,12 @@ test.describe.serial('Veto API', () => {
     expect(match.slug).toBeTruthy();
 
     // Execute CS Major BO3 veto (9 steps)
-    const actions = getCSMajorBO3Actions(team1Id, team2Id);
+    const actions = getCSMajorBO3Actions(team1, team2);
     const finalResponse = await executeVetoActions(request, match!.slug, actions);
     expect(finalResponse).toBeTruthy();
 
     // Verify veto completed
-    const vetoState = await getVetoState(request, match!.slug);
+    const vetoState = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(vetoState).toBeTruthy();
     expect(vetoState.status).toBe('completed');
     expect(vetoState.pickedMaps).toHaveLength(3);
@@ -149,13 +162,13 @@ test.describe.serial('Veto API', () => {
 
     // Test CT side pick
     const ctActions = [
-      ...getCSMajorBO1Actions(team1Id, team2Id).slice(0, 6), // All bans
-      { side: 'CT', teamSlug: team2Id }, // Team B picks CT
+      ...getCSMajorBO1Actions(team1, team2).slice(0, 6), // All bans
+      { side: 'CT', teamSlug: team2Id, actAsSteamId: actingSteamIdFor(team2) }, // Team B picks CT
     ];
     const ctResponse = await executeVetoActions(request, match!.slug, ctActions);
     expect(ctResponse).toBeTruthy();
     
-    let vetoState = await getVetoState(request, match!.slug);
+    let vetoState = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(vetoState.pickedMaps[0].sideTeam2).toBe('CT');
     expect(vetoState.pickedMaps[0].sideTeam1).toBe('T');
 
@@ -174,21 +187,18 @@ test.describe.serial('Veto API', () => {
 
     // Test T side pick
     const tActions = [
-      ...getCSMajorBO1Actions(team1Id, team2Id).slice(0, 6), // All bans
-      { side: 'T', teamSlug: team2Id }, // Team B picks T
+      ...getCSMajorBO1Actions(team1, team2).slice(0, 6), // All bans
+      { side: 'T', teamSlug: team2Id, actAsSteamId: actingSteamIdFor(team2) }, // Team B picks T
     ];
     const tResponse = await executeVetoActions(request, match2!.slug, tActions);
     expect(tResponse).toBeTruthy();
     
-    vetoState = await getVetoState(request, match2!.slug);
+    vetoState = await getVetoState(request, match2!.slug, actingSteamIdFor(team1));
     expect(vetoState.pickedMaps[0].sideTeam2).toBe('T');
     expect(vetoState.pickedMaps[0].sideTeam1).toBe('CT');
   });
 
-  // TODO: Implement custom veto order validation in tournament creation endpoint
-  // The API currently accepts invalid custom veto orders (missing side pick for BO1)
-  // Once validation is implemented, uncomment and complete this test
-  test.skip('should validate and reject invalid custom veto orders', {
+  test('should validate and reject invalid custom veto orders', {
     tag: ['@api', '@veto', '@custom'],
   }, async ({ request }) => {
     // Create tournament with invalid custom veto order (missing side pick)
@@ -256,16 +266,16 @@ test.describe.serial('Veto API', () => {
     expect(match).toBeTruthy();
 
     // Get veto state - should use custom order
-    const vetoState = await getVetoState(request, match!.slug);
+    const vetoState = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(vetoState).toBeTruthy();
     expect(vetoState.totalSteps).toBe(7);
 
     // Complete the veto to verify it works
-    const actions = getCSMajorBO1Actions(team1Id, team2Id);
+    const actions = getCSMajorBO1Actions(team1, team2);
     const finalResponse = await executeVetoActions(request, match!.slug, actions);
     expect(finalResponse).toBeTruthy();
     
-    const completedVeto = await getVetoState(request, match!.slug);
+    const completedVeto = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(completedVeto.status).toBe('completed');
   });
 });

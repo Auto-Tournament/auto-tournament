@@ -27,12 +27,8 @@ test.describe.serial('Maps UI', () => {
 
       // Open create modal
       const addButton = page.getByTestId('add-map-button');
-      const buttonVisible = await addButton.isVisible().catch(() => false);
-
-      if (!buttonVisible) {
-        test.skip();
-        return;
-      }
+      // Assert rather than self-skip: a missing button is a regression.
+      await expect(addButton).toBeVisible({ timeout: 10000 });
 
       await addButton.click();
 

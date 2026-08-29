@@ -1,11 +1,14 @@
 import { test, expect } from '@playwright/test';
 import { setupShuffleTournament } from '../helpers/shuffleTournament';
 import { createPlayer, type Player } from '../helpers/players';
-import { getAuthHeader } from '../helpers/auth';
+import { setupTestContext } from '../helpers/setup';
 
 /**
  * Public Pages UI tests
- * Tests public pages that don't require authentication
+ *
+ * Player profile and find-player pages are reachable by any signed-in identity
+ * (they are `adminOnly={false}` routes), not just admins. Seeding the players
+ * they display still needs an admin session on the `request` context.
  *
  * @tag ui
  * @tag public
@@ -15,8 +18,12 @@ import { getAuthHeader } from '../helpers/auth';
  */
 
 test.describe.serial('Public Pages UI', () => {
-  test.skip(
-    'should display player page without authentication',
+  test.beforeEach(async ({ page, request }) => {
+    // Creating the players below is admin-only; the pages themselves are not.
+    await setupTestContext(page, request);
+  });
+
+  test('should display a player profile page',
     {
       tag: ['@ui', '@public', '@players'],
     },
@@ -51,8 +58,7 @@ test.describe.serial('Public Pages UI', () => {
     }
   );
 
-  test.skip(
-    'should allow finding player by Steam URL',
+  test('should allow finding player by Steam URL',
     {
       tag: ['@ui', '@public', '@players', '@search'],
     },
@@ -103,10 +109,7 @@ test.describe.serial('Public Pages UI', () => {
         initialELO: 1500,
       });
 
-      if (!player) {
-        test.skip();
-        return;
-      }
+      expect(player, 'test player should have been created').toBeTruthy();
 
       // Navigate to public page directly (no need to clear localStorage)
       await page.goto(`/player/${player.id}`, { waitUntil: 'domcontentloaded' });

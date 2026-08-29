@@ -7,13 +7,13 @@ This directory contains the test suite for MatchZy Auto Tournament.
 ```
 tests/
 ├── helpers/           # Shared test utilities
-│   ├── auth.ts       # Authentication helpers
+│   ├── auth.ts       # Authentication + admin impersonation helpers
 │   ├── database.ts   # Database management helpers
-│   ├── setup.ts      # Test setup helpers
+│   ├── setup.ts      # Test setup helpers (signs in page AND request)
 │   ├── teams.ts      # Team creation/management helpers
 │   ├── servers.ts    # Server creation/management helpers
-│   ├── fixtures.ts   # Playwright fixtures
-│   └── storage-state.ts # Storage state helpers
+│   ├── veto.ts       # Veto API helpers
+│   └── vetoUI.ts     # Veto UI helpers
 ├── api/              # API tests (no UI interaction)
 │   └── servers.spec.ts
 ├── ui/               # UI tests (browser interaction)
@@ -58,56 +58,83 @@ test.describe.serial('My Tests', () => {
 - ✅ Tests run in order
 - ✅ If one fails, subsequent tests are skipped
 - ❌ localStorage/session does NOT persist between tests
-- ❌ Each test needs to sign in separately (or use storage state)
+- ❌ Each test needs to sign in separately (see "Two cookie jars" below)
 
-#### Sharing Authentication State
+#### Two cookie jars: `page` and `request`
 
-**Option 1: Use `ensureSignedIn()` helper** (Recommended for most cases)
+Playwright's `page` and the standalone `request` fixture do **not** share cookies.
+`page.request` uses the browser context's jar; the `request` fixture has its own.
+
+Almost every helper in `helpers/` drives the API through `request`, so a test that
+only calls `ensureSignedIn(page)` will get
+`401 Unauthorized - Admin session required` from those helpers.
+
+Use `setupTestContext(page, request)`, which signs in on both:
 
 ```typescript
-test('my test', async ({ page }) => {
-  await ensureSignedIn(page); // Checks first, only signs in if needed
-  // Now authenticated
+test.beforeEach(async ({ page, request }) => {
+  await setupTestContext(page, request);
 });
 ```
 
-**Option 2: Use Storage State** (For all tests in a file)
+If a spec only needs the `request` side, call `signInViaRequest(request)` directly.
+
+#### Acting as a player (veto and other player-only flows)
+
+Veto actions are authorized from the caller's **Steam identity** — a `teamSlug` in
+the request body is ignored, and an admin is not a member of either team. Tests use
+admin impersonation to act as a real roster member:
 
 ```typescript
-// In playwright.config.ts
-use: {
-  storageState: 'tests/.auth/user.json', // Auto-authenticates all tests
-}
+import { impersonatePlayer, stopImpersonating } from './helpers/auth';
+
+await impersonatePlayer(request, steamId); // admin now acts as this player
+// ... perform veto actions ...
+await stopImpersonating(request);
 ```
 
-**Option 3: Use Fixtures** (For reusable authenticated page)
+The veto helpers (`helpers/veto.ts`, `helpers/vetoUI.ts`) do this for you — each
+action carries an `actAsSteamId` and impersonation is always cleared afterwards.
 
-```typescript
-import { test } from './helpers/fixtures';
+Note that the veto board lives on a player's **own** profile page
+(`/player/:steamId`), not on the team page.
 
-test('my test', async ({ authenticatedPage }) => {
-  // authenticatedPage is already signed in
-});
-```
+#### Fake servers
+
+Create test servers with host `0.0.0.0`. The API treats that as a fake server
+(canned RCON, always online). Any other host makes the tournament-start preflight
+attempt a real RCON `version` call, which fails and blocks the tournament with
+`cs2_outdated_servers`. `createTestServer` already uses `FAKE_SERVER_HOST`.
 
 ## Helpers
 
 ### Authentication
 
 ```typescript
-import { signIn, ensureSignedIn, getAuthHeader } from './helpers/auth';
+import {
+  signIn,
+  ensureSignedIn,
+  signInViaRequest,
+  signInAsPlayer,
+  impersonatePlayer,
+  stopImpersonating,
+} from './helpers/auth';
 
-// Sign in via UI
+// Sign in the browser page as admin
 await signIn(page);
 
-// Sign in via API (faster)
-await signInViaAPI(page);
-
-// Ensure signed in (checks first, only signs in if needed)
+// Ensure the page is signed in (checks first, only signs in if needed)
 await ensureSignedIn(page);
 
-// Get auth header for API requests
-const headers = getAuthHeader();
+// Sign in the standalone `request` context as admin (needed by API helpers)
+await signInViaRequest(request);
+
+// Sign in as a normal, non-admin player
+await signInAsPlayer(page);
+
+// Act as another player (admin only)
+await impersonatePlayer(request, steamId);
+await stopImpersonating(request);
 ```
 
 ### Database
@@ -194,9 +221,11 @@ test.describe.serial('Server Tests', () => {
 1. **Merge related operations**: Create + delete in one test
 2. **Use helpers**: Don't repeat setup code
 3. **Use `test.describe.serial()`**: For tests that depend on each other
-4. **Use `ensureSignedIn()`**: Instead of signing in every time
-5. **Keep files small**: Split into logical groups if > 400 lines
-6. **Tag tests**: Use tags like `@api`, `@ui`, `@crud` for filtering
+4. **Use `setupTestContext(page, request)`**: Signs in both cookie jars
+5. **Never let a test skip itself**: `if (!visible) test.skip()` hides regressions —
+   assert instead, so a missing element fails the run
+6. **Keep files small**: Split into logical groups if > 400 lines
+7. **Tag tests**: Use tags like `@api`, `@ui`, `@crud` for filtering
 
 ## Running Tests
 
@@ -298,11 +327,9 @@ yarn test:ui:manual
 
 ### Q: Do tests share authentication state?
 
-**A**: No, by default each test gets a fresh browser context. Use:
-
-- `ensureSignedIn()` helper (checks first, only signs in if needed)
-- Storage state (auto-authenticates all tests)
-- Fixtures (reusable authenticated page)
+**A**: No. Each test gets a fresh browser context, and `page` and `request` have
+separate cookie jars even within one test. Use `setupTestContext(page, request)`
+to sign in on both.
 
 ### Q: How do I order tests?
 
@@ -310,4 +337,6 @@ yarn test:ui:manual
 
 ### Q: Do I need to sign in for each test?
 
-**A**: Yes, unless you use storage state or fixtures. But `ensureSignedIn()` is smart - it checks first and only signs in if needed.
+**A**: Yes. `ensureSignedIn()` is cheap though — it checks first and only signs in
+if needed. Remember to sign in the `request` context too (`signInViaRequest`), or
+use `setupTestContext(page, request)` which does both.

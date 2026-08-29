@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
+import { ensureSignedIn, getAuthHeader, signInViaRequest } from '../helpers/auth';
 import { setupShuffleTournament, getStandings } from '../helpers/shuffleTournament';
 import { createPlayer, getPlayer, type Player } from '../helpers/players';
 
@@ -14,16 +14,18 @@ import { createPlayer, getPlayer, type Player } from '../helpers/players';
  * @tag players
  */
 
-test.describe.skip('Public Pages API', () => {
+test.describe('Public Pages API', () => {
   let testPlayer: Player | null = null;
   let tournamentId: number = 1;
 
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
   });
 
-  test.skip(
-    'should provide public player page endpoint without authentication',
+  test('should provide public player page endpoint without authentication',
     {
       tag: ['@api', '@public', '@players'],
     },

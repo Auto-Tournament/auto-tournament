@@ -74,6 +74,16 @@ export async function deleteServer(request: APIRequestContext, serverId: string)
 }
 
 /**
+ * Host used for fake test servers.
+ *
+ * The API treats 0.0.0.0 as a "fake" server: RCON returns canned responses and
+ * status is always online. Any other host makes the tournament-start preflight
+ * try a real RCON `version` call, which fails and blocks the tournament with
+ * `cs2_outdated_servers`.
+ */
+export const FAKE_SERVER_HOST = '0.0.0.0';
+
+/**
  * Create a test server
  * @param request Playwright API request context
  * @param prefix Prefix for server name/ID
@@ -87,7 +97,7 @@ export async function createTestServer(
   return await createServer(request, {
     id: `${prefix}-server-${timestamp}`,
     name: `${prefix} Server ${timestamp}`,
-    host: '127.0.0.1',
+    host: FAKE_SERVER_HOST,
     port: 27015 + (timestamp % 1000),
     password: 'testpassword123',
     enabled: true,

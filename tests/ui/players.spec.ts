@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 import { createPlayer, getAllPlayers, type Player } from '../helpers/players';
+import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Player Management UI tests
@@ -12,12 +13,14 @@ import { createPlayer, getAllPlayers, type Player } from '../helpers/players';
  */
 
 test.describe.serial('Player Management UI', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
   });
 
-  test.skip(
-    'should display players page',
+  test('should display players page',
     {
       tag: ['@ui', '@players'],
     },
@@ -31,8 +34,7 @@ test.describe.serial('Player Management UI', () => {
     }
   );
 
-  test.skip(
-    'should create player via UI',
+  test('should create player via UI',
     {
       tag: ['@ui', '@players', '@crud'],
     },
@@ -82,8 +84,7 @@ test.describe.serial('Player Management UI', () => {
   );
 
   // Consolidated players page test
-  test.skip(
-    'should display players page and list',
+  test('should display players page and list',
     {
       tag: ['@ui', '@players'],
     },
@@ -106,8 +107,7 @@ test.describe.serial('Player Management UI', () => {
     }
   );
 
-  test.skip(
-    'should allow editing player Skill Rating',
+  test('should allow editing player Skill Rating',
     {
       tag: ['@ui', '@players', '@elo'],
     },
@@ -118,12 +118,8 @@ test.describe.serial('Player Management UI', () => {
         name: 'Rating Edit Test',
         initialELO: 1500,
       });
-      expect(testPlayer).toBeTruthy();
-
-      if (!testPlayer) {
-        test.skip();
-        return;
-      }
+      // Fail loudly if seeding did not work; a skipped test hides the breakage.
+      expect(testPlayer, 'test player should have been created').toBeTruthy();
 
       await page.goto('/players');
       await page.waitForLoadState('networkidle');
@@ -144,7 +140,9 @@ test.describe.serial('Player Management UI', () => {
             await eloField.clear();
             await eloField.fill('3500');
 
-            // Save changes
+            // Save changes. Snackbars are anchored bottom-right, over the
+            // dialog's Save button, so clear them first.
+            await dismissSnackbars(page);
             const saveButton = page.getByTestId('player-save-button');
             await Promise.all([
               page

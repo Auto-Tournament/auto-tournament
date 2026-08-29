@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { findMatchByTeams } from '../helpers/matches';
 import {
@@ -7,7 +7,9 @@ import {
   getVetoState,
   getCSMajorBO1Actions,
   getCSMajorBO3Actions,
+  actingSteamIdFor,
 } from '../helpers/veto';
+import type { Team } from '../helpers/teams';
 
 /**
  * CS Major Veto Format API tests
@@ -20,6 +22,8 @@ import {
  */
 
 test.describe.serial('CS Major BO1 Veto - API E2E', () => {
+  let team1: Team;
+  let team2: Team;
   let team1Id: string;
   let team2Id: string;
   let matchSlug: string;
@@ -35,6 +39,9 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
 
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
 
     // Setup tournament with all prerequisites (webhook, servers, teams)
     const setup = await setupTournament(request, {
@@ -48,7 +55,8 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
     expect(setup).toBeTruthy();
     if (!setup) return;
 
-    [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
+    [team1, team2] = [setup.teams[0], setup.teams[1]];
+    [team1Id, team2Id] = [team1.id, team2.id];
 
     // Find match - poll until it's created (tournament start creates matches)
     let match: any = null;
@@ -77,7 +85,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
     matchSlug = match.slug;
   });
 
-  test.skip(
+  test(
     'should complete CS Major BO1 veto and generate match config',
     {
       tag: ['@api', '@veto', '@cs-major', '@bo1'],
@@ -89,12 +97,12 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
       expect(matchCheck?.slug).toBe(matchSlug);
 
       // Execute CS Major BO1 veto (7 steps)
-      const actions = getCSMajorBO1Actions(team1Id, team2Id);
+      const actions = getCSMajorBO1Actions(team1, team2);
       const finalResponse = await executeVetoActions(request, matchSlug, actions);
       expect(finalResponse).toBeTruthy();
 
       // Verify veto completed
-      const vetoState = await getVetoState(request, matchSlug);
+      const vetoState = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
       expect(vetoState).toBeTruthy();
       expect(vetoState.status).toBe('completed');
       expect(vetoState.pickedMaps).toHaveLength(1);
@@ -125,10 +133,10 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
     },
     async ({ request }) => {
       // Check if veto is already completed, if not, run it
-      let vetoState = await getVetoState(request, matchSlug);
+      let vetoState = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
       if (!vetoState || vetoState.status !== 'completed') {
         // Execute CS Major BO1 veto (7 steps)
-        const actions = getCSMajorBO1Actions(team1Id, team2Id);
+        const actions = getCSMajorBO1Actions(team1, team2);
         await executeVetoActions(request, matchSlug, actions);
 
         // Wait for veto to complete
@@ -136,7 +144,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
         await expect
           .poll(
             async () => {
-              const state = await getVetoState(request, matchSlug);
+              const state = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
               if (state?.status === 'completed') {
                 polledVetoState = state;
                 return true;
@@ -191,6 +199,8 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
 });
 
 test.describe.serial('CS Major BO3 Veto - API E2E', () => {
+  let team1: Team;
+  let team2: Team;
   let team1Id: string;
   let team2Id: string;
   let matchSlug: string;
@@ -206,6 +216,9 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
 
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
 
     // Setup tournament with all prerequisites (webhook, servers, teams)
     const setup = await setupTournament(request, {
@@ -219,7 +232,8 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
     expect(setup).toBeTruthy();
     if (!setup) return;
 
-    [team1Id, team2Id] = [setup.teams[0].id, setup.teams[1].id];
+    [team1, team2] = [setup.teams[0], setup.teams[1]];
+    [team1Id, team2Id] = [team1.id, team2.id];
 
     // Find match
     let match: any = null;
@@ -248,19 +262,19 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
     matchSlug = match.slug;
   });
 
-  test.skip(
+  test(
     'should complete CS Major BO3 veto with all 9 steps',
     {
       tag: ['@api', '@veto', '@cs-major', '@bo3'],
     },
     async ({ request }) => {
       // Execute CS Major BO3 veto (9 steps)
-      const actions = getCSMajorBO3Actions(team1Id, team2Id);
+      const actions = getCSMajorBO3Actions(team1, team2);
       const finalResponse = await executeVetoActions(request, matchSlug, actions);
       expect(finalResponse).toBeTruthy();
 
       // Verify veto completed
-      const vetoState = await getVetoState(request, matchSlug);
+      const vetoState = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
       expect(vetoState).toBeTruthy();
       expect(vetoState.status).toBe('completed');
       expect(vetoState.pickedMaps).toHaveLength(3);
@@ -287,10 +301,10 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
     },
     async ({ request }) => {
       // Check if veto is already completed, if not, run it
-      let vetoState = await getVetoState(request, matchSlug);
+      let vetoState = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
       if (!vetoState || vetoState.status !== 'completed') {
         // Execute CS Major BO3 veto (9 steps)
-        const actions = getCSMajorBO3Actions(team1Id, team2Id);
+        const actions = getCSMajorBO3Actions(team1, team2);
         await executeVetoActions(request, matchSlug, actions);
 
         // Wait for veto to complete
@@ -298,7 +312,7 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
         await expect
           .poll(
             async () => {
-              const state = await getVetoState(request, matchSlug);
+              const state = await getVetoState(request, matchSlug, actingSteamIdFor(team1));
               if (state?.status === 'completed') {
                 polledVetoState = state;
                 return true;

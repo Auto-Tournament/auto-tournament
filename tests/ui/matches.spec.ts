@@ -15,8 +15,7 @@ test.describe.serial('Matches UI', () => {
     await ensureSignedIn(page);
   });
 
-  test.skip(
-    'should navigate to and display matches page',
+  test('should navigate to and display matches page',
     {
       tag: ['@ui', '@matches'],
     },
@@ -31,8 +30,7 @@ test.describe.serial('Matches UI', () => {
     }
   );
 
-  test.skip(
-    'should display matches list or empty state and filter/search',
+  test('should display matches list or empty state and filter/search',
     {
       tag: ['@ui', '@matches'],
     },

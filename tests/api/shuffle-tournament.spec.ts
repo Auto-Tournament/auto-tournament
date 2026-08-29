@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
+import { ensureSignedIn, getAuthHeader, signInViaRequest } from '../helpers/auth';
 import {
   setupShuffleTournament,
   createShuffleTournament,
@@ -36,6 +36,9 @@ test.describe.serial('Shuffle Tournament API', () => {
 
   test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
   });
 
   test.afterEach(async ({ request }) => {
@@ -49,8 +52,7 @@ test.describe.serial('Shuffle Tournament API', () => {
     }
   });
 
-  test.skip(
-    'should create shuffle tournament with valid configuration',
+  test('should create shuffle tournament with valid configuration',
     {
       tag: ['@api', '@shuffle', '@tournament'],
     },
