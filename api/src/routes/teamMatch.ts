@@ -8,19 +8,16 @@ import { teamService } from '../services/teamService';
 import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiveStatsService';
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
-import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
+import { resolveViewerIdentity } from '../utils/viewerIdentity';
 
 const router = Router();
 
-function getViewerSteamId(req: Request): string | null {
-  const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-  if (cookieSteamId) return cookieSteamId;
-
-  const anyReq = req as Request & { user?: { steamId?: string } };
-  if (anyReq.user?.steamId && anyReq.user.steamId.trim().length > 0) {
-    return anyReq.user.steamId.trim();
-  }
-  return null;
+/**
+ * Steam ID this request should be treated as (admin impersonation applied).
+ */
+async function getViewerSteamId(req: Request): Promise<string | null> {
+  const { effectiveSteamId } = await resolveViewerIdentity(req);
+  return effectiveSteamId;
 }
 
 /**
@@ -325,7 +322,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // We intentionally scope this to the team whose page is being viewed
     // (teamId route param), not just "any team in the match", so opponents
     // cannot use the other team's link to see server or veto controls.
-    const viewerSteamId = getViewerSteamId(req);
+    const viewerSteamId = await getViewerSteamId(req);
     const playersForThisTeam = isTeam1 ? normalizedTeam1Players : normalizedTeam2Players;
     const viewerIsTeamMember =
       !!viewerSteamId && playersForThisTeam.some((p) => p.steamid === viewerSteamId);

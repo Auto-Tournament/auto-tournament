@@ -20,6 +20,7 @@ import AddIcon from '@mui/icons-material/Add';
 import PersonIcon from '@mui/icons-material/Person';
 import SearchIcon from '@mui/icons-material/Search';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
+import VisibilityIcon from '@mui/icons-material/Visibility';
 import { api } from '../utils/api';
 import PlayerModal from '../components/modals/PlayerModal';
 import { PlayerImportModal } from '../components/modals/PlayerImportModal';
@@ -30,11 +31,13 @@ import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Players() {
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
   const { showSuccess, showError } = useSnackbar();
+  const { startImpersonation } = useAuth();
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<PlayerDetail[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,6 +53,15 @@ export default function Players() {
   useEffect(() => {
     document.title = t('layout.pageTitle.players');
   }, [t]);
+
+  const handleImpersonate = async (player: PlayerDetail) => {
+    try {
+      // Reloads the app as the target player on success.
+      await startImpersonation(player.id);
+    } catch (error) {
+      showError(error instanceof Error ? error.message : t('impersonation.failed'));
+    }
+  };
 
   const handleOpenModal = (player?: PlayerDetail) => {
     setEditingPlayer(player || null);
@@ -353,6 +365,21 @@ export default function Players() {
                               <OpenInNewIcon fontSize="small" />
                             </IconButton>
                           </Tooltip>
+                          {/* Admins can't be impersonated, so don't offer it. */}
+                          {!player.isAdmin && (
+                            <Tooltip title={t('impersonation.viewAs')}>
+                              <IconButton
+                                size="small"
+                                data-testid={`impersonate-player-${player.id}`}
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  void handleImpersonate(player);
+                                }}
+                              >
+                                <VisibilityIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Box>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {player.id}

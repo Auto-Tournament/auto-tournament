@@ -11,6 +11,12 @@ import {
   getVerifiedPlayerSteamId,
 } from '../utils/signedPlayerCookie';
 import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
+import {
+  signImpersonatedSteamId,
+  IMPERSONATION_COOKIE_NAME,
+} from '../utils/impersonationCookie';
+import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -50,6 +56,28 @@ function shouldUseSecureCookie(req: Request): boolean {
   if (req.secure) return true;
   // As a final fallback, respect explicit FRONTEND_BASE_URL scheme.
   return getFrontendBaseUrl(req).startsWith('https://');
+}
+
+function setImpersonationCookie(req: Request, res: Response, steamId: string): void {
+  res.cookie(IMPERSONATION_COOKIE_NAME, signImpersonatedSteamId(steamId), {
+    // Read server-side only; the client learns about impersonation via
+    // /api/auth/me and /api/auth/impersonate.
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+    path: '/',
+    // Deliberately short-lived: impersonation is a debugging tool, not a login.
+    maxAge: 1000 * 60 * 60 * 2, // 2 hours
+  });
+}
+
+function clearImpersonationCookie(req: Request, res: Response): void {
+  res.clearCookie(IMPERSONATION_COOKIE_NAME, {
+    path: '/',
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+  });
 }
 
 function setPlayerSteamCookie(req: Request, res: Response, steamId: string): void {
@@ -836,11 +864,16 @@ router.get('/providers', async (_req: Request, res: Response) => {
  */
 router.get('/me', async (req: Request, res: Response) => {
   try {
-    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
+    // The *effective* identity: normally the signed-in user, but an admin who
+    // started an impersonation session is reported as the impersonated player
+    // so all player-facing UI (veto, team pages, CTAs) matches what the API
+    // will actually authorize.
+    const identity = await resolveViewerIdentity(req);
+    const steamId = identity.effectiveSteamId;
 
     log.info('/api/auth/me: evaluated cookie state', {
-      rawCookieHeader: req.headers.cookie ?? null,
       steamId: steamId ?? null,
+      isImpersonating: identity.isImpersonating,
     });
 
     if (!steamId) {
@@ -851,9 +884,11 @@ router.get('/me', async (req: Request, res: Response) => {
     }
 
     let hasPlayerRecord = false;
+    let playerName: string | null = null;
     try {
       const player = await playerService.getPlayerById(steamId);
       hasPlayerRecord = !!player;
+      playerName = player?.name ?? null;
     } catch {
       // treat lookup failure as no record
     }
@@ -864,6 +899,14 @@ router.get('/me', async (req: Request, res: Response) => {
       authenticated: true,
       steamId,
       hasPlayerRecord,
+      impersonation: identity.isImpersonating
+        ? {
+            active: true,
+            steamId,
+            name: playerName,
+            realSteamId: identity.realSteamId,
+          }
+        : { active: false },
     });
   } catch (error) {
     log.warn('Failed to read player_steam_id cookie', error as Error);
@@ -1164,6 +1207,166 @@ router.post('/admin/logout', (req: Request, res: Response) => {
   });
 });
 
+/**
+ * Admin impersonation ("view as player").
+ *
+ * Lets an admin walk through player-facing flows – map veto in particular –
+ * as a specific player, without needing that player's Steam credentials.
+ *
+ * Guarantees:
+ *  - `requireAuth` resolves admin rights from the **real** session/cookie and
+ *    deliberately ignores the impersonation cookie, so an admin impersonating a
+ *    normal player keeps full admin access and can always stop.
+ *  - The impersonation cookie is HMAC-signed and only honoured when the real
+ *    requester is an admin, so it grants nothing if copied to another browser.
+ *  - Admins cannot impersonate another admin: that would let a lower-trust
+ *    admin borrow a peer's identity for audit-visible actions.
+ */
+
+/**
+ * @openapi
+ * /api/auth/impersonate:
+ *   get:
+ *     tags: [Auth]
+ *     summary: Current impersonation state for the signed-in admin
+ *     responses:
+ *       200:
+ *         description: Impersonation state
+ */
+router.get('/impersonate', requireAuth, async (req: Request, res: Response) => {
+  const identity = await resolveViewerIdentity(req);
+
+  if (!identity.isImpersonating || !identity.effectiveSteamId) {
+    return res.json({ success: true, active: false });
+  }
+
+  const player = await playerService.getPlayerById(identity.effectiveSteamId).catch(() => null);
+
+  return res.json({
+    success: true,
+    active: true,
+    steamId: identity.effectiveSteamId,
+    name: player?.name ?? null,
+    avatar: player?.avatar ?? null,
+    realSteamId: identity.realSteamId,
+  });
+});
+
+/**
+ * @openapi
+ * /api/auth/impersonate:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Start impersonating a player (admin only)
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [steamId]
+ *             properties:
+ *               steamId:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Impersonation started
+ *       400:
+ *         description: Invalid Steam ID
+ *       403:
+ *         description: Target is an admin, or caller is not an admin
+ *       404:
+ *         description: No such player
+ */
+router.post('/impersonate', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { steamId: raw } = req.body as { steamId?: unknown };
+
+    if (typeof raw !== 'string' || raw.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Field "steamId" is required',
+      });
+    }
+
+    const steamId = raw.trim();
+    if (!/^\d{17}$/.test(steamId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Field "steamId" must be a 17-digit Steam ID',
+      });
+    }
+
+    const identity = await resolveViewerIdentity(req);
+    if (identity.realSteamId === steamId) {
+      return res.status(400).json({
+        success: false,
+        error: 'You are already signed in as this player',
+      });
+    }
+
+    const target = await playerService.getPlayerById(steamId);
+    if (!target) {
+      return res.status(404).json({
+        success: false,
+        error: 'No player found for that Steam ID',
+      });
+    }
+
+    if (target.isAdmin) {
+      return res.status(403).json({
+        success: false,
+        error: 'Admins cannot impersonate other admins',
+      });
+    }
+
+    setImpersonationCookie(req, res, steamId);
+
+    log.warn('[IMPERSONATION] Admin started impersonating a player', {
+      adminSteamId: identity.realSteamId,
+      targetSteamId: steamId,
+    });
+
+    return res.json({
+      success: true,
+      active: true,
+      steamId,
+      name: target.name ?? null,
+      avatar: target.avatar ?? null,
+      realSteamId: identity.realSteamId,
+    });
+  } catch (error) {
+    log.error('Failed to start impersonation', error as Error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to start impersonation',
+    });
+  }
+});
+
+/**
+ * @openapi
+ * /api/auth/impersonate/stop:
+ *   post:
+ *     tags: [Auth]
+ *     summary: Stop impersonating and return to your own identity
+ *     responses:
+ *       200:
+ *         description: Impersonation cleared
+ */
+router.post('/impersonate/stop', requireAuth, async (req: Request, res: Response) => {
+  const identity = await resolveViewerIdentity(req);
+
+  clearImpersonationCookie(req, res);
+
+  if (identity.isImpersonating) {
+    log.warn('[IMPERSONATION] Admin stopped impersonating', {
+      adminSteamId: identity.realSteamId,
+      targetSteamId: identity.effectiveSteamId,
+    });
+  }
+
+  return res.json({ success: true, active: false });
+});
+
 export default router;
-
-
