@@ -1,9 +1,16 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { setupTestContext } from '../helpers/setup';
+import { getAuthHeader } from '../helpers/auth';
+import { setupTournament } from '../helpers/tournamentSetup';
 
 /**
  * Matches UI tests
- * Tests matches page functionality
+ *
+ * Each state is arranged deliberately rather than accepted. The previous version
+ * asserted `expect(hasMatches || isEmpty).toBeTruthy()`, which holds as long as
+ * the page renders *something*, and then guarded a search-input assertion behind
+ * a visibility check — `matches-search-input` does not exist in the client, so
+ * that branch could never run.
  *
  * @tag ui
  * @tag matches
@@ -11,50 +18,44 @@ import { ensureSignedIn } from '../helpers/auth';
  */
 
 test.describe.serial('Matches UI', () => {
-  test.beforeEach(async ({ page }) => {
-    await ensureSignedIn(page);
+  test.beforeEach(async ({ page, request }) => {
+    await setupTestContext(page, request);
   });
 
-  test('should navigate to and display matches page',
-    {
-      tag: ['@ui', '@matches'],
-    },
+  test(
+    'should navigate to and display the matches page',
+    { tag: ['@ui', '@matches'] },
     async ({ page }) => {
       await page.goto('/matches');
       await expect(page).toHaveURL(/\/matches/);
       await expect(page).toHaveTitle(/Matches/i);
-      await page.waitForLoadState('networkidle');
-
-      // Verify matches page loaded
-      await expect(page.getByTestId('matches-page')).toBeVisible({ timeout: 15000 });
+      await expect(page.getByTestId('matches-page')).toBeVisible();
     }
   );
 
-  test('should display matches list or empty state and filter/search',
-    {
-      tag: ['@ui', '@matches'],
-    },
-    async ({ page }) => {
+  test(
+    'should show the empty state with no tournament, and the list once matches exist',
+    { tag: ['@ui', '@matches'] },
+    async ({ page, request }) => {
+      await request.delete('/api/tournament', { headers: getAuthHeader() });
+
       await page.goto('/matches');
-      await page.waitForLoadState('networkidle');
+      await expect(page.getByTestId('matches-empty-state')).toBeVisible();
+      await expect(page.getByTestId('matches-list')).toHaveCount(0);
 
-      // Check for either matches list or empty state
-      const matchesList = page.getByTestId('matches-list');
-      const emptyState = page.getByTestId('matches-empty-state');
+      // Starting a tournament generates its first-round matches.
+      const setup = await setupTournament(request, {
+        type: 'single_elimination',
+        format: 'bo1',
+        teamCount: 2,
+        serverCount: 1,
+        prefix: 'matches-ui',
+      });
+      expect(setup, 'tournament setup should succeed').toBeTruthy();
 
-      const hasMatches = await matchesList.isVisible().catch(() => false);
-      const isEmpty = await emptyState.isVisible().catch(() => false);
-
-      // Should have either matches or empty state
-      expect(hasMatches || isEmpty).toBeTruthy();
-
-      // Check for filter/search inputs
-      const searchInput = page.getByTestId('matches-search-input');
-      const hasSearch = await searchInput.isVisible().catch(() => false);
-
-      if (hasSearch) {
-        await expect(searchInput).toBeVisible();
-      }
+      await page.goto('/matches');
+      await expect(page.getByTestId('matches-list')).toBeVisible();
+      await expect(page.getByTestId('matches-empty-state')).toHaveCount(0);
     }
   );
 });

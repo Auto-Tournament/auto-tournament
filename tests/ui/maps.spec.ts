@@ -1,194 +1,194 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { setupTestContext } from '../helpers/setup';
+import { getAuthHeader } from '../helpers/auth';
+import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Maps UI tests
- * Tests maps and map pools page functionality
+ *
+ * The previous version claimed to "create, validate, edit, and view" a map but
+ * only ever created one. Both other stages were unreachable:
+ *
+ *   - validation was asserted behind `map-error-alert`, which does not exist in
+ *     the client (errors render as a plain MUI Alert);
+ *   - the edit stage keyed off `[data-testid="map-card"]`, but cards are
+ *     `map-card-<id>`, so the count was always 0 and the block never ran.
+ *
+ * The tournament map-pool test was conditional the whole way down and asserted
+ * nothing: it looked for `tournament-name-input` on /tournament, which only
+ * appears after entering the creation wizard.
  *
  * @tag ui
  * @tag maps
- * @tag map-pools
  * @tag crud
  */
 
 test.describe.serial('Maps UI', () => {
-  test.beforeEach(async ({ page }) => {
-    await ensureSignedIn(page);
+  test.beforeEach(async ({ page, request }) => {
+    await setupTestContext(page, request);
   });
 
   test(
-    'should create, validate, edit, and view map',
-    {
-      tag: ['@ui', '@maps', '@crud'],
-    },
-    async ({ page }) => {
+    'should normalise a typed map id to lowercase',
+    { tag: ['@ui', '@maps', '@validation'] },
+    async ({ page, request }) => {
       await page.goto('/maps');
-      await page.waitForLoadState('networkidle');
+      await dismissSnackbars(page);
+      await page.getByTestId('add-map-button').click();
 
-      // Open create modal
-      const addButton = page.getByTestId('add-map-button');
-      // Assert rather than self-skip: a missing button is a regression.
-      await expect(addButton).toBeVisible({ timeout: 10000 });
-
-      await addButton.click();
-
-      // Wait for modal to appear
       const modal = page.getByTestId('map-modal');
-      await expect(modal).toBeVisible({ timeout: 15000 });
+      await expect(modal).toBeVisible();
 
-      // Wait for form fields to be ready
-      await page.waitForTimeout(500);
+      // The field sanitises as you type (`toLowerCase().trim()`), so the
+      // `/^[a-z0-9_]+$/` guard behind the Create button is unreachable through
+      // the UI — an invalid id simply cannot be entered. Assert the behaviour
+      // that actually exists rather than a rejection that cannot happen.
+      //
+      // An earlier version of this test asserted the error copy and appeared to
+      // pass, but it was matching the field's *helper text*, which reads
+      // "Lowercase letters, numbers, and underscores only (de_dust2)".
+      const suffix = Date.now();
+      const idInput = page.getByTestId('map-id-input');
+      await idInput.fill(`UPPER_MAP_${suffix}`);
+      await expect(idInput).toHaveValue(`upper_map_${suffix}`);
 
-      // Test validation - invalid map ID (uppercase)
-      // Use a unique invalid ID to avoid conflicts with previous test runs
-      const invalidMapId = `INVALID_MAP_ID_${Date.now()}`;
-      await page.getByTestId('map-id-input').fill(invalidMapId);
-      await page.getByTestId('map-display-name-input').fill('Test Map');
-      const submitButton = page.getByTestId('map-create-button');
-      await submitButton.click();
-      await page.waitForTimeout(1000);
-
-      const errorAlert = page.getByTestId('map-error-alert');
-      const hasError = await errorAlert.isVisible().catch(() => false);
-      if (hasError) {
-        const errorText = await errorAlert.textContent().catch(() => '');
-        // Error could be about lowercase OR about map already existing
-        const isValidationError =
-          errorText?.toLowerCase().includes('lowercase') ||
-          errorText?.toLowerCase().includes('invalid');
-        if (isValidationError) {
-          expect(errorText?.toLowerCase()).toMatch(/lowercase|invalid/);
-        }
-      }
-
-      // Now create valid map
-      // Check if modal is still open, if not, reopen it
-      const modalStillOpen = await modal.isVisible().catch(() => false);
-      if (!modalStillOpen) {
-        // Modal closed after error, reopen it
-        await addButton.click();
-        await expect(page.getByTestId('map-modal')).toBeVisible({ timeout: 15000 });
-        await page.waitForTimeout(500);
-      }
-
-      const mapId = `test_map_${Date.now()}`;
-      const displayName = `Test Map ${Date.now()}`;
-
-      // Get fresh references to the inputs
-      const mapIdInput = page.getByTestId('map-id-input');
-      const displayNameInput = page.getByTestId('map-display-name-input');
-
-      // Wait for inputs to be ready
-      await expect(mapIdInput).toBeVisible({ timeout: 15000 });
-      await expect(displayNameInput).toBeVisible({ timeout: 15000 });
-
-      // Clear and fill - use fill with empty string first to clear, then fill with new value
-      await mapIdInput.fill(''); // Clear by filling empty
-      await mapIdInput.fill(mapId);
-      await displayNameInput.fill(''); // Clear by filling empty
-      await displayNameInput.fill(displayName);
-
-      // Submit form
-      const freshSubmitButton = page.getByTestId('map-create-button');
-      await Promise.all([
-        page
-          .waitForResponse(
-            (resp) =>
-              resp.url().includes('/api/maps') &&
-              (resp.request().method() === 'POST' || resp.request().method() === 'PUT'),
-            { timeout: 15000 }
-          )
-          .catch(() => null),
-        freshSubmitButton
-          .click({ timeout: 15000 })
-          .catch(() => freshSubmitButton.click({ force: true })),
+      await page.getByTestId('map-display-name-input').fill('Normalised Map');
+      const [createResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) => resp.url().includes('/api/maps') && resp.request().method() === 'POST',
+          { timeout: 15000 }
+        ),
+        page.getByTestId('map-create-button').click(),
       ]);
+      expect(createResponse.ok()).toBe(true);
 
-      await page.waitForTimeout(2000);
-
-      // Verify map appears in list
-      const mapCard = page.getByTestId(`map-card-${mapId}`);
-      await expect(mapCard).toBeVisible({ timeout: 15000 });
-
-      // Test edit - find and click map card
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-
-      const mapCards = page.locator('[data-testid="map-card"]');
-      const cardCount = await mapCards.count();
-
-      if (cardCount > 0) {
-        await mapCards.first().click();
-        const actionsModal = page.getByTestId('map-actions-modal');
-        await expect(actionsModal).toBeVisible({ timeout: 15000 });
-
-        const editButton = page.getByTestId('map-edit-button');
-        const editVisible = await editButton.isVisible().catch(() => false);
-
-        if (editVisible) {
-          await editButton.click();
-          await page.waitForTimeout(500);
-
-          const editModal = page.getByTestId('map-modal');
-          await expect(editModal).toBeVisible();
-
-          const nameInput = page.getByTestId('map-display-name-input');
-          const currentValue = await nameInput.inputValue();
-          await nameInput.fill(`${currentValue} Updated`);
-
-          const saveButton = page.getByTestId('map-update-button');
-          await saveButton.click();
-          await page.waitForTimeout(2000);
-        }
-      }
+      const maps = await (await request.get('/api/maps', { headers: getAuthHeader() })).json();
+      expect(maps.maps.map((m: { id: string }) => m.id)).toContain(`upper_map_${suffix}`);
     }
   );
 
+  test(
+    'should create a map and show it in the list',
+    { tag: ['@ui', '@maps', '@crud'] },
+    async ({ page, request }) => {
+      await page.goto('/maps');
+      await dismissSnackbars(page);
+      await page.getByTestId('add-map-button').click();
+
+      const modal = page.getByTestId('map-modal');
+      await expect(modal).toBeVisible();
+
+      const mapId = `test_map_${Date.now()}`;
+      await page.getByTestId('map-id-input').fill(mapId);
+      await page.getByTestId('map-display-name-input').fill('UI Test Map');
+
+      const [createResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) => resp.url().includes('/api/maps') && resp.request().method() === 'POST',
+          { timeout: 15000 }
+        ),
+        page.getByTestId('map-create-button').click(),
+      ]);
+      expect(createResponse.ok(), 'POST /api/maps should succeed').toBe(true);
+
+      await expect(modal).not.toBeVisible();
+      await expect(page.getByTestId(`map-card-${mapId}`)).toBeVisible();
+
+      const maps = await (await request.get('/api/maps', { headers: getAuthHeader() })).json();
+      expect(maps.maps.map((m: { id: string }) => m.id)).toContain(mapId);
+    }
+  );
+
+  test(
+    'should rename a map through the actions modal',
+    { tag: ['@ui', '@maps', '@crud'] },
+    async ({ page, request }) => {
+      const mapId = `edit_map_${Date.now()}`;
+      const created = await request.post('/api/maps', {
+        headers: getAuthHeader(),
+        data: { id: mapId, displayName: 'Before Rename' },
+      });
+      expect(created.ok(), 'seed map should be created').toBe(true);
+
+      await page.goto('/maps');
+      const card = page.getByTestId(`map-card-${mapId}`);
+      await expect(card).toBeVisible();
+
+      await dismissSnackbars(page);
+      await card.click();
+      await expect(page.getByTestId('map-actions-modal')).toBeVisible();
+
+      await page.getByTestId('map-edit-button').click();
+      const modal = page.getByTestId('map-modal');
+      await expect(modal).toBeVisible();
+
+      const renamed = 'After Rename';
+      await page.getByTestId('map-display-name-input').fill(renamed);
+
+      const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) => resp.url().includes('/api/maps') && resp.request().method() === 'PUT',
+          { timeout: 15000 }
+        ),
+        page.getByTestId('map-update-button').click(),
+      ]);
+      expect(updateResponse.ok(), 'PUT /api/maps/:id should succeed').toBe(true);
+
+      await expect
+        .poll(
+          async () => {
+            const maps = await (
+              await request.get('/api/maps', { headers: getAuthHeader() })
+            ).json();
+            return maps.maps.find((m: { id: string }) => m.id === mapId)?.displayName;
+          },
+          { message: 'renamed display name to persist', timeout: 15000 }
+        )
+        .toBe(renamed);
+    }
+  );
 });
 
 test.describe.serial('Tournament Map Pool Selection', () => {
-  test.beforeEach(async ({ page }) => {
-    await ensureSignedIn(page);
+  test.beforeEach(async ({ page, request }) => {
+    await setupTestContext(page, request);
+    // The map-pool step lives inside the creation wizard, which is only offered
+    // when no tournament exists yet.
+    await request.delete('/api/tournament', { headers: getAuthHeader() });
   });
 
   test(
-    'should display and allow selecting map pool in tournament',
-    {
-      tag: ['@ui', '@tournament', '@map-pools'],
-    },
+    'should offer a map pool on the wizard map step',
+    { tag: ['@ui', '@tournament', '@map-pools'] },
     async ({ page }) => {
       await page.goto('/tournament');
-      await page.waitForLoadState('networkidle');
+      await page.getByTestId('tournament-welcome-create-new').click();
 
-      // Check for tournament form
+      // Toasts stack bottom-right, over the wizard's Next button.
+      await dismissSnackbars(page);
+      const nextButton = page.getByTestId('tournament-next-button');
+
+      // Name -> Type -> Format -> Maps
       const nameInput = page.getByTestId('tournament-name-input');
-      const formVisible = await nameInput.isVisible().catch(() => false);
+      await expect(nameInput).toBeVisible();
+      await nameInput.fill(`Map Pool Test ${Date.now()}`);
+      await nextButton.click();
 
-      if (formVisible) {
-        // Look for map pool selection
-        const mapPoolSelect = page.getByTestId('tournament-map-pool-select');
-        const selectVisible = await mapPoolSelect.isVisible().catch(() => false);
+      await expect(page.getByTestId('tournament-type-selector')).toBeVisible();
+      await page.getByTestId('tournament-type-option-single_elimination').click();
+      await nextButton.click();
 
-        if (selectVisible) {
-          await expect(mapPoolSelect).toBeVisible();
+      // Format step has no test ids, so select by its visible label. A format is
+      // required before the wizard will advance for non-shuffle tournaments.
+      await page.getByText('Best of 1', { exact: true }).click();
+      await nextButton.click();
 
-          await mapPoolSelect.click();
-          await page.waitForTimeout(500);
+      const mapPoolSelect = page.getByTestId('tournament-map-pool-select');
+      await expect(mapPoolSelect).toBeVisible();
 
-          const options = page.getByTestId('tournament-map-pool-option');
-          const optionCount = await options.count();
-          if (optionCount > 0) {
-            expect(optionCount).toBeGreaterThan(0);
-          }
-        }
-      } else {
-        // Tournament might already exist, check if we can see map pool info
-        const mapPoolInfo = page.getByTestId('tournament-map-pool-display');
-        const infoVisible = await mapPoolInfo.isVisible().catch(() => false);
-        if (infoVisible) {
-          await expect(mapPoolInfo).toBeVisible();
-        }
-      }
+      await mapPoolSelect.click();
+      const options = page.getByTestId('tournament-map-pool-option');
+      expect(await options.count()).toBeGreaterThan(0);
     }
   );
 });

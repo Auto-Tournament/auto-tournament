@@ -79,11 +79,27 @@ export async function signIn(page: Page): Promise<boolean> {
 
   // Confirm against the API rather than the resulting URL — see
   // isAdminAuthenticated for why the URL cannot be trusted here.
-  if (!(await isAdminAuthenticated(page.request))) return false;
+  //
+  // Poll rather than checking once. `setupTestContextWithFreshDB` signs in
+  // immediately after /api/test/reset-database, which drops and recreates the
+  // whole public schema — including the express-session table and the players
+  // row that grants admin. On a slower machine the very next request can land
+  // while that is still settling, and a single check would report a failed
+  // sign-in for what is really a transient state.
+  const deadline = Date.now() + 15_000;
+  while (Date.now() < deadline) {
+    if (await isAdminAuthenticated(page.request)) {
+      await page.goto('/');
+      await page.waitForLoadState('domcontentloaded');
+      return true;
+    }
+    await page.waitForTimeout(500);
+    // Re-issue the login: a reset between the first POST and this check would
+    // have discarded both the session and the admin's players row.
+    await signInViaRequest(page.request);
+  }
 
-  await page.goto('/');
-  await page.waitForLoadState('domcontentloaded');
-  return true;
+  return false;
 }
 
 /**

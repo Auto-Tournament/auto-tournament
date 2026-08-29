@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn } from '../helpers/auth';
+import { ensureSignedIn, signInViaRequest, getAuthHeader } from '../helpers/auth';
 import {
   setupShuffleTournament,
   createShuffleTournament,
@@ -21,8 +21,13 @@ import { dismissSnackbars } from '../helpers/ui';
  */
 
 test.describe.serial('Shuffle Tournament UI', () => {
-  test.beforeEach(async ({ page }) => {
+  test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    await signInViaRequest(request);
+    // The creation wizard is only reachable from the welcome screen, which only
+    // appears when no tournament exists. Other specs leave one behind, so clear
+    // it rather than depending on file order.
+    await request.delete('/api/tournament', { headers: getAuthHeader() });
   });
 
   test(

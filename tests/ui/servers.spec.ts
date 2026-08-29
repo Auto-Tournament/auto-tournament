@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
+import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Server UI tests
@@ -82,50 +83,32 @@ test.describe.serial('Server UI', () => {
       const serverHostInList = serverCard.getByTestId('server-host');
       await expect(serverHostInList).toBeVisible();
 
-      // Step 3: Delete server via UI
-      // Find the server card and click edit button
-      const editButton = serverCard.getByTestId('server-edit-button');
-      const editButtonVisible = await editButton.isVisible().catch(() => false);
-      
-      if (editButtonVisible) {
-        await editButton.click();
+      // Step 3: Delete the server through the modal.
+      //
+      // There is no server-edit-button in the client — the card itself opens the
+      // modal. The previous version looked for that button, found nothing, and
+      // silently skipped the entire delete stage while still reporting success.
+      // The "server created" toast is anchored bottom-right and can sit over the
+      // card, so clear it before clicking through.
+      await dismissSnackbars(page);
+      await serverCard.click();
+      await expect(modal).toBeVisible();
 
-        // Wait for edit modal
-        const editModal = page.getByTestId('server-modal');
-        await expect(editModal).toBeVisible();
+      await page.getByTestId('server-delete-button').click();
+      await expect(page.getByTestId('confirm-dialog')).toBeVisible();
 
-        // Find and click delete button
-        const deleteButton = page.getByTestId('server-delete-button');
-        const deleteButtonVisible = await deleteButton.isVisible().catch(() => false);
+      // Assert the response rather than swallowing it — a failed DELETE would
+      // otherwise show up only as a confusing "card still present".
+      const [deleteResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) => resp.url().includes('/api/servers') && resp.request().method() === 'DELETE',
+          { timeout: 15000 }
+        ),
+        page.getByTestId('confirm-dialog-confirm-button').click(),
+      ]);
+      expect(deleteResponse.ok(), 'DELETE /api/servers should succeed').toBe(true);
 
-        if (deleteButtonVisible) {
-          await deleteButton.click();
-
-          // Wait for confirmation dialog
-          const confirmDialog = page.getByTestId('confirm-dialog');
-          await expect(confirmDialog).toBeVisible({ timeout: 2000 });
-
-          // Confirm deletion
-          const confirmButton = page.getByTestId('confirm-dialog-confirm-button');
-          await Promise.all([
-            page
-              .waitForResponse(
-                (resp) =>
-                  resp.url().includes('/api/servers') && resp.request().method() === 'DELETE',
-                { timeout: 10000 }
-              )
-              .catch(() => null),
-            confirmButton.click(),
-          ]);
-
-          // Wait for deletion to complete
-          await page.waitForTimeout(2000);
-          await page.waitForLoadState('networkidle');
-
-          // Verify server is no longer visible
-          await expect(serverCard).not.toBeVisible({ timeout: 15000 });
-        }
-      }
+      await expect(serverCard).toHaveCount(0);
     }
   );
 });

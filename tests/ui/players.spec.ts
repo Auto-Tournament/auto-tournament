@@ -1,11 +1,16 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
-import { createPlayer, getAllPlayers, type Player } from '../helpers/players';
+import { createPlayer, getAllPlayers } from '../helpers/players';
 import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Player Management UI tests
- * Tests player management via browser interaction
+ *
+ * The previous version wrapped each stage in
+ * `if (await x.isVisible().catch(() => false))`, so creating and editing a
+ * player both passed whether or not they happened. The rating test was the worst
+ * of them: three nested guards, and a final assertion that only checked the
+ * player still existed — its own comment conceded the rating was never verified.
  *
  * @tag ui
  * @tag players
@@ -20,157 +25,141 @@ test.describe.serial('Player Management UI', () => {
     await signInViaRequest(request);
   });
 
-  test('should display players page',
-    {
-      tag: ['@ui', '@players'],
-    },
+  test(
+    'should display the players page',
+    { tag: ['@ui', '@players'] },
     async ({ page }) => {
       await page.goto('/players');
-      await page.waitForLoadState('networkidle');
-
-      // Verify players page loaded
-      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 15000 });
-      expect(page.url()).toContain('/players');
+      await expect(page).toHaveURL(/\/players/);
+      await expect(page.getByTestId('players-page')).toBeVisible();
     }
   );
 
-  test('should create player via UI',
-    {
-      tag: ['@ui', '@players', '@crud'],
-    },
+  test(
+    'should create a player via the UI',
+    { tag: ['@ui', '@players', '@crud'] },
     async ({ page, request }) => {
       await page.goto('/players');
+      await expect(page.getByTestId('players-page')).toBeVisible();
 
-      // Wait for page to load
-      await page.waitForLoadState('networkidle');
+      await dismissSnackbars(page);
+      await page
+        .getByTestId('add-player-button')
+        .or(page.getByTestId('empty-state-action'))
+        .first()
+        .click();
 
-      // Look for "Add Player" button
-      const addButton = page.getByTestId('add-player-button');
-      if (await addButton.isVisible().catch(() => false)) {
-        await addButton.click();
+      const modal = page.getByTestId('player-modal');
+      await expect(modal).toBeVisible();
 
-        // Wait for modal
-        const modal = page.getByTestId('player-modal');
-        await expect(modal).toBeVisible({ timeout: 15000 });
+      const timestamp = Date.now();
+      const playerId = `76561198${String(timestamp).slice(-9)}`;
+      const playerName = `UI Test Player ${timestamp}`;
 
-        // Fill in player details
-        const timestamp = Date.now();
-        const playerId = `76561198${String(timestamp).slice(-10)}`;
-        const playerName = `UI Test Player ${timestamp}`;
+      await page.getByTestId('player-steam-id-input').fill(playerId);
+      await page.getByTestId('player-name-input').fill(playerName);
+      await page.getByTestId('player-elo-input').fill('3200');
 
-        await page.getByTestId('player-steam-id-input').fill(playerId);
-        await page.getByTestId('player-name-input').fill(playerName);
-        await page.getByTestId('player-elo-input').fill('3200');
+      await dismissSnackbars(page);
+      const [createResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) => resp.url().includes('/api/players') && resp.request().method() === 'POST',
+          { timeout: 15000 }
+        ),
+        page.getByTestId('player-save-button').click(),
+      ]);
+      expect(createResponse.ok(), 'POST /api/players should succeed').toBe(true);
 
-        // Submit
-        const submitButton = page.getByTestId('player-save-button');
-        await Promise.all([
-          page
-            .waitForResponse(
-              (resp) => resp.url().includes('/api/players') && resp.request().method() === 'POST',
-              { timeout: 10000 }
-            )
-            .catch(() => null),
-          submitButton.click(),
-        ]);
+      const players = await getAllPlayers(request);
+      const created = players?.find((p) => p.id === playerId);
+      expect(created, 'created player should come back from the API').toBeTruthy();
+      expect(created?.name).toBe(playerName);
+      expect(created?.currentElo).toBe(3200);
 
-        // Verify player was created
-        const players = await getAllPlayers(request);
-        const createdPlayer = players?.find((p) => p.id === playerId);
-        expect(createdPlayer).toBeTruthy();
-        expect(createdPlayer?.name).toBe(playerName);
-      }
+      await expect(page.getByTestId(`player-card-${playerId}`)).toBeVisible();
     }
   );
 
-  // Consolidated players page test
-  test('should display players page and list',
-    {
-      tag: ['@ui', '@players'],
-    },
+  test(
+    'should render seeded players in the list',
+    { tag: ['@ui', '@players'] },
     async ({ page, request }) => {
+      const seeded = await createPlayer(request, {
+        id: '76561198000000700',
+        name: 'List Render Test',
+        initialELO: 1800,
+      });
+      expect(seeded, 'seed player should be created').toBeTruthy();
+
       await page.goto('/players');
-      await page.waitForLoadState('networkidle');
 
-      // Verify players page loaded
-      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 15000 });
-      expect(page.url()).toContain('/players');
-
-      // Player list may be empty or populated
-      const playersList = page.getByTestId('players-list');
-      const playersEmptyState = page.getByTestId('players-empty-state');
-      const hasList = await playersList.isVisible().catch(() => false);
-      const hasEmptyState = await playersEmptyState.isVisible().catch(() => false);
-
-      // Should have either list or empty state
-      expect(hasList || hasEmptyState).toBeTruthy();
+      // NOTE: this deliberately does not assert the empty state. Admin rights
+      // are held by a *player* row, so an authenticated admin session always has
+      // at least one player and players-empty-state is unreachable here. The
+      // previous `expect(hasList || hasEmptyState).toBeTruthy()` passed without
+      // ever revealing that only one of its two branches could occur.
+      await expect(page.getByTestId('players-list')).toBeVisible();
+      await expect(page.getByTestId(`player-card-${seeded!.id}`)).toBeVisible();
     }
   );
 
-  test('should allow editing player Skill Rating',
-    {
-      tag: ['@ui', '@players', '@elo'],
-    },
+  test(
+    'should update a player Skill Rating from the UI',
+    { tag: ['@ui', '@players', '@elo'] },
     async ({ page, request }) => {
-      // Create a test player
       const testPlayer = await createPlayer(request, {
-        id: `76561198${Date.now()}`,
+        id: '76561198000000701',
         name: 'Rating Edit Test',
         initialELO: 1500,
       });
-      // Fail loudly if seeding did not work; a skipped test hides the breakage.
       expect(testPlayer, 'test player should have been created').toBeTruthy();
 
       await page.goto('/players');
-      await page.waitForLoadState('networkidle');
 
-      // Click on player card/row to open edit modal
-      const playerCard = page.getByTestId(`player-card-${testPlayer.id}`);
-      if (await playerCard.isVisible().catch(() => false)) {
-        await playerCard.click();
+      const playerCard = page.getByTestId(`player-card-${testPlayer!.id}`);
+      await expect(playerCard).toBeVisible();
 
-        // Wait for edit modal
-        const modal = page.getByTestId('player-modal');
-        if (await modal.isVisible().catch(() => false)) {
-          await expect(modal).toBeVisible({ timeout: 15000 });
+      await dismissSnackbars(page);
+      await playerCard.click();
 
-          // Find Skill Rating field and update it
-          const eloField = page.getByTestId('player-elo-input');
-          if (await eloField.isVisible().catch(() => false)) {
-            await eloField.clear();
-            await eloField.fill('3500');
+      const modal = page.getByTestId('player-modal');
+      await expect(modal).toBeVisible();
 
-            // Save changes. Snackbars are anchored bottom-right, over the
-            // dialog's Save button, so clear them first.
-            await dismissSnackbars(page);
-            const saveButton = page.getByTestId('player-save-button');
-            await Promise.all([
-              page
-                .waitForResponse(
-                  (resp) =>
-                    resp.url().includes(`/api/players/${testPlayer.id}`) &&
-                    resp.request().method() === 'PUT',
-                  { timeout: 10000 }
-                )
-                .catch(() => null),
-              saveButton.click(),
-            ]);
+      const eloField = page.getByTestId('player-elo-input');
+      await expect(eloField).toBeVisible();
+      await eloField.fill('3500');
 
-            // Wait for update to complete
-            await page.waitForTimeout(2000);
+      await dismissSnackbars(page);
+      await page.getByTestId('player-save-button').click();
 
-            // Verify ELO was updated
-            const updated = await getAllPlayers(request);
-            const updatedPlayer = updated?.find((p) => p.id === testPlayer.id);
+      // Changing an existing player's rating is gated behind a confirmation
+      // dialog, so the PUT only fires after it is accepted. The old test clicked
+      // Save, waited two seconds and asserted nothing about the rating, so it
+      // never noticed this step existed.
+      const confirmEloUpdate = page.getByTestId('confirm-dialog-confirm-button');
+      await expect(confirmEloUpdate).toBeVisible();
 
-            // ELO update may require page refresh or time to propagate
-            // Check if updated or still original (test might need API call verification instead)
-            expect(updatedPlayer).toBeTruthy();
-            // Note: ELO update might not reflect immediately in UI test
-            // This should be verified via API instead
-          }
-        }
-      }
+      const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) =>
+            resp.url().includes(`/api/players/${testPlayer!.id}`) &&
+            resp.request().method() === 'PUT',
+          { timeout: 15000 }
+        ),
+        confirmEloUpdate.click(),
+      ]);
+      expect(updateResponse.ok(), 'PUT /api/players/:id should succeed').toBe(true);
+
+      // The point of the test: the new rating actually persisted.
+      await expect
+        .poll(
+          async () => {
+            const players = await getAllPlayers(request);
+            return players?.find((p) => p.id === testPlayer!.id)?.currentElo;
+          },
+          { message: 'skill rating to persist as 3500', timeout: 15000 }
+        )
+        .toBe(3500);
     }
   );
 });
