@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Box, Typography, Card, CardContent, Grid } from '@mui/material';
 import MapIcon from '@mui/icons-material/Map';
 import { api } from '../../utils/api';

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Typography, Chip, Alert, Button, Autocomplete, TextField } from '@mui/material';
 import { Warning as WarningIcon, Add as AddIcon } from '@mui/icons-material';
 import { Team } from '../../types';

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -118,7 +118,6 @@ export default function BatchServerModal({
   );
   const [password, setPassword] = useState('');
   const [enabled, setEnabled] = useState(true);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -439,6 +438,12 @@ export default function BatchServerModal({
       </DialogTitle>
       <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
         <Stack spacing={3}>
+          {error && (
+            <Alert severity="error" data-testid="batch-server-modal-error">
+              {error}
+            </Alert>
+          )}
+
           <Alert severity="info">
             {t('batchServerModal.info')}
           </Alert>

@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Button, Stack, Typography, Divider } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
 import type { MatchMapResult } from '../../types';

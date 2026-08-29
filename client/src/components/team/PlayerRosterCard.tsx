@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Card, CardContent, Typography, Stack, Paper, IconButton, Tooltip } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';

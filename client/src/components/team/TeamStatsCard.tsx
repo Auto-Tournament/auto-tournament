@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Card, CardContent, Typography, Grid, Paper } from '@mui/material';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
 import type { TeamStats, TeamStanding } from '../../types';

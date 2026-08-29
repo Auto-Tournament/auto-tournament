@@ -94,7 +94,6 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
   const [newPlayerName, setNewPlayerName] = useState('');
   const [newPlayerAvatar, setNewPlayerAvatar] = useState<string | undefined>(undefined);
   const [newPlayerElo, setNewPlayerElo] = useState<number | ''>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
   const [resolving, setResolving] = useState(false);
@@ -436,6 +435,12 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
           </IconButton>
         </DialogTitle>
         <DialogContent sx={{ px: 3, pt: 2, pb: 1 }}>
+          {error && (
+            <Alert severity="error" sx={{ mb: 2 }} data-testid="team-modal-error">
+              {error}
+            </Alert>
+          )}
+
           <Box display="flex" flexDirection="column" gap={2}>
             <TextField
               label={t('teamModal.teamNameLabel')}

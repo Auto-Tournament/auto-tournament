@@ -47,7 +47,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
     return (
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6" fontWeight={600}>
+          <Typography variant="h6" fontWeight={600} color={`${teamColor}.main`}>
             {teamName}
           </Typography>
           {isYourTeam && <Chip label="Your Team" color="primary" size="small" />}

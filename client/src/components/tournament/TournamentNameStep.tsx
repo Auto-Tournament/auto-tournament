@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, TextField } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 

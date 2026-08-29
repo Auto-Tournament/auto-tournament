@@ -70,7 +70,19 @@ interface MatchDetailsModalProps {
   onDeleted?: (slug: string) => void;
 }
 
-const InnerMatchDetailsModal: React.FC<Required<MatchDetailsModalProps>> = ({
+/**
+ * The inner component runs only once the wrapper below has established that a
+ * match exists, so `match` is non-null here.
+ *
+ * `Required<T>` alone was not enough: it strips `?`, not `| null`, so every one
+ * of the ~125 `match.` dereferences in this component was a type error that the
+ * build never surfaced (esbuild strips types without checking them).
+ */
+type InnerMatchDetailsModalProps = Omit<Required<MatchDetailsModalProps>, 'match'> & {
+  match: Match;
+};
+
+const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   match,
   matchNumber,
   roundLabel,

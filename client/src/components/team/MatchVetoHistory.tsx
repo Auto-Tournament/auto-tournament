@@ -1,4 +1,3 @@
-import React from 'react';
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import type { VetoAction } from '../../types';

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
