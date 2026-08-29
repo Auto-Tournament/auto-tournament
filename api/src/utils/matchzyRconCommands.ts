@@ -135,6 +135,11 @@ export function getMatchZyServerConfigCommands(config: {
    * 0 = idle/sleep, 1 = match mode, 2 = practice mode
    */
   autostartMode?: 0 | 1 | 2 | null;
+  /**
+   * Hostname MatchZy applies on match load. `''` is a meaningful value: it tells
+   * the plugin to leave the server's own `hostname` alone.
+   */
+  hostnameFormat?: string | null;
   demoPath?: string | null;
   demoNameFormat?: string | null;
   seriesEndKickDelayNoDemo?: number | null;
@@ -191,6 +196,12 @@ export function getMatchZyServerConfigCommands(config: {
 
   if (config.autostartMode !== undefined && config.autostartMode !== null) {
     commands.push(`matchzy_autostart_mode ${config.autostartMode}`);
+  }
+
+  // Emitted even when empty — `matchzy_hostname_format ""` is how the plugin is
+  // told not to overwrite the hostname set in the server's own config.
+  if (config.hostnameFormat !== undefined && config.hostnameFormat !== null) {
+    commands.push(`matchzy_hostname_format "${config.hostnameFormat}"`);
   }
 
   if (config.demoPath !== undefined && config.demoPath !== null) {

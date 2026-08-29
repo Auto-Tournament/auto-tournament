@@ -137,6 +137,9 @@ export interface MatchzyServerConfig {
    */
   autostartMode?: 0 | 1 | 2 | null;
 
+  /** `''` leaves the server's own hostname alone. */
+  hostnameFormat?: string | null;
+
   // Demo / logging settings
   demoPath?: string | null;
   demoNameFormat?: string | null;

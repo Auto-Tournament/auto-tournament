@@ -84,6 +84,7 @@ export interface Server {
     /** MatchZy Enhanced: 0=idle, 1=match, 2=practice */
     autostartMode?: 0 | 1 | 2 | null;
     demoPath?: string | null;
+    hostnameFormat?: string | null;
     demoNameFormat?: string | null;
     demoUploadUrl?: string | null;
   } | null;
@@ -336,6 +337,8 @@ export interface SettingsResponse extends ApiResponse {
     matchzyStopCommandAvailable?: boolean;
     matchzyStopCommandNoDamage?: boolean;
     matchzyUsePauseCommandForTacticalPause?: boolean;
+    /** '' means: leave each server's own hostname alone. */
+    matchzyHostnameFormat?: string;
     matchzyDemoPath?: string;
     matchzyDemoNameFormat?: string;
     matchzySeriesEndKickDelayNoDemo?: number;

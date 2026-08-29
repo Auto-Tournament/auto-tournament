@@ -127,6 +127,10 @@ export default function Settings() {
     initialMatchzyUsePauseCommandForTacticalPause,
     setInitialMatchzyUsePauseCommandForTacticalPause,
   ] = useState<boolean>(false);
+  // '' is a real value here: it tells MatchZy to leave the server's own
+  // hostname alone, so it is never folded into the default on the way in or out.
+  const [matchzyHostnameFormat, setMatchzyHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
+  const [initialMatchzyHostnameFormat, setInitialMatchzyHostnameFormat] = useState<string>('{TEAM1} vs {TEAM2}');
   const [matchzyDemoPath, setMatchzyDemoPath] = useState<string>('MatchZy/');
   const [initialMatchzyDemoPath, setInitialMatchzyDemoPath] = useState<string>('MatchZy/');
   const [matchzyDemoNameFormat, setMatchzyDemoNameFormat] = useState<string>(
@@ -238,6 +242,7 @@ export default function Settings() {
       const stopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
       const usePauseCommandForTacticalPause =
         response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+      const hostnameFormat = response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
       const demoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
       const demoNameFormat =
         response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
@@ -296,6 +301,8 @@ export default function Settings() {
       setInitialMatchzyStopCommandNoDamage(stopCommandNoDamage);
       setMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
       setInitialMatchzyUsePauseCommandForTacticalPause(usePauseCommandForTacticalPause);
+      setMatchzyHostnameFormat(hostnameFormat);
+      setInitialMatchzyHostnameFormat(hostnameFormat);
       setMatchzyDemoPath(demoPath);
       setInitialMatchzyDemoPath(demoPath);
       setMatchzyDemoNameFormat(demoNameFormat);
@@ -383,6 +390,7 @@ export default function Settings() {
           matchzyStopCommandAvailable,
           matchzyStopCommandNoDamage,
           matchzyUsePauseCommandForTacticalPause,
+          matchzyHostnameFormat: matchzyHostnameFormat.trim(),
           matchzyDemoPath: matchzyDemoPath.trim(),
           matchzyDemoNameFormat: matchzyDemoNameFormat.trim(),
           matchzySeriesEndKickDelayNoDemo,
@@ -439,6 +447,7 @@ export default function Settings() {
         const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
         const newUsePauseCommandForTacticalPause =
           response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+        const newHostnameFormat = response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
         const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
         const newDemoNameFormat =
           response.settings.matchzyDemoNameFormat ?? '{TIME}_{MATCH_ID}_{MAP}_{TEAM1}_vs_{TEAM2}';
@@ -502,6 +511,8 @@ export default function Settings() {
         setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
         setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
         setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+        setMatchzyHostnameFormat(newHostnameFormat);
+        setInitialMatchzyHostnameFormat(newHostnameFormat);
         setMatchzyDemoPath(newDemoPath);
         setInitialMatchzyDemoPath(newDemoPath);
         setMatchzyDemoNameFormat(newDemoNameFormat);
@@ -592,6 +603,7 @@ export default function Settings() {
       matchzyStopCommandAvailable,
       matchzyStopCommandNoDamage,
       matchzyUsePauseCommandForTacticalPause,
+      matchzyHostnameFormat,
       matchzyDemoPath,
       matchzyDemoNameFormat,
       matchzySeriesEndKickDelayNoDemo,
@@ -638,6 +650,7 @@ export default function Settings() {
       matchzyStopCommandAvailable !== initialMatchzyStopCommandAvailable ||
       matchzyStopCommandNoDamage !== initialMatchzyStopCommandNoDamage ||
       matchzyUsePauseCommandForTacticalPause !== initialMatchzyUsePauseCommandForTacticalPause ||
+      matchzyHostnameFormat !== initialMatchzyHostnameFormat ||
       matchzyDemoPath !== initialMatchzyDemoPath ||
       matchzyDemoNameFormat !== initialMatchzyDemoNameFormat ||
       matchzySeriesEndKickDelayNoDemo !== initialMatchzySeriesEndKickDelayNoDemo ||
@@ -711,6 +724,7 @@ export default function Settings() {
       matchzyStopCommandAvailable === initialMatchzyStopCommandAvailable &&
       matchzyStopCommandNoDamage === initialMatchzyStopCommandNoDamage &&
       matchzyUsePauseCommandForTacticalPause === initialMatchzyUsePauseCommandForTacticalPause &&
+      matchzyHostnameFormat === initialMatchzyHostnameFormat &&
       matchzyDemoPath === initialMatchzyDemoPath &&
       matchzyDemoNameFormat === initialMatchzyDemoNameFormat &&
       matchzySeriesEndKickDelayNoDemo === initialMatchzySeriesEndKickDelayNoDemo &&
@@ -766,6 +780,7 @@ export default function Settings() {
     matchzyStopCommandAvailable,
     matchzyStopCommandNoDamage,
     matchzyUsePauseCommandForTacticalPause,
+    matchzyHostnameFormat,
     matchzyDemoPath,
     matchzyDemoNameFormat,
     matchzySeriesEndKickDelayNoDemo,
@@ -799,6 +814,7 @@ export default function Settings() {
     initialMatchzyStopCommandAvailable,
     initialMatchzyStopCommandNoDamage,
     initialMatchzyUsePauseCommandForTacticalPause,
+    initialMatchzyHostnameFormat,
     initialMatchzyDemoPath,
     initialMatchzyDemoNameFormat,
     initialMatchzySeriesEndKickDelayNoDemo,
@@ -1124,6 +1140,17 @@ export default function Settings() {
                       <Typography variant="subtitle1" fontWeight={600}>
                         {t('settingsPage.matchRating.matchzyCore.demos.title')}
                       </Typography>
+                      <TextField
+                        label={t('settingsPage.matchRating.matchzyCore.hostname.formatLabel')}
+                        value={matchzyHostnameFormat}
+                        onChange={(e) => setMatchzyHostnameFormat(e.target.value)}
+                        onBlur={handleFieldBlur}
+                        onKeyDown={handleFieldKeyDown}
+                        helperText={t('settingsPage.matchRating.matchzyCore.hostname.formatHelper')}
+                        fullWidth
+                        size="small"
+                        inputProps={{ 'data-testid': 'matchzy-hostname-format-input' }}
+                      />
                       <TextField
                         label={t('settingsPage.matchRating.matchzyCore.demos.demoPathLabel')}
                         value={matchzyDemoPath}
@@ -1828,6 +1855,7 @@ export default function Settings() {
                       matchzyStopCommandAvailable?: null;
                       matchzyStopCommandNoDamage?: null;
                       matchzyUsePauseCommandForTacticalPause?: null;
+                      matchzyHostnameFormat?: null;
                       matchzyDemoPath?: null;
                       matchzyDemoNameFormat?: null;
                       matchzySeriesEndKickDelayNoDemo?: null;
@@ -1860,6 +1888,7 @@ export default function Settings() {
                       matchzyStopCommandAvailable: null,
                       matchzyStopCommandNoDamage: null,
                       matchzyUsePauseCommandForTacticalPause: null,
+                      matchzyHostnameFormat: null,
                       matchzyDemoPath: null,
                       matchzyDemoNameFormat: null,
                       matchzySeriesEndKickDelayNoDemo: null,
@@ -1910,6 +1939,8 @@ export default function Settings() {
                     const newStopCommandNoDamage = response.settings.matchzyStopCommandNoDamage ?? false;
                     const newUsePauseCommandForTacticalPause =
                       response.settings.matchzyUsePauseCommandForTacticalPause ?? false;
+                    const newHostnameFormat =
+                      response.settings.matchzyHostnameFormat ?? '{TEAM1} vs {TEAM2}';
                     const newDemoPath = response.settings.matchzyDemoPath ?? 'MatchZy/';
                     const newDemoNameFormat =
                       response.settings.matchzyDemoNameFormat ??
@@ -1962,6 +1993,8 @@ export default function Settings() {
                     setInitialMatchzyStopCommandNoDamage(newStopCommandNoDamage);
                     setMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
                     setInitialMatchzyUsePauseCommandForTacticalPause(newUsePauseCommandForTacticalPause);
+                    setMatchzyHostnameFormat(newHostnameFormat);
+                    setInitialMatchzyHostnameFormat(newHostnameFormat);
                     setMatchzyDemoPath(newDemoPath);
                     setInitialMatchzyDemoPath(newDemoPath);
                     setMatchzyDemoNameFormat(newDemoNameFormat);

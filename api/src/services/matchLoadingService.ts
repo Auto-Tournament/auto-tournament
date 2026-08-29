@@ -143,6 +143,7 @@ export async function loadMatchOnServer(
         stopCommandAvailable: matchzyCore.stopCommandAvailable,
         stopCommandNoDamage: matchzyCore.stopCommandNoDamage,
         usePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
+        hostnameFormat: matchzyCore.hostnameFormat,
         demoPath: matchzyCore.demoPath,
         demoNameFormat: matchzyCore.demoNameFormat,
         seriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,

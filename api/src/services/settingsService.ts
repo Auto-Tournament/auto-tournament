@@ -21,6 +21,7 @@ export type AppSettingKey =
   | 'matchzy_stop_command_available'
   | 'matchzy_stop_command_no_damage'
   | 'matchzy_use_pause_command_for_tactical_pause'
+  | 'matchzy_hostname_format'
   | 'matchzy_demo_path'
   | 'matchzy_demo_name_format'
   | 'matchzy_series_end_kick_delay_no_demo'
@@ -66,6 +67,7 @@ const ALLOWED_KEYS: AppSettingKey[] = [
   'matchzy_stop_command_available',
   'matchzy_stop_command_no_damage',
   'matchzy_use_pause_command_for_tactical_pause',
+  'matchzy_hostname_format',
   'matchzy_demo_path',
   'matchzy_demo_name_format',
   'matchzy_series_end_kick_delay_no_demo',
@@ -113,6 +115,24 @@ class SettingsService {
 
     if (value !== null) {
       const trimmed = value.trim();
+
+      // An empty hostname format is a real choice, not an absent one: it is how
+      // MatchZy is told to leave the server's own `hostname` alone. Every other
+      // setting folds "" to NULL and falls back to its default, which would make
+      // "don't touch my hostname" indistinguishable from "never configured".
+      if (key === 'matchzy_hostname_format') {
+        // The value is sent as `matchzy_hostname_format "<value>"`, so an
+        // embedded quote would terminate the argument and produce a malformed
+        // command. Drop them on write, so what is stored is what is sent.
+        const sanitized = trimmed.replace(/"/g, '');
+        await db.setAppSettingAsync(key, sanitized);
+        log.success(
+          sanitized === ''
+            ? 'matchzy_hostname_format cleared - servers keep their own hostname'
+            : `matchzy_hostname_format updated to ${sanitized}`
+        );
+        return;
+      }
 
       if (!trimmed) {
         await db.setAppSettingAsync(key, null);
@@ -502,6 +522,20 @@ class SettingsService {
     return normalized === '1' || normalized === 'true' || normalized === 'yes';
   }
 
+  /**
+   * Hostname format MatchZy applies when a match loads.
+   *
+   * Returns `''` when the operator has explicitly cleared it, which tells the
+   * plugin to leave the server's own `hostname` (from server.cfg) untouched.
+   * A missing row means "never configured", which keeps MatchZy's own default.
+   * The two are deliberately distinct — see `setSetting`.
+   */
+  async getMatchzyHostnameFormat(): Promise<string> {
+    const value = await this.getSetting('matchzy_hostname_format');
+    if (value === null) return '{TEAM1} vs {TEAM2}'; // MatchZy default
+    return value.trim();
+  }
+
   async getMatchzyDemoPath(): Promise<string> {
     const value = await this.getSetting('matchzy_demo_path');
     if (!value) return 'MatchZy/'; // MatchZy default
@@ -551,6 +585,7 @@ class SettingsService {
     stopCommandAvailable: boolean;
     stopCommandNoDamage: boolean;
     usePauseCommandForTacticalPause: boolean;
+    hostnameFormat: string;
     demoPath: string;
     demoNameFormat: string;
     seriesEndKickDelayNoDemo: number;
@@ -567,6 +602,7 @@ class SettingsService {
       stopCommandAvailable,
       stopCommandNoDamage,
       usePauseCommandForTacticalPause,
+      hostnameFormat,
       demoPath,
       demoNameFormat,
       seriesEndKickDelayNoDemo,
@@ -582,6 +618,7 @@ class SettingsService {
       this.isMatchzyStopCommandAvailable(),
       this.isMatchzyStopCommandNoDamage(),
       this.isMatchzyUsePauseCommandForTacticalPause(),
+      this.getMatchzyHostnameFormat(),
       this.getMatchzyDemoPath(),
       this.getMatchzyDemoNameFormat(),
       this.getMatchzySeriesEndKickDelayNoDemo(),
@@ -599,6 +636,7 @@ class SettingsService {
       stopCommandAvailable,
       stopCommandNoDamage,
       usePauseCommandForTacticalPause,
+      hostnameFormat,
       demoPath,
       demoNameFormat,
       seriesEndKickDelayNoDemo,

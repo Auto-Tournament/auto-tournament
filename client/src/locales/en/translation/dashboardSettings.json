@@ -201,6 +201,10 @@
           "stopCommandNoDamage": "Disable .stop after opposing-team damage occurs",
           "usePauseForTacticalPause": "Make .pause behave like tactical pause"
         },
+        "hostname": {
+          "formatLabel": "Server hostname format",
+          "formatHelper": "Applied to every server when a match loads. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Leave empty to keep the hostname each server sets in its own config."
+        },
         "demos": {
           "title": "Demos",
           "demoPathLabel": "Demo path (relative to csgo/)",

@@ -57,6 +57,7 @@ const mapSettingsResponse = async () => {
     matchzyStopCommandAvailable: matchzyCore.stopCommandAvailable,
     matchzyStopCommandNoDamage: matchzyCore.stopCommandNoDamage,
     matchzyUsePauseCommandForTacticalPause: matchzyCore.usePauseCommandForTacticalPause,
+    matchzyHostnameFormat: matchzyCore.hostnameFormat,
     matchzyDemoPath: matchzyCore.demoPath,
     matchzyDemoNameFormat: matchzyCore.demoNameFormat,
     matchzySeriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
@@ -106,6 +107,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyStopCommandAvailable,
     matchzyStopCommandNoDamage,
     matchzyUsePauseCommandForTacticalPause,
+    matchzyHostnameFormat,
     matchzyDemoPath,
     matchzyDemoNameFormat,
     matchzySeriesEndKickDelayNoDemo,
@@ -144,6 +146,7 @@ router.put('/', async (req: Request, res: Response) => {
     matchzyStopCommandAvailable?: unknown;
     matchzyStopCommandNoDamage?: unknown;
     matchzyUsePauseCommandForTacticalPause?: unknown;
+    matchzyHostnameFormat?: unknown;
     matchzyDemoPath?: unknown;
     matchzyDemoNameFormat?: unknown;
     matchzySeriesEndKickDelayNoDemo?: unknown;
@@ -409,6 +412,12 @@ router.put('/', async (req: Request, res: Response) => {
     }
 
     // MatchZy core defaults (strings)
+    // Note: an empty string is preserved here rather than clearing the setting.
+    // "" is how MatchZy is told to leave the server's own hostname alone.
+    if (matchzyHostnameFormat !== undefined) {
+      const resp = await putStringOrNull('matchzy_hostname_format', matchzyHostnameFormat, 'matchzyHostnameFormat');
+      if (resp) return resp;
+    }
     if (matchzyDemoPath !== undefined) {
       const resp = await putStringOrNull('matchzy_demo_path', matchzyDemoPath, 'matchzyDemoPath');
       if (resp) return resp;
