@@ -426,11 +426,11 @@ export function useCreateManualMatchModal({
   const team1DisplayName =
     team1Mode === 'existing'
       ? existingTeam1?.name ?? ''
-      : team1NewName || t('playersTeams.teamMatchHistory.team1');
+      : team1NewName || t('teamMatchHistory.team1');
   const team2DisplayName =
     team2Mode === 'existing'
       ? existingTeam2?.name ?? ''
-      : team2NewName || t('playersTeams.teamMatchHistory.team2');
+      : team2NewName || t('teamMatchHistory.team2');
 
   // Preview the config that would be sent to MatchZy, for review step.
   // Teams are **optional** for manual matches: when no teams are selected,

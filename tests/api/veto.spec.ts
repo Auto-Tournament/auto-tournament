@@ -1,5 +1,10 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
+import {
+  ensureSignedIn,
+  signInViaRequest,
+  impersonatePlayer,
+  stopImpersonating,
+} from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import { createAndStartTournament } from '../helpers/tournaments';
 import { findMatchByTeams } from '../helpers/matches';
@@ -196,6 +201,65 @@ test.describe.serial('Veto API', () => {
     vetoState = await getVetoState(request, match2!.slug, actingSteamIdFor(team1));
     expect(vetoState.pickedMaps[0].sideTeam2).toBe('T');
     expect(vetoState.pickedMaps[0].sideTeam1).toBe('CT');
+  });
+
+  test('should tell the first team it is their turn before any action is taken', {
+    tag: ['@api', '@veto', '@cta'],
+  }, async ({ request }) => {
+    const tournament = await createAndStartTournament(request, {
+      name: `Veto CTA Test ${Date.now()}`,
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamIds: [team1Id, team2Id],
+    });
+    expect(tournament).toBeTruthy();
+
+    const match = await findMatchByTeams(request, team1Id, team2Id);
+    expect(match).toBeTruthy();
+
+    // Nothing has been vetoed yet, so matches.veto_state is still NULL. The
+    // navbar CTA must still tell team1's players to act — reading the turn
+    // straight off veto_state reports "waiting" here, which is exactly backwards
+    // for the team that has to move first.
+    expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+    const first = await (await request.get('/api/players/me/match-status')).json();
+    expect(first.matchSlug).toBe(match!.slug);
+    expect(first.status).toBe('your_turn_veto');
+
+    // Their opponent is correctly told to wait.
+    expect(await impersonatePlayer(request, actingSteamIdFor(team2))).toBe(true);
+    const second = await (await request.get('/api/players/me/match-status')).json();
+    expect(second.status).toBe('waiting_veto');
+
+    // BO1 opens with *two* team1 bans, so after the first the turn stays put.
+    const actions = getCSMajorBO1Actions(team1, team2);
+    expect(await executeVetoActions(request, match!.slug, [actions[0]])).toBeTruthy();
+
+    expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
+      'your_turn_veto'
+    );
+
+    expect(await impersonatePlayer(request, actingSteamIdFor(team2))).toBe(true);
+    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
+      'waiting_veto'
+    );
+
+    // Team1's second ban hands over to team2.
+    expect(await executeVetoActions(request, match!.slug, [actions[1]])).toBeTruthy();
+
+    expect(await impersonatePlayer(request, actingSteamIdFor(team2))).toBe(true);
+    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
+      'your_turn_veto'
+    );
+
+    expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
+    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
+      'waiting_veto'
+    );
+
+    await stopImpersonating(request);
   });
 
   test('should validate and reject invalid custom veto orders', {

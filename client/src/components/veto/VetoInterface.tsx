@@ -284,8 +284,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   }
 
   // Determine which team is viewing (must be defined before early returns)
-  const team1Name = vetoState.team1Name || propTeam1Name || t('playersTeams.teamMatchHistory.team1');
-  const team2Name = vetoState.team2Name || propTeam2Name || t('playersTeams.teamMatchHistory.team2');
+  const team1Name = vetoState.team1Name || propTeam1Name || t('teamMatchHistory.team1');
+  const team2Name = vetoState.team2Name || propTeam2Name || t('teamMatchHistory.team2');
   const isViewingTeam1 = currentTeamSlug === vetoState.team1Id;
   const isViewingTeam2 = currentTeamSlug === vetoState.team2Id;
 
@@ -398,7 +398,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
             {team1Name}
           </Typography>
           <Typography variant="h3" fontWeight={300} color="text.secondary">
-            {t('playersTeams.teamMatchHistory.vs')}
+            {t('teamMatchHistory.vs')}
           </Typography>
           <Typography
             variant="h4"

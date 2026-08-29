@@ -186,5 +186,12 @@
       "serverEvents": "Server Events Monitor",
       "appLogs": "Application Logs"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Waiting for an available server",
+      "waiting": "This match will start automatically once servers are free. Servers needed:",
+      "nextPass": "Next allocation attempt in {{seconds}}s"
+    }
   }
 }

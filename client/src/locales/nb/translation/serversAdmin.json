@@ -186,5 +186,12 @@
       "serverEvents": "Overvåk serverhendelser",
       "appLogs": "Applikasjonslogger"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Venter på en ledig server",
+      "waiting": "Kampen starter automatisk når servere er ledige. Servere som trengs:",
+      "nextPass": "Neste tildelingsforsøk om {{seconds}} s"
+    }
   }
 }
