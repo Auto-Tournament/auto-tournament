@@ -1126,8 +1126,12 @@ async function persistPlayerMatchStats(options: {
   // These include cumulative per-player damage and rounds_played, which we use
   // to derive ADR. This avoids needing a separate "player_stats" event from
   // the plugin.
-  const liveStats = matchLiveStatsService.getStats(matchSlug);
-  if (liveStats?.playerStats) {
+  // Series totals, not just the map that happened to finish last. `round_end`
+  // reports stats cumulative within the current map, so reading `playerStats`
+  // directly recorded only the final map of a BO3/BO5 - which is what made a
+  // player's profile show the last map's KDA for a whole series.
+  const seriesPlayerStats = matchLiveStatsService.getSeriesPlayerStats(matchSlug);
+  if (seriesPlayerStats) {
     const toMap = (lines: PlayerStatLine[]): Record<string, Record<string, unknown>> => {
       const map: Record<string, Record<string, unknown>> = {};
       for (const line of lines) {
@@ -1148,8 +1152,8 @@ async function persistPlayerMatchStats(options: {
       return map;
     };
 
-    team1PlayerStats = toMap(liveStats.playerStats.team1);
-    team2PlayerStats = toMap(liveStats.playerStats.team2);
+    team1PlayerStats = toMap(seriesPlayerStats.team1);
+    team2PlayerStats = toMap(seriesPlayerStats.team2);
   } else {
     // Fallback for older/alternate setups: look for a dedicated "player_stats"
     // match event if present and parse its per-player dictionaries.
