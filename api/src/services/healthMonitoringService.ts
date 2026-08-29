@@ -8,7 +8,7 @@ import { serverService } from './serverService';
 import { serverStatusService } from './serverStatusService';
 import { serverTrackingService } from './serverTrackingService';
 import { cs2FleetMonitoringService } from './cs2FleetMonitoringService';
-import type { Server } from '../types/server.types';
+import type { ServerResponse } from '../types/server.types';
 
 class HealthMonitoringService {
   private intervalId: NodeJS.Timeout | null = null;
@@ -128,17 +128,17 @@ class HealthMonitoringService {
     }
   }
 
-  private async maybeRunCs2FleetCheck(servers: Server[], now: number): Promise<void> {
+  private async maybeRunCs2FleetCheck(servers: ServerResponse[], now: number): Promise<void> {
     const last = this.lastCs2FleetCheckAt;
     const due = typeof last !== 'number' || now - last >= this.CS2_FLEET_CHECK_INTERVAL_SECONDS;
     if (!due) return;
 
     this.lastCs2FleetCheckAt = now;
 
-    const enabled = servers.filter((s) => s.enabled === 1 && s.host !== '0.0.0.0');
-    const outdated = enabled.filter((s) => typeof s.cs2_required_version === 'number');
+    const enabled = servers.filter((s) => s.enabled && s.host !== '0.0.0.0');
+    const outdated = enabled.filter((s) => typeof s.cs2RequiredVersion === 'number');
     const stale = enabled.filter(
-      (s) => !s.cs2_update_checked_at || now - s.cs2_update_checked_at >= 30 * 60
+      (s) => !s.cs2UpdateCheckedAt || now - s.cs2UpdateCheckedAt >= 30 * 60
     );
 
     log.info('[HEALTH-MONITOR] Starting CS2 fleet check', {

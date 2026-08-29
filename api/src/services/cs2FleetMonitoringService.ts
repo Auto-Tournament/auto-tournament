@@ -20,7 +20,7 @@ import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { extractCs2StatusVersionLine, parseCs2BuildId } from '../utils/cs2Version';
 import { cs2UpdateService } from './cs2UpdateService';
-import type { Server } from '../types/server.types';
+import type { ServerResponse } from '../types/server.types';
 
 export interface Cs2FleetCycleStats {
   /** Unix timestamp when the cycle ran. */
@@ -55,7 +55,7 @@ class Cs2FleetMonitoringService {
    * This is intentionally sequential to avoid hammering either RCON or Steam.
    * Scheduling/cadence is controlled by the caller (typically health monitoring).
    */
-  async runOnce(params?: { servers?: Server[]; now?: number }): Promise<Cs2FleetCycleStats> {
+  async runOnce(params?: { servers?: ServerResponse[]; now?: number }): Promise<Cs2FleetCycleStats> {
     if (this.inProgress) {
       return {
         now: params?.now ?? Math.floor(Date.now() / 1000),
@@ -76,13 +76,16 @@ class Cs2FleetMonitoringService {
       const now = params?.now ?? Math.floor(Date.now() / 1000);
       const servers = params?.servers ?? (await serverService.getAllServers(true));
 
-      const enabled = servers.filter((s) => s.enabled === 1);
+      // `getAllServers` hands back ServerResponse, where `enabled` is a boolean
+      // and the CS2 fields are camelCase. Comparing to 1 and reading snake_case
+      // here matched nothing, so this whole cycle quietly did nothing at all.
+      const enabled = servers.filter((s) => s.enabled);
       const eligible = enabled.filter((s) => s.host !== '0.0.0.0');
 
       // Prioritize servers that are currently marked out of date.
-      const markedOutOfDate = eligible.filter((s) => typeof s.cs2_required_version === 'number');
+      const markedOutOfDate = eligible.filter((s) => typeof s.cs2RequiredVersion === 'number');
       const stale = eligible.filter(
-        (s) => !s.cs2_update_checked_at || now - s.cs2_update_checked_at >= this.STALE_AFTER_SECONDS
+        (s) => !s.cs2UpdateCheckedAt || now - s.cs2UpdateCheckedAt >= this.STALE_AFTER_SECONDS
       );
 
       // Deduplicate: out-of-date first, then stale.
@@ -161,7 +164,7 @@ class Cs2FleetMonitoringService {
               'id = ?',
               [s.id]
             );
-            if (typeof s.cs2_required_version === 'number') {
+            if (typeof s.cs2RequiredVersion === 'number') {
               cleared += 1;
             }
           } else {
@@ -172,7 +175,7 @@ class Cs2FleetMonitoringService {
                 cs2_version_string: cs2VersionString,
                 cs2_version_fetched_at: now,
                 cs2_required_version: check.requiredVersion ?? null,
-                cs2_update_phase: (s.cs2_update_phase === 'shutdown' ? 'shutdown' : 'available'),
+                cs2_update_phase: s.cs2UpdatePhase === 'shutdown' ? 'shutdown' : 'available',
                 cs2_update_required_at: now,
                 cs2_update_checked_at: now,
                 updated_at: now,
@@ -180,7 +183,7 @@ class Cs2FleetMonitoringService {
               'id = ?',
               [s.id]
             );
-            if (typeof s.cs2_required_version !== 'number') {
+            if (typeof s.cs2RequiredVersion !== 'number') {
               marked += 1;
             }
           }
