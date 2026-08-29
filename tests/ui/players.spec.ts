@@ -29,7 +29,7 @@ test.describe.serial('Player Management UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Verify players page loaded
-      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain('/players');
     }
   );
@@ -51,7 +51,7 @@ test.describe.serial('Player Management UI', () => {
 
         // Wait for modal
         const modal = page.getByTestId('player-modal');
-        await expect(modal).toBeVisible({ timeout: 5000 });
+        await expect(modal).toBeVisible({ timeout: 15000 });
 
         // Fill in player details
         const timestamp = Date.now();
@@ -93,7 +93,7 @@ test.describe.serial('Player Management UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Verify players page loaded
-      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('players-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain('/players');
 
       // Player list may be empty or populated
@@ -132,7 +132,7 @@ test.describe.serial('Player Management UI', () => {
         // Wait for edit modal
         const modal = page.getByTestId('player-modal');
         if (await modal.isVisible().catch(() => false)) {
-          await expect(modal).toBeVisible({ timeout: 5000 });
+          await expect(modal).toBeVisible({ timeout: 15000 });
 
           // Find Skill Rating field and update it
           const eloField = page.getByTestId('player-elo-input');

@@ -37,3 +37,79 @@ jobs:
       # errors are introduced. See scripts/typecheck-ratchet.mjs.
       - name: Typecheck (ratchet)
         run: yarn typecheck:ratchet
+
+  e2e:
+    name: E2E tests
+    runs-on: ubuntu-latest
+    # The image build runs a full yarn install plus a Vite build.
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Install Playwright browser
+        run: npx playwright install --with-deps chromium
+
+      # The compose stack reads the repo-root .env, both for env_file and for
+      # ${VAR} substitution (hence --env-file below). Building it from
+      # example.env also means CI exercises the documented setup path.
+      #
+      # No STEAM_API_KEY: Steam is left unconfigured on purpose, so the suite has
+      # to hold up with no auth provider enabled.
+      - name: Create .env
+        run: |
+          cp example.env .env
+          {
+            echo "SESSION_SECRET=ci-session-secret"
+            echo "SERVER_TOKEN=server123"
+            echo "ENABLE_TEST_ENDPOINTS=true"
+            echo "STEAM_API_KEY="
+            echo "LOG_LEVEL=info"
+          } >> .env
+
+      - name: Start the stack
+        run: docker compose --env-file .env -f docker/docker-compose.local.yml up -d --build
+
+      - name: Wait for the app
+        run: |
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:3069/health > /dev/null; then
+              echo "app healthy after ${i} attempt(s)"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "App never became healthy." >&2
+          docker compose --env-file .env -f docker/docker-compose.local.yml logs --tail=100
+          exit 1
+
+      - name: Run Playwright
+        env:
+          SKIP_WEBSERVER: '1'
+          PLAYWRIGHT_BASE_URL: http://localhost:3069
+        run: npx playwright test -c tests/playwright.config.ts --reporter=list,html
+
+      # Container logs are usually more informative than the Playwright trace
+      # when the failure is server-side.
+      - name: Dump container logs
+        if: failure()
+        run: docker compose --env-file .env -f docker/docker-compose.local.yml logs --tail=300
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Tear down
+        if: always()
+        run: docker compose --env-file .env -f docker/docker-compose.local.yml down -v

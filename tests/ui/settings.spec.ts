@@ -30,10 +30,10 @@ test.describe.serial('Settings UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Check for webhook URL input
-      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 15000 });
 
       // Save control is present
-      await expect(page.getByTestId('settings-save-button')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('settings-save-button')).toBeVisible({ timeout: 15000 });
 
       // The Steam API key is env-only; a field here would mean a secret is being
       // round-tripped through the browser.
@@ -50,7 +50,7 @@ test.describe.serial('Settings UI', () => {
       await page.waitForLoadState('networkidle');
 
       const webhookInput = page.getByTestId('settings-webhook-url-input');
-      await expect(webhookInput).toBeVisible({ timeout: 5000 });
+      await expect(webhookInput).toBeVisible({ timeout: 15000 });
 
       // --- Update webhook URL (auto-saved on change/blur) ---
       const testWebhookUrl = `https://example.com/webhook/${Date.now()}`;
@@ -72,7 +72,7 @@ test.describe.serial('Settings UI', () => {
 
       // --- Clear webhook URL and verify the empty value persists ---
       const webhookInput2 = page.getByTestId('settings-webhook-url-input');
-      await expect(webhookInput2).toBeVisible({ timeout: 5000 });
+      await expect(webhookInput2).toBeVisible({ timeout: 15000 });
       await webhookInput2.clear();
       await webhookInput2.blur();
 

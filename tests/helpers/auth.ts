@@ -48,6 +48,26 @@ export async function signInViaRequest(
 }
 
 /**
+ * Does this context currently hold an authenticated admin session?
+ *
+ * Asks the API directly. Inferring this from the browser URL is unreliable: the
+ * SPA decides whether to bounce to /login only after it has bootstrapped and
+ * called /api/auth/admin/me, so straight after a `domcontentloaded` navigation
+ * the URL still reads as the requested page for a session that is about to be
+ * rejected.
+ */
+export async function isAdminAuthenticated(request: APIRequestContext): Promise<boolean> {
+  try {
+    const response = await request.get('/api/auth/admin/me');
+    if (!response.ok()) return false;
+    const data = (await response.json()) as { authenticated?: boolean };
+    return data.authenticated === true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Sign in via a test-only admin endpoint that creates a Passport session.
  *
  * This bypasses the real SSO flow but still uses the same session mechanism
@@ -57,29 +77,30 @@ export async function signIn(page: Page): Promise<boolean> {
   const ok = await signInViaRequest(page.request);
   if (!ok) return false;
 
-  // Navigate to dashboard; the session cookie should be sent automatically.
+  // Confirm against the API rather than the resulting URL — see
+  // isAdminAuthenticated for why the URL cannot be trusted here.
+  if (!(await isAdminAuthenticated(page.request))) return false;
+
   await page.goto('/');
   await page.waitForLoadState('domcontentloaded');
-
-  return !page.url().includes('/login');
+  return true;
 }
 
 /**
- * Ensure user is signed in (checks first, signs in if needed)
- * @param page Playwright page
+ * Ensure the page holds an admin session, signing in only if it does not.
  */
 export async function ensureSignedIn(page: Page): Promise<void> {
-  await page.goto('/');
-  await page.waitForLoadState('domcontentloaded');
-
-  const currentUrl = page.url();
-  if (!currentUrl.includes('/login')) {
-    // Already signed in
-    return;
+  if (!(await isAdminAuthenticated(page.request))) {
+    const ok = await signIn(page);
+    expect(ok, 'admin sign-in should succeed').toBe(true);
+  } else {
+    await page.goto('/');
+    await page.waitForLoadState('domcontentloaded');
   }
 
-  const ok = await signIn(page);
-  expect(ok).toBe(true);
+  // The SPA redirects to /login asynchronously once it has checked the session,
+  // so assert on the settled URL rather than whatever it is right now.
+  await expect(page).not.toHaveURL(/\/login/);
 }
 
 /**

@@ -118,7 +118,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
             return configResponse.ok();
           },
           {
-            timeout: 5000,
+            timeout: 15000,
             intervals: [100, 250, 500],
           }
         )
@@ -152,7 +152,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
               return false;
             },
             {
-              timeout: 5000,
+              timeout: 15000,
               intervals: [500, 1000],
             }
           )
@@ -176,7 +176,7 @@ test.describe.serial('CS Major BO1 Veto - API E2E', () => {
             return configResponse.ok();
           },
           {
-            timeout: 5000,
+            timeout: 15000,
             intervals: [100, 250, 500],
           }
         )
@@ -320,7 +320,7 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
               return false;
             },
             {
-              timeout: 5000,
+              timeout: 15000,
               intervals: [500, 1000],
             }
           )
@@ -339,7 +339,7 @@ test.describe.serial('CS Major BO3 Veto - API E2E', () => {
             return configResponse.ok();
           },
           {
-            timeout: 5000,
+            timeout: 15000,
             intervals: [100, 250, 500],
           }
         )

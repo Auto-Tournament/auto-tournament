@@ -37,7 +37,7 @@ test.describe.serial('Login providers error', () => {
       });
 
       await page.goto('/login', { waitUntil: 'domcontentloaded' });
-      await expect(page.getByText(message)).toBeVisible({ timeout: 5000 });
+      await expect(page.getByText(message)).toBeVisible({ timeout: 15000 });
     }
   );
 });

@@ -85,47 +85,24 @@ async function ensureTeams(
   count: number,
   prefix: string
 ): Promise<Team[]> {
-  // Try to get existing teams first
-  try {
-    const response = await request.get('/api/teams', {
-      headers: getAuthHeader(),
-    });
-    if (response.ok()) {
-      const data = await response.json();
-      const existingTeams: Team[] = data.teams || [];
-
-      // Reuse a leftover team only if it can actually play a match:
-      //
-      //  - every player must have a real 17-digit Steam ID. Some specs (shuffle)
-      //    create players with synthetic ids like `match-test-player-3-...`;
-      //    those cannot sign in, be impersonated, or take veto turns.
-      //  - the two teams must have disjoint rosters. A match whose teams share a
-      //    Steam ID is unusable: the veto API cannot tell which side that player
-      //    acts for and rejects every action as "not on one of the
-      //    participating teams".
-      const isSteamId = (value: string) => /^\d{17}$/.test(value);
-
-      const picked: Team[] = [];
-      const claimed = new Set<string>();
-
-      for (const team of existingTeams) {
-        const steamIds = (team.players ?? []).map((player) => player.steamId);
-        if (steamIds.length === 0) continue;
-        if (!steamIds.every(isSteamId)) continue;
-        if (steamIds.some((steamId) => claimed.has(steamId))) continue;
-
-        steamIds.forEach((steamId) => claimed.add(steamId));
-        picked.push(team);
-        if (picked.length === count) break;
-      }
-
-      if (picked.length >= count) {
-        return picked.slice(0, count);
-      }
-    }
-  } catch (error) {
-    // Ignore errors, will create new teams
-  }
+  // Always create fresh teams. Reusing whatever teams happen to exist has
+  // repeatedly poisoned other specs, because "a team that exists" is not the
+  // same as "a team that can play a match":
+  //
+  //   - shuffle specs create players with synthetic ids (match-test-player-3-...)
+  //     that can never sign in or be impersonated;
+  //   - the teams UI spec creates a team whose only member (76561198000000000)
+  //     has no player row behind it;
+  //   - leaked duplicates could hand a match two teams with identical rosters,
+  //     which the veto API correctly rejects as ambiguous.
+  //
+  // Each of those was previously patched with a narrower reuse filter. The
+  // filters kept missing cases, so the reuse itself is the problem. Creating a
+  // fresh pair costs two API calls and makes setup deterministic.
+  //
+  // Rosters are disjoint within a pair, which is all the veto API requires; the
+  // same Steam IDs appearing on teams from earlier calls is harmless because
+  // team membership is only ever resolved against the two teams in a match.
 
   // Real Steam IDs for testing avatars - public profiles that should exist
   // These will cycle through as needed for multiple teams

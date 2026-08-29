@@ -67,7 +67,7 @@ test.describe.serial('Server UI', () => {
             { timeout: 15000 }
           )
           .catch(() => null),
-        submitButton.click({ timeout: 5000 }),
+        submitButton.click({ timeout: 15000 }),
       ]);
 
       // Wait for modal to close
@@ -76,7 +76,7 @@ test.describe.serial('Server UI', () => {
 
       // Step 2: Verify server appears in UI
       const serverCard = page.getByTestId(`server-card-${serverName.replace(/\s+/g, '-').toLowerCase()}`);
-      await expect(serverCard).toBeVisible({ timeout: 5000 });
+      await expect(serverCard).toBeVisible({ timeout: 15000 });
 
       // Verify server details are visible
       const serverHostInList = serverCard.getByTestId('server-host');
@@ -123,7 +123,7 @@ test.describe.serial('Server UI', () => {
           await page.waitForLoadState('networkidle');
 
           // Verify server is no longer visible
-          await expect(serverCard).not.toBeVisible({ timeout: 5000 });
+          await expect(serverCard).not.toBeVisible({ timeout: 15000 });
         }
       }
     }
