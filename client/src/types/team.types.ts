@@ -78,6 +78,11 @@ export interface TeamMatchInfo {
   mapResults: MatchMapResult[];
   matchFormat: string;
   loadedAt?: number;
+  /**
+   * NOTE: this mirrors `MatchConfig` in match.types.ts rather than reusing it,
+   * and the two have already drifted — `cvars` was missing here while callers
+   * read it. Worth collapsing into the shared type.
+   */
   config?: {
     // Core player / team counts
     players_per_team?: number;
@@ -91,17 +96,21 @@ export interface TeamMatchInfo {
     maxRounds?: number;
     overtimeMode?: 'enabled' | 'disabled';
     overtimeSegments?: number;
+    /** MatchZy convars carried through from the generated match JSON. */
+    cvars?: {
+      [key: string]: string | number;
+    };
     team1?: {
       id?: string;
       name: string;
       tag?: string;
-      players?: Array<{ steamid: string; name: string }>;
+      players?: Array<{ steamid: string; name: string; avatar?: string }>;
     };
     team2?: {
       id?: string;
       name: string;
       tag?: string;
-      players?: Array<{ steamid: string; name: string }>;
+      players?: Array<{ steamid: string; name: string; avatar?: string }>;
     };
   };
   veto?: TeamMatchVetoSummary | null;

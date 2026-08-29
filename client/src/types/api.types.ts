@@ -43,6 +43,8 @@ export interface Server {
   cs2UpdateRequiredAt?: number | null;
   /** Best-effort: CS2 server build ID parsed from `version` output. */
   cs2BuildId?: number | null;
+  /** Unix timestamp when MAT last ran the Steam UpToDateCheck for this server. */
+  cs2UpdateCheckedAt?: number | null;
   /** Best-effort: `version` output (display-only; may include multiple lines). */
   cs2VersionString?: string | null;
   /** Unix timestamp when version/build was last fetched via RCON. */

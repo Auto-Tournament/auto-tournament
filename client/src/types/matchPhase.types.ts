@@ -48,7 +48,10 @@ export const getPhaseDisplay = (phase: MatchPhase): { label: string; color: stri
     case 'post_match':
       return { label: 'POST-MATCH', color: 'success' };
     default:
-      return { label: phase.toUpperCase(), color: 'default' };
+      // Unreachable for the declared union — `phase` narrows to `never` here —
+      // but the API could introduce a phase this client does not know yet, so
+      // keep the fallback and stringify rather than assume.
+      return { label: String(phase).toUpperCase(), color: 'default' };
   }
 };
 

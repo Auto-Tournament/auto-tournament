@@ -77,17 +77,18 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
     if (typeof player !== 'object' || player === null) {
       return `Player ${index + 1}: Invalid player object`;
     }
-    if (!player.steamId || typeof player.steamId !== 'string') {
+    // `typeof x === 'object'` narrows to `object`, which has no index
+    // signature, so reading fields off it is a type error. Go through a
+    // record and let the guards below do the actual narrowing.
+    const { steamId, name, initialELO } = player as Record<string, unknown>;
+    if (!steamId || typeof steamId !== 'string') {
       return `Player ${index + 1}: Missing or invalid steamId`;
     }
-    if (!player.name || typeof player.name !== 'string') {
-      return `Player ${index + 1} (${player.steamId}): Missing or invalid name`;
+    if (!name || typeof name !== 'string') {
+      return `Player ${index + 1} (${steamId}): Missing or invalid name`;
     }
-    if (
-      player.initialELO !== undefined &&
-      (typeof player.initialELO !== 'number' || player.initialELO < 0)
-    ) {
-      return `Player "${player.name}": initialELO must be a positive number or omitted`;
+    if (initialELO !== undefined && (typeof initialELO !== 'number' || initialELO < 0)) {
+      return `Player "${name}": initialELO must be a positive number or omitted`;
     }
     return null;
   };

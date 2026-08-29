@@ -2,7 +2,7 @@
  * Match-related types
  */
 
-import type { Team, MatchMapResult } from './team.types';
+import type { Team, MatchMapResult, MatchLiveStats } from './team.types';
 import type { MatchPhase } from './matchPhase.types';
 
 export interface Match {
@@ -33,11 +33,18 @@ export interface Match {
   mapResults?: MatchMapResult[];
   maps?: string[];
   queuePosition?: number | null; // Position in allocation queue (1 = first in queue, null = already allocated)
+  /**
+   * Live scoreboard for an in-progress match, attached by the API from
+   * matchLiveStatsService. Absent once the match is over.
+   */
+  liveStats?: MatchLiveStats | null;
 }
 
 export interface MatchConfigPlayer {
   steamid: string;
   name: string;
+  /** Filled in by the API from the team roster where one is known. */
+  avatar?: string;
 }
 
 export interface MatchConfigTeam {
@@ -83,11 +90,20 @@ export interface MatchConfig {
    * When provided alongside simulation: true, controls how fast the simulated match runs.
    */
   simulation_timescale?: number;
+  /**
+   * Round-limit metadata the config builder writes alongside the cvars, so
+   * consumers do not have to parse `cvars.mp_maxrounds` back out.
+   */
+  maxRounds?: number;
+  overtimeMode?: 'enabled' | 'disabled';
+  overtimeSegments?: number;
 }
 
 export interface PlayerStats {
   name: string;
   steamId: string;
+  /** Filled in by the API from the team roster where one is known. */
+  avatar?: string;
   kills: number;
   deaths: number;
   assists: number;

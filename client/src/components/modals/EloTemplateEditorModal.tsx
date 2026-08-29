@@ -129,7 +129,7 @@ export default function EloTemplateEditorModal({
           maxAdjustment,
           minAdjustment,
         };
-        const response = await api.put<{ success: boolean; template: EloCalculationTemplate }>(
+        const response = await api.put<{ success: boolean; template: EloCalculationTemplate; error?: string }>(
           `/api/elo-templates/${template.id}`,
           input
         );
@@ -149,7 +149,7 @@ export default function EloTemplateEditorModal({
           maxAdjustment,
           minAdjustment,
         };
-        const response = await api.post<{ success: boolean; template: EloCalculationTemplate }>(
+        const response = await api.post<{ success: boolean; template: EloCalculationTemplate; error?: string }>(
           '/api/elo-templates',
           input
         );

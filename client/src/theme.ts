@@ -1,6 +1,17 @@
 import { createTheme } from '@mui/material/styles';
 import type {} from '@mui/lab/themeAugmentation';
 
+// The palette below adds Material 3 surface levels to `background`. Declare
+// them so components can read `theme.palette.background.surface2` without the
+// compiler rejecting it.
+declare module '@mui/material/styles' {
+  interface TypeBackground {
+    surface1: string;
+    surface2: string;
+    surface3: string;
+  }
+}
+
 // Material Design 3 Purple theme with maximum roundness
 export const theme = createTheme({
   palette: {

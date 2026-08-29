@@ -85,19 +85,6 @@ export default function TournamentInfoCard({ tournament }: TournamentInfoCardPro
               {tournament.format?.toUpperCase() || 'N/A'}
             </Typography>
           </Box>
-          {tournament.description && (
-            <>
-              <Divider />
-              <Box>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Description
-                </Typography>
-                <Typography variant="body2">
-                  {tournament.description}
-                </Typography>
-              </Box>
-            </>
-          )}
         </Stack>
       </CardContent>
     </Card>
