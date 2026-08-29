@@ -238,6 +238,7 @@ export function getSchemaSQL(): string {
       id TEXT PRIMARY KEY, -- Steam ID
       name TEXT NOT NULL,
       avatar_url TEXT,
+      is_admin INTEGER NOT NULL DEFAULT 0, -- 1 = can reach the admin dashboard
       -- Admin-facing Skill Rating (for compatibility and display)
       current_elo INTEGER NOT NULL DEFAULT 1500, -- Skill Rating (ordinal * 200 + 1500)
       starting_elo INTEGER NOT NULL DEFAULT 1500, -- Initial Skill Rating seed
