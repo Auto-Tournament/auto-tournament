@@ -1,4 +1,3 @@
-import React from 'react';
 import { Avatar, Skeleton } from '@mui/material';
 
 interface PlayerAvatarProps {

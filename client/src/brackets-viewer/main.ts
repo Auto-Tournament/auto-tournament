@@ -40,11 +40,9 @@ export class BracketsViewer {
         return this.config.customRoundName?.(info, lang.t) || fallbackGetter(info, lang.t);
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _onMatchClick: MatchClickCallback = (match: MatchWithMetadata): void => { };
+    private _onMatchClick: MatchClickCallback = (_match: MatchWithMetadata): void => { };
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    private _onMatchLabelClick: MatchClickCallback = (match: MatchWithMetadata): void => { };
+    private _onMatchLabelClick: MatchClickCallback = (_match: MatchWithMetadata): void => { };
 
     /**
      * @deprecated Use `onMatchClick` in the `config` parameter of `viewer.render()`.

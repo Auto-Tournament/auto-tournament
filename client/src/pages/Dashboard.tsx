@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { Box, Stack, Alert } from '@mui/material';
 import { alpha } from '@mui/material/styles';
 import { OnboardingChecklist } from '../components/dashboard/OnboardingChecklist';

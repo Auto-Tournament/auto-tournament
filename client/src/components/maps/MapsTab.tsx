@@ -1,4 +1,3 @@
-import React from 'react';
 import { Grid } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import MapIcon from '@mui/icons-material/Map';

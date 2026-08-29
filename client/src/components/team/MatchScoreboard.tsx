@@ -1,4 +1,3 @@
-import React from 'react';
 import { Stack, Typography, Chip, Paper, Box } from '@mui/material';
 import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
 

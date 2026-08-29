@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Chip } from '@mui/material';
 import type { MatchMapResult } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';

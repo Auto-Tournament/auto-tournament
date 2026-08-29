@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
 import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
 import { validateMapCount } from '../../utils/tournamentVerification';

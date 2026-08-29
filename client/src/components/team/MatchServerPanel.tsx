@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box, Button, Typography, Alert } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';

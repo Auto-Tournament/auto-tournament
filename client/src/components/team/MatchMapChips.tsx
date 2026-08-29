@@ -1,4 +1,3 @@
-import React from 'react';
 import { Box } from '@mui/material';
 import type { TeamMatchInfo } from '../../types';
 import { MapChipList } from '../match/MapChipList';

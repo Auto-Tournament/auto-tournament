@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import { Card, CardContent, Typography, Button, Box } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
