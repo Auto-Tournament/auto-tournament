@@ -173,12 +173,20 @@ export function MatchInfoCard({
       : serverViewerIsTeamMember;
 
   const serverStatus = match.server?.status ?? null;
-  // Only treat explicit "online" (or transitional "checking") as truly online.
-  // However, if we are actively receiving live stats from the MatchZy plugin,
-  // we treat the server as effectively online even if the cached status is
-  // slightly out of date.
-  const isServerOnlineBase =
-    serverStatus === 'online' || serverStatus === 'checking' || serverStatus === 'loading';
+  // `server.status` here is a MatchZy plugin status — idle | loading | warmup |
+  // knife | live | paused | halftime | postgame | queued | error — and
+  // /api/players/:id/current-match only fills it in when the server actually
+  // answered. So any value at all means the server is reachable.
+  //
+  // This used to compare against 'online' and 'checking', which that endpoint
+  // never produces: only 'loading' could ever match. A server sitting in 'idle'
+  // or 'warmup' with a match loaded therefore read as offline, and the page
+  // claimed it was still waiting for a server to be assigned — verified against
+  // a real CS2 server, which reports 'idle' for a freshly loaded match.
+  //
+  // Live stats still count on their own: they only arrive from a server that is
+  // demonstrably talking to us.
+  const isServerOnlineBase = !!serverStatus && serverStatus !== 'error';
   const isServerOnline = isServerOnlineBase || !!liveStats;
   const effectiveServer = isServerOnline ? match.server : null;
 
