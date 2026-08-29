@@ -161,7 +161,7 @@ async function handleEventRequest(
   });
 
   try {
-    const event: MatchZyEvent = body;
+    const event: MatchZyEvent | undefined = body;
 
     if (!event?.event) {
       log.warn('[EVENTS] Rejected: missing event type', { path: req.path });
@@ -181,10 +181,18 @@ async function handleEventRequest(
         ]))
       : null;
 
-    const matchFromPayload = await findMatchByIdentifier(event.matchid);
+    // Server-level events (server_configured, server_health, the connectivity
+    // probe) describe the server, not a match, and carry no matchid at all —
+    // so this cannot assume the field is there. It previously read it off every
+    // event and logged server events against the slug "undefined".
+    const payloadMatchId = 'matchid' in event ? event.matchid : undefined;
+
+    const matchFromPayload =
+      payloadMatchId === undefined ? null : await findMatchByIdentifier(payloadMatchId);
     const resolvedMatch = matchFromUrl || matchFromPayload;
 
-    const actualMatchSlug = resolvedMatch?.slug || String(event.matchid);
+    const actualMatchSlug =
+      resolvedMatch?.slug ?? (payloadMatchId === undefined ? '-1' : String(payloadMatchId));
     const isNoMatch = actualMatchSlug === '-1';
 
     log.webhookReceived(event.event, actualMatchSlug);

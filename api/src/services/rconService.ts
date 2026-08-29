@@ -382,8 +382,16 @@ export class RconService {
       
       if (lowerMessage.includes('authentication') || lowerMessage === 'authentication error') {
         // Only track as potential IP ban if server is reachable (responded to us)
-        // AND server appears to be online (GameDig query succeeded or unknown)
-        if (serverReachable && (serverQueryStatus === 'online' || serverQueryStatus === 'unknown')) {
+        // AND the GameDig query succeeded.
+        //
+        // NOTE: this used to also allow 'unknown', but that was dead — the
+        // query above always resolves to 'online' or 'offline' before we get
+        // here, so 'unknown' never survives. Behaviour is unchanged by dropping
+        // it. Whether it *should* be permissive is a separate question: the
+        // query failing is explicitly treated as non-blocking above ("server
+        // might still be online with RCON access"), yet a failed query stops
+        // ban tracking even when the server just answered us.
+        if (serverReachable && serverQueryStatus === 'online') {
           this.recordAuthError(serverId, true);
           const isBanned = this.isLikelyIpBanned(serverId);
           

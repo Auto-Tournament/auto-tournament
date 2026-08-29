@@ -4,6 +4,7 @@
  */
 
 import type { BracketMatch } from './tournament.types';
+import type { MatchZyEvent } from './matchzy-events.types';
 import type { DbMatchRow } from './database.types';
 
 /**
@@ -40,10 +41,13 @@ export type MatchUpdateEvent = Partial<BracketMatch> | Partial<DbMatchRow> | {
  */
 export interface MatchEventData {
   matchSlug: string;
-  event: {
-    event?: string;
-    [key: string]: unknown;
-  } & Record<string, unknown>;
+  /**
+   * The webhook event as received. This used to be a loose index-signature
+   * shape, which no declared event interface could satisfy — TypeScript does
+   * not give interfaces implicit index signatures — so the one caller failed
+   * to typecheck.
+   */
+  event: MatchZyEvent;
 }
 
 /**

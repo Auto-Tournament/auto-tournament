@@ -297,6 +297,54 @@ export interface PlayerStatsUpdateEvent extends MatchZyBaseEvent {
   };
 }
 
+// Server-level events from MatchZy Enhanced.
+//
+// These carry matchid -1 (or none at all) and describe the server rather than a
+// match. They were declared in serverTrackingService and left out of the union
+// below, so every `event.event === 'server_configured'` style check in the
+// events route compared against a type that could not contain it — the branches
+// ran fine at runtime, but the compiler could not check a line inside them.
+export interface ServerConfiguredEvent {
+  event: 'server_configured';
+  server_id: string;
+  hostname: string;
+  plugin_version: string;
+  remote_log_url: string;
+  timestamp: number;
+  configured_by: 'Console' | 'Startup';
+}
+
+export interface Cs2UpdateRequiredEvent {
+  event: 'cs2_update_required';
+  matchid: -1;
+  server_id: string;
+  required_version: number;
+  phase?: 'available' | 'shutdown';
+  timestamp: number;
+}
+
+export interface ServerHealthEvent {
+  event: 'server_health';
+  server_id: string;
+  plugin_version: string;
+  timestamp: number;
+  db_ok: boolean;
+  db_type: 'sqlite' | 'mysql' | string;
+  db_error?: string | null;
+  reason?: 'startup' | 'periodic' | 'change' | string;
+}
+
+/**
+ * Connectivity probe. MatchZy sends this to verify the server can reach our
+ * /api/events endpoint; both spellings are in the wild.
+ */
+export interface ServerTestEvent {
+  event: 'test_event' | 'MatchZyTestEvent';
+  server_id?: string;
+  matchid?: number | string;
+  timestamp?: number;
+}
+
 // Union type of all events
 export type MatchZyEvent =
   | SeriesStartEvent
@@ -329,7 +377,11 @@ export type MatchZyEvent =
   | UnpauseRequestedEvent
   | MatchUnpausedEvent
   | BackupLoadedEvent
-  | PlayerStatsUpdateEvent;
+  | PlayerStatsUpdateEvent
+  | ServerConfiguredEvent
+  | Cs2UpdateRequiredEvent
+  | ServerHealthEvent
+  | ServerTestEvent;
 
 // Event storage in database
 export interface MatchEvent {
