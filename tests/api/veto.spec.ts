@@ -15,6 +15,7 @@ import {
   getCSMajorBO3Actions,
   actingSteamIdFor,
 } from '../helpers/veto';
+import { updateTeam } from '../helpers/teams';
 import type { Team } from '../helpers/teams';
 
 /**
@@ -342,5 +343,58 @@ test.describe.serial('Veto API', () => {
     const completedVeto = await getVetoState(request, match!.slug, actingSteamIdFor(team1));
     expect(completedVeto.status).toBe('completed');
   });
-});
+  test('a player on both teams is told why, and can veto once removed from one', {
+    tag: ['@api', '@veto', '@regression'],
+  }, async ({ request }) => {
+    // Reported on Discord 2026-01-26: a player who had self-registered onto two
+    // teams could not veto for either side. The veto looped on "it's not your
+    // turn", and removing them from one team did not recover it - the whole
+    // tournament had to be recreated.
+    //
+    // Order matters. The duplicate has to exist *before* the tournament starts,
+    // so the generated match config carries the player on both sides, which is
+    // what a self-registering player produces.
+    const duplicatePlayer = team1.players[0];
+    const originalTeam2Players = team2.players;
 
+    const withDuplicate = await updateTeam(request, team2Id, {
+      players: [...originalTeam2Players, duplicatePlayer],
+    });
+    expect(withDuplicate).toBeTruthy();
+
+    const tournament = await createAndStartTournament(request, {
+      name: `Duplicate Player Veto ${Date.now()}`,
+      type: 'single_elimination',
+      format: 'bo1',
+      maps,
+      teamIds: [team1Id, team2Id],
+    });
+    expect(tournament).toBeTruthy();
+
+    const match = await findMatchByTeams(request, team1Id, team2Id);
+    expect(match?.slug).toBeTruthy();
+
+    const firstBan = getCSMajorBO1Actions(team1, team2)[0];
+
+    await impersonatePlayer(request, duplicatePlayer.steamId);
+    const blocked = await request.post(`/api/veto/${match!.slug}/action`, { data: firstBan });
+    await stopImpersonating(request);
+
+    // Before the fix this was a 403 whose message talked about turn order, which
+    // is what sent the reporter looking in the wrong place.
+    expect(blocked.status()).toBe(409);
+    expect((await blocked.json()).error).toContain('both teams');
+
+    // Correcting the roster must be enough to recover. Before the fix the stored
+    // match config still listed the player on both sides, so this stayed broken
+    // until the tournament was recreated.
+    const restored = await updateTeam(request, team2Id, { players: originalTeam2Players });
+    expect(restored).toBeTruthy();
+
+    await impersonatePlayer(request, duplicatePlayer.steamId);
+    const allowed = await request.post(`/api/veto/${match!.slug}/action`, { data: firstBan });
+    await stopImpersonating(request);
+
+    expect(allowed.ok()).toBe(true);
+  });
+});

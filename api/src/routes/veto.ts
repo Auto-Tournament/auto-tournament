@@ -40,10 +40,20 @@ function normalizeTeamRosterPlayers(players: string | null | undefined) {
   }
 }
 
+/**
+ * Which side of a match a viewer plays for.
+ *
+ * `'both'` is a real, reachable state: nothing stops a player self-registering
+ * onto two teams of the same tournament. It is reported separately from `null`
+ * so callers can say what is actually wrong instead of treating the player as a
+ * spectator and leaving the veto deadlocked with "it's not your turn".
+ */
+type ViewerTeam = 'team1' | 'team2' | 'both';
+
 async function resolveViewerTeamForMatch(
   match: DbMatchRow,
   viewerSteamId: string | null
-): Promise<'team1' | 'team2' | null> {
+): Promise<ViewerTeam | null> {
   if (!viewerSteamId) {
     return null;
   }
@@ -139,15 +149,8 @@ async function resolveViewerTeamForMatch(
     ? normalizeConfigPlayers(config.team2.players)
     : [];
 
-  const isInTeam1 = normalizedTeam1Players.some((p) => p.steamid === viewerSteamId);
-  const isInTeam2 = normalizedTeam2Players.some((p) => p.steamid === viewerSteamId);
-
-  if (isInTeam1 && !isInTeam2) {
-    return 'team1';
-  }
-  if (!isInTeam1 && isInTeam2) {
-    return 'team2';
-  }
+  const isInConfigTeam1 = normalizedTeam1Players.some((p) => p.steamid === viewerSteamId);
+  const isInConfigTeam2 = normalizedTeam2Players.some((p) => p.steamid === viewerSteamId);
 
   const [team1Roster, team2Roster] = await Promise.all([
     match.team1_id
@@ -169,14 +172,27 @@ async function resolveViewerTeamForMatch(
     (player) => player.steamid === viewerSteamId
   );
 
-  if ((isInTeam1 || isInTeam1Roster) && !(isInTeam2 || isInTeam2Roster)) {
+  // The stored match config is a snapshot taken when the match was created; the
+  // teams table is what the admin edits. When both rosters exist they are the
+  // source of truth, so removing a player from a team takes effect immediately.
+  // Trusting the snapshot as well would keep a corrected roster looking wrong
+  // until the tournament was recreated.
+  const rostersAreAuthoritative = team1Roster !== null && team2Roster !== null;
+
+  const isInTeam1 = rostersAreAuthoritative ? isInTeam1Roster : isInConfigTeam1 || isInTeam1Roster;
+  const isInTeam2 = rostersAreAuthoritative ? isInTeam2Roster : isInConfigTeam2 || isInTeam2Roster;
+
+  if (isInTeam1 && isInTeam2) {
+    return 'both';
+  }
+  if (isInTeam1) {
     return 'team1';
   }
-  if (!(isInTeam1 || isInTeam1Roster) && (isInTeam2 || isInTeam2Roster)) {
+  if (isInTeam2) {
     return 'team2';
   }
 
-  // Ambiguous or not present – treat as spectator for veto security purposes.
+  // Not playing in this match – a spectator as far as the veto is concerned.
   return null;
 }
 
@@ -296,7 +312,9 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     const viewerSteamId = await getViewerSteamId(req);
     const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
 
-    if (!viewerTeam) {
+    // A player on both teams cannot represent either side, so they see the same
+    // redacted view as a spectator. The /action endpoint explains why.
+    if (!viewerTeam || viewerTeam === 'both') {
       const publicVeto = {
         matchSlug: vetoState.matchSlug,
         format: vetoState.format,
@@ -358,6 +376,14 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
     // Steam ID (from player_steam_id cookie or Passport user).
     const viewerSteamId = await getViewerSteamId(req);
     const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
+
+    if (viewerTeam === 'both') {
+      return res.status(409).json({
+        success: false,
+        error:
+          'You are on both teams in this match, so you cannot veto for either side. An admin needs to remove you from one of the teams.',
+      });
+    }
 
     if (!viewerSteamId || !viewerTeam) {
       return res.status(403).json({

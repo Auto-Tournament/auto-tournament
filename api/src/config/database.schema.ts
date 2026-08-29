@@ -238,6 +238,7 @@ export function getSchemaSQL(): string {
       id TEXT PRIMARY KEY, -- Steam ID
       name TEXT NOT NULL,
       avatar_url TEXT,
+      is_admin INTEGER NOT NULL DEFAULT 0, -- 1 = can reach the admin dashboard
       -- Admin-facing Skill Rating (for compatibility and display)
       current_elo INTEGER NOT NULL DEFAULT 1500, -- Skill Rating (ordinal * 200 + 1500)
       starting_elo INTEGER NOT NULL DEFAULT 1500, -- Initial Skill Rating seed
@@ -656,4 +657,73 @@ export async function getDefaultMapPoolsSQL(client: {
       enabled = EXCLUDED.enabled,
       updated_at = EXCLUDED.updated_at;
   `;
+}
+
+/**
+ * A column that `getSchemaSQL()` declares, in a form that can be handed to
+ * `ALTER TABLE ... ADD COLUMN`.
+ */
+export interface SchemaColumn {
+  table: string;
+  column: string;
+  /** Column definition with anything that cannot be added retroactively removed. */
+  type: string;
+}
+
+/**
+ * Every column declared by `getSchemaSQL()`, derived from the schema itself.
+ *
+ * `CREATE TABLE IF NOT EXISTS` only ever creates missing *tables* — it never adds
+ * a column to a table that already exists. Instances that were created before a
+ * column was introduced therefore need an explicit `ALTER TABLE ADD COLUMN`.
+ * That list used to be maintained by hand and drifted from the schema, which is
+ * how upgraded instances ended up without `servers.status` and crashed the
+ * health monitor with `column "status" does not exist`. Deriving it here means
+ * adding a column to the schema is enough — there is no second list to forget.
+ *
+ * The definition is sanitised so it is legal on a table that already has rows:
+ * - `PRIMARY KEY` / `UNIQUE` / `REFERENCES` are dropped (constraints belong to
+ *   the create statement; re-adding them here would fail or lock).
+ * - `NOT NULL` is dropped unless the column also has a `DEFAULT`, because
+ *   Postgres cannot add a NOT NULL column to a non-empty table without one.
+ */
+export function getSchemaColumns(): SchemaColumn[] {
+  const sql = getSchemaSQL();
+  const columns: SchemaColumn[] = [];
+
+  const tableRe = /CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\(([\s\S]*?)\n\s*\);/g;
+  let table: RegExpExecArray | null;
+
+  while ((table = tableRe.exec(sql)) !== null) {
+    const [, tableName, body] = table;
+
+    for (const rawLine of body.split('\n')) {
+      const line = rawLine.split('--')[0].trim().replace(/,$/, '');
+      if (!line) continue;
+      // Table-level constraints, not columns.
+      if (/^(PRIMARY KEY|FOREIGN KEY|UNIQUE|CHECK|CONSTRAINT)\b/i.test(line)) continue;
+
+      const match = /^(\w+)\s+(.+)$/.exec(line);
+      if (!match) continue;
+      const [, column, rawType] = match;
+
+      // SERIAL columns are identity columns of a table we would never be adding to.
+      if (/\bSERIAL\b/i.test(rawType)) continue;
+
+      let type = rawType
+        .replace(/\s+PRIMARY KEY\b/gi, '')
+        .replace(/\s+UNIQUE\b/gi, '')
+        .replace(/\s+REFERENCES\s+\w+\s*\([^)]*\)(\s+ON\s+(DELETE|UPDATE)\s+[A-Z ]+)*/gi, '')
+        .trim();
+
+      if (!/\bDEFAULT\b/i.test(type)) {
+        type = type.replace(/\s*\bNOT NULL\b/gi, '').trim();
+      }
+
+      if (!type) continue;
+      columns.push({ table: tableName, column, type });
+    }
+  }
+
+  return columns;
 }
