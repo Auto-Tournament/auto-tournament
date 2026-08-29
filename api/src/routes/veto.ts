@@ -7,6 +7,7 @@ import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { getVetoOrder } from '../utils/vetoConfig';
+import { getVetoContext } from '../utils/vetoContext';
 import { settingsService } from '../services/settingsService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
@@ -177,42 +178,6 @@ async function resolveViewerTeamForMatch(
 
   // Ambiguous or not present – treat as spectator for veto security purposes.
   return null;
-}
-
-type VetoContext = {
-  format: 'bo1' | 'bo3' | 'bo5';
-  tournamentMaps: string[];
-  customVetoOrder?: { bo1?: unknown[]; bo3?: unknown[]; bo5?: unknown[] };
-};
-
-/**
- * Resolve format and map pool for veto. Tournament matches use tournament row;
- * manual matches (round === 0, no tournament) use match config.
- */
-async function getVetoContext(match: DbMatchRow): Promise<VetoContext | null> {
-  const isManual = match.round === 0 || match.tournament_id == null;
-
-  if (isManual) {
-    const config = match.config ? (JSON.parse(match.config) as { maplist?: string[]; num_maps?: number }) : {};
-    const maplist = Array.isArray(config.maplist) ? config.maplist : [];
-    const numMaps = config.num_maps === 1 ? 1 : config.num_maps === 3 ? 3 : config.num_maps === 5 ? 5 : 1;
-    const format: 'bo1' | 'bo3' | 'bo5' = numMaps === 1 ? 'bo1' : numMaps === 3 ? 'bo3' : 'bo5';
-    if (maplist.length === 0) return null;
-    return { format, tournamentMaps: maplist };
-  }
-
-  const tournament = await db.queryOneAsync<{ format: string; maps: string; settings: string | null }>(
-    'SELECT format, maps, settings FROM tournament WHERE id = ?',
-    [match.tournament_id]
-  );
-  if (!tournament) return null;
-
-  const tournamentSettings = tournament.settings ? JSON.parse(tournament.settings) : {};
-  return {
-    format: tournament.format as 'bo1' | 'bo3' | 'bo5',
-    tournamentMaps: JSON.parse(tournament.maps),
-    customVetoOrder: tournamentSettings.customVetoOrder,
-  };
 }
 
 /**

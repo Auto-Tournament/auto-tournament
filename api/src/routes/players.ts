@@ -26,6 +26,7 @@ import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { generateAvatarSvg } from '../generation/avatar';
 import { getEffectiveViewerSteamId } from '../utils/viewerIdentity';
+import { resolveCurrentVetoTurn } from '../utils/vetoContext';
 
 const router = Router();
 
@@ -398,6 +399,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
     >(
       `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+              m.round, m.tournament_id,
               t1.players as team1_players, t2.players as team2_players
        FROM matches m
        LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -418,6 +420,7 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
         DbMatchRow & { team1_players?: string | null; team2_players?: string | null }
       >(
         `SELECT m.id, m.slug, m.status, m.config, m.veto_state, m.team1_id, m.team2_id,
+                m.round, m.tournament_id,
                 t1.players as team1_players, t2.players as team2_players
          FROM matches m
          LEFT JOIN teams t1 ON m.team1_id = t1.id
@@ -472,7 +475,13 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       ? (JSON.parse(match.veto_state) as { status?: string; currentTurn?: string })
       : null;
     const vetoCompleted = vetoState?.status === 'completed';
-    const currentTurn = vetoState?.currentTurn ?? null;
+
+    // Do NOT read currentTurn straight off veto_state: that row is only written
+    // once the first action is submitted, so on step 1 it is NULL and the team
+    // that has to act first would be told "waiting for veto" instead of
+    // "your turn". resolveCurrentVetoTurn derives the opening step from the
+    // configured veto order in that case.
+    const currentTurn = vetoCompleted ? null : (await resolveCurrentVetoTurn(match))?.currentTurn ?? null;
 
     if (['loaded', 'live'].includes(match.status)) {
       return res.json({
