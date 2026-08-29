@@ -7,6 +7,7 @@ import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
+import { matchConfigFetchTracker } from '../services/matchConfigFetchTracker';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
@@ -392,6 +393,10 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
         error: `Match configuration '${slug}' not found`,
       });
     }
+
+    // The game server fetching this config is the only reliable proof that
+    // MatchZy accepted the load command - see matchConfigFetchTracker.
+    matchConfigFetchTracker.record(slug);
 
     // Manual / non-bracket matches:
     // We treat any match with round = 0 as a manually created match. For these,
