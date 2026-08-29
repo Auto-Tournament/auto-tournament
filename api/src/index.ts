@@ -308,6 +308,11 @@ app.get('/health', (_req: Request, res: Response) => {
   res.json({
     status: 'ok',
     timestamp: new Date().toISOString(),
+    // Seconds this process has been running. A drop means the API restarted,
+    // which is the difference between "survived an error" and "crashed and
+    // came back" — indistinguishable from the outside otherwise, since the
+    // container restarts in a couple of seconds.
+    uptime: Math.floor(process.uptime()),
   });
 });
 
@@ -413,6 +418,29 @@ initializeSocket(httpServer);
 
 // Cleanup old event logs (keep last 30 days)
 cleanupOldLogs(30);
+
+// A rejected promise with no catch is fatal in Node by default, so a single
+// stray background task can take the whole tournament server down mid-match.
+// This was not hypothetical: a background settings read rejected with
+// `relation "app_settings" does not exist` and killed the process, after
+// which Caddy served 502 for every request.
+//
+// A rejection is not evidence that the process state is corrupt, so log it
+// loudly and keep serving.
+process.on('unhandledRejection', (reason) => {
+  const err = reason instanceof Error ? reason : new Error(String(reason));
+  log.error(`[FATAL-GUARD] Unhandled promise rejection: ${err.message}`);
+  if (err.stack) log.error(err.stack);
+});
+
+// An uncaught exception is different: it unwound the stack somewhere
+// arbitrary, so continuing risks acting on corrupt state. Log it and let the
+// container restart us.
+process.on('uncaughtException', (err) => {
+  log.error(`[FATAL] Uncaught exception, shutting down: ${err.message}`);
+  if (err.stack) log.error(err.stack);
+  process.exit(1);
+});
 
 // Initialize database and start server
 (async () => {
