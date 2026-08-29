@@ -43,6 +43,7 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
       </Typography>
       {actionLabel && onAction && (
         <Button
+          data-testid="empty-state-action"
           variant="contained"
           startIcon={ActionIcon ? <ActionIcon /> : undefined}
           onClick={onAction}

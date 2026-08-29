@@ -4,6 +4,10 @@
 #   docker compose -f docker/docker-compose.yml up -d
 #
 # Environment variables are loaded from:
+#   NOTE: run compose with `--env-file .env` from the repo root (the yarn
+#   docker:* scripts do this). Compose resolves ${VAR} substitutions below from
+#   that file plus your shell — without it, entries like SESSION_SECRET and
+#   ENABLE_TEST_ENDPOINTS silently override the env_file with their defaults.
 #   - ../.env file (project root) via env_file directive
 #   - Environment variables set in your shell (for docker-compose variable substitution)
 #
@@ -37,7 +41,7 @@ services:
       postgres:
         condition: service_healthy
     env_file:
-      - .env
+      - ../.env
     ports:
       - '${HOST_PORT:-3069}:3069'
     environment:

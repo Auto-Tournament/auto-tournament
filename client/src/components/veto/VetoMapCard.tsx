@@ -23,7 +23,7 @@ interface VetoMapCardProps {
 }
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
-  _mapName,
+  mapName,
   displayName,
   imageUrl,
   state,
@@ -38,7 +38,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
 
   return (
     <Card
-      data-testid={`veto-map-card-${_mapName}`}
+      data-testid={`veto-map-card-${mapName}`}
       sx={{
         position: 'relative',
         cursor: isClickable ? 'pointer' : 'default',

@@ -5,6 +5,10 @@ import { ensureSignedIn } from '../helpers/auth';
  * Settings UI tests
  * Tests settings page functionality
  *
+ * NOTE: the Steam API key is no longer editable here — it is supplied via the
+ * STEAM_API_KEY environment variable (see example.env). These tests previously
+ * asserted a `settings-steam-api-key-input` field that no longer exists.
+ *
  * @tag ui
  * @tag settings
  * @tag configuration
@@ -15,8 +19,7 @@ test.describe.serial('Settings UI', () => {
     await ensureSignedIn(page);
   });
 
-  test.skip(
-    'should navigate to and display settings page',
+  test('should navigate to and display settings page',
     {
       tag: ['@ui', '@settings'],
     },
@@ -29,13 +32,16 @@ test.describe.serial('Settings UI', () => {
       // Check for webhook URL input
       await expect(page.getByTestId('settings-webhook-url-input')).toBeVisible({ timeout: 5000 });
 
-      // Check for Steam API key input
-      await expect(page.getByTestId('settings-steam-api-key-input')).toBeVisible({ timeout: 5000 });
+      // Save control is present
+      await expect(page.getByTestId('settings-save-button')).toBeVisible({ timeout: 5000 });
+
+      // The Steam API key is env-only; a field here would mean a secret is being
+      // round-tripped through the browser.
+      await expect(page.getByTestId('settings-steam-api-key-input')).toHaveCount(0);
     }
   );
 
-  test.skip(
-    'should update and clear webhook URL and Steam API key',
+  test('should update and clear the webhook URL',
     {
       tag: ['@ui', '@settings', '@configuration'],
     },
@@ -43,56 +49,43 @@ test.describe.serial('Settings UI', () => {
       await page.goto('/settings');
       await page.waitForLoadState('networkidle');
 
-      // Locate inputs once to assert presence
       const webhookInput = page.getByTestId('settings-webhook-url-input');
       await expect(webhookInput).toBeVisible({ timeout: 5000 });
-      const steamInput = page.getByTestId('settings-steam-api-key-input');
-      await expect(steamInput).toBeVisible({ timeout: 5000 });
 
       // --- Update webhook URL (auto-saved on change/blur) ---
       const testWebhookUrl = `https://example.com/webhook/${Date.now()}`;
       await webhookInput.clear();
       await webhookInput.fill(testWebhookUrl);
       await webhookInput.blur();
-      await page.waitForTimeout(1500); // allow debounce + save to complete
 
-      // Reload to verify value was persisted server-side
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-      const webhookAfterSave = page.getByTestId('settings-webhook-url-input');
-      await expect(webhookAfterSave).toBeVisible({ timeout: 5000 });
-      const savedWebhook = await webhookAfterSave.inputValue();
-      expect(savedWebhook).toBe(testWebhookUrl);
+      // Reload to verify the value was persisted server-side.
+      await expect
+        .poll(
+          async () => {
+            await page.reload();
+            await page.waitForLoadState('networkidle');
+            return page.getByTestId('settings-webhook-url-input').inputValue();
+          },
+          { message: 'webhook URL to persist', timeout: 15000 }
+        )
+        .toBe(testWebhookUrl);
 
-      // --- Update Steam API key (auto-saved) ---
-      const steamInput2 = page.getByTestId('settings-steam-api-key-input');
-      await expect(steamInput2).toBeVisible({ timeout: 5000 });
-
-      const testSteamKey = `TEST_STEAM_KEY_${Date.now()}`;
-      await steamInput2.clear();
-      await steamInput2.fill(testSteamKey);
-      await steamInput2.blur();
-      await page.waitForTimeout(1500);
-
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-      const steamAfterSave = page.getByTestId('settings-steam-api-key-input');
-      await expect(steamAfterSave).toBeVisible({ timeout: 5000 });
-      const savedSteamKey = await steamAfterSave.inputValue();
-      expect(savedSteamKey).toBe(testSteamKey);
-
-      // --- Clear webhook URL and verify empty persisted value ---
+      // --- Clear webhook URL and verify the empty value persists ---
       const webhookInput2 = page.getByTestId('settings-webhook-url-input');
       await expect(webhookInput2).toBeVisible({ timeout: 5000 });
       await webhookInput2.clear();
       await webhookInput2.blur();
-      await page.waitForTimeout(1500);
 
-      await page.reload();
-      await page.waitForLoadState('networkidle');
-      const webhookAfterClear = page.getByTestId('settings-webhook-url-input');
-      const clearedValue = await webhookAfterClear.inputValue();
-      expect(clearedValue).toBe('');
+      await expect
+        .poll(
+          async () => {
+            await page.reload();
+            await page.waitForLoadState('networkidle');
+            return page.getByTestId('settings-webhook-url-input').inputValue();
+          },
+          { message: 'webhook URL to be cleared', timeout: 15000 }
+        )
+        .toBe('');
     }
   );
 });

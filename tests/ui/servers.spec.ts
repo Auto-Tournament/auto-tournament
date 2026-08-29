@@ -28,15 +28,13 @@ test.describe.serial('Server UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Step 1: Create server via UI
-      const addButton = page.getByTestId('add-server-button');
-      const buttonVisible = await addButton.isVisible().catch(() => false);
-      
-      if (!buttonVisible) {
-        // Button might be covered by alert or not exist - skip test
-        test.skip();
-        return;
-      }
-      
+      // With no servers yet the page shows an empty state whose CTA is the only
+      // way in; once servers exist the header action appears instead.
+      const addButton = page
+        .getByTestId('add-server-button')
+        .or(page.getByTestId('empty-state-action'))
+        .first();
+      await expect(addButton).toBeVisible({ timeout: 10000 });
       await addButton.click();
 
       // Wait for modal
@@ -46,7 +44,10 @@ test.describe.serial('Server UI', () => {
       // Fill in server details
       const timestamp = Date.now();
       const serverName = `UI Test Server ${timestamp}`;
-      const serverHost = '127.0.0.1';
+      // 0.0.0.0 marks a fake server: the API skips RCON for it. A reachable-looking
+      // host left behind by this test would block every later tournament start
+      // with `cs2_outdated_servers`.
+      const serverHost = '0.0.0.0';
       const serverPort = String(27015 + (timestamp % 1000));
       const serverPassword = 'testpassword123';
 

@@ -73,7 +73,18 @@ export async function startTournament(request: APIRequestContext): Promise<boole
     const response = await request.post('/api/tournament/start', {
       headers: getAuthHeader(),
     });
-    return response.ok();
+
+    if (!response.ok()) {
+      // Surface the body – start failures are usually actionable (e.g. a 409
+      // `cs2_outdated_servers` when a leftover server has a real host).
+      console.error('Tournament start failed:', {
+        status: response.status(),
+        error: await response.text(),
+      });
+      return false;
+    }
+
+    return true;
   } catch (error) {
     console.error('Tournament start error:', error);
     return false;

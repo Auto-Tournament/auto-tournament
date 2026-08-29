@@ -1,8 +1,51 @@
-import { Page, expect } from '@playwright/test';
+import { Page, APIRequestContext, expect } from '@playwright/test';
 
 /**
  * Authentication helper functions
+ *
+ * ## Two cookie jars
+ *
+ * Playwright's `page` and the standalone `request` fixture do **not** share
+ * cookies. `page.request` uses the browser context's jar; the `request` fixture
+ * has its own. API-driven tests therefore have to sign in on *both*, otherwise
+ * admin-guarded endpoints reject the `request` calls with
+ * "Unauthorized - Admin session required".
+ *
+ * Use `setupTestContext()` (helpers/setup.ts) which does this for you.
  */
+
+export const DEFAULT_ADMIN_STEAM_ID = process.env.TEST_STEAM_ID || '76561198000000001';
+export const DEFAULT_PLAYER_STEAM_ID = '76561198000000002';
+
+/**
+ * Sign in as admin on a Playwright APIRequestContext.
+ *
+ * Hits the test-only admin endpoint, which creates a Passport session *and*
+ * sets the signed player_steam_id cookie. Both land in this context's cookie
+ * jar, so subsequent `request.*` calls are authenticated.
+ *
+ * Works with either the `request` fixture or `page.request`.
+ */
+export async function signInViaRequest(
+  request: APIRequestContext,
+  steamId: string = DEFAULT_ADMIN_STEAM_ID
+): Promise<boolean> {
+  try {
+    const response = await request.post('/api/test/login-admin', {
+      data: { steamId },
+    });
+
+    if (!response.ok()) {
+      console.error('login-admin test helper failed:', await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Sign in via request context failed:', error);
+    return false;
+  }
+}
 
 /**
  * Sign in via a test-only admin endpoint that creates a Passport session.
@@ -11,28 +54,14 @@ import { Page, expect } from '@playwright/test';
  * the UI relies on. Steam-based admin rights are still decided by players.is_admin.
  */
 export async function signIn(page: Page): Promise<boolean> {
-  try {
-    const testSteamId = process.env.TEST_STEAM_ID || '76561198000000001';
+  const ok = await signInViaRequest(page.request);
+  if (!ok) return false;
 
-    const response = await page.request.post('/api/test/login-admin', {
-      data: { steamId: testSteamId },
-    });
+  // Navigate to dashboard; the session cookie should be sent automatically.
+  await page.goto('/');
+  await page.waitForLoadState('domcontentloaded');
 
-    if (!response.ok()) {
-      console.error('login-admin test helper failed:', await response.text());
-      return false;
-    }
-
-    // Navigate to dashboard; the session cookie should be sent automatically.
-    await page.goto('/');
-    await page.waitForLoadState('domcontentloaded');
-
-    const url = page.url();
-    return !url.includes('/login');
-  } catch (error) {
-    console.error('Sign in via test helper failed:', error);
-    return false;
-  }
+  return !page.url().includes('/login');
 }
 
 /**
@@ -64,10 +93,20 @@ export async function ensureSignedIn(page: Page): Promise<void> {
  */
 export async function signInAsPlayer(
   page: Page,
-  steamId: string = '76561198000000002'
+  steamId: string = DEFAULT_PLAYER_STEAM_ID
+): Promise<boolean> {
+  return signInAsPlayerViaRequest(page.request, steamId);
+}
+
+/**
+ * Same as `signInAsPlayer`, but for a bare APIRequestContext.
+ */
+export async function signInAsPlayerViaRequest(
+  request: APIRequestContext,
+  steamId: string = DEFAULT_PLAYER_STEAM_ID
 ): Promise<boolean> {
   try {
-    const response = await page.request.post('/api/test/login-player', {
+    const response = await request.post('/api/test/login-player', {
       data: { steamId },
     });
     if (!response.ok()) {
@@ -82,6 +121,49 @@ export async function signInAsPlayer(
 }
 
 /**
+ * Start impersonating a player as the currently signed-in admin.
+ *
+ * The admin keeps their admin rights (admin auth deliberately ignores the
+ * impersonation cookie), but every player-facing endpoint — veto in particular —
+ * now treats the request as coming from `steamId`.
+ *
+ * @returns true when impersonation started
+ */
+export async function impersonatePlayer(
+  request: APIRequestContext,
+  steamId: string
+): Promise<boolean> {
+  try {
+    const response = await request.post('/api/auth/impersonate', {
+      data: { steamId },
+    });
+
+    if (!response.ok()) {
+      console.error('impersonate failed:', await response.text());
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Impersonate request failed:', error);
+    return false;
+  }
+}
+
+/**
+ * Stop impersonating and return to the admin's own identity.
+ */
+export async function stopImpersonating(request: APIRequestContext): Promise<boolean> {
+  try {
+    const response = await request.post('/api/auth/impersonate/stop');
+    return response.ok();
+  } catch (error) {
+    console.error('Stop impersonation request failed:', error);
+    return false;
+  }
+}
+
+/**
  * Legacy helper kept for backwards compatibility in tests.
  *
  * Now that admin auth is fully Passport/session-based, this returns an
@@ -91,4 +173,3 @@ export async function signInAsPlayer(
 export function getAuthHeader(): { Authorization: string } {
   return { Authorization: '' };
 }
-

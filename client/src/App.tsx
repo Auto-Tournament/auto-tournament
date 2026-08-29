@@ -27,6 +27,7 @@ import ELOTemplates from './pages/ELOTemplates';
 import Layout from './components/layout/Layout';
 import NotFound from './pages/NotFound';
 import { theme } from './theme';
+import { ImpersonationBanner } from './components/common/ImpersonationBanner';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -218,6 +219,9 @@ export default function App() {
         <AuthProvider>
           <SnackbarProvider>
             <PageHeaderProvider>
+              {/* Rendered above every route: impersonation applies app-wide,
+                  including the public/player-facing pages it exists to test. */}
+              <ImpersonationBanner />
               <AppRoutes />
             </PageHeaderProvider>
           </SnackbarProvider>

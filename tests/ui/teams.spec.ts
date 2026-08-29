@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
+import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Teams UI tests
@@ -27,8 +28,7 @@ test.describe.serial('Teams UI', () => {
     }
   });
 
-  test.skip(
-    'should navigate to and display teams page',
+  test('should navigate to and display teams page',
     {
       tag: ['@ui', '@teams'],
     },
@@ -77,13 +77,13 @@ test.describe.serial('Teams UI', () => {
       }
 
       // Step 1: Create team via UI
-      const createButton = page.getByTestId('add-team-button');
-      const buttonVisible = await createButton.isVisible().catch(() => false);
-
-      if (!buttonVisible) {
-        test.skip();
-        return;
-      }
+      // With no teams yet the page shows an empty state whose CTA is the only
+      // way in; once teams exist the header action appears instead. Accept either.
+      const createButton = page
+        .getByTestId('add-team-button')
+        .or(page.getByTestId('empty-state-action'))
+        .first();
+      await expect(createButton).toBeVisible({ timeout: 10000 });
 
       await createButton.click();
 
@@ -105,13 +105,8 @@ test.describe.serial('Teams UI', () => {
       const steamIdInput = page.getByTestId('team-steam-id-input');
       const playerNameInput = page.getByTestId('team-player-name-input');
 
-      const steamInputVisible = await steamIdInput.isVisible().catch(() => false);
-      const nameInputVisible = await playerNameInput.isVisible().catch(() => false);
-
-      if (!steamInputVisible || !nameInputVisible) {
-        test.skip();
-        return;
-      }
+      await expect(steamIdInput).toBeVisible({ timeout: 10000 });
+      await expect(playerNameInput).toBeVisible({ timeout: 10000 });
 
       await steamIdInput.fill('76561198000000000');
       await playerNameInput.fill('Test Player');
@@ -132,13 +127,10 @@ test.describe.serial('Teams UI', () => {
       await expect(noPlayersAlert).not.toBeVisible({ timeout: 2000 });
 
       // Submit form
+      // Snackbars sit over the dialog's Save button; clear them first.
+      await dismissSnackbars(page);
       const submitButton = page.getByTestId('team-save-button');
-      const submitButtonVisible = await submitButton.isVisible().catch(() => false);
-
-      if (!submitButtonVisible) {
-        test.skip();
-        return;
-      }
+      await expect(submitButton).toBeVisible({ timeout: 10000 });
 
       // Wait for creation
       const [response] = await Promise.all([
@@ -191,6 +183,7 @@ test.describe.serial('Teams UI', () => {
         await nameInput.fill(updatedName);
 
         // Save
+        await dismissSnackbars(page);
         const saveButton = page.getByTestId('team-save-button');
         await saveButton.click();
 

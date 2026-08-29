@@ -9,19 +9,20 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import { getVetoOrder } from '../utils/vetoConfig';
 import { settingsService } from '../services/settingsService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
-import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
+import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { requireAuth } from '../middleware/auth';
 
 const router = Router();
 
-function getViewerSteamId(req: Request): string | null {
-  const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
-  if (cookieSteamId) return cookieSteamId;
-
-  const anyReq = req as Request & { user?: { steamId?: string } };
-  if (anyReq.user?.steamId && anyReq.user.steamId.trim().length > 0) {
-    return anyReq.user.steamId.trim();
-  }
-  return null;
+/**
+ * Steam ID this request should be treated as.
+ *
+ * Honours admin impersonation, so an admin can walk through a real team's veto
+ * to reproduce and debug issues without borrowing a player's Steam account.
+ */
+async function getViewerSteamId(req: Request): Promise<string | null> {
+  const { effectiveSteamId } = await resolveViewerIdentity(req);
+  return effectiveSteamId;
 }
 
 function normalizeTeamRosterPlayers(players: string | null | undefined) {
@@ -327,7 +328,7 @@ router.get('/:matchSlug', async (req: Request, res: Response) => {
     // Determine whether the current viewer is actually on one of the two teams.
     // Team members get the full veto state; spectators get a redacted, read‑only
     // view with only high‑level information (team names, status, picked maps).
-    const viewerSteamId = getViewerSteamId(req);
+    const viewerSteamId = await getViewerSteamId(req);
     const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
 
     if (!viewerTeam) {
@@ -390,7 +391,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
     // Resolve which team (if any) the current viewer belongs to based on their
     // Steam ID (from player_steam_id cookie or Passport user).
-    const viewerSteamId = getViewerSteamId(req);
+    const viewerSteamId = await getViewerSteamId(req);
     const viewerTeam = await resolveViewerTeamForMatch(match, viewerSteamId);
 
     if (!viewerSteamId || !viewerTeam) {
@@ -794,9 +795,11 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
 
 /**
  * POST /api/veto/:matchSlug/reset
- * Reset veto state (admin only in future)
+ *
+ * Wipes a match's veto so it can be redone. Admin only: without the guard any
+ * anonymous caller could reset a live tournament's veto.
  */
-router.post('/:matchSlug/reset', async (req: Request, res: Response) => {
+router.post('/:matchSlug/reset', requireAuth, async (req: Request, res: Response) => {
   try {
     const { matchSlug } = req.params;
 

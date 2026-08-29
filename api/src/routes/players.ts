@@ -25,7 +25,7 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { generateAvatarSvg } from '../generation/avatar';
-import { getVerifiedPlayerSteamId } from '../utils/signedPlayerCookie';
+import { getEffectiveViewerSteamId } from '../utils/viewerIdentity';
 
 const router = Router();
 
@@ -370,7 +370,9 @@ router.get('/:playerId/team', async (req: Request, res: Response) => {
  */
 router.get('/me/match-status', async (req: Request, res: Response) => {
   try {
-    const steamId = getVerifiedPlayerSteamId(req.headers.cookie);
+    // Honour admin impersonation so the navbar CTA reflects the player being
+    // impersonated, not the admin doing the impersonating.
+    const steamId = await getEffectiveViewerSteamId(req);
     if (!steamId) {
       return res.json({
         success: true,

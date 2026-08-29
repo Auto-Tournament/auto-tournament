@@ -164,36 +164,16 @@ export async function createTestPlayers(
   prefix: string = 'test',
   baseElo: number = 1500
 ): Promise<Player[] | null> {
-  // Real Steam IDs for testing - public profiles that should exist
-  const realSteamIds = [
-    '76561197960287930', // Gabe Newell (public profile)
-    '76561198013825972',
-    '76561198067146383',
-    '76561198021466528',
-    '76561198059949467',
-    '76561198077860982',
-    '76561198041282941',
-    '76561198012563928',
-    '76561198063472351',
-    '76561198084126937',
-    '76561198012345678',
-    '76561198023456789',
-    '76561198034567890',
-    '76561198045678901',
-    '76561198056789012',
-    '76561198067890123',
-    '76561198078901234',
-    '76561198089012345',
-    '76561198090123456',
-    '76561198101234567',
-  ];
-
+  // NOTE: these players get synthetic ids (`<prefix>-player-<i>-<ts>`), not Steam
+  // IDs. That is fine for shuffle/rating tests, which only need distinct player
+  // rows — but such players can never sign in, be impersonated, or take a veto
+  // turn. Use `createTestTeams` (helpers/teams.ts) when a test needs real Steam
+  // identities.
   const timestamp = Date.now();
 
   // Use bulk import for efficiency
   const playerInputs: CreatePlayerInput[] = [];
   for (let i = 0; i < count; i++) {
-    const steamId = realSteamIds[i % realSteamIds.length];
     // Add variation to Skill Rating for testing team balancing
     const eloVariation = Math.floor((i % 10) * 50); // 0-450 rating variation
     const profile = generatePlayerProfile();

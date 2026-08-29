@@ -1,7 +1,7 @@
 import { APIRequestContext } from '@playwright/test';
 import { getAuthHeader } from './auth';
 import { createTestTeams, type Team, createTeam } from './teams';
-import { createTestServer, type Server } from './servers';
+import { createTestServer, deleteServer, FAKE_SERVER_HOST, type Server } from './servers';
 import {
   createAndStartTournament,
   type CreateTournamentInput,
@@ -92,9 +92,35 @@ async function ensureTeams(
     });
     if (response.ok()) {
       const data = await response.json();
-      const existingTeams = data.teams || [];
-      if (existingTeams.length >= count) {
-        return existingTeams.slice(0, count);
+      const existingTeams: Team[] = data.teams || [];
+
+      // Reuse a leftover team only if it can actually play a match:
+      //
+      //  - every player must have a real 17-digit Steam ID. Some specs (shuffle)
+      //    create players with synthetic ids like `match-test-player-3-...`;
+      //    those cannot sign in, be impersonated, or take veto turns.
+      //  - the two teams must have disjoint rosters. A match whose teams share a
+      //    Steam ID is unusable: the veto API cannot tell which side that player
+      //    acts for and rejects every action as "not on one of the
+      //    participating teams".
+      const isSteamId = (value: string) => /^\d{17}$/.test(value);
+
+      const picked: Team[] = [];
+      const claimed = new Set<string>();
+
+      for (const team of existingTeams) {
+        const steamIds = (team.players ?? []).map((player) => player.steamId);
+        if (steamIds.length === 0) continue;
+        if (!steamIds.every(isSteamId)) continue;
+        if (steamIds.some((steamId) => claimed.has(steamId))) continue;
+
+        steamIds.forEach((steamId) => claimed.add(steamId));
+        picked.push(team);
+        if (picked.length === count) break;
+      }
+
+      if (picked.length >= count) {
+        return picked.slice(0, count);
       }
     }
   } catch (error) {
@@ -144,6 +170,17 @@ async function ensureTeams(
 }
 
 /**
+ * Does this server look like one the E2E suite created?
+ *
+ * Matches `createTestServer`'s `<prefix>-server-<timestamp>` ids and the
+ * `ui_test_server_<timestamp>` id the app derives from the Servers-page test.
+ * Anything else is treated as the operator's real infrastructure.
+ */
+function isTestFixtureServer(server: Server): boolean {
+  return /-server-\d{10,}$/.test(server.id) || /^ui_test_server_\d{10,}$/.test(server.id);
+}
+
+/**
  * Get existing servers or create new ones
  */
 async function ensureServers(
@@ -158,10 +195,40 @@ async function ensureServers(
     });
     if (response.ok()) {
       const data = await response.json();
-      const existingServers = data.servers || [];
-      const enabledServers = existingServers.filter((s: Server) => s.enabled);
-      if (enabledServers.length >= count) {
-        return enabledServers.slice(0, count);
+      const existingServers: Server[] = data.servers || [];
+
+      // Tournament start refuses to run while any enabled server fails its RCON
+      // version check, so a leftover server with a real host makes every later
+      // tournament fail with `cs2_outdated_servers`.
+      //
+      // Only ever delete servers this suite created. Never touch a server we do
+      // not recognise: the tests may be pointed at an instance that has real CS2
+      // servers configured, and silently deleting those would be destructive.
+      const blocking = existingServers.filter(
+        (server) => server.enabled && server.host !== FAKE_SERVER_HOST
+      );
+
+      for (const server of blocking) {
+        if (isTestFixtureServer(server)) {
+          console.warn(
+            `[tournamentSetup] Removing leftover test server ${server.id} (${server.host}) ` +
+              'which would block tournament start'
+          );
+          await deleteServer(request, server.id);
+        } else {
+          console.warn(
+            `[tournamentSetup] Enabled server ${server.id} (${server.host}) is not a test ` +
+              'fixture and will not be modified. If it is unreachable, tournament start will ' +
+              `fail with cs2_outdated_servers — disable it, or use host ${FAKE_SERVER_HOST}.`
+          );
+        }
+      }
+
+      const usableServers = existingServers.filter(
+        (server) => server.enabled && server.host === FAKE_SERVER_HOST
+      );
+      if (usableServers.length >= count) {
+        return usableServers.slice(0, count);
       }
     }
   } catch (error) {

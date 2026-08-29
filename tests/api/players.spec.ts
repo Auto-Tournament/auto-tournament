@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { ensureSignedIn, getAuthHeader } from '../helpers/auth';
+import { ensureSignedIn, getAuthHeader, signInViaRequest } from '../helpers/auth';
 import {
   createPlayer,
   bulkImportPlayers,
@@ -20,25 +20,32 @@ import {
  * @tag shuffle
  */
 
-test.describe.skip('Player Management API', () => {
-  test.beforeEach(async ({ page }) => {
+/**
+ * NOTE: these tests deliberately avoid 76561198000000001 / ...002 — those are the
+ * Steam IDs the auth helpers use for the test admin and test player, so a player
+ * row already exists for them with a different name.
+ */
+test.describe('Player Management API', () => {
+  test.beforeEach(async ({ page, request }) => {
     await ensureSignedIn(page);
+    // `page` and `request` have separate cookie jars – the API helpers below
+    // use `request`, so it needs its own admin session.
+    await signInViaRequest(request);
   });
 
-  test.skip(
-    'should create a player with initial Skill Rating',
+  test('should create a player with initial Skill Rating',
     {
       tag: ['@api', '@players', '@crud'],
     },
     async ({ request }) => {
       const player = await createPlayer(request, {
-        id: '76561198000000001',
+        id: '76561198000001001',
         name: 'Test Player 1',
         initialELO: 1500,
       });
 
       expect(player).toBeTruthy();
-      expect(player?.id).toBe('76561198000000001');
+      expect(player?.id).toBe('76561198000001001');
       expect(player?.name).toBe('Test Player 1');
       expect(player?.currentElo).toBe(1500);
       expect(player?.startingElo).toBe(1500);
@@ -52,7 +59,7 @@ test.describe.skip('Player Management API', () => {
     },
     async ({ request }) => {
       const player = await createPlayer(request, {
-        id: '76561198000000002',
+        id: '76561198000001002',
         name: 'Test Player 2',
       });
 

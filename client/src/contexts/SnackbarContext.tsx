@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
 import { SnackbarProvider as NotistackProvider, enqueueSnackbar, closeSnackbar, VariantType, SnackbarKey } from 'notistack';
-import { Alert, Slide, TransitionProps } from '@mui/material';
+import { Alert, IconButton, Slide, TransitionProps } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
 
 type ShowSnackbarOptions = {
   /**
@@ -29,6 +30,9 @@ const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined
 // Important: keep snackbars from affecting layout/scrollbars. Use a responsive
 // width so the toast never overflows the viewport (which can cause "page jump").
 const SNACKBAR_SX = {
+  // The notistack container spans a region larger than the toast. Without this,
+  // that empty area swallows clicks on whatever sits beneath it.
+  pointerEvents: 'auto',
   width: 'min(500px, calc(100vw - 24px))',
   minWidth: 0,
   maxWidth: '500px',
@@ -46,70 +50,62 @@ const SNACKBAR_SX = {
   },
 } as const;
 
-const SuccessSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
-  <Alert
-    ref={ref}
-    severity="success"
-    variant="filled"
-    sx={{
-      ...SNACKBAR_SX,
-      // Use theme success colors so this matches the global palette
-      backgroundColor: 'success.main',
-      color: 'success.contrastText',
-    }}
-  >
-    {message}
-  </Alert>
-));
-SuccessSnackbar.displayName = 'SuccessSnackbar';
+type SnackbarComponentProps = {
+  id: SnackbarKey;
+  message: ReactNode;
+};
 
-const ErrorSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
-  <Alert
-    ref={ref}
-    severity="error"
-    variant="filled"
-    sx={{
-      ...SNACKBAR_SX,
-      backgroundColor: 'error.main',
-      color: 'error.contrastText',
-    }}
-  >
-    {message}
-  </Alert>
-));
-ErrorSnackbar.displayName = 'ErrorSnackbar';
+/**
+ * Dismiss control for every snackbar.
+ *
+ * Persistent snackbars (see `showPersistentError`) stay until closed. Without a
+ * close button they permanently cover the bottom-right of the viewport and
+ * intercept clicks on anything underneath — dialog Save buttons in particular.
+ */
+function SnackbarCloseButton({ id }: { id: SnackbarKey }) {
+  return (
+    <IconButton
+      size="small"
+      color="inherit"
+      aria-label="Dismiss notification"
+      data-testid="snackbar-close-button"
+      onClick={() => closeSnackbar(id)}
+    >
+      <CloseIcon fontSize="small" />
+    </IconButton>
+  );
+}
 
-const WarningSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
-  <Alert
-    ref={ref}
-    severity="warning"
-    variant="filled"
-    sx={{
-      ...SNACKBAR_SX,
-      backgroundColor: 'warning.main',
-      color: 'warning.contrastText',
-    }}
-  >
-    {message}
-  </Alert>
-));
-WarningSnackbar.displayName = 'WarningSnackbar';
+function createSnackbarVariant(
+  severity: 'success' | 'error' | 'warning' | 'info',
+  displayName: string
+) {
+  const Component = React.forwardRef<HTMLDivElement, SnackbarComponentProps>(
+    ({ id, message }, ref) => (
+      <Alert
+        ref={ref}
+        severity={severity}
+        variant="filled"
+        action={<SnackbarCloseButton id={id} />}
+        sx={{
+          ...SNACKBAR_SX,
+          // Use theme colors so this matches the global palette
+          backgroundColor: `${severity}.main`,
+          color: `${severity}.contrastText`,
+        }}
+      >
+        {message}
+      </Alert>
+    )
+  );
+  Component.displayName = displayName;
+  return Component;
+}
 
-const InfoSnackbar = React.forwardRef<HTMLDivElement, { message: ReactNode }>(({ message }, ref) => (
-  <Alert
-    ref={ref}
-    severity="info"
-    variant="filled"
-    sx={{
-      ...SNACKBAR_SX,
-      backgroundColor: 'info.main',
-      color: 'info.contrastText',
-    }}
-  >
-    {message}
-  </Alert>
-));
-InfoSnackbar.displayName = 'InfoSnackbar';
+const SuccessSnackbar = createSnackbarVariant('success', 'SuccessSnackbar');
+const ErrorSnackbar = createSnackbarVariant('error', 'ErrorSnackbar');
+const WarningSnackbar = createSnackbarVariant('warning', 'WarningSnackbar');
+const InfoSnackbar = createSnackbarVariant('info', 'InfoSnackbar');
 
 // Custom Slide transition with smooth easing for snackbars
 const SlideTransition = React.forwardRef<unknown, TransitionProps & { children: React.ReactElement }>(
@@ -186,6 +182,9 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   return (
     <NotistackProvider
       maxSnack={5}
+      // Only the toasts themselves are interactive; the container must let
+      // clicks through to the page underneath.
+      style={{ pointerEvents: 'none' }}
       anchorOrigin={{
         vertical: 'bottom',
         horizontal: 'right',

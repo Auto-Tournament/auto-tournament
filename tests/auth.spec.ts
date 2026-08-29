@@ -25,8 +25,7 @@ test.describe.serial('Authentication', () => {
     await page.evaluate(() => localStorage.clear());
   });
 
-  test.skip(
-    'should display login page when not authenticated',
+  test('should display login page when not authenticated',
     {
       tag: ['@ui', '@auth', '@login'],
     },
@@ -34,12 +33,31 @@ test.describe.serial('Authentication', () => {
       await page.goto('/login');
       await expect(page).toHaveTitle(/Login/i);
 
-      // Check for login form elements
-      const passwordInput = page.getByTestId('login-api-token-input');
-      await expect(passwordInput).toBeVisible();
+      // Login is provider-based (SSO): one button per *enabled* provider. Which
+      // providers are enabled depends on the environment — Steam, for instance,
+      // only appears when STEAM_API_KEY is configured — so drive the assertion
+      // off what the API actually reports.
+      const providers: Array<{ id: string; enabled?: boolean }> = (
+        await (await page.request.get('/api/auth/providers')).json()
+      ).providers;
+      const enabled = providers.filter((provider) => provider.enabled);
 
-      const loginButton = page.getByTestId('login-sign-in-button');
-      await expect(loginButton).toBeVisible();
+      for (const provider of enabled) {
+        const testId =
+          provider.id === 'steam'
+            ? 'login-steam-sign-in-button'
+            : `login-${provider.id}-sign-in-button`;
+        await expect(page.getByTestId(testId)).toBeVisible();
+      }
+
+      if (enabled.length === 0) {
+        // No provider configured: the page must say so rather than look broken.
+        await expect(page.getByText(/sign-in is temporarily unavailable/i)).toBeVisible();
+      }
+
+      // There is no password/API-token field any more; make sure one has not
+      // crept back in, since that would mean a second, unguarded way in.
+      await expect(page.getByTestId('login-api-token-input')).toHaveCount(0);
     }
   );
 
@@ -116,8 +134,7 @@ test.describe.serial('Authentication', () => {
     }
   );
 
-  test.skip(
-    'should use ensureSignedIn helper to auto-sign-in',
+  test('should use ensureSignedIn helper to auto-sign-in',
     {
       tag: ['@ui', '@auth', '@login'],
     },

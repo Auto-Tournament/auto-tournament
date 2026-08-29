@@ -21,7 +21,7 @@ TEST_TIMEOUT=300 # 5 minutes timeout for tests
 cleanup() {
   echo ""
   echo -e "${YELLOW}Cleaning up Docker Compose services...${NC}"
-  docker compose -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" down -v 2>/dev/null || true
+  docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" down -v 2>/dev/null || true
   echo -e "${GREEN}✅ Cleanup complete${NC}"
 }
 
@@ -56,16 +56,16 @@ echo ""
 
 # Step 1: Start Docker Compose services
 echo -e "${YELLOW}Step 1/4: Starting Docker Compose services...${NC}"
-docker compose -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" up -d --build
+docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" up -d --build
 
 # Wait for PostgreSQL to be ready
 echo -e "${YELLOW}Waiting for PostgreSQL to be ready...${NC}"
 timeout=60
 elapsed=0
-while ! docker compose -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" exec -T postgres pg_isready -U "${DB_USER}" > /dev/null 2>&1; do
+while ! docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" exec -T postgres pg_isready -U "${DB_USER}" > /dev/null 2>&1; do
   if [ $elapsed -ge $timeout ]; then
     echo -e "${RED}❌ PostgreSQL failed to start within ${timeout} seconds${NC}"
-    docker compose -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs postgres --tail=20
+    docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs postgres --tail=20
     exit 1
   fi
   sleep 2
@@ -83,7 +83,7 @@ while ! curl -f -s http://localhost:3069/health > /dev/null 2>&1; do
   if [ $elapsed -ge $timeout ]; then
     echo -e "${RED}❌ Application failed to start within ${timeout} seconds${NC}"
     echo -e "${YELLOW}Container logs:${NC}"
-    docker compose -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs matchzy-tournament --tail=50
+    docker compose --env-file .env -f "${COMPOSE_FILE}" -p "${COMPOSE_PROJECT}" logs matchzy-tournament --tail=50
     exit 1
   fi
   sleep 2

@@ -21,7 +21,7 @@ fi
 # Stop any existing containers first to ensure fresh database
 # --rmi local removes images built by compose to save space
 echo "🧹 Stopping any existing containers (fresh database)..."
-docker compose -f docker/docker-compose.local.yml down --rmi local 2>/dev/null || true  # Don't fail if containers don't exist
+docker compose --env-file .env -f docker/docker-compose.local.yml down --rmi local 2>/dev/null || true  # Don't fail if containers don't exist
 
 # Start Docker containers
 echo "📦 Starting Docker containers..."
