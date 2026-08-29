@@ -24,6 +24,11 @@ public/
 .env.local
 .env.*.local
 
+# Local tooling credentials (Vikunja API token etc). Deliberately NOT .env:
+# .env is loaded into the app container via env_file, and these have no business
+# being in the app's environment.
+.secrets.env
+
 # IDE
 .vscode/*
 !.vscode/extensions.json

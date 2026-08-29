@@ -26,7 +26,7 @@ cleanup() {
     echo ""
     echo -e "${YELLOW}Cleaning up...${NC}"
     cd "$(dirname "$0")/.." || exit 1
-    docker compose -f "$COMPOSE_FILE" down > /dev/null 2>&1 || true
+    docker compose --env-file .env -f "$COMPOSE_FILE" down > /dev/null 2>&1 || true
     # Also try direct docker commands as fallback
     docker stop "$CONTAINER_NAME" > /dev/null 2>&1 || true
     docker rm "$CONTAINER_NAME" > /dev/null 2>&1 || true
@@ -76,11 +76,11 @@ echo -e "${YELLOW}Starting container with docker-compose...${NC}"
 cd .. || exit 1
 
 # Stop any existing containers first
-docker compose -f "$COMPOSE_FILE" down > /dev/null 2>&1 || true
+docker compose --env-file .env -f "$COMPOSE_FILE" down > /dev/null 2>&1 || true
 
 # Start with docker-compose (will use build cache from our earlier build)
 # The build will be fast since we just built the image
-docker compose -f "$COMPOSE_FILE" up -d || {
+docker compose --env-file .env -f "$COMPOSE_FILE" up -d || {
     echo -e "${RED}❌ Failed to start container with docker-compose${NC}"
     exit 1
 }
@@ -183,7 +183,7 @@ echo "  - Frontend: http://localhost:$TEST_PORT"
 echo "  - Health: http://localhost:$TEST_PORT/health"
 echo "  - API: http://localhost:$TEST_PORT/api"
 echo ""
-echo "View logs: docker compose -f $COMPOSE_FILE logs -f"
+echo "View logs: docker compose --env-file .env -f $COMPOSE_FILE logs -f"
 echo "Or: docker logs -f $CONTAINER_NAME"
 echo ""
 read -p "Press Enter to stop and clean up the container..."
