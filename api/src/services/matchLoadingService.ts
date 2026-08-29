@@ -13,6 +13,13 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from './settingsService';
 import { getMatchZyServerConfigCommands } from '../utils/matchzyRconCommands';
+import { matchConfigFetchTracker } from './matchConfigFetchTracker';
+
+/**
+ * How long to wait for MatchZy to fetch the match config after the load command.
+ * Observed locally at well under a second; the headroom is for a busy server.
+ */
+const CONFIG_FETCH_TIMEOUT_MS = 10_000;
 
 export interface MatchLoadOptions {
   skipWebhook?: boolean; // Deprecated: Webhooks are now persistent, this param is ignored
@@ -258,6 +265,7 @@ export async function loadMatchOnServer(
     // Server initialization has already ensured webhook, auth, and core config are set and persisted
     log.success(`✅ Server ${serverId} ready. Loading match ${matchSlug}`);
     log.info(`Sending load command to ${serverId}: matchzy_loadmatch_url "${configUrl}"`);
+    const loadCommandSentAt = Date.now();
     const loadResult = await rconService.sendCommand(
       serverId,
       `matchzy_loadmatch_url "${configUrl}"`
@@ -269,8 +277,12 @@ export async function loadMatchOnServer(
     });
 
     const responseText = (loadResult.response || '').toLowerCase();
-    const pluginReportedFailure = responseText.includes('match load failed');
     const gotvInactive = responseText.includes('gotv[0] not active');
+    // MatchZy has several refusals and they share no common wording. These are
+    // the ones we know; the config-fetch check below is what catches the rest.
+    const alreadySetUp =
+      responseText.includes('cannot load a new match') || responseText.includes('already setup');
+    const pluginReportedFailure = responseText.includes('match load failed');
 
     const handlePluginFailure = (message: string) => {
       log.warn(message, {
@@ -280,9 +292,11 @@ export async function loadMatchOnServer(
       });
     };
 
-    if (pluginReportedFailure || gotvInactive) {
+    if (pluginReportedFailure || gotvInactive || alreadySetUp) {
       const errorMessage = gotvInactive
         ? 'MatchZy refused to load because GOTV is disabled. Enable GOTV (tv_enable 1) and retry.'
+        : alreadySetUp
+        ? 'MatchZy refused the match because the server still has a previous match set up. End or cancel that match on the server, then load this one again.'
         : 'MatchZy plugin reported that it failed to load the match. Check the server console for the detailed error.';
 
       handlePluginFailure(errorMessage);
@@ -294,6 +308,44 @@ export async function loadMatchOnServer(
         demoUploadConfigured: false,
         rconResponses: results,
       };
+    }
+
+    // RCON accepting the command only means it was delivered. MatchZy still has
+    // to fetch the config, and when it refuses it does so without telling RCON
+    // anything we can rely on - which is how a match could be marked "loaded"
+    // while the server sat on the previous map.
+    //
+    // Only require this of servers we know can reach us. A server that has
+    // never sent an event (a placeholder host, or one used for screenshots)
+    // would never fetch, and failing those would be a regression.
+    if (loadResult.success) {
+      const server = await db.queryOneAsync<{ server_can_reach_api_at: number | null }>(
+        'SELECT server_can_reach_api_at FROM servers WHERE id = ?',
+        [serverId]
+      );
+
+      if (server?.server_can_reach_api_at) {
+        const fetched = await matchConfigFetchTracker.waitForFetch(
+          matchSlug,
+          loadCommandSentAt,
+          CONFIG_FETCH_TIMEOUT_MS
+        );
+
+        if (!fetched) {
+          const errorMessage =
+            'MatchZy never fetched the match config, so the match did not load. ' +
+            'The server is still running whatever it had before. Check the server console for the reason it refused.';
+          handlePluginFailure(errorMessage);
+
+          return {
+            success: false,
+            error: errorMessage,
+            webhookConfigured: false,
+            demoUploadConfigured: false,
+            rconResponses: results,
+          };
+        }
+      }
     }
 
     if (loadResult.success) {
