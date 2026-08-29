@@ -229,7 +229,13 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = await resolveMatch(event.matchid);
       if (match) {
-        updateLiveStats(match, { status: 'warmup' });
+        // The knife winner still has to pick a side, and MatchZy emits no event
+        // for that choice — the next signal is `going_live`. Reporting warmup
+        // here dropped the UI out of the knife round for the whole selection
+        // window (matchzy_side_selection_time, 60s by default), which is what
+        // users saw: "it looks like it goes back to warmup, but they are
+        // picking sides". Stay on 'knife' until the match actually starts.
+        updateLiveStats(match, { status: 'knife' });
       }
       break;
     }
