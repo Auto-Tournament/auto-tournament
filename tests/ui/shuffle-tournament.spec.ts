@@ -9,7 +9,6 @@ import {
   getStandings,
 } from '../helpers/shuffleTournament';
 import { createTestPlayers, type Player } from '../helpers/players';
-import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Shuffle Tournament UI tests
@@ -42,8 +41,6 @@ test.describe.serial('Shuffle Tournament UI', () => {
       // /tournament opens on a welcome screen; the wizard is behind "Create New".
       await page.getByTestId('tournament-welcome-create-new').click();
 
-      // The wizard's Next button is bottom-right, where snackbars appear.
-      await dismissSnackbars(page);
       const nextButton = page.getByTestId('tournament-next-button');
 
       // Step 1 of 6 — Name.

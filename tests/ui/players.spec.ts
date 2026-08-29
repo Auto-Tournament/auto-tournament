@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { ensureSignedIn, signInViaRequest } from '../helpers/auth';
 import { createPlayer, getAllPlayers } from '../helpers/players';
-import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Player Management UI tests
@@ -42,7 +41,6 @@ test.describe.serial('Player Management UI', () => {
       await page.goto('/players');
       await expect(page.getByTestId('players-page')).toBeVisible();
 
-      await dismissSnackbars(page);
       await page
         .getByTestId('add-player-button')
         .or(page.getByTestId('empty-state-action'))
@@ -60,7 +58,6 @@ test.describe.serial('Player Management UI', () => {
       await page.getByTestId('player-name-input').fill(playerName);
       await page.getByTestId('player-elo-input').fill('3200');
 
-      await dismissSnackbars(page);
       const [createResponse] = await Promise.all([
         page.waitForResponse(
           (resp) => resp.url().includes('/api/players') && resp.request().method() === 'POST',
@@ -119,7 +116,6 @@ test.describe.serial('Player Management UI', () => {
       const playerCard = page.getByTestId(`player-card-${testPlayer!.id}`);
       await expect(playerCard).toBeVisible();
 
-      await dismissSnackbars(page);
       await playerCard.click();
 
       const modal = page.getByTestId('player-modal');
@@ -129,7 +125,6 @@ test.describe.serial('Player Management UI', () => {
       await expect(eloField).toBeVisible();
       await eloField.fill('3500');
 
-      await dismissSnackbars(page);
       await page.getByTestId('player-save-button').click();
 
       // Changing an existing player's rating is gated behind a confirmation

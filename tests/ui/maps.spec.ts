@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
-import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Maps UI tests
@@ -33,7 +32,6 @@ test.describe.serial('Maps UI', () => {
     { tag: ['@ui', '@maps', '@validation'] },
     async ({ page, request }) => {
       await page.goto('/maps');
-      await dismissSnackbars(page);
       await page.getByTestId('add-map-button').click();
 
       const modal = page.getByTestId('map-modal');
@@ -72,7 +70,6 @@ test.describe.serial('Maps UI', () => {
     { tag: ['@ui', '@maps', '@crud'] },
     async ({ page, request }) => {
       await page.goto('/maps');
-      await dismissSnackbars(page);
       await page.getByTestId('add-map-button').click();
 
       const modal = page.getByTestId('map-modal');
@@ -114,7 +111,6 @@ test.describe.serial('Maps UI', () => {
       const card = page.getByTestId(`map-card-${mapId}`);
       await expect(card).toBeVisible();
 
-      await dismissSnackbars(page);
       await card.click();
       await expect(page.getByTestId('map-actions-modal')).toBeVisible();
 
@@ -164,8 +160,6 @@ test.describe.serial('Tournament Map Pool Selection', () => {
       await page.goto('/tournament');
       await page.getByTestId('tournament-welcome-create-new').click();
 
-      // Toasts stack bottom-right, over the wizard's Next button.
-      await dismissSnackbars(page);
       const nextButton = page.getByTestId('tournament-next-button');
 
       // Name -> Type -> Format -> Maps

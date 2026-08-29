@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext, configureWebhook } from '../helpers/setup';
 import { getAuthHeader } from '../helpers/auth';
-import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Teams UI tests
@@ -68,7 +67,6 @@ test.describe.serial('Teams UI', () => {
 
       // --- Create ---
       const teamName = `UI Team ${Date.now()}`;
-      await dismissSnackbars(page);
       await page
         .getByTestId('add-team-button')
         .or(page.getByTestId('empty-state-action'))
@@ -84,7 +82,6 @@ test.describe.serial('Teams UI', () => {
       await page.getByTestId('team-player-name-input').fill('UI Test Player');
       await page.getByTestId('team-add-player-button').click();
 
-      await dismissSnackbars(page);
       await page.getByTestId('team-save-button').click();
       await expect(modal).not.toBeVisible();
 
@@ -97,7 +94,6 @@ test.describe.serial('Teams UI', () => {
       await expect(modal).toBeVisible();
 
       await page.getByTestId('team-name-input').fill(updatedName);
-      await dismissSnackbars(page);
       await page.getByTestId('team-save-button').click();
       await expect(modal).not.toBeVisible();
 
@@ -115,7 +111,6 @@ test.describe.serial('Teams UI', () => {
       await updatedCard.click();
       await expect(modal).toBeVisible();
 
-      await dismissSnackbars(page);
       await page.getByTestId('team-delete-button').click();
       await page.getByTestId('confirm-dialog-confirm-button').click();
 

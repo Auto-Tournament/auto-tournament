@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useCallback, ReactNode } from 'react';
-import { SnackbarProvider as NotistackProvider, enqueueSnackbar, closeSnackbar, VariantType, SnackbarKey } from 'notistack';
-import { Alert, IconButton, Slide, TransitionProps } from '@mui/material';
+import {
+  SnackbarProvider as NotistackProvider,
+  enqueueSnackbar,
+  closeSnackbar,
+  VariantType,
+  SnackbarKey,
+} from 'notistack';
+import { Alert, GlobalStyles, IconButton, Slide, TransitionProps } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
 type ShowSnackbarOptions = {
@@ -15,7 +21,11 @@ type ShowSnackbarOptions = {
 };
 
 interface SnackbarContextType {
-  showSnackbar: (message: ReactNode, severity?: VariantType, options?: ShowSnackbarOptions) => SnackbarKey;
+  showSnackbar: (
+    message: ReactNode,
+    severity?: VariantType,
+    options?: ShowSnackbarOptions
+  ) => SnackbarKey;
   showSuccess: (message: ReactNode) => SnackbarKey;
   showError: (message: ReactNode) => SnackbarKey;
   showWarning: (message: ReactNode) => SnackbarKey;
@@ -30,9 +40,8 @@ const SnackbarContext = createContext<SnackbarContextType | undefined>(undefined
 // Important: keep snackbars from affecting layout/scrollbars. Use a responsive
 // width so the toast never overflows the viewport (which can cause "page jump").
 const SNACKBAR_SX = {
-  // The notistack container spans a region larger than the toast. Without this,
-  // that empty area swallows clicks on whatever sits beneath it.
-  pointerEvents: 'auto',
+  // Pointer-events for the whole toast subtree are handled globally in the
+  // provider below — a toast must never steal a click from the page.
   width: 'min(500px, calc(100vw - 24px))',
   minWidth: 0,
   maxWidth: '500px',
@@ -108,41 +117,46 @@ const WarningSnackbar = createSnackbarVariant('warning', 'WarningSnackbar');
 const InfoSnackbar = createSnackbarVariant('info', 'InfoSnackbar');
 
 // Custom Slide transition with smooth easing for snackbars
-const SlideTransition = React.forwardRef<unknown, TransitionProps & { children: React.ReactElement }>(
-  (props, ref) => {
-    return (
-      <Slide
-        {...props}
-        ref={ref}
-        // Use vertical motion to avoid horizontal overflow/scrollbar shifts.
-        direction="up"
-        timeout={{
-          enter: 400,
-          exit: 300,
-        }}
-        easing={{
-          enter: 'cubic-bezier(0.0, 0, 0.2, 1)',
-          exit: 'cubic-bezier(0.4, 0, 1, 1)',
-        }}
-      />
-    );
-  }
-);
+const SlideTransition = React.forwardRef<
+  unknown,
+  TransitionProps & { children: React.ReactElement }
+>((props, ref) => {
+  return (
+    <Slide
+      {...props}
+      ref={ref}
+      // Use vertical motion to avoid horizontal overflow/scrollbar shifts.
+      direction="up"
+      timeout={{
+        enter: 400,
+        exit: 300,
+      }}
+      easing={{
+        enter: 'cubic-bezier(0.0, 0, 0.2, 1)',
+        exit: 'cubic-bezier(0.4, 0, 1, 1)',
+      }}
+    />
+  );
+});
 SlideTransition.displayName = 'SlideTransition';
 
 export function SnackbarProvider({ children }: { children: ReactNode }) {
   const showSnackbar = useCallback(
-    (msg: ReactNode, variant: VariantType = 'success', options?: ShowSnackbarOptions): SnackbarKey => {
-    return enqueueSnackbar(msg, {
-      variant,
-      persist: options?.persist === true,
-      autoHideDuration: options?.persist === true ? undefined : 6000,
-      key: options?.key,
-      anchorOrigin: {
-        vertical: 'bottom',
-        horizontal: 'right',
-      },
-    });
+    (
+      msg: ReactNode,
+      variant: VariantType = 'success',
+      options?: ShowSnackbarOptions
+    ): SnackbarKey => {
+      return enqueueSnackbar(msg, {
+        variant,
+        persist: options?.persist === true,
+        autoHideDuration: options?.persist === true ? undefined : 6000,
+        key: options?.key,
+        anchorOrigin: {
+          vertical: 'bottom',
+          horizontal: 'right',
+        },
+      });
     },
     []
   );
@@ -180,38 +194,87 @@ export function SnackbarProvider({ children }: { children: ReactNode }) {
   }, []);
 
   return (
-    <NotistackProvider
-      maxSnack={5}
-      // Only the toasts themselves are interactive; the container must let
-      // clicks through to the page underneath.
-      style={{ pointerEvents: 'none' }}
-      anchorOrigin={{
-        vertical: 'bottom',
-        horizontal: 'right',
-      }}
-      autoHideDuration={6000}
-      TransitionComponent={SlideTransition}
-      dense={false}
-      Components={{
-        success: SuccessSnackbar,
-        error: ErrorSnackbar,
-        warning: WarningSnackbar,
-        info: InfoSnackbar,
-      }}
-    >
-      <SnackbarContext.Provider
-        value={{
-          showSnackbar,
-          showSuccess,
-          showError,
-          showWarning,
-          showPersistentError,
-          closeSnackbar: handleCloseSnackbar,
+    <>
+      {/*
+        Keep toasts underneath MUI's modal layer (zIndex 1300).
+
+        Toasts are anchored bottom-right and the stack grows upward, so with two
+        or three showing it reaches the action row of a tall dialog — measured at
+        y 620-664 for the map modal's Update button, against a toast stack
+        spanning y 497-706. Which button gets covered just depends on the corner:
+        Save sits bottom-right, Delete bottom-left (`mr: 'auto'`), so moving the
+        anchor only moves the problem.
+
+        A modal dialog is by definition the focused interaction, so it should own
+        its own clicks; a toast raised behind one is still there when it closes.
+        With no dialog open — the common case — nothing changes.
+
+        This has to be a global rule rather than the provider's `style` prop:
+        notistack applies `style` to each snackbar item, not to the container,
+        so setting zIndex there silently does nothing and the container keeps
+        MUI's snackbar layer (1400) — above the dialog. `div.` makes the
+        selector specific enough to win without `!important`.
+      */}
+      <GlobalStyles
+        styles={{
+          // A toast must never steal a click.
+          //
+          // Toasts float bottom-right, which is exactly where primary actions
+          // live — a dialog's Save button, the tournament wizard's Next button.
+          // A persistent toast (see `showPersistentError`) sits there
+          // indefinitely, so anything it covers becomes permanently
+          // unclickable.
+          //
+          // notistack already makes its container inert, but then sets
+          // `pointer-events: all` on each item so toasts stay clickable. That
+          // is a reasonable default and the wrong one here, so override it —
+          // `!important` because the library's own rule has equal specificity
+          // and is injected later. Only the action area stays interactive: the
+          // close button and any action a caller supplies.
+          'div.notistack-SnackbarContainer, div.notistack-SnackbarContainer *': {
+            pointerEvents: 'none !important',
+          },
+          'div.notistack-SnackbarContainer .MuiAlert-action, div.notistack-SnackbarContainer .MuiAlert-action *':
+            {
+              pointerEvents: 'auto !important',
+            },
+          // Below MUI's modal layer (1300) as well, so a dialog is never
+          // visually obscured by a toast either.
+          'div.notistack-SnackbarContainer': {
+            zIndex: 1200,
+          },
+        }}
+      />
+      <NotistackProvider
+        maxSnack={5}
+        anchorOrigin={{
+          vertical: 'bottom',
+          horizontal: 'right',
+        }}
+        autoHideDuration={6000}
+        TransitionComponent={SlideTransition}
+        dense={false}
+        Components={{
+          success: SuccessSnackbar,
+          error: ErrorSnackbar,
+          warning: WarningSnackbar,
+          info: InfoSnackbar,
         }}
       >
-        {children}
-      </SnackbarContext.Provider>
-    </NotistackProvider>
+        <SnackbarContext.Provider
+          value={{
+            showSnackbar,
+            showSuccess,
+            showError,
+            showWarning,
+            showPersistentError,
+            closeSnackbar: handleCloseSnackbar,
+          }}
+        >
+          {children}
+        </SnackbarContext.Provider>
+      </NotistackProvider>
+    </>
   );
 }
 

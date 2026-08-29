@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test';
 import { setupTestContext } from '../helpers/setup';
-import { dismissSnackbars } from '../helpers/ui';
 
 /**
  * Server UI tests
@@ -88,9 +87,15 @@ test.describe.serial('Server UI', () => {
       // There is no server-edit-button in the client — the card itself opens the
       // modal. The previous version looked for that button, found nothing, and
       // silently skipped the entire delete stage while still reporting success.
-      // The "server created" toast is anchored bottom-right and can sit over the
-      // card, so clear it before clicking through.
-      await dismissSnackbars(page);
+      //
+      // Saving is asynchronous: handleSave runs auto-configuration, schedules a
+      // server reload 1.5s later, and only then calls handleCloseModal(). Reopen
+      // a dialog inside that window and the trailing close tears it down —
+      // Playwright sees the delete button detach mid-click. Wait the timer out.
+      // (Tracked as a real UI bug; a user clicking quickly hits the same thing.)
+      await page.waitForTimeout(2500);
+      await page.waitForLoadState('networkidle');
+
       await serverCard.click();
       await expect(modal).toBeVisible();
 
