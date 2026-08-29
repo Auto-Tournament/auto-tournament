@@ -3,6 +3,7 @@ import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
+import { copyTextToClipboard } from '../../utils/clipboard';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
 // Note: status color is handled by higher-level components; keep imports minimal here.
 import {
@@ -302,7 +303,7 @@ export function MatchInfoCard({
     setTimeout(() => setConnected(false), 3000);
   };
 
-  const handleCopyIP = () => {
+  const handleCopyIP = async () => {
     if (!match.server) return;
     const connectCommand = `connect ${match.server.host}:${match.server.port}${
       match.server.password ? `; password ${match.server.password}` : ''
@@ -311,30 +312,21 @@ export function MatchInfoCard({
     // Reset any previous fallback state
     setCopyFallbackCommand(null);
 
-    // Prefer modern clipboard API when available and allowed
-    if (navigator.clipboard && (window as typeof globalThis).isSecureContext) {
-      navigator.clipboard
-        .writeText(connectCommand)
-        .then(() => {
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        })
-        .catch((err) => {
-          console.warn('Clipboard write failed, falling back to manual copy:', err);
-          setCopyFallbackCommand(connectCommand);
-          showError(
-            'Unable to copy connect command automatically. Command is shown below so you can copy it manually.'
-          );
-        });
+    // Copying works over plain HTTP too — `copyTextToClipboard` falls back to
+    // execCommand where `navigator.clipboard` does not exist. Showing the
+    // command is the last resort, not the first response to a non-HTTPS origin:
+    // most LAN users can simply have the button work.
+    const copiedOk = await copyTextToClipboard(connectCommand);
+
+    if (copiedOk) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
       return;
     }
 
-    // Fallback for non-secure contexts (e.g. plain HTTP) or missing API:
-    // show the command so the user can copy it manually, and surface a clear
-    // warning so they know why the button did not copy to the clipboard.
     setCopyFallbackCommand(connectCommand);
     showError(
-      'Your browser blocked automatic copying (non-HTTPS or missing clipboard access). Command is shown below so you can copy it manually.'
+      'Your browser blocked copying. The command is shown below so you can copy it manually.'
     );
   };
 
