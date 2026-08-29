@@ -129,18 +129,51 @@ HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
   CMD node -e "require('http').get('http://localhost:3069/health', (r) => { process.exit(r.statusCode === 200 ? 0 : 1) }).on('error', () => process.exit(1))" || exit 1
 
 # Startup script (Node API + Caddy)
+#
+# Both processes are supervised. Previously Caddy ran in the foreground as PID 1
+# with Node backgrounded, so if Node exited -- e.g. it lost the race with
+# Postgres on a host reboot and died with "the database system is starting up"
+# -- the container stayed "up" and Caddy served 502 for every request, forever.
+# The restart policy never fired because the container had not exited, and the
+# healthcheck could only mark it unhealthy.
+#
+# Now the container exits as soon as either process does, so
+# `restart: unless-stopped` can actually recover it.
 RUN printf '%s\n' \
   '#!/bin/sh' \
   'set -e' \
   '' \
-  '# Start Express backend in background' \
+  '# Start Express backend' \
   'node dist/index.js &' \
+  'NODE_PID=$!' \
   '' \
-  '# Wait a moment for backend to start' \
+  '# Give the backend a moment before Caddy starts proxying to it' \
   'sleep 2' \
   '' \
-  '# Start Caddy in foreground' \
-  'exec caddy run --config /app/Caddyfile --adapter caddyfile' \
+  '# Start Caddy' \
+  'caddy run --config /app/Caddyfile --adapter caddyfile &' \
+  'CADDY_PID=$!' \
+  '' \
+  'term() {' \
+  '  kill "$NODE_PID" "$CADDY_PID" 2>/dev/null || true' \
+  '  exit 0' \
+  '}' \
+  'trap term TERM INT' \
+  '' \
+  '# Exit if either process dies, so the container is restarted rather than' \
+  '# left serving 502s from a half-dead stack.' \
+  'while kill -0 "$NODE_PID" 2>/dev/null && kill -0 "$CADDY_PID" 2>/dev/null; do' \
+  '  sleep 5' \
+  'done' \
+  '' \
+  'if kill -0 "$NODE_PID" 2>/dev/null; then' \
+  '  echo "[start.sh] Caddy exited; shutting down so the container restarts." >&2' \
+  'else' \
+  '  echo "[start.sh] Node API exited; shutting down so the container restarts." >&2' \
+  'fi' \
+  '' \
+  'kill "$NODE_PID" "$CADDY_PID" 2>/dev/null || true' \
+  'exit 1' \
   > /app/start.sh && \
   chmod +x /app/start.sh
 
