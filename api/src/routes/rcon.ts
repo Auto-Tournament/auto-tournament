@@ -6,6 +6,10 @@ import { log } from '../utils/logger';
 import { getWebhookBaseUrl } from '../utils/urlHelper';
 import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
+import {
+  findActiveMatchForServer,
+  settleEndedMatch,
+} from '../services/matchTerminationService';
 
 const router = Router();
 
@@ -707,8 +711,26 @@ router.post('/end-match', async (req: Request, res: Response) => {
       });
     }
 
-    const result = await rconService.sendCommand(serverId, 'css_restart');
+    // css_restart *restarts* the match; css_endmatch ends it and tells players
+    // an admin did so. Both reset the server, but only one matches the button.
+    const result = await rconService.sendCommand(serverId, 'css_endmatch');
     const statusCode = result.success ? 200 : 400;
+
+    // Ending the match on the server is only half of it. MatchZy emits no event
+    // when a match is force-ended, so unless MAT settles its own record here the
+    // row stays 'live' and the Matches tab keeps showing LIVE — which is exactly
+    // what was reported. Force Cancel already did this; End Match never did.
+    if (result.success) {
+      const match = await findActiveMatchForServer(serverId);
+      if (match) {
+        await settleEndedMatch(match, 'end match');
+      } else {
+        log.warn(
+          `[RCON] End match sent to ${serverId} but no loaded/live match was found for it; ` +
+            'nothing to settle'
+        );
+      }
+    }
 
     return res.status(statusCode).json(result);
   } catch (error) {
