@@ -743,6 +743,87 @@ router.post('/end-match', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/rcon/:serverId/add-player
+ * Add a backup player or spectator to the match currently set up on a server.
+ *
+ * The admin tools have always called this; it simply did not exist, so every
+ * attempt 404'd and the UI reported "failed to add player to match".
+ *
+ * MatchZy answers over RCON in prose and reports refusals — no match set up,
+ * halftime, already on a team, bad Steam ID — through the *reply text* while
+ * the RCON call itself succeeds. Returning `result.success` alone would tell
+ * the admin the player was added when nothing happened, so the reply is
+ * inspected here.
+ */
+router.post('/:serverId/add-player', async (req: Request, res: Response) => {
+  try {
+    const { serverId } = req.params;
+    const { steamId, team, nickname } = req.body as {
+      steamId?: string;
+      team?: string;
+      nickname?: string;
+    };
+
+    if (!steamId || !team) {
+      return res.status(400).json({
+        success: false,
+        error: 'steamId and team are required',
+      });
+    }
+
+    if (!/^\d{17}$/.test(steamId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'steamId must be a 17-digit Steam64 ID',
+      });
+    }
+
+    const allowedTeams = ['team1', 'team2', 'spec'];
+    if (!allowedTeams.includes(team)) {
+      return res.status(400).json({
+        success: false,
+        error: `team must be one of: ${allowedTeams.join(', ')}`,
+      });
+    }
+
+    // The name is interpolated into a quoted RCON argument, so a quote in it
+    // would end the argument early and corrupt the command.
+    const safeName = (nickname || steamId).replace(/"/g, '').trim() || steamId;
+
+    const result = await rconService.sendCommand(
+      serverId,
+      `matchzy_addplayer ${steamId} ${team} "${safeName}"`
+    );
+
+    if (!result.success) {
+      return res.status(400).json(result);
+    }
+
+    const reply = (result.response || '').trim();
+
+    // MatchZy says "... added to <team> successfully!" on the happy path.
+    if (/successfully/i.test(reply)) {
+      return res.json({ ...result, success: true, message: reply });
+    }
+
+    // Anything else is a refusal it explained in words; pass that on rather
+    // than inventing a generic failure.
+    log.warn('[RCON] matchzy_addplayer refused', { serverId, steamId, team, reply });
+    return res.status(400).json({
+      ...result,
+      success: false,
+      error: reply || 'The server did not confirm the player was added.',
+    });
+  } catch (error) {
+    log.error('Error adding player to match', error as Error);
+    return res.status(500).json({
+      success: false,
+      error: 'Failed to add player to match',
+    });
+  }
+});
+
+/**
  * POST /api/rcon/command
  * Execute generic admin commands with parameters
  */
