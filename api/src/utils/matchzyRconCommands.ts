@@ -18,6 +18,14 @@ export function getMatchZyWebhookCommands(
     `matchzy_remote_log_url "${webhookUrl}"`,
     `matchzy_remote_log_header_key "X-MatchZy-Token"`,
     `matchzy_remote_log_header_value "${serverToken}"`,
+    // Where the plugin pushes full match reports. Without this the plugin's
+    // upload is skipped and the report is only offered as the reply to an RCON
+    // command — which it builds asynchronously, long after the RCON response has
+    // been sent, so MAT reads an empty string and drops the report entirely.
+    // `matchzy_report_server_id` needs no command: the plugin sets it from
+    // `matchzy_server_id`, which is already sent during initialization.
+    `matchzy_report_endpoint "${baseUrl}/api/events/report"`,
+    `matchzy_report_token "${serverToken}"`,
     `get5_check_auths true`, // Enable auth check to prevent random players
   ];
 }

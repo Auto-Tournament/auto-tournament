@@ -124,6 +124,27 @@ test.describe.serial('MatchZy hostname format', () => {
   );
 
   test(
+    'tells the server where to push match reports',
+    { tag: ['@api', '@matchzy', '@regression'] },
+    async ({ request }) => {
+      const commands = await bootstrapCommands(request, serverId);
+
+      // Without these the plugin skips its HTTP upload and only offers the
+      // report as the reply to an RCON command, which it builds asynchronously
+      // — long after the RCON response has been sent. MAT then reads an empty
+      // string and every match report is lost, taking phase reconciliation and
+      // connection snapshots with it.
+      expect(commands).toContain(
+        `matchzy_report_endpoint "http://localhost:3069/api/events/report"`
+      );
+      expect(
+        commands.some((c) => c.startsWith('matchzy_report_token ')),
+        'the plugin needs a token to authenticate its upload'
+      ).toBe(true);
+    }
+  );
+
+  test(
     'clearing the setting with null restores the default',
     { tag: ['@api', '@matchzy', '@settings'] },
     async ({ request }) => {
