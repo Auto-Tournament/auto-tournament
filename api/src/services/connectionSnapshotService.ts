@@ -468,9 +468,23 @@ function toMillis(value?: number | null): number {
   return value > 1_000_000_000_000 ? value : value * 1000;
 }
 
+/**
+ * Map a plugin phase onto the status the UIs render.
+ *
+ * The default is 'warmup', so any phase missing from this switch silently reads
+ * as WARMUP. That is how a knife round's side selection came to show the match
+ * as warming up: MatchZy Enhanced reports `knife_decision` while the winning
+ * team picks a side, and nothing here knew the name. The same held for a paused
+ * match and for a round restore, both of which are plainly live.
+ *
+ * Phase names come from `GetMatchPhaseLabel()` in MatchZy Enhanced
+ * (src/MatchReportCommand.cs); keep this in step with it.
+ */
 function mapPhaseToLiveStatus(phase?: string) {
   switch ((phase || '').toLowerCase()) {
     case 'knife':
+    case 'knife_decision':
+      // Side selection is still part of the knife stage, not a return to warmup.
       return 'knife';
     case 'going_live':
     case 'warmup_ended':
@@ -478,6 +492,10 @@ function mapPhaseToLiveStatus(phase?: string) {
       // Treat both "going_live" and "warmup_ended" as fully LIVE so that the
       // bracket and match cards flip out of WARMUP as soon as the match is
       // actually about to begin.
+      return 'live';
+    case 'paused':
+    case 'round_restore':
+      // A pause or a backup restore happens inside a live match.
       return 'live';
     case 'halftime':
       return 'halftime';
@@ -507,6 +525,9 @@ async function reconcileMatchStatusFromPhase(
   switch (normalized) {
     case 'live':
     case 'knife':
+    case 'knife_decision':
+    case 'paused':
+    case 'round_restore':
     case 'halftime':
       targetStatus = 'live';
       break;

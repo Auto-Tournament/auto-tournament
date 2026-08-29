@@ -1,6 +1,7 @@
 import { Router, type Request, type Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
+import { applyMatchReport, type MatchReport } from '../services/connectionSnapshotService';
 import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
@@ -227,6 +228,37 @@ router.post('/match-state', requireAuth, async (req: Request, res: Response): Pr
   params.push(slug);
   await db.runAsync(`UPDATE matches SET ${sets.join(', ')} WHERE slug = ?`, params);
   log.warn(`[DEV-TOOLS] Set match state for ${slug}: ${sets.join(', ')}`);
+  res.json({ success: true });
+});
+
+/**
+ * Test-only helper: apply a MatchZy match report as if it arrived from a server.
+ *
+ * POST /api/test/match-report  { slug, report }
+ *
+ * Match reports reach MAT over RCON, and `rconService` short-circuits fake test
+ * servers (host 0.0.0.0) with a canned non-JSON response — so the whole
+ * `applyMatchReport` path, including the plugin-phase mapping that decides
+ * whether a match reads as WARMUP or LIVE, is otherwise unreachable from the
+ * suite. This injects a report directly.
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/match-report', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return;
+  }
+
+  const { slug, report } = (req.body || {}) as { slug?: string; report?: unknown };
+
+  if (!slug || !report || typeof report !== 'object') {
+    res.status(400).json({ success: false, error: 'slug and report are required' });
+    return;
+  }
+
+  await applyMatchReport(slug, report as MatchReport);
+  log.warn(`[DEV-TOOLS] Applied injected match report for ${slug}`);
   res.json({ success: true });
 });
 
