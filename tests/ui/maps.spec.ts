@@ -34,7 +34,7 @@ test.describe.serial('Maps UI', () => {
 
       // Wait for modal to appear
       const modal = page.getByTestId('map-modal');
-      await expect(modal).toBeVisible({ timeout: 5000 });
+      await expect(modal).toBeVisible({ timeout: 15000 });
 
       // Wait for form fields to be ready
       await page.waitForTimeout(500);
@@ -67,7 +67,7 @@ test.describe.serial('Maps UI', () => {
       if (!modalStillOpen) {
         // Modal closed after error, reopen it
         await addButton.click();
-        await expect(page.getByTestId('map-modal')).toBeVisible({ timeout: 5000 });
+        await expect(page.getByTestId('map-modal')).toBeVisible({ timeout: 15000 });
         await page.waitForTimeout(500);
       }
 
@@ -79,8 +79,8 @@ test.describe.serial('Maps UI', () => {
       const displayNameInput = page.getByTestId('map-display-name-input');
 
       // Wait for inputs to be ready
-      await expect(mapIdInput).toBeVisible({ timeout: 5000 });
-      await expect(displayNameInput).toBeVisible({ timeout: 5000 });
+      await expect(mapIdInput).toBeVisible({ timeout: 15000 });
+      await expect(displayNameInput).toBeVisible({ timeout: 15000 });
 
       // Clear and fill - use fill with empty string first to clear, then fill with new value
       await mapIdInput.fill(''); // Clear by filling empty
@@ -100,7 +100,7 @@ test.describe.serial('Maps UI', () => {
           )
           .catch(() => null),
         freshSubmitButton
-          .click({ timeout: 5000 })
+          .click({ timeout: 15000 })
           .catch(() => freshSubmitButton.click({ force: true })),
       ]);
 
@@ -120,7 +120,7 @@ test.describe.serial('Maps UI', () => {
       if (cardCount > 0) {
         await mapCards.first().click();
         const actionsModal = page.getByTestId('map-actions-modal');
-        await expect(actionsModal).toBeVisible({ timeout: 5000 });
+        await expect(actionsModal).toBeVisible({ timeout: 15000 });
 
         const editButton = page.getByTestId('map-edit-button');
         const editVisible = await editButton.isVisible().catch(() => false);

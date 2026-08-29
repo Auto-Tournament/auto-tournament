@@ -26,7 +26,7 @@ test.describe.serial('Matches UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Verify matches page loaded
-      await expect(page.getByTestId('matches-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('matches-page')).toBeVisible({ timeout: 15000 });
     }
   );
 

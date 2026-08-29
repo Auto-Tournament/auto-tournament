@@ -42,7 +42,7 @@ test.describe.serial('Teams UI', () => {
       await page.waitForTimeout(500);
 
       // Verify teams page loaded
-      await expect(page.getByTestId('teams-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('teams-page')).toBeVisible({ timeout: 15000 });
       
       // Should have create/add button
       const createButton = page.getByTestId('add-team-button');
@@ -114,13 +114,13 @@ test.describe.serial('Teams UI', () => {
 
       // Click the Add button to add the player
       const addPlayerButton = page.getByTestId('team-add-player-button');
-      await expect(addPlayerButton).toBeVisible({ timeout: 5000 });
+      await expect(addPlayerButton).toBeVisible({ timeout: 15000 });
       await addPlayerButton.click();
       await page.waitForTimeout(1000);
 
       // Verify player was added (check that player count increased to 1 and error is gone)
       const playersHeading = page.getByTestId('team-players-count');
-      await expect(playersHeading).toContainText(/1/, { timeout: 5000 });
+      await expect(playersHeading).toContainText(/1/, { timeout: 15000 });
 
       // Also verify the "No players added yet" alert is gone
       const noPlayersAlert = page.getByTestId('team-no-players-alert');
@@ -142,7 +142,7 @@ test.describe.serial('Teams UI', () => {
             { timeout: 15000 }
           )
           .catch(() => null),
-        submitButton.click({ timeout: 5000 }).catch(() => submitButton.click({ force: true })),
+        submitButton.click({ timeout: 15000 }).catch(() => submitButton.click({ force: true })),
       ]);
 
       // Verify the API call succeeded
@@ -194,7 +194,7 @@ test.describe.serial('Teams UI', () => {
 
         // Verify updated name appears
         const updatedTeamCard = page.getByTestId(`team-card-${updatedName.replace(/\s+/g, '-').toLowerCase()}`);
-        await expect(updatedTeamCard).toBeVisible({ timeout: 5000 });
+        await expect(updatedTeamCard).toBeVisible({ timeout: 15000 });
       }
 
       // Step 4: Delete team via UI
@@ -246,7 +246,7 @@ test.describe.serial('Teams UI', () => {
             await page.waitForLoadState('networkidle');
 
             // Verify team is no longer visible
-            await expect(finalTeamCard).not.toBeVisible({ timeout: 5000 });
+            await expect(finalTeamCard).not.toBeVisible({ timeout: 15000 });
           }
         }
       }

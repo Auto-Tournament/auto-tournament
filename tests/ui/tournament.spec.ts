@@ -26,7 +26,7 @@ test.describe.serial('Tournament UI', () => {
       await page.waitForLoadState('networkidle');
 
       // Verify tournament page loaded
-      await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 15000 });
 
       // Check for tournament form elements - form might be visible if no tournament exists
       const nameInput = page.getByTestId('tournament-name-input');

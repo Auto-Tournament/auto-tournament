@@ -26,11 +26,21 @@ export default defineConfig({
     ['html', { outputFolder: '../playwright-report', open: 'never' }],
     ['list'],
   ],
+  /* CI runners are markedly slower than a dev machine. Every E2E failure in the
+     first CI run was a 5s assertion timeout (Playwright's default) rather than a
+     logic error — 13 more tests only passed on retry. Give CI real headroom;
+     keep local runs snappy so a genuine hang still surfaces quickly. */
+  expect: {
+    timeout: process.env.CI ? 15_000 : 5_000,
+  },
+
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
     /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
+    actionTimeout: process.env.CI ? 15_000 : 0,
+    navigationTimeout: process.env.CI ? 30_000 : 0,
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
   },

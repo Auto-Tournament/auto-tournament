@@ -74,7 +74,7 @@ test.describe.serial('Shuffle Tournament UI', () => {
       await page.waitForLoadState('networkidle');
       
       // Verify tournament page loaded
-      await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('tournament-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain('/tournament');
     }
   );

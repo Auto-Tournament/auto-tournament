@@ -81,7 +81,7 @@ test.describe.serial('Public Pages UI', () => {
       }
 
       // Wait for find player form
-      await expect(page.getByTestId('find-player-form')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('find-player-form')).toBeVisible({ timeout: 15000 });
 
       // Enter Steam ID
       const input = page.getByTestId('find-player-input');
@@ -122,7 +122,7 @@ test.describe.serial('Public Pages UI', () => {
       await page.waitForTimeout(1000);
 
       // Verify public player page loaded
-      await expect(page.getByTestId('public-player-page')).toBeVisible({ timeout: 5000 });
+      await expect(page.getByTestId('public-player-page')).toBeVisible({ timeout: 15000 });
       expect(page.url()).toContain(`/player/${player.id}`);
     }
   );
@@ -141,7 +141,7 @@ test.describe.serial('Public Pages UI', () => {
 
       // Look for error message
       const errorMessage = page.getByTestId('player-not-found-error');
-      await expect(errorMessage).toBeVisible({ timeout: 5000 });
+      await expect(errorMessage).toBeVisible({ timeout: 15000 });
     }
   );
 });
