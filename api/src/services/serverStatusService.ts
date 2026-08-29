@@ -150,6 +150,20 @@ export class ServerStatusService {
   /**
    * Get descriptive status text for display
    */
+  /** See `primeServerStatusForTests`. */
+  primeCache(
+    serverId: string,
+    entry: {
+      status: ServerStatus | null;
+      matchSlug: string | null;
+      nextMatchSlug: string | null;
+      updatedAt: number | null;
+      online: boolean;
+    }
+  ): void {
+    this.statusCache.set(serverId, { ...entry, cachedAt: Date.now() });
+  }
+
   getStatusDescription(status: ServerStatus): {
     label: string;
     description: string;
@@ -224,6 +238,32 @@ export class ServerStatusService {
         };
     }
   }
+}
+
+/**
+ * Seed the status cache directly.
+ *
+ * Only for the gated E2E test endpoints: allocation behaviour depends on what
+ * the CS2 plugin reports, and CI has no CS2 server to report anything. Reaching
+ * the cache is what lets a test stand in for one.
+ */
+export function primeServerStatusForTests(
+  serverId: string,
+  entry: {
+    status: ServerStatus | null;
+    matchSlug?: string | null;
+    nextMatchSlug?: string | null;
+    updatedAt?: number | null;
+    online?: boolean;
+  }
+): void {
+  serverStatusService.primeCache(serverId, {
+    status: entry.status,
+    matchSlug: entry.matchSlug ?? null,
+    nextMatchSlug: entry.nextMatchSlug ?? null,
+    updatedAt: entry.updatedAt ?? null,
+    online: entry.online ?? true,
+  });
 }
 
 export const serverStatusService = new ServerStatusService();
