@@ -1,0 +1,39 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+# A newer push to the same branch makes older runs pointless.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  static:
+    name: Lint & typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Lint
+        run: yarn lint
+
+      # The build strips types without checking them (esbuild for the api, Vite
+      # for the client), so tsc errors have never failed anything. This ratchets
+      # the count instead of gating on zero: the build fails only when new type
+      # errors are introduced. See scripts/typecheck-ratchet.mjs.
+      - name: Typecheck (ratchet)
+        run: yarn typecheck:ratchet

@@ -327,10 +327,15 @@ app.get('/api/health/fleet', async (_req: Request, res: Response) => {
   const now = Math.floor(Date.now() / 1000);
   const servers = await serverService.getAllServers(true);
 
-  const enabled = servers.filter((s) => s.enabled === 1 && s.host !== '0.0.0.0');
-  const outdated = enabled.filter((s) => typeof s.cs2_required_version === 'number');
-  const stale = enabled.filter((s) => !s.cs2_update_checked_at || now - s.cs2_update_checked_at >= 30 * 60);
-  const neverChecked = enabled.filter((s) => !s.cs2_update_checked_at);
+  // NOTE: getAllServers already filters to enabled servers, and ServerResponse
+  // exposes `enabled` as a boolean. Comparing it to 1 is always false, which
+  // silently made this whole endpoint report an empty fleet.
+  const enabled = servers.filter((s) => s.enabled && s.host !== '0.0.0.0');
+  const outdated = enabled.filter((s) => typeof s.cs2RequiredVersion === 'number');
+  const stale = enabled.filter(
+    (s) => !s.cs2UpdateCheckedAt || now - s.cs2UpdateCheckedAt >= 30 * 60
+  );
+  const neverChecked = enabled.filter((s) => !s.cs2UpdateCheckedAt);
 
   res.json({
     status: 'ok',
@@ -345,13 +350,13 @@ app.get('/api/health/fleet', async (_req: Request, res: Response) => {
       id: s.id,
       name: s.name,
       status: s.status ?? null,
-      lastSeen: s.last_seen ?? null,
-      cs2BuildId: s.cs2_build_id ?? null,
-      cs2RequiredVersion: s.cs2_required_version ?? null,
-      cs2UpdatePhase: s.cs2_update_phase ?? null,
-      cs2UpdateRequiredAt: s.cs2_update_required_at ?? null,
-      cs2UpdateCheckedAt: s.cs2_update_checked_at ?? null,
-      cs2VersionFetchedAt: s.cs2_version_fetched_at ?? null,
+      lastSeen: s.lastSeen ?? null,
+      cs2BuildId: s.cs2BuildId ?? null,
+      cs2RequiredVersion: s.cs2RequiredVersion ?? null,
+      cs2UpdatePhase: s.cs2UpdatePhase ?? null,
+      cs2UpdateRequiredAt: s.cs2UpdateRequiredAt ?? null,
+      cs2UpdateCheckedAt: s.cs2UpdateCheckedAt ?? null,
+      cs2VersionFetchedAt: s.cs2VersionFetchedAt ?? null,
     })),
   });
 });
