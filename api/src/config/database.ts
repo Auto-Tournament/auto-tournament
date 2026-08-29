@@ -11,7 +11,12 @@
 
 import { Pool } from 'pg';
 import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
-import { getSchemaSQL, getDefaultMapsSQL, getDefaultMapPoolsSQL } from './database.schema';
+import {
+  getSchemaSQL,
+  getSchemaColumns,
+  getDefaultMapsSQL,
+  getDefaultMapPoolsSQL,
+} from './database.schema';
 
 const MAX_DB_VALUES_SAMPLE = 5;
 
@@ -131,44 +136,9 @@ class DatabaseManager {
         }
       }
 
-      // Migrations
-      const migrations = [
-        { table: 'matches', column: 'demo_file_path', type: 'TEXT' },
-        { table: 'matches', column: 'veto_state', type: 'TEXT' },
-        { table: 'matches', column: 'current_map', type: 'TEXT' },
-        { table: 'matches', column: 'map_number', type: 'INTEGER DEFAULT 0' },
-        { table: 'map_pools', column: 'enabled', type: 'INTEGER NOT NULL DEFAULT 1' },
-        { table: 'match_map_results', column: 'demo_file_path', type: 'TEXT' },
-        { table: 'tournament_templates', column: 'team_ids', type: 'TEXT' },
-        { table: 'tournament', column: 'map_sequence', type: 'TEXT' },
-        { table: 'tournament', column: 'team_size', type: 'INTEGER DEFAULT 5' },
-        { table: 'tournament', column: 'max_rounds', type: 'INTEGER DEFAULT 24' },
-        { table: 'tournament', column: 'overtime_mode', type: "TEXT DEFAULT 'enabled'" },
-        { table: 'tournament', column: 'elo_template_id', type: 'TEXT' },
-        { table: 'player_rating_history', column: 'base_elo_after', type: 'INTEGER' },
-        { table: 'player_rating_history', column: 'stat_adjustment', type: 'INTEGER' },
-        { table: 'player_rating_history', column: 'template_id', type: 'TEXT' },
-        { table: 'player_match_stats', column: 'flash_assists', type: 'INTEGER' },
-        { table: 'player_match_stats', column: 'utility_damage', type: 'INTEGER' },
-        { table: 'player_match_stats', column: 'kast', type: 'REAL' },
-        { table: 'player_match_stats', column: 'mvps', type: 'INTEGER' },
-        { table: 'player_match_stats', column: 'score', type: 'INTEGER' },
-        { table: 'player_match_stats', column: 'rounds_played', type: 'INTEGER' },
-        { table: 'players', column: 'is_admin', type: 'INTEGER NOT NULL DEFAULT 0' },
-        { table: 'servers', column: 'cs2_required_version', type: 'INTEGER' },
-        { table: 'servers', column: 'cs2_update_phase', type: 'TEXT' },
-        { table: 'servers', column: 'cs2_update_required_at', type: 'INTEGER' },
-        { table: 'servers', column: 'cs2_update_checked_at', type: 'INTEGER' },
-        { table: 'servers', column: 'cs2_build_id', type: 'INTEGER' },
-        { table: 'servers', column: 'cs2_version_string', type: 'TEXT' },
-        { table: 'servers', column: 'cs2_version_fetched_at', type: 'INTEGER' },
-        { table: 'servers', column: 'matchzy_db_ok', type: 'INTEGER' },
-        { table: 'servers', column: 'matchzy_db_type', type: 'TEXT' },
-        { table: 'servers', column: 'matchzy_db_error', type: 'TEXT' },
-        { table: 'servers', column: 'matchzy_db_last_ok_at', type: 'INTEGER' },
-        { table: 'servers', column: 'matchzy_db_last_seen_at', type: 'INTEGER' },
-        { table: 'servers', column: 'server_can_reach_api_at', type: 'INTEGER' },
-      ];
+      // Column migrations, derived from the schema itself so the two cannot drift.
+      // See getSchemaColumns() for why this is not a hand-maintained list.
+      const migrations = getSchemaColumns();
 
       // Check if tournament_templates table exists, create if not
       try {
@@ -207,25 +177,55 @@ class DatabaseManager {
         }
       }
 
-      for (const migration of migrations) {
-        try {
-          const checkResult = await client.query(
-            `
-            SELECT column_name 
-            FROM information_schema.columns 
-            WHERE table_name = $1 AND column_name = $2
-          `,
-            [migration.table, migration.column]
-          );
-
-          if (checkResult.rows.length === 0) {
-            await client.query(
-              `ALTER TABLE ${migration.table} ADD COLUMN ${migration.column} ${migration.type}`
-            );
-          }
-        } catch {
-          // Ignore errors
+      // One lookup for the whole database rather than one per column.
+      const existingColumns = new Set<string>();
+      const existingTables = new Set<string>();
+      try {
+        const { rows } = await client.query<{ table_name: string; column_name: string }>(
+          `SELECT table_name, column_name
+           FROM information_schema.columns
+           WHERE table_schema = current_schema()`
+        );
+        for (const row of rows) {
+          existingTables.add(row.table_name);
+          existingColumns.add(`${row.table_name}.${row.column_name}`);
         }
+      } catch (err) {
+        log.error(
+          `[PostgreSQL] Could not read existing columns, skipping migrations: ${
+            (err as Error).message
+          }`
+        );
+      }
+
+      let added = 0;
+      for (const migration of migrations) {
+        // A table that does not exist yet was just created from the schema with
+        // all its columns, or genuinely is not ours to touch.
+        if (!existingTables.has(migration.table)) continue;
+        if (existingColumns.has(`${migration.table}.${migration.column}`)) continue;
+
+        try {
+          await client.query(
+            `ALTER TABLE ${migration.table} ADD COLUMN ${migration.column} ${migration.type}`
+          );
+          added++;
+          log.success(
+            `[PostgreSQL] Added missing column ${migration.table}.${migration.column} (${migration.type})`
+          );
+        } catch (err) {
+          // Keep going: one column we cannot add should not stop the rest, but it
+          // must be visible - a silently skipped migration is how an upgraded
+          // instance ends up querying a column that is not there.
+          log.error(
+            `[PostgreSQL] Failed to add ${migration.table}.${migration.column}: ${
+              (err as Error).message
+            }`
+          );
+        }
+      }
+      if (added > 0) {
+        log.success(`[PostgreSQL] Applied ${added} column migration(s)`);
       }
 
       // Insert default maps (only if maps table is empty - first initialization or after wipe)
