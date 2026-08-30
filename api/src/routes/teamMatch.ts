@@ -322,8 +322,33 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     // We intentionally scope this to the team whose page is being viewed
     // (teamId route param), not just "any team in the match", so opponents
     // cannot use the other team's link to see server or veto controls.
+    //
+    // The team's own roster decides this, not the match config. `config` is a
+    // snapshot taken when the match was created, and it goes stale the moment
+    // an admin edits the team — in both directions, both wrong:
+    //
+    //  - someone removed from the roster kept seeing the match server, because
+    //    the snapshot still listed them;
+    //  - someone added after the snapshot could not see their own server,
+    //    which is the reported "the server shows on my player page but not on
+    //    the team page".
+    //
+    // `veto.ts` already resolves membership this way, and for the same reason:
+    // an admin correcting a roster should take effect immediately. The snapshot
+    // is still the fallback for a team row that has no usable roster.
     const viewerSteamId = await getViewerSteamId(req);
-    const playersForThisTeam = isTeam1 ? normalizedTeam1Players : normalizedTeam2Players;
+    const rosterForThisTeam = normalizeConfigPlayers(
+      (() => {
+        try {
+          return team.players ? JSON.parse(team.players) : [];
+        } catch {
+          return [];
+        }
+      })()
+    );
+    const snapshotForThisTeam = isTeam1 ? normalizedTeam1Players : normalizedTeam2Players;
+    const playersForThisTeam =
+      rosterForThisTeam.length > 0 ? rosterForThisTeam : snapshotForThisTeam;
     const viewerIsTeamMember =
       !!viewerSteamId && playersForThisTeam.some((p) => p.steamid === viewerSteamId);
 
