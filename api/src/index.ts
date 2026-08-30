@@ -48,6 +48,7 @@ import { initMatchZyVersionService } from './services/matchzyVersionService';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import { healthMonitoringService } from './services/healthMonitoringService';
+import { steamService } from './services/steamService';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
@@ -504,6 +505,9 @@ process.on('uncaughtException', (err) => {
         recoverActiveMatches().catch((error) => {
           log.warn('Failed to recover active matches on startup', { error });
         }),
+        reportSteamApiKeyStatus().catch((error) => {
+          log.warn('Failed to check the Steam Web API key on startup', { error });
+        }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
         
@@ -567,6 +571,56 @@ process.on('uncaughtException', (err) => {
     process.exit(1);
   }
 })();
+
+/**
+ * Report the state of the Steam Web API key once, at startup.
+ *
+ * The health check already classifies a missing key, a rejected key and an
+ * unreachable Steam, but nothing ran it until something happened to need
+ * Steam — so an operator who started the container with a bad key saw a clean
+ * log and found out much later, if at all. That is the reported problem: a
+ * whole debugging session lost to a fake key, when one line at boot would have
+ * ended it.
+ *
+ * Never fatal. Steam is optional, and Steam being down is not a reason to
+ * refuse to start; the point is to say so plainly.
+ */
+async function reportSteamApiKeyStatus(): Promise<void> {
+  const health = await steamService.checkSteamWebApiHealth({ force: true });
+
+  if (health.ok) {
+    log.success('[Startup] Steam Web API key is valid');
+    return;
+  }
+
+  switch (health.errorType) {
+    case 'not_configured':
+      log.warn(
+        '[Startup] STEAM_API_KEY is not set. Steam features (avatars, name lookups, ' +
+          'Steam sign-in checks) are disabled. Get a key at ' +
+          'https://steamcommunity.com/dev/apikey and set STEAM_API_KEY.'
+      );
+      break;
+    case 'invalid_key':
+      log.error(
+        '[Startup] STEAM_API_KEY was rejected by Steam' +
+          (health.statusCode ? ` (HTTP ${health.statusCode})` : '') +
+          '. The key is set but not valid, so Steam features will fail. ' +
+          'Check it at https://steamcommunity.com/dev/apikey.'
+      );
+      break;
+    case 'unreachable':
+      log.warn(
+        `[Startup] Could not reach the Steam Web API to verify STEAM_API_KEY (${health.error}). ` +
+          'This may be temporary; the key will be re-checked when it is next used.'
+      );
+      break;
+    default:
+      log.warn(
+        `[Startup] STEAM_API_KEY could not be verified: ${health.error ?? 'unknown error'}`
+      );
+  }
+}
 
 async function bootstrapServerWebhooks(): Promise<void> {
   const serverToken = process.env.SERVER_TOKEN;
