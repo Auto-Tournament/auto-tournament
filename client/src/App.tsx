@@ -3,7 +3,7 @@ import { ThemeProvider, CssBaseline, Box } from '@mui/material';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { PageHeaderProvider } from './contexts/PageHeaderContext';
-import { SnackbarProvider } from './contexts/SnackbarContext';
+import { SnackbarProvider, useSnackbar } from './contexts/SnackbarContext';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import Teams from './pages/Teams';
@@ -42,8 +42,25 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink } = useAuth();
+  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink, adminDenialMessage } =
+    useAuth();
   const location = useLocation();
+  const { showWarning } = useSnackbar();
+
+  // Being bounced to your own player page when you expected the admin panel is
+  // indistinguishable from the app being broken, and it used to happen in
+  // silence — which is why "it redirects me even though I am an admin" was
+  // never diagnosable. Say what the server said.
+  const willRedirectFromAdminRoute =
+    !isLoading && adminOnly && !isAuthenticated && !!playerSteamId && !!adminDenialMessage;
+
+  React.useEffect(() => {
+    if (willRedirectFromAdminRoute && adminDenialMessage) {
+      showWarning(adminDenialMessage);
+    }
+    // Keyed on the message so a changed reason is shown again, but the same
+    // reason does not re-fire on every render.
+  }, [willRedirectFromAdminRoute, adminDenialMessage, showWarning]);
 
   if (isLoading) {
     return (

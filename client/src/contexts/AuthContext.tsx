@@ -72,6 +72,15 @@ interface AuthContextType {
    */
   adminProvider: string | null;
   /**
+   * Why admin access was refused, in words, when it was.
+   *
+   * `/api/auth/admin/me` used to answer a bare `authenticated: false`, and the
+   * router then bounced the user to their player page without saying anything.
+   * Reports of "it sends me to my player profile even though I am an admin"
+   * were undiagnosable because nothing was ever shown or collected.
+   */
+  adminDenialMessage: string | null;
+  /**
    * Lightweight profile preview for the current admin provider – used for
    * UI hints like the /connect-steam page.
    */
@@ -116,6 +125,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [adminHasSteamLinked, setAdminHasSteamLinked] = useState(false);
   const [adminProvider, setAdminProvider] = useState<string | null>(null);
+  const [adminDenialMessage, setAdminDenialMessage] = useState<string | null>(null);
   const [adminProfileName, setAdminProfileName] = useState<string | null>(null);
   const [adminProfileAvatarUrl, setAdminProfileAvatarUrl] = useState<string | null>(null);
   const [hasPlayerRecord, setHasPlayerRecord] = useState(false);
@@ -234,9 +244,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             steamId?: string | null;
             provider?: string;
             providerProfile?: { name?: string | null; avatarUrl?: string | null };
+            reason?: string;
+            message?: string;
           } = await response.json();
 
           setIsAdmin(Boolean(data.authenticated));
+          // Keep the explanation only while it is true; a later successful
+          // check must not leave a stale "you are not an admin" behind.
+          setAdminDenialMessage(data.authenticated ? null : data.message ?? null);
           setAdminProvider(data.provider ?? null);
           if (data.authenticated) setHasPlayerRecord(true);
 
@@ -417,6 +432,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         needsSteamLink: isAdmin && !adminHasSteamLinked,
         isLoading,
         adminProvider,
+        adminDenialMessage,
         adminProfileName,
         adminProfileAvatarUrl,
         hasPlayerRecord,

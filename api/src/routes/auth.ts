@@ -1070,7 +1070,12 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  */
 router.get('/admin/me', async (req: Request, res: Response) => {
   if (shouldBlockAdminAsDirectAccess(req)) {
-    return res.json({ authenticated: false });
+    return res.json({
+      authenticated: false,
+      reason: 'direct_access_blocked',
+      message:
+        'Admin access is only allowed through the configured frontend URL. This request did not come through your reverse proxy.',
+    });
   }
 
   const anyReq = req as Request & {
@@ -1163,13 +1168,44 @@ router.get('/admin/me', async (req: Request, res: Response) => {
     }
   }
 
+  // Say *why* admin was refused.
+  //
+  // This used to return a bare `authenticated: false`, and the client silently
+  // redirected to the player profile. Three quite different situations —
+  // nobody is signed in, the Steam ID has no player row, and the player exists
+  // but is not an admin — were indistinguishable from the outside, which is
+  // exactly why the reports of "redirected to my player page even though
+  // is_admin = 1" could never be diagnosed: there was nothing to collect.
+  const resolvedSteamId = steamId ?? cookieSteamId ?? null;
+  let reason: 'not_signed_in' | 'no_player_record' | 'not_admin' = 'not_signed_in';
+  let message = 'You are not signed in.';
+
+  if (resolvedSteamId) {
+    let player = null;
+    try {
+      player = await playerService.getPlayerById(resolvedSteamId);
+    } catch (err) {
+      log.warn('Failed to load player while explaining admin denial', err as Error);
+    }
+
+    if (!player) {
+      reason = 'no_player_record';
+      message = `Signed in as ${resolvedSteamId}, but there is no player with that Steam ID.`;
+    } else {
+      reason = 'not_admin';
+      message = `Signed in as ${player.name || resolvedSteamId} (${resolvedSteamId}), but this account is not an admin.`;
+    }
+  }
+
   log.info('/api/auth/admin/me: unauthenticated admin session', {
     hasIsAuthenticated: !!anyReq.isAuthenticated,
     isAuthenticated: anyReq.isAuthenticated ? anyReq.isAuthenticated() : null,
     hasUser: !!anyReq.user,
     hasCookieSteamId: !!cookieSteamId,
+    resolvedSteamId,
+    reason,
   });
-  return res.json({ authenticated: false });
+  return res.json({ authenticated: false, reason, message });
 });
 
 /**
