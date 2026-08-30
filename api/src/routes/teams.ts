@@ -2,6 +2,10 @@ import { Router, Request, Response } from 'express';
 import { teamService } from '../services/teamService';
 import { CreateTeamInput, UpdateTeamInput } from '../types/team.types';
 import { requireAuth } from '../middleware/auth';
+import {
+  findDuplicateTournamentMemberships,
+  describeDuplicateMemberships,
+} from '../utils/duplicateTeamMembership';
 
 const router = Router();
 
@@ -90,10 +94,15 @@ router.post('/', async (req: Request, res: Response) => {
     const input = body as CreateTeamInput;
     const team = await teamService.createTeam(input, upsert);
 
+    const duplicates = await findDuplicateTournamentMemberships(team.id, team.players ?? []);
+
     return res.status(upsert ? 200 : 201).json({
       success: true,
       message: upsert ? `Team '${team.id}' created or updated` : `Team '${team.id}' created`,
       team,
+      ...(duplicates.length > 0
+        ? { warnings: describeDuplicateMemberships(duplicates), duplicateMemberships: duplicates }
+        : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -115,10 +124,18 @@ router.put('/:id', async (req: Request, res: Response) => {
 
     const team = await teamService.updateTeam(id, input);
 
+    // Admins are allowed to put a player on two teams of one tournament, but
+    // it silently dead-ends the veto for that player, so say so at the moment
+    // it happens rather than leaving it to be discovered mid-match.
+    const duplicates = await findDuplicateTournamentMemberships(id, team.players ?? []);
+
     return res.json({
       success: true,
       message: `Team '${id}' updated`,
       team,
+      ...(duplicates.length > 0
+        ? { warnings: describeDuplicateMemberships(duplicates), duplicateMemberships: duplicates }
+        : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

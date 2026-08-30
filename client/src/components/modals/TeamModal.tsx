@@ -343,24 +343,37 @@ export default function TeamModal({ open, team, onClose, onSave }: TeamModalProp
       };
 
       let newTeamId: string | undefined;
+      // The API flags players who now sit on two teams of the same tournament.
+      // It is allowed — an admin may mean it — but it dead-ends the veto for
+      // that player, so surface it here instead of at match time.
+      let warnings: string[] = [];
+
       if (isEditing) {
-        await api.put(`/api/teams/${team.id}`, {
-          name: payload.name,
-          tag: payload.tag,
-          discordRoleId: undefined, // Discord notifications not yet implemented
-          players: payload.players,
-        });
+        const response = await api.put<{ success: boolean; warnings?: string[] }>(
+          `/api/teams/${team.id}`,
+          {
+            name: payload.name,
+            tag: payload.tag,
+            discordRoleId: undefined, // Discord notifications not yet implemented
+            players: payload.players,
+          }
+        );
+        warnings = response.warnings ?? [];
         showSuccess(t('teamModal.success.teamUpdated'));
       } else {
-        const response = await api.post<{ success: boolean; team: Team }>(
+        const response = await api.post<{ success: boolean; team: Team; warnings?: string[] }>(
           '/api/teams?upsert=true',
           payload
         );
         if (response.success && response.team) {
           newTeamId = response.team.id;
         }
+        warnings = response.warnings ?? [];
         showSuccess(t('teamModal.success.teamCreated'));
       }
+
+      // After the success toast, so the warning is the message left on screen.
+      warnings.forEach((warning) => showWarning(warning));
 
       onSave(newTeamId);
       onClose();
