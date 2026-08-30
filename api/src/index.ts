@@ -49,6 +49,7 @@ import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
 import { healthMonitoringService } from './services/healthMonitoringService';
 import { steamService } from './services/steamService';
+import { seedAdminsFromEnv } from './services/adminSeedService';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
@@ -507,6 +508,9 @@ process.on('uncaughtException', (err) => {
         }),
         reportSteamApiKeyStatus().catch((error) => {
           log.warn('Failed to check the Steam Web API key on startup', { error });
+        }),
+        seedAdminsFromEnv().catch((error) => {
+          log.warn('Failed to seed admins from ADMIN_STEAM_IDS on startup', { error });
         }),
       ]).then(() => {
         log.success('[Startup] All startup tasks completed');
