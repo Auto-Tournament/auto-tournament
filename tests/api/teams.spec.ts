@@ -40,10 +40,14 @@ test.describe.serial('Teams API', () => {
     expect(team?.name).toBeTruthy();
     createdTeam = team;
 
-    // Step 2: Verify team exists via API
-    const getResponse = await request.get(`/api/teams/${team!.id}`, {
-      headers: { Authorization: `Bearer ${context.apiToken}` },
-    });
+    // Step 2: Verify team exists via API.
+    // Authenticated by the admin session on this request context (see
+    // setupTestContext) — TestContext has no `apiToken`, and the stale
+    // `Bearer ${context.apiToken}` header this used to send resolved to the
+    // literal string "Bearer undefined". Harmless while nothing read the
+    // Authorization header; now that service tokens do, a presented-but-invalid
+    // token is a 401 rather than a fall-through to the session.
+    const getResponse = await request.get(`/api/teams/${team!.id}`);
     expect(getResponse.ok()).toBeTruthy();
     const teamData = await getResponse.json();
     expect(teamData.team.id).toBe(team!.id);

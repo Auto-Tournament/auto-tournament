@@ -50,6 +50,7 @@ import { matchAllocationService } from './services/matchAllocationService';
 import { healthMonitoringService } from './services/healthMonitoringService';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
+import { getServiceTokens } from './utils/serviceTokens';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
@@ -498,6 +499,8 @@ process.on('uncaughtException', (err) => {
       log.server(`Event logs: api/data/logs/events/ (30 day retention)`);
       log.server('='.repeat(60));
 
+      reportServiceTokens();
+
       // Bootstrap webhooks, recover matches, fetch MatchZy version (now database is ready)
       Promise.all([
         bootstrapServerWebhooks().catch((error) => {
@@ -624,6 +627,36 @@ async function reportSteamApiKeyStatus(): Promise<void> {
         `[Startup] STEAM_API_KEY could not be verified: ${health.error ?? 'unknown error'}`
       );
   }
+}
+
+/**
+ * Say what machine access is configured, at boot.
+ *
+ * A service token that was rejected at parse time (too short, duplicated)
+ * otherwise fails silently: nothing complains until the integration's first
+ * call comes back 401, by which point the person debugging it is looking at
+ * the bot rather than at the env var they typo'd.
+ */
+function reportServiceTokens(): void {
+  const { tokens, problems } = getServiceTokens();
+
+  for (const problem of problems) {
+    log.warn(`[Startup] ${problem}`);
+  }
+
+  if (tokens.length === 0) {
+    log.info(
+      '[Startup] No API tokens configured. Set API_TOKENS (full admin) or ' +
+        'API_TOKENS_READONLY (GET only) to let bots and scripts call the admin ' +
+        'API without a browser session. See docs/API.md.'
+    );
+    return;
+  }
+
+  const described = tokens.map((t) => `${t.label} (${t.scope}, ${t.fingerprint})`).join(', ');
+  log.success(
+    `[Startup] ${tokens.length} API token(s) active: ${described}`
+  );
 }
 
 async function bootstrapServerWebhooks(): Promise<void> {

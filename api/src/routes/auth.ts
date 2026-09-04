@@ -16,7 +16,7 @@ import {
   IMPERSONATION_COOKIE_NAME,
 } from '../utils/impersonationCookie';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
-import { requireAuth } from '../middleware/auth';
+import { authenticateServiceToken, requireAuth } from '../middleware/auth';
 
 const router = Router();
 
@@ -1069,6 +1069,30 @@ router.get('/admin-status', async (req: Request, res: Response) => {
  * - Fallback to the player_steam_id cookie for SSO logins that linked Steam.
  */
 router.get('/admin/me', async (req: Request, res: Response) => {
+  // A service token identifies an integration, not a person, so there is no
+  // Steam ID or profile to return. Answering here anyway gives bots a single
+  // endpoint to check "is my token accepted, and what may it do" against.
+  const tokenAuth = authenticateServiceToken(req);
+  if (tokenAuth) {
+    if (tokenAuth.ok) {
+      return res.json({
+        authenticated: true,
+        provider: 'service-token',
+        steamId: null,
+        serviceToken: {
+          label: tokenAuth.identity.label,
+          scope: tokenAuth.identity.scope,
+          fingerprint: tokenAuth.identity.fingerprint,
+        },
+      });
+    }
+    return res.json({
+      authenticated: false,
+      reason: 'invalid_service_token',
+      message: tokenAuth.reason,
+    });
+  }
+
   if (shouldBlockAdminAsDirectAccess(req)) {
     return res.json({
       authenticated: false,

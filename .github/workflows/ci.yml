@@ -70,6 +70,8 @@ jobs:
             echo "SESSION_SECRET=ci-session-secret"
             echo "SERVER_TOKEN=server123"
             echo "ENABLE_TEST_ENDPOINTS=true"
+            echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
+            echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
             echo "STEAM_API_KEY="
             echo "LOG_LEVEL=info"
           } >> .env

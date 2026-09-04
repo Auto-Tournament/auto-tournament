@@ -79,6 +79,7 @@ See screenshots in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 - [Creating Tournaments](https://docs.sivert.io/docs/mat/user/tournaments)
 
 **For Developers:**
+- [Using the API from a bot or script](docs/API.md)
 - [Contributing Guide](.github/CONTRIBUTING.md)
 - [Architecture](https://docs.sivert.io/docs/mat/developer/architecture)
 - [Testing](https://docs.sivert.io/docs/mat/developer/testing)

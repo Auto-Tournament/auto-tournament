@@ -46,6 +46,8 @@ export DB_USER="${DB_USER:-postgres}"
 export DB_PASSWORD="${DB_PASSWORD:-postgres}"
 export DB_NAME="${DB_NAME:-matchzy_tournament}"
 export ENABLE_TEST_ENDPOINTS="${ENABLE_TEST_ENDPOINTS:-true}"
+export API_TOKENS="${API_TOKENS:-ci-admin:ci-admin-token-0123456789abcdef}"
+export API_TOKENS_READONLY="${API_TOKENS_READONLY:-ci-readonly:ci-readonly-token-0123456789abcdef}"
 export PLAYWRIGHT_BASE_URL="http://localhost:3069"
 
 echo -e "${BLUE}Configuration:${NC}"

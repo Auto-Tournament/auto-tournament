@@ -24,20 +24,42 @@ const options: swaggerJsdoc.Options = {
     ],
     components: {
       securitySchemes: {
+        // NOTE: this is an opaque shared secret from API_TOKENS /
+        // API_TOKENS_READONLY, not a JWT. It used to be documented as one,
+        // which was doubly misleading: nothing issued a JWT, and nothing
+        // accepted a bearer token at all. See docs/API.md.
+        //
+        // Browsers use the admin session cookie instead; that is not described
+        // here because Swagger UI cannot drive the Steam login flow anyway.
         bearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
+          bearerFormat: 'opaque',
           description:
-            'Dashboard/admin authentication. Send `Authorization: Bearer <token>`.',
+            'Service token for machine clients (bots, scripts, CI). Send ' +
+            '`Authorization: Bearer <token>`, where the token is one configured ' +
+            'in API_TOKENS (full admin) or API_TOKENS_READONLY (GET only). ' +
+            'Human admins authenticate with a session cookie instead.',
         },
         // Backward compatible alias: many route docs use BearerAuth.
         BearerAuth: {
           type: 'http',
           scheme: 'bearer',
-          bearerFormat: 'JWT',
+          bearerFormat: 'opaque',
           description:
-            'Dashboard/admin authentication. Send `Authorization: Bearer <token>`.',
+            'Service token for machine clients (bots, scripts, CI). Send ' +
+            '`Authorization: Bearer <token>`, where the token is one configured ' +
+            'in API_TOKENS (full admin) or API_TOKENS_READONLY (GET only). ' +
+            'Human admins authenticate with a session cookie instead.',
+        },
+        // Same service token, for clients whose HTTP layer reserves the
+        // Authorization header.
+        apiToken: {
+          type: 'apiKey',
+          in: 'header',
+          name: 'X-API-Token',
+          description:
+            'Service token, as an alternative to `Authorization: Bearer <token>`.',
         },
         matchzyServerToken: {
           type: 'apiKey',
