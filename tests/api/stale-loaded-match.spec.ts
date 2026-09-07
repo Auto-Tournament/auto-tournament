@@ -23,6 +23,15 @@ import { setupTournament } from '../helpers/tournamentSetup';
  * @tag servers
  */
 
+/**
+ * These posts stand in for the game server, so they carry the game server's
+ * credential — `/api/events/*` requires `X-MatchZy-Token`.
+ */
+const SERVER_HEADERS = {
+  'Content-Type': 'application/json',
+  'X-MatchZy-Token': process.env.SERVER_TOKEN ?? 'server123',
+};
+
 type AvailabilityServer = {
   id: string;
   allocatable: boolean;
@@ -59,6 +68,7 @@ test.describe.serial('Stale loaded match', () => {
       // least once. Send the real server_configured webhook rather than faking
       // lastSeen, so the registration path is exercised too.
       const configured = await request.post(`/api/events/${server.id}`, {
+        headers: SERVER_HEADERS,
         data: {
           event: 'server_configured',
           server_id: server.id,
@@ -132,6 +142,7 @@ test.describe.serial('Stale loaded match', () => {
       const server = setup!.servers[0];
 
       await request.post(`/api/events/${server.id}`, {
+        headers: SERVER_HEADERS,
         data: {
           event: 'server_configured',
           server_id: server.id,
@@ -187,6 +198,7 @@ test.describe.serial('Stale loaded match', () => {
       const server = setup!.servers[0];
 
       await request.post(`/api/events/${server.id}`, {
+        headers: SERVER_HEADERS,
         data: {
           event: 'server_configured',
           server_id: server.id,

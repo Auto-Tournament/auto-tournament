@@ -14,7 +14,7 @@
 
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
-import { validateServerToken } from '../middleware/serverAuth';
+import { validateEventToken, validateServerToken } from '../middleware/serverAuth';
 import { MatchZyEvent } from '../types/matchzy-events.types';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
@@ -59,7 +59,7 @@ router.get('/test', (req: Request, res: Response) => {
  * POST /api/events
  * Receive MatchZy events via webhook (legacy endpoint without server ID)
  */
-router.post('/', async (req: Request, res: Response) => {
+router.post('/', validateEventToken, async (req: Request, res: Response) => {
   await handleEventRequest(req, res, undefined);
 });
 
@@ -136,7 +136,7 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
  * POST /api/events/:matchSlugOrServerId
  * Receive MatchZy events via webhook with match slug or server ID in URL
  */
-router.post('/:matchSlugOrServerId', async (req: Request, res: Response) => {
+router.post('/:matchSlugOrServerId', validateEventToken, async (req: Request, res: Response) => {
   const identifier = req.params.matchSlugOrServerId;
   await handleEventRequest(req, res, identifier);
 });

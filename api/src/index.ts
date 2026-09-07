@@ -26,6 +26,7 @@ import { healthMonitoringService } from './services/healthMonitoringService';
 import { steamService } from './services/steamService';
 import { seedAdminsFromEnv } from './services/adminSeedService';
 import { getServiceTokens } from './utils/serviceTokens';
+import { allowUnauthenticatedEvents } from './middleware/serverAuth';
 import packageJson from '../package.json';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
@@ -248,7 +249,7 @@ app.get('/', (_req: Request, res: Response) => {
       },
       events: {
         note: 'MatchZy event webhooks - receive game events',
-        webhook: 'POST /api/events (server token required)',
+        webhook: 'POST /api/events (X-MatchZy-Token required)',
         getEvents: 'GET /api/events/:matchSlug (auth required)',
       },
       settings: {
@@ -456,6 +457,7 @@ process.on('uncaughtException', (err) => {
       log.server('='.repeat(60));
 
       reportServiceTokens();
+      reportEventAuth();
 
       // Bootstrap webhooks, recover matches, fetch MatchZy version (now database is ready)
       Promise.all([
@@ -612,6 +614,25 @@ function reportServiceTokens(): void {
   const described = tokens.map((t) => `${t.label} (${t.scope}, ${t.fingerprint})`).join(', ');
   log.success(
     `[Startup] ${tokens.length} API token(s) active: ${described}`
+  );
+}
+
+/**
+ * Say when game event ingest is running without authentication.
+ *
+ * ALLOW_UNAUTHENTICATED_EVENTS is a migration shim for servers configured
+ * before the webhook token was enforced. Left on, it means anyone who can
+ * reach this API can forge match events, so it should be loud every boot
+ * rather than something an operator sets once and forgets.
+ */
+function reportEventAuth(): void {
+  if (!allowUnauthenticatedEvents()) return;
+
+  log.warn(
+    '[Startup] ALLOW_UNAUTHENTICATED_EVENTS is set: game events with no ' +
+      'X-MatchZy-Token are accepted. Anyone who can reach this API can forge match ' +
+      'events. Reconnect your servers so they re-fetch their webhook config, then ' +
+      'unset this.'
   );
 }
 

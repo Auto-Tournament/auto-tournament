@@ -32,6 +32,7 @@ const INDEX_TS = path.join(REPO_ROOT, 'api', 'src', 'index.ts');
 const GUARDS: Record<string, string> = {
   requireAuth: 'admin',
   validateServerToken: 'server token',
+  validateEventToken: 'server token',
 };
 
 interface Endpoint {

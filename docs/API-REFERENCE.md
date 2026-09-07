@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 187 of them, 138 behind auth —
+Every endpoint this API serves — 187 of them, 140 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -149,9 +149,9 @@ MatchZy webhooks in, and the recorded event log out.
 | Method | Path | Auth |
 | --- | --- | --- |
 | `GET` | `/api/events/test` | public |
-| `POST` | `/api/events` | public |
+| `POST` | `/api/events` | server token |
 | `POST` | `/api/events/report` | server token |
-| `POST` | `/api/events/:matchSlugOrServerId` | public |
+| `POST` | `/api/events/:matchSlugOrServerId` | server token |
 | `GET` | `/api/events/connections/:matchSlug` | public |
 | `GET` | `/api/events/live/:matchSlug` | public |
 | `GET` | `/api/events/server/:serverId` | admin |

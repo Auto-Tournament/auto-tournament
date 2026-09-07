@@ -298,7 +298,8 @@ server.
 | --- | --- |
 | `API_TOKENS` | Full-admin service tokens |
 | `API_TOKENS_READONLY` | Read-only service tokens |
-| `SERVER_TOKEN` | Game-server credential for MatchZy webhooks (`X-MatchZy-Token`). Unrelated to service tokens — it only gates `POST /api/events` |
+| `SERVER_TOKEN` | Game-server credential for MatchZy webhooks and demo uploads (`X-MatchZy-Token`). Unrelated to service tokens — it gates the ingest endpoints only, never the admin API |
+| `ALLOW_UNAUTHENTICATED_EVENTS` | Migration shim: accept game events with no token. Off by default; see `example.env` |
 | `ADMIN_STEAM_IDS` | Steam IDs always granted admin, for human sign-in |
 | `SESSION_SECRET` | Signs admin session cookies |
 
