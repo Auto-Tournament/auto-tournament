@@ -5,13 +5,47 @@ can do, another program can do — run a tournament from Discord, post scoreboar
 to a channel, wire match results into something else.
 
 This document covers how a machine authenticates, and a task-oriented tour of
-the endpoints worth using. For the **complete** list — every endpoint and what
-guards it, generated from the routers themselves — see
-[API-REFERENCE.md](API-REFERENCE.md).
+the endpoints worth using.
 
-A Swagger UI is also served at `/api-docs` on a running instance
-(`/api-docs.json` for the raw spec), but its annotations cover only part of the
-surface; the generated reference is the one that is complete.
+Three other things, all generated from the routers themselves so none of them
+can drift from the code:
+
+| | What it is |
+| --- | --- |
+| [API-REFERENCE.md](API-REFERENCE.md) | Every endpoint and what guards it, to read |
+| [openapi.json](openapi.json) | The same, machine-readable — generate a client from it |
+| `/api-docs` on a running instance | Swagger UI over that spec, with a Try-it button |
+
+## Generating a client
+
+`docs/openapi.json` is a complete OpenAPI 3.0 document. Point any generator at
+it and get a typed client, without needing a MAT instance running:
+
+```bash
+# TypeScript types only — no runtime, no dependencies in your bot
+npx openapi-typescript docs/openapi.json -o src/mat-api.d.ts
+```
+
+```bash
+# A full client, in whatever language
+npx @openapitools/openapi-generator-cli generate \
+  -i docs/openapi.json -g typescript-fetch -o src/generated
+```
+
+A live instance serves the identical document at `/api-docs.json`, so a bot can
+also regenerate against the deployment it actually talks to:
+
+```bash
+curl -s https://mat.example.com/api-docs.json -o openapi.json
+```
+
+**What the spec does and does not carry.** Paths, methods, path parameters and
+`security` come from the routers, so they are complete and correct for every
+endpoint. Request and response *schemas* only exist where someone wrote an
+`@openapi` block — around a third of the surface. The rest are marked as
+generated and say to read the handler. That is worth knowing before you trust a
+generated response type: the endpoint list is authoritative, the response bodies
+are not, yet.
 
 ---
 

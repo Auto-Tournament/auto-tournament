@@ -38,10 +38,11 @@ jobs:
       - name: Typecheck (ratchet)
         run: yarn typecheck:ratchet
 
-      # docs/API-REFERENCE.md is generated from the routers. This fails when a
-      # route is added, removed or has its auth changed without regenerating,
-      # which is the only thing that keeps the reference honest.
-      - name: API reference is current
+      # docs/API-REFERENCE.md and docs/openapi.json are generated from the
+      # routers. This fails when a route is added, removed or has its auth
+      # changed without regenerating — the only thing keeping them honest, and
+      # openapi.json is what people outside this repo generate clients from.
+      - name: API docs are current
         run: yarn docs:api:check
 
   e2e:

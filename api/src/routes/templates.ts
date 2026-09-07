@@ -141,7 +141,7 @@ router.post('/', async (req: Request, res: Response) => {
 
 /**
  * @openapi
- * /api/templates/:id:
+ * /api/templates/{id}:
  *   get:
  *     tags:
  *       - Templates
@@ -188,7 +188,7 @@ router.get('/:id', async (req: Request, res: Response) => {
 
 /**
  * @openapi
- * /api/templates/:id:
+ * /api/templates/{id}:
  *   put:
  *     tags:
  *       - Templates
@@ -244,7 +244,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
 /**
  * @openapi
- * /api/templates/:id:
+ * /api/templates/{id}:
  *   delete:
  *     tags:
  *       - Templates

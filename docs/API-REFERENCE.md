@@ -11,11 +11,12 @@
 
 # API reference
 
-Every endpoint this API serves — 187 of them, 140 behind auth —
+Every endpoint this API serves — 187 of them, 138 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
-endpoints worth using, see [API.md](API.md). This file is the index.
+endpoints worth using, see [API.md](API.md). To generate a client, use
+[openapi.json](openapi.json) — same walk, machine-readable.
 
 ## Reading the Auth column
 
@@ -29,6 +30,16 @@ endpoints worth using, see [API.md](API.md). This file is the index.
 the caller's identity from a cookie and change what they return, or reject the
 action further in — map veto is the notable one, since actions are attributed
 to a player. Read the handler before assuming an endpoint is anonymous.
+
+**shadowed** marks a registration that never runs: the same method and path was
+registered earlier, and Express matches in registration order. It is dead code,
+and the dangerous kind — it reads as though it were in force. Where a shadowed
+row claims different auth from the row above it, the row above is what answers.
+
+Currently shadowed:
+
+- `DELETE /api/matches/:slug`
+- `GET /api/tournament/:id/leaderboard`
 
 ## Endpoints
 
@@ -140,7 +151,7 @@ Create, load, restart and cancel matches; read match state.
 | `POST` | `/api/matches/:slug/reallocate` | admin |
 | `PATCH` | `/api/matches/:slug/status` | admin |
 | `POST` | `/api/matches/:slug/force-cancel` | admin |
-| `DELETE` | `/api/matches/:slug` | admin |
+| `DELETE` | `/api/matches/:slug` | ~~admin~~ **shadowed** |
 
 ### Events
 
@@ -194,7 +205,7 @@ The tournament itself — setup, bracket, rounds, standings.
 | `POST` | `/api/tournament/:id/register-players` | admin |
 | `PUT` | `/api/tournament/:id/set-players` | admin |
 | `GET` | `/api/tournament/:id/players` | admin |
-| `GET` | `/api/tournament/:id/leaderboard` | admin |
+| `GET` | `/api/tournament/:id/leaderboard` | ~~admin~~ **shadowed** |
 | `GET` | `/api/tournament/:id/round-status` | admin |
 | `POST` | `/api/tournament/:id/generate-round` | admin |
 | `GET` | `/api/tournament/:id/elo-template` | admin |

@@ -1,124 +1,47 @@
 /**
- * Generate docs/API-REFERENCE.md from the actual Express routers.
+ * Generate docs/API-REFERENCE.md and docs/openapi.json from the actual routers.
  *
  * Hand-written endpoint lists rot. `docs/API.md` covers the endpoints a bot
- * would want and stops there; the OpenAPI annotations cover about a third of
+ * would want and stops there; the `@openapi` annotations cover about a third of
  * the surface. Neither tells you what is actually mounted, and neither
  * complains when a route is added.
  *
- * This reads the routers themselves. Every router carries a `stack` of layers:
- * a layer with a `route` is an endpoint, and a layer without one is middleware
- * applied to everything registered after it. That is exactly enough to recover
- * both the path list and which of them are guarded, because `requireAuth` and
- * `validateServerToken` appear in the stack under their own function names —
- * whether applied per-route (`router.get(path, requireAuth, handler)`) or to a
- * whole router (`router.use(requireAuth)`).
+ * Both outputs come from the same walk (`utils/routeIntrospection`), which is
+ * also what the running server uses to build /api-docs.json — so the Markdown,
+ * the committed spec and the live spec cannot disagree.
+ *
+ * The committed `openapi.json` is the point of contact for anything outside
+ * this repo: generate a typed client from it, in any language, without needing
+ * a MAT instance to point at.
  *
  * Usage:
- *   yarn docs:api           # write docs/API-REFERENCE.md
- *   yarn docs:api --check   # exit 1 if the file is stale (used by CI)
+ *   yarn docs:api           # write both files
+ *   yarn docs:api --check   # exit 1 if either is stale (used by CI)
  */
 
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { routeTable } from '../api/src/routes/routeTable';
+import {
+  collectRouterGroups,
+  describeGuards,
+  type Endpoint,
+  type EndpointGroup,
+} from '../api/src/utils/routeIntrospection';
+import { buildOpenApiSpec } from '../api/src/config/swagger';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const OUTPUT = path.join(REPO_ROOT, 'docs', 'API-REFERENCE.md');
+const MARKDOWN_OUT = path.join(REPO_ROOT, 'docs', 'API-REFERENCE.md');
+const OPENAPI_OUT = path.join(REPO_ROOT, 'docs', 'openapi.json');
 const INDEX_TS = path.join(REPO_ROOT, 'api', 'src', 'index.ts');
-
-/** Middleware we recognise, and what it means for a caller. */
-const GUARDS: Record<string, string> = {
-  requireAuth: 'admin',
-  validateServerToken: 'server token',
-  validateEventToken: 'server token',
-};
-
-interface Endpoint {
-  method: string;
-  path: string;
-  guards: string[];
-}
-
-interface Group {
-  title: string;
-  prefix: string;
-  description: string;
-  endpoints: Endpoint[];
-}
-
-// Express layer internals. Typed loosely on purpose: this is a private shape,
-// and pinning it exactly would only turn an Express upgrade into a type error
-// instead of the runtime check below, which explains itself far better.
-interface Layer {
-  name?: string;
-  route?: {
-    path: string | string[];
-    methods: Record<string, boolean>;
-    stack: Array<{ name?: string }>;
-  };
-}
-
-/**
- * Walk one router in registration order.
- *
- * Router-level middleware (`router.use(requireAuth)`) applies to everything
- * registered *after* it, so guards accumulate as we go rather than being read
- * per route. Several routers rely on that — `teams`, `settings` and `servers`
- * guard the whole file with a single `use`, while `matches` guards route by
- * route, and `tournament` and `players` do both, switching partway down.
- */
-function walkRouter(router: unknown): Endpoint[] {
-  const stack = (router as { stack?: Layer[] }).stack;
-
-  if (!Array.isArray(stack)) {
-    throw new Error(
-      'Router has no `stack` array. Express changed its internals, so this ' +
-        'generator can no longer see the routes and would silently emit an ' +
-        'empty reference. Fix the walk in scripts/generate-api-reference.ts.'
-    );
-  }
-
-  const endpoints: Endpoint[] = [];
-  const routerGuards: string[] = [];
-
-  for (const layer of stack) {
-    if (!layer.route) {
-      // Middleware applied to the rest of this router.
-      const guard = layer.name && GUARDS[layer.name];
-      if (guard && !routerGuards.includes(guard)) routerGuards.push(guard);
-      continue;
-    }
-
-    const routeGuards = [...routerGuards];
-    for (const handler of layer.route.stack) {
-      const guard = handler.name && GUARDS[handler.name];
-      if (guard && !routeGuards.includes(guard)) routeGuards.push(guard);
-    }
-
-    const paths = Array.isArray(layer.route.path) ? layer.route.path : [layer.route.path];
-    for (const routePath of paths) {
-      for (const method of Object.keys(layer.route.methods)) {
-        endpoints.push({
-          method: method.toUpperCase(),
-          path: routePath,
-          guards: routeGuards,
-        });
-      }
-    }
-  }
-
-  return endpoints;
-}
 
 /**
  * Routes declared on the app rather than on a router — `/health` and friends.
  *
- * These are read out of index.ts as text. They are a handful of top-level
- * calls with literal paths, and lifting them into a router purely so this
- * script could import them would be tail-wagging-dog; reading them keeps them
- * in the reference and keeps the drift visible.
+ * These are read out of index.ts as text. They are a handful of top-level calls
+ * with literal paths, and lifting them into a router purely so this script
+ * could import them would be tail-wagging-dog. (The OpenAPI side does not need
+ * this: they already carry `@openapi` blocks, which swagger-jsdoc picks up.)
  */
 function appLevelEndpoints(): Endpoint[] {
   const source = fs.readFileSync(INDEX_TS, 'utf8');
@@ -135,20 +58,15 @@ function appLevelEndpoints(): Endpoint[] {
   return endpoints;
 }
 
-function describeGuards(guards: string[]): string {
-  if (guards.length === 0) return 'public';
-  return guards.join(' + ');
-}
-
-function renderGroup(group: Group): string {
+function renderGroup(group: EndpointGroup): string {
   if (group.endpoints.length === 0) return '';
 
   const rows = group.endpoints
     .map((e) => {
-      // `/` as a router path means the prefix itself — except in the
-      // app-level group, which has no prefix, where `/` is the real path.
-      const full = e.path === '/' ? group.prefix || '/' : `${group.prefix}${e.path}`;
-      return `| \`${e.method}\` | \`${full}\` | ${describeGuards(e.guards)} |`;
+      const auth = e.shadowed
+        ? `~~${describeGuards(e.guards)}~~ **shadowed**`
+        : describeGuards(e.guards);
+      return `| \`${e.method}\` | \`${e.path}\` | ${auth} |`;
     })
     .join('\n');
 
@@ -164,10 +82,10 @@ function renderGroup(group: Group): string {
   ].join('\n');
 }
 
-function render(groups: Group[], total: number): string {
-  const guarded = groups
-    .flatMap((g) => g.endpoints)
-    .filter((e) => e.guards.length > 0).length;
+function renderMarkdown(groups: EndpointGroup[], total: number): string {
+  const all = groups.flatMap((g) => g.endpoints);
+  const guarded = all.filter((e) => e.guards.length > 0 && !e.shadowed).length;
+  const shadowed = all.filter((e) => e.shadowed);
 
   return `<!--
   GENERATED FILE — DO NOT EDIT BY HAND.
@@ -186,7 +104,8 @@ Every endpoint this API serves — ${total} of them, ${guarded} behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
-endpoints worth using, see [API.md](API.md). This file is the index.
+endpoints worth using, see [API.md](API.md). To generate a client, use
+[openapi.json](openapi.json) — same walk, machine-readable.
 
 ## Reading the Auth column
 
@@ -201,27 +120,86 @@ the caller's identity from a cookie and change what they return, or reject the
 action further in — map veto is the notable one, since actions are attributed
 to a player. Read the handler before assuming an endpoint is anonymous.
 
+**shadowed** marks a registration that never runs: the same method and path was
+registered earlier, and Express matches in registration order. It is dead code,
+and the dangerous kind — it reads as though it were in force. Where a shadowed
+row claims different auth from the row above it, the row above is what answers.
+${
+  shadowed.length === 0
+    ? ''
+    : `\nCurrently shadowed:\n\n${shadowed
+        .map((e) => `- \`${e.method} ${e.path}\``)
+        .join('\n')}\n`
+}
 ## Endpoints
 
 ${groups.map(renderGroup).filter(Boolean).join('\n')}`;
 }
 
+/**
+ * Structural sanity check on the spec before it is written.
+ *
+ * Deliberately dependency-free rather than pulling in a full OpenAPI validator:
+ * the failure modes that actually happen here are a walk that silently returns
+ * nothing, an Express-style `:param` leaking into a path, and a path parameter
+ * used but not declared — which makes generated clients fail at runtime rather
+ * than at codegen. A schema validator catches the first two and is quiet about
+ * the third.
+ */
+function assertSpecIsSound(spec: Record<string, unknown>): void {
+  const paths = (spec.paths ?? {}) as Record<string, Record<string, unknown>>;
+  const problems: string[] = [];
+
+  if (Object.keys(paths).length === 0) {
+    problems.push('the spec has no paths at all');
+  }
+
+  for (const [routePath, operations] of Object.entries(paths)) {
+    if (!routePath.startsWith('/')) {
+      problems.push(`path "${routePath}" does not start with "/"`);
+    }
+    if (routePath.includes(':')) {
+      problems.push(
+        `path "${routePath}" uses Express-style ":param" — OpenAPI wants "{param}". ` +
+          'An `@openapi` block is probably written with the wrong syntax.'
+      );
+    }
+
+    const templated = [...routePath.matchAll(/\{([^}]+)\}/g)].map((m) => m[1]);
+
+    for (const [method, operation] of Object.entries(operations)) {
+      const op = operation as { parameters?: Array<Record<string, unknown>> };
+      const declared = new Set(
+        (op.parameters ?? [])
+          .filter((param) => param.in === 'path')
+          .map((param) => param.name as string)
+      );
+      for (const name of templated) {
+        if (!declared.has(name)) {
+          problems.push(`${method.toUpperCase()} ${routePath}: path parameter "${name}" is not declared`);
+        }
+      }
+    }
+  }
+
+  if (problems.length > 0) {
+    throw new Error(
+      `Refusing to write a malformed OpenAPI spec:\n  - ${problems.join('\n  - ')}`
+    );
+  }
+}
+
 function main(): void {
   const check = process.argv.includes('--check');
 
-  const groups: Group[] = [
+  const groups: EndpointGroup[] = [
     {
       title: 'Health and docs',
       prefix: '',
       description: 'Served by the app itself rather than a router.',
       endpoints: appLevelEndpoints(),
     },
-    ...routeTable.map((mount) => ({
-      title: mount.title,
-      prefix: mount.prefix,
-      description: mount.description,
-      endpoints: walkRouter(mount.router),
-    })),
+    ...collectRouterGroups(),
   ];
 
   const total = groups.reduce((n, g) => n + g.endpoints.length, 0);
@@ -233,30 +211,45 @@ function main(): void {
     );
   }
 
-  const output = render(groups, total);
-  const existing = fs.existsSync(OUTPUT) ? fs.readFileSync(OUTPUT, 'utf8') : null;
+  const markdown = renderMarkdown(groups, total);
+
+  const specObject = buildOpenApiSpec();
+  assertSpecIsSound(specObject);
+  const spec = `${JSON.stringify(specObject, null, 2)}\n`;
+
+  const outputs: Array<{ file: string; content: string; label: string }> = [
+    { file: MARKDOWN_OUT, content: markdown, label: 'docs/API-REFERENCE.md' },
+    { file: OPENAPI_OUT, content: spec, label: 'docs/openapi.json' },
+  ];
 
   if (check) {
-    if (existing === output) {
-      console.log(`docs/API-REFERENCE.md is up to date (${total} endpoints).`);
+    const stale = outputs.filter(
+      (o) => !fs.existsSync(o.file) || fs.readFileSync(o.file, 'utf8') !== o.content
+    );
+
+    if (stale.length === 0) {
+      console.log(`API docs are up to date (${total} endpoints).`);
       return;
     }
+
     console.error(
-      'docs/API-REFERENCE.md is out of date with the routers.\n' +
+      `Out of date with the routers: ${stale.map((o) => o.label).join(', ')}.\n` +
         'Run `yarn docs:api` and commit the result.'
     );
     process.exitCode = 1;
     return;
   }
 
-  fs.mkdirSync(path.dirname(OUTPUT), { recursive: true });
-  fs.writeFileSync(OUTPUT, output);
+  fs.mkdirSync(path.dirname(MARKDOWN_OUT), { recursive: true });
+  for (const output of outputs) fs.writeFileSync(output.file, output.content);
+
   console.log(
-    `Wrote docs/API-REFERENCE.md — ${total} endpoints across ${groups.length} groups.`
+    `Wrote docs/API-REFERENCE.md and docs/openapi.json — ${total} endpoints ` +
+      `across ${groups.length} groups.`
   );
 }
 
 main();
-// Importing the routers pulls in services that hold timers and a database
-// pool, so the process would otherwise sit there with nothing to do.
+// Importing the routers pulls in services that hold timers and a database pool,
+// so the process would otherwise sit there with nothing to do.
 process.exit(process.exitCode ?? 0);
