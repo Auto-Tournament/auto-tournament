@@ -80,6 +80,7 @@ See screenshots in the docs: https://docs.sivert.io/docs/mat/user/screenshots
 
 **For Developers:**
 - [Using the API from a bot or script](docs/API.md)
+- [Complete API reference](docs/API-REFERENCE.md) (generated)
 - [Contributing Guide](.github/CONTRIBUTING.md)
 - [Architecture](https://docs.sivert.io/docs/mat/developer/architecture)
 - [Testing](https://docs.sivert.io/docs/mat/developer/testing)

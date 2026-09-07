@@ -4,9 +4,14 @@ MAT's dashboard is a normal client of its own HTTP API. Anything the dashboard
 can do, another program can do — run a tournament from Discord, post scoreboards
 to a channel, wire match results into something else.
 
-This document covers how a machine authenticates, and what is on the other side
-once it does. The generated endpoint reference lives at `/api-docs` on a running
-instance (`/api-docs.json` for the raw OpenAPI spec).
+This document covers how a machine authenticates, and a task-oriented tour of
+the endpoints worth using. For the **complete** list — every endpoint and what
+guards it, generated from the routers themselves — see
+[API-REFERENCE.md](API-REFERENCE.md).
+
+A Swagger UI is also served at `/api-docs` on a running instance
+(`/api-docs.json` for the raw spec), but its annotations cover only part of the
+surface; the generated reference is the one that is complete.
 
 ---
 

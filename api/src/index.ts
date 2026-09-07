@@ -18,32 +18,7 @@ import { serverService } from './services/serverService';
 import { rconService } from './services/rconService';
 import { settingsService } from './services/settingsService';
 import { serverInitializationService } from './services/serverInitializationService';
-import serverRoutes from './routes/servers';
-import serverStatusRoutes from './routes/serverStatus';
-import serverBootstrapRoutes from './routes/serverBootstrap';
-import teamRoutes from './routes/teams';
-import rconRoutes from './routes/rcon';
-import matchRoutes from './routes/matches';
-import eventRoutes from './routes/events';
-import steamRoutes from './routes/steam';
-import tournamentRoutes from './routes/tournament';
-import demoRoutes from './routes/demos';
-import teamMatchRoutes from './routes/teamMatch';
-import teamStatsRoutes from './routes/teamStats';
-import logsRoutes from './routes/logs';
-import vetoRoutes from './routes/veto';
-import settingsRoutes from './routes/settings';
-import mapsRoutes from './routes/maps';
-import mapPoolsRoutes from './routes/mapPools';
-import recoveryRoutes from './routes/recovery';
-import generationRoutes from './routes/generation';
-import templatesRoutes from './routes/templates';
-import manualMatchTemplatesRoutes from './routes/manualMatchTemplates';
-import playersRoutes from './routes/players';
-import eloTemplatesRoutes from './routes/eloTemplates';
-import testRoutes from './routes/test';
-import authRoutes from './routes/auth';
-import matchzyRoutes from './routes/matchzy';
+import { routeTable } from './routes/routeTable';
 import { initMatchZyVersionService } from './services/matchzyVersionService';
 import { recoverActiveMatches } from './services/matchRecoveryService';
 import { matchAllocationService } from './services/matchAllocationService';
@@ -369,33 +344,14 @@ app.get('/api/health/fleet', async (_req: Request, res: Response) => {
   });
 });
 
-// API Routes
-app.use('/api/servers', serverBootstrapRoutes);
-app.use('/api/servers', serverRoutes);
-app.use('/api/servers', serverStatusRoutes); // Mount status routes under /api/servers
-app.use('/api/teams', teamRoutes);
-app.use('/api/rcon', rconRoutes);
-app.use('/api/matches', matchRoutes);
-app.use('/api/events', eventRoutes);
-app.use('/api/steam', steamRoutes);
-app.use('/api/tournament', tournamentRoutes);
-app.use('/api/demos', demoRoutes);
-app.use('/api/logs', logsRoutes);
-app.use('/api/team', teamMatchRoutes); // Public team match data
-app.use('/api/team', teamStatsRoutes); // Public team stats/history
-app.use('/api/veto', vetoRoutes); // Map veto system
-app.use('/api/settings', settingsRoutes);
-app.use('/api/maps', mapsRoutes);
-app.use('/api/map-pools', mapPoolsRoutes);
-app.use('/api/templates', templatesRoutes); // Tournament templates
-app.use('/api/manual-match-templates', manualMatchTemplatesRoutes); // Manual match templates
-app.use('/api/recovery', recoveryRoutes); // Match recovery endpoints
-app.use('/api/players', playersRoutes); // Player management
-app.use('/api/elo-templates', eloTemplatesRoutes); // ELO calculation templates
-app.use('/api/generation', generationRoutes); // Shared name/code generators (e.g. team names)
-app.use('/api/test', testRoutes); // Test utilities (log markers, etc.)
-app.use('/api/auth', authRoutes); // Authentication (Steam, Keycloak, Discord)
-app.use('/api/matchzy', matchzyRoutes); // MatchZy Enhanced version info
+// API Routes.
+//
+// The mount table lives in routes/routeTable.ts so that the reference
+// generator can read it without starting a server. Order is significant —
+// see the note there.
+for (const { prefix, router } of routeTable) {
+  app.use(prefix, router);
+}
 
 // Serve frontend at /app (built client lives under api/public)
 const publicPath = path.join(__dirname, '..', 'public');

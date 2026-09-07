@@ -32,6 +32,8 @@
         "typecheck": "tsc -p api/tsconfig.json --noEmit && tsc -p client/tsconfig.json --noEmit",
         "typecheck:ratchet": "node scripts/typecheck-ratchet.mjs",
         "typecheck:baseline": "node scripts/typecheck-ratchet.mjs --update",
+    "docs:api": "tsx scripts/generate-api-reference.ts",
+    "docs:api:check": "tsx scripts/generate-api-reference.ts --check",
         "db": "docker ps --format '{{.Names}}' | grep -q '^matchzy-postgres$' && echo '\u2705 PostgreSQL container is already running' || (docker ps -a --format '{{.Names}}' | grep -q '^matchzy-postgres$' && (docker start matchzy-postgres && echo '\u2705 Started existing PostgreSQL container') || (docker run -d --name matchzy-postgres -e POSTGRES_USER=postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=matchzy_tournament -p 5432:5432 postgres:16-alpine && echo '\u2705 Created and started PostgreSQL container'))",
         "db:stop": "docker stop matchzy-postgres 2>/dev/null && echo '\u2705 Stopped PostgreSQL container' || echo '\u26a0\ufe0f  PostgreSQL container not running'",
         "db:restart": "yarn db:stop && sleep 1 && yarn db",
