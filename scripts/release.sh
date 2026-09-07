@@ -32,6 +32,73 @@ if [ -n "${DOCKER_HOST:-}" ] && echo "${DOCKER_HOST}" | grep -qi "rancher-deskto
     unset DOCKER_HOST
 fi
 
+# Collect the changes in this release, newest last.
+#
+# PRs are squash-merged here, so each one lands as a single commit whose subject
+# ends in "(#123)" — there is no merge commit to read. This used to look only at
+# `git log --merges`, which in a squash-merge repository finds nothing except
+# the release PR itself. That is why past releases were published with a
+# changelog reading, in full, "- chore: bump version to X.Y.Z".
+#
+# Merge commits are still read, so this keeps working if a PR is ever merged
+# rather than squashed. The release's own version-bump commit is dropped: it is
+# noise in every changelog it has ever appeared in.
+collect_changes() {
+    local current_tag="v${NEW_VERSION}"
+    local prev_tag
+    local range
+
+    # The tag immediately *preceding* this version, not merely the newest other
+    # tag. Those are the same thing while releasing the newest version, which is
+    # why the old form worked in practice — but it silently produced an inverted,
+    # empty range for anything else, so the function could never be tested.
+    # `current_tag` is added to the list in case the tag does not exist yet.
+    prev_tag=$(
+        { git tag --sort=v:refname 2>/dev/null; echo "${current_tag}"; } \
+            | sort -V -u \
+            | grep -B1 -x -- "${current_tag}" \
+            | head -1
+    )
+    [ "$prev_tag" = "${current_tag}" ] && prev_tag=""
+
+    if [ -n "$prev_tag" ]; then
+        range="${prev_tag}..${current_tag}"
+    elif git rev-parse "${current_tag}" >/dev/null 2>&1; then
+        range="${current_tag}"
+    else
+        range=""
+    fi
+
+    local changes
+    changes=$(
+        {
+            # Squash-merged PRs: subject ends in (#123).
+            git log ${range} --no-merges --format="%s" 2>/dev/null | grep -E '\(#[0-9]+\)$' || true
+            # Genuine merge commits: the PR title is the first non-empty body line.
+            git log ${range} --merges --format="%B" 2>/dev/null | awk '
+                /^Merge pull request/ { getline; getline; if (NF > 0) print }
+            ' || true
+        } | grep -vE '^chore: bump version to ' || true
+    )
+
+    # Nothing looked like a PR, so fall back to plain commit subjects. A release
+    # made from direct pushes should still say what is in it rather than fall
+    # through to the "- Release vX.Y.Z" placeholder.
+    if [ -z "$changes" ]; then
+        changes=$(
+            git log ${range} --no-merges --format="%s" 2>/dev/null \
+                | grep -vE '^chore: bump version to ' || true
+        )
+    fi
+
+    printf '%s\n' "$changes" \
+        | grep -v '^$' \
+        | head -30 \
+        | sed 's/^/- /' \
+        | { if [[ "$OSTYPE" == "darwin"* ]]; then tail -r; else tac; fi; }
+}
+
+
 # Configuration
 DOCKER_USERNAME="${DOCKER_USERNAME:-sivertio}"
 IMAGE_NAME="matchzy-auto-tournament"
@@ -663,140 +730,26 @@ else
         done
     fi
     
-    # Update changelog.md
+    # Changelog
+    #
+    # The changelog is not in this repository. It lives in the docs site, at
+    # content/docs/mat/advanced/changelog.mdx in sivert-io/docs.sivert.io, and
+    # is written by hand in prose rather than PR titles.
+    #
+    # This step used to write docs/changelog.md here. That path went away when
+    # the docs moved out, so it silently did nothing for every release since —
+    # it printed "Changelog file not found" and carried on, and nobody reads a
+    # warning in the middle of a successful release. Rather than pretend, print
+    # the changes so whoever is releasing can paste them into the docs repo.
     echo ""
-    echo -e "${YELLOW}Updating changelog...${NC}"
-    
-    # Function to get changelog from merged PR titles (same as in Step 10)
-    get_changelog_for_docs() {
-        local prev_tag
-        local current_tag="v${NEW_VERSION}"
-        
-        # Get the previous tag (second most recent, excluding the current one)
-        prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
-        
-        # Extract PR titles from merge commits
-        # Reverse order so oldest PRs are first (git log shows newest first by default)
-        extract_pr_titles() {
-            local log_range="$1"
-            local temp_output
-            temp_output=$(git log ${log_range} --merges --format="%B" | \
-                awk '
-                    /^Merge pull request/ {
-                        # Skip the merge line and blank line, get the next non-empty line (PR title)
-                        getline
-                        getline
-                        if (NF > 0) {
-                            print "- " $0
-                        }
-                    }
-                ' | head -30)
-            
-            # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                echo "$temp_output" | tail -r
-            else
-                echo "$temp_output" | tac
-            fi
-        }
-        
-        if [ -z "$prev_tag" ]; then
-            # No previous tag, get all merged PRs up to the current tag
-            if git rev-parse "${current_tag}" >/dev/null 2>&1; then
-                extract_pr_titles "${current_tag}"
-            else
-                # Tag doesn't exist, get recent merged PRs
-                extract_pr_titles ""
-            fi
-        else
-            # Get merged PRs between previous tag and current tag
-            extract_pr_titles "${prev_tag}..${current_tag}"
-        fi
-    }
-    
-    # Get changelog entries
-    CHANGELOG_ENTRIES=$(get_changelog_for_docs)
-    
-    # If changelog is empty, use a default message
-    if [ -z "$CHANGELOG_ENTRIES" ] || [ ${#CHANGELOG_ENTRIES} -lt 10 ]; then
-        CHANGELOG_ENTRIES="- Release v${NEW_VERSION}"
-    fi
-    
-    # Get current date in YYYY-MM-DD format
-    RELEASE_DATE=$(date +%Y-%m-%d)
-    
-    # Get previous version for the link
-    PREV_TAG=$(git tag --sort=-v:refname | grep -v "^v${NEW_VERSION}$" | sed -n '1p' 2>/dev/null || echo "")
-    if [ -z "$PREV_TAG" ]; then
-        PREV_TAG="HEAD"
-    else
-        PREV_TAG="${PREV_TAG}"
-    fi
-    
-    # Update changelog.md
-    CHANGELOG_FILE="docs/changelog.md"
-    if [ -f "$CHANGELOG_FILE" ]; then
-        # Create temporary files
-        TEMP_CHANGELOG=$(mktemp)
-        TEMP_VERSION_SECTION=$(mktemp)
-        
-        # Write the new version section to a temp file
-        cat > "$TEMP_VERSION_SECTION" <<EOF
-## [${NEW_VERSION}] - ${RELEASE_DATE}
+    echo -e "${YELLOW}Changelog${NC}"
+    echo -e "${BLUE}The changelog lives in the docs site, not here. Add an entry to:${NC}"
+    echo -e "  ${GREEN}content/docs/mat/advanced/changelog.mdx${NC} (sivert-io/docs.sivert.io)"
+    echo ""
+    echo -e "${BLUE}Landing in v${NEW_VERSION}:${NC}"
+    collect_changes | sed 's/^/  /'
+    echo ""
 
-### Added
-${CHANGELOG_ENTRIES}
-
----
-EOF
-        
-        # Insert new version section after the "---" following [Unreleased]
-        # Use awk to insert the file content after the line containing "---" that comes after [Unreleased]
-        awk -v version_file="$TEMP_VERSION_SECTION" '
-            /^## \[Unreleased\]/ { unreleased_found=1; print; next }
-            unreleased_found && /^---$/ { 
-                print
-                print ""
-                while ((getline line < version_file) > 0) {
-                    print line
-                }
-                close(version_file)
-                unreleased_found=0
-                next
-            }
-            { print }
-        ' "$CHANGELOG_FILE" > "$TEMP_CHANGELOG"
-        
-        rm -f "$TEMP_VERSION_SECTION"
-        
-        # Update the [Unreleased] link to point to the new version
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            # macOS
-            sed -i '' "s|\[Unreleased\]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v.*\.\.\.HEAD|[Unreleased]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v${NEW_VERSION}...HEAD|" "$TEMP_CHANGELOG"
-        else
-            # Linux
-            sed -i "s|\[Unreleased\]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v.*\.\.\.HEAD|[Unreleased]: https://github.com/${REPO_OWNER}/${REPO_NAME}/compare/v${NEW_VERSION}...HEAD|" "$TEMP_CHANGELOG"
-        fi
-        
-        # Add the new version link if it doesn't exist
-        if ! grep -q "\[${NEW_VERSION}\]:" "$TEMP_CHANGELOG"; then
-            # Add the link after [Unreleased] link
-            if [[ "$OSTYPE" == "darwin"* ]]; then
-                # macOS - need to escape newline properly
-                sed -i '' "/\[Unreleased\]:/a\\
-[${NEW_VERSION}]: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" "$TEMP_CHANGELOG"
-            else
-                # Linux
-                sed -i "/\[Unreleased\]:/a[${NEW_VERSION}]: https://github.com/${REPO_OWNER}/${REPO_NAME}/releases/tag/v${NEW_VERSION}" "$TEMP_CHANGELOG"
-            fi
-        fi
-        
-        # Replace the original file
-        mv "$TEMP_CHANGELOG" "$CHANGELOG_FILE"
-        echo -e "${GREEN}✅ Changelog updated${NC}"
-    else
-        echo -e "${YELLOW}⚠️  Changelog file not found: ${CHANGELOG_FILE}${NC}"
-    fi
     
     # Step 6: Commit version bump and changelog
     echo ""
@@ -813,17 +766,11 @@ EOF
     if ! git diff --quiet client/package.json 2>/dev/null; then
         FILES_TO_COMMIT+=("client/package.json")
     fi
-    if [ -f "$CHANGELOG_FILE" ] && ! git diff --quiet "$CHANGELOG_FILE" 2>/dev/null; then
-        FILES_TO_COMMIT+=("$CHANGELOG_FILE")
-    fi
     
     if [ ${#FILES_TO_COMMIT[@]} -gt 0 ]; then
         git add "${FILES_TO_COMMIT[@]}"
-        git commit -m "chore: bump version to ${NEW_VERSION} and update changelog"
+        git commit -m "chore: bump version to ${NEW_VERSION}"
         echo -e "${GREEN}✅ Version bumped to ${NEW_VERSION} in root, api, and client package.json files${NC}"
-        if [ -f "$CHANGELOG_FILE" ]; then
-            echo -e "${GREEN}✅ Changelog updated${NC}"
-        fi
         VERSION_BUMPED=true
     else
         echo -e "${YELLOW}⚠️  No changes detected. Version may already be ${NEW_VERSION}.${NC}"
@@ -1157,57 +1104,9 @@ rm -f /tmp/image_inspect.txt
 echo ""
 echo -e "${YELLOW}Step 10: Creating GitHub release...${NC}"
 
-# Function to get changelog from merged PR titles
-get_changelog() {
-    local prev_tag
-    local current_tag="v${NEW_VERSION}"
-    
-    # Get the previous tag (second most recent, excluding the current one)
-    prev_tag=$(git tag --sort=-v:refname | grep -v "^${current_tag}$" | sed -n '1p' 2>/dev/null || echo "")
-    
-    # Extract PR titles from merge commits
-    # Format: "Merge pull request #XX..." followed by blank line, then PR title
-    # Reverse order so oldest PRs are first (git log shows newest first by default)
-    extract_pr_titles() {
-        local log_range="$1"
-        local temp_output
-        temp_output=$(git log ${log_range} --merges --format="%B" | \
-            awk '
-                /^Merge pull request/ {
-                    # Skip the merge line and blank line, get the next non-empty line (PR title)
-                    getline
-                    getline
-                    if (NF > 0) {
-                        print "- " $0
-                    }
-                }
-            ' | head -30)
-        
-        # Reverse the order (oldest first) - use tail -r on macOS, tac on Linux
-        if [[ "$OSTYPE" == "darwin"* ]]; then
-            echo "$temp_output" | tail -r
-        else
-            echo "$temp_output" | tac
-        fi
-    }
-    
-    if [ -z "$prev_tag" ]; then
-        # No previous tag, get all merged PRs up to the current tag
-        if git rev-parse "${current_tag}" >/dev/null 2>&1; then
-            extract_pr_titles "${current_tag}"
-        else
-            # Tag doesn't exist, get recent merged PRs
-            extract_pr_titles ""
-        fi
-    else
-        # Get merged PRs between previous tag and current tag
-        extract_pr_titles "${prev_tag}..${current_tag}"
-    fi
-}
-
 # Generate changelog
 echo -e "${BLUE}Generating changelog from merged PRs...${NC}"
-CHANGELOG=$(get_changelog)
+CHANGELOG=$(collect_changes)
 
 # If changelog is empty, use a default message
 if [ -z "$CHANGELOG" ] || [ ${#CHANGELOG} -lt 10 ]; then
