@@ -328,6 +328,11 @@ export default [
       'client/vite.config.ts',
       'eslint.config.mjs',
       'client/src/brackets-viewer/**', // Vendored code - ignore linting errors
+      // Standalone example projects: their own package.json, lockfile and
+      // tsconfig, installed separately and typechecked on their own in CI.
+      // Linting them from here would apply this project's type-aware rules to
+      // a tsconfig they are not part of.
+      'examples/**',
       '.pnp.cjs', // Yarn PnP file
     ],
   },

@@ -28,7 +28,7 @@ import {
   type Endpoint,
   type EndpointGroup,
 } from '../api/src/utils/routeIntrospection';
-import { buildOpenApiSpec } from '../api/src/config/swagger';
+import { PORTABLE_SERVER_URL, buildOpenApiSpec } from '../api/src/config/swagger';
 
 const REPO_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const MARKDOWN_OUT = path.join(REPO_ROOT, 'docs', 'API-REFERENCE.md');
@@ -213,7 +213,9 @@ function main(): void {
 
   const markdown = renderMarkdown(groups, total);
 
-  const specObject = buildOpenApiSpec();
+  // Pinned rather than taken from the environment: this file is committed, so
+  // it must be identical whoever regenerates it. See PORTABLE_SERVER_URL.
+  const specObject = buildOpenApiSpec({ serverUrl: PORTABLE_SERVER_URL });
   assertSpecIsSound(specObject);
   const spec = `${JSON.stringify(specObject, null, 2)}\n`;
 

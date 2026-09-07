@@ -106,6 +106,32 @@ test.describe('OpenAPI spec', () => {
     expect(response.status(), 'and it should really answer without auth').not.toBe(401);
   });
 
+  test('the committed spec is byte-stable across machines', {
+    tag: ['@api', '@docs'],
+  }, async () => {
+    // docs/openapi.json is committed and CI rejects a mismatch, so its bytes
+    // must not depend on who generated it. Two things made them depend on that,
+    // and both are easy to reintroduce:
+    //
+    //  1. swagger-jsdoc collects annotations by globbing the route files, and a
+    //     glob returns them in filesystem order — different on APFS and ext4.
+    //     Key insertion order leaked into JSON.stringify, so a spec that was
+    //     otherwise identical produced different bytes on CI.
+    //  2. The server URL is resolved from API_BASE_URL / FRONTEND_BASE_URL,
+    //     read from whatever .env sat in the working directory.
+    const committed = JSON.parse(fs.readFileSync(COMMITTED, 'utf8')) as Spec & {
+      servers?: Array<{ url: string }>;
+    };
+
+    const paths = Object.keys(committed.paths);
+    expect(paths, 'path keys must be sorted, not in glob order').toEqual([...paths].sort());
+
+    expect(
+      committed.servers?.[0]?.url,
+      'the committed spec must carry the pinned URL, not a local one'
+    ).toBe('http://localhost:3069');
+  });
+
   test('every security scheme a path references is defined', {
     tag: ['@api', '@docs'],
   }, async ({ request }) => {

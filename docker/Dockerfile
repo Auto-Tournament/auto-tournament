@@ -113,6 +113,10 @@ COPY --from=build /app/package.json ./
 # We copy them into /app/dist and /app/public so runtime paths stay consistent.
 COPY --from=build /app/api/dist ./dist
 COPY --from=build /app/api/public ./public
+# The generated OpenAPI spec. Without it, swagger-jsdoc has no .ts sources to
+# read in this image and /api-docs would list every endpoint with none of the
+# hand-written descriptions. See resolveOpenApiSpec in api/src/config/swagger.ts.
+COPY --from=build /app/docs/openapi.json ./docs/openapi.json
 
 # Copy Caddy configuration
 COPY docker/Caddyfile /app/Caddyfile

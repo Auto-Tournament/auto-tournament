@@ -15,6 +15,7 @@ can drift from the code:
 | [API-REFERENCE.md](API-REFERENCE.md) | Every endpoint and what guards it, to read |
 | [openapi.json](openapi.json) | The same, machine-readable — generate a client from it |
 | `/api-docs` on a running instance | Swagger UI over that spec, with a Try-it button |
+| [examples/discord-bot](../examples/discord-bot/README.md) | A working bot, ~350 lines, to copy and extend |
 
 ## Generating a client
 

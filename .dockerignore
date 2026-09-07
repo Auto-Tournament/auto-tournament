@@ -5,6 +5,10 @@
 
 # Documentation
 docs/
+# ...except the generated OpenAPI spec, which the image serves at /api-docs.
+# Without it swagger-jsdoc has no .ts sources to read in the release image and
+# every hand-written description is lost. See api/src/config/swagger.ts.
+!docs/openapi.json
 *.md
 LICENSE
 

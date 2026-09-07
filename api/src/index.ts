@@ -10,7 +10,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import swaggerUi from 'swagger-ui-express';
 import { db } from './config/database';
-import { swaggerSpec } from './config/swagger';
+import { getOpenApiSpec } from './config/swagger';
 import { log, logger, LOG_HTTP_REQUESTS, LOG_DB_VERBOSE, LOG_DB_VALUES } from './utils/logger';
 import { cleanupOldLogs } from './utils/eventLogger';
 import { initializeSocket } from './services/socketService';
@@ -161,7 +161,7 @@ app.use(
   '/api-docs',
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ...(swaggerUi.serve as any),
-  swaggerUi.setup(swaggerSpec, {
+  swaggerUi.setup(getOpenApiSpec(), {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: 'MatchZy API Docs',
   }) as // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,7 +171,7 @@ app.use(
 // Swagger JSON
 app.get('/api-docs.json', (_req: Request, res: Response) => {
   res.setHeader('Content-Type', 'application/json');
-  res.send(swaggerSpec);
+  res.send(getOpenApiSpec());
 });
 
 /**

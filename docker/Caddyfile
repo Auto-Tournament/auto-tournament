@@ -16,6 +16,8 @@
 
 # /api/\* → Express backend API
 
+# /api-docs\* → Swagger UI and the OpenAPI spec
+
 # /socket.io/\* → Socket.IO WebSocket
 
 # /health → Health check endpoint
@@ -25,6 +27,10 @@
 :3069 {
 	# API and WebSocket proxying (must come before file_server)
 	reverse_proxy /api/* localhost:3000
+	# /api-docs and /api-docs.json are not under /api/, so without this they
+	# fall through to the SPA and the OpenAPI spec comes back as index.html —
+	# even though the API advertises both at GET /.
+	reverse_proxy /api-docs* localhost:3000
 	reverse_proxy /socket.io/* localhost:3000
 	reverse_proxy /health localhost:3000
 
@@ -34,6 +40,7 @@
 	# Handle SPA routing: try file, then fallback to index.html
 	@notAPI {
 		not path /api/*
+		not path /api-docs*
 		not path /socket.io/*
 		not path /health
 		file {

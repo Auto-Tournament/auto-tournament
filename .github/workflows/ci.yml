@@ -45,6 +45,16 @@ jobs:
       - name: API docs are current
         run: yarn docs:api:check
 
+      # examples/discord-bot is a standalone project, not a workspace, so it
+      # installs on its own. Typechecking it here is what stops the example
+      # rotting against the API it demonstrates — which is the whole reason it
+      # lives in this repo rather than one of its own.
+      - name: Typecheck the Discord bot example
+        working-directory: examples/discord-bot
+        run: |
+          yarn install --immutable
+          yarn typecheck
+
   e2e:
     name: E2E tests
     runs-on: ubuntu-latest
