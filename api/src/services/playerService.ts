@@ -107,8 +107,10 @@ export class InvalidDiscordIdError extends Error {
 function withoutDiscordId<T extends { discord_id?: unknown; discord_id_edited_at?: unknown }>(
   row: T
 ): Omit<T, 'discord_id' | 'discord_id_edited_at'> {
-  const { discord_id: _discordId, discord_id_edited_at: _editedAt, ...rest } = row;
-  return rest;
+  const rest: Partial<T> = { ...row };
+  delete rest.discord_id;
+  delete rest.discord_id_edited_at;
+  return rest as Omit<T, 'discord_id' | 'discord_id_edited_at'>;
 }
 
 class PlayerService {
@@ -557,12 +559,15 @@ class PlayerService {
     const warnings = [...normalised.warnings];
     const succeeded = new Set<string>();
 
-    for (const { steamId: _steamId, ...playerInput } of normalised.players) {
+    // `steamId` is the same value as `id`; it was only added so the Discord ID
+    // normaliser could name the player. Keeping it out of playerInput keeps it out
+    // of the created record and of the error payload returned to the client.
+    for (const { steamId, ...playerInput } of normalised.players) {
       try {
-        const existing = await this.getPlayerById(playerInput.id);
+        const existing = await this.getPlayerById(steamId);
         if (existing) {
           // Update existing player
-          await this.updatePlayer(playerInput.id, {
+          await this.updatePlayer(steamId, {
             name: playerInput.name,
             avatar: playerInput.avatar,
             elo: playerInput.elo,
@@ -573,11 +578,11 @@ class PlayerService {
           await this.createPlayer(playerInput);
           created++;
         }
-        succeeded.add(playerInput.id);
+        succeeded.add(steamId);
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : String(error);
         errors.push({ player: playerInput, error: errorMessage });
-        log.error(`Error importing player ${playerInput.id}`, { error: errorMessage });
+        log.error(`Error importing player ${steamId}`, { error: errorMessage });
       }
     }
 

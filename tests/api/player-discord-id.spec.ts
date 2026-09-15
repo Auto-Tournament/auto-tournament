@@ -207,6 +207,8 @@ test.describe('Discord ID validation (pure)', () => {
     expect(isValidDiscordId('1'.repeat(21))).toBe(false);
     expect(isValidDiscordId('12345678901234567a')).toBe(false);
     expect(isValidDiscordId('ola.gamer')).toBe(false);
+    // The precision loss is the point: a snowflake sent as a JSON number is already wrong.
+    // eslint-disable-next-line no-loss-of-precision
     expect(isValidDiscordId(123456789012345678)).toBe(false);
     expect(isValidDiscordId('')).toBe(false);
     expect(isValidDiscordId(undefined)).toBe(false);
@@ -530,6 +532,8 @@ test.describe('Discord ID: team imports', () => {
         name: 'Invalid IDs',
         players: [
           { steamId: a, name: 'Username', discordId: 'per.gamer' },
+          // A snowflake as a JSON number loses precision; that is what this row checks.
+          // eslint-disable-next-line no-loss-of-precision
           { steamId: b, name: 'Numeric', discordId: 123456789012345678 },
         ],
       }),
