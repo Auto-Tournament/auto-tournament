@@ -1,0 +1,16 @@
+# CI-only override for docker-compose.local.yml.
+#
+# The CI workflow builds the app image once (with a GitHub Actions layer cache)
+# and hands it to every E2E shard as a tarball. This override points the app
+# service at that pre-built, `docker load`-ed image so compose never rebuilds it:
+#
+#   docker compose --env-file .env \
+#     -f docker/docker-compose.local.yml -f docker/docker-compose.ci.yml \
+#     up -d --no-build
+#
+# MAT_IMAGE must match the tag the workflow's build job gives the image.
+
+services:
+  matchzy-tournament:
+    image: ${MAT_IMAGE:-matchzy-tournament:ci}
+    pull_policy: never

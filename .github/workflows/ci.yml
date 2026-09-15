@@ -13,6 +13,12 @@ concurrency:
 permissions:
   contents: read
 
+env:
+  # Tag given to the image the build job produces and every shard loads.
+  # docker/docker-compose.ci.yml points the app service at it.
+  MAT_IMAGE: matchzy-tournament:ci
+  SHARD_TOTAL: 4
+
 jobs:
   static:
     name: Lint & typecheck
@@ -55,28 +61,164 @@ jobs:
           yarn install --immutable
           yarn typecheck
 
-  e2e:
-    name: E2E tests
+  # Decides whether the E2E suite can be affected at all. Pull requests that only
+  # touch docs, markdown, the Discord bot example or issue templates skip the
+  # image build and every shard; the `E2E tests` job below still reports green
+  # so a required check is satisfied. Pushes to main always run the suite.
+  changes:
+    name: Detect E2E-relevant changes
     runs-on: ubuntu-latest
-    # The image build runs a full yarn install plus a Vite build.
-    timeout-minutes: 45
+    permissions:
+      contents: read
+      pull-requests: read
+    outputs:
+      e2e: ${{ steps.filter.outputs.e2e }}
+    steps:
+      - id: filter
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" != "pull_request" ]; then
+            echo "Not a pull request: running E2E."
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Any failure to list the files (API hiccup, oversized diff) falls back
+          # to running the suite rather than silently skipping it.
+          if ! files="$(gh api --paginate "repos/${REPO}/pulls/${PR_NUMBER}/files" --jq '.[].filename')"; then
+            echo "Could not list changed files: running E2E."
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          run=false
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in
+              # Copied into the image and served at /api-docs; tested.
+              docs/openapi.json) run=true ;;
+              docs/*|examples/*|.github/ISSUE_TEMPLATE/*|LICENSE|*.md) ;;
+              *) run=true ;;
+            esac
+            if [ "$run" = true ]; then
+              echo "E2E-relevant change: $f"
+              break
+            fi
+          done <<< "$files"
+
+          if [ "$run" = false ]; then
+            echo "Only docs/markdown/examples changed: skipping E2E."
+          fi
+          echo "e2e=$run" >> "$GITHUB_OUTPUT"
+
+  # Builds the app image once, with a layer cache shared across runs, and hands
+  # it to the shards as a tarball. Uncached, `compose up --build` in every shard
+  # took ~3 min; with the cache the dependency layers are restored rather than
+  # re-installed.
+  build:
+    name: Build E2E image
+    needs: changes
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Same build as docker/docker-compose.local.yml (incl. the dev-page arg).
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          build-args: |
+            VITE_ENABLE_DEV_PAGE=true
+          tags: ${{ env.MAT_IMAGE }}
+          outputs: type=docker,dest=${{ runner.temp }}/mat-image.tar
+          cache-from: type=gha,scope=e2e-image
+          cache-to: type=gha,scope=e2e-image,mode=max
+
+      - name: Upload image
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-image
+          path: ${{ runner.temp }}/mat-image.tar
+          # Image layers are already gzip-compressed.
+          compression-level: 0
+          retention-days: 1
+
+  e2e:
+    name: E2E shard ${{ matrix.shard }}/4
+    needs: [changes, build]
+    if: needs.changes.outputs.e2e == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      # Let every shard finish so the merged report shows every failure.
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    # Each shard is its own runner with its own app + Postgres stack, so specs
+    # that reset the database cannot collide across shards. Within a shard the
+    # suite still runs with workers: 1 (tests/playwright.config.ts).
+    env:
+      COMPOSE: docker compose --env-file .env -f docker/docker-compose.local.yml -f docker/docker-compose.ci.yml
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
           node-version-file: .nvmrc
-          cache: yarn
+
+      # node_modules (root + workspaces) keyed on the lockfile. On a hit the
+      # install is skipped entirely.
+      - name: Cache node_modules
+        id: nm-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            api/node_modules
+            client/node_modules
+          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock', 'package.json', 'api/package.json', 'client/package.json') }}
 
       - name: Install dependencies
+        if: steps.nm-cache.outputs.cache-hit != 'true'
         run: yarn install --frozen-lockfile
 
+      - name: Cache Playwright browsers
+        id: pw-cache
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: pw-${{ runner.os }}-${{ hashFiles('yarn.lock') }}
+
       - name: Install Playwright browser
+        if: steps.pw-cache.outputs.cache-hit != 'true'
         run: npx playwright install --with-deps chromium
 
+      - name: Install Playwright system deps
+        if: steps.pw-cache.outputs.cache-hit == 'true'
+        run: npx playwright install-deps chromium
+
+      - name: Download image
+        uses: actions/download-artifact@v4
+        with:
+          name: e2e-image
+          path: ${{ runner.temp }}
+
+      - name: Load image
+        run: docker load --input "${{ runner.temp }}/mat-image.tar"
+
       # The compose stack reads the repo-root .env, both for env_file and for
-      # ${VAR} substitution (hence --env-file below). Building it from
-      # example.env also means CI exercises the documented setup path.
+      # ${VAR} substitution (hence --env-file). Building it from example.env
+      # also means CI exercises the documented setup path.
       #
       # No STEAM_API_KEY: Steam is left unconfigured on purpose, so the suite has
       # to hold up with no auth provider enabled.
@@ -94,41 +236,119 @@ jobs:
           } >> .env
 
       - name: Start the stack
-        run: docker compose --env-file .env -f docker/docker-compose.local.yml up -d --build
+        run: $COMPOSE up -d --no-build
 
       - name: Wait for the app
         run: |
-          for i in $(seq 1 60); do
+          for i in $(seq 1 90); do
             if curl -sf http://localhost:3069/health > /dev/null; then
               echo "app healthy after ${i} attempt(s)"
               exit 0
             fi
-            sleep 5
+            sleep 2
           done
           echo "App never became healthy." >&2
-          docker compose --env-file .env -f docker/docker-compose.local.yml logs --tail=100
+          $COMPOSE logs --tail=100
           exit 1
 
+      # fullyParallel: true in the config means Playwright shards by test group,
+      # not by file. A test.describe.serial block is always one group, so tests
+      # that depend on each other stay together on one shard.
       - name: Run Playwright
         env:
           SKIP_WEBSERVER: '1'
           PLAYWRIGHT_BASE_URL: http://localhost:3069
-        run: npx playwright test -c tests/playwright.config.ts --reporter=list,html
+          PLAYWRIGHT_BLOB_OUTPUT_DIR: blob-report
+        run: npx playwright test -c tests/playwright.config.ts --shard=${{ matrix.shard }}/${{ env.SHARD_TOTAL }} --reporter=list,blob
 
       # Container logs are usually more informative than the Playwright trace
       # when the failure is server-side.
       - name: Dump container logs
         if: failure()
-        run: docker compose --env-file .env -f docker/docker-compose.local.yml logs --tail=300
+        run: $COMPOSE logs --tail=300
+
+      - name: Upload blob report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: blob-report-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 1
+
+      - name: Tear down
+        if: always()
+        run: $COMPOSE down -v
+
+  report:
+    name: Merge Playwright reports
+    needs: [changes, e2e]
+    if: ${{ !cancelled() && needs.changes.outputs.e2e == 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+
+      - name: Cache node_modules
+        id: nm-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            node_modules
+            api/node_modules
+            client/node_modules
+          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock', 'package.json', 'api/package.json', 'client/package.json') }}
+
+      - name: Install dependencies
+        if: steps.nm-cache.outputs.cache-hit != 'true'
+        run: yarn install --frozen-lockfile
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v4
+        with:
+          pattern: blob-report-*
+          path: all-blob-reports
+          merge-multiple: true
+
+      - name: Merge into one HTML report
+        run: npx playwright merge-reports --reporter html ./all-blob-reports
 
       - name: Upload Playwright report
-        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-report
           path: playwright-report/
           retention-days: 7
 
-      - name: Tear down
-        if: always()
-        run: docker compose --env-file .env -f docker/docker-compose.local.yml down -v
+  # Aggregate status under the check name branch protection has always required.
+  # Green when every shard passed, or when the change filter skipped E2E.
+  e2e-result:
+    name: E2E tests
+    needs: [changes, build, e2e]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check E2E outcome
+        env:
+          CHANGES: ${{ needs.changes.result }}
+          RUN_E2E: ${{ needs.changes.outputs.e2e }}
+          BUILD: ${{ needs.build.result }}
+          SHARDS: ${{ needs.e2e.result }}
+        run: |
+          echo "changes=$CHANGES run_e2e=$RUN_E2E build=$BUILD shards=$SHARDS"
+          if [ "$CHANGES" != "success" ]; then
+            echo "Change detection did not succeed." >&2
+            exit 1
+          fi
+          if [ "$RUN_E2E" != "true" ]; then
+            echo "No E2E-relevant changes; E2E skipped."
+            exit 0
+          fi
+          if [ "$BUILD" = "success" ] && [ "$SHARDS" = "success" ]; then
+            echo "All E2E shards passed."
+            exit 0
+          fi
+          echo "E2E did not pass." >&2
+          exit 1
