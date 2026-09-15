@@ -10,6 +10,13 @@ import {
   signPlayerSteamId,
   getVerifiedPlayerSteamId,
 } from '../utils/signedPlayerCookie';
+import {
+  PENDING_STEAM_LINK_COOKIE_NAME,
+  PENDING_STEAM_LINK_TTL_MS,
+  signPendingSteamLink,
+  verifyPendingSteamLink,
+  type PendingSteamLinkRejection,
+} from '../utils/signedPendingSteamLink';
 import { shouldBlockAdminAsDirectAccess } from '../utils/canonicalOrigin';
 import {
   signImpersonatedSteamId,
@@ -111,7 +118,7 @@ function clearIdentityCookies(req: Request, res: Response): void {
   res.clearCookie('pending_steam_link', {
     path: '/',
     httpOnly: true,
-    // Matches the pending_steam_link setters in the SSO callbacks.
+    // Matches setPendingSteamLinkCookie (PENDING_STEAM_LINK_COOKIE_OPTIONS).
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
   });
@@ -122,6 +129,168 @@ function clearIdentityCookies(req: Request, res: Response): void {
 function redactProviderUserId(id: string | undefined | null): string | null {
   if (!id) return null;
   return id.length <= 4 ? '****' : `${id.slice(0, 4)}…`;
+}
+
+type PendingSteamLinkSessionRequest = Request & {
+  session?: {
+    pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
+  };
+};
+
+/** Cookie attributes for pending_steam_link. `clearIdentityCookies` and
+ * `completePendingSteamLink` clear it with the same path/sameSite/secure. */
+const PENDING_STEAM_LINK_COOKIE_OPTIONS = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === 'production',
+  sameSite: 'lax' as const,
+  path: '/',
+};
+
+/**
+ * Set the short-lived `pending_steam_link` cookie that carries "link this SSO
+ * identity once Steam proves an account" into `/steam/callback`. Passport
+ * regenerates the session on the Steam login, so this cookie, not the session
+ * copy, is what normally survives.
+ *
+ * The callback re-points a login based on it, so the value is signed with
+ * SESSION_SECRET and carries its own expiry (see `utils/signedPendingSteamLink`).
+ * This is the only writer; `readPendingSteamLink` is the only reader.
+ */
+export function setPendingSteamLinkCookie(
+  res: Response,
+  provider: AuthProvider,
+  providerUserId: string
+): void {
+  res.cookie(PENDING_STEAM_LINK_COOKIE_NAME, signPendingSteamLink({ provider, providerUserId }), {
+    ...PENDING_STEAM_LINK_COOKIE_OPTIONS,
+    maxAge: PENDING_STEAM_LINK_TTL_MS,
+  });
+}
+
+export type PendingSteamLinkRead = {
+  /** What the Steam callback would link, or null for a plain Steam login. */
+  link: { provider: AuthProvider; providerUserId: string } | null;
+  source: 'session' | 'cookie' | null;
+  /**
+   * Why a cookie that WAS present was not trusted, or null when there was no
+   * cookie or it verified. Reported even when the session copy wins.
+   */
+  cookieRejected: Exclude<PendingSteamLinkRejection, 'missing'> | null;
+};
+
+/**
+ * Work out which SSO identity, if any, the Steam callback should link.
+ *
+ * The session copy wins when it exists, as before: the server wrote it and the
+ * client cannot touch it. Usually it is gone by now, so the cookie is the normal
+ * source, and it is only believed if its signature and expiry check out. A
+ * cookie that is present but fails is logged with a reason code and ignored;
+ * the login then carries on as a plain Steam login. Neither the cookie value
+ * nor the provider user id it names is logged.
+ *
+ * `now` exists for the test helper only, so expiry can be checked without
+ * waiting ten minutes.
+ */
+export function readPendingSteamLink(
+  req: Request,
+  options: { now?: number } = {}
+): PendingSteamLinkRead {
+  const anyReq = req as PendingSteamLinkSessionRequest;
+
+  let rawCookie: string | undefined;
+  try {
+    rawCookie = parseCookies(req.headers.cookie)[PENDING_STEAM_LINK_COOKIE_NAME];
+  } catch {
+    // decodeURIComponent throws on a malformed %-escape anywhere in the header.
+    // If a pending cookie might be in there, treat it as malformed, never as absent-but-fine.
+    rawCookie = (req.headers.cookie ?? '').includes(`${PENDING_STEAM_LINK_COOKIE_NAME}=`)
+      ? '\u0000unparseable'
+      : undefined;
+  }
+
+  let cookieLink: PendingSteamLinkRead['link'] = null;
+  let cookieRejected: PendingSteamLinkRead['cookieRejected'] = null;
+  const verification = verifyPendingSteamLink(rawCookie, { now: options.now });
+  if (verification.ok) {
+    cookieLink = verification.link;
+  } else if (verification.reason !== 'missing') {
+    cookieRejected = verification.reason;
+    // Reason code only. The provider inside a rejected cookie is unverified, so
+    // it is not logged, and neither is the value.
+    log.warn('Steam callback: rejected pending_steam_link cookie; nothing will be linked from it', {
+      reason: verification.reason,
+    });
+  }
+
+  const sessionPending = anyReq.session?.pendingSteamLink ?? null;
+  if (sessionPending) {
+    // Same precedence as before signing: any session value shadows the cookie.
+    return sessionPending.provider && sessionPending.providerUserId
+      ? { link: sessionPending, source: 'session', cookieRejected }
+      : { link: null, source: null, cookieRejected };
+  }
+  if (cookieLink) {
+    return { link: cookieLink, source: 'cookie', cookieRejected };
+  }
+  return { link: null, source: null, cookieRejected };
+}
+
+/**
+ * The linking step of `/steam/callback`, once Steam has proven `steamId`: link
+ * the pending SSO identity (per `readPendingSteamLink`) to it and clear the
+ * pending state. Errors are logged and swallowed; a failed link must not fail
+ * the Steam login itself.
+ *
+ * Exported so the test helper runs exactly this code, since a test cannot
+ * complete a real Steam OpenID login.
+ */
+export async function completePendingSteamLink(
+  req: Request,
+  res: Response,
+  steamId: string,
+  options: { now?: number } = {}
+): Promise<PendingSteamLinkRead & { linked: boolean }> {
+  const anyReq = req as PendingSteamLinkSessionRequest;
+
+  let read: PendingSteamLinkRead = { link: null, source: null, cookieRejected: null };
+  try {
+    read = readPendingSteamLink(req, options);
+    log.info('Steam Passport callback: checking for pending external identity link', {
+      hasSession: !!anyReq.session,
+      source: read.source,
+      pendingProvider: read.link?.provider ?? null,
+      cookieRejected: read.cookieRejected,
+    });
+
+    if (!read.link) {
+      log.info('Steam Passport callback: no trusted pending external identity link; skipping link');
+      return { ...read, linked: false };
+    }
+
+    await authIdentityService.linkIdentityToSteam(
+      read.link.provider,
+      read.link.providerUserId,
+      steamId
+    );
+
+    if (anyReq.session) {
+      delete anyReq.session.pendingSteamLink;
+    }
+
+    // Clear the bridging cookie once we've successfully linked.
+    res.clearCookie(PENDING_STEAM_LINK_COOKIE_NAME, PENDING_STEAM_LINK_COOKIE_OPTIONS);
+
+    log.success('Linked external auth identity to Steam', {
+      provider: read.link.provider,
+      providerUserId: redactProviderUserId(read.link.providerUserId),
+      steamId,
+      linkSource: read.source,
+    });
+    return { ...read, linked: true };
+  } catch (linkError) {
+    log.warn('Failed to persist external auth → Steam link', linkError as Error);
+    return { ...read, linked: false };
+  }
 }
 
 /**
@@ -274,94 +443,8 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
       // Keycloak, GitHub), persist that association so future logins via that
       // provider automatically resolve the Steam ID without asking to link
       // again.
-      try {
-        const anyReq = req as Request & {
-          session?: {
-            pendingSteamLink?: { provider: AuthProvider; providerUserId: string };
-          };
-        } & {
-          sessionID?: string;
-        };
-        const cookies = parseCookies(req.headers.cookie);
-        const rawCookiePending = cookies.pending_steam_link;
-
-        let cookiePending: { provider: AuthProvider; providerUserId: string } | null = null;
-        if (rawCookiePending) {
-          try {
-            const parsed = JSON.parse(rawCookiePending) as {
-              provider?: string;
-              providerUserId?: string;
-            };
-            if (
-              parsed &&
-              parsed.provider &&
-              (parsed.provider === 'discord' ||
-                parsed.provider === 'keycloak' ||
-                parsed.provider === 'github') &&
-              typeof parsed.providerUserId === 'string' &&
-              parsed.providerUserId.trim() !== ''
-            ) {
-              cookiePending = {
-                provider: parsed.provider as AuthProvider,
-                providerUserId: parsed.providerUserId,
-              };
-            } else {
-              log.info(
-                'Steam Passport callback: pending_steam_link cookie present but invalid; ignoring',
-                { provider: parsed?.provider ?? null }
-              );
-            }
-          } catch (parseErr) {
-            log.warn('Steam Passport callback: failed to parse pending_steam_link cookie', {
-              error:
-                parseErr instanceof Error
-                  ? { message: parseErr.message, stack: parseErr.stack }
-                  : parseErr,
-            });
-          }
-        }
-
-        const sessionPending = anyReq.session?.pendingSteamLink ?? null;
-        log.info('Steam Passport callback: checking for pending external identity link', {
-          hasSession: !!anyReq.session,
-          sessionPendingProvider: sessionPending?.provider ?? null,
-          cookiePendingProvider: cookiePending?.provider ?? null,
-        });
-
-        const pending = sessionPending || cookiePending;
-        if (pending && pending.provider && pending.providerUserId) {
-          await authIdentityService.linkIdentityToSteam(
-            pending.provider,
-            pending.providerUserId,
-            steamId
-          );
-
-          if (anyReq.session) {
-            delete anyReq.session.pendingSteamLink;
-          }
-
-          // Clear the bridging cookie once we've successfully linked.
-          res.clearCookie('pending_steam_link', {
-            path: '/',
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-          });
-
-          log.success('Linked external auth identity to Steam', {
-            provider: pending.provider,
-            providerUserId: redactProviderUserId(pending.providerUserId),
-            steamId,
-            linkSource: cookiePending ? 'cookie' : 'session',
-          });
-        } else {
-          log.info(
-            'Steam Passport callback: no pending external identity link found in session or cookie; skipping link'
-          );
-        }
-      } catch (linkError) {
-        log.warn('Failed to persist external auth → Steam link', linkError as Error);
-      }
+      // Only the session copy or a correctly signed, unexpired cookie is acted on.
+      await completePendingSteamLink(req, res, steamId);
 
       // Set a signed player_steam_id cookie (verified on read to prevent forgery).
       setPlayerSteamCookie(req, res, steamId);
@@ -541,21 +624,9 @@ router.get(
 
       // Also set a short-lived cookie so that even if the Express session ID
       // changes between the SSO callback and the Steam callback, we can still
-      // recover the pending identity and persist the link.
-      res.cookie(
-        'pending_steam_link',
-        JSON.stringify({
-          provider,
-          providerUserId,
-        }),
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 10, // 10 minutes
-        }
-      );
+      // recover the pending identity and persist the link. The cookie is signed
+      // and expires, so the Steam callback only acts on one we wrote.
+      setPendingSteamLinkCookie(res, provider, providerUserId);
 
       log.success('Keycloak Passport login completed; Steam link required');
       return sendAdminLoginBridgePage(req, res);
@@ -667,21 +738,9 @@ router.get(
 
       // Also set a short-lived cookie so that even if the Express session ID
       // changes between the Discord callback and the Steam callback, we can still
-      // recover the pending identity and persist the link.
-      res.cookie(
-        'pending_steam_link',
-        JSON.stringify({
-          provider,
-          providerUserId,
-        }),
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 10, // 10 minutes
-        }
-      );
+      // recover the pending identity and persist the link. The cookie is signed
+      // and expires, so the Steam callback only acts on one we wrote.
+      setPendingSteamLinkCookie(res, provider, providerUserId);
 
       log.success('Discord Passport login completed; Steam link required');
       return sendAdminLoginBridgePage(req, res);
@@ -793,21 +852,9 @@ router.get(
 
       // Also set a short-lived cookie so that even if the Express session ID
       // changes between the GitHub callback and the Steam callback, we can still
-      // recover the pending identity and persist the link.
-      res.cookie(
-        'pending_steam_link',
-        JSON.stringify({
-          provider,
-          providerUserId,
-        }),
-        {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
-          path: '/',
-          maxAge: 1000 * 60 * 10, // 10 minutes
-        }
-      );
+      // recover the pending identity and persist the link. The cookie is signed
+      // and expires, so the Steam callback only acts on one we wrote.
+      setPendingSteamLinkCookie(res, provider, providerUserId);
 
       log.success('GitHub Passport login completed; Steam link required');
       return sendAdminLoginBridgePage(req, res);
@@ -825,8 +872,7 @@ router.get(
  * "Sign in with X" buttons (Steam, Keycloak, Discord, etc.).
  */
 router.get('/providers', async (_req: Request, res: Response) => {
-  const genericUnavailable =
-    'Sign-in is temporarily unavailable. Please contact an administrator.';
+  const genericUnavailable = 'Sign-in is temporarily unavailable. Please contact an administrator.';
 
   try {
     let providers = getAuthProvidersConfig();
@@ -1031,14 +1077,13 @@ router.get('/admin-status', async (req: Request, res: Response) => {
     }
 
     const hasAnyAdmin = await playerService.hasAnyAdmin();
-    const hint =
-      !hasPlayerRecord
-        ? 'You are not in the players table. Ask an admin to add you, or enable self-registration.'
-        : !isAdmin && hasAnyAdmin
-          ? 'An admin already exists. Only the first user to sign in (after DB reset) is auto-promoted. Ask an existing admin to grant you access.'
-          : !isAdmin
-            ? 'No admins exist yet. The first user to sign in with Steam is auto-promoted. Ensure you are the only player, then sign in again.'
-            : undefined;
+    const hint = !hasPlayerRecord
+      ? 'You are not in the players table. Ask an admin to add you, or enable self-registration.'
+      : !isAdmin && hasAnyAdmin
+        ? 'An admin already exists. Only the first user to sign in (after DB reset) is auto-promoted. Ask an existing admin to grant you access.'
+        : !isAdmin
+          ? 'No admins exist yet. The first user to sign in with Steam is auto-promoted. Ensure you are the only player, then sign in again.'
+          : undefined;
 
     log.debug('[auth/admin-status]', { steamId, isAdmin, hasPlayerRecord, reason });
 

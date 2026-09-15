@@ -6,7 +6,9 @@ import { db } from '../config/database';
 import { playerService } from '../services/playerService';
 import { signPlayerSteamId } from '../utils/signedPlayerCookie';
 import { primeServerStatusForTests, ServerStatus } from '../services/serverStatusService';
-
+import { authIdentityService, type AuthProvider } from '../services/authIdentityService';
+import { completePendingSteamLink, setPendingSteamLinkCookie } from './auth';
+import { PENDING_STEAM_LINK_PROVIDERS } from '../utils/signedPendingSteamLink';
 
 const router = Router();
 
@@ -389,6 +391,180 @@ router.post('/login-player', async (req: Request, res: Response): Promise<void> 
   }
 });
 
+function isTestHelperDisabled(res: Response): boolean {
+  if (process.env.NODE_ENV === 'production' && !isE2eTestHelperEnabled()) {
+    res.status(403).json({ success: false, error: 'Disabled in production' });
+    return true;
+  }
+  return false;
+}
+
+function parseProvider(value: unknown): AuthProvider | null {
+  return typeof value === 'string' &&
+    (PENDING_STEAM_LINK_PROVIDERS as readonly string[]).includes(value)
+    ? (value as AuthProvider)
+    : null;
+}
+
+const STEAM_ID_RE = /^\d{17}$/;
+
+/**
+ * Test-only helper: issue a pending Steam link cookie with the real writer.
+ *
+ * POST /api/test/pending-steam-link
+ * Body: { provider?: 'discord' | 'keycloak' | 'github', providerUserId }
+ *
+ * Calls `setPendingSteamLinkCookie`, the same function the SSO callbacks call
+ * when an identity has no Steam link yet, so tests get a genuine cookie without
+ * a real OAuth round trip.
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/pending-steam-link', requireAuth, (req: Request, res: Response): void => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { provider: rawProvider, providerUserId } = req.body as {
+    provider?: unknown;
+    providerUserId?: unknown;
+  };
+  const provider = rawProvider === undefined ? 'discord' : parseProvider(rawProvider);
+  if (!provider) {
+    res.status(400).json({ success: false, error: 'Field "provider" is not a known SSO provider' });
+    return;
+  }
+  if (typeof providerUserId !== 'string' || providerUserId.trim() === '') {
+    res.status(400).json({ success: false, error: 'Field "providerUserId" is required' });
+    return;
+  }
+
+  setPendingSteamLinkCookie(res, provider, providerUserId);
+  res.json({ success: true });
+});
+
+/**
+ * Test-only helper: run the linking step of the Steam callback.
+ *
+ * POST /api/test/complete-steam-link
+ * Body: { steamId, nowOffsetMs? }
+ *
+ * `/steam/callback` needs a real Steam OpenID login, so nothing else reaches the
+ * code that decides whether a `pending_steam_link` cookie is trusted. This
+ * pretends Steam just proved `steamId` and calls the same
+ * `completePendingSteamLink` the callback calls, against this request's own
+ * cookies and session. The player row is created first, as the callback does
+ * (auth_identities.steam_id references players).
+ *
+ * `nowOffsetMs` shifts the clock the cookie's expiry is checked against.
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post(
+  '/complete-steam-link',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+
+    const { steamId, nowOffsetMs } = req.body as { steamId?: unknown; nowOffsetMs?: unknown };
+    if (typeof steamId !== 'string' || !STEAM_ID_RE.test(steamId)) {
+      res
+        .status(400)
+        .json({ success: false, error: 'Field "steamId" must be a 17-digit Steam ID' });
+      return;
+    }
+    if (
+      nowOffsetMs !== undefined &&
+      (typeof nowOffsetMs !== 'number' || !Number.isFinite(nowOffsetMs))
+    ) {
+      res.status(400).json({ success: false, error: 'Field "nowOffsetMs" must be a number' });
+      return;
+    }
+
+    try {
+      await playerService.getOrCreatePlayer(steamId, `Test Player ${steamId}`);
+      const result = await completePendingSteamLink(req, res, steamId, {
+        now: typeof nowOffsetMs === 'number' ? Date.now() + nowOffsetMs : undefined,
+      });
+      res.json({ success: true, ...result });
+    } catch (err) {
+      log.error('Error in /api/test/complete-steam-link', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to complete Steam link' });
+    }
+  }
+);
+
+/**
+ * Test-only helper: read the auth identity links for one external account.
+ *
+ * GET /api/test/auth-identities?provider=discord&providerUserId=123...
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.get('/auth-identities', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const { provider, providerUserId } = req.query;
+  if (typeof provider !== 'string' || typeof providerUserId !== 'string') {
+    res.status(400).json({
+      success: false,
+      error: 'Query parameters "provider" and "providerUserId" are required',
+    });
+    return;
+  }
+
+  try {
+    const rows = await db.queryAsync<{ steam_id: string }>(
+      'SELECT steam_id FROM auth_identities WHERE provider = ? AND provider_user_id = ? ORDER BY id',
+      [provider, providerUserId]
+    );
+    res.json({ success: true, steamIds: rows.map((r) => r.steam_id) });
+  } catch (err) {
+    log.error('Error in GET /api/test/auth-identities', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to read auth identities' });
+  }
+});
+
+/**
+ * Test-only helper: seed an auth identity link (creating the player first).
+ *
+ * POST /api/test/auth-identities
+ * Body: { provider?, providerUserId, steamId }
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.post('/auth-identities', requireAuth, async (req: Request, res: Response): Promise<void> => {
+  if (isTestHelperDisabled(res)) return;
+
+  const {
+    provider: rawProvider,
+    providerUserId,
+    steamId,
+  } = req.body as {
+    provider?: unknown;
+    providerUserId?: unknown;
+    steamId?: unknown;
+  };
+  const provider = rawProvider === undefined ? 'discord' : parseProvider(rawProvider);
+  if (!provider) {
+    res.status(400).json({ success: false, error: 'Field "provider" is not a known SSO provider' });
+    return;
+  }
+  if (typeof providerUserId !== 'string' || providerUserId.trim() === '') {
+    res.status(400).json({ success: false, error: 'Field "providerUserId" is required' });
+    return;
+  }
+  if (typeof steamId !== 'string' || !STEAM_ID_RE.test(steamId)) {
+    res.status(400).json({ success: false, error: 'Field "steamId" must be a 17-digit Steam ID' });
+    return;
+  }
+
+  try {
+    await playerService.getOrCreatePlayer(steamId, `Test Player ${steamId}`);
+    await authIdentityService.linkIdentityToSteam(provider, providerUserId, steamId);
+    res.json({ success: true });
+  } catch (err) {
+    log.error('Error in POST /api/test/auth-identities', err as Error);
+    res.status(500).json({ success: false, error: 'Failed to seed auth identity' });
+  }
+});
+
 export default router;
-
-
