@@ -1,6 +1,7 @@
 import { Box, Button, Typography, Alert } from '@mui/material';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import { useTranslation } from 'react-i18next';
 import type { TeamMatchInfo } from '../../types';
 import type { CS2MapData } from '../../constants/maps';
 import { FadeInImage } from '../common/FadeInImage';
@@ -24,20 +25,26 @@ export function MatchServerPanel({
   onConnect,
   onCopy,
 }: MatchServerPanelProps) {
+  const { t } = useTranslation();
+
   if (!server) {
     return (
       <Alert severity="info">
         <Typography variant="body2" fontWeight={600} gutterBottom>
-          ⏳ Waiting for Server Assignment
+          ⏳ {t('matchInfo.server.waitingTitle')}
         </Typography>
-        <Typography variant="body2">
-          A server will be automatically assigned as soon as one becomes available. After each
-          match, servers go into a short cooldown (about 2 minutes) so demos can upload and the
-          server can fully reset. This page will update automatically when your server is ready.
-        </Typography>
+        <Typography variant="body2">{t('matchInfo.server.waitingBody')}</Typography>
       </Alert>
     );
   }
+
+  // The API sends an English label alongside the raw MatchZy status; translate
+  // the known statuses and fall back to that label for anything new.
+  const statusLabel = server.status
+    ? t(`matchInfo.server.statusLabels.${server.status}`, {
+        defaultValue: server.statusDescription?.label || server.status,
+      })
+    : '';
 
   return (
     <Box display="flex" flexDirection="column" gap={2}>
@@ -81,7 +88,7 @@ export function MatchServerPanel({
                   textShadow: '1px 1px 3px rgba(0,0,0,0.8)',
                 }}
               >
-                Map {currentMapNumber + 1}
+                {t('matchInfo.mapN', { n: currentMapNumber + 1 })}
               </Typography>
             )}
           </Box>
@@ -92,14 +99,14 @@ export function MatchServerPanel({
         {/* Server info */}
         <Box>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Server: {server.name}
+            {t('matchInfo.server.serverName', { name: server.name })}
           </Typography>
           <Typography variant="body2" color="text.secondary" fontFamily="monospace">
             {server.host}:{server.port}
           </Typography>
           {server.status && (
             <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-              Status: {server.statusDescription?.label || server.status}
+              {t('matchInfo.server.status', { status: statusLabel })}
             </Typography>
           )}
         </Box>
@@ -114,7 +121,7 @@ export function MatchServerPanel({
           disabled={!server.host || !server.port} // Disable if server details missing
           sx={{ py: 1.5 }}
         >
-          {connected ? '✓ Connecting...' : 'Connect to Server'}
+          {connected ? t('matchInfo.server.connecting') : t('matchInfo.server.connect')}
         </Button>
 
         <Button
@@ -125,10 +132,9 @@ export function MatchServerPanel({
           onClick={onCopy}
           disabled={!server.host || !server.port} // Disable if server details missing
         >
-          {copied ? '✓ Copied!' : 'Copy Console Command'}
+          {copied ? t('matchInfo.server.copied') : t('matchInfo.server.copyCommand')}
         </Button>
       </Box>
     </Box>
   );
 }
-

@@ -67,7 +67,16 @@
       "saved": "Discord ID saved",
       "removed": "Discord ID removed",
       "saveFailed": "Failed to save your Discord ID"
-    }
+    },
+    "teamChip": "Team: {{team}}",
+    "myTeam": "My Team",
+    "openTeam": "Open team: {{team}}",
+    "you": "You",
+    "noMatchHistory": "No match history yet",
+    "demo": "Demo",
+    "downloadDemo": "Download demo",
+    "showingLastMatches": "Showing last {{shown}} matches. Total: {{total}}",
+    "noMatchesYet": "No matches yet"
   },
   "teamPage": {
     "wantYourStats": "Want to see your own stats and match history?",
@@ -251,6 +260,18 @@
     "historyStep": "Step {{step}}:",
     "startingSide": "Starting {{side}}",
     "otherTeam": "the other team",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "SIDE PICK"
+    },
+    "mapBadge": "MAP {{n}}",
+    "mapCardAria": {
+      "ban": "Ban {{map}}",
+      "pick": "Pick {{map}}",
+      "banned": "{{map}} (banned)",
+      "picked": "{{map}} (picked)"
+    },
     "errors": {
       "failedToLoadVetoState": "Failed to load veto state",
       "failedToProcessVetoAction": "Failed to process veto action",
@@ -278,5 +299,107 @@
   "importWarnings": {
     "title": "Warnings from the import ({{count}}):",
     "more": "…and {{count}} more"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "Waiting for Tournament to Start",
+    "waitingForTournamentBody": "Your match is ready, but the tournament hasn't started yet. The map veto will become available once the tournament administrator starts the tournament.",
+    "tournamentStatusSetup": "Tournament Status: Setup Phase",
+    "waitingForOpponentTitle": "Waiting for Opponent",
+    "waitingForOpponentBody": "You have advanced to the next round. Your next opponent is not decided yet, so map veto will open once both teams are known.",
+    "mapSelectionTitle": "Map Selection",
+    "tournamentStartedTitle": "Tournament has started!",
+    "tournamentStartedBody": "Complete the map veto process to begin your match.",
+    "mapN": "Map {{n}}",
+    "mapFinishedWaiting": "Map finished. Waiting for next map in this series...",
+    "allPlayersConnected": "All required players are connected. Match can start.",
+    "waitingForPlayers": "Waiting for players to connect ({{connected}}/{{expected}})",
+    "copyBlocked": "Your browser blocked copying. The command is shown below so you can copy it manually.",
+    "copyFallback": "Unable to copy automatically in this browser. Run in console: {{command}}",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "liveStatus": {
+      "warmup": "Warmup",
+      "knife": "Knife Round",
+      "live": "Live",
+      "halftime": "Halftime",
+      "postgame": "Map finished – waiting for next map",
+      "overtime": "OVERTIME #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Maps won",
+      "currentMapScore": "Current map score (Rounds)",
+      "eloAvg": "ELO (avg): {{elo}}",
+      "vs": "VS",
+      "tbd": "TBD"
+    },
+    "server": {
+      "waitingTitle": "Waiting for Server Assignment",
+      "waitingBody": "A server will be automatically assigned as soon as one becomes available. After each match, servers go into a short cooldown (about 2 minutes) so demos can upload and the server can fully reset. This page will update automatically when your server is ready.",
+      "serverName": "Server: {{name}}",
+      "status": "Status: {{status}}",
+      "connect": "Connect to Server",
+      "connecting": "✓ Connecting...",
+      "copyCommand": "Copy Console Command",
+      "copied": "✓ Copied!",
+      "statusLabels": {
+        "idle": "Available",
+        "loading": "Loading",
+        "warmup": "Warmup - Join Now!",
+        "knife": "Knife Round",
+        "live": "Live",
+        "paused": "Paused",
+        "halftime": "Halftime",
+        "postgame": "Match Ended",
+        "queued": "Next Match Queued",
+        "error": "Error"
+      }
+    },
+    "performance": {
+      "title": "Player Performance",
+      "player": "Player",
+      "waitingForStats": "Waiting for stats...",
+      "yourTeam": "Your Team",
+      "opponent": "Opponent"
+    },
+    "mapChips": {
+      "live": "Live"
+    },
+    "demos": {
+      "title": "Map Demos",
+      "download": "Download {{map}} demo"
+    }
+  },
+  "tournamentRules": {
+    "title": "About this tournament",
+    "intro": "These are the core rules used to decide matches in this tournament.",
+    "matchFormatLabel": "Match format:",
+    "regulationLabel": "Regulation rounds:",
+    "overtimeLabel": "Overtime:",
+    "tiesLabel": "How ties are resolved:",
+    "format": {
+      "bo1": "Best of 1 map – the map winner wins the match.",
+      "bo3": "Best of 3 maps – first team to win 2 maps wins the match.",
+      "bo5": "Best of 5 maps – first team to win 3 maps wins the match."
+    },
+    "regulationWithRounds": "Each map is played up to {{rounds}} rounds. The team with more rounds at the end of regulation wins the map.",
+    "regulationGeneric": "Each map is played for a fixed number of rounds. The team with more rounds at the end of regulation wins the map.",
+    "overtime": {
+      "disabled": "Overtime: disabled (regulation only).",
+      "enabledSegments_one": "Overtime: enabled with up to {{count}} overtime segment.",
+      "enabledSegments_other": "Overtime: enabled with up to {{count}} overtime segments.",
+      "enabled": "Overtime: enabled. Tied regulation scores will trigger overtime until one team finishes ahead.",
+      "effectivelyDisabled": "Overtime: effectively disabled (regulation only).",
+      "implicitSegments_one": "Overtime: enabled with up to {{count}} overtime segment (implicit).",
+      "implicitSegments_other": "Overtime: enabled with up to {{count}} overtime segments (implicit).",
+      "standard": "Overtime: standard settings. Tied regulation scores usually trigger overtime."
+    },
+    "tiebreak": {
+      "disabled": "If regulation ends with equal scores, the match does not go to overtime. Instead, the winner is decided by total team damage across the map. If total damage is also exactly equal, the result is a true draw.",
+      "enabledSegments": "If the score is still tied after the configured overtime segments, the winner is decided by total team damage across the map. If total damage is also tied, the result is recorded as a draw.",
+      "enabled": "In normal play, a higher final score decides the winner. Draws are rare and only occur if both score and damage remain exactly tied.",
+      "effectivelyDisabled": "If regulation ends with equal scores, the match does not go to overtime. The winner is decided by total team damage across the map; if damage is tied, the match is a draw.",
+      "implicitSegments": "If the score is still tied after the configured overtime segments, the winner is decided by total team damage. If damage is tied, the result is a draw.",
+      "standard": "In most cases, the team with the higher final score wins. Only when both score and total damage are exactly tied is the result recorded as a true draw."
+    }
   }
 }

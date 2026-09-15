@@ -1,5 +1,6 @@
 import { Box, Button, Stack, Typography, Divider } from '@mui/material';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useTranslation } from 'react-i18next';
 import type { MatchMapResult } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 
@@ -14,6 +15,7 @@ export function MapDemoDownloads({
   mapResults,
   matchSlug,
 }: MapDemoDownloadsProps) {
+  const { t } = useTranslation();
   const handleDownloadDemo = (mapNumber: number) => {
     const link = document.createElement('a');
     link.href = `/api/demos/${matchSlug}/download/${mapNumber}`;
@@ -47,7 +49,7 @@ export function MapDemoDownloads({
   return (
     <Box>
       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-        Map Demos
+        {t('matchInfo.demos.title')}
       </Typography>
       <Divider sx={{ mb: 2 }} />
       <Stack spacing={1}>
@@ -60,7 +62,7 @@ export function MapDemoDownloads({
             onClick={() => handleDownloadDemo(mapNumber)}
             sx={{ justifyContent: 'flex-start' }}
           >
-            Download {mapName} demo
+            {t('matchInfo.demos.download', { map: mapName })}
           </Button>
         ))}
       </Stack>

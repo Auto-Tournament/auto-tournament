@@ -83,6 +83,41 @@ test.describe.serial('Veto UI', () => {
   );
 
   test(
+    'should expose map tiles as keyboard-operable buttons and translate the history',
+    { tag: ['@ui', '@veto', '@a11y'] },
+    async ({ page }) => {
+      // Step 1 is team2's to wait on: their tiles are buttons, but not selectable.
+      await viewVetoPageAs(page, actingSteamIdFor(team2));
+      const waitingTile = page.getByRole('button', { name: /^Ban .*Mirage$/i });
+      await expect(waitingTile).toBeVisible();
+      await expect(waitingTile).toHaveAttribute('aria-disabled', 'true');
+
+      // Team1 acts first: the tile is an enabled button named after the action.
+      await viewVetoPageAs(page, actingSteamIdFor(team1));
+      const tile = page.getByRole('button', { name: /^Ban .*Inferno$/i });
+      await expect(tile).toBeVisible();
+      await expect(tile).toHaveAttribute('aria-disabled', 'false');
+
+      // Operate it from the keyboard alone.
+      const actionResponse = page.waitForResponse(
+        (r) => r.url().includes(`/api/veto/${matchSlug}/action`) && r.request().method() === 'POST',
+        { timeout: 20000 }
+      );
+      await tile.focus();
+      await page.keyboard.press('Enter');
+      expect((await actionResponse).ok()).toBe(true);
+
+      // The banned tile keeps its button role but is no longer selectable.
+      const bannedTile = page.getByRole('button', { name: /Inferno \(banned\)/i });
+      await expect(bannedTile).toHaveAttribute('aria-disabled', 'true');
+
+      // History renders a translated action label, never the raw enum.
+      const historyChip = page.getByTestId('veto-history-action').first();
+      await expect(historyChip).toHaveText('BAN');
+    }
+  );
+
+  test(
     "should not expose the veto board on another player's page",
     { tag: ['@ui', '@veto', '@security'] },
     async ({ page }) => {

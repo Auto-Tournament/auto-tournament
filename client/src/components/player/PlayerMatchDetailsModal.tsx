@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from '@mui/material';
 import { api } from '../../utils/api';
 import MatchDetailsModal from '../modals/MatchDetailsModal';
 import type { Match } from '../../types';
-import { getRoundLabel } from '../../utils/matchUtils';
+import { useTranslation } from 'react-i18next';
 
 interface PlayerMatchDetailsModalProps {
   open: boolean;
@@ -20,6 +20,7 @@ export const PlayerMatchDetailsModal: React.FC<PlayerMatchDetailsModalProps> = (
   matchNumber,
   onClose,
 }) => {
+  const { t } = useTranslation();
   const [match, setMatch] = useState<Match | null>(null);
 
   useEffect(() => {
@@ -56,7 +57,7 @@ export const PlayerMatchDetailsModal: React.FC<PlayerMatchDetailsModalProps> = (
         <MatchDetailsModal
           match={match}
           matchNumber={matchNumber}
-          roundLabel={getRoundLabel(round)}
+          roundLabel={t('rounds.roundN', { n: round })}
           onClose={handleClose}
         />
       </DialogContent>

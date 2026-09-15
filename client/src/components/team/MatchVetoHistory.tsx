@@ -1,5 +1,6 @@
 import { Accordion, AccordionDetails, AccordionSummary, Box, Chip, Stack, Typography } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useTranslation } from 'react-i18next';
 import type { VetoAction } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 
@@ -10,6 +11,8 @@ interface MatchVetoHistoryProps {
 }
 
 export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHistoryProps) {
+  const { t } = useTranslation();
+
   if (actions.length === 0) {
     return null;
   }
@@ -18,7 +21,7 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="subtitle1" fontWeight={600}>
-          Veto History
+          {t('vetoInterface.vetoHistory')}
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
@@ -35,10 +38,13 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
               }}
             >
               <Typography variant="body2">
-                <strong>Step {action.step}:</strong>{' '}
+                <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
                 {action.team === 'team1' ? team1Name : team2Name}{' '}
                 <Chip
-                  label={action.action.toUpperCase()}
+                  data-testid="veto-history-action"
+                  label={t(`vetoInterface.actionLabels.${action.action}`, {
+                    defaultValue: action.action.toUpperCase(),
+                  })}
                   size="small"
                   color={
                     action.action === 'ban'
@@ -50,7 +56,7 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
                   sx={{ mx: 1 }}
                 />
                 {action.mapName ? getMapDisplayName(action.mapName) || action.mapName : '—'}
-                {action.side ? ` (Starting ${action.side})` : ''}
+                {action.side ? ` (${t('vetoInterface.startingSide', { side: action.side })})` : ''}
               </Typography>
             </Box>
           ))}
@@ -59,4 +65,3 @@ export function MatchVetoHistory({ actions, team1Name, team2Name }: MatchVetoHis
     </Accordion>
   );
 }
-

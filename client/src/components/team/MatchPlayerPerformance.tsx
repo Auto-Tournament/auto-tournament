@@ -10,6 +10,8 @@ import {
   TableRow,
   Typography,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import { PlayerName } from '../player/PlayerName';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import type { MatchLiveStats } from '../../types';
@@ -41,6 +43,7 @@ function formatAdr(player: PlayerLine): string {
 function renderTable(
   rows: PlayerLine[],
   accent: 'primary' | 'error',
+  t: TFunction,
   highlightPlayerId?: string
 ) {
   const sortedRows = [...rows].sort((a, b) => getAdrValue(b) - getAdrValue(a));
@@ -50,7 +53,7 @@ function renderTable(
       <Table size="small">
         <TableHead>
           <TableRow>
-            <TableCell>Player</TableCell>
+            <TableCell>{t('matchInfo.performance.player')}</TableCell>
             <TableCell align="right">K</TableCell>
             <TableCell align="right">D</TableCell>
             <TableCell align="right">A</TableCell>
@@ -63,7 +66,7 @@ function renderTable(
             <TableRow>
               <TableCell colSpan={7} align="center">
                 <Typography variant="body2" color="text.secondary">
-                  Waiting for stats...
+                  {t('matchInfo.performance.waitingForStats')}
                 </Typography>
               </TableCell>
             </TableRow>
@@ -128,6 +131,7 @@ export function MatchPlayerPerformance({
   yourTeamIsTeam1 = true,
   highlightPlayerId,
 }: MatchPlayerPerformanceProps) {
+  const { t } = useTranslation();
   if (!playerStats || (!playerStats.team1.length && !playerStats.team2.length)) {
     return null;
   }
@@ -138,14 +142,14 @@ export function MatchPlayerPerformance({
   return (
     <Box>
       <Typography variant="h6" fontWeight={600} mb={1}>
-        Player Performance
+        {t('matchInfo.performance.title')}
       </Typography>
       <Stack direction={{ xs: 'column', md: 'row' }} spacing={2}>
         <Box flex={1}>
           <Typography variant="subtitle2" color="text.secondary" mb={0.5}>
-            {teamName || 'Your Team'}
+            {teamName || t('matchInfo.performance.yourTeam')}
           </Typography>
-          {renderTable(yourTeamStats, 'primary', highlightPlayerId)}
+          {renderTable(yourTeamStats, 'primary', t, highlightPlayerId)}
         </Box>
         <Box flex={1}>
           <Typography
@@ -154,9 +158,9 @@ export function MatchPlayerPerformance({
             mb={0.5}
             textAlign={{ xs: 'left', md: 'right' }}
           >
-            {opponentName || 'Opponent'}
+            {opponentName || t('matchInfo.performance.opponent')}
           </Typography>
-          {renderTable(opponentStats, 'error', highlightPlayerId)}
+          {renderTable(opponentStats, 'error', t, highlightPlayerId)}
         </Box>
       </Stack>
     </Box>

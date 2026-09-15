@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
 import { getMapData } from '../../constants/maps';
@@ -43,20 +44,18 @@ interface MatchInfoCardProps {
   viewerIsTeamMemberOverride?: boolean;
 }
 
+// Labels are i18n keys under matchInfo.liveStatus.<status>.
 const LIVE_STATUS_DISPLAY: Record<
   MatchLiveStats['status'],
-  { label: string; chipColor: 'default' | 'info' | 'success' | 'warning' }
+  { chipColor: 'default' | 'info' | 'success' | 'warning' }
 > = {
   // Warmup / between-maps states share the same soft blue "pre-live" tone
-  warmup: { label: 'Warmup', chipColor: 'info' },
-  knife: { label: 'Knife Round', chipColor: 'success' },
-  live: { label: 'Live', chipColor: 'warning' },
-  halftime: { label: 'Halftime', chipColor: 'warning' },
+  warmup: { chipColor: 'info' },
+  knife: { chipColor: 'success' },
+  live: { chipColor: 'warning' },
+  halftime: { chipColor: 'warning' },
   // Map just ended; server is cleaning up or preparing next map
-  postgame: {
-    label: 'Map finished – waiting for next map',
-    chipColor: 'default',
-  },
+  postgame: { chipColor: 'default' },
 };
 
 export function MatchInfoCard({
@@ -76,6 +75,7 @@ export function MatchInfoCard({
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
   const { showError } = useSnackbar();
   const { isAuthenticated } = useAuth();
+  const { t } = useTranslation();
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
@@ -136,8 +136,8 @@ export function MatchInfoCard({
         ...LIVE_STATUS_DISPLAY[liveStats.status],
         label:
           overtimeNumber !== null
-            ? `OVERTIME #${overtimeNumber}`
-            : LIVE_STATUS_DISPLAY[liveStats.status].label,
+            ? t('matchInfo.liveStatus.overtime', { n: overtimeNumber })
+            : t(`matchInfo.liveStatus.${liveStats.status}`, { defaultValue: liveStats.status }),
       }
     : null;
   
@@ -153,8 +153,8 @@ export function MatchInfoCard({
       ? totalConnected >= expectedPlayersTotal
       : totalConnected > 0;
   const vetoActions = match.veto?.actions ?? [];
-  const vetoTeam1Name = match.veto?.team1Name || match.team1?.name || 'Team 1';
-  const vetoTeam2Name = match.veto?.team2Name || match.team2?.name || 'Team 2';
+  const vetoTeam1Name = match.veto?.team1Name || match.team1?.name || t('matchInfo.team1');
+  const vetoTeam2Name = match.veto?.team2Name || match.team2?.name || t('matchInfo.team2');
   const showVetoHistory = vetoActions.length > 0;
   const playerStats = liveStats?.playerStats ?? null;
   const hasPlayerStats =
@@ -333,9 +333,7 @@ export function MatchInfoCard({
     }
 
     setCopyFallbackCommand(connectCommand);
-    showError(
-      'Your browser blocked copying. The command is shown below so you can copy it manually.'
-    );
+    showError(t('matchInfo.copyBlocked'));
   };
 
   const isManualMatch = match.round === 0;
@@ -371,15 +369,12 @@ export function MatchInfoCard({
         <CardContent>
           <Alert severity="warning">
             <Typography variant="body1" fontWeight={600} gutterBottom>
-              ⏳ Waiting for Tournament to Start
+              ⏳ {t('matchInfo.waitingForTournamentTitle')}
             </Typography>
-            <Typography variant="body2">
-              Your match is ready, but the tournament hasn't started yet. The map veto will become
-              available once the tournament administrator starts the tournament.
-            </Typography>
+            <Typography variant="body2">{t('matchInfo.waitingForTournamentBody')}</Typography>
             {tournamentStatus === 'setup' && (
               <Typography variant="caption" display="block" mt={1}>
-                Tournament Status: Setup Phase
+                {t('matchInfo.tournamentStatusSetup')}
               </Typography>
             )}
           </Alert>
@@ -402,12 +397,9 @@ export function MatchInfoCard({
         <CardContent>
           <Alert severity="info">
             <Typography variant="body1" fontWeight={600} gutterBottom>
-              Waiting for Opponent
+              {t('matchInfo.waitingForOpponentTitle')}
             </Typography>
-            <Typography variant="body2">
-              You have advanced to the next round. Your next opponent is not decided yet, so map
-              veto will open once both teams are known.
-            </Typography>
+            <Typography variant="body2">{t('matchInfo.waitingForOpponentBody')}</Typography>
           </Alert>
         </CardContent>
       </Card>
@@ -433,12 +425,12 @@ export function MatchInfoCard({
       <Card>
         <CardContent>
           <Typography variant="h5" fontWeight={600} mb={3}>
-            🗺️ Map Selection
+            🗺️ {t('matchInfo.mapSelectionTitle')}
           </Typography>
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">
-              <strong>Tournament has started!</strong> Complete the map veto process to begin your
-              match.
+              <strong>{t('matchInfo.tournamentStartedTitle')}</strong>{' '}
+              {t('matchInfo.tournamentStartedBody')}
             </Typography>
           </Alert>
           <VetoInterface
@@ -481,7 +473,7 @@ export function MatchInfoCard({
                 </Typography>
                 {typeof mapNumber === 'number' && (
                   <Typography variant="body2" color="text.secondary">
-                    Map {mapNumber + 1}
+                    {t('matchInfo.mapN', { n: mapNumber + 1 })}
                   </Typography>
                 )}
               </Box>
@@ -512,7 +504,7 @@ export function MatchInfoCard({
 
             {liveStats?.status === 'postgame' && match.status !== 'completed' && (
               <Typography variant="body2" color="text.secondary" mt={1}>
-                Map finished. Waiting for next map in this series...
+                {t('matchInfo.mapFinishedWaiting')}
               </Typography>
             )}
 
@@ -522,8 +514,11 @@ export function MatchInfoCard({
                 icon={<PeopleIcon fontSize="small" />}
               >
                 {playersReady
-                  ? 'All required players are connected. Match can start.'
-                  : `Waiting for players to connect (${totalConnected}/${expectedPlayersDisplay})`}
+                  ? t('matchInfo.allPlayersConnected')
+                  : t('matchInfo.waitingForPlayers', {
+                      connected: totalConnected,
+                      expected: expectedPlayersDisplay,
+                    })}
               </Alert>
             )}
 
@@ -543,7 +538,7 @@ export function MatchInfoCard({
                 color="text.secondary"
                 sx={{ mt: 1, fontFamily: 'monospace' }}
               >
-                Unable to copy automatically in this browser. Run in console: {copyFallbackCommand}
+                {t('matchInfo.copyFallback', { command: copyFallbackCommand })}
               </Typography>
             )}
 
