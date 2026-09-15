@@ -96,6 +96,12 @@ jobs:
             exit 0
           fi
 
+          if [ -z "$files" ]; then
+            echo "No changed files listed: running E2E."
+            echo "e2e=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
           run=false
           while IFS= read -r f; do
             [ -z "$f" ] && continue
