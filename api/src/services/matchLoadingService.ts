@@ -14,6 +14,9 @@ import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from './settingsService';
 import { getMatchZyServerConfigCommands } from '../utils/matchzyRconCommands';
 import { matchConfigFetchTracker } from './matchConfigFetchTracker';
+import { classifyClearQueuedReply, classifyLoadMatchReply } from '../utils/matchzyServerReplies';
+import { serverStatusService, ServerStatus } from './serverStatusService';
+import { buildMatchConfigUrl, buildServerEventsUrl } from '../utils/serverAttribution';
 
 /**
  * How long to wait for MatchZy to fetch the match config after the load command.
@@ -31,6 +34,18 @@ export interface MatchLoadResult {
   error?: string;
   webhookConfigured?: boolean;
   demoUploadConfigured?: boolean;
+  /**
+   * The plugin is still finishing the previous series and queued this match to
+   * load after its reset. The assignment stands; do not give the match to
+   * another server.
+   */
+  queued?: boolean;
+  /**
+   * The load failed without a recognisable refusal, so the plugin may still be
+   * holding it in its queue. Whoever moves the match elsewhere should clear
+   * `server_id` and then call `cancelQueuedLoad` on this server.
+   */
+  mayHaveQueued?: boolean;
   rconResponses?: Array<{ success: boolean; command: string; error?: string }>;
 }
 
@@ -59,7 +74,10 @@ export async function loadMatchOnServer(
       return { success: false, error: 'Match not found' };
     }
 
-    const configUrl = `${baseUrl}/api/matches/${matchSlug}.json`;
+    // The server id and match id ride along so MAT can refuse the fetch if the
+    // match has moved or the slug was reused by the time the plugin acts on it
+    // (a queued load runs minutes later) - see checkConfigFetch.
+    const configUrl = buildMatchConfigUrl(baseUrl, matchSlug, serverId, match.id);
     log.debug(`Match config URL: ${configUrl}`);
 
     // Parse match config once so we can reuse its cvars for per-match setup.
@@ -277,13 +295,12 @@ export async function loadMatchOnServer(
       error: loadResult.error,
     });
 
-    const responseText = (loadResult.response || '').toLowerCase();
-    const gotvInactive = responseText.includes('gotv[0] not active');
+    const reply = classifyLoadMatchReply(loadResult.response);
+    const gotvInactive = reply === 'gotv_inactive';
     // MatchZy has several refusals and they share no common wording. These are
     // the ones we know; the config-fetch check below is what catches the rest.
-    const alreadySetUp =
-      responseText.includes('cannot load a new match') || responseText.includes('already setup');
-    const pluginReportedFailure = responseText.includes('match load failed');
+    const alreadySetUp = reply === 'already_setup';
+    const pluginReportedFailure = reply === 'failed';
 
     const handlePluginFailure = (message: string) => {
       log.warn(message, {
@@ -307,6 +324,43 @@ export async function loadMatchOnServer(
         error: errorMessage,
         webhookConfigured: false,
         demoUploadConfigured: false,
+        rconResponses: results,
+      };
+    }
+
+    // The previous series on this server is in postgame. MatchZy stored the URL
+    // and fetches it after its reset, which can be minutes away (demo upload +
+    // kick delay), so waiting for the fetch here would always "fail". Treating
+    // that as a failure is what put one match on two servers: MAT re-allocated
+    // it, and the first server loaded its queued copy anyway. The plugin has no
+    // command to drop a queued load, so keep the assignment.
+    if (loadResult.success && reply === 'queued') {
+      log.info('[MATCH LOADING] MatchZy queued the match to load after the current series resets', {
+        matchSlug,
+        serverId,
+        response: loadResult.response,
+      });
+      matchLiveStatsService.reset(match.slug);
+      await db.updateAsync(
+        'matches',
+        { status: 'loaded', loaded_at: Math.floor(Date.now() / 1000) },
+        'slug = ?',
+        [matchSlug]
+      );
+      log.matchLoaded(matchSlug, serverId, true);
+      const updatedMatch = await db.queryOneAsync<DbMatchRow>(
+        'SELECT * FROM matches WHERE slug = ?',
+        [matchSlug]
+      );
+      if (updatedMatch) {
+        emitMatchUpdate(updatedMatch);
+        emitBracketUpdate({ action: 'match_loaded', matchSlug });
+      }
+      return {
+        success: true,
+        queued: true,
+        webhookConfigured: true,
+        demoUploadConfigured,
         rconResponses: results,
       };
     }
@@ -343,6 +397,7 @@ export async function loadMatchOnServer(
             error: errorMessage,
             webhookConfigured: false,
             demoUploadConfigured: false,
+            mayHaveQueued: true,
             rconResponses: results,
           };
         }
@@ -351,6 +406,17 @@ export async function loadMatchOnServer(
 
     if (loadResult.success) {
       log.success(`[MATCH LOADING] Match ${matchSlug} loaded successfully on ${serverId}`);
+
+      // Make this server's events attributable. Every server used to post to
+      // the same /api/events URL with only a matchid, so events from a second
+      // server running the same match were applied as if they were real.
+      // Servers bootstrapped since this change already have the URL; this brings
+      // older ones up to date. It is sent only after a real (not queued) load:
+      // the plugin clears its event retry queue when the URL changes, and during
+      // a previous series' postgame that queue can still hold its final events.
+      const webhookCmd = `matchzy_remote_log_url "${buildServerEventsUrl(baseUrl, serverId)}"`;
+      const webhookResult = await rconService.sendCommand(serverId, webhookCmd);
+      results.push({ success: webhookResult.success, command: webhookCmd, error: webhookResult.error });
       matchLiveStatsService.reset(match.slug);
 
       // With persistent configuration, webhook and demo upload URLs are stored in the server's
@@ -398,5 +464,57 @@ export async function loadMatchOnServer(
       error: errorMessage,
       rconResponses: results,
     };
+  }
+}
+
+export type CancelQueuedLoadOutcome = 'cleared' | 'none' | 'restarted' | 'skipped';
+
+/**
+ * Make sure a server will not later load a match MAT has moved elsewhere.
+ *
+ * MatchZy-Enhanced queues a load sent during postgame and runs it after the
+ * series resets. Newer plugins (MatchZy-Enhanced#16) drop it with
+ * `matchzy_clear_queued_match`. 1.4.24 has no such command; there the queue is
+ * only consumed by a reset, so `css_restart` is sent — but only when the plugin
+ * reports `queued`, since restarting a server in any other state could end a
+ * match that is really being played there. On 1.4.24 that restart makes the
+ * plugin fetch the queued config straight away, so call this only after the
+ * match's `server_id` no longer points at this server: the config route then
+ * refuses the fetch (see checkConfigFetch).
+ */
+export async function cancelQueuedLoad(
+  serverId: string,
+  matchSlug: string
+): Promise<CancelQueuedLoadOutcome> {
+  try {
+    const reply = await rconService.sendCommand(serverId, 'matchzy_clear_queued_match');
+    const outcome = reply.success ? classifyClearQueuedReply(reply.response) : 'unsupported';
+    if (outcome !== 'unsupported') {
+      log.info('[MATCH LOADING] Cleared queued load before moving match', {
+        serverId,
+        matchSlug,
+        outcome,
+      });
+      return outcome;
+    }
+
+    const status = await serverStatusService.getServerStatus(serverId);
+    if (status.online && status.status === ServerStatus.QUEUED) {
+      log.warn(
+        '[MATCH LOADING] Plugin has no matchzy_clear_queued_match; restarting the server to drop its queued load',
+        { serverId, matchSlug }
+      );
+      await rconService.sendCommand(serverId, 'css_restart');
+      return 'restarted';
+    }
+
+    return 'skipped';
+  } catch (error) {
+    log.warn('[MATCH LOADING] Failed to clear queued load', {
+      serverId,
+      matchSlug,
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return 'skipped';
   }
 }

@@ -3,8 +3,8 @@ import { serverService } from './serverService';
 import { rconService } from './rconService';
 import { tournamentService } from './tournamentService';
 import { emitTournamentUpdate, emitBracketUpdate, emitMatchUpdate } from './socketService';
-import { loadMatchOnServer } from './matchLoadingService';
-import { serverStatusService, ServerStatus } from './serverStatusService';
+import { cancelQueuedLoad, loadMatchOnServer } from './matchLoadingService';
+import { serverStatusService, ServerStatus, isAllocatableStatus } from './serverStatusService';
 import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentService';
 import { log } from '../utils/logger';
 import { getLastServerTestEvent } from './serverConnectivityService';
@@ -226,7 +226,7 @@ export class MatchAllocationService {
       // - AND database must not show a loaded/live match
       // This prevents servers from showing as "Available" when they have
       // a match in warmup but the plugin hasn't updated the ConVar yet.
-      const pluginSaysIdle = status === ServerStatus.IDLE;
+      const pluginSaysIdle = isAllocatableStatus(status);
       const dbSaysBusy = dbBusy !== null;
 
       // A freshly loaded match legitimately looks idle for a moment: MatchZy has
@@ -487,9 +487,10 @@ export class MatchAllocationService {
         continue;
       }
 
-      // Follow MatchZy spec: ONLY allocate when status is "idle". All other
-      // states, including "postgame", are considered busy.
-      if (status !== ServerStatus.IDLE) {
+      // Follow MatchZy spec: only allocate an idle server (or one left in
+      // 'error' - see isAllocatableStatus). "postgame" and "queued" are busy: a
+      // load sent then is queued by the plugin and runs minutes later.
+      if (!isAllocatableStatus(status)) {
         log.debug(
           `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
         );
@@ -643,7 +644,7 @@ export class MatchAllocationService {
       // the older snapshot returned from getAvailableServers.
       const statusInfo = await serverStatusService.getServerStatus(server.id);
 
-      if (!statusInfo.online || statusInfo.status !== ServerStatus.IDLE) {
+      if (!statusInfo.online || !isAllocatableStatus(statusInfo.status)) {
         log.debug(
           `[ALLOCATION]${ctxLabel} Refusing to allocate match ${match.slug} to server ${server.id} (${server.name}) because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
         );
@@ -726,6 +727,10 @@ export class MatchAllocationService {
           `[ALLOCATION]${ctxLabel} Failed to roll back server_id for match ${match.slug} after load failure`,
           rollbackError
         );
+      }
+      // The match may go to another server next; do not let this one load it later.
+      if (loadResult.mayHaveQueued) {
+        await cancelQueuedLoad(server.id, match.slug);
       }
 
       const errorMessage = loadResult.error || 'Failed to load match';
@@ -1118,6 +1123,10 @@ export class MatchAllocationService {
       } else {
         // Rollback server_id if loading failed
         await db.updateAsync('matches', { server_id: null }, 'slug = ?', [matchSlug]);
+        // The match may go to another server next; do not let this one load it later.
+        if (loadResult.mayHaveQueued) {
+          await cancelQueuedLoad(server.id, matchSlug);
+        }
         return {
           success: false,
           serverId: server.id,

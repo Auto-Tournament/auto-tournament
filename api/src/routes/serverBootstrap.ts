@@ -63,7 +63,7 @@ router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Resp
       'matchzy_clear_event_queue',
       // Ensure server_id is set (even if the controller sets it separately via RCON).
       `matchzy_server_id "${serverId}"`,
-      ...getMatchZyWebhookCommands(baseUrl, serverToken, null),
+      ...getMatchZyWebhookCommands(baseUrl, serverToken, null, serverId),
       ...getMatchZyLoadMatchAuthCommands(serverToken),
       ...getMatchZyCoreSettingsCommands({
         chatPrefix,

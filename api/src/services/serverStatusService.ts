@@ -1,6 +1,7 @@
 import { rconService } from './rconService';
 import { serverService } from './serverService';
 import { log } from '../utils/logger';
+import { parseConVarReply } from '../utils/matchzyServerReplies';
 
 /**
  * Server Status Values
@@ -105,24 +106,27 @@ export class ServerStatusService {
         };
       }
 
-      // Parse the response - ConVar commands return: "varname" = "value"
-      const statusMatch = statusResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
-      const status = statusMatch ? (statusMatch[2] as ServerStatus) : ServerStatus.IDLE;
+      // The plugin's convars are CounterStrikeSharp FakeConVars, which answer
+      // `name = value` without quotes. Only the quoted Source 1 form used to be
+      // parsed, so every server read as idle - including one still in postgame,
+      // which is how a match was loaded onto a server that queued it for later.
+      const rawStatus = parseConVarReply(statusResult.response, this.STATUS_VAR);
+      const status = rawStatus ? (rawStatus.toLowerCase() as ServerStatus) : ServerStatus.IDLE;
 
       // Get current match slug
       const slugResult = await rconService.sendCommand(serverId, this.MATCH_SLUG_VAR);
-      const slugMatch = slugResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
-      const matchSlug = slugMatch && slugMatch[2] ? slugMatch[2] : null;
+      const matchSlug = parseConVarReply(slugResult.response, this.MATCH_SLUG_VAR) || null;
 
       // Get queued next match slug (if any)
       const nextResult = await rconService.sendCommand(serverId, this.NEXT_MATCH_VAR);
-      const nextMatch = nextResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
-      const nextMatchSlug = nextMatch && nextMatch[2] ? nextMatch[2] : null;
+      const nextMatchSlug = parseConVarReply(nextResult.response, this.NEXT_MATCH_VAR) || null;
 
       // Get update timestamp
       const timeResult = await rconService.sendCommand(serverId, this.UPDATE_TIME_VAR);
-      const timeMatch = timeResult.response?.match(/"([^"]+)"\s*=\s*"([^"]*)"/);
-      const updatedAt = timeMatch && timeMatch[2] ? parseInt(timeMatch[2], 10) : null;
+      const rawUpdated = parseConVarReply(timeResult.response, this.UPDATE_TIME_VAR);
+      const parsedUpdated = rawUpdated ? parseInt(rawUpdated, 10) : NaN;
+      // The plugin's default is "0" - never updated - which is not a timestamp.
+      const updatedAt = Number.isFinite(parsedUpdated) && parsedUpdated > 0 ? parsedUpdated : null;
 
       const result = {
         status,
@@ -264,6 +268,19 @@ export function primeServerStatusForTests(
     updatedAt: entry.updatedAt ?? null,
     online: entry.online ?? true,
   });
+}
+
+/**
+ * Can MAT send a new match to a server reporting this status?
+ *
+ * Idle, obviously. 'error' too: MatchZy sets it when a load or queued load
+ * fails and leaves it there until the next load, usually with no match set up.
+ * Blocking on it would strand the server. If a match is in fact still set up,
+ * the plugin refuses the load and MAT reports that. Every other state has a
+ * match on the server (postgame and queued included) and stays busy.
+ */
+export function isAllocatableStatus(status: ServerStatus | string | null | undefined): boolean {
+  return status === ServerStatus.IDLE || status === ServerStatus.ERROR;
 }
 
 export const serverStatusService = new ServerStatusService();
