@@ -42,3 +42,24 @@ export function determineInitialMatchStatus(
   return 'pending';
 }
 
+/**
+ * Whether a match was actually finished through a series result.
+ *
+ * `status = 'completed'` alone is not proof. Every real completion path in the
+ * event handler (decisive, drawn and manual series_end, plus the map_result
+ * paths that synthesize one) also stamps `completed_at`, and a decisive one
+ * sets `winner_id`. A row that says completed with neither was flipped by
+ * something that skipped that path — the plugin-phase reconciler used to do it
+ * on `postgame`, which the plugin also reports between maps of a series — so
+ * later events for that match must still be let through.
+ */
+export function isMatchFinalized(match: {
+  status?: string | null;
+  winner_id?: string | null;
+  completed_at?: number | string | null;
+}): boolean {
+  if (match.status !== 'completed') return false;
+  if (match.winner_id) return true;
+  return match.completed_at !== null && match.completed_at !== undefined;
+}
+

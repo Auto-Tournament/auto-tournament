@@ -30,6 +30,7 @@ import { matchAllocationService } from './matchAllocationService';
 import { settingsService } from './settingsService';
 import { serverAllocationTracker } from './serverAllocationTracker';
 import type { Player } from '../types/team.types';
+import { isMatchFinalized } from '../utils/matchStatusHelpers';
 
 /**
  * Main event handler - routes events to specific handlers
@@ -66,15 +67,24 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       break;
 
-    case 'map_result':
+    case 'map_result': {
+      // MatchZy sends the teams nested: team1: { name, score, series_score },
+      // winner: { side, team }. The flat team1_name / team1_score fields this
+      // used to read don't exist, so the line logged "undefined undefined-undefined".
+      const t1 = (eventData.team1 ?? {}) as { name?: string; score?: number; series_score?: number };
+      const t2 = (eventData.team2 ?? {}) as { name?: string; score?: number; series_score?: number };
       log.success(
-        `Map ${eventData.map_number} result: ${eventData.team1_name} ${eventData.team1_score}-${eventData.team2_score} ${eventData.team2_name}`,
+        `Map ${eventData.map_number} result: ${t1.name ?? eventData.team1_name ?? 'team1'} ${
+          t1.score ?? eventData.team1_score ?? '?'
+        }-${t2.score ?? eventData.team2_score ?? '?'} ${t2.name ?? eventData.team2_name ?? 'team2'}`,
         {
           matchId: event.matchid,
           map: eventData.map_name,
-          winner: (eventData.winner as { name?: string })?.name,
+          winner: (eventData.winner as { team?: string })?.team,
+          series: `${t1.series_score ?? '?'}-${t2.series_score ?? '?'}`,
         }
       );
+    }
       {
         const match = await resolveMatch(event.matchid);
         if (match) {
@@ -101,11 +111,7 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         // finalized. Some MatchZy setups can emit stray lifecycle events after
         // series_end / restore, and we never want to resurrect a completed
         // match back into the LIVE state.
-        if (liveMatch.status === 'completed') {
-          log.warn(`Ignoring going_live for already completed match`, {
-            matchId: event.matchid,
-            slug: liveMatch.slug,
-          });
+        if (!shouldAcceptPlayEvent(liveMatch, 'going_live', event.matchid)) {
           break;
         }
         await updateMatchStatus(liveMatch, 'live');
@@ -248,11 +254,7 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       });
       const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
-        if (match.status === 'completed') {
-          log.warn(`Ignoring round_started for already completed match`, {
-            matchId: event.matchid,
-            slug: match.slug,
-          });
+        if (!shouldAcceptPlayEvent(match, 'round_started', event.matchid)) {
           break;
         }
         // Some MatchZy setups are flaky about emitting the "going_live" event,
@@ -341,6 +343,36 @@ async function resolveMatch(identifier: string | number): Promise<DbMatchRow | n
     (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ??
     null
   );
+}
+
+/**
+ * Gate for events that mean "a map is being played" (going_live, round_started),
+ * which would otherwise move the match back to live.
+ *
+ * A finalized match (see isMatchFinalized) ignores them: some MatchZy setups
+ * emit stray lifecycle events after series_end / restore, and a finished match
+ * must never be resurrected. A match that only *says* completed — no winner,
+ * no completed_at — was flipped without a series result, so play events for it
+ * are accepted and the rest of the series is tracked.
+ */
+function shouldAcceptPlayEvent(
+  match: DbMatchRow,
+  eventName: string,
+  matchId: string | number
+): boolean {
+  if (match.status !== 'completed') return true;
+  if (isMatchFinalized(match)) {
+    log.warn(`Ignoring ${eventName} for already completed match`, {
+      matchId,
+      slug: match.slug,
+    });
+    return false;
+  }
+  log.warn(`Re-opening match marked completed without a series result (${eventName})`, {
+    matchId,
+    slug: match.slug,
+  });
+  return true;
 }
 
 async function updateMatchStatus(match: DbMatchRow, status: DbMatchRow['status']): Promise<void> {
