@@ -60,12 +60,22 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
-  const { status: matchStatus, label: matchStatusLabel, loading: matchStatusLoading } =
-    useCurrentMatchStatus(playerSteamId ?? null);
+  const {
+    status: matchStatus,
+    label: matchStatusLabel,
+    loading: matchStatusLoading,
+    viewerTeam,
+    vetoActionCount,
+    lastVetoActionTeam,
+  } = useCurrentMatchStatus(playerSteamId ?? null);
   const { showSnackbar } = useSnackbar();
 
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const prevMatchRef = React.useRef<{ status: string; label: string | null } | null>(null);
+  const prevMatchRef = React.useRef<{
+    status: string;
+    label: string | null;
+    vetoActionCount: number | null;
+  } | null>(null);
   const [playerAvatarUrl, setPlayerAvatarUrl] = React.useState<string | undefined>(undefined);
   const [playerName, setPlayerName] = React.useState<string>('Player');
   const [isLoadingPlayer, setIsLoadingPlayer] = React.useState(false);
@@ -143,12 +153,24 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     }
     if (matchStatusLoading) return;
     const prev = prevMatchRef.current;
-    const now = { status: matchStatus, label: matchStatusLabel };
-    if (prev && (prev.status !== now.status || prev.label !== now.label)) {
+    const now = { status: matchStatus, label: matchStatusLabel, vetoActionCount };
+    // A new veto action landed since the last status we saw. Only credit the
+    // opponent when the latest action was actually made by the other team —
+    // after the viewer's own ban/pick/side pick the label also flips to
+    // "waiting", which previously produced a bogus "opponent moved" toast.
+    const newVetoAction =
+      prev !== null &&
+      typeof prev.vetoActionCount === 'number' &&
+      typeof now.vetoActionCount === 'number' &&
+      now.vetoActionCount > prev.vetoActionCount;
+    const opponentActed =
+      newVetoAction && !!viewerTeam && !!lastVetoActionTeam && lastVetoActionTeam !== viewerTeam;
+    const labelChanged = !!prev && (prev.status !== now.status || prev.label !== now.label);
+    if (prev && (labelChanged || (opponentActed && now.label === 'waiting_veto'))) {
       const msg =
         now.label === 'your_turn_veto'
           ? t('nav.matchStatus.yourTurnVeto')
-          : now.label === 'waiting_veto' && prev.label === 'your_turn_veto'
+          : now.label === 'waiting_veto' && opponentActed
             ? t('nav.matchStatus.snackbarOpponentMoved')
             : now.label === 'waiting_veto'
               ? t('nav.matchStatus.waitingVeto')
@@ -162,7 +184,17 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
       }
     }
     prevMatchRef.current = now;
-  }, [playerSteamId, matchStatusLoading, matchStatus, matchStatusLabel, showSnackbar, t]);
+  }, [
+    playerSteamId,
+    matchStatusLoading,
+    matchStatus,
+    matchStatusLabel,
+    vetoActionCount,
+    viewerTeam,
+    lastVetoActionTeam,
+    showSnackbar,
+    t,
+  ]);
 
   const ctaLabels: Record<string, string> = {
     your_turn_veto: t('nav.matchStatus.yourTurnVeto'),

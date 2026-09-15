@@ -251,6 +251,18 @@
     "historyStep": "Krok {{step}}:",
     "startingSide": "Start {{side}}",
     "otherTeam": "drugi zespół",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "WYBÓR STRONY"
+    },
+    "mapBadge": "MAPA {{n}}",
+    "mapCardAria": {
+      "ban": "Zbanuj {{map}}",
+      "pick": "Wybierz {{map}}",
+      "banned": "{{map}} (zbanowana)",
+      "picked": "{{map}} (wybrana)"
+    },
     "errors": {
       "failedToLoadVetoState": "Nie można załadować stanu veto",
       "failedToProcessVetoAction": "Nie można przetworzyć akcji veto",

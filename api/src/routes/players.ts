@@ -474,7 +474,11 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
     }
 
     const vetoState = match.veto_state
-      ? (JSON.parse(match.veto_state) as { status?: string; currentTurn?: string })
+      ? (JSON.parse(match.veto_state) as {
+          status?: string;
+          currentTurn?: string;
+          actions?: Array<{ team?: string }>;
+        })
       : null;
     const vetoCompleted = vetoState?.status === 'completed';
 
@@ -498,11 +502,18 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       const myTurn =
         currentTurn &&
         ((currentTurn === 'team1' && isTeam1) || (currentTurn === 'team2' && !isTeam1));
+      // Who made the most recent veto move, so the navbar can tell "the
+      // opponent made their choice" apart from the viewer's own action.
+      const vetoActions = Array.isArray(vetoState?.actions) ? vetoState.actions : [];
+      const lastTeam = vetoActions[vetoActions.length - 1]?.team;
       return res.json({
         success: true,
         status: myTurn ? 'your_turn_veto' : 'waiting_veto',
         matchSlug: match.slug,
         label: myTurn ? 'your_turn_veto' : 'waiting_veto',
+        viewerTeam: isTeam1 ? 'team1' : 'team2',
+        vetoActionCount: vetoActions.length,
+        lastVetoActionTeam: lastTeam === 'team1' || lastTeam === 'team2' ? lastTeam : null,
       });
     }
 

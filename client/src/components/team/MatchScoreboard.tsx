@@ -1,5 +1,5 @@
 import { Stack, Typography, Chip, Paper, Box } from '@mui/material';
-import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
+import { useTranslation } from 'react-i18next';
 
 interface MatchScoreboardProps {
   leftName?: string | null;
@@ -35,6 +35,8 @@ export function MatchScoreboard({
   hideSeriesWins,
   hideMapRounds,
 }: MatchScoreboardProps) {
+  const { t } = useTranslation();
+
   return (
     <Paper
       variant="outlined"
@@ -50,7 +52,7 @@ export function MatchScoreboard({
           </Typography>
           {typeof leftTeamElo === 'number' && Number.isFinite(leftTeamElo) && (
             <Typography variant="body2" color="text.secondary">
-              ELO (avg): {leftTeamElo}
+              {t('matchInfo.scoreboard.eloAvg', { elo: leftTeamElo })}
             </Typography>
           )}
           {!hideSeriesWins && (
@@ -59,7 +61,7 @@ export function MatchScoreboard({
                 {leftSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {SERIES_SCORE_LABEL}
+                {t('matchInfo.scoreboard.mapsWon')}
               </Typography>
             </>
           )}
@@ -69,14 +71,14 @@ export function MatchScoreboard({
                 {leftMapRounds}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {CURRENT_MAP_SCORE_LABEL}
+                {t('matchInfo.scoreboard.currentMapScore')}
               </Typography>
             </>
           )}
         </Stack>
         <Stack spacing={1} alignItems="center" mx={3}>
           <Typography variant="h3" color="text.secondary" fontWeight={700}>
-            VS
+            {t('matchInfo.scoreboard.vs')}
           </Typography>
           {liveStatusDisplay && (
             <Chip
@@ -89,11 +91,11 @@ export function MatchScoreboard({
         </Stack>
         <Stack spacing={1} alignItems="center" flex={1}>
           <Typography variant="h4" fontWeight={700} color="error.main" align="center">
-            {rightName || 'TBD'}
+            {rightName || t('matchInfo.scoreboard.tbd')}
           </Typography>
           {typeof rightTeamElo === 'number' && Number.isFinite(rightTeamElo) && (
             <Typography variant="body2" color="text.secondary">
-              ELO (avg): {rightTeamElo}
+              {t('matchInfo.scoreboard.eloAvg', { elo: rightTeamElo })}
             </Typography>
           )}
           {!hideSeriesWins && (
@@ -102,7 +104,7 @@ export function MatchScoreboard({
                 {rightSeriesWins}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {SERIES_SCORE_LABEL}
+                {t('matchInfo.scoreboard.mapsWon')}
               </Typography>
             </>
           )}
@@ -112,7 +114,7 @@ export function MatchScoreboard({
                 {rightMapRounds}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {CURRENT_MAP_SCORE_LABEL}
+                {t('matchInfo.scoreboard.currentMapScore')}
               </Typography>
             </>
           )}

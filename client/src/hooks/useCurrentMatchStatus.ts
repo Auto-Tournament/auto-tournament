@@ -13,6 +13,12 @@ interface MatchStatusResult {
   status: MatchStatusValue;
   matchSlug: string | null;
   label: string | null;
+  /** Which side of the current match the viewer is on (veto phase only). */
+  viewerTeam: 'team1' | 'team2' | null;
+  /** Number of veto actions taken so far (veto phase only). */
+  vetoActionCount: number | null;
+  /** Team that made the most recent veto action (veto phase only). */
+  lastVetoActionTeam: 'team1' | 'team2' | null;
   loading: boolean;
   refetch: () => void;
 }
@@ -25,6 +31,9 @@ export function useCurrentMatchStatus(
   const [status, setStatus] = useState<MatchStatusValue>('none');
   const [matchSlug, setMatchSlug] = useState<string | null>(null);
   const [label, setLabel] = useState<string | null>(null);
+  const [viewerTeam, setViewerTeam] = useState<'team1' | 'team2' | null>(null);
+  const [vetoActionCount, setVetoActionCount] = useState<number | null>(null);
+  const [lastVetoActionTeam, setLastVetoActionTeam] = useState<'team1' | 'team2' | null>(null);
   const [loading, setLoading] = useState(false);
   const socketRef = useRef<Socket | null>(null);
   const refreshTimerRef = useRef<number | null>(null);
@@ -34,6 +43,9 @@ export function useCurrentMatchStatus(
       setStatus('none');
       setMatchSlug(null);
       setLabel(null);
+      setViewerTeam(null);
+      setVetoActionCount(null);
+      setLastVetoActionTeam(null);
       return;
     }
 
@@ -46,17 +58,26 @@ export function useCurrentMatchStatus(
         status?: MatchStatusValue;
         matchSlug?: string | null;
         label?: string | null;
+        viewerTeam?: 'team1' | 'team2' | null;
+        vetoActionCount?: number | null;
+        lastVetoActionTeam?: 'team1' | 'team2' | null;
       }>('/api/players/me/match-status');
 
       if (res?.success) {
         setStatus((res.status as MatchStatusValue) ?? 'none');
         setMatchSlug(res.matchSlug ?? null);
         setLabel(res.label ?? null);
+        setViewerTeam(res.viewerTeam ?? null);
+        setVetoActionCount(typeof res.vetoActionCount === 'number' ? res.vetoActionCount : null);
+        setLastVetoActionTeam(res.lastVetoActionTeam ?? null);
       }
     } catch {
       setStatus('none');
       setMatchSlug(null);
       setLabel(null);
+      setViewerTeam(null);
+      setVetoActionCount(null);
+      setLastVetoActionTeam(null);
     } finally {
       if (!options?.silent) {
         setLoading(false);
@@ -117,6 +138,9 @@ export function useCurrentMatchStatus(
     status,
     matchSlug,
     label,
+    viewerTeam,
+    vetoActionCount,
+    lastVetoActionTeam,
     loading,
     refetch: () => fetchStatus(),
   };

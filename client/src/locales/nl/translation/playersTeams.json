@@ -251,6 +251,18 @@
     "historyStep": "Stap {{step}}:",
     "startingSide": "Start {{side}}",
     "otherTeam": "het andere team",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "ZIJDEKEUZE"
+    },
+    "mapBadge": "MAP {{n}}",
+    "mapCardAria": {
+      "ban": "{{map}} bannen",
+      "pick": "{{map}} kiezen",
+      "banned": "{{map}} (gebannd)",
+      "picked": "{{map}} (gekozen)"
+    },
     "errors": {
       "failedToLoadVetoState": "Kan veto-status niet laden",
       "failedToProcessVetoAction": "Kan veto-actie niet verwerken",

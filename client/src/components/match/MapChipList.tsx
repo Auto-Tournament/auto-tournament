@@ -1,4 +1,5 @@
 import { Box, Chip } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { MatchMapResult } from '../../types';
 import { getMapDisplayName } from '../../constants/maps';
 
@@ -15,6 +16,7 @@ export function MapChipList({
   activeMapLabel,
   mapResults,
 }: MapChipListProps) {
+  const { t } = useTranslation();
   return (
     <Box display="flex" flexWrap="wrap" gap={1} alignItems="center">
       {maps.map((map, idx) => {
@@ -28,7 +30,7 @@ export function MapChipList({
           chipLabel = `${labelBase} • ${result.team1Score}-${result.team2Score}`;
           chipColor = result.team1Score > result.team2Score ? 'success' : 'error';
         } else if (activeMapIndex === idx && activeMapLabel) {
-          chipLabel = `${labelBase} • Live`;
+          chipLabel = `${labelBase} • ${t('matchInfo.mapChips.live')}`;
           chipColor = 'secondary';
         }
 
