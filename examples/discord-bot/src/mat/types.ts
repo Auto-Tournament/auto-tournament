@@ -43,8 +43,18 @@ export interface Match {
   team1?: TeamRef;
   team2?: TeamRef;
   winner?: TeamRef;
+  /**
+   * Headline score: maps won once completed, the current map's rounds while
+   * the match is in progress. Prefer the explicit fields below.
+   */
   team1Score?: number;
   team2Score?: number;
+  /** Maps won in the series. */
+  team1SeriesScore?: number;
+  team2SeriesScore?: number;
+  /** Rounds on the map being played; null when the match is not in progress. */
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
   currentMap?: string;
   mapNumber?: number;
   serverName?: string;
@@ -65,6 +75,24 @@ export interface MatchConfig {
  * get a `team1` object, manual matches only ever have the name in the MatchZy
  * config. Reading just the first gives "TBD" for every manual match.
  */
+/**
+ * "maps (rounds)" for one match, e.g. "1 – 0 (7 – 3)" mid-series, "2 – 1" once
+ * finished. Socket pushes can be partial, so fall back to the headline score.
+ */
+export function scoreText(match: Match): string {
+  const series1 = match.team1SeriesScore ?? (match.status === 'completed' ? match.team1Score : undefined);
+  const series2 = match.team2SeriesScore ?? (match.status === 'completed' ? match.team2Score : undefined);
+  if (match.status === 'completed') {
+    return `${series1 ?? 0} – ${series2 ?? 0}`;
+  }
+  const map1 = match.team1MapScore ?? match.team1Score;
+  const map2 = match.team2MapScore ?? match.team2Score;
+  const seriesPart = `${series1 ?? 0} – ${series2 ?? 0}`;
+  return typeof map1 === 'number' && typeof map2 === 'number'
+    ? `${seriesPart} (${map1} – ${map2})`
+    : seriesPart;
+}
+
 export function teamName(match: Match, side: 'team1' | 'team2'): string {
   return match[side]?.name ?? match.config?.[side]?.name ?? 'TBD';
 }

@@ -2,7 +2,8 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
-import { enrichMatch } from '../utils/matchEnrichment';
+import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
+import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
@@ -70,7 +71,72 @@ class TournamentService {
       started_at: tournament.started_at,
       completed_at: tournament.completed_at,
       teams,
+      winner:
+        tournament.status === 'completed'
+          ? await this.getTournamentWinner(tournament.type, teams)
+          : null,
     };
+  }
+
+  /**
+   * Champion of a completed tournament.
+   *
+   * - Single/double elimination: winner of the final (the grand final `gf`
+   *   when present, otherwise the last winners-bracket round, skipping a
+   *   third-place match fed by losers).
+   * - Round robin / swiss: the team with the most match wins; null when the
+   *   top spot is shared, since no tiebreak data is stored.
+   * - Shuffle: null (players, not teams, are ranked on the leaderboard).
+   */
+  async getTournamentWinner(
+    type: string,
+    teams: Array<{ id: string; name: string; tag?: string }>
+  ): Promise<{ id: string; name: string; tag?: string } | null> {
+    if (type === 'shuffle') return null;
+
+    const rows = await db.queryAsync<DbMatchRow>(
+      'SELECT id, slug, round, match_number, status, team1_id, team2_id, winner_id, team1_from_outcome, team2_from_outcome FROM matches WHERE tournament_id = 1 AND round >= 1'
+    );
+    if (rows.length === 0) return null;
+
+    const teamById = new Map(teams.map((t) => [t.id, t]));
+    const resolveTeam = async (teamId: string | null | undefined) => {
+      if (!teamId) return null;
+      const known = teamById.get(teamId);
+      if (known) return known;
+      const row = await db.queryOneAsync<DbTeamRow>('SELECT id, name, tag FROM teams WHERE id = ?', [
+        teamId,
+      ]);
+      return row ? { id: row.id, name: row.name, tag: row.tag || undefined } : null;
+    };
+
+    if (type === 'single_elimination' || type === 'double_elimination') {
+      const grandFinal = rows.find((r) => r.slug === 'gf');
+      let final: DbMatchRow | undefined = grandFinal;
+      if (!final) {
+        const winnersBracket = rows.filter((r) => !r.slug.startsWith('lb-'));
+        const maxRound = Math.max(...winnersBracket.map((r) => r.round));
+        const candidates = winnersBracket
+          .filter((r) => r.round === maxRound)
+          .filter((r) => r.team1_from_outcome !== 'loser' && r.team2_from_outcome !== 'loser')
+          .sort((a, b) => a.match_number - b.match_number);
+        final = candidates[0];
+      }
+      if (!final || final.status !== 'completed') return null;
+      return resolveTeam(final.winner_id);
+    }
+
+    // Round robin / swiss: most match wins, no winner on a shared top spot.
+    const wins = new Map<string, number>();
+    for (const r of rows) {
+      if (r.status === 'completed' && r.winner_id) {
+        wins.set(r.winner_id, (wins.get(r.winner_id) ?? 0) + 1);
+      }
+    }
+    const ranked = [...wins.entries()].sort((a, b) => b[1] - a[1]);
+    if (ranked.length === 0) return null;
+    if (ranked.length > 1 && ranked[0][1] === ranked[1][1]) return null;
+    return resolveTeam(ranked[0][0]);
   }
 
   /**
@@ -571,36 +637,18 @@ class TournamentService {
       // Enrich match with player stats and scores from persisted events
       await enrichMatch(match, row.slug);
 
-      // For matches that are still in progress, optionally overlay in‑memory live
-      // stats so the bracket reflects the most recent score. For multi‑map
-      // series we prefer the live **series** score when it is positive
-      // (e.g. 1–0 in a BO3). For BO1 / early maps where seriesScore is still 0,
-      // we instead surface the current **map rounds** (e.g. 8–5) so the UI
-      // doesn't get stuck showing 0–0 until the final result is known.
-      //
-      // For completed matches we ALWAYS trust persisted results and DO NOT let
-      // transient live stats overwrite the final series score (e.g. 2–1).
-      if (row.status !== 'completed') {
-        const liveStats = matchLiveStatsService.getStats(row.slug);
-        if (liveStats) {
-          // Prefer positive series scores; otherwise fall back to current map rounds.
-          const liveTeam1 =
-            typeof liveStats.team1SeriesScore === 'number' && liveStats.team1SeriesScore > 0
-              ? liveStats.team1SeriesScore
-              : liveStats.team1Score;
-          const liveTeam2 =
-            typeof liveStats.team2SeriesScore === 'number' && liveStats.team2SeriesScore > 0
-              ? liveStats.team2SeriesScore
-              : liveStats.team2Score;
-
-          if (typeof liveTeam1 === 'number' && Number.isFinite(liveTeam1)) {
-            match.team1Score = liveTeam1;
-          }
-          if (typeof liveTeam2 === 'number' && Number.isFinite(liveTeam2)) {
-            match.team2Score = liveTeam2;
-          }
-        }
+      // Normalise score fields (series = maps won, map score = current map
+      // rounds, headline team1Score/team2Score). Completed matches keep their
+      // persisted series result; live stats are only consulted in progress.
+      const mapResults = await getMapResults(row.slug);
+      if (mapResults.length > 0) {
+        match.mapResults = mapResults;
       }
+      applyScoreFields(match, {
+        status: row.status,
+        mapResults,
+        liveStats: row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null,
+      });
 
       matches.push(match);
     }

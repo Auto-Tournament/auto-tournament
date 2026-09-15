@@ -12,7 +12,7 @@ import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
-import { enrichMatch } from '../utils/matchEnrichment';
+import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { teamService } from '../services/teamService';
@@ -304,6 +304,11 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
 
   // Enrich match with player stats and scores from events
   await enrichMatch(match, row.slug);
+  applyScoreFields(match, {
+    status: row.status,
+    mapResults,
+    liveStats: row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null,
+  });
 
   // For shuffle tournaments, enrich players with ELO
   if (
@@ -933,6 +938,14 @@ router.get('/', async (req: Request, res: Response) => {
         // Enrich match with player stats and scores from persisted events
         await enrichMatch(match, row.slug);
 
+        // Normalise score fields: series (maps won), current map rounds, and the
+        // headline team1Score/team2Score. See applyScoreFields for semantics.
+        applyScoreFields(match, {
+          status: row.status,
+          mapResults,
+          liveStats: row.status !== 'completed' ? matchLiveStatsService.getStats(row.slug) : null,
+        });
+
         // For COMPLETED matches, if we still don't have any non‑zero score, fall
         // back to the final map result so the admin never sees "0‑0" after a
         // full game has been played (especially for BO1/manual matches).
@@ -945,32 +958,6 @@ router.get('/', async (req: Request, res: Response) => {
           const lastResult = mapResults[mapResults.length - 1];
           match.team1Score = lastResult.team1Score;
           match.team2Score = lastResult.team2Score;
-        }
-
-        // For matches that are still in progress, optionally overlay in‑memory
-        // live stats so the admin "Matches" page reflects the most recent
-        // score. As with the bracket view, prefer a positive series score when
-        // available (e.g. 1‑0 in a BO3); otherwise fall back to current map
-        // rounds (e.g. 8‑5) so we don't show 0‑0 while rounds are being played.
-        if (row.status !== 'completed') {
-          const liveStats = matchLiveStatsService.getStats(row.slug);
-          if (liveStats) {
-            const liveTeam1 =
-              typeof liveStats.team1SeriesScore === 'number' && liveStats.team1SeriesScore > 0
-                ? liveStats.team1SeriesScore
-                : liveStats.team1Score;
-            const liveTeam2 =
-              typeof liveStats.team2SeriesScore === 'number' && liveStats.team2SeriesScore > 0
-                ? liveStats.team2SeriesScore
-                : liveStats.team2Score;
-
-            if (typeof liveTeam1 === 'number' && Number.isFinite(liveTeam1)) {
-              match.team1Score = liveTeam1;
-            }
-            if (typeof liveTeam2 === 'number' && Number.isFinite(liveTeam2)) {
-              match.team2Score = liveTeam2;
-            }
-          }
         }
 
         // For shuffle tournaments, enrich players with ELO

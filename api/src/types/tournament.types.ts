@@ -151,8 +151,23 @@ export interface BracketMatch {
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
+  /** Headline score: maps won when completed, current map rounds while in progress. */
   team1Score?: number;
   team2Score?: number;
+  /** Maps won in the series. */
+  team1SeriesScore?: number;
+  team2SeriesScore?: number;
+  /** Rounds on the map being played (null when not in progress, 0-0 during warmup). */
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
+  mapResults?: Array<{
+    mapNumber: number;
+    mapName?: string | null;
+    team1Score: number;
+    team2Score: number;
+    winnerTeam: 'team1' | 'team2' | 'none' | null;
+    completedAt: number;
+  }>;
   team1Players?: Array<{
     name: string;
     steamId: string;
@@ -195,6 +210,11 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
+  /**
+   * Champion once the tournament is completed (null otherwise, for shuffle
+   * tournaments, and for round robin / swiss when the top spot is shared).
+   */
+  winner?: { id: string; name: string; tag?: string } | null;
 }
 
 export interface BracketResponse {
