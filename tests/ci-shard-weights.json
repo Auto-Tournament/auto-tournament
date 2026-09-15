@@ -19,6 +19,7 @@
   "tests/api/player-discord-id.spec.ts": 2.1,
   "tests/api/player-page-permissions.spec.ts": 1.1,
   "tests/api/players.spec.ts": 7.2,
+  "tests/api/postgame-between-maps.spec.ts": 5.4,
   "tests/api/public-pages.spec.ts": 3.3,
   "tests/api/rcon-restart-outcome.spec.ts": 0.5,
   "tests/api/resilience.spec.ts": 20.3,

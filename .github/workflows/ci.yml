@@ -206,8 +206,9 @@ jobs:
         with:
           node-version-file: .nvmrc
 
-      # node_modules (root + workspaces) keyed on the lockfile. On a hit the
-      # install is skipped entirely.
+      # node_modules (root + workspaces) keyed on the lockfile only: every
+      # release bumps "version" in the package.json files, which changes no
+      # dependency. On a hit the install is skipped entirely.
       - name: Cache node_modules
         id: nm-cache
         uses: actions/cache@v4
@@ -216,7 +217,7 @@ jobs:
             node_modules
             api/node_modules
             client/node_modules
-          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock', 'package.json', 'api/package.json', 'client/package.json') }}
+          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         if: steps.nm-cache.outputs.cache-hit != 'true'
@@ -343,7 +344,7 @@ jobs:
             node_modules
             api/node_modules
             client/node_modules
-          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock', 'package.json', 'api/package.json', 'client/package.json') }}
+          key: nm-${{ runner.os }}-node${{ hashFiles('.nvmrc') }}-${{ hashFiles('yarn.lock') }}
 
       - name: Install dependencies
         if: steps.nm-cache.outputs.cache-hit != 'true'
