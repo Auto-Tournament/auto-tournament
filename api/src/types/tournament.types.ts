@@ -122,7 +122,12 @@ export interface UpdateTournamentInput {
   settings?: Partial<TournamentSettings>;
   maxRounds?: number;
   overtimeMode?: 'enabled' | 'disabled';
-  overtimeSegments?: number;
+  /**
+   * null clears the setting back to the MatchZy default (unlimited overtime,
+   * or draws allowed when overtime is disabled). 0 with overtimeMode
+   * 'disabled' means "no overtime, no draws" (damage tiebreak).
+   */
+  overtimeSegments?: number | null;
 }
 
 export interface BracketMatch {

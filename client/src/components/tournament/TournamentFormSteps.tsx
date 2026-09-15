@@ -27,6 +27,8 @@ import { MapPoolStep } from './MapPoolStep';
 import { TeamSelectionStep } from './TeamSelectionStep';
 import {
   ShuffleTournamentConfigStep,
+  deriveOvertimeOption,
+  type OvertimeOption,
   type ShuffleTournamentSettings,
 } from './ShuffleTournamentConfigStep';
 import { TournamentFormActions } from './TournamentFormActions';
@@ -235,6 +237,27 @@ export function TournamentFormSteps({
     prevTypeRef.current = type;
   }, [type, maps.length, onMapsChange]);
 
+  // Overtime is configured through three meaningful options; the API keeps the
+  // (overtimeMode, overtimeSegments) pair, see deriveOvertimeOption.
+  const overtimeOption = deriveOvertimeOption(overtimeMode, overtimeSegments);
+  const shuffleOvertimeOption = deriveOvertimeOption(
+    shuffleSettings?.overtimeMode,
+    shuffleSettings?.overtimeSegments
+  );
+
+  const handleOvertimeOptionChange = (option: OvertimeOption) => {
+    if (option === 'enabled') {
+      onOvertimeModeChange?.('enabled');
+      // 0 segments only means something together with "disabled".
+      if (overtimeSegments === 0) {
+        onOvertimeSegmentsChange?.(null);
+      }
+      return;
+    }
+    onOvertimeModeChange?.('disabled');
+    onOvertimeSegmentsChange?.(option === 'disabledNoDraws' ? 0 : null);
+  };
+
   const handleMapPoolChange = (poolId: string) => {
     setSelectedMapPool(poolId);
     if (poolId === 'custom') {
@@ -323,13 +346,15 @@ export function TournamentFormSteps({
   const getValidationMessage = () => {
     switch (activeStep) {
       case 0:
-        return canProceedFromStep0 ? null : 'Tournament name is required';
+        return canProceedFromStep0 ? null : t('tournament.toasts.nameRequired');
       case 1:
-        return canProceedFromStep1 ? null : 'Please select a tournament type';
+        return canProceedFromStep1 ? null : t('tournament.wizard.validation.selectType');
       case 2:
-        return canProceedFromStep2 ? null : 'Please select a match format';
+        return canProceedFromStep2 ? null : t('tournament.wizard.validation.selectFormat');
       case 3:
-        return isValidMaps ? null : mapValidation.message || 'Invalid map selection';
+        return isValidMaps
+          ? null
+          : mapValidation.message || t('tournament.toasts.invalidMapSelection');
       case 4:
         // No validation needed for step 4 (players registered after creation)
         return null;
@@ -444,15 +469,12 @@ export function TournamentFormSteps({
           const volume = getMatchVolumeEstimate();
           return (
             <Stack spacing={3}>
-              <Alert severity="info">
-                Shuffle tournaments don&apos;t use fixed teams. Players will be automatically
-                balanced into teams for each match based on their Skill Ratings.
-              </Alert>
+              <Alert severity="info">{t('tournament.wizard.shuffleInfo')}</Alert>
               {volume && (
                 <Alert severity="info">
-                  This shuffle tournament will have approximately{' '}
-                  <strong>{volume.totalRounds}</strong> round{volume.totalRounds === 1 ? '' : 's'}{' '}
-                  (one per selected map).
+                  {t('tournament.wizard.shuffleRounds', {
+                    rounds: t('tournament.counts.rounds', { count: volume.totalRounds }),
+                  })}
                 </Alert>
               )}
               {shuffleSettings && onShuffleSettingsChange && (
@@ -472,23 +494,23 @@ export function TournamentFormSteps({
           <Stack spacing={2}>
             {volume && (
               <Alert severity="info">
-                With <strong>{selectedTeams.length}</strong> team
-                {selectedTeams.length === 1 ? '' : 's'} in a{' '}
-                <strong>{type.replace('_', ' ')}</strong> {format.toUpperCase()} tournament, this
-                bracket will have approximately <strong>{volume.totalMatches}</strong> match
-                {volume.totalMatches === 1 ? '' : 'es'} across <strong>{volume.totalRounds}</strong>{' '}
-                round
-                {volume.totalRounds === 1 ? '' : 's'} (up to <strong>{volume.totalMaps}</strong> map
-                {volume.totalMaps === 1 ? '' : 's'} total).
+                {t('tournament.wizard.volumeAlert', {
+                  teams: t('tournament.counts.teams', { count: selectedTeams.length }),
+                  type: type.replace('_', ' '),
+                  format: format.toUpperCase(),
+                  matches: t('tournament.counts.matches', { count: volume.totalMatches ?? 0 }),
+                  rounds: t('tournament.counts.rounds', { count: volume.totalRounds }),
+                  maps: t('tournament.counts.maps', { count: volume.totalMaps }),
+                })}
               </Alert>
             )}
             {typeof maxRounds === 'number' && onMaxRoundsChange && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Match Rules
+                  {t('tournament.labels.matchRules')}
                 </Typography>
                 <TextField
-                  label="Max Rounds per Map"
+                  label={t('tournament.wizard.maxRoundsLabel')}
                   type="number"
                   value={maxRounds}
                   onChange={(event) => {
@@ -505,10 +527,11 @@ export function TournamentFormSteps({
                   }}
                   helperText={
                     maxRounds > 0
-                      ? `Each map plays up to ${maxRounds} rounds; winner is first to ${
-                          Math.floor(maxRounds / 2) + 1
-                        } rounds.`
-                      : 'Maximum number of rounds per map (default: 24, max: 30).'
+                      ? t('tournament.wizard.maxRoundsHelper', {
+                          maxRounds,
+                          winRounds: Math.floor(maxRounds / 2) + 1,
+                        })
+                      : t('tournament.wizard.maxRoundsHelperEmpty')
                   }
                   error={maxRounds <= 0 || maxRounds > 30}
                   fullWidth
@@ -516,14 +539,10 @@ export function TournamentFormSteps({
 
                 <Box mt={3}>
                   <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                    Overtime Settings
+                    {t('tournament.labels.overtimeSettings')}
                   </Typography>
                   <Tooltip
-                    title={
-                      'Control overtime behaviour and how ties at max rounds are handled. ' +
-                      'These settings are passed through to MatchZy as overtimeMode/overtimeSegments ' +
-                      'and share the same semantics as shuffle tournaments and manual matches.'
-                    }
+                    title={t('tournament.overtime.tooltip')}
                     arrow
                     placement="top"
                     enterDelay={500}
@@ -536,61 +555,81 @@ export function TournamentFormSteps({
                       }}
                     >
                       <FormControl sx={{ flex: 1, minWidth: 160 }}>
-                        <InputLabel id="tournament-overtime-mode-label">Overtime</InputLabel>
+                        <InputLabel id="tournament-overtime-mode-label">
+                          {t('tournament.overtime.selectLabel')}
+                        </InputLabel>
                         <Select
                           labelId="tournament-overtime-mode-label"
-                          value={overtimeMode ?? 'enabled'}
-                          label="Overtime"
+                          value={overtimeOption}
+                          label={t('tournament.overtime.selectLabel')}
                           onChange={(event) =>
-                            onOvertimeModeChange?.(event.target.value as 'enabled' | 'disabled')
+                            handleOvertimeOptionChange(event.target.value as OvertimeOption)
                           }
                           disabled={!canEdit || saving}
                         >
-                          <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
-                          <MenuItem value="disabled">Disabled (no overtime)</MenuItem>
+                          <MenuItem value="enabled">
+                            {t('tournament.overtime.options.enabled')}
+                          </MenuItem>
+                          <MenuItem value="disabledDraws">
+                            {t('tournament.overtime.options.disabledDraws')}
+                          </MenuItem>
+                          <MenuItem value="disabledNoDraws">
+                            {t('tournament.overtime.options.disabledNoDraws')}
+                          </MenuItem>
                         </Select>
+                        <FormHelperText>{t('tournament.overtime.modeHelper')}</FormHelperText>
                       </FormControl>
 
-                      <TextField
-                        sx={{ flex: 1, minWidth: 200 }}
-                        label="Overtime segments (optional)"
-                        type="number"
-                        value={typeof overtimeSegments === 'number' ? overtimeSegments : ''}
-                        onChange={(event) => {
-                          const raw = event.target.value.trim();
-                          if (!onOvertimeSegmentsChange) return;
-                          if (raw === '') {
-                            onOvertimeSegmentsChange(null);
-                            return;
+                      {overtimeOption === 'enabled' && (
+                        <TextField
+                          sx={{ flex: 1, minWidth: 200 }}
+                          label={t('tournament.overtime.segmentsLabel')}
+                          type="number"
+                          value={typeof overtimeSegments === 'number' ? overtimeSegments : ''}
+                          onChange={(event) => {
+                            const raw = event.target.value.trim();
+                            if (!onOvertimeSegmentsChange) return;
+                            if (raw === '') {
+                              onOvertimeSegmentsChange(null);
+                              return;
+                            }
+                            const parsed = Number(raw);
+                            if (!Number.isFinite(parsed) || parsed < 0) {
+                              onOvertimeSegmentsChange(null);
+                              return;
+                            }
+                            onOvertimeSegmentsChange(parsed);
+                          }}
+                          disabled={!canEdit || saving}
+                          slotProps={{
+                            htmlInput: { min: 0, max: 10 },
+                          }}
+                          helperText={
+                            typeof overtimeSegments === 'number' && overtimeSegments > 0
+                              ? t('tournament.overtime.segmentsHelperValue', {
+                                  count: overtimeSegments,
+                                })
+                              : t('tournament.overtime.segmentsHelper')
                           }
-                          const parsed = Number(raw);
-                          if (!Number.isFinite(parsed) || parsed < 0) {
-                            onOvertimeSegmentsChange(null);
-                            return;
-                          }
-                          onOvertimeSegmentsChange(parsed);
-                        }}
-                        disabled={!canEdit || saving || overtimeMode === 'disabled'}
-                        slotProps={{
-                          htmlInput: { min: 0, max: 10 },
-                        }}
-                        helperText="Optional: limit the number of overtime segments. Leave empty for MatchZy default."
-                        fullWidth
-                      />
+                          fullWidth
+                        />
+                      )}
                     </Box>
                   </Tooltip>
                 </Box>
                 {type === 'double_elimination' && onGrandFinalModeChange && (
                   <Box mt={3}>
                     <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                      Grand Final Mode (Double Elimination)
+                      {t('tournament.grandFinal.sectionTitle')}
                     </Typography>
                     <FormControl fullWidth sx={{ mb: 1 }}>
-                      <InputLabel id="tournament-grand-final-mode-label">Grand Final</InputLabel>
+                      <InputLabel id="tournament-grand-final-mode-label">
+                        {t('tournament.grandFinal.label')}
+                      </InputLabel>
                       <Select
                         labelId="tournament-grand-final-mode-label"
                         value={grandFinalMode ?? 'simple'}
-                        label="Grand Final"
+                        label={t('tournament.grandFinal.label')}
                         onChange={(event) =>
                           onGrandFinalModeChange(
                             event.target.value as 'none' | 'simple' | 'double'
@@ -599,20 +638,14 @@ export function TournamentFormSteps({
                         disabled={!canEdit || saving}
                       >
                         <MenuItem value="simple">
-                          Simple – single Grand Final between winners and losers bracket champions
+                          {t('tournament.grandFinal.options.simple')}
                         </MenuItem>
-                        <MenuItem value="none">
-                          None – winners bracket final decides the tournament (no Grand Final)
-                        </MenuItem>
+                        <MenuItem value="none">{t('tournament.grandFinal.options.none')}</MenuItem>
                         <MenuItem value="double">
-                          Double – bracket‑reset style (currently behaves like Simple; full reset
-                          support is planned)
+                          {t('tournament.grandFinal.options.double')}
                         </MenuItem>
                       </Select>
-                      <FormHelperText>
-                        Controls how the champions of the winners and losers brackets meet at the end
-                        of the tournament.
-                      </FormHelperText>
+                      <FormHelperText>{t('tournament.grandFinal.helper')}</FormHelperText>
                     </FormControl>
                   </Box>
                 )}
@@ -676,76 +709,26 @@ export function TournamentFormSteps({
             {type !== 'shuffle' && typeof maxRounds === 'number' && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Match Rules
+                  {t('tournament.labels.matchRules')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  Max {maxRounds} rounds per map; winner is first to{' '}
-                  {Math.floor(maxRounds / 2) + 1} rounds.
-                </Typography>
-              </Box>
-            )}
-            {type !== 'shuffle' && (
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Servers
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color={hasEnoughServers ? 'text.secondary' : 'error.main'}
-                >
-                  {serverCount} server{serverCount === 1 ? '' : 's'} configured;&nbsp;
-                  <strong>{requiredServers}</strong> required to run all matches in this bracket.
-                </Typography>
-              </Box>
-            )}
-            {volumeReview && type !== 'shuffle' && (
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Estimated Volume
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {t('tournament.review.summary.estimatedVolume', {
-                    matches: volumeReview.totalMatches,
-                    rounds: volumeReview.totalRounds,
-                    mapsPerMatch: volumeReview.mapsPerMatch,
-                    totalMaps: volumeReview.totalMaps,
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  {t('tournament.matchRules.value', {
+                    maxRounds,
+                    winRounds: Math.floor(maxRounds / 2) + 1,
                   })}
                 </Typography>
-              </Box>
-            )}
-            <Box>
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Maps ({maps.length})
-              </Typography>
-              <Typography variant="body2" color="text.secondary" mb={2}>
-                {maps.join(', ') || 'No maps selected'}
-              </Typography>
-            </Box>
-            {type === 'shuffle' && shuffleSettings && (
-              <Box>
-                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Match Configuration
-                </Typography>
                 <Typography variant="body2" color="text.secondary" mb={1}>
-                  Team Size: {shuffleSettings.teamSize}v{shuffleSettings.teamSize}
+                  {overtimeOption === 'enabled'
+                    ? t('tournament.matchRules.overtimeEnabled')
+                    : overtimeOption === 'disabledNoDraws'
+                    ? t('tournament.matchRules.overtimeDisabledNoDraws')
+                    : t('tournament.matchRules.overtimeDisabled')}
                 </Typography>
-                <Typography variant="body2" color="text.secondary" mb={1}>
-                  Round Limit: Max {shuffleSettings.maxRounds} rounds
-                </Typography>
-                <Typography variant="body2" color="text.secondary" mb={2}>
-                  Overtime:{' '}
-                  {shuffleSettings.overtimeMode === 'enabled'
-                    ? 'Enabled'
-                    : 'Disabled (No Overtime)'}
-                </Typography>
-                {shuffleSettings.overtimeMode === 'enabled' && (
+                {overtimeOption === 'enabled' && (
                   <Typography variant="body2" color="text.secondary" mb={2}>
-                    Overtime Segments:{' '}
-                    {shuffleSettings.overtimeSegments && shuffleSettings.overtimeSegments > 0
-                      ? `${shuffleSettings.overtimeSegments} ${
-                          shuffleSettings.overtimeSegments === 1 ? 'segment' : 'segments'
-                        }`
-                      : 'MatchZy default (usually unlimited)'}
+                    {typeof overtimeSegments === 'number' && overtimeSegments > 0
+                      ? t('tournament.matchRules.overtimeSegments', { count: overtimeSegments })
+                      : t('tournament.matchRules.overtimeSegmentsDefault')}
                   </Typography>
                 )}
               </Box>
@@ -753,26 +736,95 @@ export function TournamentFormSteps({
             {type !== 'shuffle' && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Teams ({selectedTeams.length})
+                  {t('tournament.labels.servers')}
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color={hasEnoughServers ? 'text.secondary' : 'error.main'}
+                >
+                  {t('tournament.wizard.serversSummary', {
+                    servers: t('tournament.counts.servers', { count: serverCount }),
+                    required: requiredServers,
+                  })}
+                </Typography>
+              </Box>
+            )}
+            {volumeReview && type !== 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  {t('tournament.wizard.estimatedVolumeLabel')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {t('tournament.review.summary.estimatedVolumeText', {
+                    matches: t('tournament.counts.matches', {
+                      count: volumeReview.totalMatches ?? 0,
+                    }),
+                    rounds: t('tournament.counts.rounds', { count: volumeReview.totalRounds }),
+                    mapsPerMatch: volumeReview.mapsPerMatch,
+                    maps: t('tournament.counts.maps', { count: volumeReview.totalMaps }),
+                  })}
+                </Typography>
+              </Box>
+            )}
+            <Box>
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                {t('tournament.wizard.mapsHeading', { total: maps.length })}
+              </Typography>
+              <Typography variant="body2" color="text.secondary" mb={2}>
+                {maps.join(', ') || t('tournament.wizard.noMapsSelected')}
+              </Typography>
+            </Box>
+            {type === 'shuffle' && shuffleSettings && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  {t('tournament.wizard.matchConfiguration')}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  {t('tournament.matchRules.teamSizeValue', { size: shuffleSettings.teamSize })}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  {t('tournament.wizard.roundLimitValue', { count: shuffleSettings.maxRounds })}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" mb={2}>
+                  {shuffleOvertimeOption === 'enabled'
+                    ? t('tournament.matchRules.overtimeEnabled')
+                    : shuffleOvertimeOption === 'disabledNoDraws'
+                    ? t('tournament.matchRules.overtimeDisabledNoDraws')
+                    : t('tournament.matchRules.overtimeDisabled')}
+                </Typography>
+                {shuffleOvertimeOption === 'enabled' && (
+                  <Typography variant="body2" color="text.secondary" mb={2}>
+                    {shuffleSettings.overtimeSegments && shuffleSettings.overtimeSegments > 0
+                      ? t('tournament.matchRules.overtimeSegments', {
+                          count: shuffleSettings.overtimeSegments,
+                        })
+                      : t('tournament.matchRules.overtimeSegmentsDefaultUnlimited')}
+                  </Typography>
+                )}
+              </Box>
+            )}
+            {type !== 'shuffle' && (
+              <Box>
+                <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                  {t('tournament.wizard.teamsHeading', { total: selectedTeams.length })}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
                   {selectedTeams.length > 0
                     ? teams
-                        .filter((t) => selectedTeams.includes(t.id))
-                        .map((t) => t.name)
+                        .filter((team) => selectedTeams.includes(team.id))
+                        .map((team) => team.name)
                         .join(', ')
-                    : 'No teams selected (optional)'}
+                    : t('tournament.wizard.noTeamsSelected')}
                 </Typography>
               </Box>
             )}
             {type === 'shuffle' && (
               <Box>
                 <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                  Player Registration
+                  {t('tournament.wizard.playerRegistration')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" mb={2}>
-                  Players will be registered after tournament creation. Each map selected represents
-                  one round of matches ({maps.length} rounds total).
+                  {t('tournament.wizard.playerRegistrationInfo', { count: maps.length })}
                 </Typography>
               </Box>
             )}

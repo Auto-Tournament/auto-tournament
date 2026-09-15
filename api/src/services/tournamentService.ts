@@ -264,8 +264,14 @@ class TournamentService {
     if (overtimeMode) {
       updates.overtime_mode = overtimeMode;
     }
-    if (typeof overtimeSegments === 'number') {
-      updates.overtime_segments = overtimeSegments;
+    // `null` is meaningful here (back to the MatchZy default), so only an
+    // absent field leaves the stored value alone. Without this an existing
+    // tournament could never be switched off "no draws (0)" again.
+    if (overtimeSegments !== undefined) {
+      updates.overtime_segments =
+        typeof overtimeSegments === 'number' && Number.isFinite(overtimeSegments)
+          ? overtimeSegments
+          : null;
     }
 
     await db.updateAsync('tournament', updates, 'id = ?', [1]);
