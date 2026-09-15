@@ -524,6 +524,42 @@ router.get('/auth-identities', requireAuth, async (req: Request, res: Response):
 });
 
 /**
+ * Test-only helper: the raw, stored roster JSON of one team (`teams.players`).
+ *
+ * GET /api/test/raw-team-roster/:teamId
+ *
+ * Read-only. Exists so a test can prove a Discord ID was never written into the
+ * roster JSON. No real endpoint can show that: admin team GETs overwrite each
+ * roster player's `discordId` from the players table, and public team pages
+ * never show roster fields, so an ID stored in the JSON would go unnoticed.
+ *
+ * NOTE: This endpoint is only available in non-production environments.
+ */
+router.get(
+  '/raw-team-roster/:teamId',
+  requireAuth,
+  async (req: Request, res: Response): Promise<void> => {
+    if (isTestHelperDisabled(res)) return;
+
+    try {
+      const row = await db.queryOneAsync<{ players: string | null }>(
+        'SELECT players FROM teams WHERE id = ?',
+        [req.params.teamId]
+      );
+      if (!row) {
+        res.status(404).json({ success: false, error: 'Team not found' });
+        return;
+      }
+      const players: unknown = row.players ? JSON.parse(row.players) : [];
+      res.json({ success: true, players });
+    } catch (err) {
+      log.error('Error in GET /api/test/raw-team-roster', err as Error);
+      res.status(500).json({ success: false, error: 'Failed to read team roster' });
+    }
+  }
+);
+
+/**
  * Test-only helper: seed an auth identity link (creating the player first).
  *
  * POST /api/test/auth-identities

@@ -80,3 +80,63 @@ export interface MatchResponse {
   success: boolean;
   match: Match;
 }
+
+/**
+ * A player as `GET /api/players/by-discord-id/:discordId` returns them.
+ *
+ * `id` is the Steam ID; it is what every other player endpoint takes. The
+ * Discord ID only comes back from admin-guarded routes (some players are
+ * children), which is why this lookup needs a token at all.
+ */
+export interface Player {
+  id: string;
+  name: string;
+  avatar?: string;
+  discordId: string | null;
+}
+
+/**
+ * An array, and `[]` (still a 200) when nobody matches: a Discord ID is not
+ * unique, because a parent may put their own on several children.
+ */
+export interface PlayersByDiscordIdResponse {
+  success: boolean;
+  players: Player[];
+}
+
+/**
+ * `GET /api/players/:playerId/current-match` — the player's live match, or
+ * failing that their next pending one. Only the fields this bot reads; the
+ * real response also carries veto, connection and per-player stats.
+ *
+ * `hasMatch` is the discriminant: without a match there is no `match` key at
+ * all, just a `message`.
+ */
+export type PlayerCurrentMatchResponse =
+  | {
+      success: boolean;
+      player: { id: string; name: string; avatar?: string };
+      hasMatch: false;
+      message?: string;
+    }
+  | {
+      success: boolean;
+      player: { id: string; name: string; avatar?: string };
+      hasMatch: true;
+      tournamentStatus: string;
+      match: PlayerCurrentMatch;
+    };
+
+export interface PlayerCurrentMatch {
+  slug: string;
+  round?: number;
+  matchNumber?: number;
+  status: MatchStatus;
+  /** Which side the player is on. `opponent` is the other one. */
+  isTeam1: boolean;
+  currentMap: string | null;
+  /** `null` while a bracket slot is still waiting for its team. */
+  team1: TeamRef | null;
+  team2: TeamRef | null;
+  opponent: TeamRef | null;
+}

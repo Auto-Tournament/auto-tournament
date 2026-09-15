@@ -8,7 +8,14 @@
  */
 
 import type { Config } from '../config.js';
-import type { Match, MatchListResponse, MatchResponse } from './types.js';
+import type {
+  Match,
+  MatchListResponse,
+  MatchResponse,
+  Player,
+  PlayerCurrentMatchResponse,
+  PlayersByDiscordIdResponse,
+} from './types.js';
 
 export class MatApiError extends Error {
   constructor(
@@ -62,6 +69,51 @@ export class MatClient {
     try {
       const body = await this.get<MatchResponse>(`/api/matches/${encodeURIComponent(slug)}`);
       return body.match ?? null;
+    } catch (error) {
+      if (error instanceof MatApiError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  /**
+   * Every MAT player whose Discord ID is this Discord user, by name.
+   *
+   * Usually zero or one, but a list: a parent may put their own Discord ID on
+   * several children. Nobody matching is an ordinary `[]`, not an error.
+   *
+   * The Discord ID has to be set on the player in MAT — by an admin, by an
+   * import, or by the player on their own profile page. MAT does no Discord
+   * sign-in; the ID is just stored contact data.
+   */
+  async findPlayersByDiscordId(discordId: string): Promise<Player[]> {
+    try {
+      const body = await this.get<PlayersByDiscordIdResponse>(
+        `/api/players/by-discord-id/${encodeURIComponent(discordId)}`
+      );
+      return body.players ?? [];
+    } catch (error) {
+      // The route never 404s for "no such player" (that is `[]`), so a 404
+      // means the instance predates the endpoint. Say that, not "not found".
+      if (error instanceof MatApiError && error.status === 404) {
+        throw new MatApiError(
+          404,
+          error.path,
+          `${error.message} — this MAT instance is too old to look players up by Discord ID`
+        );
+      }
+      throw error;
+    }
+  }
+
+  /**
+   * A player's live match, or their next pending one, by Steam ID. `null` if
+   * MAT has no such player (it may have been deleted since the lookup).
+   */
+  async getPlayerCurrentMatch(steamId: string): Promise<PlayerCurrentMatchResponse | null> {
+    try {
+      return await this.get<PlayerCurrentMatchResponse>(
+        `/api/players/${encodeURIComponent(steamId)}/current-match`
+      );
     } catch (error) {
       if (error instanceof MatApiError && error.status === 404) return null;
       throw error;

@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 191 of them, 142 behind auth —
+Every endpoint this API serves — 195 of them, 144 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -339,6 +339,8 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/selection` | admin |
 | `GET` | `/api/players/:playerId/team` | public |
 | `GET` | `/api/players/me/match-status` | public |
+| `GET` | `/api/players/me/discord-id` | public |
+| `PUT` | `/api/players/me/discord-id` | public |
 | `GET` | `/api/players/:playerId/current-match` | public |
 | `GET` | `/api/players/:playerId/summary` | public |
 | `GET` | `/api/players/:playerId/avatar.svg` | public |
@@ -346,6 +348,7 @@ Player records, ratings, match history and profiles.
 | `GET` | `/api/players/:playerId/rating-history` | public |
 | `GET` | `/api/players/:playerId/matches` | public |
 | `GET` | `/api/players` | admin |
+| `GET` | `/api/players/by-discord-id/:discordId` | admin |
 | `POST` | `/api/players` | admin |
 | `POST` | `/api/players/bulk-import` | admin |
 | `POST` | `/api/players/bulk-delete` | admin |
@@ -388,6 +391,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/pending-steam-link` | admin |
 | `POST` | `/api/test/complete-steam-link` | admin |
 | `GET` | `/api/test/auth-identities` | admin |
+| `GET` | `/api/test/raw-team-roster/:teamId` | admin |
 | `POST` | `/api/test/auth-identities` | admin |
 
 ### Auth

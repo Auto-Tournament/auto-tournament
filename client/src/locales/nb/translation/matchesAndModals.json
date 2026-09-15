@@ -67,7 +67,10 @@
       "teamNameRequired": "Lagnavn er påkrevd",
       "playersRequired": "Minst én spiller er påkrevd",
       "saveFailed": "Klarte ikke å lagre lag",
-      "deleteFailed": "Klarte ikke å slette lag"
+      "deleteFailed": "Klarte ikke å slette lag",
+      "discordIdInvalid": "Discord-ID må være 17–20 sifre (den numeriske bruker-ID-en, ikke et brukernavn)",
+      "discordIdInvalidPlayers": "Ugyldig Discord-ID for: {{names}}. Den må være 17–20 sifre, eller stå tom.",
+      "discordIdSaveFailed": "Laget ble lagret, men Discord-ID-en kunne ikke lagres for: {{names}}. {{message}}"
     },
     "success": {
       "playerAdded": "Spiller lagt til i laget",
@@ -134,7 +137,8 @@
     "confirmEloUpdate": {
       "title": "Oppdater spiller-ELO",
       "message": "Er du sikker på at du vil oppdatere denne spillerens ELO fra {{from}} til {{to}}? Dette vil tilbakestille statistikk og ratinghistorikk. Dette kan ikke angres."
-    }
+    },
+    "discordIdHelper": "Valgfritt. 17–20 sifre. Lar arrangørene nå denne spilleren på Discord. Vises aldri offentlig."
   },
   "manualMatchModal": {
     "title": "Opprett manuell kamp",
@@ -245,7 +249,7 @@
     "title": "Importer lag fra JSON",
     "info": {
       "title": "Lim inn JSON med lagdata under.",
-      "format": "Forventet format: en liste med lag med navn, tag (valgfritt) og spillere (navn + steamId).",
+      "format": "Forventet format: en liste med lag med navn, tag (valgfritt) og spillere (navn + steamId, pluss en valgfri discordId som tekst i anførselstegn).",
       "link": "Se dokumentasjon med eksempler"
     },
     "jsonLabel": "JSON-data",
@@ -260,12 +264,19 @@
     "preview": {
       "summary": "✓ Gyldig JSON! Fant {{teamCount}} lag{{teamCount, plural, one {} other {}}} med totalt {{playerCount}} spillere.",
       "title": "Forhåndsvisning:",
-      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}"
+      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}",
+      "missingDiscordTotal": "Spillere uten Discord-ID: {{count}}",
+      "missingDiscordChip": "Uten Discord: {{count}}"
     },
     "actions": {
       "preview": "Forhåndsvis",
       "importing": "Importerer...",
       "import": "Importer {{count}} lag{{count, plural, one {} other {}}}"
+    },
+    "warnings": {
+      "title": "Noen Discord-ID-er ble ignorert. Disse spillerne importeres uten:",
+      "discordIdNumber": "Lag \"{{team}}\", spiller \"{{player}}\": discordId må være tekst i anførselstegn. Store tall mister presisjon i JSON, så ID-en ble fjernet.",
+      "discordIdInvalid": "Lag \"{{team}}\", spiller \"{{player}}\": \"{{value}}\" er ikke en Discord-bruker-ID (forventet 17–20 sifre), så den ble fjernet."
     }
   },
   "playerImportModal": {

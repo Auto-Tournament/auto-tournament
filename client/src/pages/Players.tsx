@@ -30,13 +30,15 @@ import type { PlayerDetail, PlayersResponse } from '../types/api.types';
 import { getPlayerPageUrl } from '../utils/playerLinks';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { NoDiscordChip } from '../components/player/NoDiscordChip';
+import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessage';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Players() {
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
-  const { showSuccess, showError } = useSnackbar();
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const { startImpersonation } = useAuth();
   const [players, setPlayers] = useState<PlayerDetail[]>([]);
   const [filteredPlayers, setFilteredPlayers] = useState<PlayerDetail[]>([]);
@@ -235,6 +237,7 @@ export default function Players() {
       name: string;
       initialELO?: number;
       avatarUrl?: string;
+      discordId?: string;
     }>
   ) => {
     try {
@@ -243,10 +246,19 @@ export default function Players() {
         name: p.name,
         elo: p.initialELO,
         avatar: p.avatarUrl,
+        // The API validates it and only fills in players that have none yet.
+        discordId: p.discordId,
       }));
 
-      await api.post('/api/players/bulk-import', playersToImport);
+      const response = await api.post<{ warnings?: string[] }>(
+        '/api/players/bulk-import',
+        playersToImport
+      );
       showSuccess(t('playersPage.importSuccess', { count: importedPlayers.length }));
+      const warnings = Array.from(new Set(response?.warnings ?? []));
+      if (warnings.length > 0) {
+        showWarning(<ImportWarningsMessage warnings={warnings} />);
+      }
       await loadPlayers();
     } catch (err) {
       console.error('Failed to import players:', err);
@@ -406,6 +418,9 @@ export default function Players() {
                           size="small"
                           variant="outlined"
                         />
+                      )}
+                      {!player.discordId && (
+                        <NoDiscordChip testId={`player-card-no-discord-${player.id}`} />
                       )}
                     </Box>
                   </CardContent>

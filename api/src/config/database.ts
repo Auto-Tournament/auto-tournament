@@ -12,6 +12,11 @@
 import { Pool } from 'pg';
 import { log, LOG_DB_VERBOSE, LOG_DB_VALUES } from '../utils/logger';
 import {
+  safeLogJson,
+  redactParamsForLog,
+  redactInsertValuesForLog,
+} from '../utils/dbLogRedaction';
+import {
   getSchemaSQL,
   getSchemaColumns,
   getDefaultMapsSQL,
@@ -109,6 +114,11 @@ class DatabaseManager {
         .filter((s) => s.length > 0 && s.length > 10); // Filter out empty or very short strings
 
       log.database(`[PostgreSQL] Executing ${statements.length} schema statements`);
+      // An index on a column that an upgraded database does not have yet fails
+      // here with "column does not exist": the column is only added by the
+      // migrations below. Those indexes are retried once the columns exist,
+      // rather than being logged as a schema error and silently never created.
+      const deferredIndexes: string[] = [];
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];
         try {
@@ -120,7 +130,9 @@ class DatabaseManager {
           }
         } catch (err) {
           const error = err as Error & { code?: string };
-          if (error.code === '42P07' || error.message.includes('already exists')) {
+          if (error.code === '42703' && /^CREATE\s+(UNIQUE\s+)?INDEX\b/i.test(statement)) {
+            deferredIndexes.push(statement);
+          } else if (error.code === '42P07' || error.message.includes('already exists')) {
             log.database(
               `[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`
             );
@@ -226,6 +238,17 @@ class DatabaseManager {
       }
       if (added > 0) {
         log.success(`[PostgreSQL] Applied ${added} column migration(s)`);
+      }
+
+      for (const statement of deferredIndexes) {
+        try {
+          await client.query(statement);
+        } catch (err) {
+          log.error(
+            `[PostgreSQL] Failed to create index after column migrations: ${(err as Error).message}`
+          );
+          log.error(`[PostgreSQL] Failed statement: ${statement.substring(0, 200)}`);
+        }
       }
 
       // Insert default maps (only if maps table is empty - first initialization or after wipe)
@@ -346,17 +369,11 @@ class DatabaseManager {
     }
   }
 
+  // Redaction lives in utils/dbLogRedaction so it can be unit-tested: secrets
+  // and Discord IDs (private contact data, some of it children's) must not
+  // reach the verbose DB logs.
   private safeJson(value: unknown): string {
-    try {
-      return JSON.stringify(value, (k, v) => {
-        const key = k.toLowerCase?.() ?? '';
-        if (/(password|secret|token|key)/.test(key)) return '***';
-        if (typeof v === 'string' && v.length > 500) return v.slice(0, 500) + '…';
-        return v;
-      });
-    } catch {
-      return String(value);
-    }
+    return safeLogJson(value);
   }
 
   private logRunResult(
@@ -387,7 +404,10 @@ class DatabaseManager {
       params = converted.params;
     }
     if (LOG_DB_VERBOSE) {
-      log.database(`[DB] GETALL ${table} where=${where ?? 'none'} params=${this.safeJson(params ?? [])}`);
+      const loggedParams = redactParamsForLog(where ?? '', params) ?? [];
+      log.database(
+        `[DB] GETALL ${table} where=${where ?? 'none'} params=${this.safeJson(loggedParams)}`
+      );
     }
     const result = await this.postgresPool.query(query, params);
     const rows = result.rows as T[];
@@ -406,7 +426,9 @@ class DatabaseManager {
     const converted = convertPlaceholders(where, params);
     const query = `SELECT * FROM ${table} WHERE ${converted.sql} LIMIT 1`;
     if (LOG_DB_VERBOSE) {
-      log.database(`[DB] GETONE ${table} where=${where} params=${this.safeJson(params)}`);
+      log.database(
+        `[DB] GETONE ${table} where=${where} params=${this.safeJson(redactParamsForLog(where, params))}`
+      );
     }
     const result = await this.postgresPool.query(query, converted.params);
     const row = (result.rows[0] as T) || undefined;
@@ -442,7 +464,9 @@ class DatabaseManager {
     try {
       if (LOG_DB_VERBOSE) {
         log.database(
-          `[DB] INSERT ${table} columns=[${columns.join(', ')}] values=${this.safeJson(values)}`
+          `[DB] INSERT ${table} columns=[${columns.join(', ')}] values=${this.safeJson(
+            redactInsertValuesForLog(columns, values)
+          )}`
         );
       }
       const result = await this.postgresPool.query(query, values);
@@ -512,7 +536,9 @@ class DatabaseManager {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
       if (LOG_DB_VERBOSE) {
-        log.database(`[DB] RUN sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+        log.database(
+          `[DB] RUN sql=${JSON.stringify(sql)} params=${this.safeJson(redactParamsForLog(sql, params))}`
+        );
       }
       const converted = convertPlaceholders(sql, params);
       const result = await this.postgresPool.query(converted.sql, converted.params);
@@ -543,7 +569,9 @@ class DatabaseManager {
     if (!this.postgresPool) throw new Error('Database not initialized');
     try {
       if (LOG_DB_VERBOSE) {
-        log.database(`[DB] QUERY sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`);
+        log.database(
+          `[DB] QUERY sql=${JSON.stringify(sql)} params=${this.safeJson(redactParamsForLog(sql, params))}`
+        );
       }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };
       const result = await this.postgresPool.query(converted.sql, converted.params);
@@ -567,7 +595,9 @@ class DatabaseManager {
     try {
       if (LOG_DB_VERBOSE) {
         log.database(
-          `[DB] QUERY ONE sql=${JSON.stringify(sql)} params=${this.safeJson(params)}`
+          `[DB] QUERY ONE sql=${JSON.stringify(sql)} params=${this.safeJson(
+            redactParamsForLog(sql, params)
+          )}`
         );
       }
       const converted = params ? convertPlaceholders(sql, params) : { sql, params: [] };

@@ -172,7 +172,10 @@
       "teamNameRequired": "Teamnaam is verplicht",
       "playersRequired": "Minstens één speler is verplicht",
       "saveFailed": "Team opslaan mislukt",
-      "deleteFailed": "Team verwijderen mislukt"
+      "deleteFailed": "Team verwijderen mislukt",
+      "discordIdInvalid": "Discord-ID moet 17–20 cijfers zijn (het numerieke gebruikers-ID, geen gebruikersnaam)",
+      "discordIdInvalidPlayers": "Ongeldige Discord-ID voor: {{names}}. Deze moet 17–20 cijfers zijn of leeg blijven.",
+      "discordIdSaveFailed": "Het team is opgeslagen, maar de Discord-ID kon niet worden opgeslagen voor: {{names}}. {{message}}"
     },
     "success": {
       "playerAdded": "Speler aan team toegevoegd",
@@ -239,13 +242,14 @@
     "confirmEloUpdate": {
       "title": "Speler-ELO bijwerken",
       "message": "Weet je zeker dat je de ELO van deze speler wilt wijzigen van {{from}} naar {{to}}? Dit reset statistieken en ratinggeschiedenis. Deze actie kan niet ongedaan worden gemaakt."
-    }
+    },
+    "discordIdHelper": "Optioneel. 17–20 cijfers. Hiermee kunnen organisatoren deze speler via Discord bereiken. Wordt nooit openbaar getoond."
   },
   "teamImportModal": {
     "title": "Teams importeren vanuit JSON",
     "info": {
       "title": "Plak hieronder JSON met teamgegevens.",
-      "format": "Verwacht formaat: lijst met teams met name, tag (optioneel) en players (name + steamId).",
+      "format": "Verwacht formaat: array van teams met name, tag (optioneel) en players (name + steamId, plus een optionele discordId als tekst tussen aanhalingstekens).",
       "link": "Bekijk documentatie met voorbeelden"
     },
     "jsonLabel": "JSON-gegevens",
@@ -260,12 +264,19 @@
     "preview": {
       "summary": "✓ Geldige JSON! {{teamCount}} team{{teamCount, plural, one {} other {s}}} gevonden met {{playerCount}} speler{{playerCount, plural, one {} other {s}}} in totaal.",
       "title": "Voorbeeld:",
-      "playersChip": "{{count}} speler{{count, plural, one {} other {s}}}"
+      "playersChip": "{{count}} speler{{count, plural, one {} other {s}}}",
+      "missingDiscordTotal": "Spelers zonder Discord-ID: {{count}}",
+      "missingDiscordChip": "Zonder Discord: {{count}}"
     },
     "actions": {
       "preview": "Voorbeeld",
       "importing": "Importeren...",
       "import": "{{count}} team{{count, plural, one {} other {s}}} importeren"
+    },
+    "warnings": {
+      "title": "Sommige Discord-ID's zijn genegeerd. Deze spelers worden zonder ID geïmporteerd:",
+      "discordIdNumber": "Team \"{{team}}\", speler \"{{player}}\": discordId moet tekst tussen aanhalingstekens zijn. Grote getallen verliezen precisie in JSON, dus de ID is verwijderd.",
+      "discordIdInvalid": "Team \"{{team}}\", speler \"{{player}}\": \"{{value}}\" is geen Discord-gebruikers-ID (17–20 cijfers verwacht) en is verwijderd."
     }
   },
   "playerImportModal": {

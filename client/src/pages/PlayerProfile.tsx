@@ -39,6 +39,7 @@ import { TopNavBar } from '../components/layout/TopNavBar';
 import { TournamentRulesAccordion } from '../components/tournament/TournamentRulesAccordion';
 import { PlayerAvatar } from '../components/player/PlayerAvatar';
 import { PlayerName } from '../components/player/PlayerName';
+import { OwnDiscordIdCard } from '../components/player/OwnDiscordIdCard';
 import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
@@ -240,7 +241,7 @@ export default function PlayerProfile() {
     gracePeriodSeconds: 300,
   });
   const socketRef = useRef<Socket | null>(null);
-  const { playerSteamId, hasPlayerRecord } = useAuth();
+  const { playerSteamId, hasPlayerRecord, impersonation } = useAuth();
   const { t } = useTranslation();
   const { matchSlug: statusMatchSlug } = useCurrentMatchStatus(
     steamId && playerSteamId === steamId ? steamId : null
@@ -1020,6 +1021,13 @@ export default function PlayerProfile() {
               </Box>
             </CardContent>
           </Card>
+
+          {/* Self-service contact details: only on the viewer's own profile, and not
+              while an admin impersonates (playerSteamId is then the impersonated
+              player, and the API refuses the request anyway). */}
+          {steamId && playerSteamId === steamId && !impersonation && (
+            <OwnDiscordIdCard steamId={steamId} />
+          )}
 
           {currentMatch && (
             <TournamentRulesAccordion

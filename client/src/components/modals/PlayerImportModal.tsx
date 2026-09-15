@@ -33,6 +33,7 @@ interface ImportPlayer {
   name: string;
   initialELO?: number;
   avatarUrl?: string;
+  discordId?: string; // Optional Discord user ID (17–20 digit string); validated by the API
 }
 
 interface PlayerImportModalProps {
@@ -126,6 +127,8 @@ export const PlayerImportModal: React.FC<PlayerImportModalProps> = ({
               player.initialELO = value ? parseInt(value, 10) : undefined;
             } else if (header === 'avatarurl' || header === 'avatar_url' || header === 'avatar') {
               player.avatarUrl = value || undefined;
+            } else if (header === 'discordid' || header === 'discord_id') {
+              player.discordId = value || undefined;
             }
           });
           return player;
