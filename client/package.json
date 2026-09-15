@@ -1,6 +1,6 @@
 {
   "name": "@matchzy/client",
-  "version": "2.4.5",
+  "version": "2.4.6",
   "description": "MatchZy Auto Tournament React client",
   "private": true,
   "scripts": {
