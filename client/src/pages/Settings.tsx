@@ -1744,9 +1744,9 @@ export default function Settings() {
                             void handleSave(true);
                           }}
                           min={0.1}
-                          max={4}
+                          max={10}
                           step={0.1}
-                          marks
+                          marks={[1, 2, 4, 6, 8, 10].map((v) => ({ value: v, label: `${v}×` }))}
                           valueLabelDisplay="on"
                           data-testid="settings-simulation-timescale-slider"
                         />
