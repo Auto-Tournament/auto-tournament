@@ -329,17 +329,17 @@ router.get('/', async (_req: Request, res: Response) => {
       });
     }
 
-    log.info(`[TOURNAMENT API] GET /api/tournament - Current status: ${tournament.status}`);
+    log.debug(`[TOURNAMENT API] GET /api/tournament - Current status: ${tournament.status}`);
 
     // Automatically check if tournament should be marked as completed
     // This ensures the status is always up-to-date when fetched
     if (tournament.status === 'in_progress') {
-      log.info(`[TOURNAMENT API] Tournament is in_progress, checking completion...`);
+      log.debug(`[TOURNAMENT API] Tournament is in_progress, checking completion...`);
       await checkTournamentCompletion(tournament.id);
       // Re-fetch tournament to get updated status
       const updatedTournament = await tournamentService.getTournament();
       if (updatedTournament) {
-        log.info(`[TOURNAMENT API] After completion check - Status: ${updatedTournament.status}`);
+        log.debug(`[TOURNAMENT API] After completion check - Status: ${updatedTournament.status}`);
         return res.json({
           success: true,
           tournament: updatedTournament,

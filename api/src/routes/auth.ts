@@ -921,13 +921,13 @@ router.get('/me', async (req: Request, res: Response) => {
     const identity = await resolveViewerIdentity(req);
     const steamId = identity.effectiveSteamId;
 
-    log.info('/api/auth/me: evaluated cookie state', {
+    log.debug('/api/auth/me: evaluated cookie state', {
       steamId: steamId ?? null,
       isImpersonating: identity.isImpersonating,
     });
 
     if (!steamId) {
-      log.info('/api/auth/me: no Steam ID cookie present; returning unauthenticated');
+      log.debug('/api/auth/me: no Steam ID cookie present; returning unauthenticated');
       return res.json({
         authenticated: false,
       });
@@ -943,7 +943,7 @@ router.get('/me', async (req: Request, res: Response) => {
       // treat lookup failure as no record
     }
 
-    log.info('/api/auth/me: returning authenticated Steam identity', { steamId, hasPlayerRecord });
+    log.debug('/api/auth/me: returning authenticated Steam identity', { steamId, hasPlayerRecord });
 
     return res.json({
       authenticated: true,
