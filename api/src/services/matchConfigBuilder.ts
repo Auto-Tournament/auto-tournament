@@ -138,16 +138,13 @@ export const generateMatchConfig = async (
   let per_map_sides: PerMapSide[] = Array.from({ length: numMaps }, () => 'knife');
 
   // 2) If we have a match/veto, use it
-  console.log('slug', slug);
   let existingMatch: DbMatchRow | null = null;
   if (slug) {
     existingMatch =
       (await db.queryOneAsync<DbMatchRow>('SELECT id, veto_state FROM matches WHERE slug = ?', [
         slug,
       ])) ?? null;
-    console.log('match', existingMatch);
     if (existingMatch?.veto_state) {
-      console.log('match.veto_state', existingMatch.veto_state);
       try {
         const veto = JSON.parse(existingMatch.veto_state) as {
           status: 'in_progress' | 'completed';
@@ -158,11 +155,11 @@ export const generateMatchConfig = async (
           }>;
         };
 
-        console.log('veto', veto);
-
-        console.log('veto.status', veto?.status);
-        console.log('veto.pickedMaps', veto?.pickedMaps);
-        console.log('veto.pickedMaps.length', veto?.pickedMaps?.length);
+        log.debug('Building match config from veto state', {
+          matchSlug: slug,
+          vetoStatus: veto?.status,
+          pickedMaps: veto?.pickedMaps?.map((p) => p.mapName),
+        });
 
         if (
           veto?.status === 'completed' &&
@@ -177,8 +174,6 @@ export const generateMatchConfig = async (
           // 2b) Build maplist from the ordered picks
           maplist = ordered.map((p) => p.mapName);
           maplist = maplist.slice(0, numMaps); // ensure we only have the number of maps we need
-
-          console.log('maplist', maplist);
 
           // 2c) Translate side picks (UI is per-map; backend previously only had a global toggle)
           // MatchZy format: 'team1_ct' means team1 starts CT, 'team2_ct' means team2 starts CT (team1 starts T)
