@@ -140,6 +140,21 @@ RELEASE_SKIP_PROJECT_BUILD="${RELEASE_SKIP_PROJECT_BUILD:-false}"
 RELEASE_EXPECTED_VERSION="${RELEASE_EXPECTED_VERSION:-}"
 RELEASE_EXPECTED_SHA="${RELEASE_EXPECTED_SHA:-}"
 
+# How the version bump reaches main.
+#
+# By default the "chore: bump version to X.Y.Z" commit is made on main and
+# pushed straight to origin/main (fast-forward only). main has no branch
+# protection or rulesets, so the old route — push a `release` branch, open a PR,
+# merge it three seconds later — reviewed nothing. When the Release workflow did
+# it with GITHUB_TOKEN, the bot-authored PR also left a red CI run behind every
+# release ("workflow file issue" / approval expired) with no jobs in it.
+#
+# RELEASE_BUMP_VIA_PR=true
+#     Use the old release branch + PR + merge route. Needed only if main ever
+#     gets protection that forbids direct pushes. The Release workflow would
+#     then also need `pull-requests: write` back in its permissions.
+RELEASE_BUMP_VIA_PR="${RELEASE_BUMP_VIA_PR:-false}"
+
 if [ "$RELEASE_SKIP_DOCKER_BUILD" = "true" ] && [ -z "$RELEASE_IMAGE_DIGESTS" ] && [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
     echo -e "${RED}RELEASE_SKIP_DOCKER_BUILD=true needs RELEASE_IMAGE_DIGESTS in non-interactive mode,${NC}"
     echo -e "${RED}otherwise the release would be published with no images.${NC}"
@@ -481,10 +496,17 @@ echo -e "  ${BLUE}0.${NC} Clean up Docker (stop containers, remove images, prune
 echo -e "  ${BLUE}1.${NC} Build project (yarn build)"
 echo -e "  ${BLUE}2.${NC} Run tests (yarn test) - optional, skip by default"
 echo -e "  ${BLUE}3.${NC} Build Docker image (test build)"
-echo -e "  ${BLUE}4.${NC} Update release branch (rebase onto main)"
-echo -e "  ${BLUE}5.${NC} Bump version: ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
-echo -e "  ${BLUE}6.${NC} Create PR and merge to main"
-echo -e "  ${BLUE}7.${NC} Rebase release branch back onto main"
+if [ "$RELEASE_BUMP_VIA_PR" = "true" ]; then
+    echo -e "  ${BLUE}4.${NC} Update release branch (rebase onto main)"
+    echo -e "  ${BLUE}5.${NC} Bump version: ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
+    echo -e "  ${BLUE}6.${NC} Create PR and merge to main"
+    echo -e "  ${BLUE}7.${NC} Rebase release branch back onto main"
+else
+    echo -e "  ${BLUE}4.${NC} Stay on main"
+    echo -e "  ${BLUE}5.${NC} Bump version: ${CURRENT_VERSION} → ${GREEN}${NEW_VERSION}${NC}"
+    echo -e "  ${BLUE}6.${NC} Commit the bump on main"
+    echo -e "  ${BLUE}7.${NC} Push the bump commit to origin/main (fast-forward only)"
+fi
 echo -e "  ${BLUE}8.${NC} Create git tag: ${GREEN}v${NEW_VERSION}${NC}"
 echo -e "  ${BLUE}9.${NC} Push Docker images to Docker Hub"
 echo -e "  ${BLUE}10.${NC} Create GitHub release"
@@ -666,30 +688,15 @@ fi
 
 # Step 4: Set up or update release branch
 echo ""
-echo -e "${YELLOW}Step 4: Setting up release branch...${NC}"
-RELEASE_BRANCH="release"
+if [ "$RELEASE_BUMP_VIA_PR" = "true" ]; then
+    echo -e "${YELLOW}Step 4: Setting up release branch...${NC}"
+    RELEASE_BRANCH="release"
 
-# Check if release branch exists locally
-if git show-ref --verify --quiet refs/heads/"${RELEASE_BRANCH}"; then
-    echo -e "${GREEN}Release branch exists locally${NC}"
-    git checkout "${RELEASE_BRANCH}"
-    # Rebase release branch onto main to keep it up to date
-    echo -e "${YELLOW}Rebasing release branch onto main...${NC}"
-    git rebase origin/main
-    if [ $? -ne 0 ]; then
-        echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
-        if [ "$STASHED_CHANGES" = true ]; then
-            echo -e "${YELLOW}Restoring stashed changes...${NC}"
-            git stash pop > /dev/null 2>&1 || true
-        fi
-        exit 1
-    fi
-else
-    # Check if release branch exists on remote
-    if git show-ref --verify --quiet refs/remotes/origin/"${RELEASE_BRANCH}"; then
-        echo -e "${GREEN}Release branch exists on remote, checking out...${NC}"
-        git checkout -b "${RELEASE_BRANCH}" "origin/${RELEASE_BRANCH}"
-        # Rebase onto main
+    # Check if release branch exists locally
+    if git show-ref --verify --quiet refs/heads/"${RELEASE_BRANCH}"; then
+        echo -e "${GREEN}Release branch exists locally${NC}"
+        git checkout "${RELEASE_BRANCH}"
+        # Rebase release branch onto main to keep it up to date
         echo -e "${YELLOW}Rebasing release branch onto main...${NC}"
         git rebase origin/main
         if [ $? -ne 0 ]; then
@@ -701,21 +708,42 @@ else
             exit 1
         fi
     else
-        # Create new release branch from main
-        echo -e "${GREEN}Creating new release branch from main...${NC}"
-        git checkout -b "${RELEASE_BRANCH}"
+        # Check if release branch exists on remote
+        if git show-ref --verify --quiet refs/remotes/origin/"${RELEASE_BRANCH}"; then
+            echo -e "${GREEN}Release branch exists on remote, checking out...${NC}"
+            git checkout -b "${RELEASE_BRANCH}" "origin/${RELEASE_BRANCH}"
+            # Rebase onto main
+            echo -e "${YELLOW}Rebasing release branch onto main...${NC}"
+            git rebase origin/main
+            if [ $? -ne 0 ]; then
+                echo -e "${RED}Rebase failed. Please resolve conflicts manually.${NC}"
+                if [ "$STASHED_CHANGES" = true ]; then
+                    echo -e "${YELLOW}Restoring stashed changes...${NC}"
+                    git stash pop > /dev/null 2>&1 || true
+                fi
+                exit 1
+            fi
+        else
+            # Create new release branch from main
+            echo -e "${GREEN}Creating new release branch from main...${NC}"
+            git checkout -b "${RELEASE_BRANCH}"
+        fi
     fi
-fi
 
-# Restore stashed changes after switching to release branch
-if [ "$STASHED_CHANGES" = true ]; then
-    echo -e "${YELLOW}Restoring stashed changes on release branch...${NC}"
-    git stash pop > /dev/null 2>&1 || echo -e "${YELLOW}⚠️  Note: Some stashed changes may have conflicts${NC}"
-fi
+    # Restore stashed changes after switching to release branch
+    if [ "$STASHED_CHANGES" = true ]; then
+        echo -e "${YELLOW}Restoring stashed changes on release branch...${NC}"
+        git stash pop > /dev/null 2>&1 || echo -e "${YELLOW}⚠️  Note: Some stashed changes may have conflicts${NC}"
+    fi
 
-# Push release branch to ensure it's up to date on remote
-echo -e "${YELLOW}Pushing release branch to origin...${NC}"
-git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+    # Push release branch to ensure it's up to date on remote
+    echo -e "${YELLOW}Pushing release branch to origin...${NC}"
+    git push -u origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+else
+    echo -e "${YELLOW}Step 4: Staying on main (the bump is pushed directly to origin/main)${NC}"
+    # Any stash taken above stays stashed until the bump commit is pushed, so
+    # none of it can end up in a commit that goes straight to main.
+fi
 
 # Step 5: Bump version
 echo ""
@@ -730,7 +758,7 @@ VERSION_BUMPED=false
 if [ "$CURRENT_VERSION" = "$NEW_VERSION" ]; then
     echo -e "${YELLOW}⚠️  Version is already ${NEW_VERSION}. Skipping version bump.${NC}"
 else
-    # We're on the release branch
+    # We're on main (default) or the release branch (RELEASE_BUMP_VIA_PR=true)
 
     bump_version_file() {
         local file="$1"
@@ -810,15 +838,115 @@ else
     fi
 fi
 
-# Push branch
-echo -e "${YELLOW}Pushing release branch to origin...${NC}"
-git push origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+# The only files a version bump commit may touch.
+VERSION_FILES_RE='^(package\.json|api/package\.json|client/package\.json)$'
 
-# Check if there are commits between main and release branch
-COMMITS_AHEAD=$(git rev-list --count origin/main..origin/"${RELEASE_BRANCH}" 2>/dev/null || echo "0")
+# Fail unless every file changed between $1 and $2 is a version file.
+assert_only_version_files() {
+    local from="$1" to="$2" other
+    other=$(git diff --name-only "$from" "$to" | grep -vE "$VERSION_FILES_RE" || true)
+    if [ -n "$other" ]; then
+        echo -e "${RED}Bump commit $(git rev-parse --short "$to") changes more than the version files:${NC}"
+        printf '  %s\n' "$other"
+        exit 1
+    fi
+}
+
+# Push the bump commit (HEAD on local main) to origin/main.
+#
+# The push is fast-forward only; nothing here ever force-pushes main.
+#
+# In split-build mode (RELEASE_EXPECTED_SHA set) the images were built from
+# RELEASE_EXPECTED_SHA with the version applied in the workspace, so the commit
+# that gets tagged must be exactly that commit plus the version files. If main
+# moved between the check near the top and this push, rebasing would give a
+# tag containing code the images do not have. The release stops here instead:
+# no tag, manifest, GitHub release or Discord post has happened yet, and the
+# unpushed bump commit is simply left behind on the runner. Re-run the release.
+#
+# Local runs build the images after tagging, from the tagged commit, so there a
+# rejected push is retried once: fetch, check that nothing new on main touched
+# the version files, rebase the bump commit on top and push again.
+push_bump_to_main() {
+    local base
+    base=$(git rev-parse HEAD~1)
+
+    if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+        echo -e "${RED}Expected to be on main to push the version bump, but on $(git rev-parse --abbrev-ref HEAD).${NC}"
+        exit 1
+    fi
+    if [ -n "$RELEASE_EXPECTED_SHA" ] && [ "$base" != "$RELEASE_EXPECTED_SHA" ]; then
+        echo -e "${RED}Bump commit's parent is ${base}, but the images were built from ${RELEASE_EXPECTED_SHA}. Aborting.${NC}"
+        exit 1
+    fi
+    assert_only_version_files "$base" HEAD
+
+    echo -e "${YELLOW}Pushing version bump to origin/main...${NC}"
+    if git push origin HEAD:refs/heads/main; then
+        git fetch origin main --quiet
+        echo -e "${GREEN}✅ Version bump pushed to main ($(git rev-parse --short HEAD))${NC}"
+        return 0
+    fi
+
+    echo -e "${YELLOW}Push rejected: origin/main moved since this release started.${NC}"
+    git fetch origin main --quiet
+    if [ -n "$RELEASE_EXPECTED_SHA" ]; then
+        echo -e "${RED}origin/main is now $(git rev-parse origin/main); the images were built from ${RELEASE_EXPECTED_SHA}.${NC}"
+        echo -e "${RED}Tagging a rebased bump would publish images that lack the new commits.${NC}"
+        echo -e "${RED}Nothing was tagged or published. Re-run the release.${NC}"
+        exit 1
+    fi
+
+    local touched
+    touched=$(git diff --name-only "$base" origin/main | grep -E "$VERSION_FILES_RE" || true)
+    if [ -n "$touched" ]; then
+        echo -e "${RED}New commits on origin/main change the version files. Aborting; re-run the release.${NC}"
+        printf '  %s\n' "$touched"
+        exit 1
+    fi
+
+    echo -e "${YELLOW}New commits on main do not touch the version files. Rebasing the bump onto origin/main...${NC}"
+    git log --oneline "${base}..origin/main" | sed 's/^/  /'
+    if ! git rebase origin/main; then
+        git rebase --abort 2>/dev/null || true
+        echo -e "${RED}Rebasing the version bump onto origin/main failed. Aborting.${NC}"
+        exit 1
+    fi
+    assert_only_version_files HEAD~1 HEAD
+
+    if ! git push origin HEAD:refs/heads/main; then
+        echo -e "${RED}Push to main rejected again. Aborting; nothing was tagged or published.${NC}"
+        exit 1
+    fi
+    git fetch origin main --quiet
+    echo -e "${GREEN}✅ Version bump pushed to main ($(git rev-parse --short HEAD))${NC}"
+}
+
+if [ "$RELEASE_BUMP_VIA_PR" != "true" ]; then
+    echo ""
+    echo -e "${YELLOW}Step 7: Pushing version bump to main...${NC}"
+    if [ "$VERSION_BUMPED" = "true" ]; then
+        push_bump_to_main
+    else
+        echo -e "${BLUE}No bump commit to push; tagging origin/main as it is.${NC}"
+    fi
+    if [ "$STASHED_CHANGES" = true ]; then
+        echo -e "${YELLOW}Restoring stashed changes...${NC}"
+        git stash pop > /dev/null 2>&1 || echo -e "${YELLOW}⚠️  Note: Some stashed changes may have conflicts${NC}"
+    fi
+else
+    # Push branch
+    echo -e "${YELLOW}Pushing release branch to origin...${NC}"
+    git push origin "${RELEASE_BRANCH}" || git push origin "${RELEASE_BRANCH}" --force-with-lease
+
+    # Check if there are commits between main and release branch
+    COMMITS_AHEAD=$(git rev-list --count origin/main..origin/"${RELEASE_BRANCH}" 2>/dev/null || echo "0")
+fi
 
 # Create PR and merge (only if there are commits to merge)
-if [ "$COMMITS_AHEAD" -gt 0 ]; then
+if [ "$RELEASE_BUMP_VIA_PR" != "true" ]; then
+    : # Done above.
+elif [ "$COMMITS_AHEAD" -gt 0 ]; then
     echo ""
     echo -e "${YELLOW}Step 7: Creating PR to merge version bump...${NC}"
     PR_BODY="## Release ${NEW_VERSION}
