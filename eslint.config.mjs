@@ -116,9 +116,9 @@ export default [
     },
   },
 
-  // Repo tooling scripts (scripts/**/*.mjs) — plain Node ESM.
+  // Repo tooling scripts (scripts/**/*.mjs, tests/*.mjs) — plain Node ESM.
   {
-    files: ['scripts/**/*.mjs'],
+    files: ['scripts/**/*.mjs', 'tests/*.mjs'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
