@@ -1,18 +1,23 @@
 import type { MatchLiveStats } from '../types';
 
-export const SERIES_SCORE_LABEL = 'Maps won';
-export const CURRENT_MAP_SCORE_LABEL = 'Current map score (Rounds)';
 
 type MatchMapResultLike = {
   mapNumber?: number | null;
   team1Score: number;
   team2Score: number;
+  winnerTeam?: 'team1' | 'team2' | 'none' | null;
 };
 
 type MatchLikeForScores = {
   status?: string | null;
   team1Score?: number | null;
   team2Score?: number | null;
+  /** Maps won, as returned by the API. */
+  team1SeriesScore?: number | null;
+  team2SeriesScore?: number | null;
+  /** Current map rounds, as returned by the API (null when not in progress). */
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
   mapNumber?: number | null;
   mapResults?: MatchMapResultLike[] | null;
 };
@@ -25,7 +30,14 @@ export function deriveSeriesScore(
   if (Array.isArray(results) && results.length > 0) {
     const derived = results.reduce(
       (acc, r) => {
-        if (typeof r.team1Score === 'number' && typeof r.team2Score === 'number') {
+        // An explicit winner counts even when rounds are level (damage tiebreak).
+        if (r.winnerTeam === 'team1') acc.team1 += 1;
+        else if (r.winnerTeam === 'team2') acc.team2 += 1;
+        else if (
+          r.winnerTeam !== 'none' &&
+          typeof r.team1Score === 'number' &&
+          typeof r.team2Score === 'number'
+        ) {
           if (r.team1Score > r.team2Score) acc.team1 += 1;
           else if (r.team2Score > r.team1Score) acc.team2 += 1;
         }
@@ -34,6 +46,10 @@ export function deriveSeriesScore(
       { team1: 0, team2: 0 }
     );
     return { ...derived, source: 'mapResults' };
+  }
+
+  if (typeof match.team1SeriesScore === 'number' && typeof match.team2SeriesScore === 'number') {
+    return { team1: match.team1SeriesScore, team2: match.team2SeriesScore, source: 'match' };
   }
 
   if (
@@ -61,19 +77,38 @@ export function deriveSeriesScore(
 
 export function deriveCurrentMapScore(
   match: MatchLikeForScores,
-  liveStats?: Pick<MatchLiveStats, 'team1Score' | 'team2Score'> | null,
+  liveStats?: (Pick<MatchLiveStats, 'team1Score' | 'team2Score'> & { status?: string }) | null,
   options?: { mapNumber?: number | null }
-): { team1: number; team2: number; source: 'liveStats' | 'mapResults' | 'default' } {
+): {
+  team1: number;
+  team2: number;
+  source: 'liveStats' | 'match' | 'mapResults' | 'default';
+  warmup?: boolean;
+} {
   if (
     liveStats &&
+    match.status !== 'completed' &&
     typeof liveStats.team1Score === 'number' &&
     typeof liveStats.team2Score === 'number'
   ) {
+    // Between maps the live stats still hold the finished map's rounds until
+    // the next map goes live; during warmup the current map has no score yet.
+    if (liveStats.status === 'warmup') {
+      return { team1: 0, team2: 0, source: 'liveStats', warmup: true };
+    }
     return {
       team1: liveStats.team1Score ?? 0,
       team2: liveStats.team2Score ?? 0,
       source: 'liveStats',
     };
+  }
+
+  if (
+    match.status !== 'completed' &&
+    typeof match.team1MapScore === 'number' &&
+    typeof match.team2MapScore === 'number'
+  ) {
+    return { team1: match.team1MapScore, team2: match.team2MapScore, source: 'match' };
   }
 
   // When completed, prefer per-map round score from the selected mapResult (if present).

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardContent, Typography, Alert } from '@mui/material';
 import PeopleIcon from '@mui/icons-material/People';
-import { getMapData } from '../../constants/maps';
+import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { VetoInterface } from '../veto/VetoInterface';
 import { copyTextToClipboard } from '../../utils/clipboard';
 import type { Team, TeamMatchInfo, VetoState, MatchLiveStats, PlayersResponse } from '../../types';
@@ -79,8 +79,12 @@ export function MatchInfoCard({
 
   const liveStats = match.liveStats || null;
   const connectionStatus = match.connectionStatus || null;
-  const mapRoundsTeam1 = liveStats?.team1Score ?? 0;
-  const mapRoundsTeam2 = liveStats?.team2Score ?? 0;
+  // Between maps the live stats keep the finished map's rounds until the next
+  // map goes live, which made the next map's warmup show the previous map's
+  // score. The current map has no score until it starts.
+  const inMapWarmup = liveStats?.status === 'warmup';
+  const mapRoundsTeam1 = inMapWarmup ? 0 : liveStats?.team1Score ?? 0;
+  const mapRoundsTeam2 = inMapWarmup ? 0 : liveStats?.team2Score ?? 0;
   const mapNumber = liveStats?.mapNumber ?? match.mapNumber ?? null;
 
   const mapFromMatchMaps =
@@ -103,7 +107,7 @@ export function MatchInfoCard({
       'https://raw.githubusercontent.com/sivert-io/cs2-server-manager/master/map_thumbnails';
     return {
       name: currentMapSlug,
-      displayName: currentMapSlug.replace('de_', '').replace('cs_', ''),
+      displayName: getMapDisplayName(currentMapSlug),
       // Use full-size webp for the large hero image, and thumbnail for smaller usages
       image: `${baseUrl}/${currentMapSlug}.webp`,
       thumbnail: `${baseUrl}/${currentMapSlug}_thumb.webp`,
@@ -188,7 +192,25 @@ export function MatchInfoCard({
   // demonstrably talking to us.
   const isServerOnlineBase = !!serverStatus && serverStatus !== 'error';
   const isServerOnline = isServerOnlineBase || !!liveStats;
-  const effectiveServer = isServerOnline ? match.server : null;
+
+  // The plugin reports 'idle' for a server that has a match loaded but has not
+  // been asked again since, so a live match could show "Status: Available".
+  // What the match itself is doing is the better answer when we have it.
+  const liveDerivedStatus: string | null = liveStats
+    ? liveStats.status
+    : match.status === 'live'
+      ? 'live'
+      : match.status === 'loaded'
+        ? 'warmup'
+        : null;
+  const effectiveServerStatus =
+    liveDerivedStatus && (!serverStatus || serverStatus === 'idle' || serverStatus === 'queued')
+      ? liveDerivedStatus
+      : serverStatus;
+  const effectiveServer =
+    isServerOnline && match.server
+      ? { ...match.server, status: effectiveServerStatus ?? match.server.status }
+      : null;
 
   const isShuffleMatch = isShuffleMatchGlobal({
     round: match.round,

@@ -65,8 +65,21 @@ export const getMapData = (mapName: string): CS2MapData | undefined => {
   return CS2_MAPS.find((m) => m.name === mapName);
 };
 
+/**
+ * Title-cased fallback for maps that aren't in CS2_MAPS (workshop maps, maps
+ * added to the pool later): "de_train" -> "Train", not "train".
+ */
+const titleCaseMapName = (mapName: string): string =>
+  mapName
+    .replace(/^(de|cs|ar|dz)_/, '')
+    .split(/[_\s]+/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(' ');
+
 export const getMapDisplayName = (mapName: string): string => {
+  if (!mapName) return mapName;
   const mapData = getMapData(mapName);
-  return mapData?.displayName || mapName.replace('de_', '');
+  return mapData?.displayName || titleCaseMapName(mapName) || mapName;
 };
 
