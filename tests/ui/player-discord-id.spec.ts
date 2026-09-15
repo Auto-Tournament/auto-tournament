@@ -92,6 +92,50 @@ test.describe.serial('Player Discord ID: admin editor', () => {
       await expect(page.getByTestId('player-discord-id-input')).toHaveValue(discordId);
     }
   );
+
+  test(
+    'a name-only save from a stale list keeps a Discord ID set meanwhile',
+    { tag: ['@ui', '@players', '@discord', '@crud'] },
+    async ({ page, request }) => {
+      const steamId = uniqueSteamId(30);
+      const discordId = uniqueDiscordId(30);
+      const player = await createPlayer(request, { id: steamId, name: 'Discord Stale Edit' });
+      expect(player, 'seed player should be created').toBeTruthy();
+
+      await page.goto('/players');
+      const card = page.getByTestId(`player-card-${steamId}`);
+      await expect(card).toBeVisible();
+
+      // Set after the list loaded, standing in for the player saving their own
+      // ID on their profile: the page still holds "no Discord ID".
+      const seed = await request.put(`/api/players/${steamId}`, {
+        headers: getAuthHeader(),
+        data: { discordId },
+      });
+      expect(seed.ok(), 'seeding the Discord ID should succeed').toBe(true);
+
+      await card.click();
+      const modal = page.getByTestId('player-modal');
+      await expect(modal).toBeVisible();
+      await expect(page.getByTestId('player-discord-id-input')).toHaveValue('');
+
+      await page.getByTestId('player-name-input').fill('Discord Stale Renamed');
+      const [updateResponse] = await Promise.all([
+        page.waitForResponse(
+          (resp) =>
+            resp.url().includes(`/api/players/${steamId}`) && resp.request().method() === 'PUT'
+        ),
+        page.getByTestId('player-save-button').click(),
+      ]);
+      expect(updateResponse.ok(), 'PUT /api/players/:id should succeed').toBe(true);
+      const sent = updateResponse.request().postDataJSON() as Record<string, unknown>;
+      expect(sent.name).toBe('Discord Stale Renamed');
+      expect('discordId' in sent, 'an untouched Discord ID field must not be sent').toBe(false);
+      await expect(modal).not.toBeVisible();
+
+      expect(await getDiscordId(request, steamId)).toBe(discordId);
+    }
+  );
 });
 
 test.describe.serial('Player Discord ID: self-service on the profile page', () => {

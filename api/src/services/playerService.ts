@@ -30,6 +30,12 @@ export interface PlayerRecord {
    * reads never select it; see `PlayerAdminResponse`.
    */
   discord_id?: string | null;
+  /**
+   * When a person last set or cleared `discord_id` by hand (epoch seconds);
+   * null when only an import ever wrote it. Internal: it decides whether an
+   * import may fill the ID, and never leaves the service.
+   */
+  discord_id_edited_at?: number | null;
 }
 
 export interface CreatePlayerInput {
@@ -89,14 +95,19 @@ export class InvalidDiscordIdError extends Error {
 }
 
 /**
- * Remove `discord_id` from a raw row before it leaves the service.
+ * Remove `discord_id` (and its edit stamp) from a raw row before it leaves the
+ * service.
  *
  * `SELECT *` rows are handed to callers that return them unmapped (admin
  * `GET /api/tournament/:id/players` via `getRegisteredPlayers`), and to code
- * that may be public tomorrow. Stripping here keeps the column opt-in.
+ * that may be public tomorrow. Stripping here keeps the columns opt-in. The
+ * stamp goes too: "this child's Discord ID was removed by hand" is itself
+ * something about the ID.
  */
-function withoutDiscordId<T extends { discord_id?: unknown }>(row: T): Omit<T, 'discord_id'> {
-  const { discord_id: _discordId, ...rest } = row;
+function withoutDiscordId<T extends { discord_id?: unknown; discord_id_edited_at?: unknown }>(
+  row: T
+): Omit<T, 'discord_id' | 'discord_id_edited_at'> {
+  const { discord_id: _discordId, discord_id_edited_at: _editedAt, ...rest } = row;
   return rest;
 }
 
@@ -272,72 +283,127 @@ class PlayerService {
   }
 
   /**
+   * What an import needs to know about each player's Discord ID: the stored
+   * value, and whether a person ever set or cleared it by hand. One query.
+   */
+  private async getImportDiscordIdState(
+    steamIds: string[]
+  ): Promise<Map<string, { discordId: string | null; editedByHand: boolean }>> {
+    const unique = [...new Set(steamIds.filter((id) => typeof id === 'string' && id.length > 0))];
+    const result = new Map<string, { discordId: string | null; editedByHand: boolean }>();
+    if (unique.length === 0) return result;
+
+    const placeholders = unique.map(() => '?').join(',');
+    const rows = await db.queryAsync<{
+      id: string;
+      discord_id: string | null;
+      discord_id_edited_at: number | null;
+    }>(
+      `SELECT id, discord_id, discord_id_edited_at FROM players WHERE id IN (${placeholders})`,
+      unique
+    );
+    for (const row of rows) {
+      result.set(row.id, {
+        discordId: row.discord_id ? row.discord_id : null,
+        editedByHand: row.discord_id_edited_at !== null && row.discord_id_edited_at !== undefined,
+      });
+    }
+    return result;
+  }
+
+  /**
    * Apply Discord IDs that arrived with an IMPORT (team roster, bulk import).
    *
-   * The import rule: an import only ever fills a blank. It never overwrites a
-   * stored value and never clears one. Explicit edits — the admin form, and the
-   * player's own self-service page — are the only way to change an ID once it is
-   * set. Rosters are re-imported over and over from signup sheets that the
-   * player (or a parent) may have filled in months ago; if the import won, the
+   * The import rule: an import only ever fills a blank that nobody has touched.
+   * It never overwrites a stored value, never clears one, and never refills one
+   * a person removed. Explicit edits — the admin form, and the player's own
+   * self-service page — are the only way to change an ID once it is set.
+   * Rosters are re-imported over and over from signup sheets that the player
+   * (or a parent) may have filled in months ago; if the import won, the
    * correction a player made themselves would be quietly undone by the next
    * upload.
    *
-   * - stored value empty → fill it;
+   * "Empty" alone is not enough to fill: a parent who removes a child's ID
+   * leaves the column NULL, exactly like a player who never had one. So every
+   * explicit edit stamps `discord_id_edited_at`, and a stamped row is off
+   * limits to imports whatever its value.
+   *
    * - stored value equal → nothing to say;
-   * - stored value different → keep it, and warn so the admin can check;
+   * - edited by hand (set or cleared) → keep it, and warn without saying what
+   *   the stored value is (or that there is none — that is the player's call);
+   * - stored value different, from an earlier import → keep it, and warn;
+   * - stored value empty, never edited → fill it;
    * - no players row (its creation failed earlier) → skip; that failure was
    *   already logged by the caller.
    *
-   * The fill is a conditional UPDATE, so a self-service edit racing the import
-   * still wins. Never throws for a single player: a Discord ID must not fail an
-   * import. Returns warnings for the caller to merge into its response.
+   * The fill is a conditional UPDATE carrying both conditions, so a
+   * self-service edit racing the import still wins. Never throws for a single
+   * player: a Discord ID must not fail an import. Returns warnings for the
+   * caller to merge into its response.
    */
   async applyImportedDiscordIds(entries: ImportedDiscordId[]): Promise<string[]> {
     const warnings: string[] = [];
     if (entries.length === 0) return warnings;
 
-    let stored: Map<string, string | null>;
+    let stored: Map<string, { discordId: string | null; editedByHand: boolean }>;
     try {
-      stored = await this.getDiscordIdsBySteamIds(entries.map((e) => e.steamId));
+      stored = await this.getImportDiscordIdState(entries.map((e) => e.steamId));
     } catch (error) {
       log.warn('Could not read stored Discord IDs; imported Discord IDs were not applied', { error });
       return [`Discord IDs from this import were not saved: ${(error as Error).message}`];
     }
 
-    for (const entry of entries) {
-      if (!stored.has(entry.steamId)) continue;
-      const current = stored.get(entry.steamId) ?? null;
-
-      if (current === entry.discordId) continue;
-
-      if (current) {
-        warnings.push(
-          `${describePlayer(entry)}: has Discord ID ${abbreviateId(current)} on file; ` +
-            `import had ${abbreviateId(entry.discordId)}, kept the existing one.`
+    // The warning for a value that is kept, or null when there is nothing to say.
+    const conflictWarning = (
+      entry: ImportedDiscordId,
+      state: { discordId: string | null; editedByHand: boolean }
+    ): string | null => {
+      if (state.discordId === entry.discordId) return null;
+      if (state.editedByHand) {
+        return (
+          `${describePlayer(entry)}: Discord ID was set or removed by hand, so it was kept; ` +
+          `the import's value was not applied.`
         );
+      }
+      if (state.discordId) {
+        return (
+          `${describePlayer(entry)}: has Discord ID ${abbreviateId(state.discordId)} on file; ` +
+          `import had ${abbreviateId(entry.discordId)}, kept the existing one.`
+        );
+      }
+      return null;
+    };
+
+    for (const entry of entries) {
+      const state = stored.get(entry.steamId);
+      if (!state) continue;
+
+      if (state.discordId === entry.discordId) continue;
+      if (state.editedByHand || state.discordId) {
+        const warning = conflictWarning(entry, state);
+        if (warning) warnings.push(warning);
         continue;
       }
 
       try {
         const result = await db.runAsync(
-          "UPDATE players SET discord_id = ?, updated_at = ? WHERE id = ? AND (discord_id IS NULL OR discord_id = '')",
+          "UPDATE players SET discord_id = ?, updated_at = ? WHERE id = ? AND (discord_id IS NULL OR discord_id = '') AND discord_id_edited_at IS NULL",
           [entry.discordId, Math.floor(Date.now() / 1000), entry.steamId]
         );
         if (result.changes > 0) {
           // Fill so a later entry for the same player in this import (a player
           // on two teams of one upload) is compared against what we just wrote.
-          stored.set(entry.steamId, entry.discordId);
+          stored.set(entry.steamId, { discordId: entry.discordId, editedByHand: false });
           log.info(`Imported Discord ID ${abbreviateId(entry.discordId)} for player ${entry.steamId}`);
         } else {
-          // Someone set it between our read and this write; theirs stands.
-          const now = await this.getDiscordId(entry.steamId);
-          if (now && now !== entry.discordId) {
-            warnings.push(
-              `${describePlayer(entry)}: has Discord ID ${abbreviateId(now)} on file; ` +
-                `import had ${abbreviateId(entry.discordId)}, kept the existing one.`
-            );
+          // Someone set or cleared it between our read and this write; theirs
+          // stands. Re-read so the warning matches what actually happened.
+          const now = (await this.getImportDiscordIdState([entry.steamId])).get(entry.steamId);
+          if (now) {
+            const warning = conflictWarning(entry, now);
+            if (warning) warnings.push(warning);
+            stored.set(entry.steamId, now);
           }
-          if (now !== undefined) stored.set(entry.steamId, now);
         }
       } catch (error) {
         log.warn(`Failed to save imported Discord ID for player ${entry.steamId}`, { error });
@@ -384,6 +450,11 @@ class PlayerService {
 
     if (discordIdEdit.kind === 'set') {
       playerData.discord_id = discordIdEdit.value;
+    }
+    // Any explicit value, including an explicit "none", is a decision a later
+    // import must respect (see applyImportedDiscordIds).
+    if (discordIdEdit.kind === 'set' || discordIdEdit.kind === 'clear') {
+      playerData.discord_id_edited_at = now;
     }
 
     await db.insertAsync('players', {
@@ -438,11 +509,15 @@ class PlayerService {
       updates.is_admin = input.isAdmin ? 1 : 0;
     }
 
-    // An explicit edit overwrites, unlike an import (see applyImportedDiscordIds).
+    // An explicit edit overwrites, unlike an import (see applyImportedDiscordIds),
+    // and stamps the row so no later import refills or replaces it. Clearing
+    // stamps too: that is how a removed ID stays removed.
     if (discordIdEdit.kind === 'set') {
       updates.discord_id = discordIdEdit.value;
+      updates.discord_id_edited_at = updates.updated_at;
     } else if (discordIdEdit.kind === 'clear') {
       updates.discord_id = null;
+      updates.discord_id_edited_at = updates.updated_at;
     }
 
     await db.updateAsync('players', updates, 'id = ?', [playerId]);

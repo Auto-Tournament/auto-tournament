@@ -12,6 +12,11 @@ import {
   parseDiscordIdEdit,
   redactDiscordIdsInPath,
 } from '../../api/src/utils/discordId';
+import {
+  redactInsertValuesForLog,
+  redactParamsForLog,
+  safeLogJson,
+} from '../../api/src/utils/dbLogRedaction';
 
 /**
  * A player's Discord ID.
@@ -133,6 +138,55 @@ async function postTeam(
   return (await res.json()) as TeamWrite;
 }
 
+/**
+ * The roster JSON exactly as stored in `teams.players`, via a test-only route.
+ * Admin team GETs overwrite `discordId` from the players table and public pages
+ * never show roster fields, so only the raw column proves the ID is not there.
+ */
+async function rawRoster(
+  request: APIRequestContext,
+  teamId: string
+): Promise<Array<Record<string, unknown>>> {
+  const res = await request.get(`/api/test/raw-team-roster/${encodeURIComponent(teamId)}`);
+  expect(res.ok(), await res.text()).toBe(true);
+  return ((await res.json()) as { players: Array<Record<string, unknown>> }).players;
+}
+
+async function expectRosterWithoutDiscordId(
+  request: APIRequestContext,
+  teamId: string
+): Promise<void> {
+  const players = await rawRoster(request, teamId);
+  expect(players.length).toBeGreaterThan(0);
+  for (const player of players) {
+    expect('discordId' in player, `roster of ${teamId} stores discordId`).toBe(false);
+    expect('discord_id' in player, `roster of ${teamId} stores discord_id`).toBe(false);
+  }
+}
+
+/** A separate, signed-in player context; the caller disposes it. */
+async function playerContext(playwright: Playwright, steamId: string): Promise<APIRequestContext> {
+  const ctx = await playwright.request.newContext({
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
+  });
+  expect(await signInAsPlayerViaRequest(ctx, steamId)).toBe(true);
+  return ctx;
+}
+
+async function selfServiceSet(
+  playwright: Playwright,
+  steamId: string,
+  discordId: string | null
+): Promise<void> {
+  const ctx = await playerContext(playwright, steamId);
+  try {
+    const res = await ctx.put('/api/players/me/discord-id', { data: { discordId } });
+    expect(res.status(), await res.text()).toBe(200);
+  } finally {
+    await ctx.dispose();
+  }
+}
+
 async function publicContext(playwright: Playwright): Promise<APIRequestContext> {
   return playwright.request.newContext({
     baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3069',
@@ -185,6 +239,76 @@ test.describe('Discord ID validation (pure)', () => {
     expect(redactDiscordIdsInPath('/api/players/76561198000000010')).toBe(
       '/api/players/76561198000000010'
     );
+  });
+
+  test('request path redaction survives the forms Express still routes', () => {
+    // Express matches routes case-insensitively.
+    expect(redactDiscordIdsInPath('/api/players/By-Discord-Id/123456789012345678')).toBe(
+      '/api/players/By-Discord-Id/1234…'
+    );
+    expect(redactDiscordIdsInPath('/API/PLAYERS/BY-DISCORD-ID/123456789012345678')).toBe(
+      '/API/PLAYERS/BY-DISCORD-ID/1234…'
+    );
+    // req.path is not decoded, but the route param is.
+    const encoded = '123456789012345678'
+      .split('')
+      .map((d) => `%3${d}`)
+      .join('');
+    const redactedEncoded = redactDiscordIdsInPath(`/api/players/by-discord-id/${encoded}`);
+    expect(redactedEncoded).toBe('/api/players/by-discord-id/1234…');
+    // Plain and encoded digits mixed in one ID.
+    expect(redactDiscordIdsInPath('/api/players/by-discord-id/1234%3567890123456789')).toBe(
+      '/api/players/by-discord-id/1234…'
+    );
+    // Anything appended to the self-service path.
+    expect(redactDiscordIdsInPath('/api/players/me/Discord-Id/123456789012345678')).toBe(
+      '/api/players/me/Discord-Id/1234…'
+    );
+    // The self-service path itself, and a query string, are left alone.
+    expect(redactDiscordIdsInPath('/api/players/me/discord-id')).toBe('/api/players/me/discord-id');
+    // Steam IDs elsewhere stay readable.
+    expect(redactDiscordIdsInPath('/api/players/76561198000000010/summary')).toBe(
+      '/api/players/76561198000000010/summary'
+    );
+  });
+
+  test('verbose DB logs mask Discord IDs but keep Steam IDs', () => {
+    const discordId = '123456789012345678';
+    const steamId = '76561198000000010';
+
+    // Row fields, by key, however they are spelled.
+    const row = safeLogJson([
+      { id: steamId, discord_id: discordId, discord_id_edited_at: 1, name: 'Ola' },
+      { steamId, discordId },
+    ]);
+    expect(row).not.toContain(discordId);
+    expect(row).toContain(steamId);
+    expect(row).toContain('Ola');
+    // The existing secrets rule still applies.
+    expect(safeLogJson({ password: 'hunter2' })).not.toContain('hunter2');
+
+    // Positional params: masked only in statements about the Discord ID.
+    const fill = redactParamsForLog(
+      'UPDATE players SET discord_id = ?, updated_at = ? WHERE id = ?',
+      [discordId, 1700000000, steamId]
+    );
+    expect(JSON.stringify(fill)).not.toContain(discordId);
+    expect(fill![1]).toBe(1700000000);
+    const lookup = redactParamsForLog('SELECT * FROM players WHERE discord_id = ?', [discordId]);
+    expect(lookup).toEqual(['1234…']);
+
+    const unrelated = [steamId, 'Ola'];
+    expect(redactParamsForLog('SELECT * FROM players WHERE id = ?', unrelated)).toBe(unrelated);
+    expect(redactParamsForLog('SELECT 1', undefined)).toBeUndefined();
+
+    // INSERT values, by column name.
+    const inserted = redactInsertValuesForLog(
+      ['id', 'name', 'discord_id', 'discord_id_edited_at'],
+      [steamId, 'Ola', discordId, 1700000000]
+    );
+    expect(inserted).toEqual([steamId, 'Ola', '***', '***']);
+    const plain = [steamId, 'Ola'];
+    expect(redactInsertValuesForLog(['id', 'name'], plain)).toBe(plain);
   });
 
   test('an import: valid IDs split off, invalid dropped with a warning, blank ignored', () => {
@@ -251,6 +375,29 @@ test.describe('Discord ID: admin edits', () => {
     expect(((await emptyRes.json()) as { player: AdminPlayer }).player.discordId).toBeNull();
   });
 
+  test("a save without discordId keeps an ID the player set meanwhile (stale editor)", async ({
+    request,
+    playwright,
+  }) => {
+    // The Players page modal only sends discordId when the admin changed it.
+    // This is the server half of that contract: a full form save without the
+    // key must not touch an ID the player set after the admin loaded the list.
+    const steamId = uniqueSteamId();
+    const discordId = uniqueDiscordId();
+    await adminCreatePlayer(request, { id: steamId, name: 'Stale Before' });
+
+    await selfServiceSet(playwright, steamId, discordId);
+
+    const res = await request.put(`/api/players/${steamId}`, {
+      data: { id: steamId, name: 'Stale After', elo: 1500, isAdmin: false },
+    });
+    expect(res.ok(), await res.text()).toBe(true);
+    const player = ((await res.json()) as { player: AdminPlayer }).player;
+    expect(player.name).toBe('Stale After');
+    expect(player.discordId).toBe(discordId);
+    expect(await storedDiscordId(request, steamId)).toBe(discordId);
+  });
+
   test('an invalid value is a 400 and changes nothing', async ({ request }) => {
     const steamId = uniqueSteamId();
     const discordId = uniqueDiscordId();
@@ -308,15 +455,11 @@ test.describe('Discord ID: team imports', () => {
     const { team } = (await res.json()) as { team: { players: RosterPlayer[] } };
     expect(team.players[0].discordId).toBe(discordId);
 
-    // GET enriches from the players table. Clear the table value: if the ID were
-    // also in the roster JSON, it would still come back.
-    await setDiscordIdAsAdmin(request, steamId, null);
-    const again = await request.get(`/api/teams/${teamId}`);
-    const reread = (await again.json()) as { team: { players: RosterPlayer[] } };
-    expect(reread.team.players[0].discordId).toBeNull();
+    // GET enriches from the players table, so it cannot show what the roster
+    // JSON holds. Read the stored column itself.
+    await expectRosterWithoutDiscordId(request, teamId);
 
-    // The public team page reads the raw roster JSON.
-    await setDiscordIdAsAdmin(request, steamId, discordId);
+    // The public team page must not show it either.
     const anon = await publicContext(playwright);
     try {
       const pub = await anon.get(`/api/team/${teamId}/match`);
@@ -332,7 +475,10 @@ test.describe('Discord ID: team imports', () => {
     const steamId = uniqueSteamId();
     const onFile = uniqueDiscordId();
     const imported = uniqueDiscordId();
-    await adminCreatePlayer(request, { id: steamId, name: 'Kari', discordId: onFile });
+    // On file from an earlier IMPORT, so this is the "different value" warning,
+    // not the "edited by hand" one (see the hand-edit tests).
+    await postTeam(request, uniqueTeamId('first'), [{ steamId, name: 'Kari', discordId: onFile }]);
+    expect(await storedDiscordId(request, steamId)).toBe(onFile);
 
     const different = await postTeam(request, uniqueTeamId('diff'), [
       { steamId, name: 'Kari', discordId: imported },
@@ -425,6 +571,7 @@ test.describe('Discord ID: team imports', () => {
     expect(body.team!.players.find((p) => p.steamId === blank)!.discordId).toBe(newId);
     expect(await storedDiscordId(request, blank)).toBe(newId);
     expect(await storedDiscordId(request, taken)).toBe(takenId);
+    await expectRosterWithoutDiscordId(request, teamId);
   });
 
   test('array POST and PATCH batch prefix warnings with the team', async ({ request }) => {
@@ -450,6 +597,7 @@ test.describe('Discord ID: team imports', () => {
     expect(discordWarnings(arrayBody)).toHaveLength(1);
     expect(discordWarnings(arrayBody)[0].startsWith(`Team '${teamA}': `)).toBe(true);
     expect(arrayBody.successful[0].players[0].discordId).toBe(onFile);
+    await expectRosterWithoutDiscordId(request, teamA);
 
     const patchRes = await request.patch('/api/teams/batch', {
       data: [
@@ -465,11 +613,216 @@ test.describe('Discord ID: team imports', () => {
     expect(discordWarnings(patchBody)[0].startsWith(`Team '${teamA}': `)).toBe(true);
     expect(await storedDiscordId(request, steamId)).toBe(onFile);
 
+    // A PATCH batch with a VALID ID must not store it in the roster either.
+    const patchValid = await request.patch('/api/teams/batch', {
+      data: [
+        {
+          id: teamA,
+          updates: { players: [{ steamId, name: 'Batch', discordId: uniqueDiscordId() }] },
+        },
+      ],
+    });
+    expect(patchValid.status(), await patchValid.text()).toBe(200);
+    await expectRosterWithoutDiscordId(request, teamA);
+
     // No warnings → no key, as before.
     const quiet = await request.patch('/api/teams/batch', {
       data: [{ id: teamA, updates: { players: [{ steamId, name: 'Batch' }] } }],
     });
     expect('warnings' in ((await quiet.json()) as object)).toBe(false);
+  });
+});
+
+test.describe('Discord ID: roster JSON never stores it', () => {
+  test.beforeEach(async ({ request }) => {
+    await signInAdmin(request);
+  });
+
+  test('single POST, array POST, upsert, PUT and PATCH batch', async ({ request }) => {
+    const single = uniqueTeamId('raw-single');
+    const arrayTeam = uniqueTeamId('raw-array');
+    const player = () => ({ steamId: uniqueSteamId(), name: 'Raw', discordId: uniqueDiscordId() });
+
+    await postTeam(request, single, [player()]);
+    await expectRosterWithoutDiscordId(request, single);
+
+    const arrayRes = await request.post('/api/teams', {
+      data: [{ id: arrayTeam, name: 'Raw Array', players: [player(), player()] }],
+    });
+    expect(arrayRes.status(), await arrayRes.text()).toBe(201);
+    await expectRosterWithoutDiscordId(request, arrayTeam);
+
+    await postTeam(request, single, [player()], '?upsert=true');
+    await expectRosterWithoutDiscordId(request, single);
+
+    const put = await request.put(`/api/teams/${single}`, { data: { players: [player()] } });
+    expect(put.ok(), await put.text()).toBe(true);
+    await expectRosterWithoutDiscordId(request, single);
+
+    const patch = await request.patch('/api/teams/batch', {
+      data: [{ id: arrayTeam, updates: { players: [player()] } }],
+    });
+    expect(patch.status(), await patch.text()).toBe(200);
+    await expectRosterWithoutDiscordId(request, arrayTeam);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// 3b. Hand edits lock the ID against imports
+// ---------------------------------------------------------------------------
+
+test.describe('Discord ID: a hand edit is never undone by an import', () => {
+  test.beforeEach(async ({ request }) => {
+    await signInAdmin(request);
+  });
+
+  function handEditWarnings(body: { warnings?: string[] }): string[] {
+    return discordWarnings(body).filter((w) => w.includes('by hand'));
+  }
+
+  test('a player who removed their ID does not get it back from a re-import', async ({
+    request,
+    playwright,
+  }) => {
+    const steamId = uniqueSteamId();
+    const discordId = uniqueDiscordId();
+    const teamId = uniqueTeamId('cleared');
+
+    await postTeam(request, teamId, [{ steamId, name: 'Ola', discordId }]);
+    expect(await storedDiscordId(request, steamId)).toBe(discordId);
+
+    // A parent removes the child's ID on the profile page...
+    await selfServiceSet(playwright, steamId, null);
+    expect(await storedDiscordId(request, steamId)).toBeNull();
+
+    // ...and the admin re-imports the same signup export.
+    const again = await postTeam(request, teamId, [{ steamId, name: 'Ola', discordId }], '?upsert=true');
+    expect(await storedDiscordId(request, steamId)).toBeNull();
+    const warnings = handEditWarnings(again);
+    expect(warnings).toHaveLength(1);
+    expect(warnings[0]).toContain('"Ola"');
+    expect(warnings[0]).toContain('kept');
+    expect(warnings[0]).not.toContain(discordId);
+    expect(warnings[0]).not.toContain(discordId.slice(0, 4));
+
+    // The bulk player import follows the same rule.
+    const bulk = await request.post('/api/players/bulk-import', {
+      data: [{ id: steamId, name: 'Ola', discordId }],
+    });
+    expect(bulk.ok(), await bulk.text()).toBe(true);
+    expect(handEditWarnings((await bulk.json()) as { warnings?: string[] })).toHaveLength(1);
+    expect(await storedDiscordId(request, steamId)).toBeNull();
+  });
+
+  test('a player who set their own ID keeps it over a different import', async ({
+    request,
+    playwright,
+  }) => {
+    const steamId = uniqueSteamId();
+    const own = uniqueDiscordId();
+    const imported = uniqueDiscordId();
+    await adminCreatePlayer(request, { id: steamId, name: 'Kari' });
+
+    await selfServiceSet(playwright, steamId, own);
+
+    const body = await postTeam(request, uniqueTeamId('own'), [
+      { steamId, name: 'Kari', discordId: imported },
+    ]);
+    expect(await storedDiscordId(request, steamId)).toBe(own);
+    const warnings = handEditWarnings(body);
+    expect(warnings).toHaveLength(1);
+    // Says it was kept, not what it is.
+    expect(warnings[0]).not.toContain(own.slice(0, 4));
+    expect(warnings[0]).not.toContain(imported);
+
+    // Importing the value the player already has is silent.
+    const same = await postTeam(request, uniqueTeamId('own-same'), [
+      { steamId, name: 'Kari', discordId: own },
+    ]);
+    expect(discordWarnings(same)).toEqual([]);
+  });
+
+  test('an admin edit locks it too, including an admin clear', async ({ request }) => {
+    const setByAdmin = uniqueSteamId();
+    const clearedByAdmin = uniqueSteamId();
+    const adminValue = uniqueDiscordId();
+    const imported = uniqueDiscordId();
+
+    await adminCreatePlayer(request, { id: setByAdmin, name: 'Set', discordId: adminValue });
+    await postTeam(request, uniqueTeamId('adm-fill'), [
+      { steamId: clearedByAdmin, name: 'Cleared', discordId: imported },
+    ]);
+    await setDiscordIdAsAdmin(request, clearedByAdmin, null);
+
+    const body = await postTeam(request, uniqueTeamId('adm-lock'), [
+      { steamId: setByAdmin, name: 'Set', discordId: imported },
+      { steamId: clearedByAdmin, name: 'Cleared', discordId: imported },
+    ]);
+    expect(await storedDiscordId(request, setByAdmin)).toBe(adminValue);
+    expect(await storedDiscordId(request, clearedByAdmin)).toBeNull();
+    expect(handEditWarnings(body)).toHaveLength(2);
+  });
+
+  test('a player nobody edited still gets an empty ID filled', async ({ request }) => {
+    const steamId = uniqueSteamId();
+    const discordId = uniqueDiscordId();
+    // Created without a discordId key and renamed: neither is a Discord ID edit.
+    await adminCreatePlayer(request, { id: steamId, name: 'Untouched' });
+    const rename = await request.put(`/api/players/${steamId}`, { data: { name: 'Untouched 2' } });
+    expect(rename.ok()).toBe(true);
+
+    const body = await postTeam(request, uniqueTeamId('untouched'), [
+      { steamId, name: 'Untouched 2', discordId },
+    ]);
+    expect(discordWarnings(body)).toEqual([]);
+    expect(await storedDiscordId(request, steamId)).toBe(discordId);
+  });
+
+  test('the edit stamp never appears in a response', async ({ request, playwright }) => {
+    const steamId = uniqueSteamId();
+    const discordId = uniqueDiscordId();
+    const teamId = uniqueTeamId('stamp');
+    await postTeam(request, teamId, [{ steamId, name: 'Stamp' }]);
+    await setDiscordIdAsAdmin(request, steamId, discordId);
+
+    const adminPaths = [
+      '/api/players',
+      `/api/players/${steamId}`,
+      `/api/players/by-discord-id/${discordId}`,
+      `/api/teams/${teamId}`,
+      '/api/teams',
+    ];
+    for (const path of adminPaths) {
+      const text = await (await request.get(path)).text();
+      expect(text, `${path} exposed the edit stamp`).not.toContain('edited_at');
+      expect(text, `${path} exposed the edit stamp`).not.toContain('editedAt');
+    }
+    const put = await request.put(`/api/players/${steamId}`, { data: { discordId } });
+    expect(await put.text()).not.toContain('edited_at');
+
+    const self = await playerContext(playwright, steamId);
+    try {
+      const own = await self.put('/api/players/me/discord-id', { data: { discordId } });
+      expect(await own.text()).not.toContain('edited_at');
+      expect(await (await self.get('/api/players/me/discord-id')).text()).not.toContain('edited_at');
+    } finally {
+      await self.dispose();
+    }
+
+    const anon = await publicContext(playwright);
+    try {
+      for (const path of [
+        `/api/players/${steamId}`,
+        `/api/players/${steamId}/summary`,
+        `/api/players/find?query=${steamId}`,
+        `/api/team/${teamId}/match`,
+      ]) {
+        const text = await (await anon.get(path)).text();
+        expect(text, `${path} exposed the edit stamp`).not.toContain('edited_at');
+      }
+    } finally {
+      await anon.dispose();
+    }
   });
 });
 

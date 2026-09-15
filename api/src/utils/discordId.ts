@@ -49,11 +49,32 @@ export function abbreviateId(value: string): string {
  * `GET /api/players/by-discord-id/:discordId` carries the ID in the URL, and
  * every request path is logged at info level (and failed auth at warn). Without
  * this, the bot's lookups would write a log line per child's Discord ID.
+ *
+ * Two ways the full ID could slip past a naive pattern, both of which Express
+ * still routes to the lookup:
+ * - case: Express matches routes case-insensitively, so `/By-Discord-Id/...`
+ *   is the same request;
+ * - percent-encoding: `req.path` is not decoded, but route params are, so
+ *   `%31%32...` arrives at the handler as a valid ID.
+ *
+ * So the segment after `by-discord-id` (and after `/me/discord-id`, in case a
+ * value is ever appended there) is matched case-insensitively, and any run of
+ * digits, plain or `%3X`-encoded, that decodes to 5 or more digits is
+ * abbreviated. That covers every 17–20 digit ID and near-misses a client got
+ * wrong. Only these segments are touched: Steam IDs elsewhere in a path stay
+ * readable for debugging.
  */
+const DISCORD_ID_PATH_SEGMENT = /(\/(?:by-)?discord-id\/)([^/?#]+)/gi;
+const PATH_DIGIT_RUN = /(?:\d|%3\d)+/gi;
+
 export function redactDiscordIdsInPath(path: string): string {
-  return path.replace(/(\/by-discord-id\/)(\d{5,})/g, (_match, prefix: string, id: string) =>
-    `${prefix}${abbreviateId(id)}`
-  );
+  return path.replace(DISCORD_ID_PATH_SEGMENT, (_match, prefix: string, segment: string) => {
+    const masked = segment.replace(PATH_DIGIT_RUN, (run) => {
+      const decoded = run.replace(/%3(\d)/gi, '$1');
+      return decoded.length >= 5 ? abbreviateId(decoded) : run;
+    });
+    return `${prefix}${masked}`;
+  });
 }
 
 /** How a player is named in a warning — the name and Steam ID the admin sent. */

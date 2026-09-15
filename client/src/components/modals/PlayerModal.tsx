@@ -156,16 +156,24 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     setError('');
 
     try {
-      const normalizedDiscordId = normalizeDiscordId(discordId);
+      const normalizedDiscordId = normalizeDiscordId(discordId) ?? null;
+      // Only send the Discord ID when the admin actually changed it, as
+      // TeamModal does. The modal is opened from a list that may be minutes
+      // old; if the player has since set (or removed) their own ID, echoing
+      // the stale value back on a name-only save would silently overwrite
+      // their edit. An absent key leaves the stored value alone on the server.
+      // On create, a blank field is simply omitted.
+      const originalDiscordId = isEditing ? normalizeDiscordId(player.discordId) ?? null : null;
+      const discordIdChanged = normalizedDiscordId !== originalDiscordId;
       const payload = {
         id: steamId.trim(),
         name: name.trim(),
         avatar: avatar.trim() || undefined,
         elo: elo !== '' ? Number(elo) : undefined,
         isAdmin,
-        // An explicit admin edit: a value sets it, and clearing the field on an
-        // existing player sends null so the stored ID is removed.
-        discordId: normalizedDiscordId ?? (isEditing ? null : undefined),
+        // A value sets it; clearing the field on an existing player sends null
+        // so the stored ID is removed.
+        ...(discordIdChanged ? { discordId: normalizedDiscordId } : {}),
       };
 
       if (isEditing) {

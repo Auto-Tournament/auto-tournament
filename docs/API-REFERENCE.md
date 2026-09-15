@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 194 of them, 143 behind auth —
+Every endpoint this API serves — 195 of them, 144 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -391,6 +391,7 @@ E2E helpers. Disabled in production unless ENABLE_TEST_ENDPOINTS is set.
 | `POST` | `/api/test/pending-steam-link` | admin |
 | `POST` | `/api/test/complete-steam-link` | admin |
 | `GET` | `/api/test/auth-identities` | admin |
+| `GET` | `/api/test/raw-team-roster/:teamId` | admin |
 | `POST` | `/api/test/auth-identities` | admin |
 
 ### Auth
