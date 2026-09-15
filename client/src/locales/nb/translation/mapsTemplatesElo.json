@@ -33,6 +33,13 @@
   "mapModal": {
     "titleCreate": "Legg til kart",
     "titleEdit": "Rediger kart",
+    "workshop": {
+      "inputLabel": "Steam Workshop-URL eller -ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Lim inn en Workshop-URL eller numerisk ID for å fylle ut navn og bilde automatisk.",
+      "found": "Funnet: {{title}}",
+      "lookupFailed": "Oppslag i Workshop mislyktes"
+    },
     "mapIdLabel": "Kart-ID",
     "mapIdPlaceholder": "de_dust2",
     "mapIdHelper": "Kun små bokstaver, tall og understrek (de_dust2)",

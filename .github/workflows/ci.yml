@@ -44,6 +44,14 @@ jobs:
       - name: Typecheck (ratchet)
         run: yarn typecheck:ratchet
 
+      # Every locale must have every key en has (otherwise the UI silently falls
+      # back to English), and no locale file may contain duplicate JSON keys.
+      - name: i18n keys complete
+        working-directory: client
+        run: |
+          node scripts/check-missing-i18n-keys.mjs
+          node scripts/check-duplicate-json-keys.mjs
+
       # docs/API-REFERENCE.md and docs/openapi.json are generated from the
       # routers. This fails when a route is added, removed or has its auth
       # changed without regenerating — the only thing keeping them honest, and

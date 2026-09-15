@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 import {
   Accordion,
   AccordionSummary,
@@ -43,6 +44,7 @@ export function MapAccordion({
   opponentTeamName,
   viewingTeamIsTeam1,
 }: MapAccordionProps) {
+  const { t } = useTranslation();
   const mapData = getMapData(mapName);
   const displayName = getMapDisplayName(mapName);
   const hasDemo = !!mapResult?.demoFilePath;
@@ -69,15 +71,15 @@ export function MapAccordion({
     ? null
     : hasTeamContext
     ? viewingTeamWon
-      ? 'Won'
+      ? t('mapAccordion.won')
       : viewingTeamLost
-      ? 'Lost'
-      : 'Draw'
+      ? t('mapAccordion.lost')
+      : t('mapAccordion.draw')
     : mapResult.winnerTeam === 'team1'
-    ? 'Team 1'
+    ? t('mapAccordion.team1')
     : mapResult.winnerTeam === 'team2'
-    ? 'Team 2'
-    : 'Draw';
+    ? t('mapAccordion.team2')
+    : t('mapAccordion.draw');
 
   // Calculate map duration
   let duration: string | null = null;
@@ -163,7 +165,7 @@ export function MapAccordion({
               onClick={handleDownloadDemo}
               sx={{ flexShrink: 0 }}
             >
-              Download Demo
+              {t('mapAccordion.downloadDemo')}
             </Button>
           )}
         </Box>
@@ -200,20 +202,22 @@ export function MapAccordion({
 
           <Box>
             <Typography variant="body2" color="text.secondary" gutterBottom>
-              Map Information
+              {t('mapAccordion.mapInformation')}
             </Typography>
             <Stack spacing={1}>
               <Box display="flex" justifyContent="space-between">
                 <Typography variant="body2" fontWeight={500}>
-                  Map Number:
+                  {t('mapAccordion.mapNumberLabel')}
                 </Typography>
-                <Typography variant="body2">Map {mapNumber + 1}</Typography>
+                <Typography variant="body2">
+                  {t('mapAccordion.mapN', { n: mapNumber + 1 })}
+                </Typography>
               </Box>
               {mapResult && (
                 <>
                   <Box display="flex" justifyContent="space-between">
                     <Typography variant="body2" fontWeight={500}>
-                      Score:
+                      {t('mapAccordion.scoreLabel')}
                     </Typography>
                     <Typography variant="body2">
                       {mapResult.team1Score} - {mapResult.team2Score}
@@ -222,7 +226,7 @@ export function MapAccordion({
                   {resultLabel && (
                     <Box display="flex" justifyContent="space-between">
                       <Typography variant="body2" fontWeight={500}>
-                        {hasTeamContext ? 'Result:' : 'Winner:'}
+                        {hasTeamContext ? t('mapAccordion.resultLabel') : t('mapAccordion.winnerLabel')}
                       </Typography>
                       <Typography variant="body2">
                         {resultLabel}
@@ -232,7 +236,7 @@ export function MapAccordion({
                   {duration && (
                     <Box display="flex" justifyContent="space-between">
                       <Typography variant="body2" fontWeight={500}>
-                        Duration:
+                        {t('mapAccordion.durationLabel')}
                       </Typography>
                       <Typography variant="body2">{duration}</Typography>
                     </Box>
@@ -240,7 +244,7 @@ export function MapAccordion({
                   {mapResult.completedAt && (
                     <Box display="flex" justifyContent="space-between">
                       <Typography variant="body2" fontWeight={500}>
-                        Completed:
+                        {t('mapAccordion.completedLabel')}
                       </Typography>
                       <Typography variant="body2">
                         {new Date(mapResult.completedAt * 1000).toLocaleString()}
@@ -259,7 +263,7 @@ export function MapAccordion({
               startIcon={<DownloadIcon />}
               onClick={handleDownloadDemo}
             >
-              Download {displayName} Demo
+              {t('mapAccordion.downloadMapDemo', { map: displayName })}
             </Button>
           )}
         </Stack>

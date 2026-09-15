@@ -186,5 +186,12 @@
       "serverEvents": "服务器事件监控",
       "appLogs": "应用日志"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "等待可用服务器",
+      "waiting": "服务器空闲后，此比赛将自动开始。所需服务器：",
+      "nextPass": "{{seconds}} 秒后再次尝试分配"
+    }
   }
 }

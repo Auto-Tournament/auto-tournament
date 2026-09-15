@@ -67,7 +67,16 @@
       "saved": "Discord ID 已保存",
       "removed": "Discord ID 已移除",
       "saveFailed": "保存你的 Discord ID 失败"
-    }
+    },
+    "teamChip": "战队：{{team}}",
+    "myTeam": "我的战队",
+    "openTeam": "打开战队：{{team}}",
+    "you": "你",
+    "noMatchHistory": "暂无比赛记录",
+    "demo": "录像",
+    "downloadDemo": "下载录像",
+    "showingLastMatches": "显示最近 {{shown}} 场比赛，共 {{total}} 场",
+    "noMatchesYet": "暂无比赛"
   },
   "teamPage": {
     "wantYourStats": "想查看自己的数据和比赛记录？",
@@ -111,8 +120,45 @@
     "noMaps": "本场比赛无地图数据。",
     "playerStatsAllMaps": "选手数据（全部地图）",
     "player": "选手",
+    "damage": "伤害",
     "fetchError": "获取比赛详情失败",
     "loadError": "加载比赛详情失败"
+  },
+  "teamHeader": {
+    "soundSettings": "声音设置",
+    "muteNotifications": "静音通知",
+    "unmuteNotifications": "取消通知静音"
+  },
+  "teamStatsCard": {
+    "title": "战队表现",
+    "wins": "胜场",
+    "losses": "负场",
+    "winRate": "胜率",
+    "ofTotal": "共 {{total}} 队"
+  },
+  "playerRosterCard": {
+    "title": "战队阵容",
+    "unknownPlayer": "未知",
+    "rating": "评分：{{rating}}",
+    "viewPlayerStats": "查看选手数据",
+    "viewSteamProfile": "查看 Steam 个人资料"
+  },
+  "mapAccordion": {
+    "won": "胜",
+    "lost": "负",
+    "draw": "平",
+    "team1": "队伍 1",
+    "team2": "队伍 2",
+    "downloadDemo": "下载录像",
+    "downloadMapDemo": "下载 {{map}} 录像",
+    "mapInformation": "地图信息",
+    "mapNumberLabel": "地图序号：",
+    "mapN": "第 {{n}} 张地图",
+    "scoreLabel": "比分：",
+    "resultLabel": "结果：",
+    "winnerLabel": "胜者：",
+    "durationLabel": "时长：",
+    "completedLabel": "结束时间："
   },
   "leaderboardPage": {
     "emptyTitle": "暂无锦标赛排行榜",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "导入警告（{{count}}）：",
     "more": "……还有 {{count}} 条"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "等待锦标赛开始",
+    "waitingForTournamentBody": "你的比赛已就绪，但锦标赛尚未开始。管理员开始锦标赛后，即可进行地图否决。",
+    "tournamentStatusSetup": "锦标赛状态：准备阶段",
+    "waitingForOpponentTitle": "等待对手",
+    "waitingForOpponentBody": "你已晋级下一轮。下一个对手尚未确定，双方队伍确定后将开放地图否决。",
+    "mapSelectionTitle": "地图选择",
+    "tournamentStartedTitle": "锦标赛已开始！",
+    "tournamentStartedBody": "完成地图否决流程即可开始比赛。",
+    "mapN": "第 {{n}} 张地图",
+    "mapFinishedWaiting": "本图已结束，等待系列赛下一张地图...",
+    "allPlayersConnected": "所有必需选手均已连接，比赛可以开始。",
+    "waitingForPlayers": "等待选手连接（{{connected}}/{{expected}}）",
+    "copyBlocked": "浏览器阻止了复制。命令显示在下方，你可以手动复制。",
+    "copyFallback": "此浏览器无法自动复制。请在控制台中运行：{{command}}",
+    "team1": "队伍 1",
+    "team2": "队伍 2",
+    "liveStatus": {
+      "warmup": "热身",
+      "knife": "刀局",
+      "live": "进行中",
+      "halftime": "半场休息",
+      "postgame": "本图已结束 – 等待下一张地图",
+      "overtime": "加时 #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "获胜地图数",
+      "currentMapScore": "当前地图比分（回合）",
+      "eloAvg": "ELO（平均）：{{elo}}",
+      "vs": "对阵",
+      "tbd": "待定"
+    },
+    "server": {
+      "waitingTitle": "等待分配服务器",
+      "waitingBody": "一旦有可用服务器，将自动为你分配。每场比赛结束后，服务器会进入短暂的冷却期（约 2 分钟），以便上传录像并完全重置服务器。服务器就绪后此页面会自动更新。",
+      "serverName": "服务器：{{name}}",
+      "status": "状态：{{status}}",
+      "connect": "连接服务器",
+      "connecting": "✓ 正在连接...",
+      "copyCommand": "复制控制台命令",
+      "copied": "✓ 已复制！",
+      "statusLabels": {
+        "idle": "空闲",
+        "loading": "加载中",
+        "warmup": "热身中 – 立即加入！",
+        "knife": "刀局",
+        "live": "进行中",
+        "paused": "已暂停",
+        "halftime": "半场休息",
+        "postgame": "比赛已结束",
+        "queued": "下一场比赛排队中",
+        "error": "错误"
+      }
+    },
+    "performance": {
+      "title": "选手表现",
+      "player": "选手",
+      "waitingForStats": "等待数据...",
+      "yourTeam": "你的战队",
+      "opponent": "对手"
+    },
+    "mapChips": {
+      "live": "进行中"
+    },
+    "demos": {
+      "title": "地图录像",
+      "download": "下载 {{map}} 录像"
+    }
+  },
+  "tournamentRules": {
+    "title": "关于本锦标赛",
+    "intro": "以下是本锦标赛用于判定比赛结果的核心规则。",
+    "matchFormatLabel": "比赛赛制：",
+    "regulationLabel": "常规回合：",
+    "overtimeLabel": "加时：",
+    "tiesLabel": "平局处理方式：",
+    "format": {
+      "bo1": "BO1（一局定胜负）– 赢下地图的队伍赢得比赛。",
+      "bo3": "BO3（三局两胜）– 先赢下 2 张地图的队伍赢得比赛。",
+      "bo5": "BO5（五局三胜）– 先赢下 3 张地图的队伍赢得比赛。"
+    },
+    "regulationWithRounds": "每张地图最多进行 {{rounds}} 个回合。常规时间结束时回合数较多的队伍赢得该地图。",
+    "regulationGeneric": "每张地图进行固定数量的回合。常规时间结束时回合数较多的队伍赢得该地图。",
+    "overtime": {
+      "disabled": "加时：已禁用（仅常规时间）。",
+      "enabledSegments_one": "加时：已启用，最多 {{count}} 段加时。",
+      "enabledSegments_other": "加时：已启用，最多 {{count}} 段加时。",
+      "enabled": "加时：已启用。常规时间比分相同时将进入加时，直到一方领先结束。",
+      "effectivelyDisabled": "加时：实际上已禁用（仅常规时间）。",
+      "implicitSegments_one": "加时：已启用，最多 {{count}} 段加时（隐式）。",
+      "implicitSegments_other": "加时：已启用，最多 {{count}} 段加时（隐式）。",
+      "standard": "加时：标准设置。常规时间比分相同时通常会进入加时。"
+    },
+    "tiebreak": {
+      "disabled": "如果常规时间结束时比分相同，比赛不会进入加时，而是根据该地图上队伍的总伤害判定胜者。如果总伤害也完全相同，则判为真正的平局。",
+      "enabledSegments": "如果在设定的加时段结束后比分仍然相同，则根据该地图上队伍的总伤害判定胜者。如果伤害也相同，则记为平局。",
+      "enabled": "正常情况下，最终比分较高的一方获胜。平局非常少见，只有在比分和伤害都完全相同时才会出现。",
+      "effectivelyDisabled": "如果常规时间结束时比分相同，比赛不会进入加时。根据该地图上队伍的总伤害判定胜者；如果伤害也相同，则比赛为平局。",
+      "implicitSegments": "如果在设定的加时段结束后比分仍然相同，则根据队伍总伤害判定胜者。如果伤害也相同，则结果为平局。",
+      "standard": "大多数情况下，最终比分较高的队伍获胜。只有当比分和总伤害都完全相同时，才会记为真正的平局。"
+    }
   }
 }

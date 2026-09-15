@@ -186,5 +186,12 @@
       "serverEvents": "Monitor zdarzeń serwera",
       "appLogs": "Logi aplikacji"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Oczekiwanie na wolny serwer",
+      "waiting": "Ten mecz rozpocznie się automatycznie, gdy zwolnią się serwery. Potrzebne serwery:",
+      "nextPass": "Następna próba przydziału za {{seconds}} s"
+    }
   }
 }

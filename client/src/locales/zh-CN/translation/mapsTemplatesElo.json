@@ -33,6 +33,13 @@
   "mapModal": {
     "titleCreate": "新增地图",
     "titleEdit": "编辑地图",
+    "workshop": {
+      "inputLabel": "Steam 创意工坊 URL 或 ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "粘贴创意工坊 URL 或数字 ID，自动填写名称和图片。",
+      "found": "已找到：{{title}}",
+      "lookupFailed": "创意工坊查询失败"
+    },
     "mapIdLabel": "地图 ID",
     "mapIdPlaceholder": "de_dust2",
     "mapIdHelper": "仅允许小写字母、数字和下划线（例如：de_dust2）",

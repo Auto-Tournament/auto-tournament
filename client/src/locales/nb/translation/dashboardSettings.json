@@ -201,6 +201,10 @@
           "stopCommandNoDamage": "Deaktiver .stop etter skade på motstanderlaget",
           "usePauseForTacticalPause": "La .pause oppføre seg som taktisk pause"
         },
+        "hostname": {
+          "formatLabel": "Format for serverens vertsnavn",
+          "formatHelper": "Brukes på alle servere når en kamp lastes. Variabler: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. La feltet stå tomt for å beholde vertsnavnet hver server setter i sin egen konfig."
+        },
         "demos": {
           "title": "Demoer",
           "demoPathLabel": "Demo-sti (relativ til csgo/)",

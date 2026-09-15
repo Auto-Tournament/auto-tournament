@@ -67,7 +67,16 @@
       "saved": "ID do Discord guardado",
       "removed": "ID do Discord removido",
       "saveFailed": "Não foi possível guardar o teu ID do Discord"
-    }
+    },
+    "teamChip": "Equipa: {{team}}",
+    "myTeam": "A minha equipa",
+    "openTeam": "Abrir equipa: {{team}}",
+    "you": "Tu",
+    "noMatchHistory": "Ainda sem histórico de jogos",
+    "demo": "Demo",
+    "downloadDemo": "Transferir demo",
+    "showingLastMatches": "A mostrar os últimos {{shown}} jogos. Total: {{total}}",
+    "noMatchesYet": "Ainda sem jogos"
   },
   "teamPage": {
     "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",
@@ -111,8 +120,45 @@
     "noMaps": "Sem mapas disponíveis para este jogo.",
     "playerStatsAllMaps": "Estatísticas de jogadores (todos os mapas)",
     "player": "Jogador",
+    "damage": "Dano",
     "fetchError": "Falha ao obter detalhes do jogo",
     "loadError": "Falha ao carregar detalhes do jogo"
+  },
+  "teamHeader": {
+    "soundSettings": "Definições de som",
+    "muteNotifications": "Silenciar notificações",
+    "unmuteNotifications": "Ativar som das notificações"
+  },
+  "teamStatsCard": {
+    "title": "Desempenho da equipa",
+    "wins": "Vitórias",
+    "losses": "Derrotas",
+    "winRate": "Taxa de vitórias",
+    "ofTotal": "de {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Plantel da equipa",
+    "unknownPlayer": "Desconhecido",
+    "rating": "Classificação: {{rating}}",
+    "viewPlayerStats": "Ver estatísticas do jogador",
+    "viewSteamProfile": "Ver perfil Steam"
+  },
+  "mapAccordion": {
+    "won": "Ganho",
+    "lost": "Perdido",
+    "draw": "Empate",
+    "team1": "Equipa 1",
+    "team2": "Equipa 2",
+    "downloadDemo": "Transferir demo",
+    "downloadMapDemo": "Transferir demo de {{map}}",
+    "mapInformation": "Informação do mapa",
+    "mapNumberLabel": "Número do mapa:",
+    "mapN": "Mapa {{n}}",
+    "scoreLabel": "Resultado:",
+    "resultLabel": "Desfecho:",
+    "winnerLabel": "Vencedor:",
+    "durationLabel": "Duração:",
+    "completedLabel": "Concluído:"
   },
   "leaderboardPage": {
     "emptyTitle": "Ainda não há classificação do torneio",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Avisos da importação ({{count}}):",
     "more": "…e mais {{count}}"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "À espera do início do torneio",
+    "waitingForTournamentBody": "O teu jogo está pronto, mas o torneio ainda não começou. O veto de mapas ficará disponível assim que o administrador iniciar o torneio.",
+    "tournamentStatusSetup": "Estado do torneio: fase de configuração",
+    "waitingForOpponentTitle": "À espera do adversário",
+    "waitingForOpponentBody": "Avançaste para a ronda seguinte. O teu próximo adversário ainda não está decidido, por isso o veto de mapas abrirá quando ambas as equipas forem conhecidas.",
+    "mapSelectionTitle": "Seleção de mapas",
+    "tournamentStartedTitle": "O torneio começou!",
+    "tournamentStartedBody": "Conclui o veto de mapas para começar o teu jogo.",
+    "mapN": "Mapa {{n}}",
+    "mapFinishedWaiting": "Mapa terminado. À espera do próximo mapa desta série...",
+    "allPlayersConnected": "Todos os jogadores necessários estão ligados. O jogo pode começar.",
+    "waitingForPlayers": "À espera que os jogadores se liguem ({{connected}}/{{expected}})",
+    "copyBlocked": "O teu navegador bloqueou a cópia. O comando é mostrado abaixo para que o possas copiar manualmente.",
+    "copyFallback": "Não é possível copiar automaticamente neste navegador. Executa na consola: {{command}}",
+    "team1": "Equipa 1",
+    "team2": "Equipa 2",
+    "liveStatus": {
+      "warmup": "Aquecimento",
+      "knife": "Ronda de knife",
+      "live": "Em direto",
+      "halftime": "Intervalo",
+      "postgame": "Mapa terminado – à espera do próximo mapa",
+      "overtime": "PROLONGAMENTO #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Mapas ganhos",
+      "currentMapScore": "Resultado do mapa atual (rondas)",
+      "eloAvg": "ELO (média): {{elo}}",
+      "vs": "VS",
+      "tbd": "A definir"
+    },
+    "server": {
+      "waitingTitle": "À espera de atribuição de servidor",
+      "waitingBody": "Um servidor será atribuído automaticamente assim que houver um disponível. Após cada jogo, os servidores entram num breve período de arrefecimento (cerca de 2 minutos) para que as demos sejam enviadas e o servidor seja totalmente reiniciado. Esta página será atualizada automaticamente quando o teu servidor estiver pronto.",
+      "serverName": "Servidor: {{name}}",
+      "status": "Estado: {{status}}",
+      "connect": "Ligar ao servidor",
+      "connecting": "✓ A ligar...",
+      "copyCommand": "Copiar comando da consola",
+      "copied": "✓ Copiado!",
+      "statusLabels": {
+        "idle": "Disponível",
+        "loading": "A carregar",
+        "warmup": "Aquecimento – entra já!",
+        "knife": "Ronda de knife",
+        "live": "Em direto",
+        "paused": "Em pausa",
+        "halftime": "Intervalo",
+        "postgame": "Jogo terminado",
+        "queued": "Próximo jogo em fila",
+        "error": "Erro"
+      }
+    },
+    "performance": {
+      "title": "Desempenho dos jogadores",
+      "player": "Jogador",
+      "waitingForStats": "À espera das estatísticas...",
+      "yourTeam": "A tua equipa",
+      "opponent": "Adversário"
+    },
+    "mapChips": {
+      "live": "Em direto"
+    },
+    "demos": {
+      "title": "Demos dos mapas",
+      "download": "Transferir demo de {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "Sobre este torneio",
+    "intro": "Estas são as regras base usadas para decidir os jogos deste torneio.",
+    "matchFormatLabel": "Formato do jogo:",
+    "regulationLabel": "Rondas regulamentares:",
+    "overtimeLabel": "Prolongamento:",
+    "tiesLabel": "Como são resolvidos os empates:",
+    "format": {
+      "bo1": "Melhor de 1 mapa – quem ganha o mapa ganha o jogo.",
+      "bo3": "Melhor de 3 mapas – a primeira equipa a ganhar 2 mapas ganha o jogo.",
+      "bo5": "Melhor de 5 mapas – a primeira equipa a ganhar 3 mapas ganha o jogo."
+    },
+    "regulationWithRounds": "Cada mapa é jogado até {{rounds}} rondas. A equipa com mais rondas no fim do tempo regulamentar ganha o mapa.",
+    "regulationGeneric": "Cada mapa é jogado num número fixo de rondas. A equipa com mais rondas no fim do tempo regulamentar ganha o mapa.",
+    "overtime": {
+      "disabled": "Prolongamento: desativado (apenas tempo regulamentar).",
+      "enabledSegments_one": "Prolongamento: ativado com até {{count}} segmento de prolongamento.",
+      "enabledSegments_other": "Prolongamento: ativado com até {{count}} segmentos de prolongamento.",
+      "enabled": "Prolongamento: ativado. Um empate no fim do tempo regulamentar leva a prolongamento até uma equipa terminar em vantagem.",
+      "effectivelyDisabled": "Prolongamento: na prática desativado (apenas tempo regulamentar).",
+      "implicitSegments_one": "Prolongamento: ativado com até {{count}} segmento de prolongamento (implícito).",
+      "implicitSegments_other": "Prolongamento: ativado com até {{count}} segmentos de prolongamento (implícito).",
+      "standard": "Prolongamento: definições padrão. Um empate no fim do tempo regulamentar normalmente leva a prolongamento."
+    },
+    "tiebreak": {
+      "disabled": "Se o tempo regulamentar terminar empatado, o jogo não vai a prolongamento. Em vez disso, o vencedor é decidido pelo dano total da equipa no mapa. Se o dano total também for exatamente igual, o resultado é um empate verdadeiro.",
+      "enabledSegments": "Se o resultado continuar empatado após os segmentos de prolongamento configurados, o vencedor é decidido pelo dano total da equipa no mapa. Se o dano também estiver empatado, o resultado é registado como empate.",
+      "enabled": "Em jogo normal, o resultado final mais alto decide o vencedor. Os empates são raros e só acontecem se o resultado e o dano ficarem exatamente iguais.",
+      "effectivelyDisabled": "Se o tempo regulamentar terminar empatado, o jogo não vai a prolongamento. O vencedor é decidido pelo dano total da equipa no mapa; se o dano estiver empatado, o jogo termina empatado.",
+      "implicitSegments": "Se o resultado continuar empatado após os segmentos de prolongamento configurados, o vencedor é decidido pelo dano total da equipa. Se o dano estiver empatado, o resultado é um empate.",
+      "standard": "Na maioria dos casos, ganha a equipa com o resultado final mais alto. Só quando o resultado e o dano total estão exatamente iguais é que o resultado é registado como um empate verdadeiro."
+    }
   }
 }

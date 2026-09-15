@@ -186,5 +186,12 @@
       "serverEvents": "Monitor de eventos do servidor",
       "appLogs": "Logs da aplicação"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "À espera de um servidor disponível",
+      "waiting": "Este jogo começará automaticamente assim que houver servidores livres. Servidores necessários:",
+      "nextPass": "Próxima tentativa de atribuição em {{seconds}} s"
+    }
   }
 }

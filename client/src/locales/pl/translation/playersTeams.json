@@ -67,7 +67,16 @@
       "saved": "Zapisano ID Discord",
       "removed": "Usunięto ID Discord",
       "saveFailed": "Nie udało się zapisać Twojego ID Discord"
-    }
+    },
+    "teamChip": "Drużyna: {{team}}",
+    "myTeam": "Moja drużyna",
+    "openTeam": "Otwórz drużynę: {{team}}",
+    "you": "Ty",
+    "noMatchHistory": "Brak historii meczów",
+    "demo": "Demo",
+    "downloadDemo": "Pobierz demo",
+    "showingLastMatches": "Wyświetlane ostatnie mecze: {{shown}}. Łącznie: {{total}}",
+    "noMatchesYet": "Brak meczów"
   },
   "teamPage": {
     "wantYourStats": "Chcesz zobaczyć swoje statystyki i historię meczów?",
@@ -111,8 +120,45 @@
     "noMaps": "Brak map dla tego meczu.",
     "playerStatsAllMaps": "Statystyki graczy (wszystkie mapy)",
     "player": "Gracz",
+    "damage": "Obrażenia",
     "fetchError": "Nie udało się pobrać szczegółów meczu",
     "loadError": "Nie udało się załadować szczegółów meczu"
+  },
+  "teamHeader": {
+    "soundSettings": "Ustawienia dźwięku",
+    "muteNotifications": "Wycisz powiadomienia",
+    "unmuteNotifications": "Włącz dźwięk powiadomień"
+  },
+  "teamStatsCard": {
+    "title": "Wyniki drużyny",
+    "wins": "Zwycięstwa",
+    "losses": "Porażki",
+    "winRate": "Procent zwycięstw",
+    "ofTotal": "z {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Skład drużyny",
+    "unknownPlayer": "Nieznany",
+    "rating": "Ocena: {{rating}}",
+    "viewPlayerStats": "Zobacz statystyki gracza",
+    "viewSteamProfile": "Zobacz profil Steam"
+  },
+  "mapAccordion": {
+    "won": "Wygrana",
+    "lost": "Przegrana",
+    "draw": "Remis",
+    "team1": "Drużyna 1",
+    "team2": "Drużyna 2",
+    "downloadDemo": "Pobierz demo",
+    "downloadMapDemo": "Pobierz demo z {{map}}",
+    "mapInformation": "Informacje o mapie",
+    "mapNumberLabel": "Numer mapy:",
+    "mapN": "Mapa {{n}}",
+    "scoreLabel": "Wynik:",
+    "resultLabel": "Rezultat:",
+    "winnerLabel": "Zwycięzca:",
+    "durationLabel": "Czas trwania:",
+    "completedLabel": "Zakończono:"
   },
   "leaderboardPage": {
     "emptyTitle": "Brak rankingu turnieju",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Ostrzeżenia z importu ({{count}}):",
     "more": "…i jeszcze {{count}}"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "Oczekiwanie na start turnieju",
+    "waitingForTournamentBody": "Twój mecz jest gotowy, ale turniej jeszcze się nie rozpoczął. Veto map będzie dostępne, gdy administrator turnieju go uruchomi.",
+    "tournamentStatusSetup": "Status turnieju: faza konfiguracji",
+    "waitingForOpponentTitle": "Oczekiwanie na przeciwnika",
+    "waitingForOpponentBody": "Awansowaliście do następnej rundy. Kolejny przeciwnik nie jest jeszcze znany, więc veto map otworzy się, gdy obie drużyny będą ustalone.",
+    "mapSelectionTitle": "Wybór map",
+    "tournamentStartedTitle": "Turniej wystartował!",
+    "tournamentStartedBody": "Dokończ veto map, aby rozpocząć mecz.",
+    "mapN": "Mapa {{n}}",
+    "mapFinishedWaiting": "Mapa zakończona. Oczekiwanie na następną mapę w tej serii...",
+    "allPlayersConnected": "Wszyscy wymagani gracze są połączeni. Mecz może się rozpocząć.",
+    "waitingForPlayers": "Oczekiwanie na połączenie graczy ({{connected}}/{{expected}})",
+    "copyBlocked": "Przeglądarka zablokowała kopiowanie. Polecenie jest widoczne poniżej, więc możesz skopiować je ręcznie.",
+    "copyFallback": "Nie można automatycznie skopiować w tej przeglądarce. Wpisz w konsoli: {{command}}",
+    "team1": "Drużyna 1",
+    "team2": "Drużyna 2",
+    "liveStatus": {
+      "warmup": "Rozgrzewka",
+      "knife": "Runda nożowa",
+      "live": "Na żywo",
+      "halftime": "Przerwa",
+      "postgame": "Mapa zakończona – oczekiwanie na następną mapę",
+      "overtime": "DOGRYWKA #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Wygrane mapy",
+      "currentMapScore": "Wynik bieżącej mapy (rundy)",
+      "eloAvg": "ELO (śr.): {{elo}}",
+      "vs": "VS",
+      "tbd": "Do ustalenia"
+    },
+    "server": {
+      "waitingTitle": "Oczekiwanie na przydział serwera",
+      "waitingBody": "Serwer zostanie przydzielony automatycznie, gdy tylko któryś będzie wolny. Po każdym meczu serwery przechodzą krótki cooldown (około 2 minut), aby dema mogły zostać wysłane, a serwer w pełni zresetowany. Ta strona odświeży się automatycznie, gdy Twój serwer będzie gotowy.",
+      "serverName": "Serwer: {{name}}",
+      "status": "Status: {{status}}",
+      "connect": "Połącz z serwerem",
+      "connecting": "✓ Łączenie...",
+      "copyCommand": "Kopiuj polecenie konsoli",
+      "copied": "✓ Skopiowano!",
+      "statusLabels": {
+        "idle": "Dostępny",
+        "loading": "Ładowanie",
+        "warmup": "Rozgrzewka – dołącz teraz!",
+        "knife": "Runda nożowa",
+        "live": "Na żywo",
+        "paused": "Wstrzymany",
+        "halftime": "Przerwa",
+        "postgame": "Mecz zakończony",
+        "queued": "Następny mecz w kolejce",
+        "error": "Błąd"
+      }
+    },
+    "performance": {
+      "title": "Wyniki graczy",
+      "player": "Gracz",
+      "waitingForStats": "Oczekiwanie na statystyki...",
+      "yourTeam": "Twoja drużyna",
+      "opponent": "Przeciwnik"
+    },
+    "mapChips": {
+      "live": "Na żywo"
+    },
+    "demos": {
+      "title": "Dema map",
+      "download": "Pobierz demo z {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "O tym turnieju",
+    "intro": "To podstawowe zasady rozstrzygania meczów w tym turnieju.",
+    "matchFormatLabel": "Format meczu:",
+    "regulationLabel": "Rundy regulaminowe:",
+    "overtimeLabel": "Dogrywka:",
+    "tiesLabel": "Rozstrzyganie remisów:",
+    "format": {
+      "bo1": "Best of 1 – zwycięzca mapy wygrywa mecz.",
+      "bo3": "Best of 3 – pierwsza drużyna, która wygra 2 mapy, wygrywa mecz.",
+      "bo5": "Best of 5 – pierwsza drużyna, która wygra 3 mapy, wygrywa mecz."
+    },
+    "regulationWithRounds": "Każda mapa jest rozgrywana do {{rounds}} rund. Drużyna z większą liczbą rund na koniec czasu regulaminowego wygrywa mapę.",
+    "regulationGeneric": "Każda mapa jest rozgrywana przez stałą liczbę rund. Drużyna z większą liczbą rund na koniec czasu regulaminowego wygrywa mapę.",
+    "overtime": {
+      "disabled": "Dogrywka: wyłączona (tylko czas regulaminowy).",
+      "enabledSegments_one": "Dogrywka: włączona, maksymalnie {{count}} segment dogrywki.",
+      "enabledSegments_other": "Dogrywka: włączona, maksymalna liczba segmentów dogrywki: {{count}}.",
+      "enabled": "Dogrywka: włączona. Remis po czasie regulaminowym oznacza dogrywkę, dopóki jedna z drużyn nie wyjdzie na prowadzenie.",
+      "effectivelyDisabled": "Dogrywka: w praktyce wyłączona (tylko czas regulaminowy).",
+      "implicitSegments_one": "Dogrywka: włączona, maksymalnie {{count}} segment dogrywki (domyślnie).",
+      "implicitSegments_other": "Dogrywka: włączona, maksymalna liczba segmentów dogrywki: {{count}} (domyślnie).",
+      "standard": "Dogrywka: ustawienia standardowe. Remis po czasie regulaminowym zwykle oznacza dogrywkę."
+    },
+    "tiebreak": {
+      "disabled": "Jeśli czas regulaminowy kończy się remisem, mecz nie przechodzi do dogrywki. Zamiast tego o zwycięzcy decydują łączne obrażenia zadane przez drużynę na mapie. Jeśli łączne obrażenia również są dokładnie równe, wynikiem jest prawdziwy remis.",
+      "enabledSegments": "Jeśli po skonfigurowanych segmentach dogrywki nadal jest remis, o zwycięzcy decydują łączne obrażenia zadane przez drużynę na mapie. Jeśli obrażenia również są równe, wynik zostaje zapisany jako remis.",
+      "enabled": "W normalnej grze o zwycięzcy decyduje wyższy wynik końcowy. Remisy są rzadkie i zdarzają się tylko wtedy, gdy zarówno wynik, jak i obrażenia są dokładnie równe.",
+      "effectivelyDisabled": "Jeśli czas regulaminowy kończy się remisem, mecz nie przechodzi do dogrywki. O zwycięzcy decydują łączne obrażenia zadane przez drużynę na mapie; jeśli obrażenia są równe, mecz kończy się remisem.",
+      "implicitSegments": "Jeśli po skonfigurowanych segmentach dogrywki nadal jest remis, o zwycięzcy decydują łączne obrażenia drużyny. Jeśli obrażenia są równe, wynikiem jest remis.",
+      "standard": "W większości przypadków wygrywa drużyna z wyższym wynikiem końcowym. Tylko gdy wynik i łączne obrażenia są dokładnie równe, rezultat zostaje zapisany jako prawdziwy remis."
+    }
   }
 }

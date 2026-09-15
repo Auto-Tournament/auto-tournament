@@ -33,6 +33,13 @@
   "mapModal": {
     "titleCreate": "Kaart toevoegen",
     "titleEdit": "Kaart bewerken",
+    "workshop": {
+      "inputLabel": "Steam Workshop-URL of -ID",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Plak een Workshop-URL of numerieke ID om naam en afbeelding automatisch in te vullen.",
+      "found": "Gevonden: {{title}}",
+      "lookupFailed": "Opzoeken in Workshop mislukt"
+    },
     "mapIdLabel": "Kaart-ID",
     "mapIdPlaceholder": "de_dust2",
     "mapIdHelper": "Alleen kleine letters, cijfers en underscores (de_dust2)",

@@ -120,8 +120,45 @@
     "noMaps": "Ingen kart tilgjengelig for denne kampen.",
     "playerStatsAllMaps": "Spillerstatistikk (alle kart)",
     "player": "Spiller",
+    "damage": "Skade",
     "fetchError": "Klarte ikke å hente kampdetaljer",
     "loadError": "Klarte ikke å laste kampdetaljer"
+  },
+  "teamHeader": {
+    "soundSettings": "Lydinnstillinger",
+    "muteNotifications": "Demp varsler",
+    "unmuteNotifications": "Slå på varsellyd"
+  },
+  "teamStatsCard": {
+    "title": "Lagprestasjon",
+    "wins": "Seire",
+    "losses": "Tap",
+    "winRate": "Seiersprosent",
+    "ofTotal": "av {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Lagoppstilling",
+    "unknownPlayer": "Ukjent",
+    "rating": "Rating: {{rating}}",
+    "viewPlayerStats": "Se spillerstatistikk",
+    "viewSteamProfile": "Se Steam-profil"
+  },
+  "mapAccordion": {
+    "won": "Vunnet",
+    "lost": "Tapt",
+    "draw": "Uavgjort",
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "downloadDemo": "Last ned demo",
+    "downloadMapDemo": "Last ned demo for {{map}}",
+    "mapInformation": "Kartinformasjon",
+    "mapNumberLabel": "Kartnummer:",
+    "mapN": "Kart {{n}}",
+    "scoreLabel": "Resultat:",
+    "resultLabel": "Utfall:",
+    "winnerLabel": "Vinner:",
+    "durationLabel": "Varighet:",
+    "completedLabel": "Fullført:"
   },
   "leaderboardPage": {
     "emptyTitle": "Ingen turneringstoppliste ennå",
