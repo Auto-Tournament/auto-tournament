@@ -51,7 +51,7 @@
         "typeLabel": "Turniertyp",
         "formatLabel": "Match-Format",
         "notSet": "Nicht gesetzt",
-        "estimatedVolume": "Ungefähr {{matches}} Matches über {{rounds}} Runden (Best-of {{mapsPerMatch}}, insgesamt bis zu {{totalMaps}} Maps)."
+        "estimatedVolumeText": "Ungefähr {{matches}} über {{rounds}} (Best of {{mapsPerMatch}}, insgesamt bis zu {{maps}})."
       }
     },
     "formSteps": {
@@ -75,12 +75,328 @@
       "createTournament": "Turnier erstellen"
     },
     "nameLabel": "Turniername",
-    "namePlaceholder": "MAT 2025 Frühjahrs-Turnier"
+    "namePlaceholder": "MAT 2025 Frühjahrs-Turnier",
+    "champion": {
+      "title": "Turniersieger"
+    },
+    "page": {
+      "title": "Turnier-Einrichtung"
+    },
+    "labels": {
+      "teams": "Mannschaften",
+      "maps": "Karten",
+      "format": "Modus",
+      "players": "Spieler",
+      "matchRules": "Match-Regeln",
+      "servers": "Server",
+      "overtimeSettings": "Verlängerungs-Einstellungen",
+      "mapPool": "Kartenpool"
+    },
+    "tooltips": {
+      "deleteTournament": "Dieses Turnier und alle zugehörigen Daten dauerhaft löschen"
+    },
+    "counts": {
+      "teams_one": "{{count}} Mannschaft",
+      "teams_other": "{{count}} Mannschaften",
+      "matches_one": "{{count}} Match",
+      "matches_other": "{{count}} Matches",
+      "rounds_one": "{{count}} Runde",
+      "rounds_other": "{{count}} Runden",
+      "maps_one": "{{count}} Karte",
+      "maps_other": "{{count}} Karten",
+      "servers_one": "{{count}} Server",
+      "servers_other": "{{count}} Server",
+      "availableServers_one": "{{count}} verfügbaren Server",
+      "availableServers_other": "{{count}} verfügbare Server",
+      "concurrentMatches_one": "{{count}} gleichzeitiges Match",
+      "concurrentMatches_other": "{{count}} gleichzeitige Matches"
+    },
+    "matchRules": {
+      "value": "Maximal {{maxRounds}} Runden pro Karte; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt.",
+      "teamSizeValue": "Teamgröße: {{size}}v{{size}}",
+      "overtimeEnabled": "Verlängerung: aktiviert",
+      "overtimeDisabled": "Verlängerung: deaktiviert (keine Verlängerung)",
+      "overtimeDisabledNoDraws": "Verlängerung: deaktiviert (kein Unentschieden – Schaden entscheidet)",
+      "overtimeSegments_one": "Verlängerungsabschnitte: {{count}} Abschnitt",
+      "overtimeSegments_other": "Verlängerungsabschnitte: {{count}} Abschnitte",
+      "overtimeSegmentsDefault": "Verlängerungsabschnitte: MatchZy-Standard",
+      "overtimeSegmentsDefaultUnlimited": "Verlängerungsabschnitte: MatchZy-Standard (normalerweise unbegrenzt)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Vorlage konnte nicht geladen werden",
+      "nameRequired": "Ein Turniername ist erforderlich",
+      "nameUpdated": "Turniername aktualisiert",
+      "nameUpdateFailed": "Turniername konnte nicht aktualisiert werden",
+      "selectAtLeastOneMap": "Bitte wähle mindestens 1 Karte aus",
+      "maxRoundsRange": "Die maximale Rundenzahl muss zwischen 1 und 30 liegen",
+      "teamSizeRange": "Die Teamgröße muss zwischen 2 und 10 Spielern liegen",
+      "invalidTeamCount": "Ungültige Anzahl an Mannschaften",
+      "selectAtLeastTwoTeams": "Bitte wähle mindestens 2 Mannschaften aus",
+      "shuffleCreated": "Shuffle-Turnier „{{name}}“ wurde erstellt! Nächster Schritt: Registriere mindestens {{minPlayers}} Spieler, um das Turnier zu starten ({{teamSize}}v{{teamSize}}-Matches).",
+      "shuffleCreateFailed": "Shuffle-Turnier konnte nicht erstellt werden",
+      "shuffleCreateFailedRetry": "Shuffle-Turnier konnte nicht erstellt werden. Prüfe die Einstellungen und versuche es erneut.",
+      "updated": "Turnier aktualisiert und Turnierbaum neu erstellt!",
+      "created": "Turnier erstellt!",
+      "saveFailed": "Turnier konnte nicht gespeichert werden",
+      "deleted": "Turnier erfolgreich gelöscht",
+      "deleteFailed": "Turnier konnte nicht gelöscht werden",
+      "regenerated": "Turnierbaum erfolgreich neu erstellt",
+      "regenerateFailed": "Turnierbaum konnte nicht neu erstellt werden",
+      "resetDone": "Turnier auf den Einrichtungsmodus zurückgesetzt",
+      "resetFailed": "Turnier konnte nicht zurückgesetzt werden",
+      "started_one": "Turnier gestartet! {{count}} Match wurde Servern zugewiesen.",
+      "started_other": "Turnier gestartet! {{count}} Matches wurden Servern zugewiesen.",
+      "startRequested": "Turnierstart angefordert. Server werden in Kürze zugewiesen.",
+      "startFailed": "Turnier konnte nicht gestartet werden",
+      "templateSaved": "Vorlage gespeichert!",
+      "disableServersFailed": "Ein oder mehrere Server konnten nicht deaktiviert werden: {{message}}",
+      "noChangesToSave": "Keine Änderungen zum Speichern",
+      "invalidMapSelection": "Ungültige Kartenauswahl"
+    },
+    "outdatedServers": {
+      "title": "Server benötigen ein Update",
+      "body": "Laut Steam sind ein oder mehrere aktivierte Server veraltet (oder konnten nicht überprüft werden). Aktualisiere sie oder deaktiviere sie, um mit den übrigen Servern fortzufahren.",
+      "confirm": "Betroffene Server deaktivieren und erneut versuchen",
+      "disabling": "Wird deaktiviert …"
+    },
+    "live": {
+      "saveNameAria": "Turniername speichern",
+      "cancelRenameAria": "Umbenennen des Turniers abbrechen",
+      "editNameAria": "Turniername bearbeiten",
+      "renameTooltip": "Turnier umbenennen",
+      "alert": {
+        "liveTitle": "Turnier läuft",
+        "liveBody": "Auf den Servern laufen gerade Matches. Während des laufenden Turniers kannst du die Turniereinstellungen nicht ändern (außer den Turniernamen).",
+        "pendingTitle": "Turnier läuft",
+        "pendingBody": "Die Matches starten, sobald Server zugewiesen sind und die Vetos abgeschlossen wurden. Während das Turnier läuft, kannst du die Turniereinstellungen nicht ändern (außer den Turniernamen).",
+        "completedTitle": "Turnier abgeschlossen",
+        "completedBody": "Alle Matches dieses Turniers sind gespielt. Erstelle ein neues Turnier oder setze dieses zurück, um neu zu beginnen."
+      },
+      "teamsCompeting_one": "{{count}} Mannschaft tritt an",
+      "teamsCompeting_other": "{{count}} Mannschaften treten an",
+      "playersCompeting_one": "{{count}} Spieler tritt an",
+      "playersCompeting_other": "{{count}} Spieler treten an",
+      "playersCompetingUnknown": "Spieler treten an",
+      "shuffleSettingsLabel": "Shuffle-Einstellungen",
+      "maxRoundsPerMapValue": "Maximale Runden pro Karte: {{rounds}}",
+      "eloTemplateValue": "ELO-Vorlage: {{template}}",
+      "mapSequenceLabel": "Kartenreihenfolge (Runden)",
+      "noMapsConfigured": "Noch keine Karten konfiguriert.",
+      "viewBracket": "Turnierbaum ansehen",
+      "viewBracketTooltip": "Turnierbaum und Match-Details ansehen",
+      "leaderboardTooltip": "Öffne die öffentliche Bestenliste, die du mit den Spielern teilen kannst",
+      "restartTooltip": "Alle aktiven Matches auf den Servern beenden und neu laden (hilfreich bei hängenden Matches)",
+      "resetTooltip": "Alle Matches beenden und das Turnier in den Einrichtungsmodus zurücksetzen (behält die Turniereinstellungen, löscht aber alle Matchdaten)",
+      "reset": "Auf Einrichtung zurücksetzen"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Zum Start des Turniers werden mindestens {{minPlayers}} Spieler benötigt ({{teamSize}}v{{teamSize}}-Matches). Aktuell registriert: {{registered}}",
+      "start": "Turnier starten",
+      "starting": "Wird gestartet …",
+      "startSimulation": "Simulation starten",
+      "startingSimulation": "Simulation wird gestartet …",
+      "bulkCreateMatches": "Matches in großer Menge erstellen",
+      "edit": "Bearbeiten",
+      "regenerate": "Neu erstellen",
+      "regenerateTooltip": "Alle aktuellen Matches löschen und den Turnierbaum mit denselben Einstellungen neu erstellen.",
+      "regenerateDisabledTooltip": "Erstelle den Turnierbaum mindestens einmal („Speichern & Turnierbaum erstellen“), bevor du ihn neu erstellen kannst."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Alle aktiven Matches auf den Servern beenden",
+        "deleteMatches": "Alle Matches und Turnierbäume löschen",
+        "deleteData": "Alle Matchdaten und Statistiken löschen"
+      },
+      "delete": {
+        "title": "🗑️ Turnier löschen",
+        "question": "Möchtest du <b>„{{name}}“</b> wirklich dauerhaft LÖSCHEN?",
+        "willTitle": "⚠️ Dadurch wird:",
+        "items": {
+          "removeTournament": "Das Turnier vollständig entfernen",
+          "cannotBeUndone": "Kann nicht rückgängig gemacht werden"
+        },
+        "note": "💡 Hinweis: Wenn du nur mit denselben Turniereinstellungen neu beginnen willst, nutze stattdessen „Auf Einrichtung zurücksetzen“.",
+        "confirm": "Dauerhaft löschen"
+      },
+      "regenerate": {
+        "title": "🔄 Turnierbaum neu erstellen",
+        "liveWarning": "⚠️ WARNUNG: Das Turnier ist {{status}}!",
+        "liveBody": "Beim Neuerstellen des Turnierbaums werden <b>ALLE</b> vorhandenen Matchdaten gelöscht, einschließlich Ergebnissen, Statistiken und Ereignisverlauf.",
+        "cannotBeUndone": "Diese Aktion kann nicht rückgängig gemacht werden.",
+        "areYouSure": "Bist du ganz sicher, dass du fortfahren möchtest?",
+        "setupBody": "Dadurch werden alle vorhandenen Matches gelöscht und der Turnierbaum mit denselben Einstellungen neu erstellt.",
+        "continue": "Fortfahren?",
+        "confirmDestructive": "JA, ALLES LÖSCHEN",
+        "confirm": "Neu erstellen"
+      },
+      "reset": {
+        "title": "🔄 Auf Einrichtung zurücksetzen",
+        "question": "<b>„{{name}}“</b> in den EINRICHTUNGS-Modus zurücksetzen?",
+        "willTitle": "Dadurch wird:",
+        "items": {
+          "clearStatus": "Den Turnierstatus zurücksetzen (zurück zur Einrichtung)",
+          "keepSettings": "Die Turniereinstellungen <b>behalten</b> (Name, Mannschaften, Modus)",
+          "allowEdit": "Dir wieder erlauben, die Einstellungen zu bearbeiten"
+        },
+        "saveAgain": "Nach dem Zurücksetzen musst du erneut speichern, um den Turnierbaum neu zu erstellen.",
+        "note": "💡 Hinweis: Um das Turnier vollständig zu entfernen, nutze stattdessen „Löschen“.",
+        "confirm": "Auf Einrichtung zurücksetzen"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Keine Server verfügbar",
+        "titleInsufficient": "⚠️ Nicht genügend Server",
+        "titleUncertain": "⚠️ Turnier ohne Server starten?",
+        "noServersHeading": "Derzeit ist kein Server verfügbar",
+        "noServersBody": "Das Turnier startet, die Matches werden aber verschoben, bis ein Server frei wird. Das System weist die Matches automatisch zu, sobald Server bereit sind.",
+        "insufficientHeading": "Nicht genug Server, um alle Matches der ersten Runde gleichzeitig auszutragen",
+        "insufficientBody": "Du hast aktuell <b>{{available}}</b>, die erste Runde erwartet aber <b>{{required}}</b>. Einige Matches kommen in die Warteschlange und starten später, sobald Server frei werden.",
+        "uncertainHeading": "Serververfügbarkeit ist unklar",
+        "uncertainBody": "Das Turnier startet möglicherweise mit wenigen oder gar keinen verfügbaren Servern. Die Matches werden verschoben, bis Server verfügbar sind, und automatisch zugewiesen, sobald sie bereit sind.",
+        "question": "Möchtest du das Turnier trotzdem starten?",
+        "confirm": "Ja, trotzdem starten",
+        "cancel": "Server prüfen"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Speichern & Turnierbaum erstellen",
+      "saveAsTemplate": "Als Vorlage speichern",
+      "saveTemplateTooltip": "Aktuelle Turnierkonfiguration als Vorlage speichern"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Bitte wähle einen Turniertyp aus",
+        "selectFormat": "Bitte wähle einen Match-Modus aus"
+      },
+      "shuffleInfo": "Shuffle-Turniere verwenden keine festen Mannschaften. Die Spieler werden für jedes Match anhand ihres Skill Ratings automatisch ausgewogen auf Teams verteilt.",
+      "shuffleRounds": "Dieses Shuffle-Turnier hat ungefähr {{rounds}} (eine pro ausgewählter Karte).",
+      "volumeAlert": "Mit {{teams}} in einem {{type}}-Turnier im Modus {{format}} umfasst dieser Turnierbaum ungefähr {{matches}} über {{rounds}} (insgesamt bis zu {{maps}}).",
+      "maxRoundsLabel": "Maximale Runden pro Karte",
+      "maxRoundsHelper": "Jede Karte wird über bis zu {{maxRounds}} Runden gespielt; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt.",
+      "maxRoundsHelperEmpty": "Maximale Rundenzahl pro Karte (Standard: 24, max.: 30).",
+      "serversSummary": "{{servers}} konfiguriert; {{required}} werden benötigt, um alle Matches dieses Turnierbaums auszutragen.",
+      "estimatedVolumeLabel": "Geschätzter Umfang",
+      "mapsHeading": "Karten ({{total}})",
+      "noMapsSelected": "Keine Karten ausgewählt",
+      "matchConfiguration": "Match-Konfiguration",
+      "roundLimitValue_one": "Rundenlimit: max. {{count}} Runde",
+      "roundLimitValue_other": "Rundenlimit: max. {{count}} Runden",
+      "teamsHeading": "Mannschaften ({{total}})",
+      "noTeamsSelected": "Keine Mannschaften ausgewählt (optional)",
+      "playerRegistration": "Spielerregistrierung",
+      "playerRegistrationInfo_one": "Die Spieler werden nach dem Erstellen des Turniers registriert. Jede ausgewählte Karte entspricht einer Match-Runde (insgesamt {{count}} Runde).",
+      "playerRegistrationInfo_other": "Die Spieler werden nach dem Erstellen des Turniers registriert. Jede ausgewählte Karte entspricht einer Match-Runde (insgesamt {{count}} Runden)."
+    },
+    "overtime": {
+      "selectLabel": "Verlängerung",
+      "options": {
+        "enabled": "Aktiviert (normale Verlängerung)",
+        "disabledDraws": "Deaktiviert – Unentschieden erlaubt",
+        "disabledNoDraws": "Deaktiviert – kein Unentschieden (Schaden entscheidet)"
+      },
+      "modeHelper": "Bei normaler Verlängerung werden zusätzliche Abschnitte gespielt, bis ein Team vorne liegt. „Unentschieden erlaubt“ beendet eine ausgeglichene Karte remis, „kein Unentschieden“ entscheidet sie über den Gesamtschaden des Teams.",
+      "tooltip": "Steuert das Verhalten der Verlängerung und wie Gleichstände bei maximaler Rundenzahl behandelt werden. Diese Einstellungen werden als overtimeMode/overtimeSegments an MatchZy weitergegeben und haben dieselbe Bedeutung wie bei Shuffle-Turnieren und manuellen Matches.",
+      "shuffleTooltip": "Steuert das Verhalten der Verlängerung in Shuffle-Matches und wie Gleichstände bei maximaler Rundenzahl entschieden werden. Ist die Verlängerung deaktiviert, können ausgeglichene Matches je nach gewählter Option unentschieden bleiben oder über den Gesamtschaden des Teams entschieden werden.",
+      "segmentsLabel": "Verlängerungsabschnitte (optional)",
+      "segmentsHelper": "Optional: Anzahl der Verlängerungsabschnitte begrenzen. Leer lassen für den MatchZy-Standard.",
+      "segmentsHelperValue_one": "Verlängerung auf {{count}} Abschnitt begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams.",
+      "segmentsHelperValue_other": "Verlängerung auf {{count}} Abschnitte begrenzen. Steht es danach weiter gleich, entscheidet der Gesamtschaden des Teams."
+    },
+    "grandFinal": {
+      "sectionTitle": "Grand-Final-Modus (Double Elimination)",
+      "label": "Grand Final",
+      "options": {
+        "simple": "Einfach – ein einzelnes Grand Final zwischen den Siegern von Winner- und Loser-Bracket",
+        "none": "Keins – das Finale des Winner-Brackets entscheidet das Turnier (kein Grand Final)",
+        "double": "Doppelt – mit Bracket‑Reset (verhält sich derzeit wie „Einfach“; volle Unterstützung ist geplant)"
+      },
+      "helper": "Legt fest, wie die Sieger von Winner- und Loser-Bracket am Ende des Turniers aufeinandertreffen."
+    },
+    "mapPool": {
+      "shuffleTitle": "Kartenauswahl für Shuffle-Turniere",
+      "shuffleBody": "Alle ausgewählten Karten werden nacheinander gespielt. Jede Karte entspricht einer Match-Runde. Die Anzahl der gewählten Karten bestimmt, wie viele Runden gespielt werden.",
+      "shuffleSelected": "Du hast {{maps}} ausgewählt, es werden also {{rounds}} gespielt.",
+      "chooseLabel": "Kartenpool auswählen",
+      "custom": "Benutzerdefiniert",
+      "selectedMaps": "Ausgewählte Karten ({{total}}):",
+      "chooseMapsPlaceholder": "Karten auswählen …",
+      "saveMapPool": "Kartenpool speichern",
+      "types": {
+        "defusal": "Defusal",
+        "hostage": "Geiseln",
+        "armsRace": "Arms Race",
+        "unknown": "Unbekannt"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Shuffle-Turniere verwenden den Modus Best of 1. Jedes Match besteht aus einer Karte."
+    },
+    "shuffleConfig": {
+      "overline": "Konfiguration des Shuffle-Turniers",
+      "subtitle": "Match-Regeln & Einstellungen",
+      "teamSizeLabel": "Teamgröße",
+      "teamSizeTooltip": "Anzahl der Spieler pro Team. Übliche Optionen: 4v4, 5v5, 6v6. Mindestens 2, höchstens 10 Spieler pro Team.",
+      "teamSizeHelper": "Anzahl der Spieler pro Team (Standard: 5 für 5v5, Bereich: 2–10)",
+      "maxRoundsLabel": "Maximale Runden",
+      "maxRoundsTooltip": "Maximale Rundenzahl pro Match. Der Wert wird direkt als mp_maxrounds an MatchZy übergeben. Beispiel: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Das Match geht über bis zu {{maxRounds}} Runden; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt",
+      "maxRoundsHelperEmpty": "Maximale Rundenzahl pro Match (Standard: 24, max.: 30)",
+      "eloTemplateLabel": "ELO-Berechnungsvorlage",
+      "eloTemplateTooltip": "Wähle, wie die ELO für dieses Turnier berechnet wird. Standardmäßig nutzt die Vorlage „Pure Win/Loss“ nur das Matchergebnis (Sieg/Niederlage); Statistiken werden erfasst, ändern die ELO aber nicht. Andere Vorlagen sind optional und ergänzen die OpenSkill-Änderung um statistikbasierte Anpassungen, wenn du ein Excel-ähnliches Verhalten möchtest.",
+      "eloDefaultSuffix": "(Standard)",
+      "eloTemplateHelper": "Pure Win/Loss (Standard): Nur das Matchergebnis beeinflusst die ELO. Spielerstatistiken werden weiterhin für Bestenlisten und Exporte erfasst, ändern die Wertung aber nur, wenn du eine eigene Vorlage wählst."
+    },
+    "changePreview": {
+      "title": "Turnieränderungen prüfen",
+      "liveHeading": "Das Turnier läuft LIVE!",
+      "liveBody": "Wenn du Turniertyp, Modus oder Mannschaftszahl änderst, muss der Turnierbaum eventuell neu erstellt werden. Nutze ggf. „Turnier zurücksetzen“, um neu zu beginnen.",
+      "noChangesDetected": "Keine Änderungen erkannt",
+      "intro": "Die folgenden Änderungen werden übernommen:",
+      "before": "VORHER",
+      "after": "NACHHER",
+      "apply": "Änderungen übernehmen",
+      "applyRisky": "Änderungen übernehmen (riskant!)",
+      "noChangesToApply": "Keine Änderungen zum Übernehmen",
+      "none": "Keine",
+      "itemCount_one": "{{count}} Eintrag",
+      "itemCount_other": "{{count}} Einträge"
+    }
   },
   "bracket": {
     "empty": {
       "noBracketTitle": "Kein Turnierbaum vorhanden",
       "noBracketDescription": "Erstelle ein Turnier und generiere den Turnierbaum, um zu starten"
+    },
+    "view": {
+      "visual": "Grafisch",
+      "list": "Liste",
+      "refresh": "Aktualisieren",
+      "enterFullscreen": "Vollbild",
+      "exitFullscreen": "Vollbild beenden",
+      "shuffleNoVisual": "Shuffle-Turniere haben keinen grafischen Turnierbaum; nutze stattdessen die Listenansicht."
+    },
+    "shuffleEmpty": {
+      "title": "Kein Turnierbaum für Shuffle-Turniere",
+      "description": "Shuffle-Turniere haben keinen festen Turnierbaum. Teams werden jede Runde anhand der Spieler-ELO neu gemischt.",
+      "hint": "Verfolge laufende und kommende Matches auf der Matches-Seite und die Spielerrangliste auf der Ranglisten-Seite.",
+      "goToMatches": "Zu den Matches",
+      "viewLeaderboard": "Rangliste anzeigen"
+    },
+    "notGenerated": {
+      "title": "Turnierbaum noch nicht erstellt",
+      "description": "Erstelle den Turnierbaum, um Matches für {{name}} anzulegen",
+      "goToSettings": "Zu den Turniereinstellungen"
+    },
+    "shuffleNoVisual": {
+      "title": "Kein grafischer Turnierbaum für Shuffle-Turniere",
+      "description": "Matches werden jede Runde dynamisch anhand von Spieler-ELO und Teamausgleich erstellt. Fortschritt verfolgen:",
+      "listView": "Listenansicht",
+      "matches": "Matches",
+      "standings": "Tabelle",
+      "docsHint": "Eine vollständige Erklärung findest du im Leitfaden „Shuffle Tournaments“ in der Dokumentation."
+    },
+    "swiss": {
+      "notGenerated": "Nicht erstellt",
+      "generatedAfter": "Matches werden nach Abschluss von Runde {{round}} erstellt"
     }
   }
 }

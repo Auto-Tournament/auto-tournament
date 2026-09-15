@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Nie udało się załadować meczów",
-      "loadTitle": "Błąd podczas ładowania meczów"
+      "loadTitle": "Błąd podczas ładowania meczów",
+      "bulkDelete": "Nie udało się usunąć jednego lub więcej meczów"
     },
     "allocation": {
       "nextServers": "Kolejna alokacja serwerów za {{seconds}} s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Usuń mecze ręczne",
-      "message": "Czy na pewno chcesz usunąć {{count}} mecz ręczny{{suffix}}? Tej akcji nie można cofnąć."
+      "message": "Czy na pewno chcesz usunąć {{count}} mecz ręczny{{suffix}}? Tej akcji nie można cofnąć.",
+      "deleted_one": "Usunięto {{count}} mecz",
+      "deleted_other": "Usunięto {{count}} meczów"
+    },
+    "card": {
+      "matchNumber": "Mecz #{{number}}",
+      "server": "Serwer: {{name}}",
+      "queuePosition": "Pozycja w kolejce: #{{position}}",
+      "waitingForServers": "Oczekiwanie na serwery...",
+      "allocatingNow": "Przydzielanie...",
+      "allocatesIn": "Przydział za {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle ręczny",
+      "manual": "Ręczny",
+      "simulation": "Symulacja",
+      "winner": "ZWYCIĘZCA",
+      "mapN": "Mapa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOWER",
+      "waitingForTournament": "OCZEKIWANIE NA START TURNIEJU",
+      "waitingForServer": "OCZEKIWANIE NA SERWER",
+      "vetoPending": "VETO OCZEKUJE",
+      "mapVeto": "VETO MAP",
+      "serverAllocated": "SERWER PRZYDZIELONY",
+      "warmup": "ROZGRZEWKA",
+      "overtime": "DOGRYWKA #{{n}}",
+      "live": "NA ŻYWO",
+      "completed": "ZAKOŃCZONY",
+      "cancelled": "ANULOWANY"
+    },
+    "statusGuide": {
+      "title": "Przewodnik po statusach meczu",
+      "pending": "Mecz jest zaplanowany, ale nie ma jeszcze przydzielonego serwera. Zostanie przydzielony, gdy serwer będzie wolny.",
+      "loaded": "Mecz jest załadowany na serwerze i trwa rozgrzewka. Gracze powinni się połączyć i zgłosić gotowość.",
+      "live": "Mecz jest rozgrywany na serwerze.",
+      "completed": "Mecz się zakończył. Zwycięzca został wyłoniony, a drabinka zaktualizowana.",
+      "proTipTitle": "Wskazówka:",
+      "proTip": "Gdy mecz pokazuje „Oczekiwanie na graczy (X/Y)”, serwer jest gotowy i gracze powinni się połączyć. Gdy wszyscy oczekiwani gracze połączą się i zgłoszą gotowość, mecz rozpocznie się automatycznie."
+    },
+    "allocationWidget": {
+      "title": "Status przydziału serwerów",
+      "available": "Wolne:",
+      "busy": "Zajęte:",
+      "cooling": "Chłodzenie:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Oczekuje: {{count}} mecz",
+      "waitingMatches_other": "Oczekuje: {{count}} meczów",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Gotowy",
+      "statusCooling": "Chłodzenie",
+      "statusBusy": "Zajęty",
+      "statusOffline": "Offline",
+      "readyIn": "Gotowy za: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Usunąć ten mecz?",
       "confirmBody": "Czy na pewno chcesz usunąć mecz \"{{slug}}\"? Tej akcji nie można cofnąć.",
       "button": "Usuń mecz"
+    },
+    "roster": {
+      "title": "Skład",
+      "yourTeam": "Twoja drużyna",
+      "openPlayerPage": "Otwórz stronę gracza",
+      "ready": "GOTOWY",
+      "connected": "POŁĄCZONY",
+      "offline": "OFFLINE"
     }
   },
   "bulkShuffleMatchesModal": {

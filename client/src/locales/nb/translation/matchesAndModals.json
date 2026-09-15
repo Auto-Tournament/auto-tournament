@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Klarte ikke å laste kamper",
-      "loadTitle": "Feil ved lasting av kamper"
+      "loadTitle": "Feil ved lasting av kamper",
+      "bulkDelete": "Kunne ikke slette én eller flere kamper"
     },
     "allocation": {
       "nextServers": "Neste servere tildeles om {{seconds}}s"
@@ -26,7 +27,9 @@
     },
     "bulkDelete": {
       "title": "Slett manuelle kamper",
-      "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres."
+      "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres.",
+      "deleted_one": "Slettet {{count}} kamp",
+      "deleted_other": "Slettet {{count}} kamper"
     },
     "bulkSelect": {
       "select": "Velg",
@@ -34,6 +37,57 @@
       "selectAll": "Velg alle",
       "unselectAll": "Fjern alle valg",
       "deleteSelected": "Slett valgte"
+    },
+    "card": {
+      "matchNumber": "Kamp #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Plass i kø: #{{position}}",
+      "waitingForServers": "Venter på servere...",
+      "allocatingNow": "Tildeler nå...",
+      "allocatesIn": "Tildeles om {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manuell",
+      "manual": "Manuell",
+      "simulation": "Simulering",
+      "winner": "VINNER",
+      "mapN": "Kart {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "VENTER PÅ TURNERINGSSTART",
+      "waitingForServer": "VENTER PÅ SERVER",
+      "vetoPending": "VETO VENTER",
+      "mapVeto": "KARTVETO",
+      "serverAllocated": "SERVER TILDELT",
+      "warmup": "OPPVARMING",
+      "overtime": "OVERTID #{{n}}",
+      "live": "DIREKTE",
+      "completed": "FULLFØRT",
+      "cancelled": "AVLYST"
+    },
+    "statusGuide": {
+      "title": "Forklaring av kampstatus",
+      "pending": "Kampen er planlagt, men har ikke fått en server ennå. Den tildeles når en server blir ledig.",
+      "loaded": "Kampen er lastet inn på serveren og er i oppvarming. Spillerne må koble til og melde seg klare for å starte.",
+      "live": "Kampen spilles på serveren.",
+      "completed": "Kampen er ferdig. Vinneren er avgjort og bracketen er oppdatert.",
+      "proTipTitle": "Tips:",
+      "proTip": "Når en kamp viser «Venter på spillere (X/Y)», er serveren klar og spillerne bør koble til. Når alle forventede spillere er koblet til og klare, starter kampen automatisk."
+    },
+    "allocationWidget": {
+      "title": "Status for servertildeling",
+      "available": "Ledige:",
+      "busy": "Opptatt:",
+      "cooling": "Nedkjøling:",
+      "offline": "Frakoblet:",
+      "waitingMatches_one": "Venter: {{count}} kamp",
+      "waitingMatches_other": "Venter: {{count}} kamper",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Klar",
+      "statusCooling": "Nedkjøling",
+      "statusBusy": "Opptatt",
+      "statusOffline": "Frakoblet",
+      "readyIn": "Klar om: {{time}}"
     }
   },
   "teamModal": {
@@ -192,6 +246,14 @@
       "confirmTitle": "Slette denne kampen?",
       "confirmBody": "Er du sikker på at du vil slette kampen \"{{slug}}\"? Dette kan ikke angres.",
       "button": "Slett kamp"
+    },
+    "roster": {
+      "title": "Spillerstall",
+      "yourTeam": "Ditt lag",
+      "openPlayerPage": "Åpne spillersiden",
+      "ready": "KLAR",
+      "connected": "TILKOBLET",
+      "offline": "FRAKOBLET"
     }
   },
   "bulkShuffleMatchesModal": {

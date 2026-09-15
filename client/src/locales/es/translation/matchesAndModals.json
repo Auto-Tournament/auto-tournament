@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "No se pudieron cargar los partidos",
-      "loadTitle": "Error al cargar los partidos"
+      "loadTitle": "Error al cargar los partidos",
+      "bulkDelete": "No se pudieron eliminar una o más partidas"
     },
     "allocation": {
       "nextServers": "Siguiente asignación de servidores en {{seconds}} s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Eliminar partidos manuales",
-      "message": "¿Seguro que quieres eliminar {{count}} partido manual{{suffix}}? Esta acción no se puede deshacer."
+      "message": "¿Seguro que quieres eliminar {{count}} partido manual{{suffix}}? Esta acción no se puede deshacer.",
+      "deleted_one": "{{count}} partida eliminada",
+      "deleted_other": "{{count}} partidas eliminadas"
+    },
+    "card": {
+      "matchNumber": "Partida #{{number}}",
+      "server": "Servidor: {{name}}",
+      "queuePosition": "Posición en la cola: #{{position}}",
+      "waitingForServers": "Esperando servidores...",
+      "allocatingNow": "Asignando ahora...",
+      "allocatesIn": "Se asigna en {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manual",
+      "manual": "Manual",
+      "simulation": "Simulación",
+      "winner": "GANADOR",
+      "mapN": "Mapa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "ESPERANDO INICIO DEL TORNEO",
+      "waitingForServer": "ESPERANDO SERVIDOR",
+      "vetoPending": "VETO PENDIENTE",
+      "mapVeto": "VETO DE MAPAS",
+      "serverAllocated": "SERVIDOR ASIGNADO",
+      "warmup": "CALENTAMIENTO",
+      "overtime": "PRÓRROGA #{{n}}",
+      "live": "EN VIVO",
+      "completed": "FINALIZADO",
+      "cancelled": "CANCELADO"
+    },
+    "statusGuide": {
+      "title": "Guía de estados de partida",
+      "pending": "La partida está programada pero aún no tiene servidor asignado. Se asignará cuando haya un servidor disponible.",
+      "loaded": "La partida está cargada en el servidor y en calentamiento. Los jugadores deben conectarse y marcarse como listos para empezar.",
+      "live": "La partida se está jugando en su servidor.",
+      "completed": "La partida ha terminado. Se ha determinado el ganador y se ha actualizado el cuadro.",
+      "proTipTitle": "Consejo:",
+      "proTip": "Cuando una partida muestra \"Esperando jugadores (X/Y)\", el servidor está listo y los jugadores deben conectarse. Cuando todos los jugadores esperados estén conectados y listos, la partida empezará automáticamente."
+    },
+    "allocationWidget": {
+      "title": "Estado de asignación de servidores",
+      "available": "Disponibles:",
+      "busy": "Ocupados:",
+      "cooling": "Enfriando:",
+      "offline": "Sin conexión:",
+      "waitingMatches_one": "En espera: {{count}} partida",
+      "waitingMatches_other": "En espera: {{count}} partidas",
+      "statusLine": "Estado: {{status}}",
+      "statusReady": "Listo",
+      "statusCooling": "Enfriando",
+      "statusBusy": "Ocupado",
+      "statusOffline": "Sin conexión",
+      "readyIn": "Listo en: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "¿Eliminar este partido?",
       "confirmBody": "¿Seguro que quieres eliminar el partido \"{{slug}}\"? Esta acción no se puede deshacer.",
       "button": "Eliminar partido"
+    },
+    "roster": {
+      "title": "Plantilla",
+      "yourTeam": "Tu equipo",
+      "openPlayerPage": "Abrir la página del jugador",
+      "ready": "LISTO",
+      "connected": "CONECTADO",
+      "offline": "DESCONECTADO"
     }
   },
   "bulkShuffleMatchesModal": {

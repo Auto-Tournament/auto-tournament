@@ -51,7 +51,7 @@
         "typeLabel": "Tipo de torneo",
         "formatLabel": "Formato del partido",
         "notSet": "No establecido",
-        "estimatedVolume": "Aproximadamente {{matches}} partido{{matches, plural, one {} other {s}}} en {{rounds}} ronda{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, hasta {{totalMaps}} mapa{{totalMaps, plural, one {} other {s}}} en total)."
+        "estimatedVolumeText": "Aproximadamente {{matches}} en {{rounds}} (al mejor de {{mapsPerMatch}}, hasta {{maps}} en total)."
       }
     },
     "formSteps": {
@@ -75,12 +75,328 @@
       "createTournament": "Crear torneo"
     },
     "nameLabel": "Nombre del torneo",
-    "namePlaceholder": "MAT 2025 — torneo de primavera"
+    "namePlaceholder": "MAT 2025 — torneo de primavera",
+    "champion": {
+      "title": "Campeón"
+    },
+    "page": {
+      "title": "Configuración del torneo"
+    },
+    "labels": {
+      "teams": "Equipos",
+      "maps": "Mapas",
+      "format": "Formato",
+      "players": "Jugadores",
+      "matchRules": "Reglas del partido",
+      "servers": "Servidores",
+      "overtimeSettings": "Ajustes de prórroga",
+      "mapPool": "Grupo de mapas"
+    },
+    "tooltips": {
+      "deleteTournament": "Eliminar definitivamente este torneo y todos sus datos"
+    },
+    "counts": {
+      "teams_one": "{{count}} equipo",
+      "teams_other": "{{count}} equipos",
+      "matches_one": "{{count}} partido",
+      "matches_other": "{{count}} partidos",
+      "rounds_one": "{{count}} ronda",
+      "rounds_other": "{{count}} rondas",
+      "maps_one": "{{count}} mapa",
+      "maps_other": "{{count}} mapas",
+      "servers_one": "{{count}} servidor",
+      "servers_other": "{{count}} servidores",
+      "availableServers_one": "{{count}} servidor disponible",
+      "availableServers_other": "{{count}} servidores disponibles",
+      "concurrentMatches_one": "{{count}} partido simultáneo",
+      "concurrentMatches_other": "{{count}} partidos simultáneos"
+    },
+    "matchRules": {
+      "value": "Máximo {{maxRounds}} rondas por mapa; gana el primero en llegar a {{winRounds}} rondas.",
+      "teamSizeValue": "Tamaño de equipo: {{size}}v{{size}}",
+      "overtimeEnabled": "Prórroga: activada",
+      "overtimeDisabled": "Prórroga: desactivada (sin prórroga)",
+      "overtimeDisabledNoDraws": "Prórroga: desactivada (sin empates: decide el daño)",
+      "overtimeSegments_one": "Tramos de prórroga: {{count}} tramo",
+      "overtimeSegments_other": "Tramos de prórroga: {{count}} tramos",
+      "overtimeSegmentsDefault": "Tramos de prórroga: valor predeterminado de MatchZy",
+      "overtimeSegmentsDefaultUnlimited": "Tramos de prórroga: valor predeterminado de MatchZy (normalmente ilimitado)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "No se pudo cargar la plantilla",
+      "nameRequired": "El nombre del torneo es obligatorio",
+      "nameUpdated": "Nombre del torneo actualizado",
+      "nameUpdateFailed": "No se pudo actualizar el nombre del torneo",
+      "selectAtLeastOneMap": "Selecciona al menos 1 mapa",
+      "maxRoundsRange": "Las rondas máximas deben estar entre 1 y 30",
+      "teamSizeRange": "El tamaño del equipo debe estar entre 2 y 10 jugadores",
+      "invalidTeamCount": "Número de equipos no válido",
+      "selectAtLeastTwoTeams": "Selecciona al menos 2 equipos",
+      "shuffleCreated": "¡Torneo shuffle «{{name}}» creado correctamente! Siguiente paso: registra al menos {{minPlayers}} jugadores para empezar el torneo (partidos {{teamSize}}v{{teamSize}}).",
+      "shuffleCreateFailed": "No se pudo crear el torneo shuffle",
+      "shuffleCreateFailedRetry": "No se pudo crear el torneo shuffle. Revisa la configuración e inténtalo de nuevo.",
+      "updated": "¡Torneo actualizado y cuadro regenerado!",
+      "created": "¡Torneo creado!",
+      "saveFailed": "No se pudo guardar el torneo",
+      "deleted": "Torneo eliminado correctamente",
+      "deleteFailed": "No se pudo eliminar el torneo",
+      "regenerated": "Cuadro regenerado correctamente",
+      "regenerateFailed": "No se pudo regenerar el cuadro",
+      "resetDone": "Torneo restablecido al modo de configuración",
+      "resetFailed": "No se pudo restablecer el torneo",
+      "started_one": "¡Torneo iniciado! {{count}} partido asignado a los servidores.",
+      "started_other": "¡Torneo iniciado! {{count}} partidos asignados a los servidores.",
+      "startRequested": "Se ha solicitado el inicio del torneo. Los servidores se asignarán en breve.",
+      "startFailed": "No se pudo iniciar el torneo",
+      "templateSaved": "¡Plantilla guardada!",
+      "disableServersFailed": "No se pudieron desactivar uno o varios servidores: {{message}}",
+      "noChangesToSave": "No hay cambios que guardar",
+      "invalidMapSelection": "Selección de mapas no válida"
+    },
+    "outdatedServers": {
+      "title": "Los servidores necesitan actualizarse",
+      "body": "Según Steam, uno o varios servidores activados están desactualizados (o no se pudieron verificar). Actualízalos o desactívalos para continuar con el resto de servidores.",
+      "confirm": "Desactivar los servidores afectados y reintentar",
+      "disabling": "Desactivando..."
+    },
+    "live": {
+      "saveNameAria": "Guardar el nombre del torneo",
+      "cancelRenameAria": "Cancelar el cambio de nombre del torneo",
+      "editNameAria": "Editar el nombre del torneo",
+      "renameTooltip": "Cambiar el nombre del torneo",
+      "alert": {
+        "liveTitle": "El torneo está en directo",
+        "liveBody": "Hay partidos en curso en los servidores. No puedes editar la configuración del torneo mientras está en directo (salvo el nombre).",
+        "pendingTitle": "Torneo en curso",
+        "pendingBody": "Los partidos comenzarán en cuanto se asignen los servidores y terminen los vetos. No puedes editar la configuración del torneo mientras está en marcha (salvo el nombre).",
+        "completedTitle": "Torneo finalizado",
+        "completedBody": "Este torneo ha terminado todos sus partidos. Crea un torneo nuevo o restablece este para empezar de cero."
+      },
+      "teamsCompeting_one": "{{count}} equipo compitiendo",
+      "teamsCompeting_other": "{{count}} equipos compitiendo",
+      "playersCompeting_one": "{{count}} jugador compitiendo",
+      "playersCompeting_other": "{{count}} jugadores compitiendo",
+      "playersCompetingUnknown": "Jugadores compitiendo",
+      "shuffleSettingsLabel": "Ajustes de shuffle",
+      "maxRoundsPerMapValue": "Rondas máximas por mapa: {{rounds}}",
+      "eloTemplateValue": "Plantilla de ELO: {{template}}",
+      "mapSequenceLabel": "Secuencia de mapas (rondas)",
+      "noMapsConfigured": "Todavía no hay mapas configurados.",
+      "viewBracket": "Ver el cuadro",
+      "viewBracketTooltip": "Ver el cuadro del torneo y los detalles de los partidos",
+      "leaderboardTooltip": "Abre la clasificación pública para compartirla con los jugadores",
+      "restartTooltip": "Finaliza todos los partidos activos en los servidores y vuelve a cargarlos (útil para partidos bloqueados)",
+      "resetTooltip": "Finaliza todos los partidos y restablece el torneo al modo de configuración (mantiene los ajustes pero borra todos los datos de partido)",
+      "reset": "Restablecer a configuración"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Se necesitan al menos {{minPlayers}} jugadores para empezar el torneo (partidos {{teamSize}}v{{teamSize}}). Registrados ahora: {{registered}}",
+      "start": "Iniciar torneo",
+      "starting": "Iniciando...",
+      "startSimulation": "Iniciar simulación",
+      "startingSimulation": "Iniciando simulación...",
+      "bulkCreateMatches": "Crear partidos en lote",
+      "edit": "Editar",
+      "regenerate": "Regenerar",
+      "regenerateTooltip": "Elimina todos los partidos actuales y regenera el cuadro con los mismos ajustes.",
+      "regenerateDisabledTooltip": "Genera el cuadro al menos una vez (Guardar y generar el cuadro) antes de poder regenerarlo."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Finalizar todos los partidos activos en los servidores",
+        "deleteMatches": "Eliminar todos los partidos y cuadros",
+        "deleteData": "Eliminar todos los datos de partido y las estadísticas"
+      },
+      "delete": {
+        "title": "🗑️ Eliminar el torneo",
+        "question": "¿Seguro que quieres ELIMINAR definitivamente <b>«{{name}}»</b>?",
+        "willTitle": "⚠️ Esto hará lo siguiente:",
+        "items": {
+          "removeTournament": "Eliminar el torneo por completo",
+          "cannotBeUndone": "No se puede deshacer"
+        },
+        "note": "💡 Nota: si solo quieres empezar de nuevo con los mismos ajustes del torneo, usa «Restablecer a configuración».",
+        "confirm": "Eliminar definitivamente"
+      },
+      "regenerate": {
+        "title": "🔄 Regenerar el cuadro",
+        "liveWarning": "⚠️ ADVERTENCIA: el torneo está {{status}}.",
+        "liveBody": "Regenerar el cuadro <b>ELIMINARÁ TODOS</b> los datos de partido existentes, incluidos marcadores, estadísticas e historial de eventos.",
+        "cannotBeUndone": "Esta acción no se puede deshacer.",
+        "areYouSure": "¿Seguro del todo que quieres continuar?",
+        "setupBody": "Esto eliminará todos los partidos existentes y regenerará el cuadro con los mismos ajustes.",
+        "continue": "¿Continuar?",
+        "confirmDestructive": "SÍ, ELIMINARLO TODO",
+        "confirm": "Regenerar"
+      },
+      "reset": {
+        "title": "🔄 Restablecer a configuración",
+        "question": "¿Restablecer <b>«{{name}}»</b> al modo de CONFIGURACIÓN?",
+        "willTitle": "Esto hará lo siguiente:",
+        "items": {
+          "clearStatus": "Restablecer el estado del torneo (volver a configuración)",
+          "keepSettings": "<b>Mantener</b> los ajustes del torneo (nombre, equipos, formato)",
+          "allowEdit": "Permitirte editar de nuevo la configuración"
+        },
+        "saveAgain": "Tras el restablecimiento, tendrás que guardar de nuevo para regenerar el cuadro.",
+        "note": "💡 Nota: para eliminar el torneo por completo, usa «Eliminar».",
+        "confirm": "Restablecer a configuración"
+      },
+      "start": {
+        "titleNoServers": "⚠️ No hay servidores disponibles",
+        "titleInsufficient": "⚠️ No hay suficientes servidores",
+        "titleUncertain": "⚠️ ¿Iniciar el torneo sin servidores?",
+        "noServersHeading": "Ahora mismo no hay servidores disponibles",
+        "noServersBody": "El torneo comenzará, pero los partidos se aplazarán hasta que haya un servidor disponible. El sistema asignará los partidos automáticamente cuando los servidores estén listos.",
+        "insufficientHeading": "No hay suficientes servidores para jugar a la vez todos los partidos de la primera ronda",
+        "insufficientBody": "Ahora mismo tienes <b>{{available}}</b>, pero la primera ronda necesita <b>{{required}}</b>. Algunos partidos quedarán en cola y empezarán cuando se liberen servidores.",
+        "uncertainHeading": "La disponibilidad de servidores es incierta",
+        "uncertainBody": "El torneo puede empezar con pocos servidores o sin ninguno. Los partidos se aplazarán hasta que haya servidores disponibles y se asignarán automáticamente cuando estén listos.",
+        "question": "¿Quieres iniciar el torneo de todas formas?",
+        "confirm": "Sí, iniciar de todas formas",
+        "cancel": "Comprobar servidores"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Guardar y generar el cuadro",
+      "saveAsTemplate": "Guardar como plantilla",
+      "saveTemplateTooltip": "Guarda la configuración actual del torneo como plantilla"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Selecciona un tipo de torneo",
+        "selectFormat": "Selecciona un formato de partido"
+      },
+      "shuffleInfo": "Los torneos shuffle no usan equipos fijos. Los jugadores se reparten automáticamente en equipos equilibrados en cada partido según su Skill Rating.",
+      "shuffleRounds": "Este torneo shuffle tendrá aproximadamente {{rounds}} (una por cada mapa seleccionado).",
+      "volumeAlert": "Con {{teams}} en un torneo {{type}} en {{format}}, este cuadro tendrá aproximadamente {{matches}} repartidos en {{rounds}} (hasta {{maps}} en total).",
+      "maxRoundsLabel": "Rondas máximas por mapa",
+      "maxRoundsHelper": "Cada mapa se juega hasta {{maxRounds}} rondas; gana el primero en llegar a {{winRounds}} rondas.",
+      "maxRoundsHelperEmpty": "Número máximo de rondas por mapa (predeterminado: 24, máximo: 30).",
+      "serversSummary": "{{servers}} configurados; se necesitan {{required}} para jugar todos los partidos de este cuadro.",
+      "estimatedVolumeLabel": "Volumen estimado",
+      "mapsHeading": "Mapas ({{total}})",
+      "noMapsSelected": "No hay mapas seleccionados",
+      "matchConfiguration": "Configuración de partido",
+      "roundLimitValue_one": "Límite de rondas: máximo {{count}} ronda",
+      "roundLimitValue_other": "Límite de rondas: máximo {{count}} rondas",
+      "teamsHeading": "Equipos ({{total}})",
+      "noTeamsSelected": "No hay equipos seleccionados (opcional)",
+      "playerRegistration": "Registro de jugadores",
+      "playerRegistrationInfo_one": "Los jugadores se registrarán después de crear el torneo. Cada mapa seleccionado equivale a una ronda de partidos ({{count}} ronda en total).",
+      "playerRegistrationInfo_other": "Los jugadores se registrarán después de crear el torneo. Cada mapa seleccionado equivale a una ronda de partidos ({{count}} rondas en total)."
+    },
+    "overtime": {
+      "selectLabel": "Prórroga",
+      "options": {
+        "enabled": "Activada (prórroga estándar)",
+        "disabledDraws": "Desactivada: se permiten empates",
+        "disabledNoDraws": "Desactivada: sin empates (desempate por daño)"
+      },
+      "modeHelper": "La prórroga estándar juega tramos adicionales hasta que un equipo queda por delante. «Se permiten empates» deja el mapa igualado en empate, mientras que «sin empates» lo decide por el daño total del equipo.",
+      "tooltip": "Controla el comportamiento de la prórroga y cómo se resuelven los empates al llegar al máximo de rondas. Estos ajustes se envían a MatchZy como overtimeMode/overtimeSegments y tienen el mismo significado que en los torneos shuffle y los partidos manuales.",
+      "shuffleTooltip": "Controla el comportamiento de la prórroga en los partidos shuffle y cómo se resuelven los empates al llegar al máximo de rondas. Con la prórroga desactivada, los partidos igualados pueden quedar en empate o decidirse por el daño total del equipo, según la opción elegida.",
+      "segmentsLabel": "Tramos de prórroga (opcional)",
+      "segmentsHelper": "Opcional: limita el número de tramos de prórroga. Déjalo vacío para el valor predeterminado de MatchZy.",
+      "segmentsHelperValue_one": "Limita la prórroga a {{count}} tramo. Si sigue el empate tras la prórroga, decide el daño total del equipo.",
+      "segmentsHelperValue_other": "Limita la prórroga a {{count}} tramos. Si sigue el empate tras la prórroga, decide el daño total del equipo."
+    },
+    "grandFinal": {
+      "sectionTitle": "Modo de gran final (doble eliminación)",
+      "label": "Gran final",
+      "options": {
+        "simple": "Simple: una única gran final entre los campeones del cuadro de ganadores y el de perdedores",
+        "none": "Ninguna: la final del cuadro de ganadores decide el torneo (sin gran final)",
+        "double": "Doble: con bracket‑reset (por ahora se comporta como Simple; el soporte completo está previsto)"
+      },
+      "helper": "Controla cómo se enfrentan al final del torneo los campeones del cuadro de ganadores y el de perdedores."
+    },
+    "mapPool": {
+      "shuffleTitle": "Selección de mapas para torneos shuffle",
+      "shuffleBody": "Todos los mapas seleccionados se juegan en orden. Cada mapa equivale a una ronda de partidos. El número de mapas que elijas determina cuántas rondas se jugarán.",
+      "shuffleSelected": "Has seleccionado {{maps}}, así que se jugarán {{rounds}}.",
+      "chooseLabel": "Elige un grupo de mapas",
+      "custom": "Personalizado",
+      "selectedMaps": "Mapas seleccionados ({{total}}):",
+      "chooseMapsPlaceholder": "Elige mapas...",
+      "saveMapPool": "Guardar grupo de mapas",
+      "types": {
+        "defusal": "Desactivación",
+        "hostage": "Rehenes",
+        "armsRace": "Carrera armamentística",
+        "unknown": "Desconocido"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Los torneos shuffle usan el formato al mejor de 1. Cada partido es un solo mapa."
+    },
+    "shuffleConfig": {
+      "overline": "Configuración del torneo shuffle",
+      "subtitle": "Reglas y ajustes del partido",
+      "teamSizeLabel": "Tamaño de equipo",
+      "teamSizeTooltip": "Número de jugadores por equipo. Opciones habituales: 4v4, 5v5, 6v6. Mínimo 2 jugadores y máximo 10 por equipo.",
+      "teamSizeHelper": "Número de jugadores por equipo (predeterminado: 5 para 5v5, rango: 2-10)",
+      "maxRoundsLabel": "Rondas máximas",
+      "maxRoundsTooltip": "Número máximo de rondas por partido. Este valor se envía directamente a MatchZy como mp_maxrounds. Ejemplo: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "El partido se juega hasta {{maxRounds}} rondas; gana el primero en llegar a {{winRounds}} rondas",
+      "maxRoundsHelperEmpty": "Número máximo de rondas por partido (predeterminado: 24, máximo: 30)",
+      "eloTemplateLabel": "Plantilla de cálculo de ELO",
+      "eloTemplateTooltip": "Elige cómo se calcula el ELO en este torneo. De forma predeterminada, la plantilla «Pure Win/Loss» solo usa el resultado del partido (victoria/derrota); las estadísticas se registran pero no cambian el ELO. Las demás plantillas son opcionales y añaden ajustes basados en estadísticas sobre el cambio de OpenSkill si quieres un comportamiento tipo Excel.",
+      "eloDefaultSuffix": "(predeterminada)",
+      "eloTemplateHelper": "Pure Win/Loss (predeterminada): solo el resultado del partido afecta al ELO. Las estadísticas de los jugadores se siguen registrando para clasificaciones y exportaciones, pero no cambian la puntuación salvo que elijas una plantilla personalizada."
+    },
+    "changePreview": {
+      "title": "Revisar los cambios del torneo",
+      "liveHeading": "¡El torneo está EN DIRECTO!",
+      "liveBody": "Cambiar el tipo, el formato o el número de equipos puede exigir regenerar el cuadro. Plantéate usar «Restablecer torneo» para empezar de cero.",
+      "noChangesDetected": "No se han detectado cambios",
+      "intro": "Se aplicarán los siguientes cambios:",
+      "before": "ANTES",
+      "after": "DESPUÉS",
+      "apply": "Aplicar cambios",
+      "applyRisky": "Aplicar cambios (¡arriesgado!)",
+      "noChangesToApply": "No hay cambios que aplicar",
+      "none": "Ninguno",
+      "itemCount_one": "{{count}} elemento",
+      "itemCount_other": "{{count}} elementos"
+    }
   },
   "bracket": {
     "empty": {
       "noBracketTitle": "No hay bracket para mostrar",
       "noBracketDescription": "Crea un torneo y genera el bracket para empezar"
+    },
+    "view": {
+      "visual": "Visual",
+      "list": "Lista",
+      "refresh": "Actualizar",
+      "enterFullscreen": "Pantalla completa",
+      "exitFullscreen": "Salir de pantalla completa",
+      "shuffleNoVisual": "Los torneos shuffle no tienen cuadro visual; usa la vista de lista."
+    },
+    "shuffleEmpty": {
+      "title": "No hay cuadro para torneos shuffle",
+      "description": "Los torneos shuffle no usan un cuadro fijo. Los equipos se remezclan cada ronda según el ELO de los jugadores.",
+      "hint": "Usa la página Partidas para seguir las partidas en curso y próximas, y la página Clasificación para el ranking de jugadores.",
+      "goToMatches": "Ir a partidas",
+      "viewLeaderboard": "Ver clasificación"
+    },
+    "notGenerated": {
+      "title": "El cuadro aún no se ha generado",
+      "description": "Genera el cuadro para crear las partidas de {{name}}",
+      "goToSettings": "Ir a la configuración del torneo"
+    },
+    "shuffleNoVisual": {
+      "title": "No hay cuadro visual para torneos shuffle",
+      "description": "Las partidas se generan cada ronda según el ELO de los jugadores y el equilibrio de equipos. Sigue el progreso aquí:",
+      "listView": "Vista de lista",
+      "matches": "Partidas",
+      "standings": "Clasificación",
+      "docsHint": "Para una explicación completa de cómo funciona el shuffle, consulta la guía \"Shuffle Tournaments\" en la documentación."
+    },
+    "swiss": {
+      "notGenerated": "No generado",
+      "generatedAfter": "Las partidas se generarán al terminar la ronda {{round}}"
     }
   }
 }

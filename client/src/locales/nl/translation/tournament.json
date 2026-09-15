@@ -51,7 +51,7 @@
         "typeLabel": "Toernooitype",
         "formatLabel": "Matchformaat",
         "notSet": "Niet ingesteld",
-        "estimatedVolume": "Ongeveer {{matches}} wedstrijd{{matches, plural, one {} other {en}}} over {{rounds}} ronde{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, tot {{totalMaps}} kaart{{totalMaps, plural, one {} other {en}}} in totaal)."
+        "estimatedVolumeText": "Ongeveer {{matches}} verdeeld over {{rounds}} (best of {{mapsPerMatch}}, tot {{maps}} in totaal)."
       }
     },
     "formSteps": {
@@ -75,12 +75,328 @@
       "createTournament": "Toernooi maken"
     },
     "nameLabel": "Toernooinaam",
-    "namePlaceholder": "MAT 2025 Voorjaarstoernooi"
+    "namePlaceholder": "MAT 2025 Voorjaarstoernooi",
+    "champion": {
+      "title": "Kampioen"
+    },
+    "page": {
+      "title": "Toernooi-instellingen"
+    },
+    "labels": {
+      "teams": "Ploegen",
+      "maps": "Kaarten",
+      "format": "Formaat",
+      "players": "Spelers",
+      "matchRules": "Wedstrijdregels",
+      "servers": "Servers",
+      "overtimeSettings": "Overtime-instellingen",
+      "mapPool": "Kaartenpool"
+    },
+    "tooltips": {
+      "deleteTournament": "Verwijder dit toernooi en alle bijbehorende gegevens definitief"
+    },
+    "counts": {
+      "teams_one": "{{count}} ploeg",
+      "teams_other": "{{count}} ploegen",
+      "matches_one": "{{count}} wedstrijd",
+      "matches_other": "{{count}} wedstrijden",
+      "rounds_one": "{{count}} ronde",
+      "rounds_other": "{{count}} rondes",
+      "maps_one": "{{count}} kaart",
+      "maps_other": "{{count}} kaarten",
+      "servers_one": "{{count}} server",
+      "servers_other": "{{count}} servers",
+      "availableServers_one": "{{count}} beschikbare server",
+      "availableServers_other": "{{count}} beschikbare servers",
+      "concurrentMatches_one": "{{count}} gelijktijdige wedstrijd",
+      "concurrentMatches_other": "{{count}} gelijktijdige wedstrijden"
+    },
+    "matchRules": {
+      "value": "Maximaal {{maxRounds}} rondes per kaart; wie als eerste {{winRounds}} rondes wint, wint de kaart.",
+      "teamSizeValue": "Ploeggrootte: {{size}}v{{size}}",
+      "overtimeEnabled": "Overtime: ingeschakeld",
+      "overtimeDisabled": "Overtime: uitgeschakeld (geen overtime)",
+      "overtimeDisabledNoDraws": "Overtime: uitgeschakeld (geen gelijkspel – schade beslist)",
+      "overtimeSegments_one": "Overtime-segmenten: {{count}} segment",
+      "overtimeSegments_other": "Overtime-segmenten: {{count}} segmenten",
+      "overtimeSegmentsDefault": "Overtime-segmenten: standaardwaarde van MatchZy",
+      "overtimeSegmentsDefaultUnlimited": "Overtime-segmenten: standaardwaarde van MatchZy (meestal onbeperkt)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Sjabloon laden is mislukt",
+      "nameRequired": "Toernooinaam is verplicht",
+      "nameUpdated": "Toernooinaam bijgewerkt",
+      "nameUpdateFailed": "Bijwerken van de toernooinaam is mislukt",
+      "selectAtLeastOneMap": "Selecteer minstens 1 kaart",
+      "maxRoundsRange": "Het maximale aantal rondes moet tussen 1 en 30 liggen",
+      "teamSizeRange": "De ploeggrootte moet tussen 2 en 10 spelers liggen",
+      "invalidTeamCount": "Ongeldig aantal ploegen",
+      "selectAtLeastTwoTeams": "Selecteer minstens 2 ploegen",
+      "shuffleCreated": "Shuffle-toernooi “{{name}}” is aangemaakt! Volgende stap: registreer minstens {{minPlayers}} spelers om het toernooi te starten ({{teamSize}}v{{teamSize}}-wedstrijden).",
+      "shuffleCreateFailed": "Aanmaken van het shuffle-toernooi is mislukt",
+      "shuffleCreateFailedRetry": "Aanmaken van het shuffle-toernooi is mislukt. Controleer je instellingen en probeer het opnieuw.",
+      "updated": "Toernooi bijgewerkt en schema opnieuw gegenereerd!",
+      "created": "Toernooi aangemaakt!",
+      "saveFailed": "Opslaan van het toernooi is mislukt",
+      "deleted": "Toernooi verwijderd",
+      "deleteFailed": "Verwijderen van het toernooi is mislukt",
+      "regenerated": "Schema opnieuw gegenereerd",
+      "regenerateFailed": "Opnieuw genereren van het schema is mislukt",
+      "resetDone": "Toernooi teruggezet naar de instelmodus",
+      "resetFailed": "Terugzetten van het toernooi is mislukt",
+      "started_one": "Toernooi gestart! {{count}} wedstrijd toegewezen aan servers.",
+      "started_other": "Toernooi gestart! {{count}} wedstrijden toegewezen aan servers.",
+      "startRequested": "Start van het toernooi aangevraagd. Servers worden binnenkort toegewezen.",
+      "startFailed": "Starten van het toernooi is mislukt",
+      "templateSaved": "Sjabloon opgeslagen!",
+      "disableServersFailed": "Een of meer servers uitschakelen is mislukt: {{message}}",
+      "noChangesToSave": "Geen wijzigingen om op te slaan",
+      "invalidMapSelection": "Ongeldige kaartselectie"
+    },
+    "outdatedServers": {
+      "title": "Servers hebben een update nodig",
+      "body": "Volgens Steam zijn een of meer ingeschakelde servers verouderd (of konden ze niet worden geverifieerd). Werk ze bij of schakel ze uit om verder te gaan met de overige servers.",
+      "confirm": "Betrokken servers uitschakelen en opnieuw proberen",
+      "disabling": "Uitschakelen..."
+    },
+    "live": {
+      "saveNameAria": "Toernooinaam opslaan",
+      "cancelRenameAria": "Hernoemen van toernooi annuleren",
+      "editNameAria": "Toernooinaam bewerken",
+      "renameTooltip": "Toernooi hernoemen",
+      "alert": {
+        "liveTitle": "Toernooi is live",
+        "liveBody": "Er lopen op dit moment wedstrijden op de servers. Je kunt de toernooi-instellingen niet aanpassen zolang het toernooi live is (behalve de naam).",
+        "pendingTitle": "Toernooi bezig",
+        "pendingBody": "De wedstrijden beginnen zodra er servers zijn toegewezen en de veto's klaar zijn. Je kunt de toernooi-instellingen niet aanpassen zolang het toernooi loopt (behalve de naam).",
+        "completedTitle": "Toernooi voltooid",
+        "completedBody": "Alle wedstrijden van dit toernooi zijn gespeeld. Maak een nieuw toernooi aan of zet dit toernooi terug om opnieuw te beginnen."
+      },
+      "teamsCompeting_one": "{{count}} ploeg doet mee",
+      "teamsCompeting_other": "{{count}} ploegen doen mee",
+      "playersCompeting_one": "{{count}} speler doet mee",
+      "playersCompeting_other": "{{count}} spelers doen mee",
+      "playersCompetingUnknown": "Spelers doen mee",
+      "shuffleSettingsLabel": "Shuffle-instellingen",
+      "maxRoundsPerMapValue": "Maximaal aantal rondes per kaart: {{rounds}}",
+      "eloTemplateValue": "ELO-sjabloon: {{template}}",
+      "mapSequenceLabel": "Kaartvolgorde (rondes)",
+      "noMapsConfigured": "Nog geen kaarten ingesteld.",
+      "viewBracket": "Schema bekijken",
+      "viewBracketTooltip": "Bekijk het toernooischema en de wedstrijddetails",
+      "leaderboardTooltip": "Open het openbare klassement om met spelers te delen",
+      "restartTooltip": "Beëindig alle actieve wedstrijden op de servers en laad ze opnieuw (handig bij vastgelopen wedstrijden)",
+      "resetTooltip": "Beëindig alle wedstrijden en zet het toernooi terug naar de instelmodus (behoudt de instellingen maar wist alle wedstrijdgegevens)",
+      "reset": "Terug naar instellen"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Er zijn minstens {{minPlayers}} spelers nodig om het toernooi te starten ({{teamSize}}v{{teamSize}}-wedstrijden). Nu geregistreerd: {{registered}}",
+      "start": "Toernooi starten",
+      "starting": "Starten...",
+      "startSimulation": "Simulatie starten",
+      "startingSimulation": "Simulatie starten...",
+      "bulkCreateMatches": "Wedstrijden in bulk aanmaken",
+      "edit": "Bewerken",
+      "regenerate": "Opnieuw genereren",
+      "regenerateTooltip": "Verwijder alle huidige wedstrijden en genereer het schema opnieuw met dezelfde instellingen.",
+      "regenerateDisabledTooltip": "Genereer het schema minstens één keer (Opslaan en schema genereren) voordat je het opnieuw kunt genereren."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Alle actieve wedstrijden op de servers beëindigen",
+        "deleteMatches": "Alle wedstrijden en schema's verwijderen",
+        "deleteData": "Alle wedstrijdgegevens en statistieken verwijderen"
+      },
+      "delete": {
+        "title": "🗑️ Toernooi verwijderen",
+        "question": "Weet je zeker dat je <b>“{{name}}”</b> definitief wilt VERWIJDEREN?",
+        "willTitle": "⚠️ Hiermee ga je:",
+        "items": {
+          "removeTournament": "Het toernooi volledig verwijderen",
+          "cannotBeUndone": "Kan niet ongedaan worden gemaakt"
+        },
+        "note": "💡 Let op: wil je gewoon opnieuw beginnen met dezelfde toernooi-instellingen, gebruik dan “Terug naar instellen”.",
+        "confirm": "Definitief verwijderen"
+      },
+      "regenerate": {
+        "title": "🔄 Schema opnieuw genereren",
+        "liveWarning": "⚠️ WAARSCHUWING: het toernooi is {{status}}!",
+        "liveBody": "Het schema opnieuw genereren <b>VERWIJDERT ALLE</b> bestaande wedstrijdgegevens, inclusief scores, statistieken en gebeurtenisgeschiedenis.",
+        "cannotBeUndone": "Deze actie kan niet ongedaan worden gemaakt.",
+        "areYouSure": "Weet je heel zeker dat je wilt doorgaan?",
+        "setupBody": "Hiermee worden alle bestaande wedstrijden verwijderd en wordt het schema opnieuw gegenereerd met dezelfde instellingen.",
+        "continue": "Doorgaan?",
+        "confirmDestructive": "JA, ALLES VERWIJDEREN",
+        "confirm": "Opnieuw genereren"
+      },
+      "reset": {
+        "title": "🔄 Terug naar instellen",
+        "question": "<b>“{{name}}”</b> terugzetten naar de INSTELMODUS?",
+        "willTitle": "Hiermee ga je:",
+        "items": {
+          "clearStatus": "De toernooistatus wissen (terug naar instellen)",
+          "keepSettings": "De toernooi-instellingen <b>behouden</b> (naam, ploegen, formaat)",
+          "allowEdit": "Je de instellingen weer laten bewerken"
+        },
+        "saveAgain": "Na het terugzetten moet je opnieuw opslaan om het schema te genereren.",
+        "note": "💡 Let op: wil je het toernooi volledig verwijderen, gebruik dan “Verwijderen”.",
+        "confirm": "Terug naar instellen"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Geen servers beschikbaar",
+        "titleInsufficient": "⚠️ Te weinig servers",
+        "titleUncertain": "⚠️ Toernooi zonder servers starten?",
+        "noServersHeading": "Er zijn momenteel geen servers beschikbaar",
+        "noServersBody": "Het toernooi start, maar wedstrijden worden uitgesteld totdat er een server vrij is. Het systeem wijst de wedstrijden automatisch toe zodra servers klaarstaan.",
+        "insufficientHeading": "Te weinig servers om alle wedstrijden van de eerste ronde tegelijk te spelen",
+        "insufficientBody": "Je hebt momenteel <b>{{available}}</b>, maar de eerste ronde verwacht <b>{{required}}</b>. Sommige wedstrijden komen in de wachtrij en starten zodra er servers vrijkomen.",
+        "uncertainHeading": "Serverbeschikbaarheid is onzeker",
+        "uncertainBody": "Het toernooi kan starten met weinig of geen beschikbare servers. Wedstrijden worden uitgesteld totdat er servers beschikbaar zijn en worden automatisch toegewezen zodra ze klaarstaan.",
+        "question": "Wil je het toernooi toch starten?",
+        "confirm": "Ja, toch starten",
+        "cancel": "Servers controleren"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Opslaan en schema genereren",
+      "saveAsTemplate": "Opslaan als sjabloon",
+      "saveTemplateTooltip": "Sla de huidige toernooiconfiguratie op als sjabloon"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Kies een toernooisoort",
+        "selectFormat": "Kies een wedstrijdformaat"
+      },
+      "shuffleInfo": "Shuffle-toernooien werken niet met vaste ploegen. Spelers worden per wedstrijd automatisch in evenwichtige ploegen verdeeld op basis van hun Skill Rating.",
+      "shuffleRounds": "Dit shuffle-toernooi krijgt ongeveer {{rounds}} (één per geselecteerde kaart).",
+      "volumeAlert": "Met {{teams}} in een {{type}}-toernooi in {{format}} telt dit schema ongeveer {{matches}} verdeeld over {{rounds}} (tot {{maps}} in totaal).",
+      "maxRoundsLabel": "Maximaal aantal rondes per kaart",
+      "maxRoundsHelper": "Elke kaart wordt tot {{maxRounds}} rondes gespeeld; wie als eerste {{winRounds}} rondes wint, wint.",
+      "maxRoundsHelperEmpty": "Maximaal aantal rondes per kaart (standaard: 24, max: 30).",
+      "serversSummary": "{{servers}} ingesteld; er zijn er {{required}} nodig om alle wedstrijden in dit schema te spelen.",
+      "estimatedVolumeLabel": "Geschatte omvang",
+      "mapsHeading": "Kaarten ({{total}})",
+      "noMapsSelected": "Geen kaarten geselecteerd",
+      "matchConfiguration": "Wedstrijdconfiguratie",
+      "roundLimitValue_one": "Rondelimiet: maximaal {{count}} ronde",
+      "roundLimitValue_other": "Rondelimiet: maximaal {{count}} rondes",
+      "teamsHeading": "Ploegen ({{total}})",
+      "noTeamsSelected": "Geen ploegen geselecteerd (optioneel)",
+      "playerRegistration": "Spelersregistratie",
+      "playerRegistrationInfo_one": "Spelers worden na het aanmaken van het toernooi geregistreerd. Elke geselecteerde kaart staat voor één ronde wedstrijden ({{count}} ronde in totaal).",
+      "playerRegistrationInfo_other": "Spelers worden na het aanmaken van het toernooi geregistreerd. Elke geselecteerde kaart staat voor één ronde wedstrijden ({{count}} rondes in totaal)."
+    },
+    "overtime": {
+      "selectLabel": "Overtime",
+      "options": {
+        "enabled": "Ingeschakeld (standaard overtime)",
+        "disabledDraws": "Uitgeschakeld – gelijkspel toegestaan",
+        "disabledNoDraws": "Uitgeschakeld – geen gelijkspel (schade beslist)"
+      },
+      "modeHelper": "Standaard overtime speelt extra segmenten tot een ploeg voorstaat. “Gelijkspel toegestaan” laat een gelijke kaart in een gelijkspel eindigen, terwijl “geen gelijkspel” beslist op basis van de totale ploegschade.",
+      "tooltip": "Bepaalt hoe overtime werkt en hoe gelijke stand bij het maximale aantal rondes wordt afgehandeld. Deze instellingen gaan als overtimeMode/overtimeSegments naar MatchZy en betekenen hetzelfde als bij shuffle-toernooien en handmatige wedstrijden.",
+      "shuffleTooltip": "Bepaalt hoe overtime werkt bij shuffle-wedstrijden en hoe een gelijke stand bij het maximale aantal rondes wordt beslist. Met overtime uitgeschakeld kan een gelijke wedstrijd in een gelijkspel eindigen of worden beslist door de totale ploegschade, afhankelijk van je keuze.",
+      "segmentsLabel": "Overtime-segmenten (optioneel)",
+      "segmentsHelper": "Optioneel: beperk het aantal overtime-segmenten. Laat leeg voor de standaardwaarde van MatchZy.",
+      "segmentsHelperValue_one": "Beperk overtime tot {{count}} segment. Blijft het daarna gelijk, dan beslist de totale ploegschade.",
+      "segmentsHelperValue_other": "Beperk overtime tot {{count}} segmenten. Blijft het daarna gelijk, dan beslist de totale ploegschade."
+    },
+    "grandFinal": {
+      "sectionTitle": "Grand-finalemodus (dubbele eliminatie)",
+      "label": "Grand finale",
+      "options": {
+        "simple": "Eenvoudig – één grand finale tussen de winnaars van het winnaars- en verliezersschema",
+        "none": "Geen – de finale van het winnaarsschema beslist het toernooi (geen grand finale)",
+        "double": "Dubbel – met bracket‑reset (gedraagt zich nu als Eenvoudig; volledige ondersteuning is gepland)"
+      },
+      "helper": "Bepaalt hoe de winnaars van het winnaars- en verliezersschema aan het eind van het toernooi tegenover elkaar komen te staan."
+    },
+    "mapPool": {
+      "shuffleTitle": "Kaartselectie voor shuffle-toernooien",
+      "shuffleBody": "Alle geselecteerde kaarten worden op volgorde gespeeld. Elke kaart staat voor één ronde wedstrijden. Het aantal gekozen kaarten bepaalt hoeveel rondes er worden gespeeld.",
+      "shuffleSelected": "Je hebt {{maps}} geselecteerd, dus er worden {{rounds}} gespeeld.",
+      "chooseLabel": "Kies een kaartenpool",
+      "custom": "Aangepast",
+      "selectedMaps": "Geselecteerde kaarten ({{total}}):",
+      "chooseMapsPlaceholder": "Kies kaarten...",
+      "saveMapPool": "Kaartenpool opslaan",
+      "types": {
+        "defusal": "Defusal",
+        "hostage": "Gijzelaars",
+        "armsRace": "Arms Race",
+        "unknown": "Onbekend"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Shuffle-toernooien gebruiken best of 1. Elke wedstrijd bestaat uit één kaart."
+    },
+    "shuffleConfig": {
+      "overline": "Configuratie shuffle-toernooi",
+      "subtitle": "Wedstrijdregels en instellingen",
+      "teamSizeLabel": "Ploeggrootte",
+      "teamSizeTooltip": "Aantal spelers per ploeg. Gebruikelijke opties: 4v4, 5v5, 6v6. Minimaal 2 en maximaal 10 spelers per ploeg.",
+      "teamSizeHelper": "Aantal spelers per ploeg (standaard: 5 voor 5v5, bereik: 2-10)",
+      "maxRoundsLabel": "Max. rondes",
+      "maxRoundsTooltip": "Maximaal aantal rondes per wedstrijd. Deze waarde gaat rechtstreeks als mp_maxrounds naar MatchZy. Voorbeeld: 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "De wedstrijd gaat tot {{maxRounds}} rondes; wie als eerste {{winRounds}} rondes wint, wint",
+      "maxRoundsHelperEmpty": "Maximaal aantal rondes per wedstrijd (standaard: 24, max: 30)",
+      "eloTemplateLabel": "ELO-berekeningssjabloon",
+      "eloTemplateTooltip": "Kies hoe de ELO voor dit toernooi wordt berekend. Standaard gebruikt het sjabloon “Pure Win/Loss” alleen het wedstrijdresultaat (winst/verlies); statistieken worden bijgehouden maar veranderen de ELO niet. Andere sjablonen zijn optioneel en voegen statistiekgebaseerde correcties toe bovenop de OpenSkill-verandering als je Excel-achtig gedrag wilt.",
+      "eloDefaultSuffix": "(standaard)",
+      "eloTemplateHelper": "Pure Win/Loss (standaard): alleen het wedstrijdresultaat beïnvloedt de ELO. Spelersstatistieken worden nog steeds vastgelegd voor klassementen en exports, maar veranderen de rating niet tenzij je een aangepast sjabloon kiest."
+    },
+    "changePreview": {
+      "title": "Toernooiwijzigingen controleren",
+      "liveHeading": "Het toernooi is LIVE!",
+      "liveBody": "Het wijzigen van de soort, het formaat of het aantal ploegen kan het opnieuw genereren van het schema vereisen. Overweeg “Toernooi terugzetten” om opnieuw te beginnen.",
+      "noChangesDetected": "Geen wijzigingen gevonden",
+      "intro": "De volgende wijzigingen worden toegepast:",
+      "before": "VOOR",
+      "after": "NA",
+      "apply": "Wijzigingen toepassen",
+      "applyRisky": "Wijzigingen toepassen (riskant!)",
+      "noChangesToApply": "Geen wijzigingen om toe te passen",
+      "none": "Geen",
+      "itemCount_one": "{{count}} item",
+      "itemCount_other": "{{count}} items"
+    }
   },
   "bracket": {
     "empty": {
       "noBracketTitle": "Geen schema om te tonen",
       "noBracketDescription": "Maak een toernooi en genereer het schema om te beginnen"
+    },
+    "view": {
+      "visual": "Visueel",
+      "list": "Lijst",
+      "refresh": "Vernieuwen",
+      "enterFullscreen": "Volledig scherm",
+      "exitFullscreen": "Volledig scherm afsluiten",
+      "shuffleNoVisual": "Shuffle-toernooien hebben geen visueel schema; gebruik de lijstweergave."
+    },
+    "shuffleEmpty": {
+      "title": "Geen schema voor shuffle-toernooien",
+      "description": "Shuffle-toernooien gebruiken geen vast schema. Teams worden elke ronde opnieuw samengesteld op basis van spelers-ELO.",
+      "hint": "Gebruik de pagina Wedstrijden voor lopende en komende wedstrijden, en de pagina Ranglijst voor de spelersranking.",
+      "goToMatches": "Naar wedstrijden",
+      "viewLeaderboard": "Ranglijst bekijken"
+    },
+    "notGenerated": {
+      "title": "Schema nog niet gegenereerd",
+      "description": "Genereer het schema om wedstrijden voor {{name}} aan te maken",
+      "goToSettings": "Naar toernooi-instellingen"
+    },
+    "shuffleNoVisual": {
+      "title": "Geen visueel schema voor shuffle-toernooien",
+      "description": "Wedstrijden worden elke ronde gegenereerd op basis van spelers-ELO en teambalans. Volg de voortgang hier:",
+      "listView": "Lijstweergave",
+      "matches": "Wedstrijden",
+      "standings": "Stand",
+      "docsHint": "Zie de handleiding \"Shuffle Tournaments\" in de documentatie voor een volledige uitleg van shuffle."
+    },
+    "swiss": {
+      "notGenerated": "Niet gegenereerd",
+      "generatedAfter": "Wedstrijden worden gegenereerd na afloop van ronde {{round}}"
     }
   }
 }

@@ -16,6 +16,7 @@ import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import type { Match, MatchLiveStats, Team } from '../../types';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
+import { useTranslation } from 'react-i18next';
 
 interface SwissViewProps {
   matches: Match[];
@@ -35,6 +36,7 @@ interface SwissTeamRecord {
 }
 
 export default function SwissView({ matches, teams, totalRounds, onMatchClick }: SwissViewProps) {
+  const { t } = useTranslation();
   type SwissMatch = Match & { liveStats?: MatchLiveStats | null };
 
   // Calculate team records
@@ -200,9 +202,9 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                   <CardContent>
                     <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                       <Typography variant="h6" fontWeight={600}>
-                        Round {round}
+                        {t('rounds.roundN', { n: round })}
                       </Typography>
-                      {!hasMatches && <Chip label="Not Generated" size="small" color="default" />}
+                      {!hasMatches && <Chip label={t('bracket.swiss.notGenerated')} size="small" color="default" />}
                     </Box>
 
                     {hasMatches ? (
@@ -310,7 +312,7 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                         color="text.secondary"
                         sx={{ fontStyle: 'italic' }}
                       >
-                        Matches will be generated after Round {round - 1} completes
+                        {t('bracket.swiss.generatedAfter', { round: round - 1 })}
                       </Typography>
                     )}
                   </CardContent>

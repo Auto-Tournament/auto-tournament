@@ -76,7 +76,22 @@
     "demo": "Demo",
     "downloadDemo": "Download demo",
     "showingLastMatches": "Showing last {{shown}} matches. Total: {{total}}",
-    "noMatchesYet": "No matches yet"
+    "noMatchesYet": "No matches yet",
+    "pageTitle": "{{name}} - Player Profile",
+    "loadFailed": "Failed to load player data",
+    "eloChart": {
+      "title": "ELO Progression",
+      "noHistory": "No rating history available",
+      "startingElo": "Starting ELO",
+      "currentElo": "Current ELO",
+      "totalChange": "Total Change"
+    },
+    "performanceChart": {
+      "title": "Performance Trends",
+      "noData": "No meaningful performance data yet – play a few rounds to see ADR and K/D trends.",
+      "avgAdr": "ADR: {{value}} avg",
+      "avgKd": "K/D: {{value}} avg"
+    }
   },
   "teamPage": {
     "wantYourStats": "Want to see your own stats and match history?",

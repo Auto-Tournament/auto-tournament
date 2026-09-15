@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Kan wedstrijden niet laden",
-      "loadTitle": "Fout bij het laden van wedstrijden"
+      "loadTitle": "Fout bij het laden van wedstrijden",
+      "bulkDelete": "Kan een of meer wedstrijden niet verwijderen"
     },
     "allocation": {
       "nextServers": "Volgende servertoewijzing over {{seconds}}s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Handmatige wedstrijden verwijderen",
-      "message": "Weet je zeker dat je {{count}} handmatige wedstrijd{{suffix}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
+      "message": "Weet je zeker dat je {{count}} handmatige wedstrijd{{suffix}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "deleted_one": "{{count}} wedstrijd verwijderd",
+      "deleted_other": "{{count}} wedstrijden verwijderd"
+    },
+    "card": {
+      "matchNumber": "Wedstrijd #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Positie in wachtrij: #{{position}}",
+      "waitingForServers": "Wachten op servers...",
+      "allocatingNow": "Nu toewijzen...",
+      "allocatesIn": "Toewijzing over {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle handmatig",
+      "manual": "Handmatig",
+      "simulation": "Simulatie",
+      "winner": "WINNAAR",
+      "mapN": "Map {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "WACHTEN OP START TOERNOOI",
+      "waitingForServer": "WACHTEN OP SERVER",
+      "vetoPending": "VETO IN AFWACHTING",
+      "mapVeto": "MAPVETO",
+      "serverAllocated": "SERVER TOEGEWEZEN",
+      "warmup": "WARMING-UP",
+      "overtime": "VERLENGING #{{n}}",
+      "live": "LIVE",
+      "completed": "VOLTOOID",
+      "cancelled": "GEANNULEERD"
+    },
+    "statusGuide": {
+      "title": "Uitleg wedstrijdstatus",
+      "pending": "De wedstrijd is gepland maar nog niet aan een server toegewezen. Hij wordt toegewezen zodra er een server vrij is.",
+      "loaded": "De wedstrijd is geladen op de server en in warming-up. Spelers moeten verbinden en zich klaar melden om te starten.",
+      "live": "De wedstrijd wordt op de server gespeeld.",
+      "completed": "De wedstrijd is afgelopen. De winnaar is bepaald en het schema is bijgewerkt.",
+      "proTipTitle": "Tip:",
+      "proTip": "Als een wedstrijd \"Wachten op spelers (X/Y)\" toont, is de server klaar en moeten spelers verbinden. Zodra alle verwachte spelers verbonden en klaar zijn, start de wedstrijd automatisch."
+    },
+    "allocationWidget": {
+      "title": "Status servertoewijzing",
+      "available": "Beschikbaar:",
+      "busy": "Bezet:",
+      "cooling": "Afkoelen:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Wachtend: {{count}} wedstrijd",
+      "waitingMatches_other": "Wachtend: {{count}} wedstrijden",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Klaar",
+      "statusCooling": "Afkoelen",
+      "statusBusy": "Bezet",
+      "statusOffline": "Offline",
+      "readyIn": "Klaar over: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Deze wedstrijd verwijderen?",
       "confirmBody": "Weet je zeker dat je wedstrijd \"{{slug}}\" wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "button": "Wedstrijd verwijderen"
+    },
+    "roster": {
+      "title": "Spelerslijst",
+      "yourTeam": "Jouw team",
+      "openPlayerPage": "Spelerspagina openen",
+      "ready": "KLAAR",
+      "connected": "VERBONDEN",
+      "offline": "OFFLINE"
     }
   },
   "bulkShuffleMatchesModal": {

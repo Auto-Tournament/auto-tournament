@@ -27,6 +27,7 @@ import MatchDetailsModal from '../components/modals/MatchDetailsModal';
 import { EmptyState } from '../components/shared/EmptyState';
 import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
+import { ChampionBanner } from '../components/tournament/ChampionBanner';
 import { getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
 import { api } from '../utils/api';
@@ -350,40 +351,23 @@ export default function Bracket() {
         <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8, px: 3 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            No bracket for shuffle tournaments
+            {t('bracket.shuffleEmpty.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={2}>
-            Shuffle tournaments don&apos;t use a fixed bracket view. Teams are reshuffled each round
-            based on player ELO.
+            {t('bracket.shuffleEmpty.description')}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Use the{' '}
-            <Box
-              component="a"
-              href="/matches"
-              sx={{ fontWeight: 600, textDecoration: 'underline', color: 'inherit' }}
-            >
-              Matches
-            </Box>{' '}
-            page to monitor live and upcoming matches, and the{' '}
-            <Box
-              component="a"
-              href={`/tournament/${tournament.id}/leaderboard`}
-              sx={{ fontWeight: 600, textDecoration: 'underline', color: 'inherit' }}
-            >
-              Leaderboard
-            </Box>{' '}
-            page to track player rankings.
+            {t('bracket.shuffleEmpty.hint')}
           </Typography>
           <Stack direction="row" spacing={2} justifyContent="center">
             <Button variant="contained" onClick={() => navigate('/matches')}>
-              Go to Matches
+              {t('bracket.shuffleEmpty.goToMatches')}
             </Button>
             <Button
               variant="outlined"
               onClick={() => navigate(`/tournament/${tournament.id}/leaderboard`)}
             >
-              View Leaderboard
+              {t('bracket.shuffleEmpty.viewLeaderboard')}
             </Button>
           </Stack>
         </Card>
@@ -428,13 +412,13 @@ export default function Bracket() {
         <Card data-testid="bracket-empty-state" sx={{ textAlign: 'center', py: 8 }}>
           <EmojiEventsIcon sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }} />
           <Typography variant="h6" color="text.secondary" gutterBottom>
-            Bracket not generated yet
+            {t('bracket.notGenerated.title')}
           </Typography>
           <Typography variant="body2" color="text.secondary" mb={3}>
-            Generate the bracket to create matches for {tournament.name}
+            {t('bracket.notGenerated.description', { name: tournament.name })}
           </Typography>
           <Button variant="contained" onClick={() => navigate('/tournament')}>
-            Go to Tournament Settings
+            {t('bracket.notGenerated.goToSettings')}
           </Button>
         </Card>
       </Box>
@@ -461,7 +445,7 @@ export default function Bracket() {
 
   const getBracketRoundLabel = (round: number): string => {
     if (tournament.type === 'shuffle') {
-      return `Round ${round}`;
+      return getRoundLabel(round);
     }
     return getRoundLabel(round, effectiveTotalRounds);
   };
@@ -553,7 +537,7 @@ export default function Bracket() {
                   {tournament.name}
                 </Typography>
                 <Typography variant="body2" color="text.secondary">
-                  {tournament.type.replace('_', ' ').toUpperCase()} •{' '}
+                  {t(`tournament.typeSelector.types.${tournament.type}.label`)} •{' '}
                   {tournament.format.toUpperCase()}
                 </Typography>
               </Box>
@@ -576,7 +560,7 @@ export default function Bracket() {
                 <Tooltip
                   title={
                     tournament.type === 'shuffle'
-                      ? 'Shuffle tournaments do not have a visual bracket; use the list view instead.'
+                      ? t('bracket.view.shuffleNoVisual')
                       : ''
                   }
                   disableHoverListener={tournament.type !== 'shuffle'}
@@ -585,13 +569,13 @@ export default function Bracket() {
                   <span>
                     <ToggleButton value="visual" disabled={tournament.type === 'shuffle'}>
                       <AccountTreeOutlinedIcon sx={{ mr: 1 }} fontSize="small" />
-                      Visual
+                      {t('bracket.view.visual')}
                     </ToggleButton>
                   </span>
                 </Tooltip>
                 <ToggleButton value="list">
                   <ViewListIcon sx={{ mr: 1 }} fontSize="small" />
-                  List
+                  {t('bracket.view.list')}
                 </ToggleButton>
               </ToggleButtonGroup>
               <Button
@@ -600,18 +584,24 @@ export default function Bracket() {
                 onClick={loadBracket}
                 size="small"
               >
-                Refresh
+                {t('bracket.view.refresh')}
               </Button>
               <IconButton
                 onClick={toggleFullscreen}
                 color="primary"
-                title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
+                title={isFullscreen ? t('bracket.view.exitFullscreen') : t('bracket.view.enterFullscreen')}
               >
                 {isFullscreen ? <FullscreenExitIcon /> : <FullscreenIcon />}
               </IconButton>
             </Box>
           </Box>
         </>
+      )}
+
+      {!isFullscreen && (
+        <Box px={2}>
+          <ChampionBanner tournament={tournament} />
+        </Box>
       )}
 
       {/* Allocation / cooldown status helper */}
@@ -636,7 +626,7 @@ export default function Bracket() {
               color: '#ffffff',
             },
           }}
-          title="Exit Fullscreen"
+          title={t('bracket.view.exitFullscreen')}
         >
           <FullscreenExitIcon />
         </IconButton>
@@ -679,44 +669,28 @@ export default function Bracket() {
               }}
             >
               <Typography variant="h6" gutterBottom>
-                No visual bracket for shuffle tournaments
+                {t('bracket.shuffleNoVisual.title')}
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={2}>
-                Matches are generated dynamically each round based on player ELO and team balancing.
+                {t('bracket.shuffleNoVisual.description')}
               </Typography>
-              <Typography variant="body2" color="text.secondary">
-                Use the{' '}
-                <Button
-                  size="small"
-                  variant="text"
-                  sx={{ px: 0.5, minWidth: 0 }}
-                  onClick={() => setViewMode('list')}
-                >
-                  <strong>List view</strong>
+              <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
+                <Button size="small" variant="outlined" onClick={() => setViewMode('list')}>
+                  {t('bracket.shuffleNoVisual.listView')}
                 </Button>
-                , the{' '}
+                <Button size="small" variant="outlined" onClick={() => navigate('/matches')}>
+                  {t('bracket.shuffleNoVisual.matches')}
+                </Button>
                 <Button
                   size="small"
-                  variant="text"
-                  sx={{ px: 0.5, minWidth: 0 }}
-                  onClick={() => navigate('/matches')}
-                >
-                  <strong>Matches</strong>
-                </Button>{' '}
-                page, and{' '}
-                <Button
-                  size="small"
-                  variant="text"
-                  sx={{ px: 0.5, minWidth: 0 }}
+                  variant="outlined"
                   onClick={() => navigate('/tournament/1/leaderboard')}
                 >
-                  <strong>Standings</strong>
-                </Button>{' '}
-                to track shuffle tournament progress.
-              </Typography>
-              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                For a full walkthrough of how shuffle works, see the{' '}
-                <strong>Shuffle Tournaments</strong> guide in the documentation.
+                  {t('bracket.shuffleNoVisual.standings')}
+                </Button>
+              </Stack>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                {t('bracket.shuffleNoVisual.docsHint')}
               </Typography>
             </Box>
           ) : (
@@ -787,7 +761,7 @@ export default function Bracket() {
           matchNumber={getGlobalMatchNumber(selectedMatch)}
           roundLabel={
             tournament.type === 'shuffle'
-              ? `Round ${selectedMatch.round}`
+              ? getRoundLabel(selectedMatch.round)
               : getRoundLabel(selectedMatch.round, totalRounds)
           }
           onClose={handleCloseMatchModal}
