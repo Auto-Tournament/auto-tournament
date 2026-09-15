@@ -9,6 +9,7 @@ import { matchLiveStatsService, type MatchLiveStats } from '../services/matchLiv
 import type { DbMatchRow } from '../types/database.types';
 import { getMapResults } from '../services/matchMapResultService';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
+import { log } from '../utils/logger';
 
 const router = Router();
 
@@ -29,8 +30,6 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
   try {
     const { teamId } = req.params;
 
-    console.log(`[TeamMatch] Looking for matches for team: ${teamId}`);
-
     // Check if team exists and get players
     const team = await db.queryOneAsync<{ id: string; name: string; tag: string; players: string }>(
       'SELECT id, name, tag, players FROM teams WHERE id = ?',
@@ -38,14 +37,11 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     );
 
     if (!team) {
-      console.log(`[TeamMatch] Team not found: ${teamId}`);
       return res.status(404).json({
         success: false,
         error: 'Team not found',
       });
     }
-
-    console.log(`[TeamMatch] Team found: ${team.name}`);
 
     // Parse players JSON (preserve avatar field)
     let parsedPlayers: Array<{ steamId: string; name: string; avatar?: string }> = [];
@@ -107,13 +103,8 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       [teamId, teamId]
     );
 
-    if (match) {
-      console.log(`[TeamMatch] Found active match: ${match.slug} (status: ${match.status})`);
-    }
-
     // If no active match, find next pending/ready match
     if (!match) {
-      console.log(`[TeamMatch] No active match, looking for pending/ready matches...`);
       match = await db.queryOneAsync<
         DbMatchRow & {
           team1_name?: string;
@@ -141,27 +132,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         [teamId, teamId]
       );
 
-      if (match) {
-        console.log(
-          `[TeamMatch] Found pending/ready match: ${match.slug} (status: ${match.status})`
-        );
-      }
     }
 
-    // Check all matches for this team for debugging
-    const allMatches = await db.queryAsync<DbMatchRow>(
-      `SELECT slug, status, round, match_number FROM matches 
-       WHERE team1_id = ? OR team2_id = ?
-       ORDER BY round, match_number`,
-      [teamId, teamId]
-    );
-    console.log(
-      `[TeamMatch] All matches for team ${team.name}:`,
-      allMatches.map((m) => `${m.slug} (${m.status})`).join(', ') || 'none'
-    );
-
     if (!match) {
-      console.log(`[TeamMatch] No matches found for team ${team.name}`);
       return res.json({
         success: true,
         team: {
@@ -181,11 +154,13 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       ? { id: match.team2_id, name: match.team2_name, tag: match.team2_tag }
       : { id: match.team1_id, name: match.team1_name, tag: match.team1_tag };
 
-    console.log(
-      `[TeamMatch] Returning match ${match.slug} for team ${team.name} (opponent: ${
-        opponent.name || 'TBD'
-      }, server: ${match.server_name || 'not assigned'})`
-    );
+    log.debug('[TeamMatch] Returning match for team', {
+      teamId,
+      matchSlug: match.slug,
+      status: match.status,
+      opponent: opponent.name || 'TBD',
+      server: match.server_name || 'not assigned',
+    });
 
     // Get match config for map pool
     const config = match.config ? JSON.parse(match.config) : {};
@@ -279,10 +254,10 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
         }
       } catch (error) {
         // Silently fail - server status is nice-to-have, not critical
-        console.debug(
-          '[TeamMatch] Server status check failed (plugin ConVars may not exist yet):',
-          error
-        );
+        log.debug('[TeamMatch] Server status check failed (plugin ConVars may not exist yet)', {
+          matchSlug: match.slug,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -370,7 +345,10 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           }));
         }
       } catch (error) {
-        console.debug('Failed to enrich players with avatars:', error);
+        log.debug('[TeamMatch] Failed to enrich players with avatars', {
+          teamId,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
       return normalizedPlayers;
     };

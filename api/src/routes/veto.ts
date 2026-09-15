@@ -704,14 +704,10 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       }
 
       // Automatically allocate server and load match after veto completion (async)
-      console.log('\n========================================');
-      console.log(`AUTO-LOADING MATCH AFTER VETO`);
-      console.log(`Match: ${matchSlug}`);
-      console.log(
-        `Picked Maps:`,
-        vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName)
-      );
-      console.log('========================================\n');
+      log.info(`[VETO] Auto-loading match ${matchSlug} after veto`, {
+        matchSlug,
+        pickedMaps: vetoState.pickedMaps.map((m: { mapName: string }) => m.mapName),
+      });
 
       const baseUrl = await settingsService.getWebhookUrl();
 
@@ -720,31 +716,27 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
           `Webhook URL is not configured. Skipping auto-load for match ${matchSlug} after veto.`
         );
       } else {
-        console.log(`Base URL for webhook: ${baseUrl}`);
-
         setImmediate(async () => {
           try {
-            console.log(`[VETO] Calling allocateSingleMatch for ${matchSlug}...`);
             const result = await matchAllocationService.allocateSingleMatch(matchSlug, baseUrl);
 
             if (result.success) {
               log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
-              console.log(`Server: ${result.serverId}`);
             } else {
               log.warn(`[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
-              console.log('Allocation error:', result.error);
-              
+
               // Start polling for available servers (checks every 10 seconds)
               // The backend will keep checking for available servers and assign one when found
-              console.log(`[VETO] Starting background polling for available servers...`);
+              log.debug(`[VETO] Starting background polling for available servers`, { matchSlug });
               matchAllocationService.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {
             log.error(`[VETO] Error loading match after veto`, err as Error);
-            console.error('Exception during allocation:', err);
-            
+
             // Start polling even on exception if match is still ready
-            console.log(`[VETO] Starting background polling for available servers after error...`);
+            log.debug(`[VETO] Starting background polling for available servers after error`, {
+              matchSlug,
+            });
             matchAllocationService.startPollingForServer(matchSlug, baseUrl);
           }
         });

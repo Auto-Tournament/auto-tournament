@@ -30,6 +30,17 @@ import { validateVetoOrder, type VetoStep } from '../utils/vetoConfig';
 
 const router = Router();
 
+/** Distinct servers the given matches are running on. */
+function serverIdsOf(matches: DbMatchRow[]): Set<string> {
+  const serverIds = new Set<string>();
+  for (const match of matches) {
+    if (match.server_id) {
+      serverIds.add(match.server_id);
+    }
+  }
+  return serverIds;
+}
+
 /**
  * Ensure MatchZy webhooks are configured for all enabled servers at the moment
  * a tournament is started. This mirrors the behaviour of the Servers page
@@ -619,32 +630,9 @@ router.delete('/', async (_req: Request, res: Response) => {
     if (loadedMatches.length > 0) {
       log.info(`Ending ${loadedMatches.length} active match(es) on servers before deletion...`);
 
-      const serverIds = new Set<string>();
-      for (const match of loadedMatches) {
-        if (match.server_id) {
-          serverIds.add(match.server_id);
-        }
-      }
-
-      for (const serverId of serverIds) {
-        try {
-          log.info(`Ending match on server: ${serverId}`);
-          const result = await rconService.sendCommand(serverId, 'css_restart');
-
-          if (result.success) {
-            log.success(`Match ended on server ${serverId}`);
-            matchesEnded++;
-          } else {
-            log.error(`Failed to end match on server ${serverId}`, undefined, {
-              error: result.error,
-            });
-            matchesEndedFailed++;
-          }
-        } catch (error) {
-          log.error(`Error ending match on server ${serverId}`, error);
-          matchesEndedFailed++;
-        }
-      }
+      const outcome = await rconService.endMatchesOnServers(serverIdsOf(loadedMatches));
+      matchesEnded = outcome.ended;
+      matchesEndedFailed = outcome.failed;
 
       // Wait a moment for servers to clean up
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -805,32 +793,9 @@ router.post('/reset', requireAuth, async (_req: Request, res: Response) => {
     if (loadedMatches.length > 0) {
       log.info(`Ending ${loadedMatches.length} active match(es) on servers...`);
 
-      const serverIds = new Set<string>();
-      for (const match of loadedMatches) {
-        if (match.server_id) {
-          serverIds.add(match.server_id);
-        }
-      }
-
-      for (const serverId of serverIds) {
-        try {
-          log.info(`Ending match on server: ${serverId}`);
-          const result = await rconService.sendCommand(serverId, 'css_restart');
-
-          if (result.success) {
-            log.success(`Match ended on server ${serverId}`);
-            matchesEnded++;
-          } else {
-            log.error(`Failed to end match on server ${serverId}`, undefined, {
-              error: result.error,
-            });
-            matchesEndedFailed++;
-          }
-        } catch (error) {
-          log.error(`Error ending match on server ${serverId}`, error);
-          matchesEndedFailed++;
-        }
-      }
+      const outcome = await rconService.endMatchesOnServers(serverIdsOf(loadedMatches));
+      matchesEnded = outcome.ended;
+      matchesEndedFailed = outcome.failed;
 
       // Wait a moment for servers to clean up
       await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -1300,35 +1265,8 @@ router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) 
         `[DEV] Ending ${loadedMatches.length} active match(es) on servers before simulation reset`
       );
 
-      const serverIds = new Set<string>();
-      for (const match of loadedMatches) {
-        if (match.server_id) {
-          serverIds.add(match.server_id);
-        }
-      }
-
-      let serversEnded = 0;
-      let serversEndFailed = 0;
-
-      for (const serverId of serverIds) {
-        try {
-          log.info(`[DEV] Ending match on server: ${serverId}`);
-          const result = await rconService.sendCommand(serverId, 'css_restart');
-
-          if (result.success) {
-            log.success(`[DEV] Match ended on server ${serverId}`);
-            serversEnded++;
-          } else {
-            log.error(`Failed to end match on server ${serverId}`, undefined, {
-              error: result.error,
-            });
-            serversEndFailed++;
-          }
-        } catch (error) {
-          log.error(`Error ending match on server ${serverId}`, error);
-          serversEndFailed++;
-        }
-      }
+      const { ended: serversEnded, failed: serversEndFailed } =
+        await rconService.endMatchesOnServers(serverIdsOf(loadedMatches), { logPrefix: '[DEV]' });
 
       log.info(
         `[DEV] Ended matches on ${serversEnded} server(s) before simulation reset${

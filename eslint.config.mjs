@@ -63,7 +63,9 @@ export default [
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn',
       '@typescript-eslint/explicit-function-return-type': 'off',
-      'no-console': 'off',
+      // Use `log` from utils/logger. Stray console.log/debug dumps reached
+      // production logs unfiltered; console.warn/error remain in catch blocks.
+      'no-console': ['error', { allow: ['warn', 'error'] }],
     },
   },
 

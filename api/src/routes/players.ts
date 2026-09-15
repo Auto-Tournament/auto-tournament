@@ -1007,10 +1007,10 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
         }
       } catch (error) {
         // Silently fail - server status is nice-to-have, not critical
-        console.debug(
-          '[PlayerMatch] Server status check failed (plugin ConVars may not exist yet):',
-          error
-        );
+        log.debug('[PlayerMatch] Server status check failed (plugin ConVars may not exist yet)', {
+          matchSlug: match.slug,
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -1055,7 +1055,10 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
             }));
           }
         } catch (error) {
-          console.debug('[PlayerMatch] Failed to enrich players with avatars:', error);
+          log.debug('[PlayerMatch] Failed to enrich players with avatars', {
+            teamId,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
       return normalizedPlayers;
@@ -1091,7 +1094,10 @@ router.get('/:playerId/current-match', async (req: Request, res: Response) => {
             avatar: p.avatar || avatarMap.get(p.steamid.toLowerCase()),
           }));
         } catch (error) {
-          console.debug('[PlayerMatch] Failed to enrich manual-match players with avatars:', error);
+          log.debug('[PlayerMatch] Failed to enrich manual-match players with avatars', {
+            matchSlug: match.slug,
+            error: error instanceof Error ? error.message : String(error),
+          });
         }
       }
     }
