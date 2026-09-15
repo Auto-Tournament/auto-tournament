@@ -120,6 +120,32 @@ if [ "${CI:-false}" = "true" ]; then
     RELEASE_NON_INTERACTIVE=true
 fi
 
+# Split-build mode, used by .github/workflows/release.yml. Local runs leave all
+# of these unset and behave as before.
+#
+# RELEASE_SKIP_DOCKER_BUILD=true
+#     Do not clean up, build or push images here. Images were already built per
+#     platform (natively) and pushed by digest before this script runs.
+# RELEASE_IMAGE_DIGESTS="user/image@sha256:... user/image@sha256:..."
+#     With RELEASE_SKIP_DOCKER_BUILD, step 9 stitches these into the
+#     multi-arch :X.Y.Z and :latest tags instead of building.
+# RELEASE_SKIP_PROJECT_BUILD=true
+#     Skip step 1 (yarn build). The image build already compiled this commit.
+# RELEASE_EXPECTED_VERSION / RELEASE_EXPECTED_SHA
+#     The version and origin/main commit the images were built for. The
+#     release aborts before pushing anything if either has moved.
+RELEASE_SKIP_DOCKER_BUILD="${RELEASE_SKIP_DOCKER_BUILD:-false}"
+RELEASE_IMAGE_DIGESTS="${RELEASE_IMAGE_DIGESTS:-}"
+RELEASE_SKIP_PROJECT_BUILD="${RELEASE_SKIP_PROJECT_BUILD:-false}"
+RELEASE_EXPECTED_VERSION="${RELEASE_EXPECTED_VERSION:-}"
+RELEASE_EXPECTED_SHA="${RELEASE_EXPECTED_SHA:-}"
+
+if [ "$RELEASE_SKIP_DOCKER_BUILD" = "true" ] && [ -z "$RELEASE_IMAGE_DIGESTS" ] && [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+    echo -e "${RED}RELEASE_SKIP_DOCKER_BUILD=true needs RELEASE_IMAGE_DIGESTS in non-interactive mode,${NC}"
+    echo -e "${RED}otherwise the release would be published with no images.${NC}"
+    exit 1
+fi
+
 if [ -n "$RELEASE_TYPE_INPUT" ]; then
     case "$RELEASE_TYPE_INPUT" in
         patch|minor|major|custom|skip|unchanged)
@@ -157,17 +183,19 @@ if ! command -v gh &> /dev/null; then
     exit 1
 fi
 
-if ! docker info > /dev/null 2>&1; then
-    echo -e "${RED}Error: Docker is not running.${NC}"
-    echo -e "${YELLOW}Please start OrbStack or Docker Desktop.${NC}"
-    exit 1
-fi
+if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ]; then
+    if ! docker info > /dev/null 2>&1; then
+        echo -e "${RED}Error: Docker is not running.${NC}"
+        echo -e "${YELLOW}Please start OrbStack or Docker Desktop.${NC}"
+        exit 1
+    fi
 
-# Verify Docker is actually accessible
-if ! docker ps > /dev/null 2>&1; then
-    echo -e "${RED}Error: Docker daemon is not accessible.${NC}"
-    echo -e "${YELLOW}Please ensure OrbStack or Docker Desktop is running and try again.${NC}"
-    exit 1
+    # Verify Docker is actually accessible
+    if ! docker ps > /dev/null 2>&1; then
+        echo -e "${RED}Error: Docker daemon is not accessible.${NC}"
+        echo -e "${YELLOW}Please ensure OrbStack or Docker Desktop is running and try again.${NC}"
+        exit 1
+    fi
 fi
 
 if ! docker buildx version > /dev/null 2>&1; then
@@ -185,8 +213,8 @@ if ! gh auth status &> /dev/null; then
     fi
 fi
 
-# Check if logged in to Docker Hub
-if ! docker info | grep -q "Username"; then
+# Check if logged in to Docker Hub (split-build mode logs in via docker/login-action)
+if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ] && ! docker info | grep -q "Username"; then
     echo -e "${YELLOW}Not logged in to Docker Hub. Attempting to log in...${NC}"
     docker login
     if [ $? -ne 0 ]; then
@@ -257,57 +285,62 @@ check_disk_space() {
     return 0
 }
 
-# Check disk space before starting Docker operations
-# Allow override via environment variable (in GB)
-MIN_DISK_SPACE_GB="${MIN_DISK_SPACE_GB:-10}"
-echo ""
-echo -e "${YELLOW}Checking disk space requirements...${NC}"
-check_disk_space "$MIN_DISK_SPACE_GB"
+# Split-build mode never builds here, so there is nothing to clean up or make room for.
+if [ "$RELEASE_SKIP_DOCKER_BUILD" != "true" ]; then
+    # Check disk space before starting Docker operations
+    # Allow override via environment variable (in GB)
+    MIN_DISK_SPACE_GB="${MIN_DISK_SPACE_GB:-10}"
+    echo ""
+    echo -e "${YELLOW}Checking disk space requirements...${NC}"
+    check_disk_space "$MIN_DISK_SPACE_GB"
 
-# Cleanup Docker: Stop containers, remove images, prune everything for clean slate
-echo ""
-echo -e "${YELLOW}Cleaning up Docker for fresh build...${NC}"
+    # Cleanup Docker: Stop containers, remove images, prune everything for clean slate
+    echo ""
+    echo -e "${YELLOW}Cleaning up Docker for fresh build...${NC}"
 
-# Stop and remove any running containers related to this project
-echo -e "${BLUE}Stopping and removing containers...${NC}"
-CONTAINERS=$(docker ps -a --filter "name=matchzy" --format "{{.ID}}" 2>/dev/null || true)
-if [ -n "$CONTAINERS" ]; then
-    echo "$CONTAINERS" | while read -r id; do
-        [ -n "$id" ] && docker stop "$id" 2>/dev/null || true
-        [ -n "$id" ] && docker rm "$id" 2>/dev/null || true
-    done
+    # Stop and remove any running containers related to this project
+    echo -e "${BLUE}Stopping and removing containers...${NC}"
+    CONTAINERS=$(docker ps -a --filter "name=matchzy" --format "{{.ID}}" 2>/dev/null || true)
+    if [ -n "$CONTAINERS" ]; then
+        echo "$CONTAINERS" | while read -r id; do
+            [ -n "$id" ] && docker stop "$id" 2>/dev/null || true
+            [ -n "$id" ] && docker rm "$id" 2>/dev/null || true
+        done
+    fi
+
+    # Remove Docker images related to this project
+    echo -e "${BLUE}Removing Docker images...${NC}"
+    IMAGES=$(docker images "${DOCKER_IMAGE}"* --format "{{.ID}}" 2>/dev/null | sort -u || true)
+    if [ -n "$IMAGES" ]; then
+        echo "$IMAGES" | while read -r id; do
+            [ -n "$id" ] && docker rmi -f "$id" 2>/dev/null || true
+        done
+    fi
+
+    # Remove test build image if it exists
+    TEST_IMAGE=$(docker images "${DOCKER_IMAGE}:test-build" --format "{{.ID}}" 2>/dev/null | head -1 || true)
+    if [ -n "$TEST_IMAGE" ]; then
+        docker rmi -f "$TEST_IMAGE" 2>/dev/null || true
+    fi
+
+    # Prune build cache and builder cache
+    echo -e "${BLUE}Pruning Docker build cache...${NC}"
+    docker builder prune -af --filter "until=24h" 2>/dev/null || true
+
+    # Prune system (removes unused data, but not volumes by default to avoid data loss)
+    echo -e "${BLUE}Pruning Docker system...${NC}"
+    docker system prune -af 2>/dev/null || true
+
+    # Clean up buildx builder cache if it exists
+    if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+        echo -e "${BLUE}Pruning buildx builder cache...${NC}"
+        docker buildx prune -af 2>/dev/null || true
+    fi
+
+    echo -e "${GREEN}✅ Docker cleanup complete${NC}"
+else
+    echo -e "${BLUE}RELEASE_SKIP_DOCKER_BUILD=true: skipping disk check and Docker cleanup${NC}"
 fi
-
-# Remove Docker images related to this project
-echo -e "${BLUE}Removing Docker images...${NC}"
-IMAGES=$(docker images "${DOCKER_IMAGE}"* --format "{{.ID}}" 2>/dev/null | sort -u || true)
-if [ -n "$IMAGES" ]; then
-    echo "$IMAGES" | while read -r id; do
-        [ -n "$id" ] && docker rmi -f "$id" 2>/dev/null || true
-    done
-fi
-
-# Remove test build image if it exists
-TEST_IMAGE=$(docker images "${DOCKER_IMAGE}:test-build" --format "{{.ID}}" 2>/dev/null | head -1 || true)
-if [ -n "$TEST_IMAGE" ]; then
-    docker rmi -f "$TEST_IMAGE" 2>/dev/null || true
-fi
-
-# Prune build cache and builder cache
-echo -e "${BLUE}Pruning Docker build cache...${NC}"
-docker builder prune -af --filter "until=24h" 2>/dev/null || true
-
-# Prune system (removes unused data, but not volumes by default to avoid data loss)
-echo -e "${BLUE}Pruning Docker system...${NC}"
-docker system prune -af 2>/dev/null || true
-
-# Clean up buildx builder cache if it exists
-if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    echo -e "${BLUE}Pruning buildx builder cache...${NC}"
-    docker buildx prune -af 2>/dev/null || true
-fi
-
-echo -e "${GREEN}✅ Docker cleanup complete${NC}"
 
 # Get current (root) version from package.json
 if [ -f "package.json" ]; then
@@ -338,34 +371,10 @@ for WS in "${WORKSPACES[@]}"; do
     fi
 done
 
-# Function to bump version
-bump_version() {
-    local current="$1"
-    local type="$2"  # patch, minor, or major
-    
-    IFS='.' read -r major minor patch <<< "$current"
-    
-    case "$type" in
-        patch)
-            patch=$((patch + 1))
-            ;;
-        minor)
-            minor=$((minor + 1))
-            patch=0
-            ;;
-        major)
-            major=$((major + 1))
-            minor=0
-            patch=0
-            ;;
-        *)
-            echo "$current"
-            return 1
-            ;;
-    esac
-    
-    echo "${major}.${minor}.${patch}"
-}
+# bump_version lives in release-version.sh, shared with the Release workflow
+# so both compute the same version.
+# shellcheck source=scripts/release-version.sh
+source "${SCRIPT_DIR}/release-version.sh"
 
 # Prompt for version bump type or manual version
 echo ""
@@ -428,6 +437,12 @@ esac
 # Validate version format (semver)
 if ! [[ "$NEW_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     echo -e "${RED}Invalid version format. Use semantic versioning (e.g., 1.0.0)${NC}"
+    exit 1
+fi
+
+if [ -n "$RELEASE_EXPECTED_VERSION" ] && [ "$NEW_VERSION" != "$RELEASE_EXPECTED_VERSION" ]; then
+    echo -e "${RED}Computed version ${NEW_VERSION} does not match RELEASE_EXPECTED_VERSION ${RELEASE_EXPECTED_VERSION}.${NC}"
+    echo -e "${RED}The images were built for a different version. Aborting before any changes.${NC}"
     exit 1
 fi
 
@@ -539,15 +554,28 @@ if [ "$LOCAL_COMMIT" != "$REMOTE_COMMIT" ]; then
     git reset --hard origin/main
 fi
 
-# Step 1: Build project
-echo ""
-echo -e "${YELLOW}Step 1: Building project...${NC}"
-yarn build
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Project build failed${NC}"
+# In split-build mode the images were built from a specific commit. If main
+# has moved since, tagging it would publish a release whose images do not
+# contain what the tag says. Nothing has been pushed yet at this point.
+if [ -n "$RELEASE_EXPECTED_SHA" ] && [ "$(git rev-parse HEAD)" != "$RELEASE_EXPECTED_SHA" ]; then
+    echo -e "${RED}origin/main is $(git rev-parse HEAD), but the images were built from ${RELEASE_EXPECTED_SHA}.${NC}"
+    echo -e "${RED}Main moved during the release. Aborting before any changes; re-run the release.${NC}"
     exit 1
 fi
-echo -e "${GREEN}✅ Project build successful${NC}"
+
+# Step 1: Build project
+echo ""
+if [ "$RELEASE_SKIP_PROJECT_BUILD" = "true" ]; then
+    echo -e "${YELLOW}Step 1: Skipping project build (RELEASE_SKIP_PROJECT_BUILD=true)${NC}"
+else
+    echo -e "${YELLOW}Step 1: Building project...${NC}"
+    yarn build
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Project build failed${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Project build successful${NC}"
+fi
 
 # Step 2: Run tests (optional; skip by default)
 echo ""
@@ -580,56 +608,61 @@ else
 fi
 
 # Step 3: Build Docker image (test build)
-echo ""
-echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
-
-# Ensure we're using OrbStack context (or default if OrbStack not available)
-if docker context ls | grep -q "orbstack \*"; then
-    echo -e "${GREEN}✅ Using OrbStack context${NC}"
-elif docker context show | grep -q "orbstack"; then
-    docker context use orbstack
-    echo -e "${GREEN}✅ Switched to OrbStack context${NC}"
+# In split-build mode the per-platform image builds already did this.
+if [ "$RELEASE_SKIP_DOCKER_BUILD" = "true" ]; then
+    echo -e "${YELLOW}Step 3: Skipping Docker test build (RELEASE_SKIP_DOCKER_BUILD=true)${NC}"
 else
-    echo -e "${YELLOW}⚠️  OrbStack context not found, using default${NC}"
-fi
+    echo ""
+    echo -e "${YELLOW}Step 3: Building Docker image (test build)...${NC}"
 
-# Set up Docker Buildx builder
-if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    # Check if builder endpoint is valid
-    BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
-    if [ -n "$BUILDER_ENDPOINT" ] && [ "$BUILDER_ENDPOINT" != "desktop-linux" ]; then
-        docker buildx use "${BUILDER_NAME}"
-        echo -e "${GREEN}✅ Using existing builder${NC}"
-        # Bootstrap the builder if it's inactive
-        echo -e "${BLUE}Booting builder...${NC}"
-        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+    # Ensure we're using OrbStack context (or default if OrbStack not available)
+    if docker context ls | grep -q "orbstack \*"; then
+        echo -e "${GREEN}✅ Using OrbStack context${NC}"
+    elif docker context show | grep -q "orbstack"; then
+        docker context use orbstack
+        echo -e "${GREEN}✅ Switched to OrbStack context${NC}"
     else
-        echo -e "${YELLOW}⚠️  Existing builder uses invalid endpoint, removing and recreating...${NC}"
-        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
-        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-        echo -e "${GREEN}✅ Builder recreated${NC}"
+        echo -e "${YELLOW}⚠️  OrbStack context not found, using default${NC}"
     fi
-else
-    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-    echo -e "${GREEN}✅ Builder created${NC}"
-fi
 
-# Test build (single platform for speed, load into local Docker)
-docker buildx build \
-    --platform linux/amd64 \
-    --file docker/Dockerfile \
-    --tag "${DOCKER_IMAGE}:test-build" \
-    --load \
-    --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
-    --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
-    --progress=plain \
-    .
+    # Set up Docker Buildx builder
+    if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+        # Check if builder endpoint is valid
+        BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
+        if [ -n "$BUILDER_ENDPOINT" ] && [ "$BUILDER_ENDPOINT" != "desktop-linux" ]; then
+            docker buildx use "${BUILDER_NAME}"
+            echo -e "${GREEN}✅ Using existing builder${NC}"
+            # Bootstrap the builder if it's inactive
+            echo -e "${BLUE}Booting builder...${NC}"
+            docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+        else
+            echo -e "${YELLOW}⚠️  Existing builder uses invalid endpoint, removing and recreating...${NC}"
+            docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+            docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+            echo -e "${GREEN}✅ Builder recreated${NC}"
+        fi
+    else
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder created${NC}"
+    fi
 
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Docker build failed${NC}"
-    exit 1
+    # Test build (single platform for speed, load into local Docker)
+    docker buildx build \
+        --platform linux/amd64 \
+        --file docker/Dockerfile \
+        --tag "${DOCKER_IMAGE}:test-build" \
+        --load \
+        --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
+        --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
+        --progress=plain \
+        .
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Docker build failed${NC}"
+        exit 1
+    fi
+    echo -e "${GREEN}✅ Docker build successful${NC}"
 fi
-echo -e "${GREEN}✅ Docker build successful${NC}"
 
 # Step 4: Set up or update release branch
 echo ""
@@ -992,113 +1025,138 @@ echo ""
 echo -e "${YELLOW}Step 9: Building and pushing Docker images...${NC}"
 echo ""
 
-# Build both platforms by default (no prompt). Override via BUILD_PLATFORMS env if needed.
-if [ -z "${BUILD_PLATFORMS:-}" ]; then
-    BUILD_PLATFORMS="linux/amd64,linux/arm64"
-fi
-
-if [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
-    echo -e "${BLUE}Platform: linux/amd64 only${NC}"
-else
-    echo -e "${BLUE}Platforms: ${BUILD_PLATFORMS}${NC}"
-fi
-echo ""
-
-# Ensure versions are synced before Docker build (critical - must use new version)
-echo -e "${BLUE}Ensuring versions are synced before Docker build...${NC}"
-if [ -f "scripts/sync-version.sh" ]; then
-    bash scripts/sync-version.sh
-    echo -e "${GREEN}✅ Versions synced: root, api, and client package.json all have version ${NEW_VERSION}${NC}"
-else
-    echo -e "${RED}⚠️  sync-version.sh not found! Versions may be out of sync.${NC}"
-    echo -e "${YELLOW}Please manually verify api/package.json and client/package.json have version ${NEW_VERSION}${NC}"
-    if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
-        echo -e "${RED}Non-interactive mode cannot continue without sync-version.sh. Aborting.${NC}"
-        exit 1
+VERIFY_IMAGES=true
+if [ "$RELEASE_SKIP_DOCKER_BUILD" = "true" ]; then
+    # Split-build mode: each platform was built natively and pushed by digest
+    # (untagged). Publishing the release tags is just writing a manifest list
+    # that points at those digests; no image is rebuilt.
+    BUILD_PLATFORMS="${BUILD_PLATFORMS:-linux/amd64,linux/arm64}"
+    if [ -z "$RELEASE_IMAGE_DIGESTS" ]; then
+        echo -e "${YELLOW}⚠️  RELEASE_SKIP_DOCKER_BUILD=true and no RELEASE_IMAGE_DIGESTS: no Docker images published${NC}"
+        VERIFY_IMAGES=false
     else
-        read -p "Continue anyway? (y/n) " -r CONTINUE_BUILD
-        if [[ ! "$CONTINUE_BUILD" =~ ^[Yy]$ ]]; then
-            echo "Build cancelled. Please fix version sync manually."
+        echo -e "${BLUE}Creating ${DOCKER_IMAGE}:${NEW_VERSION} and :latest from:${NC}"
+        for ref in $RELEASE_IMAGE_DIGESTS; do echo "  ${ref}"; done
+        # shellcheck disable=SC2086 # one argument per digest
+        if ! docker buildx imagetools create \
+            --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
+            --tag "${DOCKER_IMAGE}:latest" \
+            $RELEASE_IMAGE_DIGESTS; then
+            echo -e "${RED}❌ Failed to create multi-arch image tags${NC}"
             exit 1
         fi
     fi
-fi
-echo ""
-
-# Re-check disk space before multi-platform build (requires more space)
-echo -e "${YELLOW}Re-checking disk space before multi-platform build...${NC}"
-# Multi-platform builds need more space, so require 12GB instead of 10GB
-MULTI_PLATFORM_MIN_GB="${MIN_DISK_SPACE_GB:-12}"
-if [ "$MULTI_PLATFORM_MIN_GB" -lt 12 ]; then
-    MULTI_PLATFORM_MIN_GB=12
-fi
-check_disk_space "$MULTI_PLATFORM_MIN_GB"
-
-# Ensure we have a suitable Buildx builder (docker-container driver) before running multi-arch build
-if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
-    # Check if builder endpoint is valid and not tied to a stale/alternate runtime
-    BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
-
-    # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
-    if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
-        echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
-        docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
-        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-        echo -e "${GREEN}✅ Builder recreated${NC}"
-    else
-        docker buildx use "${BUILDER_NAME}"
-        echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
-        # Bootstrap the builder if it's inactive
-        echo -e "${BLUE}Booting builder...${NC}"
-        docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
-    fi
 else
-    docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
-    echo -e "${GREEN}✅ Builder created${NC}"
-fi
+    # Build both platforms by default (no prompt). Override via BUILD_PLATFORMS env if needed.
+    if [ -z "${BUILD_PLATFORMS:-}" ]; then
+        BUILD_PLATFORMS="linux/amd64,linux/arm64"
+    fi
 
-# Build with network host mode for better connectivity in ARM64 emulation
-docker buildx build \
-    --platform "${BUILD_PLATFORMS}" \
-    --file docker/Dockerfile \
-    --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
-    --tag "${DOCKER_IMAGE}:latest" \
-    --push \
-    --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
-    --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
-    --build-arg BUILDKIT_INLINE_CACHE=1 \
-    --progress=plain \
-    .
+    if [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
+        echo -e "${BLUE}Platform: linux/amd64 only${NC}"
+    else
+        echo -e "${BLUE}Platforms: ${BUILD_PLATFORMS}${NC}"
+    fi
+    echo ""
 
-if [ $? -ne 0 ]; then
-    echo -e "${RED}❌ Failed to build and push Docker images${NC}"
-    exit 1
+    # Ensure versions are synced before Docker build (critical - must use new version)
+    echo -e "${BLUE}Ensuring versions are synced before Docker build...${NC}"
+    if [ -f "scripts/sync-version.sh" ]; then
+        bash scripts/sync-version.sh
+        echo -e "${GREEN}✅ Versions synced: root, api, and client package.json all have version ${NEW_VERSION}${NC}"
+    else
+        echo -e "${RED}⚠️  sync-version.sh not found! Versions may be out of sync.${NC}"
+        echo -e "${YELLOW}Please manually verify api/package.json and client/package.json have version ${NEW_VERSION}${NC}"
+        if [ "$RELEASE_NON_INTERACTIVE" = "true" ]; then
+            echo -e "${RED}Non-interactive mode cannot continue without sync-version.sh. Aborting.${NC}"
+            exit 1
+        else
+            read -p "Continue anyway? (y/n) " -r CONTINUE_BUILD
+            if [[ ! "$CONTINUE_BUILD" =~ ^[Yy]$ ]]; then
+                echo "Build cancelled. Please fix version sync manually."
+                exit 1
+            fi
+        fi
+    fi
+    echo ""
+
+    # Re-check disk space before multi-platform build (requires more space)
+    echo -e "${YELLOW}Re-checking disk space before multi-platform build...${NC}"
+    # Multi-platform builds need more space, so require 12GB instead of 10GB
+    MULTI_PLATFORM_MIN_GB="${MIN_DISK_SPACE_GB:-12}"
+    if [ "$MULTI_PLATFORM_MIN_GB" -lt 12 ]; then
+        MULTI_PLATFORM_MIN_GB=12
+    fi
+    check_disk_space "$MULTI_PLATFORM_MIN_GB"
+
+    # Ensure we have a suitable Buildx builder (docker-container driver) before running multi-arch build
+    if docker buildx inspect "${BUILDER_NAME}" > /dev/null 2>&1; then
+        # Check if builder endpoint is valid and not tied to a stale/alternate runtime
+        BUILDER_ENDPOINT=$(docker buildx inspect "${BUILDER_NAME}" 2>/dev/null | grep "Endpoint:" | awk '{print $2}' || echo "")
+
+        # Treat OrbStack-backed or unknown endpoints as invalid so we recreate the builder
+        if [ -z "$BUILDER_ENDPOINT" ] || echo "$BUILDER_ENDPOINT" | grep -qi "orbstack"; then
+            echo -e "${YELLOW}⚠️  Existing builder uses invalid/stale endpoint (${BUILDER_ENDPOINT:-unknown}), removing and recreating...${NC}"
+            docker buildx rm "${BUILDER_NAME}" 2>/dev/null || true
+            docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+            echo -e "${GREEN}✅ Builder recreated${NC}"
+        else
+            docker buildx use "${BUILDER_NAME}"
+            echo -e "${GREEN}✅ Using existing builder (endpoint: ${BUILDER_ENDPOINT})${NC}"
+            # Bootstrap the builder if it's inactive
+            echo -e "${BLUE}Booting builder...${NC}"
+            docker buildx inspect "${BUILDER_NAME}" --bootstrap > /dev/null 2>&1 || true
+        fi
+    else
+        docker buildx create --name "${BUILDER_NAME}" --driver docker-container --use
+        echo -e "${GREEN}✅ Builder created${NC}"
+    fi
+
+    # Build with network host mode for better connectivity in ARM64 emulation
+    docker buildx build \
+        --platform "${BUILD_PLATFORMS}" \
+        --file docker/Dockerfile \
+        --tag "${DOCKER_IMAGE}:${NEW_VERSION}" \
+        --tag "${DOCKER_IMAGE}:latest" \
+        --push \
+        --cache-from type=registry,ref="${DOCKER_IMAGE}:buildcache" \
+        --cache-to type=registry,ref="${DOCKER_IMAGE}:buildcache,mode=max" \
+        --build-arg BUILDKIT_INLINE_CACHE=1 \
+        --progress=plain \
+        .
+
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}❌ Failed to build and push Docker images${NC}"
+        exit 1
+    fi
 fi
 
 # Verify images
-echo ""
-echo -e "${YELLOW}Verifying pushed images...${NC}"
-docker buildx imagetools inspect "${DOCKER_IMAGE}:${NEW_VERSION}" > /tmp/image_inspect.txt 2>&1
-# Check platforms based on what we built
-if [ "$BUILD_PLATFORMS" = "linux/amd64,linux/arm64" ]; then
-    if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
-        echo -e "${RED}❌ Multi-platform build verification failed${NC}"
-        echo -e "${YELLOW}Expected both linux/amd64 and linux/arm64, but got:${NC}"
-        cat /tmp/image_inspect.txt
-        rm -f /tmp/image_inspect.txt
-        exit 1
+if [ "$VERIFY_IMAGES" = "true" ]; then
+    echo ""
+    echo -e "${YELLOW}Verifying pushed images...${NC}"
+    docker buildx imagetools inspect "${DOCKER_IMAGE}:${NEW_VERSION}" > /tmp/image_inspect.txt 2>&1
+    # Check platforms based on what we built
+    if [ "$BUILD_PLATFORMS" = "linux/amd64,linux/arm64" ]; then
+        if ! grep -q 'linux/amd64' /tmp/image_inspect.txt || ! grep -q 'linux/arm64' /tmp/image_inspect.txt; then
+            echo -e "${RED}❌ Multi-platform build verification failed${NC}"
+            echo -e "${YELLOW}Expected both linux/amd64 and linux/arm64, but got:${NC}"
+            cat /tmp/image_inspect.txt
+            rm -f /tmp/image_inspect.txt
+            exit 1
+        fi
+        echo -e "${GREEN}✅ Verified images for both platforms (linux/amd64 and linux/arm64)${NC}"
+    elif [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
+        if ! grep -q 'linux/amd64' /tmp/image_inspect.txt; then
+            echo -e "${RED}❌ AMD64 build verification failed${NC}"
+            cat /tmp/image_inspect.txt
+            rm -f /tmp/image_inspect.txt
+            exit 1
+        fi
+        echo -e "${GREEN}✅ Verified linux/amd64 platform${NC}"
     fi
-    echo -e "${GREEN}✅ Verified images for both platforms (linux/amd64 and linux/arm64)${NC}"
-elif [ "$BUILD_PLATFORMS" = "linux/amd64" ]; then
-    if ! grep -q 'linux/amd64' /tmp/image_inspect.txt; then
-        echo -e "${RED}❌ AMD64 build verification failed${NC}"
-        cat /tmp/image_inspect.txt
-        rm -f /tmp/image_inspect.txt
-        exit 1
-    fi
-    echo -e "${GREEN}✅ Verified linux/amd64 platform${NC}"
+    rm -f /tmp/image_inspect.txt
 fi
-rm -f /tmp/image_inspect.txt
 
 # Step 10: Create GitHub release
 echo ""
