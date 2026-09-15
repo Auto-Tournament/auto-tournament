@@ -11,7 +11,7 @@
 
 # API reference
 
-Every endpoint this API serves — 195 of them, 144 behind auth —
+Every endpoint this API serves — 193 of them, 144 behind auth —
 read directly from the routers rather than written down, so it cannot drift.
 
 For *how* to authenticate a bot or script, and a task-oriented tour of the
@@ -35,11 +35,6 @@ to a player. Read the handler before assuming an endpoint is anonymous.
 registered earlier, and Express matches in registration order. It is dead code,
 and the dangerous kind — it reads as though it were in force. Where a shadowed
 row claims different auth from the row above it, the row above is what answers.
-
-Currently shadowed:
-
-- `DELETE /api/matches/:slug`
-- `GET /api/tournament/:id/leaderboard`
 
 ## Endpoints
 
@@ -151,7 +146,6 @@ Create, load, restart and cancel matches; read match state.
 | `POST` | `/api/matches/:slug/reallocate` | admin |
 | `PATCH` | `/api/matches/:slug/status` | admin |
 | `POST` | `/api/matches/:slug/force-cancel` | admin |
-| `DELETE` | `/api/matches/:slug` | ~~admin~~ **shadowed** |
 
 ### Events
 
@@ -205,7 +199,6 @@ The tournament itself — setup, bracket, rounds, standings.
 | `POST` | `/api/tournament/:id/register-players` | admin |
 | `PUT` | `/api/tournament/:id/set-players` | admin |
 | `GET` | `/api/tournament/:id/players` | admin |
-| `GET` | `/api/tournament/:id/leaderboard` | ~~admin~~ **shadowed** |
 | `GET` | `/api/tournament/:id/round-status` | admin |
 | `POST` | `/api/tournament/:id/generate-round` | admin |
 | `GET` | `/api/tournament/:id/elo-template` | admin |

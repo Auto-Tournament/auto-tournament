@@ -5375,8 +5375,8 @@
         "tags": [
           "Tournament"
         ],
-        "summary": "Get player leaderboard for shuffle tournament",
-        "description": "Returns leaderboard sorted by match wins, then ELO. Includes player stats (wins, losses, win rate, ELO change).",
+        "summary": "Get tournament leaderboard (public)",
+        "description": "Public endpoint to get tournament leaderboard and current round status. No authentication required.",
         "parameters": [
           {
             "in": "path",
