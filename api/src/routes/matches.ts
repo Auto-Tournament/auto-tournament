@@ -1,13 +1,19 @@
 import { Router, Request, Response } from 'express';
 import { matchService } from '../services/matchService';
 import { matchAllocationService } from '../services/matchAllocationService';
-import { loadMatchOnServer } from '../services/matchLoadingService';
+import { cancelQueuedLoad, loadMatchOnServer } from '../services/matchLoadingService';
 import { CreateMatchInput, MatchConfig, MatchListItem, MatchPlayer } from '../types/match.types';
 import { TournamentResponse } from '../types/tournament.types';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { matchConfigFetchTracker } from '../services/matchConfigFetchTracker';
+import {
+  checkConfigFetch,
+  readQueryString,
+  SERVER_ID_PARAM,
+  MATCH_ID_PARAM,
+} from '../utils/serverAttribution';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import { getBaseUrl, getWebhookBaseUrl } from '../utils/urlHelper';
 import { emitMatchUpdate, emitBracketUpdate } from '../services/socketService';
@@ -391,6 +397,32 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
       return res.status(404).json({
         success: false,
         error: `Match configuration '${slug}' not found`,
+      });
+    }
+
+    // A fetch carrying server_id / match_id is MatchZy acting on a load MAT sent
+    // earlier - possibly minutes earlier, if the plugin queued it behind a
+    // series in postgame. If the match has moved to another server since, or
+    // the slug now belongs to a new match (tournament reset), refuse: MatchZy
+    // has no command to cancel a queued load, so this is where it is stopped.
+    // Fetches without the parameters (older loads, manual tooling) are served.
+    const verdict = checkConfigFetch(
+      match,
+      readQueryString(req.query[SERVER_ID_PARAM]),
+      readQueryString(req.query[MATCH_ID_PARAM])
+    );
+    if (!verdict.ok) {
+      log.warn('[MATCH CONFIG] Refusing config fetch for a load that no longer applies', {
+        slug,
+        matchId: match.id,
+        assignedServerId: match.server_id ?? null,
+        requestedServerId: readQueryString(req.query[SERVER_ID_PARAM]),
+        requestedMatchId: readQueryString(req.query[MATCH_ID_PARAM]),
+        reason: verdict.reason,
+      });
+      return res.status(409).json({
+        success: false,
+        error: `Match configuration '${slug}' is not available to this server: ${verdict.reason}`,
       });
     }
 
@@ -1365,18 +1397,6 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
       });
     }
 
-    // Best-effort: ask the old server to restart so it returns to a clean state.
-    try {
-      const { rconService } = await import('../services/rconService');
-      await rconService.sendCommand(oldServerId, 'css_restart');
-    } catch (err) {
-      log.warn(`Failed to restart old server during reallocation (continuing)`, {
-        matchSlug: slug,
-        serverId: oldServerId,
-        error: err instanceof Error ? err.message : String(err),
-      });
-    }
-
     // Free old server from allocation tracker immediately.
     serverAllocationTracker.markIdle(oldServerId);
 
@@ -1394,6 +1414,22 @@ router.post('/:slug/reallocate', requireAuth, async (req: Request, res: Response
       'slug = ?',
       [slug]
     );
+
+    // Only now that server_id points at the new server: drop any load of this
+    // match queued on the old server, then restart it so it returns to a clean
+    // state. In that order, a restart that makes an old plugin fetch its queued
+    // config is refused by the config route instead of starting a second copy.
+    await cancelQueuedLoad(oldServerId, slug);
+    try {
+      const { rconService } = await import('../services/rconService');
+      await rconService.sendCommand(oldServerId, 'css_restart');
+    } catch (err) {
+      log.warn(`Failed to restart old server during reallocation (continuing)`, {
+        matchSlug: slug,
+        serverId: oldServerId,
+        error: err instanceof Error ? err.message : String(err),
+      });
+    }
 
     // Load on the new server.
     const load = await loadMatchOnServer(slug, fallback.id, { baseUrl });

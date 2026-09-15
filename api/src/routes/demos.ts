@@ -9,6 +9,7 @@ import { getMapResults } from '../services/matchMapResultService';
 import path from 'path';
 import fs from 'fs';
 import type { DbMatchRow } from '../types/database.types';
+import { demoMatchIdFromHeader } from '../utils/serverAttribution';
 
 const router = Router();
 
@@ -41,7 +42,10 @@ router.post(
   // This follows MatchZy API specification exactly
   express.raw({ type: 'application/octet-stream', limit: '500mb' }),
   async (req: Request, res: Response) => {
-    const { matchSlug } = req.params;
+    const { matchSlug: urlMatchSlug } = req.params;
+    // The slug the demo is stored under. Starts as the URL slug and is replaced
+    // by the match the MatchZy-MatchId header names, once resolved below.
+    let matchSlug = urlMatchSlug;
 
     try {
       // Read MatchZy headers (with Get5 fallbacks for compatibility)
@@ -123,18 +127,53 @@ router.post(
         },
       });
 
-      // Get match details
-      const match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
-        matchSlug,
-      ]);
+      // Which match is this demo from? The URL slug is only the server's current
+      // upload setting, which MAT overwrites when it loads the next match - and
+      // the previous match's last demo uploads after that (MatchZy waits for
+      // tv_delay first). That is how r1m1's de_train demo landed on r2m1. The
+      // MatchZy-MatchId header is stamped when the demo was recorded, so when it
+      // is one of MAT's numeric ids it decides. An id that no longer exists
+      // (the tournament was reset, and the slug now belongs to a new match) is
+      // rejected rather than attached to whatever reuses the slug.
+      const headerMatchId = demoMatchIdFromHeader(matchzyMatchId);
+      let match: DbMatchRow | null | undefined;
+      if (headerMatchId !== null) {
+        match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE id = ?', [
+          headerMatchId,
+        ]);
+        if (!match) {
+          log.warn('[Demo Upload] Rejected: demo belongs to a match that no longer exists', {
+            urlMatchSlug,
+            matchId: matchzyMatchId,
+            filename: matchzyFilename,
+          });
+          return res.status(410).json({
+            success: false,
+            error: `Match id ${headerMatchId} no longer exists; demo not stored`,
+          });
+        }
+        if (match.slug !== urlMatchSlug) {
+          log.warn('[Demo Upload] Upload URL names a different match than the demo; using the demo match id', {
+            urlMatchSlug,
+            matchId: headerMatchId,
+            resolvedMatchSlug: match.slug,
+            filename: matchzyFilename,
+          });
+        }
+      } else {
+        match = await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [
+          urlMatchSlug,
+        ]);
+      }
 
       if (!match) {
-        log.warn(`Demo upload rejected: Match ${matchSlug} not found`);
+        log.warn(`Demo upload rejected: Match ${urlMatchSlug} not found`);
         return res.status(404).json({
           success: false,
-          error: `Match '${matchSlug}' not found`,
+          error: `Match '${urlMatchSlug}' not found`,
         });
       }
+      matchSlug = match.slug;
 
       // Create match-specific folder (following MatchZy pattern)
       const matchFolder = path.join(DEMOS_DIR, matchSlug);

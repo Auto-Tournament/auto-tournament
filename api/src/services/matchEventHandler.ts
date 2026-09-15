@@ -87,6 +87,9 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
     }
       {
         const match = await resolveMatch(event.matchid);
+        if (match && (await isStaleMapEvent(match, eventData.map_number, 'map_result'))) {
+          break;
+        }
         if (match) {
           updateLiveStats(match, parseScorePayload(eventData, 'postgame'));
           await handleMapCompletion(match, event, eventData);
@@ -112,6 +115,9 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         // series_end / restore, and we never want to resurrect a completed
         // match back into the LIVE state.
         if (!shouldAcceptPlayEvent(liveMatch, 'going_live', event.matchid)) {
+          break;
+        }
+        if (await isStaleMapEvent(liveMatch, eventData.map_number, 'going_live')) {
           break;
         }
         await updateMatchStatus(liveMatch, 'live');
@@ -190,6 +196,9 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
         reason: eventData.reason,
       });
       const match = await resolveMatch(event.matchid);
+      if (match && (await isStaleMapEvent(match, eventData.map_number, 'round_end'))) {
+        break;
+      }
       if (match) {
         const updates: Partial<MatchLiveStats> = parseScorePayload(eventData, 'live');
 
@@ -255,6 +264,9 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
       const match = (await resolveMatch(event.matchid)) ?? null;
       if (match) {
         if (!shouldAcceptPlayEvent(match, 'round_started', event.matchid)) {
+          break;
+        }
+        if (await isStaleMapEvent(match, eventData.map_number, 'round_started')) {
           break;
         }
         // Some MatchZy setups are flaky about emitting the "going_live" event,
@@ -343,6 +355,39 @@ async function resolveMatch(identifier: string | number): Promise<DbMatchRow | n
     (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE slug = ?', [identifierStr])) ??
     null
   );
+}
+
+/**
+ * Is this event about a map the series has already moved past?
+ *
+ * After map N's result is stored, `matches.map_number` points at map N+1. An
+ * event for a lower map number that already has a result is stale: a retried
+ * delivery, or a second server playing the same match from the start. Applying
+ * it rolled `map_number` back and let a duplicate map_result overwrite the real
+ * result for that map, so it is dropped.
+ */
+async function isStaleMapEvent(
+  match: DbMatchRow,
+  rawMapNumber: unknown,
+  eventName: string
+): Promise<boolean> {
+  const mapNumber = parseNumber(rawMapNumber);
+  const current = parseNumber(match.map_number);
+  if (mapNumber === undefined || current === undefined || mapNumber >= current) {
+    return false;
+  }
+  const existing = await db.queryOneAsync<{ map_number: number }>(
+    'SELECT map_number FROM match_map_results WHERE match_slug = ? AND map_number = ?',
+    [match.slug, mapNumber]
+  );
+  if (!existing) {
+    return false;
+  }
+  log.warn(`Ignoring ${eventName} for map ${mapNumber}: match is already on map ${current}`, {
+    matchId: match.id,
+    slug: match.slug,
+  });
+  return true;
 }
 
 /**

@@ -2,6 +2,8 @@
  * Helper functions to generate MatchZy RCON configuration commands
  */
 
+import { buildServerEventsUrl } from './serverAttribution';
+
 /**
  * Get RCON commands to configure MatchZy webhook
  * Uses match slug in URL path for better event tracking
@@ -9,10 +11,15 @@
 export function getMatchZyWebhookCommands(
   baseUrl: string,
   serverToken: string,
-  matchSlug?: string
+  matchSlug?: string | null,
+  serverId?: string | null
 ): string[] {
-  // Encode match slug in URL path if provided (e.g., /api/events/r1m1)
-  const webhookUrl = matchSlug ? `${baseUrl}/api/events/${matchSlug}` : `${baseUrl}/api/events`;
+  // Encode match slug in URL path if provided (e.g., /api/events/r1m1).
+  // Otherwise the server id goes in the query string so events are attributable
+  // to the server that sent them (see utils/serverAttribution).
+  const webhookUrl = matchSlug
+    ? `${baseUrl}/api/events/${matchSlug}`
+    : buildServerEventsUrl(baseUrl, serverId);
 
   return [
     `matchzy_remote_log_url "${webhookUrl}"`,

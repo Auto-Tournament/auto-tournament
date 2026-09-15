@@ -36,6 +36,7 @@ import {
   type Cs2UpdateRequiredEvent,
   type ServerHealthEvent,
 } from '../services/serverTrackingService';
+import { isFromAssignedServer, readQueryString, SERVER_ID_PARAM } from '../utils/serverAttribution';
 
 const router = Router();
 
@@ -82,6 +83,21 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
     let match: DbMatchRow | null = null;
     if (matchSlug !== undefined && matchSlug !== null) {
       match = await findMatchByIdentifier(matchSlug);
+    }
+
+    // The report names its server. One that is not running this match (it
+    // loaded a stale or duplicate copy) must not overwrite the real report.
+    if (match && !isFromAssignedServer(match.server_id, String(serverId))) {
+      log.warn('[MatchReport] Ignoring report from a server not assigned to the match', {
+        matchSlug: match.slug,
+        assignedServerId: match.server_id,
+        reportServerId: serverId,
+      });
+      return res.status(200).json({
+        success: true,
+        ignored: true,
+        message: 'Report ignored: server is not assigned to this match',
+      });
     }
     if (!match) {
       match =
@@ -152,11 +168,13 @@ async function handleEventRequest(
   const body = req.body as MatchZyEvent | undefined;
   const eventType = body?.event;
   const payloadServerId = (body as { server_id?: string })?.server_id;
+  // Set by MAT in the webhook URL it gives each server (see serverAttribution).
+  const urlServerId = readQueryString(req.query?.[SERVER_ID_PARAM]);
 
   log.info('[EVENTS] Incoming webhook', {
     path: req.path,
     event: eventType ?? '(missing)',
-    server_id: payloadServerId ?? '(none)',
+    server_id: payloadServerId ?? urlServerId ?? '(none)',
     urlParam: matchSlugOrServerIdFromUrl ?? '(none)',
   });
 
@@ -197,7 +215,11 @@ async function handleEventRequest(
 
     log.webhookReceived(event.event, actualMatchSlug);
 
-    const serverId = resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || payloadServerId || 'unknown';
+    // The server that actually sent the request, when it identified itself.
+    const sourceServerId = urlServerId || payloadServerId || null;
+
+    const serverId =
+      sourceServerId || resolvedMatch?.server_id || matchSlugOrServerIdFromUrl || 'unknown';
 
     // Handle server_configured event from MatchZy Enhanced
     // Sent when server is configured with webhook URL or on startup
@@ -307,6 +329,27 @@ async function handleEventRequest(
       return res.status(200).json({
         success: true,
         message: 'Event received (no active match)',
+      });
+    }
+
+    // An event for a match from a server the match is not assigned to. This is
+    // how one match got results from two servers: a load MAT gave up on was
+    // queued by the plugin and played later alongside the re-allocated copy,
+    // and its map_result overwrote the real one. Answer 200 so the plugin does
+    // not retry it forever, but apply nothing.
+    if (resolvedMatch && !isFromAssignedServer(resolvedMatch.server_id, sourceServerId)) {
+      log.warn('[EVENTS] Ignoring event from a server not assigned to the match', {
+        event: event.event,
+        matchSlug: resolvedMatch.slug,
+        matchId: resolvedMatch.id,
+        assignedServerId: resolvedMatch.server_id,
+        sourceServerId,
+      });
+      logWebhookEvent(serverId, actualMatchSlug, event);
+      return res.status(200).json({
+        success: true,
+        ignored: true,
+        message: 'Event ignored: server is not assigned to this match',
       });
     }
 
