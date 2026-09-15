@@ -31,6 +31,30 @@ export function getMatchZyWebhookCommands(
 }
 
 /**
+ * Get RCON commands that point a server at MAT's bootstrap endpoint.
+ *
+ * Order matters: the plugin fetches the bootstrap URL the moment
+ * `matchzy_bootstrap_url` is set, using whatever token it has persisted at that
+ * point, and does not refetch when the token changes afterwards. On a server
+ * last configured by another MAT instance, setting the URL first sends the stale
+ * token, gets a 401, and leaves the server unconfigured. So the token goes
+ * before the URL, and the URL is the last command.
+ */
+export function getMatchZyBootstrapCommands(
+  baseUrl: string,
+  serverId: string,
+  serverToken: string
+): string[] {
+  const bootstrapUrl = `${baseUrl}/api/servers/${serverId}/bootstrap`;
+  return [
+    'matchzy_clear_event_queue',
+    `matchzy_server_id "${serverId}"`,
+    `matchzy_bootstrap_token "${serverToken}"`,
+    `matchzy_bootstrap_url "${bootstrapUrl}"`,
+  ];
+}
+
+/**
  * Get RCON commands to configure MatchZy match loading with bearer auth
  */
 export function getMatchZyLoadMatchAuthCommands(configToken: string): string[] {
