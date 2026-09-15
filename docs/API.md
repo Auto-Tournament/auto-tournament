@@ -15,7 +15,7 @@ can drift from the code:
 | [API-REFERENCE.md](API-REFERENCE.md) | Every endpoint and what guards it, to read |
 | [openapi.json](openapi.json) | The same, machine-readable — generate a client from it |
 | `/api-docs` on a running instance | Swagger UI over that spec, with a Try-it button |
-| [examples/discord-bot](../examples/discord-bot/README.md) | A working bot, ~350 lines, to copy and extend |
+| [examples/discord-bot](../examples/discord-bot/README.md) | A working bot, under 800 lines, to copy and extend |
 
 ## Generating a client
 
@@ -184,10 +184,14 @@ current rounds rather than only the final result.
 | `PUT /teams/:id`, `PATCH /teams/batch` | token (admin) | |
 | `DELETE /teams/:id`, `POST /teams/bulk-delete` | token (admin) | |
 | `GET /players`, `POST /players`, `POST /players/bulk-import` | token (admin) | |
+| `GET /players/by-discord-id/:discordId` | token (read) | Every player with that Discord ID, as a list; `[]` if none |
 
 Teams carry a `discordRoleId` field. It is stored and returned but MAT does
 nothing with it — it is there for exactly this: a bot mapping a MAT team to a
 Discord role.
+
+Players carry a `discordId`, and `GET /players/by-discord-id/:discordId` is how
+a bot maps the Discord user running a command to their MAT player.
 
 ### Running matches
 
