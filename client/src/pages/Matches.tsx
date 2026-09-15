@@ -142,7 +142,13 @@ export default function Matches() {
         }
 
         const match = data as Match & {
-          liveStats?: { team1Score?: number; team2Score?: number; team1SeriesScore?: number; team2SeriesScore?: number };
+          liveStats?: {
+            team1Score?: number;
+            team2Score?: number;
+            team1SeriesScore?: number;
+            team2SeriesScore?: number;
+            status?: string;
+          };
         };
 
         const matchIdOrSlugEquals = (m: Match) =>
@@ -169,14 +175,19 @@ export default function Matches() {
 
           const liveStats = updates.liveStats;
           if (liveStats && next.status !== 'completed') {
-            // For in‑progress matches, use current map rounds from liveStats so
-            // match cards show 8‑5 / 13‑7 etc. instead of staying at 0‑0 until
-            // the map completes. Completed matches keep their persisted series score.
+            // For in-progress matches the headline score is the current map's
+            // rounds, and the map score field follows it. Between maps the live
+            // stats still hold the finished map's rounds, so warmup counts as
+            // no score on the new map. Completed matches keep their persisted
+            // series score.
+            const inWarmup = liveStats.status === 'warmup';
             if (typeof liveStats.team1Score === 'number') {
-              next.team1Score = liveStats.team1Score;
+              next.team1MapScore = inWarmup ? 0 : liveStats.team1Score;
+              next.team1Score = next.team1MapScore;
             }
             if (typeof liveStats.team2Score === 'number') {
-              next.team2Score = liveStats.team2Score;
+              next.team2MapScore = inWarmup ? 0 : liveStats.team2Score;
+              next.team2Score = next.team2MapScore;
             }
           }
           return next;
@@ -461,13 +472,13 @@ export default function Matches() {
       const slugs = Array.from(selectedMatchSlugs);
       const count = slugs.length;
       await api.post('/api/matches/bulk-delete', { slugs });
-      showSuccess(`Deleted ${count} match${count === 1 ? '' : 'es'}`);
+      showSuccess(t('matchesPage.bulkDelete.deleted', { count }));
       setSelectedMatchSlugs(() => new Set());
       setSelectionMode(false);
       await fetchMatches();
     } catch (err) {
       console.error('Failed to delete matches', err);
-      showError('Failed to delete one or more matches');
+      showError(t('matchesPage.errors.bulkDelete'));
     }
   };
 

@@ -20,8 +20,15 @@ export interface Match {
   createdAt?: number;
   loadedAt?: number;
   completedAt?: number;
+  /** Headline score: maps won when completed, current map rounds while in progress. */
   team1Score?: number;
   team2Score?: number;
+  /** Maps won in the series. */
+  team1SeriesScore?: number;
+  team2SeriesScore?: number;
+  /** Rounds on the map being played (null when not in progress, 0-0 during warmup). */
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
   team1Players?: PlayerStats[];
   team2Players?: PlayerStats[];
   matchPhase?: MatchPhase; // warmup, knife, veto, live, post_match
