@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { settingsService } from '../services/settingsService';
 import { log } from '../utils/logger';
+import { db } from '../config/database';
+import { autoVetoPendingMatches } from '../services/vetoSimulationService';
 import packageJson from '../../package.json';
 
 const router = Router();
@@ -15,6 +17,29 @@ router.get('/version', async (_req: Request, res: Response) => {
 });
 
 router.use(requireAuth);
+
+/**
+ * Kick off automated veto for the in-progress tournament's waiting matches.
+ * Runs in the background; a failure here must not fail the settings save.
+ */
+async function startAutoVetoForRunningTournament(): Promise<void> {
+  try {
+    const tournament = await db.queryOneAsync<{ id: number; status: string }>(
+      'SELECT id, status FROM tournament WHERE id = 1'
+    );
+    if (!tournament || tournament.status !== 'in_progress') return;
+
+    const started = await autoVetoPendingMatches(tournament.id);
+    if (started.length > 0) {
+      log.info(
+        `[VETO-SIM] Simulation enabled mid-tournament; auto-vetoing ${started.length} waiting match(es)`,
+        { matches: started }
+      );
+    }
+  } catch (error) {
+    log.error('[VETO-SIM] Failed to start auto veto after enabling simulation', error);
+  }
+}
 
 const mapSettingsResponse = async () => {
   const webhookUrl = await settingsService.getWebhookUrl();
@@ -202,7 +227,15 @@ router.put('/', async (req: Request, res: Response) => {
         const value =
           simulateMatches === null ? null : simulateMatches === true ? '1' : '0';
 
+        const wasSimulating = await settingsService.isSimulationModeEnabled();
         await settingsService.setSetting('simulate_matches', value);
+
+        // Tournament start and match progression only auto-veto matches while
+        // simulation is on. Switching it on mid-tournament must pick up the
+        // matches already waiting on a veto, or they stay stuck.
+        if (!wasSimulating && simulateMatches === true) {
+          await startAutoVetoForRunningTournament();
+        }
       }
     }
 

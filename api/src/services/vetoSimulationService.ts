@@ -72,6 +72,112 @@ export async function autoCompleteVetoForMatch(
   matchSlug: string,
   options?: { stepDelayMs?: number }
 ): Promise<void> {
+  // Two runs on one match would both walk the veto steps and overwrite each
+  // other's picks. Toggling simulation while tournament start or match
+  // progression is already vetoing a match would do exactly that.
+  if (vetoRunsInFlight.has(matchSlug)) {
+    log.debug(`[VETO-SIM] Auto veto already running for ${matchSlug}; skipping duplicate run`);
+    return;
+  }
+
+  vetoRunsInFlight.add(matchSlug);
+  try {
+    await runAutoVeto(matchSlug, options);
+  } catch (error) {
+    log.error(`[VETO-SIM] Automated veto failed for match ${matchSlug}`, error);
+  } finally {
+    vetoRunsInFlight.delete(matchSlug);
+  }
+}
+
+/** Slugs whose automated veto is currently running in this process. */
+const vetoRunsInFlight = new Set<string>();
+
+type StoredVetoStatus = 'none' | 'in_progress' | 'completed' | 'invalid';
+
+/** Read the veto progress stored on a match row without trusting the JSON. */
+function storedVetoStatus(rawVetoState: string | null | undefined): StoredVetoStatus {
+  if (!rawVetoState) return 'none';
+  try {
+    const parsed = JSON.parse(rawVetoState) as { status?: unknown } | null;
+    if (!parsed || typeof parsed !== 'object') return 'invalid';
+    return parsed.status === 'completed' ? 'completed' : 'in_progress';
+  } catch {
+    return 'invalid';
+  }
+}
+
+function isVetoCompleted(rawVetoState: string | null | undefined): boolean {
+  return storedVetoStatus(rawVetoState) === 'completed';
+}
+
+/**
+ * Start an automated veto for every match in the tournament that is waiting on
+ * one: both teams known, no server yet, and a veto that is missing or
+ * unfinished. An unfinished veto (players started it by hand) is resumed from
+ * its current step.
+ *
+ * Used when a tournament starts in simulation mode and when simulation is
+ * switched on while a tournament is already running. Runs are started in the
+ * background; the returned slugs are the matches that were kicked off.
+ * Does nothing (returns []) when simulation mode is off, which also covers the
+ * production guard (MATCHZY_ENABLE_SIMULATION_IN_PROD).
+ */
+export async function autoVetoPendingMatches(
+  tournamentId: number,
+  options?: { stepDelayMs?: number }
+): Promise<string[]> {
+  if (!(await settingsService.isSimulationModeEnabled())) {
+    return [];
+  }
+
+  // Shuffle tournaments never use veto, whatever their format.
+  const tournament = await db.queryOneAsync<Pick<DbTournamentRow, 'type' | 'format'>>(
+    'SELECT type, format FROM tournament WHERE id = ?',
+    [tournamentId]
+  );
+  if (
+    !tournament ||
+    tournament.type === 'shuffle' ||
+    !['bo1', 'bo3', 'bo5'].includes(String(tournament.format).toLowerCase())
+  ) {
+    return [];
+  }
+
+  const candidates = await db.queryAsync<DbMatchRow>(
+    `SELECT * FROM matches
+     WHERE tournament_id = ?
+       AND status IN ('pending', 'ready')
+       AND team1_id IS NOT NULL
+       AND team2_id IS NOT NULL
+       AND (server_id IS NULL OR server_id = '')`,
+    [tournamentId]
+  );
+
+  const slugs: string[] = [];
+  for (const match of candidates) {
+    const vetoStatus = storedVetoStatus(match.veto_state);
+    if (vetoStatus === 'completed') continue;
+    if (vetoStatus === 'invalid') {
+      log.warn(`[VETO-SIM] Match ${match.slug} has an unreadable veto_state; not auto-vetoing it`);
+      continue;
+    }
+    slugs.push(match.slug);
+  }
+
+  for (const slug of slugs) {
+    setImmediate(() => {
+      void autoCompleteVetoForMatch(slug, { stepDelayMs: options?.stepDelayMs ?? 1000 });
+    });
+  }
+
+  return slugs;
+}
+
+async function runAutoVeto(
+  matchSlug: string,
+  options?: { stepDelayMs?: number }
+): Promise<void> {
   const stepDelayMs = options?.stepDelayMs ?? DEFAULT_STEP_DELAY_MS;
 
   const simulationEnabled = await settingsService.isSimulationModeEnabled();
@@ -105,9 +211,13 @@ export async function autoCompleteVetoForMatch(
   // support already-initialized brackets or restart flows, we also allow a
   // one-time auto-veto for matches in 'ready' status that have no veto_state
   // and are not yet loaded on a server.
+  // A veto that players started by hand before simulation was switched on is
+  // resumed from its current step, so 'ready' matches with an unfinished veto
+  // qualify too.
   if (match.status !== 'pending') {
     const hasVetoState = Boolean(match.veto_state);
-    const isReadyAndIdle = match.status === 'ready' && !hasVetoState && !match.server_id;
+    const isReadyAndIdle =
+      match.status === 'ready' && !isVetoCompleted(match.veto_state) && !match.server_id;
 
     if (!isReadyAndIdle) {
       log.debug(
@@ -174,7 +284,11 @@ export async function autoCompleteVetoForMatch(
     return;
   }
 
-  if (!vetoState) {
+  if (vetoState) {
+    log.info(
+      `[VETO-SIM] Resuming veto for match ${matchSlug} at step ${vetoState.currentStep}/${vetoState.totalSteps}`
+    );
+  } else {
     vetoState = {
       matchSlug,
       format,

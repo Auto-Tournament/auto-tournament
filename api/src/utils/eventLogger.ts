@@ -6,6 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { MatchZyEvent } from '../types/matchzy-events.types';
+import { log } from './logger';
 
 // Logs live under the api/data directory to keep the repo root clean
 const LOGS_DIR = path.join(__dirname, '..', '..', 'data', 'logs', 'events');
@@ -70,7 +71,7 @@ export function cleanupOldLogs(daysToKeep = 30): void {
       if (fileDate < cutoffDate) {
         const filepath = path.join(LOGS_DIR, file);
         fs.unlinkSync(filepath);
-        console.log(`Deleted old event log: ${file}`);
+        log.info(`Deleted old event log: ${file}`);
       }
     });
   } catch (error) {

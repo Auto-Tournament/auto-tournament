@@ -9,7 +9,7 @@ import { generateRoundMatches, advanceToNextRound } from './shuffleTournamentSer
 import { log } from '../utils/logger';
 import { getLastServerTestEvent } from './serverConnectivityService';
 import { settingsService } from './settingsService';
-import { autoCompleteVetoForMatch } from './vetoSimulationService';
+import { autoVetoPendingMatches } from './vetoSimulationService';
 import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
@@ -1402,30 +1402,12 @@ export class MatchAllocationService {
           '[VETO-SIM] Simulation mode enabled – auto-veto will run for all pending matches with resolved teams.'
         );
 
-        // Fetch all matches that already have both teams assigned and have not
-        // yet completed veto. We deliberately skip future TBD bracket slots
-        // where team1_id/team2_id are not yet known; those matches are not
-        // "ready" for veto or loading.
-        const pendingMatches = await db.queryAsync<DbMatchRow>(
-          `SELECT * FROM matches 
-           WHERE tournament_id = ? 
-             AND status IN ('pending', 'ready')
-             AND team1_id IS NOT NULL
-             AND team2_id IS NOT NULL
-             AND (veto_state IS NULL OR veto_state = '')
-             AND (server_id IS NULL OR server_id = '')`,
-          [tournament.id]
-        );
+        // Matches with both teams assigned that have not completed veto. Future
+        // TBD bracket slots are skipped; they are not "ready" for veto yet.
+        const started = await autoVetoPendingMatches(tournament.id, { stepDelayMs: 1000 });
 
-        if (pendingMatches.length === 0) {
+        if (started.length === 0) {
           log.warn('[VETO-SIM] No pending matches found for tournament; nothing to auto-veto.');
-        } else {
-          for (const m of pendingMatches) {
-            const slug = m.slug;
-            setImmediate(() => {
-              void autoCompleteVetoForMatch(slug, { stepDelayMs: 1000 });
-            });
-          }
         }
 
         let message =
@@ -1660,8 +1642,6 @@ export class MatchAllocationService {
     log.info(`Found ${loadedMatches.length} loaded/live match(es) to restart`);
 
     // Restart each server with a loaded match
-    let restarted = 0;
-    let restartFailed = 0;
     const serverIds = new Set<string>();
 
     for (const match of loadedMatches) {
@@ -1672,28 +1652,11 @@ export class MatchAllocationService {
 
     log.info(`Restarting ${serverIds.size} server(s)...`);
 
-    for (const serverId of serverIds) {
-      try {
-        log.info(`[RESTART] Ending match on server: ${serverId}`);
-        const result = await rconService.sendCommand(serverId, 'css_restart');
-
-        if (result.success) {
-          log.success(`[RESTART] Match ended on server ${serverId}`);
-          restarted++;
-
-          // Wait a moment for the server to clean up
-          await new Promise((resolve) => setTimeout(resolve, 2000));
-        } else {
-          log.error(`Failed to end match on server ${serverId}`, undefined, {
-            error: result.error,
-          });
-          restartFailed++;
-        }
-      } catch (error) {
-        log.error(`Error ending match on server ${serverId}`, error);
-        restartFailed++;
-      }
-    }
+    // Wait a moment after each restart for the server to clean up
+    const { ended: restarted, failed: restartFailed } = await rconService.endMatchesOnServers(
+      serverIds,
+      { logPrefix: '[RESTART]', delayAfterEachMs: 2000 }
+    );
 
     // Reset all loaded/live matches back to 'ready' status
     if (loadedMatches.length > 0) {
@@ -1787,7 +1750,13 @@ export class MatchAllocationService {
         };
       }
 
-      log.success(`[RESTART] Match ${matchSlug} ended successfully`);
+      if (endResult.unconfirmed) {
+        log.warn(
+          `[RESTART] Restart sent for match ${matchSlug} on ${serverId}; no RCON reply (server was restarting), continuing`
+        );
+      } else {
+        log.success(`[RESTART] Match ${matchSlug} ended successfully`);
+      }
 
       // Step 2: Wait a few seconds for server to clean up
       await new Promise((resolve) => setTimeout(resolve, 3000));

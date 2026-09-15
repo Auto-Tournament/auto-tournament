@@ -16,6 +16,12 @@ export interface RconCommandResponse {
   error?: string;
   timestamp: number;
   ipBanned?: boolean; // True if server has likely banned our IP
+  /**
+   * True when a server-restart command (css_restart) was sent but its reply was
+   * lost because the server restarted. `success` is true: the command ran, its
+   * outcome just could not be confirmed over RCON.
+   */
+  unconfirmed?: boolean;
 }
 
 export interface RconBroadcastRequest {
