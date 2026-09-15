@@ -4,6 +4,7 @@ import { Strategy as DiscordStrategy } from 'passport-discord';
 import { Strategy as KeycloakStrategy } from 'passport-keycloak-oauth2-oidc';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { log } from '../utils/logger';
+import { SignedCookieStateStore } from '../utils/oauthStateCookie';
 
 interface SteamProfile {
   id: string;
@@ -126,6 +127,8 @@ function configureDiscordStrategy(): void {
         clientSecret,
         callbackURL,
         scope: ['identify', 'email'],
+        // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+        store: new SignedCookieStateStore({ provider: 'discord', callbackURL }),
       },
       (
         accessToken: string,
@@ -206,11 +209,15 @@ function configureKeycloakStrategy(): void {
     callbackURL: string;
     clientSecret?: string;
     publicClient?: boolean;
+    store: SignedCookieStateStore;
   } = {
     clientID,
     authServerURL,
     realm,
     callbackURL,
+    // passport-keycloak-oauth2-oidc passes options straight to passport-oauth2,
+    // so the same signed-cookie state store applies. See utils/oauthStateCookie.
+    store: new SignedCookieStateStore({ provider: 'keycloak', callbackURL }),
   };
 
   if (clientSecret) {
@@ -290,6 +297,8 @@ function configureGitHubStrategy(): void {
         clientSecret,
         callbackURL,
         scope: ['read:user', 'user:email'],
+        // CSRF protection for the OAuth round trip; see utils/oauthStateCookie.
+        store: new SignedCookieStateStore({ provider: 'github', callbackURL }),
       },
       (
         accessToken: string,
