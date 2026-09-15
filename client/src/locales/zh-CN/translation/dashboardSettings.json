@@ -201,6 +201,10 @@
           "stopCommandNoDamage": "当发生对方队伤害后禁用 .stop",
           "usePauseForTacticalPause": "让 .pause 的行为类似战术暂停"
         },
+        "hostname": {
+          "formatLabel": "服务器主机名格式",
+          "formatHelper": "在加载比赛时应用到每台服务器。可用变量：{MATCH_ID}、{MAP}、{MAPNUMBER}、{TEAM1}、{TEAM2}、{TEAM1_SCORE}、{TEAM2_SCORE}。留空则保留各服务器自身配置中设置的主机名。"
+        },
         "demos": {
           "title": "Demo",
           "demoPathLabel": "Demo 路径（相对于 csgo/）",

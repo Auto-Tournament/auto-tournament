@@ -3,6 +3,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import OpenInNewIcon from '@mui/icons-material/OpenInNew';
 import { SteamIcon } from '../icons/SteamIcon';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { useTranslation } from 'react-i18next';
 import type { Team } from '../../types';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 
@@ -11,6 +12,8 @@ interface PlayerRosterCardProps {
 }
 
 export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
+  const { t } = useTranslation();
+
   if (!team?.players || team.players.length === 0) {
     return null;
   }
@@ -20,7 +23,7 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
   const sortedPlayers = team.players
     .map((player, index) => {
       const base =
-        typeof player === 'object' ? player : { steamId: String(index), name: 'Unknown' };
+        typeof player === 'object' ? player : { steamId: String(index), name: t('playerRosterCard.unknownPlayer') };
       const displayElo =
         typeof (base as { elo?: number }).elo === 'number'
           ? (base as { elo?: number }).elo!
@@ -35,12 +38,12 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <PersonIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Team Roster
+            {t('playerRosterCard.title')}
           </Typography>
         </Box>
         <Stack spacing={1.5}>
           {sortedPlayers.map((player) => {
-            const playerName = String((player as { name?: string }).name || 'Unknown');
+            const playerName = String((player as { name?: string }).name || t('playerRosterCard.unknownPlayer'));
             const playerSteamId = String((player as { steamId?: string }).steamId || '');
             const displayElo = player.displayElo;
 
@@ -72,13 +75,13 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
                       {playerName}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      Rating: {displayElo}
+                      {t('playerRosterCard.rating', { rating: displayElo })}
                     </Typography>
                   </Box>
                 </Box>
                 <Box display="flex" alignItems="center" gap={0.5}>
                   {playerSteamId && (
-                    <Tooltip title="View player stats">
+                    <Tooltip title={t('playerRosterCard.viewPlayerStats')}>
                       <IconButton
                         size="small"
                         color="primary"
@@ -92,7 +95,7 @@ export function PlayerRosterCard({ team }: PlayerRosterCardProps) {
                     </Tooltip>
                   )}
                   {playerSteamId && (
-                    <Tooltip title="View Steam profile">
+                    <Tooltip title={t('playerRosterCard.viewSteamProfile')}>
                       <IconButton
                         size="small"
                         color="inherit"

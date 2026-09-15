@@ -186,5 +186,12 @@
       "serverEvents": "Server-eventmonitor",
       "appLogs": "Applicatielogs"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Wachten op een beschikbare server",
+      "waiting": "Deze wedstrijd start automatisch zodra er servers vrij zijn. Benodigde servers:",
+      "nextPass": "Volgende toewijzingspoging over {{seconds}} s"
+    }
   }
 }

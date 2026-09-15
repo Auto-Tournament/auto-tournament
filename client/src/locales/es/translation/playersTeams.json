@@ -67,7 +67,16 @@
       "saved": "ID de Discord guardado",
       "removed": "ID de Discord eliminado",
       "saveFailed": "No se pudo guardar tu ID de Discord"
-    }
+    },
+    "teamChip": "Equipo: {{team}}",
+    "myTeam": "Mi equipo",
+    "openTeam": "Abrir equipo: {{team}}",
+    "you": "Tú",
+    "noMatchHistory": "Aún no hay historial de partidos",
+    "demo": "Demo",
+    "downloadDemo": "Descargar demo",
+    "showingLastMatches": "Mostrando los últimos {{shown}} partidos. Total: {{total}}",
+    "noMatchesYet": "Aún no hay partidos"
   },
   "teamPage": {
     "wantYourStats": "¿Quieres ver tus propias estadísticas e historial de partidos?",
@@ -111,8 +120,45 @@
     "noMaps": "No hay mapas disponibles para este partido.",
     "playerStatsAllMaps": "Estadísticas de jugadores (todos los mapas)",
     "player": "Jugador",
+    "damage": "Daño",
     "fetchError": "No se pudieron obtener los detalles del partido",
     "loadError": "No se pudieron cargar los detalles del partido"
+  },
+  "teamHeader": {
+    "soundSettings": "Ajustes de sonido",
+    "muteNotifications": "Silenciar notificaciones",
+    "unmuteNotifications": "Activar sonido de notificaciones"
+  },
+  "teamStatsCard": {
+    "title": "Rendimiento del equipo",
+    "wins": "Victorias",
+    "losses": "Derrotas",
+    "winRate": "Porcentaje de victorias",
+    "ofTotal": "de {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Plantilla del equipo",
+    "unknownPlayer": "Desconocido",
+    "rating": "Valoración: {{rating}}",
+    "viewPlayerStats": "Ver estadísticas del jugador",
+    "viewSteamProfile": "Ver perfil de Steam"
+  },
+  "mapAccordion": {
+    "won": "Ganado",
+    "lost": "Perdido",
+    "draw": "Empate",
+    "team1": "Equipo 1",
+    "team2": "Equipo 2",
+    "downloadDemo": "Descargar demo",
+    "downloadMapDemo": "Descargar demo de {{map}}",
+    "mapInformation": "Información del mapa",
+    "mapNumberLabel": "Número de mapa:",
+    "mapN": "Mapa {{n}}",
+    "scoreLabel": "Marcador:",
+    "resultLabel": "Resultado:",
+    "winnerLabel": "Ganador:",
+    "durationLabel": "Duración:",
+    "completedLabel": "Finalizado:"
   },
   "leaderboardPage": {
     "emptyTitle": "Todavía no hay clasificación del torneo",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Avisos de la importación ({{count}}):",
     "more": "…y {{count}} más"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "Esperando a que empiece el torneo",
+    "waitingForTournamentBody": "Tu partido está listo, pero el torneo aún no ha empezado. El veto de mapas estará disponible cuando el administrador inicie el torneo.",
+    "tournamentStatusSetup": "Estado del torneo: fase de configuración",
+    "waitingForOpponentTitle": "Esperando rival",
+    "waitingForOpponentBody": "Has pasado a la siguiente ronda. Tu próximo rival aún no está decidido, así que el veto de mapas se abrirá cuando se conozcan ambos equipos.",
+    "mapSelectionTitle": "Selección de mapas",
+    "tournamentStartedTitle": "¡El torneo ha comenzado!",
+    "tournamentStartedBody": "Completa el veto de mapas para empezar tu partido.",
+    "mapN": "Mapa {{n}}",
+    "mapFinishedWaiting": "Mapa terminado. Esperando el siguiente mapa de la serie...",
+    "allPlayersConnected": "Todos los jugadores necesarios están conectados. El partido puede empezar.",
+    "waitingForPlayers": "Esperando a que se conecten los jugadores ({{connected}}/{{expected}})",
+    "copyBlocked": "Tu navegador ha bloqueado la copia. El comando se muestra abajo para que puedas copiarlo manualmente.",
+    "copyFallback": "No se puede copiar automáticamente en este navegador. Ejecuta en la consola: {{command}}",
+    "team1": "Equipo 1",
+    "team2": "Equipo 2",
+    "liveStatus": {
+      "warmup": "Calentamiento",
+      "knife": "Ronda de knife",
+      "live": "En directo",
+      "halftime": "Descanso",
+      "postgame": "Mapa terminado – esperando el siguiente mapa",
+      "overtime": "PRÓRROGA #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Mapas ganados",
+      "currentMapScore": "Marcador del mapa actual (rondas)",
+      "eloAvg": "ELO (media): {{elo}}",
+      "vs": "VS",
+      "tbd": "Por definir"
+    },
+    "server": {
+      "waitingTitle": "Esperando asignación de servidor",
+      "waitingBody": "Se asignará un servidor automáticamente en cuanto haya uno disponible. Después de cada partido, los servidores entran en un breve periodo de enfriamiento (unos 2 minutos) para que las demos se suban y el servidor se reinicie por completo. Esta página se actualizará automáticamente cuando tu servidor esté listo.",
+      "serverName": "Servidor: {{name}}",
+      "status": "Estado: {{status}}",
+      "connect": "Conectar al servidor",
+      "connecting": "✓ Conectando...",
+      "copyCommand": "Copiar comando de consola",
+      "copied": "✓ ¡Copiado!",
+      "statusLabels": {
+        "idle": "Disponible",
+        "loading": "Cargando",
+        "warmup": "Calentamiento – ¡únete ya!",
+        "knife": "Ronda de knife",
+        "live": "En directo",
+        "paused": "En pausa",
+        "halftime": "Descanso",
+        "postgame": "Partido terminado",
+        "queued": "Siguiente partido en cola",
+        "error": "Error"
+      }
+    },
+    "performance": {
+      "title": "Rendimiento de los jugadores",
+      "player": "Jugador",
+      "waitingForStats": "Esperando estadísticas...",
+      "yourTeam": "Tu equipo",
+      "opponent": "Rival"
+    },
+    "mapChips": {
+      "live": "En directo"
+    },
+    "demos": {
+      "title": "Demos de mapas",
+      "download": "Descargar demo de {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "Sobre este torneo",
+    "intro": "Estas son las reglas básicas con las que se deciden los partidos de este torneo.",
+    "matchFormatLabel": "Formato del partido:",
+    "regulationLabel": "Rondas reglamentarias:",
+    "overtimeLabel": "Prórroga:",
+    "tiesLabel": "Cómo se resuelven los empates:",
+    "format": {
+      "bo1": "Al mejor de 1 mapa: quien gana el mapa gana el partido.",
+      "bo3": "Al mejor de 3 mapas: el primer equipo en ganar 2 mapas gana el partido.",
+      "bo5": "Al mejor de 5 mapas: el primer equipo en ganar 3 mapas gana el partido."
+    },
+    "regulationWithRounds": "Cada mapa se juega hasta {{rounds}} rondas. El equipo con más rondas al final del tiempo reglamentario gana el mapa.",
+    "regulationGeneric": "Cada mapa se juega a un número fijo de rondas. El equipo con más rondas al final del tiempo reglamentario gana el mapa.",
+    "overtime": {
+      "disabled": "Prórroga: desactivada (solo tiempo reglamentario).",
+      "enabledSegments_one": "Prórroga: activada con un máximo de {{count}} tramo de prórroga.",
+      "enabledSegments_other": "Prórroga: activada con un máximo de {{count}} tramos de prórroga.",
+      "enabled": "Prórroga: activada. Un empate al final del tiempo reglamentario llevará a prórroga hasta que un equipo termine por delante.",
+      "effectivelyDisabled": "Prórroga: desactivada en la práctica (solo tiempo reglamentario).",
+      "implicitSegments_one": "Prórroga: activada con un máximo de {{count}} tramo de prórroga (implícito).",
+      "implicitSegments_other": "Prórroga: activada con un máximo de {{count}} tramos de prórroga (implícito).",
+      "standard": "Prórroga: configuración estándar. Un empate al final del tiempo reglamentario suele llevar a prórroga."
+    },
+    "tiebreak": {
+      "disabled": "Si el tiempo reglamentario termina en empate, el partido no va a prórroga. En su lugar, el ganador se decide por el daño total del equipo en el mapa. Si el daño total también es exactamente igual, el resultado es un empate real.",
+      "enabledSegments": "Si el marcador sigue empatado tras los tramos de prórroga configurados, el ganador se decide por el daño total del equipo en el mapa. Si el daño total también está empatado, el resultado se registra como empate.",
+      "enabled": "En condiciones normales, el marcador final más alto decide el ganador. Los empates son poco frecuentes y solo ocurren si tanto el marcador como el daño quedan exactamente igualados.",
+      "effectivelyDisabled": "Si el tiempo reglamentario termina en empate, el partido no va a prórroga. El ganador se decide por el daño total del equipo en el mapa; si el daño está empatado, el partido termina en empate.",
+      "implicitSegments": "Si el marcador sigue empatado tras los tramos de prórroga configurados, el ganador se decide por el daño total del equipo. Si el daño está empatado, el resultado es un empate.",
+      "standard": "En la mayoría de los casos gana el equipo con el marcador final más alto. Solo cuando el marcador y el daño total están exactamente igualados se registra un empate real."
+    }
   }
 }

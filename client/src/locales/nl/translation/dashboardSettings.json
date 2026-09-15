@@ -92,6 +92,10 @@
           "stopCommandNoDamage": "Schakel .stop uit na schade aan het andere team",
           "usePauseForTacticalPause": "Laat .pause zich gedragen als tactische pauze"
         },
+        "hostname": {
+          "formatLabel": "Formaat serverhostnaam",
+          "formatHelper": "Wordt op elke server toegepast wanneer een wedstrijd wordt geladen. Tokens: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Laat leeg om de hostnaam te behouden die elke server in zijn eigen config instelt."
+        },
         "demos": {
           "title": "Demo’s",
           "demoPathLabel": "Demo-pad (relatief aan csgo/)",

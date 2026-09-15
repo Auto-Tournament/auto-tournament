@@ -186,5 +186,12 @@
       "serverEvents": "Monitor de eventos del servidor",
       "appLogs": "Logs de la aplicación"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Esperando un servidor disponible",
+      "waiting": "Este partido empezará automáticamente cuando haya servidores libres. Servidores necesarios:",
+      "nextPass": "Próximo intento de asignación en {{seconds}} s"
+    }
   }
 }
