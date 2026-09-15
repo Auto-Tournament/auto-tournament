@@ -155,10 +155,16 @@ jobs:
 
   e2e:
     name: E2E shard ${{ matrix.shard }}/4
-    needs: [changes, build]
+    # Not `needs: build`: shards start alongside the image build and do their
+    # own setup (deps, browser, Postgres) meanwhile, then wait for the image
+    # artifact. Takes the setup time off the wall clock.
+    needs: changes
     if: needs.changes.outputs.e2e == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
     strategy:
       # Let every shard finish so the merged report shows every failure.
       fail-fast: false
@@ -171,6 +177,30 @@ jobs:
       COMPOSE: docker compose --env-file .env -f docker/docker-compose.local.yml -f docker/docker-compose.ci.yml
     steps:
       - uses: actions/checkout@v4
+
+      # The compose stack reads the repo-root .env, both for env_file and for
+      # ${VAR} substitution (hence --env-file). Building it from example.env
+      # also means CI exercises the documented setup path.
+      #
+      # No STEAM_API_KEY: Steam is left unconfigured on purpose, so the suite has
+      # to hold up with no auth provider enabled.
+      - name: Create .env
+        run: |
+          cp example.env .env
+          {
+            echo "SESSION_SECRET=ci-session-secret"
+            echo "SERVER_TOKEN=server123"
+            echo "ENABLE_TEST_ENDPOINTS=true"
+            echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
+            echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
+            echo "STEAM_API_KEY="
+            echo "LOG_LEVEL=info"
+          } >> .env
+
+      # Postgres needs nothing from the image build, so pull it and let it get
+      # healthy while the rest of the setup runs.
+      - name: Start Postgres
+        run: $COMPOSE up -d postgres
 
       - uses: actions/setup-node@v4
         with:
@@ -207,6 +237,32 @@ jobs:
         if: steps.pw-cache.outputs.cache-hit == 'true'
         run: npx playwright install-deps chromium
 
+      # Poll until the build job has uploaded the image, or give up as soon as
+      # that job ends without success.
+      - name: Wait for the image build
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+        run: |
+          for i in $(seq 1 240); do
+            count="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/artifacts?name=e2e-image" --jq '.total_count' || echo 0)"
+            if [ "${count:-0}" -gt 0 ]; then
+              echo "Image artifact available (poll ${i})."
+              exit 0
+            fi
+            conclusion="$(gh api "repos/${REPO}/actions/runs/${RUN_ID}/attempts/${RUN_ATTEMPT}/jobs" \
+              --jq '.jobs[] | select(.name == "Build E2E image") | .conclusion' || true)"
+            if [ -n "$conclusion" ] && [ "$conclusion" != "null" ] && [ "$conclusion" != "success" ]; then
+              echo "Build E2E image finished with '${conclusion}'." >&2
+              exit 1
+            fi
+            sleep 5
+          done
+          echo "Timed out waiting for the image artifact." >&2
+          exit 1
+
       - name: Download image
         uses: actions/download-artifact@v4
         with:
@@ -215,25 +271,6 @@ jobs:
 
       - name: Load image
         run: docker load --input "${{ runner.temp }}/mat-image.tar"
-
-      # The compose stack reads the repo-root .env, both for env_file and for
-      # ${VAR} substitution (hence --env-file). Building it from example.env
-      # also means CI exercises the documented setup path.
-      #
-      # No STEAM_API_KEY: Steam is left unconfigured on purpose, so the suite has
-      # to hold up with no auth provider enabled.
-      - name: Create .env
-        run: |
-          cp example.env .env
-          {
-            echo "SESSION_SECRET=ci-session-secret"
-            echo "SERVER_TOKEN=server123"
-            echo "ENABLE_TEST_ENDPOINTS=true"
-            echo "API_TOKENS=ci-admin:ci-admin-token-0123456789abcdef"
-            echo "API_TOKENS_READONLY=ci-readonly:ci-readonly-token-0123456789abcdef"
-            echo "STEAM_API_KEY="
-            echo "LOG_LEVEL=info"
-          } >> .env
 
       - name: Start the stack
         run: $COMPOSE up -d --no-build
@@ -251,15 +288,22 @@ jobs:
           $COMPOSE logs --tail=100
           exit 1
 
-      # fullyParallel: true in the config means Playwright shards by test group,
-      # not by file. A test.describe.serial block is always one group, so tests
-      # that depend on each other stay together on one shard.
+      # Whole spec files, packed by measured duration (tests/ci-shard.mjs) rather
+      # than Playwright's --shard, which splits by test count and left the
+      # UI-heavy last shard ~3x slower than the first. Files are never split, so
+      # serial describes and in-file state stay on one shard.
       - name: Run Playwright
         env:
           SKIP_WEBSERVER: '1'
           PLAYWRIGHT_BASE_URL: http://localhost:3069
           PLAYWRIGHT_BLOB_OUTPUT_DIR: blob-report
-        run: npx playwright test -c tests/playwright.config.ts --shard=${{ matrix.shard }}/${{ env.SHARD_TOTAL }} --reporter=list,blob
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.shard }}.zip
+          SHARD: ${{ matrix.shard }}
+        run: |
+          files="$(node tests/ci-shard.mjs "$SHARD" "$SHARD_TOTAL")"
+          echo "Shard $SHARD/$SHARD_TOTAL runs: $files"
+          # shellcheck disable=SC2086
+          npx playwright test -c tests/playwright.config.ts --reporter=list,blob $files
 
       # Container logs are usually more informative than the Playwright trace
       # when the failure is server-side.
