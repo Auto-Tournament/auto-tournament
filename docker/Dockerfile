@@ -14,14 +14,30 @@ RUN apk add --no-cache \
 RUN corepack enable && corepack prepare yarn@1.22.19 --activate
 
 # -------------------------------------------------------------------
+# manifests: dependency manifests with the release version blanked out
+# -------------------------------------------------------------------
+# Every release bumps "version" in all three package.json files. Copying them
+# straight into deps would invalidate the (slow) yarn install layer on each
+# bump even though no dependency changed. The files produced here are
+# byte-identical across version bumps, and COPY --from is cached on content, so
+# deps keeps hitting the layer cache. The real package.json files still reach
+# the image through `COPY . .` in the build stage.
+FROM node:20-alpine AS manifests
+WORKDIR /app
+COPY package.json yarn.lock ./
+COPY api/package.json ./api/package.json
+COPY client/package.json ./client/package.json
+RUN node -e "const fs = require('fs'); for (const f of ['package.json', 'api/package.json', 'client/package.json']) { const p = JSON.parse(fs.readFileSync(f, 'utf8')); p.version = '0.0.0'; fs.writeFileSync(f, JSON.stringify(p, null, 2) + '\n'); }"
+
+# -------------------------------------------------------------------
 # deps: install ALL dependencies (prod + dev) for building
 # -------------------------------------------------------------------
 FROM base AS deps
 
 # Only copy files needed to resolve dependencies (root + workspace manifests)
-COPY package.json yarn.lock ./
-COPY api/package.json ./api/package.json
-COPY client/package.json ./client/package.json
+COPY --from=manifests /app/package.json /app/yarn.lock ./
+COPY --from=manifests /app/api/package.json ./api/package.json
+COPY --from=manifests /app/client/package.json ./client/package.json
 
 # Install all dependencies (including devDeps for build tools) for all workspaces
 # Add retry logic for network issues, especially in ARM64 emulation
