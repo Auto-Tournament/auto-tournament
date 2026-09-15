@@ -68,6 +68,17 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
+      # Without binfmt handlers on the host, buildx falls back to the QEMU
+      # emulator bundled inside the floating moby/buildkit:buildx-stable-1
+      # image. On 2026-09-15 that emulator started crashing the arm64 stage
+      # with "qemu: uncaught target signal 4 (Illegal instruction)" during
+      # yarn install, with no change to the Dockerfile, lockfile or base image.
+      # Registering QEMU on the host makes the arm64 build use it instead.
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
