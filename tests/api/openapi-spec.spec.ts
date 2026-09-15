@@ -89,15 +89,26 @@ test.describe('OpenAPI spec', () => {
     expect(spec.paths['/api/matches']?.get?.security).toBeUndefined();
   });
 
-  test('a shadowed route is described by the registration that actually runs', {
+  test('no route is registered twice', {
+    tag: ['@api', '@docs'],
+  }, async () => {
+    // Express answers with the first registration of a method and path, so a
+    // second one is dead code that reads as though it were in force: an
+    // admin-guarded copy of the public leaderboard, or a DELETE without the
+    // guardrail of the one that actually runs. Delete the copy, or give it a
+    // different path.
+    const shadowed = collectRouterGroups()
+      .flatMap((g) => g.endpoints)
+      .filter((e) => e.shadowed)
+      .map((e) => `${e.method} ${e.path}`);
+    expect(shadowed).toEqual([]);
+  });
+
+  test('the tournament leaderboard is public, as the leaderboard page needs', {
     tag: ['@api', '@docs'],
   }, async ({ request }) => {
     const spec = (await (await request.get('/api-docs.json')).json()) as Spec;
 
-    // GET /api/tournament/:id/leaderboard is registered twice — once before
-    // router.use(requireAuth) and once after. Express answers with the first,
-    // so the spec must say public. Describing the shadowed one would tell every
-    // generated client to send a credential the endpoint never asks for.
     const op = spec.paths['/api/tournament/{id}/leaderboard']?.get;
     expect(op, 'the leaderboard should be in the spec').toBeTruthy();
     expect(op?.security).toBeUndefined();

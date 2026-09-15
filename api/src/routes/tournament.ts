@@ -16,7 +16,6 @@ import {
   setRegisteredPlayers,
   getRegisteredPlayers,
   generateRoundMatches,
-  getPlayerLeaderboard,
   getTournamentLeaderboard,
   type ShuffleTournamentConfig,
 } from '../services/shuffleTournamentService';
@@ -2010,58 +2009,6 @@ router.get('/:id/players', async (req: Request, res: Response) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
     log.error('Error fetching registered players', { error });
-    return res.status(500).json({
-      success: false,
-      error: message,
-    });
-  }
-});
-
-/**
- * @openapi
- * /api/tournament/{id}/leaderboard:
- *   get:
- *     tags:
- *       - Tournament
- *     summary: Get player leaderboard for shuffle tournament
- *     description: Returns leaderboard sorted by match wins, then ELO. Includes player stats (wins, losses, win rate, ELO change).
- *     security:
- *       - BearerAuth: []
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: Tournament ID (currently only "1" is supported)
- *     responses:
- *       200:
- *         description: Leaderboard retrieved successfully
- *       400:
- *         description: Invalid tournament ID
- *       500:
- *         description: Server error
- */
-router.get('/:id/leaderboard', async (req: Request, res: Response) => {
-  try {
-    const { id } = req.params;
-
-    if (id !== '1') {
-      return res.status(400).json({
-        success: false,
-        error: 'Only tournament ID 1 is supported',
-      });
-    }
-
-    const leaderboard = await getPlayerLeaderboard();
-
-    return res.json({
-      success: true,
-      leaderboard,
-    });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown error';
-    log.error('Error fetching leaderboard', { error });
     return res.status(500).json({
       success: false,
       error: message,

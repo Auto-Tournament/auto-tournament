@@ -37,10 +37,8 @@ export interface Endpoint {
    * True when an identical method+path was registered earlier and therefore
    * always wins. Express matches in registration order, so a shadowed route is
    * dead code — and a dangerous kind, because it reads as if it were in force.
-   *
-   * `GET /api/tournament/:id/leaderboard` is registered twice: once before
-   * `router.use(requireAuth)` and once after. The second looks admin-guarded
-   * and never runs, so the endpoint is public.
+   * An admin-guarded copy of the public leaderboard sat unnoticed for a long
+   * time that way. The OpenAPI spec test fails if one appears again.
    */
   shadowed?: boolean;
 }
