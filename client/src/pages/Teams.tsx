@@ -10,13 +10,14 @@ import { TeamImportModal } from '../components/modals/TeamImportModal';
 import { TeamLinkActions } from '../components/teams/TeamLinkActions';
 import { EmptyState } from '../components/shared/EmptyState';
 import ConfirmDialog from '../components/modals/ConfirmDialog';
+import { ImportWarningsMessage } from '../components/shared/ImportWarningsMessage';
 import type { Team, TeamsResponse } from '../types';
 import { useTranslation } from 'react-i18next';
 
 export default function Teams() {
   const { t } = useTranslation();
   const { setHeaderActions } = usePageHeader();
-  const { showSuccess, showError } = useSnackbar();
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const [teams, setTeams] = useState<Team[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -97,7 +98,12 @@ export default function Teams() {
           )}
           {!selectionMode && (
             <>
-              <Button variant="outlined" size="small" onClick={() => setImportModalOpen(true)}>
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setImportModalOpen(true)}
+                data-testid="import-teams-button"
+              >
                 {t('teamsPage.headerActions.importJson')}
               </Button>
               <Button
@@ -164,7 +170,7 @@ export default function Teams() {
     importedTeams: Array<{
       name: string;
       tag?: string;
-      players: Array<{ name: string; steamId: string; elo?: number }>;
+      players: Array<{ name: string; steamId: string; elo?: number; discordId?: string }>;
     }>
   ) => {
     // Sanitize team names and generate IDs
@@ -186,10 +192,19 @@ export default function Teams() {
       };
     });
 
-    const promises = teamsWithIds.map((team) => api.post('/api/teams', team));
-
-    await Promise.all(promises);
+    const responses = await Promise.all(
+      teamsWithIds.map((team) =>
+        api.post<{ success: boolean; warnings?: string[] }>('/api/teams', team)
+      )
+    );
     showSuccess(t('teamsPage.importSuccess', { count: importedTeams.length }));
+
+    // The API returns non-fatal warnings (e.g. a Discord ID it dropped). Show them
+    // as one toast after the success message rather than one toast per warning.
+    const warnings = Array.from(new Set(responses.flatMap((r) => r?.warnings ?? [])));
+    if (warnings.length > 0) {
+      showWarning(<ImportWarningsMessage warnings={warnings} />);
+    }
     await loadTeams();
   };
 
@@ -237,7 +252,11 @@ export default function Teams() {
             onAction={() => handleOpenModal()}
           />
           <Box display="flex" justifyContent="center" mt={2}>
-            <Button variant="outlined" onClick={() => setImportModalOpen(true)}>
+            <Button
+              variant="outlined"
+              onClick={() => setImportModalOpen(true)}
+              data-testid="import-teams-empty-button"
+            >
               {t('teamsPage.empty.importJson')}
             </Button>
           </Box>

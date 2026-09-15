@@ -247,11 +247,13 @@ export function getSchemaSQL(): string {
       openskill_sigma REAL NOT NULL DEFAULT 8.333,
       match_count INTEGER NOT NULL DEFAULT 0,
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
-      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER
+      updated_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
+      discord_id TEXT -- Discord user ID (17-20 digit string). Contact data only, admin-only, not unique (a parent may list theirs on several children)
     );
 
     CREATE INDEX IF NOT EXISTS idx_players_name ON players(name);
     CREATE INDEX IF NOT EXISTS idx_players_elo ON players(current_elo);
+    CREATE INDEX IF NOT EXISTS idx_players_discord_id ON players(discord_id);
 
     -- Auth identities table: links external auth providers (Discord, Keycloak, GitHub, etc.)
     -- to a Steam player ID so that once a user has linked Steam, future logins via

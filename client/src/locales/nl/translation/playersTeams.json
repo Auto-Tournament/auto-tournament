@@ -57,7 +57,17 @@
     "result": "Resultaat",
     "baseline": "Basislijn",
     "matchHistory": "Wedstrijdgeschiedenis",
-    "profileTitle": "Spelerprofiel"
+    "profileTitle": "Spelerprofiel",
+    "discordId": {
+      "title": "Jouw Discord-ID",
+      "description": "Voeg je Discord-gebruikers-ID toe, zodat de toernooiorganisatoren je via Discord kunnen bereiken. Alleen organisatoren kunnen het zien, en het wordt nooit op je openbare profiel getoond.",
+      "howToFind": "Zo vind je het: zet in Discord de ontwikkelaarsmodus aan (Instellingen → Geavanceerd), klik met de rechtermuisknop op je naam en kies 'Gebruikers-ID kopiëren'.",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "saved": "Discord-ID opgeslagen",
+      "removed": "Discord-ID verwijderd",
+      "saveFailed": "Je Discord-ID kon niet worden opgeslagen"
+    }
   },
   "teamPage": {
     "wantYourStats": "Wil je je eigen stats en wedstrijdgeschiedenis zien?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Match niet gevonden",
       "unauthorized": "Alleen spelers van een van de twee deelnemende teams kunnen veto-acties uitvoeren voor deze match."
     }
+  },
+  "discordId": {
+    "noDiscord": "Geen Discord",
+    "noDiscordTooltip": "Geen Discord-ID, dus deze speler kan niet via Discord worden bereikt.",
+    "display": "Discord-ID: {{id}}",
+    "label": "Discord-ID",
+    "labelOptional": "Discord-ID (optioneel)",
+    "placeholder": "123456789012345678",
+    "helper": "Optioneel. 17–20 cijfers",
+    "helperInvalid": "Moet 17–20 cijfers zijn (het numerieke gebruikers-ID, geen gebruikersnaam)"
+  },
+  "importWarnings": {
+    "title": "Waarschuwingen bij het importeren ({{count}}):",
+    "more": "…en nog {{count}}"
   }
 }

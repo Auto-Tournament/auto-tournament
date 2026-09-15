@@ -172,7 +172,10 @@
       "teamNameRequired": "Teamname ist erforderlich",
       "playersRequired": "Mindestens ein Spieler ist erforderlich",
       "saveFailed": "Speichern fehlgeschlagen.",
-      "deleteFailed": "Loeschen fehlgeschlagen"
+      "deleteFailed": "Loeschen fehlgeschlagen",
+      "discordIdInvalid": "Die Discord-ID muss aus 17–20 Ziffern bestehen (die numerische Benutzer-ID, kein Benutzername)",
+      "discordIdInvalidPlayers": "Ungültige Discord-ID für: {{names}}. Sie muss aus 17–20 Ziffern bestehen oder leer bleiben.",
+      "discordIdSaveFailed": "Das Team wurde gespeichert, aber die Discord-ID konnte nicht gespeichert werden für: {{names}}. {{message}}"
     },
     "success": {
       "playerAdded": "Spieler zum Team hinzugefügt",
@@ -239,13 +242,14 @@
     "confirmEloUpdate": {
       "title": "Spieler aktualisieren",
       "message": "Sind Sie sicher, dass Sie die ELO dieses Spielers von {{from}} auf {{to}} aktualisieren möchten? Dadurch werden ihre Statistiken und ihr Bewertungsverlauf zurückgesetzt. Diese Aktion kann nicht rückgängig gemacht werden."
-    }
+    },
+    "discordIdHelper": "Optional. 17–20 Ziffern. Damit Organisatoren diesen Spieler über Discord erreichen können. Wird nie öffentlich angezeigt."
   },
   "teamImportModal": {
     "title": "Teams aus json importieren",
     "info": {
       "title": "Fügen Sie json mit Teamdaten unten ein.",
-      "format": "Erwartetes Format: Array von Teams mit Namen, Tag (optional) und Spielern (Name + SteamId).",
+      "format": "Erwartetes Format: Array von Teams mit name, tag (optional) und players (name + steamId, dazu optional discordId als String in Anführungszeichen).",
       "link": "Sehen Sie sich die Dokumentation mit Beispielen an"
     },
     "jsonLabel": "JSON-Daten",
@@ -260,12 +264,19 @@
     "preview": {
       "summary": "✓ Gültige json! Gefunden {{teamCount}} Team{{teamCount, plural, one {} other {s}}} mit insgesamt {{playerCount}} Spielern.",
       "title": "Vorschau:",
-      "playersChip": "{{count}} Player{{count, plural, one {} other {s}}}"
+      "playersChip": "{{count}} Player{{count, plural, one {} other {s}}}",
+      "missingDiscordTotal": "Spieler ohne Discord-ID: {{count}}",
+      "missingDiscordChip": "Ohne Discord: {{count}}"
     },
     "actions": {
       "preview": "Vorschau",
       "importing": "Import läuft …",
       "import": "Importiere {{count}} Team{{count, plural, one {} other {s}}}"
+    },
+    "warnings": {
+      "title": "Einige Discord-IDs wurden ignoriert. Diese Spieler werden ohne ID importiert:",
+      "discordIdNumber": "Team \"{{team}}\", Spieler \"{{player}}\": discordId muss ein String in Anführungszeichen sein. Große Zahlen verlieren in JSON an Genauigkeit, daher wurde die ID entfernt.",
+      "discordIdInvalid": "Team \"{{team}}\", Spieler \"{{player}}\": \"{{value}}\" ist keine Discord-Benutzer-ID (erwartet 17–20 Ziffern) und wurde entfernt."
     }
   },
   "playerImportModal": {

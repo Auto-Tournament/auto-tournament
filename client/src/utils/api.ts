@@ -82,3 +82,20 @@ export const api = {
   },
 
 };
+
+/**
+ * The API answers validation failures with `{ error: string }`, and `api.fetch`
+ * throws the raw body as the message. Pull the readable part out.
+ */
+export function apiErrorMessage(err: unknown, fallback: string): string {
+  const raw = err instanceof Error ? err.message : '';
+  if (!raw) return fallback;
+  try {
+    const parsed = JSON.parse(raw) as { error?: unknown; message?: unknown };
+    if (typeof parsed.error === 'string' && parsed.error) return parsed.error;
+    if (typeof parsed.message === 'string' && parsed.message) return parsed.message;
+  } catch {
+    // Not JSON: use the text as-is.
+  }
+  return raw;
+}

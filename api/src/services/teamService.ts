@@ -3,6 +3,17 @@ import { Team, CreateTeamInput, UpdateTeamInput, TeamResponse, Player } from '..
 import { log } from '../utils/logger';
 import { steamService } from './steamService';
 import { playerService } from './playerService';
+import { normalisePlayerDiscordIds } from '../utils/discordId';
+
+/** A roster player as an admin sees it: enriched from the players table. */
+export type AdminTeamPlayer = Player & { discordId: string | null };
+export type AdminTeamResponse = Omit<TeamResponse, 'players'> & { players: AdminTeamPlayer[] };
+
+/** A team write plus anything the admin should be told about it. */
+export interface TeamWriteResult {
+  team: TeamResponse;
+  warnings: string[];
+}
 
 class TeamService {
   /**
@@ -34,6 +45,27 @@ class TeamService {
   async getTeamById(id: string): Promise<TeamResponse | null> {
     const team = await db.getOneAsync<Team>('teams', 'id = ?', [id]);
     return team ? this.toResponse(team) : null;
+  }
+
+  /**
+   * Add each roster player's Discord ID, from the players table, for admins.
+   *
+   * The ID lives only in `players.discord_id`, never in `teams.players` JSON:
+   * that JSON is read by public pages (team match page, match JSON), and a
+   * field stored there would leak the moment any of them spread a player. So
+   * `getAllTeams`/`getTeamById` stay free of it, and admin routes opt in here.
+   * One query for every player of every team, not one per player.
+   */
+  async withPlayerDiscordIds(teams: TeamResponse[]): Promise<AdminTeamResponse[]> {
+    const steamIds = teams.flatMap((team) => (team.players ?? []).map((p) => p.steamId));
+    const discordIds = await playerService.getDiscordIdsBySteamIds(steamIds);
+    return teams.map((team) => ({
+      ...team,
+      players: (team.players ?? []).map((player) => ({
+        ...player,
+        discordId: discordIds.get(player.steamId) ?? null,
+      })),
+    }));
   }
 
   /**
@@ -114,6 +146,19 @@ class TeamService {
    * Create a new team
    */
   async createTeam(input: CreateTeamInput, upsert = false): Promise<TeamResponse> {
+    return (await this.createTeamWithWarnings(input, upsert)).team;
+  }
+
+  /**
+   * Create a team, returning warnings about the roster's Discord IDs.
+   *
+   * A team write is an IMPORT for Discord IDs: `players[].discordId` is split
+   * off the roster (it is never stored in the team JSON) and applied to the
+   * players table with the import rule — fill a blank, never overwrite, never
+   * clear — only once the team write itself has succeeded, so a refused create
+   * leaves no Discord IDs behind.
+   */
+  async createTeamWithWarnings(input: CreateTeamInput, upsert = false): Promise<TeamWriteResult> {
     // Validate team ID
     if (!input.id || input.id.trim() === '') {
       throw new Error('Team ID is required');
@@ -132,11 +177,13 @@ class TeamService {
     // Validate no duplicate Steam IDs
     this.validateNoDuplicatePlayers(input.players);
 
+    const { players: rosterPlayers, discordIds, warnings } = normalisePlayerDiscordIds(input.players);
+
     // Enrich players with avatars from Steam API.
     // For dev/test teams created via the Development tools (IDs prefixed with
     // "test-team-"), we skip Steam avatar lookups entirely and rely on the
     // frontend's generated avatars / SVG fallback instead.
-    const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players, {
+    const enrichedPlayers = await this.enrichPlayersWithAvatars(rosterPlayers, {
       skipSteamAvatar: input.id.startsWith('test-team-'),
     });
 
@@ -154,12 +201,16 @@ class TeamService {
     const existing = await this.getTeamById(input.id);
     if (existing) {
       if (upsert) {
-        return await this.updateTeam(input.id, {
+        // enrichedPlayers carries no discordId any more, so the update applies
+        // none; they are applied once, below, from this create's roster.
+        const team = await this.updateTeam(input.id, {
           name: input.name,
           tag: input.tag,
           discordRoleId: input.discordRoleId,
           players: enrichedPlayers,
         });
+        warnings.push(...(await playerService.applyImportedDiscordIds(discordIds)));
+        return { team, warnings };
       }
       throw new Error(`Team with ID '${input.id}' already exists`);
     }
@@ -179,13 +230,22 @@ class TeamService {
     });
     const result = await this.getTeamById(input.id);
     if (!result) throw new Error('Failed to retrieve created team');
-    return result;
+    warnings.push(...(await playerService.applyImportedDiscordIds(discordIds)));
+    return { team: result, warnings };
   }
 
   /**
    * Update a team
    */
   async updateTeam(id: string, input: UpdateTeamInput): Promise<TeamResponse> {
+    return (await this.updateTeamWithWarnings(id, input)).team;
+  }
+
+  /**
+   * Update a team, returning warnings about the roster's Discord IDs. Same
+   * import rule as `createTeamWithWarnings`.
+   */
+  async updateTeamWithWarnings(id: string, input: UpdateTeamInput): Promise<TeamWriteResult> {
     const existing = await this.getTeamById(id);
     if (!existing) {
       throw new Error(`Team with ID '${id}' not found`);
@@ -203,11 +263,14 @@ class TeamService {
     if (input.name !== undefined) updateData.name = input.name;
     if (input.tag !== undefined) updateData.tag = input.tag || null;
     if (input.discordRoleId !== undefined) updateData.discord_role_id = input.discordRoleId || null;
+    const normalised = normalisePlayerDiscordIds(input.players ?? []);
+    const warnings = [...normalised.warnings];
+
     if (input.players !== undefined) {
       // Enrich players with avatars from Steam API. For test/dev teams created
       // from the Dev Tools page (IDs starting with "test-team-"), skip Steam
       // lookups so local development and CI don't depend on the Steam Web API.
-      const enrichedPlayers = await this.enrichPlayersWithAvatars(input.players, {
+      const enrichedPlayers = await this.enrichPlayersWithAvatars(normalised.players, {
         skipSteamAvatar: id.startsWith('test-team-'),
       });
       
@@ -229,7 +292,8 @@ class TeamService {
     log.success(`Team updated: ${input.name || existing.name} (${id})`, { id });
     const result = await this.getTeamById(id);
     if (!result) throw new Error('Failed to retrieve updated team');
-    return result;
+    warnings.push(...(await playerService.applyImportedDiscordIds(normalised.discordIds)));
+    return { team: result, warnings };
   }
 
   /**
@@ -251,14 +315,21 @@ class TeamService {
   async createTeams(
     inputs: CreateTeamInput[],
     upsert = false
-  ): Promise<{ successful: TeamResponse[]; failed: { id: string; error: string }[] }> {
+  ): Promise<{
+    successful: TeamResponse[];
+    failed: { id: string; error: string }[];
+    warnings: string[];
+  }> {
     const successful: TeamResponse[] = [];
     const failed: { id: string; error: string }[] = [];
+    const warnings: string[] = [];
 
     for (const input of inputs) {
       try {
-        const team = await this.createTeam(input, upsert);
+        const { team, warnings: teamWarnings } = await this.createTeamWithWarnings(input, upsert);
         successful.push(team);
+        // Prefixed: in a batch, a player's name alone does not say which team.
+        warnings.push(...teamWarnings.map((w) => `Team '${input.id}': ${w}`));
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         failed.push({ id: input.id, error: message });
@@ -266,7 +337,7 @@ class TeamService {
       }
     }
 
-    return { successful, failed };
+    return { successful, failed, warnings };
   }
 
   /**
@@ -275,14 +346,20 @@ class TeamService {
   async updateTeams(updates: { id: string; updates: UpdateTeamInput }[]): Promise<{
     successful: TeamResponse[];
     failed: { id: string; error: string }[];
+    warnings: string[];
   }> {
     const successful: TeamResponse[] = [];
     const failed: { id: string; error: string }[] = [];
+    const warnings: string[] = [];
 
     for (const item of updates) {
       try {
-        const team = await this.updateTeam(item.id, item.updates);
+        const { team, warnings: teamWarnings } = await this.updateTeamWithWarnings(
+          item.id,
+          item.updates
+        );
         successful.push(team);
+        warnings.push(...teamWarnings.map((w) => `Team '${item.id}': ${w}`));
       } catch (error) {
         const message = error instanceof Error ? error.message : 'Unknown error';
         failed.push({ id: item.id, error: message });
@@ -290,7 +367,7 @@ class TeamService {
       }
     }
 
-    return { successful, failed };
+    return { successful, failed, warnings };
   }
 }
 

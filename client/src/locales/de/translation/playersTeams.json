@@ -57,7 +57,17 @@
     "result": "Ergebnis",
     "baseline": "Basiswert",
     "matchHistory": "Matchverlauf",
-    "profileTitle": "Spielerprofil"
+    "profileTitle": "Spielerprofil",
+    "discordId": {
+      "title": "Deine Discord-ID",
+      "description": "Trage deine Discord-Benutzer-ID ein, damit dich die Turnierorganisatoren über Discord erreichen können. Nur Organisatoren sehen sie, und sie wird nie auf deinem öffentlichen Profil angezeigt.",
+      "howToFind": "So findest du sie: Aktiviere in Discord den Entwicklermodus (Einstellungen → Erweitert), klicke dann mit der rechten Maustaste auf deinen Namen und wähle „Benutzer-ID kopieren“.",
+      "save": "Speichern",
+      "saving": "Der Speichervorgang läuft...",
+      "saved": "Discord-ID gespeichert",
+      "removed": "Discord-ID entfernt",
+      "saveFailed": "Deine Discord-ID konnte nicht gespeichert werden"
+    }
   },
   "teamPage": {
     "wantYourStats": "Willst du deine eigenen Stats und Match-Historie sehen?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Match nicht gefunden",
       "unauthorized": "Nur Spieler eines der beiden teilnehmenden Teams können Veto-Aktionen für dieses Match durchführen."
     }
+  },
+  "discordId": {
+    "noDiscord": "Kein Discord",
+    "noDiscordTooltip": "Keine Discord-ID, daher kann dieser Spieler nicht über Discord erreicht werden.",
+    "display": "Discord-ID: {{id}}",
+    "label": "Discord-ID",
+    "labelOptional": "Discord-ID (optional)",
+    "placeholder": "123456789012345678",
+    "helper": "Optional. 17–20 Ziffern",
+    "helperInvalid": "Muss aus 17–20 Ziffern bestehen (die numerische Benutzer-ID, kein Benutzername)"
+  },
+  "importWarnings": {
+    "title": "Warnungen beim Import ({{count}}):",
+    "more": "…und {{count}} weitere"
   }
 }

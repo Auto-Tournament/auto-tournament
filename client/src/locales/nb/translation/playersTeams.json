@@ -57,7 +57,17 @@
     "rating": "Spillrating",
     "result": "Resultat",
     "baseline": "Basislinje",
-    "matchHistory": "Kamphistorikk"
+    "matchHistory": "Kamphistorikk",
+    "discordId": {
+      "title": "Din Discord-ID",
+      "description": "Legg inn Discord-bruker-ID-en din, så turneringsarrangørene kan nå deg på Discord. Bare arrangørene kan se den, og den vises aldri på den offentlige profilen din.",
+      "howToFind": "Slik finner du den: Slå på utviklermodus i Discord (Innstillinger → Avansert), høyreklikk deretter på navnet ditt og velg «Kopier bruker-ID».",
+      "save": "Lagre",
+      "saving": "Lagrer...",
+      "saved": "Discord-ID lagret",
+      "removed": "Discord-ID fjernet",
+      "saveFailed": "Kunne ikke lagre Discord-ID-en din"
+    }
   },
   "teamPage": {
     "wantYourStats": "Vil du se din egen statistikk og kamphistorikk?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Kampen ble ikke funnet",
       "unauthorized": "Bare spillere på ett av de to deltakende lagene kan utføre veto-handlinger for denne kampen."
     }
+  },
+  "discordId": {
+    "noDiscord": "Ingen Discord",
+    "noDiscordTooltip": "Ingen Discord-ID, så denne spilleren kan ikke nås på Discord.",
+    "display": "Discord-ID: {{id}}",
+    "label": "Discord-ID",
+    "labelOptional": "Discord-ID (valgfritt)",
+    "placeholder": "123456789012345678",
+    "helper": "Valgfritt. 17–20 sifre",
+    "helperInvalid": "Må være 17–20 sifre (den numeriske bruker-ID-en, ikke et brukernavn)"
+  },
+  "importWarnings": {
+    "title": "Advarsler fra importen ({{count}}):",
+    "more": "…og {{count}} til"
   }
 }

@@ -109,6 +109,11 @@ class DatabaseManager {
         .filter((s) => s.length > 0 && s.length > 10); // Filter out empty or very short strings
 
       log.database(`[PostgreSQL] Executing ${statements.length} schema statements`);
+      // An index on a column that an upgraded database does not have yet fails
+      // here with "column does not exist": the column is only added by the
+      // migrations below. Those indexes are retried once the columns exist,
+      // rather than being logged as a schema error and silently never created.
+      const deferredIndexes: string[] = [];
       for (let i = 0; i < statements.length; i++) {
         const statement = statements[i];
         try {
@@ -120,7 +125,9 @@ class DatabaseManager {
           }
         } catch (err) {
           const error = err as Error & { code?: string };
-          if (error.code === '42P07' || error.message.includes('already exists')) {
+          if (error.code === '42703' && /^CREATE\s+(UNIQUE\s+)?INDEX\b/i.test(statement)) {
+            deferredIndexes.push(statement);
+          } else if (error.code === '42P07' || error.message.includes('already exists')) {
             log.database(
               `[PostgreSQL] Statement ${i + 1}/${statements.length} skipped (already exists)`
             );
@@ -226,6 +233,17 @@ class DatabaseManager {
       }
       if (added > 0) {
         log.success(`[PostgreSQL] Applied ${added} column migration(s)`);
+      }
+
+      for (const statement of deferredIndexes) {
+        try {
+          await client.query(statement);
+        } catch (err) {
+          log.error(
+            `[PostgreSQL] Failed to create index after column migrations: ${(err as Error).message}`
+          );
+          log.error(`[PostgreSQL] Failed statement: ${statement.substring(0, 200)}`);
+        }
       }
 
       // Insert default maps (only if maps table is empty - first initialization or after wipe)

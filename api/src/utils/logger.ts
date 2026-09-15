@@ -297,7 +297,11 @@ export const log = {
     const meta = { endpoint };
     emit('debug', msg, meta);
   },
-  authFailed: (endpoint: string, reason: string) => {
+  authFailed: (rawEndpoint: string, reason: string) => {
+    // Endpoint paths can carry a Discord ID (`/by-discord-id/:id`), which is
+    // private. Required lazily, matching this file's other requires.
+    const { redactDiscordIdsInPath } = require('./discordId') as typeof import('./discordId');
+    const endpoint = redactDiscordIdsInPath(rawEndpoint);
     const msg = `[AUTH] Auth failed: ${endpoint} - ${reason}`;
     const meta = { endpoint, reason };
     emit('warn', msg, meta);
