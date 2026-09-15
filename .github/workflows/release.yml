@@ -13,9 +13,10 @@ on:
           - minor
           - major
 
+# contents: write covers pushing the bump commit to main, the tag and the
+# GitHub release. No pull-requests permission: the bump no longer goes via a PR.
 permissions:
   contents: write
-  pull-requests: write
   packages: write
 
 concurrency:
@@ -27,7 +28,7 @@ concurrency:
 # - DOCKER_USERNAME: Docker Hub username used for docker login and image naming
 # - DOCKER_PASSWORD: Docker Hub access token/password for docker login
 # Optional secret:
-# - RELEASE_GITHUB_TOKEN: PAT with repo permissions for gh CLI operations (PR create/merge, tags, release)
+# - RELEASE_GITHUB_TOKEN: PAT with repo permissions for the bump push, tags and release
 #   If omitted, workflow falls back to the auto-generated github.token.
 #
 # Flow (nothing public changes until the last job):
@@ -35,10 +36,17 @@ concurrency:
 #   build    -> one native runner per platform (no QEMU) builds the image with
 #               the bumped version applied in its workspace and pushes it to
 #               Docker Hub by digest only. No tags are created.
-#   release  -> scripts/release.sh: bump PR + merge, git tag, then the
-#               :X.Y.Z / :latest manifest from the digests, GitHub release,
-#               Discord. It aborts before pushing anything if main moved or the
-#               version changed since prepare.
+#   release  -> scripts/release.sh: commit the version bump on main and push
+#               it (fast-forward), tag, then the :X.Y.Z / :latest manifest
+#               from the digests, GitHub release, Discord. It aborts before
+#               pushing anything if main moved or the version changed since
+#               prepare, and before tagging if main moves under the bump push.
+#
+# The bump used to go through a `release` branch and a PR merged seconds later.
+# main has no protection, so that reviewed nothing, and because the PR was
+# opened by github-actions[bot] every release left a red, job-less CI run on it.
+# Pushes made with GITHUB_TOKEN do not trigger other workflows, so CI does not
+# run on the bump commit; it only changes the three package.json versions.
 #
 # arm64 used to be built under QEMU on an amd64 runner. On 2026-09-15 that
 # started dying in `yarn install` with "qemu: uncaught target signal 4
@@ -105,8 +113,8 @@ jobs:
 
       # The version is baked into the image (root package.json is copied in and
       # the client bundle embeds client/package.json's version), so apply the
-      # bump here without committing. release.sh makes the same edit on the
-      # release branch and refuses to continue if the version differs.
+      # bump here without committing. release.sh makes the same edit on
+      # main and refuses to continue if the version differs.
       - name: Apply version bump to workspace
         shell: bash
         env:
