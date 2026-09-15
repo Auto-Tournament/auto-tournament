@@ -8,6 +8,7 @@ import {
   ListItem,
 } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+import { useTranslation } from 'react-i18next';
 
 interface TournamentRulesAccordionProps {
   format?: 'bo1' | 'bo3' | 'bo5';
@@ -22,18 +23,14 @@ export const TournamentRulesAccordion: React.FC<TournamentRulesAccordionProps> =
   overtimeMode,
   overtimeSegments,
 }) => {
+  const { t } = useTranslation();
   const effectiveFormat = format || 'bo1';
 
-  const formatDescription =
-    effectiveFormat === 'bo3'
-      ? 'Best of 3 maps – first team to win 2 maps wins the match.'
-      : effectiveFormat === 'bo5'
-      ? 'Best of 5 maps – first team to win 3 maps wins the match.'
-      : 'Best of 1 map – the map winner wins the match.';
+  const formatDescription = t(`tournamentRules.format.${effectiveFormat}`);
 
   const regulationDescription = maxRounds
-    ? `Each map is played up to ${maxRounds} rounds. The team with more rounds at the end of regulation wins the map.`
-    : 'Each map is played for a fixed number of rounds. The team with more rounds at the end of regulation wins the map.';
+    ? t('tournamentRules.regulationWithRounds', { rounds: maxRounds })
+    : t('tournamentRules.regulationGeneric');
 
   let overtimeDescription: string;
   let tiebreakDescription: string;
@@ -42,67 +39,60 @@ export const TournamentRulesAccordion: React.FC<TournamentRulesAccordionProps> =
   const hasOvertimeSegments = typeof overtimeSegments === 'number';
 
   if (overtimeMode === 'disabled' && overtimeSegments === 0) {
-    overtimeDescription = 'Overtime: disabled (regulation only).';
-    tiebreakDescription =
-      'If regulation ends with equal scores, the match does not go to overtime. Instead, the winner is decided by total team damage across the map. If total damage is also exactly equal, the result is a true draw.';
+    overtimeDescription = t('tournamentRules.overtime.disabled');
+    tiebreakDescription = t('tournamentRules.tiebreak.disabled');
   } else if (overtimeMode === 'enabled' && hasOvertimeSegments && overtimeSegments! > 0) {
-    overtimeDescription = `Overtime: enabled with up to ${overtimeSegments} overtime segment${
-      overtimeSegments === 1 ? '' : 's'
-    }.`;
-    tiebreakDescription =
-      'If the score is still tied after the configured overtime segments, the winner is decided by total team damage across the map. If total damage is also tied, the result is recorded as a draw.';
+    overtimeDescription = t('tournamentRules.overtime.enabledSegments', {
+      count: overtimeSegments,
+    });
+    tiebreakDescription = t('tournamentRules.tiebreak.enabledSegments');
   } else if (overtimeMode === 'enabled') {
-    overtimeDescription =
-      'Overtime: enabled. Tied regulation scores will trigger overtime until one team finishes ahead.';
-    tiebreakDescription =
-      'In normal play, a higher final score decides the winner. Draws are rare and only occur if both score and damage remain exactly tied.';
+    overtimeDescription = t('tournamentRules.overtime.enabled');
+    tiebreakDescription = t('tournamentRules.tiebreak.enabled');
   } else if (!hasOvertimeMode && hasOvertimeSegments && overtimeSegments === 0) {
     // Config coming primarily from segments but without explicit overtimeMode flag.
-    overtimeDescription = 'Overtime: effectively disabled (regulation only).';
-    tiebreakDescription =
-      'If regulation ends with equal scores, the match does not go to overtime. The winner is decided by total team damage across the map; if damage is tied, the match is a draw.';
+    overtimeDescription = t('tournamentRules.overtime.effectivelyDisabled');
+    tiebreakDescription = t('tournamentRules.tiebreak.effectivelyDisabled');
   } else if (!hasOvertimeMode && hasOvertimeSegments && overtimeSegments! > 0) {
-    overtimeDescription = `Overtime: enabled with up to ${overtimeSegments} overtime segment${
-      overtimeSegments === 1 ? '' : 's'
-    } (implicit).`;
-    tiebreakDescription =
-      'If the score is still tied after the configured overtime segments, the winner is decided by total team damage. If damage is tied, the result is a draw.';
+    overtimeDescription = t('tournamentRules.overtime.implicitSegments', {
+      count: overtimeSegments,
+    });
+    tiebreakDescription = t('tournamentRules.tiebreak.implicitSegments');
   } else {
-    overtimeDescription = 'Overtime: standard settings. Tied regulation scores usually trigger overtime.';
-    tiebreakDescription =
-      'In most cases, the team with the higher final score wins. Only when both score and total damage are exactly tied is the result recorded as a true draw.';
+    overtimeDescription = t('tournamentRules.overtime.standard');
+    tiebreakDescription = t('tournamentRules.tiebreak.standard');
   }
 
   return (
     <Accordion>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <Typography variant="subtitle1" fontWeight={600}>
-          About this tournament
+          {t('tournamentRules.title')}
         </Typography>
       </AccordionSummary>
       <AccordionDetails>
         <Typography variant="body2" color="text.secondary" paragraph>
-          These are the core rules used to decide matches in this tournament.
+          {t('tournamentRules.intro')}
         </Typography>
         <List dense sx={{ listStyleType: 'disc', pl: 3 }}>
           <ListItem sx={{ display: 'list-item', py: 0.25 }}>
             <Typography variant="body2">
-              <strong>Match format:</strong> {formatDescription}
+              <strong>{t('tournamentRules.matchFormatLabel')}</strong> {formatDescription}
             </Typography>
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.25 }}>
             <Typography variant="body2">
-              <strong>Regulation rounds:</strong> {regulationDescription}
+              <strong>{t('tournamentRules.regulationLabel')}</strong> {regulationDescription}
             </Typography>
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.25 }}>
             <Typography variant="body2">
-              <strong>Overtime:</strong> {overtimeDescription}
+              <strong>{t('tournamentRules.overtimeLabel')}</strong> {overtimeDescription}
             </Typography>
           </ListItem>
           <ListItem sx={{ display: 'list-item', py: 0.25 }}>
             <Typography variant="body2">
-              <strong>How ties are resolved:</strong> {tiebreakDescription}
+              <strong>{t('tournamentRules.tiesLabel')}</strong> {tiebreakDescription}
             </Typography>
           </ListItem>
         </List>
@@ -110,5 +100,3 @@ export const TournamentRulesAccordion: React.FC<TournamentRulesAccordionProps> =
     </Accordion>
   );
 };
-
-

@@ -251,6 +251,18 @@
     "historyStep": "第 {{step}} 步：",
     "startingSide": "初始 {{side}}",
     "otherTeam": "另一支队伍",
+    "actionLabels": {
+      "ban": "禁用",
+      "pick": "选择",
+      "side_pick": "选边"
+    },
+    "mapBadge": "地图 {{n}}",
+    "mapCardAria": {
+      "ban": "禁用 {{map}}",
+      "pick": "选择 {{map}}",
+      "banned": "{{map}}（已禁用）",
+      "picked": "{{map}}（已选择）"
+    },
     "errors": {
       "failedToLoadVetoState": "加载禁选状态失败",
       "failedToProcessVetoAction": "处理禁选操作失败",

@@ -938,7 +938,9 @@ export default function PlayerProfile() {
                           const teamId = assignedTeam?.id || currentTeam?.id;
                           const teamName = assignedTeam?.name || currentTeam?.name || '';
                           const teamTag = assignedTeam?.tag || currentTeam?.tag;
-                          const label = `Team: ${teamTag ? `[${teamTag}] ` : ''}${teamName}`;
+                          const label = t('playerPage.teamChip', {
+                            team: `${teamTag ? `[${teamTag}] ` : ''}${teamName}`,
+                          });
                           const isLink =
                             !!teamId && teamId !== 'team1' && teamId !== 'team2';
 
@@ -1275,7 +1277,7 @@ export default function PlayerProfile() {
                     </Box>
                   ) : (
                     <Typography variant="body2" color="text.secondary">
-                      No matches yet
+                      {t('playerPage.noMatchesYet')}
                     </Typography>
                   )}
                 </Box>
@@ -1330,7 +1332,7 @@ export default function PlayerProfile() {
                         <TableCell align="right">{t('playerPage.dmg')}</TableCell>
                         <TableCell align="right">{t('playerPage.rating')}</TableCell>
                         <TableCell>{t('playerPage.result')}</TableCell>
-                        <TableCell>Demo</TableCell>
+                        <TableCell>{t('playerPage.demo')}</TableCell>
                       </TableRow>
                     </TableHead>
                     <TableBody>
@@ -1387,7 +1389,7 @@ export default function PlayerProfile() {
                               />
                             </TableCell>
                             <TableCell>
-                              <Tooltip title="Download demo">
+                              <Tooltip title={t('playerPage.downloadDemo')}>
                                 <span>
                                   <IconButton
                                     size="small"
@@ -1442,7 +1444,10 @@ export default function PlayerProfile() {
                     color="text.secondary"
                     sx={{ mt: 1, display: 'block' }}
                   >
-                    Showing last 10 matches. Total: {uniqueMatchHistory.length}
+                    {t('playerPage.showingLastMatches', {
+                      shown: 10,
+                      total: uniqueMatchHistory.length,
+                    })}
                   </Typography>
                 )}
               </CardContent>
@@ -1461,7 +1466,7 @@ export default function PlayerProfile() {
                   mb={2}
                 >
                   <Typography variant="h6" fontWeight={600}>
-                    My Team
+                    {t('playerPage.myTeam')}
                   </Typography>
                   {(assignedTeam?.id || currentTeam?.id) &&
                     (assignedTeam?.id || currentTeam?.id) !== 'team1' &&
@@ -1470,9 +1475,11 @@ export default function PlayerProfile() {
                         size="small"
                         variant="outlined"
                         color="secondary"
-                        label={`Open team: ${assignedTeam?.tag || currentTeam?.tag ? `[${assignedTeam?.tag || currentTeam?.tag}] ` : ''}${
-                          assignedTeam?.name || currentTeam?.name || ''
-                        }`}
+                        label={t('playerPage.openTeam', {
+                          team: `${assignedTeam?.tag || currentTeam?.tag ? `[${assignedTeam?.tag || currentTeam?.tag}] ` : ''}${
+                            assignedTeam?.name || currentTeam?.name || ''
+                          }`,
+                        })}
                         component={RouterLink}
                         to={`/team/${assignedTeam?.id || currentTeam?.id}`}
                         clickable
@@ -1523,7 +1530,7 @@ export default function PlayerProfile() {
                           </Typography>
                         </Box>
                         {p.steamId === steamId && (
-                          <Chip size="small" color="primary" label="You" />
+                          <Chip size="small" color="primary" label={t('playerPage.you')} />
                         )}
                       </Box>
                     </Grid>
@@ -1539,7 +1546,7 @@ export default function PlayerProfile() {
                 <Box textAlign="center" py={4}>
                   <SportsEsportsIcon sx={{ fontSize: 48, color: 'text.secondary', mb: 2 }} />
                   <Typography variant="body1" color="text.secondary">
-                    No match history yet
+                    {t('playerPage.noMatchHistory')}
                   </Typography>
                 </Box>
               </CardContent>

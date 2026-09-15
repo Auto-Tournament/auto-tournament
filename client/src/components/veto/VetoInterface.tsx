@@ -729,6 +729,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                   onClick={() => handleMapAction(map.name)}
                   disabled={mapState !== 'available' || !isMyTurn}
                   isCurrentTurn={isMyTurn && mapState === 'available'}
+                  currentAction={currentAction}
                 />
               </Grid>
             );
@@ -759,7 +760,10 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                     <strong>{t('vetoInterface.historyStep', { step: action.step })}</strong>{' '}
                     {action.team === 'team1' ? team1Name : team2Name}{' '}
                     <Chip
-                      label={action.action.toUpperCase()}
+                      data-testid="veto-history-action"
+                      label={t(`vetoInterface.actionLabels.${action.action}`, {
+                        defaultValue: action.action.toUpperCase(),
+                      })}
                       size="small"
                       color={
                         action.action === 'ban'

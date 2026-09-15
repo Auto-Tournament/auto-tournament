@@ -67,7 +67,16 @@
       "saved": "Discord-ID lagret",
       "removed": "Discord-ID fjernet",
       "saveFailed": "Kunne ikke lagre Discord-ID-en din"
-    }
+    },
+    "teamChip": "Lag: {{team}}",
+    "myTeam": "Mitt lag",
+    "openTeam": "Åpne lag: {{team}}",
+    "you": "Deg",
+    "noMatchHistory": "Ingen kamphistorikk ennå",
+    "demo": "Demo",
+    "downloadDemo": "Last ned demo",
+    "showingLastMatches": "Viser de siste {{shown}} kampene. Totalt: {{total}}",
+    "noMatchesYet": "Ingen kamper ennå"
   },
   "teamPage": {
     "wantYourStats": "Vil du se din egen statistikk og kamphistorikk?",
@@ -251,6 +260,18 @@
     "historyStep": "Trinn {{step}}:",
     "startingSide": "Start {{side}}",
     "otherTeam": "det andre laget",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "VALG",
+      "side_pick": "SIDEVALG"
+    },
+    "mapBadge": "KART {{n}}",
+    "mapCardAria": {
+      "ban": "Bann {{map}}",
+      "pick": "Velg {{map}}",
+      "banned": "{{map}} (bannet)",
+      "picked": "{{map}} (valgt)"
+    },
     "errors": {
       "failedToLoadVetoState": "Kunne ikke laste veto-tilstand",
       "failedToProcessVetoAction": "Kunne ikke behandle veto-handlingen",
@@ -278,5 +299,107 @@
   "importWarnings": {
     "title": "Advarsler fra importen ({{count}}):",
     "more": "…og {{count}} til"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "Venter på at turneringen skal starte",
+    "waitingForTournamentBody": "Kampen din er klar, men turneringen har ikke startet ennå. Kartvetoen blir tilgjengelig når turneringsadministratoren starter turneringen.",
+    "tournamentStatusSetup": "Turneringsstatus: Oppsettsfase",
+    "waitingForOpponentTitle": "Venter på motstander",
+    "waitingForOpponentBody": "Dere har gått videre til neste runde. Neste motstander er ikke avgjort ennå, så kartvetoen åpner når begge lagene er kjent.",
+    "mapSelectionTitle": "Kartvalg",
+    "tournamentStartedTitle": "Turneringen har startet!",
+    "tournamentStartedBody": "Fullfør kartvetoen for å starte kampen.",
+    "mapN": "Kart {{n}}",
+    "mapFinishedWaiting": "Kartet er ferdig. Venter på neste kart i serien...",
+    "allPlayersConnected": "Alle nødvendige spillere er tilkoblet. Kampen kan starte.",
+    "waitingForPlayers": "Venter på at spillere kobler til ({{connected}}/{{expected}})",
+    "copyBlocked": "Nettleseren blokkerte kopieringen. Kommandoen vises nedenfor så du kan kopiere den manuelt.",
+    "copyFallback": "Kunne ikke kopiere automatisk i denne nettleseren. Kjør i konsollen: {{command}}",
+    "team1": "Lag 1",
+    "team2": "Lag 2",
+    "liveStatus": {
+      "warmup": "Oppvarming",
+      "knife": "Kniverunde",
+      "live": "Direkte",
+      "halftime": "Pause",
+      "postgame": "Kartet er ferdig – venter på neste kart",
+      "overtime": "OVERTID #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Kart vunnet",
+      "currentMapScore": "Stilling på dette kartet (runder)",
+      "eloAvg": "ELO (snitt): {{elo}}",
+      "vs": "MOT",
+      "tbd": "Ikke avgjort"
+    },
+    "server": {
+      "waitingTitle": "Venter på servertildeling",
+      "waitingBody": "En server tildeles automatisk så snart en blir ledig. Etter hver kamp har serverne en kort nedkjøling (rundt 2 minutter) slik at demoer kan lastes opp og serveren kan tilbakestilles helt. Siden oppdateres automatisk når serveren din er klar.",
+      "serverName": "Server: {{name}}",
+      "status": "Status: {{status}}",
+      "connect": "Koble til server",
+      "connecting": "✓ Kobler til...",
+      "copyCommand": "Kopier konsollkommando",
+      "copied": "✓ Kopiert!",
+      "statusLabels": {
+        "idle": "Ledig",
+        "loading": "Laster",
+        "warmup": "Oppvarming – bli med nå!",
+        "knife": "Kniverunde",
+        "live": "Direkte",
+        "paused": "Pauset",
+        "halftime": "Pause",
+        "postgame": "Kampen er ferdig",
+        "queued": "Neste kamp i kø",
+        "error": "Feil"
+      }
+    },
+    "performance": {
+      "title": "Spillerprestasjon",
+      "player": "Spiller",
+      "waitingForStats": "Venter på statistikk...",
+      "yourTeam": "Ditt lag",
+      "opponent": "Motstander"
+    },
+    "mapChips": {
+      "live": "Direkte"
+    },
+    "demos": {
+      "title": "Kartdemoer",
+      "download": "Last ned demo for {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "Om denne turneringen",
+    "intro": "Dette er grunnreglene som avgjør kampene i denne turneringen.",
+    "matchFormatLabel": "Kampformat:",
+    "regulationLabel": "Ordinære runder:",
+    "overtimeLabel": "Overtid:",
+    "tiesLabel": "Slik avgjøres uavgjort:",
+    "format": {
+      "bo1": "Best av 1 kart – vinneren av kartet vinner kampen.",
+      "bo3": "Best av 3 kart – første lag til 2 kart vinner kampen.",
+      "bo5": "Best av 5 kart – første lag til 3 kart vinner kampen."
+    },
+    "regulationWithRounds": "Hvert kart spilles over opptil {{rounds}} runder. Laget med flest runder når ordinær tid er over, vinner kartet.",
+    "regulationGeneric": "Hvert kart spilles over et fast antall runder. Laget med flest runder når ordinær tid er over, vinner kartet.",
+    "overtime": {
+      "disabled": "Overtid: av (kun ordinær tid).",
+      "enabledSegments_one": "Overtid: på, med opptil {{count}} overtidsperiode.",
+      "enabledSegments_other": "Overtid: på, med opptil {{count}} overtidsperioder.",
+      "enabled": "Overtid: på. Lik stilling etter ordinær tid gir overtid til ett lag ligger foran.",
+      "effectivelyDisabled": "Overtid: i praksis av (kun ordinær tid).",
+      "implicitSegments_one": "Overtid: på, med opptil {{count}} overtidsperiode (implisitt).",
+      "implicitSegments_other": "Overtid: på, med opptil {{count}} overtidsperioder (implisitt).",
+      "standard": "Overtid: standardinnstillinger. Lik stilling etter ordinær tid gir vanligvis overtid."
+    },
+    "tiebreak": {
+      "disabled": "Ender ordinær tid med lik stilling, blir det ikke overtid. Vinneren avgjøres i stedet av total skade laget har gjort på kartet. Er også total skade helt lik, blir resultatet uavgjort.",
+      "enabledSegments": "Er stillingen fortsatt lik etter de oppsatte overtidsperiodene, avgjøres vinneren av total skade laget har gjort på kartet. Er også total skade lik, registreres resultatet som uavgjort.",
+      "enabled": "Normalt avgjør høyest sluttstilling hvem som vinner. Uavgjort er sjelden og skjer bare hvis både stilling og skade er helt like.",
+      "effectivelyDisabled": "Ender ordinær tid med lik stilling, blir det ikke overtid. Vinneren avgjøres av total skade laget har gjort på kartet; er skaden lik, blir kampen uavgjort.",
+      "implicitSegments": "Er stillingen fortsatt lik etter de oppsatte overtidsperiodene, avgjøres vinneren av total skade. Er skaden lik, blir resultatet uavgjort.",
+      "standard": "I de fleste tilfeller vinner laget med høyest sluttstilling. Bare når både stilling og total skade er helt like, registreres resultatet som uavgjort."
+    }
   }
 }

@@ -237,15 +237,21 @@ test.describe.serial('Veto API', () => {
     const actions = getCSMajorBO1Actions(team1, team2);
     expect(await executeVetoActions(request, match!.slug, [actions[0]])).toBeTruthy();
 
+    // The navbar only says "the opponent made their choice" when the latest
+    // action came from the other team, so match-status reports who acted last
+    // and which side the viewer is on.
     expect(await impersonatePlayer(request, actingSteamIdFor(team1))).toBe(true);
-    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
-      'your_turn_veto'
-    );
+    const team1AfterBan = await (await request.get('/api/players/me/match-status')).json();
+    expect(team1AfterBan.status).toBe('your_turn_veto');
+    expect(team1AfterBan.viewerTeam).toBe('team1');
+    expect(team1AfterBan.lastVetoActionTeam).toBe('team1');
+    expect(team1AfterBan.vetoActionCount).toBe(1);
 
     expect(await impersonatePlayer(request, actingSteamIdFor(team2))).toBe(true);
-    expect((await (await request.get('/api/players/me/match-status')).json()).status).toBe(
-      'waiting_veto'
-    );
+    const team2AfterBan = await (await request.get('/api/players/me/match-status')).json();
+    expect(team2AfterBan.status).toBe('waiting_veto');
+    expect(team2AfterBan.viewerTeam).toBe('team2');
+    expect(team2AfterBan.lastVetoActionTeam).toBe('team1');
 
     // Team1's second ban hands over to team2.
     expect(await executeVetoActions(request, match!.slug, [actions[1]])).toBeTruthy();

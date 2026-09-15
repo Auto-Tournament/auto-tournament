@@ -1,8 +1,9 @@
 import React from 'react';
-import { Card, CardContent, Typography, Box, Chip } from '@mui/material';
+import { useTranslation } from 'react-i18next';
+import { Card, CardActionArea, CardContent, Typography, Box, Chip } from '@mui/material';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import BlockIcon from '@mui/icons-material/Block';
-import type { MapSide } from '../../types';
+import type { MapSide, VetoActionType } from '../../types';
 import { FadeInImage } from '../common/FadeInImage';
 
 interface VetoMapCardProps {
@@ -20,6 +21,11 @@ interface VetoMapCardProps {
    * highlight "click me now" maps during the veto phase.
    */
   isCurrentTurn?: boolean;
+  /**
+   * The veto step currently in progress. Used for the tile's accessible name
+   * ("Ban Mirage" / "Pick Mirage").
+   */
+  currentAction?: VetoActionType;
 }
 
 export const VetoMapCard: React.FC<VetoMapCardProps> = ({
@@ -32,37 +38,29 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
   onClick,
   disabled,
   isCurrentTurn,
+  currentAction,
 }) => {
+  const { t } = useTranslation();
   const [imageError] = React.useState(false);
-  const isClickable = !disabled && state === 'available' && onClick;
+  const isClickable = !disabled && state === 'available' && !!onClick;
+  // Tiles in the live veto grid (the ones given an onClick) are real buttons,
+  // so keyboard and screen-reader users can reach and operate them. A tile that
+  // can't be chosen right now stays focusable and says so via aria-disabled.
+  const isInteractive = typeof onClick === 'function';
 
-  return (
-    <Card
-      data-testid={`veto-map-card-${mapName}`}
-      sx={{
-        position: 'relative',
-        cursor: isClickable ? 'pointer' : 'default',
-        opacity: state === 'banned' ? 0.5 : 1,
-        border: state === 'picked' ? 3 : isCurrentTurn ? 2 : 1,
-        borderColor:
-          state === 'picked'
-            ? 'success.main'
-            : isCurrentTurn
-            ? 'warning.main'
-            : 'divider',
-        boxShadow: isCurrentTurn ? 6 : 1,
-        transition: 'all 0.25s ease',
-        transform: isClickable ? 'scale(1)' : 'scale(1)',
-        '&:hover': isClickable
-          ? {
-              transform: 'scale(1.05)',
-              boxShadow: 8,
-              borderColor: isCurrentTurn ? 'warning.light' : 'primary.main',
-            }
-          : {},
-      }}
-      onClick={isClickable ? onClick : undefined}
-    >
+  const accessibleName =
+    state === 'banned'
+      ? t('vetoInterface.mapCardAria.banned', { map: displayName })
+      : state === 'picked'
+        ? t('vetoInterface.mapCardAria.picked', { map: displayName })
+        : currentAction === 'pick'
+          ? t('vetoInterface.mapCardAria.pick', { map: displayName })
+          : currentAction === 'ban'
+            ? t('vetoInterface.mapCardAria.ban', { map: displayName })
+            : displayName;
+
+  const content = (
+    <>
       {/* Map Number Badge (for picked maps) */}
       {state === 'picked' && mapNumber && (
         <Box
@@ -74,7 +72,7 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           }}
         >
           <Chip
-            label={`MAP ${mapNumber}`}
+            label={t('vetoInterface.mapBadge', { n: mapNumber })}
             color="success"
             size="small"
             sx={{
@@ -192,6 +190,55 @@ export const VetoMapCard: React.FC<VetoMapCardProps> = ({
           {displayName}
         </Typography>
       </CardContent>
+    </>
+  );
+
+  return (
+    <Card
+      data-testid={`veto-map-card-${mapName}`}
+      sx={{
+        position: 'relative',
+        cursor: isClickable ? 'pointer' : 'default',
+        opacity: state === 'banned' ? 0.5 : 1,
+        border: state === 'picked' ? 3 : isCurrentTurn ? 2 : 1,
+        borderColor:
+          state === 'picked'
+            ? 'success.main'
+            : isCurrentTurn
+            ? 'warning.main'
+            : 'divider',
+        boxShadow: isCurrentTurn ? 6 : 1,
+        transition: 'all 0.25s ease',
+        transform: 'scale(1)',
+        '&:hover': isClickable
+          ? {
+              transform: 'scale(1.05)',
+              boxShadow: 8,
+              borderColor: isCurrentTurn ? 'warning.light' : 'primary.main',
+            }
+          : {},
+      }}
+    >
+      {isInteractive ? (
+        <CardActionArea
+          data-testid={`veto-map-button-${mapName}`}
+          aria-label={accessibleName}
+          aria-disabled={!isClickable}
+          onClick={isClickable ? onClick : undefined}
+          disableRipple={!isClickable}
+          sx={{
+            cursor: 'inherit',
+            // Keep the tile looking as it did: no grey wash on mouse hover.
+            // The highlight overlay only appears for keyboard focus.
+            '&:hover .MuiCardActionArea-focusHighlight': { opacity: 0 },
+            '&.Mui-focusVisible .MuiCardActionArea-focusHighlight': { opacity: 0.12 },
+          }}
+        >
+          {content}
+        </CardActionArea>
+      ) : (
+        content
+      )}
     </Card>
   );
 };

@@ -251,6 +251,18 @@
     "historyStep": "Schritt {{step}}:",
     "startingSide": "Start {{side}}",
     "otherTeam": "das andere Team",
+    "actionLabels": {
+      "ban": "BANN",
+      "pick": "PICK",
+      "side_pick": "SEITENWAHL"
+    },
+    "mapBadge": "MAP {{n}}",
+    "mapCardAria": {
+      "ban": "{{map}} bannen",
+      "pick": "{{map}} picken",
+      "banned": "{{map}} (gebannt)",
+      "picked": "{{map}} (gepickt)"
+    },
     "errors": {
       "failedToLoadVetoState": "Veto-Status konnte nicht geladen werden",
       "failedToProcessVetoAction": "Veto-Aktion konnte nicht verarbeitet werden",

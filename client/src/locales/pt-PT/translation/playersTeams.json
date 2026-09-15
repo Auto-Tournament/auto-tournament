@@ -251,6 +251,18 @@
     "historyStep": "Passo {{step}}:",
     "startingSide": "Início {{side}}",
     "otherTeam": "a outra equipa",
+    "actionLabels": {
+      "ban": "BAN",
+      "pick": "PICK",
+      "side_pick": "ESCOLHA DE LADO"
+    },
+    "mapBadge": "MAPA {{n}}",
+    "mapCardAria": {
+      "ban": "Banir {{map}}",
+      "pick": "Escolher {{map}}",
+      "banned": "{{map}} (banido)",
+      "picked": "{{map}} (escolhido)"
+    },
     "errors": {
       "failedToLoadVetoState": "Falha ao carregar o estado do veto",
       "failedToProcessVetoAction": "Falha ao processar a ação de veto",
