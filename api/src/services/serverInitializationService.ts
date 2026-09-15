@@ -19,6 +19,7 @@
 import { db } from '../config/database';
 import { rconService } from './rconService';
 import { log } from '../utils/logger';
+import { getMatchZyBootstrapCommands } from '../utils/matchzyRconCommands';
 // NOTE: Remaining MatchZy configuration is fetched by the server itself
 // via /api/servers/:id/bootstrap to avoid RCON command churn.
 
@@ -120,15 +121,11 @@ class ServerInitializationService {
 
       log.info(`[SERVER-INIT] Initializing server ${serverId} via bootstrap URL`);
 
-      const bootstrapUrl = `${baseUrl}/api/servers/${serverId}/bootstrap`;
       const errors: string[] = [];
 
-      const commands = [
-        'matchzy_clear_event_queue',
-        `matchzy_server_id "${serverId}"`,
-        `matchzy_bootstrap_url "${bootstrapUrl}"`,
-        `matchzy_bootstrap_token "${serverToken}"`,
-      ];
+      // Token before URL: the plugin fetches the bootstrap URL as soon as it is
+      // set, with whatever token it holds at that moment (see helper).
+      const commands = getMatchZyBootstrapCommands(baseUrl, serverId, serverToken);
 
       for (const cmd of commands) {
         const result = await rconService.sendCommand(serverId, cmd);
