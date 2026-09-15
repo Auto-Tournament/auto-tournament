@@ -93,6 +93,38 @@ function setPlayerSteamCookie(req: Request, res: Response, steamId: string): voi
 }
 
 /**
+ * Clear every cookie that identifies the person at this browser: the signed
+ * player_steam_id, the pending SSO→Steam link, and admin impersonation.
+ *
+ * The attributes must match the setters (path, sameSite, secure) or the
+ * browser keeps the original cookie. This matters on shared PCs: a leftover
+ * player_steam_id would make the next person's SSO login auto-link to the
+ * previous user's Steam account.
+ */
+function clearIdentityCookies(req: Request, res: Response): void {
+  res.clearCookie('player_steam_id', {
+    path: '/',
+    httpOnly: true,
+    secure: shouldUseSecureCookie(req),
+    sameSite: 'lax',
+  });
+  res.clearCookie('pending_steam_link', {
+    path: '/',
+    httpOnly: true,
+    // Matches the pending_steam_link setters in the SSO callbacks.
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+  });
+  clearImpersonationCookie(req, res);
+}
+
+/** Truncate a provider user id for logs; enough to correlate, not to identify. */
+function redactProviderUserId(id: string | undefined | null): string | null {
+  if (!id) return null;
+  return id.length <= 4 ? '****' : `${id.slice(0, 4)}…`;
+}
+
+/**
  * Returns minimal HTML that redirects via meta refresh.
  * Use instead of 302 when setting cookies (e.g. OAuth callback): some browsers
  * (Chrome) drop Set-Cookie on 302 responses from cross-site redirects (e.g.
@@ -177,7 +209,7 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         | undefined;
 
       log.info('Steam Passport callback: user object received', {
-        user,
+        steamId: user?.steamId ?? null,
       });
 
       const steamId = user?.steamId;
@@ -250,7 +282,6 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
         } & {
           sessionID?: string;
         };
-        const sessionId = anyReq.sessionID ?? '(unknown)';
         const cookies = parseCookies(req.headers.cookie);
         const rawCookiePending = cookies.pending_steam_link;
 
@@ -277,17 +308,11 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
             } else {
               log.info(
                 'Steam Passport callback: pending_steam_link cookie present but invalid; ignoring',
-                {
-                  sessionId,
-                  rawCookiePending,
-                  parsed,
-                }
+                { provider: parsed?.provider ?? null }
               );
             }
           } catch (parseErr) {
             log.warn('Steam Passport callback: failed to parse pending_steam_link cookie', {
-              sessionId,
-              rawCookiePending,
               error:
                 parseErr instanceof Error
                   ? { message: parseErr.message, stack: parseErr.stack }
@@ -298,10 +323,9 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
 
         const sessionPending = anyReq.session?.pendingSteamLink ?? null;
         log.info('Steam Passport callback: checking for pending external identity link', {
-          sessionId,
           hasSession: !!anyReq.session,
-          sessionPending,
-          cookiePending,
+          sessionPendingProvider: sessionPending?.provider ?? null,
+          cookiePendingProvider: cookiePending?.provider ?? null,
         });
 
         const pending = sessionPending || cookiePending;
@@ -326,17 +350,13 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
 
           log.success('Linked external auth identity to Steam', {
             provider: pending.provider,
-            providerUserId: pending.providerUserId,
+            providerUserId: redactProviderUserId(pending.providerUserId),
             steamId,
-            sessionId,
             linkSource: cookiePending ? 'cookie' : 'session',
           });
         } else {
           log.info(
-            'Steam Passport callback: no pending external identity link found in session or cookie; skipping link',
-            {
-              sessionId,
-            }
+            'Steam Passport callback: no pending external identity link found in session or cookie; skipping link'
           );
         }
       } catch (linkError) {
@@ -395,20 +415,13 @@ router.get('/steam/callback', (req: Request, res: Response, _next) => {
  *
  * POST /api/auth/logout
  *
- * This only clears the non-privileged player_steam_id cookie. It does NOT
+ * Clears the player_steam_id, pending_steam_link and impersonation cookies. It does NOT
  * affect admin API token authentication (which is handled purely on the
  * frontend via localStorage today).
  */
-router.post('/logout', (_req: Request, res: Response) => {
+router.post('/logout', (req: Request, res: Response) => {
   try {
-    res.clearCookie('player_steam_id', {
-      path: '/',
-      httpOnly: true,
-      // Clearing cookies does not require matching secure=true, but browsers can be picky.
-      // Use the common case here; if running HTTPS, this will still clear correctly.
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-    });
+    clearIdentityCookies(req, res);
 
     return res.status(204).end();
   } catch (error) {
@@ -464,13 +477,11 @@ router.get(
     const user = anyReq.user;
     const provider = user?.provider as AuthProvider | undefined;
     const providerUserId = user?.keycloakId;
-    const sessionId = anyReq.sessionID ?? '(unknown)';
-
+    // Never log the Passport user object: it carries the OAuth access and
+    // refresh tokens. Provider plus a truncated provider user id is enough.
     log.info('Keycloak callback: resolved Passport user', {
-      sessionId,
-      user,
       provider,
-      providerUserId,
+      providerUserId: redactProviderUserId(providerUserId),
     });
 
     if (!provider || provider !== 'keycloak' || !providerUserId) {
@@ -485,7 +496,6 @@ router.get(
       // login), persist the mapping so the user doesn't have to go through link again.
       const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('Keycloak callback: checking for existing player_steam_id cookie', {
-        sessionId,
         cookieSteamId: cookieSteamId ?? null,
       });
       if (cookieSteamId) {
@@ -494,17 +504,17 @@ router.get(
         setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('Keycloak login auto-linked via existing Steam cookie', {
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
           steamId: cookieSteamId,
-          sessionId,
         });
         return res.redirect(302, `${baseUrl}/`);
       }
 
       const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
       log.info('Keycloak callback: result of auth identity lookup', {
-        sessionId,
         provider,
-        providerUserId,
+        providerUserId: redactProviderUserId(providerUserId),
         steamId: steamId ?? null,
       });
       const baseUrlResolved = baseUrl;
@@ -513,7 +523,7 @@ router.get(
         (anyReq.user as { steamId?: string }).steamId = steamId;
         setPlayerSteamCookie(req, res, steamId);
 
-        log.success('Keycloak login resolved via existing Steam link', { steamId, sessionId });
+        log.success('Keycloak login resolved via existing Steam link', { provider, steamId });
         return res.redirect(302, `${baseUrlResolved}/`);
       }
 
@@ -524,8 +534,8 @@ router.get(
           providerUserId,
         };
         log.info('Keycloak callback: stored pendingSteamLink on session', {
-          sessionId,
-          pendingSteamLink: anyReq.session.pendingSteamLink,
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
         });
       }
 
@@ -596,13 +606,11 @@ router.get(
     const user = anyReq.user;
     const provider = user?.provider as AuthProvider | undefined;
     const providerUserId = user?.discordId;
-    const sessionId = anyReq.sessionID ?? '(unknown)';
-
+    // Never log the Passport user object: it carries the OAuth access and
+    // refresh tokens. Provider plus a truncated provider user id is enough.
     log.info('Discord callback: resolved Passport user', {
-      sessionId,
-      user,
       provider,
-      providerUserId,
+      providerUserId: redactProviderUserId(providerUserId),
     });
 
     if (!provider || provider !== 'discord' || !providerUserId) {
@@ -615,7 +623,6 @@ router.get(
 
       const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('Discord callback: checking for existing player_steam_id cookie', {
-        sessionId,
         cookieSteamId: cookieSteamId ?? null,
       });
       if (cookieSteamId) {
@@ -624,8 +631,9 @@ router.get(
         setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('Discord login auto-linked via existing Steam cookie', {
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
           steamId: cookieSteamId,
-          sessionId,
         });
         return res.redirect(302, `${baseUrl}/`);
       }
@@ -633,9 +641,8 @@ router.get(
       const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
 
       log.info('Discord callback: result of auth identity lookup', {
-        sessionId,
         provider,
-        providerUserId,
+        providerUserId: redactProviderUserId(providerUserId),
         steamId: steamId ?? null,
       });
 
@@ -643,7 +650,7 @@ router.get(
         (anyReq.user as { steamId?: string }).steamId = steamId;
         setPlayerSteamCookie(req, res, steamId);
 
-        log.success('Discord login resolved via existing Steam link', { steamId, sessionId });
+        log.success('Discord login resolved via existing Steam link', { provider, steamId });
         return res.redirect(302, `${baseUrl}/`);
       }
 
@@ -653,8 +660,8 @@ router.get(
           providerUserId,
         };
         log.info('Discord callback: stored pendingSteamLink on session', {
-          sessionId,
-          pendingSteamLink: anyReq.session.pendingSteamLink,
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
         });
       }
 
@@ -725,13 +732,11 @@ router.get(
     const user = anyReq.user;
     const provider = user?.provider as AuthProvider | undefined;
     const providerUserId = user?.githubId;
-    const sessionId = anyReq.sessionID ?? '(unknown)';
-
+    // Never log the Passport user object: it carries the OAuth access and
+    // refresh tokens. Provider plus a truncated provider user id is enough.
     log.info('GitHub callback: resolved Passport user', {
-      sessionId,
-      user,
       provider,
-      providerUserId,
+      providerUserId: redactProviderUserId(providerUserId),
     });
 
     if (!provider || provider !== 'github' || !providerUserId) {
@@ -744,7 +749,6 @@ router.get(
 
       const cookieSteamId = getVerifiedPlayerSteamId(req.headers.cookie);
       log.info('GitHub callback: checking for existing player_steam_id cookie', {
-        sessionId,
         cookieSteamId: cookieSteamId ?? null,
       });
       if (cookieSteamId) {
@@ -753,8 +757,9 @@ router.get(
         setPlayerSteamCookie(req, res, cookieSteamId);
 
         log.success('GitHub login auto-linked via existing Steam cookie', {
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
           steamId: cookieSteamId,
-          sessionId,
         });
         return res.redirect(302, `${baseUrl}/`);
       }
@@ -762,9 +767,8 @@ router.get(
       const steamId = await authIdentityService.findSteamIdForIdentity(provider, providerUserId);
 
       log.info('GitHub callback: result of auth identity lookup', {
-        sessionId,
         provider,
-        providerUserId,
+        providerUserId: redactProviderUserId(providerUserId),
         steamId: steamId ?? null,
       });
 
@@ -772,7 +776,7 @@ router.get(
         (anyReq.user as { steamId?: string }).steamId = steamId;
         setPlayerSteamCookie(req, res, steamId);
 
-        log.success('GitHub login resolved via existing Steam link', { steamId, sessionId });
+        log.success('GitHub login resolved via existing Steam link', { provider, steamId });
         return res.redirect(302, `${baseUrl}/`);
       }
 
@@ -782,8 +786,8 @@ router.get(
           providerUserId,
         };
         log.info('GitHub callback: stored pendingSteamLink on session', {
-          sessionId,
-          pendingSteamLink: anyReq.session.pendingSteamLink,
+          provider,
+          providerUserId: redactProviderUserId(providerUserId),
         });
       }
 
@@ -1233,13 +1237,17 @@ router.get('/admin/me', async (req: Request, res: Response) => {
 });
 
 /**
- * Admin logout – destroys the Passport session.
+ * Admin logout – destroys the Passport session and clears the identity cookies.
  */
 router.post('/admin/logout', (req: Request, res: Response) => {
   const anyReq = req as Request & {
     logout?: (cb: (err: unknown) => void) => void;
     session?: { destroy?: (cb: (err: unknown) => void) => void };
   };
+
+  // The signed player_steam_id cookie is itself an admin credential (see
+  // middleware/auth), so destroying only the Passport session is not a logout.
+  clearIdentityCookies(req, res);
 
   if (!anyReq.logout) {
     return res.status(204).end();
