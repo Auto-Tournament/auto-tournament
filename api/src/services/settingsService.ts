@@ -1,5 +1,6 @@
 import { db } from '../config/database';
 import { log } from '../utils/logger';
+import { clampSimulationTimescale } from '../utils/simulationTimescale';
 
 export type AppSettingKey =
   | 'webhook_url'
@@ -161,7 +162,7 @@ class SettingsService {
           throw new Error('Simulation timescale must be a number');
         }
 
-        const clamped = Math.min(4, Math.max(0.1, parsed));
+        const clamped = clampSimulationTimescale(parsed);
         await db.setAppSettingAsync(key, String(clamped));
         log.success(`Simulation timescale updated to ${clamped}`);
         return;
@@ -659,10 +660,8 @@ class SettingsService {
     const parsed = Number(value);
     if (!Number.isFinite(parsed)) return 1;
 
-    // Clamp to a safe, expected range (0.1 – 4.0) to match the frontend slider.
-    if (parsed < 0.1) return 0.1;
-    if (parsed > 4) return 4;
-    return parsed;
+    // Values stored before the ceiling changed may be out of range.
+    return clampSimulationTimescale(parsed);
   }
 
   /**

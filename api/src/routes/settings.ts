@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import { requireAuth } from '../middleware/auth';
 import { settingsService } from '../services/settingsService';
+import { clampSimulationTimescale } from '../utils/simulationTimescale';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { autoVetoPendingMatches } from '../services/vetoSimulationService';
@@ -249,7 +250,7 @@ router.put('/', async (req: Request, res: Response) => {
 
       let value: string | null = null;
       if (typeof simulationTimescale === 'number' && Number.isFinite(simulationTimescale)) {
-        const clamped = Math.min(4, Math.max(0.1, simulationTimescale));
+        const clamped = clampSimulationTimescale(simulationTimescale);
         value = String(clamped);
       }
 
