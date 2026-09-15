@@ -219,6 +219,12 @@ class MatchService {
     if (status === 'loaded') {
       updateData.loaded_at = Math.floor(Date.now() / 1000);
     }
+    if (status === 'completed' && match.status !== 'completed') {
+      // An admin completing a match is a deliberate finish. Stamping
+      // completed_at is what marks it finalized (isMatchFinalized), so late
+      // plugin events don't re-open it.
+      updateData.completed_at = Math.floor(Date.now() / 1000);
+    }
 
     await db.updateAsync('matches', updateData, 'slug = ?', [slug]);
     log.matchStatusUpdate(slug, status);

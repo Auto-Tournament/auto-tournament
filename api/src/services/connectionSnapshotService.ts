@@ -10,6 +10,7 @@ import {
 } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
+import { isMatchFinalized } from '../utils/matchStatusHelpers';
 
 export type MatchReport = {
   match?: {
@@ -529,12 +530,14 @@ async function reconcileMatchStatusFromPhase(
     case 'paused':
     case 'round_restore':
     case 'halftime':
-      targetStatus = 'live';
-      break;
     case 'postgame':
-      // Keep using our existing "completed" semantics at the DB level;
-      // postgame at the plugin level means the series is effectively done.
-      targetStatus = 'completed';
+      // `postgame` is NOT "the series is over". MatchZy Enhanced reports it
+      // after every map, including between maps of a BO3/BO5, and its report
+      // POST lands before that map's map_result / series_end. Mapping it to
+      // 'completed' finished BO3s after map 1 with no winner and no bracket
+      // progression. A report can only say a map was played; completion (winner,
+      // progression, server release) belongs to the series_end path.
+      targetStatus = 'live';
       break;
     default:
       // warmup / veto / etc. don't require reconciliation
@@ -542,13 +545,28 @@ async function reconcileMatchStatusFromPhase(
   }
 
   try {
-    const existing = await db.queryOneAsync<{ status: string }>(
-      'SELECT status FROM matches WHERE slug = ?',
-      [matchSlug]
-    );
+    const existing = await db.queryOneAsync<{
+      status: string;
+      winner_id: string | null;
+      completed_at: number | null;
+    }>('SELECT status, winner_id, completed_at FROM matches WHERE slug = ?', [matchSlug]);
     if (!existing) return;
 
     const current = (existing.status || '').toLowerCase();
+
+    // A row marked completed without a series result (see isMatchFinalized)
+    // while the plugin is still playing the series: put it back to live so the
+    // rest of the series is tracked and its series_end can finish it properly.
+    // Not on `postgame`: that phase is ambiguous, and a server idling in
+    // postgame is no evidence the series is still going.
+    if (current === 'completed' && normalized !== 'postgame' && !isMatchFinalized(existing)) {
+      await db.updateAsync('matches', { status: 'live' }, 'slug = ?', [matchSlug]);
+      log.warn('[MatchReport] Re-opened match marked completed without a series result', {
+        matchSlug,
+        phase: normalized,
+      });
+      return;
+    }
 
     // Simple progression ordering: pending/ready/loaded < live < completed
     const order: Record<string, number> = {
