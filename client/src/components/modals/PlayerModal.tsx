@@ -16,6 +16,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { api } from '../../utils/api';
+import { isInvalidDiscordIdInput, normalizeDiscordId } from '../../utils/discordId';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import ConfirmDialog from './ConfirmDialog';
 import { PlayerAvatar } from '../player/PlayerAvatar';
@@ -38,6 +39,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
   const [avatar, setAvatar] = useState('');
   const [elo, setElo] = useState<number | ''>('');
   const [isAdmin, setIsAdmin] = useState(false);
+  const [discordId, setDiscordId] = useState('');
 
   const [error, setError] = useState('');
   const [saving, setSaving] = useState(false);
@@ -48,6 +50,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
 
   const isEditing = !!player;
   const originalElo = player?.currentElo ?? null;
+  const discordIdInvalid = isInvalidDiscordIdInput(discordId);
 
   useEffect(() => {
     if (player) {
@@ -57,6 +60,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       setElo(player.currentElo);
       setPendingElo('');
       setIsAdmin(Boolean(player.isAdmin));
+      setDiscordId(player.discordId ?? '');
     } else {
       resetForm();
     }
@@ -68,6 +72,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     setAvatar('');
     setElo('');
     setIsAdmin(false);
+    setDiscordId('');
     setError('');
   };
 
@@ -120,6 +125,11 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
       return;
     }
 
+    if (discordIdInvalid) {
+      showWarning(t('discordId.helperInvalid'));
+      return;
+    }
+
     // Check if ELO is being changed for an existing player
     if (isEditing && originalElo !== null && elo !== '' && Number(elo) !== originalElo) {
       setPendingElo(elo);
@@ -146,12 +156,24 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
     setError('');
 
     try {
+      const normalizedDiscordId = normalizeDiscordId(discordId) ?? null;
+      // Only send the Discord ID when the admin actually changed it, as
+      // TeamModal does. The modal is opened from a list that may be minutes
+      // old; if the player has since set (or removed) their own ID, echoing
+      // the stale value back on a name-only save would silently overwrite
+      // their edit. An absent key leaves the stored value alone on the server.
+      // On create, a blank field is simply omitted.
+      const originalDiscordId = isEditing ? normalizeDiscordId(player.discordId) ?? null : null;
+      const discordIdChanged = normalizedDiscordId !== originalDiscordId;
       const payload = {
         id: steamId.trim(),
         name: name.trim(),
         avatar: avatar.trim() || undefined,
         elo: elo !== '' ? Number(elo) : undefined,
         isAdmin,
+        // A value sets it; clearing the field on an existing player sends null
+        // so the stored ID is removed.
+        ...(discordIdChanged ? { discordId: normalizedDiscordId } : {}),
       };
 
       if (isEditing) {
@@ -294,6 +316,21 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
               }
             />
 
+            <TextField
+              label={t('discordId.labelOptional')}
+              value={discordId}
+              onChange={(e) => setDiscordId(e.target.value)}
+              placeholder={t('discordId.placeholder')}
+              fullWidth
+              error={discordIdInvalid}
+              helperText={
+                discordIdInvalid ? t('discordId.helperInvalid') : t('playerModal.discordIdHelper')
+              }
+              slotProps={{
+                htmlInput: { inputMode: 'numeric', 'data-testid': 'player-discord-id-input' },
+              }}
+            />
+
             <FormControlLabel
               control={
                 <Switch
@@ -339,7 +376,7 @@ export default function PlayerModal({ open, player, onClose, onSave, onDelete }:
             data-testid="player-save-button"
             variant="contained"
             onClick={handleSave}
-            disabled={saving || resolving}
+            disabled={saving || resolving || discordIdInvalid}
             startIcon={saving ? <CircularProgress size={20} color="inherit" /> : undefined}
             sx={{
               ...((!steamId.trim() || !name.trim()) &&

@@ -9,6 +9,11 @@ export interface Player {
   name: string;
   avatar?: string;
   elo?: number; // Optional ELO rating (defaults to 1500 Skill Rating if not specified)
+  /**
+   * Discord user ID (17–20 digit string), looked up from the player record by the
+   * admin team endpoints. Contact data only; never part of the stored roster.
+   */
+  discordId?: string | null;
 }
 
 export interface Team {

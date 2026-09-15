@@ -172,7 +172,10 @@
       "teamNameRequired": "战队名称为必填项",
       "playersRequired": "至少需要一名选手",
       "saveFailed": "保存战队失败",
-      "deleteFailed": "删除战队失败"
+      "deleteFailed": "删除战队失败",
+      "discordIdInvalid": "Discord ID 必须为 17–20 位数字（数字用户 ID，而非用户名）",
+      "discordIdInvalidPlayers": "以下选手的 Discord ID 无效：{{names}}。必须为 17–20 位数字，或留空。",
+      "discordIdSaveFailed": "战队已保存，但以下选手的 Discord ID 保存失败：{{names}}。{{message}}"
     },
     "success": {
       "playerAdded": "选手已添加到战队",
@@ -239,13 +242,14 @@
     "confirmEloUpdate": {
       "title": "更新选手 ELO",
       "message": "确定要将该选手的 ELO 从 {{from}} 更新为 {{to}} 吗？这将重置其统计和评分历史。此操作无法撤销。"
-    }
+    },
+    "discordIdHelper": "可选，17–20 位数字。便于组织者通过 Discord 联系该选手，不会公开显示。"
   },
   "teamImportModal": {
     "title": "从 JSON 导入战队",
     "info": {
       "title": "在下方粘贴包含战队数据的 JSON。",
-      "format": "预期格式：战队数组，每个战队包含 name、可选 tag，以及 players（name + steamId）。",
+      "format": "预期格式：战队数组，包含 name、tag（可选）和 players（name + steamId，以及可选的 discordId，需用引号括起的字符串）。",
       "link": "查看带示例的文档"
     },
     "jsonLabel": "JSON 数据",
@@ -260,12 +264,19 @@
     "preview": {
       "summary": "✓ JSON 校验通过！找到 {{teamCount}} 支战队，共 {{playerCount}} 名选手。",
       "title": "预览：",
-      "playersChip": "{{count}} 名选手"
+      "playersChip": "{{count}} 名选手",
+      "missingDiscordTotal": "没有 Discord ID 的选手：{{count}}",
+      "missingDiscordChip": "无 Discord：{{count}}"
     },
     "actions": {
       "preview": "预览",
       "importing": "正在导入…",
       "import": "导入 {{count}} 支战队"
+    },
+    "warnings": {
+      "title": "部分 Discord ID 已被忽略，这些选手将在没有 Discord ID 的情况下导入：",
+      "discordIdNumber": "战队“{{team}}”，选手“{{player}}”：discordId 必须是用引号括起的字符串。大数字在 JSON 中会丢失精度，因此已移除该 ID。",
+      "discordIdInvalid": "战队“{{team}}”，选手“{{player}}”：“{{value}}”不是 Discord 用户 ID（应为 17–20 位数字），因此已移除。"
     }
   },
   "playerImportModal": {

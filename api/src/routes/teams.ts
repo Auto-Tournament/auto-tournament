@@ -12,13 +12,17 @@ const router = Router();
 // All team routes require authentication
 router.use(requireAuth);
 
+// Every response here is admin-only, so roster players are enriched with their
+// Discord ID from the players table (`teamService.withPlayerDiscordIds`). The ID
+// is never stored in the roster JSON itself; see that method for why.
+
 /**
  * GET /api/teams
  * Get all teams
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const teams = await teamService.getAllTeams();
+    const teams = await teamService.withPlayerDiscordIds(await teamService.getAllTeams());
     return res.json({
       success: true,
       count: teams.length,
@@ -49,9 +53,10 @@ router.get('/:id', async (req: Request, res: Response) => {
       });
     }
 
+    const [enriched] = await teamService.withPlayerDiscordIds([team]);
     return res.json({
       success: true,
-      team,
+      team: enriched,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -80,29 +85,34 @@ router.post('/', async (req: Request, res: Response) => {
       return res.status(statusCode).json({
         success: result.failed.length === 0,
         message: `Created ${result.successful.length} team(s), ${result.failed.length} failed`,
-        successful: result.successful,
+        successful: await teamService.withPlayerDiscordIds(result.successful),
         failed: result.failed,
         stats: {
           total: body.length,
           successful: result.successful.length,
           failed: result.failed.length,
         },
+        ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
       });
     }
 
     // Single creation
     const input = body as CreateTeamInput;
-    const team = await teamService.createTeam(input, upsert);
+    const { team, warnings: discordWarnings } = await teamService.createTeamWithWarnings(
+      input,
+      upsert
+    );
 
     const duplicates = await findDuplicateTournamentMemberships(team.id, team.players ?? []);
+    const warnings = [...describeDuplicateMemberships(duplicates), ...discordWarnings];
+    const [enriched] = await teamService.withPlayerDiscordIds([team]);
 
     return res.status(upsert ? 200 : 201).json({
       success: true,
       message: upsert ? `Team '${team.id}' created or updated` : `Team '${team.id}' created`,
-      team,
-      ...(duplicates.length > 0
-        ? { warnings: describeDuplicateMemberships(duplicates), duplicateMemberships: duplicates }
-        : {}),
+      team: enriched,
+      ...(warnings.length > 0 ? { warnings } : {}),
+      ...(duplicates.length > 0 ? { duplicateMemberships: duplicates } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -122,20 +132,21 @@ router.put('/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const input = req.body as UpdateTeamInput;
 
-    const team = await teamService.updateTeam(id, input);
+    const { team, warnings: discordWarnings } = await teamService.updateTeamWithWarnings(id, input);
 
     // Admins are allowed to put a player on two teams of one tournament, but
     // it silently dead-ends the veto for that player, so say so at the moment
     // it happens rather than leaving it to be discovered mid-match.
     const duplicates = await findDuplicateTournamentMemberships(id, team.players ?? []);
+    const warnings = [...describeDuplicateMemberships(duplicates), ...discordWarnings];
+    const [enriched] = await teamService.withPlayerDiscordIds([team]);
 
     return res.json({
       success: true,
       message: `Team '${id}' updated`,
-      team,
-      ...(duplicates.length > 0
-        ? { warnings: describeDuplicateMemberships(duplicates), duplicateMemberships: duplicates }
-        : {}),
+      team: enriched,
+      ...(warnings.length > 0 ? { warnings } : {}),
+      ...(duplicates.length > 0 ? { duplicateMemberships: duplicates } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -168,13 +179,14 @@ router.patch('/batch', async (req: Request, res: Response) => {
     return res.status(statusCode).json({
       success: result.failed.length === 0,
       message: `Updated ${result.successful.length} team(s), ${result.failed.length} failed`,
-      successful: result.successful,
+      successful: await teamService.withPlayerDiscordIds(result.successful),
       failed: result.failed,
       stats: {
         total: updates.length,
         successful: result.successful.length,
         failed: result.failed.length,
       },
+      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';

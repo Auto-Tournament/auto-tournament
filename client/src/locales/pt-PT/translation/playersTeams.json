@@ -57,7 +57,17 @@
     "result": "Resultado",
     "baseline": "Base",
     "matchHistory": "Histórico de jogos",
-    "profileTitle": "Perfil do jogador"
+    "profileTitle": "Perfil do jogador",
+    "discordId": {
+      "title": "O teu ID do Discord",
+      "description": "Adiciona o teu ID de utilizador do Discord para que os organizadores do torneio te possam contactar no Discord. Só os organizadores o veem e nunca é mostrado no teu perfil público.",
+      "howToFind": "Para o encontrares, ativa o Modo de programador no Discord (Definições → Avançadas), clica com o botão direito no teu nome e escolhe «Copiar ID de utilizador».",
+      "save": "Guardar",
+      "saving": "A guardar...",
+      "saved": "ID do Discord guardado",
+      "removed": "ID do Discord removido",
+      "saveFailed": "Não foi possível guardar o teu ID do Discord"
+    }
   },
   "teamPage": {
     "wantYourStats": "Queres ver as tuas estatísticas e histórico de jogos?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Partida não encontrada",
       "unauthorized": "Apenas jogadores de uma das duas equipas participantes podem realizar ações de veto para esta partida."
     }
+  },
+  "discordId": {
+    "noDiscord": "Sem Discord",
+    "noDiscordTooltip": "Sem ID do Discord, por isso não é possível contactar este jogador no Discord.",
+    "display": "ID do Discord: {{id}}",
+    "label": "ID do Discord",
+    "labelOptional": "ID do Discord (opcional)",
+    "placeholder": "123456789012345678",
+    "helper": "Opcional. 17–20 dígitos",
+    "helperInvalid": "Tem de ter 17–20 dígitos (o ID numérico do utilizador, não um nome de utilizador)"
+  },
+  "importWarnings": {
+    "title": "Avisos da importação ({{count}}):",
+    "more": "…e mais {{count}}"
   }
 }

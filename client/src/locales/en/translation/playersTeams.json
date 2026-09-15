@@ -57,7 +57,17 @@
     "rating": "Rating",
     "result": "Result",
     "baseline": "Baseline",
-    "matchHistory": "Match History"
+    "matchHistory": "Match History",
+    "discordId": {
+      "title": "Your Discord ID",
+      "description": "Add your Discord user ID so tournament organizers can reach you on Discord. Only organizers can see it, and it is never shown on your public profile.",
+      "howToFind": "To find it, turn on Developer Mode in Discord (Settings → Advanced), then right-click your name and choose Copy User ID.",
+      "save": "Save",
+      "saving": "Saving...",
+      "saved": "Discord ID saved",
+      "removed": "Discord ID removed",
+      "saveFailed": "Failed to save your Discord ID"
+    }
   },
   "teamPage": {
     "wantYourStats": "Want to see your own stats and match history?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Match not found",
       "unauthorized": "Only players on one of the participating teams can perform veto actions for this match."
     }
+  },
+  "discordId": {
+    "noDiscord": "No Discord",
+    "noDiscordTooltip": "No Discord ID, so this player can't be reached on Discord.",
+    "display": "Discord ID: {{id}}",
+    "label": "Discord ID",
+    "labelOptional": "Discord ID (optional)",
+    "placeholder": "123456789012345678",
+    "helper": "Optional. 17–20 digits",
+    "helperInvalid": "Must be 17–20 digits (the numeric user ID, not a username)"
+  },
+  "importWarnings": {
+    "title": "Warnings from the import ({{count}}):",
+    "more": "…and {{count}} more"
   }
 }

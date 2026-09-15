@@ -200,6 +200,8 @@ export interface PlayerDetail {
   createdAt: number;
   updatedAt: number;
   isAdmin?: boolean;
+  /** Discord user ID (17–20 digits). Only returned by admin endpoints. */
+  discordId?: string | null;
 }
 
 export interface PlayersResponse extends ApiResponse {

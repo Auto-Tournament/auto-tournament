@@ -57,7 +57,17 @@
     "result": "Résultat",
     "baseline": "Base",
     "matchHistory": "Historique des matchs",
-    "profileTitle": "Profil joueur"
+    "profileTitle": "Profil joueur",
+    "discordId": {
+      "title": "Votre ID Discord",
+      "description": "Ajoutez votre ID utilisateur Discord pour que les organisateurs du tournoi puissent vous contacter sur Discord. Seuls les organisateurs le voient, et il n'est jamais affiché sur votre profil public.",
+      "howToFind": "Pour le trouver, activez le mode développeur dans Discord (Paramètres → Avancés), puis faites un clic droit sur votre nom et choisissez « Copier l'identifiant de l'utilisateur ».",
+      "save": "Enregistrer",
+      "saving": "Enregistrement…",
+      "saved": "ID Discord enregistré",
+      "removed": "ID Discord supprimé",
+      "saveFailed": "Impossible d'enregistrer votre ID Discord"
+    }
   },
   "teamPage": {
     "wantYourStats": "Vous voulez voir vos propres stats et votre historique de matchs ?",
@@ -254,5 +264,19 @@
       "matchNotFound": "Match introuvable",
       "unauthorized": "Seuls les joueurs d'une des deux équipes participantes peuvent effectuer des actions de veto pour ce match."
     }
+  },
+  "discordId": {
+    "noDiscord": "Pas de Discord",
+    "noDiscordTooltip": "Pas d'ID Discord : ce joueur ne peut pas être contacté sur Discord.",
+    "display": "ID Discord : {{id}}",
+    "label": "ID Discord",
+    "labelOptional": "ID Discord (facultatif)",
+    "placeholder": "123456789012345678",
+    "helper": "Facultatif. 17 à 20 chiffres",
+    "helperInvalid": "Doit comporter 17 à 20 chiffres (l'ID utilisateur numérique, pas un pseudo)"
+  },
+  "importWarnings": {
+    "title": "Avertissements de l'import ({{count}}) :",
+    "more": "…et {{count}} de plus"
   }
 }

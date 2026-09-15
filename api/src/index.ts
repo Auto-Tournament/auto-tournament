@@ -28,6 +28,7 @@ import { seedAdminsFromEnv } from './services/adminSeedService';
 import { getServiceTokens } from './utils/serviceTokens';
 import { allowUnauthenticatedEvents } from './middleware/serverAuth';
 import packageJson from '../package.json';
+import { redactDiscordIdsInPath } from './utils/discordId';
 import { configurePassportAuth, passport } from './config/passport';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
@@ -129,7 +130,9 @@ app.use((req: Request, res: Response, next: NextFunction) => {
     }
 
     const duration = Date.now() - start;
-    const { method, path } = req;
+    const { method } = req;
+    // Discord IDs in lookup URLs are private; log them abbreviated.
+    const path = redactDiscordIdsInPath(req.path);
     const { statusCode } = res;
 
     // Skip logging 304 (Not Modified) responses to reduce noise

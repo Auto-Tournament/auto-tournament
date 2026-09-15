@@ -6,9 +6,11 @@
 import { Router, Request, Response } from 'express';
 import {
   playerService,
+  InvalidDiscordIdError,
   type CreatePlayerInput,
   type UpdatePlayerInput,
 } from '../services/playerService';
+import { abbreviateId, isValidDiscordId, parseDiscordIdEdit } from '../utils/discordId';
 import { getRatingHistory } from '../services/ratingService';
 import { steamService } from '../services/steamService';
 import { requireAuth } from '../middleware/auth';
@@ -25,7 +27,7 @@ import { generateMatchConfig } from '../services/matchConfigBuilder';
 import type { TournamentResponse } from '../types/tournament.types';
 import type { MatchConfig } from '../types/match.types';
 import { generateAvatarSvg } from '../generation/avatar';
-import { getEffectiveViewerSteamId } from '../utils/viewerIdentity';
+import { getEffectiveViewerSteamId, resolveViewerIdentity } from '../utils/viewerIdentity';
 import { resolveCurrentVetoTurn } from '../utils/vetoContext';
 
 const router = Router();
@@ -525,6 +527,118 @@ router.get('/me/match-status', async (req: Request, res: Response) => {
       success: false,
       error: 'Failed to load match status',
     });
+  }
+});
+
+// ----------------------------------------------------------------------------
+// Player self-service: the signed-in player's own Discord ID
+// ----------------------------------------------------------------------------
+
+/**
+ * Work out whose Discord ID a self-service request may touch, or answer it.
+ *
+ * Deliberately the REAL viewer (Passport session, or the signed
+ * `player_steam_id` cookie), never the effective one, and never a Steam ID from
+ * the URL or body: a player can only ever read or change their own. There is no
+ * parameter to get wrong.
+ *
+ * An admin who is impersonating is refused outright rather than served either
+ * identity. Acting on the impersonated player would let an admin quietly edit a
+ * child's contact details through a page built for the player; acting on the
+ * admin's own row while the UI shows someone else would be worse. Admins have
+ * the Players page for this, which is the edit an audit would expect to find.
+ *
+ * These routes sit above `router.use(requireAuth)` because a normal player is
+ * not an admin; they do their own authentication here. A service token carries
+ * no Steam ID, so it gets 401 like any anonymous caller.
+ */
+async function resolveSelfServiceSteamId(req: Request, res: Response): Promise<string | null> {
+  const identity = await resolveViewerIdentity(req);
+
+  if (!identity.realSteamId) {
+    res.status(401).json({ success: false, error: 'Sign in with Steam to manage your Discord ID' });
+    return null;
+  }
+
+  if (identity.isImpersonating) {
+    res.status(403).json({
+      success: false,
+      error:
+        "You are impersonating a player. Admins edit a player's Discord ID on the Players page; " +
+        'stop impersonating to manage your own.',
+    });
+    return null;
+  }
+
+  return identity.realSteamId;
+}
+
+/**
+ * GET /api/players/me/discord-id
+ * The signed-in player's own Discord ID (player session, not admin).
+ */
+router.get('/me/discord-id', async (req: Request, res: Response) => {
+  try {
+    const steamId = await resolveSelfServiceSteamId(req, res);
+    if (!steamId) return;
+
+    const discordId = await playerService.getDiscordId(steamId);
+    if (discordId === undefined) {
+      return res.status(404).json({ success: false, error: 'No player record for this Steam account' });
+    }
+
+    return res.json({ success: true, steamId, discordId });
+  } catch (error) {
+    log.error('Error reading own Discord ID', { error });
+    return res.status(500).json({ success: false, error: 'Failed to load Discord ID' });
+  }
+});
+
+/**
+ * PUT /api/players/me/discord-id
+ * Set (string) or clear (null / "") the signed-in player's own Discord ID.
+ *
+ * An explicit edit: it overwrites whatever is stored, including a value an
+ * import filled in. That is the point — the player is the authority on their
+ * own Discord account, and a later re-import will not undo this (imports never
+ * overwrite).
+ */
+router.put('/me/discord-id', async (req: Request, res: Response) => {
+  try {
+    const steamId = await resolveSelfServiceSteamId(req, res);
+    if (!steamId) return;
+
+    const body = (req.body ?? {}) as { discordId?: unknown };
+    if (!('discordId' in body)) {
+      return res.status(400).json({
+        success: false,
+        error: 'discordId is required: a Discord user ID string, or null to remove it',
+      });
+    }
+
+    const edit = parseDiscordIdEdit(body.discordId);
+    if (edit.kind === 'invalid') {
+      return res.status(400).json({ success: false, error: edit.error });
+    }
+
+    const updated = await playerService.updatePlayer(steamId, {
+      discordId: edit.kind === 'set' ? edit.value : null,
+    });
+    if (!updated) {
+      return res.status(404).json({ success: false, error: 'No player record for this Steam account' });
+    }
+
+    const discordId = (await playerService.getDiscordId(steamId)) ?? null;
+    log.info(
+      `Player ${steamId} ${discordId ? `set their Discord ID to ${abbreviateId(discordId)}` : 'cleared their Discord ID'}`
+    );
+    return res.json({ success: true, steamId, discordId });
+  } catch (error) {
+    if (error instanceof InvalidDiscordIdError) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
+    log.error('Error updating own Discord ID', { error });
+    return res.status(500).json({ success: false, error: 'Failed to save Discord ID' });
   }
 });
 
@@ -1431,7 +1545,8 @@ router.use(requireAuth);
  */
 router.get('/', async (_req: Request, res: Response) => {
   try {
-    const players = await playerService.getAllPlayers();
+    // Admin mapping: includes the Discord ID. Public routes use getAllPlayers.
+    const players = await playerService.getAllPlayersForAdmin();
     return res.json({
       success: true,
       count: players.length,
@@ -1444,6 +1559,36 @@ router.get('/', async (_req: Request, res: Response) => {
       success: false,
       error: message,
     });
+  }
+});
+
+/**
+ * GET /api/players/by-discord-id/:discordId
+ * Every player with this Discord ID — how the Discord bot finds a player.
+ *
+ * Admin-guarded (the bot uses a service token; a read-only one is enough). An
+ * ARRAY, and 200 with `[]` when nobody matches: the ID is not unique (a parent
+ * may list theirs on several children), and "not registered" is an ordinary
+ * answer for a bot, not an error it should have to parse.
+ *
+ * Two segments, so no `/:playerId` route can shadow it; the public
+ * `/:playerId/<fixed>` routes above all end in a different literal.
+ */
+router.get('/by-discord-id/:discordId', async (req: Request, res: Response) => {
+  try {
+    const { discordId } = req.params;
+    if (!isValidDiscordId(discordId)) {
+      return res.status(400).json({
+        success: false,
+        error: 'discordId must be a Discord user ID: 17–20 digits',
+      });
+    }
+
+    const players = await playerService.getPlayersByDiscordId(discordId);
+    return res.json({ success: true, players });
+  } catch (error) {
+    log.error('Error looking up players by Discord ID', { error });
+    return res.status(500).json({ success: false, error: 'Failed to look up players' });
   }
 });
 
@@ -1462,7 +1607,9 @@ router.post('/', async (req: Request, res: Response) => {
       });
     }
 
-    const player = await playerService.createPlayer(input);
+    // An explicit edit: an invalid discordId refuses the whole create (400).
+    const created = await playerService.createPlayer(input);
+    const player = (await playerService.getPlayerByIdForAdmin(created.id)) ?? created;
 
     return res.status(201).json({
       success: true,
@@ -1470,6 +1617,9 @@ router.post('/', async (req: Request, res: Response) => {
       player,
     });
   } catch (error) {
+    if (error instanceof InvalidDiscordIdError) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     const statusCode = message.includes('already exists') ? 409 : 400;
     log.error('Error creating player', { error });
@@ -1514,6 +1664,8 @@ router.post('/bulk-import', async (req: Request, res: Response) => {
       created: result.created,
       updated: result.updated,
       errors: result.errors,
+      // Discord IDs follow the import rule: never overwritten, bad ones dropped.
+      ...(result.warnings.length > 0 ? { warnings: result.warnings } : {}),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -1578,14 +1730,18 @@ router.put('/:playerId', async (req: Request, res: Response) => {
     const { playerId } = req.params;
     const input: UpdatePlayerInput = req.body;
 
-    const player = await playerService.updatePlayer(playerId, input);
+    // An explicit edit: a string overwrites, null/"" clears, an absent key
+    // leaves it alone, and an invalid value refuses the whole update (400).
+    const updated = await playerService.updatePlayer(playerId, input);
 
-    if (!player) {
+    if (!updated) {
       return res.status(404).json({
         success: false,
         error: `Player '${playerId}' not found`,
       });
     }
+
+    const player = (await playerService.getPlayerByIdForAdmin(playerId)) ?? updated;
 
     return res.json({
       success: true,
@@ -1593,6 +1749,9 @@ router.put('/:playerId', async (req: Request, res: Response) => {
       player,
     });
   } catch (error) {
+    if (error instanceof InvalidDiscordIdError) {
+      return res.status(400).json({ success: false, error: error.message });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     log.error('Error updating player', { error, playerId: req.params.playerId });
     return res.status(500).json({

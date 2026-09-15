@@ -172,7 +172,10 @@
       "teamNameRequired": "Team name is required",
       "playersRequired": "At least one player is required",
       "saveFailed": "Failed to save team",
-      "deleteFailed": "Failed to delete team"
+      "deleteFailed": "Failed to delete team",
+      "discordIdInvalid": "Discord ID must be 17–20 digits (the numeric user ID, not a username)",
+      "discordIdInvalidPlayers": "Invalid Discord ID for: {{names}}. It must be 17–20 digits, or left empty.",
+      "discordIdSaveFailed": "The team was saved, but the Discord ID could not be saved for: {{names}}. {{message}}"
     },
     "success": {
       "playerAdded": "Player added to team",
@@ -239,13 +242,14 @@
     "confirmEloUpdate": {
       "title": "Update Player ELO",
       "message": "Are you sure you want to update this player's ELO from {{from}} to {{to}}? This will reset their stats and rating history. This action cannot be undone."
-    }
+    },
+    "discordIdHelper": "Optional. 17–20 digits. Lets organizers reach this player on Discord. Never shown publicly."
   },
   "teamImportModal": {
     "title": "Import Teams from JSON",
     "info": {
       "title": "Paste JSON with team data below.",
-      "format": "Expected format: Array of teams with name, tag (optional), and players (name + steamId).",
+      "format": "Expected format: Array of teams with name, tag (optional), and players (name + steamId, plus an optional discordId as a quoted string).",
       "link": "View documentation with examples"
     },
     "jsonLabel": "JSON Data",
@@ -260,12 +264,19 @@
     "preview": {
       "summary": "✓ Valid JSON! Found {{teamCount}} team{{teamCount, plural, one {} other {s}}} with {{playerCount}} total players.",
       "title": "Preview:",
-      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}"
+      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}",
+      "missingDiscordTotal": "Players without a Discord ID: {{count}}",
+      "missingDiscordChip": "No Discord: {{count}}"
     },
     "actions": {
       "preview": "Preview",
       "importing": "Importing...",
       "import": "Import {{count}} Team{{count, plural, one {} other {s}}}"
+    },
+    "warnings": {
+      "title": "Some Discord IDs were ignored. These players will be imported without one:",
+      "discordIdNumber": "Team \"{{team}}\", player \"{{player}}\": discordId must be a quoted string. Large numbers lose precision in JSON, so the ID was dropped.",
+      "discordIdInvalid": "Team \"{{team}}\", player \"{{player}}\": \"{{value}}\" is not a Discord user ID (expected 17–20 digits), so it was dropped."
     }
   },
   "playerImportModal": {

@@ -57,7 +57,17 @@
     "rating": "评分",
     "result": "结果",
     "baseline": "基准",
-    "matchHistory": "比赛记录"
+    "matchHistory": "比赛记录",
+    "discordId": {
+      "title": "你的 Discord ID",
+      "description": "填写你的 Discord 用户 ID，方便赛事组织者通过 Discord 联系你。仅组织者可见，不会显示在你的公开主页上。",
+      "howToFind": "查找方法：在 Discord 中开启开发者模式（设置 → 高级），然后右键点击你的名字并选择“复制用户 ID”。",
+      "save": "保存",
+      "saving": "正在保存…",
+      "saved": "Discord ID 已保存",
+      "removed": "Discord ID 已移除",
+      "saveFailed": "保存你的 Discord ID 失败"
+    }
   },
   "teamPage": {
     "wantYourStats": "想查看自己的数据和比赛记录？",
@@ -254,5 +264,19 @@
       "matchNotFound": "未找到比赛",
       "unauthorized": "只有参与队伍中的队员才能对此比赛执行禁选操作。"
     }
+  },
+  "discordId": {
+    "noDiscord": "无 Discord",
+    "noDiscordTooltip": "没有 Discord ID，因此无法通过 Discord 联系该选手。",
+    "display": "Discord ID：{{id}}",
+    "label": "Discord 用户 ID",
+    "labelOptional": "Discord 用户 ID（可选）",
+    "placeholder": "123456789012345678",
+    "helper": "可选，17–20 位数字",
+    "helperInvalid": "必须为 17–20 位数字（数字用户 ID，而非用户名）"
+  },
+  "importWarnings": {
+    "title": "导入警告（{{count}}）：",
+    "more": "……还有 {{count}} 条"
   }
 }

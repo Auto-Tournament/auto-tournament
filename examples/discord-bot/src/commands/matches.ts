@@ -9,7 +9,7 @@ import { teamName, type Match } from '../mat/types.js';
  * command of your own.
  */
 
-function scoreline(match: Match): string {
+export function scoreline(match: Match): string {
   const team1 = teamName(match, 'team1');
   const team2 = teamName(match, 'team2');
 
@@ -22,7 +22,7 @@ function scoreline(match: Match): string {
   return `${team1} **${match.team1Score ?? 0} – ${match.team2Score ?? 0}** ${team2}`;
 }
 
-function detail(match: Match): string {
+export function detail(match: Match): string {
   const bits: string[] = [match.status];
   if (match.currentMap) bits.push(match.currentMap);
   if (match.serverName) bits.push(match.serverName);
