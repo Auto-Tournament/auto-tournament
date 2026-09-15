@@ -67,7 +67,16 @@
       "saved": "ID Discord enregistré",
       "removed": "ID Discord supprimé",
       "saveFailed": "Impossible d'enregistrer votre ID Discord"
-    }
+    },
+    "teamChip": "Équipe : {{team}}",
+    "myTeam": "Mon équipe",
+    "openTeam": "Ouvrir l’équipe : {{team}}",
+    "you": "Vous",
+    "noMatchHistory": "Aucun historique de matchs pour l’instant",
+    "demo": "Démo",
+    "downloadDemo": "Télécharger la démo",
+    "showingLastMatches": "Affichage des {{shown}} derniers matchs. Total : {{total}}",
+    "noMatchesYet": "Aucun match pour l’instant"
   },
   "teamPage": {
     "wantYourStats": "Vous voulez voir vos propres stats et votre historique de matchs ?",
@@ -111,8 +120,45 @@
     "noMaps": "Aucune carte disponible pour ce match.",
     "playerStatsAllMaps": "Stats des joueurs (toutes les cartes)",
     "player": "Joueur",
+    "damage": "Dégâts",
     "fetchError": "Impossible de récupérer les détails du match",
     "loadError": "Impossible de charger les détails du match"
+  },
+  "teamHeader": {
+    "soundSettings": "Paramètres du son",
+    "muteNotifications": "Couper le son des notifications",
+    "unmuteNotifications": "Réactiver le son des notifications"
+  },
+  "teamStatsCard": {
+    "title": "Performances de l’équipe",
+    "wins": "Victoires",
+    "losses": "Défaites",
+    "winRate": "Taux de victoire",
+    "ofTotal": "sur {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Effectif de l’équipe",
+    "unknownPlayer": "Inconnu",
+    "rating": "Note : {{rating}}",
+    "viewPlayerStats": "Voir les stats du joueur",
+    "viewSteamProfile": "Voir le profil Steam"
+  },
+  "mapAccordion": {
+    "won": "Gagnée",
+    "lost": "Perdue",
+    "draw": "Égalité",
+    "team1": "Équipe 1",
+    "team2": "Équipe 2",
+    "downloadDemo": "Télécharger la démo",
+    "downloadMapDemo": "Télécharger la démo de {{map}}",
+    "mapInformation": "Informations sur la carte",
+    "mapNumberLabel": "Numéro de carte :",
+    "mapN": "Carte {{n}}",
+    "scoreLabel": "Score :",
+    "resultLabel": "Résultat :",
+    "winnerLabel": "Vainqueur :",
+    "durationLabel": "Durée :",
+    "completedLabel": "Terminée :"
   },
   "leaderboardPage": {
     "emptyTitle": "Aucun classement de tournoi pour le moment",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Avertissements de l'import ({{count}}) :",
     "more": "…et {{count}} de plus"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "En attente du début du tournoi",
+    "waitingForTournamentBody": "Votre match est prêt, mais le tournoi n’a pas encore commencé. Le veto des cartes sera disponible dès que l’administrateur lancera le tournoi.",
+    "tournamentStatusSetup": "Statut du tournoi : phase de configuration",
+    "waitingForOpponentTitle": "En attente d’un adversaire",
+    "waitingForOpponentBody": "Vous êtes qualifiés pour le tour suivant. Votre prochain adversaire n’est pas encore connu : le veto des cartes s’ouvrira quand les deux équipes seront déterminées.",
+    "mapSelectionTitle": "Sélection des cartes",
+    "tournamentStartedTitle": "Le tournoi a commencé !",
+    "tournamentStartedBody": "Terminez le veto des cartes pour lancer votre match.",
+    "mapN": "Carte {{n}}",
+    "mapFinishedWaiting": "Carte terminée. En attente de la carte suivante de la série...",
+    "allPlayersConnected": "Tous les joueurs requis sont connectés. Le match peut commencer.",
+    "waitingForPlayers": "En attente de la connexion des joueurs ({{connected}}/{{expected}})",
+    "copyBlocked": "Votre navigateur a bloqué la copie. La commande est affichée ci-dessous pour que vous puissiez la copier manuellement.",
+    "copyFallback": "Copie automatique impossible dans ce navigateur. Exécutez dans la console : {{command}}",
+    "team1": "Équipe 1",
+    "team2": "Équipe 2",
+    "liveStatus": {
+      "warmup": "Échauffement",
+      "knife": "Manche knife",
+      "live": "En direct",
+      "halftime": "Mi-temps",
+      "postgame": "Carte terminée – en attente de la carte suivante",
+      "overtime": "PROLONGATION n°{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Cartes gagnées",
+      "currentMapScore": "Score de la carte en cours (manches)",
+      "eloAvg": "ELO (moy.) : {{elo}}",
+      "vs": "VS",
+      "tbd": "À déterminer"
+    },
+    "server": {
+      "waitingTitle": "En attente d’attribution d’un serveur",
+      "waitingBody": "Un serveur sera attribué automatiquement dès qu’il y en aura un de libre. Après chaque match, les serveurs passent par une courte période de refroidissement (environ 2 minutes) pour permettre l’envoi des démos et la réinitialisation complète du serveur. Cette page se mettra à jour automatiquement quand votre serveur sera prêt.",
+      "serverName": "Serveur : {{name}}",
+      "status": "Statut : {{status}}",
+      "connect": "Se connecter au serveur",
+      "connecting": "✓ Connexion...",
+      "copyCommand": "Copier la commande console",
+      "copied": "✓ Copié !",
+      "statusLabels": {
+        "idle": "Disponible",
+        "loading": "Chargement",
+        "warmup": "Échauffement – rejoignez maintenant !",
+        "knife": "Manche knife",
+        "live": "En direct",
+        "paused": "En pause",
+        "halftime": "Mi-temps",
+        "postgame": "Match terminé",
+        "queued": "Prochain match en file d’attente",
+        "error": "Erreur"
+      }
+    },
+    "performance": {
+      "title": "Performances des joueurs",
+      "player": "Joueur",
+      "waitingForStats": "En attente des stats...",
+      "yourTeam": "Votre équipe",
+      "opponent": "Adversaire"
+    },
+    "mapChips": {
+      "live": "En direct"
+    },
+    "demos": {
+      "title": "Démos des cartes",
+      "download": "Télécharger la démo de {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "À propos de ce tournoi",
+    "intro": "Voici les règles de base utilisées pour départager les matchs de ce tournoi.",
+    "matchFormatLabel": "Format du match :",
+    "regulationLabel": "Manches réglementaires :",
+    "overtimeLabel": "Prolongation :",
+    "tiesLabel": "Résolution des égalités :",
+    "format": {
+      "bo1": "Best of 1 – l’équipe qui gagne la carte gagne le match.",
+      "bo3": "Best of 3 – la première équipe à gagner 2 cartes gagne le match.",
+      "bo5": "Best of 5 – la première équipe à gagner 3 cartes gagne le match."
+    },
+    "regulationWithRounds": "Chaque carte se joue en {{rounds}} manches maximum. L’équipe qui a remporté le plus de manches à la fin du temps réglementaire gagne la carte.",
+    "regulationGeneric": "Chaque carte se joue sur un nombre fixe de manches. L’équipe qui a remporté le plus de manches à la fin du temps réglementaire gagne la carte.",
+    "overtime": {
+      "disabled": "Prolongation : désactivée (temps réglementaire uniquement).",
+      "enabledSegments_one": "Prolongation : activée avec jusqu’à {{count}} période de prolongation.",
+      "enabledSegments_other": "Prolongation : activée avec jusqu’à {{count}} périodes de prolongation.",
+      "enabled": "Prolongation : activée. En cas d’égalité à la fin du temps réglementaire, des prolongations sont jouées jusqu’à ce qu’une équipe prenne l’avantage.",
+      "effectivelyDisabled": "Prolongation : désactivée en pratique (temps réglementaire uniquement).",
+      "implicitSegments_one": "Prolongation : activée avec jusqu’à {{count}} période de prolongation (implicite).",
+      "implicitSegments_other": "Prolongation : activée avec jusqu’à {{count}} périodes de prolongation (implicite).",
+      "standard": "Prolongation : paramètres standard. Une égalité à la fin du temps réglementaire entraîne généralement une prolongation."
+    },
+    "tiebreak": {
+      "disabled": "Si le temps réglementaire se termine sur une égalité, il n’y a pas de prolongation. Le vainqueur est alors déterminé par le total des dégâts de l’équipe sur la carte. Si le total des dégâts est lui aussi strictement identique, le résultat est une véritable égalité.",
+      "enabledSegments": "Si le score est toujours à égalité après les périodes de prolongation configurées, le vainqueur est déterminé par le total des dégâts de l’équipe sur la carte. Si les dégâts sont eux aussi à égalité, le résultat est enregistré comme un match nul.",
+      "enabled": "En temps normal, le score final le plus élevé désigne le vainqueur. Les égalités sont rares et ne se produisent que si le score et les dégâts sont strictement identiques.",
+      "effectivelyDisabled": "Si le temps réglementaire se termine sur une égalité, il n’y a pas de prolongation. Le vainqueur est déterminé par le total des dégâts de l’équipe sur la carte ; en cas d’égalité de dégâts, le match est nul.",
+      "implicitSegments": "Si le score est toujours à égalité après les périodes de prolongation configurées, le vainqueur est déterminé par le total des dégâts de l’équipe. En cas d’égalité de dégâts, le résultat est un match nul.",
+      "standard": "Dans la plupart des cas, l’équipe avec le score final le plus élevé l’emporte. Ce n’est que si le score et le total des dégâts sont strictement identiques que le résultat est enregistré comme une véritable égalité."
+    }
   }
 }

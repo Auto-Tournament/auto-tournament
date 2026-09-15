@@ -33,6 +33,13 @@
   "mapModal": {
     "titleCreate": "Dodaj mapę",
     "titleEdit": "Edytuj mapę",
+    "workshop": {
+      "inputLabel": "URL lub ID ze Steam Workshop",
+      "inputPlaceholder": "https://steamcommunity.com/sharedfiles/filedetails/?id=1234567890",
+      "inputHelper": "Wklej URL z Workshopu lub numeryczne ID, aby automatycznie uzupełnić nazwę i obraz.",
+      "found": "Znaleziono: {{title}}",
+      "lookupFailed": "Nie udało się wyszukać w Workshopie"
+    },
     "mapIdLabel": "ID mapy",
     "mapIdPlaceholder": "de_dust2",
     "mapIdHelper": "Tylko małe litery, cyfry i podkreślenia (de_dust2)",

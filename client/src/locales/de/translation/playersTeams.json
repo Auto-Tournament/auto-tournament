@@ -67,7 +67,16 @@
       "saved": "Discord-ID gespeichert",
       "removed": "Discord-ID entfernt",
       "saveFailed": "Deine Discord-ID konnte nicht gespeichert werden"
-    }
+    },
+    "teamChip": "Team: {{team}}",
+    "myTeam": "Mein Team",
+    "openTeam": "Team öffnen: {{team}}",
+    "you": "Du",
+    "noMatchHistory": "Noch kein Matchverlauf",
+    "demo": "Demo",
+    "downloadDemo": "Demo herunterladen",
+    "showingLastMatches": "Die letzten {{shown}} Matches werden angezeigt. Gesamt: {{total}}",
+    "noMatchesYet": "Noch keine Matches"
   },
   "teamPage": {
     "wantYourStats": "Willst du deine eigenen Stats und Match-Historie sehen?",
@@ -111,8 +120,45 @@
     "noMaps": "Keine Maps für dieses Match verfügbar.",
     "playerStatsAllMaps": "Spieler-Stats (alle Maps)",
     "player": "Spieler",
+    "damage": "Schaden",
     "fetchError": "Matchdetails konnten nicht abgerufen werden",
     "loadError": "Matchdetails konnten nicht geladen werden"
+  },
+  "teamHeader": {
+    "soundSettings": "Soundeinstellungen",
+    "muteNotifications": "Benachrichtigungen stummschalten",
+    "unmuteNotifications": "Benachrichtigungen einschalten"
+  },
+  "teamStatsCard": {
+    "title": "Team-Performance",
+    "wins": "Siege",
+    "losses": "Niederlagen",
+    "winRate": "Siegquote",
+    "ofTotal": "von {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Team-Kader",
+    "unknownPlayer": "Unbekannt",
+    "rating": "Bewertung: {{rating}}",
+    "viewPlayerStats": "Spieler-Stats ansehen",
+    "viewSteamProfile": "Steam-Profil ansehen"
+  },
+  "mapAccordion": {
+    "won": "Gewonnen",
+    "lost": "Verloren",
+    "draw": "Unentschieden",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "downloadDemo": "Demo herunterladen",
+    "downloadMapDemo": "Demo von {{map}} herunterladen",
+    "mapInformation": "Map-Informationen",
+    "mapNumberLabel": "Map-Nummer:",
+    "mapN": "Map {{n}}",
+    "scoreLabel": "Ergebnis:",
+    "resultLabel": "Ausgang:",
+    "winnerLabel": "Gewinner:",
+    "durationLabel": "Dauer:",
+    "completedLabel": "Abgeschlossen:"
   },
   "leaderboardPage": {
     "emptyTitle": "Noch keine Turnier-Rangliste",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Warnungen beim Import ({{count}}):",
     "more": "…und {{count}} weitere"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "Warten auf den Turnierstart",
+    "waitingForTournamentBody": "Dein Match ist bereit, aber das Turnier hat noch nicht begonnen. Das Map-Veto wird verfügbar, sobald der Turnier-Admin das Turnier startet.",
+    "tournamentStatusSetup": "Turnierstatus: Einrichtungsphase",
+    "waitingForOpponentTitle": "Warten auf Gegner",
+    "waitingForOpponentBody": "Du bist in die nächste Runde aufgestiegen. Dein nächster Gegner steht noch nicht fest – das Map-Veto öffnet, sobald beide Teams bekannt sind.",
+    "mapSelectionTitle": "Map-Auswahl",
+    "tournamentStartedTitle": "Das Turnier hat begonnen!",
+    "tournamentStartedBody": "Schließe das Map-Veto ab, um dein Match zu starten.",
+    "mapN": "Map {{n}}",
+    "mapFinishedWaiting": "Map beendet. Warten auf die nächste Map dieser Serie...",
+    "allPlayersConnected": "Alle benötigten Spieler sind verbunden. Das Match kann starten.",
+    "waitingForPlayers": "Warten auf Spieler ({{connected}}/{{expected}} verbunden)",
+    "copyBlocked": "Dein Browser hat das Kopieren blockiert. Der Befehl wird unten angezeigt, damit du ihn manuell kopieren kannst.",
+    "copyFallback": "Automatisches Kopieren ist in diesem Browser nicht möglich. Führe in der Konsole aus: {{command}}",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "liveStatus": {
+      "warmup": "Aufwärmen",
+      "knife": "Knife-Runde",
+      "live": "Live",
+      "halftime": "Halbzeit",
+      "postgame": "Map beendet – warten auf nächste Map",
+      "overtime": "VERLÄNGERUNG #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Gewonnene Maps",
+      "currentMapScore": "Aktueller Map-Stand (Runden)",
+      "eloAvg": "ELO (Ø): {{elo}}",
+      "vs": "VS",
+      "tbd": "Offen"
+    },
+    "server": {
+      "waitingTitle": "Warten auf Serverzuweisung",
+      "waitingBody": "Ein Server wird automatisch zugewiesen, sobald einer frei ist. Nach jedem Match haben Server eine kurze Abkühlphase (etwa 2 Minuten), damit Demos hochgeladen werden und der Server vollständig zurückgesetzt werden kann. Diese Seite aktualisiert sich automatisch, sobald dein Server bereit ist.",
+      "serverName": "Server: {{name}}",
+      "status": "Status: {{status}}",
+      "connect": "Mit Server verbinden",
+      "connecting": "✓ Verbinde...",
+      "copyCommand": "Konsolenbefehl kopieren",
+      "copied": "✓ Kopiert!",
+      "statusLabels": {
+        "idle": "Verfügbar",
+        "loading": "Wird geladen",
+        "warmup": "Aufwärmen – jetzt beitreten!",
+        "knife": "Knife-Runde",
+        "live": "Live",
+        "paused": "Pausiert",
+        "halftime": "Halbzeit",
+        "postgame": "Match beendet",
+        "queued": "Nächstes Match in Warteschlange",
+        "error": "Fehler"
+      }
+    },
+    "performance": {
+      "title": "Spielerleistung",
+      "player": "Spieler",
+      "waitingForStats": "Warten auf Stats...",
+      "yourTeam": "Dein Team",
+      "opponent": "Gegner"
+    },
+    "mapChips": {
+      "live": "Live"
+    },
+    "demos": {
+      "title": "Map-Demos",
+      "download": "Demo von {{map}} herunterladen"
+    }
+  },
+  "tournamentRules": {
+    "title": "Über dieses Turnier",
+    "intro": "Das sind die Grundregeln, nach denen Matches in diesem Turnier entschieden werden.",
+    "matchFormatLabel": "Match-Format:",
+    "regulationLabel": "Reguläre Runden:",
+    "overtimeLabel": "Verlängerung:",
+    "tiesLabel": "Umgang mit Gleichstand:",
+    "format": {
+      "bo1": "Best of 1 – wer die Map gewinnt, gewinnt das Match.",
+      "bo3": "Best of 3 – das erste Team mit 2 Map-Siegen gewinnt das Match.",
+      "bo5": "Best of 5 – das erste Team mit 3 Map-Siegen gewinnt das Match."
+    },
+    "regulationWithRounds": "Jede Map wird über bis zu {{rounds}} Runden gespielt. Das Team mit mehr Runden am Ende der regulären Spielzeit gewinnt die Map.",
+    "regulationGeneric": "Jede Map wird über eine feste Anzahl von Runden gespielt. Das Team mit mehr Runden am Ende der regulären Spielzeit gewinnt die Map.",
+    "overtime": {
+      "disabled": "Verlängerung: deaktiviert (nur reguläre Spielzeit).",
+      "enabledSegments_one": "Verlängerung: aktiviert mit bis zu {{count}} Verlängerungsabschnitt.",
+      "enabledSegments_other": "Verlängerung: aktiviert mit bis zu {{count}} Verlängerungsabschnitten.",
+      "enabled": "Verlängerung: aktiviert. Bei Gleichstand nach regulärer Spielzeit wird verlängert, bis ein Team vorne liegt.",
+      "effectivelyDisabled": "Verlängerung: faktisch deaktiviert (nur reguläre Spielzeit).",
+      "implicitSegments_one": "Verlängerung: aktiviert mit bis zu {{count}} Verlängerungsabschnitt (implizit).",
+      "implicitSegments_other": "Verlängerung: aktiviert mit bis zu {{count}} Verlängerungsabschnitten (implizit).",
+      "standard": "Verlängerung: Standardeinstellungen. Bei Gleichstand nach regulärer Spielzeit wird in der Regel verlängert."
+    },
+    "tiebreak": {
+      "disabled": "Endet die reguläre Spielzeit unentschieden, gibt es keine Verlängerung. Stattdessen entscheidet der gesamte Teamschaden auf der Map über den Sieger. Ist auch der Gesamtschaden exakt gleich, endet die Map tatsächlich unentschieden.",
+      "enabledSegments": "Steht es nach den konfigurierten Verlängerungsabschnitten immer noch unentschieden, entscheidet der gesamte Teamschaden auf der Map über den Sieger. Ist auch der Schaden gleich, wird ein Unentschieden gewertet.",
+      "enabled": "Im normalen Spielverlauf entscheidet das höhere Endergebnis über den Sieger. Unentschieden sind selten und kommen nur vor, wenn Ergebnis und Schaden exakt gleich sind.",
+      "effectivelyDisabled": "Endet die reguläre Spielzeit unentschieden, gibt es keine Verlängerung. Der gesamte Teamschaden auf der Map entscheidet über den Sieger; ist auch der Schaden gleich, endet das Match unentschieden.",
+      "implicitSegments": "Steht es nach den konfigurierten Verlängerungsabschnitten immer noch unentschieden, entscheidet der gesamte Teamschaden über den Sieger. Ist auch der Schaden gleich, wird ein Unentschieden gewertet.",
+      "standard": "In den meisten Fällen gewinnt das Team mit dem höheren Endergebnis. Nur wenn Ergebnis und Gesamtschaden exakt gleich sind, wird ein echtes Unentschieden gewertet."
+    }
   }
 }

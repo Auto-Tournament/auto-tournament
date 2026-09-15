@@ -67,7 +67,16 @@
       "saved": "ID Discord salvato",
       "removed": "ID Discord rimosso",
       "saveFailed": "Impossibile salvare il tuo ID Discord"
-    }
+    },
+    "teamChip": "Squadra: {{team}}",
+    "myTeam": "La mia squadra",
+    "openTeam": "Apri squadra: {{team}}",
+    "you": "Tu",
+    "noMatchHistory": "Nessuno storico match per ora",
+    "demo": "Demo",
+    "downloadDemo": "Scarica demo",
+    "showingLastMatches": "Visualizzati gli ultimi {{shown}} match. Totale: {{total}}",
+    "noMatchesYet": "Nessun match per ora"
   },
   "teamPage": {
     "wantYourStats": "Vuoi vedere le tue statistiche e lo storico match?",
@@ -111,8 +120,45 @@
     "noMaps": "Nessuna mappa disponibile per questo match.",
     "playerStatsAllMaps": "Statistiche giocatori (tutte le mappe)",
     "player": "Giocatore",
+    "damage": "Danni",
     "fetchError": "Impossibile recuperare i dettagli del match",
     "loadError": "Impossibile caricare i dettagli del match"
+  },
+  "teamHeader": {
+    "soundSettings": "Impostazioni audio",
+    "muteNotifications": "Silenzia notifiche",
+    "unmuteNotifications": "Riattiva audio notifiche"
+  },
+  "teamStatsCard": {
+    "title": "Rendimento della squadra",
+    "wins": "Vittorie",
+    "losses": "Sconfitte",
+    "winRate": "Percentuale vittorie",
+    "ofTotal": "su {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Formazione della squadra",
+    "unknownPlayer": "Sconosciuto",
+    "rating": "Valutazione: {{rating}}",
+    "viewPlayerStats": "Vedi statistiche giocatore",
+    "viewSteamProfile": "Vedi profilo Steam"
+  },
+  "mapAccordion": {
+    "won": "Vinta",
+    "lost": "Persa",
+    "draw": "Pareggio",
+    "team1": "Squadra 1",
+    "team2": "Squadra 2",
+    "downloadDemo": "Scarica demo",
+    "downloadMapDemo": "Scarica demo di {{map}}",
+    "mapInformation": "Informazioni sulla mappa",
+    "mapNumberLabel": "Numero mappa:",
+    "mapN": "Mappa {{n}}",
+    "scoreLabel": "Punteggio:",
+    "resultLabel": "Risultato:",
+    "winnerLabel": "Vincitore:",
+    "durationLabel": "Durata:",
+    "completedLabel": "Completata:"
   },
   "leaderboardPage": {
     "emptyTitle": "Nessuna classifica del torneo ancora",
@@ -290,5 +336,107 @@
   "importWarnings": {
     "title": "Avvisi dall'importazione ({{count}}):",
     "more": "…e altri {{count}}"
+  },
+  "matchInfo": {
+    "waitingForTournamentTitle": "In attesa dell'inizio del torneo",
+    "waitingForTournamentBody": "Il tuo match è pronto, ma il torneo non è ancora iniziato. Il veto delle mappe sarà disponibile quando l'amministratore avvierà il torneo.",
+    "tournamentStatusSetup": "Stato del torneo: fase di configurazione",
+    "waitingForOpponentTitle": "In attesa dell'avversario",
+    "waitingForOpponentBody": "Sei passato al turno successivo. Il tuo prossimo avversario non è ancora stato deciso: il veto delle mappe si aprirà quando entrambe le squadre saranno note.",
+    "mapSelectionTitle": "Selezione mappe",
+    "tournamentStartedTitle": "Il torneo è iniziato!",
+    "tournamentStartedBody": "Completa il veto delle mappe per iniziare il tuo match.",
+    "mapN": "Mappa {{n}}",
+    "mapFinishedWaiting": "Mappa terminata. In attesa della prossima mappa della serie...",
+    "allPlayersConnected": "Tutti i giocatori richiesti sono connessi. Il match può iniziare.",
+    "waitingForPlayers": "In attesa che i giocatori si connettano ({{connected}}/{{expected}})",
+    "copyBlocked": "Il browser ha bloccato la copia. Il comando è mostrato qui sotto così puoi copiarlo manualmente.",
+    "copyFallback": "Impossibile copiare automaticamente in questo browser. Esegui nella console: {{command}}",
+    "team1": "Squadra 1",
+    "team2": "Squadra 2",
+    "liveStatus": {
+      "warmup": "Riscaldamento",
+      "knife": "Knife round",
+      "live": "In diretta",
+      "halftime": "Intervallo",
+      "postgame": "Mappa terminata – in attesa della prossima mappa",
+      "overtime": "OVERTIME #{{n}}"
+    },
+    "scoreboard": {
+      "mapsWon": "Mappe vinte",
+      "currentMapScore": "Punteggio mappa attuale (round)",
+      "eloAvg": "ELO (media): {{elo}}",
+      "vs": "VS",
+      "tbd": "Da definire"
+    },
+    "server": {
+      "waitingTitle": "In attesa dell'assegnazione del server",
+      "waitingBody": "Un server verrà assegnato automaticamente non appena ne sarà disponibile uno. Dopo ogni match i server entrano in un breve cooldown (circa 2 minuti) per caricare le demo e resettarsi completamente. Questa pagina si aggiornerà automaticamente quando il tuo server sarà pronto.",
+      "serverName": "Server: {{name}}",
+      "status": "Stato: {{status}}",
+      "connect": "Connettiti al server",
+      "connecting": "✓ Connessione in corso...",
+      "copyCommand": "Copia comando console",
+      "copied": "✓ Copiato!",
+      "statusLabels": {
+        "idle": "Disponibile",
+        "loading": "Caricamento",
+        "warmup": "Riscaldamento – entra ora!",
+        "knife": "Knife round",
+        "live": "In diretta",
+        "paused": "In pausa",
+        "halftime": "Intervallo",
+        "postgame": "Match terminato",
+        "queued": "Prossimo match in coda",
+        "error": "Errore"
+      }
+    },
+    "performance": {
+      "title": "Rendimento dei giocatori",
+      "player": "Giocatore",
+      "waitingForStats": "In attesa delle statistiche...",
+      "yourTeam": "La tua squadra",
+      "opponent": "Avversario"
+    },
+    "mapChips": {
+      "live": "In diretta"
+    },
+    "demos": {
+      "title": "Demo delle mappe",
+      "download": "Scarica demo di {{map}}"
+    }
+  },
+  "tournamentRules": {
+    "title": "Informazioni su questo torneo",
+    "intro": "Queste sono le regole di base usate per decidere i match di questo torneo.",
+    "matchFormatLabel": "Formato del match:",
+    "regulationLabel": "Round regolamentari:",
+    "overtimeLabel": "Overtime:",
+    "tiesLabel": "Come si risolvono i pareggi:",
+    "format": {
+      "bo1": "Best of 1 – chi vince la mappa vince il match.",
+      "bo3": "Best of 3 – la prima squadra a vincere 2 mappe vince il match.",
+      "bo5": "Best of 5 – la prima squadra a vincere 3 mappe vince il match."
+    },
+    "regulationWithRounds": "Ogni mappa si gioca fino a {{rounds}} round. La squadra con più round alla fine del tempo regolamentare vince la mappa.",
+    "regulationGeneric": "Ogni mappa si gioca su un numero fisso di round. La squadra con più round alla fine del tempo regolamentare vince la mappa.",
+    "overtime": {
+      "disabled": "Overtime: disattivato (solo tempo regolamentare).",
+      "enabledSegments_one": "Overtime: attivo con al massimo {{count}} segmento di overtime.",
+      "enabledSegments_other": "Overtime: attivo con al massimo {{count}} segmenti di overtime.",
+      "enabled": "Overtime: attivo. In caso di parità al termine del tempo regolamentare si gioca l'overtime finché una squadra non passa in vantaggio.",
+      "effectivelyDisabled": "Overtime: di fatto disattivato (solo tempo regolamentare).",
+      "implicitSegments_one": "Overtime: attivo con al massimo {{count}} segmento di overtime (implicito).",
+      "implicitSegments_other": "Overtime: attivo con al massimo {{count}} segmenti di overtime (implicito).",
+      "standard": "Overtime: impostazioni standard. Una parità al termine del tempo regolamentare di solito porta all'overtime."
+    },
+    "tiebreak": {
+      "disabled": "Se il tempo regolamentare finisce in parità, il match non va all'overtime. Il vincitore viene invece deciso in base ai danni totali della squadra sulla mappa. Se anche i danni totali sono esattamente uguali, il risultato è un vero pareggio.",
+      "enabledSegments": "Se il punteggio è ancora in parità dopo i segmenti di overtime configurati, il vincitore viene deciso in base ai danni totali della squadra sulla mappa. Se anche i danni sono in parità, il risultato viene registrato come pareggio.",
+      "enabled": "Normalmente vince chi ha il punteggio finale più alto. I pareggi sono rari e si verificano solo se sia il punteggio sia i danni restano esattamente in parità.",
+      "effectivelyDisabled": "Se il tempo regolamentare finisce in parità, il match non va all'overtime. Il vincitore viene deciso in base ai danni totali della squadra sulla mappa; se anche i danni sono in parità, il match finisce in pareggio.",
+      "implicitSegments": "Se il punteggio è ancora in parità dopo i segmenti di overtime configurati, il vincitore viene deciso in base ai danni totali della squadra. Se anche i danni sono in parità, il risultato è un pareggio.",
+      "standard": "Nella maggior parte dei casi vince la squadra con il punteggio finale più alto. Solo quando punteggio e danni totali sono esattamente in parità il risultato viene registrato come vero pareggio."
+    }
   }
 }

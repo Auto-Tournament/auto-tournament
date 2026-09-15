@@ -1,5 +1,6 @@
 import { Box, Card, CardContent, Typography, Grid, Paper } from '@mui/material';
 import LeaderboardIcon from '@mui/icons-material/Leaderboard';
+import { useTranslation } from 'react-i18next';
 import type { TeamStats, TeamStanding } from '../../types';
 
 interface TeamStatsCardProps {
@@ -8,6 +9,8 @@ interface TeamStatsCardProps {
 }
 
 export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
+  const { t } = useTranslation();
+
   if (!stats || stats.totalMatches === 0) {
     return null;
   }
@@ -18,7 +21,7 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
         <Box display="flex" alignItems="center" gap={1} mb={2}>
           <LeaderboardIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Team Performance
+            {t('teamStatsCard.title')}
           </Typography>
         </Box>
         <Grid container spacing={2}>
@@ -28,7 +31,7 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
                 {stats.wins}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Wins
+                {t('teamStatsCard.wins')}
               </Typography>
             </Paper>
           </Grid>
@@ -38,7 +41,7 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
                 {stats.losses}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Losses
+                {t('teamStatsCard.losses')}
               </Typography>
             </Paper>
           </Grid>
@@ -48,7 +51,7 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
                 {stats.winRate}%
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                Win Rate
+                {t('teamStatsCard.winRate')}
               </Typography>
             </Paper>
           </Grid>
@@ -59,7 +62,7 @@ export function TeamStatsCard({ stats, standing }: TeamStatsCardProps) {
                   #{standing.position}
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
-                  of {standing.totalTeams}
+                  {t('teamStatsCard.ofTotal', { total: standing.totalTeams })}
                 </Typography>
               </Paper>
             </Grid>

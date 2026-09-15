@@ -132,7 +132,7 @@ export function TeamMatchHistoryModal({
               <TableCell align="right">K</TableCell>
               <TableCell align="right">D</TableCell>
               <TableCell align="right">A</TableCell>
-              <TableCell align="right">Damage</TableCell>
+              <TableCell align="right">{t('teamMatchHistory.damage')}</TableCell>
               <TableCell align="right">HS</TableCell>
             </TableRow>
           </TableHead>

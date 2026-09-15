@@ -92,6 +92,10 @@
           "stopCommandNoDamage": "Wyłącz .stop po zadaniu obrażeń drużynie przeciwnej",
           "usePauseForTacticalPause": "Spraw, aby .pause działało jak pauza taktyczna"
         },
+        "hostname": {
+          "formatLabel": "Format nazwy hosta serwera",
+          "formatHelper": "Stosowany na każdym serwerze podczas ładowania meczu. Zmienne: {MATCH_ID}, {MAP}, {MAPNUMBER}, {TEAM1}, {TEAM2}, {TEAM1_SCORE}, {TEAM2_SCORE}. Pozostaw puste, aby zachować nazwę hosta ustawioną w konfiguracji każdego serwera."
+        },
         "demos": {
           "title": "Dema",
           "demoPathLabel": "Ścieżka dem (względem csgo/)",

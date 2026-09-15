@@ -186,5 +186,12 @@
       "serverEvents": "Server-Events Monitor",
       "appLogs": "Anwendungs-Logs"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "Warten auf einen freien Server",
+      "waiting": "Dieses Match startet automatisch, sobald Server frei sind. Benötigte Server:",
+      "nextPass": "Nächster Zuweisungsversuch in {{seconds}} s"
+    }
   }
 }

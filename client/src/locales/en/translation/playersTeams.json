@@ -120,8 +120,45 @@
     "noMaps": "No maps available for this match.",
     "playerStatsAllMaps": "Player Stats (All Maps)",
     "player": "Player",
+    "damage": "Damage",
     "fetchError": "Failed to fetch match details",
     "loadError": "Failed to load match details"
+  },
+  "teamHeader": {
+    "soundSettings": "Sound settings",
+    "muteNotifications": "Mute notifications",
+    "unmuteNotifications": "Unmute notifications"
+  },
+  "teamStatsCard": {
+    "title": "Team Performance",
+    "wins": "Wins",
+    "losses": "Losses",
+    "winRate": "Win Rate",
+    "ofTotal": "of {{total}}"
+  },
+  "playerRosterCard": {
+    "title": "Team Roster",
+    "unknownPlayer": "Unknown",
+    "rating": "Rating: {{rating}}",
+    "viewPlayerStats": "View player stats",
+    "viewSteamProfile": "View Steam profile"
+  },
+  "mapAccordion": {
+    "won": "Won",
+    "lost": "Lost",
+    "draw": "Draw",
+    "team1": "Team 1",
+    "team2": "Team 2",
+    "downloadDemo": "Download Demo",
+    "downloadMapDemo": "Download {{map}} Demo",
+    "mapInformation": "Map Information",
+    "mapNumberLabel": "Map Number:",
+    "mapN": "Map {{n}}",
+    "scoreLabel": "Score:",
+    "resultLabel": "Result:",
+    "winnerLabel": "Winner:",
+    "durationLabel": "Duration:",
+    "completedLabel": "Completed:"
   },
   "leaderboardPage": {
     "emptyTitle": "No tournament leaderboard yet",

@@ -186,5 +186,12 @@
       "serverEvents": "Moniteur d’événements serveur",
       "appLogs": "Logs applicatifs"
     }
+  },
+  "servers": {
+    "allocation": {
+      "title": "En attente d’un serveur disponible",
+      "waiting": "Ce match démarrera automatiquement dès que des serveurs seront libres. Serveurs nécessaires :",
+      "nextPass": "Prochaine tentative d’attribution dans {{seconds}} s"
+    }
   }
 }

@@ -2,6 +2,7 @@ import { Box, Card, CardContent, Typography, IconButton, Tooltip } from '@mui/ma
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeOffIcon from '@mui/icons-material/VolumeOff';
 import SettingsIcon from '@mui/icons-material/Settings';
+import { useTranslation } from 'react-i18next';
 import type { Team } from '../../types';
 
 interface TeamHeaderProps {
@@ -20,6 +21,8 @@ export function TeamHeader({
   onToggleSettings,
   hideSoundControls,
 }: TeamHeaderProps) {
+  const { t } = useTranslation();
+
   return (
     <Card
       sx={{
@@ -36,12 +39,16 @@ export function TeamHeader({
           </Box>
           {!hideSoundControls && onToggleMute != null && onToggleSettings != null && (
             <Box display="flex" gap={1}>
-              <Tooltip title="Sound settings">
+              <Tooltip title={t('teamHeader.soundSettings')}>
                 <IconButton onClick={onToggleSettings} color="primary">
                   <SettingsIcon />
                 </IconButton>
               </Tooltip>
-              <Tooltip title={isMuted ? 'Unmute notifications' : 'Mute notifications'}>
+              <Tooltip
+                title={
+                  isMuted ? t('teamHeader.unmuteNotifications') : t('teamHeader.muteNotifications')
+                }
+              >
                 <IconButton onClick={onToggleMute} color={isMuted ? 'default' : 'primary'}>
                   {isMuted ? <VolumeOffIcon /> : <VolumeUpIcon />}
                 </IconButton>
