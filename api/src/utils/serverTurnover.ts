@@ -55,10 +55,21 @@ export function demoUploadGiveUpSeconds(tvDelaySeconds: number): number {
   return tvDelay + GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS;
 }
 
-/** Cvars added to a match config: short tv_delay for simulations only. */
+/**
+ * mp_match_restart_delay for simulated matches (seconds). Older plugins raise
+ * it for the GOTV flush and never lower it again, which kept simulated servers
+ * busy ~130 s after series_end.
+ */
+export const SIMULATION_MATCH_RESTART_DELAY_SECONDS = 10;
+
+/** Cvars added to a match config: short tv_delay and restart delay for simulations only. */
 export function simulationTvCvars(isSimulation: boolean): Record<string, number> {
   if (!isSimulation) return {};
-  return { tv_delay: SIMULATION_TV_DELAY_SECONDS, tv_delay1: SIMULATION_TV_DELAY_SECONDS };
+  return {
+    tv_delay: SIMULATION_TV_DELAY_SECONDS,
+    tv_delay1: SIMULATION_TV_DELAY_SECONDS,
+    mp_match_restart_delay: SIMULATION_MATCH_RESTART_DELAY_SECONDS,
+  };
 }
 
 /** tv_delay a match config sets, or the assumed server default when absent. */

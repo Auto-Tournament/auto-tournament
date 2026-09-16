@@ -53,3 +53,79 @@ export function connectionTestServerIds(
 }
 
 export type ApiReachability = 'reachable' | 'unreachable' | 'unknown';
+
+/** The parts of an RCON client the Server -> API check uses. */
+export interface ConnectionTestClient {
+  connect(): Promise<unknown>;
+  send(command: string): Promise<string>;
+  /** dathost-rcon-client's disconnect() is synchronous; others may return a promise. */
+  disconnect(): unknown;
+}
+
+export interface ServerToApiCheckDeps {
+  client: ConnectionTestClient;
+  /** Id the caller named, and the saved server at this host:port. */
+  knownServerIds: Array<string | null | undefined>;
+  parseReply: (reply: string, convar: string) => string | null | undefined;
+  lastTestEvent: (serverId: string) => number | null | undefined;
+  timeoutMs?: number;
+  pollMs?: number;
+  sleep?: (ms: number) => Promise<void>;
+  now?: () => number;
+  onError?: (error: unknown) => void;
+}
+
+/**
+ * Close an RCON client without ever throwing, whether disconnect() is sync,
+ * async, or throws. A throw from a `finally` discarded the test result (500).
+ */
+export function safeDisconnect(client: Pick<ConnectionTestClient, 'disconnect'>): void {
+  try {
+    const result = client.disconnect();
+    if (result && typeof (result as Promise<unknown>).catch === 'function') {
+      (result as Promise<unknown>).catch(() => {
+        // Ignore disconnect errors
+      });
+    }
+  } catch {
+    // Ignore disconnect errors
+  }
+}
+
+/** Run the read-only Server -> API check over an RCON client. Never throws. */
+export async function checkServerReachesApi(deps: ServerToApiCheckDeps): Promise<ApiReachability> {
+  const {
+    client,
+    parseReply,
+    lastTestEvent,
+    timeoutMs = 5000,
+    pollMs = 250,
+    sleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)),
+    now = Date.now,
+  } = deps;
+  let reachability: ApiReachability = 'unknown';
+  try {
+    await client.connect();
+    const [serverIdCmd, remoteLogCmd, triggerCmd] = connectionTestCommands();
+    const reportedId = parseReply(await client.send(serverIdCmd), serverIdCmd);
+    const remoteLogUrl = parseReply(await client.send(remoteLogCmd), remoteLogCmd);
+    const ids = connectionTestServerIds(...deps.knownServerIds, reportedId);
+    if (!remoteLogUrl || ids.length === 0) return reachability;
+
+    const before = new Map(ids.map((id) => [id, lastTestEvent(id) ?? 0]));
+    await client.send(triggerCmd);
+    reachability = 'unreachable';
+    const deadline = now() + timeoutMs;
+    while (now() < deadline) {
+      if (ids.some((id) => (lastTestEvent(id) ?? 0) > (before.get(id) ?? 0))) {
+        return 'reachable';
+      }
+      await sleep(pollMs);
+    }
+  } catch (error) {
+    deps.onError?.(error);
+  } finally {
+    safeDisconnect(client);
+  }
+  return reachability;
+}

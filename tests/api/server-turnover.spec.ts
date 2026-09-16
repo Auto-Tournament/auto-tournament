@@ -6,6 +6,7 @@ import {
   DEMO_UPLOAD_TIMEOUT_SECONDS,
   GOTV_FLUSH_EXTRA_SECONDS,
   ServerTurnoverTracker,
+  SIMULATION_MATCH_RESTART_DELAY_SECONDS,
   SIMULATION_SERIES_END_KICK_DELAY_SECONDS,
   SIMULATION_TV_DELAY_SECONDS,
   demoUploadGiveUpSeconds,
@@ -209,12 +210,16 @@ test.describe('Server turnover rules', () => {
     expect(sim.evaluate('s1', T + 20, T + simCap).demoUploadPending).toBe(false);
   });
 
-  test('simulated match configs carry a short tv_delay; real ones leave it to the server', () => {
+  test('simulated match configs carry a short tv_delay and restart delay; real ones leave them to the server', () => {
     expect(simulationTvCvars(true)).toEqual({
       tv_delay: SIMULATION_TV_DELAY_SECONDS,
       tv_delay1: SIMULATION_TV_DELAY_SECONDS,
+      mp_match_restart_delay: SIMULATION_MATCH_RESTART_DELAY_SECONDS,
     });
     expect(SIMULATION_TV_DELAY_SECONDS).toBeLessThanOrEqual(5);
+    // The plugin's stuck ~130 s restart delay kept simulated servers busy.
+    expect(SIMULATION_MATCH_RESTART_DELAY_SECONDS).toBeGreaterThan(0);
+    expect(SIMULATION_MATCH_RESTART_DELAY_SECONDS).toBeLessThanOrEqual(15);
     expect(simulationTvCvars(false)).toEqual({});
     expect(tvDelayFromCvars({ mp_maxrounds: 24, ...simulationTvCvars(false) })).toBe(ASSUMED_TV_DELAY_SECONDS);
     expect(tvDelayFromCvars({ tv_delay: '90' })).toBe(90);

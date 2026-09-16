@@ -2,6 +2,7 @@ import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
 import { useTranslation } from 'react-i18next';
+import { buildEloProgression } from '../../utils/eloProgression';
 
 interface ELOProgressionChartProps {
   history: Array<{
@@ -49,61 +50,12 @@ export function ELOProgressionChart({
     );
   }
 
-  // Ensure history is in chronological order (oldest -> newest) so the
-  // progression line matches the order of matches the player actually played.
-  const sortedHistory = [...history].sort((a, b) => a.createdAt - b.createdAt);
-
-  type DataPointRole = 'before' | 'base_after' | 'current';
-
-  type DataPoint = {
-    elo: number;
-    role: DataPointRole;
-  };
-
-  const dataPoints: DataPoint[] = [];
-
-  // For each match, add two points:
-  // - Rating before the match
-  // - Base rating after the match (template / win‑loss effect only, before stat adj.)
-  sortedHistory.forEach((entry) => {
-    dataPoints.push({
-      elo: entry.eloBefore,
-      role: 'before',
-    });
-
-    if (entry.baseEloAfter !== null && entry.baseEloAfter !== undefined) {
-      dataPoints.push({
-        elo: entry.baseEloAfter,
-        role: 'base_after',
-      });
-    }
-  });
-
-  // Append an explicit "current rating" point as the final dot so it is clear
-  // where the player stands now, regardless of how many matches are shown.
-  dataPoints.push({
-    elo: currentElo,
-    role: 'current',
-  });
-
-  // Find min and max ELO for scaling
-  // Use eloBefore of the first match (when available) as the starting reference
-  // for Y-axis scaling and text summary, even though we don't plot a separate
-  // neutral starting dot anymore.
-  const startingRatingBeforeFirst =
-    sortedHistory.length > 0 ? sortedHistory[0].eloBefore : startingElo;
-
-  const allElos = [
-    startingRatingBeforeFirst,
+  // Chronological points anchored on the stored starting rating (see utils/eloProgression).
+  const { points: dataPoints, minElo, maxElo, totalChange } = buildEloProgression(
+    history,
     currentElo,
-    ...sortedHistory.flatMap((h) =>
-      h.baseEloAfter !== null && h.baseEloAfter !== undefined
-        ? [h.eloBefore, h.baseEloAfter]
-        : [h.eloBefore]
-    ),
-  ];
-  const minElo = Math.min(...allElos);
-  const maxElo = Math.max(...allElos);
+    startingElo
+  );
   const eloRange = maxElo - minElo || 1; // Avoid division by zero
 
   const availableWidth = chartWidth - padding * 2;
@@ -134,13 +86,7 @@ export function ELOProgressionChart({
     chartHeight + padding - padding
   } L ${padding} ${chartHeight + padding - padding} Z`;
 
-  // "Starting ELO" is the player's stored seed (API `startingElo`), the same
-  // value the admin player modal shows. The first history entry's `eloBefore`
-  // is not a start: history outlives deleted tournaments and simulated matches
-  // share timestamps, so it read 1870 for a player seeded at 1500 (QA 2.4.10).
-  // The change is measured against the value shown.
   const displayStartingElo = startingElo;
-  const totalChange = currentElo - displayStartingElo;
 
   return (
     <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>

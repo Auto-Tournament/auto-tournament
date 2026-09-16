@@ -233,10 +233,15 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
           showError(t('serverModal.errors.rconReachableApiUnreachable'));
         }
       } else {
-        showError(result.error || t('serverModal.errors.serverOffline'));
+        const message = result.error || t('serverModal.errors.serverOffline');
+        setError(message);
+        showError(message);
       }
     } catch (err) {
-      showError(apiErrorMessage(err, t('serverModal.errors.testConnectionFailed')));
+      // Also inline: a toast alone was easy to miss on a 500.
+      const message = apiErrorMessage(err, t('serverModal.errors.testConnectionFailed'));
+      setError(message);
+      showError(message);
     } finally {
       setChecking(false);
     }
