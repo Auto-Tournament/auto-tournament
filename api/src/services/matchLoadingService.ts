@@ -13,7 +13,7 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from './settingsService';
 import { getMatchZyServerConfigCommands } from '../utils/matchzyRconCommands';
-import { resolveSeriesEndKickDelays, serverTurnoverTracker } from '../utils/serverTurnover';
+import { resolveSeriesEndKickDelays, serverTurnoverTracker, tvDelayFromCvars } from '../utils/serverTurnover';
 import { matchConfigFetchTracker } from './matchConfigFetchTracker';
 import { classifyClearQueuedReply, classifyLoadMatchReply } from '../utils/matchzyServerReplies';
 import { serverStatusService, ServerStatus } from './serverStatusService';
@@ -361,7 +361,7 @@ export async function loadMatchOnServer(
         emitMatchUpdate(updatedMatch);
         emitBracketUpdate({ action: 'match_loaded', matchSlug });
       }
-      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured);
+      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured, tvDelayFromCvars(cvars));
       return {
         success: true,
         queued: true,
@@ -448,7 +448,7 @@ export async function loadMatchOnServer(
         emitBracketUpdate({ action: 'match_loaded', matchSlug });
       }
 
-      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured);
+      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured, tvDelayFromCvars(cvars));
       return {
         success: true,
         webhookConfigured: true,
