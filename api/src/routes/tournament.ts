@@ -1277,8 +1277,10 @@ router.post('/dev/reset-simulation-state', async (_req: Request, res: Response) 
 
     // 2) Clear all match-related data so no previous matches or allocations interfere.
 
-    // Delete all matches and let foreign keys cascade to match_events, match_map_results,
-    // and player_match_stats / player_rating_history that reference match slugs.
+    // Delete all matches and let foreign keys cascade to match_events, match_map_results
+    // and player_match_stats. Rating history survives match deletion (SET NULL), so
+    // it is cleared explicitly; ratings are reset to starting values below.
+    await db.execAsync('DELETE FROM player_rating_history');
     await db.execAsync('DELETE FROM matches');
 
     // 3) Reset tournament status back to setup so the existing config can be reused.
