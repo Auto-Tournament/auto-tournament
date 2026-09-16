@@ -15,6 +15,8 @@ import type {
   Player,
   PlayerCurrentMatchResponse,
   PlayersByDiscordIdResponse,
+  Tournament,
+  TournamentResponse,
 } from './types.js';
 
 export class MatApiError extends Error {
@@ -59,16 +61,27 @@ export class MatClient {
     return (await response.json()) as T;
   }
 
-  /** Every match MAT knows about, newest rounds last. */
-  async listMatches(): Promise<Match[]> {
+  /** Every match MAT knows about, and the tournament's status alongside. */
+  async listMatches(): Promise<{ matches: Match[]; tournamentStatus: string }> {
     const body = await this.get<MatchListResponse>('/api/matches');
-    return body.matches ?? [];
+    return { matches: body.matches ?? [], tournamentStatus: body.tournamentStatus };
   }
 
   async getMatch(slug: string): Promise<Match | null> {
     try {
       const body = await this.get<MatchResponse>(`/api/matches/${encodeURIComponent(slug)}`);
       return body.match ?? null;
+    } catch (error) {
+      if (error instanceof MatApiError && error.status === 404) return null;
+      throw error;
+    }
+  }
+
+  /** The current tournament, or `null` if none has been created. */
+  async getTournament(): Promise<Tournament | null> {
+    try {
+      const body = await this.get<TournamentResponse>('/api/tournament');
+      return body.tournament ?? null;
     } catch (error) {
       if (error instanceof MatApiError && error.status === 404) return null;
       throw error;

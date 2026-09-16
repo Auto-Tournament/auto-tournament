@@ -1,11 +1,12 @@
 /**
  * A minimal MAT Discord bot.
  *
- * Two commands, so there is something to run and something to copy:
+ * Three commands, so there is something to run and something to copy:
  *   /matches              one request, one reply
  *   /scoreboard <match>   a message that edits itself as MAT pushes updates
+ *   /mymatch              the caller's own match, via their Discord ID
  *
- * Read src/commands/matches.ts first; it is the simpler of the two.
+ * Read src/commands/matches.ts first; it is the simplest of the three.
  */
 
 import { Client, Events, GatewayIntentBits, MessageFlags, REST, Routes } from 'discord.js';

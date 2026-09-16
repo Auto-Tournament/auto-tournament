@@ -9,8 +9,29 @@ instance. Three commands, chosen to show the shapes most bot commands take:
 | `/scoreboard <match>` | A message that edits itself as MAT pushes updates over Socket.IO. |
 | `/mymatch` | The caller's own match, found through the Discord ID on their MAT player. Replies only to them. |
 
-It is meant to be copied and extended, not installed as-is. Under 800 lines,
-no framework, no database.
+It is meant to be copied and extended, not installed as-is. About a thousand
+lines, most of them comments; no framework, no database.
+
+Written against MAT 2.4.10. Older instances work, minus whatever they do not
+send yet (bracket labels, the champion).
+
+## What it shows
+
+- **Scores as "maps (rounds)"**: `1 – 0 (7 – 3)` while a series is on, `2 – 1`
+  once it is over. The series score comes from `team1SeriesScore`, the current
+  map's rounds from `team1MapScore`. Don't read `team1Score`: it means maps won
+  on a finished match and rounds on a live one.
+- **Bracket-aware labels**, as MAT's own UI shows them: `UB R2 M1`, `LB R1 M3`,
+  `Grand Final` in double elimination, `R3 M2` elsewhere.
+- **Matches waiting on an admin.** A series that runs out of maps level (maps,
+  rounds and damage all tied) gets status `needs_decision`. The maps are over
+  but the bracket waits until an admin picks the winner in MAT. `/matches` lists
+  these first and `/scoreboard` says what it is waiting for. The bot does not
+  set the winner itself; it only reads.
+- **The champion** once the tournament is completed, from `winner` on
+  `GET /api/tournament`: in `/matches`, and on the scoreboard of the match that
+  decided it. A completed round robin or Swiss with a shared top spot, or a
+  shuffle tournament, has no champion, and the bot shows none.
 
 ## Running it
 
@@ -87,7 +108,7 @@ export const pingCommand: Command = {
   data: new SlashCommandBuilder().setName('ping').setDescription('Check MAT is up'),
   async execute(interaction, { mat }) {
     await interaction.deferReply();
-    const matches = await mat.listMatches();
+    const { matches } = await mat.listMatches();
     await interaction.editReply(`MAT is up — ${matches.length} matches.`);
   },
 };
@@ -95,7 +116,7 @@ export const pingCommand: Command = {
 
 ## Talking to more of the API
 
-`src/mat/client.ts` covers five endpoints. MAT has 184, all listed in
+`src/mat/client.ts` covers six endpoints. MAT has 194, all listed in
 [docs/API-REFERENCE.md](../../docs/API-REFERENCE.md) with what each one
 requires.
 
@@ -128,7 +149,9 @@ handler. See [docs/API.md](../../docs/API.md).
 ## Writing, not just reading
 
 This bot uses a read-only token deliberately. If you want commands that start
-matches or pause servers, give it a token from `API_TOKENS` instead — but know
+matches, pause servers or settle a `needs_decision` series
+(`POST /api/matches/:slug/winner` with `{ "winner": "team1" }`), give it a
+token from `API_TOKENS` instead — but know
 what that means: a full-admin token can reach every RCON command and
 `POST /api/tournament/wipe-database`. Think about who can run your commands
 before you widen the token.
@@ -148,6 +171,15 @@ new SlashCommandBuilder()
 
 Teams in MAT carry a `discordRoleId` field, which is stored and returned but
 otherwise unused — it is there for mapping a MAT team to a Discord role.
+
+## Live updates
+
+`/scoreboard` listens on `match:update:<slug>`, but treats each push as "this
+match changed" and refetches `GET /api/matches/:slug`. It does not render the
+push itself. Pushes are partial (often a slug, a status and live stats), and
+some carry `team1Score` as maps won where the REST endpoint gives the current
+map's rounds. Refetching costs one small request per edit, and edits are
+already throttled to one every five seconds.
 
 ## Things this example does not do
 
