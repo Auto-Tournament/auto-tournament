@@ -24,6 +24,7 @@ import { handleMatchEvent } from '../services/matchEventHandler';
 import { playerConnectionService } from '../services/playerConnectionService';
 import { matchLiveStatsService } from '../services/matchLiveStatsService';
 import { recordServerTestEvent } from '../services/serverConnectivityService';
+import { serverTurnoverTracker } from '../utils/serverTurnover';
 import {
   refreshConnectionsFromServer,
   applyMatchReport,
@@ -315,6 +316,18 @@ async function handleEventRequest(
     // Update server heartbeat for ALL events (shows server is alive)
     if (serverId && serverId !== 'unknown') {
       await serverTrackingService.updateHeartbeat(serverId);
+    }
+
+    // Demo recording/upload and series lifecycle decide when this server may
+    // take its next match (see serverTurnover). Recorded against the server
+    // that sent the event, before any match-level filtering: an upload in
+    // progress holds the server whichever match it belongs to.
+    if (sourceServerId) {
+      serverTurnoverTracker.recordEvent(
+        sourceServerId,
+        event as unknown as Record<string, unknown>,
+        Math.floor(Date.now() / 1000)
+      );
     }
 
     // Emit server-level event for admin monitoring UI (Server Events Monitor).
