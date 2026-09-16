@@ -156,3 +156,106 @@ export async function enrichMatch(
   await enrichMatchWithPlayerStats(match, matchSlug);
   await enrichMatchWithScores(match, matchSlug);
 }
+
+type MapResultLike = {
+  team1Score: number;
+  team2Score: number;
+  winnerTeam?: 'team1' | 'team2' | 'none' | null;
+};
+
+type LiveStatsLike = {
+  team1Score: number;
+  team2Score: number;
+  team1SeriesScore: number;
+  team2SeriesScore: number;
+  status?: string;
+};
+
+export type ScoreFieldsTarget = {
+  team1Score?: number;
+  team2Score?: number;
+  team1SeriesScore?: number;
+  team2SeriesScore?: number;
+  team1MapScore?: number | null;
+  team2MapScore?: number | null;
+};
+
+/**
+ * Maps won per side from persisted map results. An explicit winnerTeam wins
+ * over the round score so a 12-12 map decided by the damage tiebreak counts.
+ */
+export function countMapWins(mapResults: MapResultLike[]): { team1: number; team2: number } {
+  return mapResults.reduce(
+    (acc, r) => {
+      if (r.winnerTeam === 'team1') acc.team1 += 1;
+      else if (r.winnerTeam === 'team2') acc.team2 += 1;
+      else if (r.winnerTeam !== 'none') {
+        if (r.team1Score > r.team2Score) acc.team1 += 1;
+        else if (r.team2Score > r.team1Score) acc.team2 += 1;
+      }
+      return acc;
+    },
+    { team1: 0, team2: 0 }
+  );
+}
+
+/**
+ * Normalise the score fields on a match/bracket item so each field means one
+ * thing for both sides. (The old overlay mixed a positive series score on one
+ * side with the round score on the other, e.g. "23 vs 1".)
+ *
+ * - team1SeriesScore/team2SeriesScore: maps won, always set.
+ * - team1MapScore/team2MapScore: rounds on the map being played; null when the
+ *   match is not in progress, 0-0 while the current map is still in warmup.
+ * - team1Score/team2Score: the headline score. Maps won once the match is
+ *   completed; the current map's rounds while in progress (unset until live
+ *   stats exist).
+ */
+export function applyScoreFields(
+  match: ScoreFieldsTarget,
+  opts: {
+    status: string;
+    mapResults?: MapResultLike[] | null;
+    liveStats?: LiveStatsLike | null;
+  }
+): void {
+  const { status, mapResults, liveStats } = opts;
+  const fromResults =
+    Array.isArray(mapResults) && mapResults.length > 0 ? countMapWins(mapResults) : null;
+
+  if (status === 'completed') {
+    const hasHeadline =
+      typeof match.team1Score === 'number' &&
+      typeof match.team2Score === 'number' &&
+      !(match.team1Score === 0 && match.team2Score === 0);
+    if (!hasHeadline && fromResults && (fromResults.team1 > 0 || fromResults.team2 > 0)) {
+      match.team1Score = fromResults.team1;
+      match.team2Score = fromResults.team2;
+    }
+    match.team1SeriesScore =
+      typeof match.team1Score === 'number' ? match.team1Score : fromResults?.team1 ?? 0;
+    match.team2SeriesScore =
+      typeof match.team2Score === 'number' ? match.team2Score : fromResults?.team2 ?? 0;
+    match.team1MapScore = null;
+    match.team2MapScore = null;
+    return;
+  }
+
+  match.team1SeriesScore = Math.max(fromResults?.team1 ?? 0, liveStats?.team1SeriesScore ?? 0);
+  match.team2SeriesScore = Math.max(fromResults?.team2 ?? 0, liveStats?.team2SeriesScore ?? 0);
+
+  if (liveStats) {
+    // Between maps the live stats keep the finished map's rounds until the
+    // next map goes live; that score does not belong to the current map.
+    const inWarmup = liveStats.status === 'warmup';
+    match.team1MapScore = inWarmup ? 0 : liveStats.team1Score ?? 0;
+    match.team2MapScore = inWarmup ? 0 : liveStats.team2Score ?? 0;
+    match.team1Score = match.team1MapScore;
+    match.team2Score = match.team2MapScore;
+  } else {
+    match.team1MapScore = null;
+    match.team2MapScore = null;
+    delete match.team1Score;
+    delete match.team2Score;
+  }
+}

@@ -197,7 +197,8 @@ export const generateMatchConfig = async (
           // Ensure per_map_sides matches the number of maps
           per_map_sides = per_map_sides.slice(0, numMaps);
 
-          log.info('Per-map sides configured from veto', {
+          // Config is rebuilt on every fetch/poll, so this is per-request noise.
+          log.debug('Per-map sides configured from veto', {
             maplist,
             per_map_sides,
             matchSlug: slug,

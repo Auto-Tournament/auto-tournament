@@ -291,9 +291,18 @@ const channel = await discord.channels.fetch(process.env.CHANNEL_ID);
 // One message per match, edited in place as the game runs.
 const messages = new Map();
 
-const render = (m) =>
-  `**${m.team1?.name ?? 'Team 1'}** ${m.team1Score ?? 0} – ` +
-  `${m.team2Score ?? 0} **${m.team2?.name ?? 'Team 2'}**  ·  ${m.status}`;
+// team1SeriesScore/team2SeriesScore are maps won; team1MapScore/team2MapScore
+// are rounds on the map being played (null once the match is over).
+// team1Score/team2Score is the headline: rounds while live, maps when completed.
+const render = (m) => {
+  const maps = `${m.team1SeriesScore ?? 0} – ${m.team2SeriesScore ?? 0}`;
+  const rounds =
+    typeof m.team1MapScore === 'number' ? ` (${m.team1MapScore} – ${m.team2MapScore})` : '';
+  return (
+    `**${m.team1?.name ?? 'Team 1'}** ${maps}${rounds} ` +
+    `**${m.team2?.name ?? 'Team 2'}**  ·  ${m.status}`
+  );
+};
 
 async function upsert(match) {
   const existing = messages.get(match.slug);

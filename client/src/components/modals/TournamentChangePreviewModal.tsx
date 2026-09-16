@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
 interface ChangeItem {
@@ -37,22 +38,23 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
   onConfirm,
   onCancel,
 }) => {
+  const { t } = useTranslation();
   const { showWarning } = useSnackbar();
 
   const handleConfirm = () => {
     if (changes.length === 0) {
-      showWarning('No changes to apply');
+      showWarning(t('tournament.changePreview.noChangesToApply'));
       return;
     }
     onConfirm();
   };
   const formatValue = (value: string | string[]): string => {
     if (Array.isArray(value)) {
-      if (value.length === 0) return 'None';
+      if (value.length === 0) return t('tournament.changePreview.none');
       if (value.length <= 3) return value.join(', ');
-      return `${value.length} items`;
+      return t('tournament.changePreview.itemCount', { count: value.length });
     }
-    return value || 'Not set';
+    return value || t('tournament.review.summary.notSet');
   };
 
   const hasStructuralChanges = changes.some(
@@ -65,7 +67,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
         <Box display="flex" alignItems="center" gap={1.5}>
           <CompareArrowsIcon color="primary" />
           <Typography variant="h6" fontWeight={600}>
-            Review Tournament Changes
+            {t('tournament.changePreview.title')}
           </Typography>
         </Box>
       </DialogTitle>
@@ -73,23 +75,20 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
         {isLive && hasStructuralChanges && (
           <Alert severity="error" sx={{ mb: 2 }} icon={<WarningAmberIcon />}>
             <Typography variant="body2" fontWeight={600} gutterBottom>
-              Tournament is LIVE!
+              {t('tournament.changePreview.liveHeading')}
             </Typography>
-            <Typography variant="caption">
-              Changing tournament type, format, or team count may require bracket regeneration.
-              Consider using "Reset Tournament" to start fresh.
-            </Typography>
+            <Typography variant="caption">{t('tournament.changePreview.liveBody')}</Typography>
           </Alert>
         )}
 
         {changes.length === 0 ? (
           <Typography variant="body2" color="text.secondary" align="center" py={3}>
-            No changes detected
+            {t('tournament.changePreview.noChangesDetected')}
           </Typography>
         ) : (
           <Box>
             <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-              The following changes will be applied:
+              {t('tournament.changePreview.intro')}
             </Typography>
 
             {changes.map((change, index) => (
@@ -116,7 +115,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
                   {/* Old Value */}
                   <Box display="flex" alignItems="center" gap={1} mb={1}>
                     <Chip
-                      label="BEFORE"
+                      label={t('tournament.changePreview.before')}
                       size="small"
                       sx={{
                         bgcolor: 'error.light',
@@ -141,7 +140,7 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
                   {/* New Value */}
                   <Box display="flex" alignItems="center" gap={1}>
                     <Chip
-                      label="AFTER"
+                      label={t('tournament.changePreview.after')}
                       size="small"
                       sx={{
                         bgcolor: 'success.light',
@@ -185,7 +184,9 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
             }),
           }}
         >
-          {isLive && hasStructuralChanges ? 'Apply Changes (Risky!)' : 'Apply Changes'}
+          {isLive && hasStructuralChanges
+            ? t('tournament.changePreview.applyRisky')
+            : t('tournament.changePreview.apply')}
         </Button>
       </DialogActions>
     </Dialog>

@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Matches konnten nicht geladen werden",
-      "loadTitle": "Fehler beim Laden der Matches"
+      "loadTitle": "Fehler beim Laden der Matches",
+      "bulkDelete": "Ein oder mehrere Matches konnten nicht gelöscht werden"
     },
     "allocation": {
       "nextServers": "Nächste Server zugewiesen in {{seconds}}s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Manuelle Matches löschen",
-      "message": "Möchtest du wirklich {{count}} manuelles Match{{suffix}} löschen? Diese Aktion kann nicht rückgängig gemacht werden."
+      "message": "Möchtest du wirklich {{count}} manuelles Match{{suffix}} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleted_one": "{{count}} Match gelöscht",
+      "deleted_other": "{{count}} Matches gelöscht"
+    },
+    "card": {
+      "matchNumber": "Match #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Warteschlangenposition: #{{position}}",
+      "waitingForServers": "Warte auf Server...",
+      "allocatingNow": "Wird jetzt zugewiesen...",
+      "allocatesIn": "Zuweisung in {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manuell",
+      "manual": "Manuell",
+      "simulation": "Simulation",
+      "winner": "SIEGER",
+      "mapN": "Map {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "KAMPFLOS",
+      "waitingForTournament": "WARTE AUF TURNIERSTART",
+      "waitingForServer": "WARTE AUF SERVER",
+      "vetoPending": "VETO AUSSTEHEND",
+      "mapVeto": "MAP-VETO",
+      "serverAllocated": "SERVER ZUGEWIESEN",
+      "warmup": "AUFWÄRMEN",
+      "overtime": "VERLÄNGERUNG #{{n}}",
+      "live": "LIVE",
+      "completed": "BEENDET",
+      "cancelled": "ABGEBROCHEN"
+    },
+    "statusGuide": {
+      "title": "Leitfaden zum Match-Status",
+      "pending": "Das Match ist geplant, aber noch keinem Server zugewiesen. Es wird zugewiesen, sobald ein Server frei wird.",
+      "loaded": "Das Match ist auf dem Server geladen und im Aufwärmmodus. Spieler sollten sich verbinden und bereit melden.",
+      "live": "Das Match wird auf seinem Server gespielt.",
+      "completed": "Das Match ist beendet. Der Sieger steht fest und der Turnierbaum wurde aktualisiert.",
+      "proTipTitle": "Profi-Tipp:",
+      "proTip": "Wenn ein Match „Warte auf Spieler (X/Y)“ anzeigt, ist der Server bereit und die Spieler sollten sich verbinden. Sobald alle erwarteten Spieler verbunden und bereit sind, startet das Match automatisch."
+    },
+    "allocationWidget": {
+      "title": "Status der Serverzuweisung",
+      "available": "Verfügbar:",
+      "busy": "Belegt:",
+      "cooling": "Abkühlung:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Wartend: {{count}} Match",
+      "waitingMatches_other": "Wartend: {{count}} Matches",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Bereit",
+      "statusCooling": "Abkühlung",
+      "statusBusy": "Belegt",
+      "statusOffline": "Offline",
+      "readyIn": "Bereit in: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Dieses Match löschen?",
       "confirmBody": "Möchtest du das Match \"{{slug}}\" wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "button": "Match löschen"
+    },
+    "roster": {
+      "title": "Spielerkader",
+      "yourTeam": "Dein Team",
+      "openPlayerPage": "Spielerseite öffnen",
+      "ready": "BEREIT",
+      "connected": "VERBUNDEN",
+      "offline": "OFFLINE"
     }
   },
   "bulkShuffleMatchesModal": {

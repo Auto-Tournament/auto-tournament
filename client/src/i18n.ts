@@ -21,6 +21,7 @@ import bracketsViewerIt from './locales/brackets-viewer/it.json';
 import bracketsViewerPt from './locales/brackets-viewer/pt-PT.json';
 import bracketsViewerPl from './locales/brackets-viewer/pl.json';
 import bracketsViewerNl from './locales/brackets-viewer/nl.json';
+import bracketsViewerNb from './locales/brackets-viewer/nb.json';
 
 export const defaultNS = 'translation';
 
@@ -63,7 +64,7 @@ export const resources = {
   },
   nb: {
     translation: nb,
-    bracketsViewer: bracketsViewerEn, // Use English as fallback for brackets-viewer
+    bracketsViewer: bracketsViewerNb,
   },
 } as const;
 

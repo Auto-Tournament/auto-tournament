@@ -12,7 +12,25 @@ import {
   Tooltip,
 } from '@mui/material';
 import type { SelectChangeEvent } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import type { EloCalculationTemplate } from '../../types/elo.types';
+
+/**
+ * The three meaningful overtime configurations, derived from the
+ * (overtimeMode, overtimeSegments) pair that is sent to MatchZy:
+ * - enabled            → 'enabled' + null/N segments
+ * - disabledDraws      → 'disabled' + null (no overtime, draws allowed)
+ * - disabledNoDraws    → 'disabled' + 0 (no overtime, damage tiebreak)
+ */
+export type OvertimeOption = 'enabled' | 'disabledDraws' | 'disabledNoDraws';
+
+export function deriveOvertimeOption(
+  mode: 'enabled' | 'disabled' | undefined,
+  segments: number | null | undefined
+): OvertimeOption {
+  if ((mode ?? 'enabled') === 'enabled') return 'enabled';
+  return segments === 0 ? 'disabledNoDraws' : 'disabledDraws';
+}
 
 export interface ShuffleTournamentSettings {
   teamSize: number; // Number of players per team (default: 5)
@@ -43,6 +61,9 @@ export function ShuffleTournamentConfigStep({
   onSettingsChange,
   eloTemplates = [],
 }: ShuffleTournamentConfigStepProps) {
+  const { t } = useTranslation();
+  const overtimeOption = deriveOvertimeOption(settings.overtimeMode, settings.overtimeSegments);
+
   const handleMaxRoundsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = event.target.value;
     // Allow empty value for free typing
@@ -89,11 +110,21 @@ export function ShuffleTournamentConfigStep({
     });
   };
 
-  const handleOvertimeModeChange = (event: SelectChangeEvent<string>) => {
-    const value = event.target.value as 'enabled' | 'disabled';
+  const handleOvertimeOptionChange = (event: SelectChangeEvent<string>) => {
+    const value = event.target.value as OvertimeOption;
+    if (value === 'enabled') {
+      onSettingsChange({
+        ...settings,
+        overtimeMode: 'enabled',
+        // 0 segments only means something together with "disabled".
+        overtimeSegments: settings.overtimeSegments === 0 ? null : settings.overtimeSegments,
+      });
+      return;
+    }
     onSettingsChange({
       ...settings,
-      overtimeMode: value,
+      overtimeMode: 'disabled',
+      overtimeSegments: value === 'disabledNoDraws' ? 0 : null,
     });
   };
 
@@ -123,23 +154,23 @@ export function ShuffleTournamentConfigStep({
   return (
     <Box>
       <Typography variant="overline" color="primary" fontWeight={600}>
-        Shuffle Tournament Configuration
+        {t('tournament.shuffleConfig.overline')}
       </Typography>
       <Typography variant="subtitle2" fontWeight={600} mb={2}>
-        Match Rules & Settings
+        {t('tournament.shuffleConfig.subtitle')}
       </Typography>
 
       <Grid container spacing={3}>
         {/* Team Size */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title="Number of players per team. Common options: 4v4, 5v5, 6v6. Minimum 2 players, maximum 10 players per team."
+            title={t('tournament.shuffleConfig.teamSizeTooltip')}
             arrow
             placement="top"
             enterDelay={500}
           >
             <TextField
-              label="Team Size"
+              label={t('tournament.shuffleConfig.teamSizeLabel')}
               type="number"
               value={settings.teamSize === 0 ? '' : settings.teamSize}
               onChange={handleTeamSizeChange}
@@ -147,7 +178,7 @@ export function ShuffleTournamentConfigStep({
               slotProps={{
                 htmlInput: { min: 2, max: 10, 'data-testid': 'shuffle-team-size-field' },
               }}
-              helperText="Number of players per team (default: 5 for 5v5, range: 2-10)"
+              helperText={t('tournament.shuffleConfig.teamSizeHelper')}
               error={settings.teamSize > 0 && (settings.teamSize < 2 || settings.teamSize > 10)}
               fullWidth
             />
@@ -157,13 +188,13 @@ export function ShuffleTournamentConfigStep({
         {/* Max Rounds */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title="Maximum number of rounds per match. This value is passed directly to MatchZy as mp_maxrounds. Example: 6 = MR6, 24 = MR24."
+            title={t('tournament.shuffleConfig.maxRoundsTooltip')}
             arrow
             placement="top"
             enterDelay={500}
           >
             <TextField
-              label="Max Rounds"
+              label={t('tournament.shuffleConfig.maxRoundsLabel')}
               type="number"
               value={settings.maxRounds === 0 ? '' : settings.maxRounds}
               onChange={handleMaxRoundsChange}
@@ -173,10 +204,11 @@ export function ShuffleTournamentConfigStep({
               }}
               helperText={
                 settings.maxRounds > 0
-                  ? `Match plays up to ${settings.maxRounds} rounds; winner is first to ${
-                      Math.floor(settings.maxRounds / 2) + 1
-                    } rounds`
-                  : 'Maximum number of rounds per match (default: 24, max: 30)'
+                  ? t('tournament.shuffleConfig.maxRoundsHelper', {
+                      maxRounds: settings.maxRounds,
+                      winRounds: Math.floor(settings.maxRounds / 2) + 1,
+                    })
+                  : t('tournament.shuffleConfig.maxRoundsHelperEmpty')
               }
               error={settings.maxRounds > 0 && (settings.maxRounds < 1 || settings.maxRounds > 30)}
               fullWidth
@@ -187,19 +219,19 @@ export function ShuffleTournamentConfigStep({
         {/* ELO Calculation Template */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title="Choose how ELO is calculated for this tournament. By default, the 'Pure Win/Loss' template only uses match result (win/loss); stats are tracked but do not change ELO. Other templates are optional and add stat-based adjustments on top of the OpenSkill win/loss change if you want Excel-style behavior."
+            title={t('tournament.shuffleConfig.eloTemplateTooltip')}
             arrow
             placement="top"
             enterDelay={500}
           >
             <FormControl fullWidth data-testid="shuffle-elo-template-field">
               <InputLabel id="elo-template-label" shrink={true}>
-                ELO Calculation Template
+                {t('tournament.shuffleConfig.eloTemplateLabel')}
               </InputLabel>
               <Select
                 labelId="elo-template-label"
                 value={settings.eloTemplateId ?? 'pure-win-loss'}
-                label="ELO Calculation Template"
+                label={t('tournament.shuffleConfig.eloTemplateLabel')}
                 onChange={handleEloTemplateChange}
                 disabled={!canEdit || saving}
                 notched={true}
@@ -218,7 +250,7 @@ export function ShuffleTournamentConfigStep({
                         <>
                           {template.name}
                           <em style={{ marginLeft: 8, opacity: 0.7, fontSize: '0.875rem' }}>
-                            (Default)
+                            {t('tournament.shuffleConfig.eloDefaultSuffix')}
                           </em>
                         </>
                       ) : (
@@ -229,8 +261,7 @@ export function ShuffleTournamentConfigStep({
               </Select>
               <FormHelperText>
                 {eloTemplates.find((t) => t.id === (settings.eloTemplateId || 'pure-win-loss'))
-                  ?.description ||
-                  'Pure Win/Loss (default): only match result affects ELO. Player stats are still recorded for leaderboards and exports, but they do not change the rating unless you select a custom template.'}
+                  ?.description || t('tournament.shuffleConfig.eloTemplateHelper')}
               </FormHelperText>
             </FormControl>
           </Tooltip>
@@ -239,59 +270,56 @@ export function ShuffleTournamentConfigStep({
         {/* Overtime Settings */}
         <Grid size={{ xs: 12, sm: 6 }}>
           <Tooltip
-            title={
-              'Control overtime behavior for shuffle matches and how ties are decided at max rounds. ' +
-              'When overtime is disabled, tied matches can either remain draws or be broken by total team damage, ' +
-              'depending on how overtime segments are configured.'
-            }
+            title={t('tournament.overtime.shuffleTooltip')}
             arrow
             placement="top"
             enterDelay={500}
           >
             <Box>
               <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="shuffle-overtime-mode-label">Overtime</InputLabel>
+                <InputLabel id="shuffle-overtime-mode-label">
+                  {t('tournament.overtime.selectLabel')}
+                </InputLabel>
                 <Select
                   labelId="shuffle-overtime-mode-label"
-                  value={settings.overtimeMode ?? 'enabled'}
-                  label="Overtime"
-                  onChange={handleOvertimeModeChange}
+                  value={overtimeOption}
+                  label={t('tournament.overtime.selectLabel')}
+                  onChange={handleOvertimeOptionChange}
                   disabled={!canEdit || saving}
                 >
-                  <MenuItem value="enabled">Enabled (standard overtime)</MenuItem>
-                  <MenuItem value="disabled">Disabled (no overtime)</MenuItem>
+                  <MenuItem value="enabled">{t('tournament.overtime.options.enabled')}</MenuItem>
+                  <MenuItem value="disabledDraws">
+                    {t('tournament.overtime.options.disabledDraws')}
+                  </MenuItem>
+                  <MenuItem value="disabledNoDraws">
+                    {t('tournament.overtime.options.disabledNoDraws')}
+                  </MenuItem>
                 </Select>
-                <FormHelperText>
-                  Enable or disable overtime when a match is tied at max rounds. When overtime is
-                  disabled, ties can still be broken by performance (total team damage) if your
-                  MatchZy config uses that rule.
-                </FormHelperText>
+                <FormHelperText>{t('tournament.overtime.modeHelper')}</FormHelperText>
               </FormControl>
 
-              <TextField
-                label="Overtime segments (optional)"
-                type="number"
-                value={
-                  typeof settings.overtimeSegments === 'number'
-                    ? settings.overtimeSegments
-                    : ''
-                }
-                onChange={handleOvertimeSegmentsChange}
-                disabled={!canEdit || saving}
-                slotProps={{
-                  htmlInput: { min: 0, max: 10 },
-                }}
-                helperText={
-                  typeof settings.overtimeSegments === 'number'
-                    ? settings.overtimeMode === 'disabled' && settings.overtimeSegments === 0
-                      ? '0 with overtime disabled: no overtime is played and ties at max rounds are resolved by total team damage (no draws, if damage differs).'
-                      : `Limit overtime/policy to ${settings.overtimeSegments} segment${
-                          settings.overtimeSegments === 1 ? '' : 's'
-                        }. When > 0 and overtime is enabled, ties after OT can be decided by total team damage.`
-                    : 'Leave empty for MatchZy default. Combine with overtime disabled + 0 segments for "no OT, no draws", or with a positive value and overtime enabled to use damage tiebreak after OT.'
-                }
-                fullWidth
-              />
+              {overtimeOption === 'enabled' && (
+                <TextField
+                  label={t('tournament.overtime.segmentsLabel')}
+                  type="number"
+                  value={
+                    typeof settings.overtimeSegments === 'number' ? settings.overtimeSegments : ''
+                  }
+                  onChange={handleOvertimeSegmentsChange}
+                  disabled={!canEdit || saving}
+                  slotProps={{
+                    htmlInput: { min: 0, max: 10 },
+                  }}
+                  helperText={
+                    typeof settings.overtimeSegments === 'number' && settings.overtimeSegments > 0
+                      ? t('tournament.overtime.segmentsHelperValue', {
+                          count: settings.overtimeSegments,
+                        })
+                      : t('tournament.overtime.segmentsHelper')
+                  }
+                  fullWidth
+                />
+              )}
             </Box>
           </Tooltip>
         </Grid>

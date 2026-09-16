@@ -8,6 +8,7 @@ import type { ConnectedPlayer } from '../../hooks/usePlayerConnections';
 import { normalizeConfigPlayers, type NormalizedPlayer } from '../../utils/playerUtils';
 import { getPlayerPageUrl } from '../../utils/playerLinks';
 import { PlayerAvatar } from '../player/PlayerAvatar';
+import { useTranslation } from 'react-i18next';
 import { PlayerName } from '../player/PlayerName';
 
 interface PlayerRosterProps {
@@ -27,6 +28,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
   connectedPlayers,
   isTeam1,
 }) => {
+  const { t } = useTranslation();
   const team1Players = normalizeConfigPlayers(team1PlayersRaw);
   const team2Players = normalizeConfigPlayers(team2PlayersRaw);
 
@@ -50,7 +52,9 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
           <Typography variant="h6" fontWeight={600} color={`${teamColor}.main`}>
             {teamName}
           </Typography>
-          {isYourTeam && <Chip label="Your Team" color="primary" size="small" />}
+          {isYourTeam && (
+            <Chip label={t('matchDetailsModal.roster.yourTeam')} color="primary" size="small" />
+          )}
         </Box>
 
         <Stack spacing={1}>
@@ -115,7 +119,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 />
 
                 {/* Explicit player page action */}
-                <Tooltip title="Open player page">
+                <Tooltip title={t('matchDetailsModal.roster.openPlayerPage')}>
                   <IconButton
                     size="small"
                     component="a"
@@ -136,7 +140,7 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                 {/* Status Badge */}
                 {status.isReady ? (
                   <Chip
-                    label="READY"
+                    label={t('matchDetailsModal.roster.ready')}
                     size="small"
                     sx={{
                       bgcolor: 'success.light',
@@ -147,14 +151,14 @@ export const PlayerRoster: React.FC<PlayerRosterProps> = ({
                   />
                 ) : status.isConnected ? (
                   <Chip
-                    label="CONNECTED"
+                    label={t('matchDetailsModal.roster.connected')}
                     size="small"
                     color="warning"
                     sx={{ fontWeight: 600, fontSize: '0.7rem' }}
                   />
                 ) : (
                   <Chip
-                    label="OFFLINE"
+                    label={t('matchDetailsModal.roster.offline')}
                     size="small"
                     sx={{
                       bgcolor: 'action.disabled',

@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "加载比赛失败",
-      "loadTitle": "加载比赛时出错"
+      "loadTitle": "加载比赛时出错",
+      "bulkDelete": "无法删除一场或多场比赛"
     },
     "allocation": {
       "nextServers": "下一批服务器分配约在 {{seconds}} 秒后"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "删除手动比赛",
-      "message": "确定要删除 {{count}} 场手动比赛{{suffix}}吗？该操作无法撤销。"
+      "message": "确定要删除 {{count}} 场手动比赛{{suffix}}吗？该操作无法撤销。",
+      "deleted_one": "已删除 {{count}} 场比赛",
+      "deleted_other": "已删除 {{count}} 场比赛"
+    },
+    "card": {
+      "matchNumber": "比赛 #{{number}}",
+      "server": "服务器：{{name}}",
+      "queuePosition": "队列位置：#{{position}}",
+      "waitingForServers": "等待服务器...",
+      "allocatingNow": "正在分配...",
+      "allocatesIn": "{{time}} 后分配",
+      "shuffle": "随机组队",
+      "shuffleManual": "随机组队（手动）",
+      "manual": "手动",
+      "simulation": "模拟",
+      "winner": "胜者",
+      "mapN": "地图 {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "不战而胜",
+      "waitingForTournament": "等待赛事开始",
+      "waitingForServer": "等待服务器",
+      "vetoPending": "待禁选",
+      "mapVeto": "地图禁选",
+      "serverAllocated": "已分配服务器",
+      "warmup": "热身",
+      "overtime": "加时 #{{n}}",
+      "live": "直播中",
+      "completed": "已完成",
+      "cancelled": "已取消"
+    },
+    "statusGuide": {
+      "title": "比赛状态说明",
+      "pending": "比赛已排期，但尚未分配服务器。有空闲服务器时将自动分配。",
+      "loaded": "比赛已在服务器上加载并处于热身阶段。玩家需连接并准备就绪才能开始。",
+      "live": "比赛正在服务器上进行。",
+      "completed": "比赛已结束。胜者已确定，对阵图已更新。",
+      "proTipTitle": "提示：",
+      "proTip": "当比赛显示“等待玩家 (X/Y)”时，服务器已就绪，玩家应立即连接。所有预期玩家连接并准备后，比赛将自动开始。"
+    },
+    "allocationWidget": {
+      "title": "服务器分配状态",
+      "available": "可用：",
+      "busy": "占用：",
+      "cooling": "冷却中：",
+      "offline": "离线：",
+      "waitingMatches_one": "等待中：{{count}} 场比赛",
+      "waitingMatches_other": "等待中：{{count}} 场比赛",
+      "statusLine": "状态：{{status}}",
+      "statusReady": "就绪",
+      "statusCooling": "冷却中",
+      "statusBusy": "占用",
+      "statusOffline": "离线",
+      "readyIn": "就绪倒计时：{{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "确认删除此比赛？",
       "confirmBody": "确定要删除比赛 \"{{slug}}\" 吗？此操作无法撤销。",
       "button": "删除比赛"
+    },
+    "roster": {
+      "title": "参赛名单",
+      "yourTeam": "你的队伍",
+      "openPlayerPage": "打开玩家页面",
+      "ready": "已准备",
+      "connected": "已连接",
+      "offline": "未连接"
     }
   },
   "bulkShuffleMatchesModal": {

@@ -1,5 +1,6 @@
 import { Box, Button, Tooltip, CircularProgress } from '@mui/material';
 import { DeleteForever as DeleteForeverIcon, Save as SaveIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { validateMapCount } from '../../utils/tournamentVerification';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 
@@ -30,6 +31,7 @@ export function TournamentFormActions({
   onDelete,
   onSaveTemplate,
 }: TournamentFormActionsProps) {
+  const { t } = useTranslation();
   const { showWarning } = useSnackbar();
 
   if (!canEdit) {
@@ -43,11 +45,11 @@ export function TournamentFormActions({
 
   const handleSave = () => {
     if (!hasChanges) {
-      showWarning('No changes to save');
+      showWarning(t('tournament.toasts.noChangesToSave'));
       return;
     }
     if (!isValidMaps) {
-      showWarning(mapValidation.message || 'Invalid map selection');
+      showWarning(mapValidation.message || t('tournament.toasts.invalidMapSelection'));
       return;
     }
     onSave();
@@ -55,7 +57,7 @@ export function TournamentFormActions({
 
   const handleSaveTemplate = () => {
     if (!isValidMaps) {
-      showWarning(mapValidation.message || 'Invalid map selection');
+      showWarning(mapValidation.message || t('tournament.toasts.invalidMapSelection'));
       return;
     }
     onSaveTemplate?.();
@@ -85,18 +87,18 @@ export function TournamentFormActions({
           {saving ? (
             <CircularProgress size={24} />
           ) : tournamentExists ? (
-            'Save & Generate Brackets'
+            t('tournament.formActions.saveAndGenerate')
           ) : (
-            'Create Tournament'
+            t('tournament.common.createTournament')
           )}
         </Button>
         {tournamentExists && onCancel && (
           <Button variant="outlined" onClick={onCancel} disabled={saving}>
-            Cancel
+            {t('common.cancel')}
           </Button>
         )}
         {tournamentExists && (
-          <Tooltip title="Permanently delete this tournament and all its data" enterDelay={500}>
+          <Tooltip title={t('tournament.tooltips.deleteTournament')} enterDelay={500}>
             <Button
               variant="outlined"
               color="error"
@@ -104,12 +106,12 @@ export function TournamentFormActions({
               onClick={onDelete}
               disabled={saving}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Tooltip>
         )}
         {onSaveTemplate && (
-          <Tooltip title="Save current tournament configuration as a template" enterDelay={500}>
+          <Tooltip title={t('tournament.formActions.saveTemplateTooltip')} enterDelay={500}>
             <Button
               variant="outlined"
               startIcon={<SaveIcon />}
@@ -127,7 +129,7 @@ export function TournamentFormActions({
                 }),
               }}
             >
-              Save as Template
+              {t('tournament.formActions.saveAsTemplate')}
             </Button>
           </Tooltip>
         )}

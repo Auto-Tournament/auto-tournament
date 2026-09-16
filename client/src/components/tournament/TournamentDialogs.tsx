@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Typography, Alert, Box } from '@mui/material';
+import { Trans, useTranslation } from 'react-i18next';
 import ConfirmDialog from '../modals/ConfirmDialog';
 
 interface TournamentDialogsProps {
@@ -42,6 +43,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
   onStartCancel,
 }) => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   const requiredServers = startWarning?.requiredServers ?? 0;
   const availableServers = startWarning?.availableServers ?? 0;
@@ -54,40 +56,43 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
     <>
       <ConfirmDialog
         open={deleteOpen}
-        title="🗑️ Delete Tournament"
+        title={t('tournament.dialogs.delete.title')}
         message={
           <>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Are you sure you want to permanently DELETE <strong>"{tournamentName}"</strong>?
+              <Trans
+                i18nKey="tournament.dialogs.delete.question"
+                values={{ name: tournamentName }}
+                components={{ b: <strong /> }}
+              />
             </Typography>
             <Typography variant="body2" fontWeight={600} color="error.main" gutterBottom>
-              ⚠️ This will:
+              {t('tournament.dialogs.delete.willTitle')}
             </Typography>
             <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
               <Typography component="li" variant="body2" color="text.secondary">
-                End all active matches on servers
+                {t('tournament.dialogs.items.endMatches')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Remove the tournament completely
+                {t('tournament.dialogs.delete.items.removeTournament')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Delete all matches and brackets
+                {t('tournament.dialogs.items.deleteMatches')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Delete all match data and statistics
+                {t('tournament.dialogs.items.deleteData')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                <strong>Cannot be undone</strong>
+                <strong>{t('tournament.dialogs.delete.items.cannotBeUndone')}</strong>
               </Typography>
             </Box>
             <Typography variant="body2" color="info.main" sx={{ fontStyle: 'italic' }}>
-              💡 Note: If you just want to start over with the same tournament settings, use "Reset
-              to Setup" instead.
+              {t('tournament.dialogs.delete.note')}
             </Typography>
           </>
         }
-        confirmLabel="Delete Permanently"
-        cancelLabel="Cancel"
+        confirmLabel={t('tournament.dialogs.delete.confirm')}
+        cancelLabel={t('common.cancel')}
         onConfirm={onDeleteConfirm}
         onCancel={onDeleteCancel}
         confirmColor="error"
@@ -95,38 +100,45 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
 
       <ConfirmDialog
         open={regenerateOpen}
-        title="🔄 Regenerate Brackets"
+        title={t('tournament.dialogs.regenerate.title')}
         message={
           tournamentStatus !== 'setup' ? (
             <>
               <Typography variant="body2" fontWeight={600} color="error.main" paragraph>
-                ⚠️ WARNING: The tournament is {tournamentStatus?.toUpperCase()}!
+                {t('tournament.dialogs.regenerate.liveWarning', {
+                  status: tournamentStatus?.toUpperCase(),
+                })}
               </Typography>
               <Typography variant="body2" color="text.secondary" paragraph>
-                Regenerating brackets will <strong>DELETE ALL</strong> existing match data,
-                including scores, statistics, and event history.
+                <Trans
+                  i18nKey="tournament.dialogs.regenerate.liveBody"
+                  components={{ b: <strong /> }}
+                />
               </Typography>
               <Typography variant="body2" color="error.main" fontWeight={600}>
-                This action cannot be undone.
+                {t('tournament.dialogs.regenerate.cannotBeUndone')}
               </Typography>
               <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
-                Are you absolutely sure you want to proceed?
+                {t('tournament.dialogs.regenerate.areYouSure')}
               </Typography>
             </>
           ) : (
             <>
               <Typography variant="body2" color="text.secondary" paragraph>
-                This will delete all existing matches and regenerate the bracket with the same
-                settings.
+                {t('tournament.dialogs.regenerate.setupBody')}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Continue?
+                {t('tournament.dialogs.regenerate.continue')}
               </Typography>
             </>
           )
         }
-        confirmLabel={tournamentStatus !== 'setup' ? 'YES, DELETE EVERYTHING' : 'Regenerate'}
-        cancelLabel="Cancel"
+        confirmLabel={
+          tournamentStatus !== 'setup'
+            ? t('tournament.dialogs.regenerate.confirmDestructive')
+            : t('tournament.dialogs.regenerate.confirm')
+        }
+        cancelLabel={t('common.cancel')}
         onConfirm={onRegenerateConfirm}
         onCancel={onRegenerateCancel}
         confirmColor="error"
@@ -134,45 +146,52 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
 
       <ConfirmDialog
         open={resetOpen}
-        title="🔄 Reset to Setup"
+        title={t('tournament.dialogs.reset.title')}
         message={
           <>
             <Typography variant="body2" color="text.secondary" paragraph>
-              Reset <strong>"{tournamentName}"</strong> back to SETUP mode?
+              <Trans
+                i18nKey="tournament.dialogs.reset.question"
+                values={{ name: tournamentName }}
+                components={{ b: <strong /> }}
+              />
             </Typography>
             <Typography variant="body2" fontWeight={600} gutterBottom>
-              This will:
+              {t('tournament.dialogs.reset.willTitle')}
             </Typography>
             <Box component="ul" sx={{ mt: 0, mb: 2, pl: 2 }}>
               <Typography component="li" variant="body2" color="text.secondary">
-                End all active matches on servers
+                {t('tournament.dialogs.items.endMatches')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Clear tournament status (back to setup)
+                {t('tournament.dialogs.reset.items.clearStatus')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Delete all matches and brackets
+                {t('tournament.dialogs.items.deleteMatches')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Delete all match data and statistics
+                {t('tournament.dialogs.items.deleteData')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                <strong>Keep</strong> tournament settings (name, teams, format)
+                <Trans
+                  i18nKey="tournament.dialogs.reset.items.keepSettings"
+                  components={{ b: <strong /> }}
+                />
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                Allow you to edit settings again
+                {t('tournament.dialogs.reset.items.allowEdit')}
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" paragraph>
-              After resetting, you'll need to save again to regenerate brackets.
+              {t('tournament.dialogs.reset.saveAgain')}
             </Typography>
             <Typography variant="body2" color="info.main" sx={{ fontStyle: 'italic' }}>
-              💡 Note: To completely remove the tournament, use "Delete" instead.
+              {t('tournament.dialogs.reset.note')}
             </Typography>
           </>
         }
-        confirmLabel="Reset to Setup"
-        cancelLabel="Cancel"
+        confirmLabel={t('tournament.dialogs.reset.confirm')}
+        cancelLabel={t('common.cancel')}
         onConfirm={onResetConfirm}
         onCancel={onResetCancel}
         confirmColor="warning"
@@ -182,10 +201,10 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
         open={startOpen}
         title={
           noServers
-            ? '⚠️ No Servers Available'
+            ? t('tournament.dialogs.start.titleNoServers')
             : insufficientServers
-            ? '⚠️ Not Enough Servers'
-            : '⚠️ Start Tournament Without Servers?'
+            ? t('tournament.dialogs.start.titleInsufficient')
+            : t('tournament.dialogs.start.titleUncertain')
         }
         message={
           <>
@@ -193,49 +212,52 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
               {noServers && (
                 <>
                   <Typography variant="body2" fontWeight={600} gutterBottom>
-                    No servers are currently available
+                    {t('tournament.dialogs.start.noServersHeading')}
                   </Typography>
                   <Typography variant="body2">
-                    The tournament will start, but matches will be postponed until a server becomes
-                    available. The system will automatically allocate matches when servers are
-                    ready.
+                    {t('tournament.dialogs.start.noServersBody')}
                   </Typography>
                 </>
               )}
               {insufficientServers && (
                 <>
                   <Typography variant="body2" fontWeight={600} gutterBottom>
-                    Not enough servers to run all first-round matches concurrently
+                    {t('tournament.dialogs.start.insufficientHeading')}
                   </Typography>
                   <Typography variant="body2">
-                    You currently have <strong>{availableServers}</strong> available server
-                    {availableServers === 1 ? '' : 's'}, but the first round expects{' '}
-                    <strong>{requiredServers}</strong> concurrent match
-                    {requiredServers === 1 ? '' : 'es'}. Some matches will queue and start later as
-                    servers free up.
+                    <Trans
+                      i18nKey="tournament.dialogs.start.insufficientBody"
+                      values={{
+                        available: t('tournament.counts.availableServers', {
+                          count: availableServers,
+                        }),
+                        required: t('tournament.counts.concurrentMatches', {
+                          count: requiredServers,
+                        }),
+                      }}
+                      components={{ b: <strong /> }}
+                    />
                   </Typography>
                 </>
               )}
               {!noServers && !insufficientServers && (
                 <>
                   <Typography variant="body2" fontWeight={600} gutterBottom>
-                    Server availability is uncertain
+                    {t('tournament.dialogs.start.uncertainHeading')}
                   </Typography>
                   <Typography variant="body2">
-                    The tournament may start with limited or no servers available. Matches will be
-                    postponed until servers become available, and will be allocated automatically
-                    when they are ready.
+                    {t('tournament.dialogs.start.uncertainBody')}
                   </Typography>
                 </>
               )}
             </Alert>
             <Typography variant="body2" color="text.secondary">
-              Do you want to start the tournament anyway?
+              {t('tournament.dialogs.start.question')}
             </Typography>
           </>
         }
-        confirmLabel="Yes, Start Anyway"
-        cancelLabel="Check Servers"
+        confirmLabel={t('tournament.dialogs.start.confirm')}
+        cancelLabel={t('tournament.dialogs.start.cancel')}
         onConfirm={onStartConfirm}
         onCancel={() => {
           onStartCancel();

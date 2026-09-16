@@ -56,8 +56,6 @@ import { normalizeConfigPlayers } from '../../utils/playerUtils';
 import { PlayerAvatar } from '../player/PlayerAvatar';
 import { useTranslation } from 'react-i18next';
 import {
-  CURRENT_MAP_SCORE_LABEL,
-  SERIES_SCORE_LABEL,
   deriveCurrentMapScore,
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
@@ -676,7 +674,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                         </Typography>
                       </Box>
                       <Typography variant="caption" color="text.secondary" mt={1}>
-                        {SERIES_SCORE_LABEL}
+                        {t('matchInfo.scoreboard.mapsWon')}
                       </Typography>
                     </>
                   )}
@@ -706,7 +704,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                         </Typography>
                       </Box>
                       <Typography variant="caption" color="text.secondary">
-                        {CURRENT_MAP_SCORE_LABEL}
+                        {t('matchInfo.scoreboard.currentMapScore')}
                       </Typography>
                     </>
                   )}
@@ -798,7 +796,7 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       <Box display="flex" alignItems="center" gap={1}>
                         <GroupsIcon color="primary" />
                         <Typography variant="subtitle1" fontWeight={600}>
-                          Player Roster
+                          {t('matchDetailsModal.roster.title')}
                         </Typography>
                       </Box>
                     </AccordionSummary>

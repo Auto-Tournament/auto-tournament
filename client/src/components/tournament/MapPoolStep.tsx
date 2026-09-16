@@ -12,6 +12,7 @@ import {
   TextField,
 } from '@mui/material';
 import { Warning as WarningIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import type { MapPool, Map as MapType } from '../../types/api.types';
 import { SortableMapList } from './SortableMapList';
 import { validateMapCount, requiresVeto } from '../../utils/tournamentVerification';
@@ -60,16 +61,18 @@ export function MapPoolStep({
   hideShuffleExplanation = false,
   enableOrdering = true,
 }: MapPoolStepProps) {
+  const { t } = useTranslation();
+
   const getMapDisplayName = (mapId: string): string => {
     const map = availableMaps.find((m) => m.id === mapId);
     return map ? map.displayName : mapId;
   };
 
   const getMapType = (mapId: string): string => {
-    if (mapId.startsWith('de_')) return 'Defusal';
-    if (mapId.startsWith('cs_')) return 'Hostage';
-    if (mapId.startsWith('ar_')) return 'Arms Race';
-    return 'Unknown';
+    if (mapId.startsWith('de_')) return t('tournament.mapPool.types.defusal');
+    if (mapId.startsWith('cs_')) return t('tournament.mapPool.types.hostage');
+    if (mapId.startsWith('ar_')) return t('tournament.mapPool.types.armsRace');
+    return t('tournament.mapPool.types.unknown');
   };
 
   const getMapTypeColor = (mapId: string): 'default' | 'primary' | 'secondary' | 'success' => {
@@ -108,24 +111,29 @@ export function MapPoolStep({
       {isShuffle && !hideShuffleExplanation && (
         <Alert severity="info" sx={{ mb: 3 }} data-testid="shuffle-map-sequence-field">
           <Typography variant="body2" fontWeight={600} gutterBottom>
-            Map Selection for Shuffle Tournaments
+            {t('tournament.mapPool.shuffleTitle')}
           </Typography>
           <Typography variant="body2">
-            All selected maps will be played in sequence. Each map represents one round of matches.
-            The number of maps you choose determines the number of rounds that will be played.
+            {t('tournament.mapPool.shuffleBody')}
             {maps.length > 0 && (
-              <strong> You have selected {maps.length} map{maps.length !== 1 ? 's' : ''}, so {maps.length} round{maps.length !== 1 ? 's' : ''} will be played.</strong>
+              <strong>
+                {' '}
+                {t('tournament.mapPool.shuffleSelected', {
+                  maps: t('tournament.counts.maps', { count: maps.length }),
+                  rounds: t('tournament.counts.rounds', { count: maps.length }),
+                })}
+              </strong>
             )}
           </Typography>
         </Alert>
       )}
       {/* Map Pool Selection Dropdown */}
       <FormControl fullWidth sx={{ mb: 2 }}>
-        <InputLabel>Choose a map pool</InputLabel>
+        <InputLabel>{t('tournament.mapPool.chooseLabel')}</InputLabel>
         <Select
           data-testid="tournament-map-pool-select"
           value={selectedMapPool || ''}
-          label="Choose a map pool"
+          label={t('tournament.mapPool.chooseLabel')}
           onChange={(e) => onMapPoolChange(e.target.value)}
           disabled={!canEdit || saving || loadingMaps}
           displayEmpty
@@ -146,7 +154,9 @@ export function MapPoolStep({
                 {pool.name}
               </MenuItem>
             ))}
-          <MenuItem value="custom" data-testid="tournament-map-pool-option">Custom</MenuItem>
+          <MenuItem value="custom" data-testid="tournament-map-pool-option">
+            {t('tournament.mapPool.custom')}
+          </MenuItem>
         </Select>
       </FormControl>
 
@@ -154,7 +164,7 @@ export function MapPoolStep({
       {maps.length > 0 && (
         <Box sx={{ mb: 2 }}>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
-            Selected Maps ({maps.length}):
+            {t('tournament.mapPool.selectedMaps', { total: maps.length })}
           </Typography>
           {isShuffle && enableOrdering ? (
             <SortableMapList
@@ -201,7 +211,9 @@ export function MapPoolStep({
             disableCloseOnSelect
             fullWidth
             getOptionLabel={(option) => getMapDisplayName(option)}
-            renderInput={(params) => <TextField {...params} placeholder="Choose maps..." />}
+            renderInput={(params) => (
+              <TextField {...params} placeholder={t('tournament.mapPool.chooseMapsPlaceholder')} />
+            )}
             renderOption={(props, option) => (
               <Box component="li" {...props} key={option}>
                 <Box display="flex" alignItems="center" gap={1} width="100%">
@@ -232,7 +244,7 @@ export function MapPoolStep({
               disabled={!canEdit || saving}
               sx={{ mt: 1 }}
             >
-              Save Map Pool
+              {t('tournament.mapPool.saveMapPool')}
             </Button>
           )}
         </Box>

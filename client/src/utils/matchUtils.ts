@@ -2,6 +2,8 @@
  * Utility functions for match-related data formatting and calculations
  */
 
+import i18n from '../i18n';
+
 /**
  * Format a Unix timestamp to a localized date string
  */
@@ -62,23 +64,26 @@ export const getStatusLabel = (
   maxRounds?: number,
   overtimeRoundsPerSegment?: number
 ): string => {
-  if (walkover) return 'WALKOVER';
+  const label = (key: string, options?: Record<string, unknown>) =>
+    i18n.t(`matchesPage.statusLabel.${key}`, options);
+
+  if (walkover) return label('walkover');
 
   switch (status) {
     case 'pending':
-      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT TO START';
+      if (tournamentStarted === false) return label('waitingForTournament');
       // If veto is completed but no server, show waiting for server
-      if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
-      return 'VETO PENDING';
+      if (vetoCompleted === true && hasServer === false) return label('waitingForServer');
+      return label('vetoPending');
     case 'ready':
-      if (tournamentStarted === false) return 'WAITING FOR TOURNAMENT START';
-      if (vetoCompleted === false) return 'MAP VETO';
+      if (tournamentStarted === false) return label('waitingForTournament');
+      if (vetoCompleted === false) return label('mapVeto');
       // If veto is completed but no server, show waiting for server
-      if (vetoCompleted === true && hasServer === false) return 'WAITING FOR SERVER';
+      if (vetoCompleted === true && hasServer === false) return label('waitingForServer');
       // Veto complete and server assigned – match is queued to be loaded on the server.
-      return 'SERVER ALLOCATED';
+      return label('serverAllocated');
     case 'loaded':
-      return 'WARMUP';
+      return label('warmup');
     case 'live':
       // Check if in overtime
       if (
@@ -93,14 +98,14 @@ export const getStatusLabel = (
           overtimeRoundsPerSegment
         );
         if (overtimeNumber !== null) {
-          return `OVERTIME #${overtimeNumber}`;
+          return label('overtime', { n: overtimeNumber });
         }
       }
-      return 'LIVE';
+      return label('live');
     case 'completed':
-      return 'COMPLETED';
+      return label('completed');
     case 'cancelled':
-      return 'CANCELLED';
+      return label('cancelled');
     default:
       return status.toUpperCase();
   }
@@ -273,11 +278,10 @@ export const getStatusColor = (
  */
 export const getRoundLabel = (round: number, totalRounds?: number): string => {
   if (totalRounds) {
-    if (round === totalRounds) return 'Finals';
-    if (round === totalRounds - 1) return 'Semi-Finals';
-    if (round === totalRounds - 2) return 'Quarter-Finals';
+    if (round === totalRounds) return i18n.t('rounds.finals');
+    if (round === totalRounds - 1) return i18n.t('rounds.semifinals');
+    if (round === totalRounds - 2) return i18n.t('rounds.quarterfinals');
   }
 
-  if (round === 1) return 'Round 1';
-  return `Round ${round}`;
+  return i18n.t('rounds.roundN', { n: round });
 };

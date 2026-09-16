@@ -16,6 +16,7 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import RefreshIcon from '@mui/icons-material/Refresh';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
+import { useTranslation } from 'react-i18next';
 import { TOURNAMENT_TYPES, MATCH_FORMATS } from '../../constants/tournament';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { api } from '../../utils/api';
@@ -56,6 +57,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   hasBracket,
   onBulkCreateShuffleMatches,
 }) => {
+  const { t } = useTranslation();
   const { showWarning } = useSnackbar();
   const isShuffle = tournament.type === 'shuffle';
   const teamSize = tournament.teamSize || 5;
@@ -95,9 +97,11 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
   const handleStart = () => {
     if (!canStart && isShuffle) {
       showWarning(
-        `Need at least ${minPlayers} players to start the tournament (${teamSize}v${teamSize} matches). Currently registered: ${
-          registeredPlayerCount || 0
-        }`
+        t('tournament.reviewCard.needPlayersWarning', {
+          minPlayers,
+          teamSize,
+          registered: registeredPlayerCount || 0,
+        })
       );
       return;
     }
@@ -116,7 +120,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
             {!isShuffle && (
               <>
                 <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                  Teams
+                  {t('tournament.labels.teams')}
                 </Typography>
                 <Box display="flex" flexWrap="wrap" gap={1} mb={2}>
                   {tournament.teams.map((team) => (
@@ -130,7 +134,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           {!isShuffle && (
             <Grid size={{ xs: 12, sm: 6 }}>
               <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                Maps
+                {t('tournament.labels.maps')}
               </Typography>
               <Box display="flex" flexWrap="wrap" gap={1}>
                 {tournament.maps.map((map: string) => (
@@ -182,11 +186,11 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
           >
             {starting
               ? simulationEnabled
-                ? 'Starting Simulation...'
-                : 'Starting...'
+                ? t('tournament.reviewCard.startingSimulation')
+                : t('tournament.reviewCard.starting')
               : simulationEnabled
-              ? 'Start Simulation'
-              : 'Start Tournament'}
+              ? t('tournament.reviewCard.startSimulation')
+              : t('tournament.reviewCard.start')}
           </Button>
 
           {isShuffle && onBulkCreateShuffleMatches && (
@@ -196,7 +200,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               onClick={onBulkCreateShuffleMatches}
               disabled={starting || saving}
             >
-              Bulk create matches
+              {t('tournament.reviewCard.bulkCreateMatches')}
             </Button>
           )}
 
@@ -207,7 +211,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               onClick={onEdit}
               disabled={starting || saving}
             >
-              Edit
+              {t('tournament.reviewCard.edit')}
             </Button>
           )}
 
@@ -216,8 +220,8 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               <Tooltip
                 title={
                   canRegenerate
-                    ? 'Delete all current matches and regenerate the bracket with the same settings.'
-                    : 'Generate the bracket at least once (Save & Generate Brackets) before you can regenerate.'
+                    ? t('tournament.reviewCard.regenerateTooltip')
+                    : t('tournament.reviewCard.regenerateDisabledTooltip')
                 }
                 enterDelay={500}
               >
@@ -228,7 +232,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
                     onClick={onRegenerate}
                     disabled={saving || !canRegenerate}
                   >
-                    Regenerate
+                    {t('tournament.reviewCard.regenerate')}
                   </Button>
                 </Box>
               </Tooltip>
@@ -240,7 +244,7 @@ export const TournamentReview: React.FC<TournamentReviewProps> = ({
               onClick={onDelete}
               disabled={saving}
             >
-              Delete
+              {t('common.delete')}
             </Button>
           </Box>
         </Box>

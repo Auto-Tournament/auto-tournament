@@ -355,7 +355,7 @@ export async function propagateMatchBySlotSources(matchId: number): Promise<void
  */
 export async function checkTournamentCompletion(tournamentId: number = 1): Promise<void> {
   try {
-    log.info(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
+    log.debug(`[TOURNAMENT] Starting completion check for tournament ${tournamentId}`);
     
     const tournament = await db.queryOneAsync<DbTournamentRow>(
       'SELECT * FROM tournament WHERE id = ?',
@@ -363,20 +363,20 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
     );
     
     if (!tournament) {
-      log.info(`[TOURNAMENT] Tournament ${tournamentId} not found`);
+      log.debug(`[TOURNAMENT] Tournament ${tournamentId} not found`);
       return;
     }
     
     if (tournament.status === 'completed') {
-      log.info(`[TOURNAMENT] Tournament ${tournamentId} already completed, skipping check`);
+      log.debug(`[TOURNAMENT] Tournament ${tournamentId} already completed, skipping check`);
       return;
     }
 
-    log.info(`[TOURNAMENT] Tournament ${tournamentId} status: ${tournament.status}, type: ${tournament.type}`);
+    log.debug(`[TOURNAMENT] Tournament ${tournamentId} status: ${tournament.status}, type: ${tournament.type}`);
 
     // Skip shuffle tournaments - they handle completion in shuffleTournamentService
     if (tournament.type === 'shuffle') {
-      log.info(`[TOURNAMENT] Skipping shuffle tournament ${tournamentId} (handled separately)`);
+      log.debug(`[TOURNAMENT] Skipping shuffle tournament ${tournamentId} (handled separately)`);
       return;
     }
 
@@ -410,7 +410,7 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
       return acc;
     }, {} as Record<string, number>);
 
-    log.info(`[TOURNAMENT] Completion check for tournament ${tournamentId}:`, {
+    log.debug(`[TOURNAMENT] Completion check for tournament ${tournamentId}:`, {
       totalBracketMatches: totalMatchesCount,
       pendingMatches: pendingMatchesCount,
       statusBreakdown,
@@ -441,7 +441,7 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
       log.success(`[TOURNAMENT] Tournament ${tournamentId} marked as completed! Status: ${updated?.status}, completed_at: ${updated?.completed_at}`);
       emitBracketUpdate({ action: 'tournament_completed' });
     } else {
-      log.info(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {
+      log.debug(`[TOURNAMENT] Tournament ${tournamentId} not complete yet:`, {
         hasMatches: totalMatchesCount > 0,
         allCompleted: pendingMatchesCount === 0,
         reason: totalMatchesCount === 0 

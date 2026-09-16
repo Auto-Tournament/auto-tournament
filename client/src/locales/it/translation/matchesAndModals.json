@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Impossibile caricare i match",
-      "loadTitle": "Errore nel caricamento dei match"
+      "loadTitle": "Errore nel caricamento dei match",
+      "bulkDelete": "Impossibile eliminare una o più partite"
     },
     "allocation": {
       "nextServers": "Prossima allocazione server tra {{seconds}}s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Elimina match manuali",
-      "message": "Vuoi davvero eliminare {{count}} match manuale{{suffix}}? Questa azione non può essere annullata."
+      "message": "Vuoi davvero eliminare {{count}} match manuale{{suffix}}? Questa azione non può essere annullata.",
+      "deleted_one": "{{count}} partita eliminata",
+      "deleted_other": "{{count}} partite eliminate"
+    },
+    "card": {
+      "matchNumber": "Partita #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Posizione in coda: #{{position}}",
+      "waitingForServers": "In attesa di server...",
+      "allocatingNow": "Assegnazione in corso...",
+      "allocatesIn": "Assegnazione tra {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manuale",
+      "manual": "Manuale",
+      "simulation": "Simulazione",
+      "winner": "VINCITORE",
+      "mapN": "Mappa {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "A TAVOLINO",
+      "waitingForTournament": "IN ATTESA DELL'INIZIO DEL TORNEO",
+      "waitingForServer": "IN ATTESA DEL SERVER",
+      "vetoPending": "VETO IN ATTESA",
+      "mapVeto": "VETO MAPPE",
+      "serverAllocated": "SERVER ASSEGNATO",
+      "warmup": "RISCALDAMENTO",
+      "overtime": "SUPPLEMENTARI #{{n}}",
+      "live": "IN DIRETTA",
+      "completed": "COMPLETATA",
+      "cancelled": "ANNULLATA"
+    },
+    "statusGuide": {
+      "title": "Guida agli stati della partita",
+      "pending": "La partita è programmata ma non ancora assegnata a un server. Verrà assegnata quando un server sarà disponibile.",
+      "loaded": "La partita è caricata sul server ed è in riscaldamento. I giocatori devono connettersi e dichiararsi pronti per iniziare.",
+      "live": "La partita è in corso sul suo server.",
+      "completed": "La partita è terminata. Il vincitore è stato determinato e il tabellone è stato aggiornato.",
+      "proTipTitle": "Suggerimento:",
+      "proTip": "Quando una partita mostra \"In attesa dei giocatori (X/Y)\", il server è pronto e i giocatori devono connettersi. Quando tutti i giocatori previsti sono connessi e pronti, la partita inizia automaticamente."
+    },
+    "allocationWidget": {
+      "title": "Stato di assegnazione dei server",
+      "available": "Disponibili:",
+      "busy": "Occupati:",
+      "cooling": "In raffreddamento:",
+      "offline": "Offline:",
+      "waitingMatches_one": "In attesa: {{count}} partita",
+      "waitingMatches_other": "In attesa: {{count}} partite",
+      "statusLine": "Stato: {{status}}",
+      "statusReady": "Pronto",
+      "statusCooling": "Raffreddamento",
+      "statusBusy": "Occupato",
+      "statusOffline": "Offline",
+      "readyIn": "Pronto tra: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Eliminare questo match?",
       "confirmBody": "Vuoi davvero eliminare il match \"{{slug}}\"? Questa azione non può essere annullata.",
       "button": "Elimina match"
+    },
+    "roster": {
+      "title": "Rosa giocatori",
+      "yourTeam": "La tua squadra",
+      "openPlayerPage": "Apri la pagina del giocatore",
+      "ready": "PRONTO",
+      "connected": "CONNESSO",
+      "offline": "OFFLINE"
     }
   },
   "bulkShuffleMatchesModal": {

@@ -16,7 +16,7 @@ import {
 import { Link as RouterLink } from 'react-router-dom';
 import { io } from 'socket.io-client';
 import { VetoMapCard } from './VetoMapCard';
-import { getMapData } from '../../constants/maps';
+import { getMapData, getMapDisplayName } from '../../constants/maps';
 import { getVetoOrder } from '../../constants/vetoOrders';
 import { api } from '../../utils/api';
 import type { VetoState, MapSide } from '../../types';
@@ -59,6 +59,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
   const [vetoState, setVetoState] = useState<VetoState | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  // Errors from a refused ban/pick/side action are transient: they must not
+  // replace the veto board, or the team loses the UI they were acting in.
+  const [actionError, setActionError] = useState('');
   const [allMaps, setAllMaps] = useState<
     Map<string, { id: string; displayName: string; imageUrl: string | null }>
   >(new Map());
@@ -137,6 +140,8 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
     newSocket.on(`veto:update:${matchSlug}`, (updatedVeto: VetoState) => {
       setVetoState(updatedVeto);
+      // The board moved on, so a refused action from before is no longer news.
+      setActionError('');
       if (updatedVeto.status === 'completed') {
         onCompleteRef.current?.(updatedVeto);
       }
@@ -181,10 +186,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
       return {
         name: mapId,
-        displayName:
-          mapData?.displayName ||
-          fallbackData?.displayName ||
-          mapId.replace('de_', '').replace('cs_', ''),
+        displayName: mapData?.displayName || fallbackData?.displayName || getMapDisplayName(mapId),
         // Use thumbnail for map grid cards
         image: thumbnail,
       };
@@ -217,13 +219,15 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const data = await response.json();
 
       if (!data.success) {
-          setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToProcessVetoAction'));
+        setActionError(
+          translateVetoError(data.error) || t('vetoInterface.errors.failedToProcessVetoAction')
+        );
       } else {
-        setError(''); // Clear any previous errors
+        setActionError(''); // Clear any previous errors
       }
     } catch (err) {
       console.error('Error submitting veto action:', err);
-      setError(t('vetoInterface.errors.failedToSubmitVetoAction'));
+      setActionError(t('vetoInterface.errors.failedToSubmitVetoAction'));
     }
   };
 
@@ -246,14 +250,14 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
       const data = await response.json();
 
       if (data.success) {
-        setError('');
+        setActionError('');
       } else {
         console.error('Side pick failed:', data.error);
-        setError(translateVetoError(data.error) || t('vetoInterface.errors.failedToPickSide'));
+        setActionError(translateVetoError(data.error) || t('vetoInterface.errors.failedToPickSide'));
       }
     } catch (err) {
       console.error('Error picking side:', err);
-      setError(t('vetoInterface.errors.failedToPickSide'));
+      setActionError(t('vetoInterface.errors.failedToPickSide'));
     }
   };
 
@@ -321,7 +325,9 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
               <Grid size={{ xs: 12, sm: 6, md: 4 }} key={pick.mapNumber}>
                 <VetoMapCard
                   mapName={pick.mapName}
-                  displayName={mapData?.displayName || fallbackData?.displayName || pick.mapName}
+                  displayName={
+                    mapData?.displayName || fallbackData?.displayName || getMapDisplayName(pick.mapName)
+                  }
                   imageUrl={imageUrl}
                   state="picked"
                   mapNumber={pick.mapNumber}
@@ -362,6 +368,17 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
 
   return (
     <Box data-testid="veto-interface">
+      {actionError && (
+        <Alert
+          severity="error"
+          onClose={() => setActionError('')}
+          sx={{ mb: 2 }}
+          data-testid="veto-action-error"
+        >
+          {actionError}
+        </Alert>
+      )}
+
       {/* Match Header */}
       <Paper elevation={2} sx={{ mb: 3, p: 3, bgcolor: 'background.paper' }}>
         <Box display="flex" alignItems="center" justifyContent="center" gap={3}>
@@ -775,8 +792,7 @@ export const VetoInterface: React.FC<VetoInterfaceProps> = ({
                       sx={{ mx: 1 }}
                     />
                     {allMaps.get(action.mapName || '')?.displayName ||
-                      getMapData(action.mapName || '')?.displayName ||
-                      action.mapName}
+                      getMapDisplayName(action.mapName || '')}
                     {action.side && ` (${t('vetoInterface.startingSide', { side: action.side })})`}
                   </Typography>
                 </Box>

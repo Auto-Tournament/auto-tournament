@@ -346,7 +346,7 @@ export default function PlayerProfile() {
       })) as PlayerSummaryResponse;
 
       if (!summaryResponse.success || !summaryResponse.player) {
-        setError('Player not found');
+        setError(t('playerPage.playerNotFound'));
         setPlayer(null);
         setRatingHistory([]);
         setMatchHistory([]);
@@ -355,7 +355,7 @@ export default function PlayerProfile() {
       }
 
       setPlayer(summaryResponse.player);
-      document.title = `${summaryResponse.player.name} - Player Profile`;
+      document.title = t('playerPage.pageTitle', { name: summaryResponse.player.name });
 
       // Resolve team membership (used for "My Team" even when player has no current match)
       try {
@@ -479,7 +479,7 @@ export default function PlayerProfile() {
         // Swallow aborts: a newer refresh has been scheduled.
         return;
       }
-      setError('Failed to load player data');
+      setError(t('playerPage.loadFailed'));
       console.error(err);
     } finally {
       if (!silent) {
@@ -487,7 +487,7 @@ export default function PlayerProfile() {
       }
     }
   },
-    [steamId]
+    [steamId, t]
   );
 
   const handleVetoComplete = React.useCallback(() => {
