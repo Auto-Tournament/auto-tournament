@@ -150,7 +150,13 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     let effectiveMatchSlug = statusInfo.matchSlug;
     const queuedMatchSlug = statusInfo.nextMatchSlug ?? null;
 
-    if (!effectiveStatus || effectiveStatus === ServerStatus.IDLE || effectiveStatus === ServerStatus.POSTGAME) {
+    if (
+      !effectiveStatus ||
+      effectiveStatus === ServerStatus.IDLE ||
+      effectiveStatus === ServerStatus.POSTGAME ||
+      // Autostarted warmup on a server with nothing loaded (see isAllocatableStatus).
+      (effectiveStatus === ServerStatus.WARMUP && !effectiveMatchSlug)
+    ) {
       try {
         // Status column in matches can include runtime values like 'loaded' and 'live'
         // in addition to the narrower compile-time type, so we treat it as a string here.

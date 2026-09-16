@@ -2,6 +2,7 @@ import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
 import { validateTeamCount, calculateTotalRounds } from '../utils/tournamentHelpers';
+import { normalizeTournamentSettings } from '../utils/tournamentRow';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
@@ -161,11 +162,11 @@ class TournamentService {
       validateTeamCount(type, teamIds.length);
     }
 
-    const tournamentSettings: TournamentSettings = {
-      ...DEFAULT_SETTINGS,
-      matchFormat: format,
-      ...settings,
-    };
+    // `format` wins over any matchFormat inside settings: the two must agree.
+    const tournamentSettings: TournamentSettings = normalizeTournamentSettings(
+      { ...DEFAULT_SETTINGS, ...settings },
+      format
+    );
 
     const now = Math.floor(Date.now() / 1000);
 
@@ -254,8 +255,13 @@ class TournamentService {
     if (format) updates.format = format;
     if (maps) updates.maps = JSON.stringify(maps);
     if (teamIds) updates.team_ids = JSON.stringify(teamIds);
-    if (settings) {
-      const merged = { ...existing.settings, ...settings };
+    // settings.matchFormat mirrors `format`. Rewrite settings whenever either
+    // changes, or an edited format leaves the old value behind in settings.
+    if (settings || format) {
+      const merged = normalizeTournamentSettings(
+        { ...existing.settings, ...(settings ?? {}) },
+        format || existing.format
+      );
       updates.settings = JSON.stringify(merged);
     }
     if (typeof maxRounds === 'number') {
@@ -841,7 +847,7 @@ class TournamentService {
       ...row,
       maps: JSON.parse(row.maps),
       team_ids: JSON.parse(row.team_ids),
-      settings: JSON.parse(row.settings),
+      settings: normalizeTournamentSettings(JSON.parse(row.settings), row.format),
       // Normalize shuffle-specific fields
       mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
       teamSize: row.team_size === null || row.team_size === undefined ? undefined : row.team_size,

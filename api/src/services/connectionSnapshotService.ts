@@ -231,7 +231,9 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
 export async function applyMatchReport(matchSlug: string, report: MatchReport): Promise<void> {
   const connectedPlayers = extractConnectedPlayers(report, matchSlug);
   playerConnectionService.setConnections(matchSlug, connectedPlayers);
-  log.info('[Connections] Parsed players from match report', {
+  // The plugin posts a report on every phase change and player connect; the
+  // full player arrays belong at debug.
+  log.debug('[Connections] Parsed players from match report', {
     matchSlug,
     connectedPlayers,
   });

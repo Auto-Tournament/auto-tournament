@@ -12,6 +12,7 @@ import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.t
 import type { TournamentResponse } from '../types/tournament.types';
 import { settingsService } from '../services/settingsService';
 import { autoCompleteVetoForMatch } from '../services/vetoSimulationService';
+import { tournamentRowToResponse } from './tournamentRow';
 
 /**
  * Advance winner to next match in bracket
@@ -482,37 +483,7 @@ async function makeMatchReady(match: DbMatchRow): Promise<void> {
     }
 
     // Build tournament response object for config generation
-    const tournamentData: TournamentResponse = {
-      id: tournament.id,
-      name: tournament.name,
-      type: tournament.type as TournamentResponse['type'],
-      format: tournament.format as TournamentResponse['format'],
-      status: tournament.status as TournamentResponse['status'],
-      maps: JSON.parse(tournament.maps),
-      teamIds: JSON.parse(tournament.team_ids),
-      settings: tournament.settings ? JSON.parse(tournament.settings) : {},
-      created_at: tournament.created_at,
-      updated_at: tournament.updated_at ?? tournament.created_at,
-      started_at: tournament.started_at,
-      completed_at: tournament.completed_at,
-      teams: [],
-      mapSequence: tournament.map_sequence ? JSON.parse(tournament.map_sequence) : undefined,
-      teamSize:
-        tournament.team_size === null || typeof tournament.team_size === 'undefined'
-          ? undefined
-          : tournament.team_size,
-      maxRounds:
-        tournament.max_rounds === null || typeof tournament.max_rounds === 'undefined'
-          ? undefined
-          : tournament.max_rounds,
-      overtimeMode: (tournament.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-      overtimeSegments:
-        tournament.overtime_segments === null ||
-        typeof tournament.overtime_segments === 'undefined'
-          ? undefined
-          : tournament.overtime_segments,
-      eloTemplateId: tournament.elo_template_id ?? undefined,
-    };
+    const tournamentData: TournamentResponse = tournamentRowToResponse(tournament);
 
     // Generate match config using the service
     const config = await generateMatchConfig(

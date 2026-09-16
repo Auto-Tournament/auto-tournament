@@ -106,10 +106,18 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
         ])) ?? null;
     }
 
+    // Expected, not an error: the plugin also reports on warmup_start when no
+    // match is loaded (autostarted warmup after a restart). A 404 here logged a
+    // warning on every server restart.
     if (!match) {
-      return res.status(404).json({
-        success: false,
-        error: 'Match not found for provided identifiers',
+      log.debug('[MatchReport] Report with no match loaded; nothing to apply', {
+        serverId,
+        matchSlug: matchSlug ?? null,
+      });
+      return res.status(200).json({
+        success: true,
+        ignored: true,
+        message: 'Report ignored: no match found for this server',
       });
     }
 
