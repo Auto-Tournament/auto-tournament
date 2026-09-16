@@ -14,6 +14,7 @@ import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { serverAllocationTracker } from './serverAllocationTracker';
+import { serverTurnoverTracker } from '../utils/serverTurnover';
 import { checkQueueTurn, matchBracketOf, QUEUE_ORDER_SQL, type QueueEntry } from '../utils/allocationQueue';
 
 /**
@@ -22,6 +23,11 @@ import { checkQueueTurn, matchBracketOf, QUEUE_ORDER_SQL, type QueueEntry } from
 export class MatchAllocationService {
   // Grace period in seconds after server becomes idle before allowing allocation.
   // This ensures demo uploads complete and match reset finishes.
+  //
+  // It is the fallback. When MAT saw the series end and the plugin's demo
+  // upload report back (or no upload was expected), an idle server is released
+  // straight away; a server whose demo is still uploading is held past the
+  // window. See utils/serverTurnover.
   //
   // For "real" tournaments we want to be conservative, but still responsive for
   // typical events. Two minutes is usually enough time for demo uploads and a
@@ -210,6 +216,7 @@ export class MatchAllocationService {
         | 'offline'
         | 'busy'
         | 'grace-window'
+        | 'demo-upload'
         | 'cs2-out-of-date'
         | 'cs2-unverified'
         | null;
@@ -274,6 +281,7 @@ export class MatchAllocationService {
       const isIdle = pluginSaysIdle && (!dbSaysBusy || dbRecordIsStale);
       
       let inGraceWindow = false;
+      let demoUploadPending = false;
       let secondsUntilReady: number | null = null;
       let allocatable = false;
 
@@ -284,8 +292,15 @@ export class MatchAllocationService {
       const isCs2Verified =
         typeof server.cs2BuildId === 'number' && typeof server.cs2UpdateCheckedAt === 'number';
 
-      if (isIdle) {
-        if (updatedAt) {
+      const turnover = isIdle ? serverTurnoverTracker.evaluate(server.id, updatedAt ?? null, now) : null;
+
+      if (isIdle && turnover?.demoUploadPending) {
+        // The previous series' demo is still uploading: never hand the server
+        // out, however long it has been idle.
+        demoUploadPending = true;
+        secondsUntilReady = turnover.demoUploadGiveUpInSeconds;
+      } else if (isIdle) {
+        if (updatedAt && !turnover?.releaseEarly) {
           const age = now - updatedAt;
           if (age < GRACE_PERIOD_SECONDS) {
             inGraceWindow = true;
@@ -318,6 +333,7 @@ export class MatchAllocationService {
       if (!allocatable) {
         if (!online) notAllocatableReason = 'offline';
         else if (!isIdle) notAllocatableReason = 'busy';
+        else if (demoUploadPending) notAllocatableReason = 'demo-upload';
         else if (inGraceWindow) notAllocatableReason = 'grace-window';
         else if (isOutOfDate) notAllocatableReason = 'cs2-out-of-date';
         else if (!isCs2Verified) notAllocatableReason = 'cs2-unverified';
@@ -523,9 +539,22 @@ export class MatchAllocationService {
         continue;
       }
 
+      // Never load onto a server whose previous demo is still uploading.
+      const turnover = serverTurnoverTracker.evaluate(server.id, updatedAt ?? null, now);
+      if (turnover.demoUploadPending) {
+        log.debug(
+          `Server ${server.id} (${server.name}) is idle but its previous demo upload has not reported back yet`
+        );
+        continue;
+      }
+
       // Check grace period: if status was recently updated to idle, wait before allocating.
-      // This ensures demo uploads complete and match reset finishes.
-      if (updatedAt) {
+      // Skipped when the series end and demo upload were both seen (releaseEarly).
+      if (turnover.releaseEarly) {
+        log.debug(
+          `Server ${server.id} (${server.name}) is idle after series end with no demo upload pending, skipping grace period`
+        );
+      } else if (updatedAt) {
         const age = now - updatedAt;
 
         // If status was recently updated to idle (within grace period), wait

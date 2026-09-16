@@ -13,6 +13,7 @@ import { matchLiveStatsService } from './matchLiveStatsService';
 import { serverInitializationService } from './serverInitializationService';
 import { settingsService } from './settingsService';
 import { getMatchZyServerConfigCommands } from '../utils/matchzyRconCommands';
+import { resolveSeriesEndKickDelays, serverTurnoverTracker } from '../utils/serverTurnover';
 import { matchConfigFetchTracker } from './matchConfigFetchTracker';
 import { classifyClearQueuedReply, classifyLoadMatchReply } from '../utils/matchzyServerReplies';
 import { serverStatusService, ServerStatus } from './serverStatusService';
@@ -151,6 +152,12 @@ export async function loadMatchOnServer(
     // each match load so updates take effect without requiring a server init reset.
     try {
       const matchzyCore = await settingsService.getMatchzyCoreDefaults();
+      // Simulated series only have bots; MAT waits for the demo upload itself,
+      // so the plugin should not hold the server for the admin's kick delay.
+      const kickDelays = resolveSeriesEndKickDelays(
+        matchzyCore,
+        await settingsService.isSimulationModeEnabled()
+      );
       const cmds = getMatchZyServerConfigCommands({
         autostartMode: matchzyCore.autostartMode,
         minimumReadyRequired: matchzyCore.minimumReadyRequired,
@@ -164,9 +171,7 @@ export async function loadMatchOnServer(
         hostnameFormat: matchzyCore.hostnameFormat,
         demoPath: matchzyCore.demoPath,
         demoNameFormat: matchzyCore.demoNameFormat,
-        seriesEndKickDelayNoDemo: matchzyCore.seriesEndKickDelayNoDemo,
-        seriesEndKickDelayDemoNoUpload: matchzyCore.seriesEndKickDelayDemoNoUpload,
-        seriesEndKickDelayDemoUpload: matchzyCore.seriesEndKickDelayDemoUpload,
+        ...kickDelays,
       });
       for (const cmd of cmds) {
         const result = await rconService.sendCommand(serverId, cmd);
@@ -356,6 +361,7 @@ export async function loadMatchOnServer(
         emitMatchUpdate(updatedMatch);
         emitBracketUpdate({ action: 'match_loaded', matchSlug });
       }
+      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured);
       return {
         success: true,
         queued: true,
@@ -442,6 +448,7 @@ export async function loadMatchOnServer(
         emitBracketUpdate({ action: 'match_loaded', matchSlug });
       }
 
+      serverTurnoverTracker.matchLoaded(serverId, match.id, demoUploadConfigured);
       return {
         success: true,
         webhookConfigured: true,
