@@ -14,6 +14,7 @@ import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { serverAllocationTracker } from './serverAllocationTracker';
+import { checkQueueTurn, QUEUE_ORDER_SQL, type QueueEntry } from '../utils/allocationQueue';
 
 /**
  * Service for automatic server allocation to tournament matches
@@ -46,6 +47,9 @@ export class MatchAllocationService {
    * are currently marked as "allocating".
    */
   private readonly allocatingServers = new Set<string>();
+
+  /** Last contention summary logged by getAllocationStatus, to log changes only. */
+  private lastContentionSummary: string | null = null;
 
   /**
    * Effective grace period to use for allocations in the current mode.
@@ -226,7 +230,7 @@ export class MatchAllocationService {
       // - AND database must not show a loaded/live match
       // This prevents servers from showing as "Available" when they have
       // a match in warmup but the plugin hasn't updated the ConVar yet.
-      const pluginSaysIdle = isAllocatableStatus(status);
+      const pluginSaysIdle = isAllocatableStatus(status, matchSlug);
       const dbSaysBusy = dbBusy !== null;
 
       // A freshly loaded match legitimately looks idle for a moment: MatchZy has
@@ -336,20 +340,28 @@ export class MatchAllocationService {
     const readyMatches = await this.getReadyMatches();
     const requiredServerCount = readyMatches.length;
 
-    // This method is called both by UI endpoints and allocator helpers; only
-    // emit a summary when there is contention so logs stay readable.
+    // This method is called both by UI endpoints (the start dialog polls it
+    // every few seconds) and allocator helpers. Summarise contention once when
+    // it starts or changes; repeats of the same picture go to debug.
     if (requiredServerCount > 0 && availableServerCount === 0) {
-      log.warn(
+      const summary =
         `[ALLOCATION] Status: ${requiredServerCount} match(es) waiting for servers, ` +
-          `${availableServerCount} allocatable, ${offlineCount} offline, ` +
-          `${busyCount} busy, ${graceWindowCount} in grace window`
-      );
+        `${availableServerCount} allocatable, ${offlineCount} offline, ` +
+        `${busyCount} busy, ${graceWindowCount} in grace window`;
+      if (summary !== this.lastContentionSummary) {
+        this.lastContentionSummary = summary;
+        log.info(summary);
+      } else {
+        log.debug(summary);
+      }
 
       if (nextAllocationInSeconds !== null) {
-        log.warn(
+        log.debug(
           `[ALLOCATION] Next server exits grace window in ~${nextAllocationInSeconds}s (grace=${GRACE_PERIOD_SECONDS}s)`
         );
       }
+    } else {
+      this.lastContentionSummary = null;
     }
 
     return {
@@ -490,7 +502,7 @@ export class MatchAllocationService {
       // Follow MatchZy spec: only allocate an idle server (or one left in
       // 'error' - see isAllocatableStatus). "postgame" and "queued" are busy: a
       // load sent then is queued by the plugin and runs minutes later.
-      if (!isAllocatableStatus(status)) {
+      if (!isAllocatableStatus(status, matchSlug)) {
         log.debug(
           `Server ${server.id} (${server.name}) not available: status is '${status}' (not idle)`
         );
@@ -609,10 +621,38 @@ export class MatchAllocationService {
        WHERE tournament_id = 1 
        AND status = 'ready' 
        AND (server_id IS NULL OR server_id = '')
-       ORDER BY round, match_number`
+       ORDER BY ${QUEUE_ORDER_SQL}`
     );
 
     return Promise.all(matches.map((row) => this.rowToMatch(row)));
+  }
+
+  /**
+   * Ready bracket matches waiting for a server, in queue order, without the
+   * team lookups getReadyMatches does. Matches allocateSingleMatch would refuse
+   * anyway (a team missing, or both slots the same team) are left out so they
+   * cannot hold up the matches behind them.
+   */
+  private async getAllocationQueue(): Promise<QueueEntry[]> {
+    const rows = await db.queryAsync<{
+      id: number;
+      slug: string;
+      round: number;
+      match_number: number;
+    }>(
+      `SELECT id, slug, round, match_number FROM matches
+       WHERE tournament_id = 1
+       AND status = 'ready'
+       AND (server_id IS NULL OR server_id = '')
+       AND team1_id IS NOT NULL AND team2_id IS NOT NULL AND team1_id != team2_id
+       ORDER BY ${QUEUE_ORDER_SQL}`
+    );
+    return rows.map((row) => ({
+      id: row.id,
+      slug: row.slug,
+      round: row.round,
+      matchNumber: row.match_number,
+    }));
   }
 
   /**
@@ -644,7 +684,7 @@ export class MatchAllocationService {
       // the older snapshot returned from getAvailableServers.
       const statusInfo = await serverStatusService.getServerStatus(server.id);
 
-      if (!statusInfo.online || !isAllocatableStatus(statusInfo.status)) {
+      if (!statusInfo.online || !isAllocatableStatus(statusInfo.status, statusInfo.matchSlug)) {
         log.debug(
           `[ALLOCATION]${ctxLabel} Refusing to allocate match ${match.slug} to server ${server.id} (${server.name}) because it is not idle (status=${statusInfo.status}, matchSlug=${statusInfo.matchSlug})`
         );
@@ -1046,6 +1086,28 @@ export class MatchAllocationService {
       const availableServers = await this.getAvailableServers();
       if (availableServers.length === 0) {
         return { success: false, error: 'No available servers' };
+      }
+
+      // Hand servers out in queue order. Each ready match polls on its own
+      // timer, so without this the first poller to tick after a server frees
+      // up takes it, whatever its queue position.
+      const freeServerCount = availableServers.filter(
+        (candidate) => !this.allocatingServers.has(candidate.id)
+      ).length;
+      const turn = checkQueueTurn(await this.getAllocationQueue(), matchSlug, freeServerCount);
+      if (!turn.allowed) {
+        log.debug(
+          `[ALLOCATION] Holding match ${matchSlug} (queue position ${turn.position}) for ${turn.ahead.length} earlier match(es); ${freeServerCount} server(s) free`,
+          { ahead: turn.ahead.map((entry) => entry.slug) }
+        );
+        // The matches ahead must be retried, or this one waits forever.
+        for (const entry of turn.ahead) {
+          this.startPollingForServer(entry.slug, baseUrl);
+        }
+        return {
+          success: false,
+          error: `Waiting for ${turn.ahead.length} earlier match(es) in the queue`,
+        };
       }
 
       let server: ServerResponse | null = null;

@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   classifyClearQueuedReply,
   classifyLoadMatchReply,
+  isAllocatableStatus,
   parseConVarReply,
 } from '../../api/src/utils/matchzyServerReplies';
 import {
@@ -84,6 +85,31 @@ test.describe('MatchZy replies and server attribution', () => {
     expect(parseConVarReply('Unknown command "matchzy_tournament_status"!')).toBeNull();
     expect(parseConVarReply('other_var = 1', 'matchzy_tournament_status')).toBeNull();
     expect(parseConVarReply(undefined)).toBeNull();
+  });
+
+  test('an autostarted warmup with no match loaded is allocatable; warmup with a match is not', () => {
+    // Seen after restarting servers with matchzy_autostart_mode 1 (MatchZy-Enhanced
+    // 1.4.28): `[UpdateTournamentStatus] Status: warmup, Match: , Timestamp: 1789547159`.
+    // All three servers read as busy and the start dialog found no free server.
+    const matchVar = parseConVarReply('matchzy_tournament_match = ', 'matchzy_tournament_match') || null;
+    expect(matchVar).toBeNull();
+    expect(isAllocatableStatus('warmup', matchVar)).toBe(true);
+    expect(isAllocatableStatus('warmup', '')).toBe(true);
+    expect(isAllocatableStatus('warmup', '  ')).toBe(true);
+    expect(isAllocatableStatus('warmup', undefined)).toBe(true);
+
+    // A loaded match waiting for players (the convar holds MAT's match id).
+    expect(isAllocatableStatus('warmup', '25')).toBe(false);
+    expect(isAllocatableStatus('warmup', 'r1m2')).toBe(false);
+
+    // Unchanged: idle and error are free, match states are busy with or without an id.
+    expect(isAllocatableStatus('idle', '20')).toBe(true);
+    expect(isAllocatableStatus('error', null)).toBe(true);
+    for (const busy of ['loading', 'knife', 'live', 'playing', 'paused', 'halftime', 'postgame', 'queued']) {
+      expect(isAllocatableStatus(busy, null), busy).toBe(false);
+      expect(isAllocatableStatus(busy, '25'), busy).toBe(false);
+    }
+    expect(isAllocatableStatus(null, null)).toBe(false);
   });
 
   test('URLs carry the server and match identity, and stay plain without it', () => {

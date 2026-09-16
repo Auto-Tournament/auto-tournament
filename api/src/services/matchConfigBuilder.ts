@@ -311,7 +311,9 @@ export const generateMatchConfig = async (
     console.error('Failed to attach admins to standard match config', e);
   }
 
-  log.info('Match config generated (standard)', {
+  // Debug: GET /api/matches rebuilds configs, so at info this logged every
+  // config (cvars included) on each poll.
+  log.debug('Match config generated (standard)', {
     matchSlug: slug,
     matchId: config.matchid,
     numMaps: config.num_maps,
@@ -504,7 +506,7 @@ async function generateShuffleMatchConfig(
     console.error('Failed to attach admins to shuffle match config', e);
   }
 
-  log.info('Shuffle match config generated', {
+  log.debug('Shuffle match config generated', {
     matchSlug: slug,
     map: mapForRound,
     team1: config.team1.name,

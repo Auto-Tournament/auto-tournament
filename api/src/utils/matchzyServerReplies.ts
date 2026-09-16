@@ -105,3 +105,39 @@ export function classifyClearQueuedReply(response: string | null | undefined): C
   if (!match) return 'unsupported';
   return match[1].toLowerCase() === 'none' ? 'none' : 'cleared';
 }
+
+/**
+ * Can MAT send a new match to a server reporting this status?
+ *
+ * Idle, obviously. 'error' too: MatchZy sets it when a load or queued load
+ * fails and leaves it there until the next load, usually with no match set up.
+ * Blocking on it would strand the server. If a match is in fact still set up,
+ * the plugin refuses the load and MAT reports that.
+ *
+ * 'warmup' with no match loaded too. With `matchzy_autostart_mode 1` the
+ * plugin starts warmup on every map load, match or not, so a freshly restarted
+ * server reports `warmup` with an empty `matchzy_tournament_match` and never
+ * goes idle by itself. Treating that as busy left every server unallocatable
+ * after a restart. Warmup with a match loaded is a match waiting for players
+ * and stays busy. (The plugin never clears the match convar, only overwrites
+ * it, so an autostarted warmup after a map change without a restart still
+ * carries the last match id and reads as busy.)
+ *
+ * Every other state has a match on the server (postgame and queued included)
+ * and stays busy.
+ */
+export function isAllocatableStatus(
+  status: string | null | undefined,
+  matchSlug?: string | null
+): boolean {
+  if (status === 'idle' || status === 'error') return true;
+  if (status === 'warmup') return !hasLoadedMatch(matchSlug);
+  return false;
+}
+
+/** The plugin's match convar defaults to "" when nothing was ever loaded. */
+function hasLoadedMatch(matchSlug: string | null | undefined): boolean {
+  if (typeof matchSlug !== 'string') return false;
+  const trimmed = matchSlug.trim();
+  return trimmed !== '' && trimmed !== '0';
+}
