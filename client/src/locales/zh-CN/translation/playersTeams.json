@@ -422,7 +422,9 @@
       "opponent": "对手"
     },
     "mapChips": {
-      "live": "进行中"
+      "live": "进行中",
+      "tiebreak": "decided by tiebreak",
+      "tiebreakWin": "{{team}} won on tiebreak"
     },
     "demos": {
       "title": "地图录像",

@@ -61,7 +61,8 @@
     "steamUnavailable": {
       "title": "Integração com a Steam indisponível",
       "body": "O início de sessão e a pesquisa de URLs personalizados podem não funcionar. Verifique a configuração do servidor e a ligação."
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "common": {
     "delete": "Eliminar",

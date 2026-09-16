@@ -134,13 +134,12 @@ export function ELOProgressionChart({
     chartHeight + padding - padding
   } L ${padding} ${chartHeight + padding - padding} Z`;
 
-  // Use the history-derived starting rating for display as well, falling back
-  // to the prop when necessary.
-  const displayStartingElo = startingRatingBeforeFirst ?? startingElo;
-  // Measure the change against the same starting point that is shown above it.
-  // Using the `startingElo` prop here reported "+0" whenever a player's stored
-  // starting rating happened to equal their current one, even though the
-  // history clearly moved (e.g. 1153 -> 1052).
+  // "Starting ELO" is the player's stored seed (API `startingElo`), the same
+  // value the admin player modal shows. The first history entry's `eloBefore`
+  // is not a start: history outlives deleted tournaments and simulated matches
+  // share timestamps, so it read 1870 for a player seeded at 1500 (QA 2.4.10).
+  // The change is measured against the value shown.
+  const displayStartingElo = startingElo;
   const totalChange = currentElo - displayStartingElo;
 
   return (

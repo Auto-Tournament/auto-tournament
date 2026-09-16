@@ -10,7 +10,7 @@ import {
 } from '@mui/material';
 import HistoryIcon from '@mui/icons-material/History';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../../utils/matchUtils';
+import { formatDate, getBracketMatchLabel } from '../../utils/matchUtils';
 import type { TeamMatchHistory } from '../../types';
 import { TeamMatchHistoryModal } from './TeamMatchHistoryModal';
 
@@ -70,10 +70,16 @@ export function TeamMatchHistoryCard({
                   {historyMatch.opponent?.tag && ` (${historyMatch.opponent.tag})`}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" display="block">
-                  {t('teamMatchHistory.matchNumberDate', {
-                    number: historyMatch.matchNumber,
-                    date: formatDate(historyMatch.completedAt),
-                  })}
+                  {(() => {
+                    const date = formatDate(historyMatch.completedAt);
+                    const bracketLabel = getBracketMatchLabel(historyMatch);
+                    return bracketLabel
+                      ? `${bracketLabel} • ${date}`
+                      : t('teamMatchHistory.matchNumberDate', {
+                          number: historyMatch.globalMatchNumber ?? historyMatch.matchNumber,
+                          date,
+                        });
+                  })()}
                 </Typography>
               </CardContent>
             </CardActionArea>

@@ -422,7 +422,9 @@
       "opponent": "Motstander"
     },
     "mapChips": {
-      "live": "Direkte"
+      "live": "Direkte",
+      "tiebreak": "decided by tiebreak",
+      "tiebreakWin": "{{team}} won on tiebreak"
     },
     "demos": {
       "title": "Kartdemoer",

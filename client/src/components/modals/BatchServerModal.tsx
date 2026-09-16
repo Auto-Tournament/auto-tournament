@@ -27,7 +27,7 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import ErrorIcon from '@mui/icons-material/Error';
 import CloseIcon from '@mui/icons-material/Close';
-import { api } from '../../utils/api';
+import { api, apiErrorMessage } from '../../utils/api';
 import type { Server } from '../../types';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import { useTranslation } from 'react-i18next';
@@ -225,7 +225,12 @@ export default function BatchServerModal({
       const serverName = `${baseName.trim()} #${i + 1}`;
 
       try {
-        const result = await api.post<{ success: boolean; error?: string; serverCanReachApi?: boolean }>(
+        const result = await api.post<{
+          success: boolean;
+          error?: string;
+          serverCanReachApi?: boolean;
+          apiReachability?: 'reachable' | 'unreachable' | 'unknown';
+        }>(
           '/api/rcon/test-connection',
           {
             host: host.trim(),
@@ -239,17 +244,15 @@ export default function BatchServerModal({
           index: i,
           status: result.success ? 'success' : 'error',
           error: result.error,
-          serverCanReachApi: result.serverCanReachApi,
+          // Unconfigured servers have nowhere to send the test event yet.
+          serverCanReachApi:
+            result.apiReachability === 'unknown' ? undefined : result.serverCanReachApi,
         });
       } catch (err) {
-        const error = err as { response?: { data?: { error?: string } }; message?: string };
         newStatuses.set(i, {
           index: i,
           status: 'error',
-          error:
-            error.response?.data?.error ||
-            error.message ||
-            t('batchServerModal.errors.connectionFailed'),
+          error: apiErrorMessage(err, t('batchServerModal.errors.connectionFailed')),
         });
       }
     });

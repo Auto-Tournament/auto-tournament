@@ -1,6 +1,9 @@
 import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import type { DbMatchRow, DbEventRow } from '../types/database.types';
+import { computeTeamStanding, globalMatchNumbers, type TeamStanding } from '../utils/teamPage';
+import { matchBracketOf } from '../utils/allocationQueue';
+import { getSwissStandingEntries } from '../services/swissProgressionService';
 
 const router = Router();
 
@@ -49,6 +52,16 @@ router.get('/:teamId/history', async (req: Request, res: Response) => {
       [teamId, teamId, limit]
     );
 
+    // Number matches the way the matches page does, not by per-round number.
+    const orderRows = await db.queryAsync<{
+      id: number;
+      slug: string;
+      round: number;
+      match_number: number;
+      bracket: string | null;
+    }>('SELECT id, slug, round, match_number, bracket FROM matches');
+    const numbers = globalMatchNumbers(orderRows);
+
     const history = await Promise.all(matches.map(async (match) => {
       const isTeam1 = match.team1_id === teamId;
       const opponent = isTeam1
@@ -90,6 +103,8 @@ router.get('/:teamId/history', async (req: Request, res: Response) => {
         slug: match.slug,
         round: match.round,
         matchNumber: match.match_number,
+        globalMatchNumber: numbers.get(match.slug) ?? match.match_number,
+        bracket: matchBracketOf(match),
         opponent: opponent.id ? { id: opponent.id, name: opponent.name, tag: opponent.tag } : null,
         won,
         teamScore,
@@ -161,34 +176,42 @@ router.get('/:teamId/stats', async (req: Request, res: Response) => {
     const winRate = totalMatches > 0 ? (wins / totalMatches) * 100 : 0;
 
     // Get current tournament standing (if tournament exists)
-    const tournament = await db.queryOneAsync<{ id: number; name: string; status: string }>(
-      'SELECT id, name, status FROM tournament WHERE id = 1'
-    );
+    const tournament = await db.queryOneAsync<{
+      id: number;
+      name: string;
+      status: string;
+      type: string;
+      team_ids: string;
+    }>('SELECT id, name, status, type, team_ids FROM tournament WHERE id = 1');
 
-    let standing = null;
+    // Rank among this tournament's teams only; counting every team in the
+    // database gave "#6 of 9" in an 8-team event.
+    let standing: TeamStanding | null = null;
     if (tournament && tournament.status !== 'setup') {
-      // Get all teams and their wins, sorted
-      const allTeams = await db.queryAsync<{ team_id: string; wins: number; name: string }>(
-        `SELECT 
-          t.id as team_id,
-          t.name,
-          COUNT(CASE WHEN m.winner_id = t.id THEN 1 END) as wins
-        FROM teams t
-        LEFT JOIN matches m ON (m.team1_id = t.id OR m.team2_id = t.id) 
-          AND m.status = 'completed'
-          AND m.tournament_id = 1
-        GROUP BY t.id, t.name
-        ORDER BY wins DESC`
-      );
-
-      const teamIndex = allTeams.findIndex((t) => t.team_id === teamId);
-      if (teamIndex !== -1) {
-        standing = {
-          position: teamIndex + 1,
-          totalTeams: allTeams.length,
-          wins: allTeams[teamIndex].wins,
-        };
+      let teamIds: string[] = [];
+      try {
+        const parsed: unknown = JSON.parse(tournament.team_ids || '[]');
+        if (Array.isArray(parsed)) teamIds = parsed.map(String);
+      } catch {
+        // Malformed team_ids: fall back to the teams in the matches below.
       }
+      if (teamIds.length === 0) {
+        // Shuffle tournaments have no fixed team list: use the teams that played.
+        const rows = await db.queryAsync<{ team_id: string }>(
+          `SELECT team1_id as team_id FROM matches WHERE tournament_id = 1 AND team1_id IS NOT NULL
+           UNION SELECT team2_id as team_id FROM matches WHERE tournament_id = 1 AND team2_id IS NOT NULL`
+        );
+        teamIds = rows.map((r) => r.team_id);
+      }
+      const winRows = await db.queryAsync<{ winner_id: string; wins: number }>(
+        `SELECT winner_id, COUNT(*) as wins FROM matches
+         WHERE status = 'completed' AND tournament_id = 1 AND winner_id IS NOT NULL
+         GROUP BY winner_id`
+      );
+      const winsByTeam = new Map(winRows.map((r) => [r.winner_id, Number(r.wins)]));
+      const swissOrder =
+        tournament.type === 'swiss' ? await getSwissStandingEntries(tournament.id) : null;
+      standing = computeTeamStanding(teamId, teamIds, winsByTeam, swissOrder);
     }
 
     return res.json({

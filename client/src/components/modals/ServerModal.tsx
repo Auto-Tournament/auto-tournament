@@ -18,7 +18,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
-import { api } from '../../utils/api';
+import { api, apiErrorMessage } from '../../utils/api';
 import { useSnackbar } from '../../contexts/SnackbarContext';
 import type { Server as ApiServer } from '../../types/api.types';
 import ConfirmDialog from './ConfirmDialog';
@@ -46,7 +46,7 @@ const slugifyServerName = (name: string): string => {
 };
 
 export default function ServerModal({ open, server, servers, onClose, onSave }: ServerModalProps) {
-  const { showSuccess, showError } = useSnackbar();
+  const { showSuccess, showError, showWarning } = useSnackbar();
   const [name, setName] = useState('');
   const [host, setHost] = useState('');
   const [port, setPort] = useState('27015');
@@ -212,18 +212,23 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
     setError('');
     setChecking(true);
     try {
-      const result = await api.post<{ success: boolean; error?: string; serverCanReachApi?: boolean }>(
-        '/api/rcon/test-connection',
-        {
-          host: host.trim(),
-          port: portNum,
-          password: password.trim(),
-          name: name.trim() || `Test ${host.trim()}:${portNum}`,
-        }
-      );
+      const result = await api.post<{
+        success: boolean;
+        error?: string;
+        serverCanReachApi?: boolean;
+        apiReachability?: 'reachable' | 'unreachable' | 'unknown';
+      }>('/api/rcon/test-connection', {
+        host: host.trim(),
+        port: portNum,
+        password: password.trim(),
+        name: name.trim() || `Test ${host.trim()}:${portNum}`,
+        serverId: server?.id,
+      });
       if (result.success) {
         if (result.serverCanReachApi === true) {
           showSuccess(t('serverModal.success.connectivityOk'));
+        } else if (result.apiReachability === 'unknown') {
+          showWarning(t('serverModal.errors.rconReachableApiUnknown'));
         } else {
           showError(t('serverModal.errors.rconReachableApiUnreachable'));
         }
@@ -231,12 +236,7 @@ export default function ServerModal({ open, server, servers, onClose, onSave }: 
         showError(result.error || t('serverModal.errors.serverOffline'));
       }
     } catch (err) {
-      const e = err as { response?: { data?: { error?: string } }; message?: string };
-      showError(
-        e.response?.data?.error ||
-          e.message ||
-          t('serverModal.errors.testConnectionFailed')
-      );
+      showError(apiErrorMessage(err, t('serverModal.errors.testConnectionFailed')));
     } finally {
       setChecking(false);
     }

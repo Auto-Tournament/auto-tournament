@@ -61,7 +61,8 @@
     "steamUnavailable": {
       "title": "Steam-Integration nicht verfügbar",
       "body": "Anmeldungen und das Auflösen von Vanity-URLs funktionieren eventuell nicht. Prüfe die Serverkonfiguration und die Verbindung."
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "common": {
     "delete": "Löschen",

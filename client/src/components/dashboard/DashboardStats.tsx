@@ -663,13 +663,20 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 <Typography variant="body2" color="text.secondary" mb={2}>
                   {t('dashboard.stats.eloDistribution.subtitle', { bucket: eloBucketSize })}
                     </Typography>
-                <Box sx={{ width: '100%', height: 280, overflowX: 'auto' }}>
+                <Box
+                  sx={{ width: '100%', height: 280, overflowX: 'auto' }}
+                  tabIndex={0}
+                  role="region"
+                  aria-label={t('dashboard.stats.eloDistribution.title')}
+                >
                     <LineChart
                       xAxis={[
                         {
-                        data: eloBuckets.map((_, index) => index),
-                        valueFormatter: (value) =>
-                          eloBuckets?.[Number(value)]?.label ?? String(value),
+                        // Categorical: one tick per bucket. A numeric index
+                        // axis added in-between ticks (0.5, 3.5, 12.5) on top
+                        // of the bucket labels.
+                        scaleType: 'point',
+                        data: eloBuckets.map((b) => b.label),
                         label: t('dashboard.stats.eloDistribution.xAxis'),
                         },
                       ]}
@@ -677,6 +684,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                         {
                         label: t('dashboard.stats.eloDistribution.yAxis'),
                         width: 40,
+                        // Player counts are whole numbers.
+                        tickMinStep: 1,
+                        valueFormatter: (value: number) => String(Math.round(value)),
                         },
                       ]}
                       series={[

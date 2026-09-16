@@ -814,13 +814,6 @@ export default function PlayerProfile() {
     );
   }
 
-  // Use first recorded rating as a more intuitive "starting" point rather than
-  // the raw DB seed (which might be a calibration value like 3000).
-  const effectiveStartingElo =
-    ratingHistory.length > 0
-      ? ratingHistory[ratingHistory.length - 1].eloAfter
-      : player.startingElo;
-
   // Baseline for the history table: true initial rating before the first match.
   const baselineRating =
     ratingHistory.length > 0
@@ -1294,7 +1287,7 @@ export default function PlayerProfile() {
                 createdAt: entry.createdAt,
               }))}
               currentElo={player.currentElo}
-              startingElo={effectiveStartingElo}
+              startingElo={player.startingElo}
             />
           )}
 

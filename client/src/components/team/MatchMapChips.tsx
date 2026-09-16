@@ -20,6 +20,8 @@ export function MatchMapChips({ match, currentMapNumber }: MatchMapChipsProps) {
         activeMapIndex={currentMapNumber}
         activeMapLabel={match.currentMap || null}
         mapResults={match.mapResults || []}
+        team1Name={match.team1?.name}
+        team2Name={match.team2?.name}
       />
       {match.mapResults && match.mapResults.some((mr) => mr.demoFilePath) && (
         <Box mt={3}>

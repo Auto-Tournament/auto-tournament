@@ -42,8 +42,14 @@ interface ProtectedRouteProps {
 }
 
 function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
-  const { isAuthenticated, isLoading, playerSteamId, needsSteamLink, adminDenialMessage } =
-    useAuth();
+  const {
+    isAuthenticated,
+    isLoading,
+    playerSteamId,
+    needsSteamLink,
+    adminDenialMessage,
+    impersonation,
+  } = useAuth();
   const location = useLocation();
   const { showWarning } = useSnackbar();
 
@@ -96,6 +102,14 @@ function ProtectedRoute({ children, adminOnly = true }: ProtectedRouteProps) {
 
   if (adminOnly) {
     // Admin-only routes (default): require an authenticated admin session with a linked Steam ID.
+    // Impersonating: the UI behaves as that player, so admin pages send you to
+    // their profile. The banner (rendered app-wide) keeps "stop" available.
+    // The API still honours the real admin session on purpose, so stopping
+    // and anything done explicitly from the banner keep working.
+    if (impersonation) {
+      return <Navigate to={`/player/${impersonation.steamId}`} replace />;
+    }
+
     if (isAuthenticated) {
       // Admin session active – require Steam to be linked before allowing access
       // to the main dashboard and other protected admin routes.

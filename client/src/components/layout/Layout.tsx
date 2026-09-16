@@ -157,9 +157,12 @@ export default function Layout() {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const contentContainerRef = React.useRef<HTMLDivElement>(null);
   const [webhookConfigured, setWebhookConfigured] = React.useState<boolean | null>(null);
-  const [open, setOpen] = React.useState(() => {
+  // The saved preference is for the desktop mini/full sidebar only. Reusing it
+  // on phones kept the 240px permanent drawer and opened the temporary one on
+  // top, leaving ~135px of content at 375px wide. Small screens use only the
+  // temporary drawer, closed by default.
+  const [desktopOpen, setDesktopOpen] = React.useState(() => {
     if (typeof window !== 'undefined') {
-      // Check localStorage first, then fall back to screen size
       const stored = localStorage.getItem('sidebarOpen');
       if (stored !== null) {
         return stored === 'true';
@@ -168,6 +171,9 @@ export default function Layout() {
     }
     return false;
   });
+  const [mobileOpen, setMobileOpen] = React.useState(false);
+  const open = isMobile ? mobileOpen : desktopOpen;
+  const setOpen = (value: boolean) => (isMobile ? setMobileOpen(value) : setDesktopOpen(value));
 
   const isDevelopment = useIsDevelopment();
 
@@ -388,10 +394,13 @@ export default function Layout() {
   // Persist sidebar state to localStorage
   React.useEffect(() => {
     // Only persist on desktop (md and up), not mobile
-    if (!isMobile) {
-      localStorage.setItem('sidebarOpen', open.toString());
-    }
-  }, [open, isMobile]);
+    localStorage.setItem('sidebarOpen', desktopOpen.toString());
+  }, [desktopOpen]);
+
+  // Leaving the small layout must not leave a stale temporary drawer open.
+  React.useEffect(() => {
+    if (!isMobile) setMobileOpen(false);
+  }, [isMobile]);
 
   // Scroll to top when route changes
   React.useEffect(() => {
@@ -502,7 +511,7 @@ export default function Layout() {
       {/* Mobile Drawer (temporary) */}
       <MuiDrawer
         variant="temporary"
-        open={open}
+        open={isMobile && mobileOpen}
         onClose={handleDrawerClose}
         ModalProps={{
           keepMounted: true,
@@ -534,7 +543,7 @@ export default function Layout() {
                 Matchzy Auto Tournament
               </Typography>
             </Box>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton onClick={handleDrawerClose} aria-label={t('layout.closeDrawer')}>
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </Box>
@@ -671,9 +680,9 @@ export default function Layout() {
       </MuiDrawer>
 
       {/* Desktop Drawer (permanent mini variant) */}
-      <Drawer variant="permanent" open={open}>
+      <Drawer variant="permanent" open={open} sx={{ display: { xs: 'none', md: 'block' } }}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={handleDrawerClose} aria-label={t('layout.closeDrawer')}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </DrawerHeader>
@@ -866,7 +875,7 @@ export default function Layout() {
           overflow: 'hidden',
         }}
       >
-        <AppBar position="fixed" open={open} color="inherit" sx={{ displayPrint: 'none' }}>
+        <AppBar position="fixed" open={!isMobile && open} color="inherit" sx={{ displayPrint: 'none' }}>
           <Toolbar>
             <IconButton
               color="inherit"

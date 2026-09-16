@@ -229,7 +229,8 @@
       "saveFailed": "Server opslaan mislukt",
       "deleteFailed": "Server verwijderen mislukt",
       "rconReachableApiUnreachable": "We kunnen de server bereiken via RCON, maar de server kon het API-endpoint niet bereiken (testevent ontbreekt).",
-      "serverOffline": "Server lijkt offline of onbereikbaar via RCON."
+      "serverOffline": "Server lijkt offline of onbereikbaar via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
     },
     "success": {
       "connectivityOk": "Connectiviteit in beide richtingen geverifieerd: server is online en kan de API bereiken.",

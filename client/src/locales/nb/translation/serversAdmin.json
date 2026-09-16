@@ -229,7 +229,8 @@
       "saveFailed": "Klarte ikke å lagre server",
       "deleteFailed": "Klarte ikke å slette server",
       "rconReachableApiUnreachable": "Vi når serveren via RCON, men serveren klarte ikke å nå API-endepunktet (testhendelse mangler).",
-      "serverOffline": "Serveren virker å være offline eller utilgjengelig via RCON."
+      "serverOffline": "Serveren virker å være offline eller utilgjengelig via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
     },
     "success": {
       "connectivityOk": "Toveis tilkobling bekreftet: serveren er online og kan nå API-et.",

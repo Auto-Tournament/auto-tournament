@@ -56,6 +56,7 @@
       "publicLinks": "Public Links"
     },
     "openDrawer": "Open navigation menu",
+    "closeDrawer": "Close navigation menu",
     "matchzyDbDown": {
       "title": "MatchZy DB unreachable",
       "body_one": "{{count}} server reports that the plugin cannot reach its database. Backups and the event queue may be affected.",
