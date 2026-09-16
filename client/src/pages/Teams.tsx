@@ -341,7 +341,6 @@ export default function Teams() {
         title={t('teamsPage.bulkDelete.title')}
         message={t('teamsPage.bulkDelete.message', {
           count: selectedTeamIds.size,
-          suffix: selectedTeamIds.size === 1 ? '' : 's',
         })}
         confirmLabel={t('teamsPage.bulkDelete.confirm')}
         confirmColor="error"
@@ -355,10 +354,7 @@ export default function Teams() {
             const count = ids.length;
             await api.post('/api/teams/bulk-delete', { ids });
             showSuccess(
-              t('teamsPage.bulkDelete.success', {
-                count,
-                suffix: count === 1 ? '' : 's',
-              })
+              t('teamsPage.bulkDelete.success', { count })
             );
             setSelectedTeamIds(() => new Set());
             setSelectionMode(false);

@@ -38,7 +38,12 @@
       "onlineOk": "Online (API ↔ Server OK)",
       "onlineRconOnly": "Online (RCON only)",
       "rconFailed": "RCON failed",
-      "onlineTesting": "Online (testing)"
+      "onlineTesting": "Online (testing)",
+      "noEventsYet": "No events yet",
+      "notConfigured": "Not configured",
+      "onlineIdle": "Online (idle — no recent events)",
+      "onlineActive": "Online (active)",
+      "online": "Online"
     },
     "ipBanned": {
       "title": "Server May Have Banned Our IP",
@@ -61,7 +66,10 @@
     "labels": {
       "host": "Host:",
       "port": "Port:",
-      "id": "ID:"
+      "id": "ID:",
+      "cs2Name": "CS2 name:",
+      "plugin": "Plugin:",
+      "cs2BuildValue": "build {{build}}"
     },
     "errors": {
       "loadServers": "Failed to load servers",
@@ -71,13 +79,110 @@
     },
     "bulkDelete": {
       "title": "Delete Servers",
-      "message": "Are you sure you want to delete {{count}} server{{suffix}}? This action cannot be undone."
+      "message_one": "Are you sure you want to delete {{count}} server? This action cannot be undone.",
+      "message_other": "Are you sure you want to delete {{count}} servers? This action cannot be undone."
     },
     "autoConfig": {
       "configuring": "Configuring new servers (sending MatchZy config via RCON)…",
       "done": "New servers configured. Refreshing status…"
     },
-    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events."
+    "checkServerLogs": "Check the game server console/logs to see if MatchZy receives config and sends events.",
+    "fleet": {
+      "title": "Server fleet status",
+      "total_one": "{{count}} server",
+      "total_other": "{{count}} servers",
+      "online": "online",
+      "offline": "offline",
+      "notConfigured": "not configured",
+      "disabled": "disabled",
+      "latestRelease": "Latest MatchZy Enhanced release: v{{version}}",
+      "olderVersion_one": "{{count}} server is running an older version than the latest release.",
+      "olderVersion_other": "{{count}} servers are running an older version than the latest release.",
+      "newerVersion_one": "{{count}} server is running a newer version than the latest GitHub release (probably an unreleased build).",
+      "newerVersion_other": "{{count}} servers are running a newer version than the latest GitHub release (probably an unreleased build).",
+      "downloadLatest": "Download latest"
+    },
+    "cs2Update": {
+      "title": "CS2 update required",
+      "snackbarBody_one": "{{count}} server is out of date. Update the server installation and restart.",
+      "snackbarBody_other": "{{count}} servers are out of date. Update the server installation and restart.",
+      "fleetTitle": "CS2 servers out of date — update required",
+      "fleetBody_one": "{{count}} server has reported a required CS2 update from Steam. Update the server installation (SteamCMD/host) and restart.",
+      "fleetBody_other": "{{count}} servers have reported a required CS2 update from Steam. Update the server installation (SteamCMD/host) and restart."
+    },
+    "versionMismatch": {
+      "title": "Version mismatch detected",
+      "chip_one": "v{{version}}: {{count}} server",
+      "chip_other": "v{{version}}: {{count}} servers",
+      "recommended": "Recommended: update all servers to v{{version}} for consistency"
+    },
+    "notInitialized": {
+      "title": "Server not initialized",
+      "checking": "Checking connectivity…",
+      "rconUnreachable": "RCON unreachable. Check the host, port and that the game server is running. Use Retry once it's reachable.",
+      "noEvents": "RCON reachable, but MatchZy hasn't sent any events. Click Retry to configure it.",
+      "notChecked": "Connectivity not checked yet. See the status below. Click Retry to configure once RCON is reachable."
+    },
+    "chips": {
+      "versionMismatch": "Version mismatch",
+      "ipBanned": "IP banned",
+      "cs2Build": "CS2 build {{build}}",
+      "pluginDbDown": "Plugin DB down",
+      "cs2UpdateRequired": "CS2 update required ({{version}})"
+    },
+    "tooltips": {
+      "fixGuide": "Fix guide",
+      "disabledTitle": "Disabled server",
+      "disabledBody": "Disabled servers are ignored by allocation and health checks.",
+      "noEventsTitle": "No MatchZy events received yet",
+      "noEventsBody": "MAT sent the webhook config via RCON but hasn't received any events. This usually means the server can't reach the MAT webhook URL, or MatchZy isn't running.",
+      "notConfiguredTitle": "Not configured",
+      "notConfiguredBody": "MAT hasn't sent the persistent config to this server yet. Use Retry to initialize it.",
+      "unreachableTitle": "Server unreachable from MAT",
+      "unreachableBody": "MAT can't reach the server via RCON. Check host/port, RCON password, firewall, and that the server is running.",
+      "webhookTitle": "Server can't reach MAT (webhook)",
+      "webhookBody": "MAT can reach the server via RCON, but the server can't reach MAT's webhook. Check egress, DNS and the configured webhook URL.",
+      "versionDiffTitle": "Plugin versions differ across servers",
+      "versionDiffBody": "Some servers are running a different MatchZy Enhanced version. If you use CSM, run {{command}} and restart the servers.",
+      "ipBannedTitle": "RCON IP banned",
+      "ipBannedBody": "The server has temporarily banned MAT's IP after repeated RCON auth failures. Fix the RCON password and unban the IP.",
+      "pluginDbTitle": "The MatchZy plugin can't reach its database.",
+      "pluginDbBody": "If you use CSM, run {{path}}.",
+      "cs2UpdateBody": "MAT verified that this server's build is behind Steam. It is blocked from new allocations (and tournament start) until it's updated.",
+      "retryInit": "Retry server initialization (send persistent config via RCON)"
+    },
+    "lastActive": {
+      "justNow": "Active just now",
+      "minutesAgo_one": "Active {{count}} minute ago",
+      "minutesAgo_other": "Active {{count}} minutes ago",
+      "hoursAgo_one": "Active {{count}} hour ago",
+      "hoursAgo_other": "Active {{count}} hours ago",
+      "daysAgo_one": "Active {{count}} day ago",
+      "daysAgo_other": "Active {{count}} days ago"
+    },
+    "pluginStatus": {
+      "idle": "Idle",
+      "loading": "Loading",
+      "warmup": "Warmup",
+      "knife": "Knife round",
+      "live": "Live",
+      "playing": "Playing",
+      "paused": "Paused",
+      "halftime": "Halftime",
+      "postgame": "Postgame",
+      "queued": "Queued",
+      "error": "Error"
+    },
+    "retry": {
+      "sendingConfig": "Sending persistent configuration to the server…",
+      "triggered": "Server initialization triggered",
+      "failed": "Failed to retry initialization: {{message}}",
+      "retryingAll_one": "Retrying initialization for {{count}} server…",
+      "retryingAll_other": "Retrying initialization for {{count}} servers…",
+      "triggeredAll_one": "Retry triggered for {{count}} server",
+      "triggeredAll_other": "Retry triggered for {{count}} servers",
+      "failedAll": "Retry failed: {{message}}"
+    }
   },
   "serverModal": {
     "titleCreate": "Add Server",
@@ -153,8 +258,9 @@
     "serverSelect": {
       "label": "Target Server(s)",
       "allServersChip": "All Servers",
-      "allServersDescription": "Execute on all {{count}} server(s)",
-      "sendStatus": "Send Status"
+      "sendStatus": "Send Status",
+      "allServersDescription_one": "Run on {{count}} server",
+      "allServersDescription_other": "Run on all {{count}} servers"
     },
     "command": {
       "execute": "Execute"
@@ -185,6 +291,143 @@
       "title": "Monitoring & Logs",
       "serverEvents": "Server Events Monitor",
       "appLogs": "Application Logs"
+    },
+    "toasts": {
+      "commandExecuted_one": "Command executed on {{count}} server",
+      "commandExecuted_other": "Command executed on {{count}} servers",
+      "commandPartial": "Command succeeded on {{succeeded}} of {{total}} servers ({{failed}} failed)",
+      "commandFailed": "Failed to execute command"
+    },
+    "categories": {
+      "matchControl": "Match control",
+      "matchSettings": "Match settings",
+      "backupRestore": "Backup & restore",
+      "serverMgmt": "Server management",
+      "teamMgmt": "Team management",
+      "practiceMode": "Practice mode",
+      "adminComm": "Admin communication",
+      "advanced": "Advanced RCON"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Start match",
+        "description": "Start the match immediately."
+      },
+      "matchEnd": {
+        "label": "End match (css_restart)",
+        "description": "Force end the current match on the selected servers and reset them to warmup using css_restart."
+      },
+      "forcePause": {
+        "label": "Force pause",
+        "description": "Force pause the match."
+      },
+      "forceUnpause": {
+        "label": "Force unpause",
+        "description": "Force unpause the match."
+      },
+      "skipVeto": {
+        "label": "Skip veto",
+        "description": "Skip the veto phase."
+      },
+      "toggleKnife": {
+        "label": "Toggle knife round",
+        "description": "Turn the knife round for side choice on or off (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Toggle playout",
+        "description": "Turn playing out all rounds on or off."
+      },
+      "toggleWhitelist": {
+        "label": "Toggle whitelist",
+        "description": "Turn the team whitelist on or off."
+      },
+      "showSettings": {
+        "label": "Show settings",
+        "description": "Show the current match settings."
+      },
+      "reloadAdmins": {
+        "label": "Reload admins",
+        "description": "Reload the admin list from admins.json."
+      },
+      "readyRequired": {
+        "label": "Set players required to ready",
+        "description": "Set how many players must ready up before the match starts.",
+        "inputLabel": "Number of players"
+      },
+      "restoreBackup": {
+        "label": "Restore round backup",
+        "description": "Restore the match to a specific round.",
+        "inputLabel": "Round number"
+      },
+      "cleanServers": {
+        "label": "Clean servers (css_restart)",
+        "description": "End any running match on the selected servers and reset them to warmup using css_restart. This is destructive."
+      },
+      "changeMap": {
+        "label": "Change map",
+        "description": "Change to a different map (css_map <mapname>).",
+        "inputLabel": "Map name (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Set team 1 name",
+        "description": "Set the name of team 1.",
+        "inputLabel": "Team name"
+      },
+      "team2Name": {
+        "label": "Set team 2 name",
+        "description": "Set the name of team 2.",
+        "inputLabel": "Team name"
+      },
+      "startPractice": {
+        "label": "Start practice mode",
+        "description": "Turn on practice mode with .commands."
+      },
+      "exitPractice": {
+        "label": "Exit practice mode",
+        "description": "Turn off practice mode."
+      },
+      "broadcast": {
+        "label": "Broadcast message",
+        "description": "Send an admin message to all players.",
+        "inputLabel": "Message"
+      },
+      "customRcon": {
+        "label": "Run custom RCON command",
+        "description": "Run any RCON command directly.",
+        "inputLabel": "RCON command"
+      }
+    },
+    "logs": {
+      "loadFailed": "Failed to load logs",
+      "levelAll": "All",
+      "auto": "Auto",
+      "refresh": "Refresh logs",
+      "empty": "No logs to show",
+      "footer": "Showing the {{count}} most recent log entries",
+      "footerAutoRefresh": "Showing the {{count}} most recent log entries (auto-refreshing)"
+    },
+    "events": {
+      "healthCheckFailed": "Events API health check failed. Check that the API is running and /api/events/test is reachable.",
+      "loadFailed": "Failed to load events",
+      "connected": "Connected",
+      "disconnected": "Disconnected",
+      "paused": "Paused",
+      "pause": "Pause",
+      "resume": "Resume",
+      "refresh": "Refresh events",
+      "clear": "Clear console",
+      "filterLabel": "Filter by server (optional)",
+      "noServers": "No servers available",
+      "refreshServers": "Refresh server list",
+      "noEvents": "No events received from this server yet.",
+      "noEventsHint": "Still no events after 15 seconds. Check that your CS2 server is set up to send MatchZy webhooks to /api/events/:matchSlugOrServerId with the correct X-MatchZy-Token.",
+      "waiting": "Waiting for events from the server…",
+      "footer_one": "Showing {{count}} event (max 100)",
+      "footer_other": "Showing {{count}} events (max 100)",
+      "footerForServer_one": "Showing {{count}} event for server {{server}} (max 100)",
+      "footerForServer_other": "Showing {{count}} events for server {{server}} (max 100)",
+      "realtime": "Events update in real time via WebSocket",
+      "downloadDemo": "Download demo"
     }
   },
   "servers": {
@@ -192,6 +435,123 @@
       "title": "Waiting for an available server",
       "waiting": "This match will start automatically once servers are free. Servers needed:",
       "nextPass": "Next allocation attempt in {{seconds}}s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Admin controls",
+    "noServer": "No server is assigned to this match",
+    "unavailable": "No server is assigned to this match, so admin controls are unavailable.",
+    "unknownAction": "Unknown action",
+    "commandFailed": "Failed to execute command",
+    "confirm": "Confirm",
+    "execute": "Execute",
+    "close": "Close",
+    "tipLabel": "Admin tip:",
+    "tip": "Use these controls carefully during live matches. Some actions, like \"{{endMatch}}\" and \"{{restartMatch}}\", cannot be undone.",
+    "sections": {
+      "matchControl": "Match control",
+      "advanced": "Advanced actions"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pause",
+        "tooltip": "Admin pause – players cannot unpause",
+        "title": "Pause match",
+        "description": "This force pauses the match. Players cannot unpause."
+      },
+      "unpause": {
+        "button": "Unpause",
+        "tooltip": "Resume the match from a pause",
+        "title": "Unpause match",
+        "description": "This force unpauses the match."
+      },
+      "swap": {
+        "button": "Swap teams",
+        "tooltip": "Switch teams to the opposite sides (CT ↔ T)",
+        "title": "Swap teams",
+        "description": "This swaps the teams' sides (CT/T)."
+      },
+      "restartRound": {
+        "button": "Restart round",
+        "tooltip": "Restart the current round from the beginning (resets economy)",
+        "title": "Restart round",
+        "description": "This restarts the current round."
+      },
+      "skipVeto": {
+        "button": "Skip veto",
+        "tooltip": "Skip the map veto and load the first map immediately",
+        "title": "Skip veto",
+        "description": "This skips the veto phase and starts the match."
+      },
+      "endWarmup": {
+        "button": "End warmup",
+        "tooltip": "End warmup and start the match (knife round or live)",
+        "title": "End warmup",
+        "description": "This ends the warmup and starts the match."
+      },
+      "endMatch": {
+        "button": "End match",
+        "tooltip": "End the match immediately and record the final score",
+        "title": "End match",
+        "description": "This force ends the match. Use with caution!"
+      },
+      "restartMatch": {
+        "button": "Restart match",
+        "tooltip": "End and reload the match from scratch – all progress is lost",
+        "title": "Restart match",
+        "description": "This ends the match and reloads it from the beginning. All progress will be lost!"
+      },
+      "reallocateServer": {
+        "button": "Reallocate server",
+        "tooltip": "Move the match to a different server (recovery before going live)",
+        "tooltipUnavailable": "Only available for ready/loaded matches (not during live play)",
+        "title": "Reallocate server",
+        "description": "This moves the match to a different idle server and reloads it. Use it if the current server is out of date or players cannot connect. Not allowed during a live match."
+      },
+      "forceCancel": {
+        "button": "Force cancel",
+        "tooltip": "Cancel the match even if the server is offline – frees the server allocation",
+        "title": "Force cancel match",
+        "description": "⚠️ This cancels the match even if the server is offline. The match is marked as completed and the server is freed. This action cannot be undone."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Restore backup",
+        "tooltip": "Load a saved round backup – restores economy and positions",
+        "title": "Restore backup",
+        "label": "Round number to restore"
+      },
+      "addTime": {
+        "button": "Add time",
+        "tooltip": "Extend the current round timer (useful for technical pauses)",
+        "title": "Add round time",
+        "label": "Seconds to add"
+      },
+      "broadcast": {
+        "button": "Broadcast",
+        "tooltip": "Send a message to all players on the server",
+        "title": "Broadcast message",
+        "label": "Message to broadcast"
+      }
+    },
+    "success": {
+      "pause": "Match paused",
+      "unpause": "Match unpaused",
+      "swap": "Teams swapped",
+      "skipVeto": "Veto phase skipped",
+      "restartRound": "Round restarted",
+      "endMatch": "Match ended",
+      "endWarmup": "Warmup ended",
+      "startMatch": "Match started",
+      "restoreBackup": "Backup restored to round {{round}}",
+      "addTime_one": "Added {{count}} second to the round timer",
+      "addTime_other": "Added {{count}} seconds to the round timer",
+      "broadcast": "Message sent to the server",
+      "restartMatch": "Match restarted (ended and reloaded)",
+      "reallocateServer": "Match moved to a different server",
+      "forceCancel": "Match cancelled",
+      "default": "Command executed"
     }
   }
 }

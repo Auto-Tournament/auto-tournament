@@ -250,10 +250,9 @@ const Development: React.FC = () => {
           );
         } else {
           showSuccess(
-            t('devToolsPage.testPlayers.success', {
-              created,
-              updated,
-            })
+            updated > 0
+              ? t('devToolsPage.testPlayers.successWithUpdated', { created, updated })
+              : t('devToolsPage.testPlayers.success', { created })
           );
         }
       } else {

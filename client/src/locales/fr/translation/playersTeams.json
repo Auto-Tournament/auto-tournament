@@ -90,7 +90,9 @@
       "title": "Tendances de performance",
       "noData": "Pas encore de données de performance exploitables – jouez quelques manches pour voir les tendances ADR et K/D.",
       "avgAdr": "ADR : {{value}} moy.",
-      "avgKd": "K/D : {{value}} moy."
+      "avgKd": "K/D : {{value}} moy.",
+      "matchCount_one": "{{count}} match",
+      "matchCount_other": "{{count}} matchs"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Supprimer des équipes",
-      "message": "Voulez-vous vraiment supprimer {{count}} équipe{{suffix}} ? Cette action est irréversible.",
       "confirm": "Supprimer",
-      "success": "{{count}} équipe{{suffix}} supprimée(s)",
-      "error": "Impossible de supprimer une ou plusieurs équipes"
+      "error": "Impossible de supprimer une ou plusieurs équipes",
+      "message_one": "Voulez-vous vraiment supprimer {{count}} équipe ? Cette action est irréversible.",
+      "message_other": "Voulez-vous vraiment supprimer {{count}} équipes ? Cette action est irréversible.",
+      "success_one": "{{count}} équipe supprimée",
+      "success_other": "{{count}} équipes supprimées"
     },
     "loadError": "Impossible de charger les équipes",
     "importSuccess": "{{count}} équipe(s) importée(s) avec succès"
@@ -275,10 +279,12 @@
     "importError": "Impossible d’importer les joueurs",
     "bulkDelete": {
       "title": "Supprimer des joueurs",
-      "message": "Voulez-vous vraiment supprimer {{count}} joueur{{suffix}} ? Cette action est irréversible.",
       "confirm": "Supprimer",
-      "success": "{{count}} joueur{{suffix}} supprimé(s)",
-      "error": "Impossible de supprimer un ou plusieurs joueurs"
+      "error": "Impossible de supprimer un ou plusieurs joueurs",
+      "message_one": "Voulez-vous vraiment supprimer {{count}} joueur ? Cette action est irréversible.",
+      "message_other": "Voulez-vous vraiment supprimer {{count}} joueurs ? Cette action est irréversible.",
+      "success_one": "{{count}} joueur supprimé",
+      "success_other": "{{count}} joueurs supprimés"
     },
     "openPlayerPageTooltip": "Ouvrir la page joueur",
     "skillRatingTooltip": "Le niveau de compétence est basé sur OpenSkill ; plus c’est élevé, mieux c’est.",

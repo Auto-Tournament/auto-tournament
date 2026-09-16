@@ -153,13 +153,14 @@
     "title": "Guardar pool de mapas",
     "nameLabel": "Nome do pool de mapas",
     "namePlaceholder": "O meu pool personalizado",
-    "info": "Isto irá guardar um pool de mapas com {{count}} mapa{{count, plural, one {} other {s}}}.",
     "saveButton": "Guardar",
     "errors": {
       "nameRequired": "O nome do pool de mapas é obrigatório",
       "noMaps": "Selecione pelo menos um mapa",
       "saveFailed": "Não foi possível guardar o pool de mapas"
-    }
+    },
+    "info_one": "Isto guarda um map pool com {{count}} mapa.",
+    "info_other": "Isto guarda um map pool com {{count}} mapas."
   },
   "batchServerModal": {
     "title": "Criar servidores em lote",
@@ -210,22 +211,25 @@
       "helper": "Todos os servidores serão criados como ativados/desativados"
     },
     "preview": {
-      "title": "Pré-visualização ({{showingFirst10, boolean, true {a mostrar os primeiros 10} false {todos}}})",
-      "more": "...e mais {{count}}"
+      "more": "...e mais {{count}}",
+      "titleFirst10": "Pré-visualização (primeiros 10)",
+      "titleAll": "Pré-visualização (todos)"
     },
     "checkServersButton": {
       "default": "Verificar servidores",
       "checking": "A verificar..."
     },
     "createServersButton": {
-      "default": "Criar {{count}} servidor{{count, plural, one {} other {es}}}",
-      "creating": "A criar..."
+      "creating": "A criar...",
+      "default_one": "Criar {{count}} servidor",
+      "default_other": "Criar {{count}} servidores"
     },
     "warnings": {
       "notAllVerified": "Alguns servidores não passaram nas verificações de conectividade. Serão guardados, mas poderão aparecer offline até RCON e webhook estarem configurados."
     },
     "success": {
-      "createdAll": "Criados {{count}} servidor(es) com sucesso"
+      "createdAll_one": "{{count}} servidor criado",
+      "createdAll_other": "{{count}} servidores criados"
     },
     "errors": {
       "baseNameRequired": "O nome base é obrigatório",
@@ -260,7 +264,8 @@
       "defaultProtected": "O modelo predefinido \"pure-win-loss\" não pode ser eliminado."
     },
     "import": {
-      "success": "Importados {{count}} modelo(s) de ELO com sucesso"
+      "success_one": "{{count}} modelo de ELO importado",
+      "success_other": "{{count}} modelos de ELO importados"
     },
     "weights": {
       "noAdjustmentsPure": "Sem ajustes por estatísticas (vitória/derrota pura)"
@@ -289,10 +294,11 @@
       "introBody": "Formato esperado: array de modelos com name, description (opcional), enabled, weights, maxAdjustment e minAdjustment. Se omitir id, será gerado a partir do nome.",
       "jsonLabel": "Dados JSON",
       "validJsonTitle": "✓ JSON válido!",
-      "validJsonBody": "Encontrado(s) {{count}} modelo(s).",
       "previewTitle": "Pré-visualização:",
       "previewButton": "Pré-visualizar",
-      "importButton": "Importar modelos"
+      "importButton": "Importar modelos",
+      "validJsonBody_one": "Encontrado {{count}} modelo.",
+      "validJsonBody_other": "Encontrados {{count}} modelos."
     },
     "editor": {
       "titleEdit": "Editar modelo de ELO",

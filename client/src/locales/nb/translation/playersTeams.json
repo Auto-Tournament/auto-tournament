@@ -90,7 +90,9 @@
       "title": "Prestasjonsutvikling",
       "noData": "Ingen meningsfylte prestasjonsdata ennå – spill noen runder for å se ADR- og K/D-utvikling.",
       "avgAdr": "ADR: {{value}} snitt",
-      "avgKd": "K/D: {{value}} snitt"
+      "avgKd": "K/D: {{value}} snitt",
+      "matchCount_one": "{{count}} kamp",
+      "matchCount_other": "{{count}} kamper"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Slett lag",
-      "message": "Er du sikker på at du vil slette {{count}} lag{{suffix}}? Dette kan ikke angres.",
       "confirm": "Slett",
-      "success": "Slettet {{count}} lag{{suffix}}",
-      "error": "Klarte ikke å slette ett eller flere lag"
+      "error": "Klarte ikke å slette ett eller flere lag",
+      "message_one": "Er du sikker på at du vil slette {{count}} lag? Dette kan ikke angres.",
+      "message_other": "Er du sikker på at du vil slette {{count}} lag? Dette kan ikke angres.",
+      "success_one": "Slettet {{count}} lag",
+      "success_other": "Slettet {{count}} lag"
     },
     "loadError": "Klarte ikke å laste lag",
     "importSuccess": "Importerte {{count}} lag"
@@ -275,10 +279,12 @@
     "importError": "Klarte ikke å importere spillere",
     "bulkDelete": {
       "title": "Slett spillere",
-      "message": "Er du sikker på at du vil slette {{count}} spiller{{suffix}}? Dette kan ikke angres.",
       "confirm": "Slett",
-      "success": "Slettet {{count}} spiller{{suffix}}",
-      "error": "Klarte ikke å slette én eller flere spillere"
+      "error": "Klarte ikke å slette én eller flere spillere",
+      "message_one": "Er du sikker på at du vil slette {{count}} spiller? Dette kan ikke angres.",
+      "message_other": "Er du sikker på at du vil slette {{count}} spillere? Dette kan ikke angres.",
+      "success_one": "Slettet {{count}} spiller",
+      "success_other": "Slettet {{count}} spillere"
     },
     "openPlayerPageTooltip": "Åpne spiller-side",
     "skillRatingTooltip": "Skill Rating er basert på OpenSkill; høyere er bedre.",

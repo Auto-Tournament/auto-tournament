@@ -153,13 +153,14 @@
     "title": "Save Map Pool",
     "nameLabel": "Map Pool Name",
     "namePlaceholder": "My Custom Pool",
-    "info": "This will save a map pool with {{count}} map{{count, plural, one {} other {s}}}.",
     "saveButton": "Save",
     "errors": {
       "nameRequired": "Map pool name is required",
       "noMaps": "Please select at least one map",
       "saveFailed": "Failed to save map pool"
-    }
+    },
+    "info_one": "This saves a map pool with {{count}} map.",
+    "info_other": "This saves a map pool with {{count}} maps."
   },
   "batchServerModal": {
     "title": "Batch Create Servers",
@@ -210,22 +211,25 @@
       "helper": "All servers will be created as enabled/disabled"
     },
     "preview": {
-      "title": "Preview ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
-      "more": "...and {{count}} more"
+      "more": "...and {{count}} more",
+      "titleFirst10": "Preview (first 10)",
+      "titleAll": "Preview (all)"
     },
     "checkServersButton": {
       "default": "Check Servers",
       "checking": "Checking..."
     },
     "createServersButton": {
-      "default": "Create {{count}} Server{{count, plural, one {} other {s}}}",
-      "creating": "Creating..."
+      "creating": "Creating...",
+      "default_one": "Create {{count}} server",
+      "default_other": "Create {{count}} servers"
     },
     "warnings": {
       "notAllVerified": "Some servers have not passed connectivity checks. They will be saved, but may appear offline until RCON and webhook are configured."
     },
     "success": {
-      "createdAll": "Successfully created {{count}} server(s)"
+      "createdAll_one": "Created {{count}} server",
+      "createdAll_other": "Created {{count}} servers"
     },
     "errors": {
       "baseNameRequired": "Base name is required",
@@ -260,7 +264,8 @@
       "defaultProtected": "The default \"pure-win-loss\" template cannot be deleted."
     },
     "import": {
-      "success": "Successfully imported {{count}} ELO template(s)"
+      "success_one": "Imported {{count}} ELO template",
+      "success_other": "Imported {{count}} ELO templates"
     },
     "weights": {
       "noAdjustmentsPure": "No stat adjustments (Pure Win/Loss)"
@@ -289,10 +294,11 @@
       "introBody": "Expected format: array of templates with name, optional description, enabled, weights, maxAdjustment, and minAdjustment. If you omit id, it will be generated from the name.",
       "jsonLabel": "JSON Data",
       "validJsonTitle": "✓ Valid JSON!",
-      "validJsonBody": "Found {{count}} template{{count !== 1 ? 's' : ''}}.",
       "previewTitle": "Preview:",
       "previewButton": "Preview",
-      "importButton": "Import Templates"
+      "importButton": "Import Templates",
+      "validJsonBody_one": "Found {{count}} template.",
+      "validJsonBody_other": "Found {{count}} templates."
     },
     "editor": {
       "titleEdit": "Edit ELO Template",

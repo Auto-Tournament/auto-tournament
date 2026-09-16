@@ -1529,7 +1529,10 @@ export default function PlayerProfile() {
                             {p.steamId}
                           </Typography>
                         </Box>
-                        {p.steamId === steamId && (
+                        {/* playerSteamId is the viewer's Steam ID (the impersonated player
+                            while impersonating), so an admin looking at someone else's
+                            profile does not see "You" on that player. */}
+                        {!!playerSteamId && p.steamId === playerSteamId && (
                           <Chip size="small" color="primary" label={t('playerPage.you')} />
                         )}
                       </Box>

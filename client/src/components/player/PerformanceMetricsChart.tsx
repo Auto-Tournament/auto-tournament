@@ -35,7 +35,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
     return (
       <Box textAlign="center" py={4}>
         <Typography variant="body2" color="text.secondary">
-          No performance data available
+          {t('playerPage.performanceChart.noData')}
         </Typography>
       </Box>
     );
@@ -53,7 +53,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
     return (
       <Box textAlign="center" py={4}>
         <Typography variant="body2" color="text.secondary">
-          No performance data available
+          {t('playerPage.performanceChart.noData')}
         </Typography>
       </Box>
     );
@@ -347,7 +347,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
             />
           )}
           <Typography variant="caption" color="text.secondary" sx={{ alignSelf: 'center' }}>
-            {validMatches.length} matches
+            {t('playerPage.performanceChart.matchCount', { count: validMatches.length })}
           </Typography>
         </Stack>
       </Box>

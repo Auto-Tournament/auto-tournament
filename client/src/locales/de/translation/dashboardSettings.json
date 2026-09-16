@@ -207,9 +207,10 @@
     },
     "success": {
       "saveSettings": "Einstellungen gespeichert",
-      "simulationEnabled": "Simulationsmodus aktiviert{{suffix}}",
+      "simulationEnabled": "Simulationsmodus aktiviert",
       "simulationDisabled": "Simulationsmodus deaktiviert",
-      "timescaleUpdated": "Simulations-Zeitfaktor auf {{value}}x gesetzt"
+      "timescaleUpdated": "Simulations-Zeitfaktor auf {{value}}x gesetzt",
+      "simulationEnabledWithSpeed": "Simulationsmodus mit {{speed}}x-Geschwindigkeit aktiviert"
     }
   },
   "dashboard": {

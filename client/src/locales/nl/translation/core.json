@@ -51,6 +51,16 @@
       "settings": "Instellingen",
       "devTools": "Dev-tools",
       "publicLinks": "Publieke links"
+    },
+    "openDrawer": "Navigatiemenu openen",
+    "matchzyDbDown": {
+      "title": "MatchZy-database onbereikbaar",
+      "body_one": "{{count}} server meldt dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben.",
+      "body_other": "{{count}} servers melden dat de plugin zijn database niet kan bereiken. Back-ups en de eventwachtrij kunnen hierdoor last hebben."
+    },
+    "steamUnavailable": {
+      "title": "Steam-integratie niet beschikbaar",
+      "body": "Inloggen en het opzoeken van vanity-URL's werken mogelijk niet. Controleer de serverconfiguratie en de verbinding."
     }
   },
   "common": {

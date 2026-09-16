@@ -104,7 +104,15 @@ for (const locale of locales) {
 
   const locPaths = flattenLeafPaths(merged);
   const missing = [...enPaths].filter((p) => !locPaths.has(p)).sort((a, b) => a.localeCompare(b));
-  const extra = [...locPaths].filter((p) => !enPaths.has(p)).sort((a, b) => a.localeCompare(b));
+  // Plural categories English doesn't have (e.g. Polish _few/_many) are required
+  // for those locales, so they are not "extra" as long as en has the _other form.
+  const isLocalePluralForm = (p) => {
+    const m = p.match(/^(.*)_(zero|two|few|many)$/);
+    return !!m && enPaths.has(`${m[1]}_other`);
+  };
+  const extra = [...locPaths]
+    .filter((p) => !enPaths.has(p) && !isLocalePluralForm(p))
+    .sort((a, b) => a.localeCompare(b));
   results.push({ locale, missing, extra });
 }
 

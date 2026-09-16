@@ -649,11 +649,9 @@ export default function BatchServerModal({
               <Divider />
               <Box>
                 <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-                  {t('batchServerModal.preview.title', {
-                    visible: preview.length,
-                    total: parseInt(count) > 10 ? parseInt(count) : preview.length,
-                    showingFirst10: parseInt(count) > 10,
-                  })}
+                  {parseInt(count) > 10
+                    ? t('batchServerModal.preview.titleFirst10')
+                    : t('batchServerModal.preview.titleAll')}
                 </Typography>
                 <Paper variant="outlined" sx={{ p: 2, bgcolor: 'action.hover' }}>
                   <Stack spacing={1}>

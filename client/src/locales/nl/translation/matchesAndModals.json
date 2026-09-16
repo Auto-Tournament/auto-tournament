@@ -26,7 +26,8 @@
     "sections": {
       "live": "Live-wedstrijden ({{count}})",
       "upcoming": "Aankomende wedstrijden ({{count}})",
-      "history": "Wedstrijdgeschiedenis ({{count}})"
+      "history": "Wedstrijdgeschiedenis ({{count}})",
+      "inQueue": "{{count}} in wachtrij"
     },
     "manualMatchLabel": "Handmatige wedstrijd",
     "create": {
@@ -34,9 +35,10 @@
     },
     "bulkDelete": {
       "title": "Handmatige wedstrijden verwijderen",
-      "message": "Weet je zeker dat je {{count}} handmatige wedstrijd{{suffix}} wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
       "deleted_one": "{{count}} wedstrijd verwijderd",
-      "deleted_other": "{{count}} wedstrijden verwijderd"
+      "deleted_other": "{{count}} wedstrijden verwijderd",
+      "message_one": "Weet je zeker dat je {{count}} handmatige wedstrijd wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message_other": "Weet je zeker dat je {{count}} handmatige wedstrijden wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt."
     },
     "card": {
       "matchNumber": "Wedstrijd #{{number}}",
@@ -88,7 +90,8 @@
       "statusBusy": "Bezet",
       "statusOffline": "Offline",
       "readyIn": "Klaar over: {{time}}"
-    }
+    },
+    "latestEvent": "Laatste: {{event}}"
   },
   "manualMatchModal": {
     "title": "Handmatige wedstrijd maken",
@@ -324,16 +327,20 @@
       "noJson": "Vul JSON-gegevens in"
     },
     "preview": {
-      "summary": "✓ Geldige JSON! {{teamCount}} team{{teamCount, plural, one {} other {s}}} gevonden met {{playerCount}} speler{{playerCount, plural, one {} other {s}}} in totaal.",
+      "summary": "✓ Geldige JSON! {{teams}} gevonden met in totaal {{players}}.",
       "title": "Voorbeeld:",
-      "playersChip": "{{count}} speler{{count, plural, one {} other {s}}}",
       "missingDiscordTotal": "Spelers zonder Discord-ID: {{count}}",
-      "missingDiscordChip": "Zonder Discord: {{count}}"
+      "missingDiscordChip": "Zonder Discord: {{count}}",
+      "playersChip_one": "{{count}} speler",
+      "playersChip_other": "{{count}} spelers",
+      "teamsCount_one": "{{count}} team",
+      "teamsCount_other": "{{count}} teams"
     },
     "actions": {
       "preview": "Voorbeeld",
       "importing": "Importeren...",
-      "import": "{{count}} team{{count, plural, one {} other {s}}} importeren"
+      "import_one": "{{count}} team importeren",
+      "import_other": "{{count}} teams importeren"
     },
     "warnings": {
       "title": "Sommige Discord-ID's zijn genegeerd. Deze spelers worden zonder ID geïmporteerd:",
@@ -353,15 +360,17 @@
     "actions": {
       "parseValidate": "Parsen & valideren",
       "importing": "Importeren...",
-      "import": "{{count}} speler{{count, plural, one {} other {s}}} importeren"
+      "import_one": "{{count}} speler importeren",
+      "import_other": "{{count}} spelers importeren"
     },
     "preview": {
-      "readyChip": "{{count}} speler{{count, plural, one {} other {s}}} klaar om te importeren",
       "title": "Spelers om te importeren ({{count}}):",
       "steamId": "Steam-ID: {{steamId}}",
       "name": "Naam: {{name}}",
       "initialElo": "Start-ELO: {{elo}}",
-      "avatar": "Avatar-url: {{url}}"
+      "avatar": "Avatar-url: {{url}}",
+      "readyChip_one": "{{count}} speler klaar om te importeren",
+      "readyChip_other": "{{count}} spelers klaar om te importeren"
     },
     "errors": {
       "noData": "Vul JSON- of CSV-gegevens in",
@@ -387,11 +396,12 @@
     "playerCard": {
       "alreadyInTeam": "Al in team"
     },
-    "addPlayersButton": "{{count}} speler{{count, plural, one {} other {s}}} toevoegen",
     "errors": {
       "loadFailed": "Kan spelers niet laden",
       "noSelectable": "Geen selecteerbare spelers beschikbaar"
-    }
+    },
+    "addPlayersButton_one": "{{count}} speler toevoegen",
+    "addPlayersButton_other": "{{count}} spelers toevoegen"
   },
   "soundSettingsModal": {
     "title": "Geluidsinstellingen",

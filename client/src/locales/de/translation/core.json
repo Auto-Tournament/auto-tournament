@@ -51,6 +51,16 @@
       "settings": "Einstellungen",
       "devTools": "Entwicklertools",
       "publicLinks": "Öffentliche Links"
+    },
+    "openDrawer": "Navigationsmenü öffnen",
+    "matchzyDbDown": {
+      "title": "MatchZy-DB nicht erreichbar",
+      "body_one": "{{count}} Server meldet, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein.",
+      "body_other": "{{count}} Server melden, dass das Plugin seine Datenbank nicht erreichen kann. Backups und die Event-Warteschlange können betroffen sein."
+    },
+    "steamUnavailable": {
+      "title": "Steam-Integration nicht verfügbar",
+      "body": "Anmeldungen und das Auflösen von Vanity-URLs funktionieren eventuell nicht. Prüfe die Serverkonfiguration und die Verbindung."
     }
   },
   "common": {

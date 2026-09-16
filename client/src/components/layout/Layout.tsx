@@ -269,9 +269,8 @@ export default function Layout() {
           if (!dbHealthSnackbarKey) {
             const key = showPersistentError(
               <span>
-                <strong>MatchZy DB unreachable</strong> — {downCount}{' '}
-                {downCount === 1 ? 'server has' : 'servers have'} reported that the plugin cannot reach its database.
-                Backups/event queue may be impacted.
+                <strong>{t('layout.matchzyDbDown.title')}</strong> —{' '}
+                {t('layout.matchzyDbDown.body', { count: downCount })}
               </span>,
               'matchzy-db-down'
             );
@@ -292,7 +291,7 @@ export default function Layout() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar]);
+  }, [dbHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
 
   // Global admin warning: keep a persistent snackbar while Steam integration is unhealthy.
   React.useEffect(() => {
@@ -319,7 +318,8 @@ export default function Layout() {
           if (!steamHealthSnackbarKey) {
             const key = showPersistentError(
               <span>
-                <strong>Steam integration unavailable</strong> — Sign-ins and vanity URL lookups may not work. Check server configuration and connectivity.
+                <strong>{t('layout.steamUnavailable.title')}</strong> —{' '}
+                {t('layout.steamUnavailable.body')}
               </span>,
               'steam-api-health'
             );
@@ -340,7 +340,7 @@ export default function Layout() {
       cancelled = true;
       window.clearInterval(interval);
     };
-  }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar]);
+  }, [steamHealthSnackbarKey, showPersistentError, closeSnackbar, t]);
 
   // Show a single global snackbar when webhook is not configured
   const handleOpenSettingsFromSnackbar = React.useCallback(() => {
@@ -870,7 +870,7 @@ export default function Layout() {
           <Toolbar>
             <IconButton
               color="inherit"
-              aria-label="open drawer"
+              aria-label={t('layout.openDrawer')}
               onClick={handleDrawerOpen}
               edge="start"
               sx={[

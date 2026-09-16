@@ -48,10 +48,10 @@
     },
     "review": {
       "summary": {
-        "info": "Gå gjennom turneringsinnstillingene og klikk «Opprett turnering» når du er klar.",
+        "info": "Gå gjennom turneringsinnstillingene og klikk «{{button}}» når du er klar.",
         "nameLabel": "Turneringsnavn",
         "typeLabel": "Turneringstype",
-        "formatLabel": "Matchformat",
+        "formatLabel": "Kampformat",
         "notSet": "Ikke satt",
         "estimatedVolumeText": "Omtrent {{matches}} over {{rounds}} (best av {{mapsPerMatch}}, opptil {{maps}} totalt)."
       }
@@ -60,7 +60,7 @@
       "steps": {
         "name": "Navn",
         "type": "Turneringstype",
-        "format": "Spillformat",
+        "format": "Kampformat",
         "maps": "Kart",
         "teams": "Lag",
         "review": "Gjennomgå"
@@ -90,7 +90,7 @@
       "matchRules": "Kampregler",
       "servers": "Servere",
       "overtimeSettings": "Innstillinger for overtid",
-      "mapPool": "Kartpott"
+      "mapPool": "Kartpool"
     },
     "tooltips": {
       "deleteTournament": "Slett denne turneringen og alle dataene permanent"
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} ledig server",
       "availableServers_other": "{{count}} ledige servere",
       "concurrentMatches_one": "{{count}} samtidig kamp",
-      "concurrentMatches_other": "{{count}} samtidige kamper"
+      "concurrentMatches_other": "{{count}} samtidige kamper",
+      "enabledServers_one": "{{count}} aktivert server",
+      "enabledServers_other": "{{count}} aktiverte servere"
     },
     "matchRules": {
       "value": "Maks {{maxRounds}} runder per kart; først til {{winRounds}} runder vinner.",
@@ -265,7 +267,7 @@
     "wizard": {
       "validation": {
         "selectType": "Velg en turneringstype",
-        "selectFormat": "Velg et spillformat"
+        "selectFormat": "Velg et kampformat"
       },
       "shuffleInfo": "Shuffle-turneringer bruker ikke faste lag. Spillerne fordeles automatisk i balanserte lag for hver kamp ut fra Skill Rating.",
       "shuffleRounds": "Denne shuffle-turneringen får omtrent {{rounds}} (én per valgte kart).",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Maks runder per kart",
       "maxRoundsHelper": "Hvert kart spilles i opptil {{maxRounds}} runder; først til {{winRounds}} runder vinner.",
       "maxRoundsHelperEmpty": "Maksimalt antall runder per kart (standard: 24, maks: 30).",
-      "serversSummary": "{{servers}} er satt opp; {{required}} kreves for å kjøre alle kampene i denne bracketen.",
+      "serversSummary": "{{servers}} er satt opp; første runde har {{matches}}.",
       "estimatedVolumeLabel": "Estimert omfang",
       "mapsHeading": "Kart ({{total}})",
       "noMapsSelected": "Ingen kart er valgt",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Ingen lag er valgt (valgfritt)",
       "playerRegistration": "Spillerregistrering",
       "playerRegistrationInfo_one": "Spillerne registreres etter at turneringen er opprettet. Hvert valgte kart tilsvarer én runde med kamper ({{count}} runde totalt).",
-      "playerRegistrationInfo_other": "Spillerne registreres etter at turneringen er opprettet. Hvert valgte kart tilsvarer én runde med kamper ({{count}} runder totalt)."
+      "playerRegistrationInfo_other": "Spillerne registreres etter at turneringen er opprettet. Hvert valgte kart tilsvarer én runde med kamper ({{count}} runder totalt).",
+      "serversSummaryQueued": "{{servers}} er satt opp; første runde har {{matches}}. Kamper utover antall servere venter i kø til en server blir ledig."
     },
     "overtime": {
       "selectLabel": "Overtid",
@@ -315,11 +318,11 @@
       "shuffleTitle": "Kartvalg for shuffle-turneringer",
       "shuffleBody": "Alle valgte kart spilles i rekkefølge. Hvert kart tilsvarer én runde med kamper. Antall kart du velger, bestemmer hvor mange runder som spilles.",
       "shuffleSelected": "Du har valgt {{maps}}, så {{rounds}} blir spilt.",
-      "chooseLabel": "Velg en kartpott",
+      "chooseLabel": "Velg en kartpool",
       "custom": "Egendefinert",
       "selectedMaps": "Valgte kart ({{total}}):",
       "chooseMapsPlaceholder": "Velg kart …",
-      "saveMapPool": "Lagre kartpott",
+      "saveMapPool": "Lagre kartpool",
       "types": {
         "defusal": "Defusal",
         "hostage": "Gisler",
@@ -359,6 +362,22 @@
       "none": "Ingen",
       "itemCount_one": "{{count}} element",
       "itemCount_other": "{{count}} elementer"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Velg lag …",
+      "addAll": "Legg til alle",
+      "batchAddServers": "Masseopprett",
+      "addServer": "Legg til server",
+      "importTeams": "Importer lag",
+      "createTeam": "Opprett lag",
+      "notEnoughServers": "Første runde har {{matches}}, men du har {{servers}}. Kamper utover antall servere venter i kø til en server blir ledig – legg til flere servere for å spille alle samtidig.",
+      "notEnoughTeams": "Du trenger minst 2 lag for å opprette en turnering. Du har nå {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Ugyldig turneringstype",
+      "powerOfTwo": "{{type}} krever et antall lag som er en potens av 2 ({{counts}}). Du har valgt {{selected}}.",
+      "minTeams": "{{type}} krever minst {{min}} lag. Du har valgt {{selected}}.",
+      "maxTeams": "{{type}} tillater maks {{max}} lag. Du har valgt {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Ikke generert",
       "generatedAfter": "Kampene genereres når runde {{round}} er ferdig"
+    },
+    "slotHint": {
+      "winnerOf": "Vinner av {{match}}",
+      "matchNumber": "kamp {{number}}"
     }
   }
 }

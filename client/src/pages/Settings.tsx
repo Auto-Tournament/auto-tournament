@@ -555,9 +555,11 @@ export default function Settings() {
           if (simulationToggled) {
             showSnackbar(
               newSimulate
-                ? t('settingsPage.success.simulationEnabled', {
-                    suffix: isDev ? ` at ${newTimescale.toFixed(1)}x speed` : '',
-                  })
+                ? isDev
+                  ? t('settingsPage.success.simulationEnabledWithSpeed', {
+                      speed: newTimescale.toFixed(1),
+                    })
+                  : t('settingsPage.success.simulationEnabled')
                 : t('settingsPage.success.simulationDisabled'),
               'info'
             );

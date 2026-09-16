@@ -448,7 +448,6 @@ export default function Players() {
         title={t('playersPage.bulkDelete.title')}
         message={t('playersPage.bulkDelete.message', {
           count: selectedPlayerIds.size,
-          suffix: selectedPlayerIds.size === 1 ? '' : 's',
         })}
         confirmLabel={t('playersPage.bulkDelete.confirm')}
         confirmColor="error"

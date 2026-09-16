@@ -153,13 +153,14 @@
     "title": "Kartenpool speichern",
     "nameLabel": "Map-Pool-Name",
     "namePlaceholder": "Mein benutzerdefinierter Pool",
-    "info": "Dadurch wird ein Kartenpool mit {{count}} Map{{count, plural, one {} other {s}}} gespeichert.",
     "saveButton": "Speichern",
     "errors": {
       "nameRequired": "Map-Pool-Name ist erforderlich",
       "noMaps": "Bitte mindestens eines auswählen",
       "saveFailed": "Pool konnte nicht gespeichert werden"
-    }
+    },
+    "info_one": "Damit wird ein Map-Pool mit {{count}} Karte gespeichert.",
+    "info_other": "Damit wird ein Map-Pool mit {{count}} Karten gespeichert."
   },
   "batchServerModal": {
     "title": "Batch-Server erstellen",
@@ -210,22 +211,25 @@
       "helper": "Alle Server werden als aktiviert/deaktiviert erstellt"
     },
     "preview": {
-      "title": "Vorschau ({{showingFirst10, boolean, true {showing first 10} false {all}}})",
-      "more": "...und {{count}} mehr"
+      "more": "...und {{count}} mehr",
+      "titleFirst10": "Vorschau (erste 10)",
+      "titleAll": "Vorschau (alle)"
     },
     "checkServersButton": {
       "default": "Server überprüfen",
       "checking": "Wird geprüft…"
     },
     "createServersButton": {
-      "default": "Erstelle {{count}} Server",
-      "creating": "Erstellen ..."
+      "creating": "Erstellen ...",
+      "default_one": "{{count}} Server erstellen",
+      "default_other": "{{count}} Server erstellen"
     },
     "warnings": {
       "notAllVerified": "Einige Server haben die Konnektivitätsprüfungen nicht bestanden. Sie werden gespeichert, können aber offline angezeigt werden, bis RCON und Webhook konfiguriert sind."
     },
     "success": {
-      "createdAll": "{{count}} Server erfolgreich erstellt"
+      "createdAll_one": "{{count}} Server erstellt",
+      "createdAll_other": "{{count}} Server erstellt"
     },
     "errors": {
       "baseNameRequired": "Name ist erforderlich",
@@ -260,7 +264,8 @@
       "defaultProtected": "Die Standardvorlage „pure-win-loss“ kann nicht gelöscht werden."
     },
     "import": {
-      "success": "{{count}} ELO-Vorlage (n) erfolgreich importiert"
+      "success_one": "{{count}} ELO-Vorlage importiert",
+      "success_other": "{{count}} ELO-Vorlagen importiert"
     },
     "weights": {
       "noAdjustmentsPure": "Keine statistischen Anpassungen (reiner Gewinn/Verlust)"
@@ -289,10 +294,11 @@
       "introBody": "Erwartetes Format: Array von Vorlagen mit Namen, optionaler Beschreibung, aktiviert, Gewichten, maxAdjustment und minAdjustment. Wenn Sie die ID weglassen, wird sie aus dem Namen generiert.",
       "jsonLabel": "JSON-Daten",
       "validJsonTitle": "✓ Gültiges json!",
-      "validJsonBody": "{{count}} Template{{count !== 1 ? 's' : ''}} gefunden.",
       "previewTitle": "Vorschau:",
       "previewButton": "Vorschau",
-      "importButton": "Vorlagen importieren"
+      "importButton": "Vorlagen importieren",
+      "validJsonBody_one": "{{count}} Vorlage gefunden.",
+      "validJsonBody_other": "{{count}} Vorlagen gefunden."
     },
     "editor": {
       "titleEdit": "ELO-Vorlage bearbeiten",

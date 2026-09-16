@@ -418,7 +418,7 @@ export default function Servers() {
 
     setRetryingAll(true);
     const loadingKey = showSnackbar(
-      `⏳ Retrying initialization for ${needRetry.length} server(s)...`,
+      `⏳ ${t('serversPage.retry.retryingAll', { count: needRetry.length })}`,
       'info'
     );
 
@@ -428,7 +428,7 @@ export default function Servers() {
         await new Promise((r) => setTimeout(r, 500));
       }
       closeSnackbar(loadingKey);
-      showSnackbar(`✅ Retry triggered for ${needRetry.length} server(s)`, 'success');
+      showSnackbar(`✅ ${t('serversPage.retry.triggeredAll', { count: needRetry.length })}`, 'success');
       setTimeout(() => void loadServers({ useCached: false }), 1500);
     } catch (error) {
       closeSnackbar(loadingKey);
@@ -442,7 +442,7 @@ export default function Servers() {
       } catch {
         /* use raw */
       }
-      showError(`❌ Retry failed: ${msg}`);
+      showError(`❌ ${t('serversPage.retry.failedAll', { message: msg })}`);
     } finally {
       setRetryingAll(false);
     }
@@ -453,6 +453,7 @@ export default function Servers() {
     closeSnackbar,
     showError,
     loadServers,
+    t,
   ]);
 
   // Set header actions
@@ -633,9 +634,8 @@ export default function Servers() {
       if (!cs2OutdatedSnackbarKey) {
         const key = showPersistentError(
           <span>
-            🚨 <strong>CS2 update required</strong> — {outdatedEnabledServers.length}{' '}
-            {outdatedEnabledServers.length === 1 ? 'server is' : 'servers are'} out of date. Update
-            the server installation and restart.
+            🚨 <strong>{t('serversPage.cs2Update.title')}</strong> —{' '}
+            {t('serversPage.cs2Update.snackbarBody', { count: outdatedEnabledServers.length })}
           </span>,
           'cs2-update-required'
         );
@@ -645,7 +645,7 @@ export default function Servers() {
       closeSnackbar(cs2OutdatedSnackbarKey);
       setCs2OutdatedSnackbarKey(null);
     }
-  }, [servers, cs2OutdatedSnackbarKey, showPersistentError, closeSnackbar]);
+  }, [servers, cs2OutdatedSnackbarKey, showPersistentError, closeSnackbar, t]);
 
   const handleOpenModal = (server?: Server) => {
     setEditingServer(server || null);
@@ -707,11 +707,11 @@ export default function Servers() {
         const matchToShow = activeMatches[0] || response.matches[0];
         setSelectedMatch(matchToShow as Match);
       } else {
-        showError('No matches found for this server');
+        showError(t('serversPage.errors.noMatchesForServer'));
       }
     } catch (err) {
       console.error('Failed to load current match for server', err);
-      showError('Failed to load current match for this server');
+      showError(t('serversPage.errors.loadCurrentMatch'));
     } finally {
       setLoadingMatchServerId(null);
     }
@@ -736,14 +736,14 @@ export default function Servers() {
     setRetryingServerId(serverId);
     
     // Show loading snackbar
-    const loadingKey = showSnackbar('⏳ Sending persistent configuration to server...', 'info');
+    const loadingKey = showSnackbar(`⏳ ${t('serversPage.retry.sendingConfig')}`, 'info');
     
     try {
       await api.post(`/api/servers/${serverId}/reset-initialization`);
       
       // Dismiss loading snackbar and show success
       closeSnackbar(loadingKey);
-      showSnackbar('✅ Server initialization triggered successfully', 'success');
+      showSnackbar(`✅ ${t('serversPage.retry.triggered')}`, 'success');
       
       // Refresh server status after a short delay
       setTimeout(() => {
@@ -761,7 +761,7 @@ export default function Servers() {
       } catch {
         /* use raw */
       }
-      showError(`❌ Failed to retry initialization: ${msg}`);
+      showError(`❌ ${t('serversPage.retry.failed', { message: msg })}`);
     } finally {
       setRetryingServerId(null);
     }
@@ -883,30 +883,31 @@ export default function Servers() {
                 <CardContent>
                   <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
                     <Typography variant="subtitle2" fontWeight={600}>
-                      Server Fleet Status
+                      {t('serversPage.fleet.title')}
                     </Typography>
                     <Typography variant="h6" fontWeight={600}>
-                      {serverStats.total} {serverStats.total === 1 ? 'Server' : 'Servers'}
+                      {t('serversPage.fleet.total', { count: serverStats.total })}
                     </Typography>
                   </Box>
                   <Box display="flex" gap={2} flexWrap="wrap" mb={versionInfo.hasMultipleVersions ? 2 : 0}>
                     <Box display="flex" alignItems="center" gap={1}>
                       <CheckCircleIcon sx={{ color: 'success.main', fontSize: 20 }} />
                       <Typography variant="body2" color="success.main">
-                        <strong>{serverStats.online}</strong> Online
+                        <strong>{serverStats.online}</strong> {t('serversPage.fleet.online')}
                       </Typography>
                     </Box>
                     <Box display="flex" alignItems="center" gap={1}>
                       <CancelIcon sx={{ color: 'error.main', fontSize: 20 }} />
                       <Typography variant="body2" color="error.main">
-                        <strong>{serverStats.offline}</strong> Offline
+                        <strong>{serverStats.offline}</strong> {t('serversPage.fleet.offline')}
                       </Typography>
                     </Box>
                     {serverStats.notConfigured > 0 && (
                       <Box display="flex" alignItems="center" gap={1}>
                         <BlockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
                         <Typography variant="body2" color="text.disabled">
-                          <strong>{serverStats.notConfigured}</strong> Not Configured
+                          <strong>{serverStats.notConfigured}</strong>{' '}
+                          {t('serversPage.fleet.notConfigured')}
                         </Typography>
                       </Box>
                     )}
@@ -914,7 +915,7 @@ export default function Servers() {
                       <Box display="flex" alignItems="center" gap={1}>
                         <BlockIcon sx={{ color: 'text.disabled', fontSize: 20 }} />
                         <Typography variant="body2" color="text.disabled">
-                          <strong>{serverStats.disabled}</strong> Disabled
+                          <strong>{serverStats.disabled}</strong> {t('serversPage.fleet.disabled')}
                         </Typography>
                       </Box>
                     )}
@@ -958,13 +959,13 @@ export default function Servers() {
                           display="block"
                           mb={0.5}
                         >
-                          ℹ️ Latest released MatchZy Enhanced: v{latestMatchZyVersion}
+                          ℹ️ {t('serversPage.fleet.latestRelease', { version: latestMatchZyVersion })}
                         </Typography>
                         {olderCount > 0 && (
                           <Typography variant="caption" sx={{ color: 'inherit' }} display="block">
-                            {olderCount} {olderCount === 1 ? 'server is' : 'servers are'} running an older version than the latest release.{' '}
+                            {t('serversPage.fleet.olderVersion', { count: olderCount })}{' '}
                             <a href={releaseHref} target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'underline' }}>
-                              Download latest
+                              {t('serversPage.fleet.downloadLatest')}
                             </a>
                           </Typography>
                         )}
@@ -974,7 +975,7 @@ export default function Servers() {
                             sx={{ color: 'inherit', opacity: 0.9 }}
                             display="block"
                           >
-                            {newerCount} {newerCount === 1 ? 'server is' : 'servers are'} running a newer version than the latest GitHub release (likely an unreleased build).
+                            {t('serversPage.fleet.newerVersion', { count: newerCount })}
                           </Typography>
                         )}
                       </Box>
@@ -999,12 +1000,10 @@ export default function Servers() {
                         display="block"
                         mb={0.5}
                       >
-                        🚨 CS2 servers out of date — update required
+                        🚨 {t('serversPage.cs2Update.fleetTitle')}
                       </Typography>
                       <Typography variant="body2" sx={{ color: 'inherit' }} display="block">
-                        {cs2UpdateInfo.outOfDate.length}{' '}
-                        {cs2UpdateInfo.outOfDate.length === 1 ? 'server has' : 'servers have'} reported a required CS2
-                        update from Steam. Update the server installation (SteamCMD/host) and restart.
+                        {t('serversPage.cs2Update.fleetBody', { count: cs2UpdateInfo.outOfDate.length })}
                       </Typography>
                       <Box mt={1} display="flex" gap={1} flexWrap="wrap">
                         {cs2UpdateInfo.versions.map((v) => (
@@ -1031,13 +1030,13 @@ export default function Servers() {
                       }}
                     >
                       <Typography variant="caption" fontWeight={600} color="warning.dark" display="block" mb={0.5}>
-                        ⚠️ Version Mismatch Detected
+                        ⚠️ {t('serversPage.versionMismatch.title')}
                       </Typography>
                       <Box display="flex" gap={1} flexWrap="wrap">
                         {Array.from(versionInfo.versionCounts.entries()).map(([version, count]) => (
                           <Chip
                             key={version}
-                            label={`v${version}: ${count} ${count === 1 ? 'server' : 'servers'}`}
+                            label={t('serversPage.versionMismatch.chip', { version, count })}
                             size="small"
                             color={version === versionInfo.mostCommonVersion ? 'success' : 'warning'}
                             variant="outlined"
@@ -1046,7 +1045,9 @@ export default function Servers() {
                         ))}
                       </Box>
                       <Typography variant="caption" color="text.secondary" display="block" mt={0.5}>
-                        Recommended: Update all servers to v{versionInfo.mostCommonVersion} for consistency
+                        {t('serversPage.versionMismatch.recommended', {
+                          version: versionInfo.mostCommonVersion,
+                        })}
                       </Typography>
                     </Box>
                   )}
@@ -1163,10 +1164,13 @@ export default function Servers() {
                           color: 'grey.900',
                         }}
                       >
-                        <UpdateIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="CS2 update required" />
+                        <UpdateIcon
+                          sx={{ color: 'inherit', fontSize: 20 }}
+                          aria-label={t('serversPage.cs2Update.title')}
+                        />
                         <Box flex={1}>
                           <Typography variant="body2" fontWeight={800} sx={{ color: 'inherit' }}>
-                            CS2 update required
+                            {t('serversPage.cs2Update.title')}
                           </Typography>
                           <Typography
                             variant="caption"
@@ -1195,19 +1199,22 @@ export default function Servers() {
                           color: 'grey.900',
                         }}
                       >
-                        <BlockIcon sx={{ color: 'inherit', fontSize: 20 }} aria-label="Warning" />
+                        <BlockIcon
+                          sx={{ color: 'inherit', fontSize: 20 }}
+                          aria-label={t('serversPage.notInitialized.title')}
+                        />
                         <Box flex={1}>
                           <Typography variant="body2" fontWeight={600} sx={{ color: 'inherit' }}>
-                            Server Not Initialized
+                            {t('serversPage.notInitialized.title')}
                           </Typography>
                           <Typography variant="caption" display="block" mt={0.25} sx={{ color: 'inherit', opacity: 0.9 }}>
                             {isChecking
-                              ? "Checking connectivity…"
+                              ? t('serversPage.notInitialized.checking')
                               : server.reachableFromApi === false
-                              ? "RCON unreachable. Check host, port, and that the game server is running. Use Retry once it's reachable."
+                              ? t('serversPage.notInitialized.rconUnreachable')
                               : server.reachableFromApi === true
-                              ? "RCON reachable, but MatchZy hasn't sent events. Click retry button to configure."
-                              : "Connectivity not checked yet. See status below. Click retry to configure once RCON is reachable."}
+                              ? t('serversPage.notInitialized.noEvents')
+                              : t('serversPage.notInitialized.notChecked')}
                           </Typography>
                           {!isChecking && server.reachableFromApi === true && (
                             <Typography variant="caption" display="block" mt={0.5} sx={{ color: 'inherit', opacity: 0.85 }}>
@@ -1242,18 +1249,20 @@ export default function Servers() {
                               color = 'default';
                             } else if (!server.lastSeen) {
                               label = server.persistentConfigSent
-                                ? 'No events yet'
-                                : 'Not Configured';
+                                ? t('serversPage.statusChip.noEventsYet')
+                                : t('serversPage.statusChip.notConfigured');
                               color = server.persistentConfigSent ? 'info' : 'error';
                             } else if (isHeartbeatStale && reachableFromApi === true) {
-                              label = 'Online (Idle — no recent events)';
+                              label = t('serversPage.statusChip.onlineIdle');
                               color = 'info';
                             } else if (server.status !== 'online' && reachableFromApi === false) {
                               // Reserve "Offline" for true reachability failure (or when backend marks it offline).
                               label = t('serversPage.statusChip.offline');
                               color = 'error';
                             } else if (reachableFromApi && serverCanReachApi) {
-                              label = isHeartbeatActive ? 'Online (Active)' : t('serversPage.statusChip.onlineOk');
+                              label = isHeartbeatActive
+                                ? t('serversPage.statusChip.onlineActive')
+                                : t('serversPage.statusChip.onlineOk');
                               color = 'success';
                             } else if (reachableFromApi && serverCanReachApi === false) {
                               label = t('serversPage.statusChip.onlineRconOnly');
@@ -1262,7 +1271,7 @@ export default function Servers() {
                               label = t('serversPage.statusChip.rconFailed');
                               color = 'error';
                             } else {
-                              label = 'Online';
+                              label = t('serversPage.statusChip.online');
                               color = 'success';
                             }
 
@@ -1285,10 +1294,10 @@ export default function Servers() {
                               tooltip = (
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    Disabled server
+                                    {t('serversPage.tooltips.disabledTitle')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    Disabled servers are ignored by allocation and health checks.
+                                    {t('serversPage.tooltips.disabledBody')}
                                   </Typography>
                                 </Box>
                               );
@@ -1298,11 +1307,10 @@ export default function Servers() {
                                 tooltip = (
                                   <Box>
                                     <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                      No MatchZy events received yet
+                                      {t('serversPage.tooltips.noEventsTitle')}
                                     </Typography>
                                     <Typography variant="body2">
-                                      MAT sent webhook config via RCON, but hasn’t received any events. This usually means the
-                                      server can’t reach the MAT webhook URL, or MatchZy isn’t running.
+                                      {t('serversPage.tooltips.noEventsBody')}
                                     </Typography>
                                     <Link
                                       href={tooltipHref}
@@ -1311,7 +1319,7 @@ export default function Servers() {
                                       underline="hover"
                                       sx={{ display: 'inline-block', mt: 0.5 }}
                                     >
-                                      Fix guide
+                                      {t('serversPage.tooltips.fixGuide')}
                                     </Link>
                                   </Box>
                                 );
@@ -1319,11 +1327,10 @@ export default function Servers() {
                                 tooltip = (
                                   <Box>
                                     <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                      Not configured
+                                      {t('serversPage.tooltips.notConfiguredTitle')}
                                     </Typography>
                                     <Typography variant="body2">
-                                      MAT hasn’t sent persistent config to this server yet. Use <strong>Retry</strong> to
-                                      initialize it.
+                                      {t('serversPage.tooltips.notConfiguredBody')}
                                     </Typography>
                                   </Box>
                                 );
@@ -1333,11 +1340,10 @@ export default function Servers() {
                               tooltip = (
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    Server unreachable from MAT
+                                    {t('serversPage.tooltips.unreachableTitle')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    MAT can’t reach the server via RCON. Check host/port, RCON password, firewall, and that
-                                    the server is running.
+                                    {t('serversPage.tooltips.unreachableBody')}
                                   </Typography>
                                   <Link
                                     href={tooltipHref}
@@ -1346,7 +1352,7 @@ export default function Servers() {
                                     underline="hover"
                                     sx={{ display: 'inline-block', mt: 0.5 }}
                                   >
-                                    Fix guide
+                                    {t('serversPage.tooltips.fixGuide')}
                                   </Link>
                                 </Box>
                               );
@@ -1355,11 +1361,10 @@ export default function Servers() {
                               tooltip = (
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    Server can’t reach MAT (webhook)
+                                    {t('serversPage.tooltips.webhookTitle')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    MAT can reach the server via RCON, but the server can’t reach MAT’s webhook. Check egress,
-                                    DNS, and the configured webhook URL.
+                                    {t('serversPage.tooltips.webhookBody')}
                                   </Typography>
                                   <Link
                                     href={tooltipHref}
@@ -1368,7 +1373,7 @@ export default function Servers() {
                                     underline="hover"
                                     sx={{ display: 'inline-block', mt: 0.5 }}
                                   >
-                                    Fix guide
+                                    {t('serversPage.tooltips.fixGuide')}
                                   </Link>
                                 </Box>
                               );
@@ -1416,11 +1421,12 @@ export default function Servers() {
                                     title={
                                       <Box>
                                         <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                          Plugin versions differ across servers
+                                          {t('serversPage.tooltips.versionDiffTitle')}
                                         </Typography>
                                         <Typography variant="body2">
-                                          Some servers are running a different MatchZy Enhanced version. If you use CSM, run{' '}
-                                          <strong>sudo csm update-plugins</strong> and restart servers.
+                                          {t('serversPage.tooltips.versionDiffBody', {
+                                            command: 'sudo csm update-plugins',
+                                          })}
                                         </Typography>
                                         <Link
                                           href={docs.versionMismatch}
@@ -1429,13 +1435,13 @@ export default function Servers() {
                                           underline="hover"
                                           sx={{ display: 'inline-block', mt: 0.5 }}
                                         >
-                                          Fix guide
+                                          {t('serversPage.tooltips.fixGuide')}
                                         </Link>
                                       </Box>
                                     }
                                   >
                                     <Chip
-                                      label="Version Mismatch"
+                                      label={t('serversPage.chips.versionMismatch')}
                                       size="small"
                                       color="warning"
                                       sx={{ fontWeight: 500 }}
@@ -1450,11 +1456,10 @@ export default function Servers() {
                               title={
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    RCON IP banned
+                                    {t('serversPage.tooltips.ipBannedTitle')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    The server has temporarily banned MAT’s IP due to repeated RCON auth failures. Fix the RCON
-                                    password and unban the IP.
+                                    {t('serversPage.tooltips.ipBannedBody')}
                                   </Typography>
                                   <Link
                                     href={docs.ipBanned}
@@ -1463,13 +1468,13 @@ export default function Servers() {
                                     underline="hover"
                                     sx={{ display: 'inline-block', mt: 0.5 }}
                                   >
-                                    Fix guide
+                                    {t('serversPage.tooltips.fixGuide')}
                                   </Link>
                                 </Box>
                               }
                             >
                               <Chip
-                                label="IP Banned"
+                                label={t('serversPage.chips.ipBanned')}
                                 size="small"
                                 color="error"
                                 variant="outlined"
@@ -1479,7 +1484,7 @@ export default function Servers() {
                           )}
                           {typeof server.cs2BuildId === 'number' && server.enabled && (
                             <Chip
-                              label={`CS2 build ${server.cs2BuildId}`}
+                              label={t('serversPage.chips.cs2Build', { build: server.cs2BuildId })}
                               size="small"
                               variant="outlined"
                               color="secondary"
@@ -1492,11 +1497,12 @@ export default function Servers() {
                               title={
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    MatchZy plugin can’t reach its database.
+                                    {t('serversPage.tooltips.pluginDbTitle')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    If you use CSM: run <strong>sudo csm</strong> → Tools →{' '}
-                                    <strong>MatchZy DB: verify/repair</strong>.
+                                    {t('serversPage.tooltips.pluginDbBody', {
+                                      path: 'sudo csm → Tools → MatchZy DB: verify/repair',
+                                    })}
                                   </Typography>
                                   <Link
                                     href={docs.pluginDbDown}
@@ -1505,13 +1511,13 @@ export default function Servers() {
                                     underline="hover"
                                     sx={{ display: 'inline-block', mt: 0.5 }}
                                   >
-                                    Fix guide
+                                    {t('serversPage.tooltips.fixGuide')}
                                   </Link>
                                 </Box>
                               }
                             >
                               <Chip
-                                label="Plugin DB DOWN"
+                                label={t('serversPage.chips.pluginDbDown')}
                                 size="small"
                                 color="error"
                                 sx={{ fontWeight: 800 }}
@@ -1524,11 +1530,10 @@ export default function Servers() {
                               title={
                                 <Box>
                                   <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                    CS2 update required
+                                    {t('serversPage.cs2Update.title')}
                                   </Typography>
                                   <Typography variant="body2">
-                                    MAT verified this server’s build is behind Steam. It will be blocked from new allocations
-                                    (and tournament start) until updated.
+                                    {t('serversPage.tooltips.cs2UpdateBody')}
                                   </Typography>
                                   <Link
                                     href={docs.cs2Outdated}
@@ -1537,13 +1542,15 @@ export default function Servers() {
                                     underline="hover"
                                     sx={{ display: 'inline-block', mt: 0.5 }}
                                   >
-                                    Fix guide
+                                    {t('serversPage.tooltips.fixGuide')}
                                   </Link>
                                 </Box>
                               }
                             >
                               <Chip
-                                label={`CS2 update required (${server.cs2RequiredVersion})`}
+                                label={t('serversPage.chips.cs2UpdateRequired', {
+                                  version: server.cs2RequiredVersion,
+                                })}
                                 size="small"
                                 color="error"
                                 sx={{ fontWeight: 700 }}
@@ -1552,7 +1559,7 @@ export default function Servers() {
                           )}
                         </Box>
                       </Box>
-                        <Tooltip title="Retry server initialization (send persistent config via RCON)">
+                        <Tooltip title={t('serversPage.tooltips.retryInit')}>
                         <IconButton
                           size="small"
                           onClick={(e) => handleRetryInitialization(server.id, e)}
@@ -1588,7 +1595,7 @@ export default function Servers() {
                         <Box display="flex" alignItems="center" gap={0.5}>
                           <DnsIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">
-                            <strong>CS2 Name:</strong> {server.hostname}
+                            <strong>{t('serversPage.labels.cs2Name')}</strong> {server.hostname}
                           </Typography>
                         </Box>
                       )}
@@ -1596,7 +1603,7 @@ export default function Servers() {
                         <Box display="flex" alignItems="center" gap={0.5}>
                           <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">
-                            <strong>Plugin:</strong> MatchZy Enhanced v{server.pluginVersion}
+                            <strong>{t('serversPage.labels.plugin')}</strong> MatchZy Enhanced v{server.pluginVersion}
                           </Typography>
                         </Box>
                       )}
@@ -1604,7 +1611,8 @@ export default function Servers() {
                         <Box display="flex" alignItems="center" gap={0.5}>
                           <UpdateIcon sx={{ fontSize: 16, color: 'text.disabled' }} />
                           <Typography variant="body2" color="text.secondary">
-                            <strong>CS2:</strong> build {server.cs2BuildId}
+                            <strong>CS2:</strong>{' '}
+                            {t('serversPage.labels.cs2BuildValue', { build: server.cs2BuildId })}
                           </Typography>
                         </Box>
                       )}
@@ -1619,13 +1627,13 @@ export default function Servers() {
                             
                             let timeStr;
                             if (secondsAgo < 60) {
-                              timeStr = 'just now';
+                              timeStr = t('serversPage.lastActive.justNow');
                             } else if (minutesAgo < 60) {
-                              timeStr = `${minutesAgo}m ago`;
+                              timeStr = t('serversPage.lastActive.minutesAgo', { count: minutesAgo });
                             } else if (hoursAgo < 24) {
-                              timeStr = `${hoursAgo}h ago`;
+                              timeStr = t('serversPage.lastActive.hoursAgo', { count: hoursAgo });
                             } else {
-                              timeStr = `${daysAgo}d ago`;
+                              timeStr = t('serversPage.lastActive.daysAgo', { count: daysAgo });
                             }
                             
                             const isActive = secondsAgo < 300; // 5 minutes
@@ -1634,7 +1642,7 @@ export default function Servers() {
                                 color: isActive ? '#4caf50' : '#9e9e9e',
                                 fontWeight: isActive ? 600 : 400 
                               }}>
-                                ⏱️ Active {timeStr}
+                                ⏱️ {timeStr}
                               </span>
                             );
                           })()}
@@ -1706,7 +1714,9 @@ export default function Servers() {
                             <Typography variant="caption" color="text.secondary">
                               <strong>{t('serversPage.connectivity.pluginLabel')}</strong>{' '}
                               <Chip
-                                label={server.pluginStatus.toUpperCase()}
+                                label={t(`serversPage.pluginStatus.${server.pluginStatus}`, {
+                                  defaultValue: server.pluginStatus,
+                                }).toUpperCase()}
                                 size="small"
                                 color={
                                   server.pluginStatus === 'idle'
@@ -1830,7 +1840,6 @@ export default function Servers() {
         title={t('serversPage.bulkDelete.title')}
         message={t('serversPage.bulkDelete.message', {
           count: selectedServerIds.size,
-          suffix: selectedServerIds.size === 1 ? '' : 's',
         })}
         confirmColor="error"
         onConfirm={async () => {

@@ -90,7 +90,9 @@
       "title": "表现走势",
       "noData": "暂无有效的表现数据 —— 打几回合后即可查看 ADR 与 K/D 走势。",
       "avgAdr": "ADR：平均 {{value}}",
-      "avgKd": "K/D：平均 {{value}}"
+      "avgKd": "K/D：平均 {{value}}",
+      "matchCount_one": "{{count}} 场比赛",
+      "matchCount_other": "{{count}} 场比赛"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "删除战队",
-      "message": "确定要删除 {{count}} 支战队{{suffix}}吗？该操作无法撤销。",
       "confirm": "删除",
-      "success": "已删除 {{count}} 支战队{{suffix}}",
-      "error": "删除一支或多支战队时出错"
+      "error": "删除一支或多支战队时出错",
+      "message_one": "确定要删除 {{count}} 支战队吗？该操作无法撤销。",
+      "message_other": "确定要删除 {{count}} 支战队吗？该操作无法撤销。",
+      "success_one": "已删除 {{count}} 支战队",
+      "success_other": "已删除 {{count}} 支战队"
     },
     "loadError": "加载战队失败",
     "importSuccess": "成功导入 {{count}} 支战队"
@@ -275,10 +279,12 @@
     "importError": "导入选手失败",
     "bulkDelete": {
       "title": "删除选手",
-      "message": "确定要删除 {{count}} 名选手{{suffix}}吗？该操作无法撤销。",
       "confirm": "删除",
-      "success": "已删除 {{count}} 名选手{{suffix}}",
-      "error": "删除一名或多名选手时出错"
+      "error": "删除一名或多名选手时出错",
+      "message_one": "确定要删除 {{count}} 名选手吗？该操作无法撤销。",
+      "message_other": "确定要删除 {{count}} 名选手吗？该操作无法撤销。",
+      "success_one": "已删除 {{count}} 名选手",
+      "success_other": "已删除 {{count}} 名选手"
     },
     "openPlayerPageTooltip": "打开选手页面",
     "skillRatingTooltip": "Skill Rating 基于 OpenSkill，数值越高越好。",

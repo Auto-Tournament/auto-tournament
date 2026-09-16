@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Review your tournament settings and click \"Create Tournament\" when ready.",
+        "info": "Review your tournament settings and click \"{{button}}\" when you're ready.",
         "nameLabel": "Tournament Name",
         "typeLabel": "Tournament Type",
         "formatLabel": "Match Format",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} available server",
       "availableServers_other": "{{count}} available servers",
       "concurrentMatches_one": "{{count}} concurrent match",
-      "concurrentMatches_other": "{{count}} concurrent matches"
+      "concurrentMatches_other": "{{count}} concurrent matches",
+      "enabledServers_one": "{{count}} enabled server",
+      "enabledServers_other": "{{count}} enabled servers"
     },
     "matchRules": {
       "value": "Max {{maxRounds}} rounds per map; winner is first to {{winRounds}} rounds.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Max Rounds per Map",
       "maxRoundsHelper": "Each map plays up to {{maxRounds}} rounds; winner is first to {{winRounds}} rounds.",
       "maxRoundsHelperEmpty": "Maximum number of rounds per map (default: 24, max: 30).",
-      "serversSummary": "{{servers}} configured; {{required}} required to run all matches in this bracket.",
+      "serversSummary": "{{servers}} configured; the first round has {{matches}}.",
       "estimatedVolumeLabel": "Estimated Volume",
       "mapsHeading": "Maps ({{total}})",
       "noMapsSelected": "No maps selected",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "No teams selected (optional)",
       "playerRegistration": "Player Registration",
       "playerRegistrationInfo_one": "Players will be registered after tournament creation. Each map selected represents one round of matches ({{count}} round total).",
-      "playerRegistrationInfo_other": "Players will be registered after tournament creation. Each map selected represents one round of matches ({{count}} rounds total)."
+      "playerRegistrationInfo_other": "Players will be registered after tournament creation. Each map selected represents one round of matches ({{count}} rounds total).",
+      "serversSummaryQueued": "{{servers}} configured; the first round has {{matches}}. Matches beyond your server count wait in the queue until a server is free."
     },
     "overtime": {
       "selectLabel": "Overtime",
@@ -359,6 +362,22 @@
       "none": "None",
       "itemCount_one": "{{count}} item",
       "itemCount_other": "{{count}} items"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Choose teams…",
+      "addAll": "Add all",
+      "batchAddServers": "Batch add",
+      "addServer": "Add server",
+      "importTeams": "Import teams",
+      "createTeam": "Create team",
+      "notEnoughServers": "The first round has {{matches}}, but you have {{servers}}. Matches beyond your server count wait in the queue until a server is free — add more servers to run them all at once.",
+      "notEnoughTeams": "You need at least 2 teams to create a tournament. You currently have {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Invalid tournament type",
+      "powerOfTwo": "{{type}} requires a power-of-2 team count ({{counts}}). You selected {{selected}}.",
+      "minTeams": "{{type}} requires at least {{min}} teams. You selected {{selected}}.",
+      "maxTeams": "{{type}} allows at most {{max}} teams. You selected {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Not Generated",
       "generatedAfter": "Matches will be generated after Round {{round}} completes"
+    },
+    "slotHint": {
+      "winnerOf": "Winner of {{match}}",
+      "matchNumber": "match {{number}}"
     }
   }
 }

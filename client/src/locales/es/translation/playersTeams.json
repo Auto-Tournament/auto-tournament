@@ -90,7 +90,9 @@
       "title": "Tendencias de rendimiento",
       "noData": "Aún no hay datos de rendimiento significativos: juega algunas rondas para ver las tendencias de ADR y K/D.",
       "avgAdr": "ADR: {{value}} med.",
-      "avgKd": "K/D: {{value}} med."
+      "avgKd": "K/D: {{value}} med.",
+      "matchCount_one": "{{count}} partido",
+      "matchCount_other": "{{count}} partidos"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Eliminar equipos",
-      "message": "¿Seguro que quieres eliminar {{count}} equipo{{suffix}}? Esta acción no se puede deshacer.",
       "confirm": "Eliminar",
-      "success": "Se eliminaron {{count}} equipo{{suffix}}",
-      "error": "No se pudo eliminar uno o más equipos"
+      "error": "No se pudo eliminar uno o más equipos",
+      "message_one": "¿Seguro que quieres eliminar {{count}} equipo? Esta acción no se puede deshacer.",
+      "message_other": "¿Seguro que quieres eliminar {{count}} equipos? Esta acción no se puede deshacer.",
+      "success_one": "{{count}} equipo eliminado",
+      "success_other": "{{count}} equipos eliminados"
     },
     "loadError": "No se pudieron cargar los equipos",
     "importSuccess": "Se importaron {{count}} equipo(s) correctamente"
@@ -275,10 +279,12 @@
     "importError": "No se pudo importar jugadores",
     "bulkDelete": {
       "title": "Eliminar jugadores",
-      "message": "¿Seguro que quieres eliminar {{count}} jugador{{suffix}}? Esta acción no se puede deshacer.",
       "confirm": "Eliminar",
-      "success": "Se eliminaron {{count}} jugador{{suffix}}",
-      "error": "No se pudo eliminar uno o más jugadores"
+      "error": "No se pudo eliminar uno o más jugadores",
+      "message_one": "¿Seguro que quieres eliminar {{count}} jugador? Esta acción no se puede deshacer.",
+      "message_other": "¿Seguro que quieres eliminar {{count}} jugadores? Esta acción no se puede deshacer.",
+      "success_one": "{{count}} jugador eliminado",
+      "success_other": "{{count}} jugadores eliminados"
     },
     "openPlayerPageTooltip": "Abrir página del jugador",
     "skillRatingTooltip": "La puntuación de habilidad se basa en OpenSkill; más alto es mejor.",

@@ -153,13 +153,14 @@
     "title": "Salva pool mappe",
     "nameLabel": "Nome pool mappe",
     "namePlaceholder": "Il mio pool personalizzato",
-    "info": "Questo salverà un pool mappe con {{count}} mappa{{count, plural, one {} other {e}}}.",
     "saveButton": "Salva",
     "errors": {
       "nameRequired": "Il nome del pool mappe è obbligatorio",
       "noMaps": "Seleziona almeno una mappa",
       "saveFailed": "Impossibile salvare il pool mappe"
-    }
+    },
+    "info_one": "Verrà salvato un pool mappe con {{count}} mappa.",
+    "info_other": "Verrà salvato un pool mappe con {{count}} mappe."
   },
   "batchServerModal": {
     "title": "Crea server in batch",
@@ -210,22 +211,25 @@
       "helper": "Tutti i server verranno creati come abilitati/disabilitati"
     },
     "preview": {
-      "title": "Anteprima ({{showingFirst10, boolean, true {prime 10} false {tutte}}})",
-      "more": "...e altre {{count}}"
+      "more": "...e altre {{count}}",
+      "titleFirst10": "Anteprima (primi 10)",
+      "titleAll": "Anteprima (tutti)"
     },
     "checkServersButton": {
       "default": "Verifica server",
       "checking": "Verifica..."
     },
     "createServersButton": {
-      "default": "Crea {{count}} server{{count, plural, one {} other {}}}",
-      "creating": "Creazione..."
+      "creating": "Creazione...",
+      "default_one": "Crea {{count}} server",
+      "default_other": "Crea {{count}} server"
     },
     "warnings": {
       "notAllVerified": "Alcuni server non hanno superato i controlli di connettività. Verranno salvati, ma potrebbero apparire offline finché RCON e webhook non sono configurati."
     },
     "success": {
-      "createdAll": "{{count}} server creato/i con successo"
+      "createdAll_one": "{{count}} server creato",
+      "createdAll_other": "{{count}} server creati"
     },
     "errors": {
       "baseNameRequired": "Il nome base è obbligatorio",
@@ -260,7 +264,8 @@
       "defaultProtected": "Il modello predefinito \"pure-win-loss\" non può essere eliminato."
     },
     "import": {
-      "success": "{{count}} modello/i ELO importato/i con successo"
+      "success_one": "{{count}} modello ELO importato",
+      "success_other": "{{count}} modelli ELO importati"
     },
     "weights": {
       "noAdjustmentsPure": "Nessun aggiustamento stat (solo vittoria/sconfitta)"
@@ -289,10 +294,11 @@
       "introBody": "Formato atteso: array di modelli con name, description opzionale, enabled, weights, maxAdjustment e minAdjustment. Se ometti id, verrà generato dal nome.",
       "jsonLabel": "Dati JSON",
       "validJsonTitle": "✓ JSON valido!",
-      "validJsonBody": "{{count}} modello{{count !== 1 ? 'i' : ''}} trovato{{count !== 1 ? 'i' : ''}}.",
       "previewTitle": "Anteprima:",
       "previewButton": "Anteprima",
-      "importButton": "Importa modelli"
+      "importButton": "Importa modelli",
+      "validJsonBody_one": "Trovato {{count}} modello.",
+      "validJsonBody_other": "Trovati {{count}} modelli."
     },
     "editor": {
       "titleEdit": "Modifica modello ELO",

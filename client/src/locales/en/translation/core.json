@@ -54,6 +54,16 @@
       "settings": "Settings",
       "devTools": "Development Tools",
       "publicLinks": "Public Links"
+    },
+    "openDrawer": "Open navigation menu",
+    "matchzyDbDown": {
+      "title": "MatchZy DB unreachable",
+      "body_one": "{{count}} server reports that the plugin cannot reach its database. Backups and the event queue may be affected.",
+      "body_other": "{{count}} servers report that the plugin cannot reach its database. Backups and the event queue may be affected."
+    },
+    "steamUnavailable": {
+      "title": "Steam integration unavailable",
+      "body": "Sign-ins and vanity URL lookups may not work. Check the server configuration and connectivity."
     }
   },
   "language": {

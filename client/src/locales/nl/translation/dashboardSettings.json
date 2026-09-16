@@ -207,9 +207,10 @@
     },
     "success": {
       "saveSettings": "Instellingen opgeslagen",
-      "simulationEnabled": "Simulatiemodus ingeschakeld{{suffix}}",
+      "simulationEnabled": "Simulatiemodus ingeschakeld",
       "simulationDisabled": "Simulatiemodus uitgeschakeld",
-      "timescaleUpdated": "Simulatiesnelheid bijgewerkt naar {{value}}x"
+      "timescaleUpdated": "Simulatiesnelheid bijgewerkt naar {{value}}x",
+      "simulationEnabledWithSpeed": "Simulatiemodus ingeschakeld op {{speed}}x snelheid"
     }
   },
   "dashboard": {

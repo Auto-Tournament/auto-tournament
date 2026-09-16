@@ -550,7 +550,7 @@ const Tournament: React.FC = () => {
     }
 
     // Validate team count for non-shuffle tournaments
-    const validation = validateTeamCountForType(type, selectedTeams.length);
+    const validation = validateTeamCountForType(type, selectedTeams.length, t);
     if (!validation.isValid) {
       showError(validation.error || t('tournament.toasts.invalidTeamCount'));
       return;

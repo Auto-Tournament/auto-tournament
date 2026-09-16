@@ -19,7 +19,8 @@
     "sections": {
       "live": "Live-kamper ({{count}})",
       "upcoming": "Kommende kamper ({{count}})",
-      "history": "Kamphistorikk ({{count}})"
+      "history": "Kamphistorikk ({{count}})",
+      "inQueue": "{{count}} i kø"
     },
     "manualMatchLabel": "Manuell kamp",
     "create": {
@@ -27,9 +28,10 @@
     },
     "bulkDelete": {
       "title": "Slett manuelle kamper",
-      "message": "Er du sikker på at du vil slette {{count}} manuell(e) kamp(er)? Dette kan ikke angres.",
       "deleted_one": "Slettet {{count}} kamp",
-      "deleted_other": "Slettet {{count}} kamper"
+      "deleted_other": "Slettet {{count}} kamper",
+      "message_one": "Er du sikker på at du vil slette {{count}} manuell kamp? Dette kan ikke angres.",
+      "message_other": "Er du sikker på at du vil slette {{count}} manuelle kamper? Dette kan ikke angres."
     },
     "bulkSelect": {
       "select": "Velg",
@@ -88,7 +90,8 @@
       "statusBusy": "Opptatt",
       "statusOffline": "Frakoblet",
       "readyIn": "Klar om: {{time}}"
-    }
+    },
+    "latestEvent": "Siste: {{event}}"
   },
   "teamModal": {
     "titleCreate": "Opprett nytt lag",
@@ -324,16 +327,20 @@
       "noJson": "Skriv inn JSON-data"
     },
     "preview": {
-      "summary": "✓ Gyldig JSON! Fant {{teamCount}} lag{{teamCount, plural, one {} other {}}} med totalt {{playerCount}} spillere.",
+      "summary": "✓ Gyldig JSON! Fant {{teams}} med til sammen {{players}}.",
       "title": "Forhåndsvisning:",
-      "playersChip": "{{count}} player{{count, plural, one {} other {s}}}",
       "missingDiscordTotal": "Spillere uten Discord-ID: {{count}}",
-      "missingDiscordChip": "Uten Discord: {{count}}"
+      "missingDiscordChip": "Uten Discord: {{count}}",
+      "playersChip_one": "{{count}} spiller",
+      "playersChip_other": "{{count}} spillere",
+      "teamsCount_one": "{{count}} lag",
+      "teamsCount_other": "{{count}} lag"
     },
     "actions": {
       "preview": "Forhåndsvis",
       "importing": "Importerer...",
-      "import": "Importer {{count}} lag{{count, plural, one {} other {}}}"
+      "import_one": "Importer {{count}} lag",
+      "import_other": "Importer {{count}} lag"
     },
     "warnings": {
       "title": "Noen Discord-ID-er ble ignorert. Disse spillerne importeres uten:",
@@ -353,15 +360,17 @@
     "actions": {
       "parseValidate": "Parse og valider",
       "importing": "Importerer...",
-      "import": "Importer {{count}} spiller{{count, plural, one {} other {e}}}"
+      "import_one": "Importer {{count}} spiller",
+      "import_other": "Importer {{count}} spillere"
     },
     "preview": {
-      "readyChip": "{{count}} spiller{{count, plural, one {} other {e}}} klar til import",
       "title": "Spillere å importere ({{count}}):",
       "steamId": "Steam-ID: {{steamId}}",
       "name": "Navn: {{name}}",
       "initialElo": "Start-ELO: {{elo}}",
-      "avatar": "Avatar-URL: {{url}}"
+      "avatar": "Avatar-URL: {{url}}",
+      "readyChip_one": "{{count}} spiller klar til import",
+      "readyChip_other": "{{count}} spillere klare til import"
     },
     "errors": {
       "noData": "Skriv inn JSON- eller CSV-data",
@@ -387,11 +396,12 @@
     "playerCard": {
       "alreadyInTeam": "Allerede i lag"
     },
-    "addPlayersButton": "Legg til {{count}} spiller{{count, plural, one {} other {e}}}",
     "errors": {
       "loadFailed": "Klarte ikke å laste spillere",
       "noSelectable": "Ingen spillere tilgjengelig for valg"
-    }
+    },
+    "addPlayersButton_one": "Legg til {{count}} spiller",
+    "addPlayersButton_other": "Legg til {{count}} spillere"
   },
   "soundSettingsModal": {
     "title": "Lydinnstillinger",

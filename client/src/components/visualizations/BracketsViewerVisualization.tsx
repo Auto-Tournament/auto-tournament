@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { Box, useTheme } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { alpha } from '@mui/material/styles';
 import {
   TransformWrapper,
@@ -27,6 +28,7 @@ export default function BracketsViewerVisualization({
   onMatchClick,
 }: BracketsViewerVisualizationProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const matchLookupRef = useRef<Map<Id, Match>>(new Map());
   const transformRef = useRef<ReactZoomPanPinchRef | null>(null);
@@ -140,18 +142,11 @@ export default function BracketsViewerVisualization({
       return null;
     }
 
-    const getStageName = () => {
-      switch (tournamentType) {
-        case 'single_elimination':
-          return 'Single Elimination';
-        case 'double_elimination':
-          return 'Double Elimination';
-        case 'round_robin':
-          return 'Round Robin';
-        default:
-          return 'Tournament';
-      }
-    };
+    // Same translated label as the page header (tournament type selector).
+    const getStageName = () =>
+      t(`tournament.typeSelector.types.${tournamentType}.label`, {
+        defaultValue: t('nav.tournament'),
+      });
 
     // Group matches into their respective groups
     const groups: Group[] = [];
@@ -479,7 +474,63 @@ export default function BracketsViewerVisualization({
       },
       matchLookup,
     };
-  }, [matches, tournamentType]);
+  }, [matches, tournamentType, t]);
+
+  /**
+   * Labels empty slots in later rounds as "Winner of <match>".
+   *
+   * The viewer only knows numeric slot positions, which it renders as "#1"/"#2"
+   * in front of names and reads like a seed. We turn those origins off
+   * (participantOriginPlacement: 'none') and instead name the feeder match,
+   * using the label the viewer rendered for it so the two always agree.
+   * Lower-bracket slots keep the viewer's own "Loser of …" hints.
+   */
+  const updateSlotHints = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const parentsByChildId = new Map<string, Match[]>();
+    matches.forEach((m) => {
+      if (m.nextMatchId === undefined || m.nextMatchId === null) return;
+      const key = String(m.nextMatchId);
+      const list = parentsByChildId.get(key) ?? [];
+      list.push(m);
+      parentsByChildId.set(key, list);
+    });
+
+    const matchElements = container.querySelectorAll<HTMLElement>('.match[data-match-id]');
+    matchElements.forEach((element) => {
+      const matchId = element.getAttribute('data-match-id');
+      if (!matchId) return;
+
+      const originalMatch = findOriginalMatch(matchId as Id);
+      if (!originalMatch || originalMatch.status === 'completed') return;
+      if (originalMatch.slug.startsWith('lb-')) return;
+
+      const parents = [...(parentsByChildId.get(String(originalMatch.id)) ?? [])].sort(
+        (a, b) => a.matchNumber - b.matchNumber
+      );
+      if (parents.length < 2) return;
+
+      const slots = element.querySelectorAll<HTMLElement>(':scope > .opponents > .participant');
+      slots.forEach((slot, index) => {
+        if (slot.hasAttribute('data-participant-id')) return;
+        const parent = parents[index];
+        const nameEl = slot.querySelector<HTMLElement>('.name');
+        if (!parent || !nameEl) return;
+
+        const parentLabel = container
+          .querySelector<HTMLElement>(`.match[data-match-id="${parent.id}"] > .opponents > span`)
+          ?.innerText?.trim();
+        const hint = t('bracket.slotHint.winnerOf', {
+          match: parentLabel || t('bracket.slotHint.matchNumber', { number: parent.matchNumber }),
+        });
+        nameEl.classList.add('hint');
+        nameEl.innerText = hint;
+        nameEl.title = hint;
+      });
+    });
+  }, [findOriginalMatch, matches, t]);
 
   const updateMatchStatusStyles = useCallback(() => {
     const container = containerRef.current;
@@ -525,7 +576,9 @@ export default function BracketsViewerVisualization({
     const run = async () => {
       try {
         await render(data, {
-          participantOriginPlacement: 'before',
+          // Slot positions are not seeds (MAT seeds randomly); don't print "#1"
+          // in front of team names. Empty slots get "Winner of …" instead.
+          participantOriginPlacement: 'none',
           separatedChildCountLabel: true,
           showSlotsOrigin: true,
           showLowerBracketSlotsOrigin: true,
@@ -603,6 +656,7 @@ export default function BracketsViewerVisualization({
         updateMatchClickTargets();
         updateLiveRoundStyles();
         updateMatchStatusStyles();
+        updateSlotHints();
       } catch (error) {
         console.error('Error rendering bracket:', error);
       }
@@ -626,6 +680,7 @@ export default function BracketsViewerVisualization({
     updateMatchClickTargets,
     updateLiveRoundStyles,
     updateMatchStatusStyles,
+    updateSlotHints,
   ]);
 
   return (

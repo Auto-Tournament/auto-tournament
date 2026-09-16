@@ -20,11 +20,13 @@ import ClearIcon from '@mui/icons-material/Clear';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import DownloadIcon from '@mui/icons-material/Download';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import { io, Socket } from 'socket.io-client';
 import type { ServerEvent, ServerEventsResponse } from '../../types';
 
 export const ServerEventsMonitor: React.FC = () => {
+  const { t } = useTranslation();
   const [servers, setServers] = useState<Array<{ id: string; name: string; events?: number }>>([]);
   const [selectedServerId, setSelectedServerId] = useState<string>('');
   const [events, setEvents] = useState<ServerEvent[]>([]);
@@ -62,12 +64,12 @@ export const ServerEventsMonitor: React.FC = () => {
       } catch (err) {
         console.error('Failed to reach /api/events/test', err);
         setEventsHealthError(
-          'Events API health check failed. Verify that the API is running and /api/events/test is reachable.'
+          t('adminToolsPage.events.healthCheckFailed')
         );
       }
     };
     void checkEventsHealth();
-  }, []);
+  }, [t]);
 
   // Setup WebSocket connection
   useEffect(() => {
@@ -170,12 +172,12 @@ export const ServerEventsMonitor: React.FC = () => {
         setEvents(ordered);
       }
     } catch (err) {
-      setError('Failed to load events');
+      setError(t('adminToolsPage.events.loadFailed'));
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [selectedServerId]);
+  }, [selectedServerId, t]);
 
   const handleServerChange = (serverId: string) => {
     setSelectedServerId(serverId);
@@ -301,29 +303,33 @@ export const ServerEventsMonitor: React.FC = () => {
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
           <Box display="flex" alignItems="center" gap={2}>
             <Typography variant="h6" fontWeight={600}>
-              Server Events Monitor
+              {t('adminToolsPage.monitoring.serverEvents')}
             </Typography>
             {isConnected ? (
-              <Chip label="Connected" color="success" size="small" />
+              <Chip label={t('adminToolsPage.events.connected')} color="success" size="small" />
             ) : (
-              <Chip label="Disconnected" color="error" size="small" />
+              <Chip label={t('adminToolsPage.events.disconnected')} color="error" size="small" />
             )}
-            {isPaused && <Chip label="Paused" color="warning" size="small" />}
+            {isPaused && (
+              <Chip label={t('adminToolsPage.events.paused')} color="warning" size="small" />
+            )}
           </Box>
           <Box display="flex" gap={1}>
-            <Tooltip title={isPaused ? 'Resume' : 'Pause'}>
+            <Tooltip
+              title={isPaused ? t('adminToolsPage.events.resume') : t('adminToolsPage.events.pause')}
+            >
               <IconButton onClick={togglePause} color={isPaused ? 'warning' : 'default'}>
                 {isPaused ? <PlayArrowIcon /> : <PauseIcon />}
               </IconButton>
             </Tooltip>
-            <Tooltip title="Refresh events">
+            <Tooltip title={t('adminToolsPage.events.refresh')}>
               <span>
                 <IconButton onClick={loadEvents} disabled={!selectedServerId || loading}>
                   <RefreshIcon />
                 </IconButton>
               </span>
             </Tooltip>
-            <Tooltip title="Clear console">
+            <Tooltip title={t('adminToolsPage.events.clear')}>
               <span>
                 <IconButton onClick={handleClear} disabled={events.length === 0}>
                   <ClearIcon />
@@ -335,15 +341,15 @@ export const ServerEventsMonitor: React.FC = () => {
 
         {/* Server Selection */}
         <FormControl fullWidth sx={{ mb: 2 }}>
-          <InputLabel>Filter by Server (optional)</InputLabel>
+          <InputLabel>{t('adminToolsPage.events.filterLabel')}</InputLabel>
           <Select
             value={selectedServerId}
-            label="Filter by Server (optional)"
+            label={t('adminToolsPage.events.filterLabel')}
             onChange={(e) => handleServerChange(e.target.value)}
           >
             {servers.length === 0 ? (
               <MenuItem value="" disabled>
-                No servers available
+                {t('adminToolsPage.events.noServers')}
               </MenuItem>
             ) : (
               servers.map((server) => (
@@ -356,7 +362,7 @@ export const ServerEventsMonitor: React.FC = () => {
         </FormControl>
 
         <Button variant="outlined" size="small" onClick={loadServers} sx={{ mb: 2 }}>
-          Refresh Server List
+          {t('adminToolsPage.events.refreshServers')}
         </Button>
 
         {error && (
@@ -386,12 +392,12 @@ export const ServerEventsMonitor: React.FC = () => {
           {events.length === 0 && selectedServerId ? (
             <Box sx={{ mt: 20 }}>
               <Typography color="text.secondary" textAlign="center" mb={1}>
-                No events received yet for this server.
+                {t('adminToolsPage.events.noEvents')}
               </Typography>
               <Typography color="text.secondary" variant="body2" textAlign="center">
                 {noEventsHint
-                  ? 'Still no events after 15 seconds – check that your CS2 server is configured to send MatchZy webhooks to /api/events/:matchSlugOrServerId with the correct X-MatchZy-Token.'
-                  : 'Waiting for events from server...'}
+                  ? t('adminToolsPage.events.noEventsHint')
+                  : t('adminToolsPage.events.waiting')}
               </Typography>
             </Box>
           ) : (
@@ -411,11 +417,15 @@ export const ServerEventsMonitor: React.FC = () => {
 
         <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
           <Typography variant="caption" color="text.secondary">
-            Showing {events.length} event{events.length !== 1 ? 's' : ''} (max 100)
-            {selectedServerId ? ` for server ${selectedServerId}` : ''}
+            {selectedServerId
+              ? t('adminToolsPage.events.footerForServer', {
+                  count: events.length,
+                  server: selectedServerId,
+                })
+              : t('adminToolsPage.events.footer', { count: events.length })}
           </Typography>
           <Typography variant="caption" color="text.secondary">
-            Events update in real-time via WebSocket
+            {t('adminToolsPage.events.realtime')}
           </Typography>
         </Box>
       </CardContent>
@@ -429,6 +439,7 @@ const EventItem: React.FC<{
   formatTimestamp: (ts: number) => string;
   getEventColor: (type: string) => string;
 }> = ({ event, formatTimestamp, getEventColor }) => {
+  const { t } = useTranslation();
   const [expanded, setExpanded] = React.useState(false);
   const containerRef = React.useRef<HTMLDivElement | null>(null);
 
@@ -545,7 +556,7 @@ const EventItem: React.FC<{
           {roundNumber !== undefined ? `, round: ${roundNumber}` : ''}
         </Typography>
         {canDownloadDemo && (
-          <Tooltip title="Download demo">
+          <Tooltip title={t('adminToolsPage.events.downloadDemo')}>
             <IconButton
               size="small"
               onClick={handleDownloadDemo}

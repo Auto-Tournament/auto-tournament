@@ -54,6 +54,16 @@
       "settings": "设置",
       "devTools": "开发工具",
       "publicLinks": "公开链接"
+    },
+    "openDrawer": "打开导航菜单",
+    "matchzyDbDown": {
+      "title": "无法连接 MatchZy 数据库",
+      "body_one": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。",
+      "body_other": "{{count}} 台服务器报告插件无法连接其数据库。备份和事件队列可能受到影响。"
+    },
+    "steamUnavailable": {
+      "title": "Steam 集成不可用",
+      "body": "登录和自定义链接查询可能无法使用。请检查服务器配置和网络连接。"
     }
   },
   "language": {
