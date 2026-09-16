@@ -49,10 +49,22 @@ export interface TournamentSettings {
   overtimeSegments?: number;
 }
 
+/** Swiss standings row from the API, in the order the round pairing uses. */
+export interface SwissStanding {
+  rank: number;
+  teamId: string;
+  wins: number;
+  losses: number;
+  buchholz: number;
+  roundDiff: number;
+  byes: number;
+}
+
 export interface BracketData {
   tournament: Tournament;
   matches: unknown[]; // Avoid circular dependency, use Match type in actual usage
   totalRounds: number;
+  swissStandings?: SwissStanding[];
 }
 
 export interface TournamentTemplate {

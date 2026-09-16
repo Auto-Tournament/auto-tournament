@@ -45,6 +45,7 @@ export default function Bracket() {
     tournament,
     matches,
     totalRounds,
+    swissStandings,
     // starting handled by StartTournamentButton
     loadBracket,
   } = useBracket();
@@ -646,6 +647,7 @@ export default function Bracket() {
             <SwissView
               matches={matches}
               teams={tournament.teams || []}
+              standings={swissStandings}
               totalRounds={totalRounds}
               onMatchClick={handleMatchClick}
             />

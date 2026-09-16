@@ -61,6 +61,10 @@ interface TeamLeaderboardEntry {
   matchLosses: number;
   matchCount: number;
   winRate: number;
+  /** Swiss only: from the server standings, which also set the order. */
+  rank?: number;
+  buchholz?: number;
+  roundDiff?: number;
 }
 
 interface TournamentLeaderboardData {
@@ -332,6 +336,8 @@ export default function TournamentLeaderboard() {
   }
 
   const { tournament, leaderboard, currentRound, totalRounds, roundStatus, teams } = data;
+  // Swiss team standings come ordered by the server (wins, losses, Buchholz, RD).
+  const isSwissStandings = Boolean(teams?.some((team) => team.buchholz !== undefined));
 
   const tournamentTypeKeyPrefix = `tournament.typeSelector.types.${tournament.type}`;
 
@@ -665,6 +671,16 @@ export default function TournamentLeaderboard() {
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {t('leaderboardPage.losses')}
                         </TableCell>
+                        {isSwissStandings && (
+                          <>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>
+                              {t('leaderboardPage.buchholz')}
+                            </TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>
+                              {t('leaderboardPage.roundDiff')}
+                            </TableCell>
+                          </>
+                        )}
                         <TableCell align="right" sx={{ fontWeight: 600 }}>
                           {t('leaderboardPage.matches')}
                         </TableCell>
@@ -705,6 +721,15 @@ export default function TournamentLeaderboard() {
                               {team.matchLosses}
                             </Typography>
                           </TableCell>
+                          {isSwissStandings && (
+                            <>
+                              <TableCell align="right">{team.buchholz ?? 0}</TableCell>
+                              <TableCell align="right">
+                                {(team.roundDiff ?? 0) > 0 ? '+' : ''}
+                                {team.roundDiff ?? 0}
+                              </TableCell>
+                            </>
+                          )}
                           <TableCell align="right">
                             {team.matchCount}
                           </TableCell>

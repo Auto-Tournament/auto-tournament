@@ -215,7 +215,9 @@
     "noPlayersRegistered": "尚无选手注册",
     "searchNoMatch": "未找到匹配 \"{{query}}\" 的选手",
     "team": "战队",
-    "matches": "场次"
+    "matches": "场次",
+    "buchholz": "Buchholz",
+    "roundDiff": "Round Diff"
   },
   "teamsPage": {
     "headerSelect": {

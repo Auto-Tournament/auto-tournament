@@ -18,7 +18,7 @@ import {
   isUnpairedSwissMatch,
   waitingForPairingLabel,
 } from '../../utils/matchUtils';
-import type { Match, MatchLiveStats, Team } from '../../types';
+import type { Match, MatchLiveStats, SwissStanding, Team } from '../../types';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
 import { useTranslation } from 'react-i18next';
@@ -26,102 +26,28 @@ import { useTranslation } from 'react-i18next';
 interface SwissViewProps {
   matches: Match[];
   teams: Team[];
+  /** Server standings (GET /api/tournament/bracket `swissStandings`), best first. */
+  standings: SwissStanding[];
   totalRounds: number;
   onMatchClick?: (match: Match) => void;
 }
 
-interface SwissTeamRecord {
-  team: Team;
-  wins: number;
-  losses: number;
-  roundsWon: number;
-  roundsLost: number;
-  roundDiff: number;
-  buchholz: number;
-  opponents: string[];
-  opponentIds: string[];
-}
-
-export default function SwissView({ matches, teams, totalRounds, onMatchClick }: SwissViewProps) {
+export default function SwissView({
+  matches,
+  teams,
+  standings,
+  totalRounds,
+  onMatchClick,
+}: SwissViewProps) {
   const { t } = useTranslation();
   type SwissMatch = Match & { liveStats?: MatchLiveStats | null };
 
-  // Calculate team records
-  const calculateRecords = (): SwissTeamRecord[] => {
-    const records: { [teamId: string]: SwissTeamRecord } = {};
-
-    // Initialize
-    teams.forEach((team) => {
-      records[team.id] = {
-        team,
-        wins: 0,
-        losses: 0,
-        roundsWon: 0,
-        roundsLost: 0,
-        roundDiff: 0,
-        buchholz: 0,
-        opponents: [],
-        opponentIds: [],
-      };
-    });
-
-    // Byes: a completed match with a single team counts as a win.
-    matches
-      .filter((m) => m.status === 'completed' && Boolean(m.team1) !== Boolean(m.team2))
-      .forEach((match) => {
-        const solo = (match.team1 ?? match.team2)!;
-        if (records[solo.id] && match.winner?.id === solo.id) records[solo.id].wins++;
-      });
-
-    // Process matches
-    matches
-      .filter((m) => m.status === 'completed' && m.team1 && m.team2)
-      .forEach((match) => {
-        const team1Id = match.team1!.id;
-        const team2Id = match.team2!.id;
-
-        if (records[team1Id] && records[team2Id]) {
-          const team1Score = match.team1Score || 0;
-          const team2Score = match.team2Score || 0;
-
-          records[team1Id].roundsWon += team1Score;
-          records[team1Id].roundsLost += team2Score;
-          records[team1Id].opponents.push(match.team2!.name);
-          records[team1Id].opponentIds.push(team2Id);
-
-          records[team2Id].roundsWon += team2Score;
-          records[team2Id].roundsLost += team1Score;
-          records[team2Id].opponents.push(match.team1!.name);
-          records[team2Id].opponentIds.push(team1Id);
-
-          if (match.winner?.id === team1Id) {
-            records[team1Id].wins++;
-            records[team2Id].losses++;
-          } else if (match.winner?.id === team2Id) {
-            records[team2Id].wins++;
-            records[team1Id].losses++;
-          }
-        }
-      });
-
-    // Calculate differential and Buchholz (sum of opponents' wins)
-    Object.values(records).forEach((record) => {
-      record.roundDiff = record.roundsWon - record.roundsLost;
-      record.buchholz = record.opponentIds.reduce((sum, id) => sum + (records[id]?.wins ?? 0), 0);
-    });
-
-    // Same leading order the API uses to pick the champion: wins, losses,
-    // Buchholz, then differential.
-    return Object.values(records).sort((a, b) => {
-      if (b.wins !== a.wins) return b.wins - a.wins;
-      if (a.losses !== b.losses) return a.losses - b.losses;
-      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
-      if (b.roundDiff !== a.roundDiff) return b.roundDiff - a.roundDiff;
-      return b.roundsWon - a.roundsWon;
-    });
-  };
-
-  const records = calculateRecords();
+  // The server computes the standings the pairing uses; only attach team info.
+  const teamsById = new Map(teams.map((team) => [team.id, team]));
+  const records = standings.flatMap((standing) => {
+    const team = teamsById.get(standing.teamId);
+    return team ? [{ ...standing, team }] : [];
+  });
 
   // Group matches by round
   const matchesByRound: { [round: number]: Match[] } = {};
@@ -140,26 +66,37 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
           <Card>
             <CardContent>
               <Typography variant="h6" fontWeight={600} mb={2}>
-                🏆 Current Leaderboard
+                {t('bracket.swiss.standings')}
               </Typography>
               <TableContainer>
                 <Table size="small">
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600 }}>#</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Team</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>{t('bracket.swiss.team')}</TableCell>
                       <TableCell align="center" sx={{ fontWeight: 600 }}>
-                        Record
+                        {t('bracket.swiss.record')}
                       </TableCell>
-                      <TableCell align="center" sx={{ fontWeight: 600 }}>
-                        RD
+                      <TableCell
+                        align="center"
+                        sx={{ fontWeight: 600 }}
+                        title={t('bracket.swiss.buchholzHint')}
+                      >
+                        {t('bracket.swiss.buchholz')}
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{ fontWeight: 600 }}
+                        title={t('bracket.swiss.roundDiffHint')}
+                      >
+                        {t('bracket.swiss.roundDiff')}
                       </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {records.map((record, index) => (
                       <TableRow
-                        key={record.team.id}
+                        key={record.teamId}
                         sx={{
                           bgcolor:
                             index < 2
@@ -187,6 +124,9 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                           <Typography variant="body2" fontWeight={600}>
                             {record.wins}-{record.losses}
                           </Typography>
+                        </TableCell>
+                        <TableCell align="center">
+                          <Typography variant="body2">{record.buchholz}</Typography>
                         </TableCell>
                         <TableCell align="center">
                           <Typography

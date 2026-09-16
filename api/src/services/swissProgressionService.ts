@@ -23,6 +23,7 @@ import {
   type SwissStanding,
 } from '../utils/swissPairing';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
+import type { SwissStandingEntry } from '../types/tournament.types';
 
 interface RoundRow extends DbMatchRow {
   team1_rounds?: number | string | null;
@@ -76,6 +77,22 @@ export async function getSwissStandings(tournamentId: number = 1): Promise<Swiss
   if (!tournament) return [];
   const rows = await loadSwissMatches(tournamentId);
   return computeSwissStandings(parseTeamIds(tournament.team_ids), rows.map(toSwissMatch));
+}
+
+/** Standings as exposed by the API (bracket and leaderboard), best first. */
+export async function getSwissStandingEntries(
+  tournamentId: number = 1
+): Promise<SwissStandingEntry[]> {
+  const standings = await getSwissStandings(tournamentId);
+  return standings.map((s, index) => ({
+    rank: index + 1,
+    teamId: s.teamId,
+    wins: s.wins,
+    losses: s.losses,
+    buchholz: s.buchholz,
+    roundDiff: s.roundDiff,
+    byes: s.byes,
+  }));
 }
 
 // Serialises advancement in this process: concurrent or retried series_end

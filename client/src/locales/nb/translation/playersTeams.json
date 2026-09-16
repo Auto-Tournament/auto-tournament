@@ -215,7 +215,9 @@
     "noPlayersRegistered": "Ingen spillere registrert ennå",
     "searchNoMatch": "Ingen spillere som matcher \"{{query}}\"",
     "team": "Lag",
-    "matches": "Kamper"
+    "matches": "Kamper",
+    "buchholz": "Buchholz",
+    "roundDiff": "Round Diff"
   },
   "teamsPage": {
     "headerSelect": {
