@@ -33,6 +33,7 @@ export type {
   Tournament,
   TournamentSettings,
   BracketData,
+  SwissStanding,
   TournamentTemplate,
 } from './tournament.types';
 

@@ -207,6 +207,8 @@
     "ratingChange": "Rating Change",
     "avgAdr": "Avg ADR",
     "teamStandings": "Team Standings",
+    "buchholz": "Buchholz",
+    "roundDiff": "Round Diff",
     "winsShort": "W",
     "lossesShort": "L",
     "leaderboardTitle": "Leaderboard",

@@ -222,10 +222,25 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
   winner?: { id: string; name: string; tag?: string } | null;
 }
 
+/** One row of the Swiss standings, in the order the pairing uses. */
+export interface SwissStandingEntry {
+  rank: number;
+  teamId: string;
+  wins: number;
+  losses: number;
+  /** Sum of the wins of every opponent played. */
+  buchholz: number;
+  /** Rounds won minus rounds lost over all maps. */
+  roundDiff: number;
+  byes: number;
+}
+
 export interface BracketResponse {
   tournament: TournamentResponse;
   matches: BracketMatch[];
   totalRounds: number;
+  /** Swiss tournaments only: server standings, best first. */
+  swissStandings?: SwissStandingEntry[];
 }
 
 export interface TournamentTemplate {

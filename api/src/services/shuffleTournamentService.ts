@@ -13,6 +13,7 @@ import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse, TournamentType } from '../types/tournament.types';
 import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
+import { getSwissStandingEntries } from './swissProgressionService';
 import type { Player } from '../types/team.types';
 
 export interface ShuffleTournamentConfig {
@@ -55,6 +56,10 @@ export interface TeamLeaderboardEntry {
   matchLosses: number;
   matchCount: number;
   winRate: number;
+  /** Swiss only: rank, Buchholz and round differential from the server standings. */
+  rank?: number;
+  buchholz?: number;
+  roundDiff?: number;
 }
 
 export interface RoundStatus {
@@ -957,11 +962,31 @@ export async function getTournamentLeaderboard(): Promise<{
       };
     });
 
-    // Sort teams by wins desc, then by deepest round reached, then name
-    teams.sort((a, b) => {
-      if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
-      return a.name.localeCompare(b.name);
-    });
+    if (row.type === 'swiss') {
+      // Same standings (and order) the Swiss pairing uses.
+      const standings = await getSwissStandingEntries(row.id);
+      const byTeam = new Map(teams.map((t) => [t.teamId, t]));
+      teams = standings.flatMap((s) => {
+        const team = byTeam.get(s.teamId);
+        if (!team) return [];
+        return [
+          {
+            ...team,
+            matchWins: s.wins,
+            matchLosses: s.losses,
+            rank: s.rank,
+            buchholz: s.buchholz,
+            roundDiff: s.roundDiff,
+          },
+        ];
+      });
+    } else {
+      // Sort teams by wins desc, then name
+      teams.sort((a, b) => {
+        if (b.matchWins !== a.matchWins) return b.matchWins - a.matchWins;
+        return a.name.localeCompare(b.name);
+      });
+    }
 
     baseTournament.teams = teamRows.map((t) => ({
       id: t.id,

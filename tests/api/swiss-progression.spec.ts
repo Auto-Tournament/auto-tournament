@@ -118,6 +118,40 @@ async function waitForPairedRound(request: APIRequestContext, round: number) {
   return paired;
 }
 
+/** A BO1 map result with round scores, so the round differential is not flat. */
+async function playMap(
+  request: APIRequestContext,
+  match: ListedMatch,
+  winner: 'team1' | 'team2',
+  loserRounds: number
+) {
+  const [t1, t2] = winner === 'team1' ? [13, loserRounds] : [loserRounds, 13];
+  const res = await request.post(`/api/events/${match.slug}`, {
+    headers: SERVER_HEADERS,
+    data: {
+      event: 'map_result',
+      matchid: match.slug,
+      map_number: 0,
+      map_name: 'de_mirage',
+      team1_score: t1,
+      team2_score: t2,
+      winner: { side: winner === 'team1' ? '3' : '2', team: winner },
+      team1: { score: t1, series_score: winner === 'team1' ? 1 : 0 },
+      team2: { score: t2, series_score: winner === 'team2' ? 1 : 0 },
+    },
+  });
+  expect(res.ok(), `map_result for ${match.slug}: ${await res.text()}`).toBe(true);
+}
+
+type StandingRow = {
+  rank: number;
+  teamId: string;
+  wins: number;
+  losses: number;
+  buchholz: number;
+  roundDiff: number;
+};
+
 async function finishRound(request: APIRequestContext, round: number) {
   for (const match of roundOf(await swissMatches(request), round)) {
     if (isBye(match)) continue;
@@ -315,6 +349,106 @@ test.describe.serial('Swiss round progression', () => {
       expect([...byes.values()].every((n) => n === 1), 'no team gets two byes').toBe(true);
       expect(byes.size).toBe(rounds);
       expect(await waitForChampion(request), 'a champion is named').toBeTruthy();
+    }
+  );
+  test(
+    'bracket and leaderboard expose the pairing standings, ordered by Buchholz and round differential',
+    { tag: ['@api', '@regression'] },
+    async ({ request }) => {
+      const setup = await setupTournament(request, {
+        type: 'swiss',
+        format: 'bo1',
+        maps: MAPS,
+        teamCount: 8,
+        serverCount: 1,
+        prefix: 'swissstand',
+      });
+      expect(setup, 'tournament setup failed').toBeTruthy();
+
+      // Different losing scores per match, so equal records split on the tiebreaks.
+      const loserRounds = new Map<string, number>();
+      let n = 0;
+      for (let round = 1; round <= 3; round++) {
+        for (const match of await waitForPairedRound(request, round)) {
+          if (isBye(match)) continue;
+          const winner = pickWinner(match);
+          const lost = (n++ * 5) % 12;
+          loserRounds.set(match.slug, lost);
+          await playMap(request, match, winner, lost);
+          expect((await seriesEnd(request, match, winner)).status()).toBe(200);
+        }
+      }
+      await waitForChampion(request);
+
+      // Reference standings computed from the finished matches.
+      const matches = await swissMatches(request);
+      const { wins } = records(matches);
+      const tRes = await request.get('/api/tournament', { headers: getAuthHeader() });
+      const teamIds = ((await tRes.json()) as { tournament: { teamIds: string[] } }).tournament
+        .teamIds;
+      const expected = teamIds.map((teamId, seed) => {
+        let w = 0;
+        let l = 0;
+        let buchholz = 0;
+        let roundDiff = 0;
+        for (const m of matches) {
+          if (!m.team1 || !m.team2 || !m.winner) continue;
+          const side = m.team1.id === teamId ? 1 : m.team2.id === teamId ? 2 : 0;
+          if (!side) continue;
+          const opponent = side === 1 ? m.team2.id : m.team1.id;
+          const won = m.winner.id === teamId;
+          if (won) w++;
+          else l++;
+          buchholz += wins.get(opponent) ?? 0;
+          roundDiff += (won ? 1 : -1) * (13 - loserRounds.get(m.slug)!);
+        }
+        return { teamId, seed, wins: w, losses: l, buchholz, roundDiff };
+      });
+      expected.sort(
+        (a, b) =>
+          b.wins - a.wins ||
+          a.losses - b.losses ||
+          b.buchholz - a.buchholz ||
+          b.roundDiff - a.roundDiff ||
+          a.seed - b.seed
+      );
+      const strip = ({ teamId, wins: w, losses, buchholz, roundDiff }: (typeof expected)[number]) => ({
+        teamId,
+        wins: w,
+        losses,
+        buchholz,
+        roundDiff,
+      });
+
+      const bracketRes = await request.get('/api/tournament/bracket', { headers: getAuthHeader() });
+      expect(bracketRes.ok()).toBe(true);
+      const bracket = (await bracketRes.json()) as { swissStandings?: StandingRow[] };
+      expect(bracket.swissStandings, 'bracket carries swissStandings').toBeTruthy();
+      expect(bracket.swissStandings!.map((s) => s.rank)).toEqual([1, 2, 3, 4, 5, 6, 7, 8]);
+      expect(
+        bracket.swissStandings!.map(({ teamId, wins: w, losses, buchholz, roundDiff }) => ({
+          teamId,
+          wins: w,
+          losses,
+          buchholz,
+          roundDiff,
+        }))
+      ).toEqual(expected.map(strip));
+
+      // Round differential counts map rounds, not series scores.
+      expect(expected.some((s) => Math.abs(s.roundDiff) > 3)).toBe(true);
+
+      const lbRes = await request.get('/api/tournament/1/leaderboard');
+      expect(lbRes.ok()).toBe(true);
+      const lb = (await lbRes.json()) as {
+        teams?: Array<{ teamId: string; matchWins: number; buchholz?: number; roundDiff?: number }>;
+      };
+      expect(lb.teams?.map((t) => t.teamId), 'leaderboard uses the same order').toEqual(
+        expected.map((s) => s.teamId)
+      );
+      expect(lb.teams?.map((t) => [t.buchholz, t.roundDiff])).toEqual(
+        expected.map((s) => [s.buchholz, s.roundDiff])
+      );
     }
   );
 });

@@ -215,7 +215,9 @@
     "noPlayersRegistered": "Nog geen spelers geregistreerd",
     "searchNoMatch": "Geen spelers gevonden voor \"{{query}}\"",
     "team": "Ploeg",
-    "matches": "Wedstrijden"
+    "matches": "Wedstrijden",
+    "buchholz": "Buchholz",
+    "roundDiff": "Round Diff"
   },
   "teamsPage": {
     "headerSelect": {

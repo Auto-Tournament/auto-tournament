@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
-import type { Match, MatchLiveStats, Tournament } from '../types';
+import type { Match, MatchLiveStats, SwissStanding, Tournament } from '../types';
 import { useSnackbar } from '../contexts/SnackbarContext';
 
 const LIVE_STATS_CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
@@ -58,6 +58,7 @@ export const useBracket = () => {
   type BracketMatch = Match & { liveStats?: MatchLiveStats | null };
   const [matches, setMatches] = useState<BracketMatch[]>([]);
   const [totalRounds, setTotalRounds] = useState(0);
+  const [swissStandings, setSwissStandings] = useState<SwissStanding[]>([]);
   const [starting, setStarting] = useState(false);
   const lastTournamentStatusRef = useRef<Tournament['status'] | null>(null);
   const tournamentIdRef = useRef<number | null>(null);
@@ -83,6 +84,7 @@ export const useBracket = () => {
         tournament?: Tournament;
         matches?: Match[];
         totalRounds?: number;
+        swissStandings?: SwissStanding[];
       } = await api.get('/api/tournament/bracket');
 
       if (response.success && response.tournament) {
@@ -104,12 +106,14 @@ export const useBracket = () => {
 
         setMatches(rehydrated);
         setTotalRounds(response.totalRounds || 0);
+        setSwissStandings(response.swissStandings ?? []);
       } else {
         // No tournament yet - not an error, just empty state
         setTournament(null);
         tournamentIdRef.current = null;
         setMatches([]);
         setTotalRounds(0);
+        setSwissStandings([]);
       }
     } catch (err) {
       const error = err as Error;
@@ -119,6 +123,7 @@ export const useBracket = () => {
         tournamentIdRef.current = null;
         setMatches([]);
         setTotalRounds(0);
+        setSwissStandings([]);
       } else {
         // Real error - network issue, server error, etc.
         setError(error.message || 'Failed to load bracket');
@@ -511,6 +516,7 @@ export const useBracket = () => {
     tournament,
     matches,
     totalRounds,
+    swissStandings,
     starting,
     loadBracket,
     startTournament,
