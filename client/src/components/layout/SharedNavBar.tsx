@@ -57,6 +57,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
     logout,
     adminProfileName,
     adminProfileAvatarUrl,
+    impersonation,
   } = useAuth();
   const { t } = useTranslation();
   const navigate = useNavigate();
@@ -340,7 +341,8 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
               anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
               transformOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-              {isAuthenticated && (
+              {/* While impersonating, the UI behaves as the player: no admin entry. */}
+              {isAuthenticated && !impersonation && (
                 <MenuItem
                   onClick={() => {
                     handleAvatarMenuClose();

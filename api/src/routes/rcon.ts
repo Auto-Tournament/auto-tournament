@@ -3,8 +3,13 @@ import { Rcon } from 'dathost-rcon-client';
 import { rconService } from '../services/rconService';
 import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
-import { getWebhookBaseUrl } from '../utils/urlHelper';
-import { getMatchZyWebhookCommands } from '../utils/matchzyRconCommands';
+import { db } from '../config/database';
+import { parseConVarReply } from '../utils/matchzyServerReplies';
+import {
+  connectionTestCommands,
+  connectionTestServerIds,
+  type ApiReachability,
+} from '../utils/connectionTest';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import {
   findActiveMatchForServer,
@@ -71,7 +76,7 @@ router.get('/test', async (_req: Request, res: Response) => {
  */
 router.post('/test-connection', async (req: Request, res: Response) => {
   try {
-    const { host, port, password, name } = req.body;
+    const { host, port, password, name, serverId: requestedServerId } = req.body;
 
     if (!host || !port || !password) {
       return res.status(400).json({
@@ -99,71 +104,53 @@ router.post('/test-connection', async (req: Request, res: Response) => {
       });
     }
 
-    // RCON successful - now test if server can reach API (Server -> API)
-    // Use a temporary server ID based on host:port for test event tracking
-    const tempServerId = `test_${host.replace(/\./g, '_')}_${portNum}`;
-    let serverCanReachApi = false;
+    // RCON successful - now test if server can reach API (Server -> API).
+    // Read-only: never set convars here (see utils/connectionTest).
+    let apiReachability: ApiReachability = 'unknown';
+    const savedServer = await db.queryOneAsync<{ id: string }>(
+      'SELECT id FROM servers WHERE host = ? AND port = ?',
+      [host, portNum]
+    );
+    const testClient = new Rcon({ host, port: portNum, password, timeout: 5000 });
 
     try {
-      const baseUrl = await getWebhookBaseUrl(req);
-      const serverToken = process.env.SERVER_TOKEN || '';
+      await testClient.connect();
+      const [serverIdCmd, remoteLogCmd, triggerCmd] = connectionTestCommands();
+      const reportedId = parseConVarReply(await testClient.send(serverIdCmd), serverIdCmd);
+      const remoteLogUrl = parseConVarReply(await testClient.send(remoteLogCmd), remoteLogCmd);
+      const ids = connectionTestServerIds(requestedServerId, savedServer?.id, reportedId);
 
-      if (serverToken) {
-        // Configure webhook URL so server can send test events back
-        const webhookCommands = getMatchZyWebhookCommands(baseUrl, serverToken, tempServerId);
-        const testClient = new Rcon({
-          host,
-          port: portNum,
-          password,
-          timeout: 5000,
-        });
-
-        try {
-          await testClient.connect();
-          
-          // Configure webhook
-          for (const cmd of webhookCommands) {
-            await testClient.send(cmd);
-          }
-
-          // Get timestamp before sending test command
-          const previousTestEventTs = getLastServerTestEvent(tempServerId) ?? 0;
-
-          // Send test event command
-          await testClient.send('css_te');
-
-          // Wait for test event to arrive (server -> API)
-          const timeoutMs = 5000;
-          const pollIntervalMs = 250;
-          const deadline = Date.now() + timeoutMs;
-
-          while (Date.now() < deadline) {
-            const lastTs = getLastServerTestEvent(tempServerId) ?? 0;
-            if (lastTs > previousTestEventTs) {
-              serverCanReachApi = true;
-              break;
-            }
-            await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
-          }
-
-          testClient.disconnect();
-        } catch (testError) {
-          log.debug(`Server->API test failed for ${host}:${portNum}`, { error: testError });
-          testClient.disconnect().catch(() => {
-            // Ignore disconnect errors
-          });
-        }
+      if (!remoteLogUrl || ids.length === 0) {
+        log.debug(`Server ${host}:${portNum} has no event URL or id yet, reachability unknown`);
       } else {
-        log.debug(`SERVER_TOKEN not set, skipping server->API test for ${host}:${portNum}`);
+        const before = new Map(ids.map((id) => [id, getLastServerTestEvent(id) ?? 0]));
+        await testClient.send(triggerCmd);
+
+        apiReachability = 'unreachable';
+        const deadline = Date.now() + 5000;
+        while (Date.now() < deadline) {
+          if (ids.some((id) => (getLastServerTestEvent(id) ?? 0) > (before.get(id) ?? 0))) {
+            apiReachability = 'reachable';
+            break;
+          }
+          await new Promise((resolve) => setTimeout(resolve, 250));
+        }
       }
-    } catch (webhookError) {
-      log.warn(`Failed to test server->API connectivity for ${host}:${portNum}`, { error: webhookError });
+    } catch (testError) {
+      log.debug(`Server->API test failed for ${host}:${portNum}`, { error: testError });
+    } finally {
+      testClient.disconnect().catch(() => {
+        // Ignore disconnect errors
+      });
     }
+
+    const serverCanReachApi = apiReachability === 'reachable';
 
     const statusCode = rconResult.success ? 200 : 400;
     return res.status(statusCode).json({
       ...rconResult,
       serverCanReachApi,
+      apiReachability,
     });
   } catch (error) {
     console.error('Error testing connection:', error);

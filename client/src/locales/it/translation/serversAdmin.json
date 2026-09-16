@@ -229,7 +229,8 @@
       "saveFailed": "Impossibile salvare il server",
       "deleteFailed": "Impossibile eliminare il server",
       "rconReachableApiUnreachable": "Riusciamo a raggiungere il server via RCON, ma il server non riesce a raggiungere l’endpoint API (evento di test mancante).",
-      "serverOffline": "Il server sembra offline o non raggiungibile via RCON."
+      "serverOffline": "Il server sembra offline o non raggiungibile via RCON.",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
     },
     "success": {
       "connectivityOk": "Connettività bidirezionale verificata: il server è online e può raggiungere l’API.",

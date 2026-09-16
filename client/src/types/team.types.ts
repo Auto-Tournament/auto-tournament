@@ -189,6 +189,9 @@ export interface TeamMatchHistory {
   slug: string;
   round: number;
   matchNumber: number;
+  /** Chronological number, as on the matches page. */
+  globalMatchNumber?: number;
+  bracket?: string | null;
   opponent: Team | null;
   won: boolean;
   teamScore: number;

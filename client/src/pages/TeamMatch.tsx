@@ -143,17 +143,19 @@ export default function TeamMatch() {
                 <SportsEsportsIcon
                   sx={{ fontSize: 80, color: 'text.secondary', mb: 2 }}
                 />
-                {tournamentIsCompleted && teamHasPlayed && standing ? (
+                {tournamentIsCompleted ? (
                   <>
                     <Typography variant="h6" color="text.primary" mt={1} gutterBottom>
                       {t('teamPage.tournamentFinished')}
                     </Typography>
-                    <Typography variant="body1" color="text.secondary" mt={1}>
-                      {t('teamPage.finalPlacement', {
-                        position: standing.position,
-                        total: standing.totalTeams,
-                      })}
-                    </Typography>
+                    {teamHasPlayed && standing && (
+                      <Typography variant="body1" color="text.secondary" mt={1}>
+                        {t('teamPage.finalPlacement', {
+                          position: standing.position,
+                          total: standing.totalTeams,
+                        })}
+                      </Typography>
+                    )}
                   </>
                 ) : tournamentIsActive ? (
                   <>

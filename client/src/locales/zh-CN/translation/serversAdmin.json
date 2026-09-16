@@ -229,7 +229,8 @@
       "saveFailed": "保存服务器失败",
       "deleteFailed": "删除服务器失败",
       "rconReachableApiUnreachable": "可以通过 RCON 连接到服务器，但服务器无法访问 API 端点（未收到测试事件）。",
-      "serverOffline": "服务器似乎离线或无法通过 RCON 访问。"
+      "serverOffline": "服务器似乎离线或无法通过 RCON 访问。",
+      "rconReachableApiUnknown": "RCON works. The server has no event URL yet, so its connection back to the API can't be checked until it is saved and configured."
     },
     "success": {
       "connectivityOk": "双向连通性验证通过：服务器在线且可以访问 API。",

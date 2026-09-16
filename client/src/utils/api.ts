@@ -31,7 +31,12 @@ export const api = {
 
     if (!response.ok) {
       const error = await response.text();
-      throw new Error(error || `API request failed: ${response.status}`);
+      // Proxies (Cloudflare, Caddy) answer 502/504 with an HTML page; showing
+      // that raw leaves an empty or unreadable toast.
+      const readable = error && !/^\s*</.test(error) ? error : '';
+      throw new Error(
+        readable || `API request failed: ${response.status} ${response.statusText}`.trim()
+      );
     }
 
     return response.json();

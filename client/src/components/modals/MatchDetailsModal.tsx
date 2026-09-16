@@ -819,6 +819,14 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
               </Box>
             )}
 
+            {mapRoundsAreTied && winnerSide && !usesDamageTiebreak && (
+              <Alert severity="info">
+                {t('matchDetailsModal.tiebreakHint', {
+                  team: winnerSide === 'team1' ? team1Name : team2Name,
+                })}
+              </Alert>
+            )}
+
             {usesDamageTiebreak && tiebreakReason && (
               <Alert severity="info">
                 <Typography variant="body2" gutterBottom>
@@ -1128,6 +1136,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                       activeMapIndex={activeMapNumber}
                       activeMapLabel={currentMapLabel}
                       mapResults={match.mapResults || []}
+                      team1Name={team1Name}
+                      team2Name={team2Name}
                     />
                     {match.mapResults && match.mapResults.some((mr) => mr.demoFilePath) && (
                       <Box mt={3}>

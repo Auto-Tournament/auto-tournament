@@ -63,7 +63,8 @@
     "steamUnavailable": {
       "title": "Integracja ze Steam niedostępna",
       "body": "Logowanie i wyszukiwanie po vanity URL mogą nie działać. Sprawdź konfigurację serwera i połączenie."
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "common": {
     "delete": "Usuń",

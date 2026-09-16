@@ -170,7 +170,8 @@
       "confirm": "Set winner",
       "success": "Winner set",
       "failed": "Failed to set the winner"
-    }
+    },
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak."
   },
   "bulkShuffleMatchesModal": {
     "title": "批量创建洗牌比赛",

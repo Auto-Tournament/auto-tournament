@@ -422,7 +422,9 @@
       "opponent": "Gegner"
     },
     "mapChips": {
-      "live": "Live"
+      "live": "Live",
+      "tiebreak": "decided by tiebreak",
+      "tiebreakWin": "{{team}} won on tiebreak"
     },
     "demos": {
       "title": "Map-Demos",
