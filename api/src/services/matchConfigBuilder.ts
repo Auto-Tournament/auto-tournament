@@ -5,6 +5,7 @@ import type { MatchConfig } from '../types/match.types';
 import { log } from '../utils/logger';
 import { settingsService } from './settingsService';
 import { matchzyConfigService } from './matchzyConfigService';
+import { simulationTvCvars } from '../utils/serverTurnover';
 
 /**
  * Determine whether matches should be simulated (bots instead of real players).
@@ -243,6 +244,8 @@ export const generateMatchConfig = async (
     mp_maxrounds: maxRounds,
     // Add MatchZy Enhanced cvars
     ...matchzyEnhancedCvars,
+    // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
+    ...simulationTvCvars(simulation),
   };
 
   const config: MatchConfig = {
@@ -422,6 +425,9 @@ async function generateShuffleMatchConfig(
   // It must not touch any other cvars (mp_overtime_*, mp_match_can_clinch, etc.).
   const maxRounds = resolveMaxRounds(tournament);
   
+  const simulation = await getSimulationFlag();
+  const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
+
   // Generate MatchZy Enhanced v1.3.0 cvars based on tournament type (shuffle)
   const matchzyEnhancedCvars = await matchzyConfigService.generateMatchzyEnhancedCvars('shuffle');
   
@@ -429,10 +435,9 @@ async function generateShuffleMatchConfig(
     mp_maxrounds: maxRounds,
     // Add MatchZy Enhanced cvars
     ...matchzyEnhancedCvars,
+    // Simulated matches: short SourceTV delay so the demo stops and uploads quickly.
+    ...simulationTvCvars(simulation),
   };
-
-  const simulation = await getSimulationFlag();
-  const simulationTimescale = simulation ? await getSimulationTimescale() : undefined;
 
   // For shuffle we want players_per_team to reflect the configured teamSize
   // (e.g. 2 for 2v2) so the plugin's ready logic is correct. Fall back to the

@@ -2,10 +2,16 @@ import { test, expect, type APIRequestContext } from '@playwright/test';
 import { signInViaRequest, getAuthHeader } from '../helpers/auth';
 import { setupTournament } from '../helpers/tournamentSetup';
 import {
-  DEMO_UPLOAD_GIVE_UP_SECONDS,
+  ASSUMED_TV_DELAY_SECONDS,
+  DEMO_UPLOAD_TIMEOUT_SECONDS,
+  GOTV_FLUSH_EXTRA_SECONDS,
   ServerTurnoverTracker,
   SIMULATION_SERIES_END_KICK_DELAY_SECONDS,
+  SIMULATION_TV_DELAY_SECONDS,
+  demoUploadGiveUpSeconds,
   resolveSeriesEndKickDelays,
+  simulationTvCvars,
+  tvDelayFromCvars,
 } from '../../api/src/utils/serverTurnover';
 
 /**
@@ -182,9 +188,36 @@ test.describe('Server turnover rules', () => {
     expect(tracker.evaluate('s1', T + 10, T + 20).releaseEarly).toBe(true);
   });
 
-  test('a lost upload event does not hold the server forever', () => {
+  test('a lost upload event holds the server at most tv_delay + 15 s + upload timeout', () => {
+    // Real match, tv_delay unknown: assume the CS2 maximum, still under 5 min.
+    const cap = demoUploadGiveUpSeconds(ASSUMED_TV_DELAY_SECONDS);
+    expect(cap).toBe(ASSUMED_TV_DELAY_SECONDS + GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS);
+    expect(cap).toBeLessThanOrEqual(5 * 60);
     const tracker = endedSeries({ upload: true });
-    expect(tracker.evaluate('s1', T + 200, T + DEMO_UPLOAD_GIVE_UP_SECONDS).demoUploadPending).toBe(false);
+    const before = tracker.evaluate('s1', T + 200, T + cap - 1);
+    expect(before.demoUploadPending).toBe(true);
+    expect(before.demoUploadGiveUpInSeconds).toBe(1);
+    expect(tracker.evaluate('s1', T + 200, T + cap).demoUploadPending).toBe(false);
+    expect(tracker.evaluate('s1', T + 200, T + cap + 1).releaseEarly).toBe(true);
+
+    // Simulated match loaded with tv_delay 0: the cap is much shorter.
+    const sim = new ServerTurnoverTracker();
+    sim.matchLoaded('s1', 42, true, tvDelayFromCvars(simulationTvCvars(true)));
+    sim.recordEvent('s1', { event: 'map_result', matchid: 42, map_number: 0 }, T);
+    const simCap = GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS;
+    expect(sim.evaluate('s1', T + 20, T + simCap - 1).demoUploadPending).toBe(true);
+    expect(sim.evaluate('s1', T + 20, T + simCap).demoUploadPending).toBe(false);
+  });
+
+  test('simulated match configs carry a short tv_delay; real ones leave it to the server', () => {
+    expect(simulationTvCvars(true)).toEqual({
+      tv_delay: SIMULATION_TV_DELAY_SECONDS,
+      tv_delay1: SIMULATION_TV_DELAY_SECONDS,
+    });
+    expect(SIMULATION_TV_DELAY_SECONDS).toBeLessThanOrEqual(5);
+    expect(simulationTvCvars(false)).toEqual({});
+    expect(tvDelayFromCvars({ mp_maxrounds: 24, ...simulationTvCvars(false) })).toBe(ASSUMED_TV_DELAY_SECONDS);
+    expect(tvDelayFromCvars({ tv_delay: '90' })).toBe(90);
   });
 
   test('nothing known (API restart) or an idle stamp from before the series end: no early release', () => {

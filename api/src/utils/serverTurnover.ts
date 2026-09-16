@@ -18,15 +18,55 @@
  * allocator falls back to the full grace window — the old behaviour.
  */
 
+import { log } from './logger';
+
 /** Minimum time a server must have been idle before an early release (plugin ResetMatch runs 2 s after idle). */
 export const TURNOVER_MIN_IDLE_SECONDS = 5;
 
+/** The plugin stops recording tv_delay + this many seconds after a map ends (MatchZy HandleMatchEnd). */
+export const GOTV_FLUSH_EXTRA_SECONDS = 15;
+
+/** Time allowed for the HTTP demo upload itself once recording has stopped. */
+export const DEMO_UPLOAD_TIMEOUT_SECONDS = 150;
+
+/**
+ * tv_delay assumed when the match config does not set one (the server's own
+ * value is unknown to MAT). CS2 caps tv_delay at 120 s.
+ */
+export const ASSUMED_TV_DELAY_SECONDS = 120;
+
+/**
+ * SourceTV delay sent to simulated matches. Bots only, so there is nothing to
+ * ghost; recording stops GOTV_FLUSH_EXTRA_SECONDS after the map and the demo
+ * uploads right away. Real matches never get this.
+ */
+export const SIMULATION_TV_DELAY_SECONDS = 0;
+
 /**
  * An upload that has not reported back this long after its map ended is
- * presumed lost (plugin crash, dropped event) so the server is not held forever.
- * GOTV flush alone is tv_delay + 15 s; this leaves room for large demos.
+ * presumed lost (plugin crash, dropped event) so the server is not held
+ * forever: GOTV flush (tv_delay + 15 s) plus the upload timeout. At most
+ * 120 + 15 + 150 = 285 s.
  */
-export const DEMO_UPLOAD_GIVE_UP_SECONDS = 15 * 60;
+export function demoUploadGiveUpSeconds(tvDelaySeconds: number): number {
+  const tvDelay = Number.isFinite(tvDelaySeconds)
+    ? Math.min(Math.max(tvDelaySeconds, 0), ASSUMED_TV_DELAY_SECONDS)
+    : ASSUMED_TV_DELAY_SECONDS;
+  return tvDelay + GOTV_FLUSH_EXTRA_SECONDS + DEMO_UPLOAD_TIMEOUT_SECONDS;
+}
+
+/** Cvars added to a match config: short tv_delay for simulations only. */
+export function simulationTvCvars(isSimulation: boolean): Record<string, number> {
+  if (!isSimulation) return {};
+  return { tv_delay: SIMULATION_TV_DELAY_SECONDS, tv_delay1: SIMULATION_TV_DELAY_SECONDS };
+}
+
+/** tv_delay a match config sets, or the assumed server default when absent. */
+export function tvDelayFromCvars(cvars: Record<string, string | number> | undefined): number {
+  const raw = cvars?.tv_delay;
+  const n = raw === undefined || raw === '' ? NaN : Number(raw);
+  return Number.isFinite(n) ? n : ASSUMED_TV_DELAY_SECONDS;
+}
 
 /** Series-end kick delays sent to servers while simulation mode is on (seconds). */
 export const SIMULATION_SERIES_END_KICK_DELAY_SECONDS = 10;
@@ -39,10 +79,12 @@ interface ServerTurnoverState {
   matchId: string | null;
   /** MAT configured a demo upload URL when it loaded that match. */
   demoUploadConfigured: boolean;
+  /** tv_delay the loaded match runs with (bounds how long an upload may take). */
+  tvDelaySeconds: number;
   /** Maps whose recording the plugin reported starting, keyed `${matchId}:${map}`. */
   recording: Set<string>;
-  /** Maps that ended with an upload expected: key -> map end (unix s). */
-  pendingUploads: Map<string, number>;
+  /** Maps that ended with an upload expected: key -> map end and give-up time (unix s). */
+  pendingUploads: Map<string, { endedAt: number; giveUpAt: number }>;
   /** Maps whose upload already reported back (handles out-of-order events). */
   finishedUploads: Set<string>;
   /** When series_end for `matchId` arrived (unix s); null while the series runs. */
@@ -52,7 +94,7 @@ interface ServerTurnoverState {
 export interface TurnoverDecision {
   /** A demo upload from the previous series is still outstanding. */
   demoUploadPending: boolean;
-  /** Seconds until the oldest pending upload is given up on (null when none). */
+  /** Seconds until the last pending upload is given up on (null when none). */
   demoUploadGiveUpInSeconds: number | null;
   /** Idle after series_end with nothing outstanding: skip the rest of the grace window. */
   releaseEarly: boolean;
@@ -72,6 +114,7 @@ export class ServerTurnoverTracker {
       s = {
         matchId: null,
         demoUploadConfigured: false,
+        tvDelaySeconds: ASSUMED_TV_DELAY_SECONDS,
         recording: new Set(),
         pendingUploads: new Map(),
         finishedUploads: new Set(),
@@ -90,10 +133,16 @@ export class ServerTurnoverTracker {
   }
 
   /** A match was loaded on the server. Uploads still pending from before stay pending. */
-  matchLoaded(serverId: string, matchId: string | number, demoUploadConfigured: boolean): void {
+  matchLoaded(
+    serverId: string,
+    matchId: string | number,
+    demoUploadConfigured: boolean,
+    tvDelaySeconds: number = ASSUMED_TV_DELAY_SECONDS
+  ): void {
     const s = this.state(serverId);
     this.startSeries(s, String(matchId));
     s.demoUploadConfigured = demoUploadConfigured;
+    s.tvDelaySeconds = tvDelaySeconds;
   }
 
   /**
@@ -112,6 +161,7 @@ export class ServerTurnoverTracker {
         if (s.matchId !== matchId) {
           this.startSeries(s, matchId);
           s.demoUploadConfigured = false;
+          s.tvDelaySeconds = ASSUMED_TV_DELAY_SECONDS;
         }
         return;
       case 'demo_recording_start':
@@ -122,7 +172,10 @@ export class ServerTurnoverTracker {
         const expectsUpload =
           s.recording.has(key) || (s.matchId === matchId && s.demoUploadConfigured);
         if (expectsUpload && !s.finishedUploads.has(key) && !s.pendingUploads.has(key)) {
-          s.pendingUploads.set(key, now);
+          s.pendingUploads.set(key, {
+            endedAt: now,
+            giveUpAt: now + demoUploadGiveUpSeconds(s.tvDelaySeconds),
+          });
         }
         return;
       }
@@ -130,6 +183,7 @@ export class ServerTurnoverTracker {
         if (s.matchId !== matchId) {
           this.startSeries(s, matchId);
           s.demoUploadConfigured = false;
+          s.tvDelaySeconds = ASSUMED_TV_DELAY_SECONDS;
         }
         s.seriesEndedAt = now;
         return;
@@ -156,15 +210,19 @@ export class ServerTurnoverTracker {
       return { demoUploadPending: false, demoUploadGiveUpInSeconds: null, releaseEarly: false };
     }
 
-    let oldestPending: number | null = null;
-    for (const [key, endedAt] of s.pendingUploads) {
-      if (now - endedAt >= DEMO_UPLOAD_GIVE_UP_SECONDS) {
+    let latestGiveUp: number | null = null;
+    for (const [key, pending] of s.pendingUploads) {
+      if (now >= pending.giveUpAt) {
         s.pendingUploads.delete(key);
+        log.warn(
+          `[TURNOVER] Demo upload for ${key} on server ${serverId} never reported back ` +
+            `${now - pending.endedAt}s after the map ended; releasing the server`
+        );
         continue;
       }
-      if (oldestPending === null || endedAt < oldestPending) oldestPending = endedAt;
+      if (latestGiveUp === null || pending.giveUpAt > latestGiveUp) latestGiveUp = pending.giveUpAt;
     }
-    const demoUploadPending = oldestPending !== null;
+    const demoUploadPending = latestGiveUp !== null;
 
     const releaseEarly =
       !demoUploadPending &&
@@ -176,7 +234,7 @@ export class ServerTurnoverTracker {
     return {
       demoUploadPending,
       demoUploadGiveUpInSeconds:
-        oldestPending === null ? null : DEMO_UPLOAD_GIVE_UP_SECONDS - (now - oldestPending),
+        latestGiveUp === null ? null : latestGiveUp - now,
       releaseEarly,
     };
   }
