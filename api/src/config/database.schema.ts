@@ -276,7 +276,11 @@ export function getSchemaSQL(): string {
     CREATE TABLE IF NOT EXISTS player_rating_history (
       id SERIAL PRIMARY KEY,
       player_id TEXT NOT NULL,
-      match_slug TEXT NOT NULL,
+      -- NULL once the match is gone: deleting a tournament keeps its history
+      -- (reset removes it instead), so the row carries its own labels.
+      match_slug TEXT,
+      match_label TEXT,
+      tournament_name TEXT,
       -- Display values (for admin/UI)
       elo_before INTEGER NOT NULL,
       elo_after INTEGER NOT NULL,
@@ -294,7 +298,7 @@ export function getSchemaSQL(): string {
       performance_data TEXT, -- JSON with ADR, damage, etc. (future)
       created_at INTEGER NOT NULL DEFAULT EXTRACT(EPOCH FROM NOW())::INTEGER,
       FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE,
-      FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE CASCADE
+      FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE SET NULL
     );
 
     CREATE INDEX IF NOT EXISTS idx_player_rating_history_player ON player_rating_history(player_id);

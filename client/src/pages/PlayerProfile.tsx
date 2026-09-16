@@ -55,7 +55,8 @@ import type {
 
 interface RatingHistoryEntry {
   id: number;
-  matchSlug: string;
+  /** Null when the tournament was deleted: the history (and rating) is kept. */
+  matchSlug: string | null;
   eloBefore: number;
   eloAfter: number;
   eloChange: number;
@@ -271,7 +272,7 @@ export default function PlayerProfile() {
   const ratingBySlug = React.useMemo(() => {
     const map = new Map<string, number>();
     for (const entry of ratingHistory) {
-      map.set(entry.matchSlug, entry.eloAfter);
+      if (entry.matchSlug) map.set(entry.matchSlug, entry.eloAfter);
     }
     return map;
   }, [ratingHistory]);
@@ -305,7 +306,7 @@ export default function PlayerProfile() {
           recentForm: string;
         };
         ratingHistory: Array<{
-          match_slug: string;
+          match_slug: string | null;
           elo_before: number;
           elo_after: number;
           elo_change: number;
