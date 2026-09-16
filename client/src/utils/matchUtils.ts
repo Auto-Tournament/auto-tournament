@@ -78,8 +78,9 @@ export const getStatusLabel = (
     case 'ready':
       if (tournamentStarted === false) return label('waitingForTournament');
       if (vetoCompleted === false) return label('mapVeto');
-      // If veto is completed but no server, show waiting for server
-      if (vetoCompleted === true && hasServer === false) return label('waitingForServer');
+      // Only a match that actually has a server is "server allocated"; a
+      // waiting match without one used to show it in the bracket list view.
+      if (hasServer !== true) return label('waitingForServer');
       // Veto complete and server assigned – match is queued to be loaded on the server.
       return label('serverAllocated');
     case 'loaded':
@@ -106,6 +107,8 @@ export const getStatusLabel = (
       return label('completed');
     case 'cancelled':
       return label('cancelled');
+    case 'needs_decision':
+      return label('needsDecision');
     default:
       return status.toUpperCase();
   }
@@ -241,6 +244,8 @@ export const getStatusExplanation = (
       return '';
     case 'completed':
       return 'Match has finished. Winner has been determined and bracket has been updated.';
+    case 'needs_decision':
+      return 'Every map has been played but the series is level. An admin has to set the winner.';
     default:
       return '';
   }
@@ -266,6 +271,8 @@ export const getStatusColor = (
       return 'success'; // Green - match finished
     case 'cancelled':
       return 'error'; // Red - match was cancelled
+    case 'needs_decision':
+      return 'warning'; // Maps are over, an admin has to set the winner
     default:
       return 'default'; // Gray - pending or unknown
   }
@@ -284,4 +291,74 @@ export const getRoundLabel = (round: number, totalRounds?: number): string => {
   }
 
   return i18n.t('rounds.roundN', { n: round });
+};
+
+type BracketMatchRef = {
+  id: number;
+  slug: string;
+  round: number;
+  matchNumber: number;
+  bracket?: string | null;
+};
+
+/** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null, falling back to the slug. */
+export const getMatchBracket = (match: Pick<BracketMatchRef, 'slug' | 'bracket'>): string | null => {
+  if (match.bracket) return match.bracket;
+  if (match.slug === 'gf') return 'GF';
+  if (match.slug?.startsWith('lb-')) return 'LB';
+  return null;
+};
+
+/** Chronological stage; mirrors queueStage in api/src/utils/allocationQueue.ts. */
+const matchStage = (match: BracketMatchRef): number => {
+  if (match.round <= 0) return -1;
+  const bracket = getMatchBracket(match);
+  if (bracket === 'GF') return 100000;
+  if (bracket === 'GF_RESET') return 100001;
+  if (bracket === 'LB') return match.round + 1;
+  return 2 * match.round - 1;
+};
+
+const bracketRank = (match: BracketMatchRef): number => {
+  const bracket = getMatchBracket(match);
+  return bracket === 'LB' ? 1 : bracket === 'GF' ? 2 : bracket === 'GF_RESET' ? 3 : 0;
+};
+
+/**
+ * Display / queue order: stage, upper before lower bracket, round, match
+ * number, id. Double elimination numbers upper and lower rounds separately and
+ * the grand final is round 1 match 1, so plain round order numbered it #3.
+ */
+export const compareMatchOrder = (a: BracketMatchRef, b: BracketMatchRef): number =>
+  matchStage(a) - matchStage(b) ||
+  bracketRank(a) - bracketRank(b) ||
+  a.round - b.round ||
+  a.matchNumber - b.matchNumber ||
+  a.id - b.id;
+
+/** 1-based position of `match` among `all` in display order. */
+export const getGlobalMatchNumber = (match: BracketMatchRef, all: BracketMatchRef[]): number =>
+  [...all].sort(compareMatchOrder).findIndex((m) => m.id === match.id) + 1;
+
+/**
+ * Bracket-aware label for double-elimination matches: "UB R1 M1", "LB R2 M1",
+ * "Grand Final". Null for every other match, which keeps "Match #n".
+ */
+export const getBracketMatchLabel = (
+  match: Pick<BracketMatchRef, 'slug' | 'bracket' | 'round' | 'matchNumber'>
+): string | null => {
+  const bracket = getMatchBracket(match);
+  const params = { round: match.round, match: match.matchNumber };
+  switch (bracket) {
+    case 'WB':
+      return i18n.t('matchesPage.matchLabel.upper', params);
+    case 'LB':
+      return i18n.t('matchesPage.matchLabel.lower', params);
+    case 'GF':
+      return i18n.t('matchesPage.matchLabel.grandFinal');
+    case 'GF_RESET':
+      return i18n.t('matchesPage.matchLabel.grandFinalReset');
+    default:
+      return null;
+  }
 };

@@ -28,7 +28,7 @@ import { EmptyState } from '../components/shared/EmptyState';
 import { MatchListCard } from '../components/shared/MatchListCard';
 import { RoundStatusCard } from '../components/tournament/RoundStatusCard';
 import { ChampionBanner } from '../components/tournament/ChampionBanner';
-import { getRoundLabel } from '../utils/matchUtils';
+import { getGlobalMatchNumber as globalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { useBracket } from '../hooks/useBracket';
 import { api } from '../utils/api';
 import { StartTournamentButton } from '../components/dashboard';
@@ -238,18 +238,8 @@ export default function Bracket() {
   // For shuffle tournaments, we always render the list view (no visual bracket).
   const effectiveViewMode: 'visual' | 'list' = tournament?.type === 'shuffle' ? 'list' : viewMode;
 
-  // Calculate global match number
-  const getGlobalMatchNumber = (match: Match): number => {
-    // Sort all matches by round, then by matchNumber
-    // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
-    const sortedMatches = [...matches].sort((a, b) => {
-      if (a.round !== b.round) return a.round - b.round;
-      if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
-      // If round and match_number are the same (e.g., manual matches), sort by ID
-      return a.id - b.id;
-    });
-    return sortedMatches.findIndex((m) => m.id === match.id) + 1;
-  };
+  // Chronological numbering across upper/lower brackets (see compareMatchOrder).
+  const getGlobalMatchNumber = (match: Match): number => globalMatchNumber(match, matches);
 
   const handleMatchClick = async (match: Match) => {
     if (!match.team1 || !match.team2) {

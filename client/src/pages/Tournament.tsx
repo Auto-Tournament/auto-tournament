@@ -68,6 +68,9 @@ const Tournament: React.FC = () => {
   const [overtimeSegments, setOvertimeSegments] = useState<number | null>(null);
   // Grand final behaviour for double elimination tournaments.
   const [grandFinalMode, setGrandFinalMode] = useState<'none' | 'simple' | 'double'>('simple');
+  // Whether the user picked a grand final mode in this edit; if not, changing
+  // the type applies that type's default instead of a leftover value.
+  const [grandFinalModePicked, setGrandFinalModePicked] = useState(false);
 
   // Auto-set format to bo1 when shuffle is selected
   useEffect(() => {
@@ -412,6 +415,7 @@ const Tournament: React.FC = () => {
           ? storedGrandFinalMode
           : 'simple'
       );
+      setGrandFinalModePicked(false);
       setIsEditing(false);
       setShowWelcome(false);
       setShowForm(false);
@@ -514,6 +518,25 @@ const Tournament: React.FC = () => {
     return false;
   };
 
+  /** Grand final mode stored on the tournament being edited ('simple' when unset). */
+  const savedGrandFinalModeOf = (): 'none' | 'simple' | 'double' => {
+    const stored =
+      tournament?.settings &&
+      (tournament.settings as { grandFinalMode?: string }).grandFinalMode;
+    return stored === 'none' || stored === 'double' ? stored : 'simple';
+  };
+
+  const handleTypeChange = (nextType: string) => {
+    setType(nextType);
+    if (grandFinalModePicked || nextType !== 'double_elimination') return;
+    // Back to the saved double-elimination type: keep its saved mode. Switching
+    // to double elimination from another type: use the double-elim default
+    // rather than whatever the old type had stored (was 'none').
+    setGrandFinalMode(
+      tournament?.type === 'double_elimination' ? savedGrandFinalModeOf() : 'simple'
+    );
+  };
+
   const handleSave = async () => {
     if (!name.trim()) {
       showError(t('tournament.toasts.nameRequired'));
@@ -577,9 +600,21 @@ const Tournament: React.FC = () => {
         detectedChanges.push({
           field: 'type',
           label: t('tournament.review.summary.typeLabel'),
-          oldValue: tournament.type,
-          newValue: type,
+          oldValue: t(`tournament.typeSelector.types.${tournament.type}.label`, tournament.type),
+          newValue: t(`tournament.typeSelector.types.${type}.label`, type),
         });
+      }
+      if (type === 'double_elimination') {
+        // Not double elimination before: there was no grand final.
+        const oldMode = tournament.type === 'double_elimination' ? savedGrandFinalModeOf() : 'none';
+        if (grandFinalMode !== oldMode) {
+          detectedChanges.push({
+            field: 'grandFinalMode',
+            label: t('tournament.grandFinal.label'),
+            oldValue: t(`tournament.grandFinal.options.${oldMode}`),
+            newValue: t(`tournament.grandFinal.options.${grandFinalMode}`),
+          });
+        }
       }
       if (format !== tournament.format) {
         detectedChanges.push({
@@ -956,9 +991,12 @@ const Tournament: React.FC = () => {
           grandFinalMode={grandFinalMode}
           onOvertimeModeChange={setOvertimeMode}
           onOvertimeSegmentsChange={setOvertimeSegments}
-          onGrandFinalModeChange={setGrandFinalMode}
+          onGrandFinalModeChange={(mode) => {
+            setGrandFinalMode(mode);
+            setGrandFinalModePicked(true);
+          }}
           onNameChange={setName}
-          onTypeChange={setType}
+          onTypeChange={handleTypeChange}
           onFormatChange={setFormat}
           onTeamsChange={setSelectedTeams}
           onMapsChange={setMaps}
@@ -1008,6 +1046,7 @@ const Tournament: React.FC = () => {
                     .grandFinalMode) ||
                 'simple';
               setGrandFinalMode(savedGrandFinalMode);
+              setGrandFinalModePicked(false);
               setIsEditing(false);
             } else {
               setShowForm(false);

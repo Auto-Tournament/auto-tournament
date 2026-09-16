@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, Box, Typography, Chip, Tooltip } from '@mui/material';
-import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
+import { getBracketMatchLabel, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
 import {
   isManualMatch,
   isShuffleMatch,
@@ -213,7 +213,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
             }}
           >
             <Typography variant="caption" fontWeight={600} display="block">
-              #{matchNumber} · {metaLabel}
+              {getBracketMatchLabel(match) ?? `#${matchNumber}`} · {metaLabel}
             </Typography>
             {match.serverName && (
               <Typography variant="caption" color="text.secondary" noWrap>

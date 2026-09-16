@@ -11,7 +11,7 @@ import { EmptyState } from '../components/shared/EmptyState';
 import { StatusLegend } from '../components/shared/StatusLegend';
 import { MatchCard } from '../components/shared/MatchCard';
 import { ServerAllocationWidget } from '../components/shared/ServerAllocationWidget';
-import { getRoundLabel } from '../utils/matchUtils';
+import { getGlobalMatchNumber, getRoundLabel } from '../utils/matchUtils';
 import { isManualMatch as isManualMatchFlag } from '../utils/matchFlags';
 import { api } from '../utils/api';
 import type { Match, MatchEvent, MatchesResponse, ServerAvailabilityResponse } from '../types';
@@ -430,20 +430,6 @@ export default function Matches() {
   //     console.error('Failed to delete match', err);
   //   }
   // };
-
-  // Calculate global match number based on all matches
-  const getGlobalMatchNumber = (match: Match, allMatches: Match[]): number => {
-    // Sort all matches by round, then by matchNumber
-    // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
-    const sortedMatches = [...allMatches].sort((a, b) => {
-      if (a.round !== b.round) return a.round - b.round;
-      if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
-      // If round and match_number are the same (e.g., manual matches), sort by ID
-      return a.id - b.id;
-    });
-
-    return sortedMatches.findIndex((m) => m.id === match.id) + 1;
-  };
 
   // Get all matches for numbering context
   const allMatches = [...upcomingMatches, ...liveMatches, ...matchHistory];

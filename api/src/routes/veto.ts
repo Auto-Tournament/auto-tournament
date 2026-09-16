@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { emitVetoUpdate } from '../services/socketService';
-import { matchAllocationService } from '../services/matchAllocationService';
+import { isQueuedAllocationResult, matchAllocationService } from '../services/matchAllocationService';
 import type { DbMatchRow, DbTournamentRow } from '../types/database.types';
 import type { TournamentResponse } from '../types/tournament.types';
 import { generateMatchConfig } from '../services/matchConfigBuilder';
@@ -666,7 +666,11 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
             if (result.success) {
               log.success(`[VETO] Match ${matchSlug} loaded on server ${result.serverId} after veto`);
             } else {
-              log.warn(`[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
+              if (isQueuedAllocationResult(result.error)) {
+                log.info(`[VETO] Match ${matchSlug} queued for a server after veto: ${result.error}`);
+              } else {
+                log.warn(`[VETO] Failed to allocate server for match ${matchSlug} after veto: ${result.error}`);
+              }
 
               // Start polling for available servers (checks every 10 seconds)
               // The backend will keep checking for available servers and assign one when found

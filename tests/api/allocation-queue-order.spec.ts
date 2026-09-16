@@ -2,6 +2,7 @@ import { test, expect } from '@playwright/test';
 import {
   checkQueueTurn,
   compareQueueOrder,
+  isQueueable,
   type QueueEntry,
 } from '../../api/src/utils/allocationQueue';
 
@@ -80,5 +81,78 @@ test.describe('Allocation queue order', () => {
     const manual = checkQueueTurn(r1, 'manual-1', 1);
     expect(manual.allowed).toBe(true);
     expect(manual.position).toBeNull();
+  });
+
+  /**
+   * Double elimination (QA, MAT 2.4.8, 8 teams): the grand final is round 1
+   * match 1 and upper/lower brackets number rounds separately, so plain round
+   * order put the empty grand final at queue #3, ahead of lb-r1m2.
+   */
+  const de = (slug: string, bracket: string, round: number, matchNumber: number, id: number) => ({
+    ...entry(slug, round, matchNumber, id),
+    bracket,
+  });
+
+  test('double elimination: upper and lower rounds interleave, grand final last', () => {
+    const all = [
+      de('gf', 'GF', 1, 1, 15),
+      de('lb-r4m1', 'LB', 4, 1, 14),
+      de('lb-r3m1', 'LB', 3, 1, 13),
+      de('lb-r2m2', 'LB', 2, 2, 12),
+      de('lb-r2m1', 'LB', 2, 1, 11),
+      de('lb-r1m2', 'LB', 1, 2, 10),
+      de('lb-r1m1', 'LB', 1, 1, 9),
+      de('r3m1', 'WB', 3, 1, 7),
+      de('r2m2', 'WB', 2, 2, 6),
+      de('r2m1', 'WB', 2, 1, 5),
+      de('r1m4', 'WB', 1, 4, 4),
+      de('r1m3', 'WB', 1, 3, 3),
+      de('r1m2', 'WB', 1, 2, 2),
+      de('r1m1', 'WB', 1, 1, 1),
+    ];
+    expect([...all].sort(compareQueueOrder).map((e) => e.slug)).toEqual([
+      'r1m1',
+      'r1m2',
+      'r1m3',
+      'r1m4',
+      'lb-r1m1',
+      'lb-r1m2',
+      'r2m1',
+      'r2m2',
+      'lb-r2m1',
+      'lb-r2m2',
+      'lb-r3m1',
+      'r3m1',
+      'lb-r4m1',
+      'gf',
+    ]);
+  });
+
+  test('rows without a bracket column fall back to the slug', () => {
+    const legacy = [entry('gf', 1, 1, 15), entry('lb-r1m2', 1, 2, 10), entry('r1m1', 1, 1, 1)];
+    expect([...legacy].sort(compareQueueOrder).map((e) => e.slug)).toEqual(['r1m1', 'lb-r1m2', 'gf']);
+  });
+
+  test('mixed brackets: a freed server goes to queue #1 (r1m1), not lb-r1m2 or r2m2', () => {
+    const queue = [de('lb-r1m2', 'LB', 1, 2, 10), de('r2m2', 'WB', 2, 2, 6), de('r1m1', 'WB', 1, 1, 1)];
+    expect(checkQueueTurn(queue, 'lb-r1m2', 1).allowed).toBe(false);
+    expect(checkQueueTurn(queue, 'r2m2', 1).allowed).toBe(false);
+    expect(checkQueueTurn(queue, 'r1m1', 1)).toMatchObject({ allowed: true, position: 1 });
+    // Two free servers: r1m1 and lb-r1m2 (stage 2) before r2m2 (stage 3).
+    expect(checkQueueTurn(queue, 'lb-r1m2', 2).allowed).toBe(true);
+    expect(checkQueueTurn(queue, 'r2m2', 2).allowed).toBe(false);
+  });
+
+  test('only matches with both teams and no server get a queue position', () => {
+    const team = (id: string) => ({ id });
+    expect(isQueueable({ status: 'pending', team1: team('a'), team2: undefined })).toBe(false);
+    expect(isQueueable({ status: 'pending', team1: undefined, team2: undefined })).toBe(false);
+    expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('a') })).toBe(false);
+    expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('b'), serverId: 's1' })).toBe(
+      false
+    );
+    expect(isQueueable({ status: 'live', team1: team('a'), team2: team('b') })).toBe(false);
+    expect(isQueueable({ status: 'ready', team1: team('a'), team2: team('b') })).toBe(true);
+    expect(isQueueable({ status: 'pending', team1: team('a'), team2: team('b') })).toBe(true);
   });
 });
