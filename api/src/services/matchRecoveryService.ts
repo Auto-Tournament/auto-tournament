@@ -102,7 +102,7 @@ async function recoverMatch(
           score: report.match?.score,
         });
       } else {
-        log.warn(`[Recovery] Could not fetch match report for ${match.slug}`, {
+        log.info(`[Recovery] No match report from server for ${match.slug} (yet)`, {
           serverId: match.server_id,
         });
       }

@@ -58,7 +58,11 @@ const TournamentChangePreviewModal: React.FC<TournamentChangePreviewModalProps> 
   };
 
   const hasStructuralChanges = changes.some(
-    (c) => c.field === 'type' || c.field === 'format' || c.field === 'teamIds'
+    (c) =>
+      c.field === 'type' ||
+      c.field === 'format' ||
+      c.field === 'teamIds' ||
+      c.field === 'grandFinalMode'
   );
 
   return (

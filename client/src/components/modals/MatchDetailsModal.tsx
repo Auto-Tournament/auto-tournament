@@ -35,6 +35,7 @@ import {
   getStatusLabel,
   getDetailedStatusLabel,
   getStatusExplanation,
+  getBracketMatchLabel,
 } from '../../utils/matchUtils';
 import { usePlayerConnections } from '../../hooks/usePlayerConnections';
 import { useLiveStats } from '../../hooks/useLiveStats';
@@ -95,6 +96,8 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
   const [configJson, setConfigJson] = useState<string | null>(null);
   const [configLoading, setConfigLoading] = useState(false);
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  // Admin decision for a series that ran out of maps level (status needs_decision).
+  const [winnerToSet, setWinnerToSet] = useState<'team1' | 'team2' | null>(null);
   const [playerEloIndex, setPlayerEloIndex] = useState<Record<string, number> | null>(null);
 
   // Player connection status
@@ -174,6 +177,20 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
       team2: Math.max(dbBaseline.team2, derived.team2),
     };
   }, [match, liveStats]);
+
+  const handleSetWinner = async () => {
+    if (!match || !winnerToSet) return;
+    const winner = winnerToSet;
+    setWinnerToSet(null);
+    try {
+      await api.post(`/api/matches/${match.slug}/winner`, { winner });
+      setSuccess(t('matchDetailsModal.decision.success'));
+      setTimeout(() => setSuccess(''), 3000);
+    } catch (err) {
+      const error = err as Error;
+      setError(error.message || t('matchDetailsModal.decision.failed'));
+    }
+  };
 
   const handleDelete = async () => {
     if (!match) return;
@@ -472,10 +489,13 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
           <Box display="flex" justifyContent="space-between" alignItems="center">
             <Box>
               <Typography variant="h6" fontWeight={600}>
-                Match #{matchNumber}
+                {getBracketMatchLabel(match) ??
+                  t('matchesPage.card.matchNumber', { number: matchNumber })}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {roundLabel}
+                {getBracketMatchLabel(match)
+                  ? t('matchesPage.card.matchNumber', { number: matchNumber })
+                  : roundLabel}
               </Typography>
             </Box>
             <IconButton onClick={onClose} edge="end">
@@ -590,6 +610,27 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
                   <strong>Server:</strong> {match.serverName}
                 </Typography>
               </Box>
+            )}
+
+            {/* Admin decision: every map played, still level */}
+            {(match.status as string) === 'needs_decision' && (
+              <Alert severity="warning">
+                <Typography variant="body2" gutterBottom>
+                  {t('matchDetailsModal.decision.body')}
+                </Typography>
+                <Box display="flex" gap={1} flexWrap="wrap" mt={1}>
+                  {match.team1 && (
+                    <Button variant="contained" size="small" onClick={() => setWinnerToSet('team1')}>
+                      {t('matchDetailsModal.decision.setWinner', { team: team1Name })}
+                    </Button>
+                  )}
+                  {match.team2 && (
+                    <Button variant="contained" size="small" onClick={() => setWinnerToSet('team2')}>
+                      {t('matchDetailsModal.decision.setWinner', { team: team2Name })}
+                    </Button>
+                  )}
+                </Box>
+              </Alert>
             )}
 
             {/* Queue Position */}
@@ -1199,6 +1240,21 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
           </Box>
         </DialogActions>
       </Dialog>
+
+      {match && (
+        <ConfirmDialog
+          open={winnerToSet !== null}
+          title={t('matchDetailsModal.decision.confirmTitle')}
+          message={t('matchDetailsModal.decision.confirmBody', {
+            team: winnerToSet === 'team2' ? team2Name : team1Name,
+          })}
+          confirmLabel={t('matchDetailsModal.decision.confirm')}
+          cancelLabel={t('common.cancel')}
+          onConfirm={handleSetWinner}
+          onCancel={() => setWinnerToSet(null)}
+          confirmColor="warning"
+        />
+      )}
 
       {/* Confirm delete manual match */}
       {match && (

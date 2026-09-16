@@ -14,7 +14,7 @@ import type { ServerResponse } from '../types/server.types';
 import type { DbMatchRow } from '../types/database.types';
 import type { BracketMatch } from '../types/tournament.types';
 import { serverAllocationTracker } from './serverAllocationTracker';
-import { checkQueueTurn, QUEUE_ORDER_SQL, type QueueEntry } from '../utils/allocationQueue';
+import { checkQueueTurn, matchBracketOf, QUEUE_ORDER_SQL, type QueueEntry } from '../utils/allocationQueue';
 
 /**
  * Service for automatic server allocation to tournament matches
@@ -153,8 +153,9 @@ export class MatchAllocationService {
       round: number;
       loaded_at: number | null;
       status: string;
+      bracket: string | null;
     }>(
-      `SELECT server_id, slug, match_number, round, loaded_at, status
+      `SELECT server_id, slug, match_number, round, loaded_at, status, bracket
          FROM matches
         WHERE server_id IS NOT NULL
           AND server_id != ''
@@ -164,6 +165,7 @@ export class MatchAllocationService {
       slug: string;
       matchNumber: number;
       round: number;
+      bracket: string | null;
       loadedAt: number | null;
       status: string;
     }>();
@@ -173,6 +175,7 @@ export class MatchAllocationService {
           slug: row.slug,
           matchNumber: row.match_number,
           round: row.round,
+          bracket: matchBracketOf({ slug: row.slug, bracket: row.bracket }),
           loadedAt: row.loaded_at ?? null,
           status: row.status,
         });
@@ -195,6 +198,7 @@ export class MatchAllocationService {
       matchSlug: string | null;
       matchNumber: number | null;
       matchRound: number | null;
+      matchBracket: string | null;
       updatedAt: number | null;
       inGraceWindow: boolean;
       secondsUntilReady: number | null;
@@ -327,6 +331,7 @@ export class MatchAllocationService {
         matchSlug: effectiveMatchSlug,
         matchNumber: dbBusy?.matchNumber ?? null,
         matchRound: dbBusy?.round ?? null,
+        matchBracket: dbBusy?.bracket ?? null,
         updatedAt: updatedAt ?? null,
         inGraceWindow,
         secondsUntilReady,
@@ -639,8 +644,9 @@ export class MatchAllocationService {
       slug: string;
       round: number;
       match_number: number;
+      bracket: string | null;
     }>(
-      `SELECT id, slug, round, match_number FROM matches
+      `SELECT id, slug, round, match_number, bracket FROM matches
        WHERE tournament_id = 1
        AND status = 'ready'
        AND (server_id IS NULL OR server_id = '')
@@ -652,6 +658,7 @@ export class MatchAllocationService {
       slug: row.slug,
       round: row.round,
       matchNumber: row.match_number,
+      bracket: row.bracket,
     }));
   }
 
@@ -2053,3 +2060,14 @@ export class MatchAllocationService {
 }
 
 export const matchAllocationService = new MatchAllocationService();
+
+/**
+ * An allocation "failure" that only means the match is queued: no server is
+ * free yet, or earlier matches are ahead of it. Normal, so not warn-worthy.
+ */
+export function isQueuedAllocationResult(error: string | undefined | null): boolean {
+  return (
+    typeof error === 'string' &&
+    (error === 'No available servers' || /earlier match\(es\) in the queue/.test(error))
+  );
+}

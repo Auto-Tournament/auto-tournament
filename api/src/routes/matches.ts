@@ -26,7 +26,7 @@ import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
-import { compareQueueOrder } from '../utils/allocationQueue';
+import { compareQueueOrder, isQueueable, matchBracketOf } from '../utils/allocationQueue';
 
 const router = Router();
 
@@ -219,6 +219,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
     slug: row.slug,
     round: row.round,
     matchNumber: row.match_number,
+    bracket: matchBracketOf(row),
     team1:
       row.team1_id && row.team1_name
         ? {
@@ -820,6 +821,7 @@ router.get('/', async (req: Request, res: Response) => {
           slug: row.slug,
           round: row.round,
           matchNumber: row.match_number,
+          bracket: matchBracketOf(row),
           team1:
             row.team1_id && row.team1_name
               ? {
@@ -959,15 +961,9 @@ router.get('/', async (req: Request, res: Response) => {
       })
     );
 
-    // Calculate queue positions for matches without servers
-    // Queue positions should match the display order (by round, then match_number)
-    // Include all matches that are waiting for allocation (pending, ready, or any status without a server)
-    // Exclude completed, cancelled, live, and loaded matches
-    const queueableStatuses = ['pending', 'ready'];
-    const waitingMatches = matches
-      .filter((m) => !m.serverId && queueableStatuses.includes(m.status))
-      // Same order the allocator hands out servers in (see allocationQueue).
-      .sort(compareQueueOrder);
+    // Queue positions: only matches with both teams known and no server yet,
+    // in the same order the allocator hands out servers (see allocationQueue).
+    const waitingMatches = matches.filter(isQueueable).sort(compareQueueOrder);
 
     const queuePositionMap = new Map<number, number>();
     waitingMatches.forEach((match, index) => {
@@ -1398,6 +1394,35 @@ router.patch('/:slug/status', requireAuth, async (req: Request, res: Response) =
       success: false,
       error: message,
     });
+  }
+});
+
+/**
+ * POST /api/matches/:slug/winner
+ * Admin decision: finish a series for team1 or team2 (authenticated).
+ *
+ * For a series that ran out of maps level (status 'needs_decision'), or one
+ * stuck live/loaded because the plugin never sent series_end. Runs the normal
+ * series_end path, so bracket progression, stats and ratings all apply.
+ * Body: { winner: 'team1' | 'team2' }
+ */
+router.post('/:slug/winner', requireAuth, async (req: Request, res: Response) => {
+  try {
+    const { slug } = req.params;
+    const winner = (req.body as { winner?: unknown } | undefined)?.winner;
+    if (winner !== 'team1' && winner !== 'team2') {
+      return res.status(400).json({ success: false, error: "winner must be 'team1' or 'team2'" });
+    }
+    const { setSeriesWinnerByAdmin } = await import('../services/matchEventHandler');
+    const result = await setSeriesWinnerByAdmin(slug, winner);
+    if (!result.ok) {
+      return res.status(result.status).json({ success: false, error: result.error });
+    }
+    const match = await getMatchDetailsBySlug(slug);
+    return res.json({ success: true, message: 'Match winner set', match });
+  } catch (error) {
+    log.error('Error setting match winner', error);
+    return res.status(500).json({ success: false, error: 'Failed to set match winner' });
   }
 });
 

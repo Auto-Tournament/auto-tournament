@@ -65,7 +65,8 @@
       "overtime": "OVERTIME #{{n}}",
       "live": "LIVE",
       "completed": "COMPLETED",
-      "cancelled": "CANCELLED"
+      "cancelled": "CANCELLED",
+      "needsDecision": "NEEDS ADMIN DECISION"
     },
     "statusGuide": {
       "title": "Match Status Guide",
@@ -91,7 +92,13 @@
       "statusOffline": "Offline",
       "readyIn": "Ready in: {{time}}"
     },
-    "latestEvent": "Latest: {{event}}"
+    "latestEvent": "Latest: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
   },
   "manualMatchModal": {
     "title": "Create Manual Match",
@@ -153,6 +160,15 @@
       "ready": "READY",
       "connected": "CONNECTED",
       "offline": "OFFLINE"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
     }
   },
   "bulkShuffleMatchesModal": {

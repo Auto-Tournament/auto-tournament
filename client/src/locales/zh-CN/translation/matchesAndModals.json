@@ -65,7 +65,8 @@
       "overtime": "加时 #{{n}}",
       "live": "直播中",
       "completed": "已完成",
-      "cancelled": "已取消"
+      "cancelled": "已取消",
+      "needsDecision": "NEEDS ADMIN DECISION"
     },
     "statusGuide": {
       "title": "比赛状态说明",
@@ -91,7 +92,13 @@
       "statusOffline": "离线",
       "readyIn": "就绪倒计时：{{time}}"
     },
-    "latestEvent": "最新：{{event}}"
+    "latestEvent": "最新：{{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
   },
   "manualMatchModal": {
     "title": "创建手动比赛",
@@ -153,6 +160,15 @@
       "ready": "已准备",
       "connected": "已连接",
       "offline": "未连接"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
     }
   },
   "bulkShuffleMatchesModal": {

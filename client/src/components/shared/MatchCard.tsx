@@ -1,7 +1,12 @@
 import React from 'react';
 import { Box, Card, CardContent, Typography, Chip, Stack, Tooltip } from '@mui/material';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
-import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
+import {
+  getBracketMatchLabel,
+  getStatusColor,
+  getStatusLabel,
+  getRoundLabel,
+} from '../../utils/matchUtils';
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
 import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScoreDisplay';
@@ -219,10 +224,13 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <Box display="flex" alignItems="center" gap={1}>
             <Box>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
-                {t('matchesPage.card.matchNumber', { number: matchNumber })}
+                {getBracketMatchLabel(match) ??
+                  t('matchesPage.card.matchNumber', { number: matchNumber })}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                {roundLabel || getRoundLabel(match.round)}
+                {getBracketMatchLabel(match)
+                  ? t('matchesPage.card.matchNumber', { number: matchNumber })
+                  : roundLabel || getRoundLabel(match.round)}
               </Typography>
               {match.serverName && (
                 <Typography variant="caption" color="text.secondary" display="block">

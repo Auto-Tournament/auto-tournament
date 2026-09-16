@@ -5,6 +5,7 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import type { ServerAllocationInfo } from '../../types';
+import { getBracketMatchLabel } from '../../utils/matchUtils';
 import { useTranslation } from 'react-i18next';
 
 interface ServerAllocationWidgetProps {
@@ -86,13 +87,26 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
     return 'error';
   };
 
+  // "UB R1 M1" / "Grand Final" for double elimination; the raw match_number
+  // alone said "Match #1" for the grand final.
+  const serverMatchLabel = (server: ServerAllocationInfo) =>
+    (server.matchSlug &&
+      server.matchRound !== null &&
+      getBracketMatchLabel({
+        slug: server.matchSlug,
+        bracket: server.matchBracket,
+        round: server.matchRound,
+        matchNumber: server.matchNumber ?? 0,
+      })) ||
+    t('matchesPage.card.matchNumber', { number: server.matchNumber });
+
   const getServerLabel = (server: ServerAllocationInfo) => {
     const countdown = localCountdowns.get(server.id);
     if (countdown !== undefined && countdown > 0) {
       return `${server.name} (${formatTime(countdown)})`;
     }
     if (server.matchNumber !== null) {
-      return `${server.name} (${t('matchesPage.card.matchNumber', { number: server.matchNumber })})`;
+      return `${server.name} (${serverMatchLabel(server)})`;
     }
     return server.name;
   };
@@ -150,7 +164,7 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
                   </Typography>
                   {server.matchNumber !== null && (
                     <Typography variant="caption" display="block">
-                      {t('matchesPage.card.matchNumber', { number: server.matchNumber })}
+                      {serverMatchLabel(server)}
                       {server.matchRound === 0 && ` (${t('matchesPage.card.manual')})`}
                     </Typography>
                   )}

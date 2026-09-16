@@ -65,7 +65,8 @@
       "overtime": "PROLONGATION N°{{n}}",
       "live": "EN DIRECT",
       "completed": "TERMINÉ",
-      "cancelled": "ANNULÉ"
+      "cancelled": "ANNULÉ",
+      "needsDecision": "NEEDS ADMIN DECISION"
     },
     "statusGuide": {
       "title": "Guide des statuts de match",
@@ -91,7 +92,13 @@
       "statusOffline": "Hors ligne",
       "readyIn": "Prêt dans : {{time}}"
     },
-    "latestEvent": "Dernier : {{event}}"
+    "latestEvent": "Dernier : {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
   },
   "manualMatchModal": {
     "title": "Créer un match manuel",
@@ -153,6 +160,15 @@
       "ready": "PRÊT",
       "connected": "CONNECTÉ",
       "offline": "HORS LIGNE"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
     }
   },
   "bulkShuffleMatchesModal": {

@@ -322,6 +322,10 @@ class TournamentService {
     // Delete tournament (CASCADE will also delete matches and events)
     await db.execAsync('DELETE FROM tournament WHERE id = 1');
     log.debug('Tournament deleted from database');
+
+    // Live stats are keyed by slug, and the next bracket reuses slugs (r1m1...):
+    // without this a new r1m1 started with the old one's series score.
+    matchLiveStatsService.clearAll();
   }
 
   /**

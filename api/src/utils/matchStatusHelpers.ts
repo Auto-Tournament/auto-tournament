@@ -63,3 +63,15 @@ export function isMatchFinalized(match: {
   return match.completed_at !== null && match.completed_at !== undefined;
 }
 
+/**
+ * A series that ran out of maps level on maps, rounds and map-0 damage. The
+ * maps are over (the server is freed) but the bracket cannot advance until an
+ * admin sets the winner via POST /api/matches/:slug/winner.
+ */
+export const NEEDS_DECISION_STATUS = 'needs_decision';
+
+/** Bracket formats where every match needs a winner to advance. */
+export function isEliminationTournamentType(type: string | null | undefined): boolean {
+  return type === 'single_elimination' || type === 'double_elimination';
+}
+
