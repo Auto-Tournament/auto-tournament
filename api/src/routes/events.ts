@@ -36,7 +36,13 @@ import {
   type Cs2UpdateRequiredEvent,
   type ServerHealthEvent,
 } from '../services/serverTrackingService';
-import { isFromAssignedServer, readQueryString, SERVER_ID_PARAM } from '../utils/serverAttribution';
+import {
+  isFromAssignedServer,
+  readQueryString,
+  resolveReportTarget,
+  SERVER_ID_PARAM,
+} from '../utils/serverAttribution';
+import { findActiveMatchForServer } from '../services/matchTerminationService';
 
 const router = Router();
 
@@ -80,47 +86,6 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
       });
     }
 
-    let match: DbMatchRow | null = null;
-    if (matchSlug !== undefined && matchSlug !== null) {
-      match = await findMatchByIdentifier(matchSlug);
-    }
-
-    // The report names its server. One that is not running this match (it
-    // loaded a stale or duplicate copy) must not overwrite the real report.
-    if (match && !isFromAssignedServer(match.server_id, String(serverId))) {
-      log.warn('[MatchReport] Ignoring report from a server not assigned to the match', {
-        matchSlug: match.slug,
-        assignedServerId: match.server_id,
-        reportServerId: serverId,
-      });
-      return res.status(200).json({
-        success: true,
-        ignored: true,
-        message: 'Report ignored: server is not assigned to this match',
-      });
-    }
-    if (!match) {
-      match =
-        (await db.queryOneAsync<DbMatchRow>('SELECT * FROM matches WHERE server_id = ?', [
-          serverId,
-        ])) ?? null;
-    }
-
-    // Expected, not an error: the plugin also reports on warmup_start when no
-    // match is loaded (autostarted warmup after a restart). A 404 here logged a
-    // warning on every server restart.
-    if (!match) {
-      log.debug('[MatchReport] Report with no match loaded; nothing to apply', {
-        serverId,
-        matchSlug: matchSlug ?? null,
-      });
-      return res.status(200).json({
-        success: true,
-        ignored: true,
-        message: 'Report ignored: no match found for this server',
-      });
-    }
-
     let parsedReport: MatchReport;
     try {
       parsedReport =
@@ -139,6 +104,43 @@ router.post('/report', validateServerToken, async (req: Request, res: Response) 
       });
     }
 
+    const target = await resolveReportTarget<DbMatchRow>(
+      { serverId: String(serverId), matchSlug, report: parsedReport },
+      { findByIdentifier: findMatchByIdentifier, findActiveForServer: findActiveMatchForServer }
+    );
+
+    if (target.kind === 'ignore') {
+      // Answer 200 so the plugin does not retry. None of these are errors: the
+      // plugin also reports on warmup_start when no match is loaded (autostarted
+      // warmup after a restart or reset), and a 404 logged a warning every time.
+      if (target.reason === 'wrong-server') {
+        // The report names its server. One that is not running this match (it
+        // loaded a stale or duplicate copy) must not overwrite the real report.
+        log.warn('[MatchReport] Ignoring report from a server not assigned to the match', {
+          matchSlug: target.match?.slug,
+          assignedServerId: target.match?.server_id,
+          reportServerId: serverId,
+        });
+      } else {
+        log.debug('[MatchReport] Report with no active match; nothing to apply', {
+          serverId,
+          matchSlug: matchSlug ?? null,
+          reason: target.reason,
+        });
+      }
+      return res.status(200).json({
+        success: true,
+        ignored: true,
+        message:
+          target.reason === 'wrong-server'
+            ? 'Report ignored: server is not assigned to this match'
+            : target.reason === 'idle-server'
+              ? 'Report ignored: no match loaded on this server'
+              : 'Report ignored: no match found for this server',
+      });
+    }
+
+    const match = target.match;
     await applyMatchReport(match.slug, parsedReport);
 
     log.info('[MatchReport] Report ingested via plugin POST', {

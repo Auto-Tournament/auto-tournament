@@ -117,3 +117,71 @@ export function demoMatchIdFromHeader(header: string | null | undefined): number
   const id = Number(trimmed);
   return Number.isSafeInteger(id) && id > 0 ? id : null;
 }
+
+/** Match statuses that mean a server is running the match right now. */
+export const ACTIVE_MATCH_STATUSES: readonly string[] = ['loaded', 'live'];
+
+export function isActiveMatchStatus(status: string | null | undefined): boolean {
+  return typeof status === 'string' && ACTIVE_MATCH_STATUSES.includes(status);
+}
+
+/**
+ * Does a match report come from a server with no match loaded?
+ *
+ * The plugin reports phase `idle` whenever no match is set up, and keeps
+ * posting reports in that state (warmup_start after a reset or restart).
+ * MatchZy-Enhanced up to 1.4.28 also kept the last match id in
+ * `matchzy_tournament_match`, so such a report can still name the previous match.
+ */
+export function isIdleServerReport(
+  report: { match?: { phase?: string | null } } | null | undefined
+): boolean {
+  const phase = report?.match?.phase;
+  return typeof phase === 'string' && phase.trim().toLowerCase() === 'idle';
+}
+
+type ReportMatchRow = { slug: string; server_id?: string | null; status?: string | null };
+
+export type ReportTarget<M extends ReportMatchRow> =
+  | { kind: 'apply'; match: M; via: 'identifier' | 'server' }
+  | { kind: 'ignore'; reason: 'idle-server' | 'wrong-server' | 'no-match'; match?: M };
+
+/**
+ * Which match a report posted by a server applies to.
+ *
+ * - A report from a server with no match loaded applies to nothing.
+ * - A report naming a match applies to it, unless another server runs it. A
+ *   finished match is still accepted here: the plugin reports its final state
+ *   in postgame, after MAT has marked the series completed.
+ * - Otherwise only the match currently running on that server (loaded/live)
+ *   is used. Looking up any match by server id picked completed matches the
+ *   server had played earlier.
+ */
+export async function resolveReportTarget<M extends ReportMatchRow>(
+  input: { serverId: string; matchSlug: unknown; report: { match?: { phase?: string | null } } },
+  lookups: {
+    findByIdentifier: (identifier: string | number) => Promise<M | null>;
+    findActiveForServer: (serverId: string) => Promise<M | null>;
+  }
+): Promise<ReportTarget<M>> {
+  if (isIdleServerReport(input.report)) {
+    return { kind: 'ignore', reason: 'idle-server' };
+  }
+
+  const { matchSlug, serverId } = input;
+  if ((typeof matchSlug === 'string' && matchSlug.trim() !== '') || typeof matchSlug === 'number') {
+    const named = await lookups.findByIdentifier(matchSlug);
+    if (named) {
+      if (!isFromAssignedServer(named.server_id, serverId)) {
+        return { kind: 'ignore', reason: 'wrong-server', match: named };
+      }
+      return { kind: 'apply', match: named, via: 'identifier' };
+    }
+  }
+
+  const active = await lookups.findActiveForServer(serverId);
+  if (active && active.server_id === serverId && isActiveMatchStatus(active.status)) {
+    return { kind: 'apply', match: active, via: 'server' };
+  }
+  return { kind: 'ignore', reason: 'no-match' };
+}
