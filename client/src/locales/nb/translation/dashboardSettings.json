@@ -56,7 +56,7 @@
         "title": "Turneringsstatus",
         "none": "Ingen aktiv turnering",
         "typeLabel": "Turneringstype",
-        "formatLabel": "Spillformat",
+        "formatLabel": "Kampformat",
         "matchesLabel": "Kamper"
       },
       "matchStatus": {
@@ -316,9 +316,10 @@
     },
     "success": {
       "saveSettings": "Innstillinger lagret",
-      "simulationEnabled": "Simuleringsmodus aktivert{{suffix}}",
+      "simulationEnabled": "Simuleringsmodus er slått på",
       "simulationDisabled": "Simuleringsmodus deaktivert",
-      "timescaleUpdated": "Simuleringshastighet oppdatert til {{value}}x"
+      "timescaleUpdated": "Simuleringshastighet oppdatert til {{value}}x",
+      "simulationEnabledWithSpeed": "Simuleringsmodus er slått på med {{speed}}x hastighet"
     }
   }
 }

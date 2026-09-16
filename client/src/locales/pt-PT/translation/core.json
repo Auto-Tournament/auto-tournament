@@ -51,6 +51,16 @@
       "settings": "Definições",
       "devTools": "Ferramentas de desenvolvimento",
       "publicLinks": "Links públicos"
+    },
+    "openDrawer": "Abrir menu de navegação",
+    "matchzyDbDown": {
+      "title": "Base de dados do MatchZy inacessível",
+      "body_one": "{{count}} servidor indica que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas.",
+      "body_other": "{{count}} servidores indicam que o plugin não consegue aceder à base de dados. As cópias de segurança e a fila de eventos podem ser afetadas."
+    },
+    "steamUnavailable": {
+      "title": "Integração com a Steam indisponível",
+      "body": "O início de sessão e a pesquisa de URLs personalizados podem não funcionar. Verifique a configuração do servidor e a ligação."
     }
   },
   "common": {

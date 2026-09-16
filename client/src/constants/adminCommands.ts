@@ -1,10 +1,13 @@
+/**
+ * Labels, descriptions and input labels live in the locale files under
+ * `adminToolsPage.commands.<i18nKey>` (label / description / inputLabel) and
+ * category titles under `adminToolsPage.categories.<i18nKey>`.
+ */
 export interface AdminCommand {
   id: string;
-  label: string;
+  i18nKey: string;
   command: string;
-  description?: string;
   requiresInput?: boolean;
-  inputLabel?: string;
   inputType?: 'text' | 'number';
   color?: 'primary' | 'secondary' | 'success' | 'error' | 'warning' | 'info';
   icon?: string;
@@ -12,7 +15,7 @@ export interface AdminCommand {
 
 export interface AdminCommandCategory {
   id: string;
-  title: string;
+  i18nKey: string;
   icon: string;
   commands: AdminCommand[];
 }
@@ -20,104 +23,89 @@ export interface AdminCommandCategory {
 export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
   {
     id: 'match-control',
-    title: 'Match Control',
+    i18nKey: 'matchControl',
     icon: 'play',
     commands: [
       {
         id: 'match-start',
-        label: 'Start Match',
+        i18nKey: 'matchStart',
         command: 'start',
-        description: 'Start the match immediately',
         color: 'success',
       },
       {
         id: 'match-end',
-        label: 'End Match (css_restart)',
+        i18nKey: 'matchEnd',
         command: 'restart',
-        description:
-          'Force end the current match on the selected server(s) and reset them back to warmup using css_restart.',
         color: 'error',
       },
       {
         id: 'force-pause',
-        label: 'Force Pause',
+        i18nKey: 'forcePause',
         command: 'forcepause',
-        description: 'Force pause the match',
         color: 'warning',
       },
       {
         id: 'force-unpause',
-        label: 'Force Unpause',
+        i18nKey: 'forceUnpause',
         command: 'forceunpause',
-        description: 'Force unpause the match',
         color: 'success',
       },
     ],
   },
   {
     id: 'match-settings',
-    title: 'Match Settings',
+    i18nKey: 'matchSettings',
     icon: 'settings',
     commands: [
       {
         id: 'skip-veto',
-        label: 'Skip Veto',
+        i18nKey: 'skipVeto',
         command: 'skipveto',
-        description: 'Skip the veto phase',
       },
       {
         id: 'toggle-knife',
-        label: 'Toggle Knife Round',
+        i18nKey: 'toggleKnife',
         command: 'roundknife',
-        description: 'Enable/disable knife round for side choice (alias: rk)',
       },
       {
         id: 'toggle-playout',
-        label: 'Toggle Playout',
+        i18nKey: 'togglePlayout',
         command: 'playout',
-        description: 'Enable/disable playing out all rounds',
       },
       {
         id: 'toggle-whitelist',
-        label: 'Toggle Whitelist',
+        i18nKey: 'toggleWhitelist',
         command: 'whitelist',
-        description: 'Enable/disable team whitelist',
       },
       {
         id: 'show-settings',
-        label: 'Show Settings',
+        i18nKey: 'showSettings',
         command: 'settings',
-        description: 'Display current match settings',
       },
       {
         id: 'reload-admins',
-        label: 'Reload Admins',
+        i18nKey: 'reloadAdmins',
         command: 'reload_admins',
-        description: 'Reload admin list from admins.json',
       },
       {
         id: 'ready-required',
-        label: 'Set Ready Required',
+        i18nKey: 'readyRequired',
         command: 'readyrequired',
-        description: 'Set number of players required to ready up',
         requiresInput: true,
-        inputLabel: 'Number of players',
         inputType: 'number',
       },
     ],
   },
   {
     id: 'backup-restore',
-    title: 'Backup & Restore',
+    i18nKey: 'backupRestore',
     icon: 'restore',
     commands: [
       {
         id: 'restore-backup',
-        label: 'Restore Round Backup',
+        i18nKey: 'restoreBackup',
         command: 'restore',
-        description: 'Restore match to a specific round',
         requiresInput: true,
-        inputLabel: 'Round number',
         inputType: 'number',
         color: 'warning',
       },
@@ -125,86 +113,74 @@ export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
   },
   {
     id: 'server-mgmt',
-    title: 'Server Management',
+    i18nKey: 'serverMgmt',
     icon: 'dns',
     commands: [
       {
         id: 'clean-servers',
-        label: 'Clean Servers (css_restart)',
+        i18nKey: 'cleanServers',
         command: 'restart',
-        description:
-          'Destructively end any running match on the selected server(s) and reset them back to warmup using css_restart.',
         color: 'error',
       },
       {
         id: 'change-map',
-        label: 'Change Map',
+        i18nKey: 'changeMap',
         command: 'map',
-        description: 'Change to a different map (css_map <mapname>)',
         requiresInput: true,
-        inputLabel: 'Map name (de_dust2)',
         inputType: 'text',
       },
     ],
   },
   {
     id: 'team-mgmt',
-    title: 'Team Management',
+    i18nKey: 'teamMgmt',
     icon: 'groups',
     commands: [
       {
         id: 'team1-name',
-        label: 'Set Team 1 Name',
+        i18nKey: 'team1Name',
         command: 'team1',
-        description: 'Set the name for Team 1',
         requiresInput: true,
-        inputLabel: 'Team name',
         inputType: 'text',
       },
       {
         id: 'team2-name',
-        label: 'Set Team 2 Name',
+        i18nKey: 'team2Name',
         command: 'team2',
-        description: 'Set the name for Team 2',
         requiresInput: true,
-        inputLabel: 'Team name',
         inputType: 'text',
       },
     ],
   },
   {
     id: 'practice-mode',
-    title: 'Practice Mode',
+    i18nKey: 'practiceMode',
     icon: 'sports',
     commands: [
       {
         id: 'start-practice',
-        label: 'Start Practice Mode',
+        i18nKey: 'startPractice',
         command: 'prac',
-        description: 'Enable practice mode with .commands',
         color: 'info',
       },
       {
         id: 'exit-practice',
-        label: 'Exit Practice Mode',
+        i18nKey: 'exitPractice',
         command: 'exitprac',
-        description: 'Disable practice mode',
         color: 'warning',
       },
     ],
   },
   {
     id: 'admin-comm',
-    title: 'Admin Communication',
+    i18nKey: 'adminComm',
     icon: 'campaign',
     commands: [
       {
         id: 'broadcast',
-        label: 'Broadcast Message',
+        i18nKey: 'broadcast',
         command: 'asay',
-        description: 'Send an admin message to all players',
         requiresInput: true,
-        inputLabel: 'Message',
         inputType: 'text',
         color: 'primary',
       },
@@ -212,16 +188,14 @@ export const ADMIN_COMMAND_CATEGORIES: AdminCommandCategory[] = [
   },
   {
     id: 'advanced',
-    title: 'Advanced RCON',
+    i18nKey: 'advanced',
     icon: 'code',
     commands: [
       {
         id: 'custom-rcon',
-        label: 'Execute Custom RCON',
+        i18nKey: 'customRcon',
         command: 'custom',
-        description: 'Execute any RCON command directly',
         requiresInput: true,
-        inputLabel: 'RCON command',
         inputType: 'text',
         color: 'error',
       },

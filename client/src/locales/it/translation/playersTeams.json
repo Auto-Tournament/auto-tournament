@@ -90,7 +90,9 @@
       "title": "Andamento delle prestazioni",
       "noData": "Non ci sono ancora dati di prestazione significativi: gioca qualche round per vedere gli andamenti di ADR e K/D.",
       "avgAdr": "ADR: {{value}} media",
-      "avgKd": "K/D: {{value}} media"
+      "avgKd": "K/D: {{value}} media",
+      "matchCount_one": "{{count}} match",
+      "matchCount_other": "{{count}} match"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Elimina squadre",
-      "message": "Sei sicuro di voler eliminare {{count}} squadra{{suffix}}? Questa azione non può essere annullata.",
       "confirm": "Elimina",
-      "success": "Eliminate {{count}} squadra{{suffix}}",
-      "error": "Impossibile eliminare una o più squadre"
+      "error": "Impossibile eliminare una o più squadre",
+      "message_one": "Sei sicuro di voler eliminare {{count}} squadra? Questa azione non può essere annullata.",
+      "message_other": "Sei sicuro di voler eliminare {{count}} squadre? Questa azione non può essere annullata.",
+      "success_one": "{{count}} squadra eliminata",
+      "success_other": "{{count}} squadre eliminate"
     },
     "loadError": "Impossibile caricare le squadre",
     "importSuccess": "Importate {{count}} squadra(e) con successo"
@@ -275,10 +279,12 @@
     "importError": "Impossibile importare i giocatori",
     "bulkDelete": {
       "title": "Elimina giocatori",
-      "message": "Sei sicuro di voler eliminare {{count}} giocatore{{suffix}}? Questa azione non può essere annullata.",
       "confirm": "Elimina",
-      "success": "Eliminati {{count}} giocatore{{suffix}}",
-      "error": "Impossibile eliminare uno o più giocatori"
+      "error": "Impossibile eliminare uno o più giocatori",
+      "message_one": "Sei sicuro di voler eliminare {{count}} giocatore? Questa azione non può essere annullata.",
+      "message_other": "Sei sicuro di voler eliminare {{count}} giocatori? Questa azione non può essere annullata.",
+      "success_one": "{{count}} giocatore eliminato",
+      "success_other": "{{count}} giocatori eliminati"
     },
     "openPlayerPageTooltip": "Apri pagina giocatore",
     "skillRatingTooltip": "La Skill Rating si basa su OpenSkill; più alto è meglio.",

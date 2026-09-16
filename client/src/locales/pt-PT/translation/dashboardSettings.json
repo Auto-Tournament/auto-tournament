@@ -207,9 +207,10 @@
     },
     "success": {
       "saveSettings": "Definições guardadas",
-      "simulationEnabled": "Modo de simulação ativado{{suffix}}",
+      "simulationEnabled": "Modo de simulação ativado",
       "simulationDisabled": "Modo de simulação desativado",
-      "timescaleUpdated": "Velocidade de simulação atualizada para {{value}}x"
+      "timescaleUpdated": "Velocidade de simulação atualizada para {{value}}x",
+      "simulationEnabledWithSpeed": "Modo de simulação ativado a {{speed}}x de velocidade"
     }
   },
   "dashboard": {

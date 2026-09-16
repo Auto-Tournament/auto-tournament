@@ -90,7 +90,11 @@
       "title": "Trendy formy",
       "noData": "Brak miarodajnych danych o formie – zagraj kilka rund, aby zobaczyć trendy ADR i K/D.",
       "avgAdr": "ADR: {{value}} śr.",
-      "avgKd": "K/D: {{value}} śr."
+      "avgKd": "K/D: {{value}} śr.",
+      "matchCount_one": "{{count}} mecz",
+      "matchCount_few": "{{count}} mecze",
+      "matchCount_many": "{{count}} meczów",
+      "matchCount_other": "{{count}} meczów"
     }
   },
   "teamPage": {
@@ -240,10 +244,16 @@
     },
     "bulkDelete": {
       "title": "Usuń drużyny",
-      "message": "Czy na pewno chcesz usunąć {{count}} drużyn{{suffix}}? Tej akcji nie można cofnąć.",
       "confirm": "Usuń",
-      "success": "Usunięto {{count}} drużyn{{suffix}}",
-      "error": "Nie udało się usunąć jednej lub więcej drużyn"
+      "error": "Nie udało się usunąć jednej lub więcej drużyn",
+      "message_one": "Czy na pewno chcesz usunąć {{count}} drużynę? Tej operacji nie można cofnąć.",
+      "message_few": "Czy na pewno chcesz usunąć {{count}} drużyny? Tej operacji nie można cofnąć.",
+      "message_many": "Czy na pewno chcesz usunąć {{count}} drużyn? Tej operacji nie można cofnąć.",
+      "message_other": "Czy na pewno chcesz usunąć {{count}} drużyn? Tej operacji nie można cofnąć.",
+      "success_one": "Usunięto {{count}} drużynę",
+      "success_few": "Usunięto {{count}} drużyny",
+      "success_many": "Usunięto {{count}} drużyn",
+      "success_other": "Usunięto {{count}} drużyn"
     },
     "loadError": "Nie udało się załadować drużyn",
     "importSuccess": "Pomyślnie zaimportowano {{count}} drużynę/y"
@@ -275,10 +285,16 @@
     "importError": "Nie udało się zaimportować graczy",
     "bulkDelete": {
       "title": "Usuń graczy",
-      "message": "Czy na pewno chcesz usunąć {{count}} gracz{{suffix}}? Tej akcji nie można cofnąć.",
       "confirm": "Usuń",
-      "success": "Usunięto {{count}} gracz{{suffix}}",
-      "error": "Nie udało się usunąć jednego lub więcej graczy"
+      "error": "Nie udało się usunąć jednego lub więcej graczy",
+      "message_one": "Czy na pewno chcesz usunąć {{count}} gracza? Tej operacji nie można cofnąć.",
+      "message_few": "Czy na pewno chcesz usunąć {{count}} graczy? Tej operacji nie można cofnąć.",
+      "message_many": "Czy na pewno chcesz usunąć {{count}} graczy? Tej operacji nie można cofnąć.",
+      "message_other": "Czy na pewno chcesz usunąć {{count}} graczy? Tej operacji nie można cofnąć.",
+      "success_one": "Usunięto {{count}} gracza",
+      "success_few": "Usunięto {{count}} graczy",
+      "success_many": "Usunięto {{count}} graczy",
+      "success_other": "Usunięto {{count}} graczy"
     },
     "openPlayerPageTooltip": "Otwórz stronę gracza",
     "skillRatingTooltip": "Skill Rating opiera się na OpenSkill; im wyżej, tym lepiej.",

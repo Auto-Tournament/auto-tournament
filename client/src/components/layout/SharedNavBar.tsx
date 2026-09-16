@@ -213,7 +213,7 @@ export const SharedNavBar: React.FC<SharedNavBarProps> = ({
       {showMenuButton && (
         <IconButton
           color="inherit"
-          aria-label="open drawer"
+          aria-label={t('layout.openDrawer')}
           onClick={onMenuClick}
           edge="start"
           sx={{ mr: 2 }}

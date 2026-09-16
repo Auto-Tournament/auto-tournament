@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Test Players",
       "description": "Create players with ELO ratings for testing shuffle tournaments and player management.",
-      "success": "Successfully created {{created}} player(s){{updated, number} > 0 ? (', and updated ' + updated) : ''}}!",
+      "success": "Created {{created}} test players!",
       "errors": {
         "create": "Failed to create test players",
         "partial": "Created {{created}} player(s), updated {{updated}}, but {{failed}} failed. Check console for details."
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "Create {{count}} Players",
         "createCustom": "Create Players"
-      }
+      },
+      "successWithUpdated": "Created {{created}} and updated {{updated}} test players!"
     },
     "testServers": {
       "title": "Test Servers",
@@ -44,8 +45,9 @@
       },
       "customLabel": "Custom server count",
       "buttons": {
-        "createFixed": "Create {{count}} Server{{count === 1 ? '' : 's'}}",
-        "createCustom": "Create Servers"
+        "createCustom": "Create Servers",
+        "createFixed_one": "Create {{count}} server",
+        "createFixed_other": "Create {{count}} servers"
       }
     },
     "dangerZone": {

@@ -153,13 +153,14 @@
     "title": "Kaartpool opslaan",
     "nameLabel": "Naam kaartpool",
     "namePlaceholder": "Mijn aangepaste pool",
-    "info": "Dit slaat een kaartpool op met {{count}} kaart{{count, plural, one {} other {en}}}.",
     "saveButton": "Opslaan",
     "errors": {
       "nameRequired": "Naam van de kaartpool is verplicht",
       "noMaps": "Selecteer minstens één kaart",
       "saveFailed": "Kaartpool opslaan mislukt"
-    }
+    },
+    "info_one": "Dit slaat een map pool op met {{count}} map.",
+    "info_other": "Dit slaat een map pool op met {{count}} maps."
   },
   "batchServerModal": {
     "title": "Servers in bulk aanmaken",
@@ -210,22 +211,25 @@
       "helper": "Alle servers worden aangemaakt als ingeschakeld/uitgeschakeld"
     },
     "preview": {
-      "title": "Voorbeeld ({{showingFirst10, boolean, true {eerste 10} false {alle}}})",
-      "more": "...en nog {{count}}"
+      "more": "...en nog {{count}}",
+      "titleFirst10": "Voorbeeld (eerste 10)",
+      "titleAll": "Voorbeeld (alle)"
     },
     "checkServersButton": {
       "default": "Servers controleren",
       "checking": "Controleren..."
     },
     "createServersButton": {
-      "default": "{{count}} server{{count, plural, one {} other {s}}} aanmaken",
-      "creating": "Aanmaken..."
+      "creating": "Aanmaken...",
+      "default_one": "{{count}} server aanmaken",
+      "default_other": "{{count}} servers aanmaken"
     },
     "warnings": {
       "notAllVerified": "Sommige servers zijn niet door de connectiviteitscontrole gekomen. Ze worden opgeslagen, maar kunnen als offline worden weergegeven totdat RCON en webhook zijn geconfigureerd."
     },
     "success": {
-      "createdAll": "{{count}} server(s) succesvol aangemaakt"
+      "createdAll_one": "{{count}} server aangemaakt",
+      "createdAll_other": "{{count}} servers aangemaakt"
     },
     "errors": {
       "baseNameRequired": "Basisnaam is verplicht",
@@ -260,7 +264,8 @@
       "defaultProtected": "Het standaardsjabloon \"pure-win-loss\" kan niet worden verwijderd."
     },
     "import": {
-      "success": "{{count}} ELO-sjabloon/sjablonen succesvol geïmporteerd"
+      "success_one": "{{count}} ELO-sjabloon geïmporteerd",
+      "success_other": "{{count}} ELO-sjablonen geïmporteerd"
     },
     "weights": {
       "noAdjustmentsPure": "Geen stat-aanpassingen (alleen winst/verlies)"
@@ -289,10 +294,11 @@
       "introBody": "Verwacht formaat: lijst van sjablonen met name, optionele description, enabled, weights, maxAdjustment en minAdjustment. Als je id weglaat, wordt deze uit de naam gegenereerd.",
       "jsonLabel": "JSON-gegevens",
       "validJsonTitle": "✓ Geldige JSON!",
-      "validJsonBody": "{{count}} sjabloon{{count !== 1 ? 'en' : ''}} gevonden.",
       "previewTitle": "Voorbeeld:",
       "previewButton": "Voorbeeld",
-      "importButton": "Sjablonen importeren"
+      "importButton": "Sjablonen importeren",
+      "validJsonBody_one": "{{count}} sjabloon gevonden.",
+      "validJsonBody_other": "{{count}} sjablonen gevonden."
     },
     "editor": {
       "titleEdit": "ELO-sjabloon bewerken",

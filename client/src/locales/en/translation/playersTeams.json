@@ -90,7 +90,9 @@
       "title": "Performance Trends",
       "noData": "No meaningful performance data yet – play a few rounds to see ADR and K/D trends.",
       "avgAdr": "ADR: {{value}} avg",
-      "avgKd": "K/D: {{value}} avg"
+      "avgKd": "K/D: {{value}} avg",
+      "matchCount_one": "{{count}} match",
+      "matchCount_other": "{{count}} matches"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Delete Teams",
-      "message": "Are you sure you want to delete {{count}} team{{suffix}}? This action cannot be undone.",
       "confirm": "Delete",
-      "success": "Deleted {{count}} team{{suffix}}",
-      "error": "Failed to delete one or more teams"
+      "error": "Failed to delete one or more teams",
+      "message_one": "Are you sure you want to delete {{count}} team? This action cannot be undone.",
+      "message_other": "Are you sure you want to delete {{count}} teams? This action cannot be undone.",
+      "success_one": "Deleted {{count}} team",
+      "success_other": "Deleted {{count}} teams"
     },
     "loadError": "Failed to load teams",
     "importSuccess": "Successfully imported {{count}} team(s)"
@@ -275,10 +279,12 @@
     "importError": "Failed to import players",
     "bulkDelete": {
       "title": "Delete Players",
-      "message": "Are you sure you want to delete {{count}} player{{suffix}}? This action cannot be undone.",
       "confirm": "Delete",
-      "success": "Deleted {{count}} player{{suffix}}",
-      "error": "Failed to delete one or more players"
+      "error": "Failed to delete one or more players",
+      "message_one": "Are you sure you want to delete {{count}} player? This action cannot be undone.",
+      "message_other": "Are you sure you want to delete {{count}} players? This action cannot be undone.",
+      "success_one": "Deleted {{count}} player",
+      "success_other": "Deleted {{count}} players"
     },
     "openPlayerPageTooltip": "Open player page",
     "skillRatingTooltip": "Skill Rating is based on OpenSkill; higher is better.",

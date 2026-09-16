@@ -316,9 +316,10 @@
     },
     "success": {
       "saveSettings": "设置已保存",
-      "simulationEnabled": "已启用模拟模式{{suffix}}",
+      "simulationEnabled": "已启用模拟模式",
       "simulationDisabled": "已禁用模拟模式",
-      "timescaleUpdated": "模拟时间倍率已更新为 {{value}} 倍"
+      "timescaleUpdated": "模拟时间倍率已更新为 {{value}} 倍",
+      "simulationEnabledWithSpeed": "已启用模拟模式（{{speed}}x 速度）"
     }
   }
 }

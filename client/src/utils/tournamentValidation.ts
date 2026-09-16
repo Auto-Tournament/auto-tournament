@@ -1,3 +1,4 @@
+import type { TFunction } from 'i18next';
 import { TOURNAMENT_TYPES } from '../constants/tournament';
 
 export const isTournamentTypeValid = (
@@ -14,12 +15,13 @@ export const isTournamentTypeValid = (
 
 export const validateTeamCountForType = (
   type: string,
-  teamCount: number
+  teamCount: number,
+  t: TFunction
 ): { isValid: boolean; error?: string } => {
-  const tournamentType = TOURNAMENT_TYPES.find((t) => t.value === type);
+  const tournamentType = TOURNAMENT_TYPES.find((tt) => tt.value === type);
 
   if (!tournamentType) {
-    return { isValid: false, error: 'Invalid tournament type' };
+    return { isValid: false, error: t('tournament.teamValidation.invalidType') };
   }
 
   // Shuffle tournaments don't use teams, so skip validation
@@ -28,30 +30,35 @@ export const validateTeamCountForType = (
   }
 
   if (!isTournamentTypeValid(tournamentType, teamCount)) {
+    const params = {
+      type: t(`tournament.typeSelector.types.${tournamentType.value}.label`),
+      selected: t('tournament.counts.teams', { count: teamCount }),
+    };
     if (tournamentType.requirePowerOfTwo && tournamentType.validCounts) {
       return {
         isValid: false,
-        error:
-          `${
-            tournamentType.label
-          } requires a power-of-2 team count (${tournamentType.validCounts.join(', ')}). ` +
-          `You selected ${teamCount} team(s).`,
+        error: t('tournament.teamValidation.powerOfTwo', {
+          ...params,
+          counts: tournamentType.validCounts.join(', '),
+        }),
       };
     }
     if (tournamentType.minTeams && teamCount < tournamentType.minTeams) {
       return {
         isValid: false,
-        error:
-          `${tournamentType.label} requires at least ${tournamentType.minTeams} teams. ` +
-          `You selected ${teamCount} team(s).`,
+        error: t('tournament.teamValidation.minTeams', {
+          ...params,
+          min: tournamentType.minTeams,
+        }),
       };
     }
     if (tournamentType.maxTeams && teamCount > tournamentType.maxTeams) {
       return {
         isValid: false,
-        error:
-          `${tournamentType.label} allows maximum ${tournamentType.maxTeams} teams. ` +
-          `You selected ${teamCount} team(s).`,
+        error: t('tournament.teamValidation.maxTeams', {
+          ...params,
+          max: tournamentType.maxTeams,
+        }),
       };
     }
   }

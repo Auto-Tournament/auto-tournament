@@ -165,19 +165,17 @@ const AdminTools: React.FC = () => {
     <Card variant="outlined">
       <CardContent>
         <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-          {command.label}
+          {t(`adminToolsPage.commands.${command.i18nKey}.label`)}
         </Typography>
-        {command.description && (
-          <Typography variant="caption" color="text.secondary" display="block" mb={2}>
-            {command.description}
-          </Typography>
-        )}
+        <Typography variant="caption" color="text.secondary" display="block" mb={2}>
+          {t(`adminToolsPage.commands.${command.i18nKey}.description`)}
+        </Typography>
 
         {command.requiresInput && (
           <TextField
             fullWidth
             size="small"
-            label={command.inputLabel}
+            label={t(`adminToolsPage.commands.${command.i18nKey}.inputLabel`)}
             type={command.inputType || 'text'}
             value={commandInputs[command.id] || ''}
             onChange={(e) => handleInputChange(command.id, e.target.value)}
@@ -380,7 +378,7 @@ const AdminTools: React.FC = () => {
             <Accordion key={category.id}>
               <AccordionSummary expandIcon={<ExpandMoreIcon />}>
                 <Typography variant="subtitle1" fontWeight={600}>
-                  {category.title}
+                  {t(`adminToolsPage.categories.${category.i18nKey}`)}
                 </Typography>
               </AccordionSummary>
               <AccordionDetails>

@@ -153,13 +153,14 @@
     "title": "Guardar pool de mapas",
     "nameLabel": "Nombre del pool de mapas",
     "namePlaceholder": "Mi pool personalizado",
-    "info": "Esto guardará un pool de mapas con {{count}} mapa{{count, plural, one {} other {s}}}.",
     "saveButton": "Guardar",
     "errors": {
       "nameRequired": "El nombre del pool de mapas es obligatorio",
       "noMaps": "Selecciona al menos un mapa",
       "saveFailed": "No se pudo guardar el pool de mapas"
-    }
+    },
+    "info_one": "Se guardará un pool de mapas con {{count}} mapa.",
+    "info_other": "Se guardará un pool de mapas con {{count}} mapas."
   },
   "batchServerModal": {
     "title": "Crear servidores en lote",
@@ -210,22 +211,25 @@
       "helper": "Todos los servidores se crearán como activados/desactivados"
     },
     "preview": {
-      "title": "Vista previa ({{showingFirst10, boolean, true {mostrando los primeros 10} false {todos}}})",
-      "more": "...y {{count}} más"
+      "more": "...y {{count}} más",
+      "titleFirst10": "Vista previa (primeros 10)",
+      "titleAll": "Vista previa (todos)"
     },
     "checkServersButton": {
       "default": "Comprobar servidores",
       "checking": "Comprobando..."
     },
     "createServersButton": {
-      "default": "Crear {{count}} servidor{{count, plural, one {} other {es}}}",
-      "creating": "Creando..."
+      "creating": "Creando...",
+      "default_one": "Crear {{count}} servidor",
+      "default_other": "Crear {{count}} servidores"
     },
     "warnings": {
       "notAllVerified": "Algunos servidores no han superado las comprobaciones de conectividad. Se guardarán, pero pueden aparecer offline hasta que se configuren RCON y el webhook."
     },
     "success": {
-      "createdAll": "Se crearon correctamente {{count}} servidor(es)"
+      "createdAll_one": "{{count}} servidor creado",
+      "createdAll_other": "{{count}} servidores creados"
     },
     "errors": {
       "baseNameRequired": "El nombre base es obligatorio",
@@ -260,7 +264,8 @@
       "defaultProtected": "La plantilla predeterminada \"pure-win-loss\" no se puede eliminar."
     },
     "import": {
-      "success": "Se importaron correctamente {{count}} plantilla(s) de ELO"
+      "success_one": "{{count}} plantilla ELO importada",
+      "success_other": "{{count}} plantillas ELO importadas"
     },
     "weights": {
       "noAdjustmentsPure": "Sin ajustes por estadísticas (victoria/derrota pura)"
@@ -289,10 +294,11 @@
       "introBody": "Formato esperado: array de plantillas con name, description (opcional), enabled, weights, maxAdjustment y minAdjustment. Si omites id, se generará a partir del nombre.",
       "jsonLabel": "Datos JSON",
       "validJsonTitle": "✓ JSON válido",
-      "validJsonBody": "Se encontraron {{count}} plantilla(s).",
       "previewTitle": "Vista previa:",
       "previewButton": "Vista previa",
-      "importButton": "Importar plantillas"
+      "importButton": "Importar plantillas",
+      "validJsonBody_one": "Se encontró {{count}} plantilla.",
+      "validJsonBody_other": "Se encontraron {{count}} plantillas."
     },
     "editor": {
       "titleEdit": "Editar plantilla de ELO",

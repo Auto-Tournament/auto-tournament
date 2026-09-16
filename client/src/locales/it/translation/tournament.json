@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Controlla le impostazioni del torneo e clicca su \"Crea torneo\" quando sei pronto.",
+        "info": "Controlla le impostazioni del torneo e clicca su \"{{button}}\" quando sei pronto.",
         "nameLabel": "Nome torneo",
         "typeLabel": "Tipo di torneo",
         "formatLabel": "Formato match",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} server disponibile",
       "availableServers_other": "{{count}} server disponibili",
       "concurrentMatches_one": "{{count}} match in contemporanea",
-      "concurrentMatches_other": "{{count}} match in contemporanea"
+      "concurrentMatches_other": "{{count}} match in contemporanea",
+      "enabledServers_one": "{{count}} server abilitato",
+      "enabledServers_other": "{{count}} server abilitati"
     },
     "matchRules": {
       "value": "Massimo {{maxRounds}} round per mappa; vince chi arriva prima a {{winRounds}} round.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Round massimi per mappa",
       "maxRoundsHelper": "Ogni mappa si gioca fino a {{maxRounds}} round; vince chi arriva prima a {{winRounds}} round.",
       "maxRoundsHelperEmpty": "Numero massimo di round per mappa (predefinito: 24, max: 30).",
-      "serversSummary": "{{servers}} configurati; ne servono {{required}} per giocare tutti i match di questo tabellone.",
+      "serversSummary": "Server configurati: {{servers}}; il primo round prevede {{matches}}.",
       "estimatedVolumeLabel": "Volume stimato",
       "mapsHeading": "Mappe ({{total}})",
       "noMapsSelected": "Nessuna mappa selezionata",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Nessuna squadra selezionata (facoltativo)",
       "playerRegistration": "Registrazione giocatori",
       "playerRegistrationInfo_one": "I giocatori verranno registrati dopo la creazione del torneo. Ogni mappa selezionata corrisponde a un round di match ({{count}} round in totale).",
-      "playerRegistrationInfo_other": "I giocatori verranno registrati dopo la creazione del torneo. Ogni mappa selezionata corrisponde a un round di match ({{count}} round in totale)."
+      "playerRegistrationInfo_other": "I giocatori verranno registrati dopo la creazione del torneo. Ogni mappa selezionata corrisponde a un round di match ({{count}} round in totale).",
+      "serversSummaryQueued": "Server configurati: {{servers}}; il primo round prevede {{matches}}. I match oltre il numero di server restano in coda finché un server non si libera."
     },
     "overtime": {
       "selectLabel": "Overtime",
@@ -359,6 +362,22 @@
       "none": "Nessuno",
       "itemCount_one": "{{count}} elemento",
       "itemCount_other": "{{count}} elementi"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Scegli le squadre...",
+      "addAll": "Aggiungi tutte",
+      "batchAddServers": "Aggiunta in batch",
+      "addServer": "Aggiungi server",
+      "importTeams": "Importa squadre",
+      "createTeam": "Crea squadra",
+      "notEnoughServers": "Il primo round prevede {{matches}}, ma hai {{servers}}. I match oltre il numero di server restano in coda finché un server non si libera — aggiungi altri server per giocarli tutti in contemporanea.",
+      "notEnoughTeams": "Servono almeno 2 squadre per creare un torneo. Al momento ne hai {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Tipo di torneo non valido",
+      "powerOfTwo": "{{type}} richiede un numero di squadre pari a una potenza di 2 ({{counts}}). Ne hai selezionate {{selected}}.",
+      "minTeams": "{{type}} richiede almeno {{min}} squadre. Ne hai selezionate {{selected}}.",
+      "maxTeams": "{{type}} consente al massimo {{max}} squadre. Ne hai selezionate {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Non generato",
       "generatedAfter": "Le partite verranno generate al termine del round {{round}}"
+    },
+    "slotHint": {
+      "winnerOf": "Vincitore di {{match}}",
+      "matchNumber": "match {{number}}"
     }
   }
 }

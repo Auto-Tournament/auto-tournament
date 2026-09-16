@@ -496,7 +496,7 @@ export function TournamentFormSteps({
               <Alert severity="info">
                 {t('tournament.wizard.volumeAlert', {
                   teams: t('tournament.counts.teams', { count: selectedTeams.length }),
-                  type: type.replace('_', ' '),
+                  type: t(`tournament.typeSelector.types.${type}.label`),
                   format: format.toUpperCase(),
                   matches: t('tournament.counts.matches', { count: volume.totalMatches ?? 0 }),
                   rounds: t('tournament.counts.rounds', { count: volume.totalRounds }),
@@ -680,7 +680,11 @@ export function TournamentFormSteps({
         return (
           <Stack spacing={2}>
             <Alert severity="info">
-              {t('tournament.review.summary.info')}
+              {t('tournament.review.summary.info', {
+                button: tournamentExists
+                  ? t('tournament.formActions.saveAndGenerate')
+                  : t('tournament.common.createTournament'),
+              })}
             </Alert>
             <Box>
               <Typography variant="subtitle1" fontWeight={600} gutterBottom>
@@ -695,7 +699,9 @@ export function TournamentFormSteps({
                 {t('tournament.review.summary.typeLabel')}
               </Typography>
               <Typography variant="body1" color="text.secondary" mb={2}>
-                {type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase())}
+                {type
+                  ? t(`tournament.typeSelector.types.${type}.label`)
+                  : t('tournament.review.summary.notSet')}
               </Typography>
             </Box>
             <Box>
@@ -740,12 +746,17 @@ export function TournamentFormSteps({
                 </Typography>
                 <Typography
                   variant="body2"
-                  color={hasEnoughServers ? 'text.secondary' : 'error.main'}
+                  color={hasEnoughServers ? 'text.secondary' : 'warning.main'}
                 >
-                  {t('tournament.wizard.serversSummary', {
-                    servers: t('tournament.counts.servers', { count: serverCount }),
-                    required: requiredServers,
-                  })}
+                  {t(
+                    hasEnoughServers
+                      ? 'tournament.wizard.serversSummary'
+                      : 'tournament.wizard.serversSummaryQueued',
+                    {
+                      servers: t('tournament.counts.servers', { count: serverCount }),
+                      matches: t('tournament.counts.concurrentMatches', { count: requiredServers }),
+                    }
+                  )}
                 </Typography>
               </Box>
             )}

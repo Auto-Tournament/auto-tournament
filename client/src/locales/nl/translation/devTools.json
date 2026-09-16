@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Testspelers",
       "description": "Maak spelers met ELO-scores om shuffle-toernooien en spelersbeheer te testen.",
-      "success": "{{created}} speler(s) succesvol aangemaakt{{updated, number} > 0 ? (', en bijgewerkt ' + updated) : ''}}!",
+      "success": "{{created}} testspelers aangemaakt!",
       "errors": {
         "create": "Testspelers aanmaken mislukt",
         "partial": "{{created}} speler(s) aangemaakt, {{updated}} bijgewerkt, maar {{failed}} mislukt. Bekijk de console voor details."
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "{{count}} spelers aanmaken",
         "createCustom": "Spelers aanmaken"
-      }
+      },
+      "successWithUpdated": "{{created}} testspelers aangemaakt en {{updated}} bijgewerkt!"
     },
     "testServers": {
       "title": "Testservers",
@@ -44,8 +45,9 @@
       },
       "customLabel": "Aangepast aantal servers",
       "buttons": {
-        "createFixed": "{{count}} server{{count === 1 ? '' : 's'}} aanmaken",
-        "createCustom": "Servers aanmaken"
+        "createCustom": "Servers aanmaken",
+        "createFixed_one": "{{count}} server aanmaken",
+        "createFixed_other": "{{count}} servers aanmaken"
       }
     },
     "dangerZone": {

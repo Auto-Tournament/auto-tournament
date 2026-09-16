@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "测试选手",
       "description": "创建带有 ELO 评分的选手，用于测试洗牌锦标赛和选手管理。",
-      "success": "已成功创建 {{created}} 名选手{{updated, number} > 0 ? ('，并更新 ' + updated + ' 名') : ''}}！",
+      "success": "已创建 {{created}} 名测试选手！",
       "errors": {
         "create": "创建测试选手失败",
         "partial": "已创建 {{created}} 名选手，更新 {{updated}} 名，但 {{failed}} 名失败。详情请查看控制台。"
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "创建 {{count}} 名选手",
         "createCustom": "创建选手"
-      }
+      },
+      "successWithUpdated": "已创建 {{created}} 名并更新 {{updated}} 名测试选手！"
     },
     "testServers": {
       "title": "测试服务器",
@@ -44,8 +45,9 @@
       },
       "customLabel": "自定义服务器数量",
       "buttons": {
-        "createFixed": "创建 {{count}} 台服务器",
-        "createCustom": "创建服务器"
+        "createCustom": "创建服务器",
+        "createFixed_one": "创建 {{count}} 台服务器",
+        "createFixed_other": "创建 {{count}} 台服务器"
       }
     },
     "dangerZone": {

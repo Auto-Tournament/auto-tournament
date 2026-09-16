@@ -90,7 +90,9 @@
       "title": "Leistungsverlauf",
       "noData": "Noch keine aussagekräftigen Leistungsdaten – spiele ein paar Runden, um ADR- und K/D-Verläufe zu sehen.",
       "avgAdr": "ADR: {{value}} Ø",
-      "avgKd": "K/D: {{value}} Ø"
+      "avgKd": "K/D: {{value}} Ø",
+      "matchCount_one": "{{count}} Match",
+      "matchCount_other": "{{count}} Matches"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Teams löschen",
-      "message": "Möchtest du wirklich {{count}} Team{{suffix}} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "confirm": "Löschen",
-      "success": "{{count}} Team{{suffix}} gelöscht",
-      "error": "Ein oder mehrere Teams konnten nicht gelöscht werden"
+      "error": "Ein oder mehrere Teams konnten nicht gelöscht werden",
+      "message_one": "Möchtest du wirklich {{count}} Team löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message_other": "Möchtest du wirklich {{count}} Teams löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success_one": "{{count}} Team gelöscht",
+      "success_other": "{{count}} Teams gelöscht"
     },
     "loadError": "Teams konnten nicht geladen werden",
     "importSuccess": "{{count}} Team(s) erfolgreich importiert"
@@ -275,10 +279,12 @@
     "importError": "Spieler konnten nicht importiert werden",
     "bulkDelete": {
       "title": "Spieler löschen",
-      "message": "Möchtest du wirklich {{count}} Spieler{{suffix}} löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
       "confirm": "Löschen",
-      "success": "{{count}} Spieler{{suffix}} gelöscht",
-      "error": "Ein oder mehrere Spieler konnten nicht gelöscht werden"
+      "error": "Ein oder mehrere Spieler konnten nicht gelöscht werden",
+      "message_one": "Möchtest du wirklich {{count}} Spieler löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "message_other": "Möchtest du wirklich {{count}} Spieler löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "success_one": "{{count}} Spieler gelöscht",
+      "success_other": "{{count}} Spieler gelöscht"
     },
     "openPlayerPageTooltip": "Spielerseite öffnen",
     "skillRatingTooltip": "Skill Rating basiert auf OpenSkill; höher ist besser.",

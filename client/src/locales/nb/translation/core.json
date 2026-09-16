@@ -54,6 +54,16 @@
       "settings": "Innstillinger",
       "devTools": "Utviklerverktøy",
       "publicLinks": "Offentlige lenker"
+    },
+    "openDrawer": "Åpne navigasjonsmenyen",
+    "matchzyDbDown": {
+      "title": "MatchZy-databasen er utilgjengelig",
+      "body_one": "{{count}} server melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt.",
+      "body_other": "{{count}} servere melder at pluginen ikke når databasen sin. Backuper og hendelseskøen kan bli berørt."
+    },
+    "steamUnavailable": {
+      "title": "Steam-integrasjonen er utilgjengelig",
+      "body": "Innlogging og oppslag av Steam-brukernavn fungerer kanskje ikke. Sjekk serverkonfigurasjonen og nettverkstilkoblingen."
     }
   },
   "language": {

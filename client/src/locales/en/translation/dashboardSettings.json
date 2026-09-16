@@ -316,9 +316,10 @@
     },
     "success": {
       "saveSettings": "Settings saved",
-      "simulationEnabled": "Simulation mode enabled{{suffix}}",
+      "simulationEnabled": "Simulation mode enabled",
       "simulationDisabled": "Simulation mode disabled",
-      "timescaleUpdated": "Simulation timescale updated to {{value}}x"
+      "timescaleUpdated": "Simulation timescale updated to {{value}}x",
+      "simulationEnabledWithSpeed": "Simulation mode enabled at {{speed}}x speed"
     }
   }
 }
