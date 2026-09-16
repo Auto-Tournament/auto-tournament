@@ -215,7 +215,9 @@
     "noPlayersRegistered": "Nessun giocatore registrato ancora",
     "searchNoMatch": "Nessun giocatore trovato per \"{{query}}\"",
     "team": "Squadra",
-    "matches": "Match"
+    "matches": "Match",
+    "buchholz": "Buchholz",
+    "roundDiff": "Round Diff"
   },
   "teamsPage": {
     "headerSelect": {

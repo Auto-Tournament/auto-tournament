@@ -6,7 +6,7 @@ import { normalizeTournamentSettings } from '../utils/tournamentRow';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
-import { getSwissStandings } from './swissProgressionService';
+import { getSwissStandings, getSwissStandingEntries } from './swissProgressionService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
   Tournament,
@@ -599,6 +599,10 @@ class TournamentService {
     const matches = await this.getMatches();
     const totalRounds = calculateTotalRounds(tournament.teamIds.length, tournament.type);
 
+    if (tournament.type === 'swiss') {
+      const swissStandings = await getSwissStandingEntries(tournament.id);
+      return { tournament, matches, totalRounds, swissStandings };
+    }
     return { tournament, matches, totalRounds };
   }
 

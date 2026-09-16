@@ -417,7 +417,14 @@
     "swiss": {
       "notGenerated": "未生成",
       "generatedAfter": "第 {{round}} 轮结束后将生成比赛",
-      "bye": "BYE"
+      "bye": "BYE",
+      "standings": "Standings",
+      "team": "Team",
+      "record": "Record",
+      "buchholz": "BH",
+      "buchholzHint": "Buchholz: sum of opponents' wins",
+      "roundDiff": "RD",
+      "roundDiffHint": "Round differential: rounds won minus rounds lost"
     },
     "slotHint": {
       "winnerOf": "{{match}}胜者",

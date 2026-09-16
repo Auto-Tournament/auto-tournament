@@ -46,6 +46,9 @@ export function TournamentFormActions({
   const handleSave = () => {
     if (!hasChanges) {
       showWarning(t('tournament.toasts.noChangesToSave'));
+      // Nothing to regenerate: the bracket already matches the saved settings,
+      // so leave the wizard for the tournament view instead of staying put.
+      if (tournamentExists) onCancel?.();
       return;
     }
     if (!isValidMaps) {
