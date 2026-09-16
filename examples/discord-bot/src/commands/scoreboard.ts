@@ -1,6 +1,14 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command } from './types.js';
-import { scoreText, teamName, type Match } from '../mat/types.js';
+import type { MatClient } from '../mat/client.js';
+import {
+  isFinished,
+  matchLabel,
+  scoreText,
+  statusText,
+  teamName,
+  type Match,
+} from '../mat/types.js';
 import { followMatch } from '../mat/live.js';
 
 /**
@@ -17,30 +25,54 @@ const FOLLOW_FOR_MS = 3 * 60 * 60 * 1000;
 
 /**
  * Discord rate-limits message edits. A busy match emits far more updates than
- * anyone can read, so coalesce them: apply at most one edit per interval, and
- * always apply the latest state rather than a queued backlog.
+ * anyone can read, so coalesce them: at most one refetch and edit per interval,
+ * always of the latest state rather than a queued backlog.
  */
 const EDIT_EVERY_MS = 5_000;
 
-function render(match: Match): EmbedBuilder {
+function render(match: Match, champion: string | null): EmbedBuilder {
   const team1 = teamName(match, 'team1');
   const team2 = teamName(match, 'team2');
+  const label = matchLabel(match);
 
   const embed = new EmbedBuilder()
     .setTitle(`${team1} vs ${team2}`)
+    // Series score, then the current map's rounds in brackets while it runs.
     .setDescription(`**${scoreText(match)}**`)
-    .addFields({ name: 'Status', value: match.status, inline: true })
-    .setFooter({ text: match.slug })
+    .addFields({ name: 'Status', value: statusText(match.status), inline: true })
+    .setFooter({ text: label ? `${label} · ${match.slug}` : match.slug })
     .setTimestamp(new Date());
 
-  if (match.currentMap) {
+  if (match.currentMap && !isFinished(match.status)) {
     embed.addFields({ name: 'Map', value: match.currentMap, inline: true });
+  }
+  if (match.status === 'needs_decision') {
+    // Nothing more will happen on the server: every map is played and the
+    // series is level. The match finishes when an admin picks the winner in
+    // MAT, and this scoreboard picks that up like any other update.
+    embed.addFields({
+      name: 'Waiting on an admin',
+      value: 'The series ended level. An admin has to pick the winner before the bracket moves on.',
+    });
   }
   if (match.status === 'completed' && match.winner) {
     embed.addFields({ name: 'Winner', value: match.winner.name, inline: true });
   }
+  if (champion) {
+    embed.addFields({ name: 'Tournament champion', value: champion });
+  }
 
   return embed;
+}
+
+/**
+ * The champion's name if this match just finished the tournament. Only asked
+ * for completed tournament matches, so a live scoreboard costs nothing extra.
+ */
+async function championFor(mat: MatClient, match: Match): Promise<string | null> {
+  if (match.status !== 'completed' || !match.round) return null;
+  const tournament = await mat.getTournament();
+  return tournament?.status === 'completed' ? (tournament.winner?.name ?? null) : null;
 }
 
 export const scoreboardCommand: Command = {
@@ -65,22 +97,31 @@ export const scoreboardCommand: Command = {
       return;
     }
 
-    await interaction.editReply({ embeds: [render(match)] });
+    await interaction.editReply({ embeds: [render(match, await championFor(mat, match))] });
 
     // A finished match will never emit another update, so following it would
     // leak a listener for three hours to no purpose.
-    if (match.status === 'completed') return;
+    if (isFinished(match.status)) return;
 
-    let latest = match;
-    let pending = false;
     let timer: NodeJS.Timeout | null = null;
+    let stopped = false;
 
-    const flush = async () => {
+    const refresh = async () => {
       timer = null;
-      if (!pending) return;
-      pending = false;
+      if (stopped) return;
       try {
-        await interaction.editReply({ embeds: [render(latest)] });
+        // Refetch rather than render the push: pushes are partial and their
+        // score fields do not mean what REST's do (see src/mat/live.ts).
+        const latest = await mat.getMatch(slug);
+        if (!latest) {
+          // Deleted in MAT. Leave the last scoreboard standing.
+          stop();
+          return;
+        }
+        await interaction.editReply({
+          embeds: [render(latest, await championFor(mat, latest))],
+        });
+        if (isFinished(latest.status)) stop();
       } catch (error) {
         // The message may have been deleted, or the interaction token expired
         // (Discord allows edits for 15 minutes after the reply). Either way,
@@ -90,19 +131,14 @@ export const scoreboardCommand: Command = {
       }
     };
 
-    const unfollow = followMatch(socket, slug, (update) => {
-      latest = update;
-      pending = true;
-      if (!timer) timer = setTimeout(() => void flush(), EDIT_EVERY_MS);
-      if (update.status === 'completed') {
-        // Let the final score through, then stop.
-        setTimeout(stop, EDIT_EVERY_MS + 1_000);
-      }
+    const unfollow = followMatch(socket, slug, () => {
+      if (!timer && !stopped) timer = setTimeout(() => void refresh(), EDIT_EVERY_MS);
     });
 
     const expiry = setTimeout(() => stop(), FOLLOW_FOR_MS);
 
     function stop(): void {
+      stopped = true;
       unfollow();
       clearTimeout(expiry);
       if (timer) clearTimeout(timer);
