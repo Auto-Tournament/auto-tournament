@@ -12,7 +12,12 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material';
-import { getStatusColor, getStatusLabel } from '../../utils/matchUtils';
+import {
+  getStatusColor,
+  getStatusLabel,
+  isUnpairedSwissMatch,
+  waitingForPairingLabel,
+} from '../../utils/matchUtils';
 import type { Match, MatchLiveStats, Team } from '../../types';
 import { deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
@@ -32,7 +37,9 @@ interface SwissTeamRecord {
   roundsWon: number;
   roundsLost: number;
   roundDiff: number;
+  buchholz: number;
   opponents: string[];
+  opponentIds: string[];
 }
 
 export default function SwissView({ matches, teams, totalRounds, onMatchClick }: SwissViewProps) {
@@ -52,9 +59,19 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
         roundsWon: 0,
         roundsLost: 0,
         roundDiff: 0,
+        buchholz: 0,
         opponents: [],
+        opponentIds: [],
       };
     });
+
+    // Byes: a completed match with a single team counts as a win.
+    matches
+      .filter((m) => m.status === 'completed' && Boolean(m.team1) !== Boolean(m.team2))
+      .forEach((match) => {
+        const solo = (match.team1 ?? match.team2)!;
+        if (records[solo.id] && match.winner?.id === solo.id) records[solo.id].wins++;
+      });
 
     // Process matches
     matches
@@ -70,10 +87,12 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
           records[team1Id].roundsWon += team1Score;
           records[team1Id].roundsLost += team2Score;
           records[team1Id].opponents.push(match.team2!.name);
+          records[team1Id].opponentIds.push(team2Id);
 
           records[team2Id].roundsWon += team2Score;
           records[team2Id].roundsLost += team1Score;
           records[team2Id].opponents.push(match.team1!.name);
+          records[team2Id].opponentIds.push(team1Id);
 
           if (match.winner?.id === team1Id) {
             records[team1Id].wins++;
@@ -85,14 +104,18 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
         }
       });
 
-    // Calculate differential
+    // Calculate differential and Buchholz (sum of opponents' wins)
     Object.values(records).forEach((record) => {
       record.roundDiff = record.roundsWon - record.roundsLost;
+      record.buchholz = record.opponentIds.reduce((sum, id) => sum + (records[id]?.wins ?? 0), 0);
     });
 
-    // Sort by wins, then round diff
+    // Same leading order the API uses to pick the champion: wins, losses,
+    // Buchholz, then differential.
     return Object.values(records).sort((a, b) => {
       if (b.wins !== a.wins) return b.wins - a.wins;
+      if (a.losses !== b.losses) return a.losses - b.losses;
+      if (b.buchholz !== a.buchholz) return b.buchholz - a.buchholz;
       if (b.roundDiff !== a.roundDiff) return b.roundDiff - a.roundDiff;
       return b.roundsWon - a.roundsWon;
     });
@@ -290,11 +313,18 @@ export default function SwissView({ matches, teams, totalRounds, onMatchClick }:
                                     variant="body2"
                                     sx={{ minWidth: 120, textAlign: 'right' }}
                                   >
-                                    {match.team2?.name || 'TBD'}
+                                    {match.team2?.name ||
+                                      (match.team1 && match.status === 'completed'
+                                        ? t('bracket.swiss.bye')
+                                        : 'TBD')}
                                   </Typography>
                                 </Box>
                                 <Chip
-                                  label={getStatusLabel(match.status)}
+                                  label={
+                                    isUnpairedSwissMatch(match)
+                                      ? waitingForPairingLabel()
+                                      : getStatusLabel(match.status)
+                                  }
                                   size="small"
                                   color={getStatusColor(match.status)}
                                   sx={{ ml: 2, minWidth: 90 }}

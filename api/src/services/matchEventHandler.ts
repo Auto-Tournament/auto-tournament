@@ -1205,9 +1205,6 @@ async function processSeriesEnd(
         'SELECT type FROM tournament WHERE id = ?',
         [match.tournament_id ?? 1]
       );
-      if (tournament?.type === 'swiss') {
-        await checkAndAdvanceRound(match.round);
-      }
       if (tournament?.type === 'shuffle') {
         await checkAndAdvanceShuffleRound(match.round);
       }
@@ -1349,17 +1346,13 @@ async function processSeriesEnd(
     });
   }
 
-  // Check for round completion (Swiss)
-  if (tournament?.type === 'swiss') {
-    await checkAndAdvanceRound(match.round);
-  }
-
   // Shuffle-specific round progression
   if (tournament?.type === 'shuffle') {
     await checkAndAdvanceShuffleRound(match.round);
   }
 
-  // Check if tournament is complete
+  // Pairs the next Swiss round when this one is done, then checks whether the
+  // tournament is complete.
   await checkTournamentCompletion(match.tournament_id ?? 1);
 }
 
@@ -1861,49 +1854,5 @@ async function checkAndAdvanceShuffleRound(roundNumber: number): Promise<void> {
   } catch (error) {
     log.error('Error checking/advancing shuffle round', { error, roundNumber });
     // Don't throw - round advancement failure shouldn't break match completion
-  }
-}
-
-/**
- * Check if a round is complete and advance to next round (Swiss)
- */
-async function checkAndAdvanceRound(completedRound: number): Promise<void> {
-  // Get all matches in this round
-  const roundMatches = await db.queryAsync<DbMatchRow>(
-    'SELECT * FROM matches WHERE tournament_id = 1 AND round = ?',
-    [completedRound]
-  );
-
-  // Check if all matches in this round are completed
-  const allCompleted = roundMatches.every((m) => m.status === 'completed');
-
-  if (!allCompleted) {
-    log.debug(`Round ${completedRound} not yet complete`);
-    return;
-  }
-
-  log.success(`Round ${completedRound} completed! Checking for next round matches...`);
-
-  // Check if there are matches in the next round
-  const nextRoundMatches = await db.queryAsync<DbMatchRow>(
-    'SELECT * FROM matches WHERE tournament_id = 1 AND round = ? AND status = "pending"',
-    [completedRound + 1]
-  );
-
-  if (nextRoundMatches.length === 0) {
-    log.info(`No more rounds to advance to`);
-    return;
-  }
-
-  log.info(`Found ${nextRoundMatches.length} matches in round ${completedRound + 1}`);
-
-  // Swiss system: pair teams based on current standings
-  // For now, we just mark matches as ready if both teams are set
-  for (const match of nextRoundMatches) {
-    if (match.team1_id && match.team2_id) {
-      await db.updateAsync('matches', { status: 'ready' }, 'id = ?', [match.id]);
-      log.info(`Match ${match.slug} is ready`);
-      emitBracketUpdate({ action: 'match_ready', matchSlug: match.slug });
-    }
   }
 }

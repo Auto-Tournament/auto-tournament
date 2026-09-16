@@ -9,7 +9,7 @@ interface ChampionBannerProps {
 }
 
 /**
- * Shows the champion of a completed tournament. For round robin / swiss the
+ * Shows the champion of a completed tournament. For round robin the
  * API leaves `winner` null when the top spot is shared, and shuffle
  * tournaments rank players rather than teams, so nothing is shown then.
  */

@@ -58,6 +58,7 @@
       "walkover": "WALKOVER",
       "waitingForTournament": "WAITING FOR TOURNAMENT TO START",
       "waitingForServer": "WAITING FOR SERVER",
+      "waitingForPairing": "WAITING FOR PAIRING",
       "vetoPending": "VETO PENDING",
       "mapVeto": "MAP VETO",
       "serverAllocated": "SERVER ALLOCATED",

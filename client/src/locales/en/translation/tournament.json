@@ -238,9 +238,10 @@
         "items": {
           "clearStatus": "Clear tournament status (back to setup)",
           "keepSettings": "<b>Keep</b> tournament settings (name, teams, format)",
-          "allowEdit": "Allow you to edit settings again"
+          "allowEdit": "Allow you to edit settings again",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "After resetting, you'll need to save again to regenerate brackets.",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately.",
         "note": "💡 Note: To completely remove the tournament, use \"Delete\" instead.",
         "confirm": "Reset to Setup"
       },
@@ -415,7 +416,8 @@
     },
     "swiss": {
       "notGenerated": "Not Generated",
-      "generatedAfter": "Matches will be generated after Round {{round}} completes"
+      "generatedAfter": "Matches will be generated after Round {{round}} completes",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "Winner of {{match}}",

@@ -162,7 +162,7 @@ export interface BracketMatch {
   /** Maps won in the series. */
   team1SeriesScore?: number;
   team2SeriesScore?: number;
-  /** Rounds on the map being played (null when not in progress, 0-0 during warmup). */
+  /** Rounds on the map being played (0-0 during warmup; last map once completed; null before any map). */
   team1MapScore?: number | null;
   team2MapScore?: number | null;
   mapResults?: Array<{
@@ -217,7 +217,7 @@ export interface TournamentResponse extends Omit<Tournament, 'settings' | 'maps'
   eloTemplateId?: string; // ELO calculation template ID (optional, defaults to "Pure Win/Loss")
   /**
    * Champion once the tournament is completed (null otherwise, for shuffle
-   * tournaments, and for round robin / swiss when the top spot is shared).
+   * tournaments, and for round robin when the top spot is shared).
    */
   winner?: { id: string; name: string; tag?: string } | null;
 }

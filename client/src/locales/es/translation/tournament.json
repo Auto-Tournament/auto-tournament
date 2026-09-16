@@ -238,11 +238,12 @@
         "items": {
           "clearStatus": "Restablecer el estado del torneo (volver a configuración)",
           "keepSettings": "<b>Mantener</b> los ajustes del torneo (nombre, equipos, formato)",
-          "allowEdit": "Permitirte editar de nuevo la configuración"
+          "allowEdit": "Permitirte editar de nuevo la configuración",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "Tras el restablecimiento, tendrás que guardar de nuevo para regenerar el cuadro.",
         "note": "💡 Nota: para eliminar el torneo por completo, usa «Eliminar».",
-        "confirm": "Restablecer a configuración"
+        "confirm": "Restablecer a configuración",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
       },
       "start": {
         "titleNoServers": "⚠️ No hay servidores disponibles",
@@ -415,7 +416,8 @@
     },
     "swiss": {
       "notGenerated": "No generado",
-      "generatedAfter": "Las partidas se generarán al terminar la ronda {{round}}"
+      "generatedAfter": "Las partidas se generarán al terminar la ronda {{round}}",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "Ganador de {{match}}",

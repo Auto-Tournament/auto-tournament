@@ -68,7 +68,8 @@
       "live": "NA ŻYWO",
       "completed": "ZAKOŃCZONY",
       "cancelled": "ANULOWANY",
-      "needsDecision": "NEEDS ADMIN DECISION"
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
     },
     "statusGuide": {
       "title": "Przewodnik po statusach meczu",
