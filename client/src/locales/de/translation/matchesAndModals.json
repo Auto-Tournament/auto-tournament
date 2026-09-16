@@ -66,7 +66,8 @@
       "live": "LIVE",
       "completed": "BEENDET",
       "cancelled": "ABGEBROCHEN",
-      "needsDecision": "NEEDS ADMIN DECISION"
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
     },
     "statusGuide": {
       "title": "Leitfaden zum Match-Status",

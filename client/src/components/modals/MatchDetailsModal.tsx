@@ -33,6 +33,8 @@ import {
   formatDuration,
   getStatusColor,
   getStatusLabel,
+  isUnpairedSwissMatch,
+  waitingForPairingLabel,
   getDetailedStatusLabel,
   getStatusExplanation,
   getBracketMatchLabel,
@@ -515,19 +517,23 @@ const InnerMatchDetailsModal: React.FC<InnerMatchDetailsModalProps> = ({
             >
               <Box display="flex" gap={1}>
                 <Chip
-                  label={getStatusLabel(
-                    match.status,
-                    false,
-                    effectiveVetoCompleted,
-                    tournamentStarted,
-                    Boolean(match.serverId),
-                    mapRoundsTeam1,
-                    mapRoundsTeam2,
-                    match.config?.maxRounds,
-                    typeof cvars['mp_overtime_maxrounds'] === 'number'
-                      ? Number(cvars['mp_overtime_maxrounds'])
-                      : undefined
-                  )}
+                  label={
+                    isUnpairedSwissMatch(match)
+                      ? waitingForPairingLabel()
+                      : getStatusLabel(
+                          match.status,
+                          false,
+                          effectiveVetoCompleted,
+                          tournamentStarted,
+                          Boolean(match.serverId),
+                          mapRoundsTeam1,
+                          mapRoundsTeam2,
+                          match.config?.maxRounds,
+                          typeof cvars['mp_overtime_maxrounds'] === 'number'
+                            ? Number(cvars['mp_overtime_maxrounds'])
+                            : undefined
+                        )
+                  }
                   color={getStatusColor(match.status)}
                   sx={{ fontWeight: 600 }}
                 />

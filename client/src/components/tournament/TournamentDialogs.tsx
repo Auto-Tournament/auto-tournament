@@ -167,7 +167,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
                 {t('tournament.dialogs.reset.items.clearStatus')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
-                {t('tournament.dialogs.items.deleteMatches')}
+                {t('tournament.dialogs.reset.items.regenerateMatches')}
               </Typography>
               <Typography component="li" variant="body2" color="text.secondary">
                 {t('tournament.dialogs.items.deleteData')}
@@ -183,7 +183,7 @@ export const TournamentDialogs: React.FC<TournamentDialogsProps> = ({
               </Typography>
             </Box>
             <Typography variant="body2" color="text.secondary" paragraph>
-              {t('tournament.dialogs.reset.saveAgain')}
+              {t('tournament.dialogs.reset.regenerated')}
             </Typography>
             <Typography variant="body2" color="info.main" sx={{ fontStyle: 'italic' }}>
               {t('tournament.dialogs.reset.note')}

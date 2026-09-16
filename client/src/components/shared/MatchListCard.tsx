@@ -1,6 +1,12 @@
 import React from 'react';
 import { Card, CardContent, Box, Typography, Chip, Tooltip } from '@mui/material';
-import { getBracketMatchLabel, getStatusColor, getStatusLabel } from '../../utils/matchUtils';
+import {
+  getBracketMatchLabel,
+  getStatusColor,
+  getStatusLabel,
+  isUnpairedSwissMatch,
+  waitingForPairingLabel,
+} from '../../utils/matchUtils';
 import {
   isManualMatch,
   isShuffleMatch,
@@ -318,13 +324,17 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
               />
             )}
             <Chip
-              label={getStatusLabel(
-                match.status,
-                false,
-                vetoDisabled ? true : match.vetoCompleted,
-                undefined,
-                Boolean(match.serverId)
-              )}
+              label={
+                isUnpairedSwissMatch(match)
+                  ? waitingForPairingLabel()
+                  : getStatusLabel(
+                      match.status,
+                      false,
+                      vetoDisabled ? true : match.vetoCompleted,
+                      undefined,
+                      Boolean(match.serverId)
+                    )
+              }
               size="small"
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600 }}

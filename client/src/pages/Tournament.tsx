@@ -20,9 +20,14 @@ import { useTournament } from '../hooks/useTournament';
 import { validateTeamCountForType } from '../utils/tournamentValidation';
 import { api } from '../utils/api';
 import { io } from 'socket.io-client';
+import { MATCH_FORMATS } from '../constants/tournament';
 import type { TournamentTemplate } from '../types/tournament.types';
 import type { ShuffleTournamentSettings } from '../components/tournament/ShuffleTournamentConfigStep';
 import type { EloCalculationTemplate } from '../types/elo.types';
+
+/** Human label for a match format ("bo3" -> "Best of 3"), raw value if unknown. */
+const formatLabel = (value: string): string =>
+  MATCH_FORMATS.find((f) => f.value === value)?.label ?? value;
 
 interface TournamentChange {
   field: string;
@@ -620,8 +625,8 @@ const Tournament: React.FC = () => {
         detectedChanges.push({
           field: 'format',
           label: t('tournament.review.summary.formatLabel'),
-          oldValue: tournament.format,
-          newValue: format,
+          oldValue: formatLabel(tournament.format),
+          newValue: formatLabel(format),
         });
       }
       if (JSON.stringify(selectedTeams.sort()) !== JSON.stringify(tournament.teamIds.sort())) {

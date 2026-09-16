@@ -66,7 +66,8 @@
       "live": "EN DIRECT",
       "completed": "TERMINÉ",
       "cancelled": "ANNULÉ",
-      "needsDecision": "NEEDS ADMIN DECISION"
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
     },
     "statusGuide": {
       "title": "Guide des statuts de match",

@@ -205,8 +205,9 @@ export function countMapWins(mapResults: MapResultLike[]): { team1: number; team
  * side with the round score on the other, e.g. "23 vs 1".)
  *
  * - team1SeriesScore/team2SeriesScore: maps won, always set.
- * - team1MapScore/team2MapScore: rounds on the map being played; null when the
- *   match is not in progress, 0-0 while the current map is still in warmup.
+ * - team1MapScore/team2MapScore: rounds on the map being played, 0-0 while the
+ *   current map is still in warmup; once completed, rounds on the last map
+ *   played (null when no map results are stored).
  * - team1Score/team2Score: the headline score. Maps won once the match is
  *   completed; the current map's rounds while in progress (unset until live
  *   stats exist).
@@ -236,8 +237,11 @@ export function applyScoreFields(
       typeof match.team1Score === 'number' ? match.team1Score : fromResults?.team1 ?? 0;
     match.team2SeriesScore =
       typeof match.team2Score === 'number' ? match.team2Score : fromResults?.team2 ?? 0;
-    match.team1MapScore = null;
-    match.team2MapScore = null;
+    // Rounds on the last map played, so a finished BO1 still reports its
+    // map score (13-7) next to the series score (1-0).
+    const lastMap = fromResults ? mapResults![mapResults!.length - 1] : null;
+    match.team1MapScore = lastMap ? lastMap.team1Score : null;
+    match.team2MapScore = lastMap ? lastMap.team2Score : null;
     return;
   }
 

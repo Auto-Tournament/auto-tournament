@@ -12,6 +12,7 @@ import { getAuthHeader, signInViaRequest } from '../helpers/auth';
  *
  *   team1SeriesScore / team2SeriesScore  maps won
  *   team1MapScore   / team2MapScore      rounds on the map being played
+ *                                        (the last map once completed)
  *   team1Score      / team2Score         headline: rounds while in progress,
  *                                        maps won once completed
  *
@@ -235,7 +236,9 @@ test.describe.serial('Match score fields', () => {
       expect(completed.status).toBe('completed');
       expect(completed.team1SeriesScore).toBe(0);
       expect(completed.team2SeriesScore).toBe(1);
-      expect(completed.team1MapScore, 'a finished match has no current map').toBeNull();
+      // ...and keeps the rounds of its last map, instead of dropping them.
+      expect(completed.team1MapScore).toBe(7);
+      expect(completed.team2MapScore).toBe(13);
     }
   );
 });

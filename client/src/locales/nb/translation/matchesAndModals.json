@@ -66,7 +66,8 @@
       "live": "DIREKTE",
       "completed": "FULLFØRT",
       "cancelled": "AVLYST",
-      "needsDecision": "NEEDS ADMIN DECISION"
+      "needsDecision": "NEEDS ADMIN DECISION",
+      "waitingForPairing": "WAITING FOR PAIRING"
     },
     "statusGuide": {
       "title": "Forklaring av kampstatus",

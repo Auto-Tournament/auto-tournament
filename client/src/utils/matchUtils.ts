@@ -51,6 +51,25 @@ export const calculateOvertimeNumber = (
 };
 
 /**
+ * A Swiss match for a round that has not been paired yet. Its teams are picked
+ * from the standings once the previous round is complete, so it is waiting for
+ * pairing rather than for a veto.
+ */
+export const isUnpairedSwissMatch = (match: {
+  slug?: string;
+  status: string;
+  team1?: unknown;
+  team2?: unknown;
+}): boolean =>
+  match.status === 'pending' &&
+  !match.team1 &&
+  !match.team2 &&
+  /^swiss-r\d+m\d+$/.test(match.slug ?? '');
+
+export const waitingForPairingLabel = (): string =>
+  i18n.t('matchesPage.statusLabel.waitingForPairing');
+
+/**
  * Get a human-readable label for a match status
  */
 export const getStatusLabel = (
