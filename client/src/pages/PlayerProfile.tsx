@@ -44,6 +44,7 @@ import type { PlayerDetail } from '../types/api.types';
 import { useAuth } from '../contexts/AuthContext';
 import { useCurrentMatchStatus } from '../hooks/useCurrentMatchStatus';
 import { useTranslation } from 'react-i18next';
+import { ratingHistoryBaseline } from '../utils/eloProgression';
 import type {
   Team,
   TeamMatchInfo,
@@ -814,11 +815,8 @@ export default function PlayerProfile() {
     );
   }
 
-  // Baseline for the history table: true initial rating before the first match.
-  const baselineRating =
-    ratingHistory.length > 0
-      ? ratingHistory[ratingHistory.length - 1].eloBefore
-      : player.startingElo;
+  // Baseline row matches the "Starting ELO" the chart shows (see utils/eloProgression).
+  const baselineRating = ratingHistoryBaseline(player.startingElo);
   const winRate =
     uniqueMatchHistory.length > 0
       ? (uniqueMatchHistory.filter((m) => m.wonMatch).length / uniqueMatchHistory.length) * 100

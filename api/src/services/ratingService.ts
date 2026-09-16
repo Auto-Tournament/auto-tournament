@@ -3,67 +3,54 @@
  * Handles OpenSkill rating calculations and Skill Rating conversions
  */
 
-import { rating, rate, ordinal, type Rating } from 'openskill';
+import { rating, type Rating } from 'openskill';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { eloTemplateService } from './eloTemplateService';
 import type { PlayerStatLine } from './matchLiveStatsService';
 import { settingsService } from './settingsService';
+import {
+  MAX_DISPLAY_ELO,
+  MIN_DISPLAY_ELO,
+  computeTeamRatingUpdate,
+  eloToOpenSkill,
+  openSkillToDisplayElo,
+  ratingRollbacks,
+  type RatingHistoryRow,
+} from '../utils/ratingMath';
 
-// Conversion constants - Option B: closer to OpenSkill docs and classic Elo:
-// - One OpenSkill "sigma" ≈ 200 rating points
-// - Fresh player ordinal ≈ 0 maps to 1500 Skill Rating
-const ELO_OFFSET = 1500;
-const ELO_SCALE = 200;
-const DEFAULT_SIGMA = 8.333;
-
-// Guard rails for display ELO to avoid absurd values (e.g. huge negatives).
-// These only affect the stored/displayed "Skill Rating", not the underlying
-// OpenSkill mu/sigma values.
-const MIN_DISPLAY_ELO = 0;
-const MAX_DISPLAY_ELO = 5000;
+export { eloToOpenSkill, openSkillToDisplayElo };
 
 /**
- * Convert admin's "Skill Rating" input to OpenSkill rating
- * @param elo - Admin-facing Skill Rating number
- * @param matchCount - Number of matches played (for sigma adjustment)
- * @returns OpenSkill Rating object
+ * Undo a tournament's rating changes before its matches are deleted. The
+ * history rows cascade away with the matches; the players' ratings did not,
+ * so every reset run stacked on the last (QA 2.4.11: a player seeded at 1500
+ * sat at 2163 with no history).
  */
-export function eloToOpenSkill(elo: number, matchCount: number = 0): Rating {
-  // Map display ELO -> OpenSkill by inverting the ordinal mapping:
-  //   ordinal(rating) = mu - 3 * sigma
-  //   displayElo      = ordinal * ELO_SCALE + ELO_OFFSET
-  //
-  // So for a desired display ELO, we first find the target ordinal, then set:
-  //   mu = targetOrdinal + 3 * sigma
-  //
-  // This keeps 1500 Skill Rating aligned with the OpenSkill default
-  // (mu ≈ 25, sigma ≈ 8.333 ⇒ ordinal ≈ 0 ⇒ 1500).
-
-  // Sigma decreases with experience
-  // New: 8.33, After 10 matches: 6.0, After 30: 4.0, Min: 2.0
-  const sigma = Math.max(2.0, DEFAULT_SIGMA - Math.min(matchCount * 0.2, 6.33));
-
-  const targetOrdinal = (elo - ELO_OFFSET) / ELO_SCALE;
-  const mu = targetOrdinal + 3 * sigma;
-
-  return rating({ mu, sigma });
-}
-
-/**
- * Convert OpenSkill rating back to "ELO" for display
- * Uses ordinal() which returns mu - 3*sigma (conservative estimate)
- * @param rating - OpenSkill Rating object
- * @returns Display ELO number
- */
-export function openSkillToDisplayElo(rating: Rating): number {
-  const ordinalValue = ordinal(rating);
-  const raw = Math.round(ordinalValue * ELO_SCALE + ELO_OFFSET);
-  // Clamp to a sane range for display/storage.
-  if (!Number.isFinite(raw)) {
-    return ELO_OFFSET;
+export async function revertTournamentRatings(tournamentId: number): Promise<number> {
+  const rows = await db.queryAsync<RatingHistoryRow>(
+    `SELECT prh.id, prh.player_id, prh.match_slug, prh.elo_before, prh.mu_before,
+            prh.sigma_before, prh.created_at
+       FROM player_rating_history prh
+       JOIN matches m ON m.slug = prh.match_slug
+      WHERE m.tournament_id = ?`,
+    [tournamentId]
+  );
+  const rollbacks = ratingRollbacks(rows);
+  const now = Math.floor(Date.now() / 1000);
+  for (const rb of rollbacks) {
+    await db.runAsync(
+      `UPDATE players
+          SET current_elo = ?, openskill_mu = ?, openskill_sigma = ?,
+              match_count = GREATEST(0, match_count - ?), updated_at = ?
+        WHERE id = ?`,
+      [rb.elo, rb.mu, rb.sigma, rb.matches, now, rb.playerId]
+    );
   }
-  return Math.min(MAX_DISPLAY_ELO, Math.max(MIN_DISPLAY_ELO, raw));
+  if (rollbacks.length > 0) {
+    log.info(`[RATINGS] Reverted tournament ${tournamentId} ratings for ${rollbacks.length} player(s)`);
+  }
+  return rollbacks.length;
 }
 
 /**
@@ -112,18 +99,16 @@ export async function updatePlayerRatings(
     const team1PlayerData = players.filter((p) => team1Players.includes(p.id));
     const team2PlayerData = players.filter((p) => team2Players.includes(p.id));
 
-    // Convert to OpenSkill ratings
-    const team1Ratings = team1PlayerData.map((p) =>
-      rating({ mu: p.openskill_mu, sigma: p.openskill_sigma })
-    );
-    const team2Ratings = team2PlayerData.map((p) =>
-      rating({ mu: p.openskill_mu, sigma: p.openskill_sigma })
-    );
-
     // Update using OpenSkill
-    const teams = [team1Ratings, team2Ratings];
-    const ranks = team1Won ? [1, 2] : [2, 1]; // Lower rank = better (win)
-    const [newTeam1Ratings, newTeam2Ratings] = rate(teams, { rank: ranks });
+    const toSkill = (p: { openskill_mu: number; openskill_sigma: number }) => ({
+      mu: p.openskill_mu,
+      sigma: p.openskill_sigma,
+    });
+    const [newTeam1Ratings, newTeam2Ratings] = computeTeamRatingUpdate(
+      team1PlayerData.map(toSkill),
+      team2PlayerData.map(toSkill),
+      team1Won
+    );
 
     // Get tournament's template ID (if any)
     const match = await db.queryOneAsync<{ tournament_id: number }>(
