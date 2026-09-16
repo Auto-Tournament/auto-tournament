@@ -40,12 +40,23 @@ export async function handleMatchEvent(event: MatchZyEvent): Promise<void> {
 
   switch (event.event) {
     // Match Lifecycle Events
-    case 'series_start':
-      log.success(`Series started: ${eventData.team1_name} vs ${eventData.team2_name}`, {
+    case 'series_start': {
+      // MatchZy sends the names nested (team1.name); the flat *_name fields it
+      // used to log were always undefined.
+      const seriesTeam1 =
+        (eventData.team1 as { name?: string } | undefined)?.name ??
+        (eventData.team1_name as string | undefined) ??
+        'team1';
+      const seriesTeam2 =
+        (eventData.team2 as { name?: string } | undefined)?.name ??
+        (eventData.team2_name as string | undefined) ??
+        'team2';
+      log.success(`Series started: ${seriesTeam1} vs ${seriesTeam2}`, {
         matchId: event.matchid,
         format: `BO${eventData.num_maps}`,
       });
       break;
+    }
 
     case 'map_picked':
       log.info(`Map picked: ${eventData.map_name} (Map ${eventData.map_number})`, {
@@ -1321,9 +1332,22 @@ async function persistPlayerMatchStats(options: {
 
   const now = Math.floor(Date.now() / 1000);
 
+  // Look players up by steamid, not by which side the payload filed them under.
+  // MatchZy has shipped payloads that list team2's players inside the `team1`
+  // block, which made every one of those players land on 0 kills / 0 damage /
+  // 0.0 ADR in their match history. Matching on steamid is correct either way.
+  const statsBySteamId = new Map<string, Record<string, unknown>>();
+  for (const sideStats of [team1PlayerStats, team2PlayerStats]) {
+    for (const [steamId, stats] of Object.entries(sideStats)) {
+      if (steamId) statsBySteamId.set(steamId.toLowerCase(), stats);
+    }
+  }
+  const statsFor = (steamId: string): Record<string, unknown> =>
+    statsBySteamId.get((steamId || '').toLowerCase()) ?? {};
+
   // Store stats for team1 players
   for (const player of team1Players) {
-    const stats = (team1PlayerStats[player.steamId] || {}) as {
+    const stats = statsFor(player.steamId) as {
       rounds_played?: number;
       roundsPlayed?: number;
       damage?: number;
@@ -1367,7 +1391,7 @@ async function persistPlayerMatchStats(options: {
 
   // Store stats for team2 players
   for (const player of team2Players) {
-    const stats = (team2PlayerStats[player.steamId] || {}) as {
+    const stats = statsFor(player.steamId) as {
       rounds_played?: number;
       roundsPlayed?: number;
       damage?: number;

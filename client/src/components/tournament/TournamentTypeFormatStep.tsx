@@ -9,6 +9,7 @@ import {
   Stack,
   Alert,
 } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { MATCH_FORMATS } from '../../constants/tournament';
 import { TournamentTypeSelector } from './TournamentTypeSelector';
 
@@ -29,6 +30,7 @@ export function TournamentTypeFormatStep({
   onTypeChange,
   onFormatChange,
 }: TournamentTypeFormatStepProps) {
+  const { t } = useTranslation();
   const isShuffle = type === 'shuffle';
 
   return (
@@ -78,7 +80,7 @@ export function TournamentTypeFormatStep({
                             </Typography>
                             {isSelected && (
                               <Chip
-                                label="Selected"
+                                label={t('tournament.typeSelector.selectedChip')}
                                 size="small"
                                 color="primary"
                                 sx={{ height: 24, flexShrink: 0 }}
@@ -97,9 +99,7 @@ export function TournamentTypeFormatStep({
 
         {isShuffle && (
           <Alert severity="info">
-            <Typography variant="body2">
-              Shuffle tournaments use Best of 1 format. Each match is a single map.
-            </Typography>
+            <Typography variant="body2">{t('tournament.formatStep.shuffleInfo')}</Typography>
           </Alert>
         )}
       </Stack>

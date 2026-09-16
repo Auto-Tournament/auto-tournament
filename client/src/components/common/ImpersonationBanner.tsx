@@ -13,10 +13,37 @@ import { useAuth } from '../../contexts/AuthContext';
  * It is deliberately loud and always visible: impersonation changes who the API
  * thinks you are, so it must never be possible to forget it is on.
  */
+/**
+ * CSS variable holding the banner's height, so the admin layout can offset its
+ * fixed header and drawers instead of painting over the banner (which made the
+ * "stop impersonating" button unclickable at desktop width).
+ */
+const BANNER_HEIGHT_VAR = '--mat-impersonation-height';
+
 export function ImpersonationBanner() {
   const { impersonation, stopImpersonation } = useAuth();
   const { t } = useTranslation();
   const [stopping, setStopping] = React.useState(false);
+  const bannerRef = React.useRef<HTMLDivElement | null>(null);
+
+  React.useLayoutEffect(() => {
+    const node = bannerRef.current;
+    const root = document.documentElement;
+    if (!node) {
+      root.style.setProperty(BANNER_HEIGHT_VAR, '0px');
+      return;
+    }
+
+    const apply = () => root.style.setProperty(BANNER_HEIGHT_VAR, `${node.offsetHeight}px`);
+    apply();
+
+    const observer = new ResizeObserver(apply);
+    observer.observe(node);
+    return () => {
+      observer.disconnect();
+      root.style.setProperty(BANNER_HEIGHT_VAR, '0px');
+    };
+  }, [impersonation]);
 
   if (!impersonation) {
     return null;
@@ -37,10 +64,12 @@ export function ImpersonationBanner() {
 
   return (
     <Box
+      ref={bannerRef}
       sx={{
         position: 'sticky',
         top: 0,
-        zIndex: (theme) => theme.zIndex.appBar + 2,
+        // Above the admin layout's fixed AppBar (drawer + 1) and drawers.
+        zIndex: (theme) => theme.zIndex.drawer + 2,
       }}
       data-testid="impersonation-banner"
     >

@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Impossible de charger les matchs",
-      "loadTitle": "Erreur lors du chargement des matchs"
+      "loadTitle": "Erreur lors du chargement des matchs",
+      "bulkDelete": "Impossible de supprimer un ou plusieurs matchs"
     },
     "allocation": {
       "nextServers": "Prochaine allocation de serveurs dans {{seconds}}s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Supprimer des matchs manuels",
-      "message": "Voulez-vous vraiment supprimer {{count}} match{{suffix}} manuel{{suffix}} ? Cette action est irréversible."
+      "message": "Voulez-vous vraiment supprimer {{count}} match{{suffix}} manuel{{suffix}} ? Cette action est irréversible.",
+      "deleted_one": "{{count}} match supprimé",
+      "deleted_other": "{{count}} matchs supprimés"
+    },
+    "card": {
+      "matchNumber": "Match n°{{number}}",
+      "server": "Serveur : {{name}}",
+      "queuePosition": "Position dans la file : n°{{position}}",
+      "waitingForServers": "En attente de serveurs...",
+      "allocatingNow": "Attribution en cours...",
+      "allocatesIn": "Attribution dans {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manuel",
+      "manual": "Manuel",
+      "simulation": "Simulation",
+      "winner": "VAINQUEUR",
+      "mapN": "Carte {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "FORFAIT",
+      "waitingForTournament": "EN ATTENTE DU DÉBUT DU TOURNOI",
+      "waitingForServer": "EN ATTENTE DE SERVEUR",
+      "vetoPending": "VETO EN ATTENTE",
+      "mapVeto": "VETO DES CARTES",
+      "serverAllocated": "SERVEUR ATTRIBUÉ",
+      "warmup": "ÉCHAUFFEMENT",
+      "overtime": "PROLONGATION N°{{n}}",
+      "live": "EN DIRECT",
+      "completed": "TERMINÉ",
+      "cancelled": "ANNULÉ"
+    },
+    "statusGuide": {
+      "title": "Guide des statuts de match",
+      "pending": "Le match est planifié mais pas encore attribué à un serveur. Il sera attribué dès qu'un serveur sera disponible.",
+      "loaded": "Le match est chargé sur le serveur et en échauffement. Les joueurs doivent se connecter et se déclarer prêts pour commencer.",
+      "live": "Le match est en cours sur son serveur.",
+      "completed": "Le match est terminé. Le vainqueur est connu et l'arbre a été mis à jour.",
+      "proTipTitle": "Astuce :",
+      "proTip": "Quand un match affiche « En attente des joueurs (X/Y) », le serveur est prêt et les joueurs doivent se connecter. Dès que tous les joueurs attendus sont connectés et prêts, le match démarre automatiquement."
+    },
+    "allocationWidget": {
+      "title": "État d'attribution des serveurs",
+      "available": "Disponibles :",
+      "busy": "Occupés :",
+      "cooling": "En refroidissement :",
+      "offline": "Hors ligne :",
+      "waitingMatches_one": "En attente : {{count}} match",
+      "waitingMatches_other": "En attente : {{count}} matchs",
+      "statusLine": "Statut : {{status}}",
+      "statusReady": "Prêt",
+      "statusCooling": "Refroidissement",
+      "statusBusy": "Occupé",
+      "statusOffline": "Hors ligne",
+      "readyIn": "Prêt dans : {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Supprimer ce match ?",
       "confirmBody": "Voulez-vous vraiment supprimer le match \"{{slug}}\" ? Cette action est irréversible.",
       "button": "Supprimer le match"
+    },
+    "roster": {
+      "title": "Effectif",
+      "yourTeam": "Votre équipe",
+      "openPlayerPage": "Ouvrir la page du joueur",
+      "ready": "PRÊT",
+      "connected": "CONNECTÉ",
+      "offline": "HORS LIGNE"
     }
   },
   "bulkShuffleMatchesModal": {

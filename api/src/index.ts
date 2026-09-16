@@ -118,6 +118,9 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+/** Paths the client polls on a timer; see the request logger below. */
+const POLLED_ENDPOINTS = new Set(['/api/auth/me']);
+
 // Request logging middleware
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
@@ -145,11 +148,18 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       return;
     }
 
+    // Endpoints the client polls constantly. Successful calls to them say
+    // nothing and drown the log, so they only get a debug line; anything that
+    // actually failed still logs at warn/error below.
+    const isPolledEndpoint = POLLED_ENDPOINTS.has(path);
+
     // Log with appropriate level based on status code
     if (statusCode >= 500) {
       log.error(`${method} ${path}`, undefined, { statusCode, duration });
     } else if (statusCode >= 400) {
       log.warn(`${method} ${path}`, { statusCode, duration });
+    } else if (isPolledEndpoint) {
+      log.debug(`[HTTP] ${method} ${path} -> ${statusCode}`, { statusCode, duration });
     } else {
       log.request(method, path, statusCode);
     }

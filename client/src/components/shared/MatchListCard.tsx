@@ -9,12 +9,11 @@ import {
 } from '../../utils/matchFlags';
 import type { Match, MatchLiveStats } from '../../types';
 import {
-  CURRENT_MAP_SCORE_LABEL,
-  SERIES_SCORE_LABEL,
   deriveCurrentMapScore,
   deriveSeriesScore,
 } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
+import { useTranslation } from 'react-i18next';
 
 interface MatchListCardProps {
   match: Match;
@@ -31,6 +30,7 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   onClick,
   scoreDisplayMode = 'auto',
 }) => {
+  const { t } = useTranslation();
   const bracketMatch = match as Match & { liveStats?: MatchLiveStats | null };
   const matchLike = match as unknown as MatchLike;
   const shuffle = isShuffleMatch(matchLike);
@@ -144,7 +144,9 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
   // In the bracket list view we want to emphasise the map number rather than
   // the round label, so always show "Map N" (defaulting to Map 1 when unknown).
   const metaLabel =
-    typeof match.mapNumber === 'number' ? `Map ${match.mapNumber + 1}` : 'Map 1';
+    t('matchesPage.card.mapN', {
+      n: typeof match.mapNumber === 'number' ? match.mapNumber + 1 : 1,
+    });
 
   const tooltipTitle = (() => {
     if (scoreDisplayMode === 'series') {
@@ -157,10 +159,12 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
         (match.status === 'live' || match.status === 'loaded') &&
         (current.source === 'liveStats' || current.team1 !== 0 || current.team2 !== 0);
       return hasLiveRounds
-        ? `${CURRENT_MAP_SCORE_LABEL}: ${current.team1} - ${current.team2}`
-        : `${SERIES_SCORE_LABEL}: ${series.team1} - ${series.team2}`;
+        ? `${t('matchInfo.scoreboard.currentMapScore')}: ${current.team1} - ${current.team2}`
+        : `${t('matchInfo.scoreboard.mapsWon')}: ${series.team1} - ${series.team2}`;
     }
-    return match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL;
+    return match.status === 'completed'
+      ? t('matchInfo.scoreboard.mapsWon')
+      : t('matchInfo.scoreboard.currentMapScore');
   })();
 
   const getBorderColor = () => {
@@ -299,14 +303,19 @@ export const MatchListCard: React.FC<MatchListCardProps> = ({
           <Box display="flex" alignItems="center" gap={0.5}>
             {shuffle && (
               <Chip
-                label={manual ? 'Shuffle manual' : 'Shuffle'}
+                label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
                 size="small"
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
               />
             )}
             {!shuffle && manual && (
-              <Chip label="Manual" size="small" variant="outlined" sx={{ fontWeight: 500 }} />
+              <Chip
+                label={t('matchesPage.card.manual')}
+                size="small"
+                variant="outlined"
+                sx={{ fontWeight: 500 }}
+              />
             )}
             <Chip
               label={getStatusLabel(

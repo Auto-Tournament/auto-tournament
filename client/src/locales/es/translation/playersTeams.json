@@ -76,7 +76,22 @@
     "demo": "Demo",
     "downloadDemo": "Descargar demo",
     "showingLastMatches": "Mostrando los últimos {{shown}} partidos. Total: {{total}}",
-    "noMatchesYet": "Aún no hay partidos"
+    "noMatchesYet": "Aún no hay partidos",
+    "pageTitle": "{{name}} – perfil del jugador",
+    "loadFailed": "No se pudieron cargar los datos del jugador",
+    "eloChart": {
+      "title": "Evolución del ELO",
+      "noHistory": "No hay historial de clasificación disponible",
+      "startingElo": "ELO inicial",
+      "currentElo": "ELO actual",
+      "totalChange": "Cambio total"
+    },
+    "performanceChart": {
+      "title": "Tendencias de rendimiento",
+      "noData": "Aún no hay datos de rendimiento significativos: juega algunas rondas para ver las tendencias de ADR y K/D.",
+      "avgAdr": "ADR: {{value}} med.",
+      "avgKd": "K/D: {{value}} med."
+    }
   },
   "teamPage": {
     "wantYourStats": "¿Quieres ver tus propias estadísticas e historial de partidos?",

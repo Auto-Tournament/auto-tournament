@@ -76,7 +76,22 @@
     "demo": "Demo",
     "downloadDemo": "Last ned demo",
     "showingLastMatches": "Viser de siste {{shown}} kampene. Totalt: {{total}}",
-    "noMatchesYet": "Ingen kamper ennå"
+    "noMatchesYet": "Ingen kamper ennå",
+    "pageTitle": "{{name}} – spillerprofil",
+    "loadFailed": "Kunne ikke laste spillerdata",
+    "eloChart": {
+      "title": "ELO-utvikling",
+      "noHistory": "Ingen ratinghistorikk tilgjengelig",
+      "startingElo": "Start-ELO",
+      "currentElo": "Nåværende ELO",
+      "totalChange": "Total endring"
+    },
+    "performanceChart": {
+      "title": "Prestasjonsutvikling",
+      "noData": "Ingen meningsfylte prestasjonsdata ennå – spill noen runder for å se ADR- og K/D-utvikling.",
+      "avgAdr": "ADR: {{value}} snitt",
+      "avgKd": "K/D: {{value}} snitt"
+    }
   },
   "teamPage": {
     "wantYourStats": "Vil du se din egen statistikk og kamphistorikk?",
@@ -277,36 +292,36 @@
     "vetoCompleted": "Veto fullført!",
     "vetoCompletedSubtitle": "Kartvalget er fullført. Kampen starter snart.",
     "selectedMaps": "Valgte kart",
-    "yourTurnToBan": "DITT LAGS TUR TIL Å BANNE ET KART",
+    "yourTurnToBan": "DITT LAGS TUR TIL Å FJERNE ET KART",
     "yourTurnToPick": "DITT LAGS TUR TIL Å VELGE ET KART",
     "yourTurnToChooseSide": "DITT LAGS TUR TIL Å VELGE SIDE",
     "clickMapToConfirm": "Klikk på ett av de uthevede kartene nedenfor for å bekrefte valget ditt.",
-    "waitingToBan": "Venter på at {{team}} banne et kart",
+    "waitingToBan": "Venter på at {{team}} fjerner et kart",
     "waitingToPick": "Venter på at {{team}} velger et kart",
-    "waitingToChooseSide": "Venter på at {{team}} velger en side",
+    "waitingToChooseSide": "Venter på at {{team}} velger side",
     "pageUpdatesAutomatically": "Hold denne siden åpen – den oppdateres automatisk når det er din tur.",
     "stepOf": "Trinn {{current}} av {{total}}",
-    "banPhase": "Bannefase",
-    "pickPhase": "Plukke-fase",
+    "banPhase": "Fjerningsfase",
+    "pickPhase": "Valgfase",
     "sideChoice": "Sidevalg",
     "chooseYourStartingSide": "Velg din startside",
     "waitingForSidePick": "Venter på at {{team}} velger startside...",
-    "counterTerrorist": "Counterterrorist",
+    "counterTerrorist": "Counter-Terrorist",
     "terrorist": "Terrorist",
     "vetoHistory": "Veto-historikk",
     "historyStep": "Trinn {{step}}:",
-    "startingSide": "Start {{side}}",
+    "startingSide": "Starter som {{side}}",
     "otherTeam": "det andre laget",
     "actionLabels": {
-      "ban": "BAN",
-      "pick": "VALG",
+      "ban": "FJERNET",
+      "pick": "VALGTE",
       "side_pick": "SIDEVALG"
     },
     "mapBadge": "KART {{n}}",
     "mapCardAria": {
-      "ban": "Bann {{map}}",
+      "ban": "Fjern {{map}}",
       "pick": "Velg {{map}}",
-      "banned": "{{map}} (bannet)",
+      "banned": "{{map}} (fjernet)",
       "picked": "{{map}} (valgt)"
     },
     "errors": {

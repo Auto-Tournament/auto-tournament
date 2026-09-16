@@ -5,6 +5,7 @@ import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
 import SportsEsportsIcon from '@mui/icons-material/SportsEsports';
 import CloudOffIcon from '@mui/icons-material/CloudOff';
 import type { ServerAllocationInfo } from '../../types';
+import { useTranslation } from 'react-i18next';
 
 interface ServerAllocationWidgetProps {
   servers: ServerAllocationInfo[];
@@ -17,6 +18,7 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
   gracePeriodSeconds,
   requiredServerCount = 0,
 }) => {
+  const { t } = useTranslation();
   // Initialize local countdowns from server data using useMemo to avoid setState in effect
   const initialCountdowns = React.useMemo(() => {
     const countdowns = new Map<string, number>();
@@ -90,7 +92,7 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
       return `${server.name} (${formatTime(countdown)})`;
     }
     if (server.matchNumber !== null) {
-      return `${server.name} (Match #${server.matchNumber})`;
+      return `${server.name} (${t('matchesPage.card.matchNumber', { number: server.matchNumber })})`;
     }
     return server.name;
   };
@@ -99,24 +101,24 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
     <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
       <Box mb={2}>
         <Typography variant="h6" gutterBottom>
-          Server Allocation Status
+          {t('matchesPage.allocationWidget.title')}
         </Typography>
         <Stack direction="row" spacing={2} alignItems="center">
           <Typography variant="body2" color="text.secondary">
-            Available: <strong>{availableServers.length}</strong>
+            {t('matchesPage.allocationWidget.available')} <strong>{availableServers.length}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Busy: <strong>{busyServers.length}</strong>
+            {t('matchesPage.allocationWidget.busy')} <strong>{busyServers.length}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Cooling: <strong>{coolingServers.length}</strong>
+            {t('matchesPage.allocationWidget.cooling')} <strong>{coolingServers.length}</strong>
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Offline: <strong>{offlineServers.length}</strong>
+            {t('matchesPage.allocationWidget.offline')} <strong>{offlineServers.length}</strong>
           </Typography>
           {requiredServerCount > 0 && (
             <Typography variant="body2" color="warning.main" fontWeight={600}>
-              Waiting: <strong>{requiredServerCount}</strong> match{requiredServerCount !== 1 ? 'es' : ''}
+              {t('matchesPage.allocationWidget.waitingMatches', { count: requiredServerCount })}
             </Typography>
           )}
         </Stack>
@@ -136,17 +138,25 @@ export const ServerAllocationWidget: React.FC<ServerAllocationWidgetProps> = ({
               title={
                 <Box>
                   <Typography variant="caption" display="block">
-                    Status: {server.online ? (server.allocatable ? 'Ready' : server.inGraceWindow ? 'Cooling' : 'Busy') : 'Offline'}
+                    {t('matchesPage.allocationWidget.statusLine', {
+                      status: server.online
+                        ? server.allocatable
+                          ? t('matchesPage.allocationWidget.statusReady')
+                          : server.inGraceWindow
+                            ? t('matchesPage.allocationWidget.statusCooling')
+                            : t('matchesPage.allocationWidget.statusBusy')
+                        : t('matchesPage.allocationWidget.statusOffline'),
+                    })}
                   </Typography>
                   {server.matchNumber !== null && (
                     <Typography variant="caption" display="block">
-                      Match: #{server.matchNumber}
-                      {server.matchRound === 0 && ' (Manual)'}
+                      {t('matchesPage.card.matchNumber', { number: server.matchNumber })}
+                      {server.matchRound === 0 && ` (${t('matchesPage.card.manual')})`}
                     </Typography>
                   )}
                   {countdown !== undefined && countdown > 0 && (
                     <Typography variant="caption" display="block">
-                      Ready in: {formatTime(countdown)}
+                      {t('matchesPage.allocationWidget.readyIn', { time: formatTime(countdown) })}
                     </Typography>
                   )}
                 </Box>

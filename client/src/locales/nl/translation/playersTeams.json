@@ -76,7 +76,22 @@
     "demo": "Demo",
     "downloadDemo": "Demo downloaden",
     "showingLastMatches": "Laatste {{shown}} wedstrijden worden getoond. Totaal: {{total}}",
-    "noMatchesYet": "Nog geen wedstrijden"
+    "noMatchesYet": "Nog geen wedstrijden",
+    "pageTitle": "{{name}} – spelersprofiel",
+    "loadFailed": "Kan spelersgegevens niet laden",
+    "eloChart": {
+      "title": "ELO-verloop",
+      "noHistory": "Geen ratinggeschiedenis beschikbaar",
+      "startingElo": "Start-ELO",
+      "currentElo": "Huidige ELO",
+      "totalChange": "Totale verandering"
+    },
+    "performanceChart": {
+      "title": "Prestatietrends",
+      "noData": "Nog geen bruikbare prestatiegegevens – speel een paar rondes om ADR- en K/D-trends te zien.",
+      "avgAdr": "ADR: {{value}} gem.",
+      "avgKd": "K/D: {{value}} gem."
+    }
   },
   "teamPage": {
     "wantYourStats": "Wil je je eigen stats en wedstrijdgeschiedenis zien?",

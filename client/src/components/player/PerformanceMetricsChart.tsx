@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper, Stack, Chip } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 interface PerformanceMetricsChartProps {
   matchHistory: Array<{
@@ -13,6 +14,7 @@ interface PerformanceMetricsChartProps {
 }
 
 export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChartProps) {
+  const { t } = useTranslation();
   const [chartWidth, setChartWidth] = useState(600);
   const containerRef = useRef<HTMLDivElement>(null);
   const theme = useTheme();
@@ -102,11 +104,11 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
     return (
       <Paper variant="outlined" sx={{ p: 2 }}>
         <Typography variant="h6" fontWeight={600} gutterBottom>
-          Performance Trends
+          {t('playerPage.performanceChart.title')}
         </Typography>
         <Box textAlign="center" py={2}>
           <Typography variant="body2" color="text.secondary">
-            No meaningful performance data yet – play a few rounds to see ADR and K/D trends.
+            {t('playerPage.performanceChart.noData')}
           </Typography>
         </Box>
       </Paper>
@@ -157,7 +159,7 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
       <Typography variant="h6" fontWeight={600} gutterBottom>
-        Performance Trends
+        {t('playerPage.performanceChart.title')}
       </Typography>
       <Box ref={containerRef} sx={{ width: '100%', overflow: 'hidden' }}>
         <svg width={chartWidth} height={chartHeight + 60} style={{ display: 'block' }}>
@@ -331,14 +333,14 @@ export function PerformanceMetricsChart({ matchHistory }: PerformanceMetricsChar
         {/* Legend and summary */}
         <Stack direction="row" spacing={2} mt={2} flexWrap="wrap">
           <Chip
-            label={`ADR: ${avgAdr.toFixed(1)} avg`}
+            label={t('playerPage.performanceChart.avgAdr', { value: avgAdr.toFixed(1) })}
             size="small"
             color="success"
             sx={{ fontWeight: 500 }}
           />
           {avgKd > 0 && (
             <Chip
-              label={`K/D: ${avgKd.toFixed(2)} avg`}
+              label={t('playerPage.performanceChart.avgKd', { value: avgKd.toFixed(2) })}
               size="small"
               color="info"
               sx={{ fontWeight: 500 }}

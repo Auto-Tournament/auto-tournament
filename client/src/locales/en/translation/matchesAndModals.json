@@ -2,7 +2,8 @@
   "matchesPage": {
     "errors": {
       "loadMatches": "Failed to load matches",
-      "loadTitle": "Error loading matches"
+      "loadTitle": "Error loading matches",
+      "bulkDelete": "Failed to delete one or more matches"
     },
     "allocation": {
       "nextServers": "Next servers allocated in {{seconds}}s"
@@ -33,7 +34,60 @@
     },
     "bulkDelete": {
       "title": "Delete Manual Matches",
-      "message": "Are you sure you want to delete {{count}} manual match{{suffix}}? This action cannot be undone."
+      "message": "Are you sure you want to delete {{count}} manual match{{suffix}}? This action cannot be undone.",
+      "deleted_one": "Deleted {{count}} match",
+      "deleted_other": "Deleted {{count}} matches"
+    },
+    "card": {
+      "matchNumber": "Match #{{number}}",
+      "server": "Server: {{name}}",
+      "queuePosition": "Queue Position: #{{position}}",
+      "waitingForServers": "Waiting for servers...",
+      "allocatingNow": "Allocating now...",
+      "allocatesIn": "Allocates in {{time}}",
+      "shuffle": "Shuffle",
+      "shuffleManual": "Shuffle manual",
+      "manual": "Manual",
+      "simulation": "Simulation",
+      "winner": "WINNER",
+      "mapN": "Map {{n}}"
+    },
+    "statusLabel": {
+      "walkover": "WALKOVER",
+      "waitingForTournament": "WAITING FOR TOURNAMENT TO START",
+      "waitingForServer": "WAITING FOR SERVER",
+      "vetoPending": "VETO PENDING",
+      "mapVeto": "MAP VETO",
+      "serverAllocated": "SERVER ALLOCATED",
+      "warmup": "WARMUP",
+      "overtime": "OVERTIME #{{n}}",
+      "live": "LIVE",
+      "completed": "COMPLETED",
+      "cancelled": "CANCELLED"
+    },
+    "statusGuide": {
+      "title": "Match Status Guide",
+      "pending": "Match is scheduled but not yet assigned to a server. Will be allocated when a server becomes available.",
+      "loaded": "Match is loaded on the server and in warmup mode. Players should connect and ready up to start.",
+      "live": "Match is being played on its server.",
+      "completed": "Match has finished. Winner has been determined and bracket has been updated.",
+      "proTipTitle": "Pro Tip:",
+      "proTip": "When a match shows \"Waiting for players (X/Y)\", the server is ready and players should connect. Once all expected players connect and ready up, the match will automatically start."
+    },
+    "allocationWidget": {
+      "title": "Server Allocation Status",
+      "available": "Available:",
+      "busy": "Busy:",
+      "cooling": "Cooling:",
+      "offline": "Offline:",
+      "waitingMatches_one": "Waiting: {{count}} match",
+      "waitingMatches_other": "Waiting: {{count}} matches",
+      "statusLine": "Status: {{status}}",
+      "statusReady": "Ready",
+      "statusCooling": "Cooling",
+      "statusBusy": "Busy",
+      "statusOffline": "Offline",
+      "readyIn": "Ready in: {{time}}"
     }
   },
   "manualMatchModal": {
@@ -88,6 +142,14 @@
       "confirmTitle": "Delete this match?",
       "confirmBody": "Are you sure you want to delete match \"{{slug}}\"? This action cannot be undone.",
       "button": "Delete Match"
+    },
+    "roster": {
+      "title": "Player Roster",
+      "yourTeam": "Your Team",
+      "openPlayerPage": "Open player page",
+      "ready": "READY",
+      "connected": "CONNECTED",
+      "offline": "OFFLINE"
     }
   },
   "bulkShuffleMatchesModal": {

@@ -51,7 +51,7 @@
         "typeLabel": "Type de tournoi",
         "formatLabel": "Format de match",
         "notSet": "Non défini",
-        "estimatedVolume": "Environ {{matches}} match{{matches, plural, one {} other {s}}} sur {{rounds}} tour{{rounds, plural, one {} other {s}}} (best of {{mapsPerMatch}}, jusqu’à {{totalMaps}} carte{{totalMaps, plural, one {} other {s}}} au total)."
+        "estimatedVolumeText": "Environ {{matches}} sur {{rounds}} (best of {{mapsPerMatch}}, jusqu’à {{maps}} au total)."
       }
     },
     "formSteps": {
@@ -75,12 +75,328 @@
       "createTournament": "Créer un tournoi"
     },
     "nameLabel": "Nom du tournoi",
-    "namePlaceholder": "Tournoi MAT Printemps 2025"
+    "namePlaceholder": "Tournoi MAT Printemps 2025",
+    "champion": {
+      "title": "Champion"
+    },
+    "page": {
+      "title": "Configuration du tournoi"
+    },
+    "labels": {
+      "teams": "Équipes",
+      "maps": "Cartes",
+      "format": "Format",
+      "players": "Joueurs",
+      "matchRules": "Règles de match",
+      "servers": "Serveurs",
+      "overtimeSettings": "Réglages de prolongation",
+      "mapPool": "Pool de cartes"
+    },
+    "tooltips": {
+      "deleteTournament": "Supprimer définitivement ce tournoi et toutes ses données"
+    },
+    "counts": {
+      "teams_one": "{{count}} équipe",
+      "teams_other": "{{count}} équipes",
+      "matches_one": "{{count}} match",
+      "matches_other": "{{count}} matchs",
+      "rounds_one": "{{count}} tour",
+      "rounds_other": "{{count}} tours",
+      "maps_one": "{{count}} carte",
+      "maps_other": "{{count}} cartes",
+      "servers_one": "{{count}} serveur",
+      "servers_other": "{{count}} serveurs",
+      "availableServers_one": "{{count}} serveur disponible",
+      "availableServers_other": "{{count}} serveurs disponibles",
+      "concurrentMatches_one": "{{count}} match simultané",
+      "concurrentMatches_other": "{{count}} matchs simultanés"
+    },
+    "matchRules": {
+      "value": "{{maxRounds}} tours maximum par carte ; le premier à {{winRounds}} tours l’emporte.",
+      "teamSizeValue": "Taille des équipes : {{size}}v{{size}}",
+      "overtimeEnabled": "Prolongation : activée",
+      "overtimeDisabled": "Prolongation : désactivée (aucune prolongation)",
+      "overtimeDisabledNoDraws": "Prolongation : désactivée (pas de match nul – les dégâts départagent)",
+      "overtimeSegments_one": "Périodes de prolongation : {{count}} période",
+      "overtimeSegments_other": "Périodes de prolongation : {{count}} périodes",
+      "overtimeSegmentsDefault": "Périodes de prolongation : valeur par défaut de MatchZy",
+      "overtimeSegmentsDefaultUnlimited": "Périodes de prolongation : valeur par défaut de MatchZy (généralement illimitée)"
+    },
+    "toasts": {
+      "loadTemplateFailed": "Échec du chargement du modèle",
+      "nameRequired": "Le nom du tournoi est obligatoire",
+      "nameUpdated": "Nom du tournoi mis à jour",
+      "nameUpdateFailed": "Échec de la mise à jour du nom du tournoi",
+      "selectAtLeastOneMap": "Sélectionnez au moins 1 carte",
+      "maxRoundsRange": "Le nombre de tours maximum doit être compris entre 1 et 30",
+      "teamSizeRange": "La taille des équipes doit être comprise entre 2 et 10 joueurs",
+      "invalidTeamCount": "Nombre d’équipes invalide",
+      "selectAtLeastTwoTeams": "Sélectionnez au moins 2 équipes",
+      "shuffleCreated": "Le tournoi shuffle « {{name}} » a été créé ! Étape suivante : inscrivez au moins {{minPlayers}} joueurs pour lancer le tournoi (matchs en {{teamSize}}v{{teamSize}}).",
+      "shuffleCreateFailed": "Échec de la création du tournoi shuffle",
+      "shuffleCreateFailedRetry": "Échec de la création du tournoi shuffle. Vérifiez vos réglages et réessayez.",
+      "updated": "Tournoi mis à jour et arbre régénéré !",
+      "created": "Tournoi créé !",
+      "saveFailed": "Échec de l’enregistrement du tournoi",
+      "deleted": "Tournoi supprimé",
+      "deleteFailed": "Échec de la suppression du tournoi",
+      "regenerated": "Arbre du tournoi régénéré",
+      "regenerateFailed": "Échec de la régénération de l’arbre",
+      "resetDone": "Tournoi réinitialisé en mode configuration",
+      "resetFailed": "Échec de la réinitialisation du tournoi",
+      "started_one": "Tournoi lancé ! {{count}} match attribué aux serveurs.",
+      "started_other": "Tournoi lancé ! {{count}} matchs attribués aux serveurs.",
+      "startRequested": "Démarrage du tournoi demandé. Les serveurs seront attribués sous peu.",
+      "startFailed": "Échec du démarrage du tournoi",
+      "templateSaved": "Modèle enregistré !",
+      "disableServersFailed": "Impossible de désactiver un ou plusieurs serveurs : {{message}}",
+      "noChangesToSave": "Aucune modification à enregistrer",
+      "invalidMapSelection": "Sélection de cartes invalide"
+    },
+    "outdatedServers": {
+      "title": "Les serveurs doivent être mis à jour",
+      "body": "Selon Steam, un ou plusieurs serveurs activés ne sont pas à jour (ou n’ont pas pu être vérifiés). Mettez-les à jour ou désactivez-les pour continuer avec les serveurs restants.",
+      "confirm": "Désactiver les serveurs concernés et réessayer",
+      "disabling": "Désactivation…"
+    },
+    "live": {
+      "saveNameAria": "Enregistrer le nom du tournoi",
+      "cancelRenameAria": "Annuler le renommage du tournoi",
+      "editNameAria": "Modifier le nom du tournoi",
+      "renameTooltip": "Renommer le tournoi",
+      "alert": {
+        "liveTitle": "Le tournoi est en direct",
+        "liveBody": "Des matchs sont en cours sur les serveurs. Vous ne pouvez pas modifier les réglages du tournoi pendant qu’il est en direct (sauf son nom).",
+        "pendingTitle": "Tournoi en cours",
+        "pendingBody": "Les matchs démarreront dès que les serveurs seront attribués et les vetos terminés. Vous ne pouvez pas modifier les réglages du tournoi pendant qu’il se déroule (sauf son nom).",
+        "completedTitle": "Tournoi terminé",
+        "completedBody": "Tous les matchs de ce tournoi sont terminés. Créez un nouveau tournoi ou réinitialisez celui-ci pour recommencer."
+      },
+      "teamsCompeting_one": "{{count}} équipe en lice",
+      "teamsCompeting_other": "{{count}} équipes en lice",
+      "playersCompeting_one": "{{count}} joueur en lice",
+      "playersCompeting_other": "{{count}} joueurs en lice",
+      "playersCompetingUnknown": "Joueurs en lice",
+      "shuffleSettingsLabel": "Réglages shuffle",
+      "maxRoundsPerMapValue": "Tours maximum par carte : {{rounds}}",
+      "eloTemplateValue": "Modèle ELO : {{template}}",
+      "mapSequenceLabel": "Ordre des cartes (tours)",
+      "noMapsConfigured": "Aucune carte configurée pour l’instant.",
+      "viewBracket": "Voir l’arbre",
+      "viewBracketTooltip": "Voir l’arbre du tournoi et les détails des matchs",
+      "leaderboardTooltip": "Ouvrir le classement public à partager avec les joueurs",
+      "restartTooltip": "Terminer tous les matchs actifs sur les serveurs et les recharger (utile pour les matchs bloqués)",
+      "resetTooltip": "Terminer tous les matchs et réinitialiser le tournoi en mode configuration (conserve les réglages mais efface toutes les données de match)",
+      "reset": "Réinitialiser en configuration"
+    },
+    "reviewCard": {
+      "needPlayersWarning": "Il faut au moins {{minPlayers}} joueurs pour lancer le tournoi (matchs en {{teamSize}}v{{teamSize}}). Actuellement inscrits : {{registered}}",
+      "start": "Lancer le tournoi",
+      "starting": "Démarrage…",
+      "startSimulation": "Lancer la simulation",
+      "startingSimulation": "Démarrage de la simulation…",
+      "bulkCreateMatches": "Créer des matchs en masse",
+      "edit": "Modifier",
+      "regenerate": "Régénérer",
+      "regenerateTooltip": "Supprimer tous les matchs actuels et régénérer l’arbre avec les mêmes réglages.",
+      "regenerateDisabledTooltip": "Générez l’arbre au moins une fois (Enregistrer et générer l’arbre) avant de pouvoir le régénérer."
+    },
+    "dialogs": {
+      "items": {
+        "endMatches": "Terminer tous les matchs actifs sur les serveurs",
+        "deleteMatches": "Supprimer tous les matchs et les arbres",
+        "deleteData": "Supprimer toutes les données de match et les statistiques"
+      },
+      "delete": {
+        "title": "🗑️ Supprimer le tournoi",
+        "question": "Voulez-vous vraiment SUPPRIMER définitivement <b>« {{name}} »</b> ?",
+        "willTitle": "⚠️ Cette action va :",
+        "items": {
+          "removeTournament": "Supprimer complètement le tournoi",
+          "cannotBeUndone": "Action irréversible"
+        },
+        "note": "💡 Remarque : si vous voulez simplement recommencer avec les mêmes réglages, utilisez plutôt « Réinitialiser en configuration ».",
+        "confirm": "Supprimer définitivement"
+      },
+      "regenerate": {
+        "title": "🔄 Régénérer l’arbre",
+        "liveWarning": "⚠️ ATTENTION : le tournoi est {{status}} !",
+        "liveBody": "Régénérer l’arbre <b>SUPPRIMERA TOUTES</b> les données de match existantes, y compris les scores, les statistiques et l’historique des événements.",
+        "cannotBeUndone": "Cette action est irréversible.",
+        "areYouSure": "Êtes-vous absolument sûr de vouloir continuer ?",
+        "setupBody": "Cette action supprimera tous les matchs existants et régénérera l’arbre avec les mêmes réglages.",
+        "continue": "Continuer ?",
+        "confirmDestructive": "OUI, TOUT SUPPRIMER",
+        "confirm": "Régénérer"
+      },
+      "reset": {
+        "title": "🔄 Réinitialiser en configuration",
+        "question": "Réinitialiser <b>« {{name}} »</b> en mode CONFIGURATION ?",
+        "willTitle": "Cette action va :",
+        "items": {
+          "clearStatus": "Réinitialiser l’état du tournoi (retour à la configuration)",
+          "keepSettings": "<b>Conserver</b> les réglages du tournoi (nom, équipes, format)",
+          "allowEdit": "Vous permettre de modifier à nouveau les réglages"
+        },
+        "saveAgain": "Après la réinitialisation, vous devrez enregistrer à nouveau pour régénérer l’arbre.",
+        "note": "💡 Remarque : pour supprimer complètement le tournoi, utilisez plutôt « Supprimer ».",
+        "confirm": "Réinitialiser en configuration"
+      },
+      "start": {
+        "titleNoServers": "⚠️ Aucun serveur disponible",
+        "titleInsufficient": "⚠️ Serveurs insuffisants",
+        "titleUncertain": "⚠️ Lancer le tournoi sans serveurs ?",
+        "noServersHeading": "Aucun serveur n’est disponible actuellement",
+        "noServersBody": "Le tournoi démarrera, mais les matchs seront reportés jusqu’à ce qu’un serveur soit disponible. Le système attribuera automatiquement les matchs dès que des serveurs seront prêts.",
+        "insufficientHeading": "Pas assez de serveurs pour jouer tous les matchs du premier tour simultanément",
+        "insufficientBody": "Vous avez actuellement <b>{{available}}</b>, alors que le premier tour en attend <b>{{required}}</b>. Certains matchs seront mis en file d’attente et démarreront à mesure que des serveurs se libèrent.",
+        "uncertainHeading": "La disponibilité des serveurs est incertaine",
+        "uncertainBody": "Le tournoi peut démarrer avec peu ou aucun serveur disponible. Les matchs seront reportés jusqu’à ce que des serveurs soient disponibles, puis attribués automatiquement dès qu’ils seront prêts.",
+        "question": "Voulez-vous lancer le tournoi malgré tout ?",
+        "confirm": "Oui, lancer quand même",
+        "cancel": "Vérifier les serveurs"
+      }
+    },
+    "formActions": {
+      "saveAndGenerate": "Enregistrer et générer l’arbre",
+      "saveAsTemplate": "Enregistrer comme modèle",
+      "saveTemplateTooltip": "Enregistrer la configuration actuelle du tournoi comme modèle"
+    },
+    "wizard": {
+      "validation": {
+        "selectType": "Sélectionnez un type de tournoi",
+        "selectFormat": "Sélectionnez un format de match"
+      },
+      "shuffleInfo": "Les tournois shuffle n’utilisent pas d’équipes fixes. Les joueurs sont automatiquement répartis en équipes équilibrées à chaque match selon leur Skill Rating.",
+      "shuffleRounds": "Ce tournoi shuffle comptera environ {{rounds}} (un par carte sélectionnée).",
+      "volumeAlert": "Avec {{teams}} dans un tournoi {{type}} en {{format}}, cet arbre comptera environ {{matches}} répartis sur {{rounds}} (jusqu’à {{maps}} au total).",
+      "maxRoundsLabel": "Tours maximum par carte",
+      "maxRoundsHelper": "Chaque carte se joue en {{maxRounds}} tours maximum ; le premier à {{winRounds}} tours l’emporte.",
+      "maxRoundsHelperEmpty": "Nombre maximum de tours par carte (par défaut : 24, max : 30).",
+      "serversSummary": "{{servers}} configuré(s) ; {{required}} nécessaires pour jouer tous les matchs de cet arbre.",
+      "estimatedVolumeLabel": "Volume estimé",
+      "mapsHeading": "Cartes ({{total}})",
+      "noMapsSelected": "Aucune carte sélectionnée",
+      "matchConfiguration": "Configuration des matchs",
+      "roundLimitValue_one": "Limite de tours : {{count}} tour maximum",
+      "roundLimitValue_other": "Limite de tours : {{count}} tours maximum",
+      "teamsHeading": "Équipes ({{total}})",
+      "noTeamsSelected": "Aucune équipe sélectionnée (facultatif)",
+      "playerRegistration": "Inscription des joueurs",
+      "playerRegistrationInfo_one": "Les joueurs seront inscrits après la création du tournoi. Chaque carte sélectionnée correspond à un tour de matchs ({{count}} tour au total).",
+      "playerRegistrationInfo_other": "Les joueurs seront inscrits après la création du tournoi. Chaque carte sélectionnée correspond à un tour de matchs ({{count}} tours au total)."
+    },
+    "overtime": {
+      "selectLabel": "Prolongation",
+      "options": {
+        "enabled": "Activée (prolongation standard)",
+        "disabledDraws": "Désactivée – matchs nuls autorisés",
+        "disabledNoDraws": "Désactivée – pas de match nul (départage aux dégâts)"
+      },
+      "modeHelper": "La prolongation standard ajoute des périodes jusqu’à ce qu’une équipe prenne l’avantage. « Matchs nuls autorisés » laisse une carte à égalité se terminer par un nul, tandis que « pas de match nul » la départage aux dégâts totaux de l’équipe.",
+      "tooltip": "Contrôle le comportement de la prolongation et la gestion des égalités au nombre de tours maximum. Ces réglages sont transmis à MatchZy sous la forme overtimeMode/overtimeSegments et ont la même signification que pour les tournois shuffle et les matchs manuels.",
+      "shuffleTooltip": "Contrôle le comportement de la prolongation pour les matchs shuffle et la façon dont les égalités sont départagées au nombre de tours maximum. Lorsque la prolongation est désactivée, les matchs à égalité peuvent rester nuls ou être départagés aux dégâts totaux de l’équipe, selon l’option choisie.",
+      "segmentsLabel": "Périodes de prolongation (facultatif)",
+      "segmentsHelper": "Facultatif : limiter le nombre de périodes de prolongation. Laissez vide pour la valeur par défaut de MatchZy.",
+      "segmentsHelperValue_one": "Limiter la prolongation à {{count}} période. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent.",
+      "segmentsHelperValue_other": "Limiter la prolongation à {{count}} périodes. En cas d’égalité après la prolongation, les dégâts totaux de l’équipe départagent."
+    },
+    "grandFinal": {
+      "sectionTitle": "Mode de grande finale (double élimination)",
+      "label": "Grande finale",
+      "options": {
+        "simple": "Simple – une seule grande finale entre les vainqueurs des arbres gagnants et perdants",
+        "none": "Aucune – la finale de l’arbre des gagnants décide du tournoi (pas de grande finale)",
+        "double": "Double – avec bracket‑reset (se comporte actuellement comme Simple ; la prise en charge complète est prévue)"
+      },
+      "helper": "Détermine comment les vainqueurs des arbres gagnants et perdants s’affrontent à la fin du tournoi."
+    },
+    "mapPool": {
+      "shuffleTitle": "Choix des cartes pour les tournois shuffle",
+      "shuffleBody": "Toutes les cartes sélectionnées sont jouées dans l’ordre. Chaque carte correspond à un tour de matchs. Le nombre de cartes choisies détermine le nombre de tours joués.",
+      "shuffleSelected": "Vous avez sélectionné {{maps}}, donc {{rounds}} seront joués.",
+      "chooseLabel": "Choisir un pool de cartes",
+      "custom": "Personnalisé",
+      "selectedMaps": "Cartes sélectionnées ({{total}}) :",
+      "chooseMapsPlaceholder": "Choisir des cartes…",
+      "saveMapPool": "Enregistrer le pool de cartes",
+      "types": {
+        "defusal": "Défusion",
+        "hostage": "Otages",
+        "armsRace": "Arms Race",
+        "unknown": "Inconnu"
+      }
+    },
+    "formatStep": {
+      "shuffleInfo": "Les tournois shuffle utilisent le format best of 1. Chaque match se joue sur une seule carte."
+    },
+    "shuffleConfig": {
+      "overline": "Configuration du tournoi shuffle",
+      "subtitle": "Règles et réglages des matchs",
+      "teamSizeLabel": "Taille des équipes",
+      "teamSizeTooltip": "Nombre de joueurs par équipe. Options courantes : 4v4, 5v5, 6v6. Minimum 2 joueurs, maximum 10 par équipe.",
+      "teamSizeHelper": "Nombre de joueurs par équipe (par défaut : 5 pour du 5v5, plage : 2 à 10)",
+      "maxRoundsLabel": "Tours maximum",
+      "maxRoundsTooltip": "Nombre maximum de tours par match. Cette valeur est transmise telle quelle à MatchZy via mp_maxrounds. Exemple : 6 = MR6, 24 = MR24.",
+      "maxRoundsHelper": "Le match se joue en {{maxRounds}} tours maximum ; le premier à {{winRounds}} tours l’emporte",
+      "maxRoundsHelperEmpty": "Nombre maximum de tours par match (par défaut : 24, max : 30)",
+      "eloTemplateLabel": "Modèle de calcul ELO",
+      "eloTemplateTooltip": "Choisissez le mode de calcul de l’ELO pour ce tournoi. Par défaut, le modèle « Pure Win/Loss » n’utilise que le résultat du match (victoire/défaite) ; les statistiques sont enregistrées mais ne modifient pas l’ELO. Les autres modèles sont facultatifs et ajoutent des ajustements statistiques par-dessus la variation OpenSkill si vous souhaitez un comportement de type Excel.",
+      "eloDefaultSuffix": "(par défaut)",
+      "eloTemplateHelper": "Pure Win/Loss (par défaut) : seul le résultat du match influe sur l’ELO. Les statistiques des joueurs restent enregistrées pour les classements et les exports, mais ne modifient pas la note tant que vous ne choisissez pas un modèle personnalisé."
+    },
+    "changePreview": {
+      "title": "Vérifier les modifications du tournoi",
+      "liveHeading": "Le tournoi est EN DIRECT !",
+      "liveBody": "Changer le type, le format ou le nombre d’équipes peut nécessiter de régénérer l’arbre. Envisagez « Réinitialiser le tournoi » pour repartir de zéro.",
+      "noChangesDetected": "Aucune modification détectée",
+      "intro": "Les modifications suivantes seront appliquées :",
+      "before": "AVANT",
+      "after": "APRÈS",
+      "apply": "Appliquer les modifications",
+      "applyRisky": "Appliquer les modifications (risqué !)",
+      "noChangesToApply": "Aucune modification à appliquer",
+      "none": "Aucun",
+      "itemCount_one": "{{count}} élément",
+      "itemCount_other": "{{count}} éléments"
+    }
   },
   "bracket": {
     "empty": {
       "noBracketTitle": "Aucun tableau à afficher",
       "noBracketDescription": "Créez un tournoi et générez le tableau pour commencer"
+    },
+    "view": {
+      "visual": "Visuel",
+      "list": "Liste",
+      "refresh": "Actualiser",
+      "enterFullscreen": "Plein écran",
+      "exitFullscreen": "Quitter le plein écran",
+      "shuffleNoVisual": "Les tournois shuffle n'ont pas d'arbre visuel ; utilisez plutôt la vue en liste."
+    },
+    "shuffleEmpty": {
+      "title": "Pas d'arbre pour les tournois shuffle",
+      "description": "Les tournois shuffle n'utilisent pas d'arbre fixe. Les équipes sont remélangées à chaque manche selon l'ELO des joueurs.",
+      "hint": "Utilisez la page Matchs pour suivre les matchs en cours et à venir, et la page Classement pour le classement des joueurs.",
+      "goToMatches": "Aller aux matchs",
+      "viewLeaderboard": "Voir le classement"
+    },
+    "notGenerated": {
+      "title": "Arbre pas encore généré",
+      "description": "Générez l'arbre pour créer les matchs de {{name}}",
+      "goToSettings": "Aller aux paramètres du tournoi"
+    },
+    "shuffleNoVisual": {
+      "title": "Pas d'arbre visuel pour les tournois shuffle",
+      "description": "Les matchs sont générés à chaque manche selon l'ELO des joueurs et l'équilibrage des équipes. Suivez la progression ici :",
+      "listView": "Vue en liste",
+      "matches": "Matchs",
+      "standings": "Classement",
+      "docsHint": "Pour tout savoir sur le fonctionnement du shuffle, consultez le guide « Shuffle Tournaments » de la documentation."
+    },
+    "swiss": {
+      "notGenerated": "Non généré",
+      "generatedAfter": "Les matchs seront générés après la fin de la manche {{round}}"
     }
   }
 }

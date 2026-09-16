@@ -92,7 +92,8 @@ export const useTournament = () => {
     settings: { seedingMethod: string; grandFinalMode?: 'none' | 'simple' | 'double' };
     maxRounds?: number;
     overtimeMode?: 'enabled' | 'disabled';
-    overtimeSegments?: number;
+    /** null clears the setting back to the MatchZy default. */
+    overtimeSegments?: number | null;
   }) => {
     const response = await api[tournament ? 'put' : 'post']<
       TournamentResponse & { tournament: TournamentDetailed }

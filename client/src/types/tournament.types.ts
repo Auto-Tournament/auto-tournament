@@ -29,6 +29,11 @@ export interface Tournament {
   overtimeMode?: 'enabled' | 'disabled';
   overtimeSegments?: number;
   eloTemplateId?: string;
+  /**
+   * Champion once completed. Null for shuffle tournaments, and for round robin
+   * / swiss when the top spot is shared.
+   */
+  winner?: { id: string; name: string; tag?: string } | null;
 }
 
 export interface TournamentSettings {

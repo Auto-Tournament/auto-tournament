@@ -1,6 +1,7 @@
 import { useRef, useEffect, useState } from 'react';
 import { Box, Typography, Paper } from '@mui/material';
 import { useTheme, alpha } from '@mui/material/styles';
+import { useTranslation } from 'react-i18next';
 
 interface ELOProgressionChartProps {
   history: Array<{
@@ -17,6 +18,7 @@ export function ELOProgressionChart({
   currentElo,
   startingElo,
 }: ELOProgressionChartProps) {
+  const { t } = useTranslation();
   // Chart dimensions - hooks must be called before any early returns
   const chartHeight = 200;
   const padding = 40;
@@ -41,7 +43,7 @@ export function ELOProgressionChart({
     return (
       <Box textAlign="center" py={4}>
         <Typography variant="body2" color="text.secondary">
-          No rating history available
+          {t('playerPage.eloChart.noHistory')}
         </Typography>
       </Box>
     );
@@ -135,11 +137,16 @@ export function ELOProgressionChart({
   // Use the history-derived starting rating for display as well, falling back
   // to the prop when necessary.
   const displayStartingElo = startingRatingBeforeFirst ?? startingElo;
+  // Measure the change against the same starting point that is shown above it.
+  // Using the `startingElo` prop here reported "+0" whenever a player's stored
+  // starting rating happened to equal their current one, even though the
+  // history clearly moved (e.g. 1153 -> 1052).
+  const totalChange = currentElo - displayStartingElo;
 
   return (
     <Paper variant="outlined" sx={{ p: 2, bgcolor: 'background.paper' }}>
       <Typography variant="subtitle2" fontWeight={600} gutterBottom>
-        ELO Progression
+        {t('playerPage.eloChart.title')}
       </Typography>
       <Box
         ref={containerRef}
@@ -223,7 +230,7 @@ export function ELOProgressionChart({
         >
           <Box>
             <Typography variant="caption" color="text.secondary">
-              Starting ELO
+              {t('playerPage.eloChart.startingElo')}
             </Typography>
             <Typography variant="body2" fontWeight={600}>
               {displayStartingElo}
@@ -231,7 +238,7 @@ export function ELOProgressionChart({
           </Box>
           <Box textAlign="center">
             <Typography variant="caption" color="text.secondary">
-              Current ELO
+              {t('playerPage.eloChart.currentElo')}
             </Typography>
             <Typography variant="body2" fontWeight={600} color="primary.main">
               {currentElo}
@@ -239,15 +246,16 @@ export function ELOProgressionChart({
           </Box>
           <Box textAlign="right">
             <Typography variant="caption" color="text.secondary">
-              Total Change
+              {t('playerPage.eloChart.totalChange')}
             </Typography>
             <Typography
               variant="body2"
               fontWeight={600}
-              color={currentElo >= startingElo ? 'success.main' : 'error.main'}
+              color={totalChange >= 0 ? 'success.main' : 'error.main'}
+              data-testid="elo-total-change"
             >
-              {currentElo >= startingElo ? '+' : ''}
-              {currentElo - startingElo}
+              {totalChange >= 0 ? '+' : ''}
+              {totalChange}
             </Typography>
           </Box>
         </Box>

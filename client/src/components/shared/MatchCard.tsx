@@ -4,8 +4,9 @@ import SmartToyIcon from '@mui/icons-material/SmartToy';
 import { getStatusColor, getStatusLabel, getRoundLabel } from '../../utils/matchUtils';
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
 import type { Match } from '../../types';
-import { CURRENT_MAP_SCORE_LABEL, SERIES_SCORE_LABEL } from '../../utils/matchScoreDisplay';
+import { deriveCurrentMapScore, deriveSeriesScore } from '../../utils/matchScoreDisplay';
 import { TeamNameLink } from '../team/TeamNameLink';
+import { useTranslation } from 'react-i18next';
 
 interface MatchCardProps {
   match: Match;
@@ -38,6 +39,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
   queuePosition,
   hasAvailableServers,
 }) => {
+  const { t } = useTranslation();
   const getBorderColor = () => {
     // Bracket view / generic match card server status accents:
     // - allocated (serverId set, not yet loaded/live/completed) => yellow
@@ -160,6 +162,10 @@ export const MatchCard: React.FC<MatchCardProps> = ({
     return 'text.disabled';
   };
 
+  const isInProgress = match.status === 'live' || match.status === 'loaded';
+  const inProgressSeries = deriveSeriesScore(match, match.liveStats ?? null);
+  const currentMapScore = deriveCurrentMapScore(match, match.liveStats ?? null);
+
   const getTeamScoreDisplay = (team: 'team1' | 'team2'): number | undefined => {
     // For completed matches, prioritize series map wins (e.g. 1‑0, 2‑1).
     if (match.status === 'completed') {
@@ -167,11 +173,25 @@ export const MatchCard: React.FC<MatchCardProps> = ({
       return typeof seriesScore === 'number' ? seriesScore : undefined;
     }
 
-    // For live/loaded/ready/pending matches, show current map rounds (e.g. 8‑5)
-    // using the DB-backed scores which the backend keeps in sync with liveStats.
-    const roundsScore = team === 'team1' ? match.team1Score : match.team2Score;
-    return typeof roundsScore === 'number' ? roundsScore : undefined;
+    // For loaded/live matches, the big number is maps won; the current map's
+    // rounds are shown next to it (see mapScoreCaption).
+    if (isInProgress) {
+      return team === 'team1' ? inProgressSeries.team1 : inProgressSeries.team2;
+    }
+
+    // Pending/ready matches have no score yet.
+    return undefined;
   };
+
+  const mapScoreCaption = (team: 'team1' | 'team2'): number | undefined => {
+    if (!isInProgress || currentMapScore.source === 'default') return undefined;
+    return team === 'team1' ? currentMapScore.team1 : currentMapScore.team2;
+  };
+
+  const scoreTooltip =
+    match.status === 'completed'
+      ? t('matchInfo.scoreboard.mapsWon')
+      : `${t('matchInfo.scoreboard.mapsWon')} (${t('matchInfo.scoreboard.currentMapScore')})`;
 
   return (
     <Card
@@ -199,14 +219,14 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <Box display="flex" alignItems="center" gap={1}>
             <Box>
               <Typography variant="h6" fontWeight={700} sx={{ mb: 0.25 }}>
-                Match #{matchNumber}
+                {t('matchesPage.card.matchNumber', { number: matchNumber })}
               </Typography>
               <Typography variant="caption" color="text.secondary">
                 {roundLabel || getRoundLabel(match.round)}
               </Typography>
               {match.serverName && (
                 <Typography variant="caption" color="text.secondary" display="block">
-                  Server: {match.serverName}
+                  {t('matchesPage.card.server', { name: match.serverName })}
                 </Typography>
               )}
               {!match.serverId && queuePosition !== undefined && queuePosition !== null && (
@@ -224,7 +244,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     mt: 0.5
                   }}
                 >
-                  📋 Queue Position: #{queuePosition}
+                  📋 {t('matchesPage.card.queuePosition', { position: queuePosition })}
                 </Typography>
               )}
               {!match.serverId && allocationETA !== undefined && allocationETA !== null && (
@@ -244,12 +264,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   sx={{ mt: 0.25 }}
                 >
                   {allocationETA === -1
-                    ? '⏸️ Waiting for servers...'
+                    ? `⏸️ ${t('matchesPage.card.waitingForServers')}`
                     : allocationETA === 0 && !hasAvailableServers
-                    ? '⏸️ Waiting for servers...'
+                    ? `⏸️ ${t('matchesPage.card.waitingForServers')}`
                     : allocationETA === 0
-                    ? '⚡ Allocating now...'
-                    : `⏳ Allocates in ${Math.floor(allocationETA / 60)}:${(allocationETA % 60).toString().padStart(2, '0')}`}
+                    ? `⚡ ${t('matchesPage.card.allocatingNow')}`
+                    : `⏳ ${t('matchesPage.card.allocatesIn', {
+                        time: `${Math.floor(allocationETA / 60)}:${(allocationETA % 60)
+                          .toString()
+                          .padStart(2, '0')}`,
+                      })}`}
                 </Typography>
               )}
             </Box>
@@ -257,7 +281,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
           <Box display="flex" alignItems="center" gap={1}>
             {shuffle && (
               <Chip
-                label={manual ? 'Shuffle manual' : 'Shuffle'}
+                label={manual ? t('matchesPage.card.shuffleManual') : t('matchesPage.card.shuffle')}
                 size="small"
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
@@ -265,7 +289,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             )}
             {!shuffle && manual && (
               <Chip
-                label="Manual"
+                label={t('matchesPage.card.manual')}
                 size="small"
                 variant="outlined"
                 sx={{ fontWeight: 500 }}
@@ -274,7 +298,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             {match.config?.simulation && (
               <Chip
                 icon={<SmartToyIcon />}
-                label="Simulation"
+                label={t('matchesPage.card.simulation')}
                 size="small"
                 color="secondary"
                 sx={{ fontWeight: 500 }}
@@ -337,7 +361,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               />
               {team1IsWinner && (
                 <Chip
-                  label="WINNER"
+                  label={t('matchesPage.card.winner')}
                   size="small"
                   variant="outlined"
                   sx={{
@@ -350,7 +374,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             </Box>
             {getTeamScoreDisplay('team1') !== undefined && (
               <Tooltip
-                title={match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL}
+                title={scoreTooltip}
                 placement="top"
               >
                 <Typography
@@ -366,6 +390,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   }}
                 >
                   {getTeamScoreDisplay('team1')}
+                  {mapScoreCaption('team1') !== undefined && (
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ ml: 0.75, fontWeight: 500 }}
+                    >
+                      ({mapScoreCaption('team1')})
+                    </Typography>
+                  )}
                 </Typography>
               </Tooltip>
             )}
@@ -395,7 +429,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               />
               {team2IsWinner && (
                 <Chip
-                  label="WINNER"
+                  label={t('matchesPage.card.winner')}
                   size="small"
                   variant="outlined"
                   sx={{
@@ -408,7 +442,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
             </Box>
             {getTeamScoreDisplay('team2') !== undefined && (
               <Tooltip
-                title={match.status === 'completed' ? SERIES_SCORE_LABEL : CURRENT_MAP_SCORE_LABEL}
+                title={scoreTooltip}
                 placement="top"
               >
                 <Typography
@@ -422,6 +456,16 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   }}
                 >
                   {getTeamScoreDisplay('team2')}
+                  {mapScoreCaption('team2') !== undefined && (
+                    <Typography
+                      component="span"
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ ml: 0.75, fontWeight: 500 }}
+                    >
+                      ({mapScoreCaption('team2')})
+                    </Typography>
+                  )}
                 </Typography>
               </Tooltip>
             )}

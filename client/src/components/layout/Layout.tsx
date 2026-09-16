@@ -49,8 +49,18 @@ import { SharedNavBar } from './SharedNavBar';
 
 const drawerWidth = 240;
 
+/**
+ * Height of the impersonation banner (0px when it is not shown). The banner is
+ * rendered above the whole app, so the fixed header and the drawers have to
+ * start below it – otherwise the header covers the banner and its
+ * "stop impersonating" button cannot be clicked.
+ */
+const bannerOffset = `var(--mat-impersonation-height, 0px)`;
+
 const openedMixin = (theme: Theme): CSSObject => ({
   width: drawerWidth,
+  top: bannerOffset,
+  height: `calc(100% - ${bannerOffset})`,
   transition: theme.transitions.create('width', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.enteringScreen,
@@ -64,6 +74,8 @@ const closedMixin = (theme: Theme): CSSObject => ({
     duration: theme.transitions.duration.leavingScreen,
   }),
   overflowX: 'hidden',
+  top: bannerOffset,
+  height: `calc(100% - ${bannerOffset})`,
   width: `calc(${theme.spacing(7)} + 1px)`,
   [theme.breakpoints.up('sm')]: {
     width: `calc(${theme.spacing(8)} + 1px)`,
@@ -87,6 +99,7 @@ const AppBar = styled(MuiAppBar, {
   shouldForwardProp: (prop) => prop !== 'open',
 })<AppBarProps>(({ theme }) => ({
   zIndex: theme.zIndex.drawer + 1,
+  top: bannerOffset,
   transition: theme.transitions.create(['width', 'margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
@@ -484,7 +497,7 @@ export default function Layout() {
   };
 
   return (
-    <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+    <Box sx={{ display: 'flex', minHeight: `calc(100vh - ${bannerOffset})` }}>
       <CssBaseline />
       {/* Mobile Drawer (temporary) */}
       <MuiDrawer
@@ -499,6 +512,8 @@ export default function Layout() {
           '& .MuiDrawer-paper': {
             width: drawerWidth,
             boxSizing: 'border-box',
+            top: bannerOffset,
+            height: `calc(100% - ${bannerOffset})`,
           },
         }}
       >
@@ -847,7 +862,7 @@ export default function Layout() {
           display: 'flex',
           flexDirection: 'column',
           width: '100%',
-          height: '100vh',
+          height: `calc(100vh - ${bannerOffset})`,
           overflow: 'hidden',
         }}
       >

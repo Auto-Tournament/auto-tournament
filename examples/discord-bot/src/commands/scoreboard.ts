@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command } from './types.js';
-import { teamName, type Match } from '../mat/types.js';
+import { scoreText, teamName, type Match } from '../mat/types.js';
 import { followMatch } from '../mat/live.js';
 
 /**
@@ -28,7 +28,7 @@ function render(match: Match): EmbedBuilder {
 
   const embed = new EmbedBuilder()
     .setTitle(`${team1} vs ${team2}`)
-    .setDescription(`**${match.team1Score ?? 0} – ${match.team2Score ?? 0}**`)
+    .setDescription(`**${scoreText(match)}**`)
     .addFields({ name: 'Status', value: match.status, inline: true })
     .setFooter({ text: match.slug })
     .setTimestamp(new Date());

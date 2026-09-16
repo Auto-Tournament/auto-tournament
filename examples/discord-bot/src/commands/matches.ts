@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
 import type { Command } from './types.js';
-import { teamName, type Match } from '../mat/types.js';
+import { scoreText, teamName, type Match } from '../mat/types.js';
 
 /**
  * `/matches` — what is happening right now.
@@ -19,7 +19,7 @@ export function scoreline(match: Match): string {
     return `${team1} vs ${team2}`;
   }
 
-  return `${team1} **${match.team1Score ?? 0} – ${match.team2Score ?? 0}** ${team2}`;
+  return `${team1} **${scoreText(match)}** ${team2}`;
 }
 
 export function detail(match: Match): string {

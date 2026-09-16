@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Box, CircularProgress } from '@mui/material';
+import { useTranslation } from 'react-i18next';
 import { useSnackbar } from '../contexts/SnackbarContext';
 import { TournamentStepper } from '../components/tournament/TournamentStepper';
 import { TournamentFormSteps } from '../components/tournament/TournamentFormSteps';
@@ -34,6 +35,7 @@ interface TournamentChange {
 
 const Tournament: React.FC = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const {
     tournament,
     teams,
@@ -98,8 +100,8 @@ const Tournament: React.FC = () => {
 
   // Set dynamic page title
   useEffect(() => {
-    document.title = 'Tournament Setup';
-  }, []);
+    document.title = t('tournament.page.title');
+  }, [t]);
 
   // Load ELO templates
   useEffect(() => {
@@ -247,10 +249,10 @@ const Tournament: React.FC = () => {
         }
       } catch (error) {
         console.error('Error loading template:', error);
-        showError('Failed to load template');
+        showError(t('tournament.toasts.loadTemplateFailed'));
       }
     },
-    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, clearDraft, showError]
+    [setName, setType, setFormat, setMaps, setSelectedTeams, setIsEditing, clearDraft, showError, t]
   );
 
   useEffect(() => {
@@ -335,7 +337,7 @@ const Tournament: React.FC = () => {
     const trimmedName = newName.trim();
 
     if (!trimmedName) {
-      showError('Tournament name is required');
+      showError(t('tournament.toasts.nameRequired'));
       return;
     }
 
@@ -349,7 +351,7 @@ const Tournament: React.FC = () => {
       }>('/api/tournament', { name: trimmedName });
 
       if ('success' in response && response.success) {
-        showSuccess('Tournament name updated');
+        showSuccess(t('tournament.toasts.nameUpdated'));
         await refreshData();
       } else {
         const errorMessage =
@@ -358,12 +360,12 @@ const Tournament: React.FC = () => {
           'error' in response &&
           typeof (response as { error?: string }).error === 'string'
             ? (response as { error?: string }).error
-            : 'Failed to update tournament name';
+            : t('tournament.toasts.nameUpdateFailed');
         showError(errorMessage);
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to update tournament name');
+      showError(error.message || t('tournament.toasts.nameUpdateFailed'));
     } finally {
       setSaving(false);
     }
@@ -395,20 +397,21 @@ const Tournament: React.FC = () => {
           typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null
         );
       }
-      // Grand final configuration (double elimination only)
-      if (tournament.type === 'double_elimination') {
-        const mode =
-          (tournament.settings &&
-            (tournament.settings as { grandFinalMode?: string }).grandFinalMode) ||
-          'simple';
-        if (mode === 'none' || mode === 'simple' || mode === 'double') {
-          setGrandFinalMode(mode);
-        } else {
-          setGrandFinalMode('simple');
-        }
-      } else {
-        setGrandFinalMode('none');
-      }
+      // Grand final configuration. Only double elimination exposes it, but we
+      // still load whatever is stored so saving an untouched tournament (or
+      // switching the type to double elimination) keeps the saved behaviour
+      // instead of silently falling back to "none".
+      const storedGrandFinalMode =
+        (tournament.settings &&
+          (tournament.settings as { grandFinalMode?: string }).grandFinalMode) ||
+        'simple';
+      setGrandFinalMode(
+        storedGrandFinalMode === 'none' ||
+          storedGrandFinalMode === 'simple' ||
+          storedGrandFinalMode === 'double'
+          ? storedGrandFinalMode
+          : 'simple'
+      );
       setIsEditing(false);
       setShowWelcome(false);
       setShowForm(false);
@@ -480,6 +483,14 @@ const Tournament: React.FC = () => {
       const currentEloTemplate = tournament.eloTemplateId || 'pure-win-loss';
       const selectedEloTemplate = shuffleSettings.eloTemplateId || 'pure-win-loss';
       if (selectedEloTemplate !== currentEloTemplate) return true;
+
+      const currentOvertimeMode = tournament.overtimeMode ?? 'enabled';
+      if ((shuffleSettings.overtimeMode ?? 'enabled') !== currentOvertimeMode) return true;
+      const currentOvertimeSegments =
+        typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null;
+      const localSegments =
+        typeof shuffleSettings.overtimeSegments === 'number' ? shuffleSettings.overtimeSegments : null;
+      if (localSegments !== currentOvertimeSegments) return true;
     } else {
       // Non-shuffle: compare global maxRounds
       const currentMaxRounds = tournament.maxRounds || 24;
@@ -505,19 +516,19 @@ const Tournament: React.FC = () => {
 
   const handleSave = async () => {
     if (!name.trim()) {
-      showError('Tournament name is required');
+      showError(t('tournament.toasts.nameRequired'));
       return;
     }
 
     if (maps.length === 0) {
-      showError('Please select at least 1 map');
+      showError(t('tournament.toasts.selectAtLeastOneMap'));
       return;
     }
 
     // Validate global max rounds for non-shuffle tournaments
     if (type !== 'shuffle') {
       if (maxRounds < 1 || maxRounds > 30) {
-        showError('Max rounds must be between 1 and 30');
+        showError(t('tournament.toasts.maxRoundsRange'));
         return;
       }
     }
@@ -526,11 +537,11 @@ const Tournament: React.FC = () => {
     if (type === 'shuffle') {
       // Validate shuffle settings
       if (shuffleSettings.teamSize < 2 || shuffleSettings.teamSize > 10) {
-        showError('Team size must be between 2 and 10 players');
+        showError(t('tournament.toasts.teamSizeRange'));
         return;
       }
       if (shuffleSettings.maxRounds < 1 || shuffleSettings.maxRounds > 30) {
-        showError('Max rounds must be between 1 and 30');
+        showError(t('tournament.toasts.maxRoundsRange'));
         return;
       }
       // For shuffle tournaments, use the shuffle-specific endpoint
@@ -541,12 +552,12 @@ const Tournament: React.FC = () => {
     // Validate team count for non-shuffle tournaments
     const validation = validateTeamCountForType(type, selectedTeams.length);
     if (!validation.isValid) {
-      showError(validation.error || 'Invalid team count');
+      showError(validation.error || t('tournament.toasts.invalidTeamCount'));
       return;
     }
 
     if (selectedTeams.length === 0) {
-      showError('Please select at least 2 teams');
+      showError(t('tournament.toasts.selectAtLeastTwoTeams'));
       return;
     }
 
@@ -557,7 +568,7 @@ const Tournament: React.FC = () => {
       if (name !== tournament.name) {
         detectedChanges.push({
           field: 'name',
-          label: 'Tournament Name',
+          label: t('tournament.review.summary.nameLabel'),
           oldValue: tournament.name,
           newValue: name,
         });
@@ -565,7 +576,7 @@ const Tournament: React.FC = () => {
       if (type !== tournament.type) {
         detectedChanges.push({
           field: 'type',
-          label: 'Tournament Type',
+          label: t('tournament.review.summary.typeLabel'),
           oldValue: tournament.type,
           newValue: type,
         });
@@ -573,7 +584,7 @@ const Tournament: React.FC = () => {
       if (format !== tournament.format) {
         detectedChanges.push({
           field: 'format',
-          label: 'Match Format',
+          label: t('tournament.review.summary.formatLabel'),
           oldValue: tournament.format,
           newValue: format,
         });
@@ -583,7 +594,7 @@ const Tournament: React.FC = () => {
         const newTeams = teams.filter((t) => selectedTeams.includes(t.id)).map((t) => t.name);
         detectedChanges.push({
           field: 'teamIds',
-          label: 'Teams',
+          label: t('tournament.labels.teams'),
           oldValue: oldTeams.length > 0 ? oldTeams : [],
           newValue: newTeams.length > 0 ? newTeams : [],
         });
@@ -591,7 +602,7 @@ const Tournament: React.FC = () => {
       if (JSON.stringify(maps.sort()) !== JSON.stringify(tournament.maps.sort())) {
         detectedChanges.push({
           field: 'maps',
-          label: 'Map Pool',
+          label: t('tournament.labels.mapPool'),
           oldValue: tournament.maps.length > 0 ? tournament.maps : [],
           newValue: maps.length > 0 ? maps : [],
         });
@@ -647,22 +658,20 @@ const Tournament: React.FC = () => {
       if (response.success) {
         const minPlayers = (shuffleSettings.teamSize || 5) * 2;
         showSuccess(
-          `Shuffle tournament "${name}" created successfully! ` +
-            `Next step: Register at least ${minPlayers} players to start the tournament (${
-              shuffleSettings.teamSize || 5
-            }v${shuffleSettings.teamSize || 5} matches).`
+          t('tournament.toasts.shuffleCreated', {
+            name,
+            minPlayers,
+            teamSize: shuffleSettings.teamSize || 5,
+          })
         );
         clearDraft();
         await refreshData();
       } else {
-        showError(response.error || 'Failed to create shuffle tournament');
+        showError(response.error || t('tournament.toasts.shuffleCreateFailed'));
       }
     } catch (err) {
       const error = err as Error;
-      showError(
-        error.message ||
-          'Failed to create shuffle tournament. ' + 'Please check your settings and try again.'
-      );
+      showError(error.message || t('tournament.toasts.shuffleCreateFailedRetry'));
     } finally {
       setSaving(false);
     }
@@ -681,9 +690,13 @@ const Tournament: React.FC = () => {
         seedingMethod: 'random',
       };
 
+      // Keep every existing setting the wizard doesn't show (seeding, third
+      // place, custom veto order, ...). grandFinalMode is only edited for
+      // double elimination; overwriting it with 'none' for other types used to
+      // silently change a saved 'simple' setting.
       const settings = {
         ...baseSettings,
-        grandFinalMode: type === 'double_elimination' ? grandFinalMode : 'none',
+        ...(type === 'double_elimination' ? { grandFinalMode } : {}),
       };
 
       const payload = {
@@ -695,14 +708,16 @@ const Tournament: React.FC = () => {
         settings,
         maxRounds,
         overtimeMode,
-        overtimeSegments: typeof overtimeSegments === 'number' ? overtimeSegments : undefined,
+        // null, not undefined: the API leaves an absent field alone, so
+        // sending undefined made "back to the MatchZy default" unsaveable.
+        overtimeSegments: typeof overtimeSegments === 'number' ? overtimeSegments : null,
       };
 
       const response = await saveTournament(payload);
 
       if (response.success) {
         showSuccess(
-          tournament ? 'Tournament updated & brackets regenerated!' : 'Tournament created!'
+          tournament ? t('tournament.toasts.updated') : t('tournament.toasts.created')
         );
         // Clear draft when tournament is successfully created
         if (!tournament) {
@@ -710,11 +725,11 @@ const Tournament: React.FC = () => {
         }
         await refreshData();
       } else {
-        showError(response.error || 'Failed to save tournament');
+        showError(response.error || t('tournament.toasts.saveFailed'));
       }
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to save tournament');
+      showError(error.message || t('tournament.toasts.saveFailed'));
     } finally {
       setSaving(false);
     }
@@ -726,11 +741,11 @@ const Tournament: React.FC = () => {
 
     try {
       await deleteTournament();
-      showSuccess('Tournament deleted successfully');
+      showSuccess(t('tournament.toasts.deleted'));
       await refreshData();
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to delete tournament');
+      showError(error.message || t('tournament.toasts.deleteFailed'));
     } finally {
       setSaving(false);
     }
@@ -742,10 +757,10 @@ const Tournament: React.FC = () => {
 
     try {
       await regenerateBracket(true);
-      showSuccess('Brackets regenerated successfully');
+      showSuccess(t('tournament.toasts.regenerated'));
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to regenerate brackets');
+      showError(error.message || t('tournament.toasts.regenerateFailed'));
     } finally {
       setSaving(false);
     }
@@ -757,10 +772,10 @@ const Tournament: React.FC = () => {
 
     try {
       await resetTournament();
-      showSuccess('Tournament reset to setup mode');
+      showSuccess(t('tournament.toasts.resetDone'));
     } catch (err) {
       const error = err as Error;
-      showError(error.message || 'Failed to reset tournament');
+      showError(error.message || t('tournament.toasts.resetFailed'));
     } finally {
       setSaving(false);
     }
@@ -827,22 +842,18 @@ const Tournament: React.FC = () => {
       if (response.success) {
         const allocated = (response as { allocated?: number }).allocated || 0;
         if (allocated > 0) {
-          showSuccess(
-            `Tournament started! ${allocated} match${
-              allocated === 1 ? '' : 'es'
-            } allocated to servers.`
-          );
+          showSuccess(t('tournament.toasts.started', { count: allocated }));
         } else {
           showSuccess(
-            (response as { message?: string }).message ||
-              'Tournament start requested. Servers will be allocated shortly.'
+            (response as { message?: string }).message || t('tournament.toasts.startRequested')
           );
         }
         // Refresh tournament data so the UI can transition into the live
         // management view once the backend flips status to "in_progress".
         await refreshData();
       } else {
-        const message = (response as { message?: string }).message || 'Failed to start tournament';
+        const message =
+          (response as { message?: string }).message || t('tournament.toasts.startFailed');
         showError(message);
       }
     } catch (err) {
@@ -866,10 +877,10 @@ const Tournament: React.FC = () => {
           setOutdatedServers(parsed.servers);
           setShowOutdatedDialog(true);
         } else {
-          showError(error.message || 'Failed to start tournament');
+          showError(error.message || t('tournament.toasts.startFailed'));
         }
       } catch {
-        showError(error.message || 'Failed to start tournament');
+        showError(error.message || t('tournament.toasts.startFailed'));
       }
     } finally {
       setStarting(false);
@@ -974,6 +985,29 @@ const Tournament: React.FC = () => {
               setFormat(tournament.format);
               setSelectedTeams(tournament.teamIds || []);
               setMaps(tournament.maps || []);
+              // Restore the round / overtime / grand final settings too, so a
+              // cancelled edit never leaves stale values behind.
+              const savedSegments =
+                typeof tournament.overtimeSegments === 'number' ? tournament.overtimeSegments : null;
+              if (tournament.type === 'shuffle') {
+                setShuffleSettings({
+                  teamSize: tournament.teamSize || 5,
+                  maxRounds: tournament.maxRounds || 24,
+                  eloTemplateId: tournament.eloTemplateId || 'pure-win-loss',
+                  overtimeMode: tournament.overtimeMode ?? 'enabled',
+                  overtimeSegments: savedSegments,
+                });
+              } else {
+                setMaxRounds(tournament.maxRounds || 24);
+                setOvertimeMode(tournament.overtimeMode ?? 'enabled');
+                setOvertimeSegments(savedSegments);
+              }
+              const savedGrandFinalMode =
+                (tournament.settings &&
+                  (tournament.settings as { grandFinalMode?: 'none' | 'simple' | 'double' })
+                    .grandFinalMode) ||
+                'simple';
+              setGrandFinalMode(savedGrandFinalMode);
               setIsEditing(false);
             } else {
               setShowForm(false);
@@ -1056,6 +1090,7 @@ const Tournament: React.FC = () => {
             overtimeMode: tournament.overtimeMode,
             overtimeSegments: tournament.overtimeSegments,
             eloTemplateId: tournament.eloTemplateId,
+            winner: tournament.winner ?? null,
           }}
           tournamentId={tournament.id}
           onRename={handleRenameTournament}
@@ -1091,13 +1126,10 @@ const Tournament: React.FC = () => {
 
       <ConfirmDialog
         open={showOutdatedDialog}
-        title="Servers need update"
+        title={t('tournament.outdatedServers.title')}
         message={
           <>
-            <Box sx={{ mb: 1 }}>
-              One or more enabled servers are out of date (or could not be verified) according to
-              Steam. Update them, or disable them to continue with the remaining fleet.
-            </Box>
+            <Box sx={{ mb: 1 }}>{t('tournament.outdatedServers.body')}</Box>
             <Box component="ul" sx={{ mt: 0, mb: 0, pl: 2 }}>
               {outdatedServers.map((s) => (
                 <li key={s.id}>
@@ -1110,8 +1142,12 @@ const Tournament: React.FC = () => {
             </Box>
           </>
         }
-        confirmLabel={disablingOutdated ? 'Disabling...' : 'Disable affected servers & retry'}
-        cancelLabel="Cancel"
+        confirmLabel={
+          disablingOutdated
+            ? t('tournament.outdatedServers.disabling')
+            : t('tournament.outdatedServers.confirm')
+        }
+        cancelLabel={t('common.cancel')}
         confirmColor="warning"
         loading={disablingOutdated}
         onCancel={() => setShowOutdatedDialog(false)}
@@ -1127,7 +1163,7 @@ const Tournament: React.FC = () => {
             await performTournamentStart();
           } catch (e) {
             const msg = e instanceof Error ? e.message : String(e);
-            showError(`Failed to disable one or more servers: ${msg}`);
+            showError(t('tournament.toasts.disableServersFailed', { message: msg }));
           } finally {
             setDisablingOutdated(false);
           }
@@ -1146,7 +1182,7 @@ const Tournament: React.FC = () => {
         open={saveTemplateModalOpen}
         onClose={() => setSaveTemplateModalOpen(false)}
         onSave={() => {
-          showSuccess('Template saved successfully!');
+          showSuccess(t('tournament.toasts.templateSaved'));
         }}
         tournamentData={{
           name,
