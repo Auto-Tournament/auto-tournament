@@ -663,7 +663,12 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                 <Typography variant="body2" color="text.secondary" mb={2}>
                   {t('dashboard.stats.eloDistribution.subtitle', { bucket: eloBucketSize })}
                     </Typography>
-                <Box sx={{ width: '100%', height: 280, overflowX: 'auto' }}>
+                <Box
+                  sx={{ width: '100%', height: 280, overflowX: 'auto' }}
+                  tabIndex={0}
+                  role="region"
+                  aria-label={t('dashboard.stats.eloDistribution.title')}
+                >
                     <LineChart
                       xAxis={[
                         {

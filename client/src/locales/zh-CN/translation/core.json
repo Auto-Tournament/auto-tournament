@@ -64,7 +64,8 @@
     "steamUnavailable": {
       "title": "Steam 集成不可用",
       "body": "登录和自定义链接查询可能无法使用。请检查服务器配置和网络连接。"
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "language": {
     "label": "语言",

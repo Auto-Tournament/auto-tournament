@@ -64,7 +64,8 @@
     "steamUnavailable": {
       "title": "Steam-integrasjonen er utilgjengelig",
       "body": "Innlogging og oppslag av Steam-brukernavn fungerer kanskje ikke. Sjekk serverkonfigurasjonen og nettverkstilkoblingen."
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "language": {
     "label": "Språk",

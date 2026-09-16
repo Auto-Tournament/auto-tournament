@@ -61,7 +61,8 @@
     "steamUnavailable": {
       "title": "Steam-integratie niet beschikbaar",
       "body": "Inloggen en het opzoeken van vanity-URL's werken mogelijk niet. Controleer de serverconfiguratie en de verbinding."
-    }
+    },
+    "closeDrawer": "Close navigation menu"
   },
   "common": {
     "delete": "Verwijderen",

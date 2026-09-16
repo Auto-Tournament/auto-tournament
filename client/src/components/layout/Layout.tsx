@@ -543,7 +543,7 @@ export default function Layout() {
                 Matchzy Auto Tournament
               </Typography>
             </Box>
-            <IconButton onClick={handleDrawerClose}>
+            <IconButton onClick={handleDrawerClose} aria-label={t('layout.closeDrawer')}>
               {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
             </IconButton>
           </Box>
@@ -682,7 +682,7 @@ export default function Layout() {
       {/* Desktop Drawer (permanent mini variant) */}
       <Drawer variant="permanent" open={open} sx={{ display: { xs: 'none', md: 'block' } }}>
         <DrawerHeader>
-          <IconButton onClick={handleDrawerClose}>
+          <IconButton onClick={handleDrawerClose} aria-label={t('layout.closeDrawer')}>
             {theme.direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
           </IconButton>
         </DrawerHeader>
