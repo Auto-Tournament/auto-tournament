@@ -240,6 +240,51 @@ class DatabaseManager {
         log.success(`[PostgreSQL] Applied ${added} column migration(s)`);
       }
 
+      // Rating history used to cascade away with its match, so deleting a
+      // tournament left ratings with no history behind them. It now survives
+      // as an orphan (match_slug NULL); upgrade the old NOT NULL + CASCADE key.
+      try {
+        const { rows } = await client.query<{ conname: string }>(
+          `SELECT c.conname
+             FROM pg_constraint c
+             JOIN pg_attribute a ON a.attrelid = c.conrelid AND a.attnum = ANY(c.conkey)
+            WHERE c.conrelid = to_regclass('player_rating_history')
+              AND c.contype = 'f' AND c.confdeltype = 'c' AND a.attname = 'match_slug'`
+        );
+        for (const { conname } of rows) {
+          await client.query('BEGIN');
+          try {
+            await client.query(
+              'ALTER TABLE player_rating_history ALTER COLUMN match_slug DROP NOT NULL'
+            );
+            await client.query(`ALTER TABLE player_rating_history DROP CONSTRAINT "${conname}"`);
+            await client.query(
+              `ALTER TABLE player_rating_history ADD CONSTRAINT "${conname}"
+                 FOREIGN KEY (match_slug) REFERENCES matches(slug) ON DELETE SET NULL`
+            );
+            await client.query(
+              `UPDATE player_rating_history prh
+                  SET match_label = COALESCE(prh.match_label, t1.name || ' vs ' || t2.name, m.slug),
+                      tournament_name = COALESCE(prh.tournament_name, t.name)
+                 FROM matches m
+                 LEFT JOIN tournament t ON t.id = m.tournament_id
+                 LEFT JOIN teams t1 ON t1.id = m.team1_id
+                 LEFT JOIN teams t2 ON t2.id = m.team2_id
+                WHERE m.slug = prh.match_slug`
+            );
+            await client.query('COMMIT');
+            log.success('[PostgreSQL] Rating history now survives match deletion');
+          } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+          }
+        }
+      } catch (err) {
+        log.error(
+          `[PostgreSQL] Failed to migrate rating history foreign key: ${(err as Error).message}`
+        );
+      }
+
       for (const statement of deferredIndexes) {
         try {
           await client.query(statement);

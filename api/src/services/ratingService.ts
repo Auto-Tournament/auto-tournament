@@ -22,12 +22,13 @@ import {
 export { eloToOpenSkill, openSkillToDisplayElo };
 
 /**
- * Undo a tournament's rating changes before its matches are deleted. The
- * history rows cascade away with the matches; the players' ratings did not,
- * so every reset run stacked on the last (QA 2.4.11: a player seeded at 1500
- * sat at 2163 with no history).
+ * Reset only ("play it again"): undo a tournament's rating changes and remove
+ * that run's history, before its matches are deleted. Without the rollback
+ * every reset run stacked on the last (QA 2.4.11: a player seeded at 1500 sat
+ * at 2163). Deleting a tournament does NOT call this: ratings and history stay,
+ * the history rows just lose their match link (ON DELETE SET NULL).
  */
-export async function revertTournamentRatings(tournamentId: number): Promise<number> {
+export async function discardTournamentRatings(tournamentId: number): Promise<number> {
   const rows = await db.queryAsync<RatingHistoryRow>(
     `SELECT prh.id, prh.player_id, prh.match_slug, prh.elo_before, prh.mu_before,
             prh.sigma_before, prh.created_at
@@ -47,6 +48,11 @@ export async function revertTournamentRatings(tournamentId: number): Promise<num
       [rb.elo, rb.mu, rb.sigma, rb.matches, now, rb.playerId]
     );
   }
+  await db.runAsync(
+    `DELETE FROM player_rating_history
+      WHERE match_slug IN (SELECT slug FROM matches WHERE tournament_id = ?)`,
+    [tournamentId]
+  );
   if (rollbacks.length > 0) {
     log.info(`[RATINGS] Reverted tournament ${tournamentId} ratings for ${rollbacks.length} player(s)`);
   }
@@ -111,13 +117,19 @@ export async function updatePlayerRatings(
     );
 
     // Get tournament's template ID (if any)
-    const match = await db.queryOneAsync<{ tournament_id: number }>(
-      'SELECT tournament_id FROM matches WHERE slug = ?',
+    // Labels are copied onto the history rows: they outlive the match when the
+    // tournament is deleted.
+    const match = await db.queryOneAsync<{ tournament_id: number; match_label: string | null }>(
+      `SELECT m.tournament_id, t1.name || ' vs ' || t2.name AS match_label
+         FROM matches m
+         LEFT JOIN teams t1 ON t1.id = m.team1_id
+         LEFT JOIN teams t2 ON t2.id = m.team2_id
+        WHERE m.slug = ?`,
       [matchSlug]
     );
     const tournament = match
-      ? await db.queryOneAsync<{ elo_template_id: string | null }>(
-          'SELECT elo_template_id FROM tournament WHERE id = ?',
+      ? await db.queryOneAsync<{ elo_template_id: string | null; name: string | null }>(
+          'SELECT elo_template_id, name FROM tournament WHERE id = ?',
           [match.tournament_id]
         )
       : null;
@@ -250,6 +262,8 @@ export async function updatePlayerRatings(
       await db.insertAsync('player_rating_history', {
         player_id: player.id,
         match_slug: matchSlug,
+        match_label: match?.match_label ?? matchSlug,
+        tournament_name: tournament?.name ?? null,
         elo_before: oldElo,
         elo_after: finalElo,
         elo_change: finalElo - oldElo,
@@ -324,7 +338,10 @@ export async function getRatingHistory(
   tournamentId?: number
 ): Promise<
   Array<{
-    match_slug: string;
+    /** NULL when the match (and its tournament) was deleted; use match_label. */
+    match_slug: string | null;
+    match_label: string | null;
+    tournament_name: string | null;
     elo_before: number;
     elo_after: number;
     elo_change: number;
@@ -339,54 +356,28 @@ export async function getRatingHistory(
     created_at: number;
   }>
 > {
-  // Deduplicate by match_slug so that transient or historical duplicate history
-  // rows (e.g. from earlier bugs or retries) do not show up as multiple rating
-  // changes for the same match in the UI. We keep the most recent entry per
-  // (player_id, match_slug), optionally scoped to a single tournament.
-  let query = `
-    SELECT 
-      prh.match_slug,
-      prh.elo_before,
-      prh.elo_after,
-      prh.elo_change,
-      prh.mu_before,
-      prh.mu_after,
-      prh.sigma_before,
-      prh.sigma_after,
-      prh.base_elo_after,
-      prh.stat_adjustment,
-      prh.template_id,
-      prh.match_result,
-      prh.created_at
-    FROM player_rating_history prh
-    JOIN (
-      SELECT match_slug, MAX(created_at) AS max_created_at
-    FROM player_rating_history
-    WHERE player_id = ?
-  `;
-
+  // One row per match: duplicate history rows (earlier bugs or retries) would
+  // otherwise show as several rating changes for the same match. The newest
+  // row wins. Rows of deleted tournaments have no slug and are kept as-is.
   const params: unknown[] = [playerId];
-
+  let tournamentFilter = '';
   if (tournamentId) {
-    query += `
-        AND match_slug IN (
-      SELECT slug FROM matches WHERE tournament_id = ?
-        )
-    `;
+    tournamentFilter = 'AND match_slug IN (SELECT slug FROM matches WHERE tournament_id = ?)';
     params.push(tournamentId);
   }
 
-  query += `
-      GROUP BY match_slug
-    ) latest
-      ON prh.match_slug = latest.match_slug
-     AND prh.created_at = latest.max_created_at
-    WHERE prh.player_id = ?
-    ORDER BY prh.created_at DESC
-  `;
-
-  params.push(playerId);
-
-  return await db.queryAsync(query, params);
+  return await db.queryAsync(
+    `SELECT match_slug, match_label, tournament_name, elo_before, elo_after, elo_change,
+            mu_before, mu_after, sigma_before, sigma_after, base_elo_after, stat_adjustment,
+            template_id, match_result, created_at
+       FROM (
+         SELECT DISTINCT ON (COALESCE(match_slug, 'deleted:' || id)) *
+           FROM player_rating_history
+          WHERE player_id = ? ${tournamentFilter}
+          ORDER BY COALESCE(match_slug, 'deleted:' || id), created_at DESC, id DESC
+       ) latest
+      ORDER BY created_at DESC, id DESC`,
+    params
+  );
 }
 
