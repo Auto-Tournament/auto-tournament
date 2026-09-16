@@ -12,6 +12,7 @@ import { settingsService } from '../services/settingsService';
 import { normalizeConfigPlayers } from '../utils/playerTransform';
 import { resolveViewerIdentity } from '../utils/viewerIdentity';
 import { requireAuth } from '../middleware/auth';
+import { tournamentRowToResponse } from '../utils/tournamentRow';
 
 const router = Router();
 
@@ -86,38 +87,7 @@ async function resolveViewerTeamForMatch(
       ]);
 
       if (tournament) {
-        const tournamentResponse: TournamentResponse = {
-          id: tournament.id,
-          name: tournament.name,
-          type: tournament.type as TournamentResponse['type'],
-          format: tournament.format as TournamentResponse['format'],
-          status: tournament.status as TournamentResponse['status'],
-          maps: JSON.parse(tournament.maps),
-          teamIds: JSON.parse(tournament.team_ids),
-          settings: tournament.settings ? JSON.parse(tournament.settings) : {},
-          created_at: tournament.created_at,
-          updated_at: tournament.updated_at ?? tournament.created_at,
-          started_at: tournament.started_at,
-          completed_at: tournament.completed_at,
-          teams: [],
-          mapSequence: tournament.map_sequence ? JSON.parse(tournament.map_sequence) : undefined,
-          teamSize:
-            tournament.team_size === null || typeof tournament.team_size === 'undefined'
-              ? undefined
-              : tournament.team_size,
-          maxRounds:
-            tournament.max_rounds === null || typeof tournament.max_rounds === 'undefined'
-              ? undefined
-              : tournament.max_rounds,
-          overtimeMode:
-            (tournament.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-          overtimeSegments:
-            tournament.overtime_segments === null ||
-            typeof tournament.overtime_segments === 'undefined'
-              ? undefined
-              : tournament.overtime_segments,
-          eloTemplateId: tournament.elo_template_id ?? undefined,
-        };
+        const tournamentResponse: TournamentResponse = tournamentRowToResponse(tournament);
 
         const generatedConfig = (await generateMatchConfig(
           tournamentResponse,
@@ -634,34 +604,7 @@ router.post('/:matchSlug/action', async (req: Request, res: Response) => {
       ]);
       if (t) {
         // Tournament match: regenerate config from tournament settings
-        const tournament: TournamentResponse = {
-          id: t.id,
-          name: t.name,
-          type: t.type as TournamentResponse['type'],
-          format: t.format as TournamentResponse['format'],
-          status: t.status as TournamentResponse['status'],
-          maps: JSON.parse(t.maps),
-          teamIds: JSON.parse(t.team_ids),
-          settings: t.settings ? JSON.parse(t.settings) : {},
-          created_at: t.created_at,
-          updated_at: t.updated_at ?? t.created_at,
-          started_at: t.started_at,
-          completed_at: t.completed_at,
-          teams: [], // Not needed for config generation
-          mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
-          teamSize:
-            t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
-          maxRounds:
-            t.max_rounds === null || typeof t.max_rounds === 'undefined'
-              ? undefined
-              : t.max_rounds,
-          overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-          overtimeSegments:
-            t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
-              ? undefined
-              : t.overtime_segments,
-          eloTemplateId: t.elo_template_id ?? undefined,
-        };
+        const tournament: TournamentResponse = tournamentRowToResponse(t);
         try {
           const cfg = await generateMatchConfig(
             tournament,

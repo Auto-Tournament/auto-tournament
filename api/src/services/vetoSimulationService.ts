@@ -7,6 +7,7 @@ import { emitVetoUpdate } from './socketService';
 import { settingsService } from './settingsService';
 import { generateMatchConfig } from './matchConfigBuilder';
 import { matchAllocationService } from './matchAllocationService';
+import { tournamentRowToResponse } from '../utils/tournamentRow';
 
 type VetoActionType = 'ban' | 'pick' | 'side_pick';
 type VetoTeam = 'team1' | 'team2';
@@ -236,21 +237,7 @@ async function runAutoVeto(
     return;
   }
 
-  const tournament: TournamentResponse = {
-    id: t.id,
-    name: t.name,
-    type: t.type as TournamentResponse['type'],
-    format: t.format as TournamentResponse['format'],
-    status: t.status as TournamentResponse['status'],
-    maps: JSON.parse(t.maps),
-    teamIds: JSON.parse(t.team_ids),
-    settings: t.settings ? JSON.parse(t.settings) : {},
-    created_at: t.created_at,
-    updated_at: t.updated_at ?? t.created_at,
-    started_at: t.started_at,
-    completed_at: t.completed_at,
-    teams: [],
-  };
+  const tournament: TournamentResponse = tournamentRowToResponse(t);
 
   // Only BO formats use veto; safeguard here in case caller forgot.
   if (!['bo1', 'bo3', 'bo5'].includes(tournament.format)) {

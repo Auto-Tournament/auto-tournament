@@ -11,7 +11,8 @@ import { teamService } from './teamService';
 import { generateMatchConfig } from './matchConfigBuilder';
 import { generateUniqueTeamName } from '../generation/teamName';
 import type { TournamentResponse, TournamentType } from '../types/tournament.types';
-import type { DbMatchRow, DbTeamRow } from '../types/database.types';
+import type { DbMatchRow, DbTeamRow, DbTournamentRow } from '../types/database.types';
+import { tournamentRowToResponse } from '../utils/tournamentRow';
 import type { Player } from '../types/team.types';
 
 export interface ShuffleTournamentConfig {
@@ -1098,53 +1099,16 @@ export async function getTournamentLeaderboard(): Promise<{
  * Get shuffle tournament (helper)
  */
 async function getShuffleTournament(): Promise<TournamentResponse | null> {
-  const row = await db.queryOneAsync<{
-    id: number;
-    name: string;
-    type: string;
-    format: string;
-    status: string;
-    maps: string;
-    team_ids: string;
-    settings: string;
-    map_sequence?: string;
-    team_size?: number;
-    max_rounds?: number;
-    overtime_mode?: string;
-    elo_template_id?: string | null;
-    overtime_segments?: number | null;
-    created_at: number;
-    updated_at: number;
-    started_at?: number;
-    completed_at?: number;
-  }>('SELECT * FROM tournament WHERE id = 1');
+  const row = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');
 
   if (!row || row.type !== 'shuffle') {
     return null;
   }
 
   return {
-    id: row.id,
-    name: row.name,
+    ...tournamentRowToResponse(row),
     type: 'shuffle',
-    format: row.format as 'bo1',
-    status: row.status as TournamentResponse['status'],
-    maps: JSON.parse(row.maps),
-    teamIds: JSON.parse(row.team_ids),
-    settings: JSON.parse(row.settings),
-    created_at: row.created_at,
-    updated_at: row.updated_at,
-    started_at: row.started_at,
-    completed_at: row.completed_at,
-    teams: [],
-    mapSequence: row.map_sequence ? JSON.parse(row.map_sequence) : undefined,
+    // Shuffle teams are built from registered players; 5v5 unless configured.
     teamSize: row.team_size || 5,
-    maxRounds: row.max_rounds,
-    overtimeMode: (row.overtime_mode as 'enabled' | 'disabled') || undefined,
-    overtimeSegments:
-      row.overtime_segments === null || row.overtime_segments === undefined
-        ? undefined
-        : row.overtime_segments,
-    eloTemplateId: row.elo_template_id || undefined,
-  } as TournamentResponse;
+  };
 }

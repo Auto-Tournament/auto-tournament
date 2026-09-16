@@ -31,6 +31,7 @@ import { settingsService } from './settingsService';
 import { serverAllocationTracker } from './serverAllocationTracker';
 import type { Player } from '../types/team.types';
 import { isMatchFinalized } from '../utils/matchStatusHelpers';
+import { formatSeriesEndSummary } from '../utils/seriesEndSummary';
 
 /**
  * Main event handler - routes events to specific handlers
@@ -830,6 +831,43 @@ function extractNestedNumber(
   return undefined;
 }
 
+/** Team names MAT has for a match, for log lines the plugin sends without names. */
+async function knownTeamNames(match: DbMatchRow): Promise<{
+  team1Name?: string | null;
+  team2Name?: string | null;
+  configTeam1Name?: string | null;
+  configTeam2Name?: string | null;
+}> {
+  const names: {
+    team1Name?: string | null;
+    team2Name?: string | null;
+    configTeam1Name?: string | null;
+    configTeam2Name?: string | null;
+  } = {};
+  try {
+    const ids = [match.team1_id, match.team2_id].filter((id): id is string => Boolean(id));
+    if (ids.length > 0) {
+      const rows = await db.queryAsync<{ id: string; name: string }>(
+        `SELECT id, name FROM teams WHERE id IN (${ids.map(() => '?').join(',')})`,
+        ids
+      );
+      names.team1Name = rows.find((r) => r.id === match.team1_id)?.name ?? null;
+      names.team2Name = rows.find((r) => r.id === match.team2_id)?.name ?? null;
+    }
+    if (match.config) {
+      const config = JSON.parse(match.config) as {
+        team1?: { name?: string };
+        team2?: { name?: string };
+      };
+      names.configTeam1Name = config.team1?.name ?? null;
+      names.configTeam2Name = config.team2?.name ?? null;
+    }
+  } catch {
+    // Names are only for the log line.
+  }
+  return names;
+}
+
 /**
  * Handle series end event - update match status, ratings, and advance tournament
  */
@@ -852,7 +890,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   }
   const matchSlug = match.slug;
   log.success(
-    `[SERIES END] SERIES ENDED: ${eventData.team1_name} ${eventData.team1_series_score}-${eventData.team2_series_score} ${eventData.team2_name}`,
+    `[SERIES END] ${formatSeriesEndSummary(eventData, await knownTeamNames(match))}`,
     {
       matchId: event.matchid,
       winner: (eventData.winner as { name?: string })?.name,

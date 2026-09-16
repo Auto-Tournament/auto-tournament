@@ -270,17 +270,6 @@ export function primeServerStatusForTests(
   });
 }
 
-/**
- * Can MAT send a new match to a server reporting this status?
- *
- * Idle, obviously. 'error' too: MatchZy sets it when a load or queued load
- * fails and leaves it there until the next load, usually with no match set up.
- * Blocking on it would strand the server. If a match is in fact still set up,
- * the plugin refuses the load and MAT reports that. Every other state has a
- * match on the server (postgame and queued included) and stays busy.
- */
-export function isAllocatableStatus(status: ServerStatus | string | null | undefined): boolean {
-  return status === ServerStatus.IDLE || status === ServerStatus.ERROR;
-}
+export { isAllocatableStatus } from '../utils/matchzyServerReplies';
 
 export const serverStatusService = new ServerStatusService();

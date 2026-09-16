@@ -25,6 +25,8 @@ import { teamService } from '../services/teamService';
 import { playerService } from '../services/playerService';
 import { getMapResults } from '../services/matchMapResultService';
 import { serverAllocationTracker } from '../services/serverAllocationTracker';
+import { tournamentRowToResponse } from '../utils/tournamentRow';
+import { compareQueueOrder } from '../utils/allocationQueue';
 
 const router = Router();
 
@@ -91,34 +93,7 @@ async function getMatchDetailsBySlug(slug: string): Promise<MatchListItem | null
     );
 
     if (t) {
-      const tournament: TournamentResponse = {
-        id: t.id,
-        name: t.name,
-        type: t.type as TournamentResponse['type'],
-        format: t.format as TournamentResponse['format'],
-        status: t.status as TournamentResponse['status'],
-        maps: JSON.parse(t.maps),
-        teamIds: JSON.parse(t.team_ids),
-        settings: t.settings ? JSON.parse(t.settings) : {},
-        created_at: t.created_at,
-        updated_at: t.updated_at ?? t.created_at,
-        started_at: t.started_at,
-        completed_at: t.completed_at,
-        teams: [],
-        mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
-        teamSize:
-          t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
-        maxRounds:
-          t.max_rounds === null || typeof t.max_rounds === 'undefined'
-            ? undefined
-            : t.max_rounds,
-        overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-        overtimeSegments:
-          t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
-            ? undefined
-            : t.overtime_segments,
-        eloTemplateId: t.elo_template_id ?? undefined,
-      };
+      const tournament: TournamentResponse = tournamentRowToResponse(t);
 
       config = await generateMatchConfig(
         tournament,
@@ -543,35 +518,7 @@ router.get('/:slug.json', async (req: Request, res: Response) => {
     }
 
     // 3) Hydrate a Tournament-like object for config generation
-    const tournament: TournamentResponse = {
-      id: t.id,
-      name: t.name,
-      type: t.type as TournamentResponse['type'],
-      format: t.format as TournamentResponse['format'],
-      status: t.status as TournamentResponse['status'],
-      maps: JSON.parse(t.maps),
-      teamIds: JSON.parse(t.team_ids),
-      settings: t.settings ? JSON.parse(t.settings) : {},
-      created_at: t.created_at,
-      updated_at: t.updated_at ?? t.created_at,
-      started_at: t.started_at,
-      completed_at: t.completed_at,
-      teams: [], // Not needed for config generation
-      // Carry shuffle / round-limit fields so matchConfigBuilder can honor them.
-      mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
-      teamSize:
-        t.team_size === null || typeof t.team_size === 'undefined' ? undefined : t.team_size,
-      maxRounds:
-        t.max_rounds === null || typeof t.max_rounds === 'undefined'
-          ? undefined
-          : t.max_rounds,
-      overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-      overtimeSegments:
-        t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
-          ? undefined
-          : t.overtime_segments,
-      eloTemplateId: t.elo_template_id ?? undefined,
-    };
+    const tournament: TournamentResponse = tournamentRowToResponse(t);
 
     // 4) Generate a fresh config (reads veto_state internally)
     const fresh = await generateMatchConfig(
@@ -780,36 +727,7 @@ router.get('/', async (req: Request, res: Response) => {
           );
           if (tournamentRow) {
             const t = tournamentRow;
-            const tournament: TournamentResponse = {
-              id: t.id,
-              name: t.name,
-              type: t.type as TournamentResponse['type'],
-              format: t.format as TournamentResponse['format'],
-              status: t.status as TournamentResponse['status'],
-              maps: JSON.parse(t.maps),
-              teamIds: JSON.parse(t.team_ids),
-              settings: t.settings ? JSON.parse(t.settings) : {},
-              created_at: t.created_at,
-              updated_at: t.updated_at ?? t.created_at,
-              started_at: t.started_at,
-              completed_at: t.completed_at,
-              teams: [],
-              mapSequence: t.map_sequence ? JSON.parse(t.map_sequence) : undefined,
-              teamSize:
-                t.team_size === null || typeof t.team_size === 'undefined'
-                  ? undefined
-                  : t.team_size,
-              maxRounds:
-                t.max_rounds === null || typeof t.max_rounds === 'undefined'
-                  ? undefined
-                  : t.max_rounds,
-              overtimeMode: (t.overtime_mode as 'enabled' | 'disabled' | null) || undefined,
-              overtimeSegments:
-                t.overtime_segments === null || typeof t.overtime_segments === 'undefined'
-                  ? undefined
-                  : t.overtime_segments,
-              eloTemplateId: t.elo_template_id ?? undefined,
-            };
+            const tournament: TournamentResponse = tournamentRowToResponse(t);
 
             config = await generateMatchConfig(
               tournament,
@@ -1048,14 +966,8 @@ router.get('/', async (req: Request, res: Response) => {
     const queueableStatuses = ['pending', 'ready'];
     const waitingMatches = matches
       .filter((m) => !m.serverId && queueableStatuses.includes(m.status))
-      .sort((a, b) => {
-        // Sort by round first, then by match_number
-        // For manual matches (round=0, match_number=0), use database ID to maintain consistent order
-        if (a.round !== b.round) return a.round - b.round;
-        if (a.matchNumber !== b.matchNumber) return a.matchNumber - b.matchNumber;
-        // If round and match_number are the same (e.g., manual matches), sort by ID
-        return a.id - b.id;
-      });
+      // Same order the allocator hands out servers in (see allocationQueue).
+      .sort(compareQueueOrder);
 
     const queuePositionMap = new Map<number, number>();
     waitingMatches.forEach((match, index) => {
