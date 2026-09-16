@@ -5,11 +5,7 @@ import { requireAuth } from '../middleware/auth';
 import { log } from '../utils/logger';
 import { db } from '../config/database';
 import { parseConVarReply } from '../utils/matchzyServerReplies';
-import {
-  connectionTestCommands,
-  connectionTestServerIds,
-  type ApiReachability,
-} from '../utils/connectionTest';
+import { checkServerReachesApi } from '../utils/connectionTest';
 import { getLastServerTestEvent } from '../services/serverConnectivityService';
 import {
   findActiveMatchForServer,
@@ -106,43 +102,18 @@ router.post('/test-connection', async (req: Request, res: Response) => {
 
     // RCON successful - now test if server can reach API (Server -> API).
     // Read-only: never set convars here (see utils/connectionTest).
-    let apiReachability: ApiReachability = 'unknown';
     const savedServer = await db.queryOneAsync<{ id: string }>(
       'SELECT id FROM servers WHERE host = ? AND port = ?',
       [host, portNum]
     );
-    const testClient = new Rcon({ host, port: portNum, password, timeout: 5000 });
-
-    try {
-      await testClient.connect();
-      const [serverIdCmd, remoteLogCmd, triggerCmd] = connectionTestCommands();
-      const reportedId = parseConVarReply(await testClient.send(serverIdCmd), serverIdCmd);
-      const remoteLogUrl = parseConVarReply(await testClient.send(remoteLogCmd), remoteLogCmd);
-      const ids = connectionTestServerIds(requestedServerId, savedServer?.id, reportedId);
-
-      if (!remoteLogUrl || ids.length === 0) {
-        log.debug(`Server ${host}:${portNum} has no event URL or id yet, reachability unknown`);
-      } else {
-        const before = new Map(ids.map((id) => [id, getLastServerTestEvent(id) ?? 0]));
-        await testClient.send(triggerCmd);
-
-        apiReachability = 'unreachable';
-        const deadline = Date.now() + 5000;
-        while (Date.now() < deadline) {
-          if (ids.some((id) => (getLastServerTestEvent(id) ?? 0) > (before.get(id) ?? 0))) {
-            apiReachability = 'reachable';
-            break;
-          }
-          await new Promise((resolve) => setTimeout(resolve, 250));
-        }
-      }
-    } catch (testError) {
-      log.debug(`Server->API test failed for ${host}:${portNum}`, { error: testError });
-    } finally {
-      testClient.disconnect().catch(() => {
-        // Ignore disconnect errors
-      });
-    }
+    const apiReachability = await checkServerReachesApi({
+      client: new Rcon({ host, port: portNum, password, timeout: 5000 }),
+      knownServerIds: [requestedServerId, savedServer?.id],
+      parseReply: parseConVarReply,
+      lastTestEvent: getLastServerTestEvent,
+      onError: (testError) =>
+        log.debug(`Server->API test failed for ${host}:${portNum}`, { error: testError }),
+    });
 
     const serverCanReachApi = apiReachability === 'reachable';
 

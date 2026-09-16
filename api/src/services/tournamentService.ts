@@ -1,3 +1,4 @@
+import { revertTournamentRatings } from './ratingService';
 import { db } from '../config/database';
 import { log } from '../utils/logger';
 import { getBracketGenerator } from './bracketGenerators';
@@ -514,6 +515,10 @@ class TournamentService {
     const matchCount = await db.queryOneAsync<{ count: number }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = 1'
     );
+
+    // Undo this run's rating changes first: the rating history cascades away
+    // with the matches, and ratings left behind would stack on the next run.
+    await revertTournamentRatings(1);
 
     // Delete all matches (this also clears all veto states stored in matches)
     await db.execAsync('DELETE FROM matches WHERE tournament_id = 1');
