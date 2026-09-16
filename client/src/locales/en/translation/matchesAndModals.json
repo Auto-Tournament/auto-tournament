@@ -148,6 +148,7 @@
     }
   },
   "matchDetailsModal": {
+    "tiebreakHint": "Scores are level: {{team}} won the map, decided by tiebreak.",
     "delete": {
       "dialogTitle": "Delete Match",
       "confirmTitle": "Delete this match?",

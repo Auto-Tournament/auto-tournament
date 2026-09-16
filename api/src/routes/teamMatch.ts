@@ -44,7 +44,7 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     // Parse players JSON (preserve avatar field)
-    let parsedPlayers: Array<{ steamId: string; name: string; avatar?: string }> = [];
+    let parsedPlayers: Array<{ steamId: string; name: string; avatar?: string; elo?: number }> = [];
     if (team.players) {
       try {
         const playersObj = JSON.parse(team.players);
@@ -73,6 +73,20 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
       } catch (err) {
         console.error('[TeamMatch] Failed to parse players JSON:', err);
       }
+    }
+
+    // Roster ratings: the page sorted and labelled players by `elo`, which this
+    // response never carried, so everyone read 1500.
+    const rosterIds = parsedPlayers.map((p) => p.steamId).filter((id) => id && id !== 'unknown');
+    if (rosterIds.length > 0) {
+      const ratings = await db.queryAsync<{ id: string; current_elo: number }>(
+        `SELECT id, current_elo FROM players WHERE id IN (${rosterIds.map(() => '?').join(', ')})`,
+        rosterIds
+      );
+      const eloById = new Map(ratings.map((r) => [r.id, r.current_elo]));
+      parsedPlayers = parsedPlayers.map((p) =>
+        eloById.has(p.steamId) ? { ...p, elo: eloById.get(p.steamId) } : p
+      );
     }
 
     // Find active match (loaded or live)
@@ -135,6 +149,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
     }
 
     if (!match) {
+      const currentTournament = await db.queryOneAsync<{ status: string }>(
+        'SELECT status FROM tournament WHERE id = 1'
+      );
       return res.json({
         success: true,
         team: {
@@ -144,6 +161,9 @@ router.get('/:teamId/match', async (req: Request, res: Response) => {
           players: parsedPlayers,
         },
         hasMatch: false,
+        // Without this the page fell back to "setup" and told a finished
+        // tournament's teams it hadn't started.
+        tournamentStatus: currentTournament?.status || 'setup',
         message: 'No upcoming matches found',
       });
     }

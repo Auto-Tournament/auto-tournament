@@ -667,9 +667,11 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                     <LineChart
                       xAxis={[
                         {
-                        data: eloBuckets.map((_, index) => index),
-                        valueFormatter: (value) =>
-                          eloBuckets?.[Number(value)]?.label ?? String(value),
+                        // Categorical: one tick per bucket. A numeric index
+                        // axis added in-between ticks (0.5, 3.5, 12.5) on top
+                        // of the bucket labels.
+                        scaleType: 'point',
+                        data: eloBuckets.map((b) => b.label),
                         label: t('dashboard.stats.eloDistribution.xAxis'),
                         },
                       ]}
@@ -677,6 +679,9 @@ export function DashboardStats({ showOnboarding }: DashboardStatsProps) {
                         {
                         label: t('dashboard.stats.eloDistribution.yAxis'),
                         width: 40,
+                        // Player counts are whole numbers.
+                        tickMinStep: 1,
+                        valueFormatter: (value: number) => String(Math.round(value)),
                         },
                       ]}
                       series={[

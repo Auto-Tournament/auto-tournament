@@ -432,7 +432,9 @@
       "opponent": "Przeciwnik"
     },
     "mapChips": {
-      "live": "Na żywo"
+      "live": "Na żywo",
+      "tiebreak": "decided by tiebreak",
+      "tiebreakWin": "{{team}} won on tiebreak"
     },
     "demos": {
       "title": "Dema map",

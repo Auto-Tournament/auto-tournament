@@ -8,6 +8,16 @@ interface MapChipListProps {
   activeMapIndex: number | null;
   activeMapLabel?: string | null;
   mapResults: MatchMapResult[];
+  team1Name?: string;
+  team2Name?: string;
+}
+
+/** Winning side of a map: the recorded winner, else the higher score. */
+function mapWinner(result: MatchMapResult): 'team1' | 'team2' | null {
+  const recorded = result.winnerTeam ?? result.winner;
+  if (recorded === 'team1' || recorded === 'team2') return recorded;
+  if (result.team1Score === result.team2Score) return null;
+  return result.team1Score > result.team2Score ? 'team1' : 'team2';
 }
 
 export function MapChipList({
@@ -15,6 +25,8 @@ export function MapChipList({
   activeMapIndex,
   activeMapLabel,
   mapResults,
+  team1Name,
+  team2Name,
 }: MapChipListProps) {
   const { t } = useTranslation();
   return (
@@ -27,8 +39,19 @@ export function MapChipList({
         let chipColor: 'default' | 'success' | 'error' | 'secondary' = 'default';
 
         if (result) {
+          const winner = mapWinner(result);
           chipLabel = `${labelBase} • ${result.team1Score}-${result.team2Score}`;
-          chipColor = result.team1Score > result.team2Score ? 'success' : 'error';
+          // Level scores with a winner were decided by the damage tiebreak; a
+          // bare "2-2" gave no hint who took the map.
+          if (winner && result.team1Score === result.team2Score) {
+            const team = winner === 'team1' ? team1Name : team2Name;
+            chipLabel += ` • ${
+              team
+                ? t('matchInfo.mapChips.tiebreakWin', { team })
+                : t('matchInfo.mapChips.tiebreak')
+            }`;
+          }
+          chipColor = winner === 'team1' ? 'success' : 'error';
         } else if (activeMapIndex === idx && activeMapLabel) {
           chipLabel = `${labelBase} • ${t('matchInfo.mapChips.live')}`;
           chipColor = 'secondary';

@@ -22,7 +22,7 @@ import {
 import CloseIcon from '@mui/icons-material/Close';
 import EmojiEventsIcon from '@mui/icons-material/EmojiEvents';
 import { useTranslation } from 'react-i18next';
-import { formatDate } from '../../utils/matchUtils';
+import { formatDate, getBracketMatchLabel } from '../../utils/matchUtils';
 import { MapAccordion } from './MapAccordion';
 import type { Match, PlayerStats, TeamMatchHistory } from '../../types';
 
@@ -201,7 +201,12 @@ export function TeamMatchHistoryModal({
                   sx={{ fontWeight: 600 }}
                 />
                 <Chip
-                  label={t('teamMatchHistory.modalMatchNumber', { number: matchHistory.matchNumber })}
+                  label={
+                    getBracketMatchLabel(matchHistory) ??
+                    t('teamMatchHistory.modalMatchNumber', {
+                      number: matchHistory.globalMatchNumber ?? matchHistory.matchNumber,
+                    })
+                  }
                   variant="outlined"
                 />
                 <Chip

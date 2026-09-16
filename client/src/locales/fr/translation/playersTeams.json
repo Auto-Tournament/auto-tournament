@@ -422,7 +422,9 @@
       "opponent": "Adversaire"
     },
     "mapChips": {
-      "live": "En direct"
+      "live": "En direct",
+      "tiebreak": "decided by tiebreak",
+      "tiebreakWin": "{{team}} won on tiebreak"
     },
     "demos": {
       "title": "Démos des cartes",
