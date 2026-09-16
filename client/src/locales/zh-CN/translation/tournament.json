@@ -238,11 +238,12 @@
         "items": {
           "clearStatus": "清除赛事状态（回到设置状态）",
           "keepSettings": "<b>保留</b>赛事设置（名称、战队、赛制）",
-          "allowEdit": "让你可以再次修改设置"
+          "allowEdit": "让你可以再次修改设置",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "重置后需要重新保存，才能再次生成对阵表。",
         "note": "💡 提示：若要彻底删除赛事，请改用“删除”。",
-        "confirm": "重置为设置状态"
+        "confirm": "重置为设置状态",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
       },
       "start": {
         "titleNoServers": "⚠️ 没有可用服务器",
@@ -415,7 +416,8 @@
     },
     "swiss": {
       "notGenerated": "未生成",
-      "generatedAfter": "第 {{round}} 轮结束后将生成比赛"
+      "generatedAfter": "第 {{round}} 轮结束后将生成比赛",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "{{match}}胜者",

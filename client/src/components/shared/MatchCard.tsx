@@ -5,6 +5,8 @@ import {
   getBracketMatchLabel,
   getStatusColor,
   getStatusLabel,
+  isUnpairedSwissMatch,
+  waitingForPairingLabel,
   getRoundLabel,
 } from '../../utils/matchUtils';
 import { isManualMatch, isShuffleMatch, isVetoDisabledForMatch } from '../../utils/matchFlags';
@@ -313,29 +315,33 @@ export const MatchCard: React.FC<MatchCardProps> = ({
               />
             )}
             <Chip
-              label={getStatusLabel(
-                match.status,
-                false,
-                // Shuffle tournaments and veto-disabled matches don't use veto – treat
-                // as completed to avoid "VETO PENDING" labels on the list view.
-                vetoDisabled ? true : vetoCompleted,
-                tournamentStarted,
-                Boolean(match.serverId),
-                match.liveStats?.team1Score,
-                match.liveStats?.team2Score,
-                match.config?.maxRounds,
-                typeof match.config?.cvars === 'object' && match.config.cvars
-                  ? typeof (match.config.cvars as Record<string, string | number>)[
-                      'mp_overtime_maxrounds'
-                    ] === 'number'
-                    ? Number(
-                        (match.config.cvars as Record<string, string | number>)[
-                          'mp_overtime_maxrounds'
-                        ]
-                      )
-                    : undefined
-                  : undefined
-              )}
+              label={
+                isUnpairedSwissMatch(match)
+                  ? waitingForPairingLabel()
+                  : getStatusLabel(
+                      match.status,
+                      false,
+                      // Shuffle tournaments and veto-disabled matches don't use veto – treat
+                      // as completed to avoid "VETO PENDING" labels on the list view.
+                      vetoDisabled ? true : vetoCompleted,
+                      tournamentStarted,
+                      Boolean(match.serverId),
+                      match.liveStats?.team1Score,
+                      match.liveStats?.team2Score,
+                      match.config?.maxRounds,
+                      typeof match.config?.cvars === 'object' && match.config.cvars
+                        ? typeof (match.config.cvars as Record<string, string | number>)[
+                            'mp_overtime_maxrounds'
+                          ] === 'number'
+                          ? Number(
+                              (match.config.cvars as Record<string, string | number>)[
+                                'mp_overtime_maxrounds'
+                              ]
+                            )
+                          : undefined
+                        : undefined
+                    )
+              }
               size="small"
               color={getStatusColor(match.status)}
               sx={{ fontWeight: 600, minWidth: variant === 'live' ? 140 : 'auto' }}

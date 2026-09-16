@@ -6,6 +6,7 @@ import { normalizeTournamentSettings } from '../utils/tournamentRow';
 import { applyScoreFields, enrichMatch } from '../utils/matchEnrichment';
 import { getMapResults } from './matchMapResultService';
 import { matchLiveStatsService } from './matchLiveStatsService';
+import { getSwissStandings } from './swissProgressionService';
 import type { DbMatchRow, DbTeamRow } from '../types/database.types';
 import type {
   Tournament,
@@ -85,8 +86,9 @@ class TournamentService {
    * - Single/double elimination: winner of the final (the grand final `gf`
    *   when present, otherwise the last winners-bracket round, skipping a
    *   third-place match fed by losers).
-   * - Round robin / swiss: the team with the most match wins; null when the
-   *   top spot is shared, since no tiebreak data is stored.
+   * - Swiss: top of the Swiss standings (see utils/swissPairing).
+   * - Round robin: the team with the most match wins; null when the top spot
+   *   is shared, since no tiebreak data is stored.
    * - Shuffle: null (players, not teams, are ranked on the leaderboard).
    */
   async getTournamentWinner(
@@ -127,7 +129,14 @@ class TournamentService {
       return resolveTeam(final.winner_id);
     }
 
-    // Round robin / swiss: most match wins, no winner on a shared top spot.
+    // Swiss: top of the standings (wins, losses, Buchholz, round differential,
+    // then seed), so there is always a champion once every round is played.
+    if (type === 'swiss') {
+      const [top] = await getSwissStandings(1);
+      return top ? resolveTeam(top.teamId) : null;
+    }
+
+    // Round robin: most match wins, no winner on a shared top spot.
     const wins = new Map<string, number>();
     for (const r of rows) {
       if (r.status === 'completed' && r.winner_id) {

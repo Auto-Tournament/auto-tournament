@@ -381,6 +381,14 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
       return;
     }
 
+    // Swiss pairs each round once the previous one is done. Doing it here
+    // (rather than only on series_end) also unsticks a tournament whose round
+    // finished while advancement was broken: the next bracket fetch pairs it.
+    if (tournament.type === 'swiss') {
+      const { advanceSwissTournament } = await import('../services/swissProgressionService');
+      await advanceSwissTournament(tournamentId);
+    }
+
     // Count all matches for this tournament (bracket matches have round >= 1)
     const totalMatches = await db.queryOneAsync<{ count: number | string }>(
       'SELECT COUNT(*) as count FROM matches WHERE tournament_id = ? AND round >= 1',
@@ -458,7 +466,7 @@ export async function checkTournamentCompletion(tournamentId: number = 1): Promi
 /**
  * Make a match ready by generating config and auto-allocating server
  */
-async function makeMatchReady(match: DbMatchRow): Promise<void> {
+export async function makeMatchReady(match: DbMatchRow): Promise<void> {
   try {
     // Get tournament data
     const tournament = await db.queryOneAsync<DbTournamentRow>('SELECT * FROM tournament WHERE id = 1');

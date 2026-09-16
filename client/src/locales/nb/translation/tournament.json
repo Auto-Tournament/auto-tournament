@@ -238,11 +238,12 @@
         "items": {
           "clearStatus": "Nullstille turneringsstatusen (tilbake til oppsett)",
           "keepSettings": "<b>Beholde</b> turneringsinnstillingene (navn, lag, format)",
-          "allowEdit": "La deg redigere innstillingene på nytt"
+          "allowEdit": "La deg redigere innstillingene på nytt",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "Etter tilbakestillingen må du lagre på nytt for å generere bracketen igjen.",
         "note": "💡 Merk: Vil du fjerne turneringen helt, bruk «Slett» i stedet.",
-        "confirm": "Tilbakestill til oppsett"
+        "confirm": "Tilbakestill til oppsett",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
       },
       "start": {
         "titleNoServers": "⚠️ Ingen ledige servere",
@@ -415,7 +416,8 @@
     },
     "swiss": {
       "notGenerated": "Ikke generert",
-      "generatedAfter": "Kampene genereres når runde {{round}} er ferdig"
+      "generatedAfter": "Kampene genereres når runde {{round}} er ferdig",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "Vinner av {{match}}",

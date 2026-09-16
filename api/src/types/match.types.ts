@@ -199,7 +199,7 @@ export interface MatchListItem {
   /** Maps won in the series. */
   team1SeriesScore?: number;
   team2SeriesScore?: number;
-  /** Rounds on the map being played (null when not in progress, 0-0 during warmup). */
+  /** Rounds on the map being played (0-0 during warmup; last map once completed; null before any map). */
   team1MapScore?: number | null;
   team2MapScore?: number | null;
   currentMap?: string | null;

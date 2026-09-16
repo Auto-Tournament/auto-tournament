@@ -240,11 +240,12 @@
         "items": {
           "clearStatus": "Wyczyścić status turnieju (powrót do konfiguracji)",
           "keepSettings": "<b>Zachować</b> ustawienia turnieju (nazwa, drużyny, format)",
-          "allowEdit": "Umożliwić ponowną edycję ustawień"
+          "allowEdit": "Umożliwić ponowną edycję ustawień",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "Po zresetowaniu musisz ponownie zapisać, aby wygenerować drabinkę.",
         "note": "💡 Uwaga: aby całkowicie usunąć turniej, użyj opcji „Usuń”.",
-        "confirm": "Przywróć do konfiguracji"
+        "confirm": "Przywróć do konfiguracji",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
       },
       "start": {
         "titleNoServers": "⚠️ Brak dostępnych serwerów",
@@ -417,7 +418,8 @@
     },
     "swiss": {
       "notGenerated": "Nie wygenerowano",
-      "generatedAfter": "Mecze zostaną wygenerowane po zakończeniu rundy {{round}}"
+      "generatedAfter": "Mecze zostaną wygenerowane po zakończeniu rundy {{round}}",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "Zwycięzca {{match}}",

@@ -238,11 +238,12 @@
         "items": {
           "clearStatus": "De toernooistatus wissen (terug naar instellen)",
           "keepSettings": "De toernooi-instellingen <b>behouden</b> (naam, ploegen, formaat)",
-          "allowEdit": "Je de instellingen weer laten bewerken"
+          "allowEdit": "Je de instellingen weer laten bewerken",
+          "regenerateMatches": "Clear all match results and regenerate the brackets from scratch"
         },
-        "saveAgain": "Na het terugzetten moet je opnieuw opslaan om het schema te genereren.",
         "note": "💡 Let op: wil je het toernooi volledig verwijderen, gebruik dan “Verwijderen”.",
-        "confirm": "Terug naar instellen"
+        "confirm": "Terug naar instellen",
+        "regenerated": "Fresh brackets are created right away, so pending matches show up again immediately."
       },
       "start": {
         "titleNoServers": "⚠️ Geen servers beschikbaar",
@@ -415,7 +416,8 @@
     },
     "swiss": {
       "notGenerated": "Niet gegenereerd",
-      "generatedAfter": "Wedstrijden worden gegenereerd na afloop van ronde {{round}}"
+      "generatedAfter": "Wedstrijden worden gegenereerd na afloop van ronde {{round}}",
+      "bye": "BYE"
     },
     "slotHint": {
       "winnerOf": "Winnaar van {{match}}",
