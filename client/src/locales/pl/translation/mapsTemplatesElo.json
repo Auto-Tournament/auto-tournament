@@ -153,13 +153,16 @@
     "title": "Zapisz pulę map",
     "nameLabel": "Nazwa puli map",
     "namePlaceholder": "Moja niestandardowa pula",
-    "info": "To zapisze pulę map zawierającą {{count}} map.",
     "saveButton": "Zapisz",
     "errors": {
       "nameRequired": "Nazwa puli map jest wymagana",
       "noMaps": "Wybierz co najmniej jedną mapę",
       "saveFailed": "Nie udało się zapisać puli map"
-    }
+    },
+    "info_one": "Zostanie zapisana pula map z {{count}} mapą.",
+    "info_few": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_many": "Zostanie zapisana pula map z {{count}} mapami.",
+    "info_other": "Zostanie zapisana pula map z {{count}} mapami."
   },
   "batchServerModal": {
     "title": "Tworzenie serwerów zbiorczo",
@@ -210,22 +213,29 @@
       "helper": "Wszystkie serwery zostaną utworzone jako włączone/wyłączone"
     },
     "preview": {
-      "title": "Podgląd ({{showingFirst10, boolean, true {pierwsze 10} false {wszystkie}}})",
-      "more": "...i jeszcze {{count}}"
+      "more": "...i jeszcze {{count}}",
+      "titleFirst10": "Podgląd (pierwsze 10)",
+      "titleAll": "Podgląd (wszystkie)"
     },
     "checkServersButton": {
       "default": "Sprawdź serwery",
       "checking": "Sprawdzanie..."
     },
     "createServersButton": {
-      "default": "Utwórz {{count}} serwerów",
-      "creating": "Tworzenie..."
+      "creating": "Tworzenie...",
+      "default_one": "Utwórz {{count}} serwer",
+      "default_few": "Utwórz {{count}} serwery",
+      "default_many": "Utwórz {{count}} serwerów",
+      "default_other": "Utwórz {{count}} serwerów"
     },
     "warnings": {
       "notAllVerified": "Niektóre serwery nie przeszły testów łączności. Zostaną zapisane, ale mogą wyglądać na offline, dopóki RCON i webhook nie zostaną skonfigurowane."
     },
     "success": {
-      "createdAll": "Utworzono {{count}} serwerów"
+      "createdAll_one": "Utworzono {{count}} serwer",
+      "createdAll_few": "Utworzono {{count}} serwery",
+      "createdAll_many": "Utworzono {{count}} serwerów",
+      "createdAll_other": "Utworzono {{count}} serwerów"
     },
     "errors": {
       "baseNameRequired": "Nazwa bazowa jest wymagana",
@@ -260,7 +270,10 @@
       "defaultProtected": "Domyślny szablon \"pure-win-loss\" nie może zostać usunięty."
     },
     "import": {
-      "success": "Pomyślnie zaimportowano {{count}} szablon(ów) ELO"
+      "success_one": "Zaimportowano {{count}} szablon ELO",
+      "success_few": "Zaimportowano {{count}} szablony ELO",
+      "success_many": "Zaimportowano {{count}} szablonów ELO",
+      "success_other": "Zaimportowano {{count}} szablonów ELO"
     },
     "weights": {
       "noAdjustmentsPure": "Brak korekt statystyk (czyste win/loss)"
@@ -289,10 +302,13 @@
       "introBody": "Oczekiwany format: tablica szablonów z name, opcjonalnym description, enabled, weights, maxAdjustment oraz minAdjustment. Jeśli pominiesz id, zostanie wygenerowane na podstawie nazwy.",
       "jsonLabel": "Dane JSON",
       "validJsonTitle": "✓ Poprawny JSON!",
-      "validJsonBody": "Znaleziono {{count}} szablon{{count !== 1 ? 'y' : ''}}.",
       "previewTitle": "Podgląd:",
       "previewButton": "Podgląd",
-      "importButton": "Importuj szablony"
+      "importButton": "Importuj szablony",
+      "validJsonBody_one": "Znaleziono {{count}} szablon.",
+      "validJsonBody_few": "Znaleziono {{count}} szablony.",
+      "validJsonBody_many": "Znaleziono {{count}} szablonów.",
+      "validJsonBody_other": "Znaleziono {{count}} szablonów."
     },
     "editor": {
       "titleEdit": "Edytuj szablon ELO",

@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Vérifiez les paramètres de votre tournoi et cliquez sur « Créer un tournoi » lorsque vous êtes prêt.",
+        "info": "Vérifiez les paramètres de votre tournoi et cliquez sur « {{button}} » lorsque vous êtes prêt.",
         "nameLabel": "Nom du tournoi",
         "typeLabel": "Type de tournoi",
         "formatLabel": "Format de match",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} serveur disponible",
       "availableServers_other": "{{count}} serveurs disponibles",
       "concurrentMatches_one": "{{count}} match simultané",
-      "concurrentMatches_other": "{{count}} matchs simultanés"
+      "concurrentMatches_other": "{{count}} matchs simultanés",
+      "enabledServers_one": "{{count}} serveur activé",
+      "enabledServers_other": "{{count}} serveurs activés"
     },
     "matchRules": {
       "value": "{{maxRounds}} tours maximum par carte ; le premier à {{winRounds}} tours l’emporte.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Tours maximum par carte",
       "maxRoundsHelper": "Chaque carte se joue en {{maxRounds}} tours maximum ; le premier à {{winRounds}} tours l’emporte.",
       "maxRoundsHelperEmpty": "Nombre maximum de tours par carte (par défaut : 24, max : 30).",
-      "serversSummary": "{{servers}} configuré(s) ; {{required}} nécessaires pour jouer tous les matchs de cet arbre.",
+      "serversSummary": "Serveurs configurés : {{servers}} ; le premier tour compte {{matches}}.",
       "estimatedVolumeLabel": "Volume estimé",
       "mapsHeading": "Cartes ({{total}})",
       "noMapsSelected": "Aucune carte sélectionnée",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Aucune équipe sélectionnée (facultatif)",
       "playerRegistration": "Inscription des joueurs",
       "playerRegistrationInfo_one": "Les joueurs seront inscrits après la création du tournoi. Chaque carte sélectionnée correspond à un tour de matchs ({{count}} tour au total).",
-      "playerRegistrationInfo_other": "Les joueurs seront inscrits après la création du tournoi. Chaque carte sélectionnée correspond à un tour de matchs ({{count}} tours au total)."
+      "playerRegistrationInfo_other": "Les joueurs seront inscrits après la création du tournoi. Chaque carte sélectionnée correspond à un tour de matchs ({{count}} tours au total).",
+      "serversSummaryQueued": "Serveurs configurés : {{servers}} ; le premier tour compte {{matches}}. Les matchs au-delà de votre nombre de serveurs attendent dans la file jusqu’à ce qu’un serveur se libère."
     },
     "overtime": {
       "selectLabel": "Prolongation",
@@ -359,6 +362,22 @@
       "none": "Aucun",
       "itemCount_one": "{{count}} élément",
       "itemCount_other": "{{count}} éléments"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Choisir des équipes…",
+      "addAll": "Tout ajouter",
+      "batchAddServers": "Ajout en lot",
+      "addServer": "Ajouter un serveur",
+      "importTeams": "Importer des équipes",
+      "createTeam": "Créer une équipe",
+      "notEnoughServers": "Le premier tour compte {{matches}}, mais vous avez {{servers}}. Les matchs au-delà de votre nombre de serveurs attendent dans la file jusqu’à ce qu’un serveur se libère — ajoutez des serveurs pour tous les jouer en même temps.",
+      "notEnoughTeams": "Il faut au moins 2 équipes pour créer un tournoi. Vous en avez actuellement {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Type de tournoi invalide",
+      "powerOfTwo": "{{type}} nécessite un nombre d’équipes égal à une puissance de 2 ({{counts}}). Vous en avez sélectionné {{selected}}.",
+      "minTeams": "{{type}} nécessite au moins {{min}} équipes. Vous en avez sélectionné {{selected}}.",
+      "maxTeams": "{{type}} autorise au maximum {{max}} équipes. Vous en avez sélectionné {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Non généré",
       "generatedAfter": "Les matchs seront générés après la fin de la manche {{round}}"
+    },
+    "slotHint": {
+      "winnerOf": "Vainqueur de {{match}}",
+      "matchNumber": "match {{number}}"
     }
   }
 }

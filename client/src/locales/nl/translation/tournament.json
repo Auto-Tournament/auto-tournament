@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Controleer je toernooi-instellingen en klik op \"Toernooi maken\" wanneer je klaar bent.",
+        "info": "Controleer je toernooi-instellingen en klik op \"{{button}}\" wanneer je klaar bent.",
         "nameLabel": "Toernooinaam",
         "typeLabel": "Toernooitype",
         "formatLabel": "Matchformaat",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} beschikbare server",
       "availableServers_other": "{{count}} beschikbare servers",
       "concurrentMatches_one": "{{count}} gelijktijdige wedstrijd",
-      "concurrentMatches_other": "{{count}} gelijktijdige wedstrijden"
+      "concurrentMatches_other": "{{count}} gelijktijdige wedstrijden",
+      "enabledServers_one": "{{count}} ingeschakelde server",
+      "enabledServers_other": "{{count}} ingeschakelde servers"
     },
     "matchRules": {
       "value": "Maximaal {{maxRounds}} rondes per kaart; wie als eerste {{winRounds}} rondes wint, wint de kaart.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Maximaal aantal rondes per kaart",
       "maxRoundsHelper": "Elke kaart wordt tot {{maxRounds}} rondes gespeeld; wie als eerste {{winRounds}} rondes wint, wint.",
       "maxRoundsHelperEmpty": "Maximaal aantal rondes per kaart (standaard: 24, max: 30).",
-      "serversSummary": "{{servers}} ingesteld; er zijn er {{required}} nodig om alle wedstrijden in dit schema te spelen.",
+      "serversSummary": "{{servers}} ingesteld; de eerste ronde telt {{matches}}.",
       "estimatedVolumeLabel": "Geschatte omvang",
       "mapsHeading": "Kaarten ({{total}})",
       "noMapsSelected": "Geen kaarten geselecteerd",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Geen ploegen geselecteerd (optioneel)",
       "playerRegistration": "Spelersregistratie",
       "playerRegistrationInfo_one": "Spelers worden na het aanmaken van het toernooi geregistreerd. Elke geselecteerde kaart staat voor één ronde wedstrijden ({{count}} ronde in totaal).",
-      "playerRegistrationInfo_other": "Spelers worden na het aanmaken van het toernooi geregistreerd. Elke geselecteerde kaart staat voor één ronde wedstrijden ({{count}} rondes in totaal)."
+      "playerRegistrationInfo_other": "Spelers worden na het aanmaken van het toernooi geregistreerd. Elke geselecteerde kaart staat voor één ronde wedstrijden ({{count}} rondes in totaal).",
+      "serversSummaryQueued": "{{servers}} ingesteld; de eerste ronde telt {{matches}}. Wedstrijden boven je aantal servers wachten in de wachtrij tot er een server vrij is."
     },
     "overtime": {
       "selectLabel": "Overtime",
@@ -359,6 +362,22 @@
       "none": "Geen",
       "itemCount_one": "{{count}} item",
       "itemCount_other": "{{count}} items"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Kies ploegen…",
+      "addAll": "Alles toevoegen",
+      "batchAddServers": "Meerdere toevoegen",
+      "addServer": "Server toevoegen",
+      "importTeams": "Ploegen importeren",
+      "createTeam": "Ploeg maken",
+      "notEnoughServers": "De eerste ronde telt {{matches}}, maar je hebt {{servers}}. Wedstrijden boven je aantal servers wachten in de wachtrij tot er een server vrij is — voeg meer servers toe om ze allemaal tegelijk te spelen.",
+      "notEnoughTeams": "Je hebt minstens 2 ploegen nodig om een toernooi te maken. Je hebt er nu {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Ongeldig toernooitype",
+      "powerOfTwo": "{{type}} vereist een aantal ploegen dat een macht van 2 is ({{counts}}). Je hebt {{selected}} geselecteerd.",
+      "minTeams": "{{type}} vereist minstens {{min}} ploegen. Je hebt {{selected}} geselecteerd.",
+      "maxTeams": "{{type}} staat maximaal {{max}} ploegen toe. Je hebt {{selected}} geselecteerd."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Niet gegenereerd",
       "generatedAfter": "Wedstrijden worden gegenereerd na afloop van ronde {{round}}"
+    },
+    "slotHint": {
+      "winnerOf": "Winnaar van {{match}}",
+      "matchNumber": "wedstrijd {{number}}"
     }
   }
 }

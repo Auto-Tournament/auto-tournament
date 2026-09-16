@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Überprüfe deine Turnier-Einstellungen und klicke auf „Turnier erstellen“, wenn du bereit bist.",
+        "info": "Überprüfe deine Turnier-Einstellungen und klicke auf „{{button}}“, wenn du bereit bist.",
         "nameLabel": "Turniername",
         "typeLabel": "Turniertyp",
         "formatLabel": "Match-Format",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} verfügbaren Server",
       "availableServers_other": "{{count}} verfügbare Server",
       "concurrentMatches_one": "{{count}} gleichzeitiges Match",
-      "concurrentMatches_other": "{{count}} gleichzeitige Matches"
+      "concurrentMatches_other": "{{count}} gleichzeitige Matches",
+      "enabledServers_one": "{{count}} aktivierter Server",
+      "enabledServers_other": "{{count}} aktivierte Server"
     },
     "matchRules": {
       "value": "Maximal {{maxRounds}} Runden pro Karte; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Maximale Runden pro Karte",
       "maxRoundsHelper": "Jede Karte wird über bis zu {{maxRounds}} Runden gespielt; Sieger ist, wer zuerst {{winRounds}} Runden gewinnt.",
       "maxRoundsHelperEmpty": "Maximale Rundenzahl pro Karte (Standard: 24, max.: 30).",
-      "serversSummary": "{{servers}} konfiguriert; {{required}} werden benötigt, um alle Matches dieses Turnierbaums auszutragen.",
+      "serversSummary": "{{servers}} konfiguriert; die erste Runde hat {{matches}}.",
       "estimatedVolumeLabel": "Geschätzter Umfang",
       "mapsHeading": "Karten ({{total}})",
       "noMapsSelected": "Keine Karten ausgewählt",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Keine Mannschaften ausgewählt (optional)",
       "playerRegistration": "Spielerregistrierung",
       "playerRegistrationInfo_one": "Die Spieler werden nach dem Erstellen des Turniers registriert. Jede ausgewählte Karte entspricht einer Match-Runde (insgesamt {{count}} Runde).",
-      "playerRegistrationInfo_other": "Die Spieler werden nach dem Erstellen des Turniers registriert. Jede ausgewählte Karte entspricht einer Match-Runde (insgesamt {{count}} Runden)."
+      "playerRegistrationInfo_other": "Die Spieler werden nach dem Erstellen des Turniers registriert. Jede ausgewählte Karte entspricht einer Match-Runde (insgesamt {{count}} Runden).",
+      "serversSummaryQueued": "{{servers}} konfiguriert; die erste Runde hat {{matches}}. Matches, für die kein Server frei ist, warten in der Warteschlange, bis einer frei wird."
     },
     "overtime": {
       "selectLabel": "Verlängerung",
@@ -359,6 +362,22 @@
       "none": "Keine",
       "itemCount_one": "{{count}} Eintrag",
       "itemCount_other": "{{count}} Einträge"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Teams auswählen…",
+      "addAll": "Alle hinzufügen",
+      "batchAddServers": "Batch hinzufügen",
+      "addServer": "Server hinzufügen",
+      "importTeams": "Teams importieren",
+      "createTeam": "Team erstellen",
+      "notEnoughServers": "Die erste Runde hat {{matches}}, du hast aber {{servers}}. Matches, für die kein Server frei ist, warten in der Warteschlange, bis einer frei wird – füge weitere Server hinzu, um alle gleichzeitig zu spielen.",
+      "notEnoughTeams": "Du brauchst mindestens 2 Teams, um ein Turnier zu erstellen. Aktuell hast du {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Ungültiger Turniertyp",
+      "powerOfTwo": "{{type}} erfordert eine Teamanzahl, die eine Zweierpotenz ist ({{counts}}). Ausgewählt: {{selected}}.",
+      "minTeams": "{{type}} erfordert mindestens {{min}} Teams. Ausgewählt: {{selected}}.",
+      "maxTeams": "{{type}} erlaubt höchstens {{max}} Teams. Ausgewählt: {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Nicht erstellt",
       "generatedAfter": "Matches werden nach Abschluss von Runde {{round}} erstellt"
+    },
+    "slotHint": {
+      "winnerOf": "Sieger von {{match}}",
+      "matchNumber": "Match {{number}}"
     }
   }
 }

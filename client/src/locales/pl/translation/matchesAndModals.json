@@ -26,7 +26,8 @@
     "sections": {
       "live": "Mecze na żywo ({{count}})",
       "upcoming": "Nadchodzące mecze ({{count}})",
-      "history": "Historia meczów ({{count}})"
+      "history": "Historia meczów ({{count}})",
+      "inQueue": "W kolejce: {{count}}"
     },
     "manualMatchLabel": "Mecz ręczny",
     "create": {
@@ -34,9 +35,12 @@
     },
     "bulkDelete": {
       "title": "Usuń mecze ręczne",
-      "message": "Czy na pewno chcesz usunąć {{count}} mecz ręczny{{suffix}}? Tej akcji nie można cofnąć.",
       "deleted_one": "Usunięto {{count}} mecz",
-      "deleted_other": "Usunięto {{count}} meczów"
+      "deleted_other": "Usunięto {{count}} meczów",
+      "message_one": "Czy na pewno chcesz usunąć {{count}} ręczny mecz? Tej operacji nie można cofnąć.",
+      "message_few": "Czy na pewno chcesz usunąć {{count}} ręczne mecze? Tej operacji nie można cofnąć.",
+      "message_many": "Czy na pewno chcesz usunąć {{count}} ręcznych meczów? Tej operacji nie można cofnąć.",
+      "message_other": "Czy na pewno chcesz usunąć {{count}} ręcznych meczów? Tej operacji nie można cofnąć."
     },
     "card": {
       "matchNumber": "Mecz #{{number}}",
@@ -88,7 +92,8 @@
       "statusBusy": "Zajęty",
       "statusOffline": "Offline",
       "readyIn": "Gotowy za: {{time}}"
-    }
+    },
+    "latestEvent": "Ostatnie: {{event}}"
   },
   "manualMatchModal": {
     "title": "Utwórz mecz ręczny",
@@ -324,16 +329,26 @@
       "noJson": "Wpisz dane JSON"
     },
     "preview": {
-      "summary": "✓ Poprawny JSON! Znaleziono {{teamCount}} drużyn{{teamCount, plural, one {ę} other {y}}} z łączną liczbą {{playerCount}} graczy.",
+      "summary": "✓ Poprawny JSON! Znaleziono: {{teams}}, łącznie {{players}}.",
       "title": "Podgląd:",
-      "playersChip": "{{count}} gracz{{count, plural, one {} other {y}}}",
       "missingDiscordTotal": "Gracze bez ID Discord: {{count}}",
-      "missingDiscordChip": "Bez Discorda: {{count}}"
+      "missingDiscordChip": "Bez Discorda: {{count}}",
+      "playersChip_one": "{{count}} gracz",
+      "playersChip_few": "{{count}} graczy",
+      "playersChip_many": "{{count}} graczy",
+      "playersChip_other": "{{count}} graczy",
+      "teamsCount_one": "{{count}} drużyna",
+      "teamsCount_few": "{{count}} drużyny",
+      "teamsCount_many": "{{count}} drużyn",
+      "teamsCount_other": "{{count}} drużyn"
     },
     "actions": {
       "preview": "Podgląd",
       "importing": "Importowanie...",
-      "import": "Importuj {{count}} drużyn{{count, plural, one {ę} other {y}}}"
+      "import_one": "Importuj {{count}} drużynę",
+      "import_few": "Importuj {{count}} drużyny",
+      "import_many": "Importuj {{count}} drużyn",
+      "import_other": "Importuj {{count}} drużyn"
     },
     "warnings": {
       "title": "Niektóre ID Discord zostały pominięte. Ci gracze zostaną zaimportowani bez nich:",
@@ -353,15 +368,21 @@
     "actions": {
       "parseValidate": "Przetwórz i zweryfikuj",
       "importing": "Importowanie...",
-      "import": "Importuj {{count}} gracz{{count, plural, one {} other {y}}}"
+      "import_one": "Importuj {{count}} gracza",
+      "import_few": "Importuj {{count}} graczy",
+      "import_many": "Importuj {{count}} graczy",
+      "import_other": "Importuj {{count}} graczy"
     },
     "preview": {
-      "readyChip": "{{count}} gracz{{count, plural, one {} other {y}}} gotowy do importu",
       "title": "Gracze do importu ({{count}}):",
       "steamId": "Steam ID64: {{steamId}}",
       "name": "Nazwa: {{name}}",
       "initialElo": "Początkowe ELO: {{elo}}",
-      "avatar": "URL avatara: {{url}}"
+      "avatar": "URL avatara: {{url}}",
+      "readyChip_one": "{{count}} gracz gotowy do importu",
+      "readyChip_few": "{{count}} graczy gotowych do importu",
+      "readyChip_many": "{{count}} graczy gotowych do importu",
+      "readyChip_other": "{{count}} graczy gotowych do importu"
     },
     "errors": {
       "noData": "Wpisz dane JSON lub CSV",
@@ -387,11 +408,14 @@
     "playerCard": {
       "alreadyInTeam": "Już w drużynie"
     },
-    "addPlayersButton": "Dodaj {{count}} gracz{{count, plural, one {} other {y}}}",
     "errors": {
       "loadFailed": "Nie udało się załadować graczy",
       "noSelectable": "Brak graczy możliwych do wybrania"
-    }
+    },
+    "addPlayersButton_one": "Dodaj {{count}} gracza",
+    "addPlayersButton_few": "Dodaj {{count}} graczy",
+    "addPlayersButton_many": "Dodaj {{count}} graczy",
+    "addPlayersButton_other": "Dodaj {{count}} graczy"
   },
   "soundSettingsModal": {
     "title": "Ustawienia dźwięku",

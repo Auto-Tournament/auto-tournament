@@ -1,5 +1,6 @@
 import { Box, Typography, Chip, Alert, Button, Autocomplete, TextField } from '@mui/material';
 import { Warning as WarningIcon, Add as AddIcon } from '@mui/icons-material';
+import { useTranslation } from 'react-i18next';
 import { Team } from '../../types';
 import { validateTeamCountForType } from '../../utils/tournamentValidation';
 
@@ -36,12 +37,13 @@ export function TeamSelectionStep({
   onAddServer,
   onBatchAddServers,
 }: TeamSelectionStepProps) {
+  const { t } = useTranslation();
   // Hide shuffle-generated temporary teams from selection (IDs prefixed with "shuffle-")
   const selectableTeams = teams.filter((team) => !team.id.startsWith('shuffle-'));
 
   // Team count validation
   const teamCountValidation =
-    selectedTeams.length > 0 ? validateTeamCountForType(type, selectedTeams.length) : null;
+    selectedTeams.length > 0 ? validateTeamCountForType(type, selectedTeams.length, t) : null;
 
   return (
     <Box>
@@ -76,7 +78,7 @@ export function TeamSelectionStep({
                   startIcon={<AddIcon />}
                   onClick={onBatchAddServers}
                 >
-                  Batch Add
+                  {t('tournament.teamSelection.batchAddServers')}
                 </Button>
               )}
               <Button
@@ -85,15 +87,16 @@ export function TeamSelectionStep({
                 startIcon={<AddIcon />}
                 onClick={onAddServer || (() => (window.location.href = '/servers'))}
               >
-                Add Server
+                {t('tournament.teamSelection.addServer')}
               </Button>
             </Box>
           }
         >
           <Typography variant="body2">
-            The first round will have <strong>{requiredServers}</strong> concurrent match
-            {requiredServers !== 1 ? 'es' : ''}, but you only have <strong>{serverCount}</strong>{' '}
-            enabled server{serverCount !== 1 ? 's' : ''}. Add more servers or matches will queue.
+            {t('tournament.teamSelection.notEnoughServers', {
+              matches: t('tournament.counts.concurrentMatches', { count: requiredServers }),
+              servers: t('tournament.counts.enabledServers', { count: serverCount }),
+            })}
           </Typography>
         </Alert>
       )}
@@ -113,7 +116,7 @@ export function TeamSelectionStep({
                   startIcon={<AddIcon />}
                   onClick={onImportTeams}
                 >
-                  Import Teams
+                  {t('tournament.teamSelection.importTeams')}
                 </Button>
               )}
               <Button
@@ -122,14 +125,15 @@ export function TeamSelectionStep({
                 startIcon={<AddIcon />}
                 onClick={onCreateTeam || (() => (window.location.href = '/teams'))}
               >
-                Create Team
+                {t('tournament.teamSelection.createTeam')}
               </Button>
             </Box>
           }
         >
           <Typography variant="body2">
-            You need at least <strong>2 teams</strong> to create a tournament. You currently have{' '}
-            <strong>{selectableTeams.length}</strong> team(s).
+            {t('tournament.teamSelection.notEnoughTeams', {
+              teams: t('tournament.counts.teams', { count: selectableTeams.length }),
+            })}
           </Typography>
         </Alert>
       )}
@@ -143,7 +147,7 @@ export function TeamSelectionStep({
           onChange={(_, newValue) => onTeamsChange(newValue.map((t) => t.id))}
           disabled={!canEdit || saving}
           sx={{ flex: 1 }}
-          renderInput={(params) => <TextField {...params} placeholder="Choose teams..." />}
+          renderInput={(params) => <TextField {...params} placeholder={t('tournament.teamSelection.chooseTeamsPlaceholder')} />}
           renderTags={(value, getTagProps) =>
             value.map((option, index) => (
               <Chip label={option.name} {...getTagProps({ index })} key={option.id} />
@@ -156,7 +160,7 @@ export function TeamSelectionStep({
           disabled={!canEdit || saving || selectableTeams.length === 0}
           sx={{ mt: 1 }}
         >
-          Add All
+          {t('tournament.teamSelection.addAll')}
         </Button>
       </Box>
     </Box>

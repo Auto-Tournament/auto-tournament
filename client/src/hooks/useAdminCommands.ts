@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { api } from '../utils/api';
 
 export interface ExecutionResult {
@@ -10,6 +11,7 @@ export interface ExecutionResult {
 }
 
 export const useAdminCommands = () => {
+  const { t } = useTranslation();
   const [executing, setExecuting] = useState(false);
   const [results, setResults] = useState<ExecutionResult[]>([]);
   const [error, setError] = useState('');
@@ -70,19 +72,26 @@ export const useAdminCommands = () => {
 
       if (response.success) {
         setResults(response.results || []);
-        const successCount = response.results?.filter((r) => r.success).length || 0;
-        const failCount = response.results?.length - successCount || 0;
+        // Build the toast from the result counts rather than showing the API's
+        // (English) message, so it follows the UI language.
+        const total = response.results?.length ?? 0;
+        const successCount = response.results?.filter((r) => r.success).length ?? 0;
+        const failCount = total - successCount;
         setSuccess(
-          `Command executed on ${successCount} server(s)${
-            failCount > 0 ? `, ${failCount} failed` : ''
-          }`
+          failCount > 0
+            ? t('adminToolsPage.toasts.commandPartial', {
+                succeeded: successCount,
+                failed: failCount,
+                total,
+              })
+            : t('adminToolsPage.toasts.commandExecuted', { count: successCount })
         );
       } else {
-        setError('Failed to execute command');
+        setError(t('adminToolsPage.toasts.commandFailed'));
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to execute command');
+      setError(error.message || t('adminToolsPage.toasts.commandFailed'));
     } finally {
       setExecuting(false);
     }

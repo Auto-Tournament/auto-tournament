@@ -153,13 +153,14 @@
     "title": "Enregistrer le pool de cartes",
     "nameLabel": "Nom du pool de cartes",
     "namePlaceholder": "Mon pool personnalisé",
-    "info": "Cela enregistrera un pool de cartes avec {{count}} carte{{count, plural, one {} other {s}}}.",
     "saveButton": "Enregistrer",
     "errors": {
       "nameRequired": "Le nom du pool de cartes est requis",
       "noMaps": "Veuillez sélectionner au moins une carte",
       "saveFailed": "Impossible d’enregistrer le pool de cartes"
-    }
+    },
+    "info_one": "Cela enregistre un pool de cartes avec {{count}} carte.",
+    "info_other": "Cela enregistre un pool de cartes avec {{count}} cartes."
   },
   "batchServerModal": {
     "title": "Créer des serveurs en lot",
@@ -210,22 +211,25 @@
       "helper": "Tous les serveurs seront créés comme activés/désactivés"
     },
     "preview": {
-      "title": "Aperçu ({{showingFirst10, boolean, true {affiche les 10 premiers} false {tous}}})",
-      "more": "...et {{count}} de plus"
+      "more": "...et {{count}} de plus",
+      "titleFirst10": "Aperçu (10 premiers)",
+      "titleAll": "Aperçu (tous)"
     },
     "checkServersButton": {
       "default": "Vérifier les serveurs",
       "checking": "Vérification…"
     },
     "createServersButton": {
-      "default": "Créer {{count}} serveur{{count, plural, one {} other {s}}}",
-      "creating": "Création…"
+      "creating": "Création…",
+      "default_one": "Créer {{count}} serveur",
+      "default_other": "Créer {{count}} serveurs"
     },
     "warnings": {
       "notAllVerified": "Certains serveurs n’ont pas passé les vérifications de connectivité. Ils seront enregistrés, mais peuvent apparaître hors ligne jusqu’à ce que RCON et le webhook soient configurés."
     },
     "success": {
-      "createdAll": "{{count}} serveur{{count, plural, one {} other {s}}} créé{{count, plural, one {} other {s}}} avec succès"
+      "createdAll_one": "{{count}} serveur créé",
+      "createdAll_other": "{{count}} serveurs créés"
     },
     "errors": {
       "baseNameRequired": "Le nom de base est requis",
@@ -260,7 +264,8 @@
       "defaultProtected": "Le modèle par défaut \"pure-win-loss\" ne peut pas être supprimé."
     },
     "import": {
-      "success": "{{count}} modèle{{count, plural, one {} other {s}}} ELO importé{{count, plural, one {} other {s}}} avec succès"
+      "success_one": "{{count}} modèle ELO importé",
+      "success_other": "{{count}} modèles ELO importés"
     },
     "weights": {
       "noAdjustmentsPure": "Aucun ajustement de stats (victoire/défaite uniquement)"
@@ -289,10 +294,11 @@
       "introBody": "Format attendu : une liste de modèles avec name, description (facultatif), enabled, weights, maxAdjustment et minAdjustment. Si vous omettez id, il sera généré à partir du nom.",
       "jsonLabel": "Données JSON",
       "validJsonTitle": "✓ JSON valide !",
-      "validJsonBody": "{{count}} modèle{{count !== 1 ? 's' : ''}} trouvé{{count !== 1 ? 's' : ''}}.",
       "previewTitle": "Aperçu :",
       "previewButton": "Aperçu",
-      "importButton": "Importer les modèles"
+      "importButton": "Importer les modèles",
+      "validJsonBody_one": "{{count}} modèle trouvé.",
+      "validJsonBody_other": "{{count}} modèles trouvés."
     },
     "editor": {
       "titleEdit": "Modifier le modèle ELO",

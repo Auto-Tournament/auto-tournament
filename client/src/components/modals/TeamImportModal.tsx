@@ -284,8 +284,10 @@ export const TeamImportModal: React.FC<TeamImportModalProps> = ({ open, onClose,
               <Alert severity="success" icon={<CheckCircleIcon />} sx={{ mb: 2 }}>
                 <Typography variant="body2">
                   {t('teamImportModal.preview.summary', {
-                    teamCount: parsedTeams.length,
-                    playerCount: parsedTeams.reduce((sum, t) => sum + t.players.length, 0),
+                    teams: t('teamImportModal.preview.teamsCount', { count: parsedTeams.length }),
+                    players: t('teamImportModal.preview.playersChip', {
+                      count: parsedTeams.reduce((sum, team) => sum + team.players.length, 0),
+                    }),
                   })}
                 </Typography>
                 {missingDiscordTotal > 0 && (

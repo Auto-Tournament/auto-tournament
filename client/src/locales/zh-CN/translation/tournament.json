@@ -55,7 +55,7 @@
     },
     "review": {
       "summary": {
-        "info": "请检查你的锦标赛设置，准备好后点击“创建锦标赛”。",
+        "info": "请检查你的锦标赛设置，准备好后点击“{{button}}”。",
         "nameLabel": "锦标赛名称",
         "typeLabel": "锦标赛类型",
         "formatLabel": "比赛赛制",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} 台可用服务器",
       "availableServers_other": "{{count}} 台可用服务器",
       "concurrentMatches_one": "{{count}} 场同时进行的比赛",
-      "concurrentMatches_other": "{{count}} 场同时进行的比赛"
+      "concurrentMatches_other": "{{count}} 场同时进行的比赛",
+      "enabledServers_one": "{{count}} 台已启用的服务器",
+      "enabledServers_other": "{{count}} 台已启用的服务器"
     },
     "matchRules": {
       "value": "每张地图最多 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜。",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "每张地图最大回合数",
       "maxRoundsHelper": "每张地图最多打 {{maxRounds}} 回合；先赢得 {{winRounds}} 回合者获胜。",
       "maxRoundsHelperEmpty": "每张地图的最大回合数（默认 24，最大 30）。",
-      "serversSummary": "已配置 {{servers}}；运行本对阵表的全部比赛需要 {{required}} 台。",
+      "serversSummary": "已配置 {{servers}}；第一轮共有 {{matches}}。",
       "estimatedVolumeLabel": "预计规模",
       "mapsHeading": "地图（{{total}}）",
       "noMapsSelected": "未选择地图",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "未选择战队（可选）",
       "playerRegistration": "玩家注册",
       "playerRegistrationInfo_one": "玩家将在赛事创建后注册。每张所选地图代表一轮比赛（共 {{count}} 轮）。",
-      "playerRegistrationInfo_other": "玩家将在赛事创建后注册。每张所选地图代表一轮比赛（共 {{count}} 轮）。"
+      "playerRegistrationInfo_other": "玩家将在赛事创建后注册。每张所选地图代表一轮比赛（共 {{count}} 轮）。",
+      "serversSummaryQueued": "已配置 {{servers}}；第一轮共有 {{matches}}。超出服务器数量的比赛会排队等待，直到有空闲服务器。"
     },
     "overtime": {
       "selectLabel": "加时",
@@ -359,6 +362,22 @@
       "none": "无",
       "itemCount_one": "{{count}} 项",
       "itemCount_other": "{{count}} 项"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "选择战队…",
+      "addAll": "全部添加",
+      "batchAddServers": "批量添加",
+      "addServer": "添加服务器",
+      "importTeams": "导入战队",
+      "createTeam": "创建战队",
+      "notEnoughServers": "第一轮共有 {{matches}}，但你只有 {{servers}}。超出服务器数量的比赛会排队等待，直到有空闲服务器 — 添加更多服务器即可同时进行所有比赛。",
+      "notEnoughTeams": "创建锦标赛至少需要 2 支战队。你当前有 {{teams}}。"
+    },
+    "teamValidation": {
+      "invalidType": "无效的锦标赛类型",
+      "powerOfTwo": "{{type}} 要求战队数量为 2 的幂（{{counts}}）。你选择了 {{selected}}。",
+      "minTeams": "{{type}} 至少需要 {{min}} 支战队。你选择了 {{selected}}。",
+      "maxTeams": "{{type}} 最多允许 {{max}} 支战队。你选择了 {{selected}}。"
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "未生成",
       "generatedAfter": "第 {{round}} 轮结束后将生成比赛"
+    },
+    "slotHint": {
+      "winnerOf": "{{match}}胜者",
+      "matchNumber": "第 {{number}} 场比赛"
     }
   }
 }

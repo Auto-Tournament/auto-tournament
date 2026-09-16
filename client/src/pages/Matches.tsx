@@ -703,7 +703,7 @@ export default function Matches() {
                         {event && event.event && (
                           <Box mt={1} p={1} bgcolor="action.hover" borderRadius={1}>
                             <Typography variant="caption" color="text.secondary">
-                              Latest: {event.event.replace(/_/g, ' ')}
+                              {t('matchesPage.latestEvent', { event: event.event.replace(/_/g, ' ') })}
                             </Typography>
                           </Box>
                         )}
@@ -724,7 +724,9 @@ export default function Matches() {
                 </Typography>
                 {serverAllocationStatus && serverAllocationStatus.requiredServerCount > 0 && (
                   <Chip 
-                    label={`${serverAllocationStatus.requiredServerCount} in queue`}
+                    label={t('matchesPage.sections.inQueue', {
+                      count: serverAllocationStatus.requiredServerCount,
+                    })}
                     color="primary"
                     size="small"
                     sx={{ fontWeight: 600 }}
@@ -850,7 +852,6 @@ export default function Matches() {
         title={t('matchesPage.bulkDelete.title')}
         message={t('matchesPage.bulkDelete.message', {
           count: selectedMatchSlugs.size,
-          suffix: selectedMatchSlugs.size === 1 ? '' : 'es',
         })}
         confirmColor="error"
         onConfirm={async () => {

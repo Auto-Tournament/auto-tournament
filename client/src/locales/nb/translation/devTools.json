@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Testspillere",
       "description": "Opprett spillere med ELO-rating for å teste shuffle-turneringer og spilleradministrasjon.",
-      "success": "Opprettet {{created}} spiller(e){{updated, number} > 0 ? (', og oppdaterte ' + updated) : ''}}!",
+      "success": "Opprettet {{created}} testspillere!",
       "errors": {
         "create": "Kunne ikke opprette testspillere",
         "partial": "Opprettet {{created}} spiller(e), oppdaterte {{updated}}, men {{failed}} feilet. Sjekk konsollen for detaljer."
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "Opprett {{count}} spillere",
         "createCustom": "Opprett spillere"
-      }
+      },
+      "successWithUpdated": "Opprettet {{created}} og oppdaterte {{updated}} testspillere!"
     },
     "testServers": {
       "title": "Testservere",
@@ -44,8 +45,9 @@
       },
       "customLabel": "Egendefinert antall servere",
       "buttons": {
-        "createFixed": "Opprett {{count}} server{{count === 1 ? '' : 'e'}}",
-        "createCustom": "Opprett servere"
+        "createCustom": "Opprett servere",
+        "createFixed_one": "Opprett {{count}} server",
+        "createFixed_other": "Opprett {{count}} servere"
       }
     },
     "dangerZone": {

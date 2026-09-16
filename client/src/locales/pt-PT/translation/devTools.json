@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Jogadores de teste",
       "description": "Cria jogadores com ratings ELO para testar torneios shuffle e gestão de jogadores.",
-      "success": "Criados {{created}} jogador(es) com sucesso{{updated, number} > 0 ? (', e atualizados ' + updated) : ''}}!",
+      "success": "Criados {{created}} jogadores de teste!",
       "errors": {
         "create": "Falha ao criar jogadores de teste",
         "partial": "Foram criados {{created}} jogador(es), atualizados {{updated}}, mas {{failed}} falharam. Verifica a consola para detalhes."
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "Criar {{count}} jogadores",
         "createCustom": "Criar jogadores"
-      }
+      },
+      "successWithUpdated": "Criados {{created}} e atualizados {{updated}} jogadores de teste!"
     },
     "testServers": {
       "title": "Servidores de teste",
@@ -44,8 +45,9 @@
       },
       "customLabel": "Número personalizado de servidores",
       "buttons": {
-        "createFixed": "Criar {{count}} servidor{{count === 1 ? '' : 'es'}}",
-        "createCustom": "Criar servidores"
+        "createCustom": "Criar servidores",
+        "createFixed_one": "Criar {{count}} servidor",
+        "createFixed_other": "Criar {{count}} servidores"
       }
     },
     "dangerZone": {

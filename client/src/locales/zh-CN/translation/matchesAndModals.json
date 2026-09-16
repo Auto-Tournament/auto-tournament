@@ -26,7 +26,8 @@
     "sections": {
       "live": "进行中的比赛（{{count}}）",
       "upcoming": "即将开始的比赛（{{count}}）",
-      "history": "比赛历史（{{count}}）"
+      "history": "比赛历史（{{count}}）",
+      "inQueue": "{{count}} 场排队中"
     },
     "manualMatchLabel": "手动比赛",
     "create": {
@@ -34,9 +35,10 @@
     },
     "bulkDelete": {
       "title": "删除手动比赛",
-      "message": "确定要删除 {{count}} 场手动比赛{{suffix}}吗？该操作无法撤销。",
       "deleted_one": "已删除 {{count}} 场比赛",
-      "deleted_other": "已删除 {{count}} 场比赛"
+      "deleted_other": "已删除 {{count}} 场比赛",
+      "message_one": "确定要删除 {{count}} 场手动比赛吗？该操作无法撤销。",
+      "message_other": "确定要删除 {{count}} 场手动比赛吗？该操作无法撤销。"
     },
     "card": {
       "matchNumber": "比赛 #{{number}}",
@@ -88,7 +90,8 @@
       "statusBusy": "占用",
       "statusOffline": "离线",
       "readyIn": "就绪倒计时：{{time}}"
-    }
+    },
+    "latestEvent": "最新：{{event}}"
   },
   "manualMatchModal": {
     "title": "创建手动比赛",
@@ -324,16 +327,20 @@
       "noJson": "请先粘贴 JSON 数据"
     },
     "preview": {
-      "summary": "✓ JSON 校验通过！找到 {{teamCount}} 支战队，共 {{playerCount}} 名选手。",
+      "summary": "✓ JSON 有效！共找到 {{teams}}，包含 {{players}}。",
       "title": "预览：",
-      "playersChip": "{{count}} 名选手",
       "missingDiscordTotal": "没有 Discord ID 的选手：{{count}}",
-      "missingDiscordChip": "无 Discord：{{count}}"
+      "missingDiscordChip": "无 Discord：{{count}}",
+      "playersChip_one": "{{count}} 名选手",
+      "playersChip_other": "{{count}} 名选手",
+      "teamsCount_one": "{{count}} 支战队",
+      "teamsCount_other": "{{count}} 支战队"
     },
     "actions": {
       "preview": "预览",
       "importing": "正在导入…",
-      "import": "导入 {{count}} 支战队"
+      "import_one": "导入 {{count}} 支战队",
+      "import_other": "导入 {{count}} 支战队"
     },
     "warnings": {
       "title": "部分 Discord ID 已被忽略，这些选手将在没有 Discord ID 的情况下导入：",
@@ -353,15 +360,17 @@
     "actions": {
       "parseValidate": "解析并校验",
       "importing": "正在导入…",
-      "import": "导入 {{count}} 名选手"
+      "import_one": "导入 {{count}} 名选手",
+      "import_other": "导入 {{count}} 名选手"
     },
     "preview": {
-      "readyChip": "{{count}} 名选手可导入",
       "title": "待导入选手（{{count}}）：",
       "steamId": "Steam ID：{{steamId}}",
       "name": "姓名：{{name}}",
       "initialElo": "初始 ELO：{{elo}}",
-      "avatar": "头像：{{url}}"
+      "avatar": "头像：{{url}}",
+      "readyChip_one": "{{count}} 名选手可导入",
+      "readyChip_other": "{{count}} 名选手可导入"
     },
     "errors": {
       "noData": "请先输入 JSON 或 CSV 数据",
@@ -387,11 +396,12 @@
     "playerCard": {
       "alreadyInTeam": "已在该战队中"
     },
-    "addPlayersButton": "添加 {{count}} 名选手",
     "errors": {
       "loadFailed": "加载选手列表失败",
       "noSelectable": "没有可选择的选手"
-    }
+    },
+    "addPlayersButton_one": "添加 {{count}} 名选手",
+    "addPlayersButton_other": "添加 {{count}} 名选手"
   },
   "soundSettingsModal": {
     "title": "声音设置",

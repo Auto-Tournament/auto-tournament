@@ -280,7 +280,10 @@ export const TournamentLive: React.FC<TournamentLiveProps> = ({
               {t('tournament.labels.format')}
             </Typography>
             <Typography variant="body2">
-              {TOURNAMENT_TYPES.find((t) => t.value === tournament.type)?.label} •{' '}
+              {TOURNAMENT_TYPES.some((tt) => tt.value === tournament.type)
+                ? t(`tournament.typeSelector.types.${tournament.type}.label`)
+                : tournament.type}{' '}
+              •{' '}
               {MATCH_FORMATS.find((f) => f.value === tournament.format)?.label}
             </Typography>
           </Grid>

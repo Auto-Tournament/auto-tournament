@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Reveja as definições do torneio e clique em \"Criar torneio\" quando estiver pronto.",
+        "info": "Reveja as definições do torneio e clique em \"{{button}}\" quando estiver pronto.",
         "nameLabel": "Nome do torneio",
         "typeLabel": "Tipo de torneio",
         "formatLabel": "Formato do jogo",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} servidor disponível",
       "availableServers_other": "{{count}} servidores disponíveis",
       "concurrentMatches_one": "{{count}} jogo em simultâneo",
-      "concurrentMatches_other": "{{count}} jogos em simultâneo"
+      "concurrentMatches_other": "{{count}} jogos em simultâneo",
+      "enabledServers_one": "{{count}} servidor ativado",
+      "enabledServers_other": "{{count}} servidores ativados"
     },
     "matchRules": {
       "value": "Máximo de {{maxRounds}} rondas por mapa; vence quem chegar primeiro a {{winRounds}} rondas.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Rondas máximas por mapa",
       "maxRoundsHelper": "Cada mapa é jogado até {{maxRounds}} rondas; vence quem chegar primeiro a {{winRounds}} rondas.",
       "maxRoundsHelperEmpty": "Número máximo de rondas por mapa (predefinição: 24, máx.: 30).",
-      "serversSummary": "{{servers}} configurados; são necessários {{required}} para disputar todos os jogos desta chave.",
+      "serversSummary": "{{servers}} configurados; a primeira ronda tem {{matches}}.",
       "estimatedVolumeLabel": "Volume estimado",
       "mapsHeading": "Mapas ({{total}})",
       "noMapsSelected": "Nenhum mapa selecionado",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "Nenhuma equipa selecionada (opcional)",
       "playerRegistration": "Registo de jogadores",
       "playerRegistrationInfo_one": "Os jogadores são registados depois de criar o torneio. Cada mapa selecionado corresponde a uma ronda de jogos ({{count}} ronda no total).",
-      "playerRegistrationInfo_other": "Os jogadores são registados depois de criar o torneio. Cada mapa selecionado corresponde a uma ronda de jogos ({{count}} rondas no total)."
+      "playerRegistrationInfo_other": "Os jogadores são registados depois de criar o torneio. Cada mapa selecionado corresponde a uma ronda de jogos ({{count}} rondas no total).",
+      "serversSummaryQueued": "{{servers}} configurados; a primeira ronda tem {{matches}}. Os jogos além do número de servidores ficam em fila até haver um servidor livre."
     },
     "overtime": {
       "selectLabel": "Prolongamento",
@@ -359,6 +362,22 @@
       "none": "Nenhum",
       "itemCount_one": "{{count}} item",
       "itemCount_other": "{{count}} itens"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Escolha as equipas…",
+      "addAll": "Adicionar todas",
+      "batchAddServers": "Adicionar em lote",
+      "addServer": "Adicionar servidor",
+      "importTeams": "Importar equipas",
+      "createTeam": "Criar equipa",
+      "notEnoughServers": "A primeira ronda tem {{matches}}, mas tem {{servers}}. Os jogos além do número de servidores ficam em fila até haver um servidor livre — adicione mais servidores para os disputar todos ao mesmo tempo.",
+      "notEnoughTeams": "Precisa de pelo menos 2 equipas para criar um torneio. De momento tem {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Tipo de torneio inválido",
+      "powerOfTwo": "{{type}} requer um número de equipas que seja potência de 2 ({{counts}}). Selecionou {{selected}}.",
+      "minTeams": "{{type}} requer pelo menos {{min}} equipas. Selecionou {{selected}}.",
+      "maxTeams": "{{type}} permite no máximo {{max}} equipas. Selecionou {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "Não gerado",
       "generatedAfter": "As partidas serão geradas após a ronda {{round}} terminar"
+    },
+    "slotHint": {
+      "winnerOf": "Vencedor de {{match}}",
+      "matchNumber": "jogo {{number}}"
     }
   }
 }

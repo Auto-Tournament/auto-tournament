@@ -90,7 +90,9 @@
       "title": "Prestatietrends",
       "noData": "Nog geen bruikbare prestatiegegevens – speel een paar rondes om ADR- en K/D-trends te zien.",
       "avgAdr": "ADR: {{value}} gem.",
-      "avgKd": "K/D: {{value}} gem."
+      "avgKd": "K/D: {{value}} gem.",
+      "matchCount_one": "{{count}} wedstrijd",
+      "matchCount_other": "{{count}} wedstrijden"
     }
   },
   "teamPage": {
@@ -240,10 +242,12 @@
     },
     "bulkDelete": {
       "title": "Teams verwijderen",
-      "message": "Weet je zeker dat je {{count}} team{{suffix}} wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "confirm": "Verwijderen",
-      "success": "{{count}} team{{suffix}} verwijderd",
-      "error": "Kon één of meer teams niet verwijderen"
+      "error": "Kon één of meer teams niet verwijderen",
+      "message_one": "Weet je zeker dat je {{count}} team wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message_other": "Weet je zeker dat je {{count}} teams wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "success_one": "{{count}} team verwijderd",
+      "success_other": "{{count}} teams verwijderd"
     },
     "loadError": "Kon teams niet laden",
     "importSuccess": "{{count}} team(s) succesvol geïmporteerd"
@@ -275,10 +279,12 @@
     "importError": "Kon spelers niet importeren",
     "bulkDelete": {
       "title": "Spelers verwijderen",
-      "message": "Weet je zeker dat je {{count}} speler{{suffix}} wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
       "confirm": "Verwijderen",
-      "success": "{{count}} speler{{suffix}} verwijderd",
-      "error": "Kon één of meer spelers niet verwijderen"
+      "error": "Kon één of meer spelers niet verwijderen",
+      "message_one": "Weet je zeker dat je {{count}} speler wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message_other": "Weet je zeker dat je {{count}} spelers wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "success_one": "{{count}} speler verwijderd",
+      "success_other": "{{count}} spelers verwijderd"
     },
     "openPlayerPageTooltip": "Spelerspagina openen",
     "skillRatingTooltip": "Skill Rating is gebaseerd op OpenSkill; hoger is beter.",

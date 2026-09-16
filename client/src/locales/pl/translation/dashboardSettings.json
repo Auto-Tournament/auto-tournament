@@ -207,9 +207,10 @@
     },
     "success": {
       "saveSettings": "Ustawienia zapisane",
-      "simulationEnabled": "Tryb symulacji włączony{{suffix}}",
+      "simulationEnabled": "Włączono tryb symulacji",
       "simulationDisabled": "Tryb symulacji wyłączony",
-      "timescaleUpdated": "Prędkość symulacji zaktualizowana do {{value}}x"
+      "timescaleUpdated": "Prędkość symulacji zaktualizowana do {{value}}x",
+      "simulationEnabledWithSpeed": "Włączono tryb symulacji z prędkością {{speed}}x"
     }
   },
   "dashboard": {

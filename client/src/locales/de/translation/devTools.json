@@ -23,7 +23,7 @@
     "testPlayers": {
       "title": "Test-Spieler",
       "description": "Erstelle Spieler mit ELO-Wertungen, um Shuffle-Turniere und Spielerverwaltung zu testen.",
-      "success": "Erfolgreich {{created}} Spieler erstellt{{updated, number} > 0 ? (', und aktualisiert ' + updated) : ''}}!",
+      "success": "{{created}} Testspieler erstellt!",
       "errors": {
         "create": "Test-Spieler konnten nicht erstellt werden",
         "partial": "Es wurden {{created}} Spieler erstellt, {{updated}} aktualisiert, aber {{failed}} sind fehlgeschlagen. Details siehe Konsole."
@@ -32,7 +32,8 @@
       "buttons": {
         "createFixed": "{{count}} Spieler erstellen",
         "createCustom": "Spieler erstellen"
-      }
+      },
+      "successWithUpdated": "{{created}} Testspieler erstellt und {{updated}} aktualisiert!"
     },
     "testServers": {
       "title": "Test-Server",
@@ -44,8 +45,9 @@
       },
       "customLabel": "Benutzerdefinierte Serveranzahl",
       "buttons": {
-        "createFixed": "{{count}} Server erstellen",
-        "createCustom": "Server erstellen"
+        "createCustom": "Server erstellen",
+        "createFixed_one": "{{count}} Server erstellen",
+        "createFixed_other": "{{count}} Server erstellen"
       }
     },
     "dangerZone": {

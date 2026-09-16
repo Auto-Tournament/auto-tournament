@@ -153,13 +153,14 @@
     "title": "保存地图池",
     "nameLabel": "地图池名称",
     "namePlaceholder": "我的自定义地图池",
-    "info": "将保存一个包含 {{count}} 张地图的地图池。",
     "saveButton": "保存",
     "errors": {
       "nameRequired": "地图池名称为必填项",
       "noMaps": "请至少选择一张地图",
       "saveFailed": "保存地图池失败"
-    }
+    },
+    "info_one": "将保存一个包含 {{count}} 张地图的地图池。",
+    "info_other": "将保存一个包含 {{count}} 张地图的地图池。"
   },
   "batchServerModal": {
     "title": "批量创建服务器",
@@ -210,22 +211,25 @@
       "helper": "所有服务器将按此设置为启用或禁用"
     },
     "preview": {
-      "title": "预览（{{showingFirst10, boolean, true {仅显示前 10 条} false {全部}}})",
-      "more": "……以及另外 {{count}} 台"
+      "more": "……以及另外 {{count}} 台",
+      "titleFirst10": "预览（前 10 条）",
+      "titleAll": "预览（全部）"
     },
     "checkServersButton": {
       "default": "检查服务器",
       "checking": "正在检查…"
     },
     "createServersButton": {
-      "default": "创建 {{count}} 台服务器",
-      "creating": "正在创建…"
+      "creating": "正在创建…",
+      "default_one": "创建 {{count}} 台服务器",
+      "default_other": "创建 {{count}} 台服务器"
     },
     "warnings": {
       "notAllVerified": "部分服务器尚未通过连通性测试。它们仍会被保存，但在正确配置 RCON 和 Webhook 之前可能显示为离线。"
     },
     "success": {
-      "createdAll": "已成功创建 {{count}} 台服务器"
+      "createdAll_one": "已创建 {{count}} 台服务器",
+      "createdAll_other": "已创建 {{count}} 台服务器"
     },
     "errors": {
       "baseNameRequired": "基础名称为必填项",
@@ -260,7 +264,8 @@
       "defaultProtected": "默认模板 \"pure-win-loss\" 不可删除。"
     },
     "import": {
-      "success": "已成功导入 {{count}} 个 ELO 模板"
+      "success_one": "已导入 {{count}} 个 ELO 模板",
+      "success_other": "已导入 {{count}} 个 ELO 模板"
     },
     "weights": {
       "noAdjustmentsPure": "无数据加成（纯胜负 ELO）"
@@ -289,10 +294,11 @@
       "introBody": "期望格式：由模板对象构成的数组，每个对象包含 name、可选的 description、enabled、weights、maxAdjustment 和 minAdjustment。如省略 id，将根据名称自动生成。",
       "jsonLabel": "JSON 数据",
       "validJsonTitle": "✓ JSON 校验通过！",
-      "validJsonBody": "共检测到 {{count}} 个模板。",
       "previewTitle": "预览：",
       "previewButton": "预览",
-      "importButton": "导入模板"
+      "importButton": "导入模板",
+      "validJsonBody_one": "找到 {{count}} 个模板。",
+      "validJsonBody_other": "找到 {{count}} 个模板。"
     },
     "editor": {
       "titleEdit": "编辑 ELO 模板",

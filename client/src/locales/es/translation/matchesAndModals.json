@@ -26,7 +26,8 @@
     "sections": {
       "live": "Partidos en directo ({{count}})",
       "upcoming": "Próximos partidos ({{count}})",
-      "history": "Historial de partidos ({{count}})"
+      "history": "Historial de partidos ({{count}})",
+      "inQueue": "{{count}} en cola"
     },
     "manualMatchLabel": "Partido manual",
     "create": {
@@ -34,9 +35,10 @@
     },
     "bulkDelete": {
       "title": "Eliminar partidos manuales",
-      "message": "¿Seguro que quieres eliminar {{count}} partido manual{{suffix}}? Esta acción no se puede deshacer.",
       "deleted_one": "{{count}} partida eliminada",
-      "deleted_other": "{{count}} partidas eliminadas"
+      "deleted_other": "{{count}} partidas eliminadas",
+      "message_one": "¿Seguro que quieres eliminar {{count}} partido manual? Esta acción no se puede deshacer.",
+      "message_other": "¿Seguro que quieres eliminar {{count}} partidos manuales? Esta acción no se puede deshacer."
     },
     "card": {
       "matchNumber": "Partida #{{number}}",
@@ -88,7 +90,8 @@
       "statusBusy": "Ocupado",
       "statusOffline": "Sin conexión",
       "readyIn": "Listo en: {{time}}"
-    }
+    },
+    "latestEvent": "Último: {{event}}"
   },
   "manualMatchModal": {
     "title": "Crear partido manual",
@@ -324,16 +327,20 @@
       "noJson": "Introduce datos JSON"
     },
     "preview": {
-      "summary": "✓ JSON válido. Se encontraron {{teamCount}} equipo{{teamCount, plural, one {} other {s}}} con {{playerCount}} jugadores en total.",
+      "summary": "✓ JSON válido. Se encontraron {{teams}} con {{players}} en total.",
       "title": "Vista previa:",
-      "playersChip": "{{count}} jugador{{count, plural, one {} other {es}}}",
       "missingDiscordTotal": "Jugadores sin ID de Discord: {{count}}",
-      "missingDiscordChip": "Sin Discord: {{count}}"
+      "missingDiscordChip": "Sin Discord: {{count}}",
+      "playersChip_one": "{{count}} jugador",
+      "playersChip_other": "{{count}} jugadores",
+      "teamsCount_one": "{{count}} equipo",
+      "teamsCount_other": "{{count}} equipos"
     },
     "actions": {
       "preview": "Vista previa",
       "importing": "Importando...",
-      "import": "Importar {{count}} equipo{{count, plural, one {} other {s}}}"
+      "import_one": "Importar {{count}} equipo",
+      "import_other": "Importar {{count}} equipos"
     },
     "warnings": {
       "title": "Se ignoraron algunos ID de Discord. Estos jugadores se importarán sin él:",
@@ -353,15 +360,17 @@
     "actions": {
       "parseValidate": "Analizar y validar",
       "importing": "Importando...",
-      "import": "Importar {{count}} jugador{{count, plural, one {} other {es}}}"
+      "import_one": "Importar {{count}} jugador",
+      "import_other": "Importar {{count}} jugadores"
     },
     "preview": {
-      "readyChip": "{{count}} jugador{{count, plural, one {} other {es}}} listo(s) para importar",
       "title": "Jugadores a importar ({{count}}):",
       "steamId": "Steam ID64: {{steamId}}",
       "name": "Nombre: {{name}}",
       "initialElo": "ELO inicial: {{elo}}",
-      "avatar": "URL del avatar: {{url}}"
+      "avatar": "URL del avatar: {{url}}",
+      "readyChip_one": "{{count}} jugador listo para importar",
+      "readyChip_other": "{{count}} jugadores listos para importar"
     },
     "errors": {
       "noData": "Introduce datos JSON o CSV",
@@ -387,11 +396,12 @@
     "playerCard": {
       "alreadyInTeam": "Ya está en el equipo"
     },
-    "addPlayersButton": "Añadir {{count}} jugador{{count, plural, one {} other {es}}}",
     "errors": {
       "loadFailed": "No se pudieron cargar los jugadores",
       "noSelectable": "No hay jugadores seleccionables"
-    }
+    },
+    "addPlayersButton_one": "Añadir {{count}} jugador",
+    "addPlayersButton_other": "Añadir {{count}} jugadores"
   },
   "soundSettingsModal": {
     "title": "Ajustes de sonido",

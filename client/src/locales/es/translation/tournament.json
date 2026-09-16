@@ -46,7 +46,7 @@
     },
     "review": {
       "summary": {
-        "info": "Revisa los ajustes del torneo y haz clic en \"Crear torneo\" cuando estés listo.",
+        "info": "Revisa los ajustes del torneo y haz clic en \"{{button}}\" cuando estés listo.",
         "nameLabel": "Nombre del torneo",
         "typeLabel": "Tipo de torneo",
         "formatLabel": "Formato del partido",
@@ -109,7 +109,9 @@
       "availableServers_one": "{{count}} servidor disponible",
       "availableServers_other": "{{count}} servidores disponibles",
       "concurrentMatches_one": "{{count}} partido simultáneo",
-      "concurrentMatches_other": "{{count}} partidos simultáneos"
+      "concurrentMatches_other": "{{count}} partidos simultáneos",
+      "enabledServers_one": "{{count}} servidor activado",
+      "enabledServers_other": "{{count}} servidores activados"
     },
     "matchRules": {
       "value": "Máximo {{maxRounds}} rondas por mapa; gana el primero en llegar a {{winRounds}} rondas.",
@@ -273,7 +275,7 @@
       "maxRoundsLabel": "Rondas máximas por mapa",
       "maxRoundsHelper": "Cada mapa se juega hasta {{maxRounds}} rondas; gana el primero en llegar a {{winRounds}} rondas.",
       "maxRoundsHelperEmpty": "Número máximo de rondas por mapa (predeterminado: 24, máximo: 30).",
-      "serversSummary": "{{servers}} configurados; se necesitan {{required}} para jugar todos los partidos de este cuadro.",
+      "serversSummary": "{{servers}} configurados; la primera ronda tiene {{matches}}.",
       "estimatedVolumeLabel": "Volumen estimado",
       "mapsHeading": "Mapas ({{total}})",
       "noMapsSelected": "No hay mapas seleccionados",
@@ -284,7 +286,8 @@
       "noTeamsSelected": "No hay equipos seleccionados (opcional)",
       "playerRegistration": "Registro de jugadores",
       "playerRegistrationInfo_one": "Los jugadores se registrarán después de crear el torneo. Cada mapa seleccionado equivale a una ronda de partidos ({{count}} ronda en total).",
-      "playerRegistrationInfo_other": "Los jugadores se registrarán después de crear el torneo. Cada mapa seleccionado equivale a una ronda de partidos ({{count}} rondas en total)."
+      "playerRegistrationInfo_other": "Los jugadores se registrarán después de crear el torneo. Cada mapa seleccionado equivale a una ronda de partidos ({{count}} rondas en total).",
+      "serversSummaryQueued": "{{servers}} configurados; la primera ronda tiene {{matches}}. Los partidos que superen tu número de servidores esperan en cola hasta que haya un servidor libre."
     },
     "overtime": {
       "selectLabel": "Prórroga",
@@ -359,6 +362,22 @@
       "none": "Ninguno",
       "itemCount_one": "{{count}} elemento",
       "itemCount_other": "{{count}} elementos"
+    },
+    "teamSelection": {
+      "chooseTeamsPlaceholder": "Elige equipos…",
+      "addAll": "Añadir todos",
+      "batchAddServers": "Añadir en lote",
+      "addServer": "Añadir servidor",
+      "importTeams": "Importar equipos",
+      "createTeam": "Crear equipo",
+      "notEnoughServers": "La primera ronda tiene {{matches}}, pero tienes {{servers}}. Los partidos que superen tu número de servidores esperan en cola hasta que haya un servidor libre; añade más servidores para jugarlos todos a la vez.",
+      "notEnoughTeams": "Necesitas al menos 2 equipos para crear un torneo. Ahora tienes {{teams}}."
+    },
+    "teamValidation": {
+      "invalidType": "Tipo de torneo no válido",
+      "powerOfTwo": "{{type}} requiere un número de equipos que sea potencia de 2 ({{counts}}). Has seleccionado {{selected}}.",
+      "minTeams": "{{type}} requiere al menos {{min}} equipos. Has seleccionado {{selected}}.",
+      "maxTeams": "{{type}} permite como máximo {{max}} equipos. Has seleccionado {{selected}}."
     }
   },
   "bracket": {
@@ -397,6 +416,10 @@
     "swiss": {
       "notGenerated": "No generado",
       "generatedAfter": "Las partidas se generarán al terminar la ronda {{round}}"
+    },
+    "slotHint": {
+      "winnerOf": "Ganador de {{match}}",
+      "matchNumber": "partido {{number}}"
     }
   }
 }

@@ -12,10 +12,12 @@ import {
   Chip,
 } from '@mui/material';
 import RefreshIcon from '@mui/icons-material/Refresh';
+import { useTranslation } from 'react-i18next';
 import { api } from '../../utils/api';
 import type { LogEntry, LogsResponse } from '../../types';
 
 export const LogViewer: React.FC = () => {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -37,11 +39,11 @@ export const LogViewer: React.FC = () => {
       }
     } catch (err) {
       const error = err as Error;
-      setError(error.message || 'Failed to load logs');
+      setError(error.message || t('adminToolsPage.logs.loadFailed'));
     } finally {
       setLoading(false);
     }
-  }, [levelFilter]);
+  }, [levelFilter, t]);
 
   useEffect(() => {
     loadLogs();
@@ -84,7 +86,7 @@ export const LogViewer: React.FC = () => {
     <Card>
       <CardContent>
         <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-          <Typography variant="h6">Application Logs</Typography>
+          <Typography variant="h6">{t('adminToolsPage.monitoring.appLogs')}</Typography>
           <Box display="flex" gap={1} alignItems="center">
             <ToggleButtonGroup
               size="small"
@@ -92,7 +94,7 @@ export const LogViewer: React.FC = () => {
               exclusive
               onChange={(_, value) => setLevelFilter(value || '')}
             >
-              <ToggleButton value="">All</ToggleButton>
+              <ToggleButton value="">{t('adminToolsPage.logs.levelAll')}</ToggleButton>
               <ToggleButton value="debug">Debug</ToggleButton>
               <ToggleButton value="info">Info</ToggleButton>
               <ToggleButton value="warn">Warn</ToggleButton>
@@ -104,9 +106,14 @@ export const LogViewer: React.FC = () => {
               onChange={() => setAutoRefresh(!autoRefresh)}
               size="small"
             >
-              Auto
+              {t('adminToolsPage.logs.auto')}
             </ToggleButton>
-            <IconButton onClick={loadLogs} disabled={loading} size="small">
+            <IconButton
+              onClick={loadLogs}
+              disabled={loading}
+              size="small"
+              aria-label={t('adminToolsPage.logs.refresh')}
+            >
               <RefreshIcon />
             </IconButton>
           </Box>
@@ -144,7 +151,7 @@ export const LogViewer: React.FC = () => {
           >
             {logs.length === 0 ? (
               <Typography color="text.secondary" textAlign="center">
-                No logs to display
+                {t('adminToolsPage.logs.empty')}
               </Typography>
             ) : (
               logs.map((log, index) => (
@@ -192,8 +199,9 @@ export const LogViewer: React.FC = () => {
         )}
 
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-          Showing {logs.length} recent logs
-          {autoRefresh && ' (auto-refreshing)'}
+          {autoRefresh
+            ? t('adminToolsPage.logs.footerAutoRefresh', { count: logs.length })
+            : t('adminToolsPage.logs.footer', { count: logs.length })}
         </Typography>
       </CardContent>
     </Card>

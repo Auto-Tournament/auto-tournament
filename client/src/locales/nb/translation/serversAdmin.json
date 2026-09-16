@@ -38,7 +38,12 @@
       "onlineOk": "Online (API ↔ server OK)",
       "onlineRconOnly": "Online (kun RCON)",
       "rconFailed": "RCON-feil",
-      "onlineTesting": "Online (tester)"
+      "onlineTesting": "Online (tester)",
+      "noEventsYet": "Ingen hendelser ennå",
+      "notConfigured": "Ikke konfigurert",
+      "onlineIdle": "Online (inaktiv – ingen nye hendelser)",
+      "onlineActive": "Online (aktiv)",
+      "online": "Online"
     },
     "ipBanned": {
       "title": "Serveren kan ha blokkert IP-en vår",
@@ -61,7 +66,10 @@
     "labels": {
       "host": "Vert:",
       "port": "Portnr.:",
-      "id": "ID-nummer:"
+      "id": "ID-nummer:",
+      "cs2Name": "CS2-navn:",
+      "plugin": "Plugin:",
+      "cs2BuildValue": "build {{build}}"
     },
     "errors": {
       "loadServers": "Klarte ikke å laste servere",
@@ -71,13 +79,110 @@
     },
     "bulkDelete": {
       "title": "Slett servere",
-      "message": "Er du sikker på at du vil slette {{count}} server{{suffix}}? Dette kan ikke angres."
+      "message_one": "Er du sikker på at du vil slette {{count}} server? Dette kan ikke angres.",
+      "message_other": "Er du sikker på at du vil slette {{count}} servere? Dette kan ikke angres."
     },
     "autoConfig": {
       "configuring": "Konfigurerer nye servere (sender MatchZy-konfig via RCON)…",
       "done": "Nye servere konfigurert. Oppdaterer status…"
     },
-    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om MatchZy mottar konfigurasjon og sender hendelser."
+    "checkServerLogs": "Sjekk spillserverens konsoll/logger for å se om MatchZy mottar konfigurasjon og sender hendelser.",
+    "fleet": {
+      "title": "Serverstatus",
+      "total_one": "{{count}} server",
+      "total_other": "{{count}} servere",
+      "online": "online",
+      "offline": "frakoblet",
+      "notConfigured": "ikke konfigurert",
+      "disabled": "deaktivert",
+      "latestRelease": "Nyeste MatchZy Enhanced-versjon: v{{version}}",
+      "olderVersion_one": "{{count}} server kjører en eldre versjon enn den nyeste.",
+      "olderVersion_other": "{{count}} servere kjører en eldre versjon enn den nyeste.",
+      "newerVersion_one": "{{count}} server kjører en nyere versjon enn den nyeste på GitHub (trolig en uutgitt build).",
+      "newerVersion_other": "{{count}} servere kjører en nyere versjon enn den nyeste på GitHub (trolig en uutgitt build).",
+      "downloadLatest": "Last ned nyeste"
+    },
+    "cs2Update": {
+      "title": "CS2 må oppdateres",
+      "snackbarBody_one": "{{count}} server er utdatert. Oppdater serverinstallasjonen og start på nytt.",
+      "snackbarBody_other": "{{count}} servere er utdaterte. Oppdater serverinstallasjonen og start på nytt.",
+      "fleetTitle": "CS2-servere er utdaterte – oppdatering kreves",
+      "fleetBody_one": "{{count}} server har fått melding fra Steam om at CS2 må oppdateres. Oppdater serverinstallasjonen (SteamCMD/vert) og start på nytt.",
+      "fleetBody_other": "{{count}} servere har fått melding fra Steam om at CS2 må oppdateres. Oppdater serverinstallasjonen (SteamCMD/vert) og start på nytt."
+    },
+    "versionMismatch": {
+      "title": "Ulike pluginversjoner",
+      "chip_one": "v{{version}}: {{count}} server",
+      "chip_other": "v{{version}}: {{count}} servere",
+      "recommended": "Anbefalt: oppdater alle servere til v{{version}} så de er likt satt opp"
+    },
+    "notInitialized": {
+      "title": "Serveren er ikke initialisert",
+      "checking": "Sjekker tilkobling …",
+      "rconUnreachable": "Får ikke kontakt via RCON. Sjekk vert, port og at spillserveren kjører. Trykk «Prøv igjen» når den svarer.",
+      "noEvents": "RCON svarer, men MatchZy har ikke sendt hendelser. Trykk «Prøv igjen» for å konfigurere serveren.",
+      "notChecked": "Tilkoblingen er ikke sjekket ennå. Se status under. Trykk «Prøv igjen» for å konfigurere når RCON svarer."
+    },
+    "chips": {
+      "versionMismatch": "Ulik versjon",
+      "ipBanned": "IP blokkert",
+      "cs2Build": "CS2-build {{build}}",
+      "pluginDbDown": "Plugin-DB nede",
+      "cs2UpdateRequired": "CS2 må oppdateres ({{version}})"
+    },
+    "tooltips": {
+      "fixGuide": "Slik fikser du det",
+      "disabledTitle": "Deaktivert server",
+      "disabledBody": "Deaktiverte servere blir ikke tildelt kamper og helsesjekkes ikke.",
+      "noEventsTitle": "Ingen MatchZy-hendelser mottatt ennå",
+      "noEventsBody": "MAT har sendt webhook-konfigurasjonen via RCON, men har ikke mottatt noen hendelser. Som regel betyr det at serveren ikke når MATs webhook-URL, eller at MatchZy ikke kjører.",
+      "notConfiguredTitle": "Ikke konfigurert",
+      "notConfiguredBody": "MAT har ikke sendt den faste konfigurasjonen til denne serveren ennå. Trykk «Prøv igjen» for å initialisere den.",
+      "unreachableTitle": "MAT når ikke serveren",
+      "unreachableBody": "MAT får ikke kontakt med serveren via RCON. Sjekk vert/port, RCON-passord, brannmur og at serveren kjører.",
+      "webhookTitle": "Serveren når ikke MAT (webhook)",
+      "webhookBody": "MAT når serveren via RCON, men serveren når ikke MATs webhook. Sjekk utgående trafikk, DNS og webhook-URL-en som er satt opp.",
+      "versionDiffTitle": "Serverne har ulike pluginversjoner",
+      "versionDiffBody": "Noen servere kjører en annen versjon av MatchZy Enhanced. Bruker du CSM, kjør {{command}} og start serverne på nytt.",
+      "ipBannedTitle": "RCON-IP blokkert",
+      "ipBannedBody": "Serveren har midlertidig blokkert MATs IP etter gjentatte mislykkede RCON-innlogginger. Rett RCON-passordet og opphev blokkeringen av IP-en.",
+      "pluginDbTitle": "MatchZy-pluginen når ikke databasen sin.",
+      "pluginDbBody": "Bruker du CSM, kjør {{path}}.",
+      "cs2UpdateBody": "MAT har bekreftet at serverens build er eldre enn den på Steam. Serveren får ikke nye kamper (og turneringen kan ikke startes) før den er oppdatert.",
+      "retryInit": "Prøv å initialisere serveren på nytt (sender fast konfigurasjon via RCON)"
+    },
+    "lastActive": {
+      "justNow": "Aktiv akkurat nå",
+      "minutesAgo_one": "Aktiv for {{count}} minutt siden",
+      "minutesAgo_other": "Aktiv for {{count}} minutter siden",
+      "hoursAgo_one": "Aktiv for {{count}} time siden",
+      "hoursAgo_other": "Aktiv for {{count}} timer siden",
+      "daysAgo_one": "Aktiv for {{count}} dag siden",
+      "daysAgo_other": "Aktiv for {{count}} dager siden"
+    },
+    "pluginStatus": {
+      "idle": "Ledig",
+      "loading": "Laster",
+      "warmup": "Warmup",
+      "knife": "Knivrunde",
+      "live": "Live",
+      "playing": "Spiller",
+      "paused": "Pause",
+      "halftime": "Pause (halvtid)",
+      "postgame": "Ferdig",
+      "queued": "I kø",
+      "error": "Feil"
+    },
+    "retry": {
+      "sendingConfig": "Sender fast konfigurasjon til serveren …",
+      "triggered": "Initialisering av serveren er startet",
+      "failed": "Kunne ikke prøve initialiseringen på nytt: {{message}}",
+      "retryingAll_one": "Prøver å initialisere {{count}} server på nytt …",
+      "retryingAll_other": "Prøver å initialisere {{count}} servere på nytt …",
+      "triggeredAll_one": "Nytt forsøk startet for {{count}} server",
+      "triggeredAll_other": "Nytt forsøk startet for {{count}} servere",
+      "failedAll": "Nytt forsøk mislyktes: {{message}}"
+    }
   },
   "serverModal": {
     "titleCreate": "Legg til server",
@@ -153,8 +258,9 @@
     "serverSelect": {
       "label": "Målserver(e)",
       "allServersChip": "Alle servere",
-      "allServersDescription": "Kjør på alle {{count}} server{{count, plural, one {} other {e}}}",
-      "sendStatus": "Send status"
+      "sendStatus": "Send status",
+      "allServersDescription_one": "Kjør på {{count}} server",
+      "allServersDescription_other": "Kjør på alle {{count}} servere"
     },
     "command": {
       "execute": "Kjør"
@@ -172,7 +278,7 @@
     "advanced": {
       "title": "Avanserte verktøy"
     },
-    "noServers": "Ingen aktiverte servere funnet. Legg til og aktiver servere på Servers-siden.",
+    "noServers": "Fant ingen aktiverte servere. Legg til og aktiver servere på Servere-siden.",
     "recovery": {
       "title": "Kampgjenoppretting",
       "description": "Hvis API-et eller serverne ble startet på nytt under en turnering og kampstatusen ser usynkron ut (f.eks. kamper som sitter fast i warmup eller mangler live-score), kan du manuelt starte en gjenoppretting. Dette ber alle servere om sin nåværende kamp-rapport, synkroniserer score/faser og re-konfigurerer webhooks og demo-opplasting der det er mulig.",
@@ -185,6 +291,143 @@
       "title": "Overvåking og logger",
       "serverEvents": "Overvåk serverhendelser",
       "appLogs": "Applikasjonslogger"
+    },
+    "toasts": {
+      "commandExecuted_one": "Kommandoen ble kjørt på {{count}} server",
+      "commandExecuted_other": "Kommandoen ble kjørt på {{count}} servere",
+      "commandPartial": "Kommandoen lyktes på {{succeeded}} av {{total}} servere ({{failed}} feilet)",
+      "commandFailed": "Kunne ikke kjøre kommandoen"
+    },
+    "categories": {
+      "matchControl": "Kampstyring",
+      "matchSettings": "Kampinnstillinger",
+      "backupRestore": "Backup og gjenoppretting",
+      "serverMgmt": "Serveradministrasjon",
+      "teamMgmt": "Lagadministrasjon",
+      "practiceMode": "Treningsmodus",
+      "adminComm": "Admin-meldinger",
+      "advanced": "Avansert RCON"
+    },
+    "commands": {
+      "matchStart": {
+        "label": "Start kampen",
+        "description": "Start kampen med en gang."
+      },
+      "matchEnd": {
+        "label": "Avslutt kampen (css_restart)",
+        "description": "Tvinger den pågående kampen på de valgte serverne til å avslutte og setter dem tilbake til warmup med css_restart."
+      },
+      "forcePause": {
+        "label": "Tving pause",
+        "description": "Tving kampen på pause."
+      },
+      "forceUnpause": {
+        "label": "Tving fortsett",
+        "description": "Tving kampen til å fortsette etter pause."
+      },
+      "skipVeto": {
+        "label": "Hopp over veto",
+        "description": "Hopp over veto-fasen."
+      },
+      "toggleKnife": {
+        "label": "Knivrunde av/på",
+        "description": "Slå knivrunden for sidevalg av eller på (alias: rk)."
+      },
+      "togglePlayout": {
+        "label": "Spill ut alle runder av/på",
+        "description": "Slå av eller på at alle runder spilles ut."
+      },
+      "toggleWhitelist": {
+        "label": "Whitelist av/på",
+        "description": "Slå lag-whitelisten av eller på."
+      },
+      "showSettings": {
+        "label": "Vis innstillinger",
+        "description": "Vis gjeldende kampinnstillinger."
+      },
+      "reloadAdmins": {
+        "label": "Last inn admins på nytt",
+        "description": "Last inn adminlisten fra admins.json på nytt."
+      },
+      "readyRequired": {
+        "label": "Antall spillere som må være klare",
+        "description": "Angi hvor mange spillere som må være klare før kampen starter.",
+        "inputLabel": "Antall spillere"
+      },
+      "restoreBackup": {
+        "label": "Gjenopprett rundebackup",
+        "description": "Sett kampen tilbake til en bestemt runde.",
+        "inputLabel": "Rundenummer"
+      },
+      "cleanServers": {
+        "label": "Rydd servere (css_restart)",
+        "description": "Avslutter alle pågående kamper på de valgte serverne og setter dem tilbake til warmup med css_restart. Kan ikke angres."
+      },
+      "changeMap": {
+        "label": "Bytt kart",
+        "description": "Bytt til et annet kart (css_map <mapname>).",
+        "inputLabel": "Kartnavn (de_dust2)"
+      },
+      "team1Name": {
+        "label": "Sett navn på lag 1",
+        "description": "Angi navnet på lag 1.",
+        "inputLabel": "Lagnavn"
+      },
+      "team2Name": {
+        "label": "Sett navn på lag 2",
+        "description": "Angi navnet på lag 2.",
+        "inputLabel": "Lagnavn"
+      },
+      "startPractice": {
+        "label": "Start treningsmodus",
+        "description": "Slå på treningsmodus med .-kommandoer."
+      },
+      "exitPractice": {
+        "label": "Avslutt treningsmodus",
+        "description": "Slå av treningsmodus."
+      },
+      "broadcast": {
+        "label": "Send melding til alle",
+        "description": "Send en adminmelding til alle spillerne.",
+        "inputLabel": "Melding"
+      },
+      "customRcon": {
+        "label": "Kjør egen RCON-kommando",
+        "description": "Kjør en hvilken som helst RCON-kommando direkte.",
+        "inputLabel": "RCON-kommando"
+      }
+    },
+    "logs": {
+      "loadFailed": "Kunne ikke laste loggene",
+      "levelAll": "Alle",
+      "auto": "Auto",
+      "refresh": "Oppdater loggene",
+      "empty": "Ingen logger å vise",
+      "footer": "Viser de {{count}} nyeste loggoppføringene",
+      "footerAutoRefresh": "Viser de {{count}} nyeste loggoppføringene (oppdateres automatisk)"
+    },
+    "events": {
+      "healthCheckFailed": "Helsesjekken av hendelses-API-et feilet. Sjekk at API-et kjører og at /api/events/test svarer.",
+      "loadFailed": "Kunne ikke laste hendelsene",
+      "connected": "Tilkoblet",
+      "disconnected": "Frakoblet",
+      "paused": "Pauset",
+      "pause": "Pause",
+      "resume": "Fortsett",
+      "refresh": "Oppdater hendelser",
+      "clear": "Tøm konsollen",
+      "filterLabel": "Filtrer på server (valgfritt)",
+      "noServers": "Ingen servere tilgjengelig",
+      "refreshServers": "Oppdater serverlisten",
+      "noEvents": "Ingen hendelser mottatt fra denne serveren ennå.",
+      "noEventsHint": "Fortsatt ingen hendelser etter 15 sekunder. Sjekk at CS2-serveren er satt opp til å sende MatchZy-webhooks til /api/events/:matchSlugOrServerId med riktig X-MatchZy-Token.",
+      "waiting": "Venter på hendelser fra serveren …",
+      "footer_one": "Viser {{count}} hendelse (maks 100)",
+      "footer_other": "Viser {{count}} hendelser (maks 100)",
+      "footerForServer_one": "Viser {{count}} hendelse for server {{server}} (maks 100)",
+      "footerForServer_other": "Viser {{count}} hendelser for server {{server}} (maks 100)",
+      "realtime": "Hendelser oppdateres i sanntid via WebSocket",
+      "downloadDemo": "Last ned demo"
     }
   },
   "servers": {
@@ -192,6 +435,123 @@
       "title": "Venter på en ledig server",
       "waiting": "Kampen starter automatisk når servere er ledige. Servere som trengs:",
       "nextPass": "Neste tildelingsforsøk om {{seconds}} s"
+    }
+  },
+  "adminMatchControls": {
+    "title": "Adminkontroller",
+    "noServer": "Ingen server er tildelt denne kampen",
+    "unavailable": "Ingen server er tildelt denne kampen, så adminkontrollene er ikke tilgjengelige.",
+    "unknownAction": "Ukjent handling",
+    "commandFailed": "Kunne ikke kjøre kommandoen",
+    "confirm": "Bekreft",
+    "execute": "Kjør",
+    "close": "Lukk",
+    "tipLabel": "Admintips:",
+    "tip": "Vær forsiktig med disse kontrollene under live-kamper. Noen handlinger, som «{{endMatch}}» og «{{restartMatch}}», kan ikke angres.",
+    "sections": {
+      "matchControl": "Kampstyring",
+      "advanced": "Avanserte handlinger"
+    },
+    "actions": {
+      "pause": {
+        "button": "Pause",
+        "tooltip": "Adminpause – spillerne kan ikke fortsette selv",
+        "title": "Sett kampen på pause",
+        "description": "Kampen blir tvunget på pause. Spillerne kan ikke fortsette selv."
+      },
+      "unpause": {
+        "button": "Fortsett",
+        "tooltip": "Fortsett kampen etter pause",
+        "title": "Fortsett kampen",
+        "description": "Kampen blir tvunget til å fortsette."
+      },
+      "swap": {
+        "button": "Bytt sider",
+        "tooltip": "Bytt sidene til lagene (CT ↔ T)",
+        "title": "Bytt sider",
+        "description": "Lagene bytter side (CT/T)."
+      },
+      "restartRound": {
+        "button": "Start runden på nytt",
+        "tooltip": "Start runden på nytt fra begynnelsen (nullstiller økonomien)",
+        "title": "Start runden på nytt",
+        "description": "Den pågående runden startes på nytt."
+      },
+      "skipVeto": {
+        "button": "Hopp over veto",
+        "tooltip": "Hopp over kartvetoen og last inn første kart med en gang",
+        "title": "Hopp over veto",
+        "description": "Veto-fasen hoppes over og kampen starter."
+      },
+      "endWarmup": {
+        "button": "Avslutt warmup",
+        "tooltip": "Avslutt warmup og start kampen (knivrunde eller live)",
+        "title": "Avslutt warmup",
+        "description": "Warmup avsluttes og kampen starter."
+      },
+      "endMatch": {
+        "button": "Avslutt kampen",
+        "tooltip": "Avslutt kampen med en gang og registrer sluttresultatet",
+        "title": "Avslutt kampen",
+        "description": "Kampen blir tvunget til å avslutte. Bruk med forsiktighet!"
+      },
+      "restartMatch": {
+        "button": "Start kampen på nytt",
+        "tooltip": "Avslutt og last inn kampen helt på nytt – alt som er spilt, går tapt",
+        "title": "Start kampen på nytt",
+        "description": "Kampen avsluttes og lastes inn på nytt fra starten. Alt som er spilt, går tapt!"
+      },
+      "reallocateServer": {
+        "button": "Flytt til annen server",
+        "tooltip": "Flytt kampen til en annen server (før kampen er live)",
+        "tooltipUnavailable": "Bare mulig for kamper som er klare/lastet (ikke under live-spill)",
+        "title": "Flytt til annen server",
+        "description": "Kampen flyttes til en annen ledig server og lastes inn på nytt. Bruk dette hvis serveren er utdatert eller spillerne ikke får koblet til. Ikke mulig under en live-kamp."
+      },
+      "forceCancel": {
+        "button": "Tving avbrudd",
+        "tooltip": "Avbryt kampen selv om serveren er frakoblet – frigjør serveren",
+        "title": "Tving avbrudd av kampen",
+        "description": "⚠️ Kampen avbrytes selv om serveren er frakoblet. Kampen markeres som fullført og serveren frigjøres. Dette kan ikke angres."
+      }
+    },
+    "inputs": {
+      "restoreBackup": {
+        "button": "Gjenopprett backup",
+        "tooltip": "Last inn en lagret rundebackup – gjenoppretter økonomi og posisjoner",
+        "title": "Gjenopprett backup",
+        "label": "Runde som skal gjenopprettes"
+      },
+      "addTime": {
+        "button": "Legg til tid",
+        "tooltip": "Forleng rundetiden (nyttig ved tekniske pauser)",
+        "title": "Legg til rundetid",
+        "label": "Sekunder som skal legges til"
+      },
+      "broadcast": {
+        "button": "Send melding",
+        "tooltip": "Send en melding til alle spillerne på serveren",
+        "title": "Send melding til alle",
+        "label": "Melding"
+      }
+    },
+    "success": {
+      "pause": "Kampen er satt på pause",
+      "unpause": "Kampen fortsetter",
+      "swap": "Lagene har byttet side",
+      "skipVeto": "Veto-fasen er hoppet over",
+      "restartRound": "Runden er startet på nytt",
+      "endMatch": "Kampen er avsluttet",
+      "endWarmup": "Warmup er avsluttet",
+      "startMatch": "Kampen er startet",
+      "restoreBackup": "Backup gjenopprettet til runde {{round}}",
+      "addTime_one": "La til {{count}} sekund på rundetiden",
+      "addTime_other": "La til {{count}} sekunder på rundetiden",
+      "broadcast": "Meldingen er sendt til serveren",
+      "restartMatch": "Kampen er startet på nytt (avsluttet og lastet inn igjen)",
+      "reallocateServer": "Kampen er flyttet til en annen server",
+      "forceCancel": "Kampen er avbrutt",
+      "default": "Kommandoen er kjørt"
     }
   }
 }
