@@ -10,6 +10,8 @@ export interface Match {
   slug: string;
   round: number;
   matchNumber: number;
+  /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null (bracket matches only). */
+  bracket?: string | null;
   nextMatchId?: number | null;
   status: 'pending' | 'ready' | 'loaded' | 'live' | 'completed' | 'cancelled';
   team1?: Team;

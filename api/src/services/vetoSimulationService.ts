@@ -6,7 +6,7 @@ import { getVetoOrder } from '../utils/vetoConfig';
 import { emitVetoUpdate } from './socketService';
 import { settingsService } from './settingsService';
 import { generateMatchConfig } from './matchConfigBuilder';
-import { matchAllocationService } from './matchAllocationService';
+import { isQueuedAllocationResult, matchAllocationService } from './matchAllocationService';
 import { tournamentRowToResponse } from '../utils/tournamentRow';
 
 type VetoActionType = 'ban' | 'pick' | 'side_pick';
@@ -455,9 +455,15 @@ async function runAutoVeto(
                 `[VETO-SIM] Match ${matchSlug} loaded on server ${result.serverId} after automated veto`
               );
             } else {
-              log.warn(
-                `[VETO-SIM] Failed to allocate server for match ${matchSlug} after automated veto: ${result.error}`
-              );
+              if (isQueuedAllocationResult(result.error)) {
+                log.info(
+                  `[VETO-SIM] Match ${matchSlug} queued for a server after automated veto: ${result.error}`
+                );
+              } else {
+                log.warn(
+                  `[VETO-SIM] Failed to allocate server for match ${matchSlug} after automated veto: ${result.error}`
+                );
+              }
               matchAllocationService.startPollingForServer(matchSlug, baseUrl);
             }
           } catch (err) {

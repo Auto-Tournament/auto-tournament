@@ -10,7 +10,7 @@ import {
 } from './matchLiveStatsService';
 import { emitMatchUpdate } from './socketService';
 import { log } from '../utils/logger';
-import { isMatchFinalized } from '../utils/matchStatusHelpers';
+import { isMatchFinalized, NEEDS_DECISION_STATUS } from '../utils/matchStatusHelpers';
 
 export type MatchReport = {
   match?: {
@@ -158,11 +158,12 @@ export async function refreshConnectionsFromServer(
 export async function fetchMatchReport(serverId: string): Promise<MatchReport | null> {
   let lastError: unknown = null;
   let lastErrorDetails: Record<string, unknown> | null = null;
+  let failed = false;
 
   for (const command of MATCH_REPORT_COMMANDS) {
     try {
       const result = await rconService.sendCommand(serverId, command);
-      log.info('[MatchReport] RCON response', {
+      log.debug('[MatchReport] RCON response', {
         serverId,
         command,
         success: result.success,
@@ -170,14 +171,20 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
         response: result.response,
       });
 
+      if (result.success && !result.response) {
+        // Command ran, plugin had nothing to report (normal right after load).
+        continue;
+      }
       if (!result.success || !result.response) {
         lastError = result.error;
+        failed = true;
         continue;
       }
 
       const jsonStart = result.response.indexOf('{');
       if (jsonStart === -1) {
         lastError = 'No JSON payload detected';
+        failed = true;
         continue;
       }
 
@@ -187,6 +194,7 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
         return JSON.parse(jsonPayload) as MatchReport;
       } catch (parseError) {
         lastError = parseError;
+        failed = true;
         lastErrorDetails = {
           reason: 'Invalid JSON payload',
           length: jsonPayload.length,
@@ -202,6 +210,7 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
       }
     } catch (error) {
       lastError = error;
+      failed = true;
       lastErrorDetails = {
         reason: 'RCON command failed',
         command,
@@ -209,10 +218,15 @@ export async function fetchMatchReport(serverId: string): Promise<MatchReport | 
     }
   }
 
+  if (!failed) {
+    log.debug('[MatchReport] No match report available yet', { serverId });
+    return null;
+  }
+
   const now = Date.now();
   const lastLoggedAt = reportErrorLogState.get(serverId) ?? 0;
   if (now - lastLoggedAt > REPORT_ERROR_LOG_COOLDOWN_MS) {
-    log.error('[MatchReport] Unable to retrieve match report', {
+    log.warn('[MatchReport] Unable to retrieve match report', {
       serverId,
       lastError,
       lastErrorDetails,
@@ -372,6 +386,18 @@ async function persistMatchMetaFromReport(matchSlug: string, matchInfo: MatchRep
   }
 
   try {
+    // A finished match keeps the last map it played: a report from a server
+    // that has since reset says map 0 (seen as mapNumber 0 on finished Bo3s).
+    const existing = await db.queryOneAsync<{ status: string }>(
+      'SELECT status FROM matches WHERE slug = ?',
+      [matchSlug]
+    );
+    if (
+      existing &&
+      ['completed', 'cancelled', NEEDS_DECISION_STATUS].includes(existing.status)
+    ) {
+      return;
+    }
     await db.updateAsync('matches', updates, 'slug = ?', [matchSlug]);
   } catch (error) {
     log.warn('[MatchReport] Failed to persist match meta from report', {
@@ -577,6 +603,9 @@ async function reconcileMatchStatusFromPhase(
       loaded: 2,
       live: 3,
       completed: 4,
+      // Maps are over; only an admin decision or a series_end moves these on.
+      [NEEDS_DECISION_STATUS]: 4,
+      cancelled: 4,
     };
 
     const currentRank = order[current] ?? 0;

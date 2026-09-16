@@ -65,7 +65,8 @@
       "overtime": "OVERTID #{{n}}",
       "live": "DIREKTE",
       "completed": "FULLFØRT",
-      "cancelled": "AVLYST"
+      "cancelled": "AVLYST",
+      "needsDecision": "NEEDS ADMIN DECISION"
     },
     "statusGuide": {
       "title": "Forklaring av kampstatus",
@@ -91,7 +92,13 @@
       "statusOffline": "Frakoblet",
       "readyIn": "Klar om: {{time}}"
     },
-    "latestEvent": "Siste: {{event}}"
+    "latestEvent": "Siste: {{event}}",
+    "matchLabel": {
+      "upper": "UB R{{round}} M{{match}}",
+      "lower": "LB R{{round}} M{{match}}",
+      "grandFinal": "Grand Final",
+      "grandFinalReset": "Grand Final Reset"
+    }
   },
   "teamModal": {
     "titleCreate": "Opprett nytt lag",
@@ -257,6 +264,15 @@
       "ready": "KLAR",
       "connected": "TILKOBLET",
       "offline": "FRAKOBLET"
+    },
+    "decision": {
+      "body": "Every map has been played but the series is level on maps, rounds and damage. Choose the winner to advance the bracket.",
+      "setWinner": "{{team}} wins",
+      "confirmTitle": "Set series winner",
+      "confirmBody": "Finish this series with {{team}} as the winner? The bracket advances and this cannot be undone here.",
+      "confirm": "Set winner",
+      "success": "Winner set",
+      "failed": "Failed to set the winner"
     }
   },
   "bulkShuffleMatchesModal": {

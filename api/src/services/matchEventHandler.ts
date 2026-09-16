@@ -32,6 +32,8 @@ import { serverAllocationTracker } from './serverAllocationTracker';
 import type { Player } from '../types/team.types';
 import { isMatchFinalized } from '../utils/matchStatusHelpers';
 import { formatSeriesEndSummary } from '../utils/seriesEndSummary';
+import { decideExhaustedSeries, isSeriesOutOfMaps } from '../utils/exhaustedSeries';
+import { isEliminationTournamentType, NEEDS_DECISION_STATUS } from '../utils/matchStatusHelpers';
 
 /**
  * Main event handler - routes events to specific handlers
@@ -719,6 +721,21 @@ async function handleMapCompletion(
   const isBo1 = totalMaps === 1;
   const shouldForceBo1SeriesEnd = !seriesFinished && isBo1 && isFinalMap;
 
+  // A multi-map series that has run out of maps without a series winner (a
+  // recorded draw on an earlier map, or the plugin never sending series_end)
+  // would otherwise sit live on a map that does not exist. Decide it here.
+  // Draw-friendly formats (swiss, round robin) keep the drawn-series path.
+  if (!seriesFinished && !shouldForceBo1SeriesEnd && totalMaps > 1) {
+    const results = await getMapResults(match.slug);
+    if (isFinalMap || isSeriesOutOfMaps(results, totalMaps)) {
+      const keepDraw = shouldForceDrawSeries && !(await isEliminationMatch(match));
+      if (!keepDraw) {
+        await finishExhaustedSeries(match, originalEvent, results, totalMaps);
+        return;
+      }
+    }
+  }
+
   const maxMapIndex = Math.max(0, totalMaps - 1);
   const upcomingIndex = Math.min(completedMapNumber + 1, maxMapIndex);
   const targetMapNumber =
@@ -771,7 +788,7 @@ async function handleMapCompletion(
   // actually goes live (via going_live / round_started events).
   const nextStats = matchLiveStatsService.update(match.slug, {
     status: 'warmup',
-    mapNumber: completedMapNumber + 1,
+    mapNumber: upcomingIndex,
     mapName: null,
   });
 
@@ -785,6 +802,139 @@ async function handleMapCompletion(
     liveStats: nextStats,
     mapResults,
   });
+}
+
+async function isEliminationMatch(match: DbMatchRow): Promise<boolean> {
+  if (!match.round || match.round < 1) return false;
+  const tournament = await db.queryOneAsync<{ type: string }>(
+    'SELECT type FROM tournament WHERE id = ?',
+    [match.tournament_id ?? 1]
+  );
+  return isEliminationTournamentType(tournament?.type);
+}
+
+function teamDamage(lines: PlayerStatLine[] | undefined): number {
+  return (lines ?? []).reduce((sum, line) => sum + (Number(line.damage) || 0), 0);
+}
+
+/**
+ * Finish a series whose maps are all played but that has no series winner
+ * (see utils/exhaustedSeries). Picks the winner by maps, then total rounds,
+ * then map-0 damage; if still level, parks the match for an admin decision.
+ */
+async function finishExhaustedSeries(
+  match: DbMatchRow,
+  originalEvent: MatchZyEvent,
+  results: Awaited<ReturnType<typeof getMapResults>>,
+  totalMaps: number
+): Promise<void> {
+  const inSeries = results.filter((r) => r.mapNumber >= 0 && r.mapNumber < totalMaps);
+  const map0 = matchLiveStatsService.getStats(match.slug)?.playerStatsByMap?.[0];
+  const map0Damage = map0
+    ? { team1: teamDamage(map0.team1), team2: teamDamage(map0.team2) }
+    : null;
+  const decision = decideExhaustedSeries(inSeries, map0Damage);
+  const summary = {
+    slug: match.slug,
+    mapsPlayed: inSeries.length,
+    numMaps: totalMaps,
+    maps: `${decision.team1Maps}-${decision.team2Maps}`,
+    rounds: `${decision.team1Rounds}-${decision.team2Rounds}`,
+    map0Damage,
+    mapWinners: inSeries.map((r) => `${r.mapNumber}:${r.winnerTeam ?? 'none'}`).join(','),
+  };
+
+  if (decision.winner) {
+    log.warn(
+      `[SERIES GUARD] ${match.slug} ran out of maps without series_end; finishing it for ${decision.winner} (decided by ${decision.decidedBy})`,
+      summary
+    );
+    const syntheticSeriesEnd = {
+      ...originalEvent,
+      event: 'series_end',
+      team1_series_score: decision.team1Maps,
+      team2_series_score: decision.team2Maps,
+      winner: decision.winner,
+      time_until_restore: 0,
+    } as MatchZyEvent;
+    await handleSeriesEnd(syntheticSeriesEnd);
+    return;
+  }
+
+  const lastMapIndex = Math.min(
+    totalMaps - 1,
+    inSeries.reduce((max, r) => Math.max(max, r.mapNumber), 0)
+  );
+  log.warn(
+    `[SERIES GUARD] ${match.slug} ran out of maps level on maps, rounds and map-0 damage; waiting for an admin to set the winner`,
+    summary
+  );
+  await db.updateAsync(
+    'matches',
+    { status: NEEDS_DECISION_STATUS, current_map: null, map_number: lastMapIndex },
+    'id = ?',
+    [match.id]
+  );
+  if (match.server_id) {
+    serverAllocationTracker.markIdle(match.server_id);
+    setImmediate(() => {
+      void matchAllocationService.tryImmediateAllocation();
+    });
+  }
+  emitMatchUpdate({
+    id: match.id,
+    slug: match.slug,
+    status: NEEDS_DECISION_STATUS,
+    team1Score: decision.team1Maps,
+    team2Score: decision.team2Maps,
+    mapResults: results,
+  });
+  emitBracketUpdate({ action: 'match_status', matchSlug: match.slug, status: NEEDS_DECISION_STATUS });
+}
+
+/**
+ * Admin decision for a series MAT could not decide (or one stuck live because
+ * the plugin never ended it): finish it for `winner` through the normal
+ * series_end path, so bracket progression, stats and ratings all run.
+ */
+export async function setSeriesWinnerByAdmin(
+  slug: string,
+  winner: 'team1' | 'team2'
+): Promise<{ ok: true } | { ok: false; status: number; error: string }> {
+  const match = await resolveMatch(slug);
+  if (!match) return { ok: false, status: 404, error: 'Match not found' };
+  const status = match.status as string;
+  if (status === 'completed' && match.winner_id) {
+    return { ok: false, status: 409, error: 'Match already has a winner' };
+  }
+  if (!['live', 'loaded', NEEDS_DECISION_STATUS, 'completed'].includes(status)) {
+    return {
+      ok: false,
+      status: 409,
+      error: `Match is ${status}; only a live, loaded or undecided match can be given a winner`,
+    };
+  }
+  const winnerTeamId = winner === 'team1' ? match.team1_id : match.team2_id;
+  if (!winnerTeamId) {
+    return { ok: false, status: 409, error: `Match has no ${winner}` };
+  }
+
+  const results = await getMapResults(match.slug);
+  const decision = decideExhaustedSeries(results);
+  log.warn(`[SERIES GUARD] Admin set winner of ${match.slug} to ${winner}`, {
+    slug: match.slug,
+    previousStatus: status,
+    maps: `${decision.team1Maps}-${decision.team2Maps}`,
+  });
+  await handleSeriesEnd({
+    event: 'series_end',
+    matchid: match.slug,
+    team1_series_score: decision.team1Maps,
+    team2_series_score: decision.team2Maps,
+    winner,
+    time_until_restore: 0,
+  } as unknown as MatchZyEvent);
+  return { ok: true };
 }
 
 type ParsedMatchConfig = {
@@ -889,10 +1039,46 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     return;
   }
   const matchSlug = match.slug;
+  // A synthesized series_end (see finishExhaustedSeries) can race the plugin's
+  // own; only one may run the progression.
+  if (seriesEndInFlight.has(matchSlug)) {
+    log.warn('Ignoring series_end while another is being processed for this match', {
+      matchId: event.matchid,
+      slug: matchSlug,
+    });
+    return;
+  }
+  seriesEndInFlight.add(matchSlug);
+  try {
+    await processSeriesEnd(eventData, match);
+  } finally {
+    seriesEndInFlight.delete(matchSlug);
+  }
+}
+
+const seriesEndInFlight = new Set<string>();
+
+/** Index of the last map with a result, capped to the maplist, for finished matches. */
+async function lastPlayedMapIndex(match: DbMatchRow): Promise<number | null> {
+  const row = await db.queryOneAsync<{ max: number | string | null }>(
+    'SELECT MAX(map_number) as max FROM match_map_results WHERE match_slug = ?',
+    [match.slug]
+  );
+  const max = row?.max === null || row?.max === undefined ? null : Number(row.max);
+  if (max === null || !Number.isFinite(max)) return null;
+  const numMaps = parseMatchConfig(match.config)?.num_maps;
+  return typeof numMaps === 'number' && numMaps > 0 ? Math.min(max, numMaps - 1) : max;
+}
+
+async function processSeriesEnd(
+  eventData: Record<string, unknown>,
+  match: DbMatchRow
+): Promise<void> {
+  const matchSlug = match.slug;
   log.success(
     `[SERIES END] ${formatSeriesEndSummary(eventData, await knownTeamNames(match))}`,
     {
-      matchId: event.matchid,
+      matchId: eventData.matchid,
       winner: (eventData.winner as { name?: string })?.name,
     }
   );
@@ -902,7 +1088,9 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
   // Prefer the explicit winner field from the plugin, even when scores are
   // tied (e.g. performance-based tiebreaks). Fall back to score comparison
   // only if winner is missing or "none".
-  const winnerTeamFromEvent = (eventData.winner as { team?: string } | undefined)?.team as
+  // MatchZy sends winner: { team, side }; synthesized events may send the bare side.
+  const rawWinner = eventData.winner as { team?: string } | string | undefined;
+  const winnerTeamFromEvent = (typeof rawWinner === 'string' ? rawWinner : rawWinner?.team) as
     | 'team1'
     | 'team2'
     | 'none'
@@ -924,6 +1112,9 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
     winnerId = null;
   }
   const completedAt = Math.floor(Date.now() / 1000);
+  // Finished matches point at the last map played, whatever the server reported since.
+  const lastMap = await lastPlayedMapIndex(match);
+  const finalMapNumber = lastMap === null ? {} : { map_number: lastMap };
 
   if (!winnerId) {
     // For manual matches (round = 0) or other ad‑hoc configs where team1_id /
@@ -940,6 +1131,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
         {
           status: 'completed',
           completed_at: completedAt,
+          ...finalMapNumber,
         },
         'id = ?',
         [match.id]
@@ -976,6 +1168,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
           status: 'completed',
           winner_id: null,
           completed_at: completedAt,
+          ...finalMapNumber,
         },
         'id = ?',
         [match.id]
@@ -1042,6 +1235,7 @@ async function handleSeriesEnd(event: MatchZyEvent): Promise<void> {
       status: 'completed',
       winner_id: winnerId,
       completed_at: completedAt,
+      ...finalMapNumber,
     },
     'id = ?',
     [match.id]

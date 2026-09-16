@@ -21,6 +21,15 @@ interface BracketsViewerVisualizationProps {
   onMatchClick?: (match: Match) => void;
 }
 
+/** Upper bracket final and lower bracket final, in grand final slot order. */
+function grandFinalParents(matches: Match[]): Match[] {
+  const last = (list: Match[]) =>
+    [...list].sort((a, b) => b.round - a.round || a.matchNumber - b.matchNumber)[0];
+  const upperFinal = last(matches.filter((m) => /^r\d+m\d+$/.test(m.slug)));
+  const lowerFinal = last(matches.filter((m) => m.slug.startsWith('lb-')));
+  return upperFinal && lowerFinal ? [upperFinal, lowerFinal] : [];
+}
+
 export default function BracketsViewerVisualization({
   matches,
   tournamentType,
@@ -507,9 +516,16 @@ export default function BracketsViewerVisualization({
       if (!originalMatch || originalMatch.status === 'completed') return;
       if (originalMatch.slug.startsWith('lb-')) return;
 
-      const parents = [...(parentsByChildId.get(String(originalMatch.id)) ?? [])].sort(
-        (a, b) => a.matchNumber - b.matchNumber
-      );
+      // The grand final's slots are fixed: upper bracket final winner first,
+      // lower bracket final winner second. Its parents cannot be ordered by
+      // match number (both finals are match 1), and the viewer's own hint names
+      // the lower bracket final for both slots.
+      const parents =
+        originalMatch.slug === 'gf'
+          ? grandFinalParents(matches)
+          : [...(parentsByChildId.get(String(originalMatch.id)) ?? [])].sort(
+              (a, b) => a.matchNumber - b.matchNumber
+            );
       if (parents.length < 2) return;
 
       const slots = element.querySelectorAll<HTMLElement>(':scope > .opponents > .participant');

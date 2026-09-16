@@ -130,6 +130,8 @@ export interface ServerAllocationInfo {
   matchSlug: string | null;
   matchNumber: number | null;
   matchRound: number | null;
+  /** 'WB' | 'LB' | 'GF' | 'GF_RESET' | 'SE' | null */
+  matchBracket?: string | null;
   updatedAt: number | null;
   inGraceWindow: boolean;
   secondsUntilReady: number | null;
