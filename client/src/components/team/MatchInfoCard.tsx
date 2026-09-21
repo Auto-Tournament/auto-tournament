@@ -391,7 +391,7 @@ export function MatchInfoCard({
         <CardContent>
           <Alert severity="warning">
             <Typography variant="body1" fontWeight={600} gutterBottom>
-              ⏳ {t('matchInfo.waitingForTournamentTitle')}
+              {t('matchInfo.waitingForTournamentTitle')}
             </Typography>
             <Typography variant="body2">{t('matchInfo.waitingForTournamentBody')}</Typography>
             {tournamentStatus === 'setup' && (
@@ -447,7 +447,7 @@ export function MatchInfoCard({
       <Card>
         <CardContent>
           <Typography variant="h5" fontWeight={600} mb={3}>
-            🗺️ {t('matchInfo.mapSelectionTitle')}
+            {t('matchInfo.mapSelectionTitle')}
           </Typography>
           <Alert severity="info" sx={{ mb: 3 }}>
             <Typography variant="body2">

@@ -255,7 +255,7 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                     mt: 0.5
                   }}
                 >
-                  📋 {t('matchesPage.card.queuePosition', { position: queuePosition })}
+                  {t('matchesPage.card.queuePosition', { position: queuePosition })}
                 </Typography>
               )}
               {!match.serverId && allocationETA !== undefined && allocationETA !== null && (
@@ -275,12 +275,12 @@ export const MatchCard: React.FC<MatchCardProps> = ({
                   sx={{ mt: 0.25 }}
                 >
                   {allocationETA === -1
-                    ? `⏸️ ${t('matchesPage.card.waitingForServers')}`
+                    ? t('matchesPage.card.waitingForServers')
                     : allocationETA === 0 && !hasAvailableServers
-                    ? `⏸️ ${t('matchesPage.card.waitingForServers')}`
+                    ? t('matchesPage.card.waitingForServers')
                     : allocationETA === 0
-                    ? `⚡ ${t('matchesPage.card.allocatingNow')}`
-                    : `⏳ ${t('matchesPage.card.allocatesIn', {
+                    ? t('matchesPage.card.allocatingNow')
+                    : `${t('matchesPage.card.allocatesIn', {
                         time: `${Math.floor(allocationETA / 60)}:${(allocationETA % 60)
                           .toString()
                           .padStart(2, '0')}`,

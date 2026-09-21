@@ -420,7 +420,7 @@ export default function Servers() {
 
     setRetryingAll(true);
     const loadingKey = showSnackbar(
-      `⏳ ${t('serversPage.retry.retryingAll', { count: needRetry.length })}`,
+      t('serversPage.retry.retryingAll', { count: needRetry.length }),
       'info'
     );
 
@@ -672,7 +672,7 @@ export default function Servers() {
   const handleSave = async (createdIds?: string[]) => {
     await loadServers({ useCached: false });
     if (createdIds?.length) {
-      const key = showSnackbar(`⏳ ${t('serversPage.autoConfig.configuring')}`, 'info');
+      const key = showSnackbar(t('serversPage.autoConfig.configuring'), 'info');
       try {
         for (const id of createdIds) {
           try {
@@ -738,7 +738,7 @@ export default function Servers() {
     setRetryingServerId(serverId);
     
     // Show loading snackbar
-    const loadingKey = showSnackbar(`⏳ ${t('serversPage.retry.sendingConfig')}`, 'info');
+    const loadingKey = showSnackbar(t('serversPage.retry.sendingConfig'), 'info');
     
     try {
       await api.post(`/api/servers/${serverId}/reset-initialization`);
