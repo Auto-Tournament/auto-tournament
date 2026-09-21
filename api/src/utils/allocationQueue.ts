@@ -175,3 +175,20 @@ export const TEAM_BUSY_MATCH_SQL = `
   SELECT team1_id, team2_id FROM matches
    WHERE status IN ('loaded', 'live')
       OR (status = 'ready' AND server_id IS NOT NULL AND server_id != '')`;
+
+/**
+ * How many idle servers a batch allocation (a new shuffle round, or
+ * tryImmediateAllocation) waits for before it loads anything (#226).
+ *
+ * It waits so a round starts together instead of trickling out while servers
+ * leave their grace windows one by one. It used to wait for one idle server
+ * per ready match, which never happens when a round has more matches than
+ * there are servers (4 matches, 3 servers: "3/4 available" until the 15 min
+ * cap). Only servers that can take a match at all count: `servers` is the
+ * enabled servers that have reported in, and offline ones are left out. The
+ * matches beyond that are polled onto servers as the first ones finish.
+ */
+export function batchServerTarget(readyCount: number, servers: Array<{ online: boolean }>): number {
+  const usable = servers.filter((server) => server.online).length;
+  return Math.max(0, Math.min(readyCount, usable));
+}

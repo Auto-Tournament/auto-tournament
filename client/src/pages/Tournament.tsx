@@ -532,6 +532,19 @@ const Tournament: React.FC = () => {
   };
 
   const handleTypeChange = (nextType: string) => {
+    // Shuffle keeps max rounds and overtime in shuffleSettings, every other
+    // type in maxRounds/overtimeMode. Carry the values across when the type
+    // crosses that line, or the other form shows its own defaults (24, on) and
+    // the values just entered look reset (#226).
+    if (nextType === 'shuffle' && type !== 'shuffle') {
+      setShuffleSettings((prev) => ({ ...prev, maxRounds, overtimeMode, overtimeSegments }));
+    } else if (nextType !== 'shuffle' && type === 'shuffle') {
+      setMaxRounds(shuffleSettings.maxRounds);
+      setOvertimeMode(shuffleSettings.overtimeMode ?? 'enabled');
+      setOvertimeSegments(
+        typeof shuffleSettings.overtimeSegments === 'number' ? shuffleSettings.overtimeSegments : null
+      );
+    }
     setType(nextType);
     if (grandFinalModePicked || nextType !== 'double_elimination') return;
     // Back to the saved double-elimination type: keep its saved mode. Switching
