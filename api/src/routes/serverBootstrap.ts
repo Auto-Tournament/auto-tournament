@@ -5,7 +5,6 @@ import { serverService } from '../services/serverService';
 import { log } from '../utils/logger';
 import {
   getMatchZyWebhookCommands,
-  getMatchZyLoadMatchAuthCommands,
   getMatchZyCoreSettingsCommands,
   getMatchZyServerConfigCommands,
 } from '../utils/matchzyRconCommands';
@@ -64,7 +63,6 @@ router.get('/:id/bootstrap', validateServerToken, async (req: Request, res: Resp
       // Ensure server_id is set (even if the controller sets it separately via RCON).
       `matchzy_server_id "${serverId}"`,
       ...getMatchZyWebhookCommands(baseUrl, serverToken, null, serverId),
-      ...getMatchZyLoadMatchAuthCommands(serverToken),
       ...getMatchZyCoreSettingsCommands({
         chatPrefix,
         adminChatPrefix,

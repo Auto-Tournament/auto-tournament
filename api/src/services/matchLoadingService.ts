@@ -115,10 +115,6 @@ export async function loadMatchOnServer(
       if (command.startsWith('matchzy_remote_log_header_value ')) {
         return 'matchzy_remote_log_header_value "REDACTED"';
       }
-      // Match load auth header value (defense-in-depth; currently not set here)
-      if (command.startsWith('matchzy_loadmatch_url_header_value ')) {
-        return 'matchzy_loadmatch_url_header_value "REDACTED"';
-      }
       // Match report token (defense-in-depth; currently not set here)
       if (command.startsWith('matchzy_report_token ')) {
         return 'matchzy_report_token "REDACTED"';
