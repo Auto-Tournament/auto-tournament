@@ -1,5 +1,9 @@
 <div align="center">
-  <img src="client/public/icon.svg" alt="MatchZy Auto Tournament" width="140" height="140">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="docs/assets/logo/mat-wordmark-dark.svg">
+    <source media="(prefers-color-scheme: light)" srcset="docs/assets/logo/mat-wordmark-light.svg">
+    <img src="docs/assets/logo/mat-wordmark-light.svg" alt="mat" height="56">
+  </picture>
 
   # MatchZy Auto Tournament
 
