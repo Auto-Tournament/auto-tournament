@@ -13,6 +13,17 @@
 #
 # Optional: HOST_PORT=27016 docker compose -f docker/docker-compose.yml up -d
 # Default port: 3069
+#
+# Image: this still defaults to the old sivertio/matchzy-auto-tournament name
+# below. 3.0 also publishes the same build as ghcr.io/auto-tournament/auto-
+# tournament (primary) and sivertio/auto-tournament (Docker Hub mirror), but
+# neither has a stable `:latest` yet during the 3.0 release freeze — until it
+# ships, switching the default here would leave existing installs on an image
+# with no `:latest` tag. Once 3.0 is out, point `image:` below at one of:
+#   image: ghcr.io/auto-tournament/auto-tournament:latest
+#   image: sivertio/auto-tournament:latest
+# Renaming the `matchzy-tournament*` / `matchzy-postgres` service, container
+# and database names below is a separate, breaking decision — not done here.
 
 services:
   postgres:
