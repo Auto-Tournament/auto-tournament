@@ -1,0 +1,75 @@
+[
+  {
+    "slug": "shuffle-r1-m1",
+    "round": 1,
+    "matchNumber": 1,
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 16
+      },
+      "expected_players_team1": 5,
+      "expected_players_team2": 5,
+      "expected_players_total": 10,
+      "map_sides": [
+        "<random-side>"
+      ],
+      "maplist": [
+        "de_mirage"
+      ],
+      "matchid": "<matchid>",
+      "maxRounds": 16,
+      "min_players_to_ready": 5,
+      "min_spectators_to_ready": 0,
+      "num_maps": 1,
+      "overtimeMode": "disabled",
+      "players_per_team": 5,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "id": "<shuffle-team1-id>",
+        "name": "<shuffle-team1-name>",
+        "players": "<5 players>",
+        "series_score": 0,
+        "tag": "<shuffle-team1-tag>"
+      },
+      "team2": {
+        "id": "<shuffle-team2-id>",
+        "name": "<shuffle-team2-name>",
+        "players": "<5 players>",
+        "series_score": 0,
+        "tag": "<shuffle-team2-tag>"
+      },
+      "wingman": false
+    },
+    "allPlayers": [
+      "76561199000005001",
+      "76561199000005002",
+      "76561199000005003",
+      "76561199000005004",
+      "76561199000005005",
+      "76561199000005006",
+      "76561199000005007",
+      "76561199000005008",
+      "76561199000005009",
+      "76561199000005010"
+    ]
+  }
+]

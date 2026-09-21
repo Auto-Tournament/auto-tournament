@@ -1,0 +1,1509 @@
+{
+  "match": {
+    "bracket": "SE",
+    "completedAt": "<completedAt>",
+    "config": {
+      "admins": [
+        "<test-admin-steam-id>"
+      ],
+      "cvars": {
+        "matchzy_autoready_enabled": 0,
+        "matchzy_both_teams_unpause_required": 1,
+        "matchzy_demo_recording_enabled": 1,
+        "matchzy_ffw_enabled": 0,
+        "matchzy_ffw_time": 240,
+        "matchzy_gg_enabled": 0,
+        "matchzy_gg_min_score_diff": 0,
+        "matchzy_gg_threshold": 0.8,
+        "matchzy_max_pauses_per_team": 0,
+        "matchzy_pause_duration": 0,
+        "matchzy_side_selection_enabled": 1,
+        "matchzy_side_selection_time": 60,
+        "mp_maxrounds": 24
+      },
+      "expected_players_team1": 5,
+      "expected_players_team2": 5,
+      "expected_players_total": 10,
+      "map_sides": [
+        "team2_ct",
+        "team2_ct",
+        "team2_ct"
+      ],
+      "maplist": [
+        "de_ancient",
+        "de_anubis",
+        "de_nuke"
+      ],
+      "matchid": "<matchid>",
+      "maxRounds": 24,
+      "min_players_to_ready": 0,
+      "min_spectators_to_ready": 0,
+      "num_maps": 3,
+      "overtimeMode": "enabled",
+      "players_per_team": 5,
+      "simulation": false,
+      "skip_veto": true,
+      "spectators": {
+        "players": {}
+      },
+      "team1": {
+        "id": "golden-replay-a",
+        "name": "Replay Alpha",
+        "players": [
+          {
+            "name": "Alpha 1",
+            "steamid": "76561199000070001"
+          },
+          {
+            "name": "Alpha 2",
+            "steamid": "76561199000070002"
+          },
+          {
+            "name": "Alpha 3",
+            "steamid": "76561199000070003"
+          },
+          {
+            "name": "Alpha 4",
+            "steamid": "76561199000070004"
+          },
+          {
+            "name": "Alpha 5",
+            "steamid": "76561199000070005"
+          }
+        ],
+        "series_score": 0,
+        "tag": "REPL"
+      },
+      "team2": {
+        "id": "golden-replay-b",
+        "name": "Replay Bravo",
+        "players": [
+          {
+            "name": "Bravo 1",
+            "steamid": "76561199000080001"
+          },
+          {
+            "name": "Bravo 2",
+            "steamid": "76561199000080002"
+          },
+          {
+            "name": "Bravo 3",
+            "steamid": "76561199000080003"
+          },
+          {
+            "name": "Bravo 4",
+            "steamid": "76561199000080004"
+          },
+          {
+            "name": "Bravo 5",
+            "steamid": "76561199000080005"
+          }
+        ],
+        "series_score": 0,
+        "tag": "REPL"
+      },
+      "wingman": false
+    },
+    "createdAt": "<createdAt>",
+    "demoFilePath": null,
+    "id": "<matchid>",
+    "loadedAt": null,
+    "mapNumber": 2,
+    "mapResults": [
+      {
+        "completedAt": "<completedAt>",
+        "demoFilePath": null,
+        "mapName": "de_ancient",
+        "mapNumber": 0,
+        "matchSlug": "r1m1",
+        "team1Score": 13,
+        "team2Score": 9,
+        "winnerTeam": "team1"
+      },
+      {
+        "completedAt": "<completedAt>",
+        "demoFilePath": null,
+        "mapName": "de_anubis",
+        "mapNumber": 1,
+        "matchSlug": "r1m1",
+        "team1Score": 11,
+        "team2Score": 13,
+        "winnerTeam": "team2"
+      },
+      {
+        "completedAt": "<completedAt>",
+        "demoFilePath": null,
+        "mapName": "de_nuke",
+        "mapNumber": 2,
+        "matchSlug": "r1m1",
+        "team1Score": 13,
+        "team2Score": 7,
+        "winnerTeam": "team1"
+      }
+    ],
+    "maps": [
+      "de_ancient",
+      "de_anubis",
+      "de_nuke"
+    ],
+    "matchNumber": 1,
+    "round": 1,
+    "serverId": null,
+    "slug": "r1m1",
+    "status": "completed",
+    "team1": {
+      "id": "golden-replay-a",
+      "name": "Replay Alpha",
+      "tag": null
+    },
+    "team1MapScore": 13,
+    "team1Score": 2,
+    "team1SeriesScore": 2,
+    "team2": {
+      "id": "golden-replay-b",
+      "name": "Replay Bravo",
+      "tag": null
+    },
+    "team2MapScore": 7,
+    "team2Score": 1,
+    "team2SeriesScore": 1,
+    "vetoCompleted": true,
+    "winner": {
+      "id": "golden-replay-a",
+      "name": "Replay Alpha",
+      "tag": null
+    }
+  },
+  "players": {
+    "76561199000070001": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1798,
+          "created_at": "<created_at>",
+          "elo_after": 1798,
+          "elo_before": 1500,
+          "elo_change": 298,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "win",
+          "match_slug": "r1m1",
+          "mu_after": 26.284807,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 74.52,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 20,
+            "kills": 37,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4918,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000070001/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1798,
+          "id": "76561199000070001",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 1",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1798,
+            "created_at": "<created_at>",
+            "elo_after": 1798,
+            "elo_before": 1500,
+            "elo_change": 298,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "win",
+            "match_slug": "r1m1",
+            "mu_after": 26.284807,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 74.52,
+          "bestAdrMatch": {
+            "adr": 74.52,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 20,
+            "kills": 37,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4918,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          },
+          "losses": 0,
+          "matchesPlayed": 1,
+          "recentForm": "W",
+          "winRate": 1,
+          "wins": 1,
+          "worstAdrMatch": {
+            "adr": 74.52,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 20,
+            "kills": 37,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4918,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000070002": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1798,
+          "created_at": "<created_at>",
+          "elo_after": 1798,
+          "elo_before": 1500,
+          "elo_change": 298,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "win",
+          "match_slug": "r1m1",
+          "mu_after": 26.284807,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 75.15,
+            "assists": 11,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 15,
+            "kills": 41,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4960,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000070002/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1798,
+          "id": "76561199000070002",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 2",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1798,
+            "created_at": "<created_at>",
+            "elo_after": 1798,
+            "elo_before": 1500,
+            "elo_change": 298,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "win",
+            "match_slug": "r1m1",
+            "mu_after": 26.284807,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 75.15,
+          "bestAdrMatch": {
+            "adr": 75.15,
+            "assists": 11,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 15,
+            "kills": 41,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4960,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          },
+          "losses": 0,
+          "matchesPlayed": 1,
+          "recentForm": "W",
+          "winRate": 1,
+          "wins": 1,
+          "worstAdrMatch": {
+            "adr": 75.15,
+            "assists": 11,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 15,
+            "kills": 41,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4960,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000070003": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1798,
+          "created_at": "<created_at>",
+          "elo_after": 1798,
+          "elo_before": 1500,
+          "elo_change": 298,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "win",
+          "match_slug": "r1m1",
+          "mu_after": 26.284807,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 110.26,
+            "assists": 14,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 31,
+            "kills": 63,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 7277,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000070003/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1798,
+          "id": "76561199000070003",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 3",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1798,
+            "created_at": "<created_at>",
+            "elo_after": 1798,
+            "elo_before": 1500,
+            "elo_change": 298,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "win",
+            "match_slug": "r1m1",
+            "mu_after": 26.284807,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 110.26,
+          "bestAdrMatch": {
+            "adr": 110.26,
+            "assists": 14,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 31,
+            "kills": 63,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 7277,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          },
+          "losses": 0,
+          "matchesPlayed": 1,
+          "recentForm": "W",
+          "winRate": 1,
+          "wins": 1,
+          "worstAdrMatch": {
+            "adr": 110.26,
+            "assists": 14,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 31,
+            "kills": 63,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 7277,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000070004": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1798,
+          "created_at": "<created_at>",
+          "elo_after": 1798,
+          "elo_before": 1500,
+          "elo_change": 298,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "win",
+          "match_slug": "r1m1",
+          "mu_after": 26.284807,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 99.21,
+            "assists": 12,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 31,
+            "kills": 58,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 6548,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000070004/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1798,
+          "id": "76561199000070004",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 4",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1798,
+            "created_at": "<created_at>",
+            "elo_after": 1798,
+            "elo_before": 1500,
+            "elo_change": 298,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "win",
+            "match_slug": "r1m1",
+            "mu_after": 26.284807,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 99.21,
+          "bestAdrMatch": {
+            "adr": 99.21,
+            "assists": 12,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 31,
+            "kills": 58,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 6548,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          },
+          "losses": 0,
+          "matchesPlayed": 1,
+          "recentForm": "W",
+          "winRate": 1,
+          "wins": 1,
+          "worstAdrMatch": {
+            "adr": 99.21,
+            "assists": 12,
+            "completed_at": "<completed_at>",
+            "deaths": 45,
+            "headshots": 31,
+            "kills": 58,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 6548,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000070005": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1798,
+          "created_at": "<created_at>",
+          "elo_after": 1798,
+          "elo_before": 1500,
+          "elo_change": 298,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "win",
+          "match_slug": "r1m1",
+          "mu_after": 26.284807,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 68.56,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 37,
+            "headshots": 21,
+            "kills": 36,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4525,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000070005/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1798,
+          "id": "76561199000070005",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Alpha 5",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1798,
+            "created_at": "<created_at>",
+            "elo_after": 1798,
+            "elo_before": 1500,
+            "elo_change": 298,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "win",
+            "match_slug": "r1m1",
+            "mu_after": 26.284807,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 68.56,
+          "bestAdrMatch": {
+            "adr": 68.56,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 37,
+            "headshots": 21,
+            "kills": 36,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4525,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          },
+          "losses": 0,
+          "matchesPlayed": 1,
+          "recentForm": "W",
+          "winRate": 1,
+          "wins": 1,
+          "worstAdrMatch": {
+            "adr": 68.56,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 37,
+            "headshots": 21,
+            "kills": 36,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team1",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4525,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": true
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000080001": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1284,
+          "created_at": "<created_at>",
+          "elo_after": 1284,
+          "elo_before": 1500,
+          "elo_change": -216,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "loss",
+          "match_slug": "r1m1",
+          "mu_after": 23.713192,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 73.58,
+            "assists": 17,
+            "completed_at": "<completed_at>",
+            "deaths": 51,
+            "headshots": 18,
+            "kills": 38,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4856,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000080001/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1284,
+          "id": "76561199000080001",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 1",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1284,
+            "created_at": "<created_at>",
+            "elo_after": 1284,
+            "elo_before": 1500,
+            "elo_change": -216,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "loss",
+            "match_slug": "r1m1",
+            "mu_after": 23.713192,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 73.58,
+          "bestAdrMatch": {
+            "adr": 73.58,
+            "assists": 17,
+            "completed_at": "<completed_at>",
+            "deaths": 51,
+            "headshots": 18,
+            "kills": 38,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4856,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          },
+          "losses": 1,
+          "matchesPlayed": 1,
+          "recentForm": "L",
+          "winRate": 0,
+          "wins": 0,
+          "worstAdrMatch": {
+            "adr": 73.58,
+            "assists": 17,
+            "completed_at": "<completed_at>",
+            "deaths": 51,
+            "headshots": 18,
+            "kills": 38,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4856,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000080002": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1284,
+          "created_at": "<created_at>",
+          "elo_after": 1284,
+          "elo_before": 1500,
+          "elo_change": -216,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "loss",
+          "match_slug": "r1m1",
+          "mu_after": 23.713192,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 83.56,
+            "assists": 16,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 22,
+            "kills": 45,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5515,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000080002/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1284,
+          "id": "76561199000080002",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 2",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1284,
+            "created_at": "<created_at>",
+            "elo_after": 1284,
+            "elo_before": 1500,
+            "elo_change": -216,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "loss",
+            "match_slug": "r1m1",
+            "mu_after": 23.713192,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 83.56,
+          "bestAdrMatch": {
+            "adr": 83.56,
+            "assists": 16,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 22,
+            "kills": 45,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5515,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          },
+          "losses": 1,
+          "matchesPlayed": 1,
+          "recentForm": "L",
+          "winRate": 0,
+          "wins": 0,
+          "worstAdrMatch": {
+            "adr": 83.56,
+            "assists": 16,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 22,
+            "kills": 45,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5515,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000080003": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1284,
+          "created_at": "<created_at>",
+          "elo_after": 1284,
+          "elo_before": 1500,
+          "elo_change": -216,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "loss",
+          "match_slug": "r1m1",
+          "mu_after": 23.713192,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 75.56,
+            "assists": 7,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 20,
+            "kills": 42,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4987,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000080003/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1284,
+          "id": "76561199000080003",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 3",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1284,
+            "created_at": "<created_at>",
+            "elo_after": 1284,
+            "elo_before": 1500,
+            "elo_change": -216,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "loss",
+            "match_slug": "r1m1",
+            "mu_after": 23.713192,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 75.56,
+          "bestAdrMatch": {
+            "adr": 75.56,
+            "assists": 7,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 20,
+            "kills": 42,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4987,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          },
+          "losses": 1,
+          "matchesPlayed": 1,
+          "recentForm": "L",
+          "winRate": 0,
+          "wins": 0,
+          "worstAdrMatch": {
+            "adr": 75.56,
+            "assists": 7,
+            "completed_at": "<completed_at>",
+            "deaths": 46,
+            "headshots": 20,
+            "kills": 42,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 4987,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000080004": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1284,
+          "created_at": "<created_at>",
+          "elo_after": 1284,
+          "elo_before": 1500,
+          "elo_change": -216,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "loss",
+          "match_slug": "r1m1",
+          "mu_after": 23.713192,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 80.7,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 24,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5326,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000080004/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1284,
+          "id": "76561199000080004",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 4",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1284,
+            "created_at": "<created_at>",
+            "elo_after": 1284,
+            "elo_before": 1500,
+            "elo_change": -216,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "loss",
+            "match_slug": "r1m1",
+            "mu_after": 23.713192,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 80.7,
+          "bestAdrMatch": {
+            "adr": 80.7,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 24,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5326,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          },
+          "losses": 1,
+          "matchesPlayed": 1,
+          "recentForm": "L",
+          "winRate": 0,
+          "wins": 0,
+          "worstAdrMatch": {
+            "adr": 80.7,
+            "assists": 9,
+            "completed_at": "<completed_at>",
+            "deaths": 43,
+            "headshots": 24,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5326,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        },
+        "success": true
+      }
+    },
+    "76561199000080005": {
+      "ratingHistory": [
+        {
+          "base_elo_after": 1284,
+          "created_at": "<created_at>",
+          "elo_after": 1284,
+          "elo_before": 1500,
+          "elo_change": -216,
+          "match_label": "Replay Alpha vs Replay Bravo",
+          "match_result": "loss",
+          "match_slug": "r1m1",
+          "mu_after": 23.713192,
+          "mu_before": 24.999,
+          "sigma_after": 8.26426,
+          "sigma_before": 8.333,
+          "stat_adjustment": 0,
+          "template_id": null,
+          "tournament_name": "Golden Replay Tournament"
+        }
+      ],
+      "summary": {
+        "matches": [
+          {
+            "adr": 78.83,
+            "assists": 10,
+            "completed_at": "<completed_at>",
+            "deaths": 49,
+            "headshots": 22,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5203,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        ],
+        "player": {
+          "avatar": "/api/players/76561199000080005/avatar.svg",
+          "createdAt": "<createdAt>",
+          "currentElo": 1284,
+          "id": "76561199000080005",
+          "isAdmin": false,
+          "matchCount": 1,
+          "name": "Bravo 5",
+          "startingElo": 1500,
+          "updatedAt": "<updatedAt>"
+        },
+        "ratingHistory": [
+          {
+            "base_elo_after": 1284,
+            "created_at": "<created_at>",
+            "elo_after": 1284,
+            "elo_before": 1500,
+            "elo_change": -216,
+            "match_label": "Replay Alpha vs Replay Bravo",
+            "match_result": "loss",
+            "match_slug": "r1m1",
+            "mu_after": 23.713192,
+            "mu_before": 24.999,
+            "sigma_after": 8.26426,
+            "sigma_before": 8.333,
+            "stat_adjustment": 0,
+            "template_id": null,
+            "tournament_name": "Golden Replay Tournament"
+          }
+        ],
+        "stats": {
+          "averageAdr": 78.83,
+          "bestAdrMatch": {
+            "adr": 78.83,
+            "assists": 10,
+            "completed_at": "<completed_at>",
+            "deaths": 49,
+            "headshots": 22,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5203,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          },
+          "losses": 1,
+          "matchesPlayed": 1,
+          "recentForm": "L",
+          "winRate": 0,
+          "wins": 0,
+          "worstAdrMatch": {
+            "adr": 78.83,
+            "assists": 10,
+            "completed_at": "<completed_at>",
+            "deaths": 49,
+            "headshots": 22,
+            "kills": 44,
+            "match_number": 1,
+            "round": 1,
+            "slug": "r1m1",
+            "status": "completed",
+            "team": "team2",
+            "team1_id": "golden-replay-a",
+            "team1_name": "Replay Alpha",
+            "team1_tag": null,
+            "team2_id": "golden-replay-b",
+            "team2_name": "Replay Bravo",
+            "team2_tag": null,
+            "total_damage": 5203,
+            "tournamentid": 1,
+            "winner_id": "golden-replay-a",
+            "won_match": false
+          }
+        },
+        "success": true
+      }
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "config": {
+    "admins": [
+      "<test-admin-steam-id>"
+    ],
+    "cvars": {
+      "matchzy_autoready_enabled": 0,
+      "matchzy_both_teams_unpause_required": 1,
+      "matchzy_demo_recording_enabled": 1,
+      "matchzy_ffw_enabled": 0,
+      "matchzy_ffw_time": 240,
+      "matchzy_gg_enabled": 0,
+      "matchzy_gg_min_score_diff": 0,
+      "matchzy_gg_threshold": 0.8,
+      "matchzy_knife_enabled_default": 1,
+      "matchzy_max_pauses_per_team": 0,
+      "matchzy_pause_duration": 0,
+      "matchzy_side_selection_enabled": 1,
+      "matchzy_side_selection_time": 60,
+      "mp_maxrounds": 24,
+      "mp_overtime_enable": 1,
+      "mp_overtime_maxrounds": 6
+    },
+    "expected_players_team1": 5,
+    "expected_players_team2": 5,
+    "expected_players_total": 10,
+    "map_sides": [
+      "team1_ct",
+      "team2_ct",
+      "knife"
+    ],
+    "maplist": [
+      "de_mirage",
+      "de_inferno",
+      "de_nuke"
+    ],
+    "matchid": "<matchid>",
+    "num_maps": 3,
+    "players_per_team": 5,
+    "simulation": false,
+    "skip_veto": true,
+    "spectators": {
+      "players": {}
+    },
+    "team1": {
+      "id": "golden-team-1",
+      "name": "Golden Team 1",
+      "players": {
+        "76561199000000101": "Golden 1.1",
+        "76561199000000102": "Golden 1.2",
+        "76561199000000103": "Golden 1.3",
+        "76561199000000104": "Golden 1.4",
+        "76561199000000105": "Golden 1.5"
+      },
+      "tag": "GLD1"
+    },
+    "team2": {
+      "name": "Ad-hoc Mix",
+      "players": {
+        "76561199000006001": "Mix 1",
+        "76561199000006002": "Mix 2",
+        "76561199000006003": "Mix 3",
+        "76561199000006004": "Mix 4",
+        "76561199000006005": "Mix 5"
+      }
+    },
+    "vetoDisabled": true
+  },
+  "slug": "golden-manual-match"
+}
