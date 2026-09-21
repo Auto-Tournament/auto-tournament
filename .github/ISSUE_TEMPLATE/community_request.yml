@@ -93,7 +93,7 @@ body:
     attributes:
       label: Branch/PR Link
       description: Link to the branch or PR that needs testing
-      placeholder: "https://github.com/Auto-Tournament/matchzy-auto-tournament/pull/123"
+      placeholder: "https://github.com/Auto-Tournament/auto-tournament/pull/123"
     validations:
       required: false
 

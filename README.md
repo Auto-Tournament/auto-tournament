@@ -11,8 +11,8 @@
   each match onto your servers, runs the map veto in the browser and records the
   results.
 
-[![CI](https://github.com/Auto-Tournament/matchzy-auto-tournament/actions/workflows/ci.yml/badge.svg)](https://github.com/Auto-Tournament/matchzy-auto-tournament/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/Auto-Tournament/matchzy-auto-tournament)](https://github.com/Auto-Tournament/matchzy-auto-tournament/releases)
+[![CI](https://github.com/Auto-Tournament/auto-tournament/actions/workflows/ci.yml/badge.svg)](https://github.com/Auto-Tournament/auto-tournament/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/Auto-Tournament/auto-tournament)](https://github.com/Auto-Tournament/auto-tournament/releases)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 <a href="https://docs.sivert.io/docs/mat">Documentation</a> · <a href="https://discord.gg/n7gHYau7aW">Discord</a>
@@ -51,8 +51,8 @@ You need Docker with Docker Compose, and CS2 servers with
 and RCON access.
 
 ```bash
-git clone https://github.com/Auto-Tournament/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+git clone https://github.com/Auto-Tournament/auto-tournament.git
+cd auto-tournament
 cp example.env .env   # set SESSION_SECRET, SERVER_TOKEN and STEAM_API_KEY
 docker compose --env-file .env -f docker/docker-compose.yml up -d
 ```
@@ -116,7 +116,7 @@ Building on MAT:
 ## Contributing
 
 Bug reports, fixes, translations and docs changes are all welcome. See the
-[contributing guide](.github/CONTRIBUTING.md), [open an issue](https://github.com/Auto-Tournament/matchzy-auto-tournament/issues/new/choose),
+[contributing guide](.github/CONTRIBUTING.md), [open an issue](https://github.com/Auto-Tournament/auto-tournament/issues/new/choose),
 or read [TRANSLATING.md](TRANSLATING.md) to add a language.
 
 ## License

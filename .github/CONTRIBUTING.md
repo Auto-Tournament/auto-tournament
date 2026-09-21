@@ -7,7 +7,7 @@ The full guide is in the docs:
 
 ```bash
 git clone https://github.com/YOUR_USERNAME/matchzy-auto-tournament.git
-cd matchzy-auto-tournament
+cd auto-tournament
 yarn install
 
 yarn db               # starts PostgreSQL in Docker
